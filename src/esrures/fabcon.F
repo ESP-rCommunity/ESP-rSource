@@ -160,20 +160,24 @@ C to the fabric temperature or condensation information.
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/VAP1/IDO,IMO,TIMO,IDAYO,ITIMO
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RSNAME*40
+      CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RSNAME*40,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character zname*12,zdesc*64,TSTR*6,ZN*12,SN*12,DS*7,DS1*10
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      integer lml   ! string length for construction name.
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
 C pixel references for calls to viewtext.
-      SN=SNAME(ICOMP,ISUR)
+      CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
+      SN=SSNAME(ICN)
       ZN=zname(ICOMP)
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
@@ -197,8 +201,9 @@ C pixel references for calls to viewtext.
         call edisp(iuout,ETEXT)
       endif
 
-      WRITE(ETEXT,'(A,a,A,A)')' Condensation within ',
-     &              SN(:lnblnk(SN)),' of ',ZN(:lnblnk(ZN))
+      WRITE(ETEXT,'(6A)')' Condensation within ',
+     &  SN(:lnblnk(SN)),' of ',ZN(:lnblnk(ZN)),' facing ',
+     &  CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
         CALL viewtext(ETEXT,2,0,1)
       else
@@ -206,15 +211,17 @@ C pixel references for calls to viewtext.
       endif
 
 C Determine if the surface is transparent or opaque.
-      IF(SOTF(ISUR).EQ.'OPAQ'.OR.SOTF(ISUR).EQ.'UNKN')THEN
+      IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
+     &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
          TSTR='opaque'
       ELSE
          TSTR='trnsp.'
       ENDIF
 
 C Display surface information.
+      lml=lnblnk(SSMLCN(ICN))
       WRITE(ETEXT,'(5a,f6.2,a)')' It is ',TSTR,', composed of ',
-     &  SMLCN(ISUR),', with area ',SNA(ICOMP,ISUR),' m2.'
+     &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       if(MMOD.EQ.8)then
         CALL viewtext(ETEXT,3,0,1)
       else
@@ -251,14 +258,16 @@ C timestep.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/zcondhr/izctime(MCON)
 
       DIMENSION TSURF(MS),TSO(MS),ihit(ms)
       CHARACTER*1 A(MS)
       character outs*124,xfile*144,TDESCR*5,DESCR1*10,DESCR*7
-      character zname*12,zdesc*64,tg*1,delim*1
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      character zname*12,zdesc*64,tg*1,delim*1,CSTR*25
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       logical found
 
 C Set chosen result set.
@@ -345,8 +354,9 @@ C izctime is number of timesteps when some surface in zone has condensation.
 
       call edisp(itru,' Surface  occurances  hours')
       do 42 ij=1,NC
+        CALL SURADJ(izone,ij,IE,T,IZC,ISC,ICN,CSTR)
         hrs=ihit(ij)*TFACT
-        WRITE(outs,'(1x,a,i5,f8.2)') sname(izone,ij),ihit(ij),hrs
+        WRITE(outs,'(1x,a,i5,f8.2)') ssname(icn),ihit(ij),hrs
         call edisp(itru,outs)
   42  continue
       hrs=izctime(IZONE)*TFACT
@@ -429,7 +439,7 @@ C Convert to node-related thicknesses.
    10 CONTINUE
 
 C Determine diffusion resistance factor for each element.
-      call edisp(iuout,' Diffusion resistance factor for ..........')
+      call edisp(iuout,' Diffusion resistance factor for:')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
         if(closemat)then
@@ -793,14 +803,20 @@ C period.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
 
@@ -814,13 +830,38 @@ C IPRZ is primitive db ref for each layer.
       common/T8/IPRZ(MS,ME)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1
+      integer legmat  ! local variable for legacy index.
+      logical closemat
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Set chosen result set.
+      newgeo=.false.  ! assume older format geometry.
       ISET=ISIM
 
 C Set values as common block gets overwritten.
@@ -839,7 +880,12 @@ C If output to file alter the edisp unit number.
 
 C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
-      CALL EGOMIN(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      else
+        call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      endif
       IF(IER.NE.0)THEN
         write(outs,'(A,A72)')' Could not find ',LGEOM(ICOMP)
         CALL USRMSG(' ',outs,'W')
@@ -862,19 +908,38 @@ C Read (silently) construction file.
         RETURN
       ENDIF
 
+C Check which version of materials database.
+      call eclose(matver,1.1,0.001,closemat)
+
       write(outs,'(A,A)') ' Condensation search in: ',ZN(1:lnblnk(ZN))
       call edisp(iuout,outs)
 
 C For each surface.
-      do 20 ISUR=1,NSUR
-        SN=SNAME(ICOMP,ISUR)
+      do 20 ISUR=1,NZSUR(ICOMP)
+        CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
+        SN=SSNAME(ICN)
 
 C Determine diffusion resistance factor for each element
-C from primitive db and compute layer thickness.
+C from ascii or binary materials db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
+          if(closemat)then
+            legmat=IPRZ(ISUR,I)   ! which legacy index
+            if(legmat.ge.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRVAL=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
+          else
+            CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
      &         DBSHT,E,A,DRVAL,TITL,NAM)
+          endif
           VDIF(I)=DRVAL
    24   CONTINUE
 
@@ -1007,7 +1072,7 @@ C vapour pressure at any part of the construction.
 C Condensation occurs.
               CALL STIME(ITIMO,TDESCR)
               CALL STDATE(IYEAR,IDAYO,DS,DS1)
-              write(outs,'(A,A,A,A,A,A,A,A)') ' Condensation: ',
+              write(outs,'(8A)') ' Condensation: ',
      &          SN(1:lnblnk(SN)),' of ',ZN(1:lnblnk(ZN)),
      &          ' on ',DS1,' at ',TDESCR
               call edisp(itru,outs)

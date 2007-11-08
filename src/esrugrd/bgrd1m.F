@@ -42,20 +42,32 @@ C *********************************************************************
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/MOIST02/LMOIST(MCOM)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
 
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,SAVEOK
       LOGICAL ZONOK,XST,MSTROK,MSTRZN
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
       CHARACTER*12 ZONENM,ZNAME
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4,zdesc*64
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      character outs*124,outsd*124,outs72*72,OTHSTR*30
+      CHARACTER zdesc*64
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
@@ -65,6 +77,7 @@ C *********************************************************************
       IZ=0
       ZONOK=.FALSE.
       SAVEOK=.FALSE.
+      newgeo=.false.  ! assume older format geometry.
 
    10 INO=-3
       IF(ZONOK)THEN
@@ -128,7 +141,12 @@ C Show the zone selection menu.
         IZ2=IVALZ(1)
         IF(IZ2.GE.1.AND.IZ2.LE.NCOMP)THEN
           IZ=IZ2
-          CALL EGOMIN(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+          call eclose(gversion(IZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+          else
+            call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+          endif
           IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
           IF(IER.EQ.0)THEN
             ZONOK=.TRUE.
@@ -176,7 +194,8 @@ C Assign the number of nodes in a layer.
 C Show the constructions menu.
         INPICK=1
         DO 50 ISRF=1,NC
-          ITEMC(ISRF)=SNAME(IZ,ISRF)
+          icc=izstocn(iz,isrf)
+          ITEMC(ISRF)=SSNAME(icc)
    50   CONTINUE
         H(1)=' Select the surface in which the required layers '
         H(2)=' are located. '
@@ -184,10 +203,11 @@ C Show the constructions menu.
         IS2=IVALS(1)
         IF(IS2.GT.0.AND.IS2.LE.NC)THEN
           IS=IS2
+          icc=izstocn(iz,is)
           NE=NELTS(IZ,IS)
           WRITE(TXT,'(10(2X,I2))')(MNDL(IZ,IS,IL),IL=1,NE)
           WRITE(MSG1,'(A30,A28,A12))')" Enter the number of moisture ",
-     &    "nodes/layer in the surface: ",SNAME(IZ,IS)
+     &    "nodes/layer in the surface: ",SSNAME(icc)
           CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
           CALL CHITMS(TXT,NCFF)
           IF(NCFF.NE.NE)THEN
@@ -293,7 +313,9 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST05/IPERM(MCOM,MS,ME),PERM(MCOM,MS,ME,3)
       COMMON/MOIST06/ISORP(MCOM,MS,ME),SORP(MCOM,MS,ME,3)
       COMMON/MOIST07/ITVAPD(MCOM,MS,ME),TVAPD(MCOM,MS,ME)
@@ -301,7 +323,8 @@ C *********************************************************************
       CHARACTER ITEM(10)*35,ITEMC(MS)*20
       CHARACTER SURFNM*12
       CHARACTER H*72
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER*72 MSG1,TXT,TEXT1,TEXT2
 
       DIMENSION IVALS(MS),IVALL(ME)
@@ -313,7 +336,8 @@ C *********************************************************************
 
    10 INO=-3
       IF(IS.GE.1.AND.IS.LE.NC)THEN
-        SURFNM=SNAME(IZ,IS)
+        icc=izstocn(iz,is)
+        SURFNM=SSNAME(icc)
       ELSE
         SURFNM=' '
       ENDIF
@@ -341,7 +365,8 @@ C Select the surface.
 C Show the constructions menu.
         INPICK=1
         DO 20 IS2=1,NC
-          ITEMC(IS2)=SNAME(IZ,IS2)
+          icc=izstocn(iz,is2)
+          ITEMC(IS2)=SSNAME(icc)
    20   CONTINUE
         H(1)=' Select the surface '
    30   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',IER,1)

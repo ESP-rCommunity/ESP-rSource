@@ -152,6 +152,8 @@ C             new non-zero elements.
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       common/packa/nrowc(mpnode,2,mpvar),iptrd(mpnode),
      &             iptrod(mcoefg,mpvar),ntcoe
@@ -161,6 +163,9 @@ C they can be accessed later by generic 'Zero_h2_flow' routine
       common / plant_coeff / iPMC_locations(mpcom,mpcoe)
       integer iPMC_locations
 
+      COMMON /pcddsc/ pcdesc(maxpc), npref(mpcom)
+      CHARACTER pcdesc*80
+      INTEGER NPREF
 
 
 C Common for primitive parts transport delay flag. Initialize to
@@ -204,6 +209,19 @@ C matrix entries NMATX and number of miscelaneous data items NMISC
       IREC=NPCDAT(IPCOMP,2)
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=994)
      &     AA,ICODE,ZZ,NNODE,NMATX,NMISC
+
+C For a trnsys component, read its data from a data file.
+C Note that in plant database, the trnsys has dummy values only.
+C The code number in the plant database is used here to judge whether
+C it is a trnsys component. Since the code number (=85) is hard-coded
+C here, any change of this code number in the database will require
+C the changes in the source code. This may be potentially improved
+C by not referring to the code number.
+      IF(NPREF(IPCOMP) .EQ. 85) THEN
+	CALL TRNPMXT(IPCOMP, ICODE, NXT, MATPOS, LOCCON)
+        CYCLE
+      END IF
+
       NMISCD(IPCOMP)=NMISC
 
 C Read new record data related to meta components
@@ -421,6 +439,11 @@ C first reset KNHIT
       IF(NPCON.GT.0) THEN
          DO 75 IPCON=1,NPCON
          IP1=IPC1(IPCON)
+
+C If IP1 is TRNSYS type, skip the remaining of this loop
+C This is because trnsys components do not have cross-coupling coeff.
+         IF(NPREF(IP1) .EQ. 85) CYCLE
+
          NXT=LOCCON(IP1)
          LOCCON(IP1)=LOCCON(IP1)+1
          IPOFS1(NXT)=NPCDAT(IP1,9)+IPN1(IPCON)-1
@@ -1378,6 +1401,23 @@ C Pressurized WCH pump
          ELSE IF (ITYPE .EQ. 118) THEN
 C 1 node simple solar collector model
             CALL simple_solar_coll_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 119) THEN
+C X-node generic TRNSYS type
+            CALL trnsys_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 120) THEN 
+C 2-node storage tank with immersed heat exchanger
+            CALL tank_intank_hx_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 121) THEN
+C 1-node mains daily temperature and monthly draw profiles
+           CALL 
+     &     mains_temp_draw_profile_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 122) THEN
+C 1-node mains monthly draw profile
+           CALL 
+     &     mains_draw_daily_profile_coeff_gen(IPCOMP,OUT,ISTATS)
+         ELSE IF (ITYPE .EQ. 123) THEN
+C 2-node stratified storage tank model
+            CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 
@@ -1664,6 +1704,8 @@ C      common/pcres/
 C     &     qdata(mpcom),        ! not used in current context
 C     &     pcaout(mpcom,mpcres), ! not used in current context
 C     &     napdat(mpcom)        ! # of plant additional outputs
+C       REAL QDATA,PCAOUT
+C       INTEGER NAPDAT
 C
 C
 CC COMMON DELAY required only by primitive parts components.
@@ -2539,3 +2581,5 @@ C.....opportunities for improvement here!
 
       return
       end
+
+

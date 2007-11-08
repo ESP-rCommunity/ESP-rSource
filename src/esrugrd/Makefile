@@ -15,8 +15,8 @@ OBJECTS = grd.o arrow.o ascii_mat.o bgrd1d.o bgrd1m.o bgrd3d.o bgrdst.o c2fdum.o
 	 cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	 edcondb.o egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
 	 esgrid.o esru_misc.o esystem.o item.o g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o \
-         grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o sort.o startup.o \
-	 tdfile.o trnsf.o
+         grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o readTrnsys.o \
+	 sort.o startup.o tdfile.o trnsf.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -102,6 +102,9 @@ plelev.F:
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -127,4 +130,4 @@ clean:
 	e3dviews.F econstr.F edatabase.F edcondb.F egeometry.F egrid.F emfnetw.F \
 	enetmisc.F enetrewr.F emkcfg.F emoist.F esgrid.F eroper.F esru_misc.F \
 	esystem.F item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F sort.F startup.F \
-	tdfile.F trnsf.F 
+	tdfile.F trnsf.F readTrnsys.F

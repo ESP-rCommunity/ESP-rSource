@@ -24,8 +24,7 @@ C  PLOT - monitors itteration process.
 C ********************* PLOT *********************
 C PLOT - This routine traces the iteration processes by 
 C  ploting residuals of the equation and monitoring values.
-C Up to 4 variables can be displayed.
-C Only 50 iteration values are plotted. 
+C Up to 4 variables can be displayed MFRP iteration values are plotted. 
 C IPLT   - Index for the current value to be plotted.
 C NPLT   - Number of iterations between plotting.
 C ITM    - Time-step index.
@@ -37,14 +36,15 @@ C CMON   - current monitoring values.
 C LRES   - labels for residuals.
 C LMON   - labels for monitoring values.
       SUBROUTINE PLOT(iplt,NPLT,ITM,NITER,RMX,NCRV,CRES,CMON,LRES,LMON)
+#include "cfd.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-C Stores all 50 residuals, maximum and minimum residuals and max X value.
-      COMMON/RES/RESID(4,50),RESMX,RESMN,XMAX
+C Stores all MFRP residuals, maximum and minimum residuals and max X value.
+      COMMON/RES/RESID(4,MFRP),RESMX,RESMN,XMAX
 
-C Stores all 50 monitoring values, maximum and minimum values.
-      COMMON/MON/XMONIT(4,50),XMONMX(4),XMONMN(4)
+C Stores all MFRP monitoring values, maximum and minimum values.
+      COMMON/MON/XMONIT(4,MFRP),XMONMX(4),XMONMN(4)
 
       COMMON/CONST/GREAT,small,GRAV
 
@@ -252,16 +252,18 @@ C Display time-step index and iteration index.
 C ********************* REPLOT *********************
 C REPLOT - scale plots for new number of maximum iterations.
       SUBROUTINE REPLOT(MOLD,MNEW,IPLOT)
+#include "cfd.h"
 
-C Stores all 50 residuals, maximum and minimum residuals and max X value.
-      COMMON/RES/RESID(4,50),RESMX,RESMN,XMAX
+C Stores all MFRP residuals, maximum and minimum residuals and max X value.
+      COMMON/RES/RESID(4,MFRP),RESMX,RESMN,XMAX
 
-C Stores all 50 monitoring values, maximum and minimum values.
-      COMMON/MON/XMONIT(4,50),XMONMX(4),XMONMN(4)
+C Stores all MFRP monitoring values, maximum and minimum values.
+      COMMON/MON/XMONIT(4,MFRP),XMONMX(4),XMONMN(4)
 
 C Calculate index of old data and copy to new data slot.
       STEP=float(MNEW)/float(MOLD)
-      JEND=int(50.0/STEP)
+C      JEND=int(50.0/STEP)
+      JEND=int(MFRP/STEP)
       IPLOT=0
       do 10 J=1,JEND
         JOLD=int(real(J)*STEP)

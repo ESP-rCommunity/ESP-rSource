@@ -421,8 +421,8 @@ C of the distribution and let the user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
                 isource=0
               else
 
@@ -505,14 +505,9 @@ C Each of these leaves the user to define the casual gains manually.
           H(23)='at least one period and define a casual gain).'
           CALL PHELPD('operation setup',23,'-',0,0,IER)
 
-C          call edisp(iuout,' ')
-C          call edisp(iuout,'For Weekdays....')
           call initcasday('wk',ier)
-C          call edisp(iuout,'For Saturdays....')
           call initcasday('sa',ier)
-C          call edisp(iuout,'For Sundays....')
           call initcasday('su',ier)
-C          call edisp(iuout,'Casual gain details ready for editing.')
 
 C debug
 C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
@@ -570,8 +565,8 @@ C user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
                 isource=0
               else
 
@@ -2099,7 +2094,7 @@ C   e.g. 1.5 ach in source zone is also 1.5 ach in destination zone.
 C vflow = 'vol-vol' preserves volume represented by the ventilation
 C   air change rate in the source to an ach in the destination that
 C   represents the same volume flow rate.
-C sfile (char 72) name of operations file outwith the model which
+C sfile (char*(*)) name of operations file outwith the model which
 C   is used if isource is zero.
 C itrc - if zero then work silently.
 
@@ -2135,15 +2130,8 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
-C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,7)
 
 C Scratch copy of air flow pattern from an operations file.
       COMMON/P2C/NAC1C,IACS1C(MA),IACF1C(MA),ACI1C(MA),ACV1C(MA),
@@ -2154,10 +2142,10 @@ C Scratch copy of air flow pattern from an operations file.
       COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
      &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
 
-      character zname*12,zdesc*64,h*72,sfile*72
+      character*(*) sfile
+      character zname*12,zdesc*64,h*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,ctlstrc*24
-      CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
@@ -2171,14 +2159,14 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C Clear the operations data structures prior to reading in source.
+C Clear the operations data structures related to air prior
+C to reading in source.
       IER=0
       NAC1=0
       NAC2=0
       NAC3=0
-      NCAS1=0
-      NCAS2=0
-      NCAS3=0
+      ctlstr='no control of air flow  '
+      oprdesc='Flow schedules imported. No other notes (yet).'
 
 C First scan the source zone operation file if there is a problem
 C reading or it does not exist then return an error state.
@@ -2186,16 +2174,16 @@ C If the user has asked for a verbosity list out the details of
 C the source zones air flows.
       IUO=IFIL+1
       if(isource.eq.0)then
-        call FINDFIL(sfile,XST)
+        CALL EFOPSEQ(IUO,sfile,1,IER)
+        if(ier.eq.0)then
+          XST = .true.
+          CALL ERPFREE(IUO,ISTAT)
+        endif
       else
         call FINDFIL(LPROJ(isource),XST)
       endif
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
-        if(itrc.gt.0)then
-C          call edisp(iuout,' ')
-C          call edisp(iuout,'Source zone data.')
-        endif
         if(isource.eq.0)then
 
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
@@ -2301,22 +2289,6 @@ C then clear casual gain data structure and create a new file.
         CALL EASKS(ltmp,' New zone operations file: (confirm) ',
      &    ' ',72,GFILE,'new operations file',IER,2)
         LPROJ(idest)=ltmp
-
-C Clear the 'new' destination operations casual gain data structures
-C and assign the new file name to that zone.
-C << later this might be disabled. >>
-        NCAS1=0
-        NCAS2=0
-        NCAS3=0
-        ctlstr='no control of air flow  '
-        oprdesc='Flow schedules imported. No other notes (yet).'
-        lodlabel(idest,1)='Occupt'
-        lodlabel(idest,2)='Lights'
-        lodlabel(idest,3)='Equipt'  
-        lodlabel(idest,4)='NA    '  
-        lodlabel(idest,5)='AnnEl '  
-        lodlabel(idest,6)='NA    ' 
-        lodlabel(idest,7)='NA    '      
 
 C And any new file will be in the sorted format.
         ip3ver=1
@@ -4228,7 +4200,8 @@ C Electrical data flag and elctrical data.
      &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
 
 C Base area for zones.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       logical OK,DOK,CLOSE,silent
 
@@ -4804,7 +4777,7 @@ C iwatt= 'W-m2-W' preserves implied W/m^2 base area implied by
 C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
-C sfile (char 72) is the name of operations file outwith the model
+C sfile (char*(*)) is the name of operations file outwith the model
 C   which is used is isource is zero.
 C itrc - if zero then work silently.
 
@@ -4858,7 +4831,8 @@ C Descriptive label for a zone load or casual gain.
      &             dbspth
 
 C Base area for zones.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
 C Storage arrays for weekdays, saturdays, sundays
       common/P3WK/NCAS1C,ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
@@ -4877,8 +4851,9 @@ C Storage arrays for weekdays, saturdays, sundays
       common/elp3su/nel3c,pf3c(mc),ipf3c(mc),pwr3c(mc),bvolt3c(mc),
      &  iphas3c(mc)
 
+      character*(*) sfile
       CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,ctlstrc*24
-      character h*72,sfile*72
+      character h*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character lodlabel*6,lodlabelc*6
@@ -4897,14 +4872,19 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C Clear the operations data structures prior to reading in source.
+C It is assumed that a prior call to COPYAIRFL has been made
+C so there is no need to clear nac1 nac2 nac3.
       IER=0
-      NAC1=0
-      NAC2=0
-      NAC3=0
       NCAS1=0
       NCAS2=0
       NCAS3=0
+      lodlabel(idest,1)='Occupt'
+      lodlabel(idest,2)='Lights'
+      lodlabel(idest,3)='Equipt'  
+      lodlabel(idest,4)='NA    '  
+      lodlabel(idest,5)='AnnEl '  
+      lodlabel(idest,6)='NA    ' 
+      lodlabel(idest,7)='NA    '      
       MODOPR=.FALSE.
 
 C First scan the source zone operation file if there is a problem
@@ -4913,16 +4893,16 @@ C If the user has asked for a verbosity list out the details of
 C the source zones air flows.
       IUO=IFIL+1
       if(isource.eq.0)then
-        call FINDFIL(sfile,XST)
+        CALL EFOPSEQ(IUO,sfile,1,IER)
+        if(ier.eq.0)then
+          XST = .true.
+          CALL ERPFREE(IUO,ISTAT)
+        endif
       else
         call FINDFIL(LPROJ(isource),XST)
       endif
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
-        if(itrc.gt.0)then
-C          call edisp(iuout,' ')
-C          call edisp(iuout,'Source zone data.')
-        endif
         if(isource.eq.0)then
 
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
@@ -5077,9 +5057,17 @@ C then we do not know the ratio set to 1.0 and inform user.
           h(2)='zone and to do a ratio we need an assumed area. '
           CALL EASKR(VAL,' ',' Assumed floor area of source ? ',
      &        0.10,'F',9999.0,'W',0.0,'assumed floor area',IER,2)
-          ratioarea=VAL/ZBASEA(idest)
+          if(ZBASEA(idest).gt.0.01)then
+            ratioarea=VAL/ZBASEA(idest)
+          else
+            ratioarea=1.0
+          endif
         else
-          ratioarea=ZBASEA(isource)/ZBASEA(idest)
+          if(ZBASEA(idest).gt.0.01)then
+            ratioarea=ZBASEA(isource)/ZBASEA(idest)
+          else
+            ratioarea=1.0
+          endif
         endif
       else
         ratioarea=1.0
@@ -5248,7 +5236,8 @@ C  ICOMP zone number
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 

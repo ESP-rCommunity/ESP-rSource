@@ -101,7 +101,7 @@ C      123456789 123456789 123456789 123456789 123456789 1234567890
      &'Fixed flow rates controller                                 '
       IVALCM(24)=500
       LVALCM(24)=
-     &'Link with CFD component/cells                               '
+     &'Multi configuration component                               '
 
       RETURN
       END

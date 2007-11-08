@@ -93,7 +93,7 @@ C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
    76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
-      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22),
+      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23),
      &  IFUNC
       GOTO 98
 
@@ -203,6 +203,10 @@ C CL21 slave capacity controller
 
 C CL22 VAV and CAV air based controller
    22 call BCL22
+      goto 99
+      
+C CL23 sensed setpoint based controller
+   23 call BCL23
       goto 99
       
 C New control laws should be inserted here.
@@ -366,7 +370,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -593,7 +597,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -5419,6 +5423,11 @@ C if 0 for a wetted surface 1 for a swiming pool.
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
@@ -5434,6 +5443,7 @@ C Evaporation common block for use in MZVAPC.
 
       CHARACTER OUTS*124
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fatal error test.
 c      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
@@ -5443,6 +5453,7 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL20')
 
+      newgeo=.false.  ! assume older format geometry.
       QFUT=0.
       TFUT=TNP
 
@@ -5501,7 +5512,12 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
         cw=4180.
 
 C Read in surface details and calculate the area weighted radiant temperature. 
-        call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+        else
+          call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+        endif
         tsurf=0.
         do 20 isurf=1,nsur
           if(isurf.ne.isur)then
@@ -5883,6 +5899,131 @@ C Trace output format depending on whether VAV or CAV active.
       STOP
       END
 
+C ******************** BCL23
+C This subroutine dynamically allocates heating and cooling setpoint
+C temperatures from a previously defined temporal file based on column
+C numbers specifed in the contol law. It is a simplified implementation
+C of control law 1 (basic heating and cooling)
+      SUBROUTINE BCL23
+#include "building.h"
+#include "tdf2.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/btime/btimep,btimef
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
+     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
+     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
+     &BMISCD(MCF,MBCDT,MBCDP,MISC)
+      common/dllerr/dllsubr,dllmesg
+
+C TDF commons.
+C Index for each potential temporal db entry type 0=not used, 2=tabular data.
+C For each zone a pointer to relevant temporal db entry type 0=not used.
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+
+      character dllsubr*12,dllmesg*124,outs*124
+      logical dll
+      DIMENSION VAL(MBITS+2)
+
+C Check to see if running in dll mode.
+      call isadll(dll)
+
+C Fatal error test.
+      IF(BMISCD(ICF,IDTYP,IPER,1).LT.2.)GOTO 99
+
+C Determine sensed temperature.
+      CALL CFVAR(TCTL,IER)
+      if(ier.eq.2)then
+        return
+      endif
+
+C QHM = max heating capacity (W)
+C QHN = min heating capacity (W)
+C QCM = max cooling capacity (W)
+C QCN = min cooling capacity (W)
+C HSP = heating set point temp. (deg.C)
+C CSP = cooling set point temp. (deg.C)
+      QHM=999999.0
+      QHN=0.0
+      QCM=999999.0
+      QCN=0.0
+
+C<< Read setpoints from tdf here (CSP and HSP)
+C First read HSP
+       ISD=NINT(BMISCD(ICF,IDTYP,IPER,2))
+       itdi=IACTIV(ICF)
+       IFOC=itdi
+       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+       CSP=VAL(ISD)
+       ISD=NINT(BMISCD(ICF,IDTYP,IPER,3))
+       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+       HSP=VAL(ISD)
+
+C Debug.
+c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+      
+      IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
+
+C Since sensed temperature is not within range, attempt to control
+C THIS zone's temperature.
+C      TCTL=TNP
+
+C Is temp. too high ?
+      IF(TCTL.GT.CSP)GOTO 1
+
+C May need these parameters in future
+*      IPLT=1
+*      QMX=QHM
+*      QMN=QHN
+*      TCONT=HSP
+
+C Too low, heat to HSP.
+      Q=(BB3-BB1*HSP)/BB2
+
+C Is this capacity available ?
+      IF(Q.LE.QHM.AND.Q.GE.QHN)GOTO 2
+      IF(Q.GT.QHM)GOTO 3
+      Q=QHN
+      GOTO 2
+    3 Q=QHM
+      GOTO 2
+
+C Temp. too high, cool to CSP.
+    1 Q=(BB3-BB1*CSP)/BB2
+*      IPLT=2
+      QMX=QCM
+      QMN=QCN
+*      TCONT=CSP
+
+C Is this available ?
+      IF(Q.GE.QCM.AND.Q.LE.QCN)GOTO 2
+      IF(Q.LT.QCM)GOTO 5
+      Q=QCN
+      GOTO 2
+    5 Q=QCM
+    2 TFUT=(BB3-BB2*Q)/BB1
+      QFUT=Q
+
+   99 write(outs,'(a)')' BCL23: data incomplete.'
+      if(dll)then
+        dllsubr='BCL23'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        call edisp(iuout,outs)
+        call epwait
+        call epagend
+        STOP
+      endif
+      return
+      END
+
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
 C multi-layered construction(s).
@@ -5926,7 +6067,13 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/tpmod/itpmod(mcom)
@@ -5957,10 +6104,12 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
 C << for the case of bcl being called from solar is the limit >>
 C << of 3 surface to change will have to be increased!        >>
@@ -5969,6 +6118,7 @@ C << of 3 surface to change will have to be increased!        >>
       logical itpmod, close, usealt, CHANGED
       
       iunit=ifil+1
+      newgeo=.false.  ! assume older format geometry.
       
 C Debug...
 C      write (6,*) 'BCL 99 ',btimef
@@ -6055,7 +6205,12 @@ C Find version of materials database. If 1.1 then use material arrays.
 C Reset properties by reading in zone descriptor files.
         write (6,*)'Resetting tp properties at btimef ',btimef
 
-        call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        call eclose(gversion(ICMP),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        else
+          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        endif
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
         itpmod(ICMP)=.false.
       elseif ((.not.itpmod(ICMP)).and.usealt) then
@@ -6064,7 +6219,12 @@ C Reset properties by reading in zone descriptor files.
 C Change to alternate properties (up to three constructions).
 C Read in the thermophysical properties for this zone 
 C (needed in subroutine mzcoe1).
-        call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        call eclose(gversion(ICMP),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        else
+          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+        endif
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
 
 C Get replacement properties for up to 3 constructions from 

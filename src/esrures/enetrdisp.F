@@ -36,7 +36,7 @@ C
 C
       SUBROUTINE ENETGRPH(MODE)
 
-# include "power.h"
+#include "power.h"
 
 C View parameters
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH

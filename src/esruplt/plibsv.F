@@ -251,6 +251,8 @@ C  nodes)
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
 C Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact

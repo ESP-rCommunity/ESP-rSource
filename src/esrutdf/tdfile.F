@@ -78,7 +78,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL      OPTDF,OPIMP,OPEXP,XST
 
@@ -122,6 +122,7 @@ C Search instances in temporal file to find match(s).
                   if(DBTASK(ITD1)(1:6).eq.'ZIVENT')IZIVENT(itd3)=itd4
                   if(DBTASK(ITD1)(1:6).eq.'RAIRVL')IRAIRVL(itd3)=itd4
                   if(DBTASK(ITD1)(1:6).eq.'CTLSTA')ICTLSTA(itd3)=itd4
+
                     endif
   77              continue
                 endif
@@ -140,11 +141,23 @@ C << note that isetptt should be dimensioned MCF >>
 C Search instances in temporal file to find match(s).
                       DO 81 itd4=1,NDATA
                         IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
-     &                     DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
-                           ISETPTT(itd3)=itd4
+     &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
+                          ISETPTT(itd3)=itd4
                         ENDIF
    81                 CONTINUE
-                    endif
+                    
+C ...........new item starts here - need to check about the previous loop tab....
+                    elseif(DBTASK(ITD1)(1:8).eq.'ACTIVITY')then
+C Search instances in temporal file to find match(s).
+                      DO 82 itd4=1,NDATA
+                        IF(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
+     &                    DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))THEN
+                          IACTIV(itd3)=itd4
+                        ENDIF
+   82                 CONTINUE
+C ...........new item ends here..............		    
+
+		    endif
                   endif
  80             continue
               endif

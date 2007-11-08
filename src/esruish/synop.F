@@ -36,16 +36,21 @@ C held within the transitional shading file.
       COMMON/FILEP/IFIL
       COMMON/CONTR/MON,ISC(MS),IYD
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/HEADL/IRECS(MS)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       DIMENSION XFT(MV),ZFT(MV),IOSHD(MOX,MOZ)
       DIMENSION MTHNAM(12)
 
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12,h*72
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER h*72
       CHARACTER MTHNAM*3,BLKNAME*8,BLKMAT*12,outs*124,SN*12
       character tg*1,delim*1,xfile*144
       logical OK,dok
@@ -66,12 +71,13 @@ C If output to file alter the edisp unit number.
 
 C Retrieve shading information and display on a surface by
 C surface basis.
-      DO 10 I=1,NSUR
+      DO 10 I=1,NZSUR(icomp)
+        ICN=IZSTOCN(icomp,i)
         IF(ISC(I).EQ.0)goto 10
         IREC=IRECS(I)
         ISHDT=0
         ISHDH=0
-        NV=NVER(I)
+        NV=NVER(I)  ! is there a connection based variable for this?
 
 C Retrieve surface transformed coordinates.
         READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XFT(J),J=1,NV)
@@ -83,7 +89,7 @@ C Compute gross surface area.
         CALL AREA(NV,XFT,ZFT,GSA)
 
 C Write output header information.
-        SN=SNAME(ICOMP,I)
+        SN=SSNAME(ICN)
         WRITE(outs,'(3a)') MTHNAM(MON),' hourly shading for ',
      &    SN(1:lnblnk(SN))
         call edisp(itru,outs)
@@ -184,8 +190,10 @@ C surfaces insolated.
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CONTR/MON,ISC(MS),IYD
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS), SMLCN(MS), SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/tmc/itmc(ms),itmcfg,nwins
       common/stins/insst(mgt,24,misur),pinsst(mgt,24,misur),
      &             pinwst(mgt,24,misur),shadst(mgt,24)
@@ -196,7 +204,8 @@ C surfaces insolated.
 
       character*3 month(12)
       character outs*124,SN*12
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       logical close1,close2
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -215,8 +224,9 @@ C If output to file alter the edisp unit number.
       call edisp(itru,outs)
 
 C Display on a surface by surface then window by window basis.
-      DO 10 I=1,NSUR
-        SN=SNAME(ICOMP,I)
+      DO 10 I=1,NZSUR(icomp)
+        ICN=IZSTOCN(icomp,i)
+        SN=SSNAME(ICN)
         IF(ISC(I).EQ.0)goto 10
         ng=itmc(i)
 
@@ -244,13 +254,15 @@ C Hour by hour.
               if((.NOT.close1).or.(.NOT.close2))then
                 if(m.eq.1)then
                   mm=insst(kkk,k,m)
-                  write(outs,1000)k,shadst(kkk,k)*100.0,SNAME(icomp,mm),
+                  ICM=IZSTOCN(icomp,mm)
+                  write(outs,1000)k,shadst(kkk,k)*100.0,SSNAME(icm),
      &              mm,pinsst(kkk,k,m)*100.0
  1000             format(i4,f7.2,2x,a,' (',i2,')',f10.2)
                   call edisp(itru,outs)
                 else
                   mm=insst(kkk,k,m)
-                  write(outs,1001)SNAME(icomp,mm),insst(kkk,k,m),
+                  ICM=IZSTOCN(icomp,mm)
+                  write(outs,1001)SSNAME(icm),insst(kkk,k,m),
      &              pinsst(kkk,k,m)*100.0
  1001             format(13x,a,' (',i2,')',f10.2)
                   call edisp(itru,outs)
@@ -277,17 +289,20 @@ C from the point of view of an insolation analysis.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/filep/ifil
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/tmc/itmc(ms),itmcfg,nwins
 
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character*3 month(12)
       character outs*124,H*72,tg*1,delim*1,xfile*144
       logical OK,dok,close1,close2
@@ -306,12 +321,13 @@ C Assume no default windows.
      &    (isadd(i),i=1,12)
       irec=2
       read(ifilsi,rec=irec,iostat=istat,err=900)irecx,nsurs,msurs
-      if(nsur.ne.nsurs.or.msurs.ne.misur)goto 1010
+      if(nzsur(icomp).ne.nsurs.or.msurs.ne.misur)goto 1010
 
 C Assume no default windows so skip to record 4.
       irec=4
-      read(ifilsi,rec=irec,iostat=istat,err=900)(ntmc(i),i=1,nsur)
-      do 11 i=1,nsur
+      read(ifilsi,rec=irec,iostat=istat,err=900)
+     &  (ntmc(i),i=1,nzsur(icomp))
+      do 11 i=1,nzsur(icomp)
       if(itmc(i).ne.ntmc(i))goto 1010
    11 continue
 
@@ -368,7 +384,7 @@ C Output details of month shading.
       call edisp(itru,outs)
       call edisp(itru,'   Surface   24-hour shading time-series')
       IF(IREC.LT.5)goto 900
-      DO 126 J=1,NSUR
+      DO 126 J=1,NZSUR(icomp)
         READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(PS(K),K=1,24)
         IREC=IREC+1
 
@@ -380,7 +396,8 @@ C print.
   226   CONTINUE
 
         IF(LGTZ.GT.0)then
-          WRITE(outs,124)SNAME(icomp,J),(PS(K),K=1,12)
+          icn=IZSTOCN(icomp,J)
+          WRITE(outs,124)SSNAME(icn),(PS(K),K=1,12)
   124     FORMAT(a,' 1- 12 ',12(F4.2,1X))
           call edisp(itru,outs)
           WRITE(outs,1125)(PS(K),K=13,24)
@@ -395,10 +412,11 @@ C Window shading.
       call edisp(itru,'   Glazings   24-hour shading time-series  ')
       call edisp(itru,' ')
 
-      READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(IGC(J),J=1,NSUR)
+      READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)
+     &  (IGC(J),J=1,NZSUR(icomp))
       IRMS=IREC
       IREC=IREC+1
-      DO 120 J=1,NSUR
+      DO 120 J=1,NZSUR(icomp)
         IF(IGC(J).EQ.0)goto 120
         IS=IGC(J)
         IREC=IRMS+IS
@@ -406,7 +424,8 @@ C Window shading.
 
 C Insolation case.
   200 IF(ISHD(MNTH).EQ.1)goto 300
-      READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(IGC(J),J=1,NSUR)
+      READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)
+     &  (IGC(J),J=1,NZSUR(icomp))
       irec=irec+1
       do 201 i=1,nwins
         do 202 j=1,misur
@@ -424,11 +443,12 @@ C Insolation case.
   201 continue
   
       iwin=0
-      do 210 i=1,nsur
+      do 210 i=1,nzsur(icomp)
+        icn=IZSTOCN(icomp,i)
         if(igc(i).eq.0)goto 210
         do 211 k=1,itmc(i)
           iwin=iwin+1
-          write(outs,1000)month(mnth),SNAME(icomp,i),i
+          write(outs,1000)month(mnth),SSNAME(icn),i
  1000     format(' Insolation data for ',a,' : Source surface ',a,'(',
      &      i2,')')
           call edisp(itru,outs)
@@ -450,13 +470,15 @@ C Insolation case.
                 if((.NOT.close1).or.(.NOT.close2))then
                   if(j.eq.1)then
                     m=insst(iwin,n,j)
-                    write(outs,1003)n,SNAME(icomp,m),m,
+                    icm=IZSTOCN(icomp,m)
+                    write(outs,1003)n,SSNAME(icm),m,
      &                pinsst(iwin,n,j)*100.0
  1003               format(i4,2x,a,' (',i2,')',f10.2)
                     call edisp(itru,outs)
                   else
                     m=insst(iwin,n,j)
-                    write(outs,1004)SNAME(icomp,m),m,
+                    icm=IZSTOCN(icomp,m)
+                    write(outs,1004)SSNAME(icm),m,
      &                pinsst(iwin,n,j)*100.0
  1004               format(6x,a,' (',i2,')',f10.2)
                     call edisp(itru,outs)

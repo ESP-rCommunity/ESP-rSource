@@ -15,7 +15,7 @@ OBJECTS = espvwf.o arrow.o ascii_mat.o bound.o bubble.o c2fdum.o checkrec.o comm
 	  cread3dv.o ctread.o dossupport.o e3dviews.o edatabase.o edmrt.o egeometry.o \
 	  emfnetw.o emkcfg.o enetmisc.o eroper.o esru_misc.o esystem.o filein.o \
 	  grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
-	  plelev.o plne.o pltcfg.o sort.o sparea.o startup.o \
+	  plelev.o plne.o pltcfg.o readTrnsys.o sort.o sparea.o startup.o \
 	  surinv.o survis.o tdfile.o temper.o
 
 $(PROG): $(OBJECTS)
@@ -87,6 +87,9 @@ plelev.F:
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -108,4 +111,4 @@ clean:
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
 	edatabase.F edmrt.F egeometry.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F \
 	eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
-	plelev.F pltcfg.F scsys.F sort.F startup.F tdfile.F
+	plelev.F pltcfg.F readTrnsys.F scsys.F sort.F startup.F tdfile.F

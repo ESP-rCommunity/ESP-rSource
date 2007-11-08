@@ -41,10 +41,13 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/user/browse
 
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -57,11 +60,16 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,dok
       LOGICAL MODIFY,MODLEN,MODBND,UPDGEO,browse,modcfg,close,updoth
 
-      DIMENSION VERT(35),TOTHER(MS)
+C TOTHER is a temporary array for manipulating SSOTHER.
+C SO is a tempporary array to hold current surface SSOTHER.
+      DIMENSION VERT(35),TOTHER(MS,3),SO(3)
       CHARACTER VERT*46,KEY*1,CXSTR*78,H*72,outs*124,DESCRC*25
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
-      character zname*12,zdesc*64,ZN*12,SO*12,TOTHER*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      character SO*24,TOTHER*24
       character CXITM*43
 
 
@@ -170,14 +178,20 @@ C Edit item identified by KEYIND after reporting on current values.
         CALL EDISP(iuout,outs)
 
 C Remember current surface attribute.
-        WRITE(SO,'(A)')SOTHER(IE1(IFOC))(1:12)
+        ICN=IZSTOCN(IC1(IFOC),IE1(IFOC))
+        WRITE(SO(1),'(A)')SSOTHER(icn,1)
+        WRITE(SO(2),'(A)')SSOTHER(icn,2)
+        WRITE(SO(3),'(A)')SSOTHER(icn,3)
 
 C Display the reference zone (if type 3 then display both).
 C Remember the topology attributes for reference zone.
         IUO=IFIL+1
         CALL EGOMIN(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
         do 322 IJ=1,NSUR
-          write(TOTHER(IJ),'(a)') SOTHER(IJ)(1:12)
+          ICN=IZSTOCN(IC1(IFOC),IJ)
+          write(TOTHER(IJ,1),'(a)') SSOTHER(ICN,1)
+          write(TOTHER(IJ,2),'(a)') SSOTHER(ICN,2)
+          write(TOTHER(IJ,3),'(a)') SSOTHER(ICN,3)
   322   continue
         MODIFY=.TRUE.
         MODBND=.TRUE.
@@ -287,8 +301,10 @@ C Editing of items.
           ICT(IFOC)=0
           IE2(IFOC)=0
           IC2(IFOC)=0
-          if(SO(1:8).ne.'EXTERIOR')then
-            TOTHER(IE1(IFOC))='EXTERIOR'
+          if(SO(1)(1:8).ne.'EXTERIOR')then
+            TOTHER(IE1(IFOC),1)='EXTERIOR'
+            TOTHER(IE1(IFOC),2)='0'
+            TOTHER(IE1(IFOC),3)='0'
             UPDGEO=.TRUE.
           endif
         elseif(iart.eq.2)then 
@@ -311,8 +327,10 @@ C Editing of items.
      &      '(see help) ',0.0,'W',99999.,'W',0.0,'offset rad',IER,9)
           IC2(IFOC)=INT(VALT)
           IE2(IFOC)=INT(VALW)
-          if(SO(1:7).ne.'SIMILAR')then
-            TOTHER(IE1(IFOC))='SIMILAR'
+          if(SO(1)(1:7).ne.'SIMILAR')then
+            TOTHER(IE1(IFOC),1)='SIMILAR'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
         elseif(iart.eq.3)then 
@@ -330,8 +348,10 @@ C Editing of items.
      &    ' Constant radiation source (Watts) ? ',
      &      0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,2)
           IE2(IFOC)=INT(VAL)
-          if(SO(1:8).ne.'CONSTANT')then
-            TOTHER(IE1(IFOC))='CONSTANT'
+          if(SO(1)(1:8).ne.'CONSTANT')then
+            TOTHER(IE1(IFOC),1)='CONSTANT'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
         elseif(iart.eq.4)then 
@@ -366,11 +386,10 @@ C and display both zones.
             ICT(IFOC)=3
             IC2(IFOC)=IZ
             IE2(IFOC)=IS
-            ZN=zname(IZ)
-            if(SO(:lnblnk(SO)).ne.ZN(:lnblnk(ZN)))then
-              TOTHER(IE1(IFOC))=ZN
-              UPDGEO=.TRUE.
-            endif
+            TOTHER(IE1(IFOC),1)='ANOTHER'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
+            UPDGEO=.TRUE.
 
 C If applicable find other surface, return it`s connection number and
 C point it to the current surface.
@@ -428,8 +447,10 @@ C profile has not been defined.
           IF(IIC2.GT.0)THEN
             IC2(IFOC)=iic2
             IE2(IFOC)=0
-            if(SO(1:6).ne.'GROUND')then
-              TOTHER(IE1(IFOC))='GROUND'
+            if(SO(1)(1:6).ne.'GROUND')then
+              TOTHER(IE1(IFOC),1)='GROUND'
+              write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+              write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
               UPDGEO=.TRUE.
             endif
           ELSE
@@ -455,8 +476,10 @@ C profile has not been defined.
      &        ' ',0,'F',9,'F',1,'user defined profile',IER,2)
             IC2(IFOC)=0
             IE2(IFOC)=iie2
-            if(SO(1:6).ne.'GROUND')then
-              TOTHER(IE1(IFOC))='GROUND'
+            if(SO(1)(1:6).ne.'GROUND')then
+              TOTHER(IE1(IFOC),1)='GROUND'
+              write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+              write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
               UPDGEO=.TRUE.
             endif
           else
@@ -471,16 +494,20 @@ C Link to a 3D conduction model..
           ICT(IFOC)=4
           IC2(IFOC)=-3
           IE2(IFOC)=0
-          if(SO(1:6).ne.'GROUND')then
-            TOTHER(IE1(IFOC))='GROUND'
+          if(SO(1)(1:6).ne.'GROUND')then
+            TOTHER(IE1(IFOC),1)='GROUND'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
         elseif(iart.eq.8)then 
           modcfg=.true.
           IE2(IFOC)=0
           IC2(IFOC)=0
-          if(SO(1:9).ne.'ADIABATIC')then
-            TOTHER(IE1(IFOC))='ADIABATIC'
+          if(SO(1)(1:9).ne.'ADIABATIC')then
+            TOTHER(IE1(IFOC),1)='ADIABATIC'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
         elseif(iart.eq.9)then 
@@ -511,8 +538,10 @@ C attribute to the surface under consideration.
           CALL EASKI(Ifrac,' Percent of BASESIMP loss to this surface?'
      &       ,' ',0,'F',100,'F',100,'BASESIMP heat loss percent',IER,6)
           IE2(IFOC)=Ifrac
-          if(SO(1:8).ne.'BASESIMP')then
-            TOTHER(IE1(IFOC))='BASESIMP'
+          if(SO(1)(1:8).ne.'BASESIMP')then
+            TOTHER(IE1(IFOC),1)='BASESIMP'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
 C BASESIMP end.
@@ -526,8 +555,10 @@ C CEN 13791 partition start
           VALW=0.0
           IC2(IFOC)=INT(VALT)
           IE2(IFOC)=INT(VALW)
-          if(SO(1:7).ne.'IDENT_CEN')then
-            TOTHER(IE1(IFOC))='IDENT_CEN'
+          if(SO(1)(1:7).ne.'IDENT_CEN')then
+            TOTHER(IE1(IFOC),1)='IDENT_CEN'
+            write(tother(IE1(IFOC),2),'(i2.2)') IC2(ifoc)
+            write(tother(IE1(IFOC),3),'(i2.2)') IE2(ifoc)
             UPDGEO=.TRUE.
           endif
 C CEN 13791 partition end
@@ -542,7 +573,13 @@ C Update zone geometry if attributes have changed.
           call usrmsg(' Updating problem...',' ','-')
           CALL EGOMIN(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
           do 323 IJ=1,NSUR
-            SOTHER(IJ)=TOTHER(IJ)
+            SOTHER(IJ,1)=TOTHER(IJ,1)
+            SOTHER(IJ,2)=TOTHER(IJ,2)
+            SOTHER(IJ,2)=TOTHER(IJ,3)
+            ICN=IZSTOCN(IC1(IFOC),ij)
+            SSOTHER(ICN,1)=TOTHER(IJ,1)
+            SSOTHER(ICN,2)=TOTHER(IJ,2)
+            SSOTHER(ICN,3)=TOTHER(IJ,3)
   323     continue
           CALL EMKGEO(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),iuout,3,IER)
           IF(IER.NE.0)CALL USRMSG(' ',
@@ -555,7 +592,17 @@ C other zone) and write out that zones geometry.
         if(updoth)then
           call usrmsg(' Updating other side...',' ','-')
           CALL EGOMIN(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
-          SOTHER(IE2(IFOC))=zname(IC1(IFOC))
+
+C << logic needs to be tested>>
+          SOTHER(IE2(IFOC),1)='ANOTHER'
+          write(SOTHER(IE2(IFOC),2),'(i2.2)') IC1(IFOC)
+          write(SOTHER(IE2(IFOC),3),'(i2.2)') IE1(IFOC)
+
+          ICN=IZSTOCN(IC2(IFOC),IE2(IFOC))
+          SSOTHER(ICN,1)='ANOTHER'
+          write(SSOTHER(ICN,2),'(i2.2)') IC1(IFOC)
+          write(SSOTHER(ICN,3),'(i2.2)') IE1(IFOC)
+
           CALL EMKGEO(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),iuout,3,IER)
           IF(IER.NE.0)CALL USRMSG(' ',
      &           ' Problem updating other surface attribute...','W')
@@ -577,100 +624,106 @@ C Not one of the legal menu choices.
 
 C **************** CONXMENU 
 C CONXMENU returns an English description in CXITM of the inter-connection 
-C information. 
+C information. This is shorter than the string returned by CONXINFO. 
       SUBROUTINE CONXMENU(ICON,CXITM)
 #include "building.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      integer ICM  ! connection for current surface.
 
       CXITM=' '
-      SST1=SNAME(IC1(ICON),IE1(ICON))
+      SST1=SSNAME(ICON)
       lsn1=MIN0(lnblnk(SST1),8)
       ZST1=zname(IC1(ICON))
       lzn1=MIN0(lnblnk(ZST1),8)
       IF(ICT(ICON).EQ.0)THEN
         if((lsn1+lzn1+21).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &      ZST1(:lzn1),' >|< External'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< External'
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &      ZST1(:lzn1),' >|< External'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< External'
         endif
       ELSEIF(ICT(ICON).EQ.1)THEN
         if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &      ZST1(:lzn1),' >|< Identical'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< Identical'
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &      ZST1(:lzn1),' >|< Identical'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< Identical'
         endif
       ELSEIF(ICT(ICON).EQ.2)THEN
         if((lsn1+lzn1+28).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a,I3,a)') ICON,SST1(:lsn1),' in ',
-     &      ZST1(:lzn1),' >|< Constant @',IC2(ICON),'dC'
+          WRITE(CXITM,'(I4,1x,4a,I3,a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< Constant @',IC2(ICON),'dC'
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a,I3,a)') ICON,SST1(:lsn1),':',
-     &      ZST1(:lzn1),' >|< Constant @',IC2(ICON),'dC'
+          WRITE(CXITM,'(I4,1x,4a,I3,a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< Constant @',IC2(ICON),'dC'
         endif
       ELSEIF(ICT(ICON).EQ.3)THEN
-        SST2=SNAME(IC2(ICON),IE2(ICON))
+        ICM=IZSTOCN(IC2(ICON),IE2(ICON))
+        SST2=SSNAME(ICM)
         lsn2=MIN0(lnblnk(SST2),8)
         ZST2=zname(IC2(ICON))
         lzn2=MIN0(lnblnk(ZST2),8)
         if((lsn1+lzn1+lsn2+lzn2+17).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a,a,a,a)')ICON,SST1(:lsn1),' in ',
-     &          ZST1(:lzn1),' >|< ',SST2(:lsn2),' in ',ZST2(:lzn2)
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(:lsn1),' in ',
+     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),' in ',ZST2(1:lzn2)
         elseif((lsn1+lzn1+lsn2+lzn2+15).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a,a,a,a)')ICON,SST1(:lsn1),' : ',
-     &          ZST1(:lzn1),' >|< ',SST2(:lsn2),' : ',ZST2(:lzn2)
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn1),' : ',
+     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),' : ',ZST2(1:lzn2)
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a,a,a,a)')ICON,SST1(:lsn1),':',
-     &          ZST1(:lzn1),' >|< ',SST2(:lsn2),':',ZST2(:lzn2)
+          WRITE(CXITM,'(I4,1x,7a)')ICON,SST1(1:lsn1),':',
+     &          ZST1(1:lzn1),' >|< ',SST2(1:lsn2),':',ZST2(1:lzn2)
         endif
       ELSEIF(ICT(ICON).EQ.4)THEN
         IF(IC2(ICON).GT.0)THEN
           if((lsn1+lzn1+19).lt.43)then
-            WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &        ZST1(:lzn1),' >|< ground'
+            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &        ZST1(1:lzn1),' >|< ground'
           else
-            WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &        ZST1(:lzn1),' >|< ground'
+            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &        ZST1(1:lzn1),' >|< ground'
           endif
         ELSE
           if((lsn1+lzn1+26).lt.43)then
-            WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &        ZST1(:lzn1),' >|< user def grnd'
+            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &        ZST1(1:lzn1),' >|< user def grnd'
           else
-            WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &        ZST1(:lzn1),' >|< user def grnd'
+            WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &        ZST1(1:lzn1),' >|< user def grnd'
           endif
         ENDIF
       ELSEIF(ICT(ICON).EQ.5)THEN
         if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &      ZST1(:lzn1),' >|< adiabatic'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< adiabatic'
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &      ZST1(:lzn1),' >|< adiabatic'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< adiabatic'
         endif
       ELSEIF(ICT(ICON).EQ.6)THEN
         if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &      ZST1(:lzn1),' >|< BASESIMP'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< BASESIMP'
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &      ZST1(:lzn1),' >|< BASESIMP'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< BASESIMP'
         endif
       ELSEIF(ICT(ICON).EQ.7)THEN
         if((lsn1+lzn1+22).lt.43)then
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),' in ',
-     &      ZST1(:lzn1),' >|< IDENT_CEN'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),' in ',
+     &      ZST1(1:lzn1),' >|< IDENT_CEN'
         else
-          WRITE(CXITM,'(I3,1x,a,a,a,a)') ICON,SST1(:lsn1),':',
-     &      ZST1(:lzn1),' >|< IDENT_CEN'
+          WRITE(CXITM,'(I4,1x,4a)') ICON,SST1(1:lsn1),':',
+     &      ZST1(1:lzn1),' >|< IDENT_CEN'
         endif
       ENDIF
 

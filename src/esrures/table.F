@@ -558,7 +558,7 @@ C gains and losses.
 
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -567,7 +567,7 @@ C gains and losses.
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
       character outs*124,zname*12,zdesc*64,prompt*124,outsl*144
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character SLABEL*32,GLABEL*20
@@ -711,13 +711,13 @@ C in terms of surface so negate it to have contribution to air node.
               CALL FLTIAV(JD,CQ,CQOUT,NEL)
               DO 61 ISTP=ISTART,IEND
                 IF(IE.EQ.0)THEN
-                  if(SSOTF(ICN).EQ.'OPAQ')then
+                  if(SSOTF(ICN)(1:4).EQ.'OPAQ')then
                     VAL(3)=VAL(3)+CQOUT(ISTP)*(-1.0)
                   else
                     VAL(1)=VAL(1)+CQOUT(ISTP)*(-1.0)
                   endif
                 ELSE
-                  if(SSOTF(ICN).EQ.'OPAQ')then
+                  if(SSOTF(ICN)(1:4).EQ.'OPAQ')then
                     VAL(4)=VAL(4)+CQOUT(ISTP)*(-1.0)
                   else
                     VAL(2)=VAL(2)+CQOUT(ISTP)*(-1.0)

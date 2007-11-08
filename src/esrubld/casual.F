@@ -60,6 +60,9 @@ C QLAT   - latent load for present (1) and future (2) time step.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
+
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)
       COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
@@ -80,7 +83,7 @@ C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -139,6 +142,20 @@ C Variables used in trace.
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
+
+
+C.........START: USED FOR ACTIVITY TDF DATA.....................
+C TDFINT are ranges allowed for integer fields in the instance.
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+C Using the TOTOCCUP as a shortcut for the total occupant gains
+C that are taken from the activities temporal data
+      REAL QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN,QTOTEQUIP,QEQUIPCASC
+      REAL QEQUIPCASR,QEQUIPLATN
+C.........END: USED FOR ACTIVITY TDF DATA.....................
+
+
 
       DIMENSION QLATN(2),VAL(MBITS+2)
 
@@ -286,6 +303,50 @@ C Data in temporal database (3 columns of gains).
           write(outs,*)'separate casual gains from temporal db=',
      &        VAL(ISD),VAL(ISD+1),VAL(ISD+2),VAL(ISD+3),VAL(ISD+4),
      &        VAL(ISD+5),VAL(ISD+6),VAL(ISD+7),VAL(ISD+8)
+          call edisp(itu,outs)
+        endif
+      elseif(IACTIV(icomp).ne.0)then
+
+C Data in temporal database.
+C The calculations need to change in case the order of the 
+C activity data type changes (in the tdf file).
+        IFOC=IACTIV(icomp)
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+
+C Total occupancy gains are equal to: occupancy density*metabolic rate*fraction*
+C Zone floor area
+        QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(ICOMP)
+
+C Get the casual sensible gains from occupants (using the percentage of 
+C latent occupant gains here)
+        QOCCCASC=(QTOTOCCUP-((QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C Convective and radiative occupant gains are the same at the moment (50%)
+        QOCCCASR=QOCCCASC
+
+C Using again the percentage of latent gains for the occupants' latent heat gains
+        QOCCLATN=((QTOTOCCUP*ITMAR(1,3))/100)
+
+C Total EQUIPMENT gains are equal to: equipment gains in w/m2*fraction*
+C Zone floor area
+        QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(ICOMP)
+
+C C Get the casual sensible gains from equipment (using the percentage of 
+C latent equipment gains)
+        QEQUIPCASC=(QTOTEQUIP-((QTOTEQUIP*ITMAR(1,5))/100))/2
+
+C Convective and radiative occupant gains are the same at the moment (50%)
+        QEQUIPCASR=QEQUIPCASC
+        QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100)        
+
+C	QTOTGAIN=QTOTOCCUP+QTOTEQUIP
+
+	QCASC(2)=QOCCCASC+QEQUIPCASC
+        QCASR(2)=QOCCCASR+QEQUIPCASR
+        QLATN(2)=QOCCLATN+QEQUIPLATN
+        if(traceok)then
+          write(outs,*)'TOTAL OCCUPANT gains from temporal db=',
+     &    QTOTOCCUP
           call edisp(itu,outs)
         endif
       else
@@ -545,10 +606,14 @@ C  FRAC : fraction of casual gain (returned value)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-C      COMMON/C20/NZSUR(MCOM),NZTV(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -609,11 +674,13 @@ C Illuminance database.
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
       logical bInStartup
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
+      newgeo=.false.  ! assume older format geometry.
 
 C Trace output ?
       IFT=1
@@ -638,7 +705,14 @@ C If esp pre-processor or user defined df then read in geometry data.
       do  1 iu=1,NLITZ(icomp)
         IF((IDFST(ICOMP,iu).EQ.1).or.(IDFST(ICOMP,iu).eq.2))nog=.true.
   1   continue
-      if(nog)call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
+      if(nog)then
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
+        else
+          call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
+        endif
+      endif
 
 C Assume casual gains untouched and establish solar data for correct
 C time-row.  For conversion from radians to degrees.

@@ -43,7 +43,13 @@ C situated.
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/G0/CTYPE
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
@@ -52,7 +58,7 @@ C situated.
       common/dxfe/oformat,indxzon,head
 
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
-      CHARACTER OUTSTR*124,WORD*20,CTYPE*3,zname*12,zdesc*64,phrase*64
+      CHARACTER OUTSTR*124,WORD*20,zname*12,zdesc*64,phrase*64
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,LCNN*72,cfgroot*24
       character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
@@ -147,19 +153,19 @@ C second is the zone name, if more items then not a proper name.
       K=0
       IF(ND.eq.1.or.ND.gt.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-        CTYPE=WORD(1:3)
+        write(CTYPE(ic),'(a)')WORD(1:lnblnk(WORD))
         zname(IC)=' '
         zdesc(IC)=' '
       ELSEIF(ND.EQ.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-        CTYPE=WORD(1:3)
+        write(CTYPE(ic),'(a)') WORD(1:lnblnk(WORD))
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
         zdesc(IC)=' '
       ELSEIF(ND.gt.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-        CTYPE=WORD(1:3)
+        write(CTYPE(IC),'(a)') WORD(1:lnblnk(WORD))
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
@@ -178,15 +184,15 @@ C Fill in a default zone name if blank or UNKNOWN.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.
-      IF(CTYPE.EQ.'REC')THEN
+      IF(CTYPE(ic)(1:3).EQ.'REC')THEN
         read(ioin,*) XO,YO,ZO,DX,DY,DZ,AR
 
 C Now convert to a gen description.
         CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
-        CTYPE='GEN'
+        CTYPE(ic)='GEN '
 
 C Zone is of type REG.
-      ELSEIF(CTYPE.EQ.'REG')THEN
+      ELSEIF(CTYPE(ic)(1:3).EQ.'REG')THEN
         read(ioin,*) NW,Z1,Z2,AR
 
 C Read base vertex data.
@@ -201,10 +207,10 @@ C Now convert to Gen body type and place into in common block.
           y1=Y(1)
           CALL ESCROT(AR,x1,y1)
         endif
-        CTYPE='GEN'
+        CTYPE(ic)='GEN '
 
 C Zone is of type GEN.
-      ELSEIF(CTYPE.EQ.'GEN')THEN
+      ELSEIF(CTYPE(icomp)(1:3).EQ.'GEN')THEN
         read(ioin,*) NTV,NSUR,AR
 
 C Read each vertex data line, strip any comments, see if 3 items and
@@ -226,7 +232,7 @@ C Rotate if required.
           CALL ESCROT(AR,x1,y1)
         endif
       ELSE
-        write(outs,'(a,a)')' Shape type illegal in...',CTYPE
+       write(outs,'(a,a)')' Shape type illegal in...',CTYPE(ic)
         call edisp(iuout,outs)
         goto 1001
       ENDIF

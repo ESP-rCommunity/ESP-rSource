@@ -163,7 +163,7 @@ C-------------------------------------------------------------------------------
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/pclsol/icfp,idtypp,iperp
-C      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+C      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
 C     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
 C     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
 C     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1172,6 +1172,7 @@ C bHW_tank          ! Flag indicating if cold water tank exists.
 #include "plant.h"
 #include "building.h"
 #include "DG_controller_include.h"
+#include "trnsys.h"
 C-------------------------------------------------------------------------------------
 C     Required common blocks
 C-------------------------------------------------------------------------------------
@@ -1180,7 +1181,7 @@ C-------------------------------------------------------------------------------
       common/ptime/ptimep,ptimef
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/pclsol/icfp,idtypp,iperp
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
      &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
      &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
@@ -1188,6 +1189,10 @@ C-------------------------------------------------------------------------------
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar) 
       common/pdbdt/adata(mpcom,madata),bdata(mpcom,mbdata)
       common/entfile/entflnam, ientxist
+C Common for TRNSYS general information
+      COMMON/TRNSYSGEN/NTRNCMP,ITRNTYPE(MTRNCOM)
+      INTEGER NTRNCMP,ITRNTYPE
+
 C------------------------------------------------------------------------------------
 C     Declare common block variables
 C------------------------------------------------------------------------------------
@@ -1251,6 +1256,16 @@ C..............Save model type for later use
                if(NPCDAT(ii,4) .eq. 111 ) FC_TYPE = A42_SOFC_model
             end if     
          end do
+
+C       Check the case of trnsys components
+C       Type 152 is for A42_SOFC_model
+         do ii=1, NTRNCMP
+            if(ITRNTYPE(ii) .eq. 152) then
+               Number_FCs = Number_FCs + 1
+               FC_TYPE = A42_SOFC_model
+            end if
+         end do
+
          if(Number_FCs.eq.0) then
             write(IUOUT,*) ' Cogeneration system controller: ',
      &           'NO cogeneration unit found in plant configuration ',
@@ -2021,7 +2036,7 @@ C*******************************************************************************
 C---------------------------------------------------------------------------------
 C     Standard vbl. declarations
 C---------------------------------------------------------------------------------
-#include"DG_controller_include.h"
+#include "DG_controller_include.h"
 
 C---------------------------------------------------------------------------------
 C     Common blocks req'd to determine timestep frequency 
@@ -2419,7 +2434,7 @@ C******************************************************************************
 C------------------------------------------------------------------------------
 C     Common definitions 
 C------------------------------------------------------------------------------
-#include"DG_controller_include.h"
+#include "DG_controller_include.h"
 C------------------------------------------------------------------------------
 C     Local variables
 C------------------------------------------------------------------------------
@@ -2487,7 +2502,7 @@ C     corresponding future temperature.
 C---------------------------------------------------------------------------------
       REAL FUNCTION DG_temperature_sensor(node)
       IMPLICIT NONE 
-#include"plant.h"
+#include "plant.h"
 C.....Common block variable containing plant present and future temperatures
       common/pcval/csvf(mpnode,mpvar),csvp(mpnode,mpvar)
 C.....Common block declarations

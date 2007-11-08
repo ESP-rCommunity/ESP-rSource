@@ -169,6 +169,21 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
    } else if (disp_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
 /* debug     fprintf(stderr,"popup font medium 12\n"); */
+   } else if (disp_fnt == 3 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+/* debug     fprintf(stderr,"configure font medium 14\n"); */
+   } else if (disp_fnt == 4 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+/* debug     fprintf(stderr,"configure courier medium 8\n"); */
+   } else if (disp_fnt == 5 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+/* debug     fprintf(stderr,"configure courier medium 10\n"); */
+   } else if (disp_fnt == 6 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+/* debug     fprintf(stderr,"configure courier medium 12\n"); */
+   } else if (disp_fnt == 7 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+/* debug     fprintf(stderr,"configure courier medium 14\n"); */
    }
    gtk_widget_modify_font(h_dialog, pfd);
    context = gtk_widget_get_pango_context (h_dialog);
@@ -180,7 +195,7 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
    pango_font_metrics_unref (metrics);
    pango_font_description_free(pfd);
 
-   fprintf(stderr,"font height and width is %d %d\n", f_height,f_width); /* debug */
+   /* fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);  debug */
    menu_pix_wd = (gint) help_width * f_width +20;
    if(help_lines <= 7) {
      menu_pix_hi = 9 * (f_height + 2) +20;
@@ -189,7 +204,7 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
    } else {
      menu_pix_hi = 20 * (f_height + 2) +20;
    }
-   fprintf(stderr,"help lines chars and pix wd %ld %ld %d\n", help_lines,help_width,menu_pix_wd); /* debug */
+   /* fprintf(stderr,"help lines chars and pix wd %ld %ld %d\n", help_lines,help_width,menu_pix_wd);  debug */
    gtk_widget_set_size_request (h_dialog, menu_pix_wd, menu_pix_hi);
 
 /* implement scrolling (idea from gtkaboutdialog.c)... */
@@ -206,13 +221,28 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
 /* now set the font size to be used for the text in the scroll box. */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     fprintf(stderr,"configure font medium 8\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 8\n");	 debug */
    } else if (disp_fnt == 1 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     fprintf(stderr,"configure font medium 10\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 10\n");	 debug */
    } else if (disp_fnt == 2 ) {	
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     fprintf(stderr,"configure font medium 12\n");	/* debug */
+     /* fprintf(stderr,"configure font medium 12\n");	 debug */
+   } else if (disp_fnt == 3 ) {
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+     /* fprintf(stderr,"configure font medium 14\n");  debug */
+   } else if (disp_fnt == 4 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+     /* fprintf(stderr,"configure courier medium 8\n");  debug */
+   } else if (disp_fnt == 5 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+     /* fprintf(stderr,"configure courier medium 10\n");  debug */
+   } else if (disp_fnt == 6 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+     /* fprintf(stderr,"configure courier medium 12\n");  debug */
+   } else if (disp_fnt == 7 ) {
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+     /* fprintf(stderr,"configure courier medium 14\n");  debug */
    }
    gtk_widget_modify_font(view, pfd);
    pango_font_description_free(pfd);

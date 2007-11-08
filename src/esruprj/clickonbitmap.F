@@ -46,11 +46,18 @@ C via clicking on a bitmap.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G0/CTYPE
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G2/NGL(MS)
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -58,11 +65,12 @@ C via clicking on a bitmap.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,6),IUZBASEA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -97,10 +105,12 @@ C end indices for each zone.
       CHARACTER*72 H
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3,fname*72,DESC*48
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15,SSPARENT*12
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER SSPARENT*12
       character phrase*124,WORD*48,msg*72,ltmp*72
-      character zname*12,zdesc*64,zn*12,CTYPE*3,BLKNAME*8,BLKMAT*12
+      character zname*12,zdesc*64,zn*12,BLKNAME*8,BLKMAT*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -115,12 +125,14 @@ C Signal first entry to subroutine with justentered as true, once
 C an object has been saved the set justentered to false.
       logical justentered
       LOGICAL OKC,XST,dok,ok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Logical toggles: xbmorigin (required origin defined) xbmnorth (optional
 C north defined), xbmscale (required scaling factor defined), xbmgrid
 C (optional gridding defined), xbmload (has bitmap been loaded), trimmed
 C has only part of bitmap been displayed, xbmsnap (snap to grid if xbmgrid
 C is true).
+      newgeo=.false.  ! assume older format geometry.
       xbmorigin=.false.
       xbmnorth=.false.
       xbmscale=.false.
@@ -1673,7 +1685,12 @@ C instanciate the common blocks.
               SOTF(1)='OPAQ'
               SMLCN(1)='UNKN'
               SVFC(1)='FLOR'
-              SOTHER(1)='UNKNOWN'
+              SOTHER(1,1)='UNKNOWN'
+              SOTHER(1,2)='0'
+              SOTHER(1,3)='0'
+              SUSE(1,1)='-'
+              SUSE(1,2)='-'
+              SPARENT(1)='-'
               NGL(1)=0
 
 C Update the connection list for an initial surface.
@@ -1688,7 +1705,12 @@ C Update the connection list for an initial surface.
               SSOTF(iccc)=SOTF(1)
               SSMLCN(iccc)=SMLCN(1)
               SSVFC(iccc)=SVFC(1)
-              SSOTHER(iccc)=SOTHER(1)
+              SSOTHER(iccc,1)=SOTHER(1,1)
+              SSOTHER(iccc,2)=SOTHER(1,2)
+              SSOTHER(iccc,3)=SOTHER(1,3)
+              SSUSE(iccc,1)=SUSE(1,1)
+              SSUSE(iccc,2)=SUSE(1,2)
+              SSPARENT(iccc)=SPARENT(1)
               IZSTOCN(icomp,1)=iccc
               NCON=ICCC
             endif
@@ -1967,7 +1989,12 @@ C Update the connection list.
               SSOTF(iccc)=SOTF(icc)
               SSMLCN(iccc)=SMLCN(icc)
               SSVFC(iccc)=SVFC(icc)
-              SSOTHER(iccc)=SOTHER(icc)
+              SSOTHER(iccc,1)=SOTHER(icc,1)
+              SSOTHER(iccc,2)=SOTHER(icc,2)
+              SSOTHER(iccc,3)=SOTHER(icc,3)
+              SSUSE(iccc,1)=SUSE(icc,1)
+              SSUSE(iccc,2)=SUSE(icc,2)
+              SSPARENT(iccc)=SPARENT(icc)
               IZSTOCN(icomp,icc)=iccc
   432       CONTINUE
             NCON=ICCC
@@ -1981,7 +2008,14 @@ C Complete zone data before exiting.
               write(zdesc(ICOMP),'(a,a)') 
      &          zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
             endif
-            CTYPE='GEN'
+
+C Set type type and version based on current value of igupgrade.
+            CTYPE(icomp)='GEN '
+            if(igupgrade.eq.2)then
+              gversion(icomp)=1.1
+            else
+              gversion(icomp)=1.0
+            endif
             NDP(ICOMP)=3
             IDPN(ICOMP,1)=0
             IDPN(ICOMP,2)=0
@@ -1991,7 +2025,16 @@ C Save this to file before passing into the geometry editing facility.
             write(outs,'(3a)') 'Updating ',
      &        zdesc(ICOMP)(1:lnblnk(zdesc(ICOMP))),'...'
             call edisp(iuout,outs)
-            CALL EMKGEO(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call eclose(gversion(ICOMP),1.1,0.01,newgeo)
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            endif
             IF(IER.EQ.1)THEN
               CALL usrmsg(' ',' Problem creating geometry file...','W')
             ENDIF

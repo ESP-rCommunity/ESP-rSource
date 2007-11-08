@@ -1276,3 +1276,51 @@ C ..ditto
       ANGLE = ((AMOD(TT+ET,24.)-12.)*15.0 + SHFT)*RDCONV
       return
       end
+
+
+C *********************** Type60 Dummy*****************
+
+      SUBROUTINE type60(simtime,xin,out,Tinit,dtdt,par,info,icntrl,*)
+      IMPLICIT NONE
+
+      DOUBLE PRECISION  simtime, par(1), xin(1), 
+     &                  out(1),Tinit(1), dtdt(1)
+      INTEGER           icntrl, info(15)
+
+
+      RETURN 1
+      END ! of type60
+
+
+C *********************** Type505 Dummy*****************
+
+      SUBROUTINE type505(simtime,xin,out,Tinit,dtdt,par,info,icntrl,*)
+      IMPLICIT NONE
+
+      DOUBLE PRECISION  simtime, par(1), xin(1), 
+     &                  out(1),Tinit(1), dtdt(1)
+      INTEGER           icntrl, info(15)
+
+      RETURN 1
+      END ! of type505
+
+
+C *********************** Type152 Dummy*****************
+
+      SUBROUTINE type152(simtime,xin,out,Tinit,dtdt,par,info,icntrl,*)
+      IMPLICIT NONE
+
+      DOUBLE PRECISION  simtime, par(1), xin(1), 
+     &                  out(1),Tinit(1), dtdt(1)
+      INTEGER           icntrl, info(15)
+
+      RETURN 1
+      END ! of type152
+
+
+
+
+
+
+
+

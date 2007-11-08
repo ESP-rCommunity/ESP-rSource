@@ -215,7 +215,7 @@ C Common for electrical file
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
@@ -258,7 +258,7 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
@@ -531,12 +531,14 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
       IF(.NOT.MATDBOK)THEN
   55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)then
+C Database was not found, or file could not be read.
           if(dll)then
             dllsubr='mzinpt'
             dllmesg='Problem opening materials database.'
             ier=2
             return
-          else
+C In interactive mode, prompt user for new database.
+          elseif ( .not. autook ) then
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
@@ -549,7 +551,11 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
             else
               goto 56
             endif
-          endif
+          else
+C In silent running mode, notify user and terminate simulation.
+            call UsrMsg('Materials database could not be found',
+     &                  ' ', 'F')
+          endif ! <- matches 'if(ier.ne.0)then'
         else
 
 C Also check to see if the file has correct info (using pattern of
@@ -812,7 +818,12 @@ C IREP=1 implies no reporting or data checking.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -868,10 +879,12 @@ C Simulator parameters.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,H*72
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       character zname*12,zdesc*64
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spsname*8,spfdescr*8
@@ -886,6 +899,7 @@ C Simulator parameters.
       call isadll(dll)
 
 C Zone-by-zone. Use IUNIT for geometry file.
+      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       NNDS=0
       MNDS=0
@@ -931,7 +945,12 @@ C translate the casual gains.
           call PROCESSOLDCAS(IZ,itrc,itu,IER)
         endif
 
-        CALL EGOMIN(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
+        else
+          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
+        endif
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading geometry file for zone ',IZ,'.'
@@ -1748,21 +1767,33 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       logical prob,dup,first
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CXSTR*78
 
+      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+        endif
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

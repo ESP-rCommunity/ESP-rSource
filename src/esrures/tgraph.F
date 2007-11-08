@@ -183,6 +183,7 @@ C act='p' iget parameters already set.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      COMMON/GFONT/IFS,ITFS,IMFS
 
       dimension Yold(MZS), TIMEold(MZS)
       dimension YSC(5), Yadd(5), igx(5), ilr(5)
@@ -191,11 +192,20 @@ C act='p' iget parameters already set.
       character graftitle*64,grlbl*24,t24*24
 
       integer YAXSET, ADDLIN
+      integer iglib   ! if iglib is 2 then using GTK library otherwise X11
+      integer oneonright  ! if only one axis on right.
+      integer twoonrighta ! nearest if two axis on right
+      integer twoonrightb ! farthest if two axis on right
+      integer threerighta ! nearest if miscel plus two axis on right
+      integer threerightb ! farthest if miscel plus two axis on right
 
       logical kwatts,colok
 
 C Define prompt
       prompt='  '
+
+C If GTK library then there are additional options so include in help.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
 
 C Check if can draw in colour.
       colok=.false.
@@ -294,11 +304,26 @@ C Check for plant flux in kW, if so convert fluxes from W to kW
      &  'P')
       call usrmsg('  ','  ','-')
 
-C Draw axis.
+C Draw axis.where:
+C  igx(1) is the left vertical axis.
+C  igx(2) is the `Load W` vertical axis.
+C  igx(3) is the `Int W/m^2' vertical axis
+C  igx(4) is the `Miscel vertical axis which is placed in the centre.
+C  igx(5) does not have a label and is not part of the do 100 loop.
+C Set local values of offset from right end of horiz axis. Note: in 
+C the GTK version the values probably should be adjusted to fit the
+C current label font.
+      oneonright=110
+      twoonrighta=85
+      twoonrightb=135
+      threerighta=80
+      threerightb=135
+
+C moghed uses similar YAXSET logic to know how many right axis to draw.
       call MOGHED
       igx(1)=igl
-      igx(2)=igr+140
-      igx(3)=igr+80
+      igx(2)=igr+threerightb
+      igx(3)=igr+threerighta
       igx(4)=(igl+igr)/3
       igx(5)=2*(igl+igr)/3
 
@@ -307,19 +332,19 @@ C Optimise(!) axis positions.
         if (YAXSET(3).gt.0) then
 
 C Axis 2,3 active, 4 either active or not still in center.
-          igx(2)=igr+140
-          igx(3)=igr+80
+          igx(2)=igr+threerightb
+          igx(3)=igr+threerighta
           igx(4)=(igl+igr)/2
         else
 
 C Axis 2,4 active.
           if (YAXSET(4).gt.0) then
-            igx(2)=igr+90
-            igx(4)=igr+145
+            igx(2)=igr+twoonrighta
+            igx(4)=igr+twoonrightb
           else
 
 C Axis 2 active.
-            igx(2)=igr+120
+            igx(2)=igr+oneonright
           endif
         endif
       else
@@ -327,34 +352,43 @@ C Axis 2 active.
           if (YAXSET(4).gt.0) then
 
 C Axis 3, 4 active.
-            igx(3)=igr+90
-            igx(4)=igr+145
+            igx(3)=igr+twoonrighta
+            igx(4)=igr+twoonrightb
           else
 
 C Axis 3 only active.
-            igx(3)=igr+120
+            igx(3)=igr+oneonright
           endif
         else
 
 C Axis 4 only active or not. 
-          igx(4)=igr+120
+          if (YAXSET(4).gt.0) then
+            igx(4)=igr+oneonright
+          endif
         endif
       endif
+
+C Debug.
+C      write(6,*) ' igx values ',igx
+C      write(6,*) ' yaxset ',YAXSET
+C      write(6,*) ' igl igr igw igwh ',igl,igr,igw,igwh
+C      write(6,*) ' fonts ifs itfs  & imfs & iglib ',IFS,ITFS,IMFS,iglib
+C      write(6,*) ' onright ',oneonright,twoonrighta,twoonrightb
       if(IROC.eq.0)then
         ALABEL(1)='Temp: DegC'
 
 C Could be kW for next units depends on scaling.
-        ALABEL(2)='Load: W'
-        if (kwatts) ALABEL(2)='Load: kW'
-        ALABEL(3)='Int: W/m^2'
+        ALABEL(2)='Load W'
+        if (kwatts) ALABEL(2)='Load kW'
+        ALABEL(3)='Int W/m^2'
         ALABEL(4)='Misc.'
       elseif(IROC.eq.1)then
 
 C IROC, if rate of change of variable alter the axis label.
-        ALABEL(1)='T: DegC/hr'
-        ALABEL(2)='Load: W/hr'
-        if (kwatts) ALABEL(2)='Load: kW/hr'
-        ALABEL(3)='Int:W/m^2/hr'
+        ALABEL(1)='T DegC/hr'
+        ALABEL(2)='Load W/hr'
+        if (kwatts) ALABEL(2)='Load kW/hr'
+        ALABEL(3)='Int W/m^2/hr'
         ALABEL(4)='Misc./hr'
       endif
       ILR(1)=0
@@ -418,7 +452,8 @@ C draw vertical axis.
         endif
  100  continue
 
-C Draw horizontal (time) axis.
+C Draw horizontal (time) axis. But if there is no right axis then
+C there should be logic to maximize the width of the plot.  << to be done >>
       call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,'Time Hrs')
 
 C Recover and plot data.
@@ -532,6 +567,10 @@ C Reset add profile.
  10   continue
 
 C Finally label lines, matching zone line colour if used.
+C If IMFS is > zero then use IMFS-1 for line label.
+      if(IMFS.gt.0.and.IMFS.lt.4)then
+        call winfnt(imfs-1)
+      endif
       do 200 I=1,NGET
         Iax=IGETNO(I,8)
         call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
@@ -544,6 +583,9 @@ C Finally label lines, matching zone line colour if used.
         if(colok)call winscl('-',0)
         call forceflush()
  200  continue
+      if(IMFS.gt.0.and.IMFS.lt.4)then
+        call winfnt(imfs)
+      endif
 
 C If there are optional user defined labels draw them.
       if(ngrlbl.gt.0)then
@@ -575,13 +617,26 @@ C to graphical result display.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
 
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/GFONT/IFS,ITFS,IMFS
+
+C To extend logic to maximize plotting area.
+      integer YAXSET, ADDLIN
+      integer iglib   ! if iglib is 2 then using GTK library otherwise X11
+      integer onright  ! number of axis on right
+      integer onleft   ! whether there is an axis on the left
 
       CHARACTER ETEXT*124, RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
+
+C If GTK library then there are additional options << work in progress >>.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      onright = 0
+      onleft = 0
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -595,7 +650,66 @@ C pixel references for calls to viewtext.
         call feedbox(menuchw,2,igfw,igfh)
         call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 #endif
-        call win3d(menuchw,9,30,5,3,igl,igr,igt,igb,igw,igwh)
+
+C Logic to alter the '30' for two different cases:
+C  a) we are using GTK and a proportional font << to be done >>
+C  b) there is none or one or two right axis 
+C  c) there is none or one left axis
+
+C Optimise(!) axis positions for each possible combination
+C using similar logic tree to mowlin.
+        if (YAXSET(1).gt.0) then
+          onleft = 1
+        endif
+        if (YAXSET(2).gt.0) then
+          if (YAXSET(3).gt.0) then
+            onright=2
+          else
+            if (YAXSET(4).gt.0) then
+              onright=2
+            else
+              onright=1
+            endif
+          endif
+        else
+          if (YAXSET(3).gt.0) then
+            if (YAXSET(4).gt.0) then
+              onright=2
+            else
+              onright=1
+            endif
+          else
+            if (YAXSET(4).gt.0) then
+              onright=1
+            else
+              onright=0
+            endif
+          endif
+        endif
+C Debug.
+C        write(6,*) ' nb of right axis is currently ',onright
+
+C Set standard fornt width so that space around graph is correct.
+        call winfnt(imfs)
+        if(onright.eq.0)then
+          if(onleft.eq.0)then
+            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
+          else
+            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        elseif(onright.eq.1)then
+          if(onleft.eq.0)then
+            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
+          else
+            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        elseif(onright.eq.2)then
+          if(onleft.eq.0)then
+            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
+          else
+            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
+          endif
+        endif
         call startbuffer()
       ENDIF
 
@@ -720,7 +834,7 @@ C ****************************************************
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,4),ipan(mcl,4),npcdt(mcl),
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
      &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)

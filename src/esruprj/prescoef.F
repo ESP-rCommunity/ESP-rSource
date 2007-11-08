@@ -344,12 +344,19 @@ C should calculate pressure coefficients.
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
       common/pophelp/h(60)
       common/FILEP/IFIL
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -363,15 +370,17 @@ C should calculate pressure coefficients.
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION VERT(35),COMPS(MPCP),IVAL(MPCP)
       CHARACTER VERT*75,KEY*1,H*72,DESCRC*25
-      CHARACTER SOTHER*15,hold2*40,naco*40,COMPS*72
-      CHARACTER*12 SNAME, SMLCN
-      CHARACTER*4 SVFC,SOTF,type
+      CHARACTER hold2*40,naco*40,COMPS*72
+      CHARACTER*4 type
       character*72 LTMP,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,FICOCP
       CHARACTER OUTSTR*124,RSTR*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,t28*28
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV)
@@ -379,6 +388,7 @@ C should calculate pressure coefficients.
 
 C Initialise facade coordinates menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
+      newgeo=.false.  ! assume older format geometry.
       IUM=IFIL+7
  92   MHEAD=1
       MCTL=7
@@ -571,7 +581,12 @@ C Add/generate coordinates.
 C Manual input of cordinates. 
           CALL EASKGEOF('Select a zone for coords:',CFGOK,IC,'-',IER)
           IUF=IFIL+1
-          CALL EGOMIN(IUF,LGEOM(IC),IC,1,0,iuout,IER)
+          call eclose(gversion(IC),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(IC),IC,1,0,iuout,IER)
+          else
+            call egomin(IUF,LGEOM(IC),IC,1,0,iuout,IER)
+          endif
           nzg=1
           nznog(1)=IC
           izgfoc=IC
@@ -590,6 +605,7 @@ C Manual input of cordinates.
  256      CALL EASKSUR(IC,ISO,'-','with respect to which external ',
      &               'surface do you want to define coordinates? ',IER)
           call ZSID(IC,ISO,ZSDES,ZSDESC,ZSDESS) 
+          icc=izstocn(IC,ISO)   ! connection for this surface.
  
 C Set all surfaces to standard line width and surface being 
 C selected to a thick line.
@@ -677,10 +693,10 @@ C If yes than save coordinates ...
             xcoab(nuco)=XXDP
             ycoab(nuco)=YYDP
             zcoab(nuco)=ZZDP
-            azim(nuco)=SSPAZI(izstocn(IC,ISO))
+            azim(nuco)=SSPAZI(icc)
             if (azim(nuco).gt.359.9) azim(nuco)=0.0
-            type(nuco)=SVFC(ISO)
-            elev(nuco)=SSPELV(izstocn(IC,ISO))
+            type(nuco)=SSVFC(icc)
+            elev(nuco)=SSPELV(icc)
           endif
 
 C Ask whether user wants to define another point.
@@ -693,12 +709,18 @@ C Ask whether user wants to define another point.
 C Open geometry file for surface property check. 
           IUF=IFIL+1
           do 46 IZU=1,NCOMP
-            CALL EGOMIN(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
+            call eclose(gversion(IZU),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
+            else
+              call egomin(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
+            endif
 
 C  Check whether zone has external transparent surface(s)
-            do 42 IZW=1,NSUR
-              if(SOTF(IZW)(1:4).eq.'TRAN'.and.SOTHER(IZW)(1:8).eq.
-     &          'EXTERIOR') then
+            do 42 IZW=1,NZSUR(izu)
+              icc=izstocn(izu,izw)
+              if(SSOTF(icc)(1:4).eq.'TRAN'.and.
+     &           SSOTHER(icc,1)(1:8).eq.'EXTERIOR') then
 
 C  If so then display zone and centre point of the 
 C  transparent surface of the zone 
@@ -772,10 +794,10 @@ C If yes save cordinates.
                   xcoab(nuco)=xpc
                   ycoab(nuco)=ypc
                   zcoab(nuco)=zpc
-                  azim(nuco)=SSPAZI(izstocn(IZU,IZW))
+                  azim(nuco)=SSPAZI(icc)
                   if (azim(nuco).gt.359.9) azim(nuco)=0.0
-                  type(nuco)=SVFC(IZW)
-                  elev(nuco)=SSPELV(izstocn(IZU,IZW))
+                  type(nuco)=SSVFC(icc)
+                  elev(nuco)=SSPELV(icc)
                 endif
               endif               
  42         continue

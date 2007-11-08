@@ -565,7 +565,9 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -573,7 +575,9 @@ C *********************************************************************
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
 
       CHARACTER VERT(35)*35,KEY*1,H*72,STTS*4,ENAME*9,TEXT*72
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12,STATS*16
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      CHARACTER STATS*16
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -600,9 +604,10 @@ C current menu line index. Build up text strings for the menu.
             STTS='| N '
           ENDIF
           IS1=IBDYSE(L,1)
+          icon=IZSTOCN(iz,is1)
           WRITE(ENAME,'(A6,I2,A1)')'edge (',IBDYSE(L,2),')'
           WRITE(VERT(M),'(A1,1X,A12,A6,A9,1X,A5)')KEY,
-     &              SNAME(IZ,IS1),'<-->',ENAME,STTS
+     &              SSNAME(icon),'<-->',ENAME,STTS
         ENDIF
    20 CONTINUE
 
@@ -663,8 +668,10 @@ C        CALL EPAGE
           ENDIF
           ISF1=ISFEDG(IEG,1)
           ISF2=ISFEDG(IEG,2)
+          icon1=IZSTOCN(iz,isf1)
+          icon2=IZSTOCN(iz,isf2)
           WRITE(TEXT,'(3(I3,3X),3(A12,3X))')IEG,IVXEDG(IEG,1),
-     &      IVXEDG(IEG,2),SNAME(IZ,ISF1),SNAME(IZ,ISF2),STATS
+     &      IVXEDG(IEG,2),SSNAME(icon1),SSNAME(icon2),STATS
           CALL EDISP(IUOUT,TEXT)
    30   CONTINUE
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
@@ -689,7 +696,9 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -697,7 +706,8 @@ C *********************************************************************
       COMMON/GR3D61/NUMEE,IBDYEE(MEEZ,2),IVRTEE(MEEZ)
 
       CHARACTER TEXT*72,STATS*16
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER VERT(35)*19,KEY*1,H*72,STTS*4
 
 C Initialise connection menu size variables based on window size. 
@@ -783,8 +793,10 @@ C        CALL EPAGE
           ENDIF
           ISF1=ISFEDG(IEG,1)
           ISF2=ISFEDG(IEG,2)
+          icon1=IZSTOCN(iz,isf1)
+          icon2=IZSTOCN(iz,isf2)
           WRITE(TEXT,'(3(I3,3X),3(A12,3X))')IEG,IVXEDG(IEG,1),
-     &      IVXEDG(IEG,2),SNAME(IZ,ISF1),SNAME(IZ,ISF2),STATS
+     &      IVXEDG(IEG,2),SSNAME(icon1),SSNAME(icon2),STATS
           CALL EDISP(IUOUT,TEXT)
    30   CONTINUE
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
@@ -809,7 +821,9 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -819,7 +833,8 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER TEXT*72,STATS*16
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER VERT(35)*33,KEY*1,H*72,STTS*4,ENAME*9,CNAME*11
 
 C Initialise connection menu size variables based on window size. 
@@ -911,8 +926,10 @@ C        CALL EPAGE
           ENDIF
           ISF1=ISFEDG(IEG,1)
           ISF2=ISFEDG(IEG,2)
+          icon1=IZSTOCN(iz,isf1)
+          icon2=IZSTOCN(iz,isf2)
           WRITE(TEXT,'(3(I3,3X),3(A12,3X))')IEG,IVXEDG(IEG,1),
-     &      IVXEDG(IEG,2),SNAME(IZ,ISF1),SNAME(IZ,ISF2),STATS
+     &      IVXEDG(IEG,2),SSNAME(icon1),SSNAME(icon2),STATS
           CALL EDISP(IUOUT,TEXT)
    30   CONTINUE
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
@@ -936,8 +953,11 @@ C        CALL EPAGE
           ISF1=ISFCRN(ICRN,1)
           ISF2=ISFCRN(ICRN,2)
           ISF3=ISFCRN(ICRN,3)
+          icon1=IZSTOCN(iz,isf1)
+          icon2=IZSTOCN(iz,isf2)
+          icon3=IZSTOCN(iz,isf3)
           WRITE(TEXT,'(2(I3,3X),4(A12,3X))')ICRN,IVXCRN(ICRN),
-     &          SNAME(IZ,ISF1),SNAME(IZ,ISF2),SNAME(IZ,ISF3),STATS
+     &          SSNAME(icon1),SSNAME(icon2),SSNAME(icon3),STATS
           CALL EDISP(IUOUT,TEXT)
    40   CONTINUE
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
@@ -964,6 +984,11 @@ C *********************************************************************
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -972,6 +997,7 @@ C *********************************************************************
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
 
       LOGICAL ZONOK
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION IVALZ(MCOM)
 
@@ -979,6 +1005,7 @@ C *********************************************************************
       CHARACTER SZN*12,zname*12,zdesc*64,H*72
 
       IUNIT=IFIL+2
+      newgeo=.false.  ! assume older format geometry.
 
 C Show the zone selection menu.
       H(1)='    Select the zone for which the multi-D gridding'
@@ -990,7 +1017,12 @@ C Show the zone selection menu.
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
-        CALL EGOMIN(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+        endif
         IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
         IF(IER.EQ.0)THEN
           ZONOK=.TRUE.

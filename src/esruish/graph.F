@@ -193,21 +193,27 @@ C FACDRW draws the elevation of the surface.
 #include "building.h"
 
       COMMON/CONTR/MON,ISC(MS),IYD
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS), SMLCN(MS), SVFC(MS),SOTHER(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       DIMENSION MTHNAM(12)
 
       CHARACTER*72 ETEXT
       CHARACTER*3 MTHNAM
-      CHARACTER SNAME*12,SOTF*4,SVFC*4,SOTHER*15,SMLCN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      integer icn  ! connection number for this surface.
+
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C Display header information.
       CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      ICN=IZSTOCN(icomp,isur)
 
-      WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SNAME(ICOMP,ISUR)
+      WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(ICN)
     1 FORMAT(' Shading patterns: ',A3,' at hour',I3,' for surface',I3,
      &       ' ',a)
       CALL viewtext(ETEXT,1,1,2)
@@ -270,6 +276,11 @@ C and the surrounding obstruction blocks.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
@@ -283,6 +294,7 @@ C and the surrounding obstruction blocks.
       CHARACTER zname*12,sstr*72,blabel*4,BLKNAME*8,BLKMAT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character tz*13,zdesc*64
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C The right offset for the graphic box is the character width
 C of the menu. Also allow 2 text lines at the bottom for future
@@ -292,6 +304,7 @@ C dialogue. Axiscale is in wwlib.c.
         CALL USRMSG('Not in graphic mode...',' ','W')
         RETURN
       ENDIF
+      newgeo=.false.  ! assume older format geometry.
 
 C Define a viewing box, draw its border after clearing it and
 C return the offsets which define it.
@@ -303,7 +316,12 @@ C Reopen the dialogue box.
 
 C Check the max & min of the zone in question, first re-read
 C geometry file.
-      CALL EGOMIN(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      else
+        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      endif
       XMX=-1.E+8
       YMX=-1.E+8
       XMN=1.E+8
@@ -342,7 +360,12 @@ C Draw a scale vertical axis.
 
 C Re-read in the geometry file and plot it. Move to first vertex and
 C give the zone name.
-      CALL EGOMIN(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      else
+        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+      endif
 
       call u2pixel(X(1),Y(1),ix,iy)
       call etplot(X(1),Y(1),0,0)

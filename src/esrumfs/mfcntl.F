@@ -157,6 +157,8 @@ C prevailing controller type, determines sensed condition (SVCTL).
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -355,7 +357,7 @@ C Controller type 29 senses ABS mass flow at a connection.
 
 C Controller type 41 senses contaminant concentration at node
           elseif(ICLCTP.EQ.41)then
-            SVCTL=CCONC(IFS2,IFS3)*1000
+            SVCTL=CCONC(IFS2,IFS3)*1000.
           else 
             WRITE(outs,*) ' CFFVAR: function ',ICFP,' type ',ICLCTP
             call edisp(iuout,outs)
@@ -698,21 +700,30 @@ C logical AND/OR as specified in the sensor definition
       CHARACTER ERRMSG*72
       LOGICAL CHANGE,PRESENT
  
-      IDEF=int(FMISCD(ICFP,IDTYPP,IPERP,2))
-      NSEN=int(FMISCD(ICFP,IDTYPP,IPERP,3))
- 
+C If the NOT inversion is operative invert the sense of this loop as
+C compared with the sensed loop
+      IF(NINT(FMISCD(ICFP,IDTYPP,IPERP,3)).EQ.1)THEN
+        ICNN=NINT(FMISCD(ICFP,IDTYPP,IPERP,6))
+        DEF=CTLPOS(ICNN)
+        CHANGE=.TRUE.
+      ELSE
+
+C Initialise
+        DEF=FMISCD(ICFP,IDTYPP,IPERP,2)
+        NSEN=int(FMISCD(ICFP,IDTYPP,IPERP,3))
+
 C Debug ... Figure out defualt position of control
-      CHANGE=.FALSE.
+        CHANGE=.FALSE.
 
 C Establish for each auxiliary sensor whether change is required.
-      do 10 ISEN=1,NSEN
-        PRESENT=.FALSE.
-        IS1=NINT(FMISCD(ICFP,IDTYPP,IPERP,4+8*(ISEN-1)))
-        IS2=NINT(FMISCD(ICFP,IDTYPP,IPERP,5+8*(ISEN-1)))
-        IS3=NINT(FMISCD(ICFP,IDTYPP,IPERP,6+8*(ISEN-1)))
-        IS4=NINT(FMISCD(ICFP,IDTYPP,IPERP,7+8*(ISEN-1)))
-        SETPNT=FMISCD(ICFP,IDTYPP,IPERP,8+8*(ISEN-1))
-        INVPOS=NINT(FMISCD(ICFP,IDTYPP,IPERP,9+8*(ISEN-1)))
+        do 10 ISEN=1,NSEN
+          PRESENT=.FALSE.
+          IS1=NINT(FMISCD(ICFP,IDTYPP,IPERP,4+8*(ISEN-1)))
+          IS2=NINT(FMISCD(ICFP,IDTYPP,IPERP,5+8*(ISEN-1)))
+          IS3=NINT(FMISCD(ICFP,IDTYPP,IPERP,6+8*(ISEN-1)))
+          IS4=NINT(FMISCD(ICFP,IDTYPP,IPERP,7+8*(ISEN-1)))
+          SETPNT=FMISCD(ICFP,IDTYPP,IPERP,8+8*(ISEN-1))
+          INVPOS=NINT(FMISCD(ICFP,IDTYPP,IPERP,9+8*(ISEN-1)))
 
 C fraction 'ON' to be incorporated as future development
 c        FRACT=FMISCD(ICFP,IDTYPP,IPERP,10+8*(ISEN-1))
@@ -722,53 +733,53 @@ C array is not used by this multi sensor control law.
 C Due to this it is allowed to overwrite the IFSN information
 C with the details of each individual sensor before
 C successive calls to CFFVAR. 
-        IFSN(ICFP,1)=IS1
-        IFSN(ICFP,2)=IS2
-        IFSN(ICFP,3)=IS3
-        IFSN(ICFP,4)=IS4
+          IFSN(ICFP,1)=IS1
+          IFSN(ICFP,2)=IS2
+          IFSN(ICFP,3)=IS3
+          IFSN(ICFP,4)=IS4
 
 C Set control type depending upon IFSN
-        IF(IS1.EQ.-3)THEN
-          IFCTYP(ICFP,IDTYPP,IPERP)=0
-        ELSEIF(IS1.EQ.-4)THEN
+          IF(IS1.EQ.-3)THEN
+            IFCTYP(ICFP,IDTYPP,IPERP)=0
+          ELSEIF(IS1.EQ.-4)THEN
 
 C Only one type of flow condition can be sensed (yet) i.e. temperature.
-          IFCTYP(ICFP,IDTYPP,IPERP)=1
-        ELSE
-          CALL EDISP(IUOUT,'Multi-sensor not optimised for control law')
-          WRITE(ERRMSG,'(A,I4,A)')'number ',ICFP,'; use another law'
-          CALL EDISP(IUOUT,ERRMSG)
-          call epwait
-          CALL EPAGEND
-          STOP
-        ENDIF
+            IFCTYP(ICFP,IDTYPP,IPERP)=1
+          ELSE
+            CALL EDISP(IUOUT,
+     &      'Multi-sensor not optimised for control law')
+            WRITE(ERRMSG,'(A,I4,A)')'number ',ICFP,'; use another law'
+            CALL EDISP(IUOUT,ERRMSG)
+            call epwait
+            CALL EPAGEND
+            STOP
+          ENDIF
+          call CFFVAR(SIGNAL,0)
 
-        call CFFVAR(SIGNAL,0)
-
-        if((INVPOS.eq.1.and.SIGNAL.gt.SETPNT).or.
-     &    INVPOS.eq.-1.and.SIGNAL.lt.SETPNT) PRESENT=.TRUE.
-        IF(ISEN.EQ.1)THEN
-          CHANGE=PRESENT
-        ELSE
-          IF(NLOG.EQ.1)THEN
-            IF(PRESENT.AND.CHANGE)THEN
-              CHANGE=.TRUE.
-            ELSE
-              CHANGE=.FALSE.
-            ENDIF
-          ELSEIF(NLOG.EQ.2)THEN
-            IF(PRESENT.OR.CHANGE)THEN
-              CHANGE=.TRUE.
-            ELSE
-              CHANGE=.FALSE.
+          if((INVPOS.eq.1.and.SIGNAL.gt.SETPNT).or.
+     &      INVPOS.eq.-1.and.SIGNAL.lt.SETPNT) PRESENT=.TRUE.
+          IF(ISEN.EQ.1)THEN
+            CHANGE=PRESENT
+          ELSE
+            IF(NLOG.EQ.1)THEN
+              IF(PRESENT.AND.CHANGE)THEN
+                CHANGE=.TRUE.
+              ELSE
+                CHANGE=.FALSE.
+              ENDIF
+            ELSEIF(NLOG.EQ.2)THEN
+              IF(PRESENT.OR.CHANGE)THEN
+                CHANGE=.TRUE.
+              ELSE
+                CHANGE=.FALSE.
+              ENDIF
             ENDIF
           ENDIF
-        ENDIF
 
 C Get logical AND or OR to use with next sensor
-        NLOG=NINT(FMISCD(ICFP,IDTYPP,IPERP,11+8*(ISEN-1)))
-   10 continue
-
+          NLOG=NINT(FMISCD(ICFP,IDTYPP,IPERP,11+8*(ISEN-1)))
+   10   continue
+      ENDIF
 C Debug...
 c      if(present)then
 c      write(6,*)'present=true'
@@ -780,18 +791,18 @@ c      write(6,*)'CHANGE=true'
 c      else
 c      write(6,*)'CHANGE=false'
 c      endif
-
+  
       if(IFAN(ICFP,1).eq.-3)then
  
 C Controlling a connection.
-        CTLPOS(IFAN(ICFP,2))=IDEF
+        CTLPOS(IFAN(ICFP,2))=DEF
         if(CHANGE)CTLPOS(IFAN(ICFP,2))=1.0-CTLPOS(IFAN(ICFP,2))
       else
  
 C Controlling a component.
         do 20 ICNN=1,NCNN
           if((IFAN(ICFP,2).eq.ITPCON(ICNN))) then
-            CTLPOS(ICNN)=IDEF
+            CTLPOS(ICNN)=DEF
             if(CHANGE)CTLPOS(ICNN)=1.0-CTLPOS(ICNN)
           endif
  20     continue

@@ -12,7 +12,7 @@ PROG = cfg$(EXE)
 OBJECTS = cfg.o arrow.o ascii_mat.o bsimsel.o c2fdum.o cfg3dv.o common3dv.o cread3dv.o ctread.o e3dviews.o \
 	  edatabase.o edonecon.o egeometry.o emfnetw.o emkcfg.o enetmisc.o \
 	  enetrewr.o eroper.o esru_misc.o esystem.o item.o mfcdat.o nwkrewr.o \
-          plelev.o pltcfg.o sort.o startup.o tdfile.o 
+          plelev.o pltcfg.o sort.o startup.o tdfile.o readTrnsys.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -92,6 +92,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(TDFdir)/tdfile.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -103,4 +106,4 @@ clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	arrow.F ascii_mat.F bsimsel.F c2fdum.F common3dv.F cread3dv.F ctread.F e3dviews.F edatabase.F egeometry.F emkcfg.F \
 	emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
-        plelev.F pltcfg.F sort.F startup.F tdfile.F 
+        plelev.F pltcfg.F sort.F startup.F tdfile.F readTrnsys.F

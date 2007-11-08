@@ -39,6 +39,11 @@ C MZINPT code in espbps/input.f.
       COMMON/FILEP/IFIL
       common/trc/itrc
 
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -55,20 +60,22 @@ C Temporal definition commons.
       COMMON/TDFFT/LTDF,LTDFA
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LCFGF,path,LTDF,LTDFA,ltmp
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C The common code method of reading in a system configuration file
 C uses the same common blocks as MOINIT so there is no convenient way
 C of checking that they are the same. The header does not contain
 C the UTILITY file name etc. so must read in the system configuration
 C file here.
+      newgeo=.false.  ! assume older format geometry.
  289  IAPROB=IFIL+2
       IFCFG=IFIL+1
       CALL ERPFREE(IFCFG,ISTAT)
@@ -118,7 +125,12 @@ C Check the geometry and utility files by reading them in.
           call edisp(iuout,outs)
           call PROCESSOLDCAS(J,0,iuout,IER)
         endif
-        CALL EGOMIN(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+        call eclose(gversion(J),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+        endif
    30 CONTINUE
       call usrmsg(' ',
      &  ' Checking existence of descriptive files...done.','-')

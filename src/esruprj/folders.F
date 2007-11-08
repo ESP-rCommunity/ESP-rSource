@@ -102,15 +102,15 @@ C Ask for source file, brief description and log file. Offer
 C editing of log file, images, hypertext link and results summary.
       IER=0
 
-  289 H(1)='The system configuration file holds the definition'
+  289 H(1)='The model configuration file holds the definition'
       H(2)='of the building, plant and control systems to be'
       H(3)='simulated, including references to associated files.'
       h(4)='The name you supply will be used as the root name'
       h(5)='for the various files corresponding to the model'
-      h(6)='you will later establish'
+      h(6)='you will later establish. Up to 24 characters allowed.'
       LCFTMP='  '
-      CALL EASKSCMD(LCFTMP,' ','System configuration file name?',
-     &     'cancel',clkok,24,'new_model','system root name',IER,6)
+      CALL EASKSCMD(LCFTMP,' ','Model root name?',
+     &     'cancel',clkok,24,'new_model','model root name',IER,6)
       call usrmsg(' ',' ','-')
       if(clkok)then
         return         ! User selected cancel.
@@ -136,8 +136,6 @@ C User did not cancel so instantiate data for new model.
         nbdaytype=0
         call st2file(LCFTMP,LCMDFL)
       endif
-C      CALL EASKS(LCFTMP,' ','System configuration file name?',
-C     &                24,'new_model','system root name',IER,5)
 
 C Derive the model root name from this.
 C If sting > 4 char it might have a .cfg attached, otherwise add.
@@ -264,9 +262,9 @@ C Re-establish pwd and then project folders.
         call edisp(iuout,
      &        'System configuration file is located in folder:')
         call edisp(iuout,path)
-        write(path,'(5a)') 'Resetting path to: ',
-     &                  cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
-        call edisp(iuout,path)
+        write(path,'(4a)') cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
+        write(outs,'(2a)') 'Resetting path to: ',path
+        call edisp(iuout,outs)
         call edisp(iuout,' ')
       else
         return
@@ -474,7 +472,21 @@ C information.
         call tstamp('>','PRJ: create configuration')
         call tstamp('>',LCFGF)
         CALL EMKCFG('-',IER)
-        if(ier.eq.0)CFGOK=.TRUE.
+        if(ier.eq.0)then
+          CFGOK=.TRUE.
+
+C Open core of databases if not already done so.
+          if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+            continue
+          else
+            call opendb(ier)
+            if(ier.ne.0)then
+              call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db. Please check.','W')
+              ier = 0
+            endif
+          endif
+        endif
         return
       endif
       return
@@ -483,16 +495,27 @@ C information.
 C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
+#include "building.h"
 #include "espriou.h"
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      common/C1/NCOMP,NCON
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/C3F/LCNN
+      common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -507,6 +530,7 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character doit*248,tfile*72,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
@@ -577,11 +601,11 @@ C works. If path begins with /usr/esru then no need to prepend odir.
       WRITE(ITEMS(10),'(2A)')'h radiance: ',radpth(1:20)
       WRITE(ITEMS(11),'(2A)')'i local db: ',dbspth(1:20)
       ITEMS(12)  =           ' _____________________________ '
-      ITEMS(13)  =           'j zone files                  '
-      ITEMS(14)  =           ' _____________________________ '
-      WRITE(ITEMS(15),'(A)') 'k list ASCII file              '
-      WRITE(ITEMS(16),'(A)') 'l edit ASCII file              '
-      WRITE(ITEMS(17),'(A)') 'm strip file annotations       '
+      ITEMS(13)  =           'j zone files                   '
+      ITEMS(14)  =           'k scan and rewrite model files '
+      ITEMS(15)  =           ' _____________________________ '
+      WRITE(ITEMS(16),'(A)') 'l list ASCII file              '
+      WRITE(ITEMS(17),'(A)') 'm edit ASCII file              '
       ITEMS(18)  =           '? help                         '
       ITEMS(19)  =           '- exit this menu               '
       nitems=19
@@ -806,7 +830,14 @@ C Zone file composition.
 C Loop back and see if another zone is requested.
         IC=-1
         GOTO 254
-      elseif(ino.eq.15)then
+
+      elseif(ino.eq.14)then
+
+C Option to scan in current model files and then write them out
+C again, updating the file format as per value of igupgrade.
+C << to be done >>
+
+      elseif(ino.eq.16)then
 
 C List out an ASCII file.
         H(1)='The specified ASCII file will be read and displayed'
@@ -823,7 +854,7 @@ C List out an ASCII file.
      &                ' ASCII file. Try again?',OK,dok,1)
           IF(OK)GOTO 6
         ENDIF
-      elseif(ino.eq.16)then
+      elseif(ino.eq.17)then
 
 C Allow user to edit a file. Append to path if necessary.
 C If vi then spawn a new window to do the editing in.
@@ -848,40 +879,6 @@ C and change any / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
-      elseif(ino.eq.17)then
-
-C Ask for commented file name and open it, IER=-301 if not found.
-        H(1)='An annotated file may be stripped of all comments'
-        H(2)='so that it is compatible with older applications.'
-    8   CALL EASKS(LFIL,' ','Commented file name?',
-     &               72,' ','commented file name',IER,2)
-
-        IUNIT=IFIL+1
-        CALL EFOPSEQ(IUNIT,LFIL,1,IER)
-        IF(IER.LT.0)GOTO 8
-
-C Ask for name of file to put uncommented text into.
-        H(1)='An annotated file may be stripped of all comments'
-        H(2)='so that it is compatible with older applications.'
-    9   CALL EASKS(SFILE,' ','Uncommented file name?',
-     &            72,' ','Uncommented file name',IER,2)
-
-c Place output into IFIL+2, first close that unit, open any exiting
-C file with this name, delete it and create a new file.
-        ISUNIT=IFIL+2
-        CALL EFOPSEQ(ISUNIT,SFILE,4,IER)
-        IF(IER.LT.0)GOTO 9
-
-C Loop until end of file encountered and display stripped text.
-   73   CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'stripping',IER)
-        IF(IER.EQ.2)goto 72
-        IF(IER.EQ.1)GOTO 42
-        WRITE(ISUNIT,'(a)')OUTSTR(1:LNBLNK(OUTSTR))
-        CALL edisp(iuout,OUTSTR)
-        CALL edisp(iuout,' ')
-        goto 73
-   72   CALL USRMSG(' ','Reached end of source file.','-')
-        CALL ERPFREE(ISUNIT,ISTAT)
       else
         goto 42
       endif
@@ -1002,6 +999,11 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
@@ -1023,6 +1025,7 @@ C CFD
       COMMON/GRSD101/LGrdSt
 
       logical browse,BLDG3D,ZONE3D,MSTROK,MSTRZN
+      logical newgeo  ! to use for testing if new/old geometry file.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -1037,6 +1040,7 @@ C CFD
 
 C Note L is a temporary file and D is used for defaul file names.
       modcfg=.FALSE.
+      newgeo=.false.  ! assume older format geometry.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1253,7 +1257,12 @@ C Edit zone name - read and then write the geometry file.
      &                'mode, you must `own` the model!','W')
           goto 3
         endif
-        CALL EGOMIN(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+        else
+          call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+        endif
         H(1)='The zone name is used as an identifier during'
         H(2)='results analysis. Names should be unique.'
         T15=zname(IZ)
@@ -1261,7 +1270,16 @@ C Edit zone name - read and then write the geometry file.
         CALL EASKS(T15,' ','Zone name?',12,D15,'zone name',IER,2)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
-          CALL EMKGEO(IUF,LGEOM(IZ),IZ,iuout,3,IER)
+          call eclose(gversion(IZ),1.1,0.01,newgeo)
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(iz) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IUF,LGEOM(IZ),IZ,iuout,3,IER)
+          else
+            call emkgeo(IUF,LGEOM(IZ),IZ,iuout,3,IER)
+          endif
           ZN=zname(IZ)
         endif
       ELSEIF(INO.EQ.5)THEN

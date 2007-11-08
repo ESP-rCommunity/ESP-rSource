@@ -39,7 +39,7 @@ C esrures/psychart.F - revised to for plotting climate data.
      &              CDIR(MT),CHUM(MT)
       common/pixhist/ipixhist(8760,2)
      
-      CHARACTER*23 ITEM(7)
+      CHARACTER*26 ITEM(7)
       CHARACTER H*72,puts*12,etext*72,gtext*72
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*40,PERST3*40

@@ -35,9 +35,14 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/FILEP/IFIL
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
@@ -66,24 +71,25 @@ C converts into viewing coords, clips the image and draws it.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,ETEXT*82
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C If libraries and monitor support greyscale remember this.
+      newgeo=.false.  ! assume older format geometry.
       greyok=.false.
       if(nifgrey.gt.4)then
         greyok=.true.
       endif
 
-C Save the current font and switch to a smaller font for displaying
-C surface names etc.
-      NAMEFT=IFS-1
+C Set font for displaying surface names etc.
+      NAMEFT=IFS
 
 C The right offset for the graphic box is the character width of the
 C menu. Also allow 2 text lines at the bottom for future dialogue.
@@ -149,7 +155,12 @@ C before going on to the surfaces in the zone itself.
         WRITE(OUTSTR,77)LGEOM(nznog(IZ))(:LNBLNK(LGEOM(nznog(IZ))))
    77   FORMAT(' Reading: ',A)
         if(ITRC.gt.1)CALL USRMSG(' ',OUTSTR,'-')
-        CALL EGOMIN(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
+        call eclose(gversion(nznog(IZ)),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
+        else
+          call egomin(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
+        endif
       ELSEIF(nznog(IZ).EQ.izgfoc)THEN
         CALL ERCZONE(nznog(IZ))
       ENDIF
@@ -331,7 +342,7 @@ C ITHLS = 3 partial attributes
           elseif(ITHLS.eq.3)then
             if(ICC.gt.0)then
               if(SSMLCN(ICC)(1:3).eq.'UNK'.or.
-     &           SSOTHER(ICC)(1:3).eq.'UNK')then
+     &           SSOTHER(ICC,1)(1:3).eq.'UNK')then
                 IPEN= -305
               else
                 IPEN= 1

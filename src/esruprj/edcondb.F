@@ -1163,7 +1163,7 @@ C and then resetn MODDB and chgdb if mod is true.
 
 
 C ************* EDPELEM 
-C EDPELEM: Edits a material.
+C EDPELEM: Edits a material within material database.
       SUBROUTINE EDPELEM(ITRU,DBCON,DBDEN,DBSHT,E,A,DRV,NAM,IER)
       common/pophelp/h(60)
       DIMENSION PELM(11)
@@ -2363,10 +2363,14 @@ C << if needed.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -2374,6 +2378,7 @@ C << if needed.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 
 C Arrays of material properties.
@@ -2402,17 +2407,15 @@ C Arrays of material properties.
       logical moddb,chdb,showother,layermatch,layermatcha,modgeo
       logical closemat
 
-      dimension SNA(MS),PAZI(MS),PELV(MS)
+C      dimension SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12
-      character SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
-      character SSPARENT*12
-      character zname*12,zdesc*64,ZN*12,SNAME*12,SN*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character zname*12,zdesc*64,ZN*12,SN*12,SSPARENT*12
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -2423,6 +2426,7 @@ C Check to see that optical properties are available.
 
       IER=0
       moddb=.false.
+      newgeo=.false.  ! assume older format geometry.
       iuf=IFIL+1
 
 C Extract construction name, opaque/transp, optical and symmetry properties.
@@ -2887,7 +2891,7 @@ C If they do then warn the user.
               WRITE(outs,'(a,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
      &          1X,A4,1X,A12,1X,A13)')'found: ',icc,
      &          SSNA(icc),SSPAZI(icc),SSPELV(icc),SSNAME(icc),
-     &          SSOTF(icc),SSVFC(icc),SSMLCN(icc),SSOTHER(icc)
+     &          SSOTF(icc),SSVFC(icc),SSMLCN(icc),SSOTHER(icc,1)
               call edisp(iuout,outs)
               modgeo=.true.
             endif
@@ -2947,17 +2951,31 @@ C Select Opaque or transparent.
 C At this point need to check to see if this change needs to be
 C applied to surfaces within the model. If there are zones loop
 C through them and see if any surfaces have this construction 
-C attribute. If they do reset SOTF to OTF and update the geometry
+C attribute. If they do reset SSOTF to OTF and update the geometry
 C file.
+
+C << good place to try and use connection based information >>
+
+C << if the writing of geometry files can use something other
+C << than G1 common blocks then there is no need to scan the
+C << geometry file before writing it out. 
         if(ncomp.gt.0)then
           do 96 iz=1,ncomp
+            call eclose(gversion(iz),1.1,0.01,newgeo)
             write(zn,'(A)') zname(IZ)
             write(outs,'(3a)') ' Checking: ',zn(1:lnblnk(zn)),
      &         ' attributes...'
             CALL USRMSG(' ',outs,'-')
             LTMP=LGEOM(IZ)
-            CALL EGOMIN(IUF,LTMP,IZ,1,0,iuout,IER)
-            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+            if(newgeo)then
+              call georead(IUF,LTMP,IZ,1,0,iuout,IER)
+            else
+              call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
+            endif
+
+C Instead of zinfo use the info in common G7
+C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+
    93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')
             WRITE(outs,93)
@@ -2968,15 +2986,14 @@ C file.
             call edisp(iuout,outs)
             modgeo=.false.
             do 91 i=1,nsur
-              if(SMLCN(i)(1:12).eq.DESC(IFOC)(1:12))then
-                write(sn,'(a)') SNAME(IZ,I)
-                SOTF(i)=OTF
-                ioc=IZSTOCN(IZ,i)
-                SSOTF(ioc)=SOTF(i)
+              ioc=IZSTOCN(IZ,i)
+              if(SSMLCN(ioc)(1:12).eq.DESC(IFOC)(1:12))then
+                write(sn,'(a)') SSNAME(ioc)
+                write(SSOTF(ioc),'(a)') OTF
                 WRITE(outs,'(a,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
      &            1X,A4,1X,A12,1X,A13)')'updated:   ',I,
-     &            SNA(I),PAZI(I),PELV(I),SN,SOTF(I),SVFC(I),
-     &            SMLCN(I),SOTHER(I)
+     &            SSNA(ioc),SSPAZI(ioc),SSPELV(ioc),SN,SSOTF(ioc),
+     &            SSVFC(ioc),SSMLCN(ioc)(1:12),SSOTHER(ioc,1)(1:13)
                 call edisp(iuout,outs)
                 modgeo=.true.
               endif
@@ -2985,7 +3002,16 @@ C file.
 C If SOFT has changed update the zone geometry file. Warn user about
 C out of date zone construction files.
             if(modgeo)then
-              CALL EMKGEO(IUF,LTMP,IZ,ITRU,3,IER)
+              call eclose(gversion(iz),1.1,0.01,newgeo)
+              if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                gversion(iz) =1.1
+                newgeo = .true.
+              endif
+              if(newgeo)then
+                call geowrite(IUF,LTMP,IZ,ITRU,3,IER)
+              else
+                call emkgeo(IUF,LTMP,IZ,ITRU,3,IER)
+              endif
               write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),
      &          ' attributes... done.'
               CALL USRMSG(' ',outs,'-')
@@ -3002,7 +3028,7 @@ C out of date zone construction files.
 
 C Edit optical properties. Also check to see that the number of layers
 C and reference for materials matches.
-        IF(OTF.EQ.'TRAN')THEN
+        IF(OTF(1:4).NE.'OPAQ')THEN
           H(1)='In order to allow for the optical properties to be'
           H(2)='used in the model description and to be acted on'
           H(3)='by control laws the relevant optical property id  '
@@ -3188,7 +3214,9 @@ C If an air gap ask for the three R values.
 
 C ************* MKBPRC 
 C MKBPRC: Creates a binary materials db based on the
-C current contents of an ASCII file LASCI opened on unit IFA. 
+C current contents of an ASCII file LASCI opened on unit IFA.
+C Note: this subroutine is being depreciated because models
+C can use ascii version of materials database. 
       SUBROUTINE MKBPRC(ITRU,IFA,LASCI,IER)
 #include "esprdbfile.h"
       DIMENSION ICLN(30),VAL(6)
@@ -3344,11 +3372,11 @@ C so that partitions are counted as half area).
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON),SSPARENT(MCON)
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
-      CHARACTER SSMLCN*12,SSVFC*4,SSOTF*4,SSOTHER*15,SSNAME*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character mlcname*12,SSPARENT*12
       logical found
       dimension areamlc(MCOM)

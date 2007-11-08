@@ -32,6 +32,6 @@ C  Maximum number of key volumes (usual setting MNVLS=120)
 C  Maximum number of contaminants that can be modelled (Set equal to
 C  parameter MCONTM in net_flow.h, if this is changed also change MCONTM)
       PARAMETER (MCTM=4)
-      
-
+C Maximum frequency of residuals plotting during CFD solutions    
+      PARAMETER (MFRP=100)
 

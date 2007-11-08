@@ -78,7 +78,7 @@ xLibs="X11"                # Default x-library
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e cfg clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
 # (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
@@ -981,12 +981,21 @@ esac
 
 # Append XML output libararies to ULIBS as required (libxml2 and libstdc++)
 case $xml_support in
-  yes) ULIBS="$ULIBS -lxml2 -lstdc++";
+  yes) # Add c++ library
+       ULIBS="$ULIBS -lstdc++";
        # If libxslt is available, link it too
        case $xsl_libs_available in
-         "yes") ULIBS="$ULIBS -lxslt ";;
+         "yes") ULIBS="$ULIBS -lxslt";;
          "no")  ULIBS="$ULIBS";;
          esac;
+       # Add support for libxml2. This must follow
+       # -lxslt on mingw.
+       ULIBS="$ULIBS -lxml2";
+       # Append ws2_32 library on mingw.
+       case $platform in
+            mingw)    ULIBS="$ULIBS -lws2_32";;
+            *)        ULIBS="$ULIBS";;
+       esac;
        # Flag xml for inclusion in bps
        xml_status="include_XML";;
   no)  ULIBS="$ULIBS";
@@ -1306,13 +1315,13 @@ echo " Installing ESP-r system.  This may take some time."
 
  # Attempt to collect URL from svn info
  URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
-   
+
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
- URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn2.cvsdude.com/espr/esp-r/"`
+ URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn[0-9]*.cvsdude.com/espr/esp-r/"`
  URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
 
- if [ "$svnnotfound" != "" ]    || 
+ if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
     [ "$svnrevision"    =  "" ] ;   then
    versioned_repository="no";
@@ -1584,6 +1593,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
     echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
     echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
     echo "*end" >> ${ESPdir}/default
   elif [ ${MCTYPE} = lin ]; then
     echo "*ESP-r Defaults" > ${ESPdir}/default
@@ -1606,6 +1616,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
     echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
     echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
     echo "*end" >> ${ESPdir}/default
   elif [ ${MCTYPE} = cygw ]; then
     echo "*ESP-r Defaults" > ${ESPdir}/default
@@ -1628,6 +1639,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
     echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
     echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
     echo "*end" >> ${ESPdir}/default
   elif [ ${MCTYPE} = osx ]; then
     echo "*ESP-r Defaults" > ${ESPdir}/default
@@ -1650,6 +1662,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
     echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
     echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
     echo "*end" >> ${ESPdir}/default
   elif [ ${MCTYPE} = mingw ]; then
     echo "*ESP-r Defaults" > ${ESPdir}/default
@@ -1672,6 +1685,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
     echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
     echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
     echo "*end" >> ${ESPdir}/default
   fi
   
@@ -1780,7 +1794,6 @@ if [ "$install_training" = "yes" ]; then
      echo "Updating materials and climate databases in training models..."
      echo " "
      cd ${SRCdir}
-     ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materialdb.a cellular_pv.materials
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
      echo " "
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
@@ -1890,7 +1903,7 @@ if [ "$install_dbs" = "yes" ]; then
   # remove existing binary databases
   rm -f ${DESTdir}/esp-r/databases/*
   rm -f ${DESTdir}/esp-r/climate/clm67
-  rm -f ${DESTdir}/esp-r/training/results/test.res
+  rm -f ${DESTdir}/esp-r/databases/test.res
   echo " "
   # Construction databases. Note constr.db1 and constr.db2 are merely subsets
   # of constr.db3. Perhaps they can be merged into a single file?
@@ -2034,11 +2047,17 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
    echo "... Firenze-Peretola - ITA ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/ITA_Firenze-Peretola_IGDG -act asci2bin silent ITA_Firenze-Peretola_IGDG.a
 
+   echo "... Geneva ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHE_Geneva_IWEC -act asci2bin silent CHE_Geneva_IWEC.a
+
+   echo "... Guangzhou China ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHN_Guangzhou -act asci2bin silent CHN_Guangzhou.a
+
    echo "... Hemsby ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_hemsby -act asci2bin silent uk_hemsby_iwec.a
 
-   echo "... Geneva ..."
-   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHE_Geneva_IWEC -act asci2bin silent CHE_Geneva_IWEC.a
+   echo "... Hong Kong ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHN_Hong_Kong_CityUHK -act asci2bin silent CHN_Hong_Kong_CityUHK.a
 
    echo "... Houston ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TX_Houston_iwec -act asci2bin silent USA_TX_Houston_iwec.a
@@ -2097,6 +2116,9 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
    echo "... Porto ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/prt_porto_iwec -act asci2bin silent prt_porto_iwec.a
 
+   echo "... Prague ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CZE_Prague -act asci2bin silent CZE_Prague.a
+
    echo "... Quebec ..."
    $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_PQ_Quebec_CWEC -act asci2bin silent CAN_PQ_Quebec_CWEC.a
 
@@ -2149,17 +2171,12 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
 a
 d
 y
-${DESTdir}/esp-r/climate/clm67
 c
 ${DESTdir}/esp-r/databases/test.res
 11 7
 17 7
-y
 1
-*
-*
-*
-*
+1
 s
 
 example_results

@@ -42,21 +42,21 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
     0 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      3  # No. of periods in day
-    0   19   0.000  # ctl type, law (basic multi-sensor), start @
+    0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 35.000 100.000 1.000 1.000 0.000 0.000 0.000 21.000 100.000
-    0   19   6.000  # ctl type, law (basic multi-sensor), start @
+    0   19   6.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 30.000 100.000 1.000 1.000 0.000 0.000 0.000 21.000 100.000
-    0   19  18.000  # ctl type, law (basic multi-sensor), start @
+    0   19  18.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      3  # No. of periods in day
-    0   19   0.000  # ctl type, law (basic multi-sensor), start @
+    0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
-    0   19   8.000  # ctl type, law (basic multi-sensor), start @
+    0   19   8.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 35.000 100.000 1.000 1.000 0.000 0.000 0.000 21.000 100.000
     0    2  17.000  # ctl type, law (free floating), start @
@@ -64,10 +64,10 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      3  # No. of periods in day
-    0   19   0.000  # ctl type, law (basic multi-sensor), start @
+    0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 28.000 100.000 1.000 1.000 0.000 0.000 0.000 18.000 100.000
-    0   19   8.000  # ctl type, law (basic multi-sensor), start @
+    0   19   8.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   2000.000 0.000 0.000 0.000 35.000 100.000 1.000 1.000 0.000 0.000 0.000 21.000 100.000
     0    2  17.000  # ctl type, law (free floating), start @
@@ -81,35 +81,35 @@ Heat injected in floor zone with high hc coef, controlled via multi-sensor injec
     0 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      3  # No. of periods in day
-    0   19   0.000  # ctl type, law (basic multi-sensor), start @
+    0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
-    0   19   6.000  # ctl type, law (basic multi-sensor), start @
+    0   19   6.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
-    0   19  18.000  # ctl type, law (basic multi-sensor), start @
+    0   19  18.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 18.000 1.000 1.000 0.000 0.000 0.000 0.000 28.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      3  # No. of periods in day
-    0   19   0.000  # ctl type, law (basic multi-sensor), start @
+    0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
-    0   19   6.000  # ctl type, law (basic multi-sensor), start @
+    0   19   6.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
-    0   19  18.000  # ctl type, law (basic multi-sensor), start @
+    0   19  18.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 18.000 1.000 1.000 0.000 0.000 0.000 0.000 28.000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      3  # No. of periods in day
-    0   19   0.000  # ctl type, law (basic multi-sensor), start @
+    0   19   0.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
-    0   19   6.000  # ctl type, law (basic multi-sensor), start @
+    0   19   6.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 16.000 1.000 1.000 0.000 0.000 0.000 0.000 26.000
-    0   19  18.000  # ctl type, law (basic multi-sensor), start @
+    0   19  18.000  # ctl type, law (senses dry bulb temperature in manager_a.), start @
      13.  # No. of data items
   0.000 0.000 2000.000 0.000 0.000 18.000 1.000 1.000 0.000 0.000 0.000 0.000 28.000
 # Function:Zone links

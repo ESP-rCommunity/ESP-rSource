@@ -79,11 +79,11 @@ C Common blocks.
 C--------------------------------------------------------------------------------------------
 C Unit numbers for providing feedback to user during simulation.
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER IUOUT,IUIN
 
 C Trace output.
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
@@ -94,12 +94,12 @@ C Number of components in plant network and control actuation signals.
 
 C Plant component data supplied by user (via plant network file).
       COMMON/PDBDT/ADATA,BDATA
-      REAL	ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
 
 C Connecting node data.
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL CONVAR(MPCON,MCONVR)
+      INTEGER ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
 C Flag to enable inter-domain iteration 
       common / Plt_Elec_Net / bInter_domain_iteration
@@ -889,20 +889,20 @@ C Common blocks.
 C--------------------------------------------------------------------------------------------
 C Unit numbers for providing feedback to user during simulation.
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER IUOUT,IUIN
 
 C Connecting node data.
       COMMON/C10/NPCON,IPC1,IPN1,IPCT,IPC2,IPN2,PCONDR,PCONSD
-      INTEGER	NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
-      INTEGER	IPC2(MPCON),IPN2(MPCON)
-      REAL	PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
+      INTEGER IPC2(MPCON),IPN2(MPCON)
+      REAL PCONDR(MPCON),PCONSD(MPCON,2)
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL CONVAR(MPCON,MCONVR)
+      INTEGER ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
 C Trace output.
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
@@ -913,7 +913,7 @@ C Additional res output from plant domain.
 
 C Simulation time step data.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
 C Plant component pointer.
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
@@ -945,9 +945,9 @@ C Length of time-step in plant domain (s).
 
 C Plant containment data.
       COMMON/PCVAR/PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
-      REAL	PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
-      REAL	PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
-      REAL	PCQP(MPNODE),PCNTMP(MPCOM)
+      REAL PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
+      REAL PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
+      REAL PCQP(MPNODE),PCNTMP(MPCOM)
 
 C Climate data at the present and future time rows.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -4743,37 +4743,37 @@ C Shomate coefficients from NIST web site for N2, O2, Ar, CO2, H2, CH4, and
 C liquid H2O (`liq_H2O').  Coefficients for other gases determined by Brent
 C Griffith (NREL) using procedure outlined above.  Note that "G" coefficients are
 C not required for the calculation of the properties considered by this
-C implementation.
+C implementation. 
 C---------------------------------------------------------------------------------
       DATA ( A(j),j=1,15 ) / 26.092, 29.659, 29.0373, 20.786,
      &                       24.99735, 33.066178, -0.703029,
      &                       -3.03849, -23.1747, -5.24343,
      &                       -34.9431, -46.7786, 14.1952, -8.87256,
      &                       -203.6060 /
-      DATA ( B(j),j=1,15 ) / 8.218801,	6.137261,	10.2573,	2.825911E-7,
-     &                      	55.18696,	-11.363417,	108.4773,
+      DATA ( B(j),j=1,15 ) / 8.218801, 6.137261, 10.2573, 2.825911E-7,
+     &                       55.18696, -11.363417, 108.4773,
      &                       199.202, 363.742, 426.442, 576.777,
      &                       711.187, 97.7218, 282.389, 1523.290 /
-      DATA ( C(j),j=1,15 ) / -1.976141,	-1.186521,	2.81048,
-     &                       -1.464191E-7,	-33.69137,	11.432816,
-     &                     	 -42.52157,
+      DATA ( C(j),j=1,15 ) / -1.976141, -1.186521, 2.81048,
+     &                       -1.464191E-7,-33.69137,11.432816,
+     &                       -42.52157,
      &                       -84.9812, -222.981, -257.955, -338.353,
      &                       -438.39, -9.73279, -178.85, -3196.413 /
-      DATA ( D(j),j=1,15 ) / 0.159274,	0.09578, -0.959141,	1.092131E-8,
-     &                      	7.948387,	-2.772874,	5.862788,
+      DATA ( D(j),j=1,15 ) / 0.159274, 0.09578, -0.959141, 1.092131E-8,
+     &                       7.948387, -2.772874, 5.862788,
      &                       11.0348, 56.253, 66.535, 76.8232,
      &                       103.784, -12.8461, 46.3528, 2474.455 /
-      DATA ( E(j),j=1,15 ) / 0.044434,	-0.219663,	0.117253,
-     &                       -3.661371E-8,	-0.136638,	-0.158558,
-     &                      	0.678565,
+      DATA ( E(j),j=1,15 ) / 0.044434, -0.219663, 0.117253,
+     &                       -3.661371E-8, -0.136638, -0.158558,
+     &                       0.678565,
      &                       0.303476, 0.611637, -0.269941, 1.00948,
      &                       1.23887, 0.158186, 0.483644, 3.855326 /
-      DATA ( F(j),j=1,15 ) / -7.98923,	-9.861391,	-250.569,	-6.19735,
-     &                      	-403.6075,	-9.980797,	-76.84376,
+      DATA ( F(j),j=1,15 ) / -7.98923, -9.861391, -250.569, -6.19735,
+     &                       -403.6075, -9.980797, -76.84376,
      &                       -90.0633, -109.206, -149.365, -155.348,
      &                       -176.813, -209.037, -241.239, -256.5478 /
-      DATA ( H(j),j=1,15 ) / 0.,	0.,	-241.826,	0.,	-393.5224,
-     &                      	0.,	-74.8731,
+      DATA ( H(j),j=1,15 ) / 0., 0., -241.826, 0., -393.5224,
+     &                       0., -74.8731,
      &                       -83.8605, -103.855, -133.218, -146.348,
      &                       -166.966, -201.102, -234.441, -285.8304 /
 

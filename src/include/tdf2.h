@@ -10,16 +10,16 @@ C Maximum number of help lines associated with a generic item.
       PARAMETER (MHEL=5)
 
 C Maximum number of non-static bits in a generic item period data set.
-      PARAMETER (MBITS=9)
+      PARAMETER (MBITS=18)
 
 C Maximum number of text fields.
-      PARAMETER (MGAT=8)
+      PARAMETER (MGAT=12)
 
 C Maximum number of real fields.
-      PARAMETER (MGAR=12)
+      PARAMETER (MGAR=18)
 
 C Maximum number of integer fields.
-      PARAMETER (MGAI=8)
+      PARAMETER (MGAI=12)
 
 C Maximum number of text alternatives in a text field.
       PARAMETER (MALT=6)

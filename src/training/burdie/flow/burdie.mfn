@@ -23,11 +23,11 @@
     1.00000   0.800000    1.80000    1.50000   0.900000
  win     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
     1.00000    1.00000E-03    1.00000
- stair    40  3  0 Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  
+ stair    40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
     1.00000    2.00000   0.950000
- duct    40  3  0 Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  
+ duct     40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
     1.00000    0.050000   0.950000
- win2    40  3  0 Common orifice vol. flow rate comp. m = rho.f(Cd,A,rho,dP)  
+ win2     40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
     1.00000    0.400000   0.650000
  fan      30  2  0 Constant vol. flow rate component   m = rho.a               
     1.00000    5.40000E-03

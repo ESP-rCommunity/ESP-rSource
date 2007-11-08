@@ -26,6 +26,7 @@ C << This would be a great place to add in functions to edit and
 C << maintain the .esprc file and the defaults file!
 
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
+#include "building.h"
 
       integer igraphiclib  ! external definition
 
@@ -40,9 +41,17 @@ C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
       logical OK,DOK,MODSIT,browse,defview,unixok
       logical closea,closeb,closec,closed
-      dimension ITEMS1(10)
+      dimension ITEMS1(11)
       character LFIL*96,H*72,longtfile*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
@@ -100,9 +109,43 @@ C Display of time of day.
       ELSEIF(ITRC.EQ.2)THEN
         ITEMS1(7)='h feedback >> detailed                        '
       ENDIF
-      ITEMS1(8)  ='? help                                        '
-      ITEMS1(9)  ='- exit this menu                              '
-      CALL EMENU('Tool preferences',ITEMS1,9,INO1)
+      if(igupgrade.eq.0)then
+        ITEMS1(8)='i upgrade files >> no change                  '
+      elseif(igupgrade.eq.1)then
+        ITEMS1(8)='i upgrade files >> save legacy format         '
+      elseif(igupgrade.eq.2)then
+        ITEMS1(8)='i upgrade files >> save current format        '
+      endif
+      ITEMS1(9)  ='* test button (silent zone creation)          '
+      ITEMS1(10) ='? help                                        '
+      ITEMS1(11) ='- exit this menu                              '
+
+C Help text for menu.
+      H(1)='This menu allows the display format for dates and'
+      H(2)='times to be changed.  The active year can also be'
+      H(3)='defined as required by controllers that require day'
+      H(4)='of the week information.'
+      H(5)=' '
+      H(6)='One option lists a specified ASCII file - sometimes'
+      H(7)='useful if you have need to directly view the contents'
+      H(8)='of a problem describing entity such as the system'
+      H(9)='configuration file or a zone geometry file.'
+      H(10)=' '
+      H(11)='The wireframe view option allows you to set a different'
+      H(12)='initial wireframe view.'
+      H(13)=' '
+      H(14)='The external editor is currently defined to be:'
+      write(H(15),'(3a)')'      ',teditor(:lnblnk(teditor)),'.'
+      H(16)='This can be re-defined in your .esprc file.'
+      H(17)=' '
+      H(18)='The feedback level allows you to see more or less'
+      H(19)='information as model files are being scanned. '
+      H(20)=' '
+      H(21)='As ESP-r evolves file formats change. Use the toggle'
+      H(22)='to maintain the current state, save to an eariler '
+      H(23)='format or save files to a newer format (if available).'
+
+      CALL EMENU('Tool preferences',ITEMS1,11,INO1)
       IF(INO1.EQ.1)THEN
 
 C Wire frame view point.
@@ -247,27 +290,53 @@ C Toggle trace/feedback level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
       ELSEIF(INO1.EQ.8)THEN
-        H(1)='This menu allows the display format for dates and'
-        H(2)='times to be changed.  The active year can also be'
-        H(3)='defined as required by controllers that require day'
-        H(4)='of the week information.'
-        H(5)=' '
-        H(6)='One option lists a specified ASCII file - sometimes'
-        H(7)='useful if you have need to directly view the contents'
-        H(8)='of a problem describing entity such as the system'
-        H(9)='configuration file or a zone geometry file.  '
-        H(10)=' '
-        H(11)='The wireframe view option allows you to set a different'
-        H(12)='initial wireframe view.'
-        H(13)=' '
-        H(14)='The external editor is currently defined to be:'
-        write(H(15),'(3a)')'      ',teditor(:lnblnk(teditor)),'.'
-        H(16)='This can be re-defined in your .esprc file.'
-        H(17)=' '
-        H(18)='The feedback level allows you to see more or less '
-        H(19)='information as model files are being scanned. '
-        CALL PHELPD('geneeral preferences',19,'-',0,0,IER)
+
+C Toggle file format upgrade opinion.
+        igupgrade=igupgrade+1
+        IF(igupgrade.GT.2)ITRC=0
+        if(igupgrade.eq.2)then
+          h(1)='If you want to scan in all of the model geometry files'
+          h(2)='and save them out to the new format without having to'
+          h(3)='edit each one this is the place.'
+          CALL EASKABC('Geometric upgrade options',' :',
+     &      'scan & update all zones','tell me what is out of date',
+     &      'cancel',IUW,3)
+          if(iuw.eq.1)then
+            call mupdate(ier)
+          elseif(iuw.eq.2)then
+            call usrmsg('this function to be written','...','W')
+          endif
+        endif
       ELSEIF(INO1.EQ.9)THEN
+
+C Test button for silent zone read testing.
+
+C Allow user to edit a file.  Use file browser if in GTK mode.
+C If vi then spawn a new window to do the editing in.
+        LFIL=' '
+        H(1)='An ASCII format file can be edited using the current'
+        H(2)='defined text editor.'
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LFIL,'Silent zone file name?',
+     &      ' ',96,'xxx.txt','ASCII file',IER,2)
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtfile,'Silent zone file name?',
+     &      ' ',144,'xxx.txt','ASCII file',IER,2)
+        else
+          CALL EASKF(LFIL,'Silent zone file name?',
+     &      ' ',96,'xxx.txt','ASCII file',IER,2)
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+        endif
+        IUNIT=IFIL+1
+        call silentread(iunit,longtfile,ier)
+        return
+      ELSEIF(INO1.EQ.10)THEN
+
+C User asked for help.
+        CALL PHELPD('general preferences',23,'-',0,0,IER)
+      ELSEIF(INO1.EQ.11)THEN
         RETURN
       else
         goto 33

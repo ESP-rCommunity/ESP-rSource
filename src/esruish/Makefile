@@ -1,6 +1,9 @@
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
+MFSdir = $(SRCdir)/esrumfs
+MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
+TDFdir = $(SRCdir)/esrutdf
 PROG = ish$(EXE)
 
 .SUFFIXES: .o .F
@@ -8,8 +11,10 @@ PROG = ish$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o comput.o cread3dv.o ctlexp.o \
-	  dossupport.o e3dviews.o edatabase.o egeometry.o eroper.o esru_misc.o \
-	  files.o graph.o inscom.o miscel.o plelev.o scsys.o shdcon.o silist.o \
+	  ctread.o dossupport.o e3dviews.o econstr.o edatabase.o edcondb.o egeometry.o \
+	  emfnetw.o enetmisc.o eroper.o esru_misc.o esystem.o files.o graph.o inscom.o \
+	  item.o mfcdat.o miscel.o nwkrewr.o plelev.o pltcfg.o \
+	  readTrnsys.o shdcon.o silist.o \
 	  sort.o startup.o synop.o tfiles.o trnsf.o trnsfi.o winshd.o wshad.o
 
 $(PROG): $(OBJECTS)
@@ -33,36 +38,69 @@ cread3dv.F:
 ctlexp.F:
 	rm -f ctlexp.F
 	ln -s $(COMdir)/ctlexp.F .
+ctread.F:
+	rm -f ctread.F
+	ln -s $(COMdir)/ctread.F .
 dossupport.F:
 	rm -f dossupport.F
 	ln -s $(COMdir)/dossupport.F .
+econstr.F:
+	rm -f econstr.F
+	ln -s $(COMdir)/econstr.F .
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F .
+edcondb.F:
+	rm -f edcondb.F
+	ln -s $(PRJdir)/edcondb.F .
 egeometry.F:
 	rm -f egeometry.F
 	ln -s $(COMdir)/egeometry.F .
+emfnetw.F:
+	rm -f emfnetw.F
+	ln -s $(COMdir)/emfnetw.F .
+enetmisc.F:
+	rm -f enetmisc.F
+	ln -s $(COMdir)/enetmisc.F .
 eroper.F:
 	rm -f eroper.F
 	ln -s $(COMdir)/eroper.F .
 esru_misc.F:
 	rm -f esru_misc.F
 	ln -s $(COMdir)/esru_misc.F .
+esystem.F:
+	rm -f esystem.F
+	ln -s $(COMdir)/esystem.F .
+item.F:
+	rm -f item.F
+	ln -s $(TDFdir)/item.F .
+mfcdat.F:
+	rm -f mfcdat.F
+	ln -s $(MFSdir)/mfcdat.F .
+nwkrewr.F:
+	rm -f nwkrewr.F
+	ln -s $(COMdir)/nwkrewr.F .
 plelev.F:
 	rm -f plelev.F
 	ln -s $(COMdir)/plelev.F .
-scsys.F:
-	rm -f scsys.F
-	ln -s $(COMdir)/scsys.F .
+pltcfg.F:
+	rm -f pltcfg.F
+	ln -s $(COMdir)/pltcfg.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
+tdfile.F:
+	rm -f tdfile.F
+	ln -s $(TDFdir)/tdfile.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -72,6 +110,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F dossupport.F \
-	e3dviews.F edatabase.F egeometry.F esru_misc.F \
-	eroper.F plelev.F scsys.F sort.F startup.F 
+	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
+	e3dviews.F econstr.F edcondb.F edatabase.F egeometry.F emfnetw.F enetmisc.F \
+	enetrewr.F esru_misc.F esystem.F eroper.F item.F mfcdat.F nwkrewr.F \
+	plelev.F  readTrnsys.F sort.F startup.F tdfile.F pltcfg.F 

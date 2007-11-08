@@ -16,12 +16,12 @@ PROG = prj$(EXE)
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
 OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
-	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfgmsc.o cfgrid.o cgd.o \
+	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o context.o ctlexp.o ctlwrt.o ctprob.o \
 	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \
 	  e3dviews.o ecasctl.o econstr.o econtrol.o edatabase.o edcasctl.o \
 	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o edmrt.o \
-	  edobs.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
+	  edobs.o edonecon.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
 	  egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
 	  eroper.o esru_misc.o esystem.o exlgrad.o filelist.o folders.o \
 	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o \
@@ -29,7 +29,8 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o sendd.o \
-	  sendflt.o senrwl.o sensa.o setup.o sort.o spmisc.o stndrds.o startup.o tdfile.o 
+	  sendflt.o senrwl.o sensa.o setup.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
+	  readTrnsys.o
 	   
 
 $(PROG): $(OBJECTS)
@@ -210,6 +211,9 @@ DHW_module.F:
 ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
+readTrnsys.F:
+	rm -f readTrnsys.F
+	ln -s $(COMdir)/readTrnsys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -226,7 +230,7 @@ clean:
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
-	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F
+	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
 
 
 

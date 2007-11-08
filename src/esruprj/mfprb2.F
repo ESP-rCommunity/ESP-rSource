@@ -43,6 +43,7 @@ C     MF310I
 C     MF410I
 C     MF420I
 C     MF460I
+C     MF500I
 
 C ****************** MF010I 
 C Fluid flow component supplementary data input for
@@ -1923,5 +1924,78 @@ C Flow rate when S <  Ssp (m^3/s).
       SUPCMP(ICMP,2)=VAL2
       SUPCMP(ICMP,3)=VAL3
 
+      RETURN
+      END
+
+C ******************* MF500I 
+C Fluid flow component supplementary data input or check for
+C fixed flow rates controller. See synopsis for SUPCMP data.
+      SUBROUTINE MF500I(ICMP,IER)
+#include "net_flow.h"
+      common/pophelp/h(60)
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      COMMON/MFLOWIT/fndegc,imix 
+      CHARACTER LTPCMP*60,CMNAM*12,H*72,prompt*48
+      PARAMETER (MCCN=3)
+
+C Set number of supplementary data items
+      IER=0
+      ISDCMP(ICMP)=6
+      ISDCNN(ICMP)=0
+
+C Synopsis of flow component.
+      WRITE(H(1),'(A)') LTPCMP(ICMP)
+      H(2) ='Type 500 is a multiple configuration flow component.'
+      H(3) ='It assumes the properties of three PREVIOUSLY DEFINED'
+      H(4) ='components depending upon control action at simulation'
+      H(5) ='run time. For example it can assume the action of a '
+      H(6) ='window opening at control action 1, a smaller window'
+      H(7) ='opening at control action 2 and a crack at control '
+      H(8) ='action 3. Thereby removing the need for three different'
+      H(9) ='connections and corresponding control loops'
+      H(10)=' '
+      H(11)='Supplemental data:  '
+      H(12)=' (1) fluid type (air|water),'
+      H(13)=' (2) component number one'
+      H(14)=' (3) control action setting for component one'
+      H(15)=' (4) component number two'
+      H(16)=' (5) control action setting for component two'
+      H(17)=' (6) component number three'
+      H(19)=' Component one is active above control action 1'
+      H(20)=' Component two is active between control action 1 and 2'
+      H(21)=' Component three is active below control action 2'
+
+C Input fluid type.
+      if(imix.eq.1)then
+        SUPCMP(ICMP,1)=1.0
+      elseif(imix.eq.2)then
+        SUPCMP(ICMP,1)=2.0
+      else
+        write(prompt,'(3a)') 'Fluid through ',CMNAM(ICMP),':'
+        CALL EASKAB(prompt,'(help for synopsis)','air','water',IW,21)
+        SUPCMP(ICMP,1)=REAL(IW)
+      endif
+
+C Ask component and control action, currently three components are
+C supported. To increase this number modify MCCN
+      DO 500 II=1,MCCN
+        call ASKRCMP('select component','-',ICOMPN,IER)
+        WRITE(H(1),'(A)') LTPCMP(ICMP)
+
+C First reset help message the first 5 array elements of which are 
+C overwritten by ASKRCMP
+        H(2) ='Type 500 is a multiple configuration flow component.'
+        H(3) ='It assumes the properties of three PREVIOUSLY DEFINED'
+        H(4) ='components depending upon control action at simulation'
+        H(5) ='run time. For example it can assume the action of a '
+        SUPCMP(ICMP,2*II)=ICOMPN
+        IF(II.NE.MCCN)THEN
+          CALL EASKR(VAL,'Enter control action for this component',
+     &    ' ',0.,'W',0.,'-',1.,'flow in comp',IER,21)
+          SUPCMP(ICMP,2*II+1)=VAL
+        ENDIF
+ 500  CONTINUE
       RETURN
       END

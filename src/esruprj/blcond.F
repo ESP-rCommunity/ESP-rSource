@@ -44,12 +44,15 @@ C ********************************************************************
       COMMON/HELP/IHELPM
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
 
-      CHARACTER SNAME*12,SOTF*4,SMLCN*12,SVFC*4,SOTHER*15
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER ITEM(9)*29,DPNDC*20
       CHARACTER H*72,TEXT*50,MSGSET*70
 
@@ -155,13 +158,13 @@ C Reset all layers to CONSTANT without warning messages.
 
 C List the thermal conductivity of the layers.
       ELSEIF(INO.EQ.(NITEM-2))THEN
-        CALL EPAGE
         MSGSET=' Surface Name   Layer Number      Dependence Type'
         CALL EDISP(IUOUT,MSGSET)
         MSGSET=' -------------------------------------------------'
         CALL EDISP(IUOUT,MSGSET)
         CALL EDISP(IUOUT,'  ')
-        DO 20 I=1,NSUR
+        DO 20 I=1,NZSUR(icomp)
+          ioc=IZSTOCN(icomp,i)
           NGP=NAIRG(I)
           M=1
           DO 30 J=1,NE(I)
@@ -183,7 +186,7 @@ C List the thermal conductivity of the layers.
               DPNDC='Constant        '
             ENDIF 
             WRITE(MSGSET,'(1X,2A,I2,2A)')
-     &          SNAME(ICOMP,I),' ----- ',J,' ---------- ',DPNDC
+     &          SSNAME(ioc),' ----- ',J,' ---------- ',DPNDC
             CALL EDISP(IUOUT,MSGSET)
    30     CONTINUE
    20   CONTINUE
@@ -259,14 +262,14 @@ C ****************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
       CHARACTER OUTS*124
 
       ICNT=0
       ICNTM=3
-      DO 10 I=1,NSUR
+      DO 10 I=1,NZSUR(icomp)
         NGP=NAIRG(I)
         M=1
         DO 20 J=1,NE(I)
@@ -317,20 +320,25 @@ C ******************************************************************
 #include "building.h"
 
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       DIMENSION IVALS(MS)
 
-      CHARACTER SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       CHARACTER*20 ITEM(MS)
       CHARACTER TEXT*50,H*72
 
-      DO 10 I=1,NSUR
-        WRITE(ITEM(I),'(A)')SNAME(ICOMP,I)
+      DO 10 I=1,NZSUR(icomp)
+        ioc=IZSTOCN(icomp,i)
+        WRITE(ITEM(I),'(A)')SSNAME(ioc)
    10 CONTINUE
       H(1)=' Select the surfaces for which the conductivity is'
       H(2)=TEXT
-      CALL EPICKS(INPICK,IVALS,' ',' ',20,NSUR,ITEM,'Surfaces',IER,2)
+      CALL EPICKS(INPICK,IVALS,' ',' ',20,NZSUR(icomp),ITEM,
+     &  'Surfaces',IER,2)
       RETURN
       END
 
@@ -342,7 +350,7 @@ C ****************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
       DIMENSION IVALS(MS)
@@ -350,7 +358,7 @@ C ****************************************************************
 
       ICNT=0
       ICNTM=3
-      INPICK2=NSUR
+      INPICK2=NZSUR(icomp)
       CALL SURFMN(ICOMP,TEXT,INPICK2,IVALS)
       IF(INPICK2.EQ.0)RETURN
       DO 10 IN=1,INPICK2
@@ -470,16 +478,23 @@ C *********************************************************************
       SUBROUTINE WRTLYR(ICOMP,ICNST,ILYR,NAMELYR)
 #include "building.h"
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       CHARACTER NAMELYR*124,zdesc*64
-      CHARACTER zname*12,SOTHER*15,SNAME*12,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER zname*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      integer lnsn
+
+      ioc=IZSTOCN(icomp,icnst)
+      lnsn=lnblnk(ssname(ioc))
 
       WRITE(NAMELYR,'(5A,I2,A)') ' WARNING The layer ( ',
-     &zname(ICOMP)(1:lnblnk(zname(ICOMP))),', ',
-     &SNAME(ICOMP,ICNST)(1:lnblnk(SNAME(ICOMP,ICNST))),', ',ILYR,
-     &') is already defined.'
+     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),', ',
+     &  SSNAME(ioc)(1:lnsn),', ',ILYR,') is already defined.'
       RETURN
       END
 
@@ -562,8 +577,8 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
@@ -591,7 +606,7 @@ C Check if a partition is defined similarly from both sides
 C Check if the thermal conductivity of a layer is defined to be 
 C variable but no dependence factor is available in the construction 
 C file(s) 
-      DO 40 I=1,NSUR
+      DO 40 I=1,NZSUR(icomp)
         DO 50 J=1,NE(I)
           IF((IVKON(ICOMP,I,J).EQ.1.OR.IVKON(ICOMP,I,J).EQ.3).AND.
      &      ABS(THRMLI(ICOMP,I,J,6)).LT.1.E-12)THEN

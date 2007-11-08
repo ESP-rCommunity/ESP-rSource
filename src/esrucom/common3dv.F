@@ -779,6 +779,10 @@ C whether information about the zones is displayed or not.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -790,6 +794,7 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       LOGICAL  CFGOK,OK,dok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
@@ -799,6 +804,7 @@ C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
 
       IER=0
       IUF=IFIL+1
+      newgeo=.false.  ! assume older format geometry.
 
 C Write to previously opened viewer file.
 
@@ -830,7 +836,12 @@ C Pass ICOMP in as a positive so that 'ALL' is included in list.
       IF(INPIC.EQ.0)GOTO 105
       DO 83 IZ=1,INPIC
         IF(IVALS(IZ).GT.0)THEN
-          CALL EGOMIN(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
+          call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
+          else
+            call egomin(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
+          endif
           IF(IER.NE.0)THEN
             dok=.false.
             h(1)='While scanning the model`s zone geometry a problem'

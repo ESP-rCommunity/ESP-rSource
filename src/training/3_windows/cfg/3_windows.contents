@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Three offices with different window
-representations. defined in 3_windows.cfg generated on Wed Jun 20 11:03:01
-2007. Notes associated with the model are in 3_windows.log
+representations (no network). defined in 3_windows.cfg generated on Thu Aug 23
+17:52:01 2007. Notes associated with the model are in 3_windows.log
  
 The model is located at latitude   55.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
@@ -28,7 +28,52 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  hot water: 190.00   0.30   0.20
  
 An Integrated Performance View has been defined:
-And the IPV file was incomplete or missing.
+The climatelist was incomplete or missing so the
+IPV details might be incorrect.
+Title : Test model for window air flow
+Version   : base case
+synopsis:
+Test model for window air flow network options
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 5)____________days descrip___
+1st win Mon-06-Feb to Sun-12-Feb   7 3_windows 1st winter run
+spring  Mon-17-Apr to Sun-23-Apr   7 3_windows spring run
+summer  Mon-03-Jul to Sun-09-Jul   7 3_windows summer run
+autumn  Mon-02-Oct to Sun-08-Oct   7 3_windows autumn run
+2nd win Mon-20-Nov to Sun-26-Nov   7 3_windows 2nd winter run
+ 
+display day Wed-11-Jan.
+display day Wed-08-Mar.
+display day Wed-05-Jul.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
+  finish 00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
+  days      1        1       1       1       1
+ 
+ Ratios for:  winter spring summer autumn winter
+ heating       8.86   8.83  23.47   8.42   8.94
+ cooling       1.00   1.00  15.68   1.00   1.00
+ lighting     10.00   9.00  16.00   8.00   9.00
+ small power  10.00   9.00  16.00   8.00   9.00
+ fans&pumps   10.00   9.00  16.00   8.00   9.00
+ DHW          10.00   9.00  16.00   8.00   9.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Zone db T (degC)    3   40.50 1.000 1.000 ZndbT dbt_zones
+Zones: manager manager_t_b manager_bi
+ 2 Infiltration (W)    3   40.50 1.000 1.000 Infil infil_zones
+Zones: manager manager_t_b manager_bi
+ 3 Ventilation (W)    3   40.50 1.000 1.000 Vent vent_zones
+Zones: manager manager_t_b manager_bi
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 managers       3   40.50 1.000
+Zones: manager manager_t_b manager_bi
+ 
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
@@ -110,21 +155,23 @@ ID Zone         Volume|          Surface
  
  A summary of the surfaces in manager( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.70    180.   0. spandral     OPAQ VERT insul_frame  ||< external
-  8  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
-  9  5.32    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 10  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
@@ -170,23 +217,25 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  
  A summary of the surfaces in manager_t_b( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.70    180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
-  9  3.64    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 10  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
- 11  0.840   180.   0. low_glz      TRAN VERT dbl_glz      ||< external
- 12  0.840   180.   0. high_glz     TRAN VERT dbl_glz      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  3.64    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 11  0.840   180.   0. low_glz      DCF7671_ VERT -     dbl_glz      ||< external
+ 12  0.840   180.   0. high_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Uses same operations as zone manager
@@ -203,22 +252,24 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  
  A summary of the surfaces in manager_bi( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.70    180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
-  9  3.64    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 10  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
- 11  1.68    180.   0. bi-glaz      TRAN VERT dbl_glz      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  3.64    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 11  1.68    180.   0. bi-glaz      DCF7671_ VERT -     dbl_glz      ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  Uses same operations as zone manager

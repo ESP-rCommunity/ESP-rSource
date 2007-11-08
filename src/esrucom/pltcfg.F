@@ -191,6 +191,8 @@ C CEDATE required when reading plant data base record
 C containing NMISC.
       CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20
 
+      INTEGER   id_trnsysCMP  !trnsys component number
+
       call usrmsg(' ','Reading plant network description...','P')
 
 C Identify plant components database; skip if this is '* Plant' record.
@@ -493,13 +495,31 @@ C Now check connectivity information where possible
         do 46 ipcon=1,npcon
          if(ipc1(ipcon).lt.1.or.ipc1(ipcon).gt.npcomp) goto 913
          irec=npcdat(ipc1(ipcon),2)
+
+C     The receiving node number is not checked for trnsys type
+C     because the number in the plant database is a dummy value and the
+C     trnsys input file has not been read yet.
+C     The skip of this check will not cause any problem because the same
+C     check is performed in MZPMXT.
+         IF(NPREF(ipc1(ipcon)) .NE. 85) THEN
          read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,nnodes
          if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.nnodes) goto 914
+         END IF
+
          if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.4) goto 913
          if(ipc2(ipcon).lt.1.or.ipc2(ipcon).gt.npcomp) goto 913
          irec=npcdat(ipc2(ipcon),2)
+
+C     The sending node number is not checked for trnsys type
+C     because the number in the plant database is a dummy value and the
+C     trnsys input file has not been read yet.
+C     The skip of this check will not cause any problem because the same
+C     check is performed in MZPMXT.
+         IF(NPREF(ipc2(ipcon)) .NE. 85) THEN
          read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,nnodes
          if(ipn2(ipcon).lt.1.or.ipn2(ipcon).gt.nnodes) goto 914
+         END IF
+
          if(pcondr(ipcon).lt.0..or.pcondr(ipcon).gt.1.) goto 925
          if(ipct(ipcon).eq.4) then
           if(pconsd(ipcon,1).lt.0.or.
@@ -544,11 +564,21 @@ C Reporting.
             call eclose(CNTDAT(ICONT,1),0.0,0.0001,close)
             IF(close) THEN
               IREC=NPCDAT(IPCC(ICONT),2)
+              id_trnsysCMP = NPCDAT(IPCC(ICONT),1)
             ELSE
               IREC=NPCDAT(NINT(CNTDAT(ICONT,1)),2)
+              id_trnsysCMP = NPCDAT(NINT(CNTDAT(ICONT,1)),1)
             ENDIF
+            IF(NPREF(id_trnsysCMP) .EQ. 85) THEN
+C  Since a trnsys component has dummy values in the plant database,
+C  its number of nodes needs to be read from an data file.
+C  Another method is to purposely set a large number (ie., MNODEC)
+C  in the database. In this case, reading file can be avoided here.
+            CALL readTrnsysNodes(id_trnsysCMP,NNODES)
+            ELSE
             READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
      &           NNODES
+            END IF
             if(cntdat(icont,1).lt.0.0.or.cntdat(icont,1).gt.
      &            float(npcomp).or.cntdat(icont,2).lt.0.0.or.
      &            cntdat(icont,2).gt.float(nnodes)) goto 916
@@ -716,7 +746,7 @@ C Error handling
 
  1003 CALL USRMSG(' Error reading electrical data', OUTSTR,'W')
       GOTO 900
-        end      
+      end      
 
 C ************************* findpc *********************
 C This subroutine finds component index by searching 
@@ -735,3 +765,5 @@ C through pcname(?) until a match is found.
    10 continue
    20 return
       end
+
+

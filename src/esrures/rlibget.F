@@ -1472,7 +1472,7 @@ C for items in save levels 1 - 4.
 C Given IDAY, IZONE returns days values in the common array GVAL.
 C IRJ is record to jump to (passed by higher level).
 C ICJ is column to jump to (passed by higher level).
-C CALLS: MOREC1 MOREC2
+C ISET is the results set number to be scanned.
 
       SUBROUTINE GFIXED(IDAY,IZONE,ISET,IRJ,ICJ)
 #include "building.h"
@@ -1490,19 +1490,23 @@ C CALLS: MOREC1 MOREC2
 
 C Get data only if save is level 1 - 4.
       IF(ISAVE.GE.1.AND.ISAVE.LE.4)THEN
-        N=24*NTS
-        DO 20 I=1,N
-          GVAL(I)=0.
+        if(iset.gt.0)then
+          N=24*NTS
+          DO 20 I=1,N
+            GVAL(I)=0.
 
 C Return the record number using hash.
 
-          IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+IHASHS(ISET)+IRJ
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(XD(K),K=1,ICJ)
-          GVAL(I)=XD(ICJ)
-   20   CONTINUE
-C        write(6,*) iset,izone,irj,icj,irec,(GVAL(I),i=1,12)
+            IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+IHASHS(ISET)+IRJ
+            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(XD(K),K=1,ICJ)
+            GVAL(I)=XD(ICJ)
+   20     CONTINUE
+C         write(6,*) iset,izone,irj,icj,irec,(GVAL(I),i=1,12)
+        else
+          call edisp(iuout,'GFIXED: results set number is zero. Skip.')
+        endif
       ELSE
-         call edisp(iuout,' GFIXED: Save option does not allow access.')
+        call edisp(iuout,'GFIXED: Save option does not allow access.')
       ENDIF
 
     8 RETURN

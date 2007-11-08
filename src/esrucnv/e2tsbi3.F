@@ -37,8 +37,14 @@ C ******* Translate esp data to tsbi3 file geom and materials.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
@@ -69,16 +75,19 @@ C Arrays of material properties.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       dimension iprndx(50),optndx(50)
       character optndx*12,OPT*12,ZSN*28,q*1,zname*12,zdesc*64,T12*12
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION ZSN(MS)
-      character CTYPE*12
+      character CONTYPE*12
       logical found
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Setup standard assumptions.
       IFIL=11
+      newgeo=.false.  ! assume older format geometry.
 
 C Assume configuration file is from IFIL+5, any leakage description
 C is fom IFIL+6, revised config file on IFIL+3, geometry on
@@ -205,15 +214,15 @@ C Now for each mlc, write out its fields.
       WRITE(ioout,'(a)') ' '
 
       do 36 ino = 1,NMLC
-        WRITE(CTYPE,'(A)') DESC(ino)(15:18)
-        IF(CTYPE.EQ.' ')CTYPE='OPAQ'
-        IF(CTYPE.EQ.'TRAN')THEN
-           WRITE(CTYPE,'(A)') DESC(ino)(21:32)
+        WRITE(CONTYPE,'(A)') DESC(ino)(15:18)
+        IF(CONTYPE.EQ.' ')CONTYPE='OPAQ'
+        IF(CONTYPE.EQ.'TRAN')THEN
+           WRITE(CONTYPE,'(A)') DESC(ino)(21:32)
         ELSE
-           CTYPE='OPAQ'
+           CONTYPE='OPAQ'
         ENDIF
 
-        IF(CTYPE.eq.'OPAQ')THEN
+        IF(CONTYPE.eq.'OPAQ')THEN
           WRITE(T12,'(A)')DESC(ino)(1:12)
           WRITE(ioout,'(3a)') q,T12(1:lnblnk(T12)),q
 
@@ -282,7 +291,12 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
-        CALL EGOMIN(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        call eclose(gversion(mz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        endif
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
@@ -539,7 +553,12 @@ C Now look at the zone section.
 C RE-Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
-        CALL EGOMIN(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        call eclose(gversion(mz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        endif
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
@@ -712,9 +731,15 @@ C creates a grey-scale VRML 2.0 world.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -757,15 +782,18 @@ C Arrays of material properties.
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
       CHARACTER cfgroot*24,LCFGF*72
       CHARACTER NAM*72,TITL*72,DESC*48,BLKNAME*8,BLKMAT*12
-      CHARACTER SNAME*12,SMLCN*12,SVFC*4,SOTF*4,SOTHER*15
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       CHARACTER GMLCN*12,GSNAME*6
       character ZSN*28,q*1,zname*12,zdesc*64
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
       logical XST,numb
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Setup standard assumptions.
       IFIL=11
+      newgeo=.false.  ! assume older format geometry.
 
 C Ftr is cut-off point for deciding visual trans is high enough
 C for surface to be considered fictitious.
@@ -890,7 +918,12 @@ C For each zone in the model create an anchor.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
-        CALL EGOMIN(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+        call eclose(gversion(newfoc),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+        endif
         CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
         WRITE(ioout,'(a)')' '
         WRITE(ioout,'(3a)')'# zone ',zname(newfoc),' starts here....'
@@ -962,7 +995,7 @@ C Write entry for this surface in the HTML file.
      &       ' name         |other side ')
  894      FORMAT(I3,F9.3,F5.0,F5.0,1X,A12,1X,A4,1X,A4,1X,A12,2X,A13)
           WRITE(ioblk,894)J,SNA(j),PAZI(j),PELV(j),
-     &        SNAME(newfoc,j),SOTF(j),SVFC(j),SMLCN(j),SOTHER(j)
+     &        SNAME(newfoc,j),SOTF(j),SVFC(j),SMLCN(j),SOTHER(j,1)
           write(ioblk,'(a)')  '</PRE>'
           write(ioblk,'(a)')  ' '
 

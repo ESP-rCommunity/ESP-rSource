@@ -37,6 +37,11 @@ C Revised to take in configuration file and zone focus.
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
@@ -86,7 +91,7 @@ C Where default db list are kept.
       common/defdb/dfdblbl,defdbfl
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -109,6 +114,7 @@ C Name of current application
 
       integer fstgrp,fstsur,lstsur,strtgr
       logical browse
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
@@ -119,7 +125,7 @@ C Name of current application
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character path*72,upath*72,esprc*72,cfgroot*24,zdesc*64
       character dfdblbl*20,defdbfl*72,journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
@@ -189,6 +195,7 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
       ITFS=0
       IMFS=1
       ATR=.TRUE.
+      newgeo=.false.  ! assume older format geometry.
       ZN='UNKNOWN'
       LCFGF='UNKNOWN'
       ICOMP=-1
@@ -745,7 +752,12 @@ C Process a zone....
 C On entry refresh geometry, determine its bounds, force it
 C drawn and remember number of surfaces to pass to sensor file.
       ICOMP=IC
-      CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      else
+        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+      endif
 
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.

@@ -147,7 +147,7 @@ void updmenu_(items,itypes,nitmsptr,iw,len_items)
                      nulls between strings in array, it just looks like one long string) */
     }
     pm_list[i][len_items] = '\0';	/* write terminator  */
-/* debug */ fprintf(stderr,"pm_list %s %d %d %d %d\n",pm_list[i],i,k,pm_width,len_items); /* */
+/* debug  fprintf(stderr,"pm_list %s %d %d %d %d\n",pm_list[i],i,k,pm_width,len_items);  */
   }
   return;
 }
@@ -255,7 +255,7 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    fopt_local = g_strndup(fopt, (gsize) fopt_l);
    f_to_c_l(gopt,&gopt_len,&gopt_l);
    gopt_local = g_strndup(gopt, (gsize) gopt_l);
-/* debug */ fprintf(stderr,"non-blank lengths are %d %d %d %d %d %d %d\n",aopt_l,bopt_l,copt_l,dopt_l,eopt_l,fopt_l,gopt_l);
+/* debug fprintf(stderr,"non-blank lengths are %d %d %d %d %d %d %d\n",aopt_l,bopt_l,copt_l,dopt_l,eopt_l,fopt_l,gopt_l); */
 
    /* Set ok response, but if *ipick is zero reset to one. */
    abc_pick = (gint) *ipick;
@@ -359,18 +359,18 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    switch (result)
       {
        case GTK_RESPONSE_OK:
-          fprintf(stderr,"Goodbye - %d %d was selected\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d was selected\n", abc_pick,result); debug */
           *ipick = (long int) abc_pick;
           break;
        case GTK_RESPONSE_CANCEL:
-          fprintf(stderr,"Goodbye - %d %d was original choice\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d was original choice\n", abc_pick,result); debug */
           break;
        case GTK_RESPONSE_HELP:
-          fprintf(stderr,"Goodbye - %d %d help was requested\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d help was requested\n", abc_pick,result); debug */
           *ipick = -8;
           break;
        default:
-          fprintf(stderr,"Goodbye - %d %d fell to default response\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d fell to default response\n", abc_pick,result); debug */
           *ipick = -1;
           break;
       }
@@ -432,8 +432,8 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    kopt_local = g_strndup(kopt, (gsize) kopt_l);
    f_to_c_l(lopt,&lopt_len,&lopt_l);
    lopt_local = g_strndup(lopt, (gsize) lopt_l);
-/* debug */ fprintf(stderr,"non-blank lengths are %d %d %d %d %d %d %d %d %d %d %d %d\n",aopt_l,bopt_l,copt_l,dopt_l,eopt_l,
-     fopt_l,gopt_l,hopt_l,iopt_l,jopt_l,kopt_l,lopt_l);
+/* debug  fprintf(stderr,"non-blank lengths are %d %d %d %d %d %d %d %d %d %d %d %d\n",aopt_l,bopt_l,copt_l,dopt_l,eopt_l,
+     fopt_l,gopt_l,hopt_l,iopt_l,jopt_l,kopt_l,lopt_l); */
 
    /* Set ok response, but if *ipick is zero reset to one. */
    abc_pick = (gint) *ipick;
@@ -587,18 +587,18 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    switch (result)
       {
        case GTK_RESPONSE_OK:
-          fprintf(stderr,"Goodbye - %d %d was selected\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d was selected\n", abc_pick,result); */
           *ipick = (long int) abc_pick;
           break;
        case GTK_RESPONSE_CANCEL:
-          fprintf(stderr,"Goodbye - %d %d was original choice\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d was original choice\n", abc_pick,result); */
           break;
        case GTK_RESPONSE_HELP:
-          fprintf(stderr,"Goodbye - %d %d help was requested\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d help was requested\n", abc_pick,result); */
           *ipick = -8;
           break;
        default:
-          fprintf(stderr,"Goodbye - %d %d fell to default response\n", abc_pick,result);
+       /*   fprintf(stderr,"Goodbye - %d %d fell to default response\n", abc_pick,result); */
           *ipick = -1;
           break;
       }

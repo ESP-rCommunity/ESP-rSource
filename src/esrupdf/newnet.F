@@ -64,7 +64,7 @@ C Mass flow network.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -72,7 +72,7 @@ C Plant network.
 C Electrical details for specified plant components
       common/pcelflg/ipcelf(mpcom)
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
-     &BVOLTP(mpcom),IPHP(mpcom)
+     &             BVOLTP(mpcom),IPHP(mpcom)
 
       common/pcnam/pcname(mpcom)
 
@@ -96,20 +96,22 @@ C Common for the building plant link
 C Common controlling format of plant network file      
       common/PLNFMT/bPLN_format_long
       logical bPLN_format_long
-      logical bInitialized
-      data bInitialized / .false. /
-      save bInitialized
       
       character*20 simtyp(3)
       character lpnam*72,laprob*72,LPNF*72
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       dimension ival(mpcom)
       CHARACTER*44 ITEM(28)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248
       CHARACTER ICDIR*72, DOIT*248,mode*1,pcdesc*80
       character*68 mscdsc, cvrdsc,hfpdsc
       LOGICAL OK,dok,XST
+
+C And finally the DATA statement after all the other definitions.
+      logical bInitialized
+      data bInitialized / .false. /
+      save bInitialized
 
 C Initialize bPLN_format_long variable, if necessary. bPLN_format_long
 C controls the format of the plant network file --- and will always
@@ -490,7 +492,7 @@ C Overwrite the existing plant configuration file
       elseif(ino.eq.nitms) then
         IF(MODE.EQ.'G') THEN
           H(1)=' Folder where icons live (absolute path).'
- 220      CALL EASKS(icdir,' folder of icons: ',
+          CALL EASKS(icdir,' folder of icons: ',
      &          ' ',72,'/usr/esru/icons/plant','icon folder',IER,1)
           write(doit,'(a)') 'net '
           call runit(doit,'graph')
@@ -575,7 +577,7 @@ C   tadata(?,2..n) - value of each parameter.
 
 C Now display the menu.
       str=' '
-  86  call showpc(ix,ival)
+      call showpc(ix,ival)
       if (ix.eq.0) return
       if(ix.gt.0) then   
         npcomp=npcomp+1
@@ -1045,16 +1047,20 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fill array with existing containment types.
       cnttyp(1)='Ambient air temperature.             '
@@ -1169,7 +1175,12 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.4) THEN
               RETURN
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
-              CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+              call eclose(gversion(IZ),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+              else
+                call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+              endif
 
 C General image option flags.
               ITDSP=1
@@ -1329,7 +1340,6 @@ C askpar selects parameters of component (ipc) to edit.
       common/pophelp/h(60)
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA) 
       common /datdsc/ mscdsc(madata), cvrdsc(mconvr)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pcnam/pcname(mpcom)
 
       character mscdsc*68, cvrdsc*68,pcname*15,txt*28
@@ -1447,7 +1457,6 @@ C stype: Displays general system types for user selection.
 #include "plant.h"
  
       common/pophelp/h(60)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       dimension ival(mpcom)
       character*32 simtyp(4)
@@ -2095,8 +2104,8 @@ C The routine presents a list of surface layers.
 
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
 
 C Arrays of material properties.
       real matver
@@ -2123,12 +2132,12 @@ C Arrays of material properties.
       logical closemat
 
       DIMENSION PNAM(ME),item(ME+10)
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       integer header,footer
       character item*32
       CHARACTER DESC*48,NAM*72,PNAM*20,H*72
-      CHARACTER TITL*72,SNAME*12
-      CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4
+      CHARACTER TITL*72
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
 C Check composite name of surface with composite name in MLC common.
       imatch=0
@@ -2552,9 +2561,13 @@ C Common for the building plant lin
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
@@ -2562,9 +2575,10 @@ C Common for the building plant lin
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
 
+      newgeo=.false.  ! assume older format geometry.
       IF(MODE.EQ.'A'.OR.MODE.EQ.'E') THEN
 
 C Add a building plant link and update the control data. 
@@ -2714,59 +2728,64 @@ C Determine the linkage type.
           idvalue=50
           ival=50
           CALL EASKI(ival,' ',
-     &'What is the convective fraction (0-100) of heat input :',
-     &0,'-',0,'-',idvalue,' cval',IER,0)
-        IBAN(ICF,1)=-2
-        IBAN(ICF,2)=IZ
-        IBAN(ICF,3)=IVAL        
+     &      'What is the convective fraction (0-100) of heat input:',
+     &      0,'-',0,'-',idvalue,' cval',IER,0)
+          IBAN(ICF,1)=-2
+          IBAN(ICF,2)=IZ
+          IBAN(ICF,3)=IVAL        
         ELSEIF(IOPT.EQ.3) THEN
           BMISCD(ICF,1,1,4)=FLOAT(IOPT)
           IPCLINKT(IBPLINK)=IOPT
           ASKSTR='What is the embedded component?'
 
-          CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+          call eclose(gversion(IZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+          else
+            call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+          endif
 
 C General image option flags.
-           ITDSP=1
-           ITBND=1
-           ITEPT=0
-           ITZNM=0
-           ITSNM=0
-           ITVNO=1
-           ITORG=1
-           ITSNR=1
-           ITGRD=1
-           GRDIS=0.0
-           ITPPSW=0
+          ITDSP=1
+          ITBND=1
+          ITEPT=0
+          ITZNM=0
+          ITSNM=0
+          ITVNO=1
+          ITORG=1
+          ITSNR=1
+          ITGRD=1
+          GRDIS=0.0
+          ITPPSW=0
 
-           MODIFY=.TRUE.
-           MODBND=.TRUE.
-           CALL INLNST(1)
-           ITVNO=0
-           nzg=1
-           nznog(1)=IZ
-           izgfoc=IZ
-           CALL ADJVIEW(ITRC,IER)
-           MODIFY=.TRUE.
-           MODBND=.TRUE.
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          CALL INLNST(1)
+          ITVNO=0
+          nzg=1
+          nznog(1)=IZ
+          izgfoc=IZ
+          CALL ADJVIEW(ITRC,IER)
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
 
-           ISO=1
-           CALL EPMENSV
-           CALL EASKSUR(IZ,ISO,'-',
+          ISO=1
+          CALL EPMENSV
+          CALL EASKSUR(IZ,ISO,'-',
      &     'Select the surface in which the component is embedded.',
-     &' ',IER)
-            CALL EPMENRC
-            IF(ISO.GT.0)THEN
-              IBAN(ICF,2)=ISO                
-            ELSE
-              RETURN
-            ENDIF
-              CALL CONTLYR(IZ,ISO,IND)
-              IF(IND.GT.0)THEN
-                IBAN(ICF,3)=IND                     
-              ELSE
-                RETURN
-              ENDIF
+     &     ' ',IER)
+          CALL EPMENRC
+          IF(ISO.GT.0)THEN
+            IBAN(ICF,2)=ISO                
+          ELSE
+            RETURN
+          ENDIF
+          CALL CONTLYR(IZ,ISO,IND)
+          IF(IND.GT.0)THEN
+            IBAN(ICF,3)=IND                     
+          ELSE
+            RETURN
+          ENDIF
         ELSE
           RETURN
         ENDIF
@@ -2789,8 +2808,8 @@ C type.
         ENDIF
         CALL ECLOSE(BMISCD(ICF,1,1,4),1.0,0.01,CLOSE)
         IF(CLOSE) 
-     &CALL EASKAB('Is there a coupled extract component?',' ','Yes',
-     &'No',IOPT,0)
+     &  CALL EASKAB('Is there a coupled extract component?',' ',
+     &    'Yes','No',IOPT,0)
         IF(IOPT.EQ.1) THEN
           CALL USRMSG('What is the coupled extract component?',' ','-')
           CALL ASKPCMP(' Component','-',ICP,IER)
@@ -2821,17 +2840,17 @@ C MB The minimum value is negated inside BCL06
       ELSEIF(MODE.EQ.'D') THEN
 
 C Delete the appropriate control routine and menu entry. 
-         ICTL=IBPLINKID(IS)
-         IF(IS.LT.NBPLINK)THEN
-           DO 50 IBP=IS,NBPLINK-1
-             IBPLINKID(IS)=IBPLINKID(IS+1)
-             IPCLINK1(IS)=IPCLINK1(IS+1)
-             IPCLINK2(IS)=IPCLINK2(IS+1)
-             IPCNLINK1(IS)=IPCNLINK1(IS+1)
-             IPCNLINK2(IS)=IPCNLINK2(IS+1)
-             IPCLINKT(IS)=IPCLINKT(IS+1)
-             IPCLINKZ(IS)=IPCLINKZ(IS+1)
-  50       CONTINUE
+        ICTL=IBPLINKID(IS)
+        IF(IS.LT.NBPLINK)THEN
+          DO 50 IBP=IS,NBPLINK-1
+            IBPLINKID(IS)=IBPLINKID(IS+1)
+            IPCLINK1(IS)=IPCLINK1(IS+1)
+            IPCLINK2(IS)=IPCLINK2(IS+1)
+            IPCNLINK1(IS)=IPCNLINK1(IS+1)
+            IPCNLINK2(IS)=IPCNLINK2(IS+1)
+            IPCLINKT(IS)=IPCLINKT(IS+1)
+            IPCLINKZ(IS)=IPCLINKZ(IS+1)
+  50      CONTINUE
 
          ENDIF
          NBPLINK=NBPLINK-1

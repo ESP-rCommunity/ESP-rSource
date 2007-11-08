@@ -647,8 +647,8 @@ C ESP-r variables
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen     
 
-      common/pophelp/h
-      character*72 h(60)       ! help text      
+      common/pophelp/h(60)
+      character h*72       ! help text      
 
       common/spad/mmod,limit,limtty
       integer mmod, limit, limtty
@@ -1332,8 +1332,8 @@ C----------------------------------------------------------------------
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen     
 
-      common/pophelp/h
-      character*72 h(60)       ! help text
+      common/pophelp/h(60)
+      character h*72       ! help text
       
 C----------------------------------------------------------------------
 C     Local variables

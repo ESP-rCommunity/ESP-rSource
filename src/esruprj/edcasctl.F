@@ -38,8 +38,15 @@ C EDCASCTL - edit casual gain control data.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
       COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -75,6 +82,7 @@ C TMC common block:
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
       LOGICAL XST,lcouple,ldcoef
       logical MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
@@ -84,11 +92,13 @@ C TMC common block:
       character docpth*24,tmppth*24,dbspth*24
       character*48 ITEM(30)
       CHARACTER*72 DLCGCIN,LCFGF
-      CHARACTER SOTHER*15,SMLCN*12,SVFC*4,SOTF*4,info*18,SNAME*12
-      character cgcdesc*64
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER info*18,cgcdesc*64
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
+      newgeo=.false.  ! assume older format geometry.
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -181,7 +191,12 @@ C Read existing file.
 
 C Rescan geometry file.
       IUF=IFIL+1
-      CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
+      else
+        call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
+      endif
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -315,7 +330,7 @@ C In special case...
         m=m+1   
         write(ITEM(m),'(A)') '  TMC number & DF(s) for each photocell:'
         do 44 ii = 1,NSUR
-          if(SOTF(II)(1:4).EQ.'TRAN')THEN
+          if(SOTF(II)(1:4).NE.'OPAQ')THEN
             m=m+1
             CALL EMKEY(m,KEY,IER)
             write(ITEM(m),'(A,I4,2X,F6.4,a)')key,II,DFDAT(ICOMP,N,II,1),
@@ -799,7 +814,7 @@ C Calculation type.
 C Loop through all surfaces and find out number of TMCs:
           ICOUNT=0
           do 47 i = 1, NSUR
-            if(SOTF(I)(1:4).EQ.'TRAN')THEN
+            if(SOTF(I)(1:4).NE.'OPAQ')THEN
               ICOUNT=ICOUNT+1              
             endif
 47        continue 

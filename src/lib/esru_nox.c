@@ -9,7 +9,6 @@ intialisation and dummy routines for graphics. The routines are :-
 	windcl(n,ir,ig,ib)
 			:- define the colour 'n' in RGB using ir,ig,ib
 	feedbox		:- setup feedback display box
-	winfnt(n)	:- changes the font (4 different sizes 0,1,2,3)
 	viewtext_(msg,line,side,size,len)
                         :- displays a line of text within the viewing
                            box with size and location parameters
@@ -210,16 +209,6 @@ void showlogo_(itime,lix,liy)
 long int *itime,*lix, *liy; /* persistance, position from lower left of the 3dviewing image area */
 { 
  return;
-}
-
-/* ************ Select a font **************** */
-/* select one of the 6 fonts by its index, load it and update the graphic context.
- * for some reason font_0 has been cleared after initial jwinint call and so
- * it is refreshed. */
-void winfnt_(n)
- long int *n;
-{
-  return;
 }
 
 /*

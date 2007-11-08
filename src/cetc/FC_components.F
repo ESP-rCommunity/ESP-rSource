@@ -685,9 +685,9 @@ C ------------------------------------------------------------------------------
       REAL	CONVAR(MPCON,MCONVR)
       INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
-      COMMON/PCRES/QDATA,PCAOUT,napdat
-      INTEGER napdat(mpcom)
-      REAL QDATA(MPCOM),PCAOUT(MPCOM,MPCRES)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       common/elpcp/
      &     NPEL,                ! number of "electrified" plant components 
@@ -2594,9 +2594,9 @@ C MPCOM       maximum number of plant components in configuration (set to 50 in 
 C MPCRES      maximum number of additional plant component outputs (set to 15 in plant.h)
 C IPCOMP      index number of the component under consideration
 C NPCDAT(?,4) plant component model type number for component ? (equal to NPCDAT(?,3)/10)
-      COMMON/PCRES/QDATA,PCAOUT,napdat
-      INTEGER napdat(mpcom)
-      REAL QDATA(MPCOM),PCAOUT(MPCOM,MPCRES)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)

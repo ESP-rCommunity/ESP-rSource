@@ -864,6 +864,46 @@ Winter season is Mon 19 Nov - Mon 31 Dec
 Typical winter week begins Mon 17 Dec
 *help_end
 *item
+*name	GUANGZHOU - CHN
+*aide	GUANGZHOU - CHN was sourced from US DoE web site
+*dbfl	/usr/esru/esp-r/climate/CHN_Guangzhou
+*avail	ONLINE
+*winter_s  1  1  1  4  5 11 31 12
+*spring_s  2  4 29  4  8 10  4 11
+*summer_s 30  4  7 10
+*winter_t 19  2 25  2 19 11 25 11
+*spring_t 16  4 22  4 22 10 28 10
+*summer_t 25  6  1  7
+*help_start
+Climate is GUANGZHOU - CHN
+ Location: 23.13N  6.68W : 1991
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan      6.0 @ 6h00 Sun-06       24.0 @15h00 Mon-21    14.1
+ Feb      6.5 @ 5h00 Sun-17       24.6 @17h00 Wed-20    14.2
+ Mar      7.5 @ 5h00 Sun-10       29.0 @16h00 Sun-31    17.1
+ Apr     14.0 @ 6h00 Sun-14       32.0 @15h00 Fri-19    22.2
+ May     16.2 @ 6h00 Wed-01       34.0 @16h00 Fri-31    25.4
+ Jun     21.0 @ 1h00 Sun-09       35.2 @17h00 Wed-05    27.9
+ Jul     24.9 @20h00 Sat-13       36.0 @12h00 Fri-19    28.9
+ Aug     24.0 @ 3h00 Sat-03       37.0 @16h00 Thu-29    28.6
+ Sep     21.0 @ 6h00 Sat-28       36.0 @16h00 Wed-11    27.6
+ Oct     12.9 @ 2h00 Thu-31       32.1 @14h00 Wed-16    24.4
+ Nov      9.0 @ 6h00 Fri-29       30.3 @14h00 Fri-08    20.1
+ Dec      8.0 @ 7h00 Sun-22       25.0 @16h00 Mon-16    16.0
+ Annual   6.0 @ 6h00 Sun-06-Jan   37.0 @16h00 Thu-29-Aug    22.3
+ ---Seasons & typical periods---
+Winter season is Tue-01-Jan - Mon-01-Apr
+Typical winter week begins Tue-19-Feb
+Spring season is Tue-02-Apr - Mon-29-Apr
+Typical spring week begins Tue-16-Apr
+Summer season is Tue-30-Apr - Mon-07-Oct
+Typical summer week begins Tue-25-Jun
+Autumn season is Tue-08-Oct - Mon-04-Nov
+Typical autumn week begins Tue-22-Oct
+Winter season is Tue-05-Nov - Tue-31-Dec
+Typical winter week begins Tue-19-Nov
+*help_end
+*item
 *name	Hemsby UK IWEC WMO 034960
 *aide	Hemsby UK (sourced from IWEC/DoE)
 *dbfl	/usr/esru/esp-r/climate/uk_hemsby
@@ -896,6 +936,46 @@ The solar radiation is Direct Normal. Dry bulb temperatures:
  Typical summer week begins Monday 5 June.
  Typical autumn week begins Monday 25 September.
  Typical winter week begins Monday 4 December,
+*help_end
+*item
+*name	HONG KONG SAR CHN
+*aide	HONG KONG SAR CHN was sourced from US DoE web site
+*dbfl	/usr/esru/esp-r/climate/CHN_Hong_Kong_CityUHK
+*avail	ONLINE
+*winter_s  1  1  2  4 20 11 31 12
+*spring_s  3  4 30  4  9 10 19 11
+*summer_s  1  5  8 10
+*winter_t  5  2 11  2  4 12 10 12
+*spring_t 17  4 23  4  6 11 12 11
+*summer_t  7  8 13  8
+*help_start
+Climate is HONG KONG SAR CHN
+ Location: 22.32N  5.83W : 1995
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan      9.3 @ 6h00 Tue-31       22.5 @13h00 Sun-22    16.1
+ Feb     10.2 @21h00 Sun-19       23.3 @13h00 Mon-06    16.3
+ Mar     11.7 @ 7h00 Tue-07       26.4 @14h00 Fri-17    19.0
+ Apr     14.8 @ 4h00 Sat-01       30.1 @15h00 Fri-28    22.6
+ May     21.4 @ 3h00 Wed-24       31.3 @16h00 Mon-15    26.1
+ Jun     23.1 @ 5h00 Sat-03       32.5 @18h00 Fri-23    27.9
+ Jul     25.0 @11h00 Tue-18       32.8 @17h00 Sat-01    28.8
+ Aug     24.6 @ 5h00 Thu-10       32.7 @15h00 Tue-29    28.4
+ Sep     23.6 @ 6h00 Sat-23       32.8 @13h00 Wed-20    27.5
+ Oct     20.6 @ 7h00 Tue-31       31.0 @14h00 Tue-03    25.3
+ Nov     12.4 @ 7h00 Wed-29       27.8 @14h00 Mon-06    21.5
+ Dec      9.2 @ 8h00 Sun-17       24.8 @16h00 Sun-03    17.1
+ Annual   9.2 @ 8h00 Sun-17-Dec   32.8 @17h00 Sat-01-Jul    23.1
+ ---Seasons & typical periods---
+Winter season is Sun-01-Jan - Sun-02-Apr
+Typical winter week begins Sun-05-Feb
+Spring season is Mon-03-Apr - Sun-30-Apr
+Typical spring week begins Mon-17-Apr
+Summer season is Mon-01-May - Sun-08-Oct
+Typical summer week begins Mon-07-Aug
+Autumn season is Mon-09-Oct - Sun-19-Nov
+Typical autumn week begins Mon-06-Nov
+Winter season is Mon-20-Nov - Sun-31-Dec
+Typical winter week begins Mon-04-Dec
 *help_end
 *item
 *name	HOUSTON TX USA iwec 722430
@@ -1504,6 +1584,46 @@ Autumn season is Mon 10 Sep - Sun  4 Nov
 Typical autumn week begins Mon 22 Oct
 Winter season is Mon  5 Nov - Mon 31 Dec
 Typical winter week begins Mon 10 Dec
+*help_end
+*item
+*name	CZE_PRAGUE_IWEC_115180
+*aide	CZE_PRAGUE_IWEC_115180 was sourced from US DoE web
+*dbfl	/usr/esru/esp-r/climate/CZE_Prague
+*avail	ONLINE
+*winter_s  1  1 20  3 21 12 31 12
+*spring_s 21  3 20  6 21  9 20 12
+*summer_s 21  6 20  9
+*winter_t  5  2 11  2 25 12 31 12
+*spring_t 23  5 29  5 19 10 25 10
+*summer_t 19  7 25  7
+*help_start
+Climate is PRAGUE - CZE
+ Location: 50.10N  0.72W : 1995
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan    -14.4 @ 1h00 Fri-06       12.6 @13h00 Thu-26    -1.5
+ Feb    -15.0 @ 8h00 Fri-17        7.0 @14h00 Sun-05    -2.1
+ Mar     -7.0 @ 7h00 Sun-12       19.3 @13h00 Sat-04     3.5
+ Apr     -8.0 @ 6h00 Thu-13       24.0 @14h00 Sun-09     7.9
+ May      0.8 @ 4h00 Wed-31       27.5 @16h00 Wed-17    13.0
+ Jun      5.0 @ 3h00 Fri-16       30.0 @15h00 Sat-10    15.6
+ Jul      8.0 @ 2h00 Sat-15       31.1 @13h00 Sat-08    17.3
+ Aug      5.0 @ 5h00 Wed-30       32.0 @17h00 Tue-08    17.6
+ Sep      6.0 @ 6h00 Sat-09       25.6 @16h00 Fri-01    13.3
+ Oct     -4.0 @ 5h00 Thu-19       19.9 @16h00 Mon-02     8.4
+ Nov     -6.3 @ 7h00 Sun-19       13.8 @13h00 Tue-07     2.2
+ Dec    -11.1 @ 7h00 Sat-09       12.0 @17h00 Mon-18     0.8
+ Annual -15.0 @ 8h00 Fri-17-Feb   32.0 @17h00 Tue-08-Aug     8.1
+ ---Seasons & typical periods---
+Winter season is Sun-01-Jan - Mon-20-Mar
+Typical winter week begins Sun-05-Feb
+Spring season is Tue-21-Mar - Tue-20-Jun
+Typical spring week begins Tue-23-May
+Summer season is Wed-21-Jun - Wed-20-Sep
+Typical summer week begins Wed-19-Jul
+Autumn season is Thu-21-Sep - Wed-20-Dec
+Typical autumn week begins Thu-19-Oct
+Winter season is Thu-21-Dec - Sun-31-Dec
+Typical winter week begins Mon-25-Dec
 *help_end
 *item
 *name	Quebec PQ CAN

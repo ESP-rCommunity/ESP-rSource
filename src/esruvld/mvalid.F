@@ -84,27 +84,27 @@ C      VlDirR='/usr/esru/esp-r/validation'
 
 C Analytical.
       IF(INO.EQ.1)THEN
-C        call tstamp('>','PRJ: analytical validation models enter')
+        call tstamp('>','PRJ: analytical validation models enter')
         CALL ANLYTC
-C        call tstamp('>','PRJ: analytical validation models finish')
+        call tstamp('>','PRJ: analytical validation models finish')
 
 C Numerical.
       ELSEIF(INO.EQ.2)THEN
-C        call tstamp('>','PRJ: numerical validation models enter')
+        call tstamp('>','PRJ: numerical validation models enter')
         CALL NUMERC
-C        call tstamp('>','PRJ: numerical validation models finish')
+        call tstamp('>','PRJ: numerical validation models finish')
 
 C Empirical.
       ELSEIF(INO.EQ.3)THEN
-C        call tstamp('>','PRJ: empirical validation models enter')
+        call tstamp('>','PRJ: empirical validation models enter')
         CALL EMIPRC
-C        call tstamp('>','PRJ: empirical validation models finish')
+        call tstamp('>','PRJ: empirical validation models finish')
 
 C BESTEST.
       ELSEIF(INO.EQ.5)THEN
-C        call tstamp('>','PRJ: standards validation models enter')
+        call tstamp('>','PRJ: standards validation models enter')
         call STNDRDS
-C        call tstamp('>','PRJ: standards validation models finish')
+        call tstamp('>','PRJ: standards validation models finish')
           
 C Help.
       ELSEIF(INO.EQ.MITEM-1)THEN

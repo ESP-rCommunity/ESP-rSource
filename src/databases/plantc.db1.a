@@ -3732,7 +3732,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     Variable type    :  22,
 
  Miscellaneous Data
-    Adata items   :   6    Bdata items   :   0    Cdata items   :   2
+    Adata items   :   6    Bdata items   :   0    Cdata items   :   0
  ADATA variables:
     1 Minimum storage mass (kg)
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
@@ -3746,8 +3746,6 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
     6 H2 loss coefficient l2 (/kg.s)
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
- CDATA variables:
-    1 Electrical power demand (kW)
 
  Number of additional output parameters:     1
  Additional output variables:
@@ -3832,13 +3830,13 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
    28 Cool-down period mode (1: Mandatory, 2: optional)
       Value =      1.0         Range (Min Max):      0.0000       10000.
    29 Electric output at cool-down (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    30 Net electrical output in standby mode (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    31 Power output correlation minimum bound (W)
-      Value =    8000.0        Range (Min Max):     0.0000        1E-06
+      Value =    8000.0        Range (Min Max):     0.0000       1.0E-06
    32 Power output correlation maximum bound (W)
-      Value =    8400.0        Range (Min Max):     0.0000        1E-06
+      Value =    8400.0        Range (Min Max):     0.0000       1.0E-06
    33 Cooling water temperature correlation minimum bound (oC)
       Value =      60.0        Range (Min Max):     0.0000        100.00
    34 Cooling water temperature correlation maximum bound (oC)
@@ -3986,6 +3984,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     2 Control Signal (-)
 
  Number of additional output parameters:     0
+
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
@@ -4071,13 +4070,13 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
    31 Cool-down period mode (1: Mandatory, 2: optional)
       Value =      1.0         Range (Min Max):      0.0000       10000.
    32 Electric output at cool-down (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    33 Net electrical output in standby mode (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):    -1.0E06        1.0E06
    34 Power output correlation minimum bound (W)
-      Value =    8000.0        Range (Min Max):     0.0000        1E-06
+      Value =    8000.0        Range (Min Max):     0.0000       1.0E-06
    35 Power output correlation maximum bound (W)
-      Value =    8400.0        Range (Min Max):     0.0000        1E-06
+      Value =    8400.0        Range (Min Max):     0.0000       1.0E-06
    36 Cooling water temperature correlation minimum bound (oC)
       Value =      60.0        Range (Min Max):     0.0000        100.00
    37 Cooling water temperature correlation maximum bound (oC)
@@ -4225,6 +4224,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     2 Control Signal (-)
 
  Number of additional output parameters:     0
+
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
@@ -4494,23 +4494,23 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
    10 Start-up period fuel flow (kg/s)
       Value =    1.76E-05      Range (Min Max):     0.0000        1000.0
    11 Net electric output at start-up (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    12 Thermal output at start-up (W)
-      Value =   2300.0         Range (Min Max):     -1E06         1E06
+      Value =   2300.0         Range (Min Max):     -1.0E06       1.0E06
    13 Cool down period duration (s)
       Value =   1500.0         Range (Min Max):      0.0000       10000.
    14 Cool-down period fuel flow (kg/s)
       Value =      0.0         Range (Min Max):     0.0000        1000.0
    15 Electric output at cool-down (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    16 Thermal output at cool-down (W)
-      Value =   2300.0         Range (Min Max):     -1E06         1E06
+      Value =   2300.0         Range (Min Max):     -1.0E06       1.0E06
    17 Standby mode fuel flow (kg/s)
       Value =      0.0         Range (Min Max):     0.0000        1000.0
    18 Net electrical output in standby mode (W)
-      Value =    -50.0         Range (Min Max):     -1E06         1E06
+      Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    19 Thermal output in standby mode (W)
-      Value =   0.0000         Range (Min Max):     -1E06         1E06
+      Value =   0.0000         Range (Min Max):     -1.0E06       1.0E06
    20 Correlation reference CW temperature (oC)
       Value =     65.0         Range (Min Max):     0.0000         100.0
    21 Correlation reference CW flow rate (kg/s)
@@ -4574,9 +4574,9 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
    50 Aux. AC power draw coefficient C6 (Ws^2/kg^2)
       Value =   -4.16E-09      Range (Min Max):     1.0000        3.0000
    51 Gross heat input correlation minimum bound (W)
-      Value =    8000.0        Range (Min Max):     0.0000        1E-06
+      Value =    8000.0        Range (Min Max):     0.0000       1.0E-06
    52 Gross heat input correlation maximum bound (W)
-      Value =    8400.0        Range (Min Max):     0.0000        1E-06
+      Value =    8400.0        Range (Min Max):     0.0000       1.0E-06
    53 Cooling water temperature correlation minimum bound (oC)
       Value =      60.0        Range (Min Max):     0.0000        100.00
    54 Cooling water temperature correlation minimum bound (oC)
@@ -4886,109 +4886,109 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
    82 Method to calc FCPM skin loss [1=const; 2=f(dT); 3=f(Nf)]
       Value =   1.0000         Range (Min Max)      1.0000      3.0000
    83 Convective portion of FCPM skin loss (radiative = 1-conv)
-      Value =   1.0000         Range (Min Max)      0.0000     1.0000
+      Value =   1.0000         Range (Min Max)      0.0000       1.0000
    84 Skin loss in W (method 1); UA (method 2); s0 coeff (method 3)
-      Value =   0.0000         Range (Min Max)      -1000.0    1000.0
+      Value =   0.0000         Range (Min Max)      -1000.0      1000.0
    85 Skin loss s1 coeff (method 3 only) [q=s0+s1*Nf+s2*Nf^2]
-      Value =   0.0000         Range (Min Max)      -1000.0    1000.0
+      Value =   0.0000         Range (Min Max)      -1000.0      1000.0
    86 Skin loss s2 coeff (method 3 only) [q=s0+s1*Nf+s2*Nf^2]
-      Value =   0.0000         Range (Min Max)      -1000.0    1000.0
+      Value =   0.0000         Range (Min Max)      -1000.0      1000.0
    87 Auxiliary burner present or not? [0=no; 1=yes]
-      Value =   0.0000         Range (Min Max)      0.0000     1.0000
+      Value =   0.0000         Range (Min Max)      0.0000       1.0000
    88 Aux-burner capacity in W output (=1) or kmol/s fuel input (=2)
-      Value =   1.0000         Range (Min Max)      1.0000     2.0000
+      Value =   1.0000         Range (Min Max)      1.0000       2.0000
    89 Aux-burner min output (W) or input (kmol/s) [depends on method]
-      Value =   5000.0         Range (Min Max)      0.0000     20000.0
+      Value =   5000.0         Range (Min Max)      0.0000       20000.0
    90 Aux-burner max output (W) or input (kmol/s) [depends on method]
-      Value =  20000.0         Range (Min Max)      0.0000     50000.0
+      Value =  20000.0         Range (Min Max)      0.0000       50000.0
    91 Aux-burner heat loss added to room (=1) or FCPM air intake (=2)
-      Value =   2.0000         Range (Min Max)      1.0000     2.0000
+      Value =   2.0000         Range (Min Max)      1.0000       2.0000
    92 Aux-burner UA (W/K) [dT=T_gas - T_room]
-      Value =   0.1000         Range (Min Max)      0.0000    10.0000
+      Value =   0.1000         Range (Min Max)      0.0000      10.0000
    93 Aux-burner ancillary power draw anc0 coeff [P=anc0+anc1*Nf]
-      Value =   50.000         Range (Min Max)      -1000.0   1000.0
+      Value =   50.000         Range (Min Max)      -1000.0     1000.0
    94 Aux-burner ancillary power draw anc1 coeff [P=anc0+anc1*Nf]
-      Value =    0.0000        Range (Min Max)      -1000.0   1000.0
+      Value =    0.0000        Range (Min Max)      -1000.0     1000.0
    95 Aux-burner excess air ratio (constant)
-      Value =    0.3           Range (Min Max)      0.8       2.0 
+      Value =    0.3           Range (Min Max)      0.8          2.0 
    96 Diluation air system present or not? [0=no; 1=yes]
-      Value =   0.0000         Range (Min Max)      0.0000     1.0000
+      Value =   0.0000         Range (Min Max)      0.0000       1.0000
    97 Dilution air flow rate (kmol/s)
-      Value =   0.0000         Range (Min Max)      0.0000  1000.0000
+      Value =   0.0000         Range (Min Max)      0.0000       1000.0000
    98 Power draw of dilution air fan (W)
-      Value =   0.0000         Range (Min Max)      0.0000  2000.0000
+      Value =   0.0000         Range (Min Max)      0.0000       2000.0000
    99 Heat transfer from FCPM to dilution air (W)
-      Value =   0.0000         Range (Min Max)      0.0000   600.0000
+      Value =   0.0000         Range (Min Max)      0.0000       600.0000
   100 HRV present or not [0=no; 1=yes]
-      Value =   0.0000         Range (Min Max)      0.0000     1.0000
+      Value =   0.0000         Range (Min Max)      0.0000        1.0000
   101 Outdoor air flow rate through HRV (kmol/s)
-      Value =   0.0000         Range (Min Max)      0.0000     1.0000
+      Value =   0.0000         Range (Min Max)      0.0000        1.0000
   102 Power of HRV fan (W)
-      Value =   0.0000         Range (Min Max)      0.0000  2000.0000
+      Value =   0.0000         Range (Min Max)      0.0000        2000.0
   103 Effectiveness of HRV (-)
-      Value =   0.0000         Range (Min Max)      0.0000     1.0000
+      Value =   0.0000         Range (Min Max)      0.0000        1.0000
   104 Battery maximum storage capacity (J)
-      Value =   0.0000         Range (Min Max)      0.0000  100000000.0
+      Value =   0.0000         Range (Min Max)      0.0000        10.0E07
   105 Battery maximum charge rate (W)
-      Value =   0.0000         Range (Min Max)      0.0000  10000.000
+      Value =   0.0000         Range (Min Max)      0.0000        10000.0
   106 Battery maximum discharge rate (W)
-      Value =   0.0000         Range (Min Max)      0.0000  10000.000
+      Value =   0.0000         Range (Min Max)      0.0000        10000.0
   107 Battery energetic efficiency for charging (-)
-      Value =   1.0000         Range (Min Max)      0.0000      1.000
+      Value =   1.0000         Range (Min Max)      0.0000        1.000
   108 Battery energetic efficiency for discharging (-)
-      Value =   1.0000         Range (Min Max)      0.0000      1.000
+      Value =   1.0000         Range (Min Max)      0.0000        1.000
   109 Battery initial SOC (fraction of max capacity)
-      Value =   0.0000         Range (Min Max)      0.0000      1.000
+      Value =   0.0000         Range (Min Max)      0.0000        1.000
   110 Battery heat loss added to room (=1) or FCPM air intake (=2)
-      Value =   2.0000         Range (Min Max)      1.0000     2.0000
+      Value =   2.0000         Range (Min Max)      1.0000        2.0000
   111 PCU eff u0 coeff [eff=u0+u1*Ppcu-in+u2*Ppcu-in^2]
-      Value =   0.90000        Range (Min Max):     0.0000      2.0000
+      Value =   0.90000        Range (Min Max):     0.0000        2.0000
   112 PCU eff u1 coeff [eff=u0+u1*Ppcu-in+u2*Ppcu-in^2]
-      Value =   0.00000        Range (Min Max):     -100.0000   100.0000
+      Value =   0.00000        Range (Min Max):     -100.0000     100.0000
   113 PCU eff u2 coeff [eff=u0+u1*Ppcu-in+u2*Ppcu-in^2]
-      Value =   0.00000        Range (Min Max):     -100.0000   100.0000
+      Value =   0.00000        Range (Min Max):     -100.0000     100.0000
   114 PCU heat loss added to room (=1) or FCPM air intake (=2)
-      Value =   2.0000         Range (Min Max)      1.0000     2.0000
+      Value =   2.0000         Range (Min Max)      1.0000         2.0000
   115 PEM stack cooling loop present or not [0=no; 1=yes]
-      Value =   0.0000         Range (Min Max)      0.0000     1.0000
+      Value =   0.0000         Range (Min Max)      0.0000         1.0000
   116 PEM actual stack temp (oC)
-      Value =   80.000         Range (Min Max)      0.0000     200.0000
+      Value =   80.000         Range (Min Max)      0.0000        200.0000
   117 PEM nominal stack temp (oC)
-      Value =   80.000         Range (Min Max)      0.0000     200.0000
+      Value =   80.000         Range (Min Max)      0.0000        200.0000
   118 PEM stack cooling power r0 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   119 PEM stack cooling power r1 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   120 PEM stack cooling power r2 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   121 PEM stack cooling power r3 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   122 PEM internal HX UA (W/K)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   123 PEM stack cooling loop mass flow rate (kg/s)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   124 PEM stack cooling external HX UA value (0 if calculated)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   125 PEM stack cooling external HX nominal mass flow rate on heat recovery side (kg/s)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   126 PEM stack cooling external HX nominal area on heat recovery side (m2)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   127 PEM stack cooling external HX adjustment factor
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   128 PEM stack cooling external HX nominal film coeff (W/m2K)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   129 PEM stack cooling external HX empirical exponent, n
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   130 PEM stack cooling air cooler f0 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   131 PEM stack cooling air cooler f1 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   132 PEM stack cooling air cooler f2 coeff
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   133 PEM stack cooling pump heat loss ratio [ratio=heat-out/elec-input]
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
   134 PEM stack cooling pump AC power draw (W)
-      Value =   0.0000         Range (Min Max)      -100.0000  100.0000
+      Value =   0.0000         Range (Min Max)      -100.0000     100.0000
  CDATA variables:
     1 Desired net AC output (-)
     2 Auxiliary burner output (frac of max)
@@ -5198,7 +5198,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     3 UA modulus (node 1 to surroundings) (W/K)
       Value =    1.1750        Range (Min Max):    0.10000        3.5000
     4 Heater element capacity when ON (W)
-
+      Value =    8000.0        Range (Min Max):     0.0000       0.10000E+06
     5 Heater element capacity when OFF(standby) (W)
       Value =    0.0000        Range (Min Max):     0.0000       0.10000E+06
     6 DHW draw profile (0=no DHW; 1=CSA)
@@ -5465,7 +5465,7 @@ fit coefficient a3 (Pa/(m^3/s)^3)                                     0.0000
     5 Quadratic coef. of efficiency equ. (W/m2/C2)
       Value =   0.000          Range (Min Max):         -9999.0   9999.0
     6 Collector test flow rate (kg/s)
-      Value =   0.038          Range (Min Max):         0.00001   50.000
+      Value =   0.038          Range (Min Max):         1.0E-05   50.000
     7 Heat capacitance of fluid used for test (J/kg/C)
       Value =   4200.          Range (Min Max):         0.        9999.0
     8 Inc. angle correction (=1 Fit,=2 Interpolation)
@@ -5523,9 +5523,9 @@ fit coefficient a3 (Pa/(m^3/s)^3)                                     0.0000
    34 Mass fraction of propylene glycol (%)
       Value =   50.            Range (Min Max):         0.       100.
    35 Mass of collector (kg)
-      Value =   5.             Range (Min Max):         0.      1000.
+      Value =   5.             Range (Min Max):         0.        1000.
    36 Collector average capacitance (J/kg-C)
-      Value =   4200.          Range (Min Max):         0.     10000.
+      Value =   4200.          Range (Min Max):         0.       10000.
    
  Number of additional output parameters:     5
  Additional output variables:
@@ -5538,3 +5538,317 @@ fit coefficient a3 (Pa/(m^3/s)^3)                                     0.0000
  Mass flow components data
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     85
+
+ Component Description
+    Generic type     : TRNSYS Wrapper
+    Description      : Generic Trnsys Type with Dummy Values
+    Insertion date   : 8 May 2007
+    Type: Single component                    Component code :   1190
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+
+ Miscellaneous Data
+    Adata items   :  0     Bdata items   :   0    Cdata items   :   0
+   
+ Number of additional output parameters:     0
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     86
+
+ Component Description
+    Generic type     : Storage Tank with Immersed Coil
+    Description      : 2-node Storage Tank with Immersed Coil 
+    Insertion date   : 11 Feb 10th 2006
+    Type: Single component                    Component code :   1200
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  13   Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Mass of tank side node 1 (liquid+solid) (kg)
+      Value =   200.00         Range (Min Max):    10.0000       1000.0000
+    2 Specific heat of tank side node 1 (kJ/kg-K)
+      Value =  4200.00         Range (Min Max):   100.0000       10000.0000
+    3 Mass of tube side node 2 (liquid + solid) (kg)
+      Value =    10.00         Range (Min Max):     0.0010       100.0000
+    4 Specific heat of tube side node 2 (kJ/kg-K)
+      Value =  4200.0000       Range (Min Max):   100.0000       10000.0000
+    5 Tank UA value (W/K)
+      Value =     5.0000       Range (Min Max):     0.0000       1000.0000
+    6 Total length of tube (m)
+      Value =    10.0000       Range (Min Max):     0.1000       100.0000
+    7 Inside diameter of tube (m)
+      Value =     0.0120       Range (Min Max):     0.0010       0.1000
+    8 Outside diameter of tube (m)
+      Value =     0.0140       Range (Min Max):     0.0010       0.1000
+    9 Tube wall thermal conductivity (W/m-K) 
+      Value =   300.0000       Range (Min Max):     0.0010       1000.0000
+   10 Diamter of coil (m)
+      Value =     0.500        Range (Min Max):     0.0100       10.000
+   11 Coil height (-)
+      Value =     0.5          Range (Min Max):     0.0100       10.000
+   12 Shell diameter (m)
+      Value =     0.500        Range (Min Max):     0.010        10.000
+   13 Coil type (=1 hor. tube;=2 ver. helix)
+      Value =     1.0000       Range (Min Max):     1.0000       5.0000
+
+ Number of additional output parameters:     4
+ Additional output variables:
+    1 Heat transfer (W)              Type :    1
+    2 Tube heat coeff (W/m2-K)       Type :    1
+    3 Tank heat coeff (W/m2-K)       Type :    1
+    4 Total Ui-value  (W/m2-K)       Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     87
+
+ Component Description
+    Generic type     : Mains water temperature and draw profiles
+    Description      : 1-node mains water temperature and draw profiles
+    Insertion date   : 20th Feb 2006
+    Type: Single component                    Component code :   1210
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1
+    Node connections :   1,
+    Variable type    :  20
+
+ Miscellaneous Data
+    Adata items   :  37   Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Temperature Method (=1 Moore model,=2 User input)
+      Value =     1.00         Range (Min Max):     1.0000       2.0000
+    2 January mains temperature (Deg C)
+      Value =     6.55         Range (Min Max):     0.0000       30.0000
+    3 February mains temperature (Deg C)
+      Value =     5.77         Range (Min Max):     0.0000       30.0000
+    4 March mains temperature (Deg C)
+      Value =     6.55         Range (Min Max):     0.0000       30.0000
+    5 April mains temperature (Deg C)
+      Value =     8.69         Range (Min Max):     0.0000       30.0000
+    6 May mains temperature (Deg C)
+      Value =    11.61         Range (Min Max):     0.0000       30.0000
+    7 June mains temperature (Deg C)
+      Value =    14.53         Range (Min Max):     0.0000       30.0000
+    8 July mains temperature (Deg C)
+      Value =    16.67         Range (Min Max):     0.0000       30.0000
+    9 August mains temperature (Deg C)) 
+      Value =    17.46         Range (Min Max):     0.0000       30.0000
+   10 September mains temperature (Deg C)
+      Value =    16.67         Range (Min Max):     0.0000       30.0000
+   11 October mains temperature (Deg C)
+      Value =    14.53         Range (Min Max):     0.0000       30.0000
+   12 November mains temperature (Deg C)
+      Value =    11.61         Range (Min Max):     0.0000       30.0000
+   13 December mains temperature (Deg C)
+      Value =     8.69         Range (Min Max):     0.0000       30.0000
+   14 Water draw for hour ending 1:00 a.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000       1000.0000
+   15 Water draw for hour ending 2:00 a.m. (L/hr)
+      Value =     7.00         Range (Min Max):     0.0000       1000.0000
+   16 Water draw for hour ending 3:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000       1000.0000
+   17 Water draw for hour ending 4:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000       1000.0000
+   18 Water draw for hour ending 5:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000       1000.0000
+   19 Water draw for hour ending 6:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000       1000.0000
+   20 Water draw for hour ending 7:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000       1000.0000
+   21 Water draw for hour ending 8:00 a.m. (L/hr)
+      Value =     8.00         Range (Min Max):     0.0000       1000.0000
+   22 Water draw for hour ending 9:00 a.m. (L/hr)
+      Value =    18.00         Range (Min Max):     0.0000       1000.0000
+   23 Water draw for hour ending 10:00 a.m. (L/hr)
+      Value =    15.00         Range (Min Max):     0.0000       1000.0000
+   24 Water draw for hour ending 11:00 a.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000       1000.0000
+   25 Water draw for hour ending 12:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000       1000.0000
+   26 Water draw for hour ending  1:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000       1000.0000
+   27 Water draw for hour ending  2:00 p.m. (L/hr)
+      Value =    13.00         Range (Min Max):     0.0000       1000.0000
+   28 Water draw for hour ending  3:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000       1000.0000
+   29 Water draw for hour ending  4:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000       1000.0000
+   30 Water draw for hour ending  5:00 p.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000       1000.0000
+   31 Water draw for hour ending  6:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000       1000.0000
+   32 Water draw for hour ending  7:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000       1000.0000
+   33 Water draw for hour ending  8:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000       1000.0000
+   34 Water draw for hour ending  9:00 p.m. (L/hr)
+      Value =    17.00         Range (Min Max):     0.0000       1000.0000
+   35 Water draw for hour ending 10:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000       1000.0000
+   36 Water draw for hour ending 11:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000       1000.0000
+   37 Water draw for hour ending 12:00 a.m. (L/hr)
+      Value =    11.00         Range (Min Max):     0.0000       1000.0000
+
+ Number of additional output parameters:     0
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     88
+
+ Component Description
+    Generic type     : Water hourly draw profile
+    Description      : 1-node water hourly draw profile
+    Insertion date   : 23rd November 2006
+    Type: Single component                    Component code :   1220
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1
+    Node connections :   1,
+    Variable type    :  20
+
+ Miscellaneous Data
+    Adata items   :  24   Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+   1  Water draw for hour ending 1:00 a.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000        1000.0000
+   2  Water draw for hour ending 2:00 a.m. (L/hr)
+      Value =     7.00         Range (Min Max):     0.0000        1000.0000
+   3  Water draw for hour ending 3:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000        1000.0000
+   4  Water draw for hour ending 4:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000        1000.0000
+   5  Water draw for hour ending 5:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000        1000.0000
+   6  Water draw for hour ending 6:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000        1000.0000
+   7  Water draw for hour ending 7:00 a.m. (L/hr)
+      Value =     0.00         Range (Min Max):     0.0000        1000.0000
+   8  Water draw for hour ending 8:00 a.m. (L/hr)
+      Value =     8.00         Range (Min Max):     0.0000        1000.0000
+   9  Water draw for hour ending 9:00 a.m. (L/hr)
+      Value =    18.00         Range (Min Max):     0.0000        1000.0000
+   10 Water draw for hour ending 10:00 a.m. (L/hr)
+      Value =    15.00         Range (Min Max):     0.0000        1000.0000
+   11 Water draw for hour ending 11:00 a.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000        1000.0000
+   12 Water draw for hour ending 12:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000        1000.0000
+   13 Water draw for hour ending  1:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000        1000.0000
+   14 Water draw for hour ending  2:00 p.m. (L/hr)
+      Value =    13.00         Range (Min Max):     0.0000        1000.0000
+   15 Water draw for hour ending  3:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000        1000.0000
+   16 Water draw for hour ending  4:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000        1000.0000
+   17 Water draw for hour ending  5:00 p.m. (L/hr)
+      Value =     9.00         Range (Min Max):     0.0000        1000.0000
+   18 Water draw for hour ending  6:00 p.m. (L/hr)
+      Value =    10.00         Range (Min Max):     0.0000        1000.0000
+   19 Water draw for hour ending  7:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000        1000.0000
+   20 Water draw for hour ending  8:00 p.m. (L/hr)
+      Value =    16.00         Range (Min Max):     0.0000        1000.0000
+   21 Water draw for hour ending  9:00 p.m. (L/hr)
+      Value =    17.00         Range (Min Max):     0.0000        1000.0000
+   22 Water draw for hour ending 10:00 p.m. (L/hr)
+      Value =    14.00         Range (Min Max):     0.0000        1000.0000
+   23 Water draw for hour ending 11:00 p.m. (L/hr)
+      Value =    12.00         Range (Min Max):     0.0000        1000.0000
+   24 Water draw for hour ending 12:00 a.m. (L/hr)
+      Value =    11.00         Range (Min Max):     0.0000        1000.0000
+
+ Number of additional output parameters:     0
+
+ Mass flow components data                                  
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     89
+
+ Component Description
+    Generic type     : Stratified storage tank model
+    Description      : Stratified tank with up to 100 layers; 2 node model
+    Insertion date   : 23 May 2007 
+    Type: Single component                    Component code :   1230
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  20,  20,
+
+ Miscellaneous Data
+    Adata items   :  13    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Tank volume (m3)
+      Value =   0.2730         Range (Min Max):    0.0100         10.0000
+    2 Tank height (m)
+      Value =   1.5000         Range (Min Max):    0.1000         10.0000
+    3 Tank perimeter (m; -1 if cylindrical)
+      Value =  -1.0000         Range (Min Max):   -1.0000          5.0000
+    4 Height of flow inlet 1 (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+    5 Height of flow outlet 1 (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+    6 Height of flow inlet 2 (m)            
+      Value =   0.0000         Range (Min Max):    0.0000         10.0000
+    7 Height of flow outlet 2 (m)            
+      Value =   1.5000         Range (Min Max):    0.0000         10.0000
+    8 Tank heat loss coefficient (W/m2-K)
+      Value =    0.1000        Range (Min Max):    0.0000         100.000
+    9 Additional destratification conductivity (W/m-K)
+      Value =   0.0000         Range (Min Max):    0.0000         100.000
+   10 Number of nodes 
+      Value =   50.0000        Range (Min Max):    0.0000         100.000
+   11 Internal time steps per simulation time step
+      Value =   5.0000         Range (Min Max):    1.0000         100.000
+   12 Initial temperature of tank (C)
+      Value =   20.0000        Range (Min Max):    0.0000         100.000
+   13 Boiling temperature of fluid (C)
+      Value =  100.0000        Range (Min Max):   50.0000         200.000
+
+ Number of additional output parameters:     5
+ Additional output variables:
+    1 Average tank temperature       Type :    1
+    2 Heat loss                      Type :    1
+    3 Number of internal time steps  Type :    1
+    4 Times mixing algorithm called  Type :    1
+    5 Avg number of mixed sections   Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
