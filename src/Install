@@ -1315,13 +1315,13 @@ echo " Installing ESP-r system.  This may take some time."
 
  # Attempt to collect URL from svn info
  URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
-   
+
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
- URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn2.cvsdude.com/espr/esp-r/"`
+ URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn[0-9]*.cvsdude.com/espr/esp-r/"`
  URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
 
- if [ "$svnnotfound" != "" ]    || 
+ if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
     [ "$svnrevision"    =  "" ] ;   then
    versioned_repository="no";
@@ -1794,7 +1794,6 @@ if [ "$install_training" = "yes" ]; then
      echo "Updating materials and climate databases in training models..."
      echo " "
      cd ${SRCdir}
-     ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materialdb.a cellular_pv.materials
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
      echo " "
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
@@ -1904,7 +1903,7 @@ if [ "$install_dbs" = "yes" ]; then
   # remove existing binary databases
   rm -f ${DESTdir}/esp-r/databases/*
   rm -f ${DESTdir}/esp-r/climate/clm67
-  rm -f ${DESTdir}/esp-r/training/results/test.res
+  rm -f ${DESTdir}/esp-r/databases/test.res
   echo " "
   # Construction databases. Note constr.db1 and constr.db2 are merely subsets
   # of constr.db3. Perhaps they can be merged into a single file?
@@ -2172,17 +2171,12 @@ sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPd
 a
 d
 y
-${DESTdir}/esp-r/climate/clm67
 c
 ${DESTdir}/esp-r/databases/test.res
 11 7
 17 7
-y
 1
-*
-*
-*
-*
+1
 s
 
 example_results

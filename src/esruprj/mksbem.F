@@ -2285,6 +2285,8 @@ C variables for floors
       uaroofsum = 0.0
       uroofaver = 0.0
       rexposed = 0.0
+
+      zutrmax  = 0.0
        
       INPIC=NCOMP
       do 14 mz=1,inpic

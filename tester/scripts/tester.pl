@@ -68,10 +68,9 @@ sub stream_out($);
 sub echo_config();
 sub parse_hash_recursively();
 sub create_historical_archive();
-sub process_historical_archive(); 
+sub process_historical_archive($); 
 sub create_report();
-sub mail_message($$$$$);
-sub ESPR_Results_mailer();
+sub compare_results($$);
 #-------------------------------------------------------------------
 # Scope global variables. All variables beginning with a 'g' are
 # considered global, and may be used in subordinate routines.
@@ -114,6 +113,9 @@ my %gRun_Times;            # Run times for simulation
 my $gAll_tests_pass = 1;   # Flag indicating result of all tests.
                            #   (defaulted to 'pass', set to 'fail'
                            #    on first failure).
+
+                                                      
+my $gProcessed_Archive_count=0; # number of archives processed.
                                                       
 #-------------------------------------------------------------------
 # Help text. Dumped if help requested, or if no arguements supplied.
@@ -122,8 +124,9 @@ my $Help_msg = "
 
  tester.pl
 
- USAGE: tester.pl [OPTIONS] [reference_bps] test_bps
-
+ USAGE: tester.pl [OPTIONS] reference_bps test_bps
+        tester.pl [OPTIONS] -a <reference_archive> test_bps
+        tester.pl [OPTIONS] -a <reference_archive> -a <test_archive>
  
  ABSTRACT:
  ---------
@@ -216,12 +219,6 @@ my $Help_msg = "
          tested when the very-verbose option is active. 
 
     --echo: Report test configuration and quit.
-
-    --mailto <address>: This will email the results to the list given. This
-         is dependant on the unix 'mail' program. Will not work on windows.
-
-    --smtp_server <address>: This is required if you wish to use option '--mail_to'.
-         Ask your system administrator for your smtp server name.'
 
     
  SYNOPSIS:
@@ -452,6 +449,7 @@ push @Env_Paths, "";
 $gTest_params{'echo_config'}        = 0; # Report configuration to buffer
 $gTest_params{'single_case'}        = 0; # Test a single case (.cfg file)
 $gTest_params{'compare_to_archive'} = 0; # compare results to historical archive
+$gTest_params{'compare_two_archives'} = 0; # compare two historical archives
 $gTest_params{'create_archive'}     = 0; # create historical archive for future
                                          #    comparisons
 $gTest_params{'compare_versions'}   = 1; # compare 2 bps executables
@@ -515,7 +513,7 @@ $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
                   "csv" => 1,
                   "h3k" => 1,
                   "data" => 1,
-                  "fcts" => 1
+                  "fcts" => 0
              );
                                                       
 # value for close-to-zero comparisons
@@ -527,7 +525,7 @@ $gSmall = 1E-10;
                    "oC"      => 0.1,
                    "GJ"      => 1.0E-03,
                    "-"       => 1.0E-03,
-                   "%"       => 1.0E-03,
+                   "%"       => 1.0E-01,
                    "V"       => 1.0E-03,
                    "A"       => 1.0E-03,
                    "kg/s"    => 1.0E-03,
@@ -550,7 +548,7 @@ $gTolerance{"relative"}        = $gTolerance{"%"};
 
 # dump text, if no arguement given
 if (!@ARGV){
-  system("echo \"$Help_msg\" | more ");
+  system("echo \"$Help_msg\" ");
   die;
 }
 
@@ -583,8 +581,6 @@ $cmd_arguements =~ s/--historical_archive;/--historical_archive:/g;
 $cmd_arguements =~ s/--create_historical_archive;/--create_historical_archive:/g;
 $cmd_arguements =~ s/--ref_res;/--ref_res:/g;
 $cmd_arguements =~ s/--test_res;/--test_res:/g;
-$cmd_arguements =~ s/--mailto;/--mailto:/g;
-$cmd_arguements =~ s/--smtp_server;/--smtp_server:/g;
 $cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
@@ -603,7 +599,7 @@ foreach $arg (@processed_args){
   {
     if ( $arg =~/^--help/ ){
       # Dump help messages and quit.
-      system("echo \"$Help_msg\" | more ");
+      system("echo \"$Help_msg\" ");
       die;
       last SWITCH;
     }
@@ -630,15 +626,32 @@ foreach $arg (@processed_args){
     }
     if( $arg =~ /^--historical_archive:/ ){
       # results to be compared to historical archive (expect a tar.gz file)
-      $gTest_params{"compare_to_archive"} = 1;
+
       $gTest_params{"compare_versions"}   = 0;
-      $gTest_paths{"old_archive"} = $arg;
-      $gTest_paths{"old_archive"} =~ s/--historical_archive://g;
-      if ( ! $gTest_paths{"old_archive"} ){
-        fatalerror("Path to historical archive must be specified with ".
-                  "--historical_archive (or -a) option!");
+
+      if ( ! $gTest_params{"compare_to_archive"} ){
+
+        $gTest_params{"compare_to_archive"} = 1;
+        $gTest_paths{"old_archive"} = $arg;
+        $gTest_paths{"old_archive"} =~ s/--historical_archive://g;
+        if ( ! $gTest_paths{"old_archive"} ){
+          fatalerror("Path to historical archive must be specified with ".
+                     "--historical_archive (or -a) option!");
+        }
+
+      }else{
+
+        $gTest_params{"compare_to_archive"} = 0;
+        $gTest_params{"compare_two_archives"} = 1;
+
+        $gTest_paths{"new_archive"} = $arg;
+        $gTest_paths{"new_archive"} =~ s/--historical_archive://g;
+        if ( ! $gTest_paths{"new_archive"} ){
+          fatalerror("Path to historical archive must be specified with ".
+                     "--historical_archive (or -a) option!");
+        }
       }
-  
+
       last SWITCH;
     }
     if( $arg =~ /^--create_historical_archive/ ){
@@ -755,22 +768,7 @@ foreach $arg (@processed_args){
     
       last SWITCH;
     }
-    
-    if ( $arg =~ /^--mailto:/ ){
-      # Path to res for test bps
-      $arg =~ s/--mailto://g;
-      $gTest_params{"mailto_address"} = $arg ;
-    
-      last SWITCH;
-    }
 
-    if ( $arg =~ /^--smtp_server:/ ){
-      # Path to res for test bps
-      $arg =~ s/--smtp_server://g;
-      $gTest_params{"smtp_server_address"} = $arg ;
-    
-      last SWITCH;
-    }
     if ( $arg =~ /^--diff_data/ ){
       # invoke a thrid party diff to compare differning data files...
       $gTest_params{"diff_data_files"} = 1;
@@ -795,7 +793,7 @@ foreach $arg (@processed_args){
     push @binaries, $arg;
     
   }
-}  
+}
 
 
 #--------------------------------------------------------------------
@@ -819,6 +817,7 @@ $gTest_paths{"results"}      = resolve_path ( $gTest_paths{"results"} );
 # is execuitable.
 #-------------------------------------------------------------------
 my ($binary, $bin_count, $bin_list, $found, $bin_1, $bin_2, $path);
+$bin_count = 0;
 foreach $binary (@binaries){
   $bin_count++;
   $bin_list .= " $binary ";
@@ -862,22 +861,28 @@ if ( $gTest_params{"compare_versions"} ){
   }
   $gRef_Test_params{"test_binary"} = $bin_1;
   $gTest_params{"test_binary"} = $bin_2;
-}else{
+}elsif ( $gTest_params{"compare_to_archive"} || $gTest_params{"create_archive"} ){
   # a single bps should be specified
   if ( $bin_count != 1 ) {
     fatalerror("A single binary test file was expected but ".
                "$bin_count ($bin_list) specified.");
   }
   $gTest_params{"test_binary"} = $bin_1;
+}elsif ( $gTest_params{"compare_two_archives"} ){
+  # No bps executables should be specified.
+  if ( $bin_count != 0 ) {
+    fatalerror("Two archives were expected, but ".
+               "$bin_count ($bin_list) binary test files were specified.");
+  }
 }
 
 # get modification dates & md5 checksums for test file
-if ( `which stat ` !~ /no stat/ ){
+if ( ! $gTest_params{"compare_two_archives"} &&  `which stat ` !~ /no stat/ ){
   $gTest_params{"test_bin_mod_date"} = `stat --format=%y $gTest_params{'test_binary'}`;
 }else{
   $gTest_params{"test_bin_mod_date"} = "unknown";
 }
-if ( `which md5sum ` !~ /no md5sum/ ){
+if ( ! $gTest_params{"compare_two_archives"} && `which md5sum ` !~ /no md5sum/ ){
   $gTest_params{"test_bin_md5sum"} = `md5sum $gTest_params{'test_binary'}`;
   $gTest_params{"test_bin_md5sum"} =~ s/\s+.*$//g;
 }else{
@@ -950,16 +955,16 @@ if ( $gTest_params{"ref_res_path"} ){
   foreach my $path ( @Env_Paths ){
     my $combpath = resolve_path ( "$path/$gTest_params{\"ref_res_path\"}" );
     if ( -r "$combpath" &&
-        -x  "$combpath"  &&
+         -x "$combpath" &&
           ! $gTest_paths{"ref_res_path"} ){
 
       # Res was found 
       $combpath =~ s/\/res$//g;
       $gTest_params{"ref_res_found"} = 1;
       $gTest_paths{"ref_res_path"} = $combpath;
-  
+
     }
-  
+
   }
 }
 
@@ -980,7 +985,7 @@ foreach my $path ( split ( /;/, $gTest_paths{"helper_apps"} ),
     # ISH was found!
     $gTest_params{"ish_found"} = 1;
     $gTest_paths{"ish"} = "$path/ish";
-       
+
   }
 }
 
@@ -1012,7 +1017,9 @@ if ( $gTest_params{"user_databases"} ){
         "          instead ($gTest_paths{\"default_dbs\"}).\n"
       );
       $gTest_params{"user_databases"} = 0;
+
     }
+
     if ( ! -d "$path/databases" ||
          ! -r "$path/databases" ||
          ! -x "$path/databases"    ){
@@ -1042,22 +1049,25 @@ if ( $gTest_params{"user_databases"} ){
   }
 }
 
+
 #-----------------------------------------------------------------------
 # If a historical archive has been specified, process the archive
 #-----------------------------------------------------------------------
-if ( $gTest_params{"compare_to_archive"} ) {
+if ( $gTest_params{"compare_to_archive"} ||
+     $gTest_params{"compare_two_archives"}) {
 
-  process_historical_archive();
+  process_historical_archive($gTest_paths{"old_archive"});
 
-
+  if (  $gTest_params{"compare_two_archives"} ) {
+    process_historical_archive($gTest_paths{"new_archive"});
+  }
 
 #-----------------------------------------------------------------------
 #   Resolve specified test parameters against those in the
 #   archive.
 #-----------------------------------------------------------------------
   if ( $gTest_params{"abbreviated_runs"} ne
-      $gRef_Test_params{"abbreviated_runs"} ){
-  
+       $gRef_Test_params{"abbreviated_runs"} ){
     stream_out( " Warning: Abbreviated simulations have been "
               .is_empty($gTest_params{"abbreviated_runs"})
               ." but the historical archive was\n");
@@ -1068,11 +1078,10 @@ if ( $gTest_params{"compare_to_archive"} ) {
   
     $gTest_params{"abbreviated_runs"} = $gRef_Test_params{"abbreviated_runs"};
   }     
-  
   if ( $gTest_params{"abbreviated_runs"} &&
-      $gTest_params{"abbreviated_run_period"} ne
-      $gRef_Test_params{"abbreviated_run_period"} ){
-  
+       $gTest_params{"abbreviated_run_period"} ne
+       $gRef_Test_params{"abbreviated_run_period"} ){
+
     stream_out( " Warning: An abbreviated simulation period of "
               ."$gTest_params{\"abbreviated_run_period\"} has been specified\n");
     stream_out( "          but the historical archive was created with a period of "
@@ -1083,6 +1092,8 @@ if ( $gTest_params{"compare_to_archive"} ) {
     $gTest_params{"abbreviated_run_period"} = $gRef_Test_params{"abbreviated_run_period"};
   }
 }
+
+
 #-----------------------------------------------------------------------
 # Set save-levels. Note: $gTest_ext may have been adjusted if
 # all specified extentions are not present in the archive. 
@@ -1146,20 +1157,23 @@ if ( $gTest_params{"echo_config"} ) {
 # Prepare results/simulation folders
 #-----------------------------------------------------------------------
 
+
+if ( ! $gTest_params{"compare_two_archives"} ){
 # Test that 'local_models' folder can be created.
-if ( ! -d $gTest_paths{"local_models"} ){
-  execute("mkdir $gTest_paths{\"local_models\"}");
   if ( ! -d $gTest_paths{"local_models"} ){
-    fatalerror("Local model folder could not be created ($gTest_paths{\"local_models\"})");
+    execute("mkdir $gTest_paths{\"local_models\"}");
+    if ( ! -d $gTest_paths{"local_models"} ){
+      fatalerror("Local model folder could not be created ($gTest_paths{\"local_models\"})");
+    }
+  }elsif ( ! -w $gTest_paths{"local_models"} ){
+    execute("chmod u+w $gTest_paths{\"local_models\"}");
+    if ( ! -w $gTest_paths{"local_models"} ){
+      fatalerror("Local model folder is not writable ($gTest_paths{\"local_models\"})");
+    }
   }
-}elsif ( ! -w $gTest_paths{"local_models"} ){
-  execute("chmod u+w $gTest_paths{\"local_models\"}");
-  if ( ! -w $gTest_paths{"local_models"} ){
-    fatalerror("Local model folder is not writable ($gTest_paths{\"local_models\"})");
-  }
+  # Now delete it. We'll create it as we need to later on.
+  unlink $gTest_paths{"local_models"};
 }
-# Now delete it. We'll create it as we need to later on.
-unlink $gTest_paths{"local_models"};
 
 
 
@@ -1240,29 +1254,42 @@ if ( $gTest_params{"create_archive"}){
   $gTest_params{"archive_root_name"} = $gTmp_Test_archive;
   $gTest_params{"archive_root_name"} =~ s/\/$//g;              # strip any trailing slashes
   $gTest_params{"archive_root_name"} =~ s/^.*\/([^\/]+)$/$1/g; # get last folder name
-}   
+}
 
 #-----------------------------------------------------------------------
 # Process test cases
 #-----------------------------------------------------------------------
-
-if ( $gTest_params{"single_case"} ){
-  # process specified file
-  process_case($gTest_paths{"single_case"});
+if ( ! $gTest_params{"compare_two_archives"} ){
+  if ( $gTest_params{"single_case"} ){
+    # process specified file
+    process_case($gTest_paths{"single_case"});
+  }else{
+    # recursively search through test-case path for cfg files.
+    find( sub{
+          # move on to next file if (1) file is a directory,
+          # (2) file is not readable, or (3) file is not
+          # cfg file.
+          return if -d;
+          return unless -r;
+          return if $File::Find::name =~ m/CVS./;
+          return unless $File::Find::name =~ m/\.cfg$/;
+          process_case($File::Find::name);
+        },  $gTest_paths{"test_suite"} );
+  }
 }else{
-  # recursively search through test-case path for cfg files.
-  find( sub{
-        # move on to next file if (1) file is a directory,
-        # (2) file is not readable, or (3) file is not
-        # cfg file.
-        return if -d;
-        return unless -r;
-        return if $File::Find::name =~ m/CVS./;
-        return unless $File::Find::name =~ m/\.cfg$/;
-        process_case($File::Find::name);
-      },  $gTest_paths{"test_suite"} );
-}
 
+  foreach my $key ( keys %gTestable_files ){
+
+    my ($folder, $model) = split /\//, $key;
+
+    stream_out(" > TESTING: $model (in folder  $folder)\n");
+    stream_out("   Comparing files from archives.\n");
+
+    compare_results($model, $folder);
+
+  }
+
+}
 #-----------------------------------------------------------------------
 # Create test report. 
 #-----------------------------------------------------------------------
@@ -1270,9 +1297,6 @@ if ( $gTest_params{"create_report"} &&
      ( $gTest_params{"compare_versions"} || $gTest_params{"compare_to_archive"} ) ){
   create_report();
 }
-
-
-
 
 #-----------------------------------------------------------------------
 # If a historical archive is to be created, write out test configuration
@@ -1282,10 +1306,6 @@ if ( $gTest_params{"create_archive"} ){
   create_historical_archive();
 }
 
-#------------------------------------------------------------------------
-# Mail results if desired.
-#------------------------------------------------------------------------
-ESPR_Results_mailer();
 #-----------------------------------------------------------------------
 # Clean up
 #-----------------------------------------------------------------------
@@ -1415,9 +1435,9 @@ sub create_report(){
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^^^^^^^^^"
-                  ."^^^^^^^^^^^^^^^^^^";
+                  ."^^^^^^^^^^^^";
   push @output, $current_rule;
-  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> .fcts<> overall<> dt-CPU(%%)", "Folder", "Model");
+  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> overall<> dt-CPU(%%)", "Folder", "Model");
   push @output, $current_rule;
 
   # Loop throug results, and report to buffer
@@ -1427,7 +1447,6 @@ sub create_report(){
     my $csv_pass  = result_to_string($test,"csv");
     my $h3k_pass  = result_to_string($test,"h3k");
     my $data_pass = result_to_string($test,"data");
-    my $fcts_pass = result_to_string($test,"fcts");
     my $overall_pass = result_to_string($test,"overall");
     my $cpu_change = $gRun_Times{"$folder/$model"}{"chg"};
     # add extra space to align +ive and -ive CPU runtime changes
@@ -1439,7 +1458,7 @@ sub create_report(){
       $cpu_change = "N/A";
     }
     
-    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    <> ".$spacer."%-10s  ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $fcts_pass, $overall_pass, $cpu_change);
+    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    <> ".$spacer."%-10s  ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $overall_pass, $cpu_change);
   }
   push @output, $current_rule;
   push @output, "  ";
@@ -1472,9 +1491,9 @@ sub create_report(){
     push @output, " Maximum observed error";
     push @output, "  - Folder:                 <> $gMax_difference{\"global\"}{\"folder\"}";
     push @output, "  - Model:                  <> $gMax_difference{\"global\"}{\"model\"}.cfg";
-    push @output, "  - Element:                <> $gMax_difference{\"global\"}{\"element_path\"}";
-    push @output, "  - Relative difference (%):<> ".format_my_number($gMax_difference{"global"}{"relative"},15,"%-10.5g");
-
+    push @output, "  - Element:                <> $gMax_difference{\"global\"}{\"element_path\"} ($gMax_difference{\"global\"}{\"attribute\"})";
+    push @output, "  - Relative difference:    <> ".format_my_number($gMax_difference{"global"}{"relative"},15,"%-10.5g")."<> (%)";
+    push @output, "  - Absolute difference:    <> ".format_my_number($gMax_difference{"global"}{"absolute"},15,"%-10.5g")."<> (".$gMax_difference{"global"}{"units"}.")";
 
     push @output, " ";
     push @output, "  - Tolerances for comparisons: ";
@@ -1519,8 +1538,9 @@ sub create_report(){
         push @output, " TEST CASE $model ($folder)";
         push @output, "  - Folder:                     <> $folder";
         push @output, "  - Model:                      <> $model.cfg";
-        push @output, "  - MAX error observed in:      <> $gMax_difference{\"$folder;$model\"}{\"element_path\"}";
-        push @output, "  - MAX Relative difference (%):<> ".format_my_number($gMax_difference{"$folder;$model"}{"relative"},15,"%-10.5g"),;
+        push @output, "  - MAX error observed in:      <> $gMax_difference{\"$folder;$model\"}{\"element_path\"} ($gMax_difference{\"$folder;$model\"}{\"attribute\"})";
+        push @output, "        Relative difference:    <> ".format_my_number($gMax_difference{"$folder;$model"}{"relative"},15,"%-10.5g")."<> (%)";
+        push @output, "        Absolute difference:    <> ".format_my_number($gMax_difference{"$folder;$model"}{"absolute"},15,"%-10.5g")."<> (".$gMax_difference{"$folder;$model"}{"units"}.")";
         push @output, $current_rule;
         $current_line  = sprintf  (" %\-80s<>%\-20s[]",
                                    "Elements exhibiting differences", "Units");
@@ -1598,77 +1618,88 @@ sub create_report(){
    
   }
 
-
-
-
-  
-
   close (REPORT);
 
 }
 
 #-------------------------------------------------------------------
-# Process an old archive:
+# Process an archive:
 #   1. Uncompress it
 #   2. Parse the test configuration file
 #   3. Check that output files exist.
 #   4. Store output file locations in reference hash.
 #-------------------------------------------------------------------
-sub process_historical_archive(){
+sub process_historical_archive($){
+
+  my ($archive_file) = @_;
+
+
+  my %archive_Sys_params;
+  my %archive_Test_params;
+
 
   # Check that historical archive exists.
-  if ( ! -r $gTest_paths{"old_archive"} ) {
-    fatalerror("Historical archive ($gTest_paths{\"old_archive\"}) could not be found!");
+  if ( ! -r $archive_file ) {
+    fatalerror("Historical archive ($archive_file) could not be found!");
   }
-  
+
+  my $version = ( $gProcessed_Archive_count == 0 ) ? "reference" : "test" ;
+  $gProcessed_Archive_count++;
+
+
+  stream_out(" > Exploding tarball $archive_file...");
+
+
   # Check if historical archive is a tar-gz file.
-  if ( $gTest_paths{"old_archive"} !~ /\.tar\.gz$/ ){
+  if ( $archive_file !~ /\.tar\.gz$/ ){
 
     # make backup copy
 
-    $gTest_paths{"old_archive_backup"} = "$gTest_paths{\"old_archive\"}\_bak";
-    execute("cp -fr $gTest_paths{\"old_archive\"} $gTest_paths{\"old_archive_backup\"}");
+    $gTest_paths{"$version\_archive_backup"} = "$archive_file\_bak";
+    execute("cp -fr $archive_file $gTest_paths{\"$version\_archive_backup\"}");
 
-    if ( ! -r $gTest_paths{"old_archive_backup"} ){
-      fatalerror("A backup copy of $gTest_paths{\"old_archive\"} ".
-                 "could not be made at $gTest_paths{\"old_archive_backup\"}");
+    if ( ! -r $gTest_paths{"$version\_archive_backup"} ){
+      fatalerror("\nA backup copy of $archive_file ".
+                 "could not be made at $gTest_paths{\"$version\_archive_backup\"}");
     }
 
     # file does not end in .tar.gz. Attempt to rename and uncompress
-    stream_out(" Warning: $gTest_paths{\"old_archive\"} does not appear ".
+    stream_out("\n Warning: $archive_file does not appear ".
                "to be a valid archive.\n\n");
     stream_out("          Attempting to uncompress anyway.");
-    execute("mv $gTest_paths{\"old_archive\"} $gTest_paths{\"old_archive\"}.tar.gz");
+    execute("mv $archive_file $archive_file.tar.gz");
 
-    if ( ! -r "$gTest_paths{\"old_archive\"}.tar.gz" ){
+    if ( ! -r "$archive_file.tar.gz" ){
       # file could not be renamed
-      fatalerror("$gTest_paths{\"old_archive\"} could not be moved to ".
-                 "$gTest_paths{\"old_archive\"}.tar.gz!");
+      fatalerror("\n$archive_file could not be moved to ".
+                 "$archive_file.tar.gz!");
 
     }else{
       # file renamed successfully.
-      $gTest_paths{"old_archive"} .= ".tar.gz";
+      $archive_file .= ".tar.gz";
     }
   }
 
   
   
   # Get historical archive folder and root name
-  $gTest_paths{"old_archive_folder"} = $gTest_paths{"old_archive"};
-  $gTest_paths{"old_archive_folder"} =~ s/^(.+\/)[^\/]*$/$1/g;
+  $gTest_paths{"$version\_archive_folder"} = $archive_file;
+  $gTest_paths{"$version\_archive_folder"} =~ s/^(.+\/)[^\/]*$/$1/g;
   
-  $gTest_paths{"old_archive_file"} = $gTest_paths{"old_archive"};
-  $gTest_paths{"old_archive_file"} =~ s/$gTest_paths{"old_archive_folder"}//g;
+  $gTest_paths{"$version\_archive_file"} = $archive_file;
+  $gTest_paths{"$version\_archive_file"} =~ s/$gTest_paths{"$version\_archive_folder"}//g;
 
   # Move to achive directory
-  chdir $gTest_paths{"old_archive_folder"};
+  chdir $gTest_paths{"$version\_archive_folder"};
   
   # Decompress and explode tarball.
-  my $decompression_failure = `$gSys_params{"unzip_command"} $gTest_paths{"old_archive_file"} | $gSys_params{"untar_command"} -`;
+  my $decompression_failure = `$gSys_params{"unzip_command"} $gTest_paths{"$version\_archive_file"} | $gSys_params{"untar_command"} -`;
   if ( $decompression_failure ){
-    print ">>>>>> $decompression_failure ";
-    fatalerror("Could not decompress $gTest_paths{\"old_archive\"}");
+    print "\n>>>>>> $decompression_failure ";
+    fatalerror("\nCould not decompress $archive_file");
   }
+
+  stream_out("done.\n");
 
   # Open test configuration file
   open (REF_TEST_CONFIG, "$gTest_params{\"configuration_file\"}");
@@ -1726,9 +1757,9 @@ sub process_historical_archive(){
       # Parse system parameters
       if ( $values[0] eq "*sys_param" ){
         if ( $values[1] && $values[2] ){
-          $gRef_Sys_params{$values[1]} = $values[2];
+          $archive_Sys_params{$values[1]} = $values[2];
         }elsif ( $values[1] ) {
-          $gRef_Sys_params{$values[1]} = "unknown";  
+          $archive_Sys_params{$values[1]} = "unknown";
         }else{
           $error_msgs .= "      - System parameter ($values[1]=$values[2])".
                          " not understood (line: $line_number)\n";
@@ -1738,7 +1769,7 @@ sub process_historical_archive(){
       # Parse test parameters
       if ( $values[0] eq "*test_param" ){
         if ( $values[1] && $values[2] ){
-          $gRef_Test_params{$values[1]} = is_true_false($values[2]);
+          $archive_Test_params{$values[1]} = is_true_false($values[2]);
         }else{
           $error_msgs .= "      - Test parameter ($values[1]=$values[2])".
                          " not understood (line: $line_number)\n";
@@ -1769,21 +1800,23 @@ sub process_historical_archive(){
 
           my $file_list = "";
 
-          if ( $gTestable_files{$values[1]} ){
+          if ( defined ( $gTestable_files{$values[1]}{$version} ) ){
             $file_list = ";"
           }
-          $values[3] = resolve_path("$gTest_paths{\"old_archive_folder\"}/$values[3]");
+          $values[3] = resolve_path("$gTest_paths{\"$version\_archive_folder\"}/$values[3]");
           $file_list .= "$values[2]:$values[3]";
-          $gTestable_files{$values[1]}{"reference"} .= $file_list;
-
+          $gTestable_files{$values[1]}{"$version"} .= $file_list;
 
         }else{
           $error_msgs .= "      - Results file model/extention/path".
                          " ($values[1]/$values[2]$values[3])".
                          " not understood (line: $line_number)\n";
-                         
+
         }
+
       }
+
+
 
       # Parse recorded runtimes.
       if ( $values[0] eq "*runtime" ){
@@ -1791,7 +1824,7 @@ sub process_historical_archive(){
           # arg 1: model path (folder/model name)
           # arg 2: save level
           # arg 3: runtime
-          $gRun_Times{$values[1]}{$values[2]}{"reference"} = $values[3];
+          $gRun_Times{$values[1]}{$values[2]}{"$version"} = $values[3];
 
         }else{
           # Runtime 
@@ -1806,16 +1839,40 @@ sub process_historical_archive(){
 
   # Clean any ~'s, which are used to denote spaces within a string
   foreach my $parameter (keys %gRef_Test_params ){
-     $gRef_Test_params{$parameter} =~ s/~/ /g;
+     $archive_Test_params{$parameter} =~ s/~/ /g;
   }
   foreach my $parameter (keys %gRef_Sys_params ){
-     $gRef_Sys_params{$parameter} =~ s/~/ /g;
+     $archive_Sys_params{$parameter} =~ s/~/ /g;
+  }
+
+  # Now copy archive parameters into ref/test commons, depending on
+  # version.
+
+  if ( $version =~ /reference/ ){
+
+    while (my ($param, $val) = each ( %archive_Test_params ) ){
+      $gRef_Test_params{$param} = $val;
+    }
+    while (my ($param, $val) = each ( %archive_Sys_params ) ){
+      $gRef_Sys_params{$param} = $val;
+    }
+
+  }else{
+
+    while (my ($param, $val) = each ( %archive_Test_params ) ){
+      $gTest_params{$param} = $val;
+    }
+    while (my ($param, $val) = each ( %archive_Sys_params ) ){
+      $gSys_params{$param} = $val;
+    }
+
   }
 
   if ( $error_msgs ){
     print $error_msgs;
-    fatalerror("Could not parse $gTest_paths{\"old_archive\"}");
+    fatalerror("Could not parse $archive_file");
   }
+  
 }
 
 
@@ -2380,7 +2437,13 @@ sub compare_results($$){
 
   # Do test files exist?
   }elsif ( ! defined $gTestable_files{"$folder/$model"}{"test"} ){
-    $gTest_Results{"$folder/$model"}{"overall"} = "fail";
+
+    if ( $gTest_params{"compare_to_archive"} ||
+         $gTest_params{"compare_two_archives"}  ){
+      $gTest_Results{"$folder/$model"}{"overall"} = "unknown";
+    }else{
+      $gTest_Results{"$folder/$model"}{"overall"} = "fail";
+    }
     $gRun_Times{"$folder/$model"}{"chg"} = "N/A";
 
   }else{
@@ -2521,11 +2584,6 @@ sub compare_results($$){
       }
     }
 
-    # update global pass flag upon failure.
-    if ( $gTest_Results{"$folder/$model"}{"overall"} =~ /fail/ ){
-      $gAll_tests_pass = 0;
-    }
-
     # Compute average CPU runtimes for all save-levels
     # and determine increase / reduction. Run times are
     # not available in very verbose mode.
@@ -2563,6 +2621,11 @@ sub compare_results($$){
     
   }
 
+  # update global pass flag upon failure.
+  if ( $gTest_Results{"$folder/$model"}{"overall"} =~ /fail/ ){
+    $gAll_tests_pass = 0;
+  }
+
   # Report overall test result to buffer
   stream_out (
                 sprintf ("    - %-12s %s \n","Overall:",
@@ -2570,6 +2633,7 @@ sub compare_results($$){
                           {"overall"})
                              
   );
+  
 }
 
 
@@ -2755,17 +2819,23 @@ sub CompareXMLResults($){
             $global_fail = 1;
 
             if ( ! defined ( $gMax_difference{"global"}{"relative"} ) ||
-                  $difference{"relative"} >= $gMax_difference{"global"}{"relative"} ){
-                  $gMax_difference{"global"}{"relative"} = $difference{"relative"};
+                  abs($difference{"relative"}) >= $gMax_difference{"global"}{"relative"} ){
+                  $gMax_difference{"global"}{"relative"} = abs($difference{"relative"});
+                  $gMax_difference{"global"}{"absolute"} = abs($difference{"absolute"});
                   $gMax_difference{"global"}{"folder"} = "$folder";
                   $gMax_difference{"global"}{"model"}  = "$model";
                   $gMax_difference{"global"}{"element_path"} = "$element_path";
+                  $gMax_difference{"global"}{"units"} = "$units";
+                  $gMax_difference{"global"}{"attribute"} = "$attribute";
             }
             
             if ( ! defined ( $gMax_difference{"$folder;$model"}{"relative"} ) ||
-                  $difference{"relative"} >= $gMax_difference{"$folder;$model"}{"relative"} ){
-                  $gMax_difference{"$folder;$model"}{"relative"} = $difference{"relative"};
+                  abs($difference{"relative"}) >= $gMax_difference{"$folder;$model"}{"relative"} ){
+                  $gMax_difference{"$folder;$model"}{"absolute"} = abs($difference{"absolute"});
+                  $gMax_difference{"$folder;$model"}{"relative"} = abs($difference{"relative"});
                   $gMax_difference{"$folder;$model"}{"element_path"} = "$element_path";
+                  $gMax_difference{"$folder;$model"}{"units"} = "$units";
+                  $gMax_difference{"$folder;$model"}{"attribute"} = "$attribute";
             }
 
             %{$gXML_Failures{"$folder;$model;$element_path;$attribute"}{"difference"}} = %difference;
@@ -3066,7 +3136,7 @@ sub number_cruncher($$$){
   }
   
   # does the difference between values exceed the tolerance?
-  if ( abs ( $absolute_difference ) - $gTolerance{$units} < $gSmall &&
+  if ( abs ( $absolute_difference ) - $gTolerance{$units} < $gSmall ||
        abs ( $relative_difference ) - $gTolerance{"relative"} < $gSmall  ){
     
     # no - test passes
@@ -3285,96 +3355,4 @@ sub format_my_number($$$){
   return $value;
 }
 
-sub mail_message($$$$$){
-my $worked;
-if ( eval "require Net::SMTP;" ) {
-my ($smtp_server,$To,$From,$Subject,$Message) = @_;
-my $smtp;
-if ( $smtp = Net::SMTP->new($smtp_server) )
-  {
-    # use the sender's address here
-    $smtp->mail($From);
-    # recipient's address	
-    $smtp->to($To);        # recipient's address
-    # Start the mail
-    $smtp->data();
-    	
-    # Send the header.
-    $smtp->datasend("To: $To\n");
-    $smtp->datasend("From: $From\n");
-    $smtp->datasend("Subject: $Subject\n");
-    
-    # Send the body.
-    $smtp->datasend("$Message\n");
-    
-    # Finish sending the mail
-    $smtp->dataend();
-    # Close the SMTP connection.
-    $smtp->quit();
-    #Set return status.
-    $worked = 1;            
-    # A successful message.	
-    print "Mail sent to $To via $smtp_server.\n"
-      }
-else
-  {
-    #E-mail failed. Tell user.
-    print "Socket Connection to SMTP server $smtp_server failed!\n";
-    print "Mail send failed!\n";
-    print "Verify the following.\n";
-    print "SMTP server = $smtp_server \n";
-    print "Email list = $To \n";
-    #Set return status.
-    $worked = 0 ;
-  }
-}
-else
-{
-print "NET::smtp not available. Cannot mail\n";
-  $worked = 0 ;
-}
-#Return status. 
-return $worked;
- }
 
-#This adds e-mail facility to the tester.
-
-sub ESPR_Results_mailer()
-  {
-    
-    if ( defined( $gTest_params{"mailto_address"} and  defined( $gTest_params{"smtp_server_address"} ) ) )
-      {
-	my $smtp_server =$gTest_params{"smtp_server_address"};
-	my $subject = "";
-	my $email_list = $gTest_params{"mailto_address"};
-	
-	#read in bps test_report
-	open INPUT, "<bps_test_report.txt";
-	#Ensure end of file variable is unset.
-	undef $/;
-	#Get the data from the file.
-	#Close data input.
-	my $content = <INPUT>;
-	close INPUT;
-	$/ = "\n";    
-	#Restore for normal behaviour later in script
-	
-	
-	if ( $gAll_tests_pass == 1 )
-	  {
-	    
-	    $subject = "ESP-r Testing Results Pass\n"
-	      
-	  }
-	else
-	  {
-	    $subject = "ESP-r Testing Results Fail\n"
-	  }
-	
-	print "Sending mail to $email_list using the smtp server $smtp_server.\n";
-	my $From = $ENV{USER}.'@esp-r.net';
-	mail_message( $smtp_server, $email_list, $From, $subject, $content);
-    
-
-      }
-  } 

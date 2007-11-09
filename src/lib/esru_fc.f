@@ -442,6 +442,16 @@ C      write(6,*) opta
       end
 
       subroutine horaxis(xmn,xmx,ioffl,ioffr,ioffb,xadd,sca,mode,msg)
+      real xmn,xmx,sca,xadd
+      integer ioffl,ioffr,ioffb
+      character*(*) msg
+      return
+      end
+
+      subroutine horaxishdw(xmn,xmx,ioffl,ioffr,ioffb,xadd,sca,mode,
+     &  ind,idiv,isjday,msg)
+      real xmn,xmx,sca,xadd
+      integer ioffl,ioffr,ioffb,ind,idiv,isjday
       character*(*) msg
       return
       end

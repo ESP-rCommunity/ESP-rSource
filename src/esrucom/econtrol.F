@@ -2817,17 +2817,18 @@ C based on the miscel data items.
             if(oka)then
               inear=nint(cm(ndx+1))
               msg1=' sensor unknown'
-              if(inear.eq.0)msg1=' senses ambient T'
-              if(inear.eq.2)msg1=' senses wind speed'
-              if(inear.eq.3)msg1=' senses wind direction'
-              if(inear.eq.4)msg1=' senses diffuse solar'
-              if(inear.eq.5)msg1=' senses direct solar'
+              if(inear.eq.0)msg1=' ambient T'
+              if(inear.eq.2)msg1=' wind speed'
+              if(inear.eq.3)msg1=' wind direction'
+              if(inear.eq.4)msg1=' diffuse solar'
+              if(inear.eq.5)msg1=' direct solar'
               if(inear.eq.6)msg1=' senses RH'
             endif
             call eclose(cm(ndx),-4.0,0.001,okb)
             if(okb)then
               inear=nint(cm(ndx+1))
-              write(msg1,'(2a)') ' senses node ',ndnam(inear)
+              write(msg1,'(2a)') ' sense node ',
+     &          ndnam(inear)(1:lnblnk(ndnam(inear)))
             endif
             write(msg2,'(a,f7.2)') ' setpoint ',cm(ndx+4)
             if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'

@@ -7,34 +7,6 @@
 	<time_step_averaging>false</time_step_averaging>
 	<enable_xml_wildcards>true</enable_xml_wildcards>
 	<output_dictionary>true</output_dictionary>
-
- <!-- xml & post-processing options -->
-
-	<!--Summary data: to appear in out.xml -->
-
-	<!--variables to be dumped in out.csv-->
-
- <step_variable>building/day/future</step_variable>
-
- <step_variable>building/time_step</step_variable>
-
- <step_variable>electrical_net/nodes/*/generation/real</step_variable>
- <step_variable>climate/*</step_variable>
- <step_variable>building/zone_1/surface_5/temperature</step_variable>
- <step_variable>building/zone_1/surface_5/layer_3/temperature</step_variable>
-
-
- <step_variable>building/zone_1/air_point/temperature</step_variable>
-
-
-
- <step_variable>building/zone_1/surface_5/layer_6/temperature</step_variable>
-
-
- <step_variable>building/zone_1/surface_5/layer_1/temperature</step_variable>
-
- <step_variable>building/spmatl/pv-array-A/misc_data/*</step_variable>
-
-
+  <dump_all_data>true</dump_all_data>
 
 </configuration>

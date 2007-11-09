@@ -794,7 +794,7 @@ C        CALL EPAGE
           ISF1=ISFEDG(IEG,1)
           ISF2=ISFEDG(IEG,2)
           icon1=IZSTOCN(iz,isf1)
-          icon1=IZSTOCN(iz,isf2)
+          icon2=IZSTOCN(iz,isf2)
           WRITE(TEXT,'(3(I3,3X),3(A12,3X))')IEG,IVXEDG(IEG,1),
      &      IVXEDG(IEG,2),SSNAME(icon1),SSNAME(icon2),STATS
           CALL EDISP(IUOUT,TEXT)
