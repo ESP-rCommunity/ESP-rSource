@@ -27,7 +27,7 @@ C           checking as passed parameters.
 C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
-C EASKS248: Edit a long (248 char) string in sections.
+C  EASKS248: Edit a long (248 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
@@ -205,6 +205,20 @@ C DNOTZERO: Function returns non zero value with the same sign (dbl precision).
 C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  SIGFIG:  Returns number to specified number of significant figures.
 C  SIpre:   Returns suitable SI prefix for number supplied.
+
+C Dummy subroutines and functions matching calling parameters used
+C in esru_x.c so that #ifdef statements are not required for GTK
+C compile of ESP-r. This same code is found in esru_fc.f which is
+C used in the text-only compile.
+C       opentutorial place tutorial button on screen.
+C       opencpw place copyright button on screen
+C       opensetup place setup button on screen
+C       updcapt() notify level for capture buttons
+C       updazi() notify level for azimuth button
+C       winclr  clears screen
+C       feedbox() open feedback background box
+C       opengdisp opens a scrolling text display area.
+
 
 C ******************** EASKI ********************
 C EASKI is a facility for asking the user for an integer which
@@ -10949,4 +10963,47 @@ C occurance of '/' or '\'
       LAST=LONGSTR(LOCUR:ILEN)
       RETURN
       END
+
+C ********* dummy subroutines and functions to match what is found
+C in esru_fc.f
+
+C opentutorial place tutorial button on screen.
+      subroutine opentutorial
+      return
+      end
+
+C opencpw place copyright button on screen
+      subroutine opencpw
+      return
+      end
+
+C opensetup place setup button on screen
+      subroutine opensetup
+      return
+      end
+
+C updcapt() notify level for capture buttons
+      subroutine updcapt(iavail)
+      return
+      end
+
+C updazi() notify level for azimuth button
+      subroutine updazi(iavail)
+      return
+      end
+
+C winclr  clears screen
+      subroutine winclr
+      return
+      end
+
+C feedbox() open feedback background box
+      subroutine feedbox(menu_char,id_lines,igw,igh)
+      return
+      end
+
+C opengdisp opens a scrolling text display area.
+      subroutine opengdisp(menu_char,idispl_l,idial_l,igdw,igdh)
+      return
+      end
 

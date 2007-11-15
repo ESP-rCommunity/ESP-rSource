@@ -61,6 +61,8 @@ C Name of current application
       character dfdblbl*20,defdbfl*72,fs*1
       LOGICAL unixok
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initial assumptions.
       call ezero
       call curmodule('b2e ')
@@ -147,11 +149,12 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,10,30,4,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opentutorial
+          call opensetup
+        endif
         mdispl=0
         nifgrey=0
         ncset=0

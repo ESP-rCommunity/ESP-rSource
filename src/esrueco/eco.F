@@ -202,6 +202,7 @@ C      CHARACTER tab*1
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C Initial assumptions (summary reporting).
       call ezero
@@ -366,14 +367,15 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-        call updwire(0)
-        call updcapt(1)
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opentutorial
+          call opensetup
+          call updwire(0)
+          call updcapt(1)
+          call updazi(1)
+        endif
         call setzscale()
         call setgscale()
         mdispl=0

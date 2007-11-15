@@ -152,6 +152,8 @@ C Name of current application
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initialize global common data.
       call ezero
       call curmodule('res ')
@@ -292,15 +294,16 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        call win3d(menuchw,15,15,5,3,igl,igr,igt,igb,igw,igwh)
-        call opencpw
-        call opentutorial
-        call opensetup
-        call updcapt(1)
-#else
-        CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call win3d(menuchw,15,15,5,3,igl,igr,igt,igb,igw,igwh)
+          call opencpw
+          call opentutorial
+          call opensetup
+          call updcapt(1)
+        elseif(iglib.eq.2)then
+          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+        endif
         call setzscale()
         call setgscale()
         call setcscale()

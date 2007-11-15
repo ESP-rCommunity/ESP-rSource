@@ -1243,6 +1243,8 @@ C Simulator parameters.
 
       integer YAXSET, ADDLIN
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
@@ -1813,10 +1815,11 @@ C Empty bins of hits.
 
 C Write graph head and set up axis positions and draw.
         IF(MMOD.EQ.8)THEN
-#ifdef X11
-          call feedbox(menuchw,2,igfw,igfh)
-          call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call feedbox(menuchw,2,igfw,igfh)
+            call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+          endif
           call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
           call startbuffer()
         ENDIF
@@ -2429,10 +2432,11 @@ C indicate that several flow items (e.g. nodes) are included.
 
 C Write graph head and set up axis positions and draw.
             IF(MMOD.EQ.8)THEN
-#ifdef X11
-              call feedbox(menuchw,2,igfw,igfh)
-              call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+              iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+              if(iglib.eq.1)then
+                call feedbox(menuchw,2,igfw,igfh)
+                call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+              endif
               call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
               call startbuffer()
             ENDIF

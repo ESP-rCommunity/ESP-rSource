@@ -205,6 +205,7 @@ C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  SIGFIG:  Returns number to specified number of significant figures.
 C  SIpre:   Returns suitable SI prefix for number supplied.
 C Startbuffer: wrapper around call to win3dclr
+C popupimage: display image with documentation (dummy of GTK version)
 
 C ******************** EASKI ********************
 C EASKI is a facility for asking the user for an integer which
@@ -10301,6 +10302,12 @@ C the functionality of startbuffer in the GTK version.
        call win3dclr
        return
        end
+
+C popupimage() display image with documentation (dummy of GTK version)
+      subroutine popupimage(head,topic,act,longtfile)
+      character*(*) head,topic,act,longtfile
+      return
+      end
 
 C ***************** PRONAM *****************
 C Subroutine pronam returns the characters of a string after the last

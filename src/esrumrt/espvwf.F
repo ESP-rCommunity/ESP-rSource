@@ -132,6 +132,8 @@ C Name of current application
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
 C     NGRID  -  number of grid cells
@@ -293,14 +295,15 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opensetup
-        call opentutorial
-        call updwire(0)
-        call updcapt(1)
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+          call opentutorial
+          call updwire(0)
+          call updcapt(1)
+          call updazi(1)
+        endif
         call setzscale()
         mdispl=0
         nifgrey=0

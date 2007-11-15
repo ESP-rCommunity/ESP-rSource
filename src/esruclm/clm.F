@@ -98,6 +98,8 @@ C Name of current application
       character clmlhelp*72
       LOGICAL OK,DOK,unixok,there,silent
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initial assumptions. Pass module name to C code structure.
       call ezero
       call curmodule('clm ')
@@ -229,15 +231,16 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
-        call opencpw
-        call opentutorial
-        call opensetup
-        call updcapt(1)
-#else
-        CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
+          call opencpw
+          call opentutorial
+          call opensetup
+          call updcapt(1)
+        elseif(iglib.eq.2)then
+          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+        endif
         call setzscale()
         call setgscale()
         call setcscale()
@@ -518,23 +521,24 @@ C Graphic analysis. Enlarge graphics area if small.
         INIT=1
         if(MMOD.EQ.8)then
           if(LIMTTY.gt.12)then
-#ifdef X11
-            if(iappw.gt.0.and.iappw.lt.100)then
-              menuchw = MAX0(int(29*iappw*0.01),10)
-              LIMTTY= MAX0(int(6*iappw*0.01),4)
-              LIMIT = MAX0(int(6*iappw*0.01),4)
-            else
-              menuchw = 29
-              LIMTTY=6
-              LIMIT =6
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+            if(iglib.eq.1)then
+              if(iappw.gt.0.and.iappw.lt.100)then
+                menuchw = MAX0(int(29*iappw*0.01),10)
+                LIMTTY= MAX0(int(6*iappw*0.01),4)
+                LIMIT = MAX0(int(6*iappw*0.01),4)
+              else
+                menuchw = 29
+                LIMTTY=6
+                LIMIT =6
+              endif
+              call winclr
+              CALL feedbox(menuchw,2,igfw,igfh)
+              CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+              CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+            elseif(iglib.eq.2)then
+              continue
             endif
-            call winclr
-            CALL feedbox(menuchw,2,igfw,igfh)
-            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-            CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
-#else
-            continue
-#endif
           ENDIF
           call tstamp('>','CLM: enter graphic analysis')
           CALL CLMGRF
@@ -549,23 +553,24 @@ C Psychrometric analysis. Enlarge graphics area if small.
         INIT=1
         if(MMOD.EQ.8)then
           if(LIMTTY.gt.12)then
-#ifdef X11
-            if(iappw.gt.0.and.iappw.lt.100)then
-              menuchw = MAX0(int(29*iappw*0.01),10)
-              LIMTTY= MAX0(int(6*iappw*0.01),4)
-              LIMIT = MAX0(int(6*iappw*0.01),4)
-            else
-              menuchw = 29
-              LIMTTY=6
-              LIMIT =6
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+            if(iglib.eq.1)then
+              if(iappw.gt.0.and.iappw.lt.100)then
+                menuchw = MAX0(int(29*iappw*0.01),10)
+                LIMTTY= MAX0(int(6*iappw*0.01),4)
+                LIMIT = MAX0(int(6*iappw*0.01),4)
+              else
+                menuchw = 29
+                LIMTTY=6	
+                LIMIT =6
+              endif
+              call winclr
+              CALL feedbox(menuchw,2,igfw,igfh)
+              CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+              CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+            elseif(iglib.eq.2)then
+              continue
             endif
-            call winclr
-            CALL feedbox(menuchw,2,igfw,igfh)
-            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-            CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
-#else
-            continue
-#endif
           ENDIF
           call tstamp('>','CLM: enter psychrometric analysis')
           CALL PSYCHART
@@ -1014,26 +1019,29 @@ C hour in any specified day.
       character outs*124,xfile*144,tg*1,delim*1,h*72
       logical ok,dok
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C If in type 8 terminal make the text display area larger before
 C displaying the following data.
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        if(iappw.gt.0.and.iappw.lt.100)then
-          menuchw = MAX0(int(28*iappw*0.01),12)
-          LIMTTY= MAX0(int(30*iappw*0.01),24)
-          LIMIT = MAX0(int(30*iappw*0.01),24)
-        else
-          menuchw = 28
-          LIMTTY=30
-          LIMIT =30
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          if(iappw.gt.0.and.iappw.lt.100)then
+            menuchw = MAX0(int(28*iappw*0.01),12)
+            LIMTTY= MAX0(int(30*iappw*0.01),24)
+            LIMIT = MAX0(int(30*iappw*0.01),24)
+          else
+            menuchw = 28
+            LIMTTY=30
+            LIMIT =30
+          endif
+          call winclr
+          CALL feedbox(menuchw,2,igfw,igfh)
+          CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+          CALL win3d(menuchw,10,22,5,3,igl,igr,igt,igb,igw,igwh)
+        elseif(iglib.eq.2)then
+          continue
         endif
-        call winclr
-        CALL feedbox(menuchw,2,igfw,igfh)
-        CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-        CALL win3d(menuchw,10,22,5,3,igl,igr,igt,igb,igw,igwh)
-#else
-        continue
-#endif
       ENDIF
 
 C Determine day to be displayed.

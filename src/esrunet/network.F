@@ -229,6 +229,8 @@ C Name of current application
       CHARACTER*72 LAPROB*72
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initialize global common data. IUEX is file unit for the
 C model external data summary.
       CALL EZERO
@@ -328,9 +330,10 @@ C messages to stderr in case of rule script program control.
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
         CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-#ifdef X11
-        CALL OPENSETUP
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opensetup
+        endif
         call setzscale()
         call setgscale()
         mdispl=0

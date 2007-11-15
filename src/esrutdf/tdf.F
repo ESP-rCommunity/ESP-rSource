@@ -104,6 +104,8 @@ C Name of current application
       character path*72,upath*72,esprc*72,outs*124,fs*1
       character act*16,actf*72,action*16,msgl2*124,outs248*248
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Assume defaults: trace off (ITRC=0), date format is DOY,
 C time format is 10h00.
       call ezero
@@ -213,11 +215,12 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opentutorial
+          call opensetup
+        endif
         call setzscale()
         mdispl=0
         nifgrey=0

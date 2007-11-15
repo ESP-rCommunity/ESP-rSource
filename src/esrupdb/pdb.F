@@ -76,6 +76,8 @@ C Name of current application
       character path*72,upath*72,esprc*72,fs*1
       character dfdblbl*20,defdbfl*72,mfsdsc*68,ltpcmp*60 
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initialise output device, assume minimal trace, and a smallish
 C display.  If passed zero size and offsets use default, if size
 C is <200 then take % of default, otherwise use passed width.
@@ -154,11 +156,12 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,7,1,1,3,igl,igr,igt,igb,igw,igh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opentutorial
+          call opensetup
+        endif
         mdispl=0
         nifgrey=0
         ncset=0

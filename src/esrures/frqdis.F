@@ -783,19 +783,20 @@ C corresponding to graphical result display.
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical zlist
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
 C pixel references for calls to viewtext. Use winclr to erase the
 C text dialogue box that would normally be displayed.
       if(act.eq.'g')then
         IF(MMOD.EQ.8)THEN
-#ifdef X11
-          call winclr
-          call feedbox(menuchw,2,igfw,igfh)
-          call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
-C Older layout with lots of white space.
-C          call win3d(menuchw,12,20,5,3,igl,igr,igt,igb,igw,igwh)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call winclr
+            call feedbox(menuchw,2,igfw,igfh)
+            call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+          endif
 
 C Reduce the white space on the right so the label percent is not
 C so separated from the axis.

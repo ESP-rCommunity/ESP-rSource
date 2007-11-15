@@ -139,6 +139,8 @@ C Materials data array.
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initialize global common data.
       call ezero
       call curmodule('e2r ')
@@ -357,12 +359,13 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opensetup
-        call updwire(0)
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+          call updwire(0)
+          call updazi(1)
+        endif
         call setzscale()
         call setgscale()
         mdispl=0

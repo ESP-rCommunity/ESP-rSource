@@ -236,11 +236,12 @@ C Change the scales on the axis and re-calculated enthalph for the chart.
       ELSEIF(INO.EQ.7)THEN
 
 C Reset original screen size values on exit.
-#ifdef X11
-        CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
-#else
-        CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
+        elseif(iglib.eq.2)then
+          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+        endif
         call startbuffer()
         RETURN        
       ELSE
@@ -270,6 +271,8 @@ C enthmaxy enthalpy y axis maximum
       logical close,colok,cscaleok
       CHARACTER puts*12
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       PATMOS=1013.25
       IF(MMOD.ne.8) return
 
@@ -279,16 +282,17 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
       if(nzonec.ge.24)colok=.true.
       cscaleok=.false.
       if(ncset.gt.24)cscaleok=.true.
-      
-#ifdef X11
-      LIMTTY=8
-      LIMIT =8
-      call feedbox(menuchw,2,igfw,igfh)      
-      call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-      call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
-#else
-      CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
-#endif
+
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1)then
+        LIMTTY=8
+        LIMIT =8
+        call feedbox(menuchw,2,igfw,igfh)      
+        call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
+      elseif(iglib.eq.2)then
+        CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
+      endif
 
       call startbuffer()
 10    CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,xadd,yadd)
