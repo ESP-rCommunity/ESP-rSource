@@ -1118,10 +1118,7 @@ corrupted_tree="no"
 if [ "$create_espr_dir" = "no" ]; then
    
 
-     
-  if [ ! -d $ESPdir/../bin ]            || 
-     [ ! -d $ESPdir/../lib ]            ||
-     [ ! -d $ESPdir ]                   ||
+  if [ ! -d $ESPdir ]                   ||
      [ ! -d $ESPdir/bin ]               ||
      [ ! -d $ESPdir/climate ]           ||
      [ ! -d $ESPdir/databases ]         ||
@@ -1139,10 +1136,6 @@ if [ "$create_espr_dir" = "no" ]; then
       echo " The ESP-r directory tree does not exist at ${DESTdir},"
       echo " or may have been corrupted. The following directories are"
       echo " required: "
-      echo "    $DESTdir/bin"
-      echo "    $DESTdir/bin/Radiance"
-      echo "    $DESTdir/lib"
-      echo "    $DESTdir/lib/Radiance"
       echo "    $ESPdir"
       echo "    $ESPdir/bin "
       echo "    $ESPdir/climate "
@@ -1194,29 +1187,6 @@ if [ "$corrupted_tree" = "yes" ] || [ "$create_espr_dir" = "yes" ]; then
       echo " "
       exit
     fi
-  fi
-
-  # Add  bin, bin/Radiance, lib & lib/Radiance directories.
-  # NOTE: Installing these files into the DESTdir location
-  # is undesrable, and may lead to system instability. At the 
-  # very least, we're polluting the user's home directory, and 
-  # might potentially cause portions of the system to fail if the 
-  # user specifies a /usr or /usr/local installation path!
-  # An alternative should be sought as soon as possible!
-  if [ ! -d $DESTdir/bin ]; then
-    mkdir $DESTdir/bin
-  fi
-
-  if [ ! -d $DESTdir/bin/Radiance ]; then
-    mkdir $DESTdir/bin/Radiance
-  fi
-
-  if [ ! -d $DESTdir/lib ]; then
-    mkdir $DESTdir/lib
-  fi
-
-  if [ ! -d $DESTdir/lib/Radiance ]; then
-    mkdir $DESTdir/lib/Radiance
   fi
 
   rm -fr $ESPdir
@@ -1783,8 +1753,8 @@ if [ "$install_training" = "yes" ]; then
   fi
   
      echo " "
-     echo "Installing standard bitmaps into ${DESTdir}/lib ..."
-     cp ${SRCdir}/bitmaps/*.xbm ${DESTdir}/lib
+     echo "Installing standard bitmaps into ${ESPdir}/lib ..."
+     cp ${SRCdir}/bitmaps/*.xbm ${ESPdir}/lib
      echo " "
      echo "Installing training models ..."
      echo " "
