@@ -298,7 +298,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call opentutorial
           call updcapt(1)
           call updazi(1)
         endif

@@ -17,7 +17,6 @@ C       dinterval       :- determins the tic interval for an axis as well
 C                          as the number of decimal places.
 C	vrtaxis	:- draws a vertical axis with tic marks and labels.
 C	horaxis	:- draws a horizontal axis with tic marks and labels.
-C	captut	:- tutorial indicator
 C	captextf	:- text feedback capture
 C	captexgf	:- graphic feedback capture
 C	updcapt	:- notify for capture button
@@ -542,11 +541,6 @@ C updazi() notify level for azimuth button
       end
 
       subroutine capexall(cmd)
-      character*(*) cmd
-      return
-      end
-
-      subroutine captut(cmd)
       character*(*) cmd
       return
       end

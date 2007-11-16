@@ -152,7 +152,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
-          call opentutorial
           call opensetup
         endif
         mdispl=0

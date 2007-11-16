@@ -299,7 +299,6 @@ C graphic display to compensate.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call opentutorial
           call updwire(0)
           call updcapt(1)
           call updazi(1)

@@ -635,17 +635,6 @@ void capexall_(cmd,len_cmd)
   return;
 }
 
-/* captut - tutorial indicator */
-void captut_(cmd,len_cmd)
-  char      *cmd;         /* f77 message    */
-  int  len_cmd;           /* length of string from f77    */
-{
-  int  l_m;
-  f_to_c_l(cmd,&len_cmd,&l_m); strncpy(captut_exe,cmd,(unsigned int)l_m);	/* copy to static array */
-  captut_exe[l_m] = '\0';
-  return;
-}
-
 /* ********* userfonts_ set fonts for common display tasks ******* */
 /* Pass font preferences from fortran. ifs for buttons and graphs,
  * itfs for text feedback and dialog, imfs for command menus

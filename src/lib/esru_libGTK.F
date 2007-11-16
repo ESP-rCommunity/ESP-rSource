@@ -210,7 +210,6 @@ C Dummy subroutines and functions matching calling parameters used
 C in esru_x.c so that #ifdef statements are not required for GTK
 C compile of ESP-r. This same code is found in esru_fc.f which is
 C used in the text-only compile.
-C       opentutorial place tutorial button on screen.
 C       opencpw place copyright button on screen
 C       opensetup place setup button on screen
 C       updcapt() notify level for capture buttons
@@ -10965,11 +10964,6 @@ C occurance of '/' or '\'
 
 C ********* dummy subroutines and functions to match what is found
 C in esru_fc.f
-
-C opentutorial place tutorial button on screen.
-      subroutine opentutorial
-      return
-      end
 
 C opencpw place copyright button on screen
       subroutine opencpw

@@ -235,7 +235,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         if(iglib.eq.1)then
           CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
           call opencpw
-          call opentutorial
           call opensetup
           call updcapt(1)
         elseif(iglib.eq.2)then

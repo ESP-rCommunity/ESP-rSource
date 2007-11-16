@@ -81,7 +81,6 @@ intialisation and graphics, using ww. The routines are :-
 	labelstr(n,val,WticC,sstr)
                         :- generates an appropriate label for the value
                            passed.  INTERNAL.
-	opentutorial_() :- place tutorial button on screen.
 	opensetup_()    :- place environment button on screen.
 	opencpw_()      :- place copyright button on screen.
 	aux_menu()
@@ -280,7 +279,7 @@ static int f_baseline,f_lbearing;	/* num pixels under baseline and from origin t
 /* boxes outer viewing box, inner viewing box, dialogue box, text display, and scroll bar. */
 static box	dbx1, viewbx, msgbx, askbx, disp, scroll, scrollbar;
 static box      scrollv, scrollbarv,scrollh, scrollbarh;
-static box	fbb, tut, setup, cpw; /* feedback box background, tutorial, setup, copyright */
+static box	fbb, setup, cpw; /* feedback box background, setup, copyright */
 static box	wire, capture, captext ;	/* wireframe ctl, capture graphics & capture text button */
 static box	azi,aziplus,aziminus;	/* buttons for view azimuth changes */
 static box	elev,elevplus,elevminus;	/* buttons for view elevation changes */
@@ -291,7 +290,7 @@ static box	cfgz,cfgn,cfgc,cfgdfn;	/* boxes for problem type */
 static box	mouse,mouse1,mouse2,mouse3;	/* box for mouse button help */
 static char mseb1h[10],mseb2h[10],mseb3h[10]; /* mouse help strings */
 static int aziplus_left,aziminus_left,azi_left,elevplus_left,elevminus_left,elev_left; /* left of azi&elev boxes */
-static int b_setup, l_setup, b_cpw, l_cpw, b_tut, l_tut;	/* ll of setup, copyright, tutorial boxs */
+static int b_setup, l_setup, b_cpw, l_cpw;	/* ll of setup, copyright boxs */
 static int wire_left,capture_left,captext_left;	/* left of wire frame and capture control box */
 static long int ocfgz,ocfgn,ocfgc,ocfgdfn; /* persistant toggles for problem type boxes */
 static long int iiocfgz,iiocfgn,iiocfgc,iiocfgdfn; /* persistant toggles for problem type images */
@@ -302,7 +301,6 @@ static int dialogue_lines = 0;  /* number of lines of text in dialogue box */
 static int disp_lines = 0;      /* number of lines of text in text display box */
 static int menu_offset = 24;    /* character offset to right side of feedback  */
 static int fbb_b_lines = 2;    /* character offset to bottom of feedback      */
-static int tut_avail = 0;       /* tutorial box existence */
 static int setup_avail = 0;     /* setup box existence */
 static int cpw_avail = 0;       /* copyright box existence */
 static int wire_avail = 0;      /* wireframe adjustment box existence */
@@ -313,7 +311,6 @@ static int azi_avail = 0;	/* azimuth button box existence */
 static char capt_wf_exe[73];	/* command to execute for capture wire frame */
 static char capt_tf_file[73];	/* file for text feedback buffer dump */
 static char capt_all_exe[73];	/* command for capture all of display */
-static char captut_exe[73];	/* command for tutorial */
 FILE *tf_dump;			/* file for text dump */
 static int ask_len;             /* width of the input box */
 static int x_off,y_off;         /* display X & Y offsets in pixels (see linescale) */
@@ -2948,8 +2945,6 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
     setup = dobox;
   } else if (strncmp(topic, "copyright", 9) == 0) {
     cpw = dobox;
-  } else if (strncmp(topic, "tutorial", 8) == 0) {
-    tut = dobox;
   }
   if(act == '-') {
     xbox(dobox,fg,white,BMCLEAR |BMEDGES);   /* draw box with edges & text */
@@ -3048,13 +3043,6 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
     } else if (strncmp(topic, "copyright", 9) == 0) {
       avail_cpw = cpw_avail;
       cpwpk_(&avail_cpw);
-    } else if (strncmp(topic, "tutorial", 8) == 0) {
-
-/* Before executing tutorial pop up a warning message */
-      strcpy(help_list[0],"Starting Web browser.");
-      help_width = 21; help_lines = 1; impx = 0; impy = 0;	/* width, no. of lines & position */
-      egphelp_(&impx,&impy,&ipflg,&ishowmoreflg,&uresp);
-      system(captut_exe);	/* graphic mode tutorial or command from .esprc */
     } else if (strncmp(topic, "-", 1) == 0) {
       Timer(200);
     }
@@ -8077,11 +8065,6 @@ point*/
 /* selected setup display */
         saved_font = current_font; bottom = b_setup; left = l_setup;
         doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'!');
-      } else if (tut_avail == 1 && xboxinside(tut,x,y)) {
-
-/* selected tutorial */
-        saved_font = current_font; bottom = b_tut; left = l_tut;
-        doitbox(tut,"tutorial ",9,10,&saved_font,&butn_fnt,&bottom,&left,"tutorial",'!');
       } else if (cpw_avail >=1 && xboxinside(cpw,x,y)) {
 
 /* selected copyright */
@@ -8276,9 +8259,6 @@ void refreshenv_()
    if(capture_avail >= 1) {
      updcapt_(&avail);
    }
-   if(tut_avail == 1) {                        /* if tutorial button redraw it */
-     opentutorial_();
-   }
    if(setup_avail == 1) {                     /* if setup box redraw it */
      opensetup_();
    }
@@ -8299,28 +8279,6 @@ void refreshenv_()
    return;
 } /* refreshenv */
 
-/* ******  Place tutorial button on screen ********** */
-/*  Place at right side of window and just above any dialogue box. */
-void opentutorial_()
-{
- long int saved_font;
- int bottom, left;	/* pixel at lower left of box */
-
- saved_font = current_font;
- if (saved_font != butn_fnt) winfnt_(&butn_fnt);
-
- tut_avail = 1;             /* tell the world that tutorial is available */
- l_tut = xrt_width - ((f_width * 10) + 3);
- if (cpw_avail >= 1) {
-   b_tut= cpw.b_top -8;  /* place above copyright */
- } else {
-   if (dialogue_lines != 0) { b_tut = msgbx.b_bottom; } else { b_tut = xrt_height -3; }
- }
- bottom = b_tut; left = l_tut;
- doitbox(tut,"tutorial ",9,10,&saved_font,&butn_fnt,&bottom,&left,"tutorial",'-');
- return;
-} /* opentutorial */
-
 /* ******  Place copyright button on screen ********** */
 /* Place towards the right side of window and just above the base. */
 void opencpw_()
@@ -8333,7 +8291,7 @@ void opencpw_()
  label_ht = f_height+4;
  if (saved_font != butn_fnt) winfnt_(&butn_fnt);
  cpw_avail = 1;             /* tell the world that copyright is available */
- b_cpw= xrt_height - ((f_height+4) * 2) - (label_ht + 7);
+ if (dialogue_lines != 0) { b_cpw = msgbx.b_top -6; } else { b_cpw = xrt_height -16; }
  l_cpw= xrt_width - ((f_width * 10) + 3);
  bottom = b_cpw; left = l_cpw;
  doitbox(cpw,"copyright",9,10,&saved_font,&butn_fnt,&bottom,&left,"copyright",'-');
@@ -8406,7 +8364,7 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
     if (oocfgc == 1) {	/* control */
       cfgc.b_top   = viewbx.b_top + (3 * bh) +8;   cfgc.b_bottom = cfgc.b_top + bh;
       cfgc.b_right = viewbx.b_right - 2; cfgc.b_left = cfgc.b_right - (f_width * 15);
-      xbox(cfgc,fg,white, BMCLEAR | BMEDGES);   /* draw the tutorial box */
+      xbox(cfgc,fg,white, BMCLEAR | BMEDGES);   /* draw the controls box */
       XDrawString(theDisp,win,theGC,cfgc.b_left+4,cfgc.b_bottom-2,"controls     ",13);
       if (iiocfgc >= 1) {	/* network images */
         eyex = cfgc.b_right - 14;
@@ -8442,11 +8400,8 @@ void opensetup_()
  if (saved_font != butn_fnt) winfnt_(&butn_fnt);
  setup_avail = 1;             /* tell the world that setup is available */
  l_setup = xrt_width - ((f_width * 10) + 3);
- if (tut_avail >= 1) {
-   b_setup = tut.b_top -8;  /* place above tutorial */
- } else {
-   if (dialogue_lines != 0) { b_setup = msgbx.b_top -8; } else { b_setup = xrt_height -18; }
- }
+ if (dialogue_lines != 0) { b_setup = msgbx.b_top -24; } else { b_setup = xrt_height -34; }
+
  bottom = b_setup; left = l_setup;
  doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'-');
  return;
@@ -8570,17 +8525,6 @@ void capexall_(cmd,len_cmd)
   int  l_m;
   f_to_c_l(cmd,&len_cmd,&l_m); strncpy(capt_all_exe,cmd,(unsigned int)l_m);	/* copy to static array */
   capt_all_exe[l_m] = '\0';
-  return;
-}
-
-/* captut - tutorial indicator */
-void captut_(cmd,len_cmd)
-  char      *cmd;         /* f77 message    */
-  int  len_cmd;           /* length of string from f77    */
-{
-  int  l_m;
-  f_to_c_l(cmd,&len_cmd,&l_m); strncpy(captut_exe,cmd,(unsigned int)l_m);	/* copy to static array */
-  captut_exe[l_m] = '\0';
   return;
 }
 

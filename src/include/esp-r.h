@@ -83,7 +83,6 @@ extern char tmppth[25];	/* f77 relative path to scratch folder    */
 extern char capt_wf_exe[73];	/* command to execute for capture wire frame */
 extern char capt_tf_file[73];	/* file for text feedback buffer dump */
 extern char capt_all_exe[73];	/* command for capture all of display */
-extern char captut_exe[73];	/* command for tutorial */
 extern int browse;	/* if = 0 then user owns, if = 1 user browsing */
 extern gint xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 
@@ -136,7 +135,6 @@ void	curmodule_(char* fcmodule,int len_fcmodule);
 void	capexgf_(char* cmd,int len_cmd);
 void	capextf_(char* cmd,int len_cmd);
 void	capexall_(char* cmd,int len_cmd);
-void	captut_(char* cmd,int len_cmd);
 void	userfonts_(long int* ifs,long int* itfs,long int* imfs);
 int ixavail(); 
 

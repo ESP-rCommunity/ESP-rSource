@@ -1670,7 +1670,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1688,7 +1687,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1706,7 +1704,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1724,7 +1721,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1742,7 +1738,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
     echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
     echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,iexplore.exe http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
