@@ -2,7 +2,7 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish ish_joe mfs \
+PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish mfs \
 	   mld mrt pdb prj res tdf vew
 
 allX11: libX11 $(PROGRAMS)
@@ -54,8 +54,6 @@ grd:
 	cd $(SRCdir)/esrugrd; $(MAKE)
 ish: 
 	cd $(SRCdir)/esruish; $(MAKE)
-ish_joe: 
-	cd $(SRCdir)/esruish_joe; $(MAKE)
 mfs: 
 	cd $(SRCdir)/esrumfs; $(MAKE)
 mld: 
@@ -91,7 +89,6 @@ clean:
 	cd $(SRCdir)/esrueco; $(MAKE) clean
 	cd $(SRCdir)/esrugrd; $(MAKE) clean
 	cd $(SRCdir)/esruish; $(MAKE) clean
-	cd $(SRCdir)/esruish_joe; $(MAKE) clean
 	cd $(SRCdir)/esrumfs; $(MAKE) clean
 	cd $(SRCdir)/esrumld; $(MAKE) clean
 	cd $(SRCdir)/esrumrt; $(MAKE) clean
@@ -118,7 +115,6 @@ strip:
 	cd $(SRCdir)/esrueco; $(MAKE) strip
 	cd $(SRCdir)/esrugrd; $(MAKE) strip
 	cd $(SRCdir)/esruish; $(MAKE) strip
-	cd $(SRCdir)/esruish_joe; $(MAKE) strip
 	cd $(SRCdir)/esrumfs; $(MAKE) strip
 	cd $(SRCdir)/esrumld; $(MAKE) strip
 	cd $(SRCdir)/esrumrt; $(MAKE) strip
@@ -143,7 +139,6 @@ InstBins:
 	cd $(SRCdir)/esrueco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrugrd; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruish; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esruish_joe; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrumfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrumld; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrumrt; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
