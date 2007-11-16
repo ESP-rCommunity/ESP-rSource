@@ -215,7 +215,6 @@ C       opencpw place copyright button on screen
 C       opensetup place setup button on screen
 C       updcapt() notify level for capture buttons
 C       updazi() notify level for azimuth button
-C       winclr  clears screen
 C       feedbox() open feedback background box
 C       opengdisp opens a scrolling text display area.
 
@@ -10989,11 +10988,6 @@ C updcapt() notify level for capture buttons
 
 C updazi() notify level for azimuth button
       subroutine updazi(iavail)
-      return
-      end
-
-C winclr  clears screen
-      subroutine winclr
       return
       end
 
