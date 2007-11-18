@@ -1794,7 +1794,6 @@ if [ "$install_training" = "yes" ]; then
      echo "Updating materials and climate databases in training models..."
      echo " "
      cd ${SRCdir}
-     ./bin/materials_db_conv training/cellular_pv/dbs cellular_pv.materialdb.a cellular_pv.materials
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
      echo " "
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg

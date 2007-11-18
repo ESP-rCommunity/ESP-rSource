@@ -127,7 +127,7 @@ void winfnt_(font_index)
    
    
    
-   fprintf(stderr,"graphic_reset font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	 
+   /* fprintf(stderr,"graphic_reset font height and width is %d %d %d \n", f_height, f_width, ifont_index); debug */	 
  
   
   /* This function has been removed from the wstxpt_() in esp_draw.c and used here to modify the fonts  
@@ -520,7 +520,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
         if (strstr(dirt->d_name,".contents")) foundone = 1;
       } else if(strcmp("zip",act2)== 0) { /* If request for Zip or cflo3, then build this list. */
         if (strstr(dirt->d_name,".zip")) foundone = 1;
-/* debug */  fprintf(stderr,"%s is a zip file\n", dirt->d_name);
+/* debug   fprintf(stderr,"%s is a zip file\n", dirt->d_name); */
       }
       if ((foundone == 1) && (locnflist <= 51)) {	/* add d_name to the fixed string array */
         ic = (int) strlen(dirt->d_name);
@@ -580,7 +580,7 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
   upath[l_fupath] = '\0';
 /* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
 /* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
-/* debug fprintf(stderr,"docpth %s\n",docpth);  */ 
+/* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
 /* debug  fprintf(stderr,"path %s\n",path);  */
 /* debug  fprintf(stderr,"upath %s\n",upath);  */
 /* debug  fprintf(stderr,"browse %d\n",browse);  */
@@ -598,7 +598,7 @@ void curmodule_(fcmodule,len_fcmodule)
   strcpy(cappl,"    ");
   f_to_c_l(fcmodule,&len_fcmodule,&l_fcmodule); strncpy(cappl,fcmodule,(unsigned int)l_fcmodule);	/* copy to static */
   cappl[l_fcmodule] = '\0';
-/* debug */  fprintf(stderr,"the current application is %s\n",cappl); 
+/* debug   fprintf(stderr,"the current application is %s\n",cappl); */ 
 }
 
 /* functions for passing .esprc capture commands */
@@ -656,7 +656,7 @@ long int *ifs,*itfs,*imfs;
  butn_fnt = (int) *ifs;	/* remember the button and graph text font size */
  disp_fnt = (int) *itfs;	/* dialogue and text feedback  */
  menu_fnt = (int) *imfs;	/* prefered menu font */
-/* debug */  fprintf(stderr,"setting font size to %d %d %d\n",butn_fnt,disp_fnt,menu_fnt); 
+/* debug   fprintf(stderr,"setting font size to %d %d %d\n",butn_fnt,disp_fnt,menu_fnt); */
  return;
 }
 

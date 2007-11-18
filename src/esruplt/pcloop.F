@@ -224,19 +224,12 @@ C New controllers inserted here!
       END IF
 
   100 CONTINUE
-  
-
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) WRITE(ITU,*) ' Leaving subroutine CONTRL'
 
-  999 CONTINUE 
-  
-C MIMO Control: 
-      call MIMO_Apply_Plt_Loops( )
-      
-      RETURN
+  999 RETURN
       END
 
 C ******************** CLVAR ********************

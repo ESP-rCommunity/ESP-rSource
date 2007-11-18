@@ -107,7 +107,7 @@ int  len;        /* len is length passed from fortran */
  pango_layout_set_text (layout, buffer, len);	/* add len char of text */
 
  get_text = pango_layout_get_text (layout);
- fprintf(stderr, "\nget_text displays: %s\n", buffer);  /* debug */
+ /* fprintf(stderr, "\nget_text displays: %s\n", buffer);   debug */
  
  /* draw it on the pixmap taking acount to shift text up by f_height. */
  gdk_draw_layout (gr_image, gc,ix,iy-f_height,layout);
@@ -955,7 +955,7 @@ void testcscalea_()
 /* should clear the bitmap first... << >> */
   if (gr_image) {
     g_object_unref(gr_image);
-    fprintf(stderr,"unreferenced pixmap\n"); /* debug */
+    /* fprintf(stderr,"unreferenced pixmap\n");  debug */
   }
   gr_image = gdk_pixmap_new(graphic->window,
 			    graphic->allocation.width,
@@ -1023,7 +1023,7 @@ void testcscalea_()
   ilw = 1;
   gdk_gc_set_line_attributes(gc,ilw,GDK_LINE_SOLID,GDK_CAP_BUTT,GDK_JOIN_MITER); /* reset */
 
-  fprintf(stderr,"at end of testcscalea_\n"); /* debug */
+  /* fprintf(stderr,"at end of testcscalea_\n");  debug */
 /*  g_object_unref (metrics); */
   return;
 }

@@ -151,23 +151,17 @@ C In silent mode or subsequent simulation of a set.
 C Read in the control file (close before returning from EZCTLR).
   42  CALL EZCTLR(IUNIT,ITRC,IUOUT,IER)
       IF(IER.NE.0)THEN
-        IF ( .not. autook ) THEN
-          dok=.false.
-          h(1)=
-     &     'At simulation time there should not be any problems with'
-          h(2)=
-     &      'zone/flow/system controls. Check your model for possible'
-          h(3)='corruption. '
-          CALL ASKOK(' Problem detected reading controls...try again?',
-     &     '(see help)',OK,dok,3)
-          IF(OK)THEN
-            GOTO 47
-          ELSE
-            RETURN
-          ENDIF
+        dok=.false.
+        h(1)='At simulation time there should not be any problems with'
+        h(2)='zone/flow/system controls. Check your model for possible'
+        h(3)='corruption. '
+        CALL ASKOK(' Problem detected reading controls...try again?',
+     &    '(see help)',OK,dok,3)
+        IF(OK)THEN
+          GOTO 47
         ELSE
-          RETURN 
-        ENDIF  
+          RETURN
+        ENDIF
       ENDIF
 
 C Now check to ensure that control and actuator nodes

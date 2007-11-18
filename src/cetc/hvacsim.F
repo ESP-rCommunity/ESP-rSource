@@ -148,7 +148,6 @@ c     *********************************************************************
 
 #include "gcep_common.h"
 
-#include "IMS_common.h"
 
 
 c hvac system file and flag:  	ihvacflag=1 there is hvac file
@@ -233,18 +232,6 @@ c Local real variables
 c Local integer variables
       INTEGER i, j, month, iday, icomp
 
-C IMS variables
-      real fIMS_SpaceHLoad        ! Space heating load (W)
-      real fIMS_WaterHLoad        ! Water heating load (W)
-      real fIMS_WaterHDuration    ! Duration of water heating load (s)
-      real fIMS_FuelUseRate       ! Fuel use (kg/s)
-      real fIMS_ElecUseRate       ! Electricity use (W)
-      real fIMS_VentFlowRate      ! IMS ventilation flow (kg/s)
-      real fIMS_VentLoad          ! Thermal load associated with vent. (W)
-      real fIMS_AddGains          ! Heat added/removed from zones
-                                  !   by IMS fans/systems/ventilation (W)
-      real fIMS_VaporChange       ! Moisture balance assoc. w/ IMS (kg/s)
-
 C.....H3Kreports.(HVAC_ELEC_DEC).start......................
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
@@ -325,8 +312,6 @@ C...........PIN is within construction
                req_load = 0.5 * (qfa(isys_zone_num(i,j)) + 
      &              qpa(isys_zone_num(i,j)))
 
-               req_load = qfa(isys_zone_num(i,j)) 
-
             endif
             if(req_load.gt.0) then
                heating_load = heating_load + req_load
@@ -395,8 +380,7 @@ c     the HVAC system is determined. Depending on the type of the HVAC system,
 c     the appropriate subroutine is called to determine the energy consumption. 
 
 c     If the primary heating system is a furnace
-         HVAC_TYPE: if((ihvac_type(i).eq.1).and.
-     &                (ipriority(i).eq.1)) then
+         if((ihvac_type(i).eq.1).and.(ipriority(i).eq.1)) then
             call FURNACE(i,heating_load,sys_energy(i),
      &                   pilot_energy(i),plr_furnace,plf_furnace)
 
@@ -468,29 +452,6 @@ c     Energy consumption of the circulation fan in J
 C Determine average electrical draws (W) by circulating fan
 C and record for use by the fuel cell controller.
             FCctl_baseboard_fan = fan_energy(i)   / time_step
-
-C      If the primary system is an IMS system, call IMS characterization
-C      routine 
-         elseif (  ihvac_type(i) == iSysIMS_P10             .and.
-     &             ipriority(i)  == iHVACPrimarySys  ) then
-     &
-
-C.........Collect space and water heating loads.
-          fIMS_SpaceHLoad     = heating_load  ! W
-          fIMS_WaterHLoad     = 0.0 !1000.0        ! W
-          fIMS_WaterHDuration = 600.0         ! Seconds
-C.........Superviosry routine for IMS characteriztion
-          call IMS_CharPerformance ( i,
-     &                               iMode_LowVent,
-     &                               fIMS_SpaceHLoad,
-     &                               fIMS_WaterHLoad,
-     &                               fIMS_WaterHDuration,
-     &                               fIMS_FuelUseRate,
-     &                               fIMS_ElecUseRate,
-     &                               fIMS_AddGains )
-
-C.........Translate IMS outputs into hvac-friendly params.
- 
 
 c     If the primary heating system is an air-source heat pump
 c     It is confirmed here that the air-source heat pump
@@ -673,7 +634,7 @@ c For a ground-source heat pump system, call the GCEP_load subroutine
 c to average the load to the ground over an hour
 c the ground load is the minimum between the load and the heat pump capacity
 c adjusted with the COP
-           CALL GCEP_load(heating_load,cooling_load,
+      CALL GCEP_load(heating_load,cooling_load,
      &          heat_pump_cap,heat_pump_cooling_cap)
 
 c Call the air-source heat pump subroutine
@@ -819,7 +780,7 @@ c     skipped here as it is taken care of when simulating the primary
 c     system performance
          elseif(ipriority(i).eq.2) then
             goto 10 
-         endif HVAC_TYPE
+         endif
 
 c     Set the current month and day of the month using the day of the 
 c     year (integer between 1 and 365)
@@ -1071,6 +1032,21 @@ C.......-> update data
      &        fbPLR,
      &        xmlPLR(1:LNBLNK(xmlPLR))
      &        )        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
          call H3KSTORE_HVAC_Packaged_DATA(
 C     stores the heating and cooling loads for the timestep in Joules.

@@ -30,7 +30,8 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o sendd.o \
 	  sendflt.o senrwl.o sensa.o setup.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
-	  mimo_dummy.o readTrnsys.o 
+	  readTrnsys.o
+	   
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -210,9 +211,6 @@ DHW_module.F:
 ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
-mimo_dummy.F:
-	rm -f mimo_dummy.F
-	ln -s $(CTLdir)/mimo_dummy.F .
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
@@ -232,8 +230,7 @@ clean:
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
-	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F mimo_dummy.F readTrnsys.F 
-
+	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
 
 
 

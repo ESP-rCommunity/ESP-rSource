@@ -135,8 +135,8 @@ C Temporarily find the path and local file name for the results
 C file supplied. Save the current path to lpath and restore this
 C after the results file has been found and loaded so that subsequent
 C scans of cfg and zone files can be accomplished.
-      write(6,*) 'MORFIL: current path is ',path
-      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
+C      write(6,*) 'MORFIL: current path is ',path
+C      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
 C      write(6,*) 'MORFIL: local file is now ',ltmp

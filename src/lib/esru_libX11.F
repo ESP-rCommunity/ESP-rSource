@@ -6270,18 +6270,14 @@ C ***************** iEGetArrW
 C iEGetArrW reads all of the words in a 248 character string, and populates a character
 C array with each word. Words are separated by blanks, commas, or tab: WORD,WORD,WORD
 C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
-      integer function iEGetArrW(cBuffer,cWORDS)
+      integer function iEGetArrW(cString,cWORDS)
       implicit none
-      character*(*) cBuffer
+
       character*248 cString, cWords(124)
       character*1 cChar
       logical bWord
       integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
-      integer lnblnk
       parameter (iEnd=248)
-
-C Copy buffer into string
-      write (cString, '(A)') cBuffer(1:min(lnblnk(cBuffer),iEnd))
 
 C Empty word array
       do iWordCount = 1, 124
@@ -6290,9 +6286,6 @@ C Empty word array
 
 C Reset word counter
       iWordCount = 0
-
-C initialize bWord to false
-      bWord = .false. 
 
 C Loop through string
       do iStrLoc = 1, iEnd
@@ -6323,6 +6316,7 @@ C Copy current character into word buffer
           iWordLoc = iWordLoc + 1
 
         endif
+
       enddo
 
       iEGetArrW = iWordCount
@@ -7724,7 +7718,7 @@ C Find out the number of separate words/string groupings.
 
       END
 
-C ******************** LSTRIPC_LN
+C ******************** LSTRIPC
 C LSTRIPC strips comments from a ASCII file (long) string and returns the data.
 C It assumes that if a string begins with a '#' then the whole line is
 C a comment an the next line is read.  If a ' #' is discovered within
@@ -7735,64 +7729,20 @@ C IEXP is the number of expected items in the line:
 C   IEXP = 0 means don't care or already know no. items - don't check
 C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
-C LineOut is the line number of the string that was returned.
-      
-C LSTRIPC is a legacy interface to LSTRIPC_LN
+
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-      CHARACTER*248 OUTSTR
-      CHARACTER*(*) MSG
-      
-      CALL LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineNum)
-      
-      RETURN
-      END 
-      
-      SUBROUTINE LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineOut)
 #include "espriou.h"
 
       CHARACTER*248 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
       CHARACTER*(*) MSG
 
-
-      logical bInitialized
-      save bInitialized
-      data bInitialized /.false./
-
-      character*248 cNewName, cOldName
-      save cOldName
-
-
-      integer LineNum
-      save LineNum
-      
-C Collect current file name
-      inquire (UNIT=INPCH, NAME=cNewName)
-      
-      if ( .not. bInitialized ) then
-        write ( cOldName, '(A)') cNewName 
-        bInitialized = .true. 
-      endif
-
-C If file has changed, reset line counter and update
-C file name buffer. 
-      if ( cOldName .ne. cNewName ) then 
-        write ( cOldName, '(A)') cNewName 
-        LineNum = 0
-      endif 
-        
-
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
-C Empty string      
-    8 write (STRING, '(A)') ' '
-C Increment line number counter
-      LineNum = LineNum + 1
-      LineOut = LineNum          
-      READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
    10 FORMAT(A)
-   11 tmp=STRING(1:LNBLNK(STRING))
+      tmp=STRING(1:LNBLNK(STRING))
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
@@ -7842,11 +7792,8 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(loutstr,OUTSTR,'W')
       ENDIF
       goto 4
-C End of file reached.
+
   102 IER=2
-C But if last line is non-blank, parse contents anyways.
-      if (lnblnk(STRING).gt.0 ) goto 11
-      OUTSTR = ''
       IF(IR.EQ.1)THEN
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
@@ -10371,129 +10318,3 @@ C occurance of '/' or '\'
       RETURN
       END
 
-C-------------- integer function iCtoI ---------------------------------
-C
-C     Coax a string into an integer.
-C
-C-----------------------------------------------------------------------       
-      integer function  iCtoI ( cBuffer, bError )
-      implicit none 
-      character*(*) cBuffer
-      logical bError 
-      integer iMiscError
-
-      read (cBuffer,*, IOSTAT=iMiscError) iCtoI
-      if ( iMiscError /= 0 ) then
-        bError = .true. 
-      else
-        bError = .false. 
-      endif 
-      return 
-      end 
-C-------------- integer iunction fCtoI_err --------------------------------
-C
-C     Interface to iCtoI with a built-in warning message
-C
-C-----------------------------------------------------------------------     
-      integer function iCtoI_err ( cBuffer, cContext, bError )
-      implicit none
-C----------------------------------------------------------------------
-C     ESP-r variables
-C----------------------------------------------------------------------
-      common/outin/iuout,iuin
-      integer iuout, iuin      ! channels for writing messages to screen      
-      integer lnblnk
-C----------------------------------------------------------------------
-C     Local variables 
-C----------------------------------------------------------------------            
-      character*(*) cBuffer, cContext
-      character*124 cMsg
-      character*80 cTemp
-      logical bError 
-
-      integer iCtoI
-      
-C.....Convert string       
-      iCtoI_err = iCtoI ( cBuffer, bError )
-
-C.....upon error, report to user.       
-      if ( bError ) then
-      
-        write (cTemp, '(A)' ) cContext(1:min( 80, lnblnk( cContext ) ) )
-        
-        write (cMsg,'(A,A,A,A,A)')
-     &       ' Error converting ',
-     &       cTemp(1:lnblnk(cTemp)),
-     &       ' (',
-     &       cBuffer(1:lnblnk(cBuffer)),
-     &       ') to integer.'
-
-        call edisp248(iUout, cMsg,80)
-
-      endif
-      return
-      end 
-      
-C-------------- real function fCtoR ------------------------------------
-C
-C     Attempt to coax a string into a float.
-C
-C-----------------------------------------------------------------------       
-      real function  fCtoR ( cBuffer, bError )
-      implicit none 
-      character*(*) cBuffer
-      logical bError 
-      integer iMiscError 
-      
-      read (cBuffer,*, IOSTAT=iMiscError) fCtoR
-      
-      if ( iMiscError /= 0 ) then
-        bError = .true. 
-      else
-        bError = .false. 
-      endif 
-      return 
-      end
-C-------------- real function fCtoR_err --------------------------------
-C
-C     Interface to fCtoR with a built-in warning message
-C
-C-----------------------------------------------------------------------     
-      real function fCtoR_err ( cBuffer, cContext, bError )
-      implicit none
-C----------------------------------------------------------------------
-C     ESP-r variables
-C----------------------------------------------------------------------
-      common/outin/iuout,iuin
-      integer iUout, iuin      ! channels for writing messages to screen
-      integer lnblnk
-C----------------------------------------------------------------------
-C     Local variables 
-C----------------------------------------------------------------------            
-      character*(*) cBuffer, cContext
-      character*248 cMsg
-      character*80 cTemp
-      logical bError 
-
-      real fCtoR
-      
-C.....Convert string       
-      fCtoR_err = fCtoR ( cBuffer, bError )
-
-C.....upon error, report to user.       
-      if ( bError ) then
-      
-        write (cTemp, '(A)' ) cContext(1:min( 80, lnblnk( cContext ) ) )
-        
-        write (cMsg,'(A,A,A,A,A)')
-     &       ' Error converting ',
-     &       cTemp(1:lnblnk(cTemp)),
-     &       ' (',
-     &       cBuffer(1:lnblnk(cBuffer)),
-     &       ') to real.'
-
-        call edisp248(iUout, cMsg,80)
-
-      endif
-      return
-      end

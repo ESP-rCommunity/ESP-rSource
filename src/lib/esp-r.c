@@ -131,8 +131,8 @@ void calculate_font_metrics(void){
     
     
     /* debug  */
-    fprintf(stderr, " for disp_fnt %d , f_height and f_width are %d and %d\n", disp_fnt, font_calculations_array[disp_fnt].f_height,
-    font_calculations_array[disp_fnt].f_width);
+    /* fprintf(stderr, " for disp_fnt %d , f_height and f_width are %d and %d\n", disp_fnt, font_calculations_array[disp_fnt].f_height,
+       font_calculations_array[disp_fnt].f_width); */
 
   }
   disp_fnt = cur_disp_fnt;  /* re-establish initial value */
@@ -273,28 +273,28 @@ GtkWidget *create_text( void )
 /* react to different sizes of text */
    if (disp_fnt == 0 ) {
      pfd = pango_font_description_from_string("Serif,Medium 8");
-     g_print("create_text configure font medium 8\n");  /* debug */
+     /* g_print("create_text configure font medium 8\n");   debug */
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
-     g_print("create_text configure font medium 10\n"); /* debug */
+     /* g_print("create_text configure font medium 10\n");  debug */
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
-     g_printf("create_text configure font medium 12\n");  /*debug */
+     /* g_printf("create_text configure font medium 12\n");  debug */
    } else if (disp_fnt == 3 ) {
      pfd = pango_font_description_from_string("Serif,Medium 14");
-     g_print("create_text configure font medium 14\n"); /* debug */
+     /* g_print("create_text configure font medium 14\n");  debug */
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
-     g_print("create_text configure courier medium 8\n"); /* debug */
+     /* g_print("create_text configure courier medium 8\n");  debug */
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
-     g_print("create_text configure courier medium 10\n"); /* debug */
+     /* g_print("create_text configure courier medium 10\n");  debug */
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
-     g_print("create_text configure courier medium 12\n"); /* debug */
+     /* g_print("create_text configure courier medium 12\n");  debug */
    } else if (disp_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
-     g_print("create_text configure courier medium 14\n"); /* debug */
+     /* g_print("create_text configure courier medium 14\n");  debug */
    }
    gtk_widget_modify_font(text, pfd);
    pango_font_description_free(pfd);
@@ -366,15 +366,15 @@ void text_feedback_reset ( void)
  * the text feedback display font by using Pango context previously setup in esp-r.c */
     
    gdk_drawable_get_size(graphic->window,&g_width,&g_height);
-   fprintf(stderr,"std font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height); /* debug */
+   /* fprintf(stderr,"std font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
    b_top = (long int) (0 + (f_height * c3dct));	/* pixel @ top    */
    b_bottom = (long int) (g_height - 9 - (f_height * c3dcb));	/* pixel @ bottom */
    b_left = (long int) (0 + 9 + (f_width * c3dcl));	/* pixel @ left   */
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right); /* debug */
-   fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw); /* debug */
+   /* fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
+   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
 
 /* Originally there were three options for fonts and disp_fnt was either 0, 1, or 2.
  * With the addition of Serif Largest, Courier Small, Courier Medium, Courier Large and Courier Largest,
@@ -388,61 +388,61 @@ void text_feedback_reset ( void)
      f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
      f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
  
-     fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width);	//debug
+     /* fprintf(stderr,"text_feedback_reset at serif medium 8 change font height and width is %d %d", f_height, f_width); debug */
     
    } else if (disp_fnt == 1 ) {
      pfd = pango_font_description_from_string("Serif,Medium 10");
      f_height = font_calculations_array[serif_medium].f_height;
      f_width  = font_calculations_array[serif_medium].f_width;
  
-     fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width);	//debug
+     /* fprintf(stderr,"text_feedback_reset at serif medium 10 change font height and width is %d %d", f_height, f_width); debug */
       
    } else if (disp_fnt == 2 ) {
      pfd = pango_font_description_from_string("Serif,Medium 12");
      f_height = font_calculations_array[serif_large].f_height;
      f_width  = font_calculations_array[serif_large].f_width;
  
-     fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width);	//debug	
+     /* fprintf(stderr,"text_feedback_reset at serif medium 12 change font height and width is %d %d", f_height, f_width); debug */	
 
    } else if (disp_fnt == 3 ) {
      pfd = pango_font_description_from_string("Serif,Medium 14");
      f_height = font_calculations_array[serif_largest].f_height;
      f_width  = font_calculations_array[serif_largest].f_width;
  
-     fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width);	//debug	
+     /* fprintf(stderr,"text_feedback_reset at serif medium 14 change font height and width is %d %d", f_height, f_width); debug */	
    
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;
      f_width  = font_calculations_array[courier_small].f_width;
  
-     fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width);	//debug	 
+     /* fprintf(stderr,"text_feedback_reset at courier medium 8 change font height and width is %d %d", f_height, f_width); debug */	 
       
    } else if (disp_fnt == 5 ) {
      pfd = pango_font_description_from_string("Courier,Medium 10");
      f_height = font_calculations_array[courier_medium].f_height;
      f_width  = font_calculations_array[courier_medium].f_width;
  
-     fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width);	//debug	 
+     /* fprintf(stderr,"text_feedback_reset at courier medium 10 change font height and width is %d %d", f_height, f_width); debug */	 
    
    } else if (disp_fnt == 6 ) {
      pfd = pango_font_description_from_string("Courier,Medium 12");
      f_height = font_calculations_array[courier_large].f_height;
      f_width  = font_calculations_array[courier_large].f_width;
  
-     fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width);	//debug	  
+     /* fprintf(stderr,"text_feedback_reset at courier medium 12 change font height and width is %d %d", f_height, f_width); debug */	  
    
    } else if (disp_fnt == 7 ) {
      pfd = pango_font_description_from_string("Courier,Medium 14");
      f_height = font_calculations_array[courier_largest].f_height;
      f_width  = font_calculations_array[courier_largest].f_width;
  
-     fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width);	//debug	 
+     /* fprintf(stderr,"text_feedback_reset at courier medium 14 change font height and width is %d %d", f_height, f_width); debug */	 
    }
    
    gtk_widget_modify_font(text, pfd);
    
-   fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
+   /* fprintf(stderr,"text_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
 
    pango_font_description_free(pfd);
 
@@ -478,16 +478,16 @@ void emenu_feedback_reset ( void)
             pango_font_metrics_get_descent (pango_metrics));
    f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (pango_metrics));
    gdk_drawable_get_size(graphic->window,&g_width,&g_height);
-   fprintf(stderr,"std font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height); /* debug */
+   /* fprintf(stderr,"std font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
    b_top = (long int) (0 + (f_height * c3dct));	/* pixel @ top    */
    b_bottom = (long int) (g_height - 9 - (f_height * c3dcb));	/* pixel @ bottom */
    b_left = (long int) (0 + 9 + (f_width * c3dcl));	/* pixel @ left   */
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right); /* debug */
-   fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw); /* debug */
-   fprintf(stderr,"emenu_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
+   /* fprintf(stderr,"other box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
+   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
+   /* fprintf(stderr,"emenu_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
 
 /* create font description to use for resetting the menu font << dosn't quite work >>.
  * Use pango_font_get_metrics to get font width and height.
@@ -585,16 +585,16 @@ void graphic_feedback_reset ( void)
    pango_font_description_free(pfd);
 
    gdk_drawable_get_size(graphic->window,&g_width,&g_height);
-   fprintf(stderr,"graphic font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height); /* debug */
+   /* fprintf(stderr,"graphic font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
    b_top = (long int) (0 + (f_height * c3dct));	/* pixel @ top    */
    b_bottom = (long int) (g_height - 9 - (f_height * c3dcb));	/* pixel @ bottom */
    b_left = (long int) (0 + 9 + (f_width * c3dcl));	/* pixel @ left   */
    b_right = (long int) (g_width - (f_width * c3dcr));	/* pixel @ right  */
    gh = b_bottom - b_top;  /* box within axis pixel height  */
    gw = b_right - b_left;  /* box within axis pixel width */
-   fprintf(stderr,"graphic box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right); /* debug */
-   fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw); /* debug */
-   fprintf(stderr,"graphic_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height); /* debug */
+   /* fprintf(stderr,"graphic box info b_top %ld b_bottom %ld b_left %ld b_right %ld\n",b_top,b_bottom,b_left,b_right);  debug */
+   /* fprintf(stderr,"box within axis gh %ld gw %ld\n",gh,gw);  debug */
+   /* fprintf(stderr,"graphic_feedback_reset text feedback pixels %d %d \n",text->allocation.width,text->allocation.height);  debug */
 
    ifsc=butn_fnt; itfsc=disp_fnt; imfsc=menu_fnt;
    lttyc=10;	/* << this is a place holder >> */
@@ -1088,7 +1088,7 @@ void esru_wire_ctl ( void)
    izone = 0;
    while (izone < c1_.NCOMP) {
      for(icol = 0; icol < 4; icol++) {	/* fill columns in order  <<why does the while loop not work?>>*/
-       fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow);
+       /* fprintf(stderr,"Zone %d, col %d, row %d\n",izone+1, icol, irow); */
        zone_button[izone] = gtk_check_button_new_with_label (zonenames[izone]);
        gtk_table_attach_defaults (GTK_TABLE (table), zone_button[izone], icol, icol+1, irow, irow+1);
        izone++;
@@ -1702,7 +1702,7 @@ char *gintstr[] = {
     gtk_init (NULL, NULL);
 
     menuchw = *imenuchw;	/* remember initial request */
-    fprintf(stderr,"WIN SIZE H W MENUCHW LIMTTY %ld %ld %ld %ld %ld\n",*height,*width,*imenuchw,*ilimtty,menuchw);	/* debug */
+    /* fprintf(stderr,"WIN SIZE H W MENUCHW LIMTTY %ld %ld %ld %ld %ld\n",*height,*width,*imenuchw,*ilimtty,menuchw);	 debug */
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);	/* create top level window structure */
     head_local = g_strndup(head, (gsize) lhead);
     gtk_window_set_title (GTK_WINDOW (window), head_local);
@@ -1757,7 +1757,7 @@ char *gintstr[] = {
                pango_font_metrics_get_descent (metrics));
     f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
     pango_font_metrics_unref (metrics);
-    fprintf(stderr,"font height and width is %d %d\n", f_height,f_width); /* debug */
+    /* fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);  debug */
 
 /* Create upper frame, just below the menu bar and within vpaneunder */
     frame_u = gtk_frame_new (NULL);
@@ -1792,7 +1792,7 @@ char *gintstr[] = {
    if the application is re-sized */
     emenu = gtk_frame_new (NULL);
     menu_pix_wd = (gint) *imenuchw * f_width;
-    fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd); /* debug */
+    /* fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd);  debug */
 
 /* The reserved area for the graphic feedback is different for each application.
  * The following sizes are based on the standard iappw values defined in each
@@ -1872,7 +1872,7 @@ char *gintstr[] = {
 
     gtk_paned_pack2 (GTK_PANED (hpaned), emenu, FALSE, TRUE);
     gtk_widget_show (emenu);
-    fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd); /* debug */
+    /* fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd);  debug */
 
 /* so the emenu is a frame which we could try
    using the esp_list_in_frame function with */
@@ -1908,7 +1908,7 @@ char *gintstr[] = {
     textf = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type (GTK_FRAME (textf), GTK_SHADOW_OUT);
     textf_pix_ht = (gint) *ilimtty * f_height +2;
-    fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht); /* debug */
+    /* fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht);  debug */
     gtk_widget_set_size_request (textf, -1, textf_pix_ht);
     gtk_paned_pack2 (GTK_PANED (vpaned), textf, FALSE, TRUE);
     textv = create_text ();
@@ -1933,7 +1933,7 @@ char *gintstr[] = {
                pango_font_metrics_get_descent (pango_metrics));
     f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (pango_metrics));
 /*    pango_font_metrics_unref (pango_metrics); this should be placed where the application exits */
-    fprintf(stderr,"pango en_US font height and width is %d %d\n", f_height,f_width); /* debug */
+    /* fprintf(stderr,"pango en_US font height and width is %d %d\n", f_height,f_width);  debug */
 
 /* Set up a range of interface and black and white colors */
 /* << why not use quoted string rather than string variable? >> */
@@ -2023,7 +2023,7 @@ char *gintstr[] = {
         if ((gdk_color_parse(gintstr[11],&grey43)==1) && (gdk_colormap_alloc_color(cmap,&grey43,FALSE,TRUE)==1))  ngr=ngr+1;
       }
       ngr=ngr+2;	/* include black (ngr-1) and white (ngr) */
-      fprintf(stderr,"greys ngr %ld\n",ngr);
+      /* fprintf(stderr,"greys ngr %ld\n",ngr); */
       infofg = black;  infobg = white;
 
     } else {
@@ -2070,7 +2070,7 @@ void setcscale_() {
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
   if ( ncscale <= 45 ) {
     gdk_colormap_free_colors(cmap,&cscale[0],(gint) ncscale);
-    fprintf(stderr,"Trying reduced colour set\n");
+    /* fprintf(stderr,"Trying reduced colour set\n"); */
     ncscale = 0;
     ih = -1;
     for (ic=0; ic<24; ic++) {
@@ -2089,7 +2089,7 @@ void setcscale_() {
       }
     }
   }
-  fprintf(stderr,"Created cscale %ld\n",ncscale);	/* debug statement */
+  /* fprintf(stderr,"Created cscale %ld\n",ncscale);	 debug */
   return;
 }
 
@@ -2098,7 +2098,7 @@ void setcscale_() {
 void clrcscale_() {
   gdk_colormap_free_colors(cmap,&cscale[0],(gint) ncscale);
   ncscale = 0;
-  fprintf(stderr,"Freed cscale colour set\n");	/* debug statement */
+  /* fprintf(stderr,"Freed cscale colour set\n");	 debug */
   return;
 }
 
@@ -2134,7 +2134,7 @@ void setgscale_() {
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
   if ( ngscale <= 47 ) {
     gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
-    fprintf(stderr,"Trying reduced grey set\n");
+    /* fprintf(stderr,"Trying reduced grey set\n"); */
     ngscale = 0;
     ih = -1;
     for (ic=0; ic<24; ic++) {
@@ -2153,7 +2153,7 @@ void setgscale_() {
       }
     }
   }
-  fprintf(stderr,"Created grey cscale %ld\n",ngscale);
+  /* fprintf(stderr,"Created grey cscale %ld\n",ngscale); */
   return;
 }
 
@@ -2162,7 +2162,7 @@ void setgscale_() {
 void clrgscale_() {
   gdk_colormap_free_colors(cmap,&gscale[0],(gint) ngscale);
   ngscale = 0;
-  fprintf(stderr,"Freed gscale colour set\n");
+  /* fprintf(stderr,"Freed gscale colour set\n"); */
   return;
 }
 
@@ -2278,7 +2278,6 @@ long int *n;
 */
 void winclr_()
 {
-  fprintf(stderr,"call to clear entire application display (ignored)\n");
 
 /* guts commented out until we see if there is an actual need for this...
  if (entire_image) {
@@ -2291,7 +2290,6 @@ void winclr_()
   gdk_draw_rectangle (entire_image,gc,TRUE,0, 0,
 	window->allocation.width,window->allocation.height);
 
-  fprintf(stderr,"about to draw pixmap to clear application \n");
   gdk_draw_drawable(window->window, gc, entire_image,0, 0, 0, 0,
 	window->allocation.width,window->allocation.height);
   gdk_gc_set_foreground(gc,&black);
@@ -2351,7 +2349,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
    f_height = font_calculations_array[serif_large].f_height;
    f_width  = font_calculations_array[serif_large].f_width;
  
-   /* fprintf(stderr,"refresh graphic font medium 12\n"); debug */
+   /* f(stderr,"refresh graphic font medium 12\n"); debug */
  } else if (butn_fnt == 3 ) {
    pfd = pango_font_description_from_string("Serif,Medium 14");
    f_height = font_calculations_array[serif_largest].f_height;
@@ -2392,7 +2390,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  * are to the pixmap which is the same size as graphic, the coordinates
  * derived are based on upper left of the pixmap = 0, 0. */
  gdk_drawable_get_size(graphic->window,&g_width,&g_height);
- fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height); /* debug */
+ /* fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);  debug */
  b_top = 0 + (f_height * (*ct));
  b_bottom = g_height - 9 - (f_height * ((gint) *cb));
  b_left = 0 + 9 + (f_width * ((gint) *cl));
@@ -2410,8 +2408,8 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
    fprintf(wwc,"%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\n",
 		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gh);
  }
-  fprintf(stderr,"win3d mcw %ld cl %ld cr %ld ct %ld cb %ld vl %ld vr %ld vt %ld vb %ld gbw %ld gbh %ld\n",
-		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gh); /* debug */
+  /* fprintf(stderr,"win3d mcw %ld cl %ld cr %ld ct %ld cb %ld vl %ld vr %ld vt %ld vb %ld gbw %ld gbh %ld\n",
+		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gh);  debug */
   return;
 } /* win3d_ */
 

@@ -389,7 +389,6 @@ C not pass back ier.
      &(hdg.ne.'* fuz'.and.hdg.ne.'* Fuz'.and.hdg.ne.'* FUZ').and.
      & (hdg.ne.'* mas'.and.hdg.ne.'* Mas'.and.hdg.ne.'* MAS').and.
      &(hdg.ne.'* pow'.and.hdg.ne.'* Pow'.and.hdg.ne.'* POW').and.
-     &(hdg.ne.'* mim'.and.hdg.ne.'* Mim'.and.hdg.ne.'* MIM').and.
      &(hdg.ne.'* sys'.and.hdg.ne.'* Sys'.and.hdg.ne.'* SYS'))then
         write(outs,'(3a)') 'Control file ',LCTLF(1:lnblnk(LCTLF)),
      &    ' unexpected end of file sensed.'
@@ -408,22 +407,19 @@ C not pass back ier.
         endif
       endif
 
-      if(hdg.eq.'* bui'.or.hdg.eq.'* Bui'.or.hdg.eq.'* BUI')iborp=1
+      iborp=1
       if(hdg.eq.'* pla'.or.hdg.eq.'* Pla'.or.hdg.eq.'* PLA')iborp=2
       if(hdg.eq.'* mas'.or.hdg.eq.'* Mas'.or.hdg.eq.'* MAS')iborp=3
       if(hdg.eq.'* sys'.or.hdg.eq.'* Sys'.or.hdg.eq.'* SYS')iborp=4
       if(hdg.eq.'* pow'.or.hdg.eq.'* Pow'.or.hdg.eq.'* POW')iborp=5
-      if(hdg.eq.'* mim'.or.hdg.eq.'* Mim'.or.hdg.eq.'* MIM')iborp=6
-      if(hdg.eq.'* fuz'.or.hdg.eq.'* Fuz'.or.hdg.eq.'* FUZ') goto 7
-!       if(iborp.eq.2)goto 11
-!       if(iborp.eq.3)goto 12
-!       if(iborp.eq.5)goto 18
+      if(hdg.eq.'* fuz'.or.hdg.eq.'* Fuz'.or.hdg.eq.'* FUZ')GOTO 7
+      if(iborp.eq.2)goto 11
+      if(iborp.eq.3)goto 12
+      if(iborp.eq.5)goto 18
       global=.false.
       if(iborp.eq.4)global=.true.
+      if(iborp.eq.4)goto 113
 
-!       if(iborp.eq.4)goto 113
-
-      if ( iborp .eq. 1 ) then 
 C  Establish zone control regime notes (znctldoc) and number of
 C  control functions (NCF).
       CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'zn control notes',IER)
@@ -433,7 +429,7 @@ C  control functions (NCF).
       KG=0
       CALL EGETWI(OUTSTR,KG,NCF,-1,MCF,'F','no loops',IER)
       IF(IER.NE.0)GOTO 99
-      
+
 C Reporting:
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
@@ -483,6 +479,7 @@ C then new format file, otherwise old format so set IBSN(II,4)=0.
             IBSN(II,4)=0
           ENDIF
           IF(IER.NE.0)GOTO 99
+
 C Range checking.
           if((ibsn(ii,1).lt.-6.or.ibsn(ii,1).gt.mcom)
      &        .and.ibsn(ii,1).ne.-99)goto 1003
@@ -535,6 +532,7 @@ C Day types.
         CALL EGETWI(OUTSTR,KG,NBCDT(II),0,MBCDT,'F',
      &              'number of control day type(s)',IER)
         IF(IER.NE.0)GOTO 99
+
 C Reporting:
         IF(ITRC.GE.1)THEN
           IF(NBCDT(II).EQ.0)THEN
@@ -646,10 +644,9 @@ C Reporting.
         ENDIF
   28  CONTINUE
       goto 15
-      
-      
+
 C Plant control loops.
-      elseif ( iborp .eq. 2 ) then 
+
 C Establish plant control regime name and number of
 C control loops.
    11 CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'plant ctl notes',IER)
@@ -943,9 +940,9 @@ C Reporting (compacted data list):
    50   continue
    40 continue
       goto 15
+
 C mass flow control function.
 
-      elseif ( iborp .eq. 3 ) then 
 C Establish mass control regime name and number of
 C mass flow control functions.
    12 CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'mass flow ctl name',IER)
@@ -1204,7 +1201,6 @@ C              write(6,*) ' supplementary node names to be read in...'
 
 C Establish power control regime name and number of
 C control loops.
-      elseif ( iborp .eq. 5 ) then 
    18 CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'power ctl name',IER)
       elctldoc=LOUTSTR
 
@@ -1389,7 +1385,7 @@ C Reporting (compacted data list):
       goto 15
 
 C Global control function.
-      elseif ( iborp .eq. 4 ) then 
+
 C Establish global control regime name and number of
 C global control functions.
   113 CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'global ctl name',IER)
@@ -1544,17 +1540,6 @@ C Reporting:
    89   continue
    90 continue
 
-C MIMO control 
-      elseif ( iborp .eq. 6 ) then 
-      
-        call mimo_ctl_read(IUNIT,IER)
-        if ( iER .ne. 0 ) goto 99
-
-      endif 
-
-
-
-
 C Check that NCF, NCL, NCC and NGF are zero.  If so there may 
 C be more information to be read.
    15 if(ncf.eq.0.or.ncl.eq.0.or.ncc.eq.0.or.ngf.eq.0)goto 2
@@ -1646,7 +1631,6 @@ C Make up specific error messages.
 C Close file before exiting.
    9  CALL ERPFREE(IUNIT,ISTAT)
 
-
 C Re-initialise control file for fuzzy data.
 7     CALL EFOPSEQ(IUNIT,LCTLF,1,IER)
       IF(IER.LT.0)THEN
@@ -1680,9 +1664,6 @@ C Set TSC6 data items, if applicable.
 C Close file.
       CALL ERPFREE(IUNIT,ISTAT)
       return
-
-
-
 
 C Low level I/O error. Close file before exiting.
   99  continue
@@ -2836,17 +2817,18 @@ C based on the miscel data items.
             if(oka)then
               inear=nint(cm(ndx+1))
               msg1=' sensor unknown'
-              if(inear.eq.0)msg1=' senses ambient T'
-              if(inear.eq.2)msg1=' senses wind speed'
-              if(inear.eq.3)msg1=' senses wind direction'
-              if(inear.eq.4)msg1=' senses diffuse solar'
-              if(inear.eq.5)msg1=' senses direct solar'
+              if(inear.eq.0)msg1=' ambient T'
+              if(inear.eq.2)msg1=' wind speed'
+              if(inear.eq.3)msg1=' wind direction'
+              if(inear.eq.4)msg1=' diffuse solar'
+              if(inear.eq.5)msg1=' direct solar'
               if(inear.eq.6)msg1=' senses RH'
             endif
             call eclose(cm(ndx),-4.0,0.001,okb)
             if(okb)then
               inear=nint(cm(ndx+1))
-              write(msg1,'(2a)') ' senses node ',ndnam(inear)
+              write(msg1,'(2a)') ' sense node ',
+     &          ndnam(inear)(1:lnblnk(ndnam(inear)))
             endif
             write(msg2,'(a,f7.2)') ' setpoint ',cm(ndx+4)
             if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'
