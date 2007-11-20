@@ -598,12 +598,6 @@ C updazi() notify level for azimuth button
       return
       end
 
-C popupimage() display image with documentation
-      subroutine popupimage(head,topic,act,longtfile)
-      character*(*) head,topic,act,longtfile
-      return
-      end
-
 C winlodpart() loads some or all of an xbitmap file into a pixmap
       subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
