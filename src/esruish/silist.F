@@ -77,13 +77,17 @@ C If output to file alter the edisp unit number.
       itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
-        call edisp(icout,' Output being directed to file...')
+        call edisp(icout,'Output being directed to file.')
       endif
 
 C Display the contents of the shading/insolation file.
-      WRITE(outs,'(A,A)')' Shading/Insolation file: ',LSHAD(ICOMP)
+      call edisp(itru,' ')
+      WRITE(outs,'(3A)')'Content of zone shading & insolation file `',
+     &                   LSHAD(ICOMP),'`.'
       call edisp(itru,outs)
       IMS=0
+      MNTH=1
+      IFIRST=0
       DO 30 I=1,12
         if(ISHD(I).EQ.1)then
           WRITE(outs,'(2X,A,A)')MONTH(I),' - Shading'
@@ -92,39 +96,44 @@ C Display the contents of the shading/insolation file.
           WRITE(outs,'(2X,A,A)')MONTH(I),' -           Insolation'
           call edisp(itru,outs)
         elseif(ISHD(I).EQ.3)then
-          WRITE(outs,'(2X,A,A)')MONTH(I),' - Shading   Insolation'
+          WRITE(outs,'(2X,A,A)')MONTH(I),' - Shading & Insolation'
           call edisp(itru,outs)
         endif
-        IF(ISHD(I).NE.0)IMS=IMS+1
-        IF(ISHD(I).NE.0)MNTH=I
+        if(ISHD(I).NE.0)then
+           IMS=IMS+1
+           if(IFIRST.EQ.0)then
+              MNTH=I
+              IFIRST=1
+           endif
+        endif
    30 CONTINUE
       IF(IMS.EQ.0)goto 2
 
-C Ask if the output of month details required.
+C Ask if the output of month details are required.
    31 dok=.true.
-      h(1)='If you say yes you will be given further details '
-      h(2)='about shading and insolation. '
-      CALL ASKOK(' ',' Further details?',OK,dok,2)
+      h(1)='Answer `yes` if you want details on the shading and/or'
+      h(2)='insolation patterns for a specific month.'
+      CALL ASKOK(' ','Month details?',OK,dok,2)
       IF(.NOT.OK)goto  3
       IF(IMS.EQ.1)goto 50
 
-   45 H(1)='Should be an integer Jan=1 etc. '
-      CALL EASKI(MNTH,' ',' Month number ? ',
-     &  1,'F',12,'F',1,'month number',IER,1)
+   45 H(1)='Specify the month as an integer where Jan=1, Feb=2 etc.'
+      CALL EASKI(MNTH,' ','Month number?',
+     &              1,'F',12,'F',1,'month number',IER,1)
       IF(IER.NE.0)goto  45
    50 IREC=ISADD(MNTH)
       IF(ISHD(MNTH).EQ.1.OR.ISHD(MNTH).EQ.3)goto 100
       IF(ISHD(MNTH).EQ.2)goto 200
 
 C No data for this case.
-      call edisp(iuout,' Sorry - no data for this month ')
+      call edisp(iuout,'Sorry - no data available for this month!')
       goto 31
 
-C Output details of month shading.
-  100 call edisp(itru,' ')
-      WRITE(outs,'(A,A)')' Shading data for ',MONTH(MNTH)
+C Shading case.
+  100 WRITE(outs,'(3A)')'External surface shading for ',MONTH(MNTH),
+     &                  '.'
       call edisp(itru,outs)
-      call edisp(itru,'   Surface        24-hour shading time-series')
+      call edisp(itru,'Surface       Shading Factors')
       IF(IREC.LT.5)goto 900
       DO 126 J=1,NZSUR(icomp)
         ICN=IZSTOCN(icomp,j)
@@ -139,29 +148,26 @@ C print.
   226   CONTINUE
 
         IF(LGTZ.GT.0)then
-          WRITE(outs,124)SSNAME(icn),(PS(K),K=1,8)
-  124     FORMAT(a,  ' 1- 8  ',8(F5.3,1X))
+          SN=SSNAME(icn)
+          WRITE(outs,124)J,SN(1:7),(PS(K),K=1,12)
+  124     FORMAT(I2,' (',a,')  01:00-12:00 ',12(F4.1))
           call edisp(itru,outs)
-          WRITE(outs,1125)(PS(K),K=9,16)
- 1125     FORMAT(12X,'  9-16 ',8(F5.3,1X))
-          call edisp(itru,outs)
-          WRITE(outs,1126)(PS(k),K=17,24)
- 1126     FORMAT(12X,' 17-24 ',8(F5.3,1X))
+          WRITE(outs,1125)(PS(K),K=13,24)
+ 1125     FORMAT(14X,'13:00-24:00 ',12(F4.1))
           call edisp(itru,outs)
         endif
   126 CONTINUE
 
-C Window shading.  Calculate number of transparent surfaces.
+C Default window case.
       nwins=0
       do 199 i=1,nzsur(icomp)
         nwins=nwins+(ntmc(i))
   199 continue
-      if(nwins.gt.0)then
-        WRITE(outs,'(A,A)')' Shading data for ',MONTH(MNTH)
-        call edisp(itru,outs)
-        call edisp(itru,'   Glazings   24-hour shading time-series')
-        call edisp(itru,' ')
-      endif
+C      if(nwins.gt.0)then
+C        WRITE(outs,'(A,A)')'Shading for ',MONTH(MNTH)
+C        call edisp(itru,outs)
+C        call edisp(itru,'Glazings   Shading factors')
+C      endif
 
       READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(
      &  IGC(J),J=1,NZSUR(icomp))
@@ -184,38 +190,57 @@ C Insolation case.
         IREC=IREC+1
   202   continue
         do 203 j=1,misur
-        read(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(pinsst(i,n,j),n=1,24)
+        read(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(pinsst(i,n,j),
+     &                                             n=1,24)
         IREC=IREC+1
   203   continue
         do 204 j=1,misur
-        read(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(pinwst(i,n,j),n=1,24)
+        read(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(pinwst(i,n,j),
+     &                                             n=1,24)
         IREC=IREC+1
   204   continue
   201 continue
   
-C Calculate number of insolation sources (transparent) surfaces.
+C Calculate number of insolation sources (transparent surfaces).
       iwin=0
       do 210 i=1,nzsur(icomp)
         ICN=IZSTOCN(icomp,i)
         if(igc(i).eq.0) goto 210
         do 211 k=1,ntmc(i)
           iwin=iwin+1
-          SN=SSNAME(icn)
-          call edisp(itru,'  ')
-          write(outs,'(5a,i2,a)')' Insolation data for ',month(mnth),
-     &      ' : Source surface ',SN(1:lnblnk(SN)),' (',i,')'
+          write(outs,'(3A)')'Internal surface insolation for `',
+     &                       month(mnth),'`.'
           call edisp(itru,outs)
-          call edisp(itru,' Hour  Shading  Receiving       Percentage')
-          call edisp(itru,'                Surface (index) Received')
+          SN=SSNAME(icn)
+          write(outs,'(A,I2,3A)')'Source surface is ',i,' (',
+     &                            SN(1:lnblnk(SN)),').'
+          call edisp(itru,outs)
+          call edisp(itru,' Hour  Receiving       Proportion')
+          call edisp(itru,'       Surface         Received')
+          IPRINT=0
           do 212 n=1,24
             if(insst(iwin,n,1).eq.-1)then
-              write(outs,'(4X,A)')  '  Sun not up'
-              if(n.eq.1.or.n.eq.24)call edisp(iuout,outs)
+              IF(IPRINT.EQ.2)then
+                write(outs,'(I2,A)')n,':00  After sunset'
+                call edisp(itru,outs)
+C Don't write again.
+                IPRINT=-1
+              else
+                IPRINT=1
+              endif
             elseif(insst(iwin,n,1).eq.0)then
-              write(outs,'(I4,2x,2A)')n,SN(1:lnblnk(SN)),
-     &          ' totally shaded'
+              IF(IPRINT.EQ.1)then
+               write(outs,'(I2,A)')n-1,':00  Before sunrise'
+               call edisp(itru,outs)
+              ENDIF
+              write(outs,'(I2,A)')n,':00   100.0%'
               call edisp(itru,outs)
+              IPRINT=2
             else
+              IF(IPRINT.EQ.1)then
+                write(outs,'(I2,A)')n-1,':00  Before sunrise'
+                call edisp(itru,outs)
+              ENDIF
               sumins=0
               do 213 j=1,misur
                 sumins=sumins+pinsst(iwin,n,j)+pinwst(iwin,n,j)
@@ -225,20 +250,21 @@ C Calculate number of insolation sources (transparent) surfaces.
                   if(j.eq.1)then
                     m=insst(iwin,n,j)
                     ICM=IZSTOCN(icomp,m)
-                    write(outs,1003)n,SSNAME(icm),m,
-     &                pinsst(iwin,n,j)*100.0
- 1003               format(i4,2x,a,' (',i2,')',f10.2)
+                    SN=SSNAME(icm)
+                    write(outs,1003)n,m,SN(1:7),pinsst(iwin,n,j)*100.0
+ 1003               format(i2,':00  ',i2,' (',a,')',f10.1,'%')
                     call edisp(itru,outs)
                   else
                     m=insst(iwin,n,j)
                     ICM=IZSTOCN(icomp,m)
-                    write(outs,1004)SSNAME(icm),m,
-     &                pinsst(iwin,n,j)*100.0
- 1004               format(6x,a,' (',i2,')',f10.2)
+                    SN=SSNAME(icm)
+                    write(outs,1004)m,SN(1:7),pinsst(iwin,n,j)*100.0
+ 1004               format(7x,i2,' (',a,')',f10.1,'%')
                     call edisp(itru,outs)
                   endif
                 endif
   213         continue
+              IPRINT=2
               if(abs(1.0-sumins).gt.0.02)then
                  write(outs,'(6x,2A,f5.2,a)') SN(1:lnblnk(SN)),
      &            ' partly shaded (',(1.0-sumins)*100.0,'%)'
@@ -258,15 +284,17 @@ C Return.
 
 C Error handling.
   900 WRITE(outs,1009)IREC
- 1009 FORMAT(' Shading/Insolation file error in SILIST - record',I6)
+ 1009 FORMAT('Shading/Insolation file error in SILIST - record',I6)
       call edisp(iuout,outs)
       goto 2
 
- 1010 call edisp(iuout,' Geometry used in shading db is different to ')
-      call edisp(iuout,' that specified for shading predictions.')
+ 1010 call edisp (iuout,' ')
+      call edisp(iuout,'Geometry referenced in Zone Shading &')
+      call edisp(iuout,'Insolation file is different to that')
+      call edisp(iuout,'currently specified.')
       goto 2
 
- 1020 call edisp(iuout,' Empty file!')
+ 1020 call edisp(iuout,'Empty file!')
       goto 2
 
       END
@@ -291,6 +319,7 @@ C Also allow data to be imported and exported.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      CHARACTER SN*12
       CHARACTER*3 month(12)
       character outs*124,H*72,hold*74,expfil*72
       character outl*124,outld*124,OUTSTR*124,WORD*20
@@ -334,19 +363,25 @@ C Display the contents of the shading/insolation file.
       IF(IMS.EQ.0)goto 2
 
 C Ask if the output of month details required.
-   31 h(1)='Edit option allows hourly data for one or more surfaces to'
-      h(2)='be edited. Export dumps to text file, import reads from a'
-      h(3)='similarly formatted file. '
-      CALL EASKATOG(' Options:',' ','edit a month',
-     &  'export','import','list','continue',' ',' ',ins1,3)
+   31 h(1)='Edit option allows the hourly shading factors for'
+      h(2)='specified surfaces to be altered, the export option'
+      h(3)='transfers the shading factors from the zone shading'
+      h(4)='and insolation file to a text file (where they can'
+      h(5)='be edited, while the import options executes the'
+      h(6)='reverse transfer. The list option lists the contents'
+      h(7)='of the zone shading and insolation file'
+      CALL EASKATOG(' ','Options:','edit a month',
+     &  'export','import','list','cancel',' ',' ',ins1,7)
       if(ins1.eq.5)then
         goto  3
       elseif(ins1.eq.2)then
 
 C Export the data and then start up an editor.
-C << tell the user what to do >>
-        CALL EASKS(expfil,'Export file name',' : ',72,'shad.data',
-     &    'shding export',IER,1)
+        H(1)='A text file to which the shading factors will'
+        H(2)='be written.'
+        expfil='shd.txt'
+        CALL EASKS(expfil,' ','Export file name?',72,'shad.txt',
+     &    'shding export',IER,2)
         CALL EFOPSEQ(iuj,expfil,3,IER)
         IF(IER.LT.0)THEN
           IER=1
@@ -356,7 +391,7 @@ C << tell the user what to do >>
         WRITE(iuj,'(2i3,A)',IOSTAT=IOS,ERR=3) ICOMP,NZSUR(icomp),
      &    ' # zn & surfs'
       elseif(ins1.eq.3)then
-        CALL EASKS(expfil,'Import file name',' : ',72,'shad.data',
+        CALL EASKS(expfil,' ','Import file name?',72,'shad.data',
      &    'shding import',IER,1)
         CALL EFOPSEQ(iuj,expfil,1,IER)
         IF(IER.LT.0)THEN
@@ -389,15 +424,16 @@ C << tell the user what to do >>
 C Display the current months data while reading database contents.
       IF(IMS.EQ.1)goto 50
 
-   45 H(1)='Should be an integer Jan=1 etc. '
-      CALL EASKI(MNTH,' ',' Month number ? ',
-     &   1,'F',12,'F',1,'month number',IER,1)
+   45 H(1)='The month is specified as an integer where Jan=1,'
+      H(2)='Feb=2 etc.'
+      CALL EASKI(MNTH,' ',' Month number?',
+     &   1,'F',12,'F',1,'month number',IER,2)
       IF(IER.NE.0)goto 45
    50 IREC=ISADD(MNTH)
       IF(ISHD(MNTH).EQ.1.OR.ISHD(MNTH).EQ.3)goto 100
       IF(ISHD(MNTH).EQ.2)then
         call usrmsg('Sorry - only insolation data.',
-     &              'Select again...','W')
+     &              'Select again.','W')
         goto 45
       endif
 
@@ -407,20 +443,22 @@ C No data for this case.
 
 C Output details of month shading.
   100 call edisp(iuout,' ')
-      WRITE(outs,'(A,A)')' Current Shading data for ',MONTH(MNTH)
+      WRITE(outs,'(3A)')'External surface shading for ',MONTH(MNTH),
+     &                    '.'
       call edisp(iuout,outs)
-      call edisp(iuout,' Surface   24-hour shading time-series')
+      call edisp(iuout,'Surface       Shading Factors')
       IF(IREC.LT.5)goto 900
       DO 126 J=1,NZSUR(icomp)
         ICN=IZSTOCN(icomp,j)
         READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=900)(PSO(J,K),K=1,24)
         IREC=IREC+1
         if(ins1.ne.3)then
-          WRITE(outs,124)SSNAME(icn),(PSO(J,K),K=1,12)
-  124     FORMAT(a,' 1- 12 ',12(F4.2,1X))
+          SN=SSNAME(icn)
+          WRITE(outs,124)J,SN(1:7),(PSO(J,K),K=1,12)
+  124     FORMAT(I2,' (',a,')  01:00-12:00 ',12(F4.1))
           call edisp(iuout,outs)
           WRITE(outs,1125)(PSO(J,K),K=13,24)
- 1125     FORMAT(12X,' 13-24 ',12(F4.2,1X))
+ 1125     FORMAT(14X,'13:00-24:00 ',12(F4.1))
           call edisp(iuout,outs)
         endif
   126 CONTINUE
@@ -436,16 +474,18 @@ C Window shading, read but do not display (assumes no default windows).
         IREC=IRMS+IS
   120 CONTINUE
       if(ins1.eq.1)then
-   47   H(1)='Should be index to surface. '
-        CALL EASKI(ISE,' ',' Surface to edit ? ',
-     &    1,'F',NZSUR(icomp),'F',1,'surf number',IER,1)
+   47   H(1)='Integer number of surface within model.'
+        CALL EASKI(ISE,' ','Surface number?',
+     &             1,'F',NZSUR(icomp),'F',1,'surf number',IER,1)
         IF(IER.NE.0)goto 47
         ICN=IZSTOCN(icomp,ise)
-        write(outs,'(a,a,a)')'Shading: ',SSNAME(icn),' 1h00-12h00.'
-        write(hold,'(12f6.3)') (PSO(ISE,K1),K1=1,12)
-        h(1)='Shading data for hours 1-12. '
-        CALL EASKS(hold,outs,' : ',74,' 0  0 0 0 0 0 0 0 0 0 0 0 ',
-     &    '1-12 shding',IER,1)
+        SN=SSNAME(icn)
+        write(outs,'(3A)')'Shading factors for surface `',
+     &                        SN(1:lnblnk(SN)),'`,'
+        write(hold,'(12f5.2)') (PSO(ISE,K1),K1=1,12)
+        h(1)='Shading factors for hours 01:00-12:00.'
+        CALL EASKS(hold,outs,'01:00-12:00; edit as required.',
+     &     60,' 0  0 0 0 0 0 0 0 0 0 0 0 ','1-12 shding',IER,1)
         OK=.true.
         K=0
         do 42 ik=1,12
@@ -455,11 +495,13 @@ C Window shading, read but do not display (assumes no default windows).
         if(.NOT.OK)goto 47
 
         ICN=IZSTOCN(icomp,ise)
-        write(outs,'(a,a,a)')'Shading: ',SSNAME(icn),' 13h00-24h00.'
-        write(hold,'(12f6.3)') (PSO(ISE,K1),K1=13,24)
-        h(1)='Shading data for hours 13-24. '
-        CALL EASKS(hold,outs,' : ',74,' 0 0 0 0 0 0 0 0 0 0 0 0 ',
-     &    '13-24 shding',IER,1)
+        SN=SSNAME(icn)
+        write(outs,'(3A)')'Shading factors for surface `',
+     &                       SN(1:lnblnk(SN)),'`,'
+        write(hold,'(12f5.2)') (PSO(ISE,K1),K1=13,24)
+        h(1)='Shading factors for hours 13:00-24:00.'
+        CALL EASKS(hold,outs,'13:00-24:00; edit as required.',
+     &     60,' 0 0 0 0 0 0 0 0 0 0 0 0 ','13-24 shding',IER,1)
         OK=.true.
         K=0
         do 43 ik=13,24
@@ -469,14 +511,14 @@ C Window shading, read but do not display (assumes no default windows).
         if(.NOT.OK)goto 47
 
         dok=.false.
-        h(1)='Say yes if you want to continue editing. '
-        CALL ASKOK(' ',' Edit another surface?',OK,dok,1)
+        h(1)='Option to edit the shading factors for another surface.'
+        CALL ASKOK(' ','Edit another surface?',OK,dok,1)
         if(OK)goto 47
 
         dok=.true.
-        h(1)='Recent changes as held in memory and might be '
-        h(2)='lost if you do not save to file. '
-        CALL ASKOK(' ',' Update file ?',OK,dok,2)
+        h(1)='Unless saved to the zone shading & insolation file, the'
+        h(2)='edited shading factors will not be preserved.'
+        CALL ASKOK(' ','Update shading/insolation file?',OK,dok,2)
         if(OK)then
           IREC=ISADD(MNTH)
           CALL SWRT(IREC)
@@ -494,25 +536,25 @@ C Window shading, read but do not display (assumes no default windows).
         write(outs,'(a,a,a)') 'Data for ',MONTH(MNTH),' written.'
         call edisp(iuout,outs)
         dok=.true.
-        h(1)='Unless this is December say yes. '
-        CALL ASKOK('Export next month? (At last month say no',
-     &    'and this will close the export file).',OK,dok,1)
+        h(1)='Unless this is December say yes.'
+        CALL ASKOK(' ','Continue with next month?.',OK,dok,1)
         if(OK)then
           MNTH=MNTH+1
           if(MNTH.gt.12)then
             WRITE(iuj,'(A)',IOSTAT=IOS,ERR=3) '*end'
             CALL ERPFREE(iuj,istat)
-            call edisp(iuout,'Export file close.')
+            call edisp(iuout,' ')
+            call edisp(iuout,'Export file closed.')
             goto 31
           endif
           goto 50
         endif
         WRITE(iuj,'(A)',IOSTAT=IOS,ERR=3) '*end'
         CALL ERPFREE(iuj,istat)
-        call edisp(iuout,'Export file close.')
+        call edisp(iuout,'Export file closed.')
         goto 31
       elseif(ins1.eq.3)then
-        WRITE(outs,'(A,A)')' Imported Shading data for ',MONTH(MNTH)
+        WRITE(outs,'(A)')'Imported factors.'
         call edisp(iuout,outs)
   78    continue
         CALL STRIPC(iuj,OUTSTR,0,ND,1,'month line',IFLG)
@@ -531,7 +573,8 @@ C Window shading, read but do not display (assumes no default windows).
                 CALL EGETWR(OUTSTR,K,V,0.,1.,'W','data 1',IER)
                 PSO(is,iss)=V
   80          continue
-              WRITE(outs,124)SSNAME(icn),(PSO(is,K1),K1=1,12)
+              SN=SSNAME(icn)
+              WRITE(outs,124)is,SN(1:7),(PSO(is,K1),K1=1,12)
               call edisp(iuout,outs)
               CALL STRIPC(iuj,OUTSTR,0,ND,1,'data line 2',IFLG)
               k=0
@@ -545,9 +588,11 @@ C Window shading, read but do not display (assumes no default windows).
             CALL ERPFREE(iuj,istat)
             call edisp(iuout,'Import file closed.')
             dok=.true.
-            h(1)='Imported data is held in memory. It will be lost '
-            h(2)='unless you update the file. '
-            CALL ASKOK(' ',' Update file ?',OK,dok,2)
+            h(1)='Imported data is held in memory and will be lost'
+            h(2)='unless you update the zone shading & insolation'
+            h(3)='file.'
+            CALL ASKOK(' ','Update zone shading & insolation file?',
+     &                  OK,dok,3)
             if(OK)then
               IREC=ISADD(MNTH)
               CALL SWRT(IREC)

@@ -3613,12 +3613,12 @@ C Error messages.
       end
 
 C ******************** tscdta
-C Tscdta checks if TSC6 called from a building control law;
+C Tscdta checks if TSC6 is called from a building control law.
 C If so, TSC6 period data arrays are set here (as opposed
-C to being set from TSC menu).
+C to being set from the TSC menu in bps, i.e. in TSCON6 in file
+C tscon.F).
 
       subroutine tscdta
-
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -3638,58 +3638,63 @@ C to being set from TSC menu).
         if(nbcdt(i).eq.0)nn1=3
         do 600 j=1,nn1
           do 700 k=1,nbcdp(i,j)
-            if(ibclaw(i,j,k).eq.15.or.ibclaw(i,j,k).eq.16)then
 
 C FATAL ERROR TEST: COUNT NUMBER OF CONTROL FUNCTIONS 
 C SPECIFYING A 'REWIND' LAW - CURRENT MAXIMUM IS ONE 
-C SUCH LAW PER CONTROL CONFIGURATION FILE,
+C SUCH LAW PER CONFIGURATION CONTROL FILE.
+            if(ibclaw(i,j,k).eq.15.or.ibclaw(i,j,k).eq.16)then
                irwlaw=irwlaw+1
                if(irwlaw.gt.1)goto 99                 
 
-C SET TSC FLAG,
+C SET TSC FLAG.
                itsflg=1
 
-C SET FLAG INDICATING TSC6 SET FROM CONTOL LAW,
+C SET FLAG INDICATING TSC6 SET FROM CONTOL LAW.
                tsclaw=.true.
 
-C SET NUMBER OF TSC PERIODS,
+C SET NUMBER OF TSC PERIODS.
                ntscpd=ntscpd+1
              
-C SET TSC TYPE,
+C SET TSC TYPE.
                itssch(ntscpd,3)=6
 
-C DETERMINE PERIOD START TIME,
+C PERIOD START TIME.
                itssch(ntscpd,1)=int(tbcps(i,j,k))
              
-C DETERMINE PERIOD FINISH TIME,
+C PERIOD FINISH TIME.
                if(k.eq.nbcdp(i,j))then
-                 itssch(ntscpd,2)=23
+C                 itssch(ntscpd,2)=23
+                 itssch(ntscpd,2)=24
                else
-                 itssch(ntscpd,2)=int((tbcps(i,j,k+1)-1.))
+C                 itssch(ntscpd,2)=int((tbcps(i,j,k+1)-1.))
+                 itssch(ntscpd,2)=int(tbcps(i,j,k+1))
                endif
                if(ibclaw(i,j,k).eq.16)then
-                 itssch(ntscpd,2)=int((bmiscd(i,j,k,8)-1.))
+C                 itssch(ntscpd,2)=int((bmiscd(i,j,k,8)-1.))
+                 itssch(ntscpd,2)=int(bmiscd(i,j,k,8))
                endif           
 
-C DETERMINE PERIOD START DAY,
+C PERIOD START DAY.
                itssch(ntscpd,4)=ibcdv(i,j,1)
              
-C DETERMINE PERIOD FINISH DAY,
+C PERIOD FINISH DAY.
                itssch(ntscpd,5)=ibcdv(i,j,2)
   
 C ADJUST PERIOD START DAY & HOUR IF PERIOD START = 0.0 HOURS,
-               if(itssch(ntscpd,1).eq.0)then
-                 itssch(ntscpd,1)=24
-                 itssch(ntscpd,4)=ibcdv(i,j,1)-1
-               endif
+C               if(itssch(ntscpd,1).eq.0)then
+C                 itssch(ntscpd,1)=24
+C                 itssch(ntscpd,4)=ibcdv(i,j,1)-1
+C               endif
             endif
  700      continue
  600    continue
  500  continue
       return
 
-   99 call edisp(iuout,' TSCDTA: FATAL ERROR - `REWIND LAW` SPECIFIED')
-      call edisp(iuout,' MORE THAN ONCE IN CONTROL CONFIURATION FILE.')
+   99 call edisp(iuout,' ')
+      call edisp(iuout,'TSCDTA: Fatal error - time rewind')
+      call edisp(iuout,'control specified more than once in')
+      call edisp(iuout,'System Control file!')
       call epwait
       call epagend
       stop

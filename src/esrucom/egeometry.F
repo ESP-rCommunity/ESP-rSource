@@ -91,9 +91,11 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
-#include "espriou.h"
-C espriou.h provides currentfile.
 
+C espriou.h provides current file.
+#include "espriou.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
 C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
 C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
@@ -162,7 +164,7 @@ C SPARENT(MS) (12 char) the name of the parent surface or '-'
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
-C The connections based variant of G5 which can be instanciated
+C The connections based variant of G5 which can be instantiated
 C if the common block C24 has been filled.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

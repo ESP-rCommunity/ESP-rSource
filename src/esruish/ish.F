@@ -20,41 +20,43 @@ C Boston, MA 02111-1307 USA.
 
 C MAIN ish.F
 
-C THE SHADING PROGRAM PREDICTS FOR ANY BODY SHAPE :
-C      1.   THE SHADING ON OPAQUE SURFACES
-C      2.   THE SHADING ON TRANSPARENT SURFACES
+C The shading & insolation program predicts, for a target zone:
+C   1. shading on opaque and transparent surfaces;
+C   2. insolation of internal surfaces.
 
-C The subroutines used by ish are found in the following files:
-C comput.f - COMPUT: Sets up the shading computation parameters.
-C graph.f  - GRAPH:  Controls display of surface &  shaded areas.
+C The routines used within ish are as follows.
+C comput.F - COMPUT: Sets up the shading computation parameters.
+C graph.F  - GRAPH:  Controls display of surface &  shaded areas.
 C          - FACDRW: Draws the elevation of a surface.
 C          - SHDDRW: Plots point on a surface to represent shaded portion.
 C          - SITPLN: Draws the site plan showing zone & obstructions.
-C miscel.f - AREA:   Returns area for any polygon.
-C          - MESH:   Computes centre point X&Z coord of grid squares.
-C          - ERRORM: Error trapping.
-C point.f  - POINT1: Decides if a point is within a face boundary.
-C          - POINT2: Decides if a point is within a shadow boundary.
-C files.f  - SFILE:  Open a new transitional shading file.
-C          - SIFILE: Opens a shading/insolation file.
-C          - SWRT:   Writes the shading data to the shading file.
-C          - SSAVE:  Checks and writes a SHADING/INSOLATION FILE.
-C          - RETRV1: Retrives info from header block of the trans file.
-C shdcon.f - SHDCON: Controls shading computation.
-C          - SHDTST: Tests grid centre points to see if within surface.
-C          - DECOMP: Reduces 8 pt shadow 'box' to equivalent outline.
-C silist.f - SILIST: Lists the contents of a shading/insolation file.
-C synop.f  - SYNOP:  Displays table of % shading for opaque & transparent.
-C tfiles.f - TFILE1: Write to transitional shading file.
-C          - TFILE2: Transfers transformed coords of surfaces to trns shd file.
-C          - TFILE3: Saves hourly grid shading index in the trns shd file.
-C trnsf.f  - TRNSF1: Sets of the coefficients of the transformation equations.
-C          - TRNSF2: Original site coordinate system > local face system.
-C          - TRNSF3: Project 8 corner point of the obstruction block.
-C          - CORNR:  Returns X & Y coords of 4 top corners of obstr block.
-C          - PANGS:  Returns the azimuth, elevation and tilt of a surface.
-C winshd.f - WINSHD: Defines ASHRAE single window shading prediction method.
-C wshad.f  - WSHAD:  Performs ASHRAE window shading.
+C miscel.F - AREA:   Returns area for any polygon.
+C          - MESH:    Computes centre point X&Z coord of grid squares.
+C          - ERRORM:  Error trapping.
+C point.F  - POINT1:  Decides if a point is within a face boundary.
+C          - POINT2:  Decides if a point is within a shadow boundary.
+C files.F  - SFILE:   Open a new transitional shading file.
+C          - SIFILE:  Opens a shading/insolation file.
+C          - SWRT:    Writes the shading data to the shading file.
+C          - SSAVE:   Checks and writes a SHADING/INSOLATION FILE.
+C          - RETRV1:  Retrives info from header block of the trans file.
+C shdcon.F - SHDCON:  Controls shading computation.
+C          - SHDTST:  Tests grid centre points to see if within surface.
+C          - DECOMP:  Reduces 8 pt shadow 'box' to equivalent outline.
+C silist.F - SILIST:  Lists the contents of a shading/insolation file.
+C synop.F  - SYNOP:   Displays table of % shading for opaque & transparent.
+C tfiles.F - TFILE1:  Write to transitional shading file.
+C          - TFILE2:  Transfers transformed coords of surfaces to trns shd file.
+C          - TFILE3:  Saves hourly grid shading index in the trns shd file.
+C trnsf.F  - TRNSF1:  Sets of the coefficients of the transformation equations.
+C          - TRNSF2:  Convert solar angles to psuedo angles in new coordinate system.
+C          - TRNSF3:  Project 8 corner point of the obstruction block.
+C trnsfi.F - counterpart of trnsf.f but for insolation rather than shading.
+C          - TRNSF1I: Sets of the coefficients of the transformation equations.
+C          - TRNSF2I: Convert solar angles to psuedo angles in new coordinate system.
+C          - TRNSF3I: Project window vertex to new coordinate system.
+C winshd.F - WINSHD:  ASHRAE single window shading prediction method.
+C wshad.F  - WSHAD:   Performs ASHRAE window shading.
 
       program ish
 #include "building.h"
@@ -110,7 +112,7 @@ C Indicator of possible focus zone and action to take.
       common/rzone/inzone
       common/ract/paction
 
-C Where default db list are kept.
+C Where default db lists are kept.
       common/defdb/dfdblbl,defdbfl
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
@@ -126,7 +128,7 @@ C Significant figure reporting limit (NSIGFIG).
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-C Name of current application
+C Name of current application.
       common/APPNAME/cAppName
       character cAppName*12
 
@@ -139,7 +141,7 @@ C Material data arrays.
 
       DIMENSION MTHNAM(12),ITEMS(20),ISADD(12),ISHD(12)
       LOGICAL MODIFY,MODLEN,MODBND,XST
-      LOGICAL    OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,tok
+      LOGICAL    OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       CHARACTER*72 LNAME,LTRNS,TBASE,H
       CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -169,8 +171,8 @@ C Initialize global common data.
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
-C Notes on various file units within shd: IUNIT is the transitional
-C shading file, IFILSI is the shading insolation db, IUF is for
+C Notes on various file units within ish: IUNIT is the transitional
+C shading file, IFILSI is the shading & insolation db, IUF is for
 C miscel files, IFCFG for the configuration file.
       IFIL=11
       IUF=IFIL+1
@@ -200,10 +202,9 @@ C Set folder separator (fs) to \ or / as required.
       IEDOY=1
       ITC=0
       ICOUT=IUOUT
-      tok=.false.
-      newgeo=.false.  ! assume older format geometry.
+      newgeo=.false.  ! Assume old format geometry.
 
-C Initial coords for eyepoint, viewing point, angle of view.
+C Initial coordinates for eye point, viewing point & angle of view.
       EYEM(1)=-100.
       EYEM(2)=-100.
       EYEM(3)=100.
@@ -212,7 +213,7 @@ C Initial coords for eyepoint, viewing point, angle of view.
       VIEWM(3)=10.
       ANG=40.
 
-C General image option flags.
+C Image option flags.
       ITDSP=0
       ITBND=1
       ITEPT=0
@@ -260,7 +261,8 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       endif
       IF(MMOD.EQ.8)THEN
 
-C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback).
+C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text
+C feedback).
         IMFS=1
         IFS=1
         ITFS=1
@@ -325,7 +327,7 @@ C All subsequent tstamp messages will be appended to root journal.
           close(iuj)
         endif
 
-        write(outs,'(2a)')'Journal (shading analysis) for:',
+        write(outs,'(2a)')'Journal (shading/insolation) for:',
      &    uname(1:lnblnk(uname))
         call tstamp('>',outs)
       endif
@@ -337,7 +339,7 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        write(outs248,'(a,a)')'Input file is: ',LCMDFL
         if(pact(1:13).ne.'update_silent')then
           call edisp248(iuout,outs248,80)
         endif
@@ -345,28 +347,28 @@ C Take command line file name as initial configuration file.
         LCMDFL='  '
       endif
 
-C Take command line zone name and
-C determine if focus should be to a single zone.
+C Take command line zone name and determine if focus should be
+C to a single zone.
       if(inz(1:1).ne.' ')then
         inzone=inz
-        write(outs,'(a,a)')' the input zone is: ',inzone
+        write(outs,'(a,a)')'Input zone is: ',inzone
         if(pact(1:13).ne.'update_silent')then
           call edisp(iuout,outs)
         endif
-        write(outs,'(a,a)')'ISH: the input zone is: ',inzone
+        write(outs,'(a,a)')'Ish: the input zone is: ',inzone
         call tstamp('>',outs)
       else
         inzone='ALL'
-        call tstamp('>','ISH: no focus zone')
+        call tstamp('>','Ish: no focus zone')
       endif
 
 C Take command line action parameter. If paction = 'recalculate' then
-C after the configuration is read in, do a standard annual recalculation
+C after the configuration is read in, do a standard annual calculation
 C and pause so user can view results. If paction = 'update_silent' then
-C do standard annual calculation but exit when completed.
+C do standard annual calculation and exit when completed.
       if(pact(1:1).ne.' ')then
         paction=pact
-        write(outs,'(a,a)')'ISH: the input action is: ',paction
+        write(outs,'(a,a)')'Ish: the input action is: ',paction
         call tstamp('>',outs)
         if(paction(1:11).eq.'recalculate')then
           write(outs,'(a,a)')' the action is: ',paction
@@ -376,7 +378,7 @@ C do standard annual calculation but exit when completed.
           silent=.true.
         else
           paction='INTERACTIVE'
-          call tstamp('>','ISH: interactive mode')
+          call tstamp('>','Ish: interactive mode')
           silent=.false.
         endif
       else
@@ -397,9 +399,6 @@ C unit ifil+6 for output file.
       ixunit = ifil + 9
       delim = '-'
 
-C Debug.
-C      write(6,*) ixopen,ixunit,delim,xfile(1:lnblnk(xfile))
-
 C If an input file has been specified then load it.
       LCFGF=' '
       XST=.false.
@@ -408,12 +407,12 @@ C If an input file has been specified then load it.
         if(XST)then
           call fdroot(LCMDFL,path,LCFGF)
           if(paction(1:13).ne.'update_silent')then
-            call usrmsg(' Scanning the model...',' ','-')
+            call usrmsg('Scanning the model...',' ','-')
           endif
           MODE='NONE'
           call ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(paction(1:13).ne.'update_silent')then
-            call usrmsg(' Scanning the model...done.',' ','-')
+            call usrmsg('Scanning the model...done.',' ','-')
           endif
           if(IER.eq.0)then
             CFGOK=.TRUE.
@@ -422,14 +421,14 @@ C If an input file has been specified then load it.
             IF(MMOD.EQ.8)call updwire(ncomp)
 
 C If inzone = All display an image of the model. If inzone is either
-C a string which matches a zone name or is an index then focus on
+C a string which matches a zone name or is an index, then focus on
 C that zone.  If inzone = UNKNOWN or the index 0 present a list.
             call zindex(inzone,index)
             if(index.le.0)goto 201
             ICOMP = index
             ZN=zname(ICOMP)
 
-C Setup transitional shading file based on zones name.
+C Set up zone transitional shading file based on zones name.
             write(LNAME,'(A)')ZN(1:lnblnk(ZN))
             OK=.true.
             LTRNS=LNAME
@@ -438,7 +437,7 @@ C Setup transitional shading file based on zones name.
         endif
       endif
 
-C If in recalculation mode, proceed with actions with minimal interface.
+C If in recalculation mode, proceed with minimal interface.
 C If an existing db is found, removed it and open a new one before
 C starting calculations.
       if(silent)then
@@ -449,7 +448,7 @@ C starting calculations.
           if(XST)then
             CALL ERPFREE(IFILSI,ISTST)
             call EFOPRAN(IFILSI,LSHAD(ICOMP),maxrec,1,IER)
-            write(outs,'(A,A)') ' Deleting previous ',LSHAD(ICOMP)
+            write(outs,'(A,A)') 'Deleting previous ',LSHAD(ICOMP)
             if(paction(1:13).ne.'update_silent')then
               call edisp(iuout,outs)
             endif
@@ -457,44 +456,45 @@ C starting calculations.
             call sifile(ICOMP)
           endif
           
-C Proceed with shading and then insolaiton calculations.
+C Proceed with shading and then insolation calculations.
           if(IOBS(ICOMP).EQ.1)then
             CALL EGOMST(IUF,ZOBS(icomp),0,0,iuout,IER)
             ZN=zname(ICOMP)
             write(outs,'(3a)') 'Shading calculations for ',
      &        zn(1:lnblnk(zn)),'...'
             call edisp(iuout,outs)
-            call tstamp('>','ISH: re-calculate shading')
+            call tstamp('>','Ish: re-calculate shading')
             CALL COMPUT(ICOMP,IER,'s')
             write(outs,'(3a)') 'Shading calculations for ',
      &        zn(1:lnblnk(zn)),'...done.'
             call edisp(iuout,outs)
           else
-            call edisp(iuout,' No obstructions, doing insolation.')
+            call edisp(iuout,
+     &           'No obstructions, calculating insolation.')
           endif
           ICSTAT=0
           ZN=zname(ICOMP)
           write(outs,'(3a)') 'Insolation calculations for ',
      &      zn(1:lnblnk(zn)),'...'
           call edisp(iuout,outs)
-          call tstamp('>','ISH: start insolation computation')
+          call tstamp('>','Ish: start insolation computation')
           call INSCOM(ICOMP,ICSTAT,'s')
           write(outs,'(3a)') 'Insolation calculations for ',
      &      zn(1:lnblnk(zn)),'...done.'
           call edisp(iuout,outs)
          else
-          call usrmsg(' Unknown shading:insolation file.',
-     &                ' Cannot recalculate...','W')
+          call usrmsg('Unknown Zone Shading & Insolation file.',
+     &                'Cannot recalculate!','W')
         endif
         if(paction(1:11).eq.'recalculate')then
-          call usrmsg(' Recalculation complete. You may exit.',' ','-')
+          call usrmsg('Recalculation complete. You may exit.',' ','-')
         elseif(paction(1:13).eq.'update_silent')then
 
 C Finished recalculation so exit program, delete the 
-C transitional files; if a single month calculation has been done,
-C then offer to save or delete; if a multi-month calculation has
-C been done, all user to delete them.
-          call usrmsg(' Recalculation complete...exiting.',' ','-')
+C transitional files. If a single month calculation has been done,
+C then offer to save or delete. If a multi-month calculation has
+C been done, ask user to delete them.
+          call usrmsg('Recalculation complete...exiting.',' ','-')
           IUNIT=IFIL
           IF(MULTC.EQ.0)THEN
             CALL EFDELET(IUNIT,ISTAT)
@@ -515,7 +515,8 @@ C been done, all user to delete them.
         STOP
       endif
 
-C Something other than silent recalc so present application version info.
+C Not in silent recalculation mode so present application version
+C information.
       CALL ESPrVersion("summary")
       
 C Display opening menu.
@@ -526,23 +527,21 @@ C Display opening menu.
       write(ITEMS(2),'(A,A18)') '  path: ',path(1:18)
       write(ITEMS(3),'(A,A12)') 'b zone: ',ZN(1:12)
       ITEMS(4) =                '  _______________________ '
-      ITEMS(5)=                 'c ASHRAE window calc      '
-      ITEMS(6)=                 'd mercator Sun Path       '
+      ITEMS(5)=                 'c ASHRAE window shading   '
+      ITEMS(6)=                 'd Mercator sun path       '
       ITEMS(7)=                 'e views: sun/site plan    '
       ITEMS(8) =                '  _______________________ '
       ITEMS(9)=                 'f calculate shading       '
-      ITEMS(10)=                'g edit:import:export data '
-      ITEMS(11)=                'h view shading patterns   '
+      ITEMS(10)=                'h shading results         '
+      ITEMS(11)=                'g edit/import/export data '
       ITEMS(12) =               '  _______________________ '
-      ITEMS(13)=                'i predict insolation      '
-      ITEMS(14)=                'j view insolation         '
+      ITEMS(13)=                'i calculate insolation    '
+      ITEMS(14)=                'j insolation results      '
       ITEMS(15) =               '  _______________________ '
       IF(ITC.EQ.0)THEN
-        ITEMS(16)=              'r reporting >> silent     '
+        ITEMS(16)=              'r trace output >> none    '
       ELSEIF(ITC.EQ.1)THEN
-        ITEMS(16)=              'r reporting >> summary    '
-      ELSEIF(ITC.EQ.2)THEN
-        ITEMS(16)=              'r reporting >> detailed   '
+        ITEMS(16)=              'r trace output >> fort.33 '
       ENDIF
       if(ixopen.eq.1)then
         ITEMS(17)='> output >> file       '
@@ -551,7 +550,7 @@ C Display opening menu.
       endif
       ITEMS(18)=                '! browse zone surfaces    '
       ITEMS(19)=                '? help                    '
-      ITEMS(20)=                '- finish ISH              '
+      ITEMS(20)=                '- exit Shading/Insolation '
 
 C If zone has not been selected disallow calculations and views.
       if(ZN(1:4).eq.'UNKN')then
@@ -563,18 +562,19 @@ C If zone has not been selected disallow calculations and views.
       endif
       NITEMS = 20
 
-C Use askabout to instanciate the initial help messages (2nd parameter is one).
+C Use askabout to instantiate the initial help messages
+C (2nd parameter is 1).
       call askabout('ish ',1)
 
-      CALL EMENU('  Shading & insolation',ITEMS,NITEMS,INOS)
-      IF(INOS.EQ.1)THEN
+      CALL EMENU('Shading & Insolation',ITEMS,NITEMS,INOS)
 
 C Request definition of model.
-        H(1)='The system configuration file holds the definition '
+      IF(INOS.EQ.1)THEN
+        H(1)='The Model Configuration File holds the definition'
         H(2)='of the building/plant to be simulated, including the'
-        H(3)='names of all of the files required. If the name '
-        H(4)='given matches an existing file it will be read and '
-        H(5)='the data will be available for editing.'
+        H(3)='names of all constituent files. If the name given'
+        H(4)='matches an existing file it will be read and the'
+        H(5)='data therein made available for editing.'
         LTMP=LCMDFL
 
 C Call EASKF depending on the current file name length.
@@ -585,20 +585,20 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+            CALL EASKF(LTMP,'Model Configuration file?',' ',96,DFCFG,
      &        'config file name',IER,5)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LTMP,' Model configuration file?',' ',124,DFCFG,
+            CALL EASKF(LTMP,'Model configuration file?',' ',124,DFCFG,
      &        'config file name',IER,5)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+            CALL EASKF(LTMP,'Model configuration file?',' ',144,DFCFG,
      &        'config file name',IER,5)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(LTMP,' Model configuration file?',' ',144,DFCFG,
+          CALL EASKF(LTMP,'Model configuration file?',' ',144,DFCFG,
      &      'config file name',IER,5)
         else
-          CALL EASKF(LTMP,' Model configuration file?',' ',96,DFCFG,
+          CALL EASKF(LTMP,'Model configuration file?',' ',96,DFCFG,
      &      'config file name',IER,5)
         endif
 
@@ -607,8 +607,6 @@ C name with the full path.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
           call fdroot(LCMDFL,path,LCFGF)
-          call edisp(iuout,' ')
-          call edisp(iuout,' Scanning the model description')
           call tstamp('>','ISH: scanning new model')
           call tstamp('>',LCFGF)
           MODE='NONE'
@@ -619,57 +617,56 @@ C name with the full path.
             CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
           endif
         endif
-      elseif(INOS.EQ.3)THEN
 
-C Read geometry file for either calculation purpose
+C Read geometry file for either calculation purpose.
+      elseif(INOS.EQ.3)THEN
         if(.NOT.CFGOK)then
-          CALL USRMSG(' ',' Please define the model first!','W')
+          CALL USRMSG(' ','Please define the model first!','W')
           GOTO 201
         endif
         IC=-1
-        CALL EASKGEOF('Select a zone to assess:',CFGOK,IC,'-',IER)
+        CALL EASKGEOF('Zone to assess:',CFGOK,IC,'-',IER)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 201
         IER=0
         ICOMP = IC
         ZN=zname(ICOMP)
-        write(outs,'(a,a)')'ISH: shift zone focus to: ',ZN
+        write(outs,'(a,a)')'Ish: shift zone focus to: ',ZN
         call tstamp('>',outs)
 
-C See if there is an existing transitional shading file with, 
-C the zones name as root ask whether to use it.
+C If there is an existing transitional shading file with 
+C the zone's name as root, ask whether to use it.
         write(LNAME,'(A)')zname(ICOMP)(1:lnblnk(zname(ICOMP)))
         LTRNS=LNAME
         CALL SHDPRB(ITC,silent,ICOMP,IER)
-      ELSEIF(INOS.EQ.5)THEN
 
 C Perform the ASHRAE calculations.
-        call tstamp('>','ISH: enter ASHRAE calcs')
+      ELSEIF(INOS.EQ.5)THEN
+        call tstamp('>','Ish: enter ASHRAE calcs')
         CALL WINSHD
-        call tstamp('>','ISH: exit ASHRAE calcs')
-      ELSEIF(INOS.EQ.6)THEN
+        call tstamp('>','Ish: exit ASHRAE calcs')
 
 C Sun plot.
-        call tstamp('>','ISH: start sunplot')
-        call edisp(iuout,' ')
-        call edisp(iuout,' Date for the Mercator sun plot... ')
+      ELSEIF(INOS.EQ.6)THEN
+        call tstamp('>','Ish: start sunplot')
         IMO=1
         IDO=1
         call ASKDAY(IFDAY,IMO,IDO,IJDAY,IER)
         call sunplt(IJDAY,IER)
+
+C Draw the site plan.
       ELSEIF(INOS.EQ.7)THEN
         if(MMOD.lt.8)goto 201
-        H(1)='The site plan shows zones in bold and obstructions '
-        H(2)='as thin lines.  The sun view places the viewer at a '
-        H(3)='distance of a kilometer and at the azimuth & elevation'
-        H(4)='of the sun. '
-        CALL EASKAB(' ','Current viewpoints:',
-     &    'site plan','view model from sun position',IW,4)
+        H(1)='The site plan shows zones (marked `Target`) and'
+        H(2)='obstructions (marked `Bn` where n is the block number).'
+        H(3)='The view from the sun places the viewer at a distance'
+        H(4)='of 1 km from `Traget`. '
+        CALL EASKAB(' ','View point:','plan','from sun',IW,4)
 
-C Draw the siteplan.  After drawing it the zone geometry file must 
-C be read back in to reconstruct the common blocks G1,G2,G5 in 
-C preparation for any calculations to be done.
+C After drawing the site plan, the zone geometry file must 
+C be read back in to reconstruct COMMONS G1,G2,G5 in 
+C preparation for subsequent calculations.
         if(IW.eq.1)then
-          call tstamp('>','ISH: look at siteplan')
+          call tstamp('>','Ish: look at siteplan')
           CALL SITPLN(ICOMP)
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(newgeo)then
@@ -680,14 +677,13 @@ C preparation for any calculations to be done.
         else
 
 C Draw the zone and any obstructions associated with it based on
-C sun position. Confirm the lat, long, request day and time,
-C compute positon and update the view.
-          call tstamp('>','ISH: look at sun view')
-          call edisp(iuout,' Date and time for the view... ')
+C the sun position. Confirm the latitude & longitude, request
+C the day and time, compute the positon and update the view.
+          call tstamp('>' ,'Ish: look at sun view')
           NTS=1
           IMO=1
-          IDO=1
-          STIME=1.
+          IDO=9
+          STIME=12.
   67      CALL ASKTIM(IFDAY,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
   68      CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
           IF(SALT.GT.0.0)THEN
@@ -706,10 +702,10 @@ C compute positon and update the view.
 C Generate a heading for the view.
             CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
             WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &        ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &        '  azim:',SAZI,' elev:',SALT
+     &        'View: ',IDO,MTHNAM(IMO),' at ',DESCRH,
+     &        '  Azimuth ',SAZI,', Altitude ',SALT
             CALL viewtext(ETEXT,2,1,IFS)
-            CALL EASKAB(' ',' Next viewpoint:',
+            CALL EASKAB(' ','View:',
      &        'next hour','exit',IW,0)
             if(IW.eq.1)then
               STIME=STIME+((60.0/FLOAT(NTS))/60.0)
@@ -719,19 +715,20 @@ C Generate a heading for the view.
               goto 201
             endif
           else
-            CALL EASKAB(' View point below horizon:',' ',
-     &        'specify another time','exit',IW,0)
+            CALL EASKAB('View point below horizon!',' ',
+     &        'Specify another time?','exit',IW,0)
             if(IW.eq.1)goto 67
             ITSNM=0
           endif
         endif
-      ELSEIF(INOS.EQ.9)THEN
 
-C Calculate shading, first making sure that isi is non-zero.
+C Calculate shading, first making sure that ISI is non-zero
+C (i.e. surface is insolated).
+      ELSEIF(INOS.EQ.9)THEN
         if(ZN(1:4).eq.'UNKN') goto 201
         IF(ISI(ICOMP).EQ.1)THEN
 
-C If there is already data in the file ask if the user wants
+C If there is already data in the file ask user what to do.
           existing=.false.
           irec=1
           read(ifilsi,rec=irec,iostat=istat,err=30)(ishd(i),i=1,12),
@@ -740,12 +737,12 @@ C If there is already data in the file ask if the user wants
            if(ishd(i).ne.0.or.isadd(i).ne.0)existing=.true.
    10     continue
           if(existing)then
-            h(1)='Data already existing in this file. New computations'
-            h(2)='can overwrite this (not recommended) or a fresh file'
-            h(3)='can be created.'
-            CALL EASKABC('Shading file has existing data.','Options:',
-     &        'overwrite data','create a fresh file',
-     &        'abort calculation',IW,3)
+            h(1)='The Zone Shading & Insolation file already contains'
+            h(2)='data. New computations can overwrite this or another'
+            h(3)='file may be created.'
+            CALL EASKABC('Zone Shading & Insolation file has data!',
+     &        'Options:',
+     &        'overwrite','create new file','cancel',IW,3)
             if(iw.eq.1)then
               continue
             elseif(iw.eq.2)then
@@ -753,7 +750,7 @@ C If there is already data in the file ask if the user wants
               if(NZSUR(icomp).gt.24)maxrec=NZSUR(icomp)
               CALL ERPFREE(IFILSI,ISTST)
               call EFOPRAN(IFILSI,LSHAD(ICOMP),maxrec,1,IER)
-              write(outs,'(A,A)') ' Deleting previous ',LSHAD(ICOMP)
+              write(outs,'(A,A)') 'Deleting previous ',LSHAD(ICOMP)
               if(paction(1:13).ne.'update_silent')then
                 call edisp(iuout,outs)
               endif
@@ -764,117 +761,139 @@ C If there is already data in the file ask if the user wants
             endif
           endif
 
-          call tstamp('>','ISH: start shading computation')
+          call tstamp('>','Ish: start shading computation')
           CALL COMPUT(ICOMP,IER,'i')
         else
           call usrmsg(
-     &    'Unknown shading:insolation file. Please choose another zone',
-     &    'or use the Project Manager to specify for this zone.','W')
+     &    'No Zone Shading & Insolation file! Use Project Manager to',
+     &    'specify one for this zone or choose another zone.','W')
         endif
+
+C View shading/insolation file contents, get synopsis of
+C surface shading or plot surface shading patterns (requires
+C a transitional shading file).
       ELSEIF(INOS.EQ.10)THEN
-
-C Edit data for one month.
         if(ZN(1:4).eq.'UNKN')then
-          call edisp(iuout,'Plese select a zone first!')
-          goto 201
-        else
-          CALL SIEDIT(ICOMP)
-        endif
-      ELSEIF(INOS.EQ.11)THEN
-
-C View results of simulation: current shading/insolation file contents,
-C synopsis of shading or plot of shading on a surface.
-        if(ZN(1:4).eq.'UNKN')then
-          call edisp(iuout,'Plese select a zone first!')
+          call edisp(iuout,'Select a zone first!')
           goto 201
         endif
-  300   h(1)='Choose one of the options supplied. '
-        CALL EASKABC('Shading options:',' ','List file content',
-     &               'Shading synopsis','Draw surf shading ? ',IW,1)
+  300   h(1)='The `synoptic` option lists the surface shading'
+        h(2)='percentage at each sun-up hour, while the `detailed`'
+        h(3)='option lists the shading and insolation factors for'
+        h(4)='all months/hours as passed to the Simulator via'
+        h(5)='the Zone Shading & Insolation file. The `image`'
+        h(6)='option shows the shading patterns graphically. Note'
+        h(7)='that the surface is drawn relative to a coordinate'
+        h(8)='system that is located in the plane of the target'
+        h(9)='surface, i.e. the surface is in the X-Y plane while'
+        h(10)='the first 2 vertices of the surface lie along the'
+        h(11)='the X-axis (this will be especially apparent where'
+        h(12)='these vertices were not initially along the ground).'
+        CALL EASKABC(' ','Shading results:','detailed',
+     &               'synoptic','image',IW,12)
         if(IW.eq.1)then
-          call tstamp('>','ISH: list shading contents')
+          call tstamp('>','Ish: shading listing')
           CALL SILIST(ICOMP)
         ELSEIF(IW.EQ.2.OR.IW.EQ.3)THEN
-          call tstamp('>','ISH: shading synopsis')
+          call tstamp('>','Ish: shading image')
           IF(MULTC.EQ.0)THEN
 
 C Flags for calculation not set or a previous set of transition files
 C have probably been loaded.
             CALL USRMSG(
-     &      ' You have probably loaded in a previous analysis, and it',
-     &      ' is assumed that it was with the current version, ','-')
+     &      'You have probably loaded a previous analysis. It is',
+     &      'assumed that this was done with the current model.','-')
             MULTC=2
           ENDIF
 
           IF(MULTC.EQ.2)THEN
 
-C A multi-month calculation was done, ask for which month, then open
-C the relevant transitional shading file based on the base name.
-   65       H(1)='Should be an integer Jan=1 etc. '
+C A multiple month calculation was performed. Ask for month to
+C recover then open the corresponding transitional shading
+C file based on the base name.
+   65       H(1)='The month is specified as an integer with'
+            H(2)='January = 1, February = 2 and so on.'
             MON=MONS
-            CALL EASKI(MON,' ',' Computation month number? ',
-     &        1,'F',12,'F',1,'month number',IER,1)
+            CALL EASKI(MON,' ','Computation month number?',
+     &        1,'F',12,'F',1,'month number',IER,2)
             IF(IER.NE.0)goto 65
 
-C Allow for number of surfaces within the transitional file.
+C Allow for number of surfaces within the zone transitional shading
+C file.
             IRECW=MS+5
             write(TBASE,'(A,A3)')LTRNS(:LNBLNK(LTRNS)),MTHNAM(MON)
             call EFOPRAN(IUNIT,TBASE,IRECW,1,IER)
             IF(ier.eq.0)THEN
-              write(outs,'(A,A,A)')' Transitional file ',
-     &                              TBASE(:LNBLNK(TBASE)),' opened...'
+              CALL edisp(iuout,' ')
+              write(outs,'(A,A,A)')'Transitional shading file ',
+     &                TBASE(:LNBLNK(TBASE)),' used.'
               CALL edisp(iuout,outs)
             ELSE
-              CALL USRMSG(' The transitional shading file for',
-     &                    ' this month does not exist. ','W')
-C << at this point could do shading computation to create the necessary >>
-C << transitional file to read. >>
+              CALL USRMSG('A transitional shading file does',
+     &                    'not exist for this month.','W')
+
+C << At this point we could call for a shading computation in
+C    order to create the necessary transitional file to read. >>
+
               goto 300
             ENDIF
           endif
-          CALL RETRV1(icomp)
+          CALL RETRV1(ICOMP)
           if(IW.EQ.2)CALL SYNOP(ICOMP)
           if(IW.EQ.3.and.MMOD.eq.8)then
-            call tstamp('>','ISH: view shading patterns')
+            call tstamp('>','Ish: view shading patterns')
             CALL GRAPH(ICOMP)
           endif
         endif
-      ELSEIF(INOS.EQ.13)THEN
+
+C Edit/import/export/list.
+      ELSEIF(INOS.EQ.11)THEN
+        if(ZN(1:4).eq.'UNKN')then
+          call edisp(iuout,'Select a zone first!')
+          goto 201
+        else
+          CALL SIEDIT(ICOMP)
+        endif
 
 C Insolation computation.
+      ELSEIF(INOS.EQ.13)THEN
         if(ZN(1:4).eq.'UNKN')then
-          call edisp(iuout,'Plese select a zone first!')
+          call edisp(iuout,'Select a zone first!')
           goto 201
         endif
         IF(ISI(ICOMP).EQ.1)THEN
           ICSTAT=0
-          call tstamp('>','ISH: start insolation computation')
+          call tstamp('>','Ish: start insolation computation')
           call INSCOM(ICOMP,ICSTAT,'-')
         else
-          call usrmsg(' Unknown shading:insolation file.',
-     &                ' Please choose another zone...','W')
+          call usrmsg('Unknown Zone Shading & Insolation file!',
+     &                'Select another zone.','W')
         endif
-      ELSEIF(INOS.EQ.14)THEN
 
 C Synopsis of insolation.
+      ELSEIF(INOS.EQ.14)THEN
         if(ZN(1:4).eq.'UNKN')then
-          call edisp(iuout,'Plese select a zone first!')
+          call edisp(iuout,'Select a zone first!')
           goto 201
         else
-          CALL EASKAB(' Insolation reporting:',' ',
-     &      'list file contents','insolation synopsis',IW,0)
+          h(1)='Choose from the presented options.'
+          CALL EASKAB(' ','Insolation results:',
+     &      'detailed','synoptic',IW,1)
           if(IW.eq.1)then
-            call tstamp('>','ISH: list insolation contents')
+            call tstamp('>','Ish: list insolation contents')
             CALL SILISTI(icomp)
           else
-            call tstamp('>','ISH: list insolation synopsis')
+            call tstamp('>','Ish: list insolation synopsis')
+
+            H(1)='The month is specified as an integer with'
+            H(2)='January = 1, February = 2 and so on.'
             MON=MONS
-            CALL EASKI(MON,' ',' Which month (number) ? ',
-     &        1,'F',12,'F',1,'ins comp month',IER,0)
+            CALL EASKI(MON,' ','Computation month number?',
+     &        1,'F',12,'F',1,'ins comp month',IER,2)
  202        CALL INSYNP(icomp)
             if(MON.lt.12)then
-              h(1)='You can look at several months in sequence.'
-              CALL EASKAB('Look at next month?:',' ','yes','no',IW,1)
+              h(1)='You may examine months in sequence.'
+              CALL EASKAB(' ','Consider next month?','yes','no',IW,1)
               if(iw.eq.1)then
                 MON=MON+1
                 goto 202
@@ -882,37 +901,17 @@ C Synopsis of insolation.
             endif
           endif
         endif
-      ELSEIF(INOS.EQ.16)THEN
 
 C Set trace level displayed in opening menu and main menu.
+      ELSEIF(INOS.EQ.16)THEN
         ITC=ITC+1
-        if(ITC.GT.2)then
+        if(ITC.GT.1)then
           ITC=0
           ICOUT=iuout
-          tok=.false.
         elseif(ITC.eq.1)then
-          h(1)='Look for a fort.33 file'
-          CALL EASKAB(' Redirect trace messages to file?:',' ',
-     &        'yes','no',IW,1)
-          if(IW.eq.1)then
-            ICOUT=33
-            tok=.true.
-          else
-            ICOUT=iuout
-            tok=.false.
-          endif 
-        elseif(ITC.eq.2)then
-          h(1)='Look for a fort.33 file'
-          CALL EASKAB(' Redirect verbose trace messages to file?:',' ',
-     &        'yes','no',IW,1)
-          if(IW.eq.1)then
-            ICOUT=33
-            tok=.true.
-          else
-            ICOUT=iuout
-            tok=.false.
-          endif 
+          ICOUT=33
         endif
+
       ELSEIF(INOS.EQ.17)THEN
         if(ixopen.eq.0)then
           write(xfile,'(2a)') zname(icomp)(1:lnblnk(zname(icomp))),
@@ -920,34 +919,36 @@ C Set trace level displayed in opening menu and main menu.
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Report',IER)
         if(ixopen.eq.1)then
-          call usrmsg('Reports should be redirected to the file',
-     &      'until you return and toggle this option.','W')
+          call usrmsg('Reports will be redirected to file',
+     &      'until you toggle this option.','W')
         endif
-      ELSEIF(INOS.EQ.18)THEN
 
-C Surface summary: print headder, followed by surface information.
-        call tstamp('>','ISH: list surface attributes')
+C Surface summary: print header, followed by surface information.
+      ELSEIF(INOS.EQ.18)THEN
+        call tstamp('>','Ish: list surface attributes')
         context=.false.
         CALL SURINFO(ICOMP,iuout,context)
+
+C Help via the askabout facility in esru_ask.F - 0 requests display.
       ELSEIF(INOS.EQ.19)THEN
-
-C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('ish ',0)
-      ELSEIF(INOS.EQ.20)THEN
 
-C Gracefully exit program: if nothing has been done, delete the 
-C transitional file; if a single month calculation has been done,
-C then offer to save or delete; if a multi-month calculation has
-C been done, all user to delete them.
+C Exit program: if nothing has been done, delete the transitional
+C shading file; if a single or multi-month calculation has been done
+C then offer to save or delete.
+      ELSEIF(INOS.EQ.20)THEN
         IUNIT=IFIL
         IF(MULTC.EQ.0)THEN
           CALL EFDELET(IUNIT,ISTAT)
         ELSEIF(MULTC.EQ.2)THEN
           dok=.true.
-          h(1)='The transitional files were used during calculations'
-          h(2)='and do not need to be kept. Probably you will want '
-          h(3)='to delete these files. '
-          CALL ASKOK(' ',' Delete the transitional files?',OK,dok,3)
+          h(1)='Transitional shading files were used to store'
+          h(2)='intermediate shading results for use in any'
+          h(3)='subsequent insolation analysis. Normally, these'
+          h(4)='do not need to be retained and you will probably'
+          h(5)='want to delete them.'
+          CALL ASKOK(' ',
+     &        'Delete transitional shading file(s)?',OK,dok,5)
           IRECW=MS+5
           if(OK)then
             do 55 ix=1,NCOMP
@@ -956,7 +957,7 @@ C been done, all user to delete them.
      &                MTHNAM(im)
                 call EFOPRAN(IUNIT,LNAME,IRECW,0,IER)
                 if(ier.eq.0)then
-                  write(outs,'(A,A)') ' Deleting ',LNAME
+                  write(outs,'(A,A)') 'Deleting ',LNAME
                   call usrmsg(outs,' ','-')
                   CALL EFDELET(IUNIT,ISTAT)
                 endif
@@ -964,16 +965,15 @@ C been done, all user to delete them.
   55        continue
           endif
         ENDIF
-        call usrmsg(' Closing shading/insolation module...',' ','P')
         if(journio.eq.1)then
-          call tstamp('>','Finish shading & insolation analysis')
+          call tstamp('>','Finished shading/insolation analysis.')
           close(iuj)
         endif
         CALL EPAGEND
         STOP
       ELSE
 
-C Not one of the legal menu choices.
+C Not a legitimate menu choice.
         INOS=-1
         goto 201
       ENDIF
@@ -989,13 +989,13 @@ C Not one of the legal menu choices.
 C ********* SHDPRB
 C Specify files - allow user to scan the configuration file or input
 C file names manually.
-      SUBROUTINE SHDPRB(ITC,silent,ICOMP,IER)
 
+      SUBROUTINE SHDPRB(ITC,silent,ICOMP,IER)
 #include "building.h"
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
       COMMON/FILEP/IFIL
 
       character CTYPE*4
@@ -1017,10 +1017,10 @@ C file names manually.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character h*72
-      logical newgeo  ! to use for testing if new/old geometry file.
+      logical newgeo  ! Used to testing for new/old geometry file.
 
       IUF=IFIL+1
-      newgeo=.false.  ! assume older format geometry.
+      newgeo=.false.  ! Assume old format geometry.
 
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(silent)then
@@ -1038,7 +1038,7 @@ C file names manually.
       endif
       IF(IER.NE.0)THEN
         CALL edisp(iuout,'Problem detected while trying to open/read')
-        call edisp(iuout,'geom file... respecify in the main menu.')
+        call edisp(iuout,'zone geometry file. Respecify via menu.')
         return
       endif
       NZSUR(ICOMP)=NSUR
@@ -1053,15 +1053,15 @@ C Get name of obstruction file.
         endif
       ELSEIF(IOBS(ICOMP).NE.1)THEN
         if(silent)then
-          call edisp(iuout,'No obstructions, only comput insolation.')
+          call edisp(iuout,
+     &      'No obstructions so only compute insolation.')
         else
-          h(1)='When obstructions are not associated with a zone '
-          h(2)='shading (on exterior surfaces) cannot be calculated. '
-          h(3)='It is possible to calculate the distribution of '
-          h(4)='(unshaded) insolation within the zone. '
-          call easkab(' No obstruction file found:',' ',
-     &      'return to project manager',
-     &      'only look at insolation patterns',IW,4)
+          h(1)='Where obstructions are not associated with a zone,'
+          h(2)='external surface shading cannot be calculated. Note'
+          h(3)='that it is still possible to calculate internal'
+          h(4)='surface insolation.'
+          call easkab('No Zone Obstruction file found!','Options:',
+     &      'cancel','compute insolation only',IW,4)
           if(IW.EQ.1)then
             CALL EPAGEND
             STOP
@@ -1069,14 +1069,14 @@ C Get name of obstruction file.
         endif
       ENDIF
 
-C Get name of the shading insolation file.
+C Get name of the zone shading & insolation file.
       IF(ISI(ICOMP).EQ.1)THEN
         CALL SIFILE(ICOMP)
       ELSEIF(ISI(ICOMP).NE.1)THEN
-        call usrmsg(' No shading:insolation db file found.',
-     &    ' Please supply via the project manager...','W')
-        call usrmsg('The shading and insolation module is',
-     &              'now terminating...','-')
+        call usrmsg('No Zone Shading & Insolation file found!',
+     &    'Establish one via the Project Manager.','W')
+        call usrmsg('The Shading & Insolation module',
+     &              'is now terminating.','-')
         call pauses(1)
         CALL EPAGEND
         STOP

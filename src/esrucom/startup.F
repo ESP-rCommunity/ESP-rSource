@@ -2161,7 +2161,7 @@ C Arrays mapping binary names to longer descriptions
      &                'Data Conversion Utility',
      &                ' ',
      &                'Construction Gridding Tool',
-     &                'Shading Analysis Tool',
+     &                'Shading & Insolation Analysis Tool',
      &                'Mass Flow Solver',
      &                'Mould analysis tool',
      &                'Mean Radiant Temperature Module',

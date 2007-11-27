@@ -421,6 +421,8 @@ C Initialise total flux entering zone
 C Initialise external solar flux for PV materials.
       DO 98 I=1,MS
         EXRAD(I)=0.0
+        EXDIR(I)=0.0
+        EXDIF(I)=0.0
 98    CONTINUE
 
 C Initialise 'remaining flux' for diffuse allocation
