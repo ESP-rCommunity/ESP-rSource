@@ -105,9 +105,8 @@ can be downloaded using the subversion command
    svn checkout https://esp-r.net/espr/esp-r/branches/development_branch
 
 Should you wish to contribute improvements to the archive,
-you'll also need a developer's account. Contact the ESP-r
-archivist (Ian Beausoleil-Morrison,
-Ian.Beausoleil-Morrison@nrcan.gc.ca) to arrange one.
+you'll also need a developer's account. Contact Alex 
+Ferguson (aferguso@nrcan.gc.ca) to arrange one.
 
 
 ===========================================================
@@ -119,11 +118,11 @@ library combinations. Some of these configurations have been
 thoroughly tested and are regarded as 'stable', while
 others remain in beta testing.
 
-While ESP-r has been built on all of the supported platforms
-and configurations, it is most routinely used on Linux. 
-Installation on common Linux distributions (including
-Mandrake, Redhat/Fedora and Gentoo) has proven robust, and 
-you can use it with confidence on these systems. 
+While ESP-r has been built on all of the supported platforms and
+configurations, it is most routinely used on Linux.  Installation
+on common Linux distributions (including Ubuntu, Mandrake,
+Redhat/Fedora and Gentoo) has proven robust, and you can use it
+with confidence on these systems.
 
 ESP-r is used less often on Solaris, Cygwin, MinGW and OS X. 
 systems. These systems are not be available to some ESP-r 
@@ -142,16 +141,16 @@ Architectures
 ESP-r is presently only supported on 32 bit systems.
 Installations on MinGW and OS X are regarded as 'beta'.
 
-                      +-------+------+------+------+------+
-                      |Solaris|Linux |Cygwin|MinGW | OS X |
-+---------------------+-------+------+------+------+------+
-| 32-bit              |  S    |  S   |  S   |  B   |  S   |
-| 64-bit              |  X    |  X   |  X   |  X   |  X   |
-+---------------------+-------+------+------+------+------+
+ ===========================================================
+                      Solaris  Linux   Cygwin  MinGW    OS X
+ -----------------------------------------------------------
+ 32-bit                  S       S       S       B       S
+ 64-bit                  X       X       X       X       X
+ ===========================================================
  S = Stable
  B = Beta testing
  X = Not supported
- - = Not applicable 
+ - = Not applicable
 
 Compilers
 ---------
@@ -164,13 +163,13 @@ between GCC 3 and GCC4 builds. Until these differences
 are resolved, use of GCC4 builds are recommended only for
 testing purposes.
 
-                      +-------+------+------+------+------+
-                      |Solaris|Linux |Cygwin|MinGW | OS X |
-+---------------------+-------+------+------+------+------+
-| Sun cc  / f90       |  S    |  -   |  -   |  -   |  -   |
-| gcc 3.X / g77       |  S    |  S   |  S   |  B   |  S   |
-| gcc 4.X / gFrotran  |  X    |  B   |  X   |  X   |  X   |
-+---------------------+-------+------+------+------+------+
+ ===========================================================
+                      Solaris  Linux   Cygwin  MinGW    OS X
+ -----------------------------------------------------------
+   Sun cc  / f90         S       -        -      -       -
+   gcc 3.X / g77         S       S        S      B       S
+   gcc 4.X / gFrotran    X       B        X      X       X
+ ===========================================================
  S = Stable
  B = Beta testing
  X = Not supported
@@ -197,13 +196,13 @@ ESP-r interface using the GTK interface, and GTK versions
 of ESP-r can be installed on all platforms provided the
 GTK libraries are available.  
 
-                      +-------+------+------+------+------+
-                      |Solaris|Linux |Cygwin|MinGW | OS X |
-+---------------------+-------+------+------+------+------+
-| X11                 |  S    |  S   |  S   |  -   |  S   |
-| GTK                 |  B    |  B   |  B   |  B   |  B   |
-| no graphics         |  S    |  S   |  S   |  B   |  S   |
-+---------------------+-------+------+------+------+------+
+ ===========================================================
+                      Solaris  Linux   Cygwin  MinGW    OS X
+ -----------------------------------------------------------
+ X11                     S        S       S      -       S
+ GTK                     B        B       B      B       B
+ no graphics             S        S       S      B       S
+ ===========================================================
  S = Stable
  B = Beta testing
  X = Not supported
@@ -285,7 +284,7 @@ use on your system. Enter the command:
 
 Configuration of the PATH environment variable using the
 bash and csh shells are described below. Information on
-setting environment variables for other shell types (eg.
+setting environment variables for other shell types (e.g.,
 sh, zsh, ksh) is available on the Internet.
 
   BASH:
@@ -403,12 +402,17 @@ Developing with ESP-r
 ===========================================================
 9. VALIDATION
 
-Up to date description of validation studies and packaged
-QA tools to go here.
+ESP-r has been extensively validated both through comparison
+to other simulation programs, and comparison to experimental
+data. An overview of ESP-r validation studies is available
+at the following URL:
 
-   - IEA BESTEST / ASHRAE 140 references
-   - CEN test suite
-   - tester.pl 
+    http://www.esru.strath.ac.uk/Documents/validation.pdf
+
+In addition, ESP-r includes an option to automatically
+perform the IEA BESTEST/ASHRAE 140 and CEN validation tests,
+and report these results. You can exercise these tests
+by clicking on the 'validation' option in prj.
 
 ===========================================================
 10. QUALITY ASSURANCE AND RELEASE TESTING
@@ -453,37 +457,38 @@ The following table summarizes the most recent test results
 on each of ESP-r's supported platforms:
 
   ======================================================================
-  Platform  Last test date     Notes
+  Platform  Last test date      Notes
   ---------------------------------------------------------------------
-  Linux     2007-04-16 (r967)  A complete regression test was performed
-            2007-03-28 (r922)  against last release (2006-11-11, r653).
-                               All differences are expected as introduced
-                               in r665 and r904.
-  ---------------------------------------------------------------------
-  Solaris   2007-03-29 (r922)  A cross platform test was performed
-                               comparing Solaris output to linux results.
-                               Trivial numerical differences were
-                               observed in all test cases, while some
-                               non-trivial numerical differences were
-                               observed in in the temperatures of
-                               exterior surfaces in some test cases.
-  ---------------------------------------------------------------------
-  Cygwin    2007-04-04 (r922)  A cross platform test was performed
-                               comparing Cygwin output to linux
-                               results on r922. This test identified
-                               a problem with one test case in basesimp.
-                               The problem was addressed with r967.
-                               Since no source code changes between r922
-                               and r967, the complete cross platform test
-                               was not carried out for r967.
-  ---------------------------------------------------------------------
-  MinGW     -----              The cross platform test between Linux
-                               and MinGW was not undertaken.
-  ---------------------------------------------------------------------
-  OS X      -----              No comprehensive comparison between
-                               Linux and OSX results has been 
-                               undertaken.
-  ======================================================================
+  Linux     2007-11-07 (r2010)  A complete regression test was performed
+                                against last release (2007-04-17, r917).
+                                Small numerical differences were 
+                                introduced to the predictions from the 
+                                photovoltaic model and the explicit
+                                plant pump model. These differences were
+                                anticipated by developers, who modified
+                                these models in r1327 and r1952/1958.
+  ----------------------------------------------------------------------
+  Cygwin    2007-11-02 (r1981)  A cross platform test was performed
+                                comparing Cygwin output to linux
+                                results. No numerical differences were
+                                observed.
+  ----------------------------------------------------------------------
+  Solaris   2007-11-02 (r1981)  A cross platform test was performed
+                                comparing Solaris output to linux results.
+                                Trivial numerical differences were
+                                observed in all test cases, while some
+                                non-trivial numerical differences were
+                                observed in in the temperatures of
+                                exterior surfaces in some test cases.
+  ----------------------------------------------------------------------
+  OS X      2007-11-02 (r1981)  A qualitative comparison between
+                                OS X and Linux versions was undertaken.
+                                Only trace differences were observed
+                                in the results. 
+  ----------------------------------------------------------------------
+  MinGW     -----               The cross platform test between Linux
+                                and MinGW was not undertaken.
+  =======================================================================
 
 ===========================================================
 11. SUPPORT

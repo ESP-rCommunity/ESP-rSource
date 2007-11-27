@@ -1,7 +1,9 @@
+*Operations 1.0
+*date Fri Aug 17 15:30:18 2007  # latest file modification 
 # operations of garage defined in: 
-# ../zones/garage.opr
-nil_operations  # description
-# control(no control of air flow  ), low & high setpoints 
+# ../zones_basic/garage.opr
+nil_operations
+# control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      0   # no Weekday flow periods
      0   # no Saturday flow periods
