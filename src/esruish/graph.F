@@ -24,13 +24,13 @@ C GRAPH:  Displays surface and superimposes the shaded areas.
 C FACDRW: Draws the elevation of a surface.
 C SHDDRW: Plots point on a surface to represent shaded portion.
 C SITPLN: Scales and draws the site plan showing zone & obstructions.
-C sunplt: draws a mercator sun path diagram.
+C SUNPLT: draws a Mercator sun path diagram.
 
 C This code makes use of library facilities from esrulib.a .
 
 C ************* GRAPH *************************
-C GRAPH Displays selected body surface and superimposes the shaded
-C areas.
+C Displays a selected body surface as a normal elevation
+C and superimposes the shading patterns if any.
       SUBROUTINE GRAPH(ICOMP)
 #include "building.h"
 
@@ -62,8 +62,7 @@ C Assume there are no default windows.
         IS=IVA(1)
       endif
 
-C Retrieve surface transformed coordinates.  Note XFT & ZFT could be 
-C recalculated quite easily.
+C Retrieve surface transformed coordinates.
       NV=NVER(IS)
       IREC=IRECS(IS)
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(XFT(I),I=1,NV)
@@ -77,18 +76,18 @@ C Set up mesh centre points in case of first entry.
 C The right offset for the graphic box is the character width of the menu.
       IER=0
       IF(MMOD.LT.8)THEN
-        CALL USRMSG('Not in graphic mode...',' ','W')
+        CALL USRMSG('Not in graphic mode!',' ','W')
         RETURN
       ENDIF
 
-C Clear the vieweing box, draw its border and return the offsets
-C which define it.  The win3d parameters match those in FACDRW
+C Clear the viewing box, draw its border and return the offsets
+C which define it. The win3d parameters match those in FACDRW
 C and SITPLN.
       call startbuffer()
       CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
 
-C Update the equation of the plane, its transforms etc in COMMON/TRNSF
-C and COMMON/G1T.
+C Update the equation of the plane, its transforms etc. are in
+C COMMONS TRNSF & G1T.
       CALL TRNSF1(IS)
 
 C Find MAX & MIN surface coordinates.
@@ -115,7 +114,8 @@ C Place scaling in static C variables for use by line drawing routines.
 
 C Output start hour.
       IH=1
-      CALL EASKI(IH,' ',' Output start hour (1-24) ? ',
+      H(1)='Give the the hour as an integer between 1 and 24.'
+      CALL EASKI(IH,' ','Output start hour?',
      &     1,'F',24,'F',1,'output start',IER,0)
 
 C Hour-by-hour.
@@ -160,13 +160,12 @@ C Mixed shading/insolation case.
 
    14 CONTINUE
       dok=.true.
-      h(1)='Pause while you consider the data. '
-      CALL ASKOK(' ',' Continue?',OK,dok,1)
+      h(1)='Option to pause while you consider the data.'
+      CALL ASKOK(' ','Continue?',OK,dok,1)
       if(.NOT.OK)then
         dok=.true.
-        h(1)='Option to look at additional surfaces. '
-        h(2)='If you are done say no. '
-        CALL ASKOK(' ',' Consider another surface?',OK,dok,2)
+        h(1)='Option to consider additional surfaces.'
+        CALL ASKOK(' ','Consider another surface?',OK,dok,1)
         IF(OK)goto  23
         goto 19
       endif
@@ -174,14 +173,13 @@ C Mixed shading/insolation case.
     5 CONTINUE
 
       dok=.true.
-      h(1)='Option to look at additional surfaces. '
-      h(2)='If you are done say no. '
-      CALL ASKOK(' ',' Consider another surface ?',OK,dok,2)
+      h(1)='Option to consider additional surfaces.'
+      CALL ASKOK(' ',' Consider another surface?',OK,dok,1)
       IF(OK)goto 23
    19 RETURN
 
  1001 WRITE(outs,25)IREC
-   25 FORMAT(' Transitional shading file error in GRAPH - record',I4)
+   25 FORMAT('Transitional shading file error in GRAPH - record',I4)
       call edisp(iuout,outs)
       goto 19
       END
@@ -214,8 +212,8 @@ C Display header information.
       ICN=IZSTOCN(icomp,isur)
 
       WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(ICN)
-    1 FORMAT(' Shading patterns: ',A3,' at hour',I3,' for surface',I3,
-     &       ' ',a)
+    1 FORMAT('Shading pattern: ',A3,', hour',I3,', surface',I3,
+     &       ' (',a,').')
       CALL viewtext(ETEXT,1,1,2)
 
 C Draw a scale horizontal axis, move to beginning point.
@@ -301,7 +299,7 @@ C of the menu. Also allow 2 text lines at the bottom for future
 C dialogue. Axiscale is in wwlib.c.
       IER=0
       IF(MMOD.LT.8)THEN
-        CALL USRMSG('Not in graphic mode...',' ','W')
+        CALL USRMSG('Not in graphic mode.',' ','W')
         RETURN
       ENDIF
       newgeo=.false.  ! assume older format geometry.
@@ -416,8 +414,8 @@ C and plotting.
 C Print labels and return to default font.
   421 call winfnt(IFS)
       WRITE(sstr,425)SLAT,SLON
-  425 FORMAT(' Site Plan @ latitude ',F5.1,' & longitude ',F4.1)
-      iy= igt
+  425 FORMAT('Site Plan at Latitude ',F5.1,', Longitude ',F4.1)
+      iy = igt-5
       ix = igl
       call wstxpt(ix,iy,sstr)
       call forceflush()
@@ -442,7 +440,7 @@ C This routine draws a mercator sun path diagram
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-C Clear the vieweing box, draw its border and return the offsets
+C Clear the viewing box, draw its border and return the offsets
 C which define it.
       CALL win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
 
@@ -466,9 +464,9 @@ C Draw a scale vertical axis on left and right.
 
 C Generate a heading for the view.
       CALL EDAYR(IJDAY,IDO,IMO)
-      CALL viewtext('MERCATOR SUN PLOT',2,1,IFS)
+      CALL viewtext('Mercator Sun Plot',2,1,IFS)
       WRITE(ETEXT,'(A,I2,1X,A3,A,F6.1,A,F5.1)')
-     &   ' Date: ',IDO,MTHNAM(IMO),' @ lat:',slat,' long:',slon
+     &   'Date: ',IDO,MTHNAM(IMO),' at Latitude',slat,', Logitude',slon
       CALL viewtext(ETEXT,3,1,IFS)
 
 C Plot sun path, for each hour of the day get the azimuth and
@@ -503,4 +501,3 @@ C Plot a symbol at the positon of the sun.
 
       RETURN
       END
-

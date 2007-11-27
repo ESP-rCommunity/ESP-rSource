@@ -18,17 +18,18 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C TFILES.F of ESRUshd which contains the following routines:
-C TFILE1: Write to transitional shading file.
+C TFILES.F contains the following routines:
+C TFILE1: Writes model geometry to transitional shading file.
 C TFILE2: Transfers the transformed coordinates of surfaces to the
 C         transitional shading file.
-C TFILE3: Saves the hourly grid shading index values in the 
+C TFILE3: Saves the hourly grid shading index values to the 
 C         transitional shading file.
 
 C ************** TFILE1 ***********************
-C Write to transitional shading file.
+C Writes the model geometry to transitional shading file.
       SUBROUTINE TFILE1(icomp)
 #include "building.h"
+
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -47,7 +48,7 @@ C Dummy for default windows.
       DIMENSION NGLD(MS)
       logical tok
 
-C If verbose trace requested enable writing of text version of transition
+C If trace requested enable writing of text version of transition
 C file.
       tok=.false.
       if(icout.eq.33)tok=.true.
@@ -60,7 +61,7 @@ C file.
       IREC=2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)MON,(ISC(I),I=1,NSUR),
      &      IYD
-      if(tok)write(iut,*)irec,MON,(ISC(I),I=1,NSUR),IYD
+C      if(tok)write(iut,*)irec,MON,(ISC(I),I=1,NSUR),IYD
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ETYPE(icomp),NSUR,NTV,
      &     (NVER(I),I=1,NSUR)
@@ -383,8 +384,8 @@ C No default windows so no need to write out XGL, ZGL.
       END
 
 C ************** TFILE2 ***********************
-C ' TFILE2' transfers the transformed coordinates of the object
-C  body face under consideration to the transitional shading file.
+C Transfers the transformed coordinates of the target surface
+C to the transitional shading file.
       SUBROUTINE TFILE2(IS)
 #include "building.h"
       COMMON/OUTPCH/ICOUT
@@ -410,14 +411,14 @@ C Recover and update irecs for surface `is`.
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IRECS(I),I=1,NSUR)
       IRECS(IS)=IRECL
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IRECS(I),I=1,NSUR)
-      if(tok)write(iut,*)irec,(IRECS(I),I=1,NSUR)
+C      if(tok)write(iut,*)irec,(IRECS(I),I=1,NSUR)
       IREC=IRECL
       NV=NVER(IS)
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XFT(I),I=1,NV)
-      if(tok)write(iut,*)irec,(XFT(I),I=1,NV)
+C      if(tok)write(iut,*)irec,(XFT(I),I=1,NV)
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ZFT(I),I=1,NV)
-      if(tok)write(iut,*)irec,(ZFT(I),I=1,NV)
+C      if(tok)write(iut,*)irec,(ZFT(I),I=1,NV)
       IREC=IREC+1
       IRECL=IREC
     2 RETURN
@@ -430,10 +431,11 @@ C Recover and update irecs for surface `is`.
       END
 
 C ************** TFILE3 ***********************
-C 'TFILE3' saves the hourly grid shading index values in the transitional
+C Saves the hourly grid shading index values to the transitional
 C shading file.
       SUBROUTINE TFILE3(ICOMP,IS)
 #include "building.h"
+
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -455,7 +457,7 @@ C shading file.
       character SSPARENT*12
       logical tok
 
-C If verbose trace requested enable writing of text version of transition
+C If trace requested enable writing of text version of transition
 C file.
       tok=.false.
       if(icout.eq.33)tok=.true.
@@ -463,10 +465,10 @@ C file.
       IUNIT=IFIL
       iut=ifil+12
 
-C Go to the last record of the file and write sunup value.
+C Go to the last record of the file and write sun-up value.
       IREC=IRECL
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ISUNUP
-      if(tok)write(iut,*)irec,ISUNUP
+C      if(tok)write(iut,*)irec,ISUNUP
       IREC=IREC+1
       IF(ISUNUP.EQ.1)goto 11
       XVAL=1.0
@@ -487,24 +489,24 @@ C Go to the last record of the file and write sunup value.
 
 C Surface is not shaded; IS2 = -2, write this to transitional file.
     3 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IS2
-      if(tok)write(iut,*)irec,IS2,' surface ',icomp,is,' not shaded.'
+C      if(tok)write(iut,*)irec,IS2,' surface ',icomp,is,' not shaded.'
       IREC=IREC+1
       XVAL=0.0
       goto 12
 
 C Surface is totally shaded; IS1= -1, write this to transitional file.
     4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IS1
-      if(tok)write(iut,*)irec,IS1,' surface ',icomp,is,' totally shaded'
+C      if(tok)write(iut,*)irec,IS1,' surface ',icomp,is,' totally shaded'
       IREC=IREC+1
       XVAL=1.0
       goto 12
 
     2 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IS1
-      if(tok)write(iut,*)irec,IS1,' for surface ',icomp,is,' ioshd...'
+C      if(tok)write(iut,*)irec,IS1,' for surface ',icomp,is,' ioshd...'
       IREC=IREC+1
       DO 30 I=1,NOX
         WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IOSHD(I,J),J=1,NOZ)
-        if(tok)write(iut,*)irec,(IOSHD(I,J),J=1,NOZ)
+C        if(tok)write(iut,*)irec,(IOSHD(I,J),J=1,NOZ)
         IREC=IREC+1
    30 CONTINUE
 
@@ -522,7 +524,7 @@ C Compute gross surface area.
       CALL AREA(NV,XFT,ZFT,GSA)
 
       PSO(IS,IHOUR)=GSSA/GSA
-      icn=izstocn(icomp,is)   ! find connection for zone and surface.
+      icn=izstocn(icomp,is)   ! connection for zone and surface.
 
     1 IF(PSO(IS,IHOUR).GT.1.0)THEN
         WRITE(outs,'(3a,F4.2,a,I2,a)') ' Shading coef for ',
@@ -531,7 +533,7 @@ C Compute gross surface area.
         call edisp(iuout,outs)
         PSO(IS,IHOUR)=1.0
       ELSEIF(PSO(IS,IHOUR).LT.0.0)THEN
-        WRITE(outs,'(a,a,a,F4.2,a,I2,a)') ' Shading coef for ',
+        WRITE(outs,'(3a,F4.2,a,I2,a)') ' Shading coef for ',
      &    SSNAME(icn),' is ',PSO(IS,IHOUR),' @ ',IHOUR,
      &    'hr - saved as 1.00'
         call edisp(iuout,outs)
@@ -549,7 +551,7 @@ C Set COMMON 'SHAD3' to zero (no shading case).
     6 RETURN
 
  1000 WRITE(outs,7)IREC,ISTAT
-    7 FORMAT(' Transitional shading file error in TFILE3 - rec',2I5)
+    7 FORMAT('Transitional shading file error in TFILE3 - rec',2I5)
       call edisp(iuout,outs)
       goto 6
       END
