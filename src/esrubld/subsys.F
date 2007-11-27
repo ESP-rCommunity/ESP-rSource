@@ -306,6 +306,16 @@ C used.
       REAL     eGrdTp(12)
       REAL     GTMP
       
+c This common block is used to define the sky temperature calculation method
+      COMMON/EXLONGWV/iExt_longwave_flg
+      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
+                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
+                                   ! 2 = Cole (?);
+                                   ! 3 = Czeplak & Kasten (1987);               
+                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
+                                   ! 5 = Swinbank (clear - uses wet bulb T); 
+
+
       character outs*124,ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64
       DIMENSION PROPB(8),PROPS(8),PROPG(8)
       DIMENSION TBLD(MS),HROF(MS)
@@ -553,22 +563,79 @@ C For zero RF set dew point temperature to 293.
          TDP=293.0
       ENDIF
 
+C Here provide the different sky temperature options
+      IF(iExt_longwave_flg.EQ.0)THEN
+
+C Use default Berdahl & Martin calculation
 C Clear sky condition:
-      PI = 4.0 * ATAN(1.0)
-      TIM=2*PI*IHRF/24
-      E0=0.711+0.56*(TDP/100.0)+0.73*((TDP/100.0)**2)+
+        PI = 4.0 * ATAN(1.0)
+        TIM=2*PI*IHRF/24
+        E0=0.711+0.56*(TDP/100.0)+0.73*((TDP/100.0)**2)+
      &   0.013*COS(TIM)+(12.0E-05)*(PATM-1000.)
 
 C Cloudy condition: assume cloud base is at 3km.
-      CBH=3.0
-      GAMMA=EXP(CBH/(-8.2))
+        CBH=3.0
+        GAMMA=EXP(CBH/(-8.2))
 
 C Radiation from the atmosphere:
-      RSKY=SBC*(E0+(1.0-E0)*CLOUDC*GAMMA)*(TF+ZEROK)**4
+        RSKY=SBC*(E0+(1.0-E0)*CLOUDC*GAMMA)*(TF+ZEROK)**4
 
 C Assume the atmosphere is a black body emitter:
-      TSKY=(RSKY/SBC)**0.25
+        TSKY=(RSKY/SBC)**0.25
+      ELSEIF(iExt_longwave_flg.EQ.1)THEN
 
+C Use Clarke's calculation
+C Clear sky temperature as in bld #5.4 (after Swinbank).
+        TCSKY=0.05532*((TWBF+ZEROK)**1.5)
+
+C Cloudy sky temperature as JC Book.
+        TSKYJC=((1.0-CLOUDC)*TCSKY**4+CLOUDC*(1.0-0.84*CLOUDC)*(0.527+
+     &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
+     &  (TWBF+ZEROK)**4)**0.25
+         TJC=TSKYJC-ZEROK 
+         TSKY=TJC   
+      ELSEIF(iExt_longwave_flg.EQ.2)THEN
+
+C Use Cole's calculation
+        EAIR=0.527+0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK)))))
+        ECLOUD=0.16*EAIR+0.84
+
+C Assume cloud base temperature equal to wet bulb.
+        TCLOUD=TWBF+ZEROK      
+
+C Swinbank model with ambient air temperature.
+        TSKYSW=0.05532*((TF+ZEROK)**1.5)
+
+C Sky temperature after Cole.
+        TSKYNEU=
+     &  ((1.-CLOUDC)*(TSKYSW**4)+CLOUDC*ECLOUD*(TCLOUD**4))**0.25
+        TSNEU=TSKYNEU-ZEROK
+        TSKY=TSNEU
+      ELSEIF(iExt_longwave_flg.EQ.3)THEN
+
+C Use Czeplak & Kasten calculation
+        ECZ=(9.365E-06)*(TF+ZEROK)**2
+        RWOLKE=(ECZ+(1.0-ECZ)*(0.9-0.065*CBH))*SBC*((TF+ZEROK)**4)
+        RKLAR=(1.174*SBC*ECZ*(TF+ZEROK)**4)-33.0
+        RGES=(1.0-CLOUDC)*RKLAR+CLOUDC*RWOLKE
+        TSKYCZ=(RGES/SBC)**0.25      
+        TSCZ=TSKYCZ-ZEROK
+        TSKY=TSCZ
+      ELSEIF(iExt_longwave_flg.EQ.4)THEN
+
+C Use Swinbank (clear - uses dry bulb T) calculation
+C Swinbank model with ambient air temperature.
+        TSKYSW=0.05532*((TF+ZEROK)**1.5)       
+        TSW=TSKYSW-ZEROK
+        TSKY=TSW
+      ELSEIF(iExt_longwave_flg.EQ.5)THEN
+
+C Use Swinbank (clear - uses wet bulb T) calculation
+C Clear sky temperature as in bld #5.4 (after Swinbank).
+        TCSKY=0.05532*((TWBF+ZEROK)**1.5)        
+        TCS=TCSKY-ZEROK
+        TSKY=TCS
+      ENDIF
       IF(TSKY.LT.200.0.OR.TSKY.GT.325.0)then
        write(outs,'(a,F8.2,a)')'MZELWE: a dubious sky temperature(',
      &   TSKY,' (degK)) has been calculated.'
