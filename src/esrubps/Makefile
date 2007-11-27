@@ -56,7 +56,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
-	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o
+	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o hvacinput_versioned.o Int_Mech_Sys.o
 
 # Additional C and Fortran objectives needed for H3Kreports
 XML_COBJECTS =TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
@@ -457,6 +457,9 @@ CentralVentSys.F:
 hvacinput.F:
 	rm -f hvacinput.F
 	ln -s $(CETCdir)/hvacinput.F .
+hvacinput_versioned.F:
+	rm -f hvacinput_versioned.F
+	ln -s $(CETCdir)/hvacinput_versioned.F .
 hvacsim.F:
 	rm -f hvacsim.F
 	ln -s $(CETCdir)/hvacsim.F .
@@ -669,6 +672,9 @@ mains_temp_draw_profiles.F:
 stratified_tank.F:
 	rm -f stratified_tank.F
 	ln -s $(PLTdir)/stratified_tank.F .
+Int_Mech_Sys.F:
+	rm -f Int_Mech_Sys.F
+	ln -s $(PLTdir)/Int_Mech_Sys.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -715,6 +721,8 @@ clean:
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
-	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F
+  tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F hvacinput_versioned.F \
+  Int_Mech_Sys.F
+
 
 
