@@ -3748,6 +3748,8 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
         endif
         MODE='ALL '
         CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+C copy # of plant component nodes from bps to prj commons 
+        call CopyPltNodeCounts()
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='There was an unspecified problem, review any warnings'

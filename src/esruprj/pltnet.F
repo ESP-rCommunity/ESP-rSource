@@ -1576,3 +1576,34 @@ C Error trap.
 99999 call edisp(iuout,'Error reading plant data base.')
       return
       end
+
+
+C*************** CopyPltNodeCounts *************************
+C This simple subroutine copies parameters between bps and prj
+C commons structures. It's needed because of a name clash between
+C prj and bps common blocks: prj defines the pcdat common as
+C containing the number of nodes associated with a plant component,
+C while bps uses the same common to store runtime data.
+
+      subroutine CopyPltNodeCounts()
+      implicit none
+#include "plant.h"
+C Misc bps plant data
+      common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
+      common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
+C Misc prj plant data
+      common/pcdat/nnodes(mpcom),isv(mpcom,mnodec),
+     &               ndcon(mpcom,mnodec)
+
+      integer NPCOMP, NCI, npcdat, ipofs1, ipofs2, iComponent,
+     &        nnodes, isv, ndcon
+
+      real cdata 
+
+C Copy # of nodes from npcdat to nnodes.
+      do iComponent = 1, NPCOMP
+        nnodes(iComponent) = npcdat(iComponent,8)
+      enddo
+
+      return
+      end

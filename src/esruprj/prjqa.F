@@ -176,7 +176,8 @@ C matching executables. For normal image viewing take the first option.
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
-      integer iSlr_half_hr_flg     
+
+      integer iSlr_half_hr_flg
 
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -1221,6 +1222,11 @@ C If there is a plant network, scan it and report.
             call edisp(itu,' ')
             call edisp(itu,'The model includes a plant network.')
             call pltcfg(ifpnf,iunit1,itu,1)
+C copy number of nodes in each plant component from node_count to
+C nnodes: This is necessary because the nnodes common blocak (pcdat)
+C is defined differently in bps, and the pltcfg.F file cannot be
+C built as part of bps if it includes the prj pcdat common.
+            call CopyPltNodeCounts()
           endif
         endif
       endif

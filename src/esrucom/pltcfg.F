@@ -172,10 +172,6 @@ C LPCDB/IPCDB (for plant template database)
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcnam/pcname(mpcom)
 
-      common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec),
-     &               ndcon(mpcom,mnodec)
-      integer nnodes, isv, ndcon
-
 C Electrical details for specified plant components
       common/pcelflg/ipcelf(mpcom)
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
@@ -351,7 +347,7 @@ C of miscellaneous data items.
             READ(IUNIT1,REC=IREC1,IOSTAT=ISTAT,ERR=950)
      &        AA,ICODE,CEDATE,NNODE,NMATX,NMISC
 C Save number of nodes associated with each component
-            nnodes(iPComp) = NNODE
+            NPCDAT(iPComp,8) = NNODE
 C Check to see if required number of items is specified
             if(npi(ipcomp).ne.nmisc) then
               write(OUTS,707)ipcomp
