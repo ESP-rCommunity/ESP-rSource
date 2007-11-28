@@ -22,6 +22,8 @@ C folders.f provides creation and editing facilities related to
 C maintaining model folders and files:
 C  pregist: register a new project.
 C  pfolders: maintain model folders.
+C  Edimage: controls specification of an image associated with the
+C           model.
 C  EDBUILD: edits building information for system configuration file.
 
 C ********** pregist
@@ -29,7 +31,7 @@ C Register a new project. Parameter act = 'i' then initial pass.
       subroutine pregist(act,ier)
 #include "building.h"
 #include "espriou.h"
-C espriou.h provides currentfile.
+C espriou.h provides currentfile and MFFOLD.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -66,7 +68,7 @@ C External text editor.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
-      dimension nwlistf(50)
+      dimension nwlistf(MFFOLD)
 
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok,clkok
@@ -83,7 +85,7 @@ C Calendar.
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
-      character*72 listf(50),listfc(50)
+      character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
 
       integer iyeart    ! for local editing
@@ -174,6 +176,10 @@ C Ask where to put it.
 C Get the current folder and display options to the user.
       odir=' '
       call usrdir(odir)
+
+C Offer choice of single folder or standard set of folders to hold
+C the model description.
+
       H(1)='ESP-r organises a model within a standard set of folders.'
       H(2)=' '
       H(3)='Based on information you have supplied,'
@@ -195,10 +201,49 @@ C Get the current folder and display options to the user.
       write(H(12),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
      &  '/dbs (project databases)'
       H(13)=' '
-      H(14)='will be created.'
-      dok=.true.
-      CALL ASKOK(' ','Create model folders?',ok,dok,14)
-      if(ok)then
+      H(14)='will be created. '
+      H(15)=' '
+      H(16)='Or, if the model will be small (one or two zones)'
+      H(17)='all the files can be in one folder shown below:'
+      H(18)=' '
+      write(H(19),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+     &  ' (project folder)'
+      CALL EASKABC(' Create model in:',
+     &   '(see help)','single folder','standard set of folders',
+     &   'cancel',IW,19)
+      if(IW.eq.1)then
+
+C Assume all types of files go in the single project folder.
+        write(zonepth,'(2a)')'.',fs
+        write(netpth,'(2a)')'.',fs
+        write(ctlpth,'(2a)')'.',fs
+        write(imgpth,'(2a)')'.',fs
+        write(radpth,'(2a)')'.',fs
+        write(docpth,'(2a)')'.',fs
+        write(tmppth,'(2a)')'.',fs
+        write(dbspth,'(2a)')'.',fs
+        write(odir,'(a)')cfgroot(1:lnblnk(cfgroot))
+        write(doit,'(2a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot))
+        call usrmsg('Creating folder:',doit,'-')
+        call runit(doit,'-')
+        call pausems(400)
+        call usrmsg('  ','  ','-')
+
+C Re-establish pwd and then project folders.
+        odir=' '
+        call usrdir(odir)
+        write(path,'(4a)')odir(1:lnblnk(odir)),fs,
+     &      cfgroot(1:lnblnk(cfgroot)),fs
+        call edisp(iuout,
+     &        'System configuration file is located in folder:')
+        call edisp(iuout,path)
+        write(path,'(2a)') cfgroot(1:lnblnk(cfgroot)),fs
+        write(outs,'(2a)') 'Resetting path to: ',path
+        call edisp(iuout,outs)
+
+      elseif(IW.eq.2)then
+
+C Setup the various paths to distributed folders and then create.
         write(zonepth,'(3a)')'..',fs,'zones'
         write(netpth,'(3a)')'..',fs,'nets'
         write(ctlpth,'(3a)')'..',fs,'ctl'
@@ -265,8 +310,8 @@ C Re-establish pwd and then project folders.
         write(path,'(4a)') cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
         write(outs,'(2a)') 'Resetting path to: ',path
         call edisp(iuout,outs)
-        call edisp(iuout,' ')
-      else
+
+      elseif(IW.eq.3)then
         return
       endif
 
@@ -391,11 +436,11 @@ C Provide a listing of the current contents of the ../images folder.
         subpath=' '
         write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
      &  path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
-        call clearfilelist(listf,50)
+        call clearfilelist(listf,MFFOLD)
         action='fil'
         call getfilelist(subpath,action,listf,nwlistf,nlistf)
-        call copyfilelist(listf,nwlistf,listfc,50,maxw)
-        call printfilelist(outs,'p',listfc,50,nlistf)
+        call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+        call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 
         write(limg,'(a)')imgpth(1:lnblnk(imgpth))
         iformat='GIF '
@@ -524,7 +569,7 @@ C External text editor.
       common/user/browse
 
 C Remember width of file/folder names passed back from getfilelist.
-      dimension nwlistf(50)
+      dimension nwlistf(MFFOLD)
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
@@ -535,8 +580,8 @@ C Remember width of file/folder names passed back from getfilelist.
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
-      character*33 ITEMS(19)
-      character*72 listf(50),listfc(50)
+      character*33 ITEMS(21)
+      character*72 listf(MFFOLD),listfc(MFFOLD)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
       character subpath*72,action*3
@@ -555,12 +600,20 @@ C first list any files with .cfg in name.
       odir=' '
       call usrdir(odir)
 
+C If subpath is less than 72 char with odir + path use that
+C otherwise just use path.
 C Debug...
 C      write(6,*) 'usrdir is ',odir
 C      write(6,*) 'path is ',path
       subpath=' '
-      write(subpath,'(3a)') odir(1:lnblnk(odir)),fs,
-     &  path(1:lnblnk(path))
+      lnodir=lnblnk(odir)
+      lnpath=lnblnk(path)
+      if(lnodir+lnpath+1.le.72)then
+        write(subpath,'(3a)') odir(1:lnodir),fs,
+     &  path(1:lnpath)
+      else
+        write(subpath,'(a)') path(1:lnpath)
+      endif
       write(outs,'(2a)') 'configuration files in ',
      &  subpath(1:lnblnk(subpath))
 
@@ -581,11 +634,11 @@ C works. If path begins with /usr/esru then no need to prepend odir.
         continue
       endif
 #endif
-      call clearfilelist(listf,50)
+      call clearfilelist(listf,MFFOLD)
       action='cfg'
       call getfilelist(subpath,action,listf,nwlistf,nlistf)
-      call copyfilelist(listf,nwlistf,listfc,50,maxw)
-      call printfilelist(outs,'p',listfc,50,nlistf)
+      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+      call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 
   42  continue
       INO=-4
@@ -606,9 +659,11 @@ C works. If path begins with /usr/esru then no need to prepend odir.
       ITEMS(15)  =           ' _____________________________ '
       WRITE(ITEMS(16),'(A)') 'l list ASCII file              '
       WRITE(ITEMS(17),'(A)') 'm edit ASCII file              '
-      ITEMS(18)  =           '? help                         '
-      ITEMS(19)  =           '- exit this menu               '
-      nitems=19
+      WRITE(ITEMS(18),'(A)') 'n list files in esp-r/databases'
+      WRITE(ITEMS(19),'(A)') 'o list files in esp-r/climate  '
+      ITEMS(20)  =           '? help                         '
+      ITEMS(21)  =           '- exit this menu               '
+      nitems=21
 
 C Help text for this menu.
       H(1)='This menu allows you to edit the information related'
@@ -811,11 +866,11 @@ C            write(6,*) 'iier is ',iier,nli
         write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
         write(outs,*) 'files in ',subpath
-        call clearfilelist(listf,50)
+        call clearfilelist(listf,MFFOLD)
         action='fil'
         call getfilelist(subpath,action,listf,nwlistf,nlistf)
-        call copyfilelist(listf,nwlistf,listfc,50,maxw)
-        call printfilelist(outs,'p',listfc,50,nlistf)
+        call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+        call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 
 C << interface for dbspath here >>
 
@@ -879,6 +934,26 @@ C and change any / to \.
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
+      elseif(ino.eq.18)then
+
+C List files in corporate databases folder.
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('p','dbm','fil',sfile,snpfile,nli,iier)
+        if(nli.gt.MFFOLD) then
+          call usrmsg('The folder includes more files than the list',
+     &      'can handle - please be careful!','W')
+        endif
+      elseif(ino.eq.19)then
+
+C List files in corporate climate folder..
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('p','clm','fil',sfile,snpfile,nli,iier)
+        if(nli.gt.MFFOLD) then
+          call usrmsg('The folder includes more files than the list',
+     &      'can handle - please be careful!','W')
+        endif
       else
         goto 42
       endif

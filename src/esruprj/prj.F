@@ -43,6 +43,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (SBEM database)
 C default file names for databases
+#include "espriou.h"
+C espriou.h provides currentfile, defdbfl exemfl.
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -86,7 +88,6 @@ C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -98,10 +99,6 @@ C Indicator of possible focus zone.
 
 C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
-
-C Where exemplars list and default db list are kept.
-      common/exemlst/exemlbl,exemfl
-      common/defdb/dfdblbl,defdbfl
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -166,11 +163,10 @@ C Name of current application
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character inf*144,inz*16,inzone*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
-      character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
+      character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
-      character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
@@ -381,7 +377,9 @@ C Generate the version report.
       CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings
-C if defined.
+C if defined. If there is no .esprc file in the users home folder
+C then the esp-r install folders will be checked by scesprc and
+C esprc may be updated if the alternate version is found.
       call usrhome(upath)
       if(unixok)then
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
@@ -428,7 +426,7 @@ C Write header of the journal file and then close.
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(dfdblbl,defdbfl,IFIL+5,IER)
+      call escdef(IFIL+5,IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
@@ -897,7 +895,7 @@ C Call rexmpl to get the exemplar. If ier is set to 2 then the
 C user didn't pick anything. If useraction is set to 'browse' then
 C ensure the toggle is set accordingly.
               useraction = ' '
-              call rexmpl(IUF,exemfl,exemplar,useraction,ier)
+              call rexmpl(IUF,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -3543,6 +3541,7 @@ C    and iton=1 images have been displayed.
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
+      integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
 
       logical concat,show,unixok
 
@@ -3560,18 +3559,94 @@ C forces display.
         return
       endif
 
-#ifdef X11
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1)then
 
 C If X11 version then request an external agent to display the image.
-      if((iton.eq.0.or.iforce.eq.1))then
-        do 498 imgv=1,imgtyp
-          ilist=' '
-          ix=1
-          do 49 img=1,noimg
-            if(imgfmt(img)(1:3).eq.fmttag(imgv)(1:3))then
+        if((iton.eq.0.or.iforce.eq.1))then
+          do 498 imgv=1,imgtyp
+            ilist=' '
+            ix=1
+            do 49 img=1,noimg
+              if(imgfmt(img)(1:3).eq.fmttag(imgv)(1:3))then
 
 C If focus is `****` then show images marked with `****` , otherwise
 C attempt to match the focus with the image. 
+                show=.false.
+                if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
+                if(show)then
+                  longtfile=' '
+                  if(unixok)then
+                    call addpath(limgfil(img),longtfile,concat)
+                  else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.  If X11 then an external application is used
+C an double quoting is useful. If GTK then internal function used and
+C quotes are not required.
+                    call addpath(limgfil(img),longtfile,concat)
+                    if(iglib.eq.1)then
+                      call cmdfiledos(longtfile,longtfiledos,ier)
+                    elseif(iglib.eq.2)then
+                      call imgfiledos(longtfile,longtfiledos,ier)
+                    endif
+                    longtfile=' '
+                    longtfile=longtfiledos
+                  endif
+                  ixl=lnblnk(longtfile)
+                  ixe=ix+ixl
+                  if(ixe.le.200)then
+                    WRITE(ilist(ix:ixe),'(a,2x)')longtfile(1:ixl)
+                  endif
+                  ix=ixe+1
+                endif
+              endif
+ 49         continue
+            if(ix.gt.1)then
+              dolist=' '
+              if(fmtexe(imgv)(1:2).eq.'  ')then
+                call usrmsg(
+     &    'The image display tool has not be defined. Ask your',
+     &    'administrator to update the .esprc file definition.','W')
+              else
+                write(dolist,'(a,2x,a,a)')
+     &            fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
+     &            ilist(1:lnblnk(ilist)),' &'
+                call runit(dolist,'graph')
+                iton=1
+              endif
+            endif
+ 498      continue
+        endif
+      elseif(iglib.eq.2)then
+
+C If GTK version then use GTK calls to display images in popup.
+        if((iton.eq.0.or.iforce.eq.1))then
+
+C Setup help text for the popup.
+          h(1)='Images can be associated with a model for various'
+          h(2)='purposes: '
+          h(3)=' * document conditions at the physical site'
+          h(4)=' * document assumptions in the model'
+          h(5)=' * indicate what performance is expected'
+          h(6)='   '
+          h(7)='Images are added to a model via the context->images'
+          h(8)='menu item. There can be up to 10 images associate with'
+          h(9)='a model. '
+          h(10)='Images of type GIF and XBM and ?? are supported.'
+          CALL PHELPW(10,IHW,IER)
+          call dupphelp(10)
+
+          do 99 img=1,noimg
+            if(imgfmt(img)(1:3).eq.'GIF'.or.
+     &         imgfmt(img)(1:4).eq.'XBMP'.or.
+     &         imgfmt(img)(1:3).eq.'TIF'.or.
+     &         imgfmt(img)(1:3).eq.'JPG')then
+
+C If focus is `****` then show images marked with `****` , otherwise
+C attempt to match the focus with the image. Create a string topic
+C to pass to the display routine along with the image file name.
+C << tag for editing ?? >>
               show=.false.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
@@ -3581,121 +3656,46 @@ C attempt to match the focus with the image.
                 else
 
 C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.  If X11 then an external application is used
-C an double quoting is useful. If GTK then internal function used and
-C quotes are not required.
+C and change any / to \.
                   call addpath(limgfil(img),longtfile,concat)
-#ifdef X11
                   call cmdfiledos(longtfile,longtfiledos,ier)
-#endif
-#ifdef GTK
-                  call imgfiledos(longtfile,longtfiledos,ier)
-#endif
                   longtfile=' '
                   longtfile=longtfiledos
                 endif
                 ixl=lnblnk(longtfile)
-                ixe=ix+ixl
-                if(ixe.le.200)then
-                  WRITE(ilist(ix:ixe),'(a,2x)')longtfile(1:ixl)
+                if(focus(1:4).eq.'****')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' is a general topic.'
+                elseif(focus(1:4).eq.'FZON')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of zone composition.'
+                elseif(focus(1:4).eq.'FNET')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of network composition.'
+                elseif(focus(1:4).eq.'FCTL')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of control composition.'
+                elseif(focus(1:4).eq.'FDFS')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of the CFD domain.'
+                elseif(focus(1:4).eq.'FPER')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' relates to model performance.'
                 endif
-                ix=ixe+1
-              endif
-            endif
- 49       continue
-          if(ix.gt.1)then
-            dolist=' '
-            if(fmtexe(imgv)(1:2).eq.'  ')then
-              call usrmsg(
-     &    'The image display tool has not be defined. Ask your',
-     &    'administrator to update the .esprc file definition.','W')
-            else
-              write(dolist,'(a,2x,a,a)')
-     &          fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
-     &          ilist(1:lnblnk(ilist)),' &'
-              call runit(dolist,'graph')
-              iton=1
-            endif
-          endif
- 498    continue
-      endif
-#else
-C If GTK version then use GTK calls to display images in popup.
-      if((iton.eq.0.or.iforce.eq.1))then
-
-C Setup help text for the popup.
-        h(1)='Images can be associated with a model for various'
-        h(2)='purposes: '
-        h(3)=' * document conditions at the physical site'
-        h(4)=' * document assumptions in the model'
-        h(5)=' * indicate what performance is expected'
-        h(6)='   '
-        h(7)='Images are added to a model via the context->images'
-        h(8)='menu item. There can be up to 10 images associate with'
-        h(9)='a model. '
-        h(10)='Images of type GIF and XBM and ?? are supported.'
-        CALL PHELPW(10,IHW,IER)
-        call dupphelp(10)
-
-        do 99 img=1,noimg
-          if(imgfmt(img)(1:3).eq.'GIF'.or.
-     &       imgfmt(img)(1:4).eq.'XBMP'.or.
-     &       imgfmt(img)(1:3).eq.'TIF'.or.
-     &       imgfmt(img)(1:3).eq.'JPG')then
-
-C If focus is `****` then show images marked with `****` , otherwise
-C attempt to match the focus with the image. Create a string topic
-C to pass to the display routine along with the image file name.
-C << tag for editing ?? >>
-            show=.false.
-            if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
-            if(show)then
-              longtfile=' '
-              if(unixok)then
-                call addpath(limgfil(img),longtfile,concat)
-              else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-                call addpath(limgfil(img),longtfile,concat)
-                call cmdfiledos(longtfile,longtfiledos,ier)
-                longtfile=' '
-                longtfile=longtfiledos
-              endif
-              ixl=lnblnk(longtfile)
-              if(focus(1:4).eq.'****')then
-                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &            ' is a general topic.'
-              elseif(focus(1:4).eq.'FZON')then
-                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &            ' provides details of zone composition.'
-              elseif(focus(1:4).eq.'FNET')then
-                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &            ' provides details of network composition.'
-              elseif(focus(1:4).eq.'FCTL')then
-                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &            ' provides details of control composition.'
-              elseif(focus(1:4).eq.'FDFS')then
-                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &            ' provides details of the CFD domain.'
-              elseif(focus(1:4).eq.'FPER')then
-                write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &            ' relates to model performance.'
-              endif
 
 C Provide some feedback, set the title of the popup and then call C
 C function in lib/esp_draw.c
-              call edisp(iuout,topic)
-              write(head,'(2a)') 'Image: ',longtfile(1:ixl)
-              act='-'
-              call popupimage(head,topic,act,longtfile)
-              iton=1
+                call edisp(iuout,topic)
+                write(head,'(2a)') 'Image: ',longtfile(1:ixl)
+                act='-'
+                call popupimage(head,topic,act,longtfile)
+                iton=1
+              endif
             endif
-          endif
-  99    continue
+  99      continue
+        endif
       endif
 
-#endif
       return
       end
 

@@ -47,6 +47,7 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
+#include "espriou.h"
 
       integer igraphiclib  ! external definition
 
@@ -97,15 +98,11 @@ C Defaults and paths
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
 C ECO specific commons 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -181,8 +178,7 @@ C Arrays of material properties.
       CHARACTER zname*12,zdesc*64
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      CHARACTER path*72,upath*72,esprc*72,L144*144
-      CHARACTER dfdblbl*20,defdbfl*72
+      CHARACTER path*72,upath*72,L144*144
       CHARACTER NAM*72,TITL*72
 C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
@@ -390,15 +386,15 @@ C graphic display to compensate.
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.
-      call escdef(dfdblbl,defdbfl,IFIL+1,IER)
+      call escdef(IFIL+1,IER)
 
 C Take `c' command line file name, convert to fortran string LCMDFL.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

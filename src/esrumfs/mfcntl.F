@@ -109,7 +109,10 @@ C Mass flow control law 2: Range controller for components 30 35 40 110.
 C Mass flow control law 3: multi-sensor ON/OFF controller
       ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.3)THEN
          CALL FCL03
-   
+C Nicol control algorithm
+      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.4)THEN
+         CALL FCL04
+ 
 C New controllers inserted here!
       ELSE
         WRITE(outs,*) 'MFCNTR: invalid m. flow control law ',
@@ -185,7 +188,7 @@ C Locate the actuated flow connection
 C Match mass flow controller type.
       ICLCTP=IFCTYP(ICFP,IDTYPP,IPERP)
       if(IFS1.EQ.-3) THEN
-        if(ICLCTP.gt.0.and.ICLCTP.le.6)then
+        if(ICLCTP.gt.0.and.ICLCTP.le.7)then
           WRITE(outs,*) ' CFFVAR: mass flow control function ',ICFP
           call edisp(iuout,outs)
           WRITE(outs,*) 
@@ -809,3 +812,347 @@ C Controlling a component.
       ENDIF
       return
       end
+
+C *******  FCL04 Nicol Control algorithm
+
+C This subroutine controls an airflow opening based on a statistical
+C algorithm emulating occupant behaviour. The algorithm depends upon
+C ambient temperature, operative temperature and comfort temperature.
+C For further information refer to energy and buildings paper ....
+C Get ambient temperature TOUT
+C TODM   = outside daily mean temperature TODM
+C TRM    = running mean outside air temperature TRM
+C TCOMF  = comfort temperature TCOMF
+C TOP    = operative temperature TOP
+C PW     = probability function for window open PW
+C COMF   = comfort COMF
+C WINDOW = window status WINDOW
+C WSIZE  = window opening size WSIZE
+
+C Note: to allow periods to be set where the Nicol algorithm is set to 
+C "window closed" e.g. periods without occupancy then this is achieved 
+C by setting the ALPHA parameter = 0.
+
+      subroutine FCL04
+ 
+#include "net_flow.h"
+#include "building.h"
+
+C climate file commons
+      COMMON/FILEP/IFIL
+
+      common/c1/ncomp,ncon
+      common/pophelp/h(60)
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      common/MFCTL/CTLPOS(MCNN)
+      common/FCLSOL/ICFP,IDTYPP,IPERP
+      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
+     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
+     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
+     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+
+C Time and weather data.
+C Commented common blocks to be uncommented and checked for relevance 
+C when version 2 of the law will be published
+**      COMMON/BTIME/BTIMEP,BTIMEF
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+**      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+**      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+**      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
+     &             DFLP,DFLF,HFLP,HFLF
+**      COMMON/CLIM/IDIF(MT),ITMP(MT),IDNR(MT),IVEL(MT),IDIR(MT),
+**     &            IHUM(MT),IDIFF,ITMPF,IDNRF,IVELF,IDIRF,IHUMF
+
+C Adaptive comfort common
+      COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
+
+C Zone information
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
+
+      DIMENSION ICLM(24,6)
+      PARAMETER (MMD=20)
+      REAL PREVTEMP(MMD)
+      CHARACTER*72 LAPROB,H
+      CHARACTER*2 MODE
+      REAL Wposs,Fposs,WNposs,ACavail,Havail,PF,PWRfan,FUNCW
+
+C initialise variables
+      WPOSS=0; Fposs=0; WNposs=0; ACavail=0; Havail=0; PF=0
+      PWRfan=0; FUNCW=0
+
+C Remember previous state of window and fan
+      IWIN=INT(PREVSTATWIN)
+      IFANON=INT(PREVSTATFAN)
+
+C calculate outside daily mean temperature TODM and
+      IYDS=IDYP-MMD
+      IYDF=IDYP-1
+      DO 3157 II=1,MMD
+        PREVTEMP(II)=0.0
+ 3157 CONTINUE
+      IF(IYDS.GT.0.AND.IYDF.GT.0)THEN
+        ID=0
+        DO 55 I=IYDS,IYDF
+          ID=ID+1
+          II=I
+          IREC=II
+          READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)((ICLM(J,K),K=1,6),
+     &           J=1,24)
+          DO 656 J=1,24
+            PREVTEMP(ID)=REAL(ICLM(J,2))/10.+PREVTEMP(ID)
+  656     CONTINUE
+          PREVTEMP(ID)=PREVTEMP(ID)/24.
+   55   CONTINUE
+      ELSEIF(IYDS.LE.0)THEN
+        IYDS=365+IYDS
+        ID=0
+        DO 550 I=IYDS,365
+          ID=ID+1
+          II=I
+          IREC=II
+          READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)((ICLM(J,K),K=1,6),
+     &           J=1,24)
+          DO 657 J=1,24
+            PREVTEMP(ID)=REAL(ICLM(J,2))/10.+PREVTEMP(ID)
+  657     CONTINUE
+          PREVTEMP(ID)=PREVTEMP(ID)/24.
+  550   CONTINUE
+        IF(IDYF.GT.0)THEN        
+          DO 551 I=1,IDYF
+            ID=ID+1
+            II=I
+            IREC=II
+            READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)((ICLM(J,K),K=1,6),
+     &             J=1,24)
+            DO 658 J=1,24
+              PREVTEMP(ID)=REAL(ICLM(J,2))/10.+PREVTEMP(ID)
+  658       CONTINUE
+            PREVTEMP(ID)=PREVTEMP(ID)/24.
+  551     CONTINUE
+        ENDIF
+      ENDIF
+
+C Get ambient temperature TOUT
+      TOUT=TFLWF
+
+C Read data from control file
+      ALPHA=fmiscd(ICFP,IDTYPP,IPERP,2)
+
+C The following are implemented in version 2 of the algorithm
+c      Wposs=fmiscd(ICFP,IDTYPP,IPERP,3)
+c      Fposs=fmiscd(ICFP,IDTYPP,IPERP,4)
+c      WNposs=fmiscd(ICFP,IDTYPP,IPERP,5)
+c      ACavail=fmiscd(ICFP,IDTYPP,IPERP,6)
+c      Havail=fmiscd(ICFP,IDTYPP,IPERP,7)
+c      DLposs=fmiscd(ICFP,IDTYPP,IPERP,8)
+c      PWRfan=fmiscd(ICFP,IDTYPP,IPERP,9)
+c      PWRlight=fmiscd(ICFP,IDTYPP,IPERP,10)
+c      DTfan=fmiscd(ICFP,IDTYPP,IPERP,11)
+c      WD=fmiscd(ICFP,IDTYPP,IPERP,12)
+c      FD=fmiscd(ICFP,IDTYPP,IPERP,13)
+c      AIsurf=fmiscd(ICFP,IDTYPP,IPERP,14)
+
+C Calculate running mean outside air temperature TRM
+      COEFF=1.
+      TRM=0.
+      DO 245 I=1,MMD
+        ISUB=I-1
+        TRM=TRM+COEFF*PREVTEMP(MMD-ISUB)
+        COEFF=COEFF*ALPHA
+ 245  CONTINUE
+      TRM=(1.-ALPHA)*TRM
+
+C Calculate operative (50% mean radiant, 50% dry bulb) temperature TOP for zone ICOMP
+      ICOMP=0
+      INOD=IFSN(ICFP,3)
+      DO 255 IZN=1,NCOMP
+        IF(ICAAS(IZN).EQ.INOD)ICOMP=IZN
+ 255  CONTINUE
+      IF(ICOMP.LE.0)THEN
+        CALL EDISP(IUOUT,
+     &  'Node not specified for operative temperature using zone 1')
+        ICOMP=1
+      ENDIF
+
+C Get operative temperature. This is calculated as average of mean 
+C radiant and air point temperature. First get mean radiant temperature 
+C with no weighting of air temperature. Note that TOP below may hold a
+C weighted average for resultant temperature but that is model specifc
+C based on the control file being used hence is ignored.
+      CALL MZMIXT(ICOMP,TMRT,TOP)
+      TOP=0.5*TMRT+0.5*TNOD(INOD)
+
+C Calculate comfort temperature TCOMF (based on the summer and winter behaviours)
+        IF(TRM.GE.10.)TCOMF=0.33*TRM+18.8
+        IF(TRM.LT.10.)TCOMF=0.09*TRM+22.6
+
+C Pakistan mode determination (four modes)
+C Mode = AC air conditioning
+C Mode = NC night cooling
+C Mode = HT heating
+C Mode = FR free running (no heating or air conditioning, may have fan)
+      IF(ACAVAIL.GT.0..AND.TRM.GT.28.1)THEN
+        MODE='AC'
+      ELSEIF(WNposs.GT.0..AND.TRM.GT.28.1)THEN
+        MODE='NC'
+      ELSEIF(Havail.GT.0..AND.TRM.LT.10.)THEN
+        MODE='HT'
+      ELSE
+        MODE='FR'
+      ENDIF
+
+C Pakistan fan status determination 
+      IF(MODE.EQ.'FR'.AND.Fposs.GT.0.)THEN
+C Algorithms will be added below once paper is published (currently 
+C version 1 of the algorithm is active)
+**        
+**        
+        RNF=RNOR()
+        RNF=ABS(RNF)
+        RNF=1000.*RNF
+        IRNF=INT(RNF)
+        RNF=RNF-REAL(IRNF)
+        IF(PF.GT.RNF)THEN
+          IFANON=1
+        ELSE
+          IFANON=0
+        ENDIF
+      ELSE
+        IFANON=0
+      ENDIF
+
+C Determine comfort temperature based on previously determined fan
+C status
+      IF(MODE.EQ.'FR')THEN
+        IF(IFANON.EQ.0)THEN
+**        
+        ELSE
+**        
+        ENDIF
+
+C These equations may change in future
+      ELSEIF(MODE.EQ.'HT')THEN
+**        
+      ELSEIF(MODE.EQ.'NC')THEN
+**        
+      ELSEIF(MODE.EQ.'AC')THEN
+**        
+      ENDIF
+      IF(Wposs.GT.0.)THEN
+**        
+        PW=EXP(FUNCW)/(1.+EXP(FUNCW))
+        RNW=RNOR()
+        RNW=ABS(RNW)
+        RNW=1000.*RNW    
+        IRNW=INT(RNW)
+        RNW=RNW-REAL(IRNW)
+        IF(PW.GT.RNW)THEN
+          IWIN=1
+        ELSE
+          IWIN=0
+        ENDIF
+      ELSE
+        IWIN=0
+      ENDIF
+
+C if night cooling mode open window
+      IF(MODE.EQ.'NC')IWIN=1
+
+C If outdoor temperature is more than 5degC higher than indoor
+C temperature then the window will be closed
+      IF(TOUT.GT.(TOP+5.))IWIN=0
+
+C If operative temperature and comfort temperature are within 2K
+C do not modify current state of window. Else calculate probability that
+C window state will be changed.
+      RN=RNOR()
+      RN=ABS(RN)
+      RN=1000.*RN
+      IRN=INT(RN)
+      RN=RN-REAL(IRN)
+      FUNC=0.171*TOP+0.166*TOUT-6.43
+      Pw=EXP(FUNC)/(1.+EXP(FUNC))
+      IF((TOP-TCOMF).GT.2.)THEN
+
+C Hot, so open windows if closed following Nicol logic
+        IF(Pw.GT.RN)IWIN=1
+      ELSEIF((TOP-TCOMF).LT.-2.)THEN
+
+C Cold, so close windows if open following Nicol logic
+        IF(Pw.LT.RN)IWIN=0
+      ELSE
+
+C Within 2K comfort band so do nothing
+      ENDIF
+      
+C If ALPHA=0. (<0.1) then the window will be closed - use this to keep
+C shut at night etc.. (ALPHA is normally 0.8 for UK buildings)
+      IF(ALPHA.LT.0.1)IWIN=0
+
+C<< Calculate window opening size fraction ONFRAC (also incorporate
+C<< Extend to controlling components later
+C within remembering previous state of window)
+C Currently ONFRAC=0 or 1
+      PREVSTATFAN=REAL(IFANON)
+      PREVSTATWIN=REAL(IWIN)
+      ONFRAC=REAL(IWIN) 
+      if(ifan(ICFP,1).eq.-3)then
+
+C Controlling a connection. (ICNN not relevant, therefor 0)
+          CTLPOS(ifan(icfp,2))=ONFRAC
+      elseif(ifan(ICFP,1).eq.-4)then
+
+C Controlling a component. 
+        do 1 icnn=1,ncnn
+          if((ifan(icfp,2).eq.ITPCON(ICNN)))then
+
+C Establish sensed variable magnitude and actuated node location.
+              CTLPOS(icnn)=ONFRAC
+          endif
+  1     continue
+      endif
+
+C Debug...
+c      IF(NSINC.EQ.1)write(96,*)
+c     &'Top TMRT Tout Trm  Tcomf  FUNCF PF  RNF  FAN FUNCw Pw RNW  WIN M'
+c      write(96,'(F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F5.1,1X,F4.1,
+c     & 1X,F4.1,1X,I2,1X,F5.1,1X,F4.1,1X,F4.1,1X,I2,1X,A)')
+c     & Top,TMRT,Tout,Trm,Tcomf,FUNCF,PF,RNF,
+c     & IFANON,FUNCw,Pw,RNW,IWIN,MODE
+
+C node number is ifsn(icfp,3), get zone associated with node
+      DO 546 ICOM=1,NCOMP
+        IF(IFSN(ICFP,3).EQ.ICAAS(ICOM))THEN
+          ICOMP=ICOM
+          TOTPWR(ICOMP)=0.
+        ENDIF
+  546 CONTINUE
+
+C If fan is on add fan power to casual gains for that zone
+      IF(IFANON.EQ.1)THEN
+        FNPWR=ZBASEA(ICOMP)*PWRfan
+      ENDIF
+
+C If light are on add light power to casual gains for that zone
+*      IF(ILIGHTON.EQ.1)THEN
+*        GLNPWR=ZBASEA(ICOMP)*PWRlight
+*      ENDIF
+       GLNPWR=0.
+
+C Find total power of the equipment
+      TOTPWR(ICOMP)=FNPWR+GLNPWR
+ 
+      GOTO 9999
+  999 H(1) = 'A data i/o error has occured in the program at FCL04'
+      H(2) = 'and it is probably best not to go on. '
+      H(3) = 'Program is taking one step back.'
+      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+ 9999 RETURN
+      END

@@ -268,6 +268,8 @@ C Vertical axis label depending on generic type.
         LABEL1='    Watts       '
       ELSEIF(FOCUS(1:7).EQ.'GLOVRTT')THEN
         LABEL1='Watts / sq metre'
+      ELSEIF(FOCUS(1:8).EQ.'ACTIVITY')THEN
+        LABEL1='fractions & degC'
       ELSE
 
 C Add in additional generic data definitions here.
@@ -288,10 +290,11 @@ C      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
 
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1
+      M=0
       DO 66 J=ISFLDS,IEFLDS
-
+        M=M+1
 C If plotting colours for different lines set this.
-        if(colok)call winscl('z',J)
+        if(colok)call winscl('z',M)
 
 C Scan TAB columns. Depending on which field use different symbol.
         IF(ITDFTR(IFOC,J).NE.2)THEN

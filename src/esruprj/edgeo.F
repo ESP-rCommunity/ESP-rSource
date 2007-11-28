@@ -2954,12 +2954,16 @@ C Help text for the menu.
       H(3)='of the surfaces.'
       H(4)=' '
       H(5)='You can add a rectangular opening (e.g. a window or'
-      H(6)='door) to a surface by specifing an X Y offset from'
-      H(7)='the lower left hand corner (when looking from outside'
-      H(8)='the model) and the opening width and height.'
-      H(9)=' '
-      H(10)='To add a non-rectangular opening, use the surface'
-      H(11)='list & edges menu.'
+      H(6)='door) to a surface by specifing its position within'
+      H(7)='the parent surface. This position is an X Y offset from'
+      H(8)='the lower left hand corner (when looking from outside'
+      H(9)='the model). An opening will then be created within'
+      H(10)='the parent surface with the specified width and height.'
+      H(11)=' '
+      H(12)='To add a non-rectangular opening, use the surface'
+      H(13)='list & edges menu. Or you might begin with a rectangle'
+      H(14)='and then add more vertices (be careful with openings'
+      H(14)='in sloped surfaces).'
 
 C Menu control.
       CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
@@ -3863,6 +3867,76 @@ C     subset of choices can be presented.
       common/pophelp/h(60)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+
+C SUSE (8 char * 2) is the usage of the surface as follows:
+
+C    Surfaces which function as opaque portions of a facade are
+C    marked as `WALL`. If they are vertical they will be composed
+C    of a code complient construction. If they are not vertical
+C    e.g. within 20 degree of vertical they could be composed of
+C    a code-complent roofing material. The 2nd array index is not
+C    used.
+
+C    The first array index for the case of doors is as follows:
+C    `DOOR` marks a normal door (inside or outside) which might be
+C       altered to conform to building regulations.
+C    'P-DOOR' marks a door for personel egress (e.g. a fire door) which
+C       has specific code requirments
+C    'H-DOOR' marks an entrance or other high-usage door.
+C    'V-DOOR' marks a door used for vehicle access
+C    The 2nd array index for the case of doors indicates the users
+C    preference for treating air movement and the allowed tags are:
+C    CLOSED UNDERCUT  OPEN  BIDIR
+
+C    Thie first array index for a frame associated with a door or window:
+C    `FRAME` marks a frame associated with an inside door or glazing,
+C    'F-FRAME' marks a frame within the facade which might need to be
+C       of a paricular area or construction for code compliance.
+C    The 2nd array index for frames is CLOSED CRACK OPEN
+
+C    The first array index for a glazing:
+C    'C-WINDOW' is a code complient window (e.g.construction or size)
+C    'D-WINDOW' is a display window which is not typically resized to
+C       meet code compliance
+C   .'S-WINDOW' is a code complient skylight (e.g.construction or size) 
+C    'WINDOW' any other window inside or exterior
+C    The 2nd array index for frames is CLOSED CRACK OPEN SASH BIDIR
+
+C    The first array index for a surface which the user wishes to 
+C    mark as an air supply or extract is 'GRILL':
+C    The 2nd array index for grills is SOURCE EXTRACT
+
+C    A suface which represents a fire smoke vent location is marked
+C    with 'SMOKEVNT' and the 2nd array index is un-used. For code
+C    complience such surfaces would be converted to the relevant
+C    wall or roof construction.
+
+C    The opaque portion of roofs are maked as 'ROOF' and the 2nd
+C    array index is 'FLAT' (0-20 degree incline) or 'PITCHED'. Note
+C    that a wall which is not vertical may be converted to a roof
+C    construction type.
+
+C    Surfaces which `are-not-there` e.g. fictitious are marked 'FICT'
+C    and the 2nd array index can be: CLOSED CRACK OPEN BIDIREC
+
+C    Surfaces which represent internal or ground-contact floors are
+C    marked with 'FLOOR' and the 2nd index is 'EXTGRND' or '- ' to
+C    signal ground connection or internal.  A raised floor above a
+C    ground connected crawl-space is ambiguious.
+
+C    Surfaces which represent internal mass are marked 'FURNI' and
+C    the 2nd array index is un-used.
+
+C    Surface which are used as internal partitions are marked 'PARTN'
+C    and the 2nd array index is un-used.
+
+C    Interior surfaces can be marked as 'STRUC' for structural elements
+C    such as beams and columns and the 2nd array index is un-used.
+
+C    otherwise  -,-  is the initial state for newly created surfaces
+C    and surfaces which the user has not yet expressed an opinion. This
+C    can also be used for internal surfaces which may not be of concern
+C    within building code complence assessments.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -3925,10 +3999,10 @@ C Setup array of menu strings.
         useopt(3) ='DOOR ENTRANCE (high useage)     '
         useopt(4) ='DOOR VEHICLE (large access)     '
         useopt(5) ='FICTitious (not code complient) '
-        useopt(6) ='FLOOR EXTGRND (extr or ground)  '
-        useopt(7) ='FLOOR OTHER (not code complient)'
+        useopt(6) ='FLOOR EXTGRND (extrn or ground) '
+        useopt(7) ='FLOOR (other equiv to partition)'
         useopt(8) ='FRAME FACADE (code complient)   '
-        useopt(9) ='FRAME OTHER (not code complient)'
+        useopt(9) ='FRAME (for inside door/window)  '
         useopt(10)='FURNI - (mass within zone)      '
         useopt(11)='GRILL SOURCE (conduit outlet)   '
         useopt(12)='GRILL EXTRACT (conduit inlet)   '
@@ -4049,7 +4123,7 @@ C Setup array of menu strings.
         useopt(4) ='DOOR VEHICLE (large access)     '
         useopt(5) ='FICTitious (not code complient) '
         useopt(6) ='FRAME FACADE (code complient)   '
-        useopt(7) ='FRAME OTHER (not code complient)'
+        useopt(7) ='FRAME (for inside door/window)  '
         useopt(8) ='GRILL SOURCE (conduit outlet)   '
         useopt(9) ='GRILL EXTRACT (conduit inlet)   '
         useopt(10)='WINDOW  (facade code complient) '
@@ -4101,10 +4175,10 @@ C Setup array of menu strings.
         useopt(3) ='DOOR ENTRANCE (high useage)     '
         useopt(4) ='DOOR VEHICLE (large access)     '
         useopt(5) ='FICTitious (not code complient) '
-        useopt(6)='FURNI - (mass within zone)      '
-        useopt(7)='PARTN - (inside wall/ceil/floor)'
-        useopt(8)='STRUCture - (mass within zone)  '
-        useopt(9)='WALL - (part of the facade)     '
+        useopt(6) ='FURNI - (mass within zone)      '
+        useopt(7) ='PARTN - (inside wall/ceil/floor)'
+        useopt(8) ='STRUCture - (mass within zone)  '
+        useopt(9) ='WALL - (part of the facade)     '
         useopt(10)='-   -  (somthing else)          '
 
         IX=1
@@ -4138,12 +4212,12 @@ C Setup array of menu strings.
       elseif(guesstype(1:10).eq.'horizontal')then
 
         useopt(1) ='FICTitious (not code complient) '
-        useopt(2) ='FLOOR EXTGRND (extr or ground)  '
-        useopt(3) ='FLOOR OTHER (not code complient)'
+        useopt(2) ='FLOOR EXTGRND (extrn or ground) '
+        useopt(3) ='FLOOR (internal e.g. partition) '
         useopt(4) ='FURNI - (mass within zone)      '
-        useopt(5)='PARTN - (inside wall/ceil/floor)'
-        useopt(6)='STRUCture - (mass within zone)  '
-        useopt(7)='-   -  (somthing else)          '
+        useopt(5) ='PARTN - (inside wall/ceil/floor)'
+        useopt(6) ='STRUCture - (mass within zone)  '
+        useopt(7) ='-   -  (somthing else)          '
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
@@ -4294,13 +4368,13 @@ C Edit door variants.
           h(7)='component (if network) or that there might be a'
           h(8)='small scheduled flow. '
           h(9)=' '
-          h(10)='Vent - other facilities should confirm the'
+          h(10)='Open - other facilities should confirm the'
           h(11)='flow with whatever is on the other side. Control'
           h(12)='might be applied (to vary the opening area) '
           h(13)=' '
           h(14)='Cancel does what it says. '
           CALL EASKATOG(' ','FRAME surface air leakage:',
-     &      'closed','crack','vent','cancel',
+     &      'closed','crack','open','cancel',
      &      ' ',' ',' ',IRT,14)
           if(IRT.eq.1)then
             SUSE(IS,2)='CLOSED'
@@ -6926,16 +7000,8 @@ C               the surface index in SOTHER(3) and the key word ANOTHER is
 C               put in SOTHER(1).
 C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
 C               the surface index in that zone (e.g. as IC2 and IE2).
-C SUSE (8 char * 2) is the usage of the surface as follows (note this is
-C    likely to be a temporary variable and will be depreciated in favour
-C    of SSUSE:
-C    DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
-C    FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
-C    WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
-C    GRILL,SOURCE  GRILL,EXTRACT
-C    FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
-C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
-C    otherwise  -,- )
+C SUSE (8 char * 2) is the usage of the surface.
+
 C SPARENT(MS) (12 char) the name of the parent surface or '-'
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -6959,14 +7025,7 @@ C               the surface index in SOTHER(3) and the key word ANOTHER is
 C               put in SOTHER(1).
 C   SSOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
 C               the surface index in that zone (e.g. as IC2 and IE2).
-C SSUSE (8 char * 2) is the usage of the surface as follows:
-C    DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
-C    FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
-C    WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
-C    GRILL,SOURCE  GRILL,EXTRACT
-C    FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
-C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
-C    otherwise  -,- )
+C   SSUSE (8 char * 2) is the usage of the surface (described elsewhere).
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 

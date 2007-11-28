@@ -63,6 +63,17 @@ C Temporal db commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
+C.........START: USED FOR ACTIVITY TDF DATA.....................
+C TDFINT are ranges allowed for integer fields in the instance.
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
+      REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
+      
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+C.........END: USED FOR ACTIVITY TDF DATA.....................
+
       DIMENSION VAL(MBITS+2)
       character outs*124
       logical found
@@ -154,6 +165,80 @@ C     &      VAL3(17,IJ)
 C            CALL EDISP(IUOUT,OUTS)
    20     CONTINUE
    10   CONTINUE
+        RETURN
+      ENDIF
+      
+C Check to see if there is a temporal casual gain (activity)
+C entry for this zone (this requires recovering from temporal file.
+      found = .false.
+      if(IACTIV(izone).ne.0)found = .true.
+      IF(found)THEN
+
+C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
+C The past timestep C is TF = TF - 1./real(NTS). 
+C TFL is is the last timestep of the previous day.
+        IJ=0
+        DO 110 I=1,24
+          I1=I-1
+          I2=I
+          T1=FLOAT(I1)
+          T2=FLOAT(I2)
+          DO 120 J=1,NTS
+            IJ=IJ+1
+            Y1=FLOAT(J)
+            Y2=FLOAT(NTS)
+            T=T1+Y1/Y2
+            IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
+            TF = real(IJ)/Y2 
+            TP = TF - (1./Y2)
+            IF(IDAY.EQ.1)IDP=365
+            IF(IDAY.GT.1)IDP=IDAY-1
+            TFL=24.0-(1./real(NTS))
+            LTSOD=24*NTS
+
+C .............Get convective columns of the temporal item.
+            itdi=IACTIV(izone)
+            IFOC=itdi
+            if(ij.eq.1)then
+              CALL RCTDFR(0,IDAY,IJ,TP,VAL,ISD,IFOC,IER)
+            else
+              CALL RCTDFR(0,IDAY,IJ-1,TP,VAL,ISD,IFOC,IER)
+            endif
+            X1a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X1a=(X1a_QTOTOCCUP-((X1a_QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X1b=0
+            X1c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X1c=(X1c_QTOTEQUIP-((X1c_QTOTEQUIP*ITMAR(1,5))/100))/2
+
+C Same pattern as the other temporal file items (for
+C casual gains): Dealing with future timestep.
+            CALL RCTDFR(0,IDAY,IJ,TF,VAL,ISD,IFOC,IER)
+            X2a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X2a=(X2a_QTOTOCCUP-((X2a_QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X2b=0
+            X2c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X2c=(X2c_QTOTEQUIP-((X2c_QTOTEQUIP*ITMAR(1,5))/100))/2
+            VAL3(15,IJ)=X1a+(((T-TP)*(X2a-X1a))/(TF-TP))
+            VAL3(16,IJ)=X1b+(((T-TP)*(X2b-X1b))/(TF-TP))
+            VAL3(17,IJ)=X1c+(((T-TP)*(X2c-X1c))/(TF-TP))
+            VAL3(18,IJ)=0.0
+            VAL3(19,IJ)=0.0
+            VAL3(20,IJ)=0.0
+
+C Debug...
+            call DATIME(IJ,TIME)
+C          WRITE(OUTS,'(A,I3,5F6.2,I4,3F8.2)') 'IJ T TP TF TFL ID Va ',
+C     &      IJ,T,TP,TF,TFL,TIME,IDAY,VAL3(15,IJ),VAL3(16,IJ),
+C     &      VAL3(17,IJ)
+C            CALL EDISP(IUOUT,OUTS)
+  120     CONTINUE
+  110   CONTINUE
         RETURN
       ENDIF
 
@@ -280,6 +365,16 @@ C Temporal db commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
+C.........START: USED FOR ACTIVITY TDF DATA.....................
+C TDFINT are ranges allowed for integer fields in the instance.
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
+      REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
+
+C.........END: USED FOR ACTIVITY TDF DATA.....................
+
       DIMENSION VAL(MBITS+2)
       character outs*124
       logical found
@@ -380,6 +475,87 @@ C            CALL EDISP(IUOUT,OUTS)
    20     CONTINUE
    10   CONTINUE
 
+        RETURN
+      ENDIF
+
+C If temporal ACTIVITY then each type gets filled.
+      found = .false.
+      if(IACTIV(izone).ne.0)found = .true.
+      IF(found)THEN
+
+C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
+C The past timestep C is TF = TF - 1./real(NTS). 
+C TFL is is the last timestep of the previous day.
+        SCALE=sna(IZONE,ISFN)*EMISI(ISFN)/emarea
+        IJ=0
+        DO 110 I=1,24
+          I1=I-1
+          I2=I
+          T1=FLOAT(I1)
+          T2=FLOAT(I2)
+          DO 120 J=1,NTS
+            IJ=IJ+1
+            Y1=FLOAT(J)
+            Y2=FLOAT(NTS)
+            T=T1+Y1/Y2
+            IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
+            TF = real(IJ)/Y2 
+            TP = TF - (1./Y2)
+            IF(IDAY.EQ.1)IDP=365
+            IF(IDAY.GT.1)IDP=IDAY-1
+            TFL=24.0-(1./real(NTS))
+            LTSOD=24*NTS
+
+C Get radiant columns of the temporal item.
+C Important: At the moment a 50% radiant/convective split is
+C allowed for this type of temporal item. So the radiant
+C gains will be equal with the convective.
+            itdi=IACTIV(izone)
+            IFOC=itdi
+            if(ij.eq.1)then
+              CALL RCTDFR(0,IDAY,IJ,TP,VAL,ISD,IFOC,IER)
+            else
+              CALL RCTDFR(0,IDAY,IJ-1,TP,VAL,ISD,IFOC,IER)
+            endif
+            X1a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X1a=
+     &      ((X1a_QTOTOCCUP-((X1a_QTOTOCCUP*ITMAR(1,3))/100))/2)*SCALE
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X1b=0*SCALE
+            X1c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X1c=
+     &      ((X1c_QTOTEQUIP-((X1c_QTOTEQUIP*ITMAR(1,5))/100))/2)*SCALE
+
+            CALL RCTDFR(0,IDAY,IJ,TF,VAL,ISD,IFOC,IER)
+            X2a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X2a=
+     &      ((X2a_QTOTOCCUP-((X2a_QTOTOCCUP*ITMAR(1,3))/100))/2)*SCALE
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X2b=0*SCALE
+            X2c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X2c=
+     &      ((X2c_QTOTEQUIP-((X2c_QTOTEQUIP*ITMAR(1,5))/100))/2)*SCALE
+
+            VAL3(15,IJ)=X1a+(((T-TP)*(X2a-X1a))/(TF-TP))
+            VAL3(16,IJ)=X1b+(((T-TP)*(X2b-X1b))/(TF-TP))
+            VAL3(17,IJ)=X1c+(((T-TP)*(X2c-X1c))/(TF-TP))
+            VAL3(18,IJ)=0.0
+            VAL3(19,IJ)=0.0
+            VAL3(20,IJ)=0.0
+
+C Debug...
+            call DATIME(IJ,TIME)
+C          WRITE(OUTS,'(A,I3,5F6.2,I4,3F8.2)') 'IJ T TP TF TFL ID Vb ',
+C     &      IJ,T,TP,TF,TIME,TFL,IDAY,VAL3(15,IJ),VAL3(16,IJ),
+C     &      VAL3(17,IJ)
+C            CALL EDISP(IUOUT,OUTS)
+  120     CONTINUE
+  110   CONTINUE
+  
         RETURN
       ENDIF
 
@@ -501,6 +677,17 @@ C Temporal db commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
+C.........START: USED FOR ACTIVITY TDF DATA.....................
+C TDFINT are ranges allowed for integer fields in the instance.
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
+      REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
+      
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+C.........END: USED FOR ACTIVITY TDF DATA.....................
+
       DIMENSION VAL(MBITS+2)
       character outs*124
       logical found
@@ -594,6 +781,83 @@ C     &      VAL3(17,IJ)
 C            CALL EDISP(IUOUT,OUTS)
    20     CONTINUE
    10   CONTINUE
+        RETURN
+      ENDIF
+      
+C If temporal ACTIVITY then each type gets filled.
+      found = .false.
+      if(IACTIV(izone).ne.0)found = .true.
+      IF(found)THEN
+
+C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
+C The past timestep C is TF = TF - 1./real(NTS). 
+C TFL is is the last timestep of the previous day.
+        IJ=0
+        DO 110 I=1,24
+          I1=I-1
+          I2=I
+          T1=FLOAT(I1)
+          T2=FLOAT(I2)
+          DO 120 J=1,NTS
+            IJ=IJ+1
+            Y1=FLOAT(J)
+            Y2=FLOAT(NTS)
+            T=T1+Y1/Y2
+            IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
+            TF = real(IJ)/Y2 
+            TP = TF - (1./Y2)
+            IF(IDAY.EQ.1)IDP=365
+            IF(IDAY.GT.1)IDP=IDAY-1
+            TFL=24.0-(1./real(NTS))
+            LTSOD=24*NTS
+
+C Get radiant columns of the temporal item.
+C Important: At the moment a 50% radiant/convective split is
+C allowed for this type of temporal item. So the radiant
+C gains will be equal with the convective.
+            itdi=IACTIV(izone)
+            IFOC=itdi
+            if(ij.eq.1)then
+              CALL RCTDFR(0,IDAY,IJ,TP,VAL,ISD,IFOC,IER)
+            else
+              CALL RCTDFR(0,IDAY,IJ-1,TP,VAL,ISD,IFOC,IER)
+            endif
+            X1a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X1a=(X1a_QTOTOCCUP-((X1a_QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X1b=0
+            X1c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X1c=(X1c_QTOTEQUIP-((X1c_QTOTEQUIP*ITMAR(1,5))/100))/2
+
+            CALL RCTDFR(0,IDAY,IJ,TF,VAL,ISD,IFOC,IER)
+            X2a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X2a=(X2a_QTOTOCCUP-((X2a_QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X2b=0
+            X2c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X2c=(X2c_QTOTEQUIP-((X2c_QTOTEQUIP*ITMAR(1,5))/100))/2
+
+            VAL3(15,IJ)=X1a+(((T-TP)*(X2a-X1a))/(TF-TP))
+            VAL3(16,IJ)=X1b+(((T-TP)*(X2b-X1b))/(TF-TP))
+            VAL3(17,IJ)=X1c+(((T-TP)*(X2c-X1c))/(TF-TP))
+            VAL3(18,IJ)=0.0
+            VAL3(19,IJ)=0.0
+            VAL3(20,IJ)=0.0
+            
+C Debug...TIME=T TIMEF=TF TIMP=TP in case reqd for single timestep.
+            call DATIME(IJ,TIME)
+            TIMEF=real(IJ)/real(NTS)
+            TIMEP=TIMEF - (1./real(NTS))
+C          WRITE(OUTS,'(A,I3,6F6.2,I4,3F8.2)') 'IJ T TP TF TFL ID Vc ',
+C     &      IJ,T,TP,TF,TIME,TIMEF,TIMEP,IDAY,VAL3(15,IJ),VAL3(16,IJ),
+C     &      VAL3(17,IJ)
+C            CALL EDISP(IUOUT,OUTS)
+  120     CONTINUE
+  110   CONTINUE
         RETURN
       ENDIF
 
@@ -1095,6 +1359,17 @@ C Temporal db commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
+C.........START: USED FOR ACTIVITY TDF DATA.....................
+C TDFINT are ranges allowed for integer fields in the instance.
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      REAL X2a_QTOTOCCUP
+      REAL X2c_QTOTEQUIP
+      
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+C.........END: USED FOR ACTIVITY TDF DATA.....................
+
       DIMENSION VAL(MBITS+2)
       character outs*124
       logical found
@@ -1173,6 +1448,63 @@ C     &      VAL3(17,IJ)
 C            CALL EDISP(IUOUT,OUTS)
    20     CONTINUE
    10   CONTINUE
+        RETURN
+      ENDIF
+
+C Check to see if there is a temporal casual gain (separate)
+C entry for this zone (the values are explicitly saved).
+      found = .false.
+      if(IACTIV(izone).ne.0.and.IJDAY.ne.0)found = .true.
+      IF(found)THEN
+
+C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
+C The past timestep C is TF = TF - 1./real(NTS). 
+C TFL is is the last timestep of the previous day.
+        IJ=0
+        DO 110 I=1,24
+          I1=I-1
+          I2=I
+          T1=FLOAT(I1)
+          T2=FLOAT(I2)
+          DO 120 J=1,NTS
+            IJ=IJ+1
+            Y1=FLOAT(J)
+            Y2=FLOAT(NTS)
+            T=T1+Y1/Y2
+            TF = real(IJ)/Y2 
+            TP = TF - (1./Y2)
+            IF(IJDAY.EQ.1)IDP=365
+            IF(IJDAY.GT.1)IDP=IJDAY-1
+            TFL=24.0-(1./real(NTS))
+            LTSOD=24*NTS
+
+C Get future timestep convective columns of the temporal item.
+            itdi=IACTIV(izone)
+            IFOC=itdi
+            CALL RCTDFR(0,IJDAY,IJ,TF,VAL,ISD,IFOC,IER)
+            X2a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+            X2a=(X2a_QTOTOCCUP-((X2a_QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+            X2b=0
+            X2c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+            X2c=(X2c_QTOTEQUIP-((X2c_QTOTEQUIP*ITMAR(1,5))/100))/2
+ 
+            VAL3(15,IJ)=X2a
+            VAL3(16,IJ)=X2b
+            VAL3(17,IJ)=X2c
+            VAL3(18,IJ)=0.0
+            VAL3(19,IJ)=0.0
+            VAL3(20,IJ)=0.0
+
+C Debug...
+C          WRITE(OUTS,'(A,I3,4F6.2,I4,3F8.2)') 'IJ T TP TF TFL ID Vd ',
+C     &      IJ,T,TP,TF,TFL,IJDAY,VAL3(15,IJ),VAL3(16,IJ),
+C     &      VAL3(17,IJ)
+C            CALL EDISP(IUOUT,OUTS)
+  120     CONTINUE
+  110   CONTINUE
         RETURN
       ENDIF
 

@@ -24,6 +24,7 @@ C Revised to take in configuration file and zone focus.
       program espvwf
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 
       integer igraphiclib  ! external definition
 
@@ -67,7 +68,6 @@ C Path to model.
       common/user/browse
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -86,9 +86,6 @@ C Indicator of possible focus zone.
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
@@ -110,7 +107,7 @@ C Name of current application
       
       character cAppName*12      
       
-      LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL     CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       integer fstgrp,fstsur,lstsur,strtgr
       logical browse
@@ -126,8 +123,8 @@ C Name of current application
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      character path*72,upath*72,esprc*72,cfgroot*24,zdesc*64
-      character dfdblbl*20,defdbfl*72,journcmd*20,jfile*72,uname*24
+      character path*72,upath*72,cfgroot*24,zdesc*64
+      character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -319,9 +316,9 @@ C Debug
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IUF,0,IIER)
 
@@ -353,7 +350,7 @@ C All subsequent tstamp messages will be appended to root journal.
       endif
 
 C Scan the defaults file for default configuration.
-      call escdef(dfdblbl,defdbfl,IUF,IER)
+      call escdef(IUF,IER)
 
 C Take command line file name as configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

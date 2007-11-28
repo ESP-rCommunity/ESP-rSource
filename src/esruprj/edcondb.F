@@ -829,11 +829,11 @@ C Help text for this menu.
             h(1)='Recent changes to the materials database are held'
             h(2)='in memory and might be lost if not saved to file.'
             CALL ASKOK('Changes have been made in database. ',
-     &        'Save the database now ? ',OK,dok,2)
+     &        'Save the materials database now?',OK,dok,2)
             IF(.NOT.OK)GOTO 4
             chgdb=.true.
             ltmp=' '
-            write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.aa'
+            write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
             CALL mkascimat(IUOUT,IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
@@ -877,7 +877,7 @@ C reset flag to show db is current with local arrays.
           ELSE
             chgdb=.true.
             ltmp=' '
-            write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.aa'
+            write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
             CALL mkascimat(IUOUT,IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF

@@ -28,6 +28,7 @@ C NCM Array sizing integers
                             ! max. activities allowed in the model
                             ! This is kept equal to max zones normally allowed
       PARAMETER (MAC=65)    ! max. activity types 
+      PARAMETER (MILS=10)   ! max. lighting types
 
 C NCM common blocks for reading SBEM database
 C Integers
@@ -38,19 +39,19 @@ C Integers
 C Strings
       COMMON/SBEM02/FUELNAME(MFT),SYSNAME(MPT),HSYSNAME(MHT),BLDSS(MSS),
      &DHWGEN(MDW),BTYPNAME(MBT),SBTYP(MSBT),BLDREG(MREG),BLDSTG(MSTG),
-     &ATYPNAME(MAC)
+     &ATYPNAME(MAC),TLIGHT(MILS)
 
 C Real numbers
       COMMON/SBEM03/FUELCO2(MFT),SYSEFFC(MCS,MHT),DHWEFF(MDW,2),
-     &SYSEFF(MPT),BLDIF(MSS),BLDLZC(MSS),VERSBEM,SFPDEF
+     &SYSEFF(MPT),BLDIF(MSS),BLDLZC(MSS),PDRL(MILS,2),VERSBEM,SFPDEF
 
 C NCM common blocks for read/write of *.ncm project specific file and
 C for BRUKL input file (*.inp)
 C Integers
       COMMON/SBEM04/IBRUKH(MNS),IBRUKC(MNS),IBRUKW(MNS),IBRUKF(MNS),
      &IHGEF(MNS),ICGEF(MNS),IFTYP(MNS),IHLZ(MNS),IDHWS(MNS),IDHFL(MNS),
-     &INCMSYS(MNS),IDHWLZ(MNS),IACTYTYP(MNS),ISBEM,IBUSERTYP,IBSS,
-     &IRGG,ISTG,ISBT,NCMSYS,NDHWSYS
+     &INCMSYS(MNS),IDHWLZ(MNS),IACTYTYP(MNS),ILITYP(MNS),
+     &ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,NDHWSYS
 
 C Strings
       COMMON/SBEM05/DHWNAME(MNS),HVACNAME(MNS),LASBEM,SBREF,APCHK,
@@ -81,6 +82,7 @@ C Project specific *.ncm file variables
                         ! +N if coupled with DHW system number N
                         ! -N if coupled with HVAC system number N
       INTEGER IACTYTYP  ! activity type index for each zone
+      INTEGER ILITYP    ! lighting type index for each zone
                         
       CHARACTER*72 LASBEM   ! SBEM project specific file name (*.ncm)
       CHARACTER*3  SBREF    ! Scottish Accredited Construction Details followed (yes/no)
@@ -131,6 +133,7 @@ C SBEM database variables
       CHARACTER*50 BLDREG   ! Building regulations to follow
       CHARACTER*12 BLDSTG   ! Building design stage (as built or as designed)
       CHARACTER*40 ATYPNAME ! Activity type name
+      CHARACTER*70 TLIGHT   ! Lighting type name
 
       REAL VERSBEM  ! SBEM db version no.
       REAL SFPDEF   ! default specific fan power (units?)
@@ -142,4 +145,5 @@ C SBEM database variables
                     ! and after 1998 (array index 2)
       REAL BLDIF    ! building improvement factor
       REAL BLDLZC   ! building low and zero carbon benchmark
-
+      REAL PDRL     ! power density (W/m2)/100lux for lighting types PDRL(?,1)
+                    ! for commercial & PDRL(?,2) for industrial use

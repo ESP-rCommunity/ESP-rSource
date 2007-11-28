@@ -61,6 +61,7 @@ C wshad.F  - WSHAD:   Performs ASHRAE window shading.
       program ish
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 
       integer igraphiclib  ! external definition
 
@@ -105,15 +106,12 @@ C wshad.F  - WSHAD:   Performs ASHRAE window shading.
 C Path to model and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
 
 C Indicator of possible focus zone and action to take.
       common/rzone/inzone
       common/ract/paction
 
-C Where default db lists are kept.
-      common/defdb/dfdblbl,defdbfl
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
@@ -148,8 +146,7 @@ C Material data arrays.
       character items*26
       CHARACTER MTHNAM*3,outs*124,outs248*248,ETEXT*60,LTMP*144
       CHARACTER DESCRH*5,DESCRD*5,zname*12,zdesc*64,inf*144,LCMDFL*144
-      character path*72,upath*72,esprc*72,cfgroot*24
-      character dfdblbl*20,defdbfl*72
+      character path*72,upath*72,cfgroot*24
       character inz*16,inzone*16,ZN*12,pact*16,paction*16,OUTSTR*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
@@ -334,7 +331,7 @@ C All subsequent tstamp messages will be appended to root journal.
   902 continue
 
 C Scan the defaults file for default configuration.
-      call escdef(dfdblbl,defdbfl,IUF,IER)
+      call escdef(IUF,IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

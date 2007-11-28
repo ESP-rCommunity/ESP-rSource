@@ -153,13 +153,75 @@ C               the surface index in that zone (e.g. as IC2 and IE2).
 C SUSE (8 char * 2) is the usage of the surface as follows (note this is
 C    likely to be a temporary variable and will be depreciated in favour
 C    of SSUSE:
-C    DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
-C    FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
-C    WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
-C    GRILL,SOURCE  GRILL,EXTRACT
-C    FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
-C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
-C    otherwise  -,- )
+
+C    Surfaces which function as opaque portions of a facade are
+C    marked as `WALL`. If they are vertical they will be composed
+C    of a code complient construction. If they are not vertical
+C    e.g. within 20 degree of vertical they could be composed of
+C    a code-complent roofing material. The 2nd array index is not
+C    used.
+
+C    The first array index for the case of doors is as follows:
+C    `DOOR` marks a normal door (inside or outside) which might be
+C       altered to conform to building regulations.
+C    'P-DOOR' marks a door for personel egress (e.g. a fire door) which
+C       has specific code requirments
+C    'H-DOOR' marks an entrance or other high-usage door.
+C    'V-DOOR' marks a door used for vehicle access
+C    The 2nd array index for the case of doors indicates the users
+C    preference for treating air movement and the allowed tags are:
+C    CLOSED UNDERCUT  OPEN  BIDIR
+
+C    Thie first array index for a frame associated with a door or window:
+C    `FRAME` marks a frame associated with an inside door or glazing,
+C    'F-FRAME' marks a frame within the facade which might need to be
+C       of a paricular area or construction for code compliance.
+C    The 2nd array index for frames is CLOSED CRACK OPEN
+
+C    The first array index for a glazing:
+C    'C-WINDOW' is a code complient window (e.g.construction or size)
+C    'D-WINDOW' is a display window which is not typically resized to
+C       meet code compliance
+C   .'S-WINDOW' is a code complient skylight (e.g.construction or size) 
+C    'WINDOW' any other window inside or exterior
+C    The 2nd array index for frames is CLOSED CRACK OPEN SASH BIDIR
+
+C    The first array index for a surface which the user wishes to 
+C    mark as an air supply or extract is 'GRILL':
+C    The 2nd array index for grills is SOURCE EXTRACT
+
+C    A suface which represents a fire smoke vent location is marked
+C    with 'SMOKEVNT' and the 2nd array index is un-used. For code
+C    complience such surfaces would be converted to the relevant
+C    wall or roof construction.
+
+C    The opaque portion of roofs are maked as 'ROOF' and the 2nd
+C    array index is 'FLAT' (0-20 degree incline) or 'PITCHED'. Note
+C    that a wall which is not vertical may be converted to a roof
+C    construction type.
+
+C    Surfaces which `are-not-there` e.g. fictitious are marked 'FICT'
+C    and the 2nd array index can be: CLOSED CRACK OPEN BIDIREC
+
+C    Surfaces which represent internal or ground-contact floors are
+C    marked with 'FLOOR' and the 2nd index is 'EXTGRND' or '- ' to
+C    signal ground connection or internal.  A raised floor above a
+C    ground connected crawl-space is ambiguious.
+
+C    Surfaces which represent internal mass are marked 'FURNI' and
+C    the 2nd array index is un-used.
+
+C    Surface which are used as internal partitions are marked 'PARTN'
+C    and the 2nd array index is un-used.
+
+C    Interior surfaces can be marked as 'STRUC' for structural elements
+C    such as beams and columns and the 2nd array index is un-used.
+
+C    otherwise  -,-  is the initial state for newly created surfaces
+C    and surfaces which the user has not yet expressed an opinion. This
+C    can also be used for internal surfaces which may not be of concern
+C    within building code complence assessments.
+
 C SPARENT(MS) (12 char) the name of the parent surface or '-'
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -1177,16 +1239,7 @@ C               the surface index in SOTHER(3) and the key word ANOTHER is
 C               put in SOTHER(1).
 C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
 C               the surface index in that zone (e.g. as IC2 and IE2).
-C SUSE (8 char * 2) is the usage of the surface as follows (note this is
-C    likely to be a temporary variable and will be depreciated in favour
-C    of SSUSE:
-C    DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
-C    FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
-C    WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
-C    GRILL,SOURCE  GRILL,EXTRACT
-C    FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
-C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
-C    otherwise  -,- )
+C SUSE (8 char * 2) is the usage of the surface.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
@@ -1462,14 +1515,9 @@ C *surf,door,VERT,-,DOOR,UNDERCUT,door,OPAQUE,ANOTHER,3,6 # >|< door in coridor
 C (1) surf name (12 char, tbd - allow spaces)
 C (2) surf posn (tags VERT, CEIL (faces down), FLOR (faces up), SLOP (other)
 C (3) child of (name of surface, otherwise a -)
-C (4-5) useage: a pair of tags for code complience and to assist with air flow network creation:
-C    DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
-C    FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
-C    WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
-C    GRILL,SOURCE  GRILL,EXTRACT
-C    FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
-C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
-C    otherwise  -,- )
+C (4-5) useage: a pair of tags for code complience and to assist with air
+C  flow network creation. A full description is at the top of this source
+C  file.
 C (6) construction name (from MLC database, (tbd allow spaces))
 C (7) optical name (OPAQUE or the name of the optical set name, (tbd allow spaces))
 C (8-10) boundary condition (including indices from cnn file):
@@ -3380,6 +3428,13 @@ C   bounded by the parent.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+C G9 holds information on children of a surface.
+      integer nbchild       ! how many children (up to 4)
+      integer isgrandchild  ! if 1 child, if 2 grandchild
+      character childname*12 ! name of the child surface
+      common/G9/nbchild(MS),isgrandchild(MS,4),childname(MS,4)
+
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3410,6 +3465,16 @@ C referenced more than once (e.g. surface with hole in it)
         iduplist(isur,3)=0  ! clear jvn duplicate position of idupv(isur,3)
         iduplist(isur,4)=0  ! clear jvn duplicate position of idupv(isur,4)
         iduplist(isur,5)=0  ! clear jvn duplicate position of idupv(isur,4)
+        nbchild(isur)=0     ! assume no children
+        isgrandchild(isur,1)=0
+        isgrandchild(isur,2)=0
+        isgrandchild(isur,3)=0
+        isgrandchild(isur,4)=0
+        childname(isur,1)=' '
+        childname(isur,2)=' '
+        childname(isur,3)=' '
+        childname(isur,4)=' '
+
         next=0  ! counter to update to get to 2nd dimension.
 
 C Check for 2nd references of a vertex with the fast loop looping
@@ -3508,10 +3573,20 @@ C Debug.
 C            WRITE(6,*)'PARENT OF ',JCC,SSNAME(JCC),' IS ',
 C     &        SSPARENT(JCC),' match verts ',ICOMVER(JSUR),
 C     &        ' nverts in child ',NVER(JSUR)
+
+C << Having found a child add it to the list of children of
+C << the parent surface.
+            nbchild(isur)=nbchild(isur)+1
+            isgrandchild(isur,nbchild(isur))=1
+            childname(isur,1)=SSNAME(JCC)
+C Debug...
+            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
+     &        childname(isur,1)
           endif
  105      continue
  102    CONTINUE
  101  CONTINUE
+      write(6,*) 'nbchild ',nbchild
       RETURN
       END
 
@@ -3964,6 +4039,34 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
           endif
         endif
   42  continue
+      return
+      end
+
+C ********************** MATCHSNAME 
+C matchsname is passed a surface name and zone index and checks which
+C surface index in the zone matches the name.
+C If 'is' is returned as 0 if no match. 
+      subroutine matchsname(STRING,icomp,is)
+#include "building.h"
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      character string*12,SN*12
+      
+      lstr=lnblnk(string)
+      is=0
+      do 42 i=1,NZSUR(icomp)
+        icn=izstocn(icomp,i)
+        SN=SSNAME(icn)
+        if(string(1:lstr).eq.SN(1:lnblnk(SN)))then
+          is=i
+          return
+        endif
+  42  continue
+      
       return
       end
 

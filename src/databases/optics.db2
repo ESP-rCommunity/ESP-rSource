@@ -331,3 +331,21 @@ DCF6741_06n   :dbl_air_low
   1.520 0.275 0.290 0.297 0.308 0.251
   1.000 0.001 0.001 0.001 0.001 0.001
   1.520 0.066 0.069 0.069 0.061 0.044
+# 12 char id |  description       | thick | blind
+dispGlz_not   :display glazing for notional UK buil
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.690  0.070  0.110  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.588 0.561 0.517 0.412 0.238 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.337 0.358 0.370 0.365 0.315
+# 12 char id |  description       | thick | blind
+Glaz_notiona  :Notional UK glazing optical properts
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.690  0.070  0.110  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.557 0.536 0.505 0.341 0.164 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.119 0.130 0.142 0.158 0.162
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.177 0.175 0.165 0.132 0.074

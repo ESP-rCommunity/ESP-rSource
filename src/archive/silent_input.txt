@@ -15,10 +15,7 @@
 *surface,floor,floor_1,4,1,0
 *surface,door,door,0,0,0
 *surface,glaz_front,dbl_glz,0,0,0
-*usage,std_3_period   # name of casual gain pattern
-*occupant,5.4   # m2/person
-*lighting,3.1   # W/m2
-*equipment,2.1  # W/m2
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
 *environment,comvective_night_off  # name of zone control pattern
 *heating,18.0,0.0   # setpoint occupied & unoccupied
 *cooling,26.0,100.0 # setpoint occupied & unoccupied
