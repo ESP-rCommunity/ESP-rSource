@@ -71,7 +71,6 @@ C=======================================================================
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
-#include "hvac_common.h"
 #include "furnace_common.h"
 #include "IMS_common.h"
 
@@ -790,7 +789,7 @@ C
 C         See eqn 24 in Ferguson et al. (2007)
 C-----------------------------------------------------------------------
 
-          fVentLoad =   ( 1 - fVentHREfficiency )
+          fVentLoad =   ( 1.0 - fVentHREfficiency )
      &              * MAX ( fFA_HeatCapacity, fEA_HeatCapacity )
      &              * ( fDBTemp_zone - fDBTemp_amb )
      &              - 0.5 * fIMS_VentPower(iSystem, iVentMode)
@@ -888,7 +887,6 @@ C=======================================================================
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
-#include "hvac_common.h"
 #include "IMS_common.h"
 C-----------------------------------------------------------------------
 C     Passed variables
@@ -1708,8 +1706,6 @@ C=======================================================================
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
-#include "hvac_common.h"
-#include "furnace_common.h"
 #include "IMS_common.h"
 C-----------------------------------------------------------------------
 C     Passed arguements
