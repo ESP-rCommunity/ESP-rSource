@@ -34,6 +34,7 @@ C <<
 C providing paramaters MGDB,MGCL,MGIT
 
 #include "espriou.h"
+C espriou.h provides currentfile and defdbfl.
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -57,11 +58,7 @@ C Redirected text/graphics parameters.
 C Path to problem and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
-
-C Where default db list is kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Generic db commons.
 C Name of databases in common/gendbfn and file unit index in common/gendbfi
@@ -104,8 +101,8 @@ C Name of current application
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
       character tfile*72,longtfile*144
       character outs248*248,LTMP*144
-      character path*72,upath*72,esprc*72,pass*12,H*72,outs*124
-      character dfdblbl*20,defdbfl*72,xfile*144,tg*1,delim*1,cfgroot*24
+      character path*72,upath*72,pass*12,H*72,outs*124
+      character xfile*144,tg*1,delim*1,cfgroot*24
       character curfile*72,dba*12,act*1,action*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -228,7 +225,7 @@ C Make temporary use of file unit IAF=IFIL+1.
 
 C Scan the defaults file for default configuration. << tmp name >>
       defdbfl='./gdefaults'
-      call escgdef(dfdblbl,defdbfl,IAF,IER)
+      call escgdef(IAF,IER)
 
       LGENDB=' '
 

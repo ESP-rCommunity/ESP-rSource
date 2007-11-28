@@ -48,6 +48,8 @@ C      bcl19: multi-sensor basic controller.
 C      BCL20: evaporative source (defined as a controller).
 C      BCL21: master slave capacity inj/ext controller
 C      BCL22: VAV with CAV with reheat air supply controller
+C      BCL23: Match sensed values (ideal:2 setpoints)
+C      BCL24: Adaptive human comfort model
 C      BCL99: constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine
@@ -83,7 +85,8 @@ C regardless of control function prevailing at this time.
      &IICOMP).OR.(IBAN(ICF,1).GT.0.AND.IBAN(ICF,1).NE.IICOMP))GOTO 2
 
 C For the special case of current zone, mixed node control only.
-      IF(IBSN(ICF,1).EQ.-2.AND.IBSN(ICF,2).EQ.IICOMP)GOTO 77
+      IF(IBSN(ICF,1).EQ.-2.AND.IBSN(ICF,2).EQ.IICOMP
+     &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24)GOTO 77
       GOTO 76
    77 CALL BCL00
       return
@@ -93,8 +96,9 @@ C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
    76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
-      GOTO(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23),
-     &  IFUNC
+      GOTO
+     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+     & ,IFUNC
       GOTO 98
 
 C CL1 is basic control with potential for a different heating and
@@ -207,6 +211,10 @@ C CL22 VAV and CAV air based controller
       
 C CL23 sensed setpoint based controller
    23 call BCL23
+      goto 99
+      
+C CL24 Adaptive human comfort model
+   24 call BCL24(ier)
       goto 99
       
 C New control laws should be inserted here.
@@ -2690,6 +2698,10 @@ C Set IPLT to 1 in case of heating and to 2 in case of cooling.
         QMN=0.
       END IF
       TCONT=TFUT
+
+C Note flux max, min argument to this call set to QFUT, QFUT to prevent 
+C unessesary iteration, which had previously led to plant/building flux 
+C mismatch. (reverted by JWH pending investigation by Nick).
       IF(IBAN(ICF,1).EQ.-2) CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &                                  IPLT,QMX,QMN,TFUT,QFUT)
 
@@ -5928,7 +5940,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       DIMENSION VAL(MBITS+2)
-
+      integer COLUMNSETP
+     
 C Check to see if running in dll mode.
       call isadll(dll)
 
@@ -5949,19 +5962,23 @@ C HSP = heating set point temp. (deg.C)
 C CSP = cooling set point temp. (deg.C)
       QHM=999999.0
       QHN=0.0
-      QCM=999999.0
+      QCM=-999999.0
       QCN=0.0
+      QFUT=0.0
+      TFUT=TNP
 
-C<< Read setpoints from tdf here (CSP and HSP)
-C First read HSP
-       ISD=NINT(BMISCD(ICF,IDTYP,IPER,2))
+C Read setpoints from tdf here (CSP and HSP)
+C "COLUMNSETP" is an integer specifying the column where the setpoints
+C should be read from. This could be the ISD but when calling the RCTDFB it
+C seems that is always set to 2 (and it is also used in few other places as 2).
+       COLUMNSETP=BMISCD(ICF,IDTYP,IPER,2)
        itdi=IACTIV(ICF)
        IFOC=itdi
        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-       CSP=VAL(ISD)
-       ISD=NINT(BMISCD(ICF,IDTYP,IPER,3))
+       HSP=VAL(COLUMNSETP)
+       COLUMNSETP=BMISCD(ICF,IDTYP,IPER,3)
        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-       HSP=VAL(ISD)
+       CSP=VAL(COLUMNSETP)
 
 C Debug.
 c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
@@ -6008,7 +6025,7 @@ C Is this available ?
     5 Q=QCM
     2 TFUT=(BB3-BB2*Q)/BB1
       QFUT=Q
-
+      return
    99 write(outs,'(a)')' BCL23: data incomplete.'
       if(dll)then
         dllsubr='BCL23'
@@ -6021,7 +6038,249 @@ C Is this available ?
         call epagend
         STOP
       endif
-      return
+      END
+
+C ******************** BCL24
+C Adaptive human comfort model works just like the basic controller
+C BCL01, but the comfort setpoints are continually changed based on a
+C running mean comfort temperature calculated from the climate database
+      SUBROUTINE BCL24(IER)
+
+#include "building.h"
+
+C climate file commons
+      COMMON/FILEP/IFIL
+      COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
+     &             DFLP,DFLF,HFLP,HFLF
+
+      common/pophelp/h(60)
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
+      common/dllerr/dllsubr,dllmesg
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
+     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
+     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
+     &BMISCD(MCF,MBCDT,MBCDP,MISC)
+
+      DIMENSION ICLM(24,6)
+      PARAMETER (MMD=20)
+      REAL PREVTEMP(MMD)
+      character dllsubr*12,dllmesg*124,outs*124,H*72
+      logical dll
+
+C Check to see if running in dll mode.
+      call isadll(dll)
+
+C Fatal error test.
+      IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.)GOTO 99
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
+          write(outs,'(a,i2)') 
+     &      'Entering subroutine BCL24 sensing in zone ',
+     &      IBSN(ICF,1)
+          call edisp(itu,outs)
+        elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
+          write(outs,'(a,i2,a,i2)') 
+     &      'Entering subroutine BCL01 sensing in zone ',
+     &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,outs)
+        else
+          call edisp(itu,' Entering subroutine BCL24')
+        endif
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+C Determine sensed temperature.
+      CALL CFVAR(TCTL,IER)
+      if(ier.eq.2)then
+        return
+      endif
+
+C calculate outside daily mean temperature TODM and
+      IYDS=IDYP-MMD
+      IYDF=IDYP-1
+      DO 3157 II=1,MMD
+        PREVTEMP(II)=0.0
+ 3157 CONTINUE
+      IF(IYDS.GT.0.AND.IYDF.GT.0)THEN
+        ID=0
+        DO 557 I=IYDS,IYDF
+          ID=ID+1
+          II=I
+          IREC=II
+          READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)((ICLM(J,K),K=1,6),
+     &           J=1,24)
+          DO 656 J=1,24
+            PREVTEMP(ID)=REAL(ICLM(J,2))/10.+PREVTEMP(ID)
+  656     CONTINUE
+          PREVTEMP(ID)=PREVTEMP(ID)/24.
+  557   CONTINUE
+      ELSEIF(IYDS.LE.0)THEN
+        IYDS=365+IYDS
+        ID=0
+        DO 550 I=IYDS,365
+          ID=ID+1
+          II=I
+          IREC=II
+          READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)((ICLM(J,K),K=1,6),
+     &           J=1,24)
+          DO 657 J=1,24
+            PREVTEMP(ID)=REAL(ICLM(J,2))/10.+PREVTEMP(ID)
+  657     CONTINUE
+          PREVTEMP(ID)=PREVTEMP(ID)/24.
+  550   CONTINUE
+        IF(IDYF.GT.0)THEN        
+          DO 551 I=1,IDYF
+            ID=ID+1
+            II=I
+            IREC=II
+            READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=999)((ICLM(J,K),K=1,6),
+     &             J=1,24)
+            DO 658 J=1,24
+              PREVTEMP(ID)=REAL(ICLM(J,2))/10.+PREVTEMP(ID)
+  658       CONTINUE
+            PREVTEMP(ID)=PREVTEMP(ID)/24.
+  551     CONTINUE
+        ENDIF
+      ENDIF
+
+C Get ambient temperature TOUT
+      TOUT=TFLWF
+C QHM = max heating capacity (W)
+C QHN = min heating capacity (W)
+C QCM = max cooling capacity (W)
+C QCN = min cooling capacity (W)
+C HSP = heating set point temp. (deg.C)
+C CSP = cooling set point temp. (deg.C)
+C ALPHA = running mean response parameter (-)
+C CB = Comfort band
+      QHM=BMISCD(ICF,IDTYP,IPER,2)
+      QHN=BMISCD(ICF,IDTYP,IPER,3)
+      QCM=-BMISCD(ICF,IDTYP,IPER,4)
+      QCN=-BMISCD(ICF,IDTYP,IPER,5)
+      HSP=BMISCD(ICF,IDTYP,IPER,6)
+      CSP=BMISCD(ICF,IDTYP,IPER,7)
+      ALPHA=BMISCD(ICF,IDTYP,IPER,8)
+      CB=BMISCD(ICF,IDTYP,IPER,9)
+      
+C      TCTL=TNP
+      IHEAT=0
+      ICOOL=0
+      QFUT=0.
+      TFUT=TNP
+      pw=0.
+
+C Use setpoints as extreme limits at which controls become active
+**      IF(TCTL.LT.HSP)THEN
+**        IHEAT=1
+**        IHEATI=1
+**      ELSEIF(TCTL.GT.CSP)THEN
+**        ICOOL=1
+**        ICOOLI=1
+**      ENDIF
+
+C If temperature is within extreme limits then 
+C Calculate heating/cooling based on adaptive comfort algorithm
+C First calculate running mean temperature
+        COEFF=1.
+        TRM=0.
+        DO 245 I=1,MMD
+          ISUB=I-1
+          TRM=TRM+COEFF*PREVTEMP(MMD-ISUB)
+          COEFF=COEFF*ALPHA
+ 245    CONTINUE
+        TRM=(1.-ALPHA)*TRM
+
+C Calculate operative temperature of the zone (TOP). It is assumed that
+C the user has selected to sense mean radiant temperature in the sensor
+C details.
+        TOP=TCTL
+
+C Calculate comfort temperature TCOMF (based on the summer and winter behaviours)
+        IF(TRM.GE.10.)TCOMF=0.33*TRM+18.8
+        IF(TRM.LT.10.)TCOMF=0.09*TRM+22.6
+
+C Get random number
+        RN=RNOR()
+        RN=ABS(RN)
+        RN=1000.*RN
+        IRN=INT(RN)
+        RN=RN-REAL(IRN)
+
+C Calculate probability that control will be activated.
+        FUNC=0.171*TOP+0.166*TOUT-6.43
+        Pw=EXP(FUNC)/(1.+EXP(FUNC))
+        IF((TOP-TCOMF).GT.CB)THEN
+
+C Hot, so set on cooling
+          IF(Pw.GT.RN)ICOOL=1
+        ELSEIF((TOP-TCOMF).LT.(-1.*CB))THEN
+
+C Cold, so set on heating
+          IF(Pw.LT.RN)IHEAT=1
+        ELSE
+
+C Within 2degC comfort band so do nothing
+          IHEAT=0
+          ICOOL=0
+        ENDIF
+
+C Set on heating to within comfort band of comfort temperature
+C This is different from statically fixed setpoints!
+      IF(IHEAT.EQ.1)THEN
+**        Q=(BB3-BB1*HSP)/BB2
+        Q=(BB3-BB1*(TCOMF-CB))/BB2
+        IF(Q.LE.QHM.AND.Q.GE.QHN)GOTO 23
+        IF(Q.GT.QHM)GOTO 33
+        Q=QHN
+        GOTO 23
+   33   Q=QHM
+   23   TFUT=(BB3-BB2*Q)/BB1
+        QFUT=Q
+      ELSEIF(ICOOL.EQ.1)THEN
+
+C Set on cooling
+**        Q=(BB3-BB1*CSP)/BB2
+        Q=(BB3-BB1*(TCOMF+CB))/BB2
+        IF(Q.GE.QCM.AND.Q.LE.QCN)GOTO 22
+        IF(Q.LT.QCM)GOTO 55
+        Q=QCN
+        GOTO 22
+   55   Q=QCM
+   22   TFUT=(BB3-BB2*Q)/BB1
+        QFUT=Q
+      ENDIF
+
+C Debug
+C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
+
+      RETURN
+   99 write(outs,'(a)')' BCL24: data incomplete.'
+      if(dll)then
+        dllsubr='BCL24'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        call edisp(iuout,outs)
+        call epwait
+        call epagend
+        STOP
+      endif
+  999 H(1) = 'A data i/o error has occured in the program at BCL24'
+      H(2) = 'and it is probably best not to go on. '
+      H(3) = 'Program is taking one step back.'
+      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+      RETURN
       END
 
 C ******************** BCL99

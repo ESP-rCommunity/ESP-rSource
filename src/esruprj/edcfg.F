@@ -3271,6 +3271,7 @@ C selected an exemplar model.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"  ! for parameter MFFOLD
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -3583,10 +3584,10 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
           action='cfg'
           write(outs,*) 'models in folder ',subpath
           call edisp(iuout,outs)
-          call clearfilelist(listf,50)
+          call clearfilelist(listf,MFFOLD)
           call getfilelist(subpath,action,listf,nwlistf,nlistf)
-          call copyfilelist(listf,nwlistf,listfc,50,maxw)
-          call printfilelist(outs,'p',listfc,50,nlistf)
+          call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+          call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 
 C Try to use information gathered from file scan.
           if(nlistf.gt.0)then

@@ -230,8 +230,6 @@ C with save level 5.
 C Pressure distribution db.
   30    LTMP=LAPRES
         IAPRES=IFIL+1
-C        write(outs,'(2a)') 'Options for pressure distribution db: ',
-C     &    LTMP(1:lnblnk(LTMP))
         H(1)='To enable the calculation of wind-induced surface'
         H(2)='pressures (as required the simulator), this database'
         H(3)='of angle dependent pressure coefficients is provided.'
@@ -740,7 +738,7 @@ C Ask whether to scan it into the materials arrays or convert
 C to a binary file.
             CALL EASKABC(
      &        'Ascii version of Materials database found.',
-     &        'Options:','use',
+     &        'Options:','use it',
      &        'convert to a binary file','cancel',IW,5)
             if(iw.eq.1)then
               call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
@@ -980,7 +978,7 @@ C If db does not exist offer the following choices.
       H(26)='   platform dependant) to an ascii representation.'
       H(27)=' '
       H(28)='f) Import an ascii representation of the db and convert'
-      H(29)='   it to a binary representation.'
+      H(29)='   it to a binary representation (for legacy models).'
       H(30)=' '
       H(31)='g) Import an ascii representation of the db into memory,'
       H(32)='   view/modify it and then write out to an ascii'
@@ -3104,13 +3102,6 @@ C Create a minimal optics databases (code similar to edoptic.F).
         OPTKOK=.TRUE.
 
 C Scan the new file and use the editing facility.
-        if(lnblnk(LOPTDB).lt.100)then
-          write(outs,'(3a)') 'Optics db ',LOPTDB(1:lnblnk(LOPTDB)),
-     &     ' created.'
-        else
-          write(outs,'(3a)') 'Optics db ',LOPTDB(1:100),
-     &     '... created.'
-        endif
         dok=.true.
         h(1)='An empty optics database has been created. It is'
         h(2)='useless until it is populated with data. If you '
@@ -3380,10 +3371,12 @@ C from version manager
       SUBROUTINE EDDBCLM(moddb,APP,ISHD)
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile.
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/clmlst/cdblbl,cdblfil
+
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
@@ -3401,9 +3394,9 @@ C from version manager
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
-      CHARACTER*72 H,CDBLFIL,DFILE,LASCI,LTMP
+      CHARACTER*72 H,DFILE,LASCI,LTMP
       character longtfile*144,longtafile*144,message*48
-      CHARACTER CDBLBL*20,DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
+      CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*4,ext*4,llclmdb*144
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
@@ -3566,7 +3559,7 @@ C use a file browser to go looking for it.
         iuf=IFIL+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
-          call rdblist(IUF,cdblfil,LTMP,ier)
+          call rdblist(IUF,LTMP,ier)
           if(ier.eq.0)then
             if(LTMP(1:12).eq.'USER_DEFINED')then
               write(llclmdb,'(a)') 'newclim'

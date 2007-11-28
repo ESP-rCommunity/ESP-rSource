@@ -582,11 +582,12 @@ C      end
       return
       end
 
-
-      subroutine popupimage(head,topic,act,longtfile)
-      character*(*) head,topic,act,longtfile
-      return
-      end
+C Dummy subroutine for a function available in GTK for displaying images
+C in a pop-up window.
+C      subroutine popupimage(head,topic,act,longtfile)
+C      character*(*) head,topic,act,longtfile
+C      return
+C      end
 
       subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &            inuma, inumb,ixbul,iybul,ixblr,iyblr)

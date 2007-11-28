@@ -2710,6 +2710,32 @@ C          call edisp248(6,message,80)
           SSTR='Sensed temp setpts '
           cm(2)=bmiscd(II,JJ,KK,2)
           cm(3)=bmiscd(II,JJ,KK,3)
+          write(lmsg,'(2a,f9.2,a,f7.3)') 
+     &    ' Match sensed values (ideal:2 setpoints)',
+     &    ' heating setpt col. no. in tdf ',cm(2),
+     &    ' cooling setpt col. no. in tdf ',cm(3)
+          call SDELIM(lmsg,message,'S',IW)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.24)THEN
+          SSTR='Adaptive human comfort model'
+          msg1=' '
+          cm(1)=bmiscd(II,JJ,KK,1)
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          cm(8)=bmiscd(II,JJ,KK,8)
+          cm(9)=bmiscd(II,JJ,KK,9)
+          write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a
+     &    ,F7.2,a,F7.2)') 
+     &    msg1,' max heating capacity ',cm(2),
+     &    'W min heating capacity ',cm(3),'W max cooling capacity ',
+     &    cm(4),'W min cooling capacity ',cm(5),
+     &    'W. Heating setpoint ',cm(6),'C cooling setpoint ',
+     &    cm(7),' Running mean response parameter ',CM(8),
+     &    ' Comfort band (default is 2) ',CM(9)
+          call SDELIM(lmsg,message,'S',IW)
         ELSEIF(IBSN(II,1).EQ.-99)then
           SSTR='control law not used'
           message='type -99 control law not used'
@@ -2857,6 +2883,16 @@ C Append the sensor msg to the end of lmsg and increment lx position.
 C Tell the user about the multi sensor data.
           call SDELIM(lmsg,message,'S',IW)
 C          call edisp248(6,message,80)
+
+C Nicol Occupant resopnse model for control
+        elseif(IFCLAW(II,JJ,KK).EQ.4)then
+          SSTR='Nicol alg version 1.0 '
+          cm(2)=fmiscd(II,JJ,KK,2)
+	  iPGT=ifsn(ii,3)
+          write(lmsg,'(2A,F4.2,2A)')SSTR,
+     &    'with running mean response parameter of ',cm(2),
+     &    ' measuring operative temp of node ',NDNAM(iPGT)
+          call SDELIM(lmsg,message,'S',IW)
         endif
         return
       endif
@@ -3283,6 +3319,9 @@ C Flow Sensor.
           ELSEIF(icsn(2).EQ.6)THEN
             SSTR='senses ext rel hum.'
             SSTRB='senses ext RH.'
+          ELSEIF(ICSN(2).EQ.7)THEN
+            SSTR='senses temp for adaptive behaviour model'
+            SSTRB='senses T_op & T_out for ABM'
           ENDIF
         ELSEIF(icsn(1).EQ.-4)THEN
 
@@ -3468,7 +3507,7 @@ C Check to see if sensed node exists
       goto 9
 
 C Sensor located externally.
-    7 if(isn2.lt.0.or.isn2.gt.6)goto 1002
+    7 if(isn2.lt.0.or.isn2.gt.7)goto 1002
       goto 9
 
 C Sensor in the zone to which it is assigned.

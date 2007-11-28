@@ -1849,41 +1849,41 @@ C edited to a thick line if currently in graphics mode.
         goto 72
       endif
 
+C Remind use of parent surface length and height (bounding box).
+      CALL SURLEHI(IS,XYMAX,ZMAX)
+      Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+     &  XYMAX,' m, and height = ',ZMAX,' m.'
+      call edisp(itru,outs)
+
 C Insert within surface or at bottom edge (as in a door).
-C First detect the orientation of the surface, if vertical
-C then offer option of insertion as percentage.
-      if(SVFC(IS)(1:4).eq.'VERT'.OR.SVFC(IS)(1:4).eq.'SLOP')then
-        h(1)='If insertion is within the surface you will be asked for'
-        h(2)='an X Y offset from the lower left corner (when viewed '
-        h(3)='from the outside) and a width and height. '
-        h(4)=' '
-        h(5)='If insertion is at the base of the surface you will be '
-        h(6)='asked for an X offset from the left edge of the surface '
-        h(7)='as well as a width and a height. '
-        h(8)=' '
-        H(9)='The percentage of facade supports the insertion of'
-        H(10)='an opening (window) into a surface as a percentage of'
-        H(11)='the facade area.'
-        H(12)='Openings will be inserted at the centre of the'
-        H(13)='surface.'
-        H(14)='NOTE: The function can only be applied for rectangular'
-        H(15)='and vertical surfaces.'
-        CALL EASKABCD(' Insert rectangular surface:','(see help)',
-     &    'within surface','at base','percentage of facade ','continue',
-     &    IRT,15)
-        if(IRT.eq.4)return
-      else
-        h(1)='If insertion is within the surface you will be asked for'
-        h(2)='an X Y offset from the lower left corner (when viewed '
-        h(3)='from the outside) and a width and height. '
-        h(4)=' '
-        h(5)='If insertion is at the base of the surface you will be '
-        h(6)='asked for an X offset from the left edge of the surface '
-        h(7)='as well as a width and a height. '
-        CALL EASKABC(' Insert rectangular surface:',' ',
-     &   'within surface','at base','continue',IRT,7)
-        if(IRT.eq.3)return
-      endif
+      H(1)='When adding a rectangular opening (e.g. a window or'
+      H(2)='door) to a surface you specify its position within'
+      H(3)='the parent surface. For a window, this is an X Y'
+      H(4)='distance from the lower left hand corner of the parent'
+      H(5)='surface (when looking at the outside face of the parent'
+      H(5)='surface) to the lower left hand corner of the opening.'
+      H(6)='The opening will be the specified width and height.'
+      H(7)=' '
+      H(8)='More complex shaped openings might begin as a rectangle'
+      H(9)='and then be modified via a combination of adding more'
+      H(10)='vertices and using the surface list & edges menu to'
+      H(11)='link them into the child and parent surfaces.'
+      H(12)=' '
+      H(13)='For a door the position is given as a single distance'
+      H(14)='from the left edge of the parent surface (when looking '
+      H(15)='at the outside face) and a width and height.'
+      H(16)=' '
+      H(17)='The percentage of facade supports the insertion of'
+      H(18)='an opening (window) into a surface as a percentage of'
+      H(19)='the facade area.'
+      H(20)='Openings will be inserted at the centre of the'
+      H(21)='surface.'
+      H(22)='NOTE: The function can only be applied for rectangular'
+      H(23)='and vertical surfaces.'
+      CALL EASKABCD(' Insert rectangular surface:','(see help)',
+     &  'within surface','at base','percentage of parent surface',
+     &  'continue',IRT,23)
+      if(IRT.eq.4)return
       if(IRT.eq.1)then
 
 C In order to insert within a surface, check first that
@@ -1945,16 +1945,17 @@ C edited to a thick line if currently in graphics mode.
 
   43  if(IRT.eq.1)then
         H(1)='The X offset is the distance from the lower left '
-        H(2)='corner of the existing surface (looking from the  '
-        H(3)='outside) to the left side of the new surface. '
+        H(2)='corner of the parent surface (looking at the  '
+        H(3)='outside face) to the left side of the new surface.'
         H(4)=' '
-        H(5)='The Z offset is the distance from the lower left '
-        H(6)='corner of the existing surface (looking from the '
-        H(7)='outside) to the bottom of the new surface. '
+        H(5)='The Z offset is the distance from the bottom  '
+        H(6)='edge of the parent surface (looking at the '
+        H(7)='outside face) to the bottom of the new surface.'
         H(8)=' '
         H(9)='The opening width and height are in metres. '
         write(hold,'(4f8.3,a)') XO,ZO,XW,ZH,'  '
-        CALL EASKS(hold,'Insert: X offset, Z offset, Width, Height:',
+        CALL EASKS(hold,
+     &    'Insert: X offset, Z offset, Width, Height: (see help)',
      &    ' ',36,' 0.1 0.1 1.0 1.0','Xoff Zoff width height',IER,9)
         K=0
         CALL EGETWR(HOLD,K,XO,0.0,99.,'W','X offset',IER)
@@ -1962,13 +1963,14 @@ C edited to a thick line if currently in graphics mode.
         CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
         CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
       elseif (IRT.eq.2)then
-        H(1)='The X offset is the distance from the lower left '
-        H(2)='corner of the existing surface (looking from the  '
-        H(3)='outside) to the left side of the new surface. '
+        H(1)='The X offset is the distance from the left edge'
+        H(2)='of the parent surface (looking at the outside '
+        H(3)='face) to the left side of the new surface. '
         H(4)=' '
         H(5)='The opening width and height are in metres. '
         write(hold,'(3f8.3,a)') XO,XW,ZH,'  '
-        CALL EASKS(hold,'Insert: X offset, Width, Height (m):',
+        CALL EASKS(hold,
+     &    'Insert: X offset, Width, Height (m): (see help)',
      &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,5)
         K=0
         CALL EGETWR(HOLD,K,XO,0.0,99.,'W','X offset',IER)
@@ -1979,20 +1981,20 @@ C edited to a thick line if currently in graphics mode.
 C Ask for percentage.
         hold=' '
         H(1)='Define the surface area of the opening as a percentage'
-        H(2)='value of the existing surface (e.g. 40%).'
+        H(2)='value of the parent surface (e.g. 40%).'
         H(3)='The new surface will be located in the centre of the'
-        H(4)='existing surface.'
-        CALL EASKR(PERC,'Surface percentage of existing surface.',
-     &    ' ',0.,'F',99.,'F',15.0,'Facade percentage',IER,4)
+        H(4)='parent surface.'
+        CALL EASKR(PERC,'Percentage of parent surface.',
+     &    ' ',0.,'F',99.,'F',15.0,'parent percentage',IER,4)
 
-C Determine surface length and height (bounding box).
+C Determine parent surface length and height (bounding box).
         CALL SURLEHI(IS,XYMAX,ZMAX)
-        Write(outs,'(a,f6.3,a,f6.3,a)') 'Surface lenght = ',XYMAX,
-     &      ' m, surface height = ',ZMAX,' m.'
+        Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+     &    XYMAX,' m, surface height = ',ZMAX,' m.'
         call edisp(itru,outs)
 
 C Determine opening width, height, X offset and z offset.
-C << NOTE: this logic assumes a rectangular partent surface >>
+C << NOTE: this logic assumes a rectangular parent surface >>
 C << and the area will not be correct for other surface shapes. >>
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
@@ -2056,6 +2058,7 @@ C Complete rec.
    32   CONTINUE
 
 C Confirm opening.
+        call forceflush()  ! ensure opening is drawn
         dok=.true.
         h(1)='If the location appears to be correct in the preview'
         h(2)='you can accept it by saying yes. If you are in doubt'

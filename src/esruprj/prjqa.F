@@ -134,7 +134,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
-      common/clmlst/cdblbl,cdblfil
       common/IPVF/lipvdatf
 
 C  ipvtitl = main title of IPV
@@ -219,7 +218,7 @@ C Remember if each zone is fully attributed.
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
-      character cdblbl*20,cdblfil*72,LAIM2*72
+      character LAIM2*72
 
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -1035,7 +1034,7 @@ C the climate file and attempt to print out IPV contents.
               INQUIRE (FILE=cdblfil,EXIST=XST)
               if(XST)then
                 IUF=IFIL+2
-                call scancdblist(IUF,cdblfil,LCLIM,ok,iercl)
+                call scancdblist(IUF,LCLIM,ok,iercl)
                 if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else

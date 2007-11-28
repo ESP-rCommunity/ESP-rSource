@@ -27,7 +27,10 @@ C  parsepar variants: Parse command lines.
 C ******************** scesprc 
 C scesprc scans the ESP-r dot file which should be located in the
 C users home folder.  If not found then some defaults are set.
-      SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)
+      SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER) 
+C Use espriou.h for climatelist file name.
+#include "espriou.h" 
+
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
 
@@ -74,18 +77,12 @@ C Graphic capture, window dump & text print: label, command.
       common/gxwd/gxwdlbl,gxwdcmd
       common/tprint/tprlbl,tprcmd
 
-C Where exemplars list and default db list are kept.
-      common/exemlst/exemlbl,exemfl
-      common/defdb/dfdblbl,defdbfl
-
 C Where validation tests are kept.
       common/vldlst/vldlbl,vldfl
 
-C Where list of climate files is held.
-      common/clmlst/cdblbl,cdblfil
       logical localdot,unixok,dll
 
-      CHARACTER OUTSTR*124,WORD*20,LFDEF*72,outs*124
+      CHARACTER OUTSTR*124,WORD*20,LFDEF*72,outs*124,outs248*248
       character fmttag*4,fmtexe*20,cadlbl*20,cadexe*20,cadfmt*4
       character replbl*20,repexe*20
       character gprlbl*20,gprcmd*48
@@ -97,10 +94,7 @@ C Where list of climate files is held.
       character grflbl*20,grfexe*48
       character foldlbl*20,foldexe*48
       character tutlbl*20,tutexe*96
-      character exemlbl*20,exemfl*72
       character vldlbl*20,vldfl*72 
-      character dfdblbl*20,defdbfl*72
-      character cdblbl*20,cdblfil*72
       character journcmd*20,jfile*72
       character altdot*72
       character upath*72
@@ -181,14 +175,11 @@ C Set defaults and exemplars depending on whether Unix or NT.
         write(exemfl,'(2a)') instpath(1:ln),'/training/exemplars'
         dfdblbl='Standard defaults'
         write(defdbfl,'(2a)') instpath(1:ln),'/default'
-C        defdbfl='/usr/esru/esp-r/default'
         vldlbl='Validation standards'
         write(vldfl,'(2a)') instpath(1:ln),'/validation/stds_list'
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
-C        cdblfil='/usr/esru/esp-r/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
-C        altdot='/usr/esru/esp-r/esprc'
       else
         write(gxwdcmd,'(a)')'xwud -out c:/temp/gxwd.xwd'
         tprlbl='Text dump'
@@ -338,14 +329,14 @@ C Turn journaling on/off.
         if(itrc.gt.0)call edisp(iuout,outs)
       elseif(WORD(1:10).eq.'*exemplars')then
         CALL EGETP(OUTSTR,K,exemlbl,'W','exemplars list lbl',IER)
-        CALL EGETP(OUTSTR,K,exemfl,'W','exemplars file',IER)
-        write(outs,'(4a)')' Exemplars: ',exemlbl,' in ',exemfl
-        if(itrc.gt.0)call edisp(iuout,outs)
+        CALL EGETRM(OUTSTR,K,exemfl,'W','exemplars file',IER)
+        write(outs248,'(4a)')' Exemplars: ',exemlbl,' in ',exemfl
+        if(itrc.gt.0)call edisp248(iuout,outs248,100)
       elseif(WORD(1:12).eq.'*db_defaults')then
         CALL EGETP(OUTSTR,K,dfdblbl,'W','def db list lbl',IER)
-        CALL EGETP(OUTSTR,K,defdbfl,'W','def db file',IER)
-        write(outs,'(4a)')' Default: ',dfdblbl,' in ',defdbfl
-        if(itrc.gt.0)call edisp(iuout,outs)
+        CALL EGETRM(OUTSTR,K,defdbfl,'W','def db file',IER)
+        write(outs248,'(4a)')' Default: ',dfdblbl,' in ',defdbfl
+        if(itrc.gt.0)call edisp248(iuout,outs248,100)
       elseif(WORD(1:16).eq.'*validation_stds')then
         CALL EGETP(OUTSTR,K,vldlbl,'W','validation list lbl',IER)
         CALL EGETP(OUTSTR,K,vldfl,'W','validation stds file',IER)
@@ -353,9 +344,9 @@ C Turn journaling on/off.
         if(itrc.gt.0)call edisp(iuout,outs)
       elseif(WORD(1:12).eq.'*db_climates')then
         CALL EGETP(OUTSTR,K,cdblbl,'W','clm db list lbl',IER)
-        CALL EGETP(OUTSTR,K,cdblfil,'W','clm db list file',IER)
-        write(outs,'(4a)')' Climate list: ',cdblbl,' in ',cdblfil
-        if(itrc.gt.0)call edisp(iuout,outs)
+        CALL EGETRM(OUTSTR,K,cdblfil,'W','clm db list file',IER)
+        write(outs248,'(4a)')' Climate list: ',cdblbl,' in ',cdblfil
+        if(itrc.gt.0)call edisp248(iuout,outs248,100)
       elseif(WORD(1:11).eq.'*report_gen')then
         CALL EGETP(OUTSTR,K,replbl,'W','report gen lbl',IER)
         CALL EGETP(OUTSTR,K,repexe,'W','report gen exe',IER)
@@ -393,18 +384,20 @@ C the default file and genereic database names via common block.
 C It uses espinstalldir.h which was created by the Install
 C script with the current esp-r install directory held
 C in a string instpath.
-      SUBROUTINE ESCGDEF(dfdblbl,defdbfl,IFDEF,IER)
+      SUBROUTINE ESCGDEF(IFDEF,IER)
 #include "esprdbfile.h"
+C Use espriou.h for climatelist file name and defdbfl.
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
-      CHARACTER OUTSTR*124,WORD*20,outs*124
+      CHARACTER OUTSTR*124,WORD*20,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-      character dfdblbl*20,defdbfl*72,dinstpath*48,di*48
+      character dinstpath*48,di*48
       logical unixok,dll
 #include "espinstalldir.h"
 
@@ -492,9 +485,9 @@ C Open the defaults file, return if not found.
       IER=0
       CALL EFOPSEQ(IFDEF,defdbfl,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
+        write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
      &   ' was not found (assuming standard databases).'
-        call edisp(IUOUT,outs)
+        call edisp248(IUOUT,outs248,100)
         IER=1
         RETURN
       ENDIF
@@ -502,9 +495,9 @@ C Open the defaults file, return if not found.
 C Read '*ESP-r Defaults' tag.
       CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'default tag',IER)
       if(OUTSTR(1:15).ne.'*ESP-r Defaults')then
-        write(outs,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
+        write(outs248,'(3a)') 'The file ',defdbfl(1:lnblnk(defdbfl)),
      &   ' is not a defaults file.'
-        call edisp(IUOUT,outs)
+        call edisp248(IUOUT,outs248,100)
         IER=1
         RETURN
       endif
@@ -569,9 +562,9 @@ C If '*ESP-r Defaults' found then read db until '*end' found.
       endif
 
       if(ier.ne.0)then
-        write(outs,'(3a)') 'Problem detected in ',
+        write(outs248,'(3a)') 'Problem detected in ',
      &    defdbfl(:lnblnk(defdbfl)),' while reading...'
-        CALL EDISP(IUOUT,outs)
+        CALL EDISP248(IUOUT,outs248,100)
         CALL EDISP(IUOUT,outstr)
         goto 45
       endif

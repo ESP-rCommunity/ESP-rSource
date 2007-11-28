@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -842,6 +842,15 @@ C Pull up a multi-choice dialog to see what should be edited.
           goto 92
         elseif(ISW.eq.1)then
 
+C Do not edit sensor information if Nicol control algorithm
+          IF(IFSN(II,2).EQ.7)THEN
+            CALL USRMSG(
+     &      'Sensor not required for behavioural control model',
+     &      ' ','W')
+            NCA=1
+          ENDIF
+          IF(NCA.EQ.1)GOTO 64
+
 C Edit sensor location. 
           CALL EPMENSV
           if(icfoc.eq.0)then
@@ -1159,7 +1168,7 @@ C Plant common required for building/plant flux linkage
       common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
 
-      DIMENSION SALT(23),IVALS(23)
+      DIMENSION SALT(24),IVALS(24)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
@@ -1319,7 +1328,8 @@ C law can be jumped around.
         if((iclaw.ge.1.and.iclaw.lt.6).or.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
-     &      iclaw.eq.21.or.iclaw.eq.22)then
+     &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.
+     &      or.iclaw.eq.24)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1366,6 +1376,7 @@ C starting up the menu based control period definition.
         SALT(21)='Slave capacity control                 '
         SALT(22)='VAV cooling with CAV reheat            '
         SALT(23)='Match sensed values (ideal:2 setpoints)'
+        SALT(24)='Adaptive human comfort model           '
         if(iclaw.ne.0)then
           write(outs,'(a,a)') 'Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
@@ -1434,7 +1445,7 @@ C starting up the menu based control period definition.
         H(59)='control law 11 where values from the temporal file'
         H(60)='are taken to set the setpoints for heating and cooling'
   63    CALL EPICKS(IX,IVALS,' ','Control law:',
-     &    40,23,SALT,'control law (indented=old or obscure)',IER,60)
+     &    40,24,SALT,'control law (indented=old or obscure)',IER,60)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -2497,21 +2508,40 @@ C Slave Capacity Controller or VAV controller.
 C Read setpoints from temporal file. This control law was developed for
 C the UK NCM and takes in setpoints from tdf data and is based on the
 C logic on control law 1
-          H(1)='This control law sets the setpoints based on heating'
-          H(2)='and cooling temperatures as read from a temporal file'
-          H(3)='defined in the model context > impose measured data'
-          H(4)='section of the project manager interface. Any amount'
-          H(5)='of heating and cooling is added so that the setpoints'
-          H(6)='are met.'
-          HOLD='  8   9  '
-          CALL EASKS(HOLD,'Column number in tdf file for heating ',
-     &    'and cooling setpoints',40,'8 9','column # ',IER,6)   
-          cm(1)=2.
-          K=0
-          CALL EGETWI(HOLD,K,IH,1,20,'F','htg column no.',IER)
-          CALL EGETWI(HOLD,K,IC,1,20,'F','cool column no.',IER)
-          cm(2)=real(IH)
-          cm(3)=real(IC)
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
+          endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawT=ier
+            goto 77
+          endif
+          goto 92
+        elseif(IBCLAW(II,JJ,KK).eq.24)then  
+
+C Adaptive human comfort model. (Same algorithm as used within the flow
+C domain therefore refer to same reference publication)
+          nper=NBCDP(II,JJ)
+          loopdaytype=nbcdt(II)
+          if(KK.GT.1)then
+            prevstart=TBCPS(II,JJ,KK-1)
+          else
+            prevstart=0.0
+          endif
+          call editctlperiod(' Zone control period data',
+     &      icfoc,II,JJ,KK,nper,loopdaytype,prevstart,'-',ier)
+          if(ier.gt.1)then
+            useold=.true.
+            iclawT=ier
+            goto 77
+          endif
+          goto 92
         else
 
 C The fall-through (none of the above) control edit.
@@ -3388,16 +3418,18 @@ C Edit flow control function II.
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
+      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
+      DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
-
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1,NDNAM*12
       character outsa*84,outsb*84,outsc*84,hold*42,LTMP*248
+      character prmpt1*72,prmpt2*72
 
 C Portions of multi-sensor feedback message.
       character msg1*24,msg2*24,msg3*24,msg4*24
-      logical close1
+      logical close1,OK,DOK
 
 C Number of functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -3409,14 +3441,14 @@ C Control day types.
 C Initialise menu size variables based on windows size.
 C IVERT is the menu position, MVERT the current
 C number of menu lines.
-      MHEAD=5
+ 92   MHEAD=5
       MCTL=4
       ILEN=NFCDP(II,JJ)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
-   92 IER=0
+      IER=0
       IVERT=-3
       WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
       WRITE(vert(2),'(a,i3)')     ' number of periods:',NFCDP(II,JJ)
@@ -3554,8 +3586,9 @@ C What is the equivalent for flow.....
         call MENUATOL(outs,' Available laws','a on/off',
      &   'b proportional with hysteresis',
      &   'c range based (for 30 35 40 110 130)',
-     &   'd multi-sensor on/off',' ',' ',' ',' ',' ',' ',' ',' ',
-     &   ino,idno,5)
+     &   'd multi-sensor on/off',
+     &   'e human behaviour algorithm ver 1.0',' ',' ',' ',' ',' ',' '
+     &   ,' ',ino,idno,5)
         if(ino.eq.0)then
           continue
         elseif(ilno.ne.ino)then
@@ -3684,7 +3717,7 @@ C Miscellaneous data for multi sensor flow controller.
           H(7)= '    1 item for the set point temperature'
           H(8)= '    1 item for action flag (1=direct, -1=inverse)'
           H(9)= '    1 item for fraction ON (currently not implemented)'
-          H(10)='    1 item for logical action (AND/OR)'
+          H(10)='    1 item for logical action (AND/OR/NOT)'
           H(11)='  The connection/component will CHANGE from'
           H(12)='  the default position when the sensed value'
           H(13)='  is above the set-point. In case the inverse'
@@ -3708,49 +3741,61 @@ C Miscellaneous data for multi sensor flow controller.
           H(31)='will be sensor1 AND sensor2 OR sensor3 '
           H(32)='Note that logical action of sensor3 is irrelevant'
           H(33)=' '
-          H(34)='The sensor details are essentially the same as '
-          H(35)='required in a control point sensor ie. '
-          H(36)=' 1st item >0 is a zone and or surface, =0 any zone,'
-          H(37)='   = -1 measuring a plant component node,'
-          H(38)='   = -2 measuring mix air:radiant,'
-          H(39)='   = -3 ambient where the 2nd item is:'
-          H(40)='      0 = db,       2 = wind velocity, '
-          H(41)='      3 = wind dir, 4 = diffuse radiation, '
-          H(42)='      5 = direc norm rad, 6 = RH'
-          H(43)='   = -4 measuring a flow side condition.'
-          H(44)=' '
-          H(45)='Currently only option -3 and -4 are supported and'
-          H(46)='only node temperature is supported for option -4'
-          H(47)='Therefore the four items for sensor location are'
-          H(48)='-3 ? 0 0 where ?=0 or 2 to 6 depending upon climate'
-          H(49)='variable. OR. -4 ? 0 0 where ?= node number to'
-          H(50)='be sensed.'
-          H(51)=' '
+          H(34)='If the NOT option is selected the output of this  '
+          H(35)='control loop will be inverse of the flow connection'
+          H(36)='defined. Any controls on this flow connection must be'
+          H(37)='defined before the NOT loop (i.e. this loop) '
+          H(38)=' '
+          H(39)='The sensor details are essentially the same as '
+          H(40)='required in a control point sensor ie. '
+          H(41)=' 1st item >0 is a zone and or surface, =0 any zone,'
+          H(42)='   = -1 measuring a plant component node,'
+          H(43)='   = -2 measuring mix air:radiant,'
+          H(44)='   = -3 ambient where the 2nd item is:'
+          H(45)='      0 = db,       2 = wind velocity, '
+          H(46)='      3 = wind dir, 4 = diffuse radiation, '
+          H(47)='      5 = direc norm rad, 6 = RH'
+          H(48)='   = -4 measuring a flow side condition.'
+          H(49)=' '
+          H(50)='Currently only option -3 and -4 are supported and'
+          H(51)='only node temperature is supported for option -4'
+          H(52)='Therefore the four items for sensor location are'
+          H(53)='-3 ? 0 0 where ?=0 or 2 to 6 depending upon climate'
+          H(54)='variable. OR. -4 ? 0 0 where ?= node number to'
+          H(55)='be sensed.'
+          H(56)=' '
 
 C<< To include feed back to text feedback area using USRMSG
+          WRITE(OUTS,'(A,I4,A)')'number of sensors (max ',MSEN,' )?' 
+          NSEN=INT(CM(3))
+          CALL EASKI(NSEN,' ',OUTS,
+     &      0,'F',MSEN,'-',1,'no of sensors',IERI,56)
+          if(ieri.eq.-3) goto 56
+          if(ieri.ne.0)goto 56
+          cm(3)=real(NSEN)
+          call edisp(iuout,' Ideal multi-sensor controller:')
+          cm(1)=2.+8.*NSEN
+          OK=.true.
+          IF(NSEN.EQ.1)then
+            CALL ASKOK('You have chosen one sensor for multi-sensing',
+     &        '(not a good idea). Is `one sensor` correct?',OK,
+     &        dok,56)
+          endif
+          IF(.NOT.OK)THEN
+            GOTO 56
+          ENDIF
+          IF(NSEN.EQ.1)GOTO 69
+ 
 C Default position: 1=open,0=closed
-          CALL EASKAB('Default position? ',' ','closed','open',IW,51)
+          CALL EASKAB('Default position? ',' ','closed','open',IW,56)
           cm(2)=IW-1
 
-          WRITE(OUTS,'(A,I4,A)')'number of sensors (max ',MSEN,' )?' 
-          HOLD='   2'
-          CALL EASKS(HOLD,OUTS,' ',42,' 1.  2. ',
-     &    ' flow multi sensor on/off',IER,51)
-          K=0
-          CALL EGETWI(HOLD,K,INPUT,0,MSEN,'F','no of sensors',IER)
-          cm(3)=INPUT
-          if(ier.ne.0)goto 56
- 
-          call edisp(iuout,' Ideal multi-sensor controller:')
-          NSEN=NINT(cm(3))
-          cm(1)=2.+8.*NSEN
- 
 C Auxiliary sensor details,
           DO 358 ISEN=1,NSEN
             ndx=4+8*(ISEN-1)
             WRITE(OUTS,'(A,I3)')'What to sense for sensor number ',ISEN
             CALL EASKAB(OUTS,' ','Climate variable','Node temperature'
-     &      ,IW,51)
+     &      ,IW,56)
             IF(IW.EQ.1)THEN
               CM(NDX)=-3.
               idno=1
@@ -3758,7 +3803,7 @@ C Auxiliary sensor details,
      &        'b wind speed','c wind direction',
      &        'd diffuse radiation','e direct radiation ',
      &        'e relative humidity ',' ',' ',' ',' ',' ',' ',
-     &        ino,idno,51)
+     &        ino,idno,56)
               IF(INO.EQ.1)THEN
                 CM(NDX+1)=0
                 msg1=' senses ambient T'
@@ -3787,10 +3832,10 @@ C Auxiliary sensor details,
             CM(NDX+2)=0
             CM(NDX+3)=0
             CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
-     &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,51)
+     &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,56)
             write(msg2,'(a,f5.2)') ' setpoint ',cm(ndx+4)
  57         CALL EASKR(cm(ndx+5),' ',' Aux sensor inverse action ? ',
-     &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,51)
+     &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,56)
             if(int(cm(ndx+5)).eq.0)goto 57
             if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'
             if(int(cm(ndx+5)).eq.1) msg3=' direct action'
@@ -3799,16 +3844,20 @@ C<< To implement "fraction on" in a sensible way (setting it to diffent)
 C values for different sensors may cause ambiguity if differnet sensors
 C require a connection to open to different fractions
 C            CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
-C     &        0.,'F',1.,'F',1.,' Aux sensor set-point',IER,51)
+C     &        0.,'F',1.,'F',1.,' Aux sensor set-point',IER,56)
             cm(ndx+6)=0.
-            IF(ISEN.NE.NSEN)CALL EASKAB('Logical action variable',
-     &      'with next sensor','AND','OR',iad,51)
+            IF(ISEN.LT.NSEN.OR.ISEN.EQ.1)
+     &      CALL EASKABC('Logical action variable',
+     &      'with next sensor','AND','OR','NOT',iad,56)
             IF(IAD.EQ.1)THEN
               CM(NDX+7)=1.
               msg4=' AND'
             ELSEIF(IAD.EQ.2)THEN
               CM(NDX+7)=2.
               msg4=' OR'
+            ELSEIF(IAD.EQ.3)THEN
+              CM(NDX+7)=3.
+              msg4=' NOT'
             ENDIF
 
 C Echo back to the user what they just put in.
@@ -3817,9 +3866,85 @@ C Echo back to the user what they just put in.
      &        msg3(1:lnblnk(msg3)),msg4(1:lnblnk(msg4))
             call edisp(iuout,outs)
  358      CONTINUE
+          GOTO 70
  
+C For the NOT option allow to read in sensed flow connection
+  69      INODE=0
+          NNPK=1
+          prmpt1='Choose connection'
+          prmpt2=' '
+          CALL ASKMFCON(INODE,NNPK,ICPK,prmpt1,prmpt2)
+          cm(6)=real(icpk(1))
+
+C Adaptive behavioural model as detailed in Comfort Driven Adaptive
+C Window Opening Behaviour and the Influence of Building Design. Tuohy,
+C P., Rijal, H. B., Humphreys, M. A., Nicol, J. F., Samuel, A. A.,
+C Clarke, J. A. Proc. BS 2007. 10th IBPSA Conference and Exhibition.
+        elseif(iclaw.eq.4)then
+
+C cm(1)=13 for version 2
+          cm(1)=1
+          H(1)='The windowfan algorithm models occupant behaviour'
+          H(2)='and operates windows and fans based on mean operative'
+          H(3)='and outdoor mean temperatures automatically.'
+          H(4)='Users need to input the running mean response'
+          H(5)='parameter to outside temperature for the building'
+          H(6)='which is a constant from 0-0.99 (Default value 0.8)'
+          H(7)='The operative (resultant=0.5mean radiant + 0.5dry bulb)'
+          H(8)='temperature is required for this algorithm. User has '
+          H(9)='to specify internal node to be used to calculate this'
+          cm(2)=0.8
+          CALL EASKR(cm(2),' ',' Running mean response parameter ? ',
+     &    0.,'F',0.99,'F',0.8,'Running mean response parameter',IER,9)
+
+C Uncomment following code for version 2 of algorithm
+**          CALL EASKR(cm(3),'  ','Fraction window openable in day ? ',
+**     &    0.,'F',1.0,'F',1.0,' Wposs',IER,9)
+**          CALL EASKR(cm(4),' ','Fraction fan available for day use?',
+**     &    0.,'F',1.0,'F',1.0,' Fposs',IER,9)
+**          CALL EASKR(cm(5),' ','Fraction window openable in night ? ',
+**     &    0.,'F',1.0,'F',1.0,' WNposs',IER,9)
+**          CALL EASKR(cm(6),' ','Fraction AC available for day use?',
+**     &    0.,'F',1.0,'F',1.0,' ACavail',IER,9)
+**          CALL EASKR(cm(7),' ','Fraction heating available ?',
+**     &    0.,'F',1.0,'F',1.0,' Havail',IER,9)
+**          CALL EASKR(cm(8),' ','Fraction daylight available?',
+**     &    0.,'F',1.0,'F',1.0,' DLposs',IER,9)
+**          CALL EASKR(cm(9),' ','Power rating of the fan W/m2?',
+**     &    0.,'F',100.,'F',10.0,' PWRfan',IER,9)
+**          CALL EASKR(cm(10),' ','Power rating of the lights W/m2?',
+**     &    0.,'F',100.,'F',10.0,' PWRlight',IER,9)
+**          CALL EASKR(cm(11),' ','Fan comfort temperature adjustment?',
+**     &    0.,'F',4.0,'F',2.0,' DTfan',IER,9)
+**          CALL EASKR(cm(12),' ','Deadband for window open?',
+**     &    0.,'F',8.0,'F',4.0,' WD',IER,9)
+**          CALL EASKR(cm(13),' ','Deadband for fan on?',
+**     &    0.,'F',8.0,'F',2.0,' FD',IER,9)
+**          CALL EASKR(cm(14),' ','Air intake surface ID?',
+**     &    0.,'F',20.,'F',1.0,' AIsurf',IER,9)
+
+C Ask for node associated with operative temperature
+          prmpt1='Which node is to be used to represent the '
+          prmpt2='operative temperature?'
+          call edisp(iuout,prmpt1)
+          call edisp(iuout,prmpt2)
+          INOPT=1
+          NNPK=1
+ 545      call ASKMFNOD(INOPT,NNPK,INPK,prmpt1,prmpt2,9)
+          IIN=0
+          IF(NDTYP(INPK(1)).GT.2)THEN
+            H(1)='Operative node must be inside a zone'
+            H(2)='Select an internal node'
+            IIN=1
+            CALL PHELPD('node selection help',2,'-',0,0,IER)
+          ENDIF
+          IF(IIN.EQ.1)GOTO 545
+          IFSN(II,1)=-3
+          IFSN(II,2)=7
+          IFSN(II,3)=INPK(1)
+
 C Miscellaneous data for additional flow controllers should follow here.
-        endif
+  70    endif
 
 C Extract from working array to fmiscd() common structure
         call extrctl(2,II,JJ,KK)
@@ -5197,7 +5322,7 @@ C   for control law one.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
-      DIMENSION VERT(35),SALT(23),IVALS(23)
+      DIMENSION VERT(35),SALT(24),IVALS(24)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
       integer ivals              ! for return of selection array.
@@ -5436,6 +5561,7 @@ C control law to trap changes.
           SALT(21)='Slave Capacity Controller              '
           SALT(22)='VAV cooling with CAV reheat (BETA)     '
           SALT(23)='Match sensed values (ideal:2 setpoints)'
+          SALT(24)='Adaptive human comfort model           '
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -5507,7 +5633,7 @@ C Re-instanciate help specifically for summary of control laws.
           H(59)='Values from the temporal file are taken to set setpnts'
           H(60)='Further details within each control law interface. '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,23,SALT,'control law (indented=old or obscure)',IER,60)
+     &      42,24,SALT,'control law (indented=old or obscure)',IER,60)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -5713,10 +5839,21 @@ C new controller for tdf
 C At the moment it does what the control law 11 does
             elseif(iclaw.eq.23)then
               cmlocal(1)=2.0    
-              cmlocal(2)=8.0    
-              cmlocal(3)=9.0
+              cmlocal(2)=5.0    
+              cmlocal(3)=6.0
               ier=23
-              return
+              goto 90
+            elseif(iclaw.eq.24)then
+              cmlocal(1)=8.0     
+              cmlocal(2)=1000.0  
+              cmlocal(3)=0.0
+              cmlocal(4)=1000.0
+              cmlocal(5)=0.0
+              cmlocal(6)=20.0
+              cmlocal(7)=24.0
+              cmlocal(8)=0.8
+              cmlocal(9)=2.0
+              goto 90
             else
 
             endif
@@ -5999,6 +6136,10 @@ C it points to the same zone as is used by the master controller.
             endif
           elseif(iclaw.eq.22)then
             continue    ! no postprocessing (yet)
+          elseif(iclaw.eq.23)then
+            modval=.true.
+          elseif(iclaw.eq.24)then
+            modval=.true.
           else
 
 C << other control laws where processing is required... >>
@@ -6048,6 +6189,10 @@ C   for control law one.
       character menu*32,prompt1*72,prompt2*72,h*72
 
       if(icfoc.eq.0)then
+
+C Set first item of menu (this item holds number of supplementary data
+C items for the loop and should not be edited
+          menu(1)='Choose parameter to edit:'
         if(iclaw.eq.1.or.iclaw.eq.3)then
 
 C Set up the help text for the control period menu as well as the
@@ -6102,7 +6247,6 @@ C individual items to be edited (in one big block).
 
 C Basic control or pre-heat/cool (first array items are never
 C used to that the index matches the cm position.
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6204,7 +6348,6 @@ C Depending on the current number of miscel items also do humidity.
           h(4)='is applied. '
           nctlhelp=5
           nmenulines=1    ! set to the last cm index used.
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6224,7 +6367,6 @@ C Depending on the current number of miscel items also do humidity.
           H(9)='the corresponding capacity to zero.'
           nctlhelp=9
           nmenulines=5    ! set to the last cm index used.
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6278,7 +6420,6 @@ C Depending on the current number of miscel items also do humidity.
           H(31)='correspondingly low (or high) set point or by setting'
           H(32)='the corresponding capacity to zero.'
           nctlhelp=32
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
@@ -6368,7 +6509,6 @@ C Depending on the current number of miscel items also do humidity.
             ndec(12)=1; vmin(12)=1.0; vmax(12)=10000.0; vdef(12)=600.0
           endif
         elseif(iclaw.eq.6)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6386,7 +6526,6 @@ C A multi-stage controller with hysteresis.
           h(8)='and down between stages as appropriate.'
           nctlhelp=8
           nmenulines=13    ! set to the last cm index used.
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6446,7 +6585,7 @@ C Variable supply temperature with limit constraints.
           h(3)='for heating & cooling). The heating supply temperature'
           h(4)='varies up to a maximum set-point and the cooling'
           h(5)='supply temperature varies down to a minimum set-point.'
-          h(6)=''
+          h(6)=' '
           h(7)='The room heating and cooling set-points (typically'
           h(8)='defined so that there is a deadband) are met on the'
           h(9)='basis of the heating and/or cooling implicit at the'
@@ -6459,7 +6598,6 @@ C Variable supply temperature with limit constraints.
           h(16)='model.'
           nctlhelp=16
           nmenulines=7    ! set to the last cm index used.
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6495,7 +6633,6 @@ C Variable supply temperature with limit constraints.
             ndec(7)=0; vmin(7)=0.0; vmax(7)=1.0; vdef(7)=0.0
           endif
         elseif(iclaw.eq.9)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6537,7 +6674,6 @@ C Control with separate on/off setpoints for heating and cooling.
           H(32)='exit the period. '
           nctlhelp=32
           nmenulines=7    ! set to the last cm index used
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6566,13 +6702,11 @@ C Control with separate on/off setpoints for heating and cooling.
           prompt2(7)='the temperature goes below this setpoint) '
           ndec(7)=3; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=24.0
         elseif(iclaw.eq.11)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.12)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6636,7 +6770,6 @@ C and cooling (initial part of the input is similar to control 10).
           H(53)='exit the period. '
           nctlhelp=53
           nmenulines=13    ! set to the last cm index used
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6708,7 +6841,6 @@ C and cooling (initial part of the input is similar to control 10).
           H(17)='exit the period. '
           nctlhelp=17
           nmenulines=15    ! set to the last cm index used
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
@@ -6815,7 +6947,6 @@ C and cooling (initial part of the input is similar to control 10).
           H(43)='You are given the option to discard changes when you'
           H(44)='exit the period. '
           nctlhelp=44
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
@@ -6895,13 +7026,11 @@ C and cooling (initial part of the input is similar to control 10).
             ndec(10)=2; vmin(10)=0.0; vmax(10)=99999.0; vdef(10)=1.0
           endif
         elseif(iclaw.eq.16)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.17)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6912,13 +7041,11 @@ C and cooling (initial part of the input is similar to control 10).
           prompt2(1)=' '
           ndec(1)=0; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
         elseif(iclaw.eq.19)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
           continue
         elseif(iclaw.eq.20)then
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -6976,7 +7103,6 @@ C and cooling (initial part of the input is similar to control 10).
           H(50)='exit the period. '
           nctlhelp=50
           nmenulines=4    ! set to the last cm index used
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -7038,7 +7164,6 @@ C using reheat for heating mode.
           H(40)='exit the period. '
           nctlhelp=40
           nmenulines=6    ! set to the last cm index used.
-          menu(1)=' '
           prompt1(1)=' '
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
@@ -7065,18 +7190,86 @@ C using reheat for heating mode.
         elseif(iclaw.eq.23)then
 
 C Reading heating and cooling setpoints from temporal file
-          menu(1)=' '
+          H(1)='This control law sets the setpoints based on heating'
+          H(2)='and cooling temperatures as read from a temporal file'
+          H(3)='defined in the model context > impose measured data'
+          H(4)='section of the project manager interface. Any amount'
+          H(5)='of heating and cooling is added so that the setpoints'
+          H(6)='are met.'
           prompt1(1)=' '
           prompt2(1)=' '
-          ndec(1)=0; vmin(1)=1.0; vmax(1)=20.0; vdef(1)=8.0
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=5.0
           menu(2)='Heating setpoint column number'
           prompt1(2)='Set the column number which contains heating'
           prompt2(2)='setpoint value in the temporal (tdf) file'
-          ndec(2)=0; vmin(2)=1.0; vmax(2)=20.0; vdef(2)=8.0
+          ndec(2)=0; vmin(2)=1.0; vmax(2)=80.0; vdef(2)=5.0
           menu(3)='Heating setpoint column number'
           prompt1(3)='Set the column number which contains cooling'
           prompt2(3)='setpoint value in the temporal (tdf) file'
-          ndec(3)=0; vmin(3)=1.0; vmax(3)=20.0; vdef(3)=9.0
+          ndec(3)=0; vmin(3)=1.0; vmax(3)=80.0; vdef(3)=6.0
+          nmenulines=3    ! set to the last cm index used
+          nctlhelp=6
+        elseif(iclaw.eq.24)then
+
+C Adaptive human comfort model. A comfort temperature is calculated
+C based on running mean ambient temperature. If the environment
+C temperature of the controlled zone is now within 2 degrees of this
+C comfort temperature the control is activated
+          H(1) ='Adaptive comfort algorithm models occupant behaviour'
+          H(2) ='and operates heating/cooling based on mean operative'
+          H(3) ='and outdoor mean temperatures automatically.'
+          H(4) ='A comfort temperature is calculated based on the  '
+          H(5) ='running mean response parameter that governs how'
+          H(6) ='running mean temperature is calculated. This parameter'
+          H(7) ='is a constant from 0-0.99 (Default value 0.8)'
+          H(8) ='The comfort band also needs to be entered, this is the'
+          H(9) ='tolerance from calculated comfort temperature and  '
+          H(10)='has a default value of 2degC '
+          H(11)='This essentially creates a heating and cooling  '
+          H(12)='set point of magnitude of comfort band on both sides'
+          H(13)='of the comfort temperature and controls to that '
+          H(14)='temperature based on probability that heating/ccoling '
+          H(15)='will be switched on. '
+          H(16)='The statically entered set points are currently not  '
+          H(17)='used in the calculation but are retained for possible '
+          H(18)='future use. '
+          prompt1(1)=' '
+          prompt2(1)=' '
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Maximum heating capacity (W)'
+          prompt1(2)='Maximum heating capacity (W) which is available'
+          prompt2(2)='to meet the demand. '
+          ndec(2)=1; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
+          menu(3)='Minimum heating capacity (W)'
+          prompt1(3)='Minimum heating capacity (W) The flux injected'
+          prompt2(3)='will never drop below this level. '
+          ndec(3)=1; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=0.0
+          menu(4)='Maximum cooling capacity (W)'
+          prompt1(4)='Maximum cooling capacity (W) which is available'
+          prompt2(4)='to meet the demand. '
+          ndec(4)=1; vmin(4)=0.0; vmax(4)=999999.0; vdef(4)=1000.0
+          menu(5)='Minimum cooling capacity (W)'
+          prompt1(5)='Minimum cooling capacity (W) The flux extracted'
+          prompt2(5)='will never be less than this. '
+          ndec(5)=1; vmin(5)=0.0; vmax(5)=999999.0; vdef(5)=0.0
+          menu(6)='Heating setpoint (C)'
+          prompt1(6)='Heating setpoint (C) (temperature to meet if'
+          prompt2(6)='there is sufficient capacity) '
+          ndec(6)=3; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=20.0
+          menu(7)='Cooling setpoint (C)'
+          prompt1(7)='Cooling setpoint (C (temperature to meet if)'
+          prompt2(7)='there is sufficient capacity) '
+          ndec(7)=3; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=24.0
+          menu(8)='Running mean response parameter'
+          prompt1(8)='Running mean response parameter'
+          prompt2(8)=' '
+          ndec(8)=3; vmin(8)=0.0; vmax(8)=0.99; vdef(8)=0.8
+          menu(9)='Comfort band '
+          prompt1(9)='Comfort band (default is 2deg) '
+          prompt2(9)=' '
+          ndec(9)=3; vmin(8)=0.0; vmax(8)=0.99; vdef(8)=2.0
+          nmenulines=9    ! set to the last cm index used
+          nctlhelp=18
         else
           h(1)=' '
           h(2)=' '

@@ -10357,6 +10357,15 @@ C the functionality of startbuffer in the GTK version.
        return
        end
 
+C Dummy subroutine for a function available in GTK for displaying images
+C in a pop-up window.
+      subroutine popupimage(head,topic,act,longtfile)
+      character*(*) head,topic,act,longtfile
+      write(6,*) head,topic
+      write(6,*) act,longtfile
+      return
+      end
+
 C ***************** PRONAM *****************
 C Subroutine pronam returns the characters of a string after the last
 C occurance of '/' or '\'

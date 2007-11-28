@@ -143,6 +143,8 @@ C Variables used in trace.
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
+C Adaptive comfort commons
+      COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
@@ -161,7 +163,7 @@ C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       CHARACTER outs*124, lodlabel*6
       character*10 wkd1, wkd2, DSTR
-      logical traceok
+      logical traceok,closea
       REAL PEZON,QEZON
 
 C Declation of heat gain from h3k models
@@ -423,6 +425,18 @@ C Keep track of electrical loads for trace.
           endif
  10     continue
       endif
+
+C If adaptive comfort algorithm is active add sensible heat gains when on
+      call eclose(PREVSTATFAN,1.00,0.01,closea)
+      IF(CLOSEA)THEN
+
+C Debug...
+C        write(6,*)"before addition",QCASC(2)
+        QCASC(2)=QCASC(2)+TOTPWR(ICOMP)
+
+C Debug...
+C        write(6,*)"after addition",QCASC(2)
+      ENDIF
 
 C BEGIN NRCan casual-gain -> electrical coupling code.
 C
