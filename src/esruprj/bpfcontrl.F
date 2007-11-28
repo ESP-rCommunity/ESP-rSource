@@ -4516,7 +4516,7 @@ C User has declined to measure difference between nodes.
         endif
 
 C If the user has not canceled instanciate from temporary values.
-
+        nsup=0
         isn1=isn1T
         isn2=isn2T
         isn3=isn3T
