@@ -2249,9 +2249,9 @@ C patch azimuth angle (Anticlockwise from East):
         aazim = 450.0 - sazi
       endif
 
-      x3 = ecosd(aazim)
-      y3 = esind(aazim)
-      z3 = tan(salt*RAD)
+      x3 = ecosd(aazim)*cos(salt*RAD)
+      y3 = esind(aazim)*cos(salt*RAD)
+      z3 = sin(salt*RAD)
 
 C Origin coordinates for calculation of angle between sun
 C and given sky patch:
@@ -2286,15 +2286,21 @@ C sky patch:
          z1 = 1.0
       elseif(nzone.eq.1) then
          aazim = azim(nzone)*(npatch - 1)
-         x1 = ecosd(aazim)
-         y1 = esind(aazim)
-         z1 = tan(alt(nzone)*RAD)
+         x1 = ecosd(aazim)*cos(alt(nzone)*RAD)
+         y1 = esind(aazim)*cos(alt(nzone)*RAD)
+         z1 = sin(alt(nzone)*RAD)
       else
          aazim = azim(nzone)*((npatch - npz(nzone-1)) - 1)
-         x1 = ecosd(aazim)
-         y1 = esind(aazim)
-         z1 = tan(alt(nzone)*RAD)
+         x1 = ecosd(aazim)*cos(alt(nzone)*RAD)
+         y1 = esind(aazim)*cos(alt(nzone)*RAD)
+         z1 = sin(alt(nzone)*RAD)
       endif
+
+C Debug
+C      write(6,*) 'x3: ',x3,' y3: ',y3,'z3: ',z3
+C      write(6,*) 'x2: ',x2,' y2: ',y2,'z2: ',z2
+C      write(6,*) 'x1: ',x1,' y1: ',y1,'z1: ',z1
+C End debug
 
 C Find angle between given sky patch and sun position
 C and convert it to radiance:
