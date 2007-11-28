@@ -135,7 +135,7 @@ C default file names for databases
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "espriou.h"
-C espriou.h provides currentfile.
+C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
       PARAMETER (MSTMC=1)
@@ -266,11 +266,6 @@ C    and iton=1 images have been displayed.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-
-C Where default db list is kept.
-C DFDBLBL (20 char) label for list of default databases.
-C DEFDBFL (72 char) file name for list of default databases.
-      common/defdb/dfdblbl,defdbfl
 
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
@@ -483,7 +478,7 @@ c This common block is used to define the sky temperature calculation method
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
-      character dfdblbl*20,defdbfl*72,GTGEOM*72
+      character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
@@ -527,7 +522,7 @@ C Initialize flag for boundary condition data
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
 C Note: escdef must come after scan of .esprc file.
-      call escdef(dfdblbl,defdbfl,IUF,IER)
+      call escdef(IUF,IER)
       LCLIM=DCLIM
       LAPRES=DAPRES
       LFMAT=DFCON

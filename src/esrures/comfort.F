@@ -1440,6 +1440,17 @@ C Temporal db commons.
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
+C.........START: USED FOR ACTIVITY TDF DATA.....................
+C TDFINT are ranges allowed for integer fields in the instance.
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      REAL X2a_QTOTOCCUP
+      REAL X2c_QTOTEQUIP
+      
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+C.........END: USED FOR ACTIVITY TDF DATA.....................
+
       DIMENSION VAL(MBITS+2)
       character outs*124
       logical found,close15,close16,close17
@@ -1518,6 +1529,43 @@ C        elseif(iocut.eq.3)then
 C          if(close17) ioc=0
 C        endif
 C        if(ioc.gt.0) write(6,*) ' Found temporal occupancy @',itt
+      endif
+      return
+
+C Following now the same pattern as the CASUAL3T for the "ACTIVITY" tdf
+C entity.
+      found = .false.
+      if(IACTIV(izone).ne.0)found = .true.
+      if(found)then
+        itt=ih*NTS
+        call DATIME(ITT,TIME)
+        TIMEF=real(ITT)/real(NTS)
+        TIMEP=TIMEF - (1./real(NTS))
+        itdi=IACTIV(izone)
+        IFOC=itdi
+        CALL RCTDFR(0,IDAY,ITT,TIMEF,VAL,ISD,IFOC,IER)
+        X2a_QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(izone)
+        X2a=(X2a_QTOTOCCUP-((X2a_QTOTOCCUP*ITMAR(1,3))/100))/2
+
+C<<< let the lighting gains to be 0 for now until there is a
+C a decision on the calculation of the lighting gains>>
+        X2b=0
+        X2c_QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(izone)
+        X2c=(X2c_QTOTEQUIP-((X2c_QTOTEQUIP*ITMAR(1,5))/100))/2
+ 
+        call eclose(X2a,0.0,0.1,close15)
+        call eclose(X2b,0.0,0.1,close16)
+        call eclose(X2c,0.0,0.1,close17)
+        ioc=1
+        if(iocut.eq.1)then
+          if(close15) ioc=0
+        elseif(iocut.eq.2)then
+          if(close16) ioc=0
+        elseif(iocut.eq.3)then
+          if(close17) ioc=0
+        endif
+        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
       endif
       return
       end

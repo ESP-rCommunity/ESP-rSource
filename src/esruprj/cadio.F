@@ -725,7 +725,13 @@ C ********* rexmpl
 C rexmpl: scan the exemplars file, parse information and offer the user
 C selection of or information about exemplars. 
 C useraction is returned - 'browse' or 'ownit' or 'continue'
-      subroutine rexmpl(iexfil,exfil,exemplar,useraction,ier)
+C iexfil (integer) is the unit number for the exemplar file
+C exemplar (char 144) is the full path to selected cfg file.
+C useraction (char 8) is passed in to specify the task.
+C ier (integer) is returned as 1 if no exemplars file found.
+      subroutine rexmpl(iexfil,exemplar,useraction,ier)
+#include "espriou.h"
+C espriou.h provides currentfile, defdbfl exemfl.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -740,7 +746,7 @@ C to quit the image browser.
       dimension name(30),mitem(30),label(30),inl2in(30),group(15)
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
-      character exfil*72,group*42,tgroup*42,key*1,look*70,tlook*70
+      character group*42,tgroup*42,key*1,look*70,tlook*70
       character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
       character imgfmt*4,imgfoc*4,limgfil*72,doit*248,upath*72
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
@@ -765,10 +771,10 @@ C Make up a double quote and file separator for xcopy.
 
 C Open the exemplar file.
   41  IER=0
-      if(exfil(1:1).eq.'/')then
-        call FPOPEN(iexfil,ISTAT,1,0,exfil)
+      if(exemfl(1:1).eq.'/')then
+        call FPOPEN(iexfil,ISTAT,1,0,exemfl)
       else
-        CALL EFOPSEQ(iexfil,exfil,1,IER)
+        CALL EFOPSEQ(iexfil,exemfl,1,IER)
       endif
       if(ier.ne.0) return
 C Read the header and see if '*EXEMPLARS'
@@ -862,10 +868,10 @@ C Help @ db file level.
           goto 142
         endif
 C Re-open the exemplar file.
-        if(exfil(1:1).eq.'/')then
-          call FPOPEN(iexfil,ISTAT,1,0,exfil)
+        if(exemfl(1:1).eq.'/')then
+          call FPOPEN(iexfil,ISTAT,1,0,exemfl)
         else
-          CALL EFOPSEQ(iexfil,exfil,1,IER)
+          CALL EFOPSEQ(iexfil,exemfl,1,IER)
         endif
  14     CALL STRIPC(iexfil,OUTSTR,0,ND,0,'group id',IER)
         if(ier.ne.0)goto 902
@@ -1016,10 +1022,10 @@ C Open the related configuration file (if it exists), find its log file.
 C Present information on an exemplar.
         if(inl2in(ICO).eq.0)goto 42
         look=name(inl2in(ICO))
-        if(exfil(1:1).eq.'/')then
-          call FPOPEN(iexfil,ISTAT,1,0,exfil)
+        if(exemfl(1:1).eq.'/')then
+          call FPOPEN(iexfil,ISTAT,1,0,exemfl)
         else
-          CALL EFOPSEQ(iexfil,exfil,1,IER)
+          CALL EFOPSEQ(iexfil,exemfl,1,IER)
         endif
         CALL STRIPC(iexfil,OUTSTR,0,ND,0,'exemplar 1st line',IER)
         CALL STRIPC(iexfil,OUTSTR,0,ND,0,'group id',IER)

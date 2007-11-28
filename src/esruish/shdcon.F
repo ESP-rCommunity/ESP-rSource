@@ -18,17 +18,23 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C SHDCON.F Contains the following routines of ESRUshd:
+C SHDCON.F contains the following routines:
 
 C SHDCON: Controls shading computation.
-C SHDTST: Tests grid centre points to see if within surface.
-C DECOMP: Reduces the projected 8 pt shadow 'box' to equivalent outline.
+C SHDTST: Tests each grid centre point of a user-specified grid to
+C         establish if it is within the target surface and shadow
+C         polygon.
+C DECOMP: Generates a modified shadow polygon for the case where the
+C         projected surface crosses the plane of the target surface.
+C INTERSECT: Determines the intersection point between the YT=0
+C            plane and a line.
 
-C **************** SHDCON *************************
-C 'SHDCON' controls shading computation.
+C **************** SHDCON
+C Main controller for the shading computation.
+
       SUBROUTINE SHDCON(ICOMP)
 #include "building.h"
-      COMMON/TC/ITC,ICNT
+
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),Y0(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
       COMMON/SANGL1/SAZI1,SALT1
@@ -46,113 +52,130 @@ C 'SHDCON' controls shading computation.
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-C Commence computation for each object body surface in turn.
+      if(NB.eq.0)then
+         call usrmsg('No obstruction blocks defined so',
+     &               'exiting from shading calculation.','W')
+         return
+      endif
+
+C Commence computation for each target surface in turn.
       KOUNT=0
-      DO 300 I=1,NSUR
+      DO 10 I=1,NSUR
         IF(ISC(I).EQ.1)KOUNT=KOUNT+1
-  300 CONTINUE
+   10 CONTINUE
       KOUNT=KOUNT*24
       KIND=0
       INDCOM=0
-      DO 10 I=1,NSUR
-        II=I
-        IF(ISC(I).EQ.0)goto 10
+      DO 20 ITSUR=1,NSUR
+         IF(ISC(ITSUR).EQ.0)goto 20
 
-C Partially derive transformation equations by computing 
-C time independent part of equation coefficients - 
-C equivalent to translation plus three-dimensional plane rotation.
-        CALL TRNSF1(II)
+C Partially derive transformation equations by computing time
+C independent part of equation coefficients - equivalent to
+C translation plus three-dimensional plane rotation.
+         CALL TRNSF1(ITSUR)
 
-C Transfer transformed surface face coordinates to transitional
-C shading file. (only place tfile2 is called).
-        CALL TFILE2(II)
+C Transfer transformed surface coordinates to transitional
+C shading file.
+         CALL TFILE2(ITSUR)
 
-C Set up surface mesh. Then proceed hour by hour to compute 
-C the solar angles (relative to original coordinate system).
-        CALL MESH(II)
-        DO 20 J=1,24
-          JJ=J
-          IHOUR=J
-          STIME=FLOAT(JJ)
-          CALL EAZALTS(STIME,IYD,SLAT,SLON,ISUN,SAZI,SALT)
-          SAZI1=SAZI
-          SALT1=SALT
-          ISUNUP=ISUN
-          IF(ISUNUP.EQ.0)goto 1
+C Set up target surface mesh.
+         CALL MESH(ITSUR)
 
-C Compute new solar angles relative to local face coordinate system.
-          CALL TRNSF2(JJ)
+C Proceed hour-by-hour.
+         DO 30 IHR=1,24
+            IHOUR=IHR
+            STIME=FLOAT(IHOUR)
 
-C Is surface self-shaded?
-          IF(SAZI2.LE.90..OR.SAZI2.GE.270.)goto 2
+C Determine the solar azimuth and altitude angles relative to the
+C original coordinate system.
+            CALL EAZALTS(STIME,IYD,SLAT,SLON,ISUN,SAZI,SALT)
+            SAZI1=SAZI
+            SALT1=SALT
+            ISUNUP=ISUN
 
-C Complete projection transformation on a block-by-block basis.
-          if(NB.eq.0)then
-            call usrmsg(' No obstruction block loaded so',
-     &                  ' exiting from calculation...','W')
-            return
-          endif
-          DO 30 L=1,NB
-            KK=L
-            CALL TRNSF3(KK)
-            CALL DECOMP(ITC,ICOMP,KK,II,JJ)
-            CALL SHDTST(II)
-   30     CONTINUE
-          goto 1
+C Abandon shading calculation if before sunrise or after sunset.
+            IF(ISUNUP.EQ.0)goto 1
 
-C Surface is self-shaded.
-    2     DO 40 L=1,NOX
-            DO 50 M=1,NOZ
-              IOSHD(L,M)=1
-   50       CONTINUE
-   40     CONTINUE
+C Compute pseudo solar angles relative to the local surface
+C coordinate system.
+            CALL TRNSF2(IHOUR)
 
-C Assume no default windows.
+C Terminate shading calculation if transformed surface faces away
+C from the sun.
+            IF(SAZI2.LE.90.0.OR.SAZI2.GE.270.0.
+     &           OR.ABS(SALT2).GT.90.)goto 2
+
+C Complete projection transformation on an obstruction block (IBN)
+C and surface-by-surface (IBS) basis.
+            DO 40 IBN=1,NB
+
+C Compute X, Y and Z coordinates of obstruction block corners 
+C relative to the original site coordinate system.
+              CALL CORNR(IBN)
+
+C Project obstruction block surface, form intersection with plane
+C of target surface if necessary, then determine target surface
+C shading polygon.
+              do 50 IBS=1,6
+                CALL TRNSF3(IBN,IBS)
+                CALL DECOMP(IBN,IBS,ITSUR)
+                CALL SHDTST(ITSUR)
+   50        continue 
+   40       CONTINUE
+            goto 1
+
+C Surface cannot see sun.
+    2       DO 60 I=1,NOX
+              DO 70 J=1,NOZ
+                IOSHD(I,J)=1
+   70         CONTINUE
+   60       CONTINUE
 
 C Transfer results to transitional shading file.
-    1     CALL TFILE3(ICOMP,II)
-          KIND=KIND+1
-          CALCOM=FLOAT(KIND)/FLOAT(KOUNT)
-          WRITE(outs,'(1X,A3,A)')MTHNAM(MON),' calculation commenced'
-          IF(CALCOM.GT.0.95)THEN
-            IF(INDCOM.EQ.4)goto 20
-            INDCOM=INDCOM+1
-            if(paction(1:13).ne.'update_silent')then
-              CALL USRMSG(outs,' Almost Complete','-')
-            endif
-          ELSEIF(CALCOM.GT.0.75)THEN
-            IF(INDCOM.EQ.3)goto 20
-            INDCOM=INDCOM+1
-            if(paction(1:13).ne.'update_silent')then
-              CALL USRMSG(outs,' 75% Complete','-')
-            endif
-          ELSEIF(CALCOM.GT.0.50)THEN
-            IF(INDCOM.EQ.2)goto 20
-            INDCOM=INDCOM+1
-            if(paction(1:13).ne.'update_silent')then
-              CALL USRMSG(outs,' 50% Complete','-')
-            endif
-          ELSEIF(CALCOM.GT.0.25)THEN
-            IF(INDCOM.EQ.1)goto 20
-            INDCOM=INDCOM+1
-            if(paction(1:13).ne.'update_silent')then
-              CALL USRMSG(outs,' 25% Complete','-')
-            endif
-          ENDIF
-   20   CONTINUE
-   10 CONTINUE
+    1       CALL TFILE3(ICOMP,ITSUR)
+            KIND=KIND+1
+            CALCOM=FLOAT(KIND)/FLOAT(KOUNT)
+            WRITE(outs,'(A,A3,A)')'`',MTHNAM(MON),
+     &                            '` shading calculation commenced:'
+            IF(CALCOM.GT.0.95)THEN
+               IF(INDCOM.EQ.4)goto 30
+               INDCOM=INDCOM+1
+               if(paction(1:13).ne.'update_silent')then
+                  CALL USRMSG(outs,' almost complete','P')
+               endif
+            ELSEIF(CALCOM.GT.0.75)THEN
+               IF(INDCOM.EQ.3)goto 30
+               INDCOM=INDCOM+1
+               if(paction(1:13).ne.'update_silent')then
+                  CALL USRMSG(outs,' 75% Complete','-')
+               endif
+            ELSEIF(CALCOM.GT.0.50)THEN
+               IF(INDCOM.EQ.2)goto 30
+               INDCOM=INDCOM+1
+               if(paction(1:13).ne.'update_silent')then
+                  CALL USRMSG(outs,' 50% Complete','-')
+               endif
+            ELSEIF(CALCOM.GT.0.25)THEN
+               IF(INDCOM.EQ.1)goto 30
+               INDCOM=INDCOM+1
+               if(paction(1:13).ne.'update_silent')then
+                  CALL USRMSG(outs,' 25% Complete','-')
+               endif
+            ENDIF
+   30    CONTINUE
+   20 CONTINUE
+
       RETURN
       END
 
 C ****************** SHDTST *****************
-C 'SHDTST' tests each grid centre point of a user-specified 
-C grid (for opaque and transparent surfaces) to establish if
-C the point is within or outwith the object body face and
-C shadow polygon.
-      SUBROUTINE SHDTST(IS)
+C SHDTST tests each grid centre point of a user-specified grid to establish
+C if it is within the target surface and shadow polygon.
+      SUBROUTINE SHDTST(ITSUR)
 #include "building.h"
+
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/SHAD2/ISHD,XS(6),ZS(6)
+      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/SHAD3/IOSHD(MOX,MOZ)
       CHARACTER BLKNAME*8,BLKMAT*12
@@ -160,13 +183,13 @@ C shadow polygon.
       IF(ISHD.EQ.0)RETURN
 
 C For each opaque surface grid point, test whether it is within 
-C the object body face boundary.  If it is, then test for whether
-C it is within the shadow polygon boundary.
+C the target surface. If it is, then test for whether also within
+C the shadow polygon.
       DO 10 I=1,NOX
         DO 20 J=1,NOZ
 
-C Is point within face?
-          CALL POINT1(IS,XOP(I,J),ZOP(I,J),IANS)
+C Is point within face ITSUR?
+          CALL POINT1(ITSUR,XOP(I,J),ZOP(I,J),IANS)
           IF(IANS.EQ.0)goto 20
 
 C Is point within shadow polygon?
@@ -181,179 +204,287 @@ C Assuming no default windows so return.
       END
 
 C **********************  DECOMP **********************
-C 'DECOMP' reduces the projected 8 point shadow 'box' to the
-C equivalent shadow polygon outline.  Note points 1 to 4 refer
-C to the top of the box and 5 to 8 to the bottom (anti-clockwise
-C order from the top).
-      SUBROUTINE DECOMP(ITRC,ICOMP,IB,II,JJ)
+C If a projected surface crosses the target plane the intersection
+C points are located and a modified shadow polygon produced.
+      SUBROUTINE DECOMP(IBN,IBS,ITSUR)
 #include "building.h"
+
+      COMMON/OUTPCH/ICOUT
+      COMMON/TRANSFORM/XT(4),YT(4),ZT(4)
+      COMMON/PROJ/XP(4),YP(4),ZP(4)
+      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
+      COMMON/GS5/NB,XO(MB),Y0(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
+      CHARACTER CASE*40
+      character outs*124
+      logical tok
+      dimension IPC(4)
+
+      tok=.false.
+      if(icout.eq.33)tok=.true.
+
+C If one or more of the 4 projected point YP values are > 0 then the
+C obstruction block surface crosses the X`Z` plane. Depending on the
+C number of points that satisfy this condition, the surface is either
+C partially or fully behind the target surface.
+
+C Initialise array (IPC) that holds points that cross plane.
+      DO 10 I=1,4
+         IPC(I)=0
+   10 CONTINUE
+
+C Count number of points that cross plane (ISCNT) and set
+C ISHD=1 to indicate that SHDTST should process the generated
+C shadow polygon.
+      ISHD=1
+      ISCNT=0
+      DO 20 I=1,4
+        XS(I)=XP(I)
+        ZS(I)=ZP(I)
+        IF(YT(I).GT.0.0)THEN
+          ISCNT=ISCNT+1
+          IPC(ISCNT)=I
+        ELSE
+C Remember point not excluded for use in following 3 point
+C exclusion case vertex reordering.
+          INX3=I
+        ENDIF
+   20 CONTINUE
+
+C For the case of 3 excluded points, possibly rearrange order
+C to ensure correct intersection line selection.
+      IF(ISCNT.EQ.3)THEN
+         IF(INX3.eq.2)THEN
+            IPC(1)=3
+            IPC(2)=4
+            IPC(3)=1
+         ELSEIF(INX3.eq.3)THEN
+            IPC(1)=4
+            IPC(2)=1
+            IPC(3)=2
+         ENDIF
+      ENDIF
+
+C *** CASE A: No points cross => 4 point shadow polygon.
+      IF(ISCNT.EQ.0)then
+         CASE='Intersection case: no points cross.'
+         NPOINT=4
+         do 30 I=1,4
+C Shadow polygon is projected surface.
+            XS(I)=XP(I)
+            ZS(I)=ZP(I)
+   30    continue
+         goto 1
+
+C *** CASE B: 1 point crosses => 2 intersection points and a 5 point
+C shadow polygon.
+      ELSEIF(ISCNT.EQ.1)THEN
+         CASE='Intersection case: 1 point crosses.'
+         NPOINT=5
+C 1st line intersection.
+         IP1=IPC(1)
+         IP2=IP1-1
+         if(IP2.eq.0)IP2=4
+         call intersect(IP1,IP2,XI,ZI)
+C Point replaces excluded point.
+         XS(IP1)=XI
+         ZS(IP1)=ZI
+C 2nd line intersection.
+         IP1=IPC(1)
+         IP2=IP1+1
+         if(IP2.eq.5)IP2=1
+         call intersect(IP1,IP2,XI,ZI)
+C Point replaces next (anticlockwise) ordered point with subsequent
+C points reordered.
+         xs(IP2)=XI
+         zs(IP2)=ZI
+         if(IP2.EQ.1)then
+            xs(5)=xs(4)
+            xs(4)=xs(3)
+            xs(3)=xs(2)
+            xs(2)=xs(1)
+            zs(5)=zs(4)
+            zs(4)=zs(3)
+            zs(3)=zs(2)
+            zs(2)=zs(1)
+         endif 
+         if(IP2.EQ.2)then
+            xs(5)=xs(4)
+            xs(4)=xs(3)
+            xs(3)=xs(2)
+            zs(5)=zs(4)
+            zs(4)=zs(3)
+            zs(3)=zs(2)
+         endif 
+         if(IP2.EQ.3)then
+            xs(5)=xs(4)
+            xs(4)=xs(3)
+            zs(5)=zs(4)
+            zs(4)=zs(3)
+         endif 
+         if(IP2.EQ.4)then
+            xs(5)=xs(4)
+            zs(5)=zs(4)
+         endif 
+         goto 1
+
+C *** CASE C: 2 points cross => 2 intersection points and a 4 point
+C shadow polygon.
+      ELSEIF(ISCNT.EQ.2)THEN
+         CASE='Intersection case: 2 points cross.'
+         NPOINT=4
+C 1st line intersection.
+         IP1=IPC(1)
+         IP2=IP1-1
+         if(IP2.eq.0)IP2=4
+         if(IP2.eq.IPC(2))then
+            IP2=IP1+1
+            if(IP2.eq.5)IP2=1
+         endif
+         call intersect(IP1,IP2,XI,ZI)
+C Point replaces 1st excluded point.
+         XS(IP1)=XI
+         ZS(IP1)=ZI
+C 2nd line intersection.
+         IP1=IPC(2)
+         IP2=IP1+1
+         if(IP2.eq.5)IP2=1
+         if(IP2.eq.IPC(1))then
+            IP2=IP1-1
+            if(IP2.eq.0)IP2=4
+         endif
+         call intersect(IP1,IP2,XI,ZI)
+C Point replaces 2nd excluded point.
+         XS(IP1)=XI
+         ZS(IP1)=ZI
+         goto 1
+
+C *** CASE D: 3 points cross => 2 intersection points and a 3 point
+C shadow polygon.
+      ELSEIF(ISCNT.EQ.3)THEN
+         CASE='Intersection case: 3 points cross.'
+         NPOINT=3
+         do 40 i=1,4
+            if(IPC(i).eq.0)then
+C Non-excluded point becomes 1st shadow point.
+               xs(1)=xp(i)
+               zs(1)=zp(i)
+            endif
+   40    continue
+C 1st line intersection.
+         IP1=IPC(1)
+         IP2=IP1-1
+         if(IP2.eq.0)IP2=4
+C         CALL ADJVN(IP1,IP2,1)
+         call intersect(IP1,IP2,XI,ZI)
+C Point becomes 2nd shadow point.
+         XS(2)=XI
+         ZS(2)=ZI
+C 2nd line intersection.
+         IP1=IPC(3)
+         IP2=IP1+1
+         if(IP2.eq.5)IP2=1
+C         CALL ADJVN(IP1,IP2,2)
+         call intersect(IP1,IP2,XI,ZI)
+C Point becomes 2nd shadow point.
+         XS(3)=XI
+         ZS(3)=ZI
+         goto 1
+
+C *** CASE E: Entire surface crosses plane => abandon.
+      ELSEIF(ISCNT.EQ.4)then
+C Tell SHDTST to abandon shadow polygon.
+         ISHD=0
+         CASE='Intersection case: all points cross.'
+         NPOINT=0
+         goto 1
+      ENDIF
+
+C Trace output.
+   1  IF(.NOT.tok)goto 9999
+      call edisp(icout,' ')
+      write(outs,9998)ITSUR,IBN,IBS
+ 9998 FORMAT('*** DECOMP: Target surface ',I2,
+     &       '; obstruction block ',I2,', surface ',I2,'.')
+      call edisp(icout,outs)
+      call edisp(icout,case)
+      if(ISCNT.NE.0)then
+         write(outs,'(A,4I2)')'Excluded vertices =',(IPC(I),I=1,ISCNT)
+         call edisp(icout,outs)
+      endif
+      call edisp(icout,'Shadow polygon (XS,ZS):')
+      call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
+      if(NPOINT.eq.0)then
+         call edisp(icout,'None')
+         goto 9999
+      endif
+      do 9997 I=1,NPOINT
+         write(outs,'(I2,F10.1,F20.1)')I,XS(I),ZS(I)
+         call edisp(icout,outs)
+ 9997 continue
+
+ 9999 RETURN
+      END
+
+C **********************  INTERSECT
+C Determines coordinates of intersection point of YT=0 plane and
+C a given line. Uses formula:
+C
+C X = X1 + (Y1.X1-Y1.X2)
+C          -------------  
+C             (Y2-Y1)
+
+      subroutine intersect(IP1,IP2,XI,ZI)
+
       COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TC/ITC,ICNT
-      COMMON/PROJ/XP(8),YP(8),ZP(8)
-      COMMON/SHAD2/ISHD,XS(6),ZS(6)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      common/ract/paction
-      COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
-      character outs*124,BLKNAME*8,BLKMAT*12,paction*16
+      COMMON/TRANSFORM/XT(4),YT(4),ZT(4)
+      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
+      character outs*124
+      logical tok
 
-C If any projected point YP value > 0 then the associated obstruction
-C block is deemed to be behind the object body and cannot cause shading.
-C If all points >0 (ISCNT=8), then do not print the warning message.
-      ICNT=0
-      ISCNT=0
-      ISHD=1
-      DO 10 I=1,8
-        IF(YP(I).GT.0.)THEN
-          ISHD=0
-          ISCNT=ISCNT+1
-        ENDIF
-   10 CONTINUE
-C Debug...
-C      write(6,*) 'decomp XP:',XP 
-C      write(6,*) 'decomp YP:',YP 
-C      write(6,*) 'decomp ZP:',ZP 
-C      write(6,*) 'decomp iscnt ishd:',iscnt,ishd 
-      IF(ISCNT.EQ.8)goto  11
-      IF(ISHD.EQ.0)GOTO 1
+      tok=.false.
+      if(icout.eq.33)tok=.true.
 
-C Compute shadow polygon outline.
-      IF(XP(1).LE.XP(2).AND.XP(1).LE.XP(3).AND.XP(1).LE.XP(4))goto 2
-      IF(XP(2).LE.XP(1).AND.XP(2).LE.XP(3).AND.XP(2).LE.XP(4))goto 3
-      IF(XP(3).LE.XP(1).AND.XP(3).LE.XP(2).AND.XP(3).LE.XP(4))goto 4
-      IF(XP(4).LE.XP(1).AND.XP(4).LE.XP(2).AND.XP(4).LE.XP(3))goto 5
-      goto 6
+C Determine intersection points in transformed coordinate system. Note
+C that the transformed coordinates are also the projected coordinates
+C because the intersection points are in the plane of the target surface.
+C In all cases YI=0.0.
 
-C XP(1) is less:
-    2 ICNT=ICNT+1
-      IF(ICNT.GE.5)goto 6
-      XS(1)=XP(1)
-      ZS(1)=ZP(1)
-      XS(2)=XP(4)
-      ZS(2)=ZP(4)
-      XS(3)=XP(3)
-      ZS(3)=ZP(3)
-      XS(4)=XP(7)
-      ZS(4)=ZP(7)
-      XS(5)=XP(6)
-      ZS(5)=ZP(6)
-      XS(6)=XP(5)
-      ZS(6)=ZP(5)
-      X1=XP(2)
-      Z1=ZP(2)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 3
-      X1=XP(8)
-      Z1=ZP(8)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 3
-      goto 7
+C Ensure that line crosses YT=0 plane by ensuring that end point
+C YT values have different sign.
+      if((YT(IP1).gt.0.0.and.YT(IP2).gt.0.0).or.
+     &  (YT(IP1).lt.0.0.and.YT(IP2).lt.0.0))then
+         call edisp(iuout,
+     &      'INTERSECT ERROR: line does not cross YT=0 plane!')
 
-C XP(2) is less:
-    3 ICNT=ICNT+1
-      IF(ICNT.GE.5)goto 4
-      XS(1)=XP(2)
-      ZS(1)=ZP(2)
-      XS(2)=XP(1)
-      ZS(2)=ZP(1)
-      XS(3)=XP(4)
-      ZS(3)=ZP(4)
-      XS(4)=XP(8)
-      ZS(4)=ZP(8)
-      XS(5)=XP(7)
-      ZS(5)=ZP(7)
-      XS(6)=XP(6)
-      ZS(6)=ZP(6)
-      X1=XP(3)
-      Z1=ZP(3)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 4
-      X1=XP(5)
-      Z1=ZP(5)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 4
-      goto 7
-
-C XP(3) is less:
-    4 ICNT=ICNT+1
-      IF(ICNT.GE.5)goto 6
-      XS(1)=XP(3)
-      ZS(1)=ZP(3)
-      XS(2)=XP(2)
-      ZS(2)=ZP(2)
-      XS(3)=XP(1)
-      ZS(3)=ZP(1)
-      XS(4)=XP(5)
-      ZS(4)=ZP(5)
-      XS(5)=XP(8)
-      ZS(5)=ZP(8)
-      XS(6)=XP(7)
-      ZS(6)=ZP(7)
-      X1=XP(4)
-      Z1=ZP(4)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 5
-      X1=XP(6)
-      Z1=ZP(6)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 5
-      goto 7
-
-C XP(4) is less:
-    5 ICNT=ICNT+1
-      IF(ICNT.GE.5)goto 6
-      XS(1)=XP(4)
-      ZS(1)=ZP(4)
-      XS(2)=XP(3)
-      ZS(2)=ZP(3)
-      XS(3)=XP(2)
-      ZS(3)=ZP(2)
-      XS(4)=XP(6)
-      ZS(4)=ZP(6)
-      XS(5)=XP(5)
-      ZS(5)=ZP(5)
-      XS(6)=XP(8)
-      ZS(6)=ZP(8)
-      X1=XP(1)
-      Z1=ZP(1)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 2
-      X1=XP(7)
-      Z1=ZP(7)
-      CALL POINT2(X1,Z1,IANS)
-      IF(IANS.EQ.0)goto 2
-      goto 7
-
-C Block crosses plane of face under consideration.
-    1 continue
-      ICN=IZSTOCN(icomp,ii)
-      WRITE(outs,'(5A,I3)')' Block ',BLKNAME(IB),
-     &' ignored (X face of ',SSNAME(ICN),') @ time',JJ
-      if(paction(1:13).ne.'update_silent')then
-        call edisp(iuout,outs)
+C Tell SHDTST that shadow polygon should be abandoned.
+         ISHD=0
+         goto 1
       endif
-      goto 11
 
-    6 WRITE(outs,'(A,I3)')' DECOMP error - block',IB
+C Avoid divide by 0.
+      diff=YT(IP2)-YT(IP1)
+      if(ABS(diff).lt.1.E-5)diff=1.E-5
+
+C Intersection point.
+       XI=XT(IP1)+(((YT(IP1)*XT(IP1))-(YT(IP1)*XT(IP2)))/diff)
+       ZI=ZT(IP1)+(((YT(IP1)*ZT(IP1))-(YT(IP1)*ZT(IP2)))/diff)
+
+C Trace output.
+   1  IF(.NOT.tok)goto 9999
+      call edisp(icout,' ')
+      if(ISHD.eq.1)call edisp(icout,
+     &       '*** INTERSECT: line crosses YT=0 plane.')
+      if(ISHD.eq.0)call edisp(icout,
+     &       '*** INTERSECT: line does not cross YT=0 plane.')
+      write(outs,'(A,I1,A,I1)')'Line = ',IP1,' - ',IP2
       call edisp(icout,outs)
-      goto 11
-
-    7 CONTINUE
-
-   11 IF(ITRC.LT.2)goto 9999
-      WRITE(outs,'(A,I2,A,I4,A)')' DECOMP: Decomposition of block ',IB,
-     &           ' was arrived at after ',ICNT,' iterations.'
+      write(outs,'(A,3F10.3)')'Point 1 = ',XT(IP1),YT(IP1),ZT(IP1)
       call edisp(icout,outs)
-      IF(ICNT.GT.0)THEN
-        do 12 I=1,6
-          WRITE(outs,'(A,I2,3X,2F10.3)')' POINT',I,XS(I),ZS(I)
-          call edisp(icout,outs)
-   12   continue
-      ENDIF
+      write(outs,'(A,3F10.3)')'Point 2 = ',XT(IP2),YT(IP2),ZT(IP2)
+      call edisp(icout,outs)
+      write(outs,'(A,2F10.3)')'Intersection = ',XI,ZI
+      call edisp(icout,outs)
 
  9999 RETURN
       END

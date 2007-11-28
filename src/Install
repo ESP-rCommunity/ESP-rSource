@@ -1707,6 +1707,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
     echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = lin ]; then
     echo "*ESPRC" > ${ESPdir}/esprc
@@ -1725,6 +1726,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
     echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = cygw ]; then
     echo "*ESPRC" > ${ESPdir}/esprc
@@ -1743,6 +1745,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
     echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = osx ]; then
     echo "*ESPRC" > ${ESPdir}/esprc
@@ -1761,6 +1764,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
     echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   elif [ ${MCTYPE} = mingw ]; then
     echo "*ESPRC" > ${ESPdir}/esprc
@@ -1779,6 +1783,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
     echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
     echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
     echo "*end" >> ${ESPdir}/esprc
   fi
   

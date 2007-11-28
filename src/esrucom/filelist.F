@@ -42,6 +42,8 @@ C parameter nlist is the number of files matching criteria.
 C parameter ier returned as 2 if problem writing file name path.
 
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
+#include "espriou.h"  ! for parameter MFFOLD
+
       common/pophelp/h(60)
       common/uhome/upath
       common/rpath/path
@@ -57,6 +59,9 @@ C   `ctl` (looks in ../ctl), `img` (looks in ../images),
 C   `rad` (looks in ../rad), `doc` (looks in ../doc),
 C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
+C   `clm` (looks in {where esp-r installed}/climate).
+C   `dbm` (looks in {where esp-r installed}/databases).
+
 C what can be: `dir` list of folders, `fil` any files in the folders,
 C   `cfg` configuration files, `ctl` control files,
 C   `afn` air flow networks, `gnf` graphic network files,
@@ -67,21 +72,22 @@ C   `vwf` viewfactor files, `tmc` optics files,
 C   `shd` shading files, `cgc` casual gain control,
 C   `htc` heat transfer control,
 C   `gdb` generic database, `gda` ascii generic database
-C   `dba` legacy ascii database,
+C   `dba` ascii database,
+C   `dbb` binary database or climate file (for future use),
 C   `xbm` X bitmap files, `gif` gif image files,
 C   `ipv` IPV definition file, `rep` IPV report file
 C   `qac` QA contents file, `zip` cflo3 zip (geometry) file. 
 
-      dimension nwlistf(50),ivlist(50)
+      dimension nwlistf(MFFOLD),ivlist(MFFOLD)
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
       character*72 upath,path,odir
-      character*72 listf(50),listfc(50)
+      character*72 listf(MFFOLD),listfc(MFFOLD)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,act*1
       character dinstpath*48
 
 C Array for browse menu.
-      character*70 listfc70(50)
+      character*70 listfc70(MFFOLD)
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
@@ -159,6 +165,16 @@ C project manager was started from).
      &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
         write(relative,'(6a)',iostat=ios,err=2)
      &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
+      elseif(where(1:3).eq.'clm')then
+        write(subpath,'(4a)',iostat=ios,err=1)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        write(relative,'(4a)',iostat=ios,err=2)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+      elseif(where(1:3).eq.'dbm')then
+        write(subpath,'(4a)',iostat=ios,err=1)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
+        write(relative,'(4a)',iostat=ios,err=2)
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
       endif
 
 #ifdef OSX
@@ -239,6 +255,9 @@ C (just use the relative path defined above).
       elseif(what(1:3).eq.'dba')then
         action='dba'
         write(outs,*) 'ascii database files in ',subpath
+      elseif(what(1:3).eq.'dbb')then
+        action='dbb'
+        write(outs,*) 'binary database files in ',subpath
       elseif(what(1:3).eq.'xbm')then
         action='xbm'
         write(outs,*) 'X bitmap files in ',subpath
@@ -262,20 +281,20 @@ C (just use the relative path defined above).
 C Clear the list of files and recover a list of files matching
 C the current criteria. Copy this list into listfc for use by
 C fortran code.
-      call clearfilelist(listf,50)
+      call clearfilelist(listf,MFFOLD)
       call getfilelist(subpath,action,listf,nwlistf,nlistf)
-      call copyfilelist(listf,nwlistf,listfc,50,maxw)
+      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
 
 C Depending on `act`, print or browse or just return with number of files.
       if(act.eq.'p')then
-        call printfilelist(outs,'p',listfc,50,nlistf)
+        call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
         nlist=nlistf
         return
       elseif(act.eq.'?')then
         nlist=nlistf
         return
       elseif(act.eq.'l')then
-        call printfilelist(outs,'l',listfc,50,nlistf)
+        call printfilelist(outs,'l',listfc,MFFOLD,nlistf)
         nlist=nlistf
         return
       elseif(act.eq.'b')then
@@ -333,21 +352,22 @@ C      subpath=' '
 C      write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
 C     &  path(1:lnblnk(path)),zonepth(1:lnblnk(zonepth))
 C      write(outs,*) 'geometry files in ',subpath
-C      call clearfilelist(listf,50)
+C      call clearfilelist(listf,MFFOLD)
 C      action='geo'
 C      call getfilelist(subpath,action,listf,nwlistf,nlistf)
-C      call copyfilelist(listf,nwlistf,listfc,50,maxw)
-C      call printfilelist(outs,'p',listfc,50,nlistf)
+C      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+C      call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
 C      write(outs,*) 'operation files in ',subpath
-C      call clearfilelist(listf,50)
+C      call clearfilelist(listf,MFFOLD)
 C      action='opr'
 C      call getfilelist(subpath,action,listf,nwlistf,nlistf)
-C      call copyfilelist(listf,nwlistf,listfc,50,maxw)
-C      call printfilelist(outs,'p',listfc,50,nlistf)
+C      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
+C      call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
       end
 
 C ********* clearfilelist
-C clearfilelist clears a string array (char*72 listf(50))
+C clearfilelist clears a string array of size iasize which should
+C be equivalent to MFFOLD (char*72 listf(iasize))
 C used before call to getfilelist.
       subroutine clearfilelist(listf,iasize)
       character*72 listf(iasize)
@@ -358,10 +378,11 @@ C used before call to getfilelist.
       end
 
 C ********* copyfilelist
-C copyfilelist takes string array (char*72 listf(50)) returned
+C copyfilelist takes string array of size iasize which should
+C be equivalent to MFFOLD (char*72 listf(iasize)) returned
 C from call to getfilelist and copies it into another string
-C array (char*72 listfc(50)). nwlistf(50) is the length of each
-C string (returned from getfilelist call.
+C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of each
+C string (returned from getfilelist call).
 C maxw is the maximum width of any string
 C << Kludge necessary to get lnblnk to correctly determine the
 C length of each string >>.

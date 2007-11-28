@@ -1567,10 +1567,13 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 	`htc` get list of convection regime files,
 	`shd` get list of shading files, `cgc` casual gain control files,
 	`gdb` generic database, `gda` (gdba) ascii generic database
-	`dba` legacy ascii database,
+	`dba` ascii database,
+	`dbb` binary database or climate file,
 	`xbm` X bitmaps, `gif` gif image files.
         `ipv` IPV definition file, `rep` IPV report file
         `qac` QA contents file, `zip` cflo3 zip (geometry) file.
+    NOTE: the size of the 1st array index in char file_list must be edited to be
+    the same as the parameter MFFOLD in include/espriou.h
  */
 
   char *flist;	/* f77 array of returned folders or file names */
@@ -1590,7 +1593,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   char *locflist = flist;
   char *locact = act;
   int locnflist = *nflist;
-  static char file_list[50][73];	/* character arrays to hold folder or file names. */
+  static char file_list[60][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
   char act2[8];	/* buffer for act */
 
@@ -1604,7 +1607,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 */
 /* clear the local return string array and reset nflist */
   locnflist = 0;
-  for ( i = 0; i < 49; i++ ) {
+  for ( i = 0; i < 59; i++ ) {
     nwflist[i] = (long int) 0;
     strcpy(file_list[i],
       "                                                                         ");
@@ -1689,6 +1692,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
         if (strstr(dirt->d_name,".gdba")) foundone = 1;
       } else if(strcmp("dba",act2)== 0) { /* If request for asci legacy db only, then build this list. */
         if (strstr(dirt->d_name,".dba")) foundone = 1;
+        if (strstr(dirt->d_name,".a"))   foundone = 1;
       } else if(strcmp("xbm",act2)== 0) { /* If request for X pixmap only, then build this list. */
         if (strstr(dirt->d_name,".xbm")) foundone = 1;
         if (strstr(dirt->d_name,".XBM")) foundone = 1;

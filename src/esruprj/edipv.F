@@ -260,6 +260,8 @@ C Define information used in generating IPV.
       subroutine ipvdat(act)
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"  
+C espriou.h for climatelist file name.
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -346,7 +348,6 @@ C water (ratio). For nipvassmt=1 these are initially set to 1.0.
 C This information is potentially used to support IPV calculations.
       common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
      &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
-      common/clmlst/cdblbl,cdblfil
 
       common/IPVI/nipvimg,lipvimg(4)
 
@@ -367,7 +368,6 @@ C ITMM is menu for metric sets.
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF
       CHARACTER dmdsdesc*248,bdmds*72
-      character cdblbl*20,cdblfil*72
       character cfgroot*24,cr*24,t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
@@ -463,7 +463,7 @@ C Rescan climatelist file to acquire seasons and periods.
       INQUIRE (FILE=cdblfil,EXIST=XST)
       if(XST)then
         IUF=IFIL+2
-        call scancdblist(IUF,cdblfil,LCLIM,ok,ier)
+        call scancdblist(IUF,LCLIM,ok,ier)
         if(act(1:1).eq.'i'.or.act(1:1).eq.'I')then
           if(nipvassmt.eq.1)then
             continue
@@ -1348,11 +1348,11 @@ C Domestic hot water day ratio.
      &      'scan for day/DD ratios','continue',IW,9)
         if(IW.eq.1.or.IW.eq.2)then
 
-C Rescan climate to acquire ratios.
+C Rescan climate to acquire ratios from the climatelist file.
           INQUIRE (FILE=cdblfil,EXIST=XST)
           if(XST)then
             IUF=IFIL+2
-            call scancdblist(IUF,cdblfil,LCLIM,ok,ier)
+            call scancdblist(IUF,LCLIM,ok,ier)
           endif
         endif
         if(IW.eq.1)then

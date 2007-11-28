@@ -30,6 +30,7 @@ C if these are 0 then use default values.
 #include "cfd.h"
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -52,10 +53,6 @@ C if these are 0 then use default values.
 C Path to problem.
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Defaults.
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
@@ -102,9 +99,8 @@ C Material data arrays.
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       CHARACTER*24 ITEM(10)
-      CHARACTER H*72,inf*144,LCFD*72,tfile*72,DFCFD*72,Lflpar*72
-      character path*72,upath*72,esprc*72,longtfile*144
-      character dfdblbl*20,defdbfl*72
+      CHARACTER H*72,inf*144,LCFD*72,DFCFD*72,Lflpar*72
+      character path*72,upath*72,longtfile*144
       CHARACTER doit*248,tmode*8,outs*124,fs*1,outstr*124
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
@@ -325,15 +321,15 @@ C Show version.
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFL,0,IIER)
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFL.
-      call escdef(dfdblbl,defdbfl,IFL,IER)
+      call escdef(IFL,IER)
 
 C Take `c' command line file name, convert to fortran string LCFD
 C and place as initial configuration file.

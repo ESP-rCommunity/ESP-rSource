@@ -24,8 +24,10 @@ C COMPUT: Sets up the parameters relating to shading computation.
 
 C ********************* COMPUT
 C 'COMPUT' Sets up the parameters relating to shading computation.
+
       SUBROUTINE COMPUT(ICOMP,IER,act)
 #include "building.h"
+
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
@@ -47,11 +49,14 @@ C 'COMPUT' Sets up the parameters relating to shading computation.
       COMMON/SIF1/INSRTD,INSTRI
       common/ract/paction
 
-C iaplic(1) toggle for shading; iaplic(2) toggle for insolation; iaplic(3)
-C   toggle for assessment where:
-C   1 is 'all_applicable', 0 is manual selection of surfaces.
-C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
-C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
+C iaplic(1) toggle for shading;
+C iaplic(2) toggle for insolation;
+C iaplic(3) toggle for assessment where:
+C         1 is 'all_applicable',
+C         0 is manual selection of surfaces.
+C nsurfcalc is number of shaded surfaces, lstsfcalc() list of
+C applicable surfaces, nsurfinso number of insolation sources and
+C isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
       CHARACTER LTRNS*72,TBASE*72,BLKNAME*8,BLKMAT*12,outs*124
@@ -59,8 +64,8 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER act*1,paction*16,h*72
-      LOGICAL OK,tok,dok
-      logical newgeo  ! to use for testing if new/old geometry file.
+      LOGICAL OK,dok
+      logical newgeo  ! Used to test for new/old geometry file.
       DIMENSION IRECS(MS),AVEDEC(12),IVA(MS)
 
       DATA AVEDEC/17.,15.,16.,15.,15.,11.,17.,16.,16.,
@@ -68,18 +73,14 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-C If trace requested enable writing of text version of transition file.
       newgeo=.false.  ! assume older format geometry.
-      tok=.false.
-      if(icout.eq.33)tok=.true.
-
       IER=0
       IUNIT=IFIL
-      iut=ifil+12
+
   35  call eclose(gversion(icomp),1.1,0.01,newgeo)
 
-C If new format geometry and iaplic(icomp,1) alread equals 1 then
-C all applicable was set in in the geometry file.
+C If new format geometry and iaplic(icomp,1) already equals 1 then
+C all applicable surfaces were set in the zone geometry file.
       if(newgeo)then
         if(iaplic(icomp,1).eq.1)then
           NP=nsurfcalc(icomp)
@@ -148,7 +149,7 @@ C Clear return array.
             endif
   13      continue
           if(NP.eq.0)then
-            CALL usrmsg('No applicable surfaces found:',' ','W')
+            CALL usrmsg('No applicable surfaces found!',' ','W')
             return
           endif
           iaplic(icomp,1)=1
@@ -159,7 +160,7 @@ C Clear return array.
 
 C Set up ISC array (surfaces included in the shading analysis).
         ICONT=0
-        DO 110 I=1,NZSUR(icomp)
+        DO 110 I=1,NZSUR(ICOMP)
           II=I
           ISC(II)=0
           DO 120 J=1,NP
@@ -180,51 +181,62 @@ C from the geometry file.
       IF(ICONT.EQ.0)THEN
         if(newgeo)then
           CALL edisp(iuout,
-     &    'No surfaces to shade noted in geometry file. Skipping!')
+     &    'No shaded surfaces noted in zone geometry file - skipping!')
           RETURN
         else
           if(act.eq.'s')then
-            CALL edisp(iuout,' No surfs, shading Skipping!')
+            CALL edisp(iuout,'No surfaces, shading skipped!')
             ICAL=1
             RETURN
           else
             dok=.true.
-            h(1)='Surfaces which might be shaded need to be identified '
+            h(1)='Surfaces that might be shaded need to be identified '
             h(2)='or the computations cannot be done. '
-            CALL ASKOK(' No surfaces have been specified!',
-     &              ' Do you wish to re-specify?',OK,dok,2)
+            CALL ASKOK('No surfaces selected!',
+     &              'Re-specify?',OK,dok,2)
             IF(OK)goto 35
-            CALL edisp(IUOUT,' Shading computation abandoned !')
+            CALL edisp(IUOUT,'Shading computation abandoned!')
             ICAL=1
             RETURN
           endif
         endif
       endif
 
-C Use multi-month code even if only a single month required.
-C Multi-month calculation.
+C Calculate shading for specified period.
       MULTC=2
       if(paction(1:13).ne.'update_silent')then
+        CALL edisp(IUOUT,' ')
         CALL edisp(IUOUT,
-     &  ' A transitional shading file will be opened for each month,')
-        call edisp(iuout,
-     &  ' the base file name will have Jan, Feb, etc. appended.')
+     &  'A zone transitional shading file will be opened for each')
+        CALL edisp(IUOUT,
+     &  'computation month to store surface shading data that')
+        CALL edisp(IUOUT,
+     &  'are required by the internal surface insolation algorithm.')
+        CALL edisp(IUOUT,
+     &  'These file are named ?Jan, ?Feb etc., where `?` is the')
+        CALL edisp(IUOUT,
+     &  'zone base name. These files will be automatically deleted')
+        CALL edisp(IUOUT,
+     &  'when the Shading & Insolation program is exited normally')
+        CALL edisp(IUOUT,
+     &  '(otherwise they may be deleted manually).')
       endif
 
       if(act.eq.'s')then
         MONS=1
         MONF=12
       else
-        CALL EASKI(MONS,' ',' Beginning month number ? ',
-     &    1,'F',12,'F',1,'start month',IER,0)
-        CALL EASKI(MONF,' ',' Ending month number ? ',
-     &    MONS,'F',12,'F',1,'end month',IER,0)
+        h(1)='An interger value between 1 and 12.'
+        CALL EASKI(MONS,' ','Start month number?',
+     &    1,'F',12,'F',1,'start month',IER,1)
+        CALL EASKI(MONF,' ','End month number?',
+     &    MONS,'F',12,'F',1,'end month',IER,1)
       endif
       DO 601 MON=MONS,MONF
         IDAY=INT(AVEDEC(MON))
         CALL EDAY(IDAY,MON,IYD)
 
-C Reset IOSHD before each month calculation.
+C Reset IOSHD before each month's calculation.
         DO 101 I=1,NOX
           DO 201 J=1,NOZ
             IOSHD(I,J)=0
@@ -232,39 +244,34 @@ C Reset IOSHD before each month calculation.
   101   CONTINUE
 
 C As a separate file will need to be created for each month of a 
-C simulation, append 'Jan' or 'Feb' on to the end of the base name to
+C simulation, append 'Jan' or 'Feb' to the end of the base name to
 C identify them. Close any previous file on IUNIT and open a new one.
         TBASE=' '
         TBASE=LTRNS(1:LNBLNK(LTRNS))//MTHNAM(MON)
         IRECW=MS+5
         call EFOPRAN(IUNIT,TBASE,IRECW,3,IER)
-        WRITE(outs,'(1x,a,a)')MTHNAM(MON),' calculations commenced'
-        if(paction(1:13).ne.'update_silent')then
-          call usrmsg(outs,' ','-')
-        endif
 
-C Write the first record of transitional file.
+C Write the first record of the transitional file.
         IREC=1
         DO 801 I=1,MS
           IRECS(I)=0
   801   CONTINUE
         WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IRECS(I),I=1,MS)
-        if(tok)write(iut,*)irec,(IRECS(I),I=1,MS)
         CALL TFILE1(icomp)
         CALL SHDCON(ICOMP)
         ICAL=1
         INSRTD=0
         CALL SSAVE(ier)
         if(ier.ne.0)then
-          call usrmsg('Error condition detected during file save...',
-     &                'ceasing calculations.','W')
+          call usrmsg('Error condition detected during file save!',
+     &                'Terminating calculation.','W')
           return
         endif
   601 CONTINUE
       RETURN
 
  1000 WRITE(outs,21)IREC
-   21 FORMAT(' Transitional shading file error in `COMPUT` - Rec',I6)
+   21 FORMAT('COMPUT: Zone Transitional Shading file error, record',I6)
       call edisp(iuout,outs)
       RETURN
       END

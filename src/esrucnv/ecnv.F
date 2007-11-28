@@ -35,6 +35,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "espriou.h"
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -58,10 +59,7 @@ C ESP-r commons.
       common/appw/iappw,iappx,iappy
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
 
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -114,8 +112,8 @@ C Material data array.
       character iformat*24,oformat*24,number*3,fs*1
       character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*144
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character path*72,upath*72,esprc*72,LCNN*72
-      character dfdblbl*20,defdbfl*72,upgcfg*72
+      character path*72,upath*72,LCNN*72
+      character upgcfg*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character cfgroot*24,dstmp*24,MODE*4
@@ -272,7 +270,7 @@ C Instanciate and clear commons, scan the supplied problem
 C to update commons for configuration.
           call blnksys
           call edisp(iuout,' Scanning the problem before updating...')
-          call escdef(dfdblbl,defdbfl,iotmp2,IER)
+          call escdef(iotmp2,IER)
           MODE='NONE'
           call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then
@@ -282,7 +280,7 @@ C to update commons for configuration.
             stop 'ecnv aborted.'
           endif
         else
-          call escdef(dfdblbl,defdbfl,iotmp2,IER)
+          call escdef(iotmp2,IER)
           call blnksys
         endif
       elseif(oformat(1:3).eq.'dxf')then
@@ -345,7 +343,7 @@ C have not been read in.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit iotmp2.
-        call escdef(dfdblbl,defdbfl,iotmp2,IER)
+        call escdef(iotmp2,IER)
         write(LTMP,'(a)') filname(1:lnblnk(filname))
 
 C Find the path and local file name.

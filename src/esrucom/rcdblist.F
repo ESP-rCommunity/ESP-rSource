@@ -27,7 +27,7 @@ C     in climatelist file.
 
 C ********* rdblist
 C Scan list of climate databases and present selection to user.
-      subroutine rdblist(idblfil,cdblfil,clmdb,ier)
+      subroutine rdblist(idblfil,clmdb,ier)
 #include "epara.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -47,7 +47,7 @@ C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
 
       dimension name(60), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
-      character cdblfil*72, group*32,key*1,look*32,tlook*32
+      character group*32,key*1,look*32,tlook*32
       character clmdb*72,llclmdb*144,h*72,actreturn*1
 
 C Set default early winter, spring, summer, autumn, late winter periods.
@@ -278,13 +278,13 @@ C Parse this item of the climatelist file.
 
 C ********* matchcdb
 C Scan list of climate databases for name and return database.
-      subroutine matchcdb(idblfil,cdblfil,alias,clmdb,ier)
+      subroutine matchcdb(idblfil,alias,clmdb,ier)
 #include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       dimension name(60)
       character name*32,OUTSTR*124,WORD*20
-      character cdblfil*72, group*32,tlook*32,line*72,outs*124
+      character group*32,tlook*32,line*72,outs*124
       character clmdb*72,avail*10,alias*32
 
 C Open the list of climate databases.
@@ -390,13 +390,13 @@ C ********* scancdblist
 C Scan climatelist file of for documentation and typical periods
 C which might match the current database. Should be called if
 C the climate file was not selected via scan of climatelist.
-      subroutine scancdblist(idblfil,cdblfil,clmdb,ok,ier)
+      subroutine scancdblist(idblfil,clmdb,ok,ier)
 #include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       character*(*) clmdb
       character OUTSTR*124,WORD*20
-      character cdblfil*72,tlook*72
+      character tlook*72
       character actreturn*1
       logical ok
 

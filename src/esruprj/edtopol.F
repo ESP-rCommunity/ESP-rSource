@@ -2828,6 +2828,7 @@ C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"  ! for climatelist file name.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2856,10 +2857,9 @@ C IDST tool commands.
       common/anchorb/IALOC(20),lstanchr(20,60)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      common/clmlst/cdblbl,cdblfil
 
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
-      character CMDLNAM*80,CMDLBL*12,cdblbl*20,cdblfil*72
+      character CMDLNAM*80,CMDLBL*12
       character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,DESC*48,outs*124,LTMP*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,clmdb
@@ -2884,7 +2884,7 @@ C If IDST climate is different update the configuration. Check
 C against the climate list to see related db for climate name.
       iuf=IFIL+1
       write(alias,'(a)')CMDCLMN(1:lnblnk(CMDCLMN))
-      call matchcdb(iuf,cdblfil,alias,clmdb,ier)
+      call matchcdb(iuf,alias,clmdb,ier)
       if(clmdb(1:lnblnk(clmdb)).ne.LCLIM(1:lnblnk(LCLIM)))then
         if(clmdb(1:4).ne.'UNKN')then
           LCLIM=clmdb

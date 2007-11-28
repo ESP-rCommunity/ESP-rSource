@@ -18,15 +18,14 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C MISCEL.F contains the following miscellaneous routines used by ESRUshd:
+C MISCEL.F contains the following routines used by ish.
 
 C AREA:    Returns area for any polygon.
 C MESH:    Computes centre point X&Z coord of grid squares.
 C PICKSSUR selects surfaces for shading & insolation analysis.
-C POINT1: Decides if a point is within a face boundary.
-C POINT2: Decides if a point is within a shadow boundary.
+C POINT1   determine if a point is within the target surface
+C POINT2   determine if a point is within a shadow polygon.
 
-C This routine draws a mercator sun path diagram
 C ************* AREA 
       SUBROUTINE AREA(N,X,Y,A)
 C AREA calculates the area for any polygon where N is the number
@@ -58,37 +57,27 @@ C Check square root is not negative.
       RETURN
       END
 
-
 C *************** MESH ***********************
 C 'MESH' Computes the centre point X & Z coordinate of each rectangular
 C grid square of a mesh superimposed on the opaque surface in question
 C and any associated windows.
-      SUBROUTINE MESH(IS)
+      SUBROUTINE MESH(ITS)
 #include "building.h"
-      COMMON/OUTPCH/ICOUT
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TC/ITC,ICNT
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GRID3/OGRIDA(MS)
-      CHARACTER BLKNAME*8,BLKMAT*12,outs*124
-      logical OK
-      logical tok
+      CHARACTER BLKNAME*8,BLKMAT*12
 
-C If verbose trace requested enable writing.
-      tok=.false.
-      if(icout.eq.33.and.itc.gt.1)tok=.true.
-
-C Derive bounding box (in 2D) for surface `is`. First find max and min
+C Derive bounding box (in 2D) for surface ITS. First find max and min
 C X & Z values for this surface by scanning each vertex.
-      ngldum=0
       XMAX=-1.E+10
       ZMAX=-1.E+10
       XMIN=1.E+10
       ZMIN=1.E+10
-      NV=NVER(IS)
+      NV=NVER(ITS)
       DO 10 I=1,NV
         XMAX=AMAX1(XMAX,XFT(I))
         ZMAX=AMAX1(ZMAX,ZFT(I))
@@ -104,7 +93,7 @@ C Establish grid interval for this surface. Ogrida is the area of
 C one grid square.
       DIVX=DXMESH/NOX
       DIVZ=DZMESH/NOZ
-      OGRIDA(IS)=DIVX*DIVZ
+      OGRIDA(ITS)=DIVX*DIVZ
 
 C Compute X & Z values for centre point of each grid square.
       DO 20 I=1,NOX
@@ -114,30 +103,14 @@ C Compute X & Z values for centre point of each grid square.
    30   CONTINUE
    20 CONTINUE
 
-C Trace if verbose level.
-      IF(.NOT.TOK)goto 9985
-
-      WRITE(outs,9986)IS
- 9986 FORMAT(
-     &' Opaque surface grid centre coordinates for surface ',I2,':')
-      call edisp(icout,outs)
-      call edisp(icout,' NOX|NOZ|     X   |    Z')
-      DO 9996 I=1,NOX
-        DO 9995 J=1,NOZ
-          WRITE(outs,9994)I,J,XOP(I,J),ZOP(I,J)
- 9994     FORMAT(I3,',',I3,2F10.2)
-          call edisp(icout,outs)
- 9995   CONTINUE
- 9996 CONTINUE
-      call edisp(icout,'  ')
- 9985 RETURN
+      RETURN
       END
 
 C ******************** PICKSSUR 
 C PICKSSUR selects surfaces for shading & insolation analysis.
 C IZONE is the focus zone, NP is the number of surfaces selected,
-C act = 's or S' shading, act = 'i or I' insolation,
-C act = 'l or L' view shading surfs, act = '-' neither. 
+C act = 's or S' for shading, act = 'i or I' for insolation,
+C act = 'l or L' for view shading surfs, act = '-' for no selection. 
 C IVA array of selections. Uses information from ZONDF.
 
       SUBROUTINE PICKSSUR(IZONE,NP,act,IVA,IER)
@@ -151,9 +124,10 @@ C IVA array of selections. Uses information from ZONDF.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/CONTR/MON,ISC(MS),IYD
 
-C iaplic(1) toggle for shading; iaplic(2) toggle for insolation; iaplic(3)
-C   toggle for assessment where:
-C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation;
+C iaplic(3) toggle for assessment where:
+C                      1 is 'all_applicable' and
+C                      0 is manual selection of surfaces.
 C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
 C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
@@ -171,29 +145,28 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
         RETURN
       ENDIF
 
- 43   h(1) ='A shading analysis finds the temporal patterns of '
-      h(2) ='shading on exterior surfaces.  Insolation analysis'
-      h(3) ='tracks direct solar radiation entering a zone and '
-      h(4) ='it distribution. '
-      h(5) =' '
-      h(6) ='You are being asked to select surfaces. If you select'
-      h(7) ='All applicable then this is: '
-      h(8) ='  shading - all outside facing opaque & tansparent '
-      h(9) ='  insolation - all outside facing tansparent '
-      h(10)=' '
-      h(11)='You may also manually select surfaces. '
-      h(12)='Note: this process works best if the problem topology '
-      h(13)='(boundary conditions) and surface conposition (so '
-      h(14)=' '
+ 43   h(1) ='A shading analysis computes the temporal patterns of'
+      h(2) ='shading on exterior surfaces, while an insolation'
+      h(3) ='analysis tracks the direct solar radiation entering'
+      h(4) ='a zone to determine the distribution between internal'
+      h(5) ='surfaces. When selecting the surfaces to include, note'
+      h(6) ='that:'
+      h(7) ='  + for the case of shading, the surface must be external'
+      h(8) ='    and belong to a zone that has an associated Zone'
+      h(9) ='    Obstructions file; and'
+      h(10)='  + for the case of insolation, the surface must be'
+      h(11)='    transparent. If it is an internal surface it will'
+      h(12)='    be processed as if external.'
       if(act.eq.'s'.or.act.eq.'S')then
-         CALL EASKABC('Shading  options:',' ','all applicable surfaces',
-     &          'manual surf selection','continue ? ',IIC,14)
+         CALL EASKABC(' ','Shading options:',
+     &          'all applicable surfaces','select surface(s)',
+     &          'cancel',IIC,12)
          if(iic.eq.1)iaplic(izone,1)=1
          if(iic.eq.2)iaplic(izone,1)=0
       elseif(act.eq.'i'.or.act.eq.'I')then
-         CALL EASKABC('Insolation options:',' ',
-     &     'all applicable surfaces','manual surf selection',
-     &     'continue ? ',IIC,14)
+         CALL EASKABC(' ','Insolation options:',
+     &          'all applicable surfaces','select surface(s)',
+     &          'cancel',IIC,12)
          if(iic.eq.1)iaplic(izone,2)=1
          if(iic.eq.2)iaplic(izone,2)=0
       elseif(act.eq.'l'.or.act.eq.'L')then
@@ -221,7 +194,7 @@ C Process initial selection.
             endif
   13      continue
           if(NP.eq.0)then
-            CALL usrmsg('No applicable surfaces found:',' ','W')
+            CALL usrmsg('No applicable surfaces found!',' ','W')
             goto 43
           endif
           return
@@ -236,7 +209,7 @@ C Process initial selection.
             endif
    15     continue
           if(NP.eq.0)then
-            CALL usrmsg('No applicable surfaces found:',' ','W')
+            CALL usrmsg('No applicable surfaces found!',' ','W')
             goto 43
           endif
           return
@@ -267,9 +240,10 @@ C Process initial selection.
          IVA(I)=0
    11   CONTINUE
 
-        H(1)=' Pick one, several or All surfaces for inclusion'
-        CALL EPICKS(INPIC,IVALS,' ',' Which surfaces to include: ',
-     &   33,NZSUR(IZONE),STMP,' name & type & exposure',IER,1)
+        H(1)='Pick one, several or all surfaces for inclusion'
+        H(2)='in analysis.'
+        CALL EPICKS(INPIC,IVALS,' ','Surface(s) to include',
+     &   33,NZSUR(IZONE),STMP,'Surface(s) to include?',IER,2)
         if(INPIC.eq.0)then
           RETURN
         else
@@ -279,8 +253,6 @@ C Process initial selection.
    12     CONTINUE
         endif
 
-C Debug...
-C        write(6,*) 'act np iva ',act,np,iva
       elseif(IIC.eq.4)then
         INPIC=NZSUR(IZONE)
         DO 21 I=1,INPIC
@@ -294,9 +266,9 @@ C        write(6,*) 'act np iva ',act,np,iva
           IVA(I)=0
    21   CONTINUE
         INPIC=1
-        H(1)=' Surfaces which have been assessed are listed.'
-        CALL EPICKS(INPIC,IVALS,' ',' Which surface to view: ',
-     &   33,NZSUR(IZONE),STMP,' shading view surf',IER,1)
+        H(1)='Only surfaces that have been assessed are listed.'
+        CALL EPICKS(INPIC,IVALS,' ','Surface to View',
+     &   33,NZSUR(IZONE),STMP,'Surface(s) to view?',IER,1)
         if(INPIC.eq.0)then
           RETURN
         else
@@ -304,8 +276,6 @@ C        write(6,*) 'act np iva ',act,np,iva
           IVA(1)=IVALS(1)
         endif
 
-C Debug...
-C        write(6,*) 'act np iva ',act,np,iva
       endif
       RETURN
       END
@@ -314,7 +284,7 @@ C ******************** ASKDAY
 C ASKDAY is a standard call to enquire a date. 
 C Returns IMO (month), IDO (day of month), IJDAY (day of year).
 C IFDAY is a toggle to control the display and input of periods -
-C       0 = julian day, 1 or 2 = day of month.
+C       0 = Julian day, 1 or 2 = day of month.
       SUBROUTINE ASKDAY(IFDAY,IMO,IDO,IJDAY,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -325,23 +295,24 @@ C       0 = julian day, 1 or 2 = day of month.
       DATA ID/31,28,31,30,31,30,31,31,30,31,30,31/
 
       IER=0
-      H(1)='The output time defines the day and month.'
+      H(1)='The date is either specified as a day and month number or'
+      H(2)='as a year day in Julian notation (Jan 1 = 1, Dec 31 = 365).'
   281 IF(IFDAY.EQ.0)THEN
-        CALL EASKI(IJDAY,' ',' day-of-year ? ',
-     &             1,'F',365,'F',1,'start day',IER,1)
+        CALL EASKI(IJDAY,' ','Year day?',
+     &             1,'F',365,'F',1,'start day',IER,2)
         CALL EDAYR(IJDAY,IDO,IMO)
         if(IER.ne.0)goto 281
       ELSE
-        CALL EASKI(IDO,' ', ' Day of the month ? ',
-     &             1,'F',31,'F',1,'start day',IER,1)
-        CALL EASKI(IMO,' ', ' Month number     ? ',
-     &             1,'F',12,'F',1,'end day',IER,1)
+        CALL EASKI(IMO,' ', 'Month number?',
+     &             1,'F',12,'F',1,'end day',IER,2)
+        CALL EASKI(IDO,' ', 'Day of the month?',
+     &             1,'F',31,'F',1,'start day',IER,2)
         CALL EDAY(IDO,IMO,IJDAY)
       ENDIF
 
 C Check range.
       IF(IDO.GT.ID(IMO))THEN
-        call edisp(iuout,' Day past end of month... try again. ')
+        call edisp(iuout,'Day past end of month! Respecify.')
         goto 281
       ENDIF
       CALL EDAY(IDO,IMO,IJDAY)
@@ -350,10 +321,11 @@ C Check range.
       END
 
 C ************* POINT1 **********************
-C 'POINT1' determines if a specified point is within or outwith any
-C specified object body face boundary.
+C Determines if a specified point is within or outwith the
+C target surface.
       SUBROUTINE POINT1(IS,XX,ZZ,IANS)
 #include "building.h"
+
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       DIMENSION C(2*MV+2)
@@ -392,14 +364,14 @@ C Determine if point XX,ZZ is within this face.
       END
 
 C ************* POINT2 **********************
-C 'POINT2' decides if a specified point (XX,ZZ) is within or 
-C outwith any shadow boundary from common SHAD2.
+C Determines if the specified point (XX,ZZ) is within or  outwith
+C the shadow polygon in common SHAD2.
       SUBROUTINE POINT2(XX,ZZ,IANS)
-      COMMON/SHAD2/ISHD,XS(6),ZS(6)
-      DIMENSION C(14)
+      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
+      DIMENSION C(12)
 
       IANS=0
-      NP=6
+      NP=NPOINT
       DO 10 I=1,NP
         II=2*I-1
         C(II)=XS(I)
@@ -429,8 +401,3 @@ C outwith any shadow boundary from common SHAD2.
     3 IANS=1
    11 RETURN
       END
-
-C 'INWPT1' decides if a specified point is within or outwith
-C the internal surface default window section. Since there
-C are no default windows this subroutine is not needed.
-

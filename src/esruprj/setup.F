@@ -22,11 +22,9 @@ C file setup.F includes facilities for display of dates, time
 C and viewpoints. MODSIT is set to true if default wireframe
 C viewpoint is changed.
 
-C << This would be a great place to add in functions to edit and
-C << maintain the .esprc file and the defaults file!
-
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
+#include "espriou.h"
 
       integer igraphiclib  ! external definition
 
@@ -50,9 +48,9 @@ C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       logical OK,DOK,MODSIT,browse,defview,unixok
-      logical closea,closeb,closec,closed
-      dimension ITEMS1(11)
-      character LFIL*96,H*72,longtfile*144
+      logical closea,closeb,closec,closed,concat
+      dimension ITEMS1(14)
+      character LFIL*96,H*72,longtfile*144,llitem*144,longtfiledos*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
 
@@ -101,24 +99,27 @@ C Display of time of day.
 
       ITEMS1(4)  ='e look at ASCII file                          '
       ITEMS1(5)  ='f edit an ASCII file                          '
-      ITEMS1(6)  ='g                                             '
+      ITEMS1(6)  ='g edit ESP-r defaults for files               '
+      ITEMS1(7)  ='h edit ESP-r 3rd party applications           '
+      ITEMS1(8)  ='i edit ESP-r climatelist entries              '
+      ITEMS1(9)  ='j edit ESP-r exemplars entries                '
       IF(ITRC.EQ.0)THEN
-        ITEMS1(7)='h feedback >> silent                          '
+        ITEMS1(10)='h feedback >> silent                          '
       ELSEIF(ITRC.EQ.1)THEN
-        ITEMS1(7)='h feedback >> summary                         '
+        ITEMS1(10)='h feedback >> summary                         '
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS1(7)='h feedback >> detailed                        '
+        ITEMS1(10)='h feedback >> detailed                        '
       ENDIF
       if(igupgrade.eq.0)then
-        ITEMS1(8)='i upgrade files >> no change                  '
+        ITEMS1(11)='i upgrade files >> no change                  '
       elseif(igupgrade.eq.1)then
-        ITEMS1(8)='i upgrade files >> save legacy format         '
+        ITEMS1(11)='i upgrade files >> save legacy format         '
       elseif(igupgrade.eq.2)then
-        ITEMS1(8)='i upgrade files >> save current format        '
+        ITEMS1(11)='i upgrade files >> save current format        '
       endif
-      ITEMS1(9)  ='* test button (silent zone creation)          '
-      ITEMS1(10) ='? help                                        '
-      ITEMS1(11) ='- exit this menu                              '
+      ITEMS1(12)  ='* test button (silent zone creation)          '
+      ITEMS1(13) ='? help                                        '
+      ITEMS1(14) ='- exit this menu                              '
 
 C Help text for menu.
       H(1)='This menu allows the display format for dates and'
@@ -142,10 +143,23 @@ C Help text for menu.
       H(19)='information as model files are being scanned. '
       H(20)=' '
       H(21)='As ESP-r evolves file formats change. Use the toggle'
-      H(22)='to maintain the current state, save to an eariler '
+      H(22)='to maintain the current state, save to an eariler'
       H(23)='format or save files to a newer format (if available).'
+      H(24)=' '
+      H(25)='The edit `defaults` file allows you to change where'
+      H(26)='ESP-r looks for certain files. TAKE CARE when editing'
+      H(27)='this file. '
+      H(28)=' '
+      H(29)='The edit `exemplars` file allows you to change where'
+      H(30)='ESP-r looks for example models. TAKE CARE when editing'
+      H(31)='this file. '
+      H(32)=' '
+      H(33)='The edit `3rd party application` allows you to specify'
+      H(34)='a text editor, image display tool, CAD tool and the '
+      H(35)='location of example models and where the `defaults` '
+      H(36)='file (above) is located. '
 
-      CALL EMENU('Tool preferences',ITEMS1,11,INO1)
+      CALL EMENU('Tool preferences',ITEMS1,14,INO1)
       IF(INO1.EQ.1)THEN
 
 C Wire frame view point.
@@ -258,24 +272,37 @@ C If user request jump back and re-display the menu.
 C Allow user to edit a file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
         H(1)='An ASCII format file can be edited using the current'
-        H(2)='defined text editor.'
+        H(2)='defined text editor (as defined in the default file).'
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=' '
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(LFIL,'ASCII file name?',
      &      ' ',96,'xxx.rep','ASCII file',IER,2)
-          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
         elseif(iglib.eq.2)then
-          CALL EASKF(longtfile,'ASCII file name?',
+          CALL EASKF(llitem,'ASCII file name?',
      &      ' ',144,'xxx.rep','ASCII file',IER,2)
         else
           CALL EASKF(LFIL,'ASCII file name?',
      &      ' ',96,'xxx.rep','ASCII file',IER,2)
-          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
         endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
           goto 33  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
         endif
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
@@ -283,13 +310,360 @@ C If user request jump back and re-display the menu.
      &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
       ELSEIF(INO1.EQ.6)THEN
-        continue
+
+C Edit the installed file `defaults'.
+        call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=defdbfl
+        llt=lnblnk(llitem)
+        H(1) ='The edit `defaults` file allows you to change where'
+        H(2) ='ESP-r looks for certain files. TAKE CARE when editing'
+        H(3) ='this file. The key words are:'
+        H(4) =' '
+        H(5) =' *ipth - where ESP-r is installed. This was set during'
+        H(6) ='         in intial Installation and compile sequence.'
+        H(7) ='         Leave this alone!'
+        H(8) =' '
+        H(8) ='Names of default files (typically used ford demos)'
+        H(9) =' *cfg - a default model to open'
+        H(10)=' *ctl - a default zone control definition'
+        H(11)=' *mfn - a default mass flow network'
+        H(12)=' *dfd - a default CFD domain'
+        H(13)=' *pnf - a default plant-only model'
+        H(14)=' *res - a default simulation results file'
+        H(15)=' *mfr - a default mass flow simulation results file'
+        H(16)=' '
+        H(17)='Names of databases initially associated with models'
+        H(18)='edit these so as to be appropriate for your region'
+        H(19)=' *clm - initial climate file'
+        H(20)=' *prs - initial wind-pressure coefficients database'
+        H(21)=' *prm - initial materials database'
+        H(22)=' *mlc - initial constructions database'
+        H(23)=' *opt - initial optical properties database'
+        H(24)=' *env - initial event profiles database'
+        H(25)=' *pdb - initial plant component template database'
+        H(26)=' *ecdb - initial electrical component database'
+        H(27)=' *mcdb - initial active materials database'
+        H(28)=' *icdb - initial icons for the net module'
+        H(29)=' *mldb - initial micotoxin database'
+        H(30)=' *sbem - initial UK National Calculation Method'
+        H(31)='         database (or code complience rules)'
+        H(32)=' '
+        H(33)='After edting and saving the information is available'
+        H(34)='the next time applications are invoked. '
+        H(35)=' '
+        H(36)='NOTE: do not change the name of the default file! '
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &        96,'default','defaults file',IER,36)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &        124,'default','defaults file',IER,36)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &        144,'default','defaults file',IER,36)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &      144,'default','defaults file',IER,36)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &      96,'default','defaults file',IER,36)
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 33  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
+        call runit(doit,tmode)
+
       ELSEIF(INO1.EQ.7)THEN
+
+C Edit the installed file `esprc'.
+        call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=esprc
+        llt=lnblnk(llitem)
+        H(1) ='The edit `esprc` file allows you to change 3rd party'
+        H(2) ='tools used by ESP-r. A standard esprc file is included'
+        H(3) ='in the installation folder. ESP-r also checks for a '
+        H(4) ='.esprc (note the dot) file in the users home folder'
+        H(5) ='for user specific settings.  '
+        H(6) =' '
+        H(7) ='        TAKE CARE when editing this file. '
+        H(8) =' '
+        H(9) ='Data in the file are comma separated. The first token'
+        H(10)='in each line is a key, the second is (typically) a '
+        H(11)='label followed by a command or exedutable to invoke.'
+        H(12)=' '
+        H(13)='Key words in thefile are: '
+        H(14)=' *ESPRC  - first line tag (leave alone)'
+        H(15)=' '
+        H(16)=' *gprn line specifies an application to invoke for'
+        H(17)='    capturing a portion of the graphic display. For'
+        H(18)='    Linux and OSX and Solaris the `import` tool in'
+        H(19)='    Imagemagik is suggested.'
+        H(20)=' '
+        H(21)=' *cad  line specifies a CAD application to start. There'
+        H(22)='   are 3 tokens after the tag, a user description, a'
+        H(23)='   file format and the name of the executable.'
+        H(24)=' '
+        H(25)=' *image_display line(s) define how specific image types'
+        H(26)='    can be displayed. The 2nd token is TIF XMBP GIF XWD'
+        H(27)='    and the 3rd token is the name of the executable'
+        H(28)=' '
+        H(29)=' *journal is a line specifying whether a detailed log'
+        H(30)='    should be kept of the users actions. The 2nd'
+        H(31)='    token is OFF or ON'
+        H(32)=' '
+        H(33)=' *editor line specifies what text editor to invoke'
+        H(34)='    the 2nd token is a label and the 3rd token is'
+        H(35)='    the application to start. Typically on Windows'
+        H(36)='    the WordPad works well and notepad does not work'
+        H(37)='    well. On Linux/Solaris nedit is a good choice.'
+        H(38)=' '
+        H(39)=' *exemplars line provides the path to the list of '
+        H(40)='    exemplar models.'
+        H(41)=' '
+        H(42)=' *validation_stds line provides the path to the list'
+        H(43)='    of standard validation models.'
+        H(44)=' '
+        H(45)=' *db_defaults line provides the path to the file that'
+        H(46)='    holds default database and model files as well as'
+        H(47)='    default constructions to use.'
+        H(48)=' '
+        H(49)=' *db_climates line provides the path to the file that'
+        H(50)='    holds list of climate files.'
+        H(51)=' '
+        H(52)=' *end  the last line of the file (leave alone)'
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &        96,'esprc','esprc file',IER,52)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &        124,'esprc','esprc file',IER,52)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &        144,'esprc','esprc file',IER,52)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &      144,'esprc','esprc file',IER,52)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &      96,'esprc','esprc file',IER,52)
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 33  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
+        call runit(doit,tmode)
+
+      ELSEIF(INO1.EQ.8)THEN
+
+C Edit the installed file `climatelist'.
+        call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=cdblfil
+        llt=lnblnk(llitem)
+        H(1) ='The edit `climatelist` file allows you to change the'
+        H(2) ='list of climate files available for browsing. TAKE CARE'
+        H(3) ='when editing this file. '
+        H(4) =' '
+        H(5) ='The blocks of text that form an entry within this file'
+        H(6) ='are typically created within the clm module and both'
+        H(7) ='the text block and the climatelist file can be edited'
+        H(8) ='clm. '
+        H(9) =' '
+        H(10)='Key words in the file are: '
+        H(11)=' '
+        H(12)=' *CLIMATE_LIST  - 1st line identifier (leave alone)'
+        H(13)=' '
+        H(14)=' *group <tab> text for menu'
+        H(15)=' '
+        H(16)=' *item'
+        H(17)='    marks the start of one climate'
+        H(18)=' '
+        H(19)=' *name <tab> text for menu'
+        H(20)=' '
+        H(21)=' *aide <tab> description of climate'
+        H(22)=' '
+        H(23)=' *dbfl <tab> full path to the climate file'
+        H(24)=' '
+        H(25)=' *winter_s  winer season tab has 4 numbers for:'
+        H(26)='    winter begining January 1 and 4 numbers for'
+        H(27)='    winter ending 31 Dec. Each set of 4 is:'
+        H(28)='   start day, start month, finish day, finish month'
+        H(29)=' '
+        H(30)=' *spring_s has 4 numbers representing start and end'
+        H(31)='     of spring and 4 numbers representing start and'
+        H(32)='     end of autumn season'
+        H(33)=' '
+        H(34)=' *summer_s has 4 numbers representing start and end'
+        H(35)='     of summer season'
+        H(36)=' '
+        H(37)=' *winter_t is like *winter_s but for a typical period'
+        H(38)=' *spring_t is like *spring_s but for typical periods'
+        H(39)=' *summer_t is like *summer_s but for typical period'
+        H(40)=' '
+        H(41)=' *avail <tab>  ONLINE'
+        H(42)=' '
+        H(43)=' *help_start'
+        H(44)='    signals start of a block of contextual help'
+        H(45)=' '
+        H(46)=' *help_end'
+        H(47)='    signals end of a block of contextual help'
+        H(48)=' '
+        H(49)='After edting and saving the information is available'
+        H(50)='the next time applications are invoked. '
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &        96,'default','climatelist file',IER,50)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &        124,'default','climatelist file',IER,50)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &        144,'default','climatelist file',IER,50)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &      144,'default','climatelist file',IER,50)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &      96,'default','climatelist file',IER,50)
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 33  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
+        call runit(doit,tmode)
+      ELSEIF(INO1.EQ.9)THEN
+
+C Edit the installed file `exemplars'.
+        call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=exemfl
+        llt=lnblnk(llitem)
+        H(1) ='The edit `exemplars` file allows you to change the list'
+        H(2) ='of example models. TAKE CARE when editing'
+        H(3) ='this file. The key words are:'
+        H(4) =' '
+        H(5) =' *EXEMPLARS - fist line identifier (leave alone)'
+        H(6) =' *help <tab> some text'
+        H(7) =' '
+        H(8) =' *label <tab> label text'
+        H(9) =' '
+        H(10)=' *group <tab> name of group'
+        H(11)=' '
+        H(12)=' *item'
+        H(13)='    marks the start of the model information'
+        H(14)=' '
+        H(15)=' *name <tab> some text for the menu'
+        H(16)=' *cfg <tab> full path to model configuration file'
+        H(17)=' *root <tab> full path to model folder'
+        H(18)=' '
+        H(19)='To add an additional item find the relevant group and'
+        H(20)='add in the *item line, *cfg line and *root line '
+        H(21)=' '
+        H(22)='After edting and saving the information is available'
+        H(23)='the next time applications are invoked. '
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &        96,'default','exemplars file',IER,23)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &        124,'default','exemplars file',IER,23)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &        144,'default','exemplars file',IER,23)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &      144,'default','exemplars file',IER,23)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &      96,'default','exemplars file',IER,23)
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 33  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
+        call runit(doit,tmode)
+
+      ELSEIF(INO1.EQ.10)THEN
 
 C Toggle trace/feedback level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
-      ELSEIF(INO1.EQ.8)THEN
+      ELSEIF(INO1.EQ.11)THEN
 
 C Toggle file format upgrade opinion.
         igupgrade=igupgrade+1
@@ -307,7 +681,7 @@ C Toggle file format upgrade opinion.
             call usrmsg('this function to be written','...','W')
           endif
         endif
-      ELSEIF(INO1.EQ.9)THEN
+      ELSEIF(INO1.EQ.12)THEN
 
 C Test button for silent zone read testing.
 
@@ -332,11 +706,11 @@ C If vi then spawn a new window to do the editing in.
         IUNIT=IFIL+1
         call silentread(iunit,longtfile,ier)
         return
-      ELSEIF(INO1.EQ.10)THEN
+      ELSEIF(INO1.EQ.13)THEN
 
 C User asked for help.
-        CALL PHELPD('general preferences',23,'-',0,0,IER)
-      ELSEIF(INO1.EQ.11)THEN
+        CALL PHELPD('general preferences',36,'-',0,0,IER)
+      ELSEIF(INO1.EQ.14)THEN
         RETURN
       else
         goto 33

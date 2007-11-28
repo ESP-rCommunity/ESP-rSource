@@ -54,6 +54,7 @@ C     MMOD   - determines the device type attached to the current job.
       program mfs
 #include "net_flow.h"
 #include "esprdbfile.h"
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
@@ -76,13 +77,9 @@ C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
 C Path to problem
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
@@ -107,8 +104,7 @@ C Name of current application
       CHARACTER*24 ITEM(18)
       CHARACTER H*72,OUTSTR*124,inf*144,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      character path*72,upath*72,esprc*72
-      character dfdblbl*20,defdbfl*72
+      character path*72,upath*72
       character tg*1,delim*1,xfile*144
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
 
@@ -294,7 +290,7 @@ C All subsequent tstamp messages will be appended to root journal.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IUA.
- 902  call escdef(dfdblbl,defdbfl,IUA,IER)
+ 902  call escdef(IUA,IER)
 
 C Fill valid component type arrays
 C Set defaults for iteration parameters, Pstack calculation model,
@@ -535,7 +531,7 @@ C If not OK, or if not network data available go back to menu.
       ENDIF
 
 c Call control subroutine MZCSTR
-34    IER=0
+      IER=0
       CALL MZCSTR(ier)
       IF(IER.EQ.1)GOTO 10
 

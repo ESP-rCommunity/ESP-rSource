@@ -15,7 +15,7 @@ OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o comput.o cread3dv.o ctl
 	  emfnetw.o enetmisc.o eroper.o esru_misc.o esystem.o files.o graph.o inscom.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelev.o pltcfg.o \
 	  readTrnsys.o shdcon.o silist.o \
-	  sort.o startup.o synop.o tfiles.o trnsf.o trnsfi.o winshd.o wshad.o
+	  sort.o startup.o synop.o tfiles.o trnsf.o trnsfi.o winshd.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -113,4 +113,4 @@ clean:
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F econstr.F edcondb.F edatabase.F egeometry.F emfnetw.F enetmisc.F \
 	enetrewr.F esru_misc.F esystem.F eroper.F item.F mfcdat.F nwkrewr.F \
-	plelev.F  readTrnsys.F sort.F startup.F tdfile.F pltcfg.F 
+	plelev.F readTrnsys.F sort.F startup.F tdfile.F pltcfg.F 
