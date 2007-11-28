@@ -366,15 +366,20 @@ C Calculate patch direction vector (location).
             zp = 1.0
           elseif(nzone.eq.1) then
             aazim = azim(nzone)*(IPTCH - 1)
-            xp = ecosd(aazim)
-            yp = esind(aazim)
-            zp = etand(alt(nzone))
+            xp = ecosd(aazim)*ecosd(alt(nzone))
+            yp = esind(aazim)*ecosd(alt(nzone))
+            zp = esind(alt(nzone))
           else
             aazim = azim(nzone)*((IPTCH - npz(nzone-1)) - 1)
-            xp = ecosd(aazim)
-            yp = esind(aazim)
-            zp = etand(alt(nzone))
+            xp = ecosd(aazim)*ecosd(alt(nzone))
+            yp = esind(aazim)*ecosd(alt(nzone))
+            zp = esind(alt(nzone))
           endif
+
+C Debug
+C          write(6,*) 'IPTCH',' Xp',' Yp',' Zp',' azim',' alt'
+C          write(6,*) IPTCH,' ',xp,' ',yp,' ',zp,' ',aazim,' ',alt	   
+C End Debug
 
           write(ITA3,'(a)') 'patch_light source patch'
           write(ITA3,'(a)') '0'
