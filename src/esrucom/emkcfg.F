@@ -233,6 +233,16 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
+      
+c This common block is used to define the sky temperature calculation method
+      COMMON/EXLONGWV/iExt_longwave_flg
+      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
+                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
+                                   ! 2 = Cole (?);
+                                   ! 3 = Czeplak & Kasten (1987);               
+                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
+                                   ! 5 = Swinbank (clear - uses wet bulb T); 
+
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
@@ -512,6 +522,26 @@ C Solar radiation (half hour data) flag.
       else
         WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*slr_half_hr  ',
      &    iSlr_half_hr_flg,'  # solar timing half-hour centred'
+      endif
+
+C Sky temperature flag.
+      if(iExt_longwave_flg.eq.1)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Clarke calculation'
+      elseif(iExt_longwave_flg.eq.2)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Cole calculation'
+      elseif(iExt_longwave_flg.eq.3)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Czeplak & Kasten calculation'
+      elseif(iExt_longwave_flg.eq.4)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Swinbank (clear - db T) calculation'
+      elseif(iExt_longwave_flg.eq.5)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Swinbank (clear - wb T) calculation'
+      else
+        iExt_longwave_flg=0
       endif
 
 C SHOCC: library file.

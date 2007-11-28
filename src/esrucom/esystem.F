@@ -455,7 +455,15 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
-
+      
+c This common block is used to define the sky temperature calculation method
+      COMMON/EXLONGWV/iExt_longwave_flg
+      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
+                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
+                                   ! 2 = Cole (?);
+                                   ! 3 = Czeplak & Kasten (1987);               
+                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
+                                   ! 5 = Swinbank (clear - uses wet bulb T); 
 
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
@@ -1107,6 +1115,12 @@ C then get the name of the file and test for its existence.
 C Solar radiation (half hour data) flag.
         call egetwi(outstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
+
+      elseif(WORD(1:14).eq.'*sky_temp_calc')then
+
+C Solar radiation (half hour data) flag.
+        call egetwi(outstr,k,iExt_longwave_flg,0,1,'W',
+     &    'sky temper calculation flag',IER)
 
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(OUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
