@@ -2689,7 +2689,7 @@ C       Economizer control strategy
 C-------------------------------------------------------------------------
         iEconomizer_Control(iSystem) = int( fHVAC_FindTokenNoLimits(
      &                       iSystem,
-     &                       'economizer-control-mode',
+     &                       'economizer-control-type',
      &                       'economizer control strategy',
      &                       bRequired,
      &                       bFound) )
@@ -2702,7 +2702,7 @@ C-------------------------------------------------------------------------
      &   ) then
 
           write (cMsg, '(A,A,I2,A)' )
-     &      'Error interpreting ecomomizer control strategy ',
+     &      'Error interpreting economizer control strategy ',
      &      '(token "economizer-control-mode") for HVAC system # ',
      &      iSystem,
      &      '. Value must be one of the following:'
@@ -2752,7 +2752,7 @@ C       Economizer minimum outdoor air flow
 C-------------------------------------------------------------------------
         economizer_min_out_air_flow(iSystem) = fHVAC_FindTokenWithLimits
      &       ( iSystem,
-     &         'ecomomizer-min-OA-flow',
+     &         'economizer-min-OA-flow',
      &         'economizer minimum outdoor air flow',
      &         bRequired,
      &         0.0, 99.0,
@@ -2765,7 +2765,7 @@ C-------------------------------------------------------------------------
         economizer_ind_temp_setpoint(iSystem)
      &     = fHVAC_FindTokenWithLimits
      &       ( iSystem,
-     &         'ecomomizer-indoor-set-point',
+     &         'economizer-indoor-set-point',
      &         'economizer indoor temperature set point',
      &         bRequired,
      &         -99.0, 99.0,
@@ -2780,7 +2780,7 @@ C-------------------------------------------------------------------------
           economizer_out_temp_limitcon(iSystem)
      &      = fHVAC_FindTokenWithLimits
      &       ( iSystem,
-     &         'ecomomizer-OA-temp-limit',
+     &         'economizer-OA-temp-limit',
      &         'economizer indoor temperature limit',
      &         bRequired,
      &         -99.0, 99.0,
@@ -2794,7 +2794,7 @@ C-------------------------------------------------------------------------
         economizer_out_temp_limitcon(iSystem)
      &      = fHVAC_FindTokenWithLimits
      &       ( iSystem,
-     &         'ecomomizer-OA-enth-limit',
+     &         'economizer-OA-enth-limit',
      &         'economizer indoor enthalpy limit',
      &         bRequired,
      &         0.0, 1.0E06,
