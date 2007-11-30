@@ -593,7 +593,7 @@ C Cloudy sky temperature as JC Book.
      &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
      &  (TWBF+ZEROK)**4)**0.25
          TJC=TSKYJC-ZEROK 
-         TSKY=TJC   
+         TSKY=TSKYJC   
       ELSEIF(iExt_longwave_flg.EQ.2)THEN
 
 C Use Cole's calculation
@@ -610,7 +610,7 @@ C Sky temperature after Cole.
         TSKYNEU=
      &  ((1.-CLOUDC)*(TSKYSW**4)+CLOUDC*ECLOUD*(TCLOUD**4))**0.25
         TSNEU=TSKYNEU-ZEROK
-        TSKY=TSNEU
+        TSKY=TSKYNEU
       ELSEIF(iExt_longwave_flg.EQ.3)THEN
 
 C Use Czeplak & Kasten calculation
@@ -620,21 +620,21 @@ C Use Czeplak & Kasten calculation
         RGES=(1.0-CLOUDC)*RKLAR+CLOUDC*RWOLKE
         TSKYCZ=(RGES/SBC)**0.25      
         TSCZ=TSKYCZ-ZEROK
-        TSKY=TSCZ
+        TSKY=TSKYCZ
       ELSEIF(iExt_longwave_flg.EQ.4)THEN
 
 C Use Swinbank (clear - uses dry bulb T) calculation
 C Swinbank model with ambient air temperature.
         TSKYSW=0.05532*((TF+ZEROK)**1.5)       
         TSW=TSKYSW-ZEROK
-        TSKY=TSW
+        TSKY=TSKYSW
       ELSEIF(iExt_longwave_flg.EQ.5)THEN
 
 C Use Swinbank (clear - uses wet bulb T) calculation
 C Clear sky temperature as in bld #5.4 (after Swinbank).
         TCSKY=0.05532*((TWBF+ZEROK)**1.5)        
         TCS=TCSKY-ZEROK
-        TSKY=TCS
+        TSKY=TCSKY
       ENDIF
       IF(TSKY.LT.200.0.OR.TSKY.GT.325.0)then
        write(outs,'(a,F8.2,a)')'MZELWE: a dubious sky temperature(',
