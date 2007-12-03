@@ -245,11 +245,6 @@ C Images.
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-C Where default db list is kept.
-C DFDBLBL (20 char) label for list of default databases.
-C DEFDBFL (72 char) file name for list of default databases.
-      common/defdb/dfdblbl,defdbfl
-
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
@@ -412,7 +407,7 @@ C is a logical flag, .true. restricts update/save options.
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
-      character dfdblbl*20,defdbfl*72,GTGEOM*72,GTNAME*15
+      character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
@@ -454,7 +449,7 @@ C Note: escdef must come after scan of .esprc file.
 C Patch for dbm use. Scan for default generic databases and the
 C set gendbfn before reading model.
       defdbfl='./gdefaults'
-      call escgdef(dfdblbl,defdbfl,IUF,IER)
+      call escgdef(IUF,IER)
       do 43 i=1,MGDB
         gendbfn(i)=dgendbfn(i)
   43  continue

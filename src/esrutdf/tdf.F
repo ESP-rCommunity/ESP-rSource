@@ -32,6 +32,7 @@ C TDFUPD: updates TDF file from an exchange file.
       program tdf
 #include "epara.h"
 #include "tdf2.h"
+#include "espriou.h"
 
 C The following parameters are defined as integers in epara.h:
 C CREATE,PREV,NEXT,EDIT,LIST,NONE
@@ -82,7 +83,6 @@ C Related to inport and export files.
 C Path to problem
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
 
 C Logical flags for file openings.
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
@@ -101,7 +101,7 @@ C Name of current application
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,LTMPFL*72
       CHARACTER ITEM*50,itemsel*50,inf*144,KEY*1,FOCUS*8,DFILE*72
       CHARACTER PERST1*14,PERST2*44,PERST3*44
-      character path*72,upath*72,esprc*72,outs*124,fs*1
+      character path*72,upath*72,outs*124,fs*1
       character act*16,actf*72,action*16,msgl2*124,outs248*248
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

@@ -45,6 +45,9 @@ C default file names for databases
 C espriou.h provides currentfile.
 #include "sbem.h"
 
+C Note: when reading the SBEM database the code assumes that
+C the tags in the file are in a specific order.
+
 C IFIL base file unit number (set in MAIN of each application).
       common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -68,7 +71,9 @@ C Read SBEM database
       CALL EFOPSEQ(IUF,LSBEM,1,IER)
       write(currentfile,'(a)') LSBEM(1:lnblnk(LSBEM))
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
-      IF(OUTSTR(1:5).NE.'*sbem')CONTINUE ! WARNING MSG TO GO HERE
+      IF(OUTSTR(1:5).NE.'*sbem')then
+        CONTINUE ! WARNING MSG TO GO HERE
+      endif
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
       K=9
       CALL EGETWR(OUTSTR,K,VERSBEM,1.,2.,'W','Version no.',IER)
@@ -78,7 +83,9 @@ C Read SBEM database
 
 C Read fuel types names and CO2 emission ratings
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
-      IF(OUTSTR(1:11).NE.'*fuel_start')CONTINUE ! WARNING MEG TO GO HERE
+      IF(OUTSTR(1:11).NE.'*fuel_start')then
+        CONTINUE ! WARNING MEG TO GO HERE
+      endif
  1    IFUEL=IFUEL+1
       FUELNAM=" "
       ILEN=1
@@ -89,7 +96,7 @@ C Read fuel types names and CO2 emission ratings
       CALL EGETWI(OUTSTR,K,NIT,0,0,'-','nb items',IER)
       DO 110 IIT=1,NIT
           CALL EGETW(OUTSTR,K,WORD,'W','fuel name',IER)
-          WRITE(FUELNAM,'(A,1X,A)')FUELNAM(1:ILEN),WORD
+          WRITE(FUELNAM,'(A,1X,A)')FUELNAM(1:ILEN),WORD(1:lnblnk(WORD))
           ILEN=LNBLNK(WORD)+ILEN+1
  110  CONTINUE
       FUELNAME(IFUEL)=FUELNAM(1:ILEN)
@@ -105,7 +112,9 @@ C Debug...
 
 C Now read system types, default efficiencies & applicable HVAC systems
   2   CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
-      IF(OUTSTR(1:19).NE.'*system_types_start')CONTINUE ! WARNING MEG TO GO HERE
+      IF(OUTSTR(1:19).NE.'*system_types_start')then
+        CONTINUE ! WARNING MEG TO GO HERE
+      endif
   3   ISYS=ISYS+1
       SYSNAM=" "
       ILEN=1
@@ -114,11 +123,12 @@ C Now read system types, default efficiencies & applicable HVAC systems
       K=0
       CALL EGETWI(OUTSTR,K,NIT,0,0,'-','system index no.',IER)
       CALL EGETWI(OUTSTR,K,NIT,0,0,'-','nb items',IER)
-      DO 20 IIT=1,NIT
+      DO 200 IIT=1,NIT
           CALL EGETW(OUTSTR,K,WORD,'W','system name',IER)
-          WRITE(SYSNAM,'(A,1X,A)')SYSNAM(1:ILEN),WORD
+          WRITE(SYSNAM,'(A,1X,A)')SYSNAM(1:ILEN),
+     &      WORD(1:lnblnk(WORD))
           ILEN=LNBLNK(WORD)+ILEN+1
- 20   CONTINUE
+ 200  CONTINUE
       SYSNAME(ISYS)=SYSNAM(1:ILEN)
       CALL EGETWR(OUTSTR,K,SYSEFF(ISYS),-1.,10.,
      &            'W','default efficiency',IER)
@@ -137,7 +147,9 @@ C Debug...
 
 C Now read HVAC system types 
  4    CALL STRIPC(IUF,OUTSTR,99,ND,1,'start HVAC systems',IER)
-      IF(OUTSTR(1:18).NE.'*HVAC_system_start')CONTINUE ! WARNING MEG TO GO HERE
+      IF(OUTSTR(1:18).NE.'*HVAC_system_start')then
+        CONTINUE ! WARNING MEG TO GO HERE
+      endif
  5    IHSYS=IHSYS+1
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC system no.',IER)
       IF(OUTSTR(1:16).EQ.'*end_HVAC_system')GOTO 6
@@ -210,7 +222,9 @@ C redundant because default SFP for all systems is the same
 C Read SBEM building types and corresponding building type index
 C Interestingly there are 3 indices for 29 building types
  6    CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM bldg type',IER)
-      IF(OUTSTR(1:16).NE.'*bldg_type_start')CONTINUE ! WARNING MsG TO GO HERE
+      IF(OUTSTR(1:16).NE.'*bldg_type_start')then
+        CONTINUE ! WARNING MsG TO GO HERE
+      endif
       DO 80 IBT=1,MBT
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM bldg type',IER)
         K=0
@@ -223,7 +237,9 @@ C Read end of building type information
 
 C Read building services strategy
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM bldg type',IER)
-      IF(OUTSTR(1:23).NE.'*bldg_services_strategy')CONTINUE ! WARNING MsG TO GO HERE
+      IF(OUTSTR(1:23).NE.'*bldg_services_strategy')then
+        CONTINUE ! WARNING MsG TO GO HERE
+      endif
       IBT=0
  7    CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM bldg serv strategy',IER)
       IF(OUTSTR(1:14).EQ.'*end_bldg_serv')GOTO 8
@@ -243,7 +259,9 @@ C Debug...
 
 C Read building regulations type
  8    CALL STRIPC(IUF,OUTSTR,99,ND,1,'bldg regs',IER)
-      IF(OUTSTR(1:17).NE.'*bldg_regulations')CONTINUE ! WARNING MsG TO GO HERE
+      IF(OUTSTR(1:17).NE.'*bldg_regulations')then
+        CONTINUE ! WARNING MsG TO GO HERE
+      endif
       IBT=0
  9    CALL STRIPC(IUF,OUTSTR,99,ND,1,'bldg regs',IER)
       IF(OUTSTR(1:13).EQ.'*end_bld_regs')GOTO 10
@@ -258,7 +276,9 @@ C Debug...
 
 C Read building design stage
  10   CALL STRIPC(IUF,OUTSTR,99,ND,1,'bldg des stage',IER)
-      IF(OUTSTR(1:9).NE.'*br_stage')CONTINUE ! WARNING MsG TO GO HERE
+      IF(OUTSTR(1:9).NE.'*br_stage')then
+        CONTINUE ! WARNING MsG TO GO HERE
+      endif
       IBT=0
  11   CALL STRIPC(IUF,OUTSTR,99,ND,1,'bldg des stage',IER)
       IF(OUTSTR(1:13).EQ.'*end_br_stage')GOTO 12
@@ -268,7 +288,9 @@ C Read building design stage
 
 C Read Scottish building types
  12   CALL STRIPC(IUF,OUTSTR,99,ND,1,'scot bldg type',IER)
-      IF(OUTSTR(1:20).NE.'*scottish_bldg_types')CONTINUE ! WARNING MsG TO GO HERE
+      IF(OUTSTR(1:20).NE.'*scottish_bldg_types')then
+        CONTINUE ! WARNING MsG TO GO HERE
+      endif
       IBT=0
  13   CALL STRIPC(IUF,OUTSTR,99,ND,1,'scot bldg type',IER)
       IF(OUTSTR(1:24).EQ.'*end_scottish_bldg_types')GOTO 14
@@ -278,7 +300,9 @@ C Read Scottish building types
 
 C Read DHW generators, efficiencies and BRUKL indices
  14   CALL STRIPC(IUF,OUTSTR,99,ND,1,'DHW generators',IER)
-      IF(OUTSTR(1:15).NE.'*DHW_generators')CONTINUE ! WARNING MsG TO GO HERE      
+      IF(OUTSTR(1:15).NE.'*DHW_generators')then
+        CONTINUE ! WARNING MsG TO GO HERE 
+      endif     
       IBT=1
  15   CALL STRIPC(IUF,OUTSTR,99,ND,1,'DHW generators',IER)
       IF(OUTSTR(1:19).EQ.'*end_DHW_generators')GOTO 16
@@ -303,7 +327,9 @@ C Debug...
 
 C Read activity types sorted by building type
  16   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Activity types',IER)
-      IF(OUTSTR(1:23).NE.'*activities_by_building')CONTINUE ! WARNING MsG TO GO HERE      
+      IF(OUTSTR(1:23).NE.'*activities_by_building')then
+        CONTINUE ! WARNING MsG TO GO HERE   
+      endif   
       IAT=1
  17   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Activity types',IER)
       IF(OUTSTR(1:19).EQ.'*end_activities_by_')GOTO 18
@@ -313,7 +339,8 @@ C Read activity types sorted by building type
       ILEN=1
       DO 100 ITSTR=1,NTSTR
         CALL EGETW(OUTSTR,K,WORD,'W','system name',IER)
-        WRITE(SYSNAM,'(A,1X,A)')SYSNAM(1:ILEN),WORD
+        WRITE(SYSNAM,'(A,1X,A)')SYSNAM(1:ILEN),
+     &    WORD(1:lnblnk(WORD))
         ILEN=LNBLNK(WORD)+ILEN+1
  100  CONTINUE
       ATYPNAME(IAT)=SYSNAM(1:40)
@@ -331,7 +358,27 @@ C Debug...
  130  CONTINUE
       IAT=IAT+1
       GOTO 17
- 18   CALL ERPFREE(IUF,ISTAT)
+
+C Read lighting systems
+ 18   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Lighting types',IER)
+      IF(OUTSTR(1:14).NE.'*Lighting_type')then
+        CONTINUE ! WARNING MsG TO GO HERE   
+      endif   
+      IAT=1
+ 19   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Lighting types',IER)
+      IF(OUTSTR(1:18).EQ.'*end_Lighting_type')GOTO 20
+      K=0
+      CALL EGETWI(OUTSTR,K,NINDX,0,0,'-','index no.',IER)
+      CALL EGETWR(OUTSTR,K,PDRL(IAT,1),0.,35.,'W',
+     &'light pwr den com',IER)
+      CALL EGETWR(OUTSTR,K,PDRL(IAT,2),0.,35.,'W',
+     &'light pwr den ind',IER)
+      NLEN=LNBLNK(OUTSTR)      
+      TLIGHT(IAT)=OUTSTR(K+1:NLEN)
+      IAT=IAT+1
+      GOTO 19
+
+ 20   CALL ERPFREE(IUF,ISTAT)
       RETURN
       END
 
@@ -346,8 +393,8 @@ C sbmedit define high level data associated with UK NCM methodology.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       dimension IVALSS(29)       ! array to get epicks answer from
-      DIMENSION ITEMS(33),ITEMX(8),KSYS(MHT),ITEMH(MCOM+4),PRSSN(MPT)
-      DIMENSION KSTR(8),ITHND(MPT),HSYSNM(MCOM+1),JSTR(8)
+      DIMENSION ITEMS(33),ITEMX(9),KSYS(MHT),ITEMH(MCOM+4),PRSSN(MPT)
+      DIMENSION KSTR(9),ITHND(MPT),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       character outs*124,outs248*248,h*72
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
       CHARACTER HSYSNM*70,zname*12,zdesc*64,TMPSTR*64
@@ -394,10 +441,11 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(5) = 'Link HVAC systems and zones '
       ITEMX(6) = 'Link DHW systems and zones '
       ITEMX(7) = 'Link activities and zones '
-      ITEMX(8) = 'Display information '
+      ITEMX(8) = 'Link lighting systems and zones'
+      ITEMX(9) = 'Display information '
       IX=1
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-     &  50,8,ITEMX,'Define UK NCM data',IER,2)
+     &  50,9,ITEMX,'Define UK NCM data',IER,2)
       IF(KSTR(1).EQ.1)THEN
 
 C Enter building, owner and vertifier information      
@@ -405,33 +453,33 @@ C Enter building, owner and vertifier information
      &  'Enter/Confirm building, owner and certifier details')
         INO=-1
         ITEMS(1)  = 'a Project name: '
-        write(ITEMS(2),'(2A)') '  ',pjname
+        write(ITEMS(2),'(2A)') '  ',pjname(1:48)
         ITEMS(3)  = 'b Building address: '
-        write(ITEMS(4),'(2A)') '  ',baddress
+        write(ITEMS(4),'(2A)') '  ',baddress(1:48)
         ITEMS(5)  = 'c Building city: '
-        write(ITEMS(6),'(2A)') '  ',bcity      
+        write(ITEMS(6),'(2A)') '  ',bcity(1:48)     
         ITEMS(7)  = 'd Building Postcode: '
-        write(ITEMS(8),'(2A)') '  ',buildingPC 
+        write(ITEMS(8),'(2A)') '  ',buildingPC(1:48) 
         ITEMS(9)  = 'e Building owner name: '
-        write(ITEMS(10),'(2A)') '  ',ownername
+        write(ITEMS(10),'(2A)') '  ',ownername(1:48)
         ITEMS(11) = 'f Building owner telephone: '
-        write(ITEMS(12),'(2A)') '  ',ownertel
+        write(ITEMS(12),'(2A)') '  ',ownertel(1:48)
         ITEMS(13) = 'g Building owner address: '
-        write(ITEMS(14),'(2A)') '  ',owneraddr
+        write(ITEMS(14),'(2A)') '  ',owneraddr(1:48)
         ITEMS(15) = 'h Building owner city: '
-        write(ITEMS(16),'(2A)') '  ',ownercity
+        write(ITEMS(16),'(2A)') '  ',ownercity(1:48)
         ITEMS(17) = 'i Building owner Postcode: '
-        write(ITEMS(18),'(2A)') '  ',ownerPC
+        write(ITEMS(18),'(2A)') '  ',ownerPC(1:48)
         ITEMS(19) = 'j Certifier name: '
-        write(ITEMS(20),'(2A)') '  ',certifname
+        write(ITEMS(20),'(2A)') '  ',certifname(1:48)
         ITEMS(21) = 'k Certifier telephone: '
-        write(ITEMS(22),'(2A)') '  ',certTel
+        write(ITEMS(22),'(2A)') '  ',certTel(1:48)
         ITEMS(23) = 'l Certifier address: '
-        write(ITEMS(24),'(2A)') '  ',certaddress
+        write(ITEMS(24),'(2A)') '  ',certaddress(1:48)
         ITEMS(25) = 'm Certifier city: '
-        write(ITEMS(26),'(2A)') '  ',certcity
+        write(ITEMS(26),'(2A)') '  ',certcity(1:48)
         ITEMS(27) = 'n Certifier postcode: '
-        write(ITEMS(28),'(2A)') '  ',certPC
+        write(ITEMS(28),'(2A)') '  ',certPC(1:48)
         ITEMS(29) = '# Enter all details            '
         ITEMS(30) = '  _____________________________'
         ITEMS(31) = '* list project details         '
@@ -458,98 +506,98 @@ C Building/owner/certifier data description
           H(1)='Input a succinct description of the project name here.'
           CALL EASKS(pjname,'project name ?','(<64 characters)',
      &           64,D64,'project name',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project name')
         ELSEIF(INO.EQ.3)THEN
   
 C Building/owner/certifier data description
           H(1)='Input a succinct description of building address here'
           CALL EASKS(baddress,'building address ?','(<64 characters)',
      &           64,D64,'build address',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project address')
         ELSEIF(INO.EQ.5)THEN
   
 C Building/owner/certifier data description
           H(1)='Input a succinct description of the building city here'
           CALL EASKS(bcity,'building city ?','(<64 characters)',
      &           64,D64,'city building',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project city')
         ELSEIF(INO.EQ.7)THEN
   
 C Building/owner/certifier data description
           H(1)='Input for: building post code'
           CALL EASKS(buildingPC,'building post code ?',
      &    '(<64 characters)',64,D64,'building PC',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project post code')
         ELSEIF(INO.EQ.9)THEN
 
 C Building/owner/certifier data description
           H(1)='Input a succinct description of the owner name here'
           CALL EASKS(ownername,'Name of owner ?','(<64 characters)',
      &           64,D64,'owner name',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project owner name')
         ELSEIF(INO.EQ.11)THEN
   
 C Building/owner/certifier data description
           H(1)='telephone number of the owner'
           CALL EASKS(ownertel,'Telephone of owner ?','(<64 characters)',
      &           64,D64,'owner tel',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project owner phone')
         ELSEIF(INO.EQ.13)THEN
   
 C Building/owner/certifier data description
           H(1)='Address of the owner'
           CALL EASKS(owneraddr,'Address of owner ?','(<64 characters)',
      &           64,D64,'owner address',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project owner address')
         ELSEIF(INO.EQ.15)THEN
   
 C Building/owner/certifier data description
           H(1)='City (for owner)'
           CALL EASKS(ownercity,'City of owner ?','(<64 characters)',
      &           64,D64,'owner city',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project owner city')
         ELSEIF(INO.EQ.17)THEN
   
 C Building/owner/certifier data description
           H(1)='Post code (for owner)'
           CALL EASKS(ownerPC,'Post code for owner ?','(<64 characters)',
      &           64,D64,'owner post code',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project owner postcode')
         ELSEIF(INO.EQ.19)THEN
   
 C Building/owner/certifier data description
           H(1)='cetrifier name'
           CALL EASKS(certifname,'Name of certifier ?','(<64 characters)'
      &           ,64,D64,'certifier name',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project certifier')
         ELSEIF(INO.EQ.21)THEN 
       
 C Building/owner/certifier data description
           H(1)='cetrifier telephone'
           CALL EASKS(certTel,'Teleph. of certifier ?','(<64 characters)'
      &           ,64,D64,'certifier tel',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project certifier phone')
         ELSEIF(INO.EQ.23)THEN 
       
 C Building/owner/certifier data description
           H(1)='certifier address'
           CALL EASKS(certaddress,'Address of certifier ?',
      &    '(<64 characters)',64,D64,'certifier address',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project cert address')
         ELSEIF(INO.EQ.25)THEN 
       
 C Building/owner/certifier data description
           H(1)='cetrifier city'
           CALL EASKS(certcity,'City of certifier ?','(<64 characters)',
      &           64,D64,'certifier city',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project certifier city')
         ELSEIF(INO.EQ.27)THEN 
       
 C Building/owner/certifier data description
           H(1)='cetrifier post code'
           CALL EASKS(certPC,'Post code of certifier ?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
-          call tstamp('>','PRJ: edited project description')
+          call tstamp('>','PRJ: edited project cert post code')
         ELSEIF(INO.EQ.29)THEN 
 
 C Enter all information
@@ -585,11 +633,11 @@ C Enter all information
         ELSEIF(INO.EQ.31)THEN 
 
 C Display information
-          write(outs,'(2a)')'Project name: ',pjname
+          write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
           call edisp(iuout,outs)
           write(outs,'(2a)')'Building address: ',baddress
           call edisp(iuout,outs)
-          write(outs,'(2a)')'Building city: ',bcity  
+          write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
           call edisp(iuout,outs)
           write(outs,'(2a)')'Building Postcode: ',buildingPC  
           call edisp(iuout,outs)    
@@ -621,7 +669,7 @@ C Enter building services strategy
         IX=1
         JSTR(1)=IBSS
  901    CALL EPICKS(IX,JSTR,' ','Define building services strategy',
-     &  40,MSS,BLDSS,'Define building services strategy',IER,2)
+     &    40,MSS,BLDSS,'Define building services strategy',IER,2)
         IF(JSTR(1).EQ.0)GOTO 901
         IF(JSTR(1).LE.3.AND.JSTR(1).GE.1)IBSS=JSTR(1)        
 
@@ -629,7 +677,7 @@ C Enter building regulations to be used
         IX=1
         JSTR(1)=IRGG
  902    CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  50,MREG,BLDREG,'Define building services strategy',IER,2)
+     &    50,MREG,BLDREG,'Define building services strategy',IER,2)
         IF(JSTR(1).EQ.0)GOTO 902
         IF(JSTR(1).LE.4.AND.JSTR(1).GE.1)IRGG=JSTR(1)        
 
@@ -637,7 +685,7 @@ C Enter bulding design stage
         IX=1
         JSTR(1)=ISTG
  903    CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  12,MSTG,BLDSTG,'Define building services strategy',IER,2)
+     &    12,MSTG,BLDSTG,'Define building services strategy',IER,2)
         IF(JSTR(1).EQ.0)GOTO 903
         IF(JSTR(1).LE.2.AND.JSTR(1).GE.1)ISTG=JSTR(1)        
 
@@ -646,12 +694,12 @@ C Enter Scottish building types if Scottish regs to be used
           IX=1
           JSTR(1)=ISBT
  904      CALL EPICKS(IX,JSTR,' ','Define building type',
-     &    40,MSBT,SBTYP,'Define building type',IER,2)
+     &      40,MSBT,SBTYP,'Define building type',IER,2)
           IF(JSTR(1).EQ.0)GOTO 904
           IF(JSTR(1).LE.2.AND.JSTR(1).GE.1)ISBT=JSTR(1)        
           CALL EASKABC('Is the building built/designed following',
-     &    'guidance in Accredited Construction Details (Scotland)',
-     &    'yes','no','Do not know',IW,2)
+     &      'guidance in Accredited Construction Details (Scotland)',
+     &      'yes','no','Do not know',IW,2)
           IF(IW.EQ.1)THEN
             SBREF='YES'
           ELSE
@@ -675,45 +723,15 @@ C Enter building permeability
           APCHK='YES'
         ENDIF
 
-C Enter building use type
-        ibtyp=IBTYPNDX(ibusertyp)
-
-C Establish glazing fractions based on type of building
-        IF(IBTYP.EQ.1)THEN
-          ROOFFR=0.2
-          WALLFR=0.3
-        ELSEIF(IBTYP.EQ.2)THEN
-          ROOFFR=0.2
-          WALLFR=0.4
-        ELSEIF(IBTYP.EQ.3)THEN
-          ROOFFR=0.2
-          WALLFR=0.15
-        ENDIF
-        if(ibusertyp.eq.0)then
-          write(outs,'(2a)') 'The current building use is undefined ',
-     &    'and the NCM guide table 4 is also undefined.'
+C Use existing building type if non-zero.
+        if(ibusertyp.ne.0)then
+          write(outs,'(a,i2,2a)') 'The current building type is ',
+     &      ibusertyp,BTYPNAME(ibusertyp),'.'
           call edisp(iuout,outs)
         else
-          write(outs,'(2a)') 'The current building use is ',
-     &    BTYPNAME(ibusertyp)
+          write(outs,'(2a)') 'The current building use is undefined',
+     &    'and the NCM guide table 4 is also undefined.'
           call edisp(iuout,outs)
-          if(ibtyp.eq.1)then
-            write(outs248,'(2a,f6.2,a,f6.2,a)')
-     &      'The NCM guide table 4 reference is a residenatial ',
-     &      'building with roof glazing fraction ',ROOFFR,
-     &      ' and a wall glazing fraction ',WALLFR,'.'
-          elseif(ibtyp.eq.2)then
-            write(outs248,'(2a,f6.2,a,f6.2,a)')
-     &      'The NCM guide table 4 reference is an office, shop or ',
-     &      'place of assembly with roof glazing fraction ',ROOFFR,
-     &      ' and a wall glazing fraction ',WALLFR,'.'
-          elseif(ibtyp.eq.3)then
-            write(outs248,'(2a,f6.2,a,f6.2,a)')
-     &      'The NCM guide table 4 reference is an industrial or ',
-     &      'storage building with roof glazing fraction ',ROOFFR,
-     &      ' and a wall glazing fraction ',WALLFR,'.'
-          endif
-          call edisp248(iuout,outs248,80)
         endif
         h(1)='For the UK National Calculation Method you are required'
         h(2)='to select one of these building types. '
@@ -741,14 +759,8 @@ C Establish glazing fractions based on type of building
             ROOFFR=0.2
             WALLFR=0.15
           ENDIF
-        endif
       
 C After setting up echo back what was selected.
-        if(ibusertyp.eq.0)then
-          write(outs,'(2a)') 'The current building use is undefined ',
-     &    'and the NCM guide table 4 is also undefined.'
-          call edisp(iuout,outs)
-        else
           write(outs,'(2a)') 'The current building use is ',
      &    BTYPNAME(ibusertyp)
           call edisp(iuout,outs)
@@ -1223,6 +1235,16 @@ C Link DHW systems and zones
         ENDIF
       ELSEIF(KSTR(1).EQ.8)THEN
 
+C Link lighting systems with zones
+        DO 160 IZ=1,NCOMP
+          WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
+     &    zname(IZ)(1:lnblnk(zname(IZ)))
+          CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
+     &    70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
+          ILITYP(IZ)=LSYS(1)
+ 160    CONTINUE
+      ELSEIF(KSTR(1).EQ.9)THEN
+
 C Display information
  19     CALL EDISP(IUOUT,'This facility is currently not available')
       ENDIF
@@ -1275,6 +1297,13 @@ C << G1 is probably not the common block to use for this >>
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+C G9 holds information on children of a surface.
+      integer nbchild       ! how many children (up to 4)
+      integer isgrandchild  ! if 1 child, if 2 grandchild
+      character childname*12 ! name of the child surface
+      common/G9/nbchild(MS),isgrandchild(MS,4),childname(MS,4)
+
       common/FILEP/IFIL
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
@@ -1296,9 +1325,20 @@ C ivalsv keeps track of new viewfactor files which need analysys
 C ivalsg keeps track of whether a geometry file has alread been copied.
       dimension ivalsv(MCOM),ivalsg(MCOM)
 
+C grossarea holds the gross area of the parent + its children.
+      dimension grossarea(MS)
+      real childwindowarea
+      real childroofwindowarea
+      real childdoorarea
+      real childdisplayarea
+      real parentwallarea
+      real parentroofarea
+
       DIMENSION IACT(MCON),COE(3),POINT(3),TRANS(3)
+      DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       logical unixok,docnn
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical closeelv ! true if surface is close to vertical
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -1319,41 +1359,26 @@ C If not then advise user and send him/her back
       H(3) = 'Make sure that the original model follows the following '
       H(4) = 'assumptions before generating the notional model '
       H(5) = '1. All external glazings are contained within other'
-      H(6) = '   surfaces. '
-      H(7) = '2. Except for doors no opaque surfaces are contained'
-      H(8) = '   within other surfaces. e.g. it is not allowed to '
-      H(9) = '   contain a surface meant to be an opaque wall within '
-      H(10)= '   another wall.'
-      H(11)= ' '
+      H(6) = '   surfaces so there is a parent-child relationship'
+      H(7) = '   and the glazing is within the wall or roof surface.'
+      H(8) = ' '
+      H(9) = '2. All external galzings will be marked as to their'
+      H(10)= '   usage as either display or normal windows or sky-'
+      H(11)= '   lights.'
       H(12)= ' '
-      CALL PHELPD('SBEM Assumptions',12,'-',0,0,IER)
+      H(13)= '3. Window frames can be problematic (it makes the glass'
+      H(14)= '   a grandchild of the wall/roof). Be sure to mark'
+      H(15)= '   surfaces that act as frames to be frames.'
+      H(16)= ' '
+      H(17)= '4. Avoid walls that are childres of other surfaces. If'
+      H(18)= '   they are included be sure to mark their use clearly.'
+      H(19)= ' '
+      H(20)= '5. Parent surfaces facing the outside are usually one'
+      H(21)= '   of the following use types: walls, personnel doors,'
+      H(22)= '   vehicle access doors, display windows, and windows.'
+      H(23)= ' '
+      CALL PHELPD('SBEM Assumptions',23,'-',0,0,IER)
 
-C Find out what type of building it is and set up flag
-      H(1) = 'Windows, doors and rooflight areas are modified in the '
-      H(2) = 'notional building depending upon building type. There'
-      H(3) = 'are three types of building: '
-      H(4) = '1. Residential (where people temporarily or permanently'
-      H(5) = '   reside)'
-      H(6) = '2. Assembly (places of assembly, offices and shops)'
-      H(7) = '3. Industrial (industrial or storage buildings)'
-      CALL EASKABCD('What type of building is it? (see help)',' ',
-     &  'residential','assembly',
-     &  'industrial','cancel',IBTYP,7)
-      IF(IBTYP.EQ.4)THEN
-        RETURN
-
-C Establish glazing fractions based on type of building
-      ELSEIF(IBTYP.EQ.1)THEN
-        ROOFFR=0.2
-        WALLFR=0.3
-      ELSEIF(IBTYP.EQ.2)THEN
-        ROOFFR=0.2
-        WALLFR=0.4
-      ELSEIF(IBTYP.EQ.3)THEN
-        ROOFFR=0.2
-        WALLFR=0.15
-      ENDIF
-    
 C The inital task is to make copies of the relevant zone files
 C which is functionally equivalent to the code blocks in subroutine
 C verman for the case of geometry and attribution (ILM=2).
@@ -1386,7 +1411,7 @@ C Loop through each zone in the model...
         endif
 
 C Establish parents of surfaces in this zone (fill common blocks G6 G7)
-        ACT='C'
+        ACT='s'
         CALL SURREL(ACT,ICOMP,IER)
 
 C Remember this geometry file has been done so that a later selection
@@ -1555,69 +1580,226 @@ C If a variant connections file also required set this up.
       CALL EMKCFG('-',IER)
       WRITE (OUTS,'(2A)')'Writing new configuration file ',LCFGF
       CALL EDISP(IUOUT,OUTS)
+  
+C Loop through each zone in the model and if ivalsg was set earlier
+C then read in the zone geometry file and re-gather information on
+C parent child relationships
+      DO 551 ICOMP=1,NCOMP
+        if(ivalsg(icomp).eq.icomp)then
+          IUF=IFIL+2
+          call eclose(gversion(icomp),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+          else
+            call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+          endif
+          ACT='s'
+
+C Code to loop through each surface to build a hash table so that each
+C surface also knowns its children
+          CALL SURREL(ACT,ICOMP,IER)
+
+C Get surface areas via call to zinfo.
+          call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+          childwindowarea = 0.0
+          childroofwindowarea = 0.0
+          childdoorarea = 0.0
+          childdisplayarea = 0.0
+          parentwallarea = 0.0
+          parentroofarea = 0.0
+
+C Figure out the grossarea for each parent surface.  Note the
+C logic does not yet cope with grandchildren.
+          do 552 isur=1,nzsur(icomp)
+            icn=IZSTOCN(icomp,isur)
+            if(ssother(icn,1)(1:7).eq.'UNKNOWN')then
+              call usrmsg('Surface with partial attribution.',
+     &          'skipping this surface.','W')
+              grossarea(isur)=0.0
+              goto 552
+            elseif(ssother(icn,1)(1:9).eq.'ADIABATIC')then
+              grossarea(isur)=sna(isur)
+              continue   ! no change in this surface.
+            elseif(ssother(icn,1)(1:7).eq.'ANOTHER')then
+              grossarea(isur)=sna(isur)
+              continue   ! no change in this surface.
+            elseif(ssother(icn,1)(1:9).eq.'IDENT_CEN')then
+              grossarea(isur)=sna(isur)
+              continue   ! no change in this surface.
+            elseif(ssother(icn,1)(1:7).eq.'SIMILAR')then
+              grossarea(isur)=sna(isur)
+              continue   ! no change in this surface.
+            elseif(ssother(icn,1)(1:8).eq.'CONSTANT')then
+              grossarea(isur)=sna(isur)
+              continue   ! no change in this surface.
+            elseif(ssother(icn,1)(1:8).eq.'BASESIMP')then
+
+C << make the construction as in the foundation >>
+              grossarea(isur)=sna(isur)
+              continue
+            elseif(ssother(icn,1)(1:6).eq.'GROUND')then
+
+C << make the construction as in the foundation >>
+              grossarea(isur)=sna(isur)
+              continue
+            elseif(ssother(icn,1)(1:8).eq.'EXTERIOR')then
+
+C If ssparent is '-' then assume the current exterior surface 
+C might have children (add them to its gross area).
+C Depending on its `use` increment the areas parentroofarea or
+C parentwallarea.
+              if(ssparent(icn)(1:2).eq.'- ')then
+                if(SSUSE(icn,1)(1:4).eq.'ROOF')then
+                  parentroofarea=parentroofarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:4).eq.'WALL')then
+                  parentwallarea=parentwallarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:4).eq.'SMOKEVNT')then
+                  continue ! ?? smokevents become walls or roofs
+                endif
+                if(nbchild(isur).eq.0)then
+                  grossarea(isur)=sna(isur)
+                elseif(nbchild(isur).eq.1)then
+                  call matchsname(childname(isur,1),icomp,is)
+                  if(is.ne.0)then
+                    grossarea(isur)=sna(isur)+sna(is)
+                  else
+                    grossarea(isur)=sna(isur)
+                  endif
+                elseif(nbchild(isur).eq.2)then
+                  call matchsname(childname(isur,1),icomp,is)
+                  call matchsname(childname(isur,2),icomp,isb)
+                  if(is.ne.0.and.isb.ne.0)then
+                    grossarea(isur)=sna(isur)+sna(is)+sna(isb)
+                  else
+                    grossarea(isur)=sna(isur)
+                  endif
+                endif
+              else
+                grossarea(isur)=0.0
+
+C Surface has a parent so update the relevant child surface areas
+C based on the declaired `use`.
+                if(SSUSE(icn,1)(1:8).eq.'C-WINDOW')then
+                  childwindowarea=childwindowarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:8).eq.'D-WINDOW')then
+                  childdisplayarea=childdisplayarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:8).eq.'S-WINDOW')then
+                  childroofwindowarea=childroofwindowarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:4).eq.'DOOR')then
+                  childdoorarea=childdoorarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:6).eq.'P-DOOR')then
+                  childdoorarea=childdoorarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:6).eq.'H-DOOR')then
+                  childdoorarea=childdoorarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:6).eq.'V-DOOR')then
+                  childdoorarea=childdoorarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:4).eq.'ROOF')then
+                  parentroofarea=parentroofarea+sna(isur)
+                elseif(SSUSE(icn,1)(1:4).eq.'WALL')then
+
+C Count as wall if vertical, otherwise as roof.
+                  call eclose(SSPELV(icn),0.0,2.0,closeelv)
+                  if(closeelv)then
+                    parentwallarea=parentwallarea+sna(isur)
+                  else
+                    parentroofarea=parentroofarea+sna(isur)
+                  endif
+                elseif(SSUSE(icn,1)(1:4).eq.'SMOKEVNT')then
+                  call eclose(SSPELV(icn),0.0,2.0,closeelv)
+                  if(closeelv)then
+                    parentwallarea=parentwallarea+sna(isur)
+                  else
+                    parentroofarea=parentroofarea+sna(isur)
+                  endif
+                endif
+              endif
+            else
+              write(6,*) 'value of ssother unrecognised for',
+     &          icn,' connection.'
+            endif
+  552     continue
+        endif
+
+C Debug.
+        write(6,*) childwindowarea,childroofwindowarea,
+     &    childdoorarea,childdisplayarea,parentwallarea,
+     &    parentroofarea
+        write(6,*) 'grossarea',grossarea
+  551 continue
+
+*Another variable is required that holds the total area of the parent
+* TO GO HERE:
+*(currently ESP knows only of the area of the parent whereas NCM assumes
+*that the parent area is both the area of the parent and any children)
+*Assume this variable is called TARSURF(NSURF)
+
+* DO(for each surface)
+*   IF(surface is exterior)THEN
+*     check if SUSE variable (from COMMON/G5) is defined
+*     IF(not defined)THEN
+*       ask user what that variable is
+*     ENDIF
+*   ENDIF
+* CONTINUE
+
+* DO(for each surface ISURF)
+*   IF(surface is exterior)THEN
+
+*     Add its area to TARSURF(ISURF)
+
+*     Delete this surface if not marked as per item 3 of the warning
+*     message above. Add its area to TARSURF(relevant parent surface)
+
+*     An exterior surface marked as a wall which happens to have a parent
+*     is still a wall. It might get a window if more surface area is required.
+*     Add its area to TARSURF(relevant parent surface)
+*   ENDIF
+* CONTINUE
+
+* DO(for each surface ISURF)
+*   IF(surface is exterior)THEN
+
+C Figure out if this surface is a roof or wall (Set glzpercent)
+C The variables rooffr and wallfr below get values from SBEM.db1 when
+C user sets on UK NCM calculations and answers questions about the type
+C of bulding and need not be asked again
+*     IF(pitch > 70)THEN
+*       glzpercent=wallfr ! it is a wall
+*     ELSE
+*       glzpercent=rooffr ! it is a roof
+*     ENDIF
+
+* Add up area of all children of this surface (say SUMCHILDAREA)
+*     IF(SUMCHILDAREA.GE.TARSURF(ISURF))THEN
+*       do nothing
+*     ELSE
+*       DIFFERENCE=TARSURF(ISURF)-SUMCHILDAREA
+
+C Generate new surface based on the geometry of the parent that has an
+C area equal to DIFFERENCE. Currently the new surface is placed relative
+C to vertex weighted centre of gravity of parent that may cause overlaps
+C with existing children but this does not compensate thermodynamic
+C performance. It should be removed in the future.
+C Furthermore the new surface will have the same shape (and number of
+C vertices) as the parent.
+
+C Define scale factor to ensure new surface has correct area
+*       SCALEFACTOR=SQRT(DIFFERENCE/TARSURF(ISURF))
 
 
-C << the following logic does not work so is skipped for the current time >>
 
-C Work out areas of all child surfaces (AREA) and transparent
-C surfaces (TAREA) and orientation of child and parent (IACT)
-
-C Loop through each of the connections in the model.
-
-
-C IACT is action flag that means:
-C 0 = Exterior surface has requisite amount of glazing, do nothing
-C 1 = Exterior surface has no child surfaces and needs requisite amount
-C     of glazing inserted
-C 2 = Exterior surface has one or more child surfaces (all transparent)
-C     but more glazed area needs to be added
-C 3 = Exterior surface has one or more child surfaces (all opaque) and
-C     needs requisite amount of glazing
-C 4 = Exterior surface has mix of opaque and transparent children and
-C     needs requisite amount of glazing
-C          IACT(ISUR)=0
-C          IF(NCHILD.EQ.0)THEN
-C            IACT(ISUR)=1
-C          ELSEIF(NCHILD.EQ.NTCHILD)THEN
-C            IACT(ISUR)=2
-C          ELSEIF(NTCHILD.EQ.0)THEN
-C            IACT(ISUR)=3
-C          ELSE
-C            IACT(ISUR)=4
-C          ENDIF
-
-C          ICOMP=IC1(ISUR)  ! the zone associated with this connection.
-
-C Find the number of surfaces in this zone.
-C          NSUR=NZSUR(icomp)
-
-C And we might need to re-scan geometry file.
-
-C          CALL ESCZONE(ICOMP)   ! ?? why the G1 common blocks are not fresh.
-
-C Modify geometry files to have exterior walls/roofs with prescribed 
-C amount of glazing and doors. If the area of glazing is less than 
-C prescribed make balance up with windows and rooflights.
-C          KOUNTER=IACT(ISUR)
-C          IF(KOUNTER.EQ.0)THEN
-C            CONTINUE
-C          ELSEIF(KOUNTER.EQ.1)THEN
-
-C Enlarge/Diminish the glazed surface with vertex weighted centre of 
-c gravity of the parent surface as centre of enlargement.
-C            DO 560 I=1,3
-C              COE(I)=SSURCOG(ISUR,I)
-C 560        CONTINUE
-C            IF(SSVFC(ISUR)(1:4).EQ.'VERT')THEN
-C              FACTOR=SQRT(WALLFR)
-C            ELSEIF(SSVFC(ISUR)(1:4).EQ.'SLOP'.OR.
-C      &            SSVFC(ISUR)(1:4).EQ.'CEIL')THEN
-C              FACTOR=SQRT(ROOFFR)
-C            ENDIF
+C Get vertices of the new surface, POINT is each point in the parent
+C surface, TRANS is corresponding point in new surface. COE is vertex
+C weighted centre of gravity of parent and FACTOR is scale factor.
+C The following logic (previously commented out as well)
+C may be used with ammendments
 
 C << NVER and JVN are not the correct variable to use unless the zone
 C << geometry has been refreshed. Probably need to use the 
 C << same logic as in esrucfg.
+C <<< To use appropriate variables as per new format of commons/geometry
+C <<< file 
+
 C            DO 561 NV=1,NVER(ISUR)
 C              POINT(1)=X(JVN(ISUR,NV))
 C              POINT(2)=Y(JVN(ISUR,NV))
@@ -1632,6 +1814,7 @@ C 561        CONTINUE
 
 C Make new surface based on these vertices
 C << the array size for nver is not the same as for SSVFC
+C <<< To update commons based on new format again
 C            NSUR=NSUR+1
 C            NVER(NSUR)=NVER(ISUR)
 C            SSVFC(NSUR)=SSVFC(ISUR)
@@ -1640,14 +1823,15 @@ C            SSOTHER(NSUR,1)='EXTERIOR'
 
 C << probably want I2.2 as the format statement but what
 C << happens with more than 99 surfaces? >>
+C <<< If more surfaces than allowed in header file then warn user and
+C <<< abort notional model definition
 C            WRITE(SSNAME(NSUR),'(I2,A)')ISUR,'_notional'
 C            IZSTOCN(ICOMP,NSUR)=NSUR
-C          ELSEIF(KOUNTER.EQ.2)THEN
-C          ELSEIF(KOUNTER.EQ.3)THEN
-C          ELSEIF(KOUNTER.EQ.4)THEN
-C          ENDIF
-C        ENDIF
-C 551  CONTINUE
+
+
+*     ENDIF
+*   ENDIF
+* CONTINUE
 
 C After having made the changes, save the nominal model configuration file.
 C      CALL EMKCFG('-',IER)
@@ -1823,8 +2007,16 @@ C espriou.h provides currentfile.
       DO 204 IZ=1,NCOMP
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to activity linkage',IER)
         K=47
-        CALL EGETWI(OUTSTR,K,IACTYTYP(IZ),0,0,'-','zone-DHW links',IER)
+        CALL EGETWI(OUTSTR,K,IACTYTYP(IZ),0,0,'-',
+     &  'zone-activity links',IER)
  204  CONTINUE
+      CALL STRIPC(IUF,OUTSTR,99,ND,1,'lighting type zone links',IER)
+      DO 205 IZ=1,NCOMP
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone-lighting type linkage',IER)
+        K=52
+        CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
+     &  'zone-light type links',IER)
+ 205  CONTINUE
       
       RETURN
       END
@@ -1919,10 +2111,10 @@ C Write high level project specific detail
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Certifier postcode, ',certPC
       WRITE(IUF,'(A,I4)',IOSTAT=IOS,ERR=3)'Building type index, ',
      &     ibusertyp
-      K=0
-      TMPSTR=BTYPNAME(ibusertyp)
-      CALL EGETRM(TMPSTR,K,BTYPNAME(ibusertyp),'W','NCM file',IER)
       IF(IBUSERTYP.NE.0)THEN
+        K=0
+        TMPSTR=BTYPNAME(ibusertyp)
+        CALL EGETRM(TMPSTR,K,BTYPNAME(ibusertyp),'W','NCM file',IER)
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'Building type, ',
      &     BTYPNAME(ibusertyp)
       ELSE
@@ -1996,18 +2188,36 @@ C Published by Department of Communities and Local Government, UK
         ENDIF
 
 C Set BRUKL cooling value to -5555 if cooling system is not defined
-        IBRUK=IBRUKLC(ICGEF(ICMSYS),INCMSYS(ICMSYS))
+        if(icmsys.gt.0)then
+          if(ICGEF(ICMSYS).gt.0.and.INCMSYS(ICMSYS).gt.0)then
+            IBRUK=IBRUKLC(ICGEF(ICMSYS),INCMSYS(ICMSYS))
+          else
+            IBRUK=0
+          endif
+        else
+          IBRUK=0
+        endif
         IF(IBRUK.LE.0)IBRUK=-5555
 
 C Set BRUKL cooling value if no cooling generator is present in HVAC system        
-        IF(INCMSYS(ICMSYS).LE.10)IBRUK=-1111
-        WRITE(IUF,'(1X,I5,1X,A)',IOSTAT=IOS,ERR=3)
-     &    IBRUK,' # BRUKL cool generator index number'
+        if(icmsys.gt.0)then
+          IF(INCMSYS(ICMSYS).LE.10)IBRUK=-1111
+          WRITE(IUF,'(1X,I5,1X,A)',IOSTAT=IOS,ERR=3)
+     &      IBRUK,' # BRUKL cool generator index number'
 
-        WRITE(IUF,'(1X,F6.3,1X,A)',IOSTAT=IOS,ERR=3)SFPHS(ICMSYS),
-     &    ' # Specific fan power W/l/s (0 if fans N/A)'
-        WRITE(IUF,'(1X,I5,1X,A)',IOSTAT=IOS,ERR=3)
-     &    IBRUKLF(INCMSYS(ICMSYS)),' # BRUKL fan index number'
+          WRITE(IUF,'(1X,F6.3,1X,A)',IOSTAT=IOS,ERR=3)SFPHS(ICMSYS),
+     &      ' # Specific fan power W/l/s (0 if fans N/A)'
+          WRITE(IUF,'(1X,I5,1X,A)',IOSTAT=IOS,ERR=3)
+     &      IBRUKLF(INCMSYS(ICMSYS)),' # BRUKL fan index number'
+        else
+          IBRUK=-1111
+          WRITE(IUF,'(1X,I5,1X,A)',IOSTAT=IOS,ERR=3)
+     &      IBRUK,' # BRUKL cool generator index number'
+          WRITE(IUF,'(1X,A)',IOSTAT=IOS,ERR=3)
+     &      ' 0.0 # Specific fan power W/l/s (0 if fans N/A)'
+          WRITE(IUF,'(1X,A)',IOSTAT=IOS,ERR=3)
+     &      ' 0.0 # BRUKL fan index number'
+        endif
  101  CONTINUE
 
 C Write building zone to HVAC system linkage information
@@ -2057,10 +2267,28 @@ C Write building zone to DHW system linkage information
 C Write building zone to activity type linkage information
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to activity linkage'
       DO 105 IZ=1,NCOMP
-        WRITE(IUF,'(3A,1X,I4,1X,A)')
-     &  'Zone ',zname(iz),' is linked to activity number ',IACTYTYP(IZ),
-     &  atypname(IACTYTYP(IZ))
+        if(IACTYTYP(IZ).gt.0)then
+          WRITE(IUF,'(3A,1X,I4,1X,A)') 'Zone ',zname(iz),
+     &      ' is linked to activity number ',IACTYTYP(IZ),
+     &      atypname(IACTYTYP(IZ))
+        else
+          WRITE(IUF,'(3A)') 'Zone ',zname(iz),
+     &      ' is linked to activity number     0 (undefined activity)'
+        endif
  105  CONTINUE
+
+C Write building zone to lighting type linkage information
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to lighting type linkage'
+      DO 106 IZ=1,NCOMP
+        if(ILITYP(IZ).gt.0)then
+          WRITE(IUF,'(3A,1X,I4,1X,A)') 'Zone ',zname(iz),
+     &      ' is linked to lighting type number ',ILITYP(IZ),
+     &      TLIGHT(ILITYP(IZ))
+        else
+          WRITE(IUF,'(3A)') 'Zone ',zname(iz),
+     &      ' is linked to lighting type number     0 (undefined type)'
+        endif
+ 106  CONTINUE
       CALL ERPFREE(IUF,ISTAT)
       RETURN
  3    CALL USRMSG('Problem writing data to sbem file',' ','W')
@@ -2280,6 +2508,7 @@ C variables for floors
 
 C variables for floors
       zuroofmax = 0.0
+      zutrmax = 0.0
       uroof = 0.0
       uroofmax = 0.0 
       uaroofsum = 0.0

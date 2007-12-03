@@ -7,33 +7,21 @@ C	winfnt(n)	:- changes the font (4 different sizes 0,1,2,3)
 C	opensetup	:- place environment button on screen.
 C	viewtext	:- displays a line of text within the viewing
 C                          box with size and location parameters
-C       feedbox         :- open feedback background box
-C       opengdisp       :- opens a scrolling text display area.
-C       etplot          :- general line plotting.
-C       axiscale        :- determines scaling parameters for horizontal
+C	feedbox	:- open feedback background box
+C	opengdisp	:- opens a scrolling text display area.
+C	etplot	:- general line plotting.
+C	axiscale 	:- determines scaling parameters for horizontal
 C                          and vertical axis.
-C       linescale       :- stores scaling parameters for lines.
-C       dinterval       :- determins the tic interval for an axis as well
+C	linescale	:- stores scaling parameters for lines.
+C	dinterval	:- determins the tic interval for an axis as well
 C                          as the number of decimal places.
 C	vrtaxis	:- draws a vertical axis with tic marks and labels.
 C	horaxis	:- draws a horizontal axis with tic marks and labels.
+C	captut	:- tutorial indicator
 C	captextf	:- text feedback capture
 C	captexgf	:- graphic feedback capture
 C	updcapt	:- notify for capture button
 C	capexall	:- save whole display images
-
-C       winlodpart() loads some or all of an xbitmap file into a pixmap
-C       checklodpart() checks loading some or all of an xbitmap file
-C       findviewtext() return the pixel position that XDrawString should use.
-C       getfilelist() return list of files in a folder
-C       iXavail() a zero says there is neither X11 or GTK available.
-C       igraphiclib() a three says that this is the text only version.
-C       opentutorial place tutorial button on screen.
-C       opencpw place copyright button on screen
-C       opensetup place setup button on screen
-C       updwire() notify level for wireframe button
-C       updcapt() notify level for capture buttons
-C       updazi() notify level for azimuth button
 
 C ************
 
@@ -98,7 +86,6 @@ C ************
       return
       end
 
-C winclr  clears screen
       subroutine winclr
       return
       end
@@ -168,7 +155,6 @@ C winclr  clears screen
       return
       end
 
-C feedbox() open feedback background box
       subroutine feedbox(menu_char,id_lines,igw,igh)
       return
       end
@@ -350,7 +336,6 @@ C      write(6,*) opta
       return
       end
 
-C opengdisp opens a scrolling text display area.
       subroutine opengdisp(menu_char,idispl_l,idial_l,igdw,igdh)
       return
       end
@@ -495,12 +480,10 @@ C      end
       return
       end
 
-C opentutorial place tutorial button on screen.
       subroutine opentutorial
       return
       end
 
-C opencpw place copyright button on screen
       subroutine opencpw
       return
       end
@@ -510,22 +493,18 @@ C opencpw place copyright button on screen
       return
       end
 
-C opensetup place setup button on screen
       subroutine opensetup
       return
       end
 
-C updwire() notify level for wireframe button
       subroutine updwire(iavail)
       return
       end
 
-C updcapt() notify level for capture buttons
       subroutine updcapt(iavail)
       return
       end
 
-C updazi() notify level for azimuth button
       subroutine updazi(iavail)
       return
       end
@@ -541,6 +520,11 @@ C updazi() notify level for azimuth button
       end
 
       subroutine capexall(cmd)
+      character*(*) cmd
+      return
+      end
+
+      subroutine captut(cmd)
       character*(*) cmd
       return
       end
@@ -598,7 +582,13 @@ C updazi() notify level for azimuth button
       return
       end
 
-C winlodpart() loads some or all of an xbitmap file into a pixmap
+C Dummy subroutine for a function available in GTK for displaying images
+C in a pop-up window.
+C      subroutine popupimage(head,topic,act,longtfile)
+C      character*(*) head,topic,act,longtfile
+C      return
+C      end
+
       subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
       character*(*) fname
@@ -607,7 +597,6 @@ C winlodpart() loads some or all of an xbitmap file into a pixmap
       return
       end
 
-C checklodpart() checks loading some or all of an xbitmap file
       subroutine checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &      inuma,inumb,ixbul,iybul,ixblr,iyblr)
       character*(*) fname
@@ -616,26 +605,24 @@ C checklodpart() checks loading some or all of an xbitmap file
       return
       end
 
-C findviewtext() return the pixel position that XDrawString should use.
       subroutine findviewtext(icx,line,isize,ix,iy)
       integer icx,line,isize,ix,iy
       return
       end 
 
-C getfilelist() return list of files in a folder
       subroutine getfilelist(subpath,action,listf,nwlistf,nlistf)
       character*(*) subpath, action, listf
       integer nwlistf(50),nlistf
       return
       end
       
-C iXavail() a zero says there is neither X11 or GTK available.
+C A zero says there is neither X11 or GTK available.
       integer function iXavail()
       iXavail = 0
       return
       end
 
-C igraphiclib() a three says that this is the text only version.
+C A three says that this is the text only version.
       integer function igraphiclib()
       igraphiclib = 3
       return

@@ -1089,7 +1089,7 @@ C and present a different interface depending on file type.
         H(14)='your model).'
         CALL EASKATOG(' ','Temporal file options:',
      &    'view/edit','use another','dereference',
-     &    'list associations','manage associations','cancel',
+     &    'list associations','manage associations','cancel/exit',
      &    ' ',IRT,14)
           if(irt.eq.6.or.irt.eq.0)return
       elseif(iabs(itdflg).eq.2)then
@@ -1097,7 +1097,8 @@ C and present a different interface depending on file type.
           H(11)='You may view the temporal data associated with the'
           H(12)='model by selecting the view entities option.'
           CALL EASKABCD(' ','Temporal file options:',
-     &    'view entities','n/a','list associations','cancel',IRT,12)
+     &    'view entities','n/a','list associations',
+     &    'cancel/exit',IRT,12)
           if(irt.eq.4.or.irt.eq.2.or.irt.eq.0)return
         else
           H(11)='An outdated file format is associated with the'
@@ -1106,7 +1107,8 @@ C and present a different interface depending on file type.
           H(14)='your model).'
           CALL EASKATOG(' Temporal definitions file options:',' ',
      &     'view/edit entities','use another','dereference',
-     &     'list associations','manage associations','exit',' ',IRT,14)
+     &     'list associations','manage associations',
+     &     'cancel/exit',' ',IRT,14)
           if(irt.eq.6.or.irt.eq.0)return
         endif
       elseif(iabs(itdflg).eq.3)then
@@ -1114,14 +1116,14 @@ C and present a different interface depending on file type.
           H(21)='You can view the temporal data associated with the'
           H(22)='model via selecting the view entities option.'
           CALL EASKABCD(' Temporal definitions file options:',' ',
-     &    'view entities','n/a','list associations','exit',
+     &    'view entities','n/a','list associations','cancel/exit',
      &    IRT,22)
           if(irt.eq.4.or.irt.eq.2.or.irt.eq.0)return
         else
           H(11)='Temporal definitions are available for editing/use.'
           CALL EASKATOG(' ','Temporal definitions options:',
      &      'view/edit','use another','dereference',
-     &      'list associations','manage associations','cancel',' ',
+     &      'list associations','manage associations','cancel/exit',' ',
      &      IRT,11)
           if(irt.eq.6.or.irt.eq.0)return
         endif
@@ -1503,6 +1505,123 @@ C Depending on the type of the data, ask for associated zone.
      &       ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 1252
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+
+C If there is no control file warn the user that one will be added.
+            if(ncf.eq.0)then
+              call usrmsg(
+     &        'There is no zone control file (or it has been.',
+     &        'dereferenced). One will be defined automatically.','W')
+            endif
+
+C Ask the user whether there has already been a control law defined
+C to use the setpoint. If so report on that control loop and offer
+C selected information to alter. Contol law 23 is the one used for this
+C temporal definition entity
+            write(outs,'(a,i2,a)')' There are currently ',ncf,
+     &        ' control loops.'
+            call edisp(iuout,outs)
+            call edisp(iuout,'  ')
+            found=.false.
+            call edisp(iuout,
+     &  'Controls might be suitable for use with temporal data.')
+            do 777 ijj=1,ncf
+              if(ibclaw(ijj,1,1).eq.23)found=.true.
+              call LSTCNTL(iuout,0,ijj,IER)
+ 777        continue
+            if(found)then
+
+C If there are possible control laws and if the user selects one of them
+C copy data into cm variables for later editing.
+              irtc=0
+              CALL EASKABC(' Control linkage options:',' ',
+     &          'use existing control','create new control','continue',
+     &          IRTC,26)
+              if(irtc.eq.1)then
+                CALL EASKI(ispl,'Control loop to use set point data?',
+     &          ' ',1,'F',ncf,'F',1,'cntrl loop for set point',IERI,26)
+                if(ieri.eq.-3) goto 42
+                izdef=iban(ispl,1)
+                ibsn(ispl,1)=izdef
+                ibsn(ispl,2)=0
+                ibsn(ispl,3)=0
+                ibsn(ispl,4)=0
+                cm(2)=bmiscd(ispl,1,1,2)
+                cm(3)=bmiscd(ispl,1,1,3)
+              elseif(irtc.eq.3)then
+                goto 42
+              endif
+            else
+
+C If no control loop has been defined to associate with this temporal
+C setpoint so create another one, fill in as much information as
+C possible and link back to the temporal item. Increment ncf.
+              call edisp(iuout,'No applicable controls found.')
+              irtc=0
+              CALL EASKABC(' Control linkage options:',' ',
+     &          'n/a','create new control','cancel',IRTC,26)
+              if(irtc.eq.1.or.irtc.eq.3)then
+                goto 42
+              endif
+            endif
+
+C Add another controls
+            if(irtc.eq.2)then
+              ispl=ncf+1
+              ncf=ncf+1
+              ibsn(ispl,1)=0
+              ibsn(ispl,2)=0
+              ibsn(ispl,3)=0
+              ibsn(ispl,4)=0
+              cm(2)=4.0
+              cm(3)=5.0
+            endif
+
+            ibsn(ispl,1)=IC
+            iban(ispl,1)=IC
+            iban(ispl,2)=0
+            iban(ispl,3)=0
+            nbcdt(ispl)=1
+            ibcdv(ispl,1,1)=1
+            ibcdv(ispl,1,2)=365
+            nbcdp(ispl,1)=1
+            tbcps(ispl,1,1)=0.0
+            ibctyp(ispl,1,1)=0
+            ibclaw(ispl,1,1)=23
+            cm(1)=2.0
+
+C Confirm capacities.
+  553       WRITE(HOLD,'(2f8.0)')cm(2),cm(3)
+            H(1)='This control assumes that heating and cooling'
+            H(2)='capacities are adequate for reaching the setpoints'
+            H(3)='in the temporal definition file (tdf). It is only'
+            H(4)='required to define the columns in the tdf where the'
+            H(5)='setpoints should be read from. Defaults are column 4'
+            H(6)='for heating setpoint and column 5 for cooling.'
+            CALL EASKS(HOLD,
+     &      'Heating and cooling setpoint column number ',
+     &      '(respectively):',40,' 4.0 5.0 ',
+     &      ' track another column number(s)',IER,6)
+            K=0
+            CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
+            CALL EGETWR(HOLD,K,cm(3),0.,80.,'F','Max columns cool',IER)
+            if(ier.ne.0)goto 553
+
+C Update the control period data.
+            bmiscd(ispl,1,1,1)=cm(1)
+            bmiscd(ispl,1,1,2)=cm(2)
+            bmiscd(ispl,1,1,3)=cm(3)                    
+
+C Update the control file and link the control loop to the correct zone.
+            icascf(IC)=ispl
+            ICTLF=IFIL+1
+            call usrmsg('Updating model control for temporal link...',
+     &        ' ','-')
+            CALL CTLWRT(ICTLF,IER)
+            CALL EMKCFG('-',IER)
+            call usrmsg(
+     &        'Updating model control for temporal link...done.',
+     &        ' ','-')
+
           elseif(TTYPE(it)(1:6).eq.'SETPTT')then
 
 C If there is no control file warn the user to create one first.

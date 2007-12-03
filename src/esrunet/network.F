@@ -131,6 +131,7 @@ C This is the main network management routine.
 
 #include "gnetwk.h"
 #include "building.h"
+#include "espriou.h"
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -147,7 +148,6 @@ C Graphics and ESP-r default commons
 C Path to problem and command line file (if any).
       COMMON/RPATH/PATH
       COMMON/UHOME/UPATH
-      COMMON/UDOT/ESPRC
 
 C Legacy flow file commons.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -218,7 +218,7 @@ C Name of current application
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER*34 ITEM(26)
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      CHARACTER INF*144,H*72,PATH*72,UPATH*72,ESPRC*72
+      CHARACTER INF*144,H*72,PATH*72,UPATH*72
       CHARACTER FS*1,STR*72,outs*124,outstr*124
       LOGICAL UNIXOK,OK,DOK,CLOSEM,CLOSEX,isexavail
       dimension IVAL(MNWKTYP)

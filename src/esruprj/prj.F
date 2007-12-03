@@ -43,6 +43,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (SBEM database)
 C default file names for databases
+#include "espriou.h"
+C espriou.h provides currentfile, defdbfl exemfl.
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -86,7 +88,6 @@ C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -98,10 +99,6 @@ C Indicator of possible focus zone.
 
 C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
-
-C Where exemplars list and default db list are kept.
-      common/exemlst/exemlbl,exemfl
-      common/defdb/dfdblbl,defdbfl
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -166,11 +163,10 @@ C Name of current application
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character inf*144,inz*16,inzone*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
-      character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
+      character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
-      character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
@@ -183,8 +179,6 @@ C Name of current application
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*48,dirpath*48
       character useraction*8  ! returned from exemplar access call.
-
-      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -362,14 +356,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1)then
-          call opencpw
-          call opensetup
-          call updwire(0)
-          call updcapt(1)
-          call updazi(1)
-        endif
+#ifdef X11
+        call opencpw
+        call opentutorial
+        call opensetup
+        call updwire(0)
+        call updcapt(1)
+        call updazi(1)
+#endif
         call setzscale()
         nifgrey=0
         ncset=0
@@ -383,7 +377,9 @@ C Generate the version report.
       CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings
-C if defined.
+C if defined. If there is no .esprc file in the users home folder
+C then the esp-r install folders will be checked by scesprc and
+C esprc may be updated if the alternate version is found.
       call usrhome(upath)
       if(unixok)then
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
@@ -430,7 +426,7 @@ C Write header of the journal file and then close.
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(dfdblbl,defdbfl,IFIL+5,IER)
+      call escdef(IFIL+5,IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
@@ -899,7 +895,7 @@ C Call rexmpl to get the exemplar. If ier is set to 2 then the
 C user didn't pick anything. If useraction is set to 'browse' then
 C ensure the toggle is set accordingly.
               useraction = ' '
-              call rexmpl(IUF,exemfl,exemplar,useraction,ier)
+              call rexmpl(IUF,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -3545,6 +3541,7 @@ C    and iton=1 images have been displayed.
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
+      integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
 
       logical concat,show,unixok
 
@@ -3588,7 +3585,11 @@ C and change any / to \.  If X11 then an external application is used
 C an double quoting is useful. If GTK then internal function used and
 C quotes are not required.
                     call addpath(limgfil(img),longtfile,concat)
-                    call cmdfiledos(longtfile,longtfiledos,ier)
+                    if(iglib.eq.1)then
+                      call cmdfiledos(longtfile,longtfiledos,ier)
+                    elseif(iglib.eq.2)then
+                      call imgfiledos(longtfile,longtfiledos,ier)
+                    endif
                     longtfile=' '
                     longtfile=longtfiledos
                   endif
@@ -3694,6 +3695,7 @@ C function in lib/esp_draw.c
   99      continue
         endif
       endif
+
       return
       end
 

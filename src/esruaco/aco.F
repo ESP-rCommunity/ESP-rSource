@@ -51,6 +51,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "espriou.h"
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -89,11 +90,7 @@ C Defaults and paths
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
@@ -141,8 +138,8 @@ C Material data array.
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      CHARACTER*72 path,upath,esprc
-      CHARACTER dfdblbl*20,defdbfl*72,fs*1,outsd*124
+      CHARACTER*72 path,upath
+      CHARACTER fs*1,outsd*124
       CHARACTER zname*12,zdesc*64,TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 
       CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
@@ -342,15 +339,15 @@ C graphic display to compensate.
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.
-      call escdef(dfdblbl,defdbfl,IFIL+1,IER)
+      call escdef(IFIL+1,IER)
 
 C Take `c' command line file name, convert to fortran string LCMDFL.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

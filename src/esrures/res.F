@@ -58,6 +58,7 @@ C For operational details refer to the ESP-r program user's manual.
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
+#include "espriou.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -79,9 +80,6 @@ C default file names for databases
 C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
 
-C Where default db list is kept.
-      common/defdb/dfdblbl,defdbfl
-
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
@@ -97,7 +95,6 @@ C Simulator parameters and performance information requested data.
 C Path to model and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
@@ -139,15 +136,15 @@ C Name of current application
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical     unixok,there,OK
+      logical     unixok,there
 
       CHARACTER ITEM(19)*23
       CHARACTER*72 H,LTMP,LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG,DSBEM
-      character path*72,upath*72,esprc*72,spsname*8,paction*16
-      character dfdblbl*20,defdbfl*72,cfgroot*24,fs*1,act*16,aut*12
+      character path*72,upath*72,spsname*8,paction*16
+      character cfgroot*24,fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
@@ -363,7 +360,7 @@ C All subsequent tstamp messages will be appended to root journal.
       endif
 
 C Scan the defaults file for default configuration.
- 902  call escdef(dfdblbl,defdbfl,ixunit,IER)
+ 902  call escdef(ixunit,IER)
 
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

@@ -22,6 +22,7 @@ C Boston, MA 02111-1307 USA.
 #include "building.h"
 #include "mould.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 
       common/minfo/mno(MOULD),species(MOULD)
       common/meqn/a0(MOULD),a1(MOULD),a2(MOULD),a3(MOULD)
@@ -47,11 +48,7 @@ C Boston, MA 02111-1307 USA.
 C Path to problem and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
-
-C Where default db list is kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Defaults.
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
@@ -64,9 +61,8 @@ C Name of current application
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
-      character path*72,upath*72,esprc*72
-      character dfdblbl*20,defdbfl*72
-      character species*64, grow*1, head*29,fs*1,outs*124
+      character path*72,upath*72
+      character species*64, grow*1, head*29,fs*1
       logical unixok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

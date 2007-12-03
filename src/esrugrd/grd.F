@@ -36,6 +36,7 @@ C << file names can be in place.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "espriou.h"
 
       integer igraphiclib  ! external definition
 
@@ -60,12 +61,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C Path to problem
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/rzone/inzone
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       
@@ -88,13 +85,12 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      LOGICAL OK,MODIFY,MODBND,MODLEN,XST,GRDOK
+      LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(12)
       CHARACTER H*72,LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
-      character upath*72,esprc*72,cfgroot*24,outs248*248,L144*144
-      character dfdblbl*20,defdbfl*72
+      character upath*72,cfgroot*24,outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -230,13 +226,13 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
-      write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),'/.','esprc'
+      write(esprc,'(3a)') upath(1:lnblnk(upath)),'/.','esprc'
       call scesprc(esprc,IFIL+1,0,IIER)
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(dfdblbl,defdbfl,IFIL+1,IER)
+      call escdef(IFIL+1,IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

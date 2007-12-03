@@ -22,6 +22,7 @@ C Boston, MA 02111-1307 USA.
 
 #include "plantdb.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 
       integer igraphiclib  ! external definition
 
@@ -43,12 +44,9 @@ C Defaults.
 C Path to problem and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/appw/iappw,iappx,iappy
 
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
       common/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
@@ -73,8 +71,8 @@ C Name of current application
       CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      character path*72,upath*72,esprc*72,fs*1
-      character dfdblbl*20,defdbfl*72,mfsdsc*68,ltpcmp*60 
+      character path*72,upath*72,fs*1
+      character mfsdsc*68,ltpcmp*60 
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -175,16 +173,16 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(dfdblbl,defdbfl,IFIL+1,IER)
+      call escdef(IFIL+1,IER)
 
 C Take command line file name as initial file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

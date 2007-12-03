@@ -1108,24 +1108,21 @@ C Close site file.
 C Trace.
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
-        CALL EDISP(ITRU,' Details of obstruction blocks:')
-        CALL EDISP(ITRU,' ')
+        CALL EDISP(ITRU,'Details of obstruction blocks:')
         WRITE(OUTSTR,997)NOX,NOZ
-  997   FORMAT(' Shading has been calculated based on a grid of ',
+  997   FORMAT('Shading based on a grid of ',
      &           I2,' by ',I2,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
         WRITE(OUTSTR,9996)NB
- 9996   FORMAT(
-     &' There are ',I2,' obstruction blocks associated with the zone:')
+ 9996   FORMAT('There are ',I2,' blocks associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
-        CALL EDISP(ITRU,' ')
         CALL EDISP(ITRU,
-     &  ' Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+     &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
         DO 9995 I=1,NB
           tmp=BLKNAME(I)
           WRITE(OUTSTR,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
      &      BANG(I),tmp(1:LNBLNK(TMP)),BLKMAT(I)
- 9994     FORMAT(I4,7F8.1,' ',a,' ',a)
+ 9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
         CALL EDISP(ITRU,' ')

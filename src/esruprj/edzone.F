@@ -2861,7 +2861,8 @@ C to the training/pattern folder.
           CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
           write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
         else
-          call usrmsg('Usage 2nd parameter not recognised',' ','W')
+          call usrmsg('Silentread usage 2nd parameter not recognised',
+     &      ' ','W')
         endif
         goto 43
       elseif(WORD(1:9).eq.'*occupant')then

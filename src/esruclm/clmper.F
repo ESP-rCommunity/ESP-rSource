@@ -378,6 +378,8 @@ C << the text block from within clm!
       subroutine editemclimatelist()
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile, cdblfil.
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -402,7 +404,6 @@ C Typical periods and season definitions.
 
 C External text editor.
       common/texted/tedlbl,teditor
-      common/clmlst/cdblbl,cdblfil
 
 C ITM is main item editing menu.
       character ITM(25)*38
@@ -415,7 +416,6 @@ C ITM is main item editing menu.
       CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
       character llasci*144,llitem*144,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20,tmode*8,doit*248
-      character cdblbl*20,cdblfil*72
       logical unixok,xst,concat,mxmn
       logical havedrawn   ! if the user has asked to draw graph
       logical altered     ! if user changes period.
@@ -463,6 +463,14 @@ C        endif
     3 INO=-4
       IIER=0
 
+C If clmlnam and clmlaid are not set fill them with default information.
+      if(clmlnam(1:15).eq.'not yet entered')then
+        write(clmlnam,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),'  '
+      endif
+      if(clmlaid(1:15).eq.'not yet entered')then
+        write(clmlaid,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),
+     &    ' was sourced from '
+      endif
       WRITE(ITM(1),'(2A)')     'a menu str: ',clmlnam(1:26)
       WRITE(ITM(2),'(2A)')     'b menu aid: ',clmlaid(1:26)
       WRITE(ITM(3),'(2A)')     'c clm file: ',clmldbfile(1:26)
@@ -619,9 +627,12 @@ C String for the selection menu.
 C Aide memorie for the menu.
         H(1)='Aide Memorie for the selection list menu (<=72 char). '
         t72=clmlaid
-        if(t72(1:15).eq.'not yet entered')write(t72,'(2a)') CLMLOC,
-     &    ' was sourced from ... '
-        write(d72,'(2a)') CLMLOC,' was sourced from... '
+        if(t72(1:15).eq.'not yet entered')then
+          write(t72,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),
+     &    ' was sourced from '
+        endif
+        write(d72,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),
+     &    ' was sourced from '
         CALL EASKS(t72,'Aide memorie for the selection list menu',' ',
      &    72,d72,'clmlist aide',IER,1)
         if(t72(1:2).ne.'  ')clmlaid=t72
@@ -1407,14 +1418,25 @@ C Typical periods and season definitions.
      &              is2sprs,is2sprf,is1sums,is1sumf
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
+      COMMON/CLMDT1/CLMLOC
 
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
       character clmlhelp*72,tab*1
+      CHARACTER CLMLOC*30
 
       tab=CHAR(9) 
      
+C Make up the entry. If clmlnam and clmlaid has not be set fill it
+C with default information.
       write(iuf,'(a)')'*item'
+      if(clmlnam(1:15).eq.'not yet entered')then
+        write(clmlnam,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),'  '
+      endif
       write(iuf,'(3a)')'*name',tab,clmlnam(1:lnblnk(clmlnam))
+      if(clmlaid(1:15).eq.'not yet entered')then
+        write(clmlaid,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),
+     &    ' was from an unspecified source.'
+      endif
       write(iuf,'(3a)')'*aide',tab,clmlaid(1:lnblnk(clmlaid))
       write(iuf,'(3a)')'*dbfl',tab,clmldbfile(1:lnblnk(clmldbfile))
       write(iuf,'(3a)')'*avail',tab,clmlavail(1:lnblnk(clmlavail))

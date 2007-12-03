@@ -597,6 +597,7 @@ C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
 #include "esprdbfile.h"
+#include "espriou.h"
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -610,9 +611,6 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       common/pophelp/h(60)
       common/rcmd/LCMDFL
 
-C Where list of climate files is held.
-      common/clmlst/cdblbl,cdblfil
-
       logical XST,ok,silent
       
 C Logical rescan = true if climatelist needs to be rescanned to
@@ -621,7 +619,7 @@ C or passed into clm module).
       logical rescan
 
       CHARACTER CLMLOC*30,H*72,outs*124,tab*1,outs248*248
-      character LCMDFL*144,cdblbl*20,cdblfil*72,clmdb*72,L144*144
+      character LCMDFL*144,clmdb*72,L144*144
       tab = CHAR(9)
 
 C Get help message set.
@@ -667,7 +665,7 @@ C climate file.
           endif
           call usrmsg('Please select a climate set from the ',
      &                'list provided... ','-')
-          call rdblist(IUF,cdblfil,clmdb,ier)
+          call rdblist(IUF,clmdb,ier)
           if(ier.ne.0)then
             write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
             rescan=.true.
@@ -818,7 +816,7 @@ C set in clm.F will be used.
         IUF=ifil+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
-          call scancdblist(IUF,cdblfil,LCMDFL,ok,ier)
+          call scancdblist(IUF,LCMDFL,ok,ier)
         endif
       endif
       call edisp(iuout,' ')

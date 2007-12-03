@@ -178,38 +178,34 @@ c) Trace facilities
 
 
 *tut_simul_cmds   Simul menu in bld
-Save options dictate what is saved in the library:
+Save options dictate what is saved in the Results db
+as follows.
 
 SAVE >>0
    Summary report is generated.
 
 SAVE >>1
    Minimum save option (principally zone dry bulb temperature,
-   control point temperature and plant injection).
+   control point temperature and plant flux interaction).
 
 SAVE >>2
    Moderate save option - as (1) but adds inside surface
    temperatures, infiltration, ventilation, solar absorbed at
-   inside faces, casual gains and zone relative humidity.
+   inside faces, casual gains and relative humidity.
 
 SAVE >>3
    Maximum save option - as (2) but adds temperatures at all
-   nodes within constructions.
+   construction nodes.
 
 SAVE >>4
    Surface energy balance option - as (2) but with all flux
    paths at inside and outside face of surfaces included.
 
-Both level 3 and 4 result in large results libraries.
+Both level 3 and 4 result in a large Results db.
 
 The monitor option (plotting principal parameters as a
 simulation progresses) allows an initial impression of
 performance.
-
-The timestep control facility allows the simulation time step
-to vary under certain conditions such as rapidly changing
-boundary conditions.
-
 
 *tut_simul_toggl  Simul menu
 Although most simulations can proceed without special settings

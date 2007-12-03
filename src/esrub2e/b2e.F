@@ -27,6 +27,7 @@ C pertinent data to the BEMS tool.
 C *********************************** B2E ******************************
 
       PROGRAM B2E
+#include "espriou.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -45,8 +46,6 @@ C Temporal definition commons.
 C Path to problem and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
-      common/defdb/dfdblbl,defdbfl
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -57,8 +56,8 @@ C Name of current application
       character cAppName*12
 
       CHARACTER INTER*144,INF*144
-      character path*72,upath*72,esprc*72,outs*124,outs248*248
-      character dfdblbl*20,defdbfl*72,fs*1
+      character path*72,upath*72,outs*124,outs248*248
+      character fs*1
       LOGICAL unixok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -177,7 +176,7 @@ C Make temporary use of file unit IAF=IFIL+1.
       call scesprc(esprc,IAF,0,IIER)
 
 C Scan the defaults file for default configuration.
-      call escdef(dfdblbl,defdbfl,IAF,IER)
+      call escdef(IAF,IER)
 
       INIT =0
 

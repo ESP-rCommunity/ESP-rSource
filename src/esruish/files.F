@@ -155,9 +155,9 @@ C Return after advising user and setting insrtd & instri to zero
 C to indicate to subroutines comput and inscom that no data has
 C been saved.
       if(paction(1:13).ne.'update_silent')then
-        write(outs,'(A,A)')' Opened Shad:Insol db ',FNAME
+        write(outs,'(3A)')'Opened ',FNAME,'.'
         call edisp(iuout,outs)
-        call usrmsg(' Scanning shading:insolation file...done.','  ',
+        call usrmsg('Scanning shading/insolation file...done.','  ',
      &    'P')
       endif
       INSRTD=0
@@ -269,7 +269,7 @@ C Clear local arrays.
   17  continue
 
 C Check SHADING/INSOLATION file, if at least one item of ishd and isadd array
-C is none zero then there is data in the file.
+C is not zero then there is data in the file.
       irec=1
       read(ifilsi,rec=irec,iostat=istat,err=30)(ishd(i),i=1,12),
      &(isadd(i),i=1,12)
@@ -283,7 +283,7 @@ C irecx is the last record used in the file.
    20 irec=2
       read(ifilsi,rec=irec,iostat=istat,err=1100)irecx,nsurs,msurs
       if(nsur.ne.nsurs.or.msurs.ne.misur)then
-        call edisp(iuout,' Surfaces don`t match: nsur<>nsurs')
+        call edisp(iuout,'Surfaces don`t match: nsur<>nsurs')
         goto 1000
       endif
 
@@ -308,16 +308,16 @@ C File doesn't exist: create one.
 C The file exists (or has been created). Check if any shading data is
 C to be added.
    40 IF(ICAL.NE.0)goto 310
-      call edisp(iuout,' No shading data to be saved ')
+      call edisp(iuout,'No shading data to be saved.')
       goto 900
 
 C Check that data has not been saved already.
   310 IF(INSRTD.EQ.0)goto 320
-      call edisp(iuout,' This data has already been saved')
+      call edisp(iuout,'This data has already been saved!')
       goto 900
 
-C Inserting data, so ensure file is type 1 or 3 (upgrade from no
-C data to shading only or from insolation only to shading and insolation).
+C Inserting data, so ensure file is type 1 or 3 (upgrade from no data
+C to shading only or from insolation only to shading and insolation).
   320 ISHDT=ISHD(MON)
       IF(ISHDT.EQ.0)ISHD(MON)=1
       IF(ISHDT.EQ.2)ISHD(MON)=3
@@ -335,13 +335,12 @@ C code (using the last available record position).
 
 C Shading data already exists in this position
       dok=.true.
-      h(1)='This month had been previously calculated. Probably you'
-      h(2)='will want to overwrite this with the new calculations. '
-      h(3)=' '
-      h(4)='And it is safer to have removed the zone shading files '
-      h(5)='and write fresh files rather than overwriting old files. '
-      CALL ASKOK(' Data for this month already exists. The new data',
-     &' to be saved will overwrite this. Is this OK?',OK,dok,5)
+      h(1)='This month has previously been processed. You may wish to'
+      h(2)='overwrite these data with the new calculation results.'
+      h(3)='Note however that it is safer to remove the Zone Shading'
+      h(4)='and Insolation file and create a new one from scratch.'
+      WRITE(outs,'(A,I2,A)') 'Data already saved for month ',MON,'.' 
+      CALL ASKOK(outs,'OK to overwrite?',OK,dok,4)
       IF(.NOT.OK)goto 900
 
 C Check if new data will fit into the existing data space in the file.
@@ -354,7 +353,7 @@ C number and remember in INSOLR.
 C << NOTE cannot find any code that would set IGC to < zero >>
       DO 410 I=1,NSUR
         if(IGC(I).LT.0)then
-          call edisp(iuout,' Checking for space: IGC < 0')
+          call edisp(iuout,'Checking for space: IGC < 0')
           goto 1000
         endif
   410 CONTINUE
@@ -432,9 +431,11 @@ C Error handling.
 
 C ************** RETRV1 *********************
 C 'RETRV1' Retrives all input information from the header block of the
-C transitional shading file for zone icomp)
+C transitional shading file.
+
       SUBROUTINE RETRV1(icomp)
 #include "building.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       character ETYPE*4
@@ -929,16 +930,15 @@ C it matches current zone definition.
         goto 1000
       endif
 
-C Find out which surfaces are insolation sources and if this
-C these sources are `new knowledge` inform the user.
+C Find out which surfaces are insolation sources and if the insolation
+C data for these sources are new inform the user.
       irec=4
       read(ifilsi,rec=irec,iostat=istat,err=1100)(ntmc(i),i=1,nsur)
 
-C Next lines commented out of SHD version.
       do 26 i=1,nsur
         if(itmc(i).ne.ntmc(i))then
           write(outs,'(A,I2)')
-     &     ' Updating shd:ins db knowledge of transparent surface ',i
+     &     'Updating db insolation data for surface ',i
           if(paction(1:13).ne.'update_silent')then
             call edisp(iuout,outs)
           endif
@@ -954,7 +954,7 @@ C at this point. Set next available record to 5.
       endif
 
 C The file exists (or has just been created).
-C Check if any INSOLATION data is to be added.
+C Check if any insolation data is to be added.
    40 IF(ICAL.NE.0)goto 310
       call edisp(iuout,' No shading data to be saved ')
       GOTO 900
@@ -982,21 +982,20 @@ C Check if data to be inserted clashes with data already in the file.
 C Data already exists in this position.
       if(ishdt.eq.1)goto 400
       dok=.true.
-      h(1)='This month had been previously calculated. Probably you'
-      h(2)='will want to overwrite this with the new calculations. '
-      h(3)=' '
-      h(4)='And it is safer to have removed the zone shading files '
-      h(5)='and write fresh files rather than overwriting old files. '
-      CALL ASKOK('Data for this month already exists. The new data',
-     &' to be saved will overwrite this. Is this OK?',OK,dok,5)
+      h(1)='This month has previously been processed. You may wish to'
+      h(2)='overwrite these data with the new calculation results.'
+      h(3)='Note however that it is safer to remove the Zone Shading'
+      h(4)='and Insolation file and create a new one from scratch.'
+      WRITE(outs,'(A,I2,A)') 'Data already saved for month ',MON,'.' 
+      CALL ASKOK(outs,'OK to overwrite?',OK,dok,4)
       IF(.NOT.OK)goto 900
 
 C Check if new data will fit into the existing data space in the file.
   400 irec=isadd(mon)
       if(ishdt.eq.2)goto 430
 
-C Skip shading data by jumping NSUR records past the start of information
-C for month MON and read the igc array.
+C Skip shading data by jumping NSUR records past the start of
+C information for month MON and read the igc array.
       IREC=ISADD(MON)+NSUR
       READ(IFILSI,REC=IREC,IOSTAT=ISTAT,ERR=1100)(IGC(I),I=1,NSUR)
       IREC=IREC+1
@@ -1021,7 +1020,7 @@ C Check size of insolation data (read the igc hash array).
   450 CONTINUE
       IF(NR.GE.0)goto 500
 
-C COPY SHADING DATA TO END OF FILE
+C Copy shading data to end of file.
   460 ISHDR=ISADD(MON)
       ISADD(MON)=IRECX
       ISHDSZ=IREC-ISHDR
@@ -1035,7 +1034,7 @@ C COPY SHADING DATA TO END OF FILE
   480 CONTINUE
   490 CONTINUE
 
-C Insert data
+C Insert data.
   500 CALL IWRT(IREC)
 
 C Write header, if the current record is beyond irecx then shift irecx.
@@ -1054,15 +1053,15 @@ C Write header, if the current record is beyond irecx then shift irecx.
 C Return to menu.
   900 return
 
-C Error handling
- 1000 call edisp(iuout,' Geometry used in the SHADING/INSOLATION db')
-      call edisp(iuout,' DOES NOT Correspond to the geometry file you')
-      call edisp(iuout,' have specified.')
+C Error handling.
+ 1000 call edisp(iuout,' ')
+      call edisp(iuout,'Geometry used in Zone Shading & Insolation')
+      call edisp(iuout,'db does not correspond to the specified zone')
+      call edisp(iuout,'geometry file.')
       GOTO 900
 
  1100 WRITE(outs,1109)IREC
- 1109 FORMAT(' Shading/Insolation file error in SSAVE - record',I6)
+ 1109 FORMAT('SSAVE: Zone Shading & Insolation db error, record',I6)
       call edisp(iuout,outs)
       GOTO 900
       END
-

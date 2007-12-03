@@ -526,20 +526,33 @@ C If an air layer include the R values in the display.
           legmat=IPR(IFOC,IL)   ! which legacy index
           if(legmat.ge.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
+            if(matarrayindex.ge.0)then
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
 
 C Make up NAM as combination of matnam and matdoc.
-            lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
+              lnam=lnblnk(matname(matarrayindex))
+              lfordoc = 72 - (lnam +4)    ! space left for doc
+              write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
+     &          matdoc(matarrayindex)(1:lfordoc)
 C            write(NAM,'(a)') matname(matarrayindex)(1:32)
+            else
+
+C Referenced item was not in the materials hash list. Write zeros.
+              DBCON=0.0
+              DBDEN=0.0
+              DBSHT=0.0
+              E=0.0
+              A=0.0
+              DRV=0.0
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') 'unknown : unknown '
+            endif
           endif
         else
           CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,

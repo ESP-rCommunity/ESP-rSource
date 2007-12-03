@@ -25,6 +25,8 @@ C climatic data sets compatible with ESP-r.
 
       program clm
 #include "esprdbfile.h"
+#include "espriou.h"
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -53,14 +55,10 @@ C file associated with this action.
 C Path to problem and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
-
-C Where default db list is kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
@@ -90,8 +88,8 @@ C Name of current application
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
       character inf*144,ascif*72,pascif*72,llasci*144
       character pact*16,aut*12,paction*16
-      character path*72,upath*72,esprc*72,xfile*144,tg*1,delim*1
-      character dfdblbl*20,defdbfl*72,tab*1,fs*1,OUTSTR*124
+      character path*72,upath*72,xfile*144,tg*1,delim*1
+      character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
@@ -291,7 +289,7 @@ C All subsequent tstamp messages will be appended to root journal.
       endif
 
 C Scan the defaults file for default configuration.
-      call escdef(dfdblbl,defdbfl,IAF,IER)
+      call escdef(IAF,IER)
 
 C Assume climate file is on IFIL.
       ICLIM=IFIL

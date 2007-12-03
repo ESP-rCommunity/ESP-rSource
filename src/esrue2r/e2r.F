@@ -30,6 +30,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "espriou.h"
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -53,13 +54,10 @@ C Defaults.
 C Path to model.
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/expath/runpath
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
       common/rcmd/LCMDFL
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -121,8 +119,7 @@ C Materials data array.
       character*72 matfil,rmmfil,glzfil,aglzfil
       character rambfil*72,optnfil*72,tfile*72,runpath*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      character path*72,upath*72,esprc*72,cfgroot*24
-      character dfdblbl*20,defdbfl*72
+      character path*72,upath*72,cfgroot*24
       character crenrp*160,coconv*40
       character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
@@ -135,7 +132,7 @@ C Materials data array.
 
       DIMENSION ITEM(13)
 
-      LOGICAL KEEP,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL KEEP,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
@@ -209,7 +206,6 @@ C Make case insensitive.
  9    continue
 
 C Set defaults.
-      OK=.false.
       KEEP=.false.
       CFGOK=.false.
       MLDBOK=.false.
@@ -388,9 +384,9 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
       if(unixok)then
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'.esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
-        write(esprc,'(a,a,a)') upath(1:lnblnk(upath)),fs,'esprc'
+        write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFIL+1,0,IIER)
 
@@ -423,7 +419,7 @@ C All subsequent tstamp messages will be appended to root journal.
 
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.
- 902  call escdef(dfdblbl,defdbfl,IFIL+1,IER)
+ 902  call escdef(IFIL+1,IER)
 
 C Take `c' command line file name, convert to fortran string LCMDFL.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then

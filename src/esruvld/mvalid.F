@@ -42,8 +42,6 @@ C *********************************************************************
 C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
 C      common/rpath/path
-
-C      common/udot/esprc
            
 C Indicator of possible focus zone.
 C      common/user/browse

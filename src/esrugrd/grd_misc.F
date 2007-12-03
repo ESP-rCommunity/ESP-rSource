@@ -23,6 +23,7 @@ C MZMISC - equivalent to subroutine in esrubld/precal.F
 C MESH - equivalent to subroutine in esruish/miscel.F
 C FACDRW - equivalent to subrouinte in esruish/graph.F
 C POINT1 - equivalent to subroutine in esruish/point.F
+C TRNSF4 & TRNSF5 - set up the local face coordinate system
 
 c ******************** MZMISC ********************
 
@@ -317,4 +318,83 @@ C Determine if point XX,ZZ is within this face.
       goto 11
     3 IANS=1
    11 RETURN
+      END
+
+C *****************************************************************
+      SUBROUTINE TRNSF4(IS)
+#include "building.h"
+
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G1T/XFT(MV),ZFT(MV)
+      COMMON/GR3D09/XP(3),YP(3),ZP(3)
+
+      DIMENSION  XX(MV),YY(MV),ZZ(MV)
+
+      NVRIS=NVER(IS)
+      IP1=JVN(IS,1)
+      XOR=X(IP1)
+      YOR=Y(IP1)
+      ZOR=Z(IP1)
+
+C Transform object body face coordinates.
+      DO 10 I=1,NVRIS
+        IP=JVN(IS,I)
+        XX(I)=X(IP)-XOR
+        YY(I)=Y(IP)-YOR
+        ZZ(I)=Z(IP)-ZOR
+   10 CONTINUE
+
+C Define the local X,Y,and Z axes for the current surface.
+      CALL TRNSF5(NVRIS,XX,YY,ZZ)
+
+C Perform rotation.
+      XMIN=0.
+      ZMIN=0.
+      DO 20 I=1,NVRIS
+        XFT(I)=XX(I)*XP(1)+YY(I)*XP(2)+ZZ(I)*XP(3)
+        ZFT(I)=XX(I)*ZP(1)+YY(I)*ZP(2)+ZZ(I)*ZP(3)
+        XMIN=AMIN1(XMIN,XFT(I))
+        ZMIN=AMIN1(ZMIN,ZFT(I))
+   20 CONTINUE
+      DO 30 I=1,NVRIS
+        XFT(I)=XFT(I)-XMIN
+        ZFT(I)=ZFT(I)-ZMIN
+   30 CONTINUE
+      RETURN
+      END
+
+C *****************************************************************
+      SUBROUTINE TRNSF5(NVRIS,XX,YY,ZZ)
+#include "building.h"
+
+      COMMON/GR3D09/XP(3),YP(3),ZP(3)
+
+      DIMENSION  XX(MV),YY(MV),ZZ(MV)
+
+C Define the two vectors defining the current surface.
+      XP(1)=XX(2)
+      XP(2)=YY(2)
+      XP(3)=ZZ(2)
+      DIST=SQRT(XP(1)**2+XP(2)**2+XP(3)**2)
+      XP(1)=XP(1)/DIST
+      XP(2)=XP(2)/DIST
+      XP(3)=XP(3)/DIST
+      ZP(1)=XX(NVRIS)
+      ZP(2)=YY(NVRIS)
+      ZP(3)=ZZ(NVRIS)
+      DIST=SQRT(ZP(1)**2+ZP(2)**2+ZP(3)**2)
+      ZP(1)=ZP(1)/DIST
+      ZP(2)=ZP(2)/DIST
+      ZP(3)=ZP(3)/DIST
+      CALL CROSS(XP,ZP,YP)
+      DIST=SQRT(YP(1)**2+YP(2)**2+YP(3)**2)
+      YP(1)=YP(1)/DIST
+      YP(2)=YP(2)/DIST
+      YP(3)=YP(3)/DIST
+      CALL CROSS(YP,XP,ZP)
+      DIST=SQRT(ZP(1)**2+ZP(2)**2+ZP(3)**2)
+      ZP(1)=ZP(1)/DIST
+      ZP(2)=ZP(2)/DIST
+      ZP(3)=ZP(3)/DIST
+      RETURN
       END

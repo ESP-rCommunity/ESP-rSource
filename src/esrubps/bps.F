@@ -138,6 +138,7 @@ C a subroutine rather than as an application.
 #include "MultiYear_simulations.h"
 #include "cfd.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 
 C For dll mode dllsubr is the subroutine name where an error occurs
 C and dllmesg tells the details of the error.
@@ -202,7 +203,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
 C Path to model and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/CFGV/icfgv
       common/user/browse
@@ -220,9 +220,6 @@ C CFD visualisation.
 
 C CFD small openings.
       common/SSOinit/areaSSO
-
-C Where default db list are kept.
-      common/defdb/dfdblbl,defdbfl
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -283,8 +280,8 @@ C Name of current application
       character browsing*4
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar
-      character path*72,upath*72,esprc*72,bresfil*72
-      character dfdblbl*20,defdbfl*72,RFILE*72,PFILE*72,MSTRFILE*72
+      character path*72,upath*72,bresfil*72
+      character RFILE*72,PFILE*72,MSTRFILE*72
       character LAPROB*72,LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
@@ -587,8 +584,7 @@ C All subsequent tstamp messages will be appended to root journal.
 C Scan the defaults file for default configuration.
 C Make temporary use of file unit IFIL+1.  Note: escdef must come
 C after scan of .esprc file.
-C      dfdblbl='NT default'
- 902  call escdef(dfdblbl,defdbfl,IFIL+1,IER)
+ 902  call escdef(IFIL+1,IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
