@@ -142,11 +142,12 @@ C Reset to the normal graphics area before exiting.
             LIMTTY=8
             LIMIT =8
           endif
-#ifdef X11
-          call winclr
-          CALL feedbox(menuchw,2,igfw,igfh)
-          CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call winclr
+            CALL feedbox(menuchw,2,igfw,igfh)
+            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+          endif
           CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
         endif
         return

@@ -208,7 +208,6 @@ void	eewmenu_(char* titleptr,long int* impx,long int* impy,long int* iwth,long i
 	long int* irpy,long int* ino,long int* ipflg,long int* uresp,int len_title);
 /* int	aux_menu(XEvent event); */
 void	refreshenv_();
-void	opentutorial_();
 void	opencpw_();
 void	opencfg_(long int* cfg_type,long int* icfgz,long int* icfgn,long int* icfgc,
                  long int* icfgdfn,long int* iicfgz,long int* iicfgn,long int* iicfgc,long int* iicfgdfn);
@@ -219,7 +218,6 @@ void	updazi_(long int* avail);
 void	capexgf_(char* cmd,int len_cmd);
 void	capextf_(char* cmd,int len_cmd);
 void	capexall_(char* cmd,int len_cmd);
-void	captut_(char* cmd,int len_cmd);
 void	findrtb_(long int* right,long int* top,long int* bottom);
 void	openmouse_(char* mseb1,char* mseb2,char* mseb3,int len1,int len2,int len3);
 void	movemse();

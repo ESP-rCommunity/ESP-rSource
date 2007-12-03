@@ -204,9 +204,6 @@ C act='p' iget parameters already set.
 C Define prompt
       prompt='  '
 
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
@@ -645,11 +642,12 @@ C pixel references for calls to viewtext.
       CALL HDSTEP(SDESCR)
 
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        call startbuffer
-        call feedbox(menuchw,2,igfw,igfh)
-        call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call startbuffer
+          call feedbox(menuchw,2,igfw,igfh)
+          call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        endif
 
 C Logic to alter the '30' for two different cases:
 C  a) we are using GTK and a proportional font << to be done >>

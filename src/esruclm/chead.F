@@ -37,26 +37,29 @@ C of lines to include in the text portion of the display.
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*44,PERST3*44
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C If in type 8 terminal make the text display area larger before
 C displaying the following data ( but only clear it if LINES != LIMTTY)
       if(LIMTTY.NE.LINES.AND.MMOD.EQ.8)then
-#ifdef X11
-        call userfonts(IFS,ITFS,IMFS)
-        if(iappw.gt.0.and.iappw.lt.100)then
-          menuchw = MAX0(int(27*iappw*0.01),20)
-          LIMTTY=LINES
-        else
-          menuchw = 27
-          LIMTTY=LINES
-        endif
-        call winclr
-        CALL feedbox(menuchw,2,igfw,igfh)
-        CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call userfonts(IFS,ITFS,IMFS)
+          if(iappw.gt.0.and.iappw.lt.100)then
+            menuchw = MAX0(int(27*iappw*0.01),20)
+            LIMTTY=LINES
+          else
+            menuchw = 27
+            LIMTTY=LINES
+          endif
+          call winclr
+          CALL feedbox(menuchw,2,igfw,igfh)
+          CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 
-        CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
-#else
-        continue
-#endif
+          CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
+        elseif(iglib.eq.2)then
+          continue
+        endif
       endif
       ACLAT=ABS(CLAT)
       ACLONG=ABS(CLONG)
@@ -113,58 +116,61 @@ C Display heading for climate graph.
       integer onleft  ! number of left axis
       integer onright ! number of right axis
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        if(iappw.gt.0.and.iappw.lt.100)then
-          menuchw = MAX0(int(imenuch*iappw*0.01),18)
-          LIMTTY= MAX0(int(8*iappw*0.01),4)
-          LIMIT = MAX0(int(8*iappw*0.01),4)
-        else
-          menuchw = imenuch
-          LIMTTY=8
-          LIMIT =8
-        endif
-        call winclr
-        CALL feedbox(menuchw,2,igfw,igfh)
-        CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          if(iappw.gt.0.and.iappw.lt.100)then
+            menuchw = MAX0(int(imenuch*iappw*0.01),18)
+            LIMTTY= MAX0(int(8*iappw*0.01),4)
+            LIMIT = MAX0(int(8*iappw*0.01),4)
+          else
+            menuchw = imenuch
+            LIMTTY=8
+            LIMIT =8
+          endif
+          call winclr
+          CALL feedbox(menuchw,2,igfw,igfh)
+          CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 
 C The calling code will know how many axis are required.
-        if(onright.eq.3)then
-          if(onleft.eq.2)then
-            CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+          if(onright.eq.3)then
+            if(onleft.eq.2)then
+              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.1)then
+              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.0)then
+              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+            endif
+          elseif(onright.eq.2)then
+            if(onleft.eq.2)then
+              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.1)then
+              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.0)then
+              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+            endif
+          elseif(onright.eq.1)then
+            if(onleft.eq.2)then
+              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.1)then
+              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.0)then
+              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+            endif
+          elseif(onright.eq.0)then
+            if(onleft.eq.2)then
+              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.1)then
+              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+            elseif(onleft.eq.0)then
+              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+            endif
           endif
-        elseif(onright.eq.2)then
-          if(onleft.eq.2)then
-            CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
-          endif
-        elseif(onright.eq.1)then
-          if(onleft.eq.2)then
-            CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
-          endif
-        elseif(onright.eq.0)then
-          if(onleft.eq.2)then
-            CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
-          elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
-          endif
+        elseif(iglib.eq.2)then
+          continue
         endif
-#else
-        continue
-#endif
       ENDIF
       ACLAT=ABS(CLAT)
       ACLONG=ABS(CLONG)

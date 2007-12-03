@@ -205,6 +205,7 @@ C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  SIGFIG:  Returns number to specified number of significant figures.
 C  SIpre:   Returns suitable SI prefix for number supplied.
 C Startbuffer: wrapper around call to win3dclr
+C popupimage: display image with documentation (dummy of GTK version)
 
 C ******************** EASKI ********************
 C EASKI is a facility for asking the user for an integer which
@@ -264,7 +265,7 @@ C Remember value passed in in case of a cancel.
 C Generate help and default strings.
       CALL INTSTR(IDEFLT,STR2,IW2,IER)
       WRITE(DSTR,27,iostat=ios,err=1)STR2(1:IW2)
-   27 FORMAT('The default value (',a,') will be used.')
+   27 FORMAT(' The default value (',a,') will be used.')
 
       CALL INTSTR(IVAL,STR2,IW2,IER)
       CALL INTSTR(IDEFLT,STR1,IW1,IER)
@@ -274,8 +275,8 @@ C Generate help and default strings.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
    64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
+   65   FORMAT('Default (d):',a,' or Current (ok):',a)
       ENDIF
 
 C Begin with prompts.
@@ -310,13 +311,13 @@ C leading blanks from string returned.
 C A 'D' or 'd' detected, set to default value.
           call edisp(iuout,DSTR)
           IVAL=IDEFLT
-C          call usrmsg('  ','  ','-')
+          call usrmsg('  ','  ','-')
           RETURN
         elseif(idef.eq.2)then
 
 C Cancel button was pressed, reset ival as ivalold and mark as cancel. 
           IVAL=ivalold
-C          call usrmsg('User requested a cancel for dialog',PROMP1,'-')
+          call usrmsg('User requested a cancel for dialog',PROMP1,'-')
           ier=-3
           RETURN
         ENDIF
@@ -362,7 +363,7 @@ C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing integer value.
           CALL INTSTR(IVAL,STR2,IW2,IER)
           WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT('The existing value (',a,') will be used.')
+   55     FORMAT(' The existing value (',a,') will be used.')
           RETURN
         ENDIF
       ENDIF
@@ -371,7 +372,7 @@ C Decode the string into an integer.
       read(WORD,*,ERR=999)IVALT
       CALL INTSTR(IVALT,STR1,IW1,IFLAG)
       IF(IFLAG.NE.0)THEN
-        CALL USRMSG(' ','Did not understand, try again.','-')
+        CALL USRMSG(' ',' Did not understand, try again.','-')
         IFLAG=0
         GOTO 20
       ENDIF
@@ -382,11 +383,10 @@ C Check IVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,28,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   28   FORMAT('The input value for `',a,'` (',a,
-     &         ') should be greater than ',a,'!')
+   28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,' Is this OK?',OK,DOK,NHELP)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -404,11 +404,10 @@ C Check IVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,39,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   39   FORMAT('The input value for `',a,'` (',a,')',
-     &         ' should be less than ',a,'!')
+   39   FORMAT(' The value of ',a,' (',a,')',' is greater than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHELP)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -429,7 +428,7 @@ C Return to calling module
       IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
       RETURN
 
-999   CALL USRMSG(' ','Did not understand, try again.','-')
+999   CALL USRMSG(' ',' Did not understand, try again.','-')
       GOTO 20
    1  write(6,*) 'EASKI: error composing message or prompt.'
       return
@@ -515,13 +514,13 @@ C Generate help and default strings.
       CALL REL16STR(RVAL,STR2,IW2,IER)
       IF(NHELP.GT.0)THEN
         WRITE(H(NHELP+1),63,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   63   FORMAT('Current value is (',a,'); Default value is (',a,').')
+   63   FORMAT('(Current value: ',a,'; Default value: ',a,')')
       ELSE
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
    64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
+        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
+   65   FORMAT('(Current value: ',a,'; Default value: ',a,')')
       ENDIF
 
 C Begin with prompts.
@@ -553,8 +552,8 @@ C leading blanks from string returned.
 
 C A 'D' or 'd' detected, set to default value.
           call edisp(iuout,DSTR)
+          call edisp(iuout,' ')
           RVAL=DEFLT
-C          call usrmsg('  ','  ','-')
           RETURN
         ENDIF
         IF(WORD.EQ.' ')THEN
@@ -580,6 +579,7 @@ C In text mode, remind user of current value.
 
 C A 'D' or 'd' detected, set to default value.
             call edisp(iuout,DSTR)
+            call edisp(iuout,' ')
             RVAL=DEFLT
             RETURN
           ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
@@ -599,7 +599,7 @@ C A carriage return or line feed encountered, assume user wishes to
 C use prior/existing real value.
           CALL REL16STR(RVAL,STR2,IW2,IER)
           WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT('The existing value (',a,') will be used.')
+   55     FORMAT(' The existing value (',a,') will be used.')
           RETURN
         ENDIF
       ENDIF
@@ -619,8 +619,7 @@ C Check RVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,28,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   28   FORMAT('The input value for `',a,'` (',a,
-     &         ') should be greater than ',a,'!')
+   28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
           CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
@@ -641,8 +640,7 @@ C Check RVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,39,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   39   FORMAT('The input value for `',a,'` (',a,
-     &         ')',' should be less than ',a,'!')
+   39   FORMAT('The value of ',a,' (',a,')',' is greater than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
           CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
@@ -672,6 +670,7 @@ C Return to calling module
 
  999  WRITE(outs,*) 'EASKR: invalid real or > 16 chars: ',RVAL
       call edisp(iuout,outs)
+      call edisp(iuout,' ')
       RETURN
 
       END
@@ -8675,10 +8674,10 @@ C   -1.1       -2
 
 C ******************** EAZALT
 C EAZALT computes the solar azimuth and altitude angles at the current
-C time (REAL). The 'ISUNUP' variable determines whether the sun
-C is up (=1) or down (=0). The solar angles are computed relative
-C to local mean time (e.g. Greenwich is the reference time zone for
-C the UK).
+C time (REAL).   The 'ISUNUP' variable determines whether the sun
+C is up (=1) or down (=0).   The solar angles are computed relative
+C to local mean time (ie Greenwich is the reference time zone for
+C Britain).
       SUBROUTINE EAZALTS(TIMEH,ID,SLAT,SLON,ISUNUP,SAZI1,SALT1)
       logical CLOSE
       SAZI1=0.
@@ -10304,12 +10303,9 @@ C the functionality of startbuffer in the GTK version.
        return
        end
 
-C Dummy subroutine for a function available in GTK for displaying images
-C in a pop-up window.
+C popupimage() display image with documentation (dummy of GTK version)
       subroutine popupimage(head,topic,act,longtfile)
       character*(*) head,topic,act,longtfile
-      write(6,*) head,topic
-      write(6,*) act,longtfile
       return
       end
 

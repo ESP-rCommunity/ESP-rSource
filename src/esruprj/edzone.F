@@ -82,6 +82,8 @@ C an extrusion. IER=0 OK.
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C << Consider how a more robust cancel facility can
 C << be established. Possibly one that deletes the new zone
 C << from the model or that finds ways to uninstantiate the
@@ -410,19 +412,20 @@ C Point and click on a bitmap. After return, re-scan the system
 C configuration file to ensure that all the derived information
 C in the new geometry files is established.
         if(MMOD.eq.8)then
-#ifdef X11
-          call clickonbitmap(icomp,ier) 
-          if(ier.ne.0)then
-            itrc=0
-            MODE='ALL '
-            IAPROB=IPRODB
-            CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
-          endif
-          return
-#else
-          call usrmsg('The clickonbitmap facility is not yet working',
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call clickonbitmap(icomp,ier) 
+            if(ier.ne.0)then
+              itrc=0
+              MODE='ALL '
+              IAPROB=IPRODB
+              CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+            endif
+            return
+          elseif(iglib.eq.2)then
+            call usrmsg('The clickonbitmap facility is not yet working',
      &      'with new graphic library.','W')
-#endif
+          endif
         else
           call usrmsg('Must be in graphic mode to use click on bitmap',
      &      'facility to define vertices or floor plan corners. ','W')

@@ -67,9 +67,6 @@ C A set of possible cad packages: labels and executables.
 C Report generator: label and executable.
       common/rep3rd/replbl,repexe
 
-C External tutorial.
-      common/tutopts/tutlbl,tutexe
-
 C Save journal. journoo = ON or OFF
       common/journopt/journio,iuj,journcmd,jfile
 
@@ -95,7 +92,6 @@ C Where validation tests are kept.
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48
       character foldlbl*20,foldexe*48
-      character tutlbl*20,tutexe*96
       character vldlbl*20,vldfl*72 
       character journcmd*20,jfile*72
 
@@ -125,8 +121,6 @@ C initial values because they will not be used.
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
-        tutlbl='Tutorial'
-        tutexe=' '
         journcmd=' '
         jfile=' '
         imgtyp=1
@@ -153,8 +147,6 @@ C temporary files in the users home folder.
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
-        tutlbl='Tutorial'
-        tutexe='netscape http://www.esru.strath.ac.uk &'
         journcmd=' '
         jfile=' '
 
@@ -288,13 +280,8 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         if(itrc.gt.0)call edisp(iuout,outs)
       elseif(WORD(1:13).eq.'*tutorial_app')then
 
-C Tutorial application.
-        CALL EGETP(OUTSTR,K,tutlbl,'W','tutorial lbl',IER)
-        CALL EGETP(OUTSTR,K,tutexe,'W','tutorial exe',IER)
-        write(outs,'(a,a,2x,a)')' Tutorial : ',tutlbl,
-     &    tutexe(1:lnblnk(tutexe))
-        if(itrc.gt.0)call edisp(iuout,outs)
-        call captut(tutexe)
+C Tutorial application (skip this directive)
+        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
