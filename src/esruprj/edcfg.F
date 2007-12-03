@@ -3271,7 +3271,8 @@ C selected an exemplar model.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
 #include "esprdbfile.h"
-#include "espriou.h"  ! for parameter MFFOLD
+#include "espriou.h"  
+C espriou.h for parameter MFFOLD
 
       common/FILEP/IFIL
       common/pophelp/h(60)

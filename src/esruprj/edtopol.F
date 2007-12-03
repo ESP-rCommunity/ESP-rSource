@@ -2828,7 +2828,8 @@ C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
 #include "building.h"
 #include "esprdbfile.h"
-#include "espriou.h"  ! for climatelist file name.
+#include "espriou.h"  
+C espriou.h for climatelist file name.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
