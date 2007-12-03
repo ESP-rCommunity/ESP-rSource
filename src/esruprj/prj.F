@@ -180,6 +180,8 @@ C Name of current application
       CHARACTER dinstpath*48,dirpath*48
       character useraction*8  ! returned from exemplar access call.
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initialize variables and recover command line arguments.
       call ezero
       call curmodule('prj ')
@@ -356,14 +358,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-        call updwire(0)
-        call updcapt(1)
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+          call updwire(0)
+          call updcapt(1)
+          call updazi(1)
+        endif
         call setzscale()
         nifgrey=0
         ncset=0
@@ -3585,11 +3587,7 @@ C and change any / to \.  If X11 then an external application is used
 C an double quoting is useful. If GTK then internal function used and
 C quotes are not required.
                     call addpath(limgfil(img),longtfile,concat)
-                    if(iglib.eq.1)then
-                      call cmdfiledos(longtfile,longtfiledos,ier)
-                    elseif(iglib.eq.2)then
-                      call imgfiledos(longtfile,longtfiledos,ier)
-                    endif
+                    call cmdfiledos(longtfile,longtfiledos,ier)
                     longtfile=' '
                     longtfile=longtfiledos
                   endif
