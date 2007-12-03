@@ -111,10 +111,13 @@ C-----------------------------------------------------------------------
 C     Flow rates associated with ventilation: See equatiions 53/54 in
 C     Ferguson et al. (2007)
 C-----------------------------------------------------------------------
+C.....No ventilation
       fIMS_VentFlow( iSystem, iMode_NoVent   ) = 0.0
+C.....Continuious (low) ventilation
       fIMS_VentFlow( iSystem, iMode_LowVent  )
      &  = max( fP10_Vent_FA_Flow( iSystem,iMode_LowVent  ),
      &         fP10_Vent_EA_Flow( iSystem,iMode_LowVent  ) )
+C.....High ventilation
       fIMS_VentFlow( iSystem, iMode_HighVent  )
      &  = max( fP10_Vent_FA_Flow( iSystem,iMode_HighVent ),
      &         fP10_Vent_EA_Flow( iSystem,iMode_HighVent ) )
@@ -360,7 +363,7 @@ C SYNOPSYS:
 C This procedure characterizes the ventilation operation of the IMS
 C system. It reports the resulting ventilation flow rate,
 C rate of mosture addition/extraction and thermal flux associated
-C with the IMS unit's ventilaiton operation.
+C with the IMS unit's ventilation operation.
 C
 C INPUTS:
 C   - iSystem: index of system
@@ -370,8 +373,9 @@ C
 C OUTPUTS:
 C  - fVentFlow:        Ventilation flow rate (kg/s)
 C  - fVentLoad:        Thermal load associated with ventilation (W)
-C  - fVaporChangeRate: Total rate of change in building moisture
-C                      distribution (kg/s)
+C  - fVaporChangeRate: Total rate of change in building air-point
+C                      mosture balance (kg/s)
+C
 C=======================================================================
       subroutine IMS_CharVentilation(iSystem,
      &                               iVentMode,
@@ -869,10 +873,12 @@ C  - fWaterHLoad:     Combined water heating load (W)
 C  - fWaterHDuration: Duration of water heating load (s)
 C
 C OUTPUTS:
-C  - fFuelUseRate:     Rate of fuel consumption (kg/s)
-C  - fElecUseRate:     Rate of electrical consumption (kg/s)
-C  - fAddGains:        Additional heating/cooling unaccounted
-C                      for in space-heaing load.
+C  - fFuelPower:      Rate of fuel consumption (W)
+C  - fElecPower:      Rate of electrical consumption (W)
+C  - fFanPower:       Power consumed by circulation fan (W)
+C  - fVentPower:      Power consumed by ventilation sytem 
+C  - fAddGains:       Additional heating/cooling unaccounted
+C                     for in space-heaing load.
 C
 C=======================================================================
       subroutine IMS_CharPerformance( iSystem,
@@ -880,9 +886,11 @@ C=======================================================================
      &                                fSpaceHLoad,
      &                                fWaterHLoad,
      &                                fWaterHLoadDuration,
-     &                                fFuelUseRate,
-     &                                fElecUseRate,
-     &                                fAddGains )
+     &                                fOutFuelPower,
+     &                                fOutElecPower,
+     &                                fOutFanPower,
+     &                                fOutVentPower, 
+     &                                fOutAddGains )
 
       implicit none
 #include "building.h"
@@ -896,9 +904,12 @@ C-----------------------------------------------------------------------
       real fSpaceHLoad         ! space heating load (W)
       real fWaterHLoad         ! water heating load (W)
       real fWaterHLoadDuration ! duration of water heating load
-      real fFuelUseRate        ! Computed fuel use (kg/s)
-      real fElecUseRate        ! Computed electric use (W)
-      real fAddGains           ! Additional heat injection/extraction
+      real fOutFuelPower       ! Computed fuel use (kg/s)
+      real fOutElecPower       ! Computed electric use (W)
+      real fOutFanPower        ! Computed circ. fan elec. use (W)
+      real fOutVentPower       ! Computed power consumption for
+                               !   ventilation (W).
+      real fOutAddGains        ! Additional heat injection/extraction
                                !   that is not accounted for in space-
                                !   heating load (W)
 
@@ -966,10 +977,8 @@ C-----------------------------------------------------------------------
      &     fAddGains_SpaceWaterH, !  ideal controller's zone heat
      &     fAddGains_NoDemand     !  injection. (W)
 
-
       real fQOutput_SH         ! Space heating themal output (W).
 
-      
 C.....Initialization flag for h3kreprots module
       logical bH3KReportsInitialized(max_sys)
       save bH3KReportsInitialized
@@ -1093,8 +1102,6 @@ C.....comparison
 
         fTS_FracSpaceH = ( fSpaceHLoad )
      &        / fIMS_SpaceHMinCapacity(iSystem) - fTS_FracWaterH
-
-
 
         fSpaceHLoad = fIMS_SpaceHMinCapacity(iSystem)
 
@@ -1371,11 +1378,9 @@ C-----------------------------------------------------------------------
      &          ) ! (W)
 
 C-----------------------------------------------------------------------
-C     Compute space heating deficit in combined mode:
+C     Compute space heating deficit, if any:
 C
-C       Deficit = load - ( combined burner input
-C                            - water heating butner input )
-C                      * ( efficiency @ full load )
+C       Deficit = load - space heating output
 C
 C-----------------------------------------------------------------------
 
@@ -1391,13 +1396,30 @@ C        - tank losses
 C        - un-met space heating loads.
 C-----------------------------------------------------------------------
 
-      fAddGains =  fIMS_WaterHSkinLoss( iSystem )
+      fOutAddGains =  fIMS_WaterHSkinLoss( iSystem )
      &           + fIMS_ControlsPower ( iSystem )
      &           + fQSpaceH_deficit
      &           + fTS_NoDemand * ( fDistPower )
      &           + fTS_FracWaterH * ( fWaterHIncPower + fDistPower )
      &           + fTS_FracSpaceH * ( fAuxPower )
      &           + fTS_FracSpaceWaterH * ( fWaterHIncPower + fAuxPower )
+
+C-----------------------------------------------------------------------
+C     Compute total fuel and electric use
+C-----------------------------------------------------------------------
+      fOutFuelPower =   fTS_FracSpaceH * fQFuel_SH
+     &             + fTS_FracWaterH * fQFuel_WH
+     &             + fTS_FracSpaceWaterH * fQFuel_SWH
+
+      fOutElecPower =   fTS_NoDemand * fNoDemandPower
+     &             + fTS_FracWaterH * fWaterHPower
+     &             + fTS_FracSpaceH * fSpaceHPower
+     &             + fTS_FracSpaceWaterH * fSpaceWaterHPower
+
+      fOutFanPower = fFanPower
+     &                  * ( fTS_FracSpaceH + fTS_FracSpaceWaterH )
+
+      fOutVentPower = fIMS_VentPower(iSystem, iVentMode)
 
 C-----------------------------------------------------------------------
 C     Debugging:
@@ -1559,11 +1581,8 @@ C-----------------------------------------------------------------------
      &    'units','(W)',
      &    'Space heating loads unmet by IMS unit.' )
 
-
-     
-
       call add_to_xml_reporting(
-     &    fAddGains,
+     &    fOutAddGains,
      &    cRootName(iSystem)(1:iStrLen(iSystem))
      &       // '/additional_heat_transfer_to_space',
      &    'units','(W)',
@@ -1597,22 +1616,19 @@ C-----------------------------------------------------------------------
      &    'units','(W)',
      &    'Power used by IMS ventilation fans.' )
 
+      call add_to_xml_reporting(
+     &    fOutFuelPower,
+     &    cRootName(iSystem)(1:iStrLen(iSystem))
+     &       // '/fuel_power/total',
+     &    'units','(W)',
+     &    'Fuel power used by the IMS unit' )
 
-     
-! 
-!       call add_to_xml_reporting(
-!      &    ,
-!      &    cRootName(iSystem)(1:iStrLen(iSystem))
-!      &       // '/',
-!      &    'units','()',
-!      &    '' )
-! 
-!       call add_to_xml_reporting(
-!      &    ,
-!      &    cRootName(iSystem)(1:iStrLen(iSystem))
-!      &       // '/',
-!      &    'units','()',
-!      &    '' )
+      call add_to_xml_reporting(
+     &    fOutElecPower,
+     &    cRootName(iSystem)(1:iStrLen(iSystem))
+     &       // '/electric_power/total',
+     &    'units','(W)',
+     &    'Electric consumption of IMS unit' )
 ! 
 !       call add_to_xml_reporting(
 !      &    ,

@@ -168,6 +168,9 @@ c Real variables in HVAC system energy consumption common
       REAL fan_energy, draft_energy, sys_energy, backup_energy,
      &pilot_energy, GSHP_pump_energy, GCEP_pump_energy
 
+C Number of zones (ncomp)
+      common/c1/ncomp,ncon
+      integer ncomp, ncon
 
 C Common block containing miscellaneous zone data.
       common/bctl/              ! MISC zond data:
@@ -231,7 +234,7 @@ c Local real variables
      &heat_pump_cooling_cap
 
 c Local integer variables
-      INTEGER i, j, month, iday, icomp
+      INTEGER i, j, month, iday, icomp, iZoneIndex
 
 C IMS variables
       real fIMS_SpaceHLoad        ! Space heating load (W)
@@ -239,6 +242,8 @@ C IMS variables
       real fIMS_WaterHDuration    ! Duration of water heating load (s)
       real fIMS_FuelUseRate       ! Fuel use (kg/s)
       real fIMS_ElecUseRate       ! Electricity use (W)
+      real fIMS_FanUse            ! Fan power consumption (W)
+      real fIMS_VentUse           ! Ventilation power consumption (W)
       real fIMS_VentFlowRate      ! IMS ventilation flow (kg/s)
       real fIMS_VentLoad          ! Thermal load associated with vent. (W)
       real fIMS_AddGains          ! Heat added/removed from zones
@@ -294,6 +299,19 @@ C.....INITIALIZATION for H3Kreporting object
       H3K_HRV_elec       = 0. 
 C.....H3Kreports.(HVAC_ELEC_INIT).end........................
 
+C     Zero gain storage arrays.
+      do iZoneIndex= 1, ncomp
+
+C       Set zone gain flag to false.
+        bIdealHVACZoneGain(iZoneIndex) = .false.
+
+C       Zero gain storage arrays
+        fIdealHVACZoneConGain ( iZoneIndex ) = 0.0
+        fIdealHVACZoneRadGain ( iZoneIndex ) = 0.0
+        fIdealHVACZoneLatGain ( iZoneIndex ) = 0.0
+
+      enddo 
+
 
 c     For each of the HVAC systems, call the appropriate subroutine to determine
 c     the energy consumption of the system for the current time step. Before the 
@@ -304,7 +322,7 @@ c     HVAC system.
 
       do 10 i = 1,num_hvac_sys
 
-c     Determine the total heating or cooling requirement of the zones 
+c     Determine the total heating or cooling requirement of the zones
 c     associated with the HVAC system i. This load is passed on to the 
 c     equipment simulation subroutine to determine the energy cosumption.
          heating_load = 0.
@@ -335,6 +353,15 @@ C...........PIN is within construction
             endif
 
  20      continue
+
+C     (Re)Initialize idealized HVAC system - zone gain coupling
+C     to zero, and (re)set gain storage arrys to zero.
+         bIdealHVACSysGain( i ) = .false. 
+
+         fIdealHVACSysAddGain( i ) = 0.0
+         fIdealHVACSysConGainFrac( i ) = 0.0
+         fIdealHVACSysRadGainFrac( i ) = 0.0
+         fIdealHVACSysLatGainFrac( i ) = 0.0
 
 
 C.....H3Kreports.(HVAC_ELEC_CURR_INIT).start......................
@@ -475,11 +502,12 @@ C      routine
      &             ipriority(i)  == iHVACPrimarySys  ) then
      &
 
-C.........Collect space and water heating loads.
+C         Collect space and water heating loads.
           fIMS_SpaceHLoad     = heating_load  ! W
-          fIMS_WaterHLoad     = 0.0 !1000.0        ! W
-          fIMS_WaterHDuration = 600.0         ! Seconds
-C.........Superviosry routine for IMS characteriztion
+          fIMS_WaterHLoad     = 0.0 !20000.0  ! W
+          fIMS_WaterHDuration = 0.0 !1800.0   ! Seconds
+
+C         Superviosry routine for IMS characteriztion
           call IMS_CharPerformance ( i,
      &                               iMode_LowVent,
      &                               fIMS_SpaceHLoad,
@@ -487,10 +515,25 @@ C.........Superviosry routine for IMS characteriztion
      &                               fIMS_WaterHDuration,
      &                               fIMS_FuelUseRate,
      &                               fIMS_ElecUseRate,
+     &                               fIMS_FanUse,
+     &                               fIMS_VentUse,
      &                               fIMS_AddGains )
 
 C.........Translate IMS outputs into hvac-friendly params.
- 
+          sys_energy(i) =  fIMS_FuelUseRate
+          fHeat_energy  =  fIMS_FuelUseRate
+          fP_pilot_energy = 0.0
+          fan_energy(i) = fIMS_FanUse
+
+C         Save additional gains.
+          bIdealHVACSysGain(i) = .true.
+          fIdealHVACSysAddGain( i ) = fIMS_AddGains
+C         Assume additional gains are 100% convective, as they
+C         may include a 'space-heating deficit' during periods
+C         of extended DHW loads.
+          fIdealHVACSysConGainFrac( i ) = 1.0
+          fIdealHVACSysRadGainFrac( i ) = 0.0
+          fIdealHVACSysLatGainFrac( i ) = 0.0
 
 c     If the primary heating system is an air-source heat pump
 c     It is confirmed here that the air-source heat pump
@@ -821,6 +864,50 @@ c     system performance
             goto 10 
          endif HVAC_TYPE
 
+C     Add any gains associated with this particular component
+C     to the relevant zone.
+
+         CheckForGains: if ( bIdealHVACSysGain (i) ) then
+
+C     Loop through each serviced zone
+           LoopThroughZones: do j = 1, num_sys_zones(i)
+
+C     Get zone index
+              iZoneIndex = isys_zone_num( i, j )
+
+C     Set flag indicating serviced zone has associated gains
+C     from idealized HVAC equipment:
+              bIdealHVACZoneGain( iZoneIndex ) = .true.
+
+C     Add casual gains to running sum --- assume the gains are
+C     distributed according to the specified zone capacity
+C     fraction.
+              fIdealHVACZoneConGain( iZoneIndex ) =
+     &             fIdealHVACZoneConGain( iZoneIndex )
+     &           + fIdealHVACSysAddGain ( i )
+     &               * fIdealHVACSysConGainFrac( i )
+     &               * sys_zone_cap_frac( i, j )
+
+              fIdealHVACZoneRadGain( iZoneIndex ) =
+     &             fIdealHVACZoneRadGain( iZoneIndex )
+     &           + fIdealHVACSysAddGain ( i )
+     &               * fIdealHVACSysRadGainFrac( i )
+     &               * sys_zone_cap_frac( i, j )
+
+              fIdealHVACZoneLatGain( iZoneIndex ) =
+     &             fIdealHVACZoneLatGain( iZoneIndex )
+     &           + fIdealHVACSysAddGain ( i )
+     &               * fIdealHVACSysLatGainFrac( i )
+     &               * sys_zone_cap_frac( i, j )
+
+           enddo LoopThroughZones
+
+
+         endif CheckForGains
+
+
+
+
 c     Set the current month and day of the month using the day of the 
 c     year (integer between 1 and 365)
          if(idyp.le.31) then
@@ -1125,7 +1212,7 @@ C.......-> update data
 C.....H3Kreports.(HVAC_ELEC_COMP_CALC).end.......................
 
 
- 10   continue
+  10  continue
 
 
 C.....H3Kreports.(HVAC_ELEC_COMP_CALC).start......................

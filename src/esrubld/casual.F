@@ -48,6 +48,8 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "building.h"
 #include "tdf2.h"
 #include "power.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
 
       common/tc/itc,icnt
       common/trc/itrc
@@ -506,6 +508,15 @@ C
      &                   + fPltZone_Convective_Gain(iComp,iFuture) !(W)
       QCASR(2)= QCASR(2) + Total_elec_RAD_gain
      &                   + fPltZone_Radiant_Gain(iComp,iFuture)    !(W)
+
+C Check if additional casual gains have been imposed by idealized
+C HVAC components...
+      if ( bIdealHVACZoneGain(icomp) ) then
+C ...and append gains to appropriate arrays.
+        QCASC(2) = QCASC(2) + fIdealHVACZoneConGain ( icomp )
+        QCASR(2) = QCASR(2) + fIdealHVACZoneRadGain ( icomp )
+        QLATN(2) = QLATN(2) + fIdealHVACZoneLatGain ( icomp )
+      endif
 
 C STORE future row casual and radiant gains
       Cas_Con_dat(icomp) = QCASC(2)  ! W

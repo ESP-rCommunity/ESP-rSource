@@ -68,7 +68,49 @@ c Common for time step computed parameters of HVAC system
 c Common for underheated cooling
 
        common/UNDER_HEAT_COOL_HOURS/ihrs_under_heat(max_sys),
-     &                             ihrs_under_cool(max_sys)
+     &                              ihrs_under_cool(max_sys)
 
 c Declare integer in UNDER_HEAT_COOL_HOURS common
       INTEGER ihrs_under_heat, ihrs_under_cool
+
+C Common for additional "casual" gains associated with HVAC systems ---
+C that is, additional heat trasnfer not accounted for in the zone's
+C ideal controls. These amounts include the resulting 'defecit'
+C occuring when the HVAC system cannot provide the heat transfer
+C injected into the space by the ideal controls. 
+
+      common/HVAC_additional_gains/bIdealHVACSysGain(max_sys),
+     &                             fIdealHVACSysAddGain(max_sys),
+     &                             fIdealHVACSysConGainFrac(mcom),
+     &                             fIdealHVACSysRadGainFrac(mcom),
+     &                             fIdealHVACSysLatGainFrac(mcom),
+     &                             bIdealHVACZoneGain(mcom),
+     &                             fIdealHVACZoneConGain(mcom),
+     &                             fIdealHVACZoneRadGain(mcom),
+     &                             fIdealHVACZoneLatGain(mcom)
+
+
+C Flag indicating presense of additional gains from idealized hvac
+C systems
+      logical bIdealHVACSysGain
+
+C Total gain from a HVAC system
+      real fIdealHVACSysAddGain
+
+C HVAC system conective/latent/radiant fractions
+
+      real fIdealHVACSysConGainFrac,
+     &     fIdealHVACSysRadGainFrac,
+     &     fIdealHVACSysLatGainFrac
+
+
+C Logical flag indicating if zone has associated gains from idealized
+C hvac components.
+      logical bIdealHVACZoneGain
+
+C Total gain into a zone from all HVAC systems (convective,
+C radiant and latent gains)
+      real fIdealHVACZoneConGain,
+     &     fIdealHVACZoneRadGain,
+     &     fIdealHVACZoneLatGain
+
