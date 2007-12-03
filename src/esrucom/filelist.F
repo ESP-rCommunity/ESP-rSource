@@ -42,7 +42,8 @@ C parameter nlist is the number of files matching criteria.
 C parameter ier returned as 2 if problem writing file name path.
 
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
-#include "espriou.h"  ! for parameter MFFOLD
+#include "espriou.h"
+C espriou.h for parameter MFFOLD
 
       common/pophelp/h(60)
       common/uhome/upath
