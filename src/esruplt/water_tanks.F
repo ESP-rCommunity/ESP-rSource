@@ -751,10 +751,15 @@ C    PCRF(i)     future time-row mass flow * heat capacity for connection `i'
 C---------------------------------------------------------------------------------
          mdotCp_1a_future = mdot_conn1a_future
      &                    * SHTFLD( 3,CONVAR(con1a,1) )
+         write(98,*) 'NSINC = ',NSINC
+         write(98,*) '  A: ', mdot_conn1a_future,
+     &               SHTFLD( 3,CONVAR(con1a,1))
 C--------If space-heat flag set, then second connection is real: otherwise make flow zero.
          IF( tank_space_heat.eq.tank_yes_heat )THEN
            mdotCp_1b_future = mdot_conn1b_future
      &                      * SHTFLD( 3,CONVAR(con1b,1) )
+         write(98,*) '  B: ', mdot_conn1b_future,
+     &               SHTFLD( 3,CONVAR(con1b,1))
          ELSE
            mdotCp_1b_future = 0.
          END IF
@@ -1217,6 +1222,15 @@ C-------Node 1 energy balance given by Beausoleil-Morrison (2001b) eq 7.
      &          + part5
      &          + part8
 
+        write(97,*) 'NSINC = ', NSINC, ' : ',
+     &              COUT(1), COUT(5), COUT(6), COUT(7), alpha
+        write(97,*) '   ',T_node1_present,T_1a_present,
+     &                    T_1b_present,T_makeup_present,
+     &                    T_makeup_future
+        write(97,*) '   ',part1,part2,part3,part4,part5,part6,part7
+        write(97,*) 'T should solve to :',
+     &         ( COUT(7) - COUT(5)*T_1a_present - COUT(6)*T_1b_present )
+     &         / COUT(7)
 C-------Node 2 energy balance. Treatment depends on whether there is combustion.
 C-------Are there any exhaust gases (indicates that there is combustion)?
         IF( m_dot_exh_kmol_t > 0. )THEN

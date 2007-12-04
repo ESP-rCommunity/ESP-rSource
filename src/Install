@@ -1858,9 +1858,9 @@ if [ "$install_training" = "yes" ]; then
      echo "... done."
   
      echo "Installing tutorial files ..."
-     rm -rf ${DESTdir}/tutorial
-     mkdir ${DESTdir}/tutorial
-     cp -r ${SRCdir}/tutorial/* ${DESTdir}/tutorial
+     rm -rf ${ESPdir}/tutorial
+     mkdir ${ESPdir}/tutorial
+     cp -r ${SRCdir}/tutorial/* ${ESPdir}/tutorial
      echo "... done."
   
 fi

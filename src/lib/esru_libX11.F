@@ -5445,15 +5445,31 @@ C terminal type 8.
       dimension dh(60),lh(30),exh(60)
       CHARACTER*(*) MSG,OTHER
       CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
-      character tut_path*25,ltut*72,IA*3
+      character tut_path*72,ltut*72,IA*3,fs*1
       logical extra,XST
+      logical unixok
       integer ltf    ! last actual character in the string.
+      integer ln     ! last actual character in instpath (of espinstalldir.h)
+
+C The following include statment is placed after the common block
+C definitions to avoid compile errors.
+#include "espinstalldir.h"
 
 C dh is duplicate help list, lh is the list (page) to be displayed.
 C exh is 'show me more' text array read in from external file.
       extra = .false.
+      ln=lnblnk(instpath)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       if(OTHER(1:1).ne.'-')then
-        tut_path='/usr/esru/tutorial/'
+        write(tut_path,'(4a)')instpath(1:ln),fs,'tutorial',fs
+C        tut_path='/usr/esru/tutorial/'
         write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
@@ -5468,6 +5484,8 @@ C exh is 'show me more' text array read in from external file.
           else
             extra = .false.
           endif
+        else
+          extra = .false.
         endif
         CALL ERPFREE(IFTUT,ISTAT)
       endif
