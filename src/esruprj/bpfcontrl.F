@@ -3774,11 +3774,10 @@ C<< To include feed back to text feedback area using USRMSG
           call edisp(iuout,' Ideal multi-sensor controller:')
           cm(1)=2.+8.*NSEN
           OK=.true.
-          IF(NSEN.EQ.1)then
-            CALL ASKOK('You have chosen one sensor for multi-sensing',
-     &        '(not a good idea). Is `one sensor` correct?',OK,
-     &        dok,56)
-          endif
+          IF(NSEN.EQ.1)
+     &    CALL ASKOK('You have chosen just one sensor, the only option',
+     &    'for mulitsensing is the NOT option. Is this correct?',OK,
+     &    dok,56)
           IF(.NOT.OK)THEN
             GOTO 56
           ENDIF
