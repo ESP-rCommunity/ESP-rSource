@@ -162,6 +162,20 @@ C.....Ventilation heat recovery efficiency:
 C.....Temperature for outdoor defrost conditions
       real fIMS_VentDefrostTemp(max_sys)
 
+C.....Column names for user-specified boundary conditions:
+C.....  DHW volumetric flow rate
+      logical bIMS_DHWLoadsDefinedInBCD(max_sys)
+      character*248 cIMS_BcdDhwFlow(max_sys)
+C.....  DHW delivery temperature
+      character*248 cIMS_BcdDhwDeliveryTemp(max_sys)
+C.....  DHW Load duration
+      character*248 cIMS_BcdDhwLoadDuration(max_sys)
+C.....  DHW supply temperature
+      character*248 cIMS_BcdDhwMakeupTemp(max_sys)
+C.....  Space heating load
+      logical bIMS_SHLoadsDefinedInBCD(max_sys)
+      character*248 cIMS_BcdSHLoad(max_sys)
+
 C.....General model input common
       common/IMS_General_inputs/
      &   iIMS_HeatSource,
@@ -186,13 +200,11 @@ C.....General model input common
      &   fIMS_WaterHPower,
      &   fIMS_FlueSkinLossRatio,
      &   fIMS_VentHREfficiency,
-     &   fIMS_VentDefrostTemp
-
-
-
-
-
-
-
-
-
+     &   fIMS_VentDefrostTemp,
+     &   cIMS_BcdDhwFlow,
+     &   cIMS_BcdDhwDeliveryTemp,
+     &   cIMS_BcdDhwMakeupTemp,
+     &   bIMS_DHWLoadsDefinedInBCD,
+     &   bIMS_SHLoadsDefinedInBCD,
+     &   cIMS_BcdSHLoad,
+     &   cIMS_BcdDhwLoadDuration

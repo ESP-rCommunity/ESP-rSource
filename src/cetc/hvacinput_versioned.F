@@ -94,6 +94,7 @@ C-----------------------------------------------------------------------
       integer iBackupSystem       !
       integer iHour, iDay         !
       integer iHourInYear         !
+      integer iParam              ! 
 
       integer iFileLine           ! Line number in file
 
@@ -102,6 +103,7 @@ C.....Parsing flags
       logical bSystemBlockOpen
       logical bZoneBlockOpen
       logical bDataBlockOpen
+      logical bMiscBlockOpen
       logical bOASchedBlockOpen
       logical bDayTypeBlockOpen
       logical bSiteAltitudeOK
@@ -125,16 +127,13 @@ C.....Variables needed to parse outdoor air schedule
       real fOA_Period_FlowRate(max_sys,10,24)
 
 C-----------------------------------------------------------------------
-C
-C-----------------------------------------------------------------------
-
-C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
       integer iEGetArrW
       real fCtoR_err             ! Convert a char to a real
       integer iCtoI_err          ! Convert a char to an int
       integer lnblnk
+
 C-----------------------------------------------------------------------
 C     Initialize parsing flags
 C-----------------------------------------------------------------------
@@ -147,8 +146,10 @@ C-----------------------------------------------------------------------
       bZoneBlockOpen    = .false.
       bDataBlockOpen    = .false.
       bOASchedBlockOpen = .false.
+      bMiscBlockOpen    = .false. 
 
       do iSystem = 1, max_sys
+        bMiscTokenValsDefined(iSystem) = .false.
         bSysPriorityOK(iSystem)  = .false.
         bSysZonesOK(iSystem)     = .false.
         bSysDataOK(iSystem)      = .false.
@@ -807,7 +808,6 @@ C.............Get zone fraction
             endif    !<- matches "if ( iWordCount /= 3 ... "
 
 
-
 C-----------------------------------------------------------------------
 C         Parse *zone-links-end keyword, and close zone block if open
 C-----------------------------------------------------------------------
@@ -830,6 +830,51 @@ C-----------------------------------------------------------------------
 
             endif
 
+C-----------------------------------------------------------------------
+C         Parse *misc-param-start keyword, and open miscellanous
+C         parameters block.
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:18) == '*misc-param-start ' ) then
+
+            if ( bMiscBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &           'A miscellanous parameter block is already open!')
+
+            elseif ( iWordCount /= 1 ) then
+              
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*misc-param-start tag are unsupported. ')
+
+            else
+              bMiscBlockOpen = .true.
+
+            endif 
+
+C-----------------------------------------------------------------------
+C         Parse *data-end keyword, and close data block if open
+C-----------------------------------------------------------------------
+          elseif ( cLnWords(1)(1:16) == '*misc-param-end ' ) then
+
+            if ( .not. bMiscBlockOpen ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &            'There`s no open miscellaneous parameter'
+     &             // ' block to close!' )
+
+            elseif ( iWordCount /= 1 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Additional data items following '
+     &          //'*misc-param-end- tag are unsupported. ')
+
+            else
+
+              bMiscBlockOpen = .false.
+
+            endif
+
 
 
 C-----------------------------------------------------------------------
@@ -847,7 +892,7 @@ C-----------------------------------------------------------------------
 
               call HVACinput_RepErr( iFileLine,
      &          'Additional data items following '
-     &          //'*data-end tag are unsupported. ')
+     &          //'*sys-data-start tag are unsupported. ')
 
             elseif ( bSysDataOK(iSystem) ) then
 
@@ -1094,7 +1139,6 @@ C.............Close block
 
             endif
 
-
 C-----------------------------------------------------------------------
 C         Parse *system-end keyword, and close system block if open
 C-----------------------------------------------------------------------
@@ -1166,6 +1210,46 @@ C.............Attempt to read token value
             endif
 
 C-----------------------------------------------------------------------
+C         Parse misc parameter block (that is, data sandwiched between
+C         *misc-param-start and *data-param-end tags)
+C-----------------------------------------------------------------------
+          elseif ( bMiscBlockOpen ) then 
+
+C...........Line must have 2 words: Token Value
+            if ( iWordCount /= 2 ) then
+
+              call HVACinput_RepErr( iFileLine,
+     &          'Miscellaneous parameters must be in token-value '
+     &          // 'format ("<token> <value>")' )
+
+            elseif ( iMiscParamCount(iSystem) == iMaxTokenCount ) then
+
+              write (cMsg, '(A,I2,A,I2,A)')
+     &            ' The maximum number of miscellaneous tokens (',
+     &            iMaxTokenCount,
+     &            ') have already been defined for system number ',
+     &            iSystem,
+     &            '.'
+              call edisp248(iUout,cMsg,80)
+              call HVACinput_RepErr( iFileLine,
+     &           "Too many miscellaneous tokens already defined." )
+              
+            else
+
+C.............Increment system data counter
+              iMiscParamCount(iSystem) = iMiscParamCount(iSystem) + 1
+              iParam = iMiscParamCount(iSystem)
+
+C.............Attempt to read token name
+              write(cMiscTokens(iSystem,iParam), '(A)')
+     &           cLnWords(1)(1:min(72,lnblnk(cLnWords(1))))
+
+C.............Attempt to read token value
+              write(cMiscVals(iSystem,iParam), '(A)')
+     &           cLnWords(2)(1:min(72,lnblnk(cLnWords(2))))
+
+            endif
+C-----------------------------------------------------------------------
 C         Default case: if line does not start with a known keyword and
 C         block data is not open, it must be an erroneous record.
 C-----------------------------------------------------------------------
@@ -1197,7 +1281,7 @@ C-----------------------------------------------------------------------
 !          enddo
 
 C-----------------------------------------------------------------------
-C       Parse and validate block data
+C       Parse and validate data and miscellaneous parameter blocks.
 C-----------------------------------------------------------------------
         parse_data_by_HVAC_type: select case ( ihvac_type (iSystem) )
 
@@ -1529,7 +1613,9 @@ C.....Named constants
 C-----------------------------------------------------------------------
 C     References
 C-----------------------------------------------------------------------
-      real fHVAC_FindTokenNoLimits, fHVAC_FindTokenWithLimits      
+      real fHVAC_FindTokenNoLimits,
+     &     fHVAC_FindTokenWithLimits
+      character*72 cHVAC_FindCToken
 
 C-----------------------------------------------------------------------
 C     First, check that all tokens are valid
@@ -1809,6 +1895,67 @@ C-----------------------------------------------------------------------
 C     Derive general IMS model inputs from P.10 data
 C-----------------------------------------------------------------------
       call IMS_ConvertP10Data( iSystem )
+
+C-----------------------------------------------------------------------
+C     Search for other supported (but optional) inputs in
+C     the misc-param block.
+C
+C     Determine if DHW loads should be read from a bcd file, and
+C     collect apporpraite column names if so.
+C 
+C-----------------------------------------------------------------------
+
+C.....Default BCD flags to true; reset them to false if a
+C.....critical column is not found.
+      bIMS_DHWLoadsDefinedInBCD( iSystem ) = .true.
+      bIMS_SHLoadsDefinedInBCD( iSystem )  = .true.
+      
+C.....DHW flow rates
+      cIMS_BcdDhwFlow( iSystem ) = 
+     &        cHVAC_FindCToken( iSystem,
+     &                          'dhw-bcd-flow',
+     &                          'User imposed DHW flow rate',
+     &                          .false.,
+     &                          bFound )
+
+      if ( .not. bFound ) bIMS_DHWLoadsDefinedInBCD( iSystem ) = .false.
+
+      cIMS_BcdDhwDeliveryTemp( iSystem ) =
+     &        cHVAC_FindCToken( iSystem,
+     &                          'dhw-bcd-del-temp',
+     &                          'User imposed DHW delivery temperature',
+     &                          .false.,
+     &                          bFound )
+
+      if ( .not. bFound ) bIMS_DHWLoadsDefinedInBCD( iSystem ) = .false.
+
+      cIMS_BcdDhwMakeupTemp( iSystem ) =
+     &        cHVAC_FindCToken( iSystem,
+     &                          'dhw-bcd-makeup-temp',
+     &                          'User imposed DHW supply temperature',
+     &                          .false.,
+     &                          bFound )
+
+      if ( .not. bFound ) bIMS_DHWLoadsDefinedInBCD( iSystem ) = .false.
+
+      cIMS_BcdDhwLoadDuration( iSystem ) =
+     &        cHVAC_FindCToken( iSystem,
+     &                          'dhw-bcd-duration',
+     &                          'User imposed DHW load duration',
+     &                          .false.,
+     &                          bFound )
+
+      if ( .not. bFound ) bIMS_DHWLoadsDefinedInBCD( iSystem ) = .false.
+
+      cIMS_BcdSHLoad( iSystem ) =
+     &        cHVAC_FindCToken( iSystem,
+     &                          'sh-bcd-load',
+     &                          'User imposed space-heating load (W)',
+     &                          .false.,
+     &                          bFound )
+
+
+      if ( .not. bFound ) bIMS_SHLoadsDefinedInBCD( iSystem ) = .false.
 
       return
       end
@@ -2884,18 +3031,29 @@ C-----------------------------------------------------------------------
      &                              bReqired,
      &                              bFound)
       implicit none
+#include "hvac_parameters.h"
       integer iSystem
       character*(*) cToken, cDescription
       logical bFound, bReqired, bInLimits
-      real fLLimit, fULimit, fHVAC_FindToken
-      
-      fHVAC_FindTokenNoLimits = fHVAC_FindToken(iSystem,
-     &                                          cToken,
-     &                                          cDescription,
-     &                                          0.0,0.0,.false.,
-     &                                          bReqired,
-     &                                          bFound,
-     &                                          bInLimits)
+      real fLLimit, fULimit, fTokenVal
+      character*72 cTokenVal
+
+      fLLimit = 0.0
+      fULimit = 0.0
+
+      call HVAC_FindToken(iSystem,
+     &                     cToken,
+     &                     cDescription,
+     &                     fLLimit,fULimit,
+     &                     .false.,
+     &                     bReqired,
+     &                     iSearchDataTokens,
+     &                     bFound,
+     &                     fTokenVal,
+     &                     cTokenVal,
+     &                     bInLimits)
+
+      fHVAC_FindTokenNoLimits = fTokenVal
 
       return
       end function fHVAC_FindTokenNoLimits
@@ -2908,37 +3066,87 @@ C-----------------------------------------------------------------------
      &                             (iSystem,
      &                              cToken,
      &                              cDescription,
-     &                              bReqired,
+     &                              bRequired,
      &                              fLLimit, fULimit,
      &                              bFound,
      &                              bInLimits)
       implicit none
+#include "hvac_parameters.h"
+
       integer iSystem
       character*(*) cToken, cDescription
-      logical bFound, bReqired, bInLimits
-      real fLLimit, fULimit, fHVAC_FindToken
-      
-      fHVAC_FindTokenWithLimits = fHVAC_FindToken(iSystem,
-     &                                            cToken,
-     &                                            cDescription,
-     &                                          fLLimit,fULimit,.true.,
-     &                                            bReqired,
-     &                                            bFound,
-     &                                            bInLimits)
+      logical bFound, bRequired, bInLimits
+      real fLLimit, fULimit, fTokenVal
+      character*72 cTokenVal
+
+      call HVAC_FindToken(iSystem,
+     &                     cToken,
+     &                     cDescription,
+     &                     fLLimit,fULimit,
+     &                     .true.,
+     &                     bRequired,
+     &                     iSearchDataTokens,
+     &                     bFound,
+     &                     fTokenVal,
+     &                     cTokenVal,
+     &                     bInLimits)
+
+      fHVAC_FindTokenWithLimits = fTokenVal
 
       return
       end function fHVAC_FindTokenWithLimits
 
 C-----------------------------------------------------------------------
+C     Interface function: call HVAC_FindToken to locate
+C     character value in misc  parameter block.
+C-----------------------------------------------------------------------
+      character*72 function cHVAC_FindCToken( iSystem,
+     &                                        cToken,
+     &                                        cDescription,
+     &                                        bRequired,
+     &                                        bFound       )
+      implicit none
+#include "hvac_parameters.h"
+      integer iSystem
+      character*(*) cToken, cDescription
+      logical bFound, bRequired, bInLimits
+      real fLLimit, fULimit, fTokenVal
+      character*72 cTokenVal
+
+      fLLimit = 0.
+      fULimit = 0.
+
+      call HVAC_FindToken(iSystem,
+     &                     cToken,
+     &                     cDescription,
+     &                     fLLimit,fULimit,
+     &                     .false.,
+     &                     bRequired,
+     &                     iSearchParamTokens,
+     &                     bFound,
+     &                     fTokenVal,
+     &                     cTokenVal,
+     &                     bInLimits)
+
+      write( cHVAC_FindCToken, '(A)' )  cTokenVal(1:72)
+
+      return
+      end 
+
+
+C-----------------------------------------------------------------------
 C     Principal function
 C-----------------------------------------------------------------------
-      real function fHVAC_FindToken(iSystem,
+      subroutine HVAC_FindToken(iSystem,
      &                              cToken,
      &                              cDescription,
      &                              fLLimit, fULimit,
      &                              bLimitCheck,
      &                              bRequired,
+     &                              iSearchSet,
      &                              bFound,
+     &                              fTokenVal,
+     &                              cTokenVal,
      &                              bInLimits)
       implicit none
 #include "building.h"
@@ -2954,9 +3162,15 @@ C-----------------------------------------------------------------------
       logical bFound                  ! Result of search
       logical bLimitCheck             ! Should limits be checked?
       logical bInLimits               ! Is input in limits?
+      integer iSearchSet              ! Pointer indicating the
+                                      !  array to search - real data
+                                      !  block or character misc. param
+                                      !  block.
       logical bRequired               ! Is token critical?
       real fLLimit, fULimit           ! Lower and upper limits for
                                       !   bounds check.
+      real fTokenVal                  ! Token value, if numeric
+      character*72 cTokenVal          ! Token value, if alphanumeric
 
 C-----------------------------------------------------------------------
 C     ESP-r commons
@@ -2977,34 +3191,69 @@ C     References
 C-----------------------------------------------------------------------
       integer lnblnk
 
+
+
 C.....Initialize result flag
       bFound = .false.
 
 C.....Get length of search-string
       iStrLength = lnblnk( cToken )
 
+      SelectSearchSource: select case ( iSearchSet )
+
+        case ( iSearchDataTokens ) 
 C-----------------------------------------------------------------------
-C     Now loop through cTokens array, and search for cToken
+C         Now loop through cTokens array, and search for cToken
 C-----------------------------------------------------------------------
-      do iData = 1, iDataCount ( iSystem )
+          do iData = 1, iDataCount ( iSystem )
 
-C.......Do tokens match?
-        if ( cToken(1:iStrLength) ==
-     &        cTokens(iSystem,iData)(1:lnblnk(cTokens(iSystem,iData)))
-     &       ) then
-C.........Yes! Recover value
-          fHVAC_FindToken = fTokenVals( iSystem, iData)
+C...........Do tokens match?
+            if ( cToken(1:iStrLength) ==
+     &          cTokens(iSystem,iData)(1:lnblnk(cTokens(iSystem,iData)))
+     &          ) then
+C.............Yes! Recover value
+              fTokenVal = fTokenVals( iSystem, iData)
 
-C.........Set 'found' result
-          bFound = .true.
+C.............Set 'found' result
+              bFound = .true.
 
-        else
-C.........No! Do nothing
+            else
+C.............No! Do nothing
 
-        endif
+            endif
 
-      enddo
+          enddo
 
+        case ( iSearchParamTokens)
+
+C-----------------------------------------------------------------------
+C         Now loop through cMiscTokens array, and search for cToken
+C-----------------------------------------------------------------------
+          do iData = 1, iMiscParamCount ( iSystem )
+
+C...........Do tokens match?
+            if ( cToken(1:iStrLength) ==
+     &          cMiscTokens(iSystem,iData)
+     &              (1:lnblnk(cMiscTokens(iSystem,iData)))
+     &          ) then
+C.............Yes! Recover value
+              write ( cTokenVal, '(A)' ) cMiscVals(iSystem, iData)
+
+C.............Set 'found' result
+              bFound = .true.
+
+            else
+C.............No! Do nothing
+
+            endif
+
+          enddo
+
+        case default
+
+C..........Can't happen; iSearchSet set programmically.
+
+      end select SelectSearchSource
 
 C-----------------------------------------------------------------------
 C     Check if token was found 
@@ -3012,7 +3261,7 @@ C-----------------------------------------------------------------------
       token_found: if ( .not. bFound ) then
 
 C.......No! default value to zero.
-        fHVAC_FindToken = 0.0
+        fTokenVal = 0.0
 
 C-----------------------------------------------------------------------
 C       If token was not found, then check if it was required.
@@ -3033,13 +3282,13 @@ C.........Yes! Set parse error, and warn user.
 
         endif token_required
 C-----------------------------------------------------------------------
-C     Token was found. Check limits, if requested
+C     Token was found. Check limits, if requested.
 C-----------------------------------------------------------------------
       elseif ( bLimitCheck ) then 
 
-        call eclose ( fHVAC_FindToken, fLLimit, 1.0e-07, bNumsAreClose)
+        call eclose ( fTokenVal, fLLimit, 1.0e-07, bNumsAreClose)
 
-        if ( fHVAC_FindToken < fLLimit .and. .not. bNumsAreClose ) then
+        if ( fTokenVal < fLLimit .and. .not. bNumsAreClose ) then
 
 C.........Value is less than lower-limit. Set flag and warn user.
           bParseError = .true.
@@ -3047,7 +3296,7 @@ C.........Value is less than lower-limit. Set flag and warn user.
           write (cMsg, '(A,I2,A,A,A,F12.4,A,F12.4,A,A,A)')
      &    'Error: HVAC system # ', iSystem,' - ',
      &     cDescription(1:min(72,lnblnk(cDescription))), 
-     &    ' (', fHVAC_FindToken,') must be greater-than or equal to ',
+     &    ' (', fTokenVal,') must be greater-than or equal to ',
      &    fLLimit,'. Check value of token "',
      &    cToken(1:min(48,lnblnk(cToken))),'".'
 
@@ -3055,9 +3304,9 @@ C.........Value is less than lower-limit. Set flag and warn user.
 
         endif
 
-        call eclose ( fHVAC_FindToken, fULimit, 1.0e-07, bNumsAreClose)
+        call eclose ( fTokenVal, fULimit, 1.0e-07, bNumsAreClose)
 
-        if ( fHVAC_FindToken > fULimit .and. .not. bNumsAreClose ) then
+        if ( fTokenVal > fULimit .and. .not. bNumsAreClose ) then
 
 C.........Value is greater than upper-limit. Set flag and warn user.
           bParseError = .true.
@@ -3065,7 +3314,7 @@ C.........Value is greater than upper-limit. Set flag and warn user.
           write (cMsg, '(A,I2,A,A,A,F12.4,A,F12.4,A,A,A)')
      &    'Error: HVAC system # ', iSystem,' - ',
      &     cDescription(1:min(72,lnblnk(cDescription))), 
-     &    ' (', fHVAC_FindToken,') must be less-than or equal to ',
+     &    ' (', fTokenVal,') must be less-than or equal to ',
      &    fULimit,'. Check value of token "',
      &    cToken(1:min(48,lnblnk(cToken))),'".'
 
@@ -3074,9 +3323,9 @@ C.........Value is greater than upper-limit. Set flag and warn user.
         endif
 
       endif token_found
-        
+
       return
-      end function fHVAC_FindToken
+      end subroutine 
 
 
 C===================== AreTokensValid ==================================

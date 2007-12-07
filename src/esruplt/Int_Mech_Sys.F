@@ -883,9 +883,9 @@ C
 C=======================================================================
       subroutine IMS_CharPerformance( iSystem,
      &                                iVentMode,
-     &                                fSpaceHLoad,
-     &                                fWaterHLoad,
-     &                                fWaterHLoadDuration,
+     &                                fInSpaceHLoad,
+     &                                fInWaterHLoad,
+     &                                fInWaterHLoadDuration,
      &                                fOutFuelPower,
      &                                fOutElecPower,
      &                                fOutFanPower,
@@ -901,9 +901,10 @@ C     Passed variables
 C-----------------------------------------------------------------------
       integer iSystem          ! system index
       integer iVentMode        ! Ventilation mode
-      real fSpaceHLoad         ! space heating load (W)
-      real fWaterHLoad         ! water heating load (W)
-      real fWaterHLoadDuration ! duration of water heating load
+      real fInSpaceHLoad       ! space heating load from simulator (W)
+      real fInWaterHLoad       ! water heating load from simulator (W)
+      real fInWaterHLoadDuration ! duration of water heating load
+                               !    from simulator (s)
       real fOutFuelPower       ! Computed fuel use (kg/s)
       real fOutElecPower       ! Computed electric use (W)
       real fOutFanPower        ! Computed circ. fan elec. use (W)
@@ -929,13 +930,31 @@ C.....Time
       common/pctstp/ntstpp
       integer ntstpp            ! number of plant timesteps / building timestep
 
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen
+
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
+      character*248 cMsg  ! Message buffer
+
       logical bCloseToZero     ! Result of close-to-zero comparison
       logical bNoSpaceHLoad    ! Flag space heating load
       logical bNoWaterHLoad    ! Flag for water heating load
       logical bSpaceAndWaterLoad ! Flag for combined load
+
+      real fSpaceHLoad         ! Space heating load met by IMS (W)
+      real fWaterHLoad         ! Water heating load met by IMS (W)
+      real fWaterHLoadDuration ! Duration of water heating load (s)
+
+      real fBCDSpaceHLoad      ! Space heating load specified in BCD (W)
+      real fBCDWaterHFlow      ! Water heating flow rate (W) in BCD
+      real fBCDWaterHDuration  ! Duration of water heating load (s)
+                               !   from BCD file
+      real fBCDWaterHDelTemp   ! Delivery temperature for water heating
+                               !   from BCD file (oC)
+      real fBCDWaterHMakeupTemp ! Make-up temperature for water heating
+                               !   from BCD file (oC)
 
       real fTS_Duration        ! Duration of timestep (S)
 
@@ -979,19 +998,42 @@ C-----------------------------------------------------------------------
 
       real fQOutput_SH         ! Space heating themal output (W).
 
+      logical bBCDNotFound     ! Flag indicating BCD columns were
+                               !   not located correctly.
+
+      real fDay                ! Current time step expressed as a
+                               !   real fraction of the day.
+
+C.....Initialization flag for BCD coupling
+      logical bBCDCouplingChecked(max_sys)
+      integer iNumber
+      save bBCDCouplingChecked
+
+      data ( bBCDCouplingChecked(iNumber),
+     &       iNumber=1,max_sys ) / max_sys * .false. /
+
 C.....Initialization flag for h3kreprots module
       logical bH3KReportsInitialized(max_sys)
       save bH3KReportsInitialized
-      integer iNumber
 
       data ( bH3KReportsInitialized(iNumber),
      &       iNumber=1,max_sys ) / max_sys * .false. /
+
 C.....Storage string.
       character*128 cRootName(max_sys)
       save cRootName
       character*8 cFormat
       integer iStrLen(max_sys)
       save iStrLen
+
+C-----------------------------------------------------------------------
+C     Named constants
+C-----------------------------------------------------------------------
+      integer iWater
+      parameter ( iWater = 3 )
+
+      integer iStep
+      parameter ( iStep = 1 )
 
 C-----------------------------------------------------------------------
 C     References
@@ -1002,6 +1044,17 @@ C-----------------------------------------------------------------------
 
       integer LNBlnk           ! Returns length of a string.
 
+      real SHtFld              ! Returns string
+
+      logical bInquire_BC_Name_Exists ! Check if column is defined
+                                      !   in BCD facility.
+
+      real fConvert_current_TS_to_DAY ! Function returing day as 
+                                      !   a real number
+
+      real fGet_BC_data_by_name ! Function returning value of
+                                !   specified bounary condition
+
 C-----------------------------------------------------------------------
 C     Compute number of seconds/timestep
 C
@@ -1011,6 +1064,219 @@ C                     (# bld ts / hour)*(# plt ts / bld ts)
 C
 C-----------------------------------------------------------------------
       fTS_Duration = ( 60.0 * 60.0 ) / real ( ntstep * ntstpp )   ! (s)
+
+C-----------------------------------------------------------------------
+C     First, check that specified bcd columns could be found. This
+C     test really belongs in the HVAC parsing routines, but
+C     unfortunately, the HVAC files are parsed prior to the bcd file.
+C-----------------------------------------------------------------------
+      BCD_Check: if ( .not. bBCDCouplingChecked ( iSystem ) ) then
+
+        bBCDNotFound = .false.
+
+C.......DHW Loads 
+        dhw_BCD_check: if (bIMS_DHWLoadsDefinedInBCD(iSystem))  then
+
+C.........DHW Flow rate
+          if (
+     &         .not. bInquire_BC_Name_Exists(cIMS_BcdDhwFlow(iSystem))
+     &        ) then
+
+            write (cMsg, '(A,A,A)')
+     &        ' Error parsing IMS model specified DHW flow rate '
+     &      //' boundary condition. Column "',
+     &        cIMS_BcdDhwFlow(iSystem)
+     &             (1:lnblnk(cIMS_BcdDhwFlow(iSystem))),
+     &         '" was not found in .bcd file.'
+
+            call edisp248(iuout, cMsg, 80)
+            bBCDNotFound = .true.
+          endif
+
+C.........DHW Delivery temperature 
+          if ( .not.
+     &         bInquire_BC_Name_Exists(cIMS_BcdDhwDeliveryTemp(iSystem))
+     &        ) then
+
+            write (cMsg, '(A,A,A)')
+     &        ' Error parsing IMS model specified DHW delivery '
+     &      //' temperature boundary condition. Column "',
+     &        cIMS_BcdDhwDeliveryTemp(iSystem)
+     &             (1:lnblnk(cIMS_BcdDhwDeliveryTemp(iSystem))),
+     &         '" was not found in .bcd file.'
+
+            call edisp248(iuout, cMsg, 80)
+            bBCDNotFound = .true.
+          endif
+
+C.........DHW makeup temperature
+          if ( .not.
+     &         bInquire_BC_Name_Exists(cIMS_BcdDhwMakeupTemp(iSystem))
+     &        ) then
+
+            write (cMsg, '(A,A,A)')
+     &        ' Error parsing IMS model specified DHW makeup '
+     &      //' temperature boundary condition. Column "',
+     &        cIMS_BcdDhwMakeupTemp(iSystem)
+     &             (1:lnblnk(cIMS_BcdDhwMakeupTemp(iSystem))),
+     &         '" was not found in .bcd file.'
+
+            call edisp248(iuout, cMsg, 80)
+            bBCDNotFound = .true.
+
+          endif
+
+        endif dhw_BCD_check
+
+C.......Space heating loads
+
+        sh_BCD_check: if ( bIMS_SHLoadsDefinedinBCD(iSystem)) then
+
+          if ( .not.
+     &         bInquire_BC_Name_Exists(cIMS_BcdSHLoad(iSystem))
+     &        ) then
+
+            write (cMsg, '(A,A,A)')
+     &        ' Error parsing IMS model specified space-heating '
+     &      //' load boundary condition. Column "',
+     &        cIMS_BcdSHLoad(iSystem)
+     &             (1:lnblnk(cIMS_BcdSHLoad(iSystem))),
+     &         '" was not found in .bcd file.'
+
+            call edisp248(iuout, cMsg, 80)
+            bBCDNotFound = .true.
+
+          endif
+
+        endif sh_BCD_check
+
+C.......Were all columns found correctly?
+        BCD_not_found: if ( bBCDNotFound ) then
+C.........No! Inform user and stop simulatiom.
+          call edisp248(iUout,
+     &        ' Fatal error: IMS model`s specified boundary conditions'
+     &      //' could not be found!', 80)
+          stop 'Ideal HVAC models: Fatal Error!'
+
+        endif BCD_not_found
+
+C.......Set initialization flag:
+        bBCDCouplingChecked(iSystem) = .true.
+
+      endif BCD_Check
+
+
+C-----------------------------------------------------------------------
+C     Check if BCD space heating and DHW loadss have been specified,
+C     and if so, collect loads from BCD facility. Otherwise, use
+C     loads determined by simulator (and passed in procedure
+C     arguements).
+C-----------------------------------------------------------------------
+
+
+C.....Use function fConvert_current_TS_to_DAY to express
+C.....current day (and fraction thereof) as a real number.
+C.....The BCD facility uses this parameter to determine the
+C.....appropriate row.
+      fDay = fConvert_current_TS_to_DAY()
+
+      collect_dhw_BCD: if (bIMS_DHWLoadsDefinedInBCD(iSystem)) then
+C-----------------------------------------------------------------------
+C       Collect specified water flow rate, load duration,
+C       delivery and makeup temperatures from bcd file.
+C-----------------------------------------------------------------------
+
+C.......Collect DHW flow rate
+        fBCDWaterHFlow = fGet_BC_data_by_name(
+     &                      cIMS_BcdDhwFlow(iSystem),
+     &                      fDay,
+     &                      iStep,
+     &                      'IMS_CharPerformance(): '
+     &                        //'Recovering IMS boundry '
+     &                        //'conditions from .bcd File.'
+     &                    )
+
+C.......Collect DHW delivery temperature
+        fBCDWaterHDelTemp = fGet_BC_data_by_name(
+     &                      cIMS_BcdDhwDeliveryTemp(iSystem),
+     &                      fDay,
+     &                      iStep,
+     &                      'IMS_CharPerformance(): '
+     &                        //'Recovering IMS boundry '
+     &                        //'conditions from .bcd File.'
+     &                    )
+
+C.......Collect DHW make-up temperature
+        fBCDWaterHMakeupTemp = fGet_BC_data_by_name(
+     &                      cIMS_BcdDhwMakeupTemp(iSystem),
+     &                      fDay,
+     &                      iStep,
+     &                      'IMS_CharPerformance(): '
+     &                        //'Recovering IMS boundry '
+     &                        //'conditions from .bcd File.'
+     &                    )
+
+C.......Collect DHW load duration
+        fWaterHLoadDuration = fGet_BC_data_by_name(
+     &                      cIMS_BcdDhwLoadDuration(iSystem),
+     &                      fDay,
+     &                      iStep,
+     &                      'IMS_CharPerformance(): '
+     &                        //'Recovering IMS boundry '
+     &                        //'conditions from .bcd File.'
+     &                    )
+
+C-----------------------------------------------------------------------
+C
+C       Compute DHW load:
+C
+C                       (Cp delivery) + (Cp makeup)
+C          DHW Cp Avg. = ---------------------------
+C                                   2
+C
+C          Load = [DHW volume] * [DHW Cp Avg]
+C
+C                              * ( [Delivery temp.] - [Makeup temp.] )
+C
+C       See equation 13 in Ferguson et al. (2007)
+C-----------------------------------------------------------------------
+
+        fWaterHLoad = fBCDWaterHFlow
+     &                 * (
+     &                        SHtFld(iWater, fBCDWaterHDelTemp)
+     &                      + SHtFld(iWater, fBCDWaterHMakeupTemp)
+     &                     ) / 2.0
+     &                 *  ( fBCDWaterHDelTemp - fBCDWaterHMakeupTemp )
+
+      else
+
+C.......Use arguements passed by simulator to establish loads
+        fWaterHLoad         = fInWaterHLoad
+        fWaterHLoadDuration = fInWaterHLoadDuration
+
+      endif collect_dhw_BCD
+
+      collect_sh_BCD: if (bIMS_SHLoadsDefinedInBCD(iSystem)) then
+C---------------------------------------------------------------
+C       Collect specified space-heating load from bcd file.
+C---------------------------------------------------------------
+
+C.......Collect DHW flow rate
+        fSpaceHLoad = fGet_BC_data_by_name(
+     &                      cIMS_BcdSHLoad(iSystem),
+     &                      fDay,
+     &                      iStep,
+     &                      'IMS_CharPerformance(): '
+     &                        //'Recovering IMS boundry '
+     &                        //'conditions from .bcd File.'
+     &                    )
+
+      else
+
+C.......Use arguement passed from the simulator to establish load.
+        fSpaceHLoad = fInSpaceHLoad
+
+      endif collect_sh_BCD
 
 C-----------------------------------------------------------------------
 C     Begin characterization of ventilation system.
@@ -1024,7 +1290,7 @@ C.....ventilation mode:
 
           fDistPower = 0.0
           fNoDemandPower     = fIMS_ControlsPower(iSystem)    ! (W)
-          
+
         case ( iMode_LowVent, iMode_HighVent )
 
           fDistPower = fIMS_IncDistPower(iSystem)
@@ -1032,7 +1298,7 @@ C.....ventilation mode:
           fNoDemandPower =   fIMS_ControlsPower(iSystem)
      &                     + fIMS_VentPower(iSystem,iVentMode)
      &                     + fDistPower
-     
+
         case default
 
 C.........Shouldn't happen, as iVentMode is set programmically.
@@ -1053,7 +1319,7 @@ C
 C     See equation 1 in Ferguson et al (2007).
 C
 C-----------------------------------------------------------------------
-      
+
 C.....Is water heating load close to zero? Use 1 W tolerance for
 C.....comparison.
       call eclose ( fWaterHLoad + fIMS_WaterHSkinLoss(iSystem),
@@ -1074,7 +1340,7 @@ C.....comparison.
 
         if ( fTS_FracWaterH > 1.0 ) fTS_FracWaterH = 1.0
         if ( fTS_FracWaterH < 0.0 ) fTS_FracWaterH = 0.0
-        
+
 
       endif no_WH_load
 
@@ -1090,7 +1356,7 @@ C.....comparison
       call eclose ( fSpaceHLoad, 0.0, 1.0, bNoSpaceHLoad )
       call eclose ( fIMS_SpaceHMinCapacity(iSystem),
      &              0.0, 1.0, bCloseToZero )
-     
+
       no_SH_load: if ( bNoSpaceHLoad .or.
      &                 fSpaceHLoad < 0.0 ) then
 

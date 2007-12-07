@@ -37,6 +37,18 @@ c modeled ideally
      &cSys_Backup(max_sys),bFan_AutoSized(max_sys),
      &bFan_Auto_AutoSized(max_sys), bFan_Rated_AutoSized(max_sys)
 
+C Ceclare miscellaneous parameter storage array 
+      common/HVAC_misc_parameters/
+     &bMiscTokenValsDefined,
+     &iMiscParamCount,
+     &cMiscTokens,
+     &cMiscVals
+      logical bMiscTokenValsDefined(max_sys)
+      character*72 cMiscTokens(max_sys,iMAXTokenCount)
+      character*72 cMiscVals(max_sys,iMAXTokenCount)
+      integer iMiscParamCount(max_sys)
+
+
 c Declare integer values in HVAC_INPUT_DATA common
       INTEGER num_hvac_sys, ihvac_type, ipriority, isys_type,
      &num_sys_zones, ifan_operation, ifan_position, ifan_position_r,
