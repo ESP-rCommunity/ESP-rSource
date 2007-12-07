@@ -841,6 +841,8 @@ C Array of recovered data
       CHARACTER PDESCR*60,SDESCR*44,ELRFLNAM*72
       CHARACTER EVLABS*16,EVLABU*4,EXLAB*5
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
 C pixel references for calls to VIEWTEXT.
@@ -848,10 +850,11 @@ C pixel references for calls to VIEWTEXT.
       CALL HDSTEP(SDESCR)
 
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        call feedbox(menuchw,2,igfw,igfh)
-        call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call feedbox(menuchw,2,igfw,igfh)
+          call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        endif
         call win3d(menuchw,9,30,5,3,igl,igr,igt,igb,igw,igwh)
         call startbuffer()
       ENDIF

@@ -832,6 +832,8 @@ C enthmaxy enthalpy y axis maximum
       logical close,colok,cscaleok
       CHARACTER puts*12
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       PATMOS=1013.25
 
 C Check if can draw in colour and with a range of colours.
@@ -844,14 +846,15 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
       IF(MMOD.EQ.8)THEN
 
 C Store original text screen size
-#ifdef X11
-        LIMTTP=LIMTTY
-        LIMITP=LIMIT
-        LIMTTY=8
-        LIMIT =8
-        call feedbox(menuchw,2,igfw,igfh)      
-        call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          LIMTTP=LIMTTY
+          LIMITP=LIMIT
+          LIMTTY=8
+          LIMIT =8
+          call feedbox(menuchw,2,igfw,igfh)      
+          call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        endif
         call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
       ENDIF
 

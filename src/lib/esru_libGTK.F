@@ -27,7 +27,7 @@ C           checking as passed parameters.
 C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
-C EASKS248: Edit a long (248 char) string in sections.
+C  EASKS248: Edit a long (248 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
@@ -205,6 +205,18 @@ C DNOTZERO: Function returns non zero value with the same sign (dbl precision).
 C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  SIGFIG:  Returns number to specified number of significant figures.
 C  SIpre:   Returns suitable SI prefix for number supplied.
+
+C Dummy subroutines and functions matching calling parameters used
+C in esru_x.c so that #ifdef statements are not required for GTK
+C compile of ESP-r. This same code is found in esru_fc.f which is
+C used in the text-only compile.
+C       opencpw place copyright button on screen
+C       opensetup place setup button on screen
+C       updcapt() notify level for capture buttons
+C       updazi() notify level for azimuth button
+C       feedbox() open feedback background box
+C       opengdisp opens a scrolling text display area.
+
 
 C ******************** EASKI ********************
 C EASKI is a facility for asking the user for an integer which
@@ -5838,15 +5850,30 @@ C terminal type 8.
       dimension dh(60),lh(30),exh(60)
       CHARACTER*(*) MSG,OTHER
       CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
-      character tut_path*25,ltut*72,IA*3
+      character tut_path*72,ltut*72,IA*3,fs*1,localdh*72
       logical extra,XST
+      logical unixok
       integer ltf  ! position of last character in the string.
+      integer ln     ! last actual character in instpath (of espinstalldir.h)
+
+C The following include statment is placed after the common block
+C definitions to avoid compile errors.
+#include "espinstalldir.h"
 
 C dh is duplicate help list, lh is the list (page) to be displayed.
 C exh is 'show me more' text array read in from external file.
       extra = .false.
+      ln=lnblnk(instpath)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       if(OTHER(1:1).ne.'-')then
-        tut_path='/usr/esru/tutorial/'
+        write(tut_path,'(4a)')instpath(1:ln),fs,'tutorial',fs
         write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
@@ -5861,6 +5888,8 @@ C exh is 'show me more' text array read in from external file.
           else
             extra = .false.
           endif
+        else
+          extra = .false.
         endif
         CALL ERPFREE(IFTUT,ISTAT)
       endif
@@ -5902,9 +5931,18 @@ C exh is 'show me more' text array read in from external file.
         CALL PHELPW(NHELP,IHW,IER)
         call dupphelp(NHELP)
         if(extra)then
-            CALL egphelpscroll(IBX,IBY,IPFLG,1,iuresp)
-          if(iuresp.eq.1)then
+          CALL egphelpscroll(IBX,IBY,IPFLG,1,iuresp)
+          if(OTHER(1:1).ne.'-')then
+
+C Use showmeh to find out how many lines of additional help (nhi)
+C there are and then copy from the string array exh into the
+C help buffer via calls to updhelp.
             call SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw2,exh,IER)
+            call clrhelp
+            DO 50 I=1,nhi
+              localdh=exh(I)
+              call updhelp(localdh)
+   50       CONTINUE
             CALL egphelpscroll(IBX,IBY,IPFLG,0,iuresp)
           endif
         else
@@ -10949,4 +10987,37 @@ C occurance of '/' or '\'
       LAST=LONGSTR(LOCUR:ILEN)
       RETURN
       END
+
+C ********* dummy subroutines and functions to match what is found
+C in esru_fc.f
+
+C opencpw place copyright button on screen
+      subroutine opencpw
+      return
+      end
+
+C opensetup place setup button on screen
+      subroutine opensetup
+      return
+      end
+
+C updcapt() notify level for capture buttons
+      subroutine updcapt(iavail)
+      return
+      end
+
+C updazi() notify level for azimuth button
+      subroutine updazi(iavail)
+      return
+      end
+
+C feedbox() open feedback background box
+      subroutine feedbox(menu_char,id_lines,igw,igh)
+      return
+      end
+
+C opengdisp opens a scrolling text display area.
+      subroutine opengdisp(menu_char,idispl_l,idial_l,igdw,igdh)
+      return
+      end
 

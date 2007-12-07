@@ -26,6 +26,8 @@ C Name of current application
       character outs*124,inf*144,path*72,LCMDFL*144,H*72,fs*1
       character outs248*248
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Viewer works as follows:
 C call input which initialises everything and reads in
 C   the data file.
@@ -107,10 +109,11 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opensetup
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opensetup
+          call updazi(1)
+        endif
         mdispl=0
         nifgrey=0
         ncset=0

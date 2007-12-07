@@ -132,6 +132,8 @@ C Material data arrays.
       character journcmd*20,jfile*72,cfgroot*24,cjfile*72,OUTSTR*124
       character uname*24,dstmp*24,fs*1,bl*2,MODE*4
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Initialize global common data.
       call ezero
       call curmodule('cfg ')
@@ -272,14 +274,15 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,2,1,1,2,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-        call updwire(0)
-        call updcapt(1)
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opentutorial
+          call opensetup
+          call updwire(0)
+          call updcapt(1)
+          call updazi(1)
+        endif
         call setzscale()
         mdispl=0
         nifgrey=0

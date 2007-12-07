@@ -41,6 +41,8 @@ C of the user-specified time-dependant variable.
       character FDC*20,outs*124,H*72
       logical graph_ok,ok,dok
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Identify specific variable to examine
 C and set up relevant label type for axis.
       graph_ok = .false.
@@ -105,20 +107,22 @@ C Invoke drawing routines.
 C In case the user has resized the display, re-establish the graphic
 C bounds and redraw the image before presenting the command menu.
 
-#ifdef X11
-        if(iappw.gt.0.and.iappw.lt.100)then
-          LIMTTY= MAX0(int(12*iappw*0.01),8)
-          LIMIT= MAX0(int(12*iappw*0.01),8)
-        else
-          LIMTTY=12
-          LIMIT=12
-        endif
-#else
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          if(iappw.gt.0.and.iappw.lt.100)then
+            LIMTTY= MAX0(int(12*iappw*0.01),8)
+            LIMIT= MAX0(int(12*iappw*0.01),8)
+          else
+            LIMTTY=12
+            LIMIT=12
+          endif
+        elseif(iglib.eq.2)then
+
 C GTK note: the call to win3d is a new requirement (until such time
 C as the C automatically refreshes the coordinates).
-        CALL win3d(menuchw,9,8,5,3,igl,igr,igt,igb,igw,igwh)
-        call startbuffer()
-#endif
+          CALL win3d(menuchw,9,8,5,3,igl,igr,igt,igb,igw,igwh)
+          call startbuffer()
+        endif
 
         CALL CHEAD(11)
         CALL viewtext(' Frequency analysis',3,0,1)

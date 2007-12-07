@@ -107,6 +107,8 @@ C Name of current application
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       call ezero
       call curmodule('dbm ')
       cAppName = 'dbm'
@@ -187,11 +189,11 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
         CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+        endif
         mdispl=0
         nifgrey=0
         ncset=0

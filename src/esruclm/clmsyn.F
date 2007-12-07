@@ -225,6 +225,8 @@ C  terms of a dimensionless number - the CSI.
       DIMENSION CSIM(30),IVC(30)
       character CSIM*45,H*72
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       DATA AA/-0.356,-0.372,-0.409,-0.402,-0.359,-0.409,-0.436,-0.405,
      &-0.350,-0.417,-0.421,-0.375,-0.401,-0.403,-0.333,-0.400,-0.375,
      &-0.400,-0.408,-0.386,-0.435,-0.392,-0.422,-0.370,-0.426,-0.346,
@@ -276,10 +278,11 @@ C displaying the following data.
           LIMTTY=28
           LIMIT =28
         endif
-#ifdef X11
-        CALL feedbox(menuchw,2,igfw,igfh)
-        CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          CALL feedbox(menuchw,2,igfw,igfh)
+          CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        endif
         CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
         call startbuffer()
         call usrmsg(' ',' ','-')

@@ -77,6 +77,8 @@ C Currently only one node plotted.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       logical OK,DOK
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C In order to pass strings across to C it is necessary to first
 C do an internal write placing an end marker which C can understand.
       nterm=CHAR(0)
@@ -244,10 +246,11 @@ C Refresh the drawing area.
       IF(MMOD.EQ.8)THEN
         LIMTTY=10
         LIMIT =10
-#ifdef X11
-        CALL feedbox(menuchw,2,igfw,igfh)
-        CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          CALL feedbox(menuchw,2,igfw,igfh)
+          CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        endif
         CALL win3d(menuchw,12,8,7,3,igl,igr,igt,igb,igw,igwh)
       ENDIF
 
