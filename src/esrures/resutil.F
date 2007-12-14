@@ -234,6 +234,7 @@ C AXISDRW - draw and label axes.
 
       SUBROUTINE AXISDRW(TSTART,TFINISH,ALABEL,act)
 
+      COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -301,7 +302,11 @@ C Draw horizontal (time) axis.
       if(act.eq.'P')then
         call horaxis(TSTART,TFINISH,igl,igr,igb,Xadd,TSC,1,'Timesteps')
       else
-        call horaxis(TSTART,TFINISH,igl,igr,igb,Xadd,TSC,1,'Time Hrs')
+C- Hardwired to display hours instead of timesteps on x-axis
+C- To revert back to original remove npts from following statement
+        call horaxis
+     &(TSTART/npts,TFINISH/npts,igl,igr,igb,Xadd,TSC*
+     &real(npts),1,'Time Hrs')
       endif
       RETURN
       END

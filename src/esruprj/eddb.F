@@ -3957,9 +3957,9 @@ C otherwise create with 0 length.
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
         CALL ERPFREE(ICLIM,ISTAT)
       endif
-      write(outs,'(A,F7.3,A,F7.3,a,2F7.3,a)')
+      write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
      &   'The climate lat is ',clat,
-     &   ' and longitude diff is ',clong,
+     &   ' & long diff is ',clong,' & Year & DN flag ',ICYEAR,ICDNGH,
      &   '. The model currently uses ',xlat,xlon,'.'
       dok=.false.
       h(1)='Typically the project location will not deviate'

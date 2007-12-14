@@ -704,11 +704,18 @@ C logical AND/OR as specified in the sensor definition
       LOGICAL CHANGE,PRESENT
  
 C If the NOT inversion is operative invert the sense of this loop as
-C compared with the sensed loop
+C compared with the sensed loop. Do nothing for the SLAVE operation
+C aux. data item holds connection number for NOT control and holds
+C -1.*connection number for SLAVE control.
       IF(NINT(FMISCD(ICFP,IDTYPP,IPERP,3)).EQ.1)THEN
         ICNN=NINT(FMISCD(ICFP,IDTYPP,IPERP,6))
+        IF(ICNN.GT.0)THEN
+          CHANGE=.TRUE.
+        ELSEIF(ICNN.LT.0)THEN
+          CHANGE=.FALSE.
+        ENDIF
+        ICNN=ABS(ICNN)
         DEF=CTLPOS(ICNN)
-        CHANGE=.TRUE.
       ELSE
 
 C Initialise

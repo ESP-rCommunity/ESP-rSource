@@ -32,6 +32,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
 #include "building.h"
 #include "tdf2.h"
+#include "sbem.h"
 
       integer igraphiclib  ! external definition
 
@@ -85,12 +86,13 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       character zname*12,zdesc*64,SEXP*31,SALT*31,hold*72,ZN*12
 
 C ITEMS is menu for site/context items.
-      character*35 ITEMS(28)
+      character*35 ITEMS(29)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character imgfmt*4,imgfoc*4,limgfil*72
       character act*1,GTNAME*15
+      character D64*64  ! default string for editing
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
 
@@ -142,31 +144,32 @@ C Begin with high level menu.
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
       ITEMS(8) =                'g calendar (holidays)            '                             '
-      ITEMS(9) =                'h                                '
-      ITEMS(10)=                'i                                '
-      ITEMS(11)=                '  ___________________________    '
+      ITEMS(9) =                'h building address               '
+      ITEMS(10)=                'i client address                 '
+      ITEMS(11)=                'j simulationist address          '
+      ITEMS(12)=                '  ___________________________    '
       if(GTGEOM(1:2).eq.'  '.or.GTGEOM(1:4).eq.'UNKN')then
-        ITEMS(12)=              'j ground topology                '
+        ITEMS(13)=              'k ground topology                '
       else
-        WRITE(ITEMS(12),'(2A)') 'j ground topology:',GTNAME(1:13)
+        WRITE(ITEMS(13),'(2A)') 'k ground topology:',GTNAME(1:13)
       endif
-      WRITE(ITEMS(13),'(A,i2)') 'k ground temperature profiles:',NGRDP
-      ITEMS(14)=                'l 3-D ground representation      '
-      ITEMS(15)=                '  ___________________________    '
-      ITEMS(16)=                'm primary energy conversions     '
-      ITEMS(17)=                'n fan/lift/DHW demands           '
-      ITEMS(18)=                'o integrated performance view    '
-      ITEMS(19)=                '  ___________________________    '
-      ITEMS(20)=                'p pressure coefficients calc.    '
-      ITEMS(21)=                'q imposed measured data          '
-      ITEMS(22)=                '  ___________________________    '
-      WRITE(ITEMS(23),'(a,i3)') 'r define images: ',noimg
-      ITEMS(24)=                ' _____________________________ '
-      ITEMS(25)=                's UK NCM specifications         '
-      ITEMS(26)=                ' _____________________________ '
-      ITEMS(27)=                '? help                           '
-      ITEMS(28)=                '- exit this menu                 '
-      nitms=28
+      WRITE(ITEMS(14),'(A,i2)') 'l ground temperature profiles:',NGRDP
+      ITEMS(15)=                'm 3-D ground representation      '
+      ITEMS(16)=                '  ___________________________    '
+      ITEMS(17)=                'n primary energy conversions     '
+      ITEMS(18)=                'o fan/lift/DHW demands           '
+      ITEMS(19)=                'p integrated performance view    '
+      ITEMS(20)=                '  ___________________________    '
+      ITEMS(21)=                'q pressure coefficients calc.    '
+      ITEMS(22)=                'r imposed measured data          '
+      ITEMS(23)=                '  ___________________________    '
+      WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
+      ITEMS(25)=                ' _____________________________ '
+      ITEMS(26)=                's UK NCM specifications         '
+      ITEMS(27)=                ' _____________________________ '
+      ITEMS(28)=                '? help                           '
+      ITEMS(29)=                '- exit this menu                 '
+      nitms=29
 
 C Help text for this menu.
       H(1)='This menu allows site and miscellaneous data to'
@@ -276,7 +279,9 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
 
 C Produce help text for the menu.
         CALL PHELPD('Model context',30,'-',0,0,IER)
+
       ELSEIF(INO.EQ.1)THEN
+
         H(1)='Site latitude in degrees, where North is +ve, e.g. 55.9'
         H(2)='for Glasgow.'
         CALL EASKR(SLAT,' ','Site latitude?',
@@ -284,7 +289,9 @@ C Produce help text for the menu.
         IF(IER.EQ.0)XLAT=SLAT
         MODSIT=.true.
         modish=.true.
+
       ELSEIF(INO.EQ.2)THEN
+
         H(1)='Site longitude difference is the difference in degrees'
         H(2)='from the local reference meridian, East is +ve, e.g.'
         H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
@@ -293,6 +300,7 @@ C Produce help text for the menu.
         IF(IER.EQ.0)XLON=SLON
         MODSIT=.true.
         modish=.true.
+
       ELSEIF(INO.EQ.3)THEN
 
 C Solar radiation timing toggle.
@@ -302,7 +310,9 @@ C Solar radiation timing toggle.
           iSlr_half_hr_flg=1
         endif
         MODSIT=.true.
+
       ELSEIF(INO.EQ.4)THEN
+
 C        WRITE(SALT(8),53)SKYR,GRDR,BLDR
 C  53    FORMAT('user defined)
         SALT(8)='user defined'
@@ -364,6 +374,7 @@ C  53    FORMAT('user defined)
           ENDIF
         ENDIF
         MODSIT=.true.
+
       ELSEIF(INO.EQ.5)THEN
 
 C Ground reflectance type
@@ -521,6 +532,7 @@ C Weekends def.
         idwe2=idwe2T
         wkd2=wkday(idwe2)
         MODSIT=.true.
+
       ELSEIF(INO.EQ.7)THEN
 
 C Change the year and if calendar has not been set up initialise
@@ -547,6 +559,7 @@ C and then list the months of the year.
           loopst=1
           call calenprint(iuout,'t',iyear,loopst,loop,ier)
         endif
+
       ELSEIF(INO.EQ.8)THEN
 
 C Calendar functions. If number of daytypes is zero then
@@ -558,13 +571,119 @@ C to define holidays.
         endif
         act = '-'
         call calenmanage(act,ier)
+
       ELSEIF(INO.EQ.9)THEN
 
-C << available slot >>
+C The address of the model (same data fields as entered in the ncm file.
+        call edisp(iuout,'Details for code complience...')
+        write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
+        call edisp(iuout,outs)
+        write(outs,'(2a)')'Building address: ',baddress
+        call edisp(iuout,outs)
+        write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+        call edisp(iuout,outs)
+        write(outs,'(2a)')'Building Postcode: ',buildingPC  
+        call edisp(iuout,outs)    
+        DOK=.FALSE.
+        CALL ASKOK('Edit these code complience details?',' ',OK,DOK,2)
+        if(OK)then
+          H(1)='Input a succinct description of the project name here.'
+          write(D64,'(a)') 'notional model not named'
+          CALL EASKS(pjname,'Code complience project name?',
+     &      '(<64 characters)',64,D64,'project name',IER,1)
+          H(1)='Input first line of building address here'
+          write(D64,'(a)') 'address not provided'
+          CALL EASKS(baddress,'building address?','(<64 characters)',
+     &      64,D64,'build address',IER,1)
+          H(1)='Input the building city here'
+          write(D64,'(a)') 'city not provided'
+          CALL EASKS(bcity,'building city?','(<64 characters)',
+     &      64,D64,'city building',IER,1)
+          H(1)='Input for: building post code'
+          write(D64,'(a)') 'postcode not provided'
+          CALL EASKS(buildingPC,'building post code ?',
+     &      '(<64 characters)',64,D64,'building PC',IER,1)
+        endif
+
       ELSEIF(INO.EQ.10)THEN
 
-C << available slot >>
-      ELSEIF(INO.EQ.12)THEN
+C The address of the client (same data fields as entered in the ncm file.
+        call edisp(iuout,'Details of client/owner...')
+        write(outs,'(2a)')'Building owner name: ',ownername
+        call edisp(iuout,outs)   
+        write(outs,'(2a)')'Building owner telephone: ',ownertel
+        call edisp(iuout,outs)   
+        write(outs,'(2a)')'Building owner address: ',owneraddr 
+        call edisp(iuout,outs) 
+        write(outs,'(2a)')'Building owner city: ',ownercity 
+        call edisp(iuout,outs) 
+        write(outs,'(2a)')'Building owner Postcode: ',ownerPC
+        call edisp(iuout,outs)     
+        DOK=.FALSE.
+        CALL ASKOK('Edit these owner/client details?',' ',OK,DOK,2)
+        if(OK)then
+          H(1)='Input a succinct description of the owner name here'
+          write(D64,'(a)') 'owner/client not named'
+          CALL EASKS(ownername,'Name of owner?','(<64 characters)',
+     &      64,D64,'owner name',IER,1)
+          H(1)='telephone number of the owner'
+          write(D64,'(a)') 'owner/client phone not given'
+          CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
+     &       64,D64,'owner tel',IER,1)
+          H(1)='Address of the owner'
+          write(D64,'(a)') 'owner/client address not entered'
+          CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
+     &      64,D64,'owner address',IER,1)
+          H(1)='City (for owner)'
+          write(D64,'(a)') 'owner/client city not named'
+          CALL EASKS(ownercity,'City of owner?','(<64 characters)',
+     &      64,D64,'owner city',IER,1)
+          H(1)='Post code (for owner)'
+          write(D64,'(a)') 'owner/client postcode not entered'
+          CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
+     &      64,D64,'owner post code',IER,1)
+        endif
+
+      ELSEIF(INO.EQ.11)THEN
+
+C Address of simulationist.
+        call edisp(iuout,'Details of simulationist...')
+        write(outs,'(2a)')'Simulationist name: ',certifname 
+        call edisp(iuout,outs)     
+        write(outs,'(2a)')'Simulationist telephone: ',certTel 
+        call edisp(iuout,outs)     
+        write(outs,'(2a)')'Simulationist address: ',certaddress   
+        call edisp(iuout,outs)   
+        write(outs,'(2a)')'Simulationist city: ',certcity  
+        call edisp(iuout,outs)    
+        write(outs,'(2a)')'Simulationist postcode: ',certPC  
+        call edisp(iuout,outs)          
+        DOK=.FALSE.
+        CALL ASKOK('Edit the simulationist details?',' ',OK,DOK,2)
+        if(OK)then
+          H(1)='Person or team preforming the assessment.'
+          write(D64,'(a)') 'simulationist not named'
+          CALL EASKS(certifname,'Name of simulationist?',
+     &      '(<64 characters)',64,D64,'certifier name',IER,1)
+          H(1)='Simulationist/certifier telephone number'
+          write(D64,'(a)') 'simulationist phone not given'
+          CALL EASKS(certTel,'Telephone of simulationist?',
+     &      '(<64 characters)',64,D64,'certifier tel',IER,1)
+          H(1)='Simulationist/certifier address'
+          write(D64,'(a)') 'simulationist address not given'
+          CALL EASKS(certaddress,'Address of simulationist?',
+     &      '(<64 characters)',64,D64,'certifier address',IER,1)
+          H(1)='Simulationist/certifier city'
+          write(D64,'(a)') 'simulationist city not given'
+          CALL EASKS(certcity,'City of simulationist?',
+     &      '(<64 characters)',64,D64,'certifier city',IER,1)
+          H(1)='Simulationist/certifier post code'
+          write(D64,'(a)') 'simulationist postcode not given'
+          CALL EASKS(certPC,'Post code of simulationist?',
+     &      '(<64 characters)',64,D64,'certifier Post code',IER,1)
+        endif
+
+      ELSEIF(INO.EQ.13)THEN
 
 C Ground topology.
         h(1)='If there is an existing ground toplogy you may browse'
@@ -597,7 +716,8 @@ C Ground topology.
      &      'bitmap facility to define ground toplogy.','W')
           endif
         endif
-      ELSEIF(INO.EQ.13)THEN
+
+      ELSEIF(INO.EQ.14)THEN
 
 C Ground temperature profiles.
 C        call edisp(iuout,' ')  
@@ -668,12 +788,14 @@ C        call edisp(iuout,outs)
           UGRDTP(J,IFOC)=GV
    96   CONTINUE
         MODSIT=.true.
-      ELSEIF(INO.EQ.14)THEN
+
+      ELSEIF(INO.EQ.15)THEN
 
 C 3-D Ground representations....
         call usrmsg('Please use program `grd` to define',
      &              '3D ground representations.','-')
-      ELSEIF(INO.EQ.16)THEN
+
+      ELSEIF(INO.EQ.17)THEN
 
 C Primary energy conversions.
         h(1)='Energy demand may be converted to primary energy'
@@ -687,11 +809,13 @@ C Primary energy conversions.
         elseif(IR.eq.2)then
           call peconv('-')
         endif
-      ELSEIF(INO.EQ.17)THEN
+
+      ELSEIF(INO.EQ.18)THEN
 
 C Dispersed fan/pump/lift/DHW demands.
         call prjdmds(itrc,itru,iuo,ier)
-      ELSEIF(INO.EQ.18)THEN
+
+      ELSEIF(INO.EQ.19)THEN
 
 C IPV data. 
         h(1)='This file holds data required to later construct'
@@ -722,21 +846,24 @@ C IPV data.
           call usrmsg('Please re-enter file name.',' ','W')
           goto 142
         endif
-      ELSEIF(INO.EQ.20)THEN
+
+      ELSEIF(INO.EQ.21)THEN
 
 C Position specific pressure coef.
         call cpcdat
-      ELSEIF(INO.EQ.21)THEN
+
+      ELSEIF(INO.EQ.22)THEN
 
 C Temporal definitions.
         call setuptemporal(ITRC,MODSIT,IER)
 C          MODSIT=.true.
-C        endif
-      ELSEIF(INO.EQ.23)THEN
+
+      ELSEIF(INO.EQ.24)THEN
 
 C Manage images or browse by listing out current contents of image folder.
         call manageimages(modsit)
-      ELSEIF(INO.eq.25)then
+
+      ELSEIF(INO.eq.26)then
 
 C Enter the definitions for UK NCM related data.
         call sbmedit

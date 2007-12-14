@@ -1,5 +1,4 @@
 *silent_input
-*weather_station,dublin
 *start_zone,metal_box5
 *shape,box
 *origin,0.0,40.0,0.0  # origin of zone

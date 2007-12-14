@@ -348,9 +348,13 @@ C Reset the graphic display period. Allow three choices or exit.
         h(3)=' '
         h(4)='You can insert column data (from a text file of column'
         h(5)='data beginning at the startor at some timestep. '
+        h(6)=' '
+        h(7)='You can insert static values (from a text file of data'
+        h(8)='listed sequentially. '
         CALL EASKATOG('Options: ',' ',
      &    'graph day of current data','graph sequence','graph all',
-     &    'import column data','cancel',' ',' ',IWI,5)
+     &    'import column data','import static values','cancel',' ',
+     &     IWI,8)
         if(IWI.eq.1)then
           CDAY=itdbdoy+AINT(FLOAT(IST)/FLOAT(NTSPH*24))
           CALL STDATE(itdyear,INT(CDAY),DESCR,DESCR1)
@@ -436,6 +440,10 @@ C Define the beginning and ending dates for the TDF display.
             changed = .true.
             edited = .true.
           endif
+        elseif(IWI.eq.5)then
+          CALL EDSTATICIMPT(ITRC,IFOC,IER)
+          changed = .true.
+          edited = .true.
         else
           continue
         endif
@@ -627,10 +635,9 @@ C type with the current item data. Treat differently if Text or Real field.
         IF(ITDFTR(IFOC,IFLD).EQ.1)THEN
 
 C Ask for a real value using generic range checking, default and prompt.
-          CALL EASKR(VAL,' ',PROMP,TMIN(IFOC,IA),
+          CALL EASKR(TMAR(IFOC,IA),' ',PROMP,TMIN(IFOC,IA),
      &       'W',TMAX(IFOC,IA),'W',TMAR(IFOC,IA),TDFDES(IFOC,IFLD),
      &       IER,NHELP)
-          TMAR(IFOC,IA)=VAL
           edited = .true.
         ELSEIF(ITDFTR(IFOC,IFLD).EQ.2)THEN
 
@@ -653,10 +660,9 @@ C If one of the alternates selected then transfer this into TMAT.
 
 C Ask for a integer value using generic range checking, default and prompt.
           PROMP=MGMA(IFLD)
-          CALL EASKI(IV,' ',PROMP,ITMIN(IFOC,IA),
+          CALL EASKI(ITMAR(IFOC,IA),' ',PROMP,ITMIN(IFOC,IA),
      &       'W',ITMAX(IFOC,IA),'W',ITMAR(IFOC,IA),TDFDES(IFOC,IFLD),
      &       IER,NHELP)
-          ITMAR(IFOC,IA)=IV
           edited = .true.
         ENDIF
       ELSE
@@ -882,7 +888,7 @@ C Specify that read of import file begins at (non_comment) line IMSTL.
 C Later extend logic to deal with specific file types such as timestep
 C casual gain files.
         IV=IMSTL
-        H(1)='To allow flexability you may specify that the imported'
+        H(1)='To allow flexibility you may specify that the imported'
         H(2)='data should begin at a particular line of the import'
         H(3)='file.  Comment lines (which begin with a # are not'
         H(4)='counted)'
@@ -950,7 +956,6 @@ C Read timestep from the TAB file.
 
 C Real field. Overwrite column with the appropriate value from the
 C import file. Parse the import line until the column is loacted.
-              call exgmat(ia,SALT,ier)
               K=0
               DO 33 N1=1,IMSTC(J)
                 IF(N1.EQ.IMSTC(J))THEN
@@ -1002,7 +1007,7 @@ C with allowable strings and then store the matching index.
             ELSEIF(ITDFTR(IFOC,J).EQ.3)THEN
 
 C Integer field. Overwrite column with the appropriate value from the
-C import file. Parse the import line until the column is loacted.
+C import file. Parse the import line until the column is located.
               K=0
               DO 36 N1=1,IMSTC(J)
                 IF(N1.EQ.IMSTC(J))THEN
@@ -1101,3 +1106,284 @@ C End of file encountered, close the file and return to menu.
 
       END
 
+C ************* EDSTATICIMPT ************************************************
+C  EDSTATICIMPT:  Edits data importation specification for the static values.
+C thew tdf entities. Set up to allow user to specify which item should be read
+C from a file and to which static value it matches.
+      SUBROUTINE EDSTATICIMPT(ITRC,IFOC,IER)
+#include "tdf2.h"
+      
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
+      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
+     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
+      COMMON/TDFLD1/TDFDES(MIT,MBITS)
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
+      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+     
+      DIMENSION IMPT(27),IMSTC(MBITS)
+      CHARACTER IMPT*42,H*72,KEY*1,OUTSTR*124,WORD*20,OUTS*124
+      CHARACTER*72 LIMP,LEXP
+      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
+      CHARACTER TDFDES*32,DFILE*72,tfile*72,msgl2*48
+      logical XST
+
+C Static item association.
+      DO 27 I=1,MBITS
+
+C At the moment this is assigned as I+2 for the UK NCM 2007 activity data
+C it will probably be necessary to start reading from the 3rd item of csv files 
+C containing the static values for this UK activities database
+        IMSTC(I)=I+2
+   27 CONTINUE
+      IMSTL=1
+
+C Standard menu entries first.
+      MHEAD=6
+      MCTL=5
+   28 WRITE(IMPT(1),'(A,A)') '  Entry name : ',TAG(IFOC)
+      WRITE(IMPT(2),'(A,A)') '  Description: ',TAIDE(IFOC)(1:26)
+
+
+C<< Give only one value to this one
+C Import file.
+      WRITE(IMPT(3),'(A,A)') '1 Import file: ',LIMP(1:26)
+      WRITE(IMPT(4),'(A,I3)') '2 Begin reading @ line: ',IMSTL
+      IMPT(5) =      '  __________________________________   '
+      IMPT(6) =      '  Item associations:                 '
+
+C Loop through the timestep fields and build up menu text etc.
+C where IEFLDS is the total number of fields in this instance,
+C ISFLDS is the field for the first period column.
+      IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
+      ISFLDS=IEFLDS-NTBITS(IFOC)
+
+C Regenerate the menu text from current common blocks. 
+      M=6
+      DO 60 J=1,ISFLDS
+        M=M+1
+        CALL EMKEY(M-5,KEY,IER)
+        WRITE(IMPT(M),'(A1,1X,A,I3)')KEY,TDFDES(IFOC,J),IMSTC(J)
+   60 CONTINUE
+
+C Set the menu control text.
+      M=M+1
+      IMPT(M) =     '  __________________________________   '
+      M=M+1
+      IMPT(M) =     '! View start of import file            '
+      M=M+1
+      IMPT(M) =     '< Import data                          '
+      M=M+1
+      IMPT(M) =     '? Help                                 '
+      M=M+1
+      IMPT(M) =     '- Exit to timestep display             '
+      IMPTL=M
+
+C Help text for this menu.
+      H(1)= 'This display allows the user to specify parameters'
+      H(2)= 'which control the importation of data into this'
+      H(3)= 'temporal file.  '
+      H(4)= ' '
+      H(5)= 'After supplying the name of the file of column '
+      H(6)= 'data that you want to import you can view the '
+      H(7)= 'initial lines of the file to confirm which items'
+      H(8)= 'the relevant data is in as well as how many lines'
+      H(9)= '(if any) to ignore at the start of the file. If the'
+      H(10)='file name is not local, specify the whole path. '
+      H(11)=' '
+      H(12)='If the data file includes information '
+      H(13)='prior to the point in time that you are interested'
+      H(14)='in you can use the `begin reading @` instruction '
+      H(15)='to skip past the unwanted information (take care '
+      H(16)='when deciding how many lines to skip as there is '
+      H(17)='no way to shift time once the data is imported). '
+      H(18)=' '
+      H(19)='You must specify the item number within the import file'
+      H(20)='which corresponds to each of the fields which contain'
+      H(21)='data ( a zero means no import for a field).'
+      H(22)='NOTE: blank characters, tabs, and commas are all '
+      H(23)='treated as separators. '
+ 
+      INODA=-2
+   13 CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
+
+      IF(INODA.EQ.IMPTL)THEN
+        RETURN
+      ELSEIF(INODA.EQ.3)THEN
+        H(1)='One import source file will be assumed throughout this'
+        H(2)='session. If this needs to be altered then the user'
+        H(3)='should return to this menu to give the new name.'
+        DFILE='data.csv'
+        tfile=LIMP
+        CALL EASKS(tfile,' Import file name? ',
+     &   ' ',72,DFILE,'import file name',IER,3)
+        if(tfile(1:2).ne.'  ')LIMP=tfile
+        IF(ITIMP.EQ.1)THEN
+          CALL ERPFREE(IUIMP,ISTAT)
+          call findfil(LIMP,XST)
+          IF(.NOT.XST)THEN
+            msgl2='  '
+            CALL USRMSG('This file does not exist.',msgl2,'W')
+          ENDIF
+        ENDIF
+
+      ELSEIF(INODA.EQ.4)THEN        
+
+C Specify that read of import file begins at (non_comment) line IMSTL.
+        IV=IMSTL
+        H(1)='To allow flexibility you may specify that the imported'
+        H(2)='data should begin at a particular line of the import'
+        H(3)='file.  Comment lines (which begin with a # are not'
+        H(4)='counted)'
+        CALL EASKI(IV,' ','Begin reading @ import file line no:',
+     &    0,'F',43800,'W',1,'begin read @',IER,4)
+        IMSTL=IV
+      ELSEIF(INODA.EQ.IMPTL-1)THEN
+        CALL PHELPD('period fields',23,'-',0,0,IER)
+      ELSEIF(INODA.EQ.IMPTL-2)THEN      
+
+C Import data - open the import file and read until the user defined
+C beginning point read the whole line in.
+        IUNIT=IFIL+4
+        CALL EFOPSEQ(IUNIT,LIMP,1,IER)
+        if (IER.ne.0) then
+          msgl2='Is the name correct (option 1)?'
+          CALL USRMSG('Could not open import data file.',msgl2,'W')
+          goto 28
+        endif
+
+C Check that item numbers have been specified.
+        do 85 J=1,ISFLDS
+          if (IMSTC(J).EQ.0) then
+            write(outs,'(2a)')'An item was not associated with entry ',
+     &         TDFDES(IFOC,J)
+            msgl2='No data will be read for this entry.'
+            CALL USRMSG(outs,msgl2,'W')
+          endif
+  85    continue
+        N=0
+  70    N=N+1
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import raw data',IER)
+
+C If the user has specified that data import should start at the
+C line imstl of the data file. If we are not there yet
+C read another line of the data file.
+        IF(N.LT.IMSTL) GOTO 70
+
+        IF(IER.NE.0)GOTO 103
+
+        DO 6 J=1,ISFLDS
+          IA=IATDF(IFOC,J)
+          IF(IMSTC(J).EQ.0)GOTO 6
+          IF(ITDFTR(IFOC,J).EQ.1)THEN
+
+C Real field. Overwrite static values with the appropriate value from 
+C the import file. Parse the import line until the data item is located.
+
+            K=0
+            DO 33 N1=1,IMSTC(J)
+              IF(N1.EQ.IMSTC(J))THEN
+                VAL=0.
+                CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                      IER)
+                TMAR(IFOC,IA)=VAL
+              ELSE
+                CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
+              ENDIF          
+  33        CONTINUE
+
+          ELSEIF(ITDFTR(IFOC,J).EQ.2)THEN
+
+C Text attribute field. Last word read is appropriate one. Compare it
+C with allowable strings and then store the matching index.
+            DO 34 N1=1,IMSTC(J)
+              CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
+  34        CONTINUE
+
+          ELSEIF(ITDFTR(IFOC,J).EQ.3)THEN
+
+C Integer field. Overwrite static values with the appropriate value from 
+C the import file. Parse the import line until the data item is located.
+            K=0
+            DO 36 N1=1,IMSTC(J)
+              IF(N1.EQ.IMSTC(J))THEN
+                VAL=0
+
+C Here although we are looking for an integer, the csv files usually
+C convert everything to real. So, the scan is for a real at the moment
+C and then this is taken an integer.
+                CALL EGETWR(OUTSTR,K,VAL,0,0,'-','imp data',
+     &                      IER)
+                ITMAR(IFOC,IA)=VAL
+              ELSE
+                CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
+              ENDIF
+  36        CONTINUE
+
+          ENDIF
+   6    CONTINUE 
+
+C Return to main data editing menu after warning user.
+        call usrmsg(
+     &    'Imported data is currently in memory. Remember to use the',
+     &    'save->save asci command after you exit from this menu.','W')
+        return
+      ELSEIF(INODA.EQ.IMPTL-3)THEN
+
+C Preview import file.
+        IUNIT=IFIL+4
+        CALL EFOPSEQ(IUNIT,LIMP,1,IER)
+        IF(IER.LT.0)THEN
+          msgl2=' Problem detected... '
+          CALL USRMSG(' ',msgl2,'W')
+          INODA=-4
+          GOTO 28
+        ENDIF
+
+C Actual read of ASCII import file.  
+        K=0
+    7   READ(IUNIT,10,IOSTAT=ISTAT,END=102)OUTSTR
+   10   FORMAT(A124)
+        K=K+1
+        CALL  EDISP(IUOUT,OUTSTR)
+        IF(K.LT.8)GOTO 7
+        CALL EDISP(IUOUT,'  .......  ')
+        CALL EDISP(IUOUT,' ')
+        CALL ERPFREE(IUNIT,ISTAT)
+        GOTO 28
+
+C End of file encountered, close the file and return to menu.
+  102   msgl2=' End of file reached'
+        CALL USRMSG(' ',msgl2,'-')
+        CALL ERPFREE(IUNIT,ISTAT)
+      ELSEIF(INODA.GT.MHEAD.AND.INODA.LT.(IMPTL-MCTL+1))THEN
+
+C Specify the item number to be read in for each of the fields.
+C If 0 then ignore.
+        IFLD=INODA-MHEAD
+        IV=IMSTC(IFLD)
+        H(1)='Please specify which item (e.g. separated by commas'
+        H(2)='but at the same line) of the import file is associated'
+        H(3)='with this data field. A `0` indicates that no data will'
+        H(4)='be imported into this field.'
+        CALL EASKI(IV,' ','Associated item number in import file:',
+     &    0,'F',0,'-',1,'associated item',IER,4)
+        IMSTC(IFLD)=IV
+      ELSE
+        INODA=-1
+        GOTO 13
+      ENDIF
+      INODA=-4
+      GOTO 28  
+
+C End of file encountered, close the file and return to menu.
+  103 msgl2=' End of import file reached'
+      CALL USRMSG(' ',msgl2,'-')
+      CALL ERPFREE(IUNIT,ISTAT)
+      GOTO 28          
+
+      END
