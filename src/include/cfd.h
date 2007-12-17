@@ -7,13 +7,13 @@ C  these variables to be sized to 32. The other variables have little
 C  impact of the size of dfs and bps.
 C  
 C  Maximum number of cells in x direction (usual setting NTCELX=32)
-      PARAMETER (NTCELX=32)
+      PARAMETER (NTCELX=62)
 C  Maximum number of cells in y direction (usual setting NTCELY=32)
-      PARAMETER (NTCELY=32)
+      PARAMETER (NTCELY=62)
 C  Maximum number of cells in z direction (usual setting NTCELZ=32)
-      PARAMETER (NTCELZ=32)
+      PARAMETER (NTCELZ=62)
 C  Maximum number between ntcelx, ntcely and ntcelz (usual setting MCEL1D=32)
-      PARAMETER (MCEL1D=32)
+      PARAMETER (MCEL1D=62)
 C  Maximum number of new mfs connections created for CFD domain (usual setting MCFND=10)
       PARAMETER (MCFND=10)
 C  Maximum number of gridding regions per axis (usual setting MNREG=20)
@@ -24,7 +24,7 @@ C  Maximum number of solid boundaries per zone
 C (set equal to or greater than MS in building.h, because of current
 C method of specification of solid boundary conditions from building
 C surfaces)
-      PARAMETER (MNSBZ=32)
+      PARAMETER (MNSBZ=62)
 C  Maximum number of zones with CFD (usual setting MNZ=1)
       PARAMETER (MNZ=1)
 C  Maximum number of key volumes (usual setting MNVLS=120)

@@ -8,6 +8,8 @@ C Parameters mgrt, mgtv added 31.03.95
 C 32 Surface version 07.00
 C 42 Surface version 05.03
 C 62 Surface version 06.04
+C 40 zone 62 surface version 03.05
+C 42 zone 62 surface version 04.07 updated
 
 C Used in the ESP suite of programs written by staff of the
 C Energy Simulation Research Unit of the University of Strathclyde.
@@ -26,9 +28,9 @@ C Type declarations
       integer MDTY,MGTY,MGPER
 
 C For the building:
-      PARAMETER (MCOM=28)
-      PARAMETER (MCON=1000)
-      PARAMETER (MTV=250)
+      PARAMETER (MCOM=48)
+      PARAMETER (MCON=1800)
+      PARAMETER (MTV=200)
       PARAMETER (MV=24)
       PARAMETER (ME=8)
       PARAMETER (MGP=3)
@@ -116,11 +118,11 @@ C For the time-step controller type 6:
 
 C For shading/ insolation:
       PARAMETER (MB=80)
-      PARAMETER (MOX=50)
-      PARAMETER (MOZ=50)
+      PARAMETER (MOX=40)
+      PARAMETER (MOZ=40)
 
 C 'misur' is the maximum number of surfaces insolated from one source.
-      parameter (misur=10)
+      parameter (misur=30)
 
 C For mrt calculations:
 C 'mcub' is the number of MRT sensors in a zone.
