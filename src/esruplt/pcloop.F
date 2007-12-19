@@ -1656,11 +1656,12 @@ C    or type 10: senses relative humidity
       COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
       COMMON/DIGPID/PID(MCL,7)
       COMMON/PSTAT/ISTATP
-      logical closea
       COMMON/PCLOP8/LASTOUT(MCL)
 
 C Reversible heat pump common
       common/rev_HP_logic/rev_heat_pump(MPCOM)
+      logical rev_heat_pump
+      logical closea
       
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1761,6 +1762,14 @@ C -4 for cooling - Recursive Velocity PID [rectangular integration].
 C -5 for cooling - Recursive Velocity PID [trapezoidal integration].
 C Note that the set point is at the
 C mid-point of the throttling range.
+
+C Special note for heating AND cooling components (e.g. reversible heat pump): 
+C when a component can heat and cool if Tsensed > T set point PID cooling output 
+C is calculated, and PID heating output is calculated for for sensed > T set point. 
+C the set point is at the lower or upper end of the throttling 
+C In this case range for cooling and heating respectively.
+
+
       IMO=INT(PMISCD(ICFP,IDTYPP,IPERP,2))      
       QX=PMISCD(ICFP,IDTYPP,IPERP,3)
       QM=PMISCD(ICFP,IDTYPP,IPERP,4)
@@ -1805,6 +1814,7 @@ C Set point may be dynamically set by PSYSPT subroutine.
         call PSYSPT(ire,mdflag,imx,isupdc,iretdc,zntpsp,znrhsp,stpt)
         SPC=stpt
       ENDIF
+          
 
 C If first call for this control period, 
 C reset integral action variables.
@@ -1827,6 +1837,7 @@ C Determine signal upper limit SGU, lower limit SGL.
 C Test for 'realistic' values
       SGU=SPC+(TRC/2.0)
       SGL=SPC-(TRC/2.0)
+      
 
       IF(SGU.LT.SGL)then
          call edisp(iuout,' PCL01: fatal error on signal set point(s).')
@@ -1848,7 +1859,16 @@ C  pid(icfp,6)= control signal at present time-step,
 C  pid(icfp,7)= control signal at previous time-step.
       
       IF(NSINCP.EQ.(NSNCPR+1))THEN
-C since next plant time-step, update common variables,     
+C since next plant time-step, update common variables.
+C PID(ICFP,1) = e(t) [e - error term]
+C PID(ICFP,2) = e(t-dt)
+C PID(ICFP,3) = e(t-2dt) 
+C PID(ICFP,4) = [value of at prev timestep i.e. PID(ICFP,5)]+[0.5*(e(t-dt)+e(t))]
+C PID(ICFP,5) = [value of PID(ICFP,4)]
+C PID(ICFP,6) = the control signal
+C PID(ICFP,7) = [value of PID(ICFP,6)]
+
+   
        IF(NSINCP.NE.2)PID(ICFP,3)=PID(ICFP,2)
        IF(NSINCP.NE.1)PID(ICFP,2)=PID(ICFP,1)
        PID(ICFP,5)=PID(ICFP,4)   
@@ -1858,15 +1878,45 @@ C since next plant time-step, update common variables,
       PID(ICFP,4)=PID(ICFP,5)+(0.5*(PID(ICFP,2)+PID(ICFP,1)))
 
 C Determine error.
-      ER=(SVCTL-SPC)
+      ER=(SPC-SVCTL)
+      
+C Check to see if component can heat and cool
+      if(rev_heat_pump(IPCMP))then
+
+C Let output 'float' at set point. 
+         QSP=0.0
+
+C Check whether component should be cooling or heating
+C and set control mode to heating if SVCTL<SPC or cooling
+C if SVCTL>SPC
+         if(SVCTL.GE.SPC)then
+           SGL=SPC
+           if(IMO.GT.0.0) IMO=-IMO
+         else
+           SGU=SPC
+         endif
+      endif 
+         
+C End cooling or heating check
+
 
 C See if integral action is required.
-      IF(IT.EQ.1.AND.ISTATP.EQ.2)THEN
-
+C      IF(IT.EQ.1.AND.ISTATP.EQ.2)THEN
+C Possible bug in if removed (ISTATP not set)
+      IF(IT.EQ.1)THEN
 C If iterating, reject previous error value.
                if(iterp.gt.1) 
      &             RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
-               RINTGRL(ICFP,1)=RINTGRL(ICFP,1)+ER
+     
+C Anti-wind up added. 
+               IF((SVCTL.GT.SGU).OR.(SVCTL.LT.SGL))THEN
+
+C If the sensed variable is outwith the proportional band then reset integral term
+C to avoid saturation.
+                 RINTGRL(ICFP,1)=0.0
+               ELSE
+                 RINTGRL(ICFP,1)=RINTGRL(ICFP,1)+ER
+               ENDIF
 
 C Remember error value for next iteration.
                RINTGRL(ICFP,2)=ER
@@ -1879,6 +1929,7 @@ C Establish integral error term.
       IF((IMO.EQ.2.OR.IMO.EQ.-2).AND.IT.EQ.1)THEN
           RINT=(TIMSEC/TI)*(PID(ICFP,5)+
      &                      0.5*(PID(ICFP,2)+PID(ICFP,1)))
+
       ENDIF
  
 C Determine whether controlled heating or controlled cooling,
@@ -1886,14 +1937,17 @@ C Determine whether controlled heating or controlled cooling,
 C controlled heating.
 
 C Determine the gain,
-       RKP=(QM-QX)/(SGU-SGL)
+       RKP=(QX-QM)/(SGU-SGL)
+
 
 C Determine heating magnitude,
        call eclose((SGU-SGL),0.00,0.0001,closea)
        IF(SVCTL.GE.SGU) THEN
+       
 C Control signal
         PID(ICFP,6)=QM
-C Heating flux
+
+C Heating flux (if SVCTL > SGU) ignore integral and derivative action
         QH=QM
        ELSE IF(SVCTL.GT.SGL.AND.(.NOT.closea)) THEN
               
@@ -1901,6 +1955,7 @@ C Control signal depends on type of algorithm selected by user:
         IF(IMO.EQ.1) THEN
 
 C See if derivative action is required.
+C DERIV(ICFP) is previous timestep value of SVCTL.
             IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
 
 C Now evaluate heat flux.
@@ -1911,8 +1966,9 @@ C See if derivative action is required.
            IF(ID.EQ.1) RDRV=(TD/TIMSEC)*(PID(ICFP,1)-PID(ICFP,2))
 C Determine the control signal
             PID(ICFP,6)=RKP*(PID(ICFP,1)+RINT+RDRV)
+
 C Now evaluate heat flux.
-            QH=PID(ICFP,6)+QSP          
+            QH=PID(ICFP,6)+QSP       
 
         ELSE IF(IMO.EQ.3)THEN
 C Determine the control signal    
@@ -1949,6 +2005,7 @@ C Limit flux.
        ELSE
 C Control signal
            PID(ICFP,6)=QX
+
 C Heating flux
            QH=QX
        ENDIF
@@ -1960,7 +2017,7 @@ C Assign CDATA
 C controlled cooling.
 
 C Determine the gain
-       RKP=(QX-QM)/(SGU-SGL)
+       RKP=(QM-QX)/(SGU-SGL)
 
        call eclose((SGU-SGL),0.00,0.0001,closea)
        IF(SVCTL.GE.SGU) THEN
@@ -1975,6 +2032,7 @@ C Control signal depends on type of algorithm selected by user:
         IF(IMO.EQ.-1)THEN
 
 C See if derivative action is required.
+C DERIV(ICFP) is previous timestep value of SVCTL
          IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
 
 C Now evaluate cooling flux.
@@ -2305,13 +2363,24 @@ C Determine error.
       ER=(SVCTL-SPC)
 
 C See if integral action is required.
-      IF(IT.EQ.1.AND.ISTATP.EQ.2)THEN
 
+C      IF(IT.EQ.1.AND.ISTATP.EQ.2)THEN
+C Bugfix - Istatp not set.
+
+      IF(IT.EQ.1)THEN
 C If iterating, reject previous error value.
           if(iterp.gt.1)
      &       RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
 
-          RINTGRL(ICFP,1)=RINTGRL(ICFP,1)+ER
+C Anti-wind up added. 
+             IF((SVCTL.GT.SGU).OR.(SVCTL.LT.SGL))THEN
+
+C If the sensed variable is outwith the proportional band then reset integral term
+C to avoid saturation.
+               RINTGRL(ICFP,1)=0.0
+             ELSE
+               RINTGRL(ICFP,1)=RINTGRL(ICFP,1)+ER
+             ENDIF
 
 C Remember error value for next iteration.
           RINTGRL(ICFP,2)=ER
@@ -3125,7 +3194,7 @@ c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
 c           only once.
       dimension tmdr(mcl,2)
-      logical closea
+c      logical closea
 
 c Save contents of array 'tmdr'
       save tmdr
@@ -3322,7 +3391,7 @@ C Set control parameters.
           SNWGTP(L)=PMISCD(ICFP,IDTYPP,IPERP,13+(L-1)+4*(NPSEN(ICFP)-1))
           SNWTOT=SNWTOT+SNWGTP(L)
         ENDIF
-10    CONTINUE      
+10    CONTINUE     
 
 C Fatal error tests.
       IF(IOUMOD.NE.1.AND.IOUMOD.NE.-1)THEN
@@ -3511,8 +3580,6 @@ C number based on logical (AND, OR) relationships of other control loops
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
       common/cctlnm/ctldoc,lctlf
-      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
-      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
@@ -3661,7 +3728,6 @@ C Proportional Integral Room Controller
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
-      common/cctlnm/ctldoc,lctlf
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -3675,9 +3741,6 @@ C Proportional Integral Room Controller
       COMMON/LOCAL1/ISET,PHIMAX
       COMMON/Pctime/TIMSEC
       COMMON/PCLP14/DELTAI,IISET
-      dimension ICTLR(4),LOGIC(4)
-      logical ctrld(4)
-      CHARACTER ctldoc*248,LCTLF*72
       
 C Fatal error test.
       IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.6)THEN
@@ -3693,7 +3756,7 @@ C Fatal error test.
       TFSMIN=PMISCD(ICFP,IDTYPP,IPERP,4)
       PROPBAND=PMISCD(ICFP,IDTYPP,IPERP,5)
       IPCMP=IPAN(ICFP,2)
-      ITMNO=PMISCD(ICFP,IDTYPP,IPERP,6)
+      ITMNO=nint(PMISCD(ICFP,IDTYPP,IPERP,6))
       JPCOMP=IPSN(ICFP,2)
       INOD1=NPCDAT(JPCOMP,9)
       TRS=CSVP(INOD1,1)
@@ -3735,7 +3798,7 @@ C Trace output.
      &   ITRACE(40).NE.0)THEN
          CALL DAYCLK(IDYP,PTIMEF,ITU)
          WRITE(ITU,*) ' NSINC = ',nsinc,         
-     &                ' CDATA = ',cdata(ipcmp,ipcvr)
+     &                ' BDATA = ',bdata(IPCMP,ITMNO)
          write(itu,*) ' Leaving subroutine PCL15'
       ENDIF
 
@@ -3762,7 +3825,6 @@ C Outside temperature compensation controller
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
-      common/cctlnm/ctldoc,lctlf
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -3774,9 +3836,6 @@ C Outside temperature compensation controller
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/PCLOP8/LASTOUT(MCL)
       COMMON/LOCAL1/ISET,PHIMAX
-      dimension ICTLR(4),LOGIC(4)
-      logical ctrld(4)
-      CHARACTER ctldoc*248,LCTLF*72
       
 C Fatal error test.
       IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.8)THEN
@@ -3795,7 +3854,7 @@ C Fatal error test.
       TFSMAX=PMISCD(ICFP,IDTYPP,IPERP,7)
       TFSMIN=PMISCD(ICFP,IDTYPP,IPERP,8)
       IPCMP=IPAN(ICFP,2)
-      ITMNO=PMISCD(ICFP,IDTYPP,IPERP,9)
+      ITMNO=nint(PMISCD(ICFP,IDTYPP,IPERP,9))
       JPCOMP=IPSN(ICFP,2)
       INOD1=NPCDAT(JPCOMP,9)
       TRS=CSVP(INOD1,1)
@@ -3822,7 +3881,7 @@ C Trace output.
      &   ITRACE(40).NE.0)THEN
          CALL DAYCLK(IDYP,PTIMEF,ITU)
          WRITE(ITU,*) ' NSINC = ',nsinc,         
-     &                ' CDATA = ',cdata(ipcmp,ipcvr)
+     &                ' BDATA = ',bdata(IPCMP,ITMNO)
          write(itu,*) ' Leaving subroutine PCL16'
       ENDIF
 
