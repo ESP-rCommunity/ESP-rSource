@@ -102,3 +102,5 @@ void	fprofma_(char* sstr, long int* nstr, char* title, char* list, long int* nli
 		 long int* ino, long int* nhelp, int lensstr, int lentitle, int lenlist);
 
 void	ipset(int flag);
+void	ckaccess_(long int* folder,long int* laccess,long int* lerr,char* fname,int len);
+void	getfilelist_(char* folder,char* act,char* flist,long int nwflist[],long int* nflist,int lenfolder,int lenact,int lenflist);

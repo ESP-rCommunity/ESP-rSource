@@ -7,9 +7,12 @@ echo "standard databases."
 echo " "
 echo "You should be root when running this installer"
 echo " "
-echo "The installation will be to a standard location, which"
-echo "is /opt/esru and a link will be created to this from "
-echo "/usr/esru if it does not already exist."
+echo "NOTE: the installation folder is /opt/esru rather than"
+echo "the traditional /home/esru or /usr/esru. IF YOU HAVE AN"
+echo "OLDER ESP-r in /home/esru or /usr/esru you should"
+echo "remove it. There is no longer a requirement for a link"
+echo "named /usr/esru but if one does exist it should point"
+echo "to /opt/esru"
 echo " "
 
 DSP1=" \n
@@ -128,17 +131,17 @@ fi
 cd /opt/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_X11_11.3_linux.tar.gz | tar xf - 
+  zcat $ISD/esp-r_X11_11.4_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_GTK_11.3_linux.tar.gz | tar xf - 
+  zcat $ISD/esp-r_GTK_11.4_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
-echo "Creating a link to the ESP-r distribution... "
-ln -s /opt/esru /usr/esru
+# echo "Creating a link to the ESP-r distribution... "
+# ln -s /opt/esru /usr/esru
 echo "Setting folder permissions... "
 chmod a+x /opt/esru
 chmod a+x /opt/esru/bin

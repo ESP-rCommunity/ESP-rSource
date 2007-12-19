@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -39,6 +39,9 @@ C      PCL07:  duty cycle controller.
 C      PCL08:  single sensor two-position control.
 C      PCL09:  multi-sensor two-position control.
 C      PCL10:  zero-energy band controller.
+C      PCL14:  multisensor controller (senses multiple control loops)
+C      PCL15:  PI room controller
+C      PCL16:  outside temperature compensation controller
 C      PSYSPT: establishes set points for AHU systems.
 
 C ******************** CONTRL ********************
@@ -213,6 +216,18 @@ C Plant cotrol law 12: Derive signal from boundary condition
 C Plant control law 13: Adsorption storage unit controller
       ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.13) THEN
          CALL ADS_stg_controller(iterp)
+         
+C Plant cotrol law 14: Multi-sensor logical controller
+      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.14) THEN
+         CALL PCL14
+         
+C Plant cotrol law 15: PI room controller
+      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.15) THEN
+         CALL PCL15
+         
+C Plant cotrol law 16: Outside temperature compensation
+      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.16) THEN
+         CALL PCL16
          
 C New controllers inserted here!
       ELSE
@@ -400,6 +415,10 @@ C Controller type 10, 11, 17 or 23: senses relative humidity (%).
      &           iclctp.eq.23) THEN
             PATMOS=1013.25
             SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
+
+C Multisensor loop controller - do nothing here
+         ELSEIF(ICLCTP.EQ.41)THEN
+            CONTINUE
          ELSE
             call edisp(iuout,' CLVAR: invalid plant controller type ')
             call epwait
@@ -1562,6 +1581,7 @@ C by setting all plant component control variables to zero
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      COMMON/PCLOP8/LASTOUT(MCL)
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1581,6 +1601,9 @@ C Set CDATA to zero for this component
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
+
+C Set last state of this loop to off
+      LASTOUT(ICFP)=0
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1634,6 +1657,10 @@ C    or type 10: senses relative humidity
       COMMON/DIGPID/PID(MCL,7)
       COMMON/PSTAT/ISTATP
       logical closea
+      COMMON/PCLOP8/LASTOUT(MCL)
+
+C Reversible heat pump common
+      common/rev_HP_logic/rev_heat_pump(MPCOM)
       
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -2013,6 +2040,10 @@ C Remember sensed value.
 C Remember plant time-step
       NSNCPR=NSINCP
       
+C Within this loop some control action has been specified 
+C therefore control is active
+      LASTOUT(ICFP)=1
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) THEN
@@ -2071,6 +2102,7 @@ C                 or type 11: senses relative humidity.
       COMMON/DIGPID/PID(MCL,7)
       COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
       COMMON/PSTAT/ISTATP
+      COMMON/PCLOP8/LASTOUT(MCL)
       logical closea
 
 C Trace output
@@ -2453,6 +2485,10 @@ C Non-ideal actuator characteristics
 C Remember plant time-step
         NSNCPR=NSINCP
 
+C Within this loop some control action has been specified 
+C therefore control is active
+      LASTOUT(ICFP)=1
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) THEN
@@ -2496,6 +2532,7 @@ C                   or type 17: senses relative humidity
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/HPCL03/HOUT(MPCOM),HSASC(MPCOM)
+      COMMON/PCLOP8/LASTOUT(MCL)
       logical closea
 
 C Trace output
@@ -2576,6 +2613,14 @@ C Refresh history for H/H100 and in case of change recalculate HSASC
 C Assign CDATA
       CDATA(IPCMP,IPCVR)=OUT
 
+C Remember the state of this control
+      call eclose((OUT),0.00,0.01,closea)
+      IF(CLOSEA)THEN
+        LASTOUT(ICFP)=0
+      ELSE
+        LASTOUT(ICFP)=1
+      ENDIF
+
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
@@ -2617,6 +2662,9 @@ C or on a variable expecting some numerical value
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+      COMMON/PCLOP8/LASTOUT(MCL)
+
+      LOGICAL CLOSEA
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -2679,6 +2727,14 @@ C Establish start time TSTART; find out if current time is past TSTART
 C Assign CDATA
       CDATA(IPCMP,IPCVR)=OUT
 
+C Remember the state of this control
+      call eclose((OUT),0.00,0.01,closea)
+      IF(CLOSEA)THEN
+        LASTOUT(ICFP)=0
+      ELSE
+        LASTOUT(ICFP)=1
+      ENDIF
+
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
@@ -2728,6 +2784,7 @@ C                   or type 40: senses numerical value.
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      COMMON/PCLOP8/LASTOUT(MCL)
 
 c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
@@ -2747,7 +2804,7 @@ c Trace output
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(40).ne.0) then
          call dayclk(idyp,ptimef,itu)
-         write(itu,*) ' Entering subroutine pcl03 '
+         write(itu,*) ' Entering subroutine pcl05 '
       end if
 
 c Fatal error tests
@@ -2826,6 +2883,14 @@ c Evaluate damper position value.
 c Assign 'cdata'.
       cdata(ipcmp,1)=dp
 
+C Remember the state of this control
+      call eclose((DP),0.00,0.01,closea)
+      IF(CLOSEA)THEN
+        LASTOUT(ICFP)=0
+      ELSE
+        LASTOUT(ICFP)=1
+      ENDIF
+
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
@@ -2873,6 +2938,9 @@ C controller's input sensor value.
      &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
      &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      COMMON/PCLOP8/LASTOUT(MCL)
+
+      LOGICAL CLOSEA
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -2886,6 +2954,14 @@ C Establish the sensed condition and the 'actuated' component and node.
 
 C CDATA for this component is exactly equal to the sensed condition.
       CDATA(IPCMP,IPCVR)=SVCTL
+
+C Remember the state of this control
+      call eclose((SVCTL),0.00,0.01,closea)
+      IF(CLOSEA)THEN
+        LASTOUT(ICFP)=0
+      ELSE
+        LASTOUT(ICFP)=1
+      ENDIF
 
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
@@ -2927,6 +3003,8 @@ C to zero.
 
       COMMON/NDUTY/NDUTYP(MCL),NTSOFF(MCL),NOFFCT(MCL),NDUTYS(MCL),
      &NDUTYC(MCL),NSCPAV(MCL),CDATON(MPCOM,MMISCD,MCL)
+      COMMON/PCLOP8/LASTOUT(MCL)
+
 C COMMON BLOCK VARIABLES FOR 'NDUYTC' ARE:-
 C NDUTYP  = duty cycle period (in plant time-steps);
 C NTSOFF  = no. of plant time-steps `off' per duty cycle period;
@@ -2991,10 +3069,12 @@ C Possibly increment 'off' counter.
 C 'Switch off' plant component.
          DO 20 IPCVR=1,NCI(IPCMP)
             CDATA(IPCMP,IPCVR)=0.
+            LASTOUT(ICFP)=0
    20    CONTINUE
       ELSE
 C 'Switch on' plant component.
-            CDATA(IPCMP,IPCVR)=CDATON(IPCMP,IPCVR,ICFP)
+        CDATA(IPCMP,IPCVR)=CDATON(IPCMP,IPCVR,ICFP)
+        LASTOUT(ICFP)=1
       ENDIF
 
       ipa4=ipan(icfp,4)
@@ -3031,13 +3111,35 @@ C PCL08 is a `Two-Position` controller.
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      COMMON/PCLOP8/LASTOU(MCL)
+      COMMON/PCLOP8/LASTOUT(MCL)
+
+c tmdr(?,1) holds sum of mass diversion ratios
+c tmdr(?,2) indicates that (?,1) must be calculated
+c           only once.
+      dimension tmdr(mcl,2)
+      logical closea
+
+c Save contents of array 'tmdr'
+      save tmdr
+
+c 'ipass' is a flag used to indicate if first pass was made to this
+c routine. << Kelly recommends removal >>
+C      ipass = 0
+c If this is first pass, then initialise second 
+c data item of array 'tmdr'.
+      if(ipass.eq.0) then
+         do 77 i=1,mcl
+  77     tmdr(i,2)=0.0
+         ipass=1
+      endif
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -3061,6 +3163,18 @@ C Set control parameters.
       SPTOFF=PMISCD(ICFP,IDTYPP,IPERP,4)
       OUTHI=PMISCD(ICFP,IDTYPP,IPERP,5)
       OUTLO=PMISCD(ICFP,IDTYPP,IPERP,6)
+      icon1=int(pmiscd(icfp,idtypp,iperp,7))
+      icon2=int(pmiscd(icfp,idtypp,iperp,8))
+
+c If second item of array 'tmdr' for this control loop
+c is zero, calculate sum of mass diversion ratios.
+      if(int(tmdr(icfp,2)).eq.0) then
+         if(icon1.gt.0.and.icon2.gt.0) then
+            tmdr(icfp,1)=pcondr(icon1)+pcondr(icon2) 
+         else
+            tmdr(icfp,1)=0.0
+         endif
+      endif
 
 C Where IMODE indicates the following:
 
@@ -3081,28 +3195,28 @@ C Establish the sensed condition and the `actuated' component.
       IF(IMODE.EQ.1)THEN
         IF(SVCTL.LT.SPTON)THEN
            CDATA(IPCMP,IPCVR)=OUTHI
-           LASTOU(ICFP)=1
+           LASTOUT(ICFP)=1
         ELSEIF(SVCTL.GT.SPTOFF)THEN
            CDATA(IPCMP,IPCVR)=OUTLO
-           LASTOU(ICFP)=0
+           LASTOUT(ICFP)=0
         ELSEIF(SVCTL.GE.SPTON.AND.SVCTL.LE.SPTOFF)THEN
-           IF(LASTOU(ICFP).EQ.1)THEN
+           IF(LASTOUT(ICFP).EQ.1)THEN
               CDATA(IPCMP,IPCVR)=OUTHI
-           ELSEIF(LASTOU(ICFP).EQ.0)THEN
+           ELSEIF(LASTOUT(ICFP).EQ.0)THEN
               CDATA(IPCMP,IPCVR)=OUTLO
            ENDIF
         ENDIF
       ELSEIF(IMODE.EQ.-1)THEN
         IF(SVCTL.LT.SPTON)THEN
            CDATA(IPCMP,IPCVR)=OUTLO
-           LASTOU(ICFP)=0
+           LASTOUT(ICFP)=0
         ELSEIF(SVCTL.GT.SPTOFF)THEN
            CDATA(IPCMP,IPCVR)=OUTHI
-           LASTOU(ICFP)=1
+           LASTOUT(ICFP)=1
         ELSEIF(SVCTL.GE.SPTON.AND.SVCTL.LE.SPTOFF)THEN
-           IF(LASTOU(ICFP).EQ.1)THEN
+           IF(LASTOUT(ICFP).EQ.1)THEN
               CDATA(IPCMP,IPCVR)=OUTHI
-           ELSEIF(LASTOU(ICFP).EQ.0)THEN
+           ELSEIF(LASTOUT(ICFP).EQ.0)THEN
               CDATA(IPCMP,IPCVR)=OUTLO
            ENDIF
         ENDIF
@@ -3110,6 +3224,13 @@ C Establish the sensed condition and the `actuated' component.
 
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
+
+c and modify mass diversion ratio for other connection so that
+c sum of mass diversion ratios for the two connections remains
+c the same (1.0)
+      dp=CDATA(IPCMP,IPCVR)
+      if(icon1.gt.0.and.icon2.gt.0)
+     &   pcondr(icon1)=1.-(dp*pcondr(icon2))
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -3146,7 +3267,7 @@ C PCL09 is a multi-sensor `Two-Position` controller.
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
 
-      COMMON/PCLOP8/LASTOU(MCL)
+      COMMON/PCLOP8/LASTOUT(MCL)
       COMMON/CPMVAR/NPSEN(MCL),ISMODP(MCL),IPMSN(MCL,MPSEN,5),
      &SVCTLM(MCL,MPSEN),SNWGTP(MPSEN)
 
@@ -3224,18 +3345,18 @@ C Determine controller output.
       IF(IOUMOD.EQ.1)THEN
          IF(SVCTL.LE.SVCTLX)THEN
             CDATA(IPCMP,IPCVR)=OUTHI
-            LASTOU(ICFP)=1
+            LASTOUT(ICFP)=1
          ELSEIF(SVCTL.GT.SVCTLX)THEN
             CDATA(IPCMP,IPCVR)=OUTLO
-            LASTOU(ICFP)=0         
+            LASTOUT(ICFP)=0         
          ENDIF
       ELSEIF(IOUMOD.EQ.-1)THEN
           IF(SVCTL.LE.SVCTLX)THEN
             CDATA(IPCMP,IPCVR)=OUTLO
-            LASTOU(ICFP)=0
+            LASTOUT(ICFP)=0
          ELSEIF(SVCTL.GT.SVCTLX)THEN
             CDATA(IPCMP,IPCVR)=OUTHI
-            LASTOU(ICFP)=1
+            LASTOUT(ICFP)=1
          ENDIF 
       ENDIF
 
@@ -3276,6 +3397,9 @@ C PCL10 is a `Zero Energy Band' controller.
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
      &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
+      COMMON/PCLOP8/LASTOUT(MCL)
+
+      LOGICAL CLOSEA
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -3343,6 +3467,14 @@ C Extablish cooling ratio.
 C Assign CDATA
       CDATA(IPCMP,IPCVR)=OUT
 
+C Remember the state of this control
+      call eclose((OUT),0.00,0.01,closea)
+      IF(CLOSEA)THEN
+        LASTOUT(ICFP)=0
+      ELSE
+        LASTOUT(ICFP)=1
+      ENDIF
+
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
@@ -3353,6 +3485,346 @@ C Trace output
          WRITE(ITU,*) ' OUT = ',OUT
          WRITE(ITU,*) ' Leaving subroutine PCL10'
       END IF
+
+      RETURN
+      END
+
+C ******************** PCL14 ********************
+
+C Multisensor logical controller. This controller changes CDATA item
+C number based on logical (AND, OR) relationships of other control loops
+
+      SUBROUTINE PCL14
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PTIME/PTIMEP,PTIMEF
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      common/cctlnm/ctldoc,lctlf
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
+      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
+     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
+     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
+     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
+      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/Pctime/TIMSEC
+      COMMON/LOCAL2/IPREVON,ITSOR,IOR
+      dimension ICTLR(4),LOGIC(4)
+      logical ctrld(4)
+      CHARACTER ctldoc*248,LCTLF*72
+      
+C Fatal error test.
+      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.5)THEN
+         CALL EDISP(iuout,
+     &    ' PCL14: fatal error -> too few misc. data items')
+         CALL EPWAIT
+         CALL EPAGEND
+         STOP
+      ENDIF
+
+C Set control parameters.
+      NCT=(NINT(PMISCD(ICFP,IDTYPP,IPERP,1))-3)/2
+      DO 4000 ICT=1,NCT
+        ICTLR(ICT)=INT((PMISCD(ICFP,IDTYPP,IPERP,2*ICT)))
+        IF(ICT.NE.NCT)
+     &  LOGIC(ICT)=INT((PMISCD(ICFP,IDTYPP,IPERP,2*ICT+1)))
+        IF(LASTOUT(ICTLR(ICT)).NE.0)THEN
+          CTRLD(ICT)=.TRUE.
+        ELSE
+          CTRLD(ICT)=.FALSE.
+        ENDIF
+ 4000 CONTINUE
+
+C Get control logic, initially assuming OFF (ICTL=0)
+      ICTL=0
+
+C Set this control loop to follow master loop if just one loop is
+C specified
+      IF(NCT.EQ.1)THEN
+        IMASTER=INT(PMISCD(ICFP,IDTYPP,IPERP,2))
+        IF(LASTOUT(IMASTER).NE.0)ICTL=1
+      ELSE
+
+C Work out logical relationship result if more than one master loop
+        DO 5000 ICT=1,NCT-1
+          IF(ICT.EQ.1)THEN
+            IF(LOGIC(ICT).EQ.1)THEN
+              IF(CTRLD(ICT).OR.CTRLD(ICT+1))THEN
+                ICTL=1
+                IPREVON=1
+              ENDIF
+            ELSEIF(LOGIC(ICT).EQ.2)THEN
+              IF(CTRLD(ICT).AND.CTRLD(ICT+1))THEN
+                ICTL=1
+                IPREVON=1
+              ENDIF
+            ENDIF
+          ELSE
+            IF(LOGIC(ICT).EQ.1)THEN
+              IF(CTRLD(ICT+1).OR.(ICTL.EQ.1))THEN
+                ICTL=1
+                IPREVON=1
+              ENDIF
+            ELSEIF(LOGIC(ICT).EQ.2)THEN
+               IF(CTRLD(ICT+1).AND.(ICTL.EQ.1))THEN
+                ICTL=1
+                IPREVON=1
+              ENDIF
+            ENDIF
+          ENDIF
+ 5000   CONTINUE
+      ENDIF
+
+      IDATNO=INT(PMISCD(ICFP,IDTYPP,IPERP,2*NCT+3))
+      CALL CLVAR(SVCTL,IPCMP,IPCVR)
+
+C Switch the actuator on if in overrun time and ictl was 1 the previous
+C timestep
+      ORT=(PMISCD(ICFP,IDTYPP,IPERP,2*NCT+4))
+      NTSOR=INT(ORT*60./TIMSEC)
+      IF(NTSOR.NE.0)THEN
+        IF(IPREVON.EQ.1.AND.ICTL.EQ.0)THEN
+          IOR=1
+          ITSOR=0
+        ENDIF
+        IF(IOR.EQ.1)THEN
+          IF(ITSOR.LE.NTSOR)THEN
+            IPREVON=0
+            ITSOR=ITSOR+1
+            ICTL=1
+          ELSE
+            IOR=0
+            IPREVON=0
+          ENDIF
+        ENDIF      
+      ENDIF
+
+C Set CDATA item value
+      IF(ICTL.EQ.1)THEN
+        CTLPS=PMISCD(ICFP,IDTYPP,IPERP,2*NCT+1)
+        LASTOUT(ICFP)=1
+      ELSE
+        CTLPS=PMISCD(ICFP,IDTYPP,IPERP,2*NCT+2)
+        LASTOUT(ICFP)=0
+      ENDIF
+      CDATA(IPCMP,IDATNO)=CTLPS
+
+C Debug
+*      if(ipcmp.eq.1)then
+*      write(78,*)'icfp,ihrp,loop1,loop2,loop3,multi,IPCMP,IDATNO ',
+*     &  icfp,ihrp,lastout(1),lastout(2),lastout(3),lastout(5)
+*     &  ,IPCMP,IDATNO
+*      write(79,*)'ntsor',ntsor,' cdata',CTLPS,' ipcmp',ipcmp
+*      endif
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0)THEN
+         CALL DAYCLK(IDYP,PTIMEF,ITU)
+         WRITE(ITU,*) ' NSINC = ',nsinc,         
+     &                ' CDATA = ',cdata(ipcmp,ipcvr)
+         write(itu,*) ' Leaving subroutine PCL14'
+      ENDIF
+
+      RETURN
+      END
+
+C ******************** PCL15 ********************
+
+C Proportional Integral Room Controller
+
+      SUBROUTINE PCL15
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PTIME/PTIMEP,PTIMEF
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      common/cctlnm/ctldoc,lctlf
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+
+      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
+     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
+     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
+     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
+      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/LOCAL1/ISET,PHIMAX
+      COMMON/Pctime/TIMSEC
+      COMMON/PCLP14/DELTAI,IISET
+      dimension ICTLR(4),LOGIC(4)
+      logical ctrld(4)
+      CHARACTER ctldoc*248,LCTLF*72
+      
+C Fatal error test.
+      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.6)THEN
+         CALL EDISP(iuout,
+     &    ' PCL15: fatal error -> too few misc. data items')
+         CALL EPWAIT
+         CALL EPAGEND
+         STOP
+      ENDIF
+
+      TRSPT=PMISCD(ICFP,IDTYPP,IPERP,2)
+      TFSMAX=PMISCD(ICFP,IDTYPP,IPERP,3)
+      TFSMIN=PMISCD(ICFP,IDTYPP,IPERP,4)
+      PROPBAND=PMISCD(ICFP,IDTYPP,IPERP,5)
+      IPCMP=IPAN(ICFP,2)
+      ITMNO=PMISCD(ICFP,IDTYPP,IPERP,6)
+      JPCOMP=IPSN(ICFP,2)
+      INOD1=NPCDAT(JPCOMP,9)
+      TRS=CSVP(INOD1,1)
+      IOPTLP=NINT(PMISCD(ICFP,IDTYPP,IPERP,8))
+      STATICV=PMISCD(ICFP,IDTYPP,IPERP,9)
+      ACTI=PMISCD(ICFP,IDTYPP,IPERP,7)
+      DELTA=TRSPT-TRS
+
+C Implement integral action
+      DELTAI=DELTAI+DELTA*TIMSEC
+
+C Reset integral action to avoid integral windup (large integral action)
+      HACTI=0.5*ACTI
+      PROPTERM=DELTA/PROPBAND
+      IF(PROPTERM.GT.0.5.OR.PROPTERM.LT.-0.5)DELTAI=0.
+      IF(DELTAI.GT.HACTI*PROPBAND)DELTAI=HACTI*PROPBAND
+      IF(DELTAI.LT.-1.*HACTI*PROPBAND)DELTAI=-1.*HACTI*PROPBAND
+
+C Calculate Bdata item value
+      IF(PROPBAND.EQ.0..OR.ACTI.EQ.0.)THEN
+        UBTL=TFSMAX
+      ELSE  
+        UBTL=(TFSMAX-TFSMIN)*(DELTA/PROPBAND+DELTAI/(ACTI*PROPBAND))
+     &                  +0.5*(TFSMAX+TFSMIN)
+      ENDIF
+      IF(UBTL.GT.TFSMAX)UBTL=TFSMAX
+      IF(UBTL.LT.TFSMIN)UBTL=TFSMIN
+      IF(ISET.EQ.0)GOTO 9595
+      IF(IOPTLP.LE.0)THEN
+        BDATA(IPCMP,ITMNO)=UBTL
+      ELSEIF(LASTOUT(IOPTLP).EQ.0)THEN
+        BDATA(IPCMP,ITMNO)=UBTL
+      ELSE
+        BDATA(IPCMP,ITMNO)=STATICV
+      ENDIF
+
+C Trace output.
+ 9595 IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0)THEN
+         CALL DAYCLK(IDYP,PTIMEF,ITU)
+         WRITE(ITU,*) ' NSINC = ',nsinc,         
+     &                ' CDATA = ',cdata(ipcmp,ipcvr)
+         write(itu,*) ' Leaving subroutine PCL15'
+      ENDIF
+
+      RETURN
+      END
+
+C ******************** PCL16 ********************
+
+C Outside temperature compensation controller
+
+      SUBROUTINE PCL16
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/PTIME/PTIMEP,PTIMEF
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      common/cctlnm/ctldoc,lctlf
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+
+      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
+     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
+     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
+     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
+      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/LOCAL1/ISET,PHIMAX
+      dimension ICTLR(4),LOGIC(4)
+      logical ctrld(4)
+      CHARACTER ctldoc*248,LCTLF*72
+      
+C Fatal error test.
+      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.8)THEN
+         CALL EDISP(iuout,
+     &    ' PCL16: fatal error -> too few misc. data items')
+         CALL EPWAIT
+         CALL EPAGEND
+         STOP
+      ENDIF
+
+      ALPHA=PMISCD(ICFP,IDTYPP,IPERP,2)
+      BETA=PMISCD(ICFP,IDTYPP,IPERP,3)
+      GAMMA=PMISCD(ICFP,IDTYPP,IPERP,4)
+      TRSPT1=PMISCD(ICFP,IDTYPP,IPERP,5)
+      TRSPT=PMISCD(ICFP,IDTYPP,IPERP,6)
+      TFSMAX=PMISCD(ICFP,IDTYPP,IPERP,7)
+      TFSMIN=PMISCD(ICFP,IDTYPP,IPERP,8)
+      IPCMP=IPAN(ICFP,2)
+      ITMNO=PMISCD(ICFP,IDTYPP,IPERP,9)
+      JPCOMP=IPSN(ICFP,2)
+      INOD1=NPCDAT(JPCOMP,9)
+      TRS=CSVP(INOD1,1)
+      IOPTLP=NINT(PMISCD(ICFP,IDTYPP,IPERP,10))
+      STATICV=PMISCD(ICFP,IDTYPP,IPERP,11)
+
+C Outside Temperature Compensation for type 4 control
+      UBTL=TRSPT1+BETA*(TRSPT1-TFP)+ALPHA+GAMMA*(TRSPT-TRS)
+      UBTLj=TRSPT1+BETA*(TRSPT1-TFP)+ALPHA+GAMMA*(TRSPT-TRS)
+      IF(UBTL.GT.TFSMAX)UBTL=TFSMAX
+      IF(UBTL.LT.TFSMIN)UBTL=TFSMIN
+      IF(ISET.EQ.0)GOTO 235
+      IF(IOPTLP.LE.0)THEN
+        BDATA(IPCMP,ITMNO)=UBTL
+      ELSEIF(LASTOUT(IOPTLP).EQ.0)THEN
+        BDATA(IPCMP,ITMNO)=UBTL
+      ELSE
+        BDATA(IPCMP,ITMNO)=STATICV
+      ENDIF
+c      write(6,*)'ubtl,ubtlj',ubtl,ubtlj,BDATA(IPCMP,ITMNO)
+
+C Trace output.
+ 235  IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0)THEN
+         CALL DAYCLK(IDYP,PTIMEF,ITU)
+         WRITE(ITU,*) ' NSINC = ',nsinc,         
+     &                ' CDATA = ',cdata(ipcmp,ipcvr)
+         write(itu,*) ' Leaving subroutine PCL16'
+      ENDIF
 
       RETURN
       END

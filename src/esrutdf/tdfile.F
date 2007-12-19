@@ -842,7 +842,7 @@ C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
 
       CHARACTER AFIL*72,FSTR*80,HDR*12,tdaide*72
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,delim*1
-      CHARACTER TDFDES*32,TMAT*16,tab*1,msgl2*48,louts*124
+      CHARACTER TDFDES*32,TMAT*16,tab*1,msgl2*72,louts*124
 
       tab=','
       HDR  ='ASCIITDF3'
@@ -864,8 +864,10 @@ C If not already opened free unit and check if file exists.
       CALL ERPFREE(iafil,ISTAT)
       CALL EFOPSEQ(iafil,AFIL,4,IER)
       IF(ier.ne.0)THEN
-        msgl2=' error creating ASCII TDF file.'
-        CALL USRMSG(' ',msgl2,'W')
+        write(msgl2,'(3a)') 'temporal information ',AFIL(1:24),'.'
+        CALL USRMSG(
+     &    'There was an error creating the file which holds the',
+     &    msgl2,'W')
         IER=1
         RETURN
       ENDIF

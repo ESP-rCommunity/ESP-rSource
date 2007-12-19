@@ -1554,7 +1554,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1577,7 +1577,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1600,7 +1600,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1623,7 +1623,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1646,7 +1646,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default

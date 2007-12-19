@@ -25,8 +25,11 @@ C Where esp-r environment variables at initial scan are held.
       character esprc*144
 
 C parameters for browsing files (e.g. as used in esrucom/filelist.F)
-C MFFOLD - (integer) number of files remembered in a folder.
+C MFFOLD - (integer) number of files remembered in a folder. Changes
+C to this parameter should also be reflected in the size of the
+C buffers and loop limits in lib/esru_nox.c and lib/esru_x.c functions
+C getfilelist_.
       integer MFFOLD
-      parameter (MFFOLD=60)
+      parameter (MFFOLD=100)
 
 C end of espriou.h

@@ -474,7 +474,7 @@ C Only ask these questions if the source file exists.
 
 C We have all of the directives, do the import.
           call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
-     &      itrc,ier)
+     &      itrc,'-',ier)
         endif
         if(igu.eq.1.or.igu.eq.2.or.igu.eq.5)then
 
@@ -601,7 +601,7 @@ C Nothing selected treat this as a return state.
           idest=icomp
           act='allcas'
           itrc=1
-          call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
+          call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,'-',ier)
 
 C Remind users to check their data.
       h(1)='An automated process has been used to manage the imported'
@@ -1492,7 +1492,7 @@ C Should only ask users these questions if the source file has been found.
 
 C We have all of the directives, do the import.
           call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
-     &      itrc,ier)
+     &      itrc,'-',ier)
         endif
       elseif (IVERT.EQ.(MVERT-4)) then
 
@@ -2097,6 +2097,7 @@ C   represents the same volume flow rate.
 C sfile (char*(*)) name of operations file outwith the model which
 C   is used if isource is zero.
 C itrc - if zero then work silently.
+C act = '-' for normal, 's' for silent.
 
 C << issue to be resolved later...if the user copies a pattern and
 C << later on revises the zone geometry this might imply that a
@@ -2104,7 +2105,7 @@ C << different flow rate is required. Do we need to remember the
 C << initial intent to guide later revisions?
 
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
-     &  itrc,ier)
+     &  itrc,act,ier)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -2149,6 +2150,7 @@ C Scratch copy of air flow pattern from an operations file.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
+      character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -2275,7 +2277,8 @@ C then clear casual gain data structure and create a new file.
           return
         endif
       else
-        call edisp(iuout,'Destination operation file not found.')
+
+C IF asked to copy all then 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(GFILE,'(2a)') 
      &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
@@ -2284,11 +2287,16 @@ C then clear casual gain data structure and create a new file.
      &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
         endif
         write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
-        h(1)='This is the suggested name for the file that will'
-        h(2)='hold the imported air flow schedules data. '
-        CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-     &    ' ',72,GFILE,'new operations file',IER,2)
-        LPROJ(idest)=ltmp
+        if(act(1:1).eq.'s')then
+          LPROJ(idest)=ltmp
+        else
+          call edisp(iuout,'Destination operation file not found.')
+          h(1)='This is the suggested name for the file that will'
+          h(2)='hold the imported air flow schedules data. '
+          CALL EASKS(ltmp,' New zone operations file: (confirm) ',
+     &      ' ',72,GFILE,'new operations file',IER,2)
+          LPROJ(idest)=ltmp
+        endif
 
 C And any new file will be in the sorted format.
         ip3ver=1
@@ -3818,7 +3826,7 @@ C User should only get to this point if there is a source file to use.
           idest=icomp
           act='allcas'
           itrc=1
-          call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
+          call IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,'-',ier)
 
 C Remind users to check their data.
       h(1)='An automated process has been used to manage the imported'
@@ -4185,6 +4193,7 @@ C If silent is true then use icgs & icgf parameters.
       subroutine EDCASGN(ICOMP,ICGT,IDT,IPER,silent,icgs,icgf)
 #include "building.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -4208,7 +4217,7 @@ C Base area for zones.
       character OUTS*124,hold*24,h*72
 
       integer IV,ipft,IPHAST  ! for local editing.
-      real pft,pwrt,bvoltt,xfla   ! for local editing.
+      real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -4247,6 +4256,18 @@ C Ask for start and finish times.
       ICGS=IVS
       ICGF=IVF
 
+C Warn user if the zone base area is still zero.
+      call eclose(ZBASEA(ICOMP),0.0,0.01,close)
+      if(close)then
+        call edisp(iuout,
+     &    'Zone base area is ~zero so 1m^2 assumed.')
+        zb=1.0
+      else
+        zb=ZBASEA(ICOMP)
+        write(outs,'(a,f7.3)') 'The current zone base area is ',zb
+        call edisp(iuout,outs)
+      endif
+
 C Ask for sensible and latent gain.
 C Can be specified as: W, W/obj, W/m^2, m^2/obj
       h(1)='A gain can be specified as:'
@@ -4265,8 +4286,7 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
 
 C Gain as W - require gain only.
  20     if (ICGT.lt.-1) then
-          write (HOLD,'(2f8.1,a)') CMGS*real(ZBASEA(ICOMP)),
-     &                           CMGL*real(ZBASEA(ICOMP)),'  '
+          write (HOLD,'(2f8.1,a)') CMGS*zb,CMGL*zb,'  '
         else
           write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
         endif
@@ -4284,8 +4304,7 @@ C Gain as W - require gain only.
 
 C Gain as W/m^2 - require gain per square meter.
         if (ICGT.gt.0) then
-          write (HOLD,'(2f8.1,a)') CMGS/real(ZBASEA(ICOMP)),
-     &                           CMGL/real(ZBASEA(ICOMP)),'  '
+          write (HOLD,'(2f8.1,a)') CMGS/zb,CMGL/zb,'  '
         else
           write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
         endif
@@ -4297,8 +4316,8 @@ C Gain as W/m^2 - require gain per square meter.
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
         if (ICGT.eq.1) then
-          CMGS=XSEN*ZBASEA(ICOMP)
-          CMGL=XLAT*ZBASEA(ICOMP)
+          CMGS=XSEN*zb
+          CMGL=XLAT*zb
         else
           if (ICGT.gt.1) ICGT=ICGT*(-1)
           CMGS=XSEN
@@ -4355,8 +4374,8 @@ C If user cancels go back to initial question.
             CMGS=FLA
             CMGL=0.   ! Why is CMGL set to zero?
           else
-            write (HOLD,'(2f8.1,a)') CMGS/(ZBASEA(ICOMP)/FLA),
-     &                             CMGL/(ZBASEA(ICOMP)/FLA),'  '
+            write (HOLD,'(2f8.1,a)') CMGS/(zb/FLA),
+     &                               CMGL/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,1)
@@ -4365,8 +4384,8 @@ C If user cancels go back to initial question.
             call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
             if (IER.ne.0) goto 50
             if (ICGT.gt.1) ICGT=ICGT*(-1)
-            CMGS=XSEN*ZBASEA(ICOMP)/FLA
-            CMGL=XLAT*ZBASEA(ICOMP)/FLA
+            CMGS=XSEN*zb/FLA
+            CMGL=XLAT*zb/FLA
           endif
         elseif(ieri.eq.-3)then
           goto 10
@@ -4769,7 +4788,7 @@ C IMPORTZCASG - import a casual gain regime from zone isource to
 C zone idest based on act and iwatt
 C act (8 char) = 'allcas' copies all casual gain types
 C       descriptions (this will need a QA by the user in case of conflicts).
-C act = ??
+C actcas = ??
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
 C   e.g. 123W in source zone is also 123W in destination zone.
@@ -4780,6 +4799,7 @@ C   267W in a 5.0m^2 base zone.
 C sfile (char*(*)) is the name of operations file outwith the model
 C   which is used is isource is zero.
 C itrc - if zero then work silently.
+C act = '-' normal actions, 's' silent actions.
 
 C This subroutine does not alter the air flow schedules in the
 C destination zone, only the casual gains.
@@ -4789,7 +4809,8 @@ C << later on revises the zone geometry this might imply that a
 C << different flow rate is required. Do we need to remember the
 C << initial intent to guide later revisions?
 
-      subroutine IMPORTZCASG(isource,idest,act,iwatt,sfile,itrc,ier)
+      subroutine IMPORTZCASG(isource,idest,actcas,iwatt,sfile,itrc,
+     &  act,ier)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -4857,7 +4878,9 @@ C Storage arrays for weekdays, saturdays, sundays
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character lodlabel*6,lodlabelc*6
-      character zname*12,zdesc*64,fs*1,GFILE*72,act*8,iwatt*8
+      character zname*12,zdesc*64,fs*1,GFILE*72,iwatt*8
+      character actcas*8
+      character act*1   ! '-' normal, 's' silent
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL XST,unixok,dok,ok
 
@@ -5023,11 +5046,15 @@ C name based on the zone name.
      &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
         endif
         write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
-        h(1)='This is the suggested name for the file that will'
-        h(2)='hold the imported casual gain data. '
-        CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-     &    ' ',72,GFILE,'new operations file',IER,2)
-        LPROJ(idest)=ltmp
+        if(act(1:1).eq.'s')then
+          LPROJ(idest)=ltmp
+        else
+          h(1)='This is the suggested name for the file that will'
+          h(2)='hold the imported casual gain data. '
+          CALL EASKS(ltmp,' New zone operations file: (confirm) ',
+     &      ' ',72,GFILE,'new operations file',IER,2)
+          LPROJ(idest)=ltmp
+        endif
 
 C This subroutine does not deal with importing air schedules or
 C controls so, in the case of a new file ensure nothing but a default
@@ -5046,7 +5073,7 @@ C And any new file will be in the sorted format.
       endif
 
 C Copy the local array data into the common blocks overwriting
-C the data implied by 'act'. Also act on the iwatt directive.
+C the data implied by 'actcas'. Also act on the iwatt directive.
 C Note: if the casual gain type is negative then the units are
 C already per m2 so no need for conversion.  If isource is zero
 C then we do not know the ratio set to 1.0 and inform user.
@@ -5072,7 +5099,7 @@ C then we do not know the ratio set to 1.0 and inform user.
       else
         ratioarea=1.0
       endif
-      if(act(1:7).eq.'allcas ')then
+      if(actcas(1:7).eq.'allcas ')then
         ielf(idest)=ielfc
         NCAS1=NCAS1C
         nel1=nel1c
@@ -5153,23 +5180,29 @@ C then we do not know the ratio set to 1.0 and inform user.
 C << could also offer this copy process when importing air flow
 C << patterns (however it would probably work better to have a
 C << separate documentation string for air flows and casual gains.
-        call edisp(iuout,' ')
-        call edisp(iuout,' Current operation notes:')
-        call edisp248(iuout,oprdesc,80)
-        call edisp(iuout,' ')
-        call edisp(iuout,' Source operation notes:')
-        call edisp248(iuout,oprdescc,80)
-        call edisp(iuout,' ')
-        dok=.true.
-        call askok('Use the source documentation?',' ',OK,DOK,0)
-        if(ok) oprdesc=oprdescc
+        if(act(1:1).eq.'-')then
+          call edisp(iuout,' ')
+          call edisp(iuout,' Current operation notes:')
+          call edisp248(iuout,oprdesc,80)
+          call edisp(iuout,' ')
+          call edisp(iuout,' Source operation notes:')
+          call edisp248(iuout,oprdescc,80)
+          call edisp(iuout,' ')
+          dok=.true.
+          call askok('Use the source documentation?',' ',OK,DOK,0)
+          if(ok) oprdesc=oprdescc
+        elseif(act(1:1).eq.'s')then
+          oprdesc=oprdescc
+        endif
 
-        H(1)='Notes (<248 char) for schedules of zone air flow and' 
-        H(2)='casual gains can be included in the model. Use this'
-        H(3)='facility to clarify what is happening in the zone.'
-        CALL EASKS248(oprdesc,'Operations notes (please edit):',
-     &    ' ',72,'base_case','operation notes',IER,3)
-        if(oprdescc(1:2).ne.'  ')oprdesc=oprdescc
+        if(act(1:1).eq.'-')then
+          H(1)='Notes (<248 char) for schedules of zone air flow and' 
+          H(2)='casual gains can be included in the model. Use this'
+          H(3)='facility to clarify what is happening in the zone.'
+          CALL EASKS248(oprdescc,'Operations notes (please edit):',
+     &      ' ',72,'base_case','operation notes',IER,3)
+          if(oprdescc(1:2).ne.'  ')oprdesc=oprdescc
+        endif
         if(isource.eq.0)then
           lodlabel(idest,1)=lodlabelc(1)
           lodlabel(idest,2)=lodlabelc(2)
@@ -5190,12 +5223,14 @@ C << separate documentation string for air flows and casual gains.
       endif
 
 C If the user has asked for verbosity list out the result.
-      if(itrc.gt.0)then
-        call edisp(iuout,' ')
-        call edisp(iuout,'Updated data.... ')
-        call edisp(iuout,' ')
-        CALL CASINF(idest,iuout)
-        call edisp(iuout,' ')
+      if(act(1:1).eq.'-')then
+        if(itrc.gt.0)then
+          call edisp(iuout,' ')
+          call edisp(iuout,'Updated data.... ')
+          call edisp(iuout,' ')
+          CALL CASINF(idest,iuout)
+          call edisp(iuout,' ')
+        endif
       endif
 
 C Because there is a small chance that the source file lacked fully
@@ -5205,14 +5240,18 @@ C sorted casual gains (e.g. was an older file) force a sorting.
       call edisp(iuout,'Sorting imported casual gains...completed.')
 
 C Save the destination operation file.
-      call usrmsg(
-     &  'Updating model to reflect changes',
-     &  'in destination operation data or file name...','-')
+      if(act(1:1).eq.'-')then
+        call usrmsg(
+     &    'Updating model to reflect changes',
+     &    'in destination operation data or file name...','-')
+      endif
       CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
-      CALL EMKCFG('-',ier)
-      call usrmsg(
-     &  'Updating model to reflect changes',
-     &  'in destination operation data or file name...done.','-')
+      CALL EMKCFG('s',ier)
+      if(act(1:1).eq.'-')then
+        call usrmsg(
+     &    'Updating model to reflect changes',
+     &    'in destination operation data or file name...done.','-')
+      endif
 
       return
       end

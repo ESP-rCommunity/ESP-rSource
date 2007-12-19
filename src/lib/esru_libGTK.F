@@ -102,6 +102,7 @@ C  getsecs: Get computer clock seconds.
 C  EGETW:  Finds first word after pos k in a string (' ' ',' '|' or tab separated).
 C  iEGetArrW: integer function that breaks a string into an array.
 C  EGETP:  Finds first phrase after pos k in a string (tab separated).
+C  EGETDQ:  Finds first quoted phrase after pos k in a string (delimeter separated).
 C  EGETWI: As EGETW for an integer with range checking & error messages.
 C  EGETWR: As EGETW for a real with range checking & error messages.
 C  EGETWRA: Recovers (IRVA) reals of real array (RVA) from an ASCII file.
@@ -6911,6 +6912,105 @@ C comma is found.
       endif
       GOTO 100
    1  write(6,*) 'EGETP: error writing warning re: ',STRING
+
+      END
+
+C ***************** EGETDQ
+C EGETDQ gets first quoted PHRASE after position K from the STRING of
+C characters. Phrases are separated by tabs or commas. Provides a warning
+C message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'.  The string returned has the quotes removed.
+C Note it uses an internal string buffer which assumes that the
+C phrase is less than 248 characters long.
+      SUBROUTINE EGETDQ(STRING,K,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) PHRASE, STRING, MSG
+      CHARACTER ACT*1,A*1,B*1,loutstr*124
+      character dq*1,sqleft*1,sqright*1
+      character buffer*248
+      integer lnofstr
+
+      dq = char(34)  ! double quote
+      sqleft = char(96)  ! single quote left
+      sqright = char(39)  ! single quote right
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      ier=0
+      PHRASE=' '
+      LS=LEN(STRING)
+      LW=LEN(PHRASE)
+      L=0
+
+C Start by skipping blanks and tabs before the PHRASE.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+
+C Copy PHRASE from STRING, character by character until tab or a
+C comma is found.
+   20 L=L+1
+      IF(L.GT.LW) GOTO 100
+      PHRASE(L:L)=A
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      GOTO 20
+
+  100 continue
+
+C Test if the first and last characters are double or single quotes
+      A=PHRASE(1:1)
+      B=PHRASE(L:L)
+      if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+        if(B.eq.dq.or.B.eq.sqright.or.B.eq.sqleft)then
+          lnofstr=lnblnk(PHRASE)-1
+          write(buffer,'(a)') PHRASE(2:lnofstr)
+          write(phrase,'(a)') buffer(1:lnblnk(buffer))
+        endif
+      endif
+      RETURN
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILUREW: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+   1  write(6,*) 'EGETDQ: error writing warning re: ',STRING
 
       END
 

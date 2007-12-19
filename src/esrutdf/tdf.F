@@ -463,7 +463,7 @@ C Set the menu control text.
       if(OPTDF)then
         ITEM(MITEM-5)  ='* add, delete, copy temporal entry     '
       else
-        ITEM(MITEM-5)  ='*                                      '
+        ITEM(MITEM-5)  ='* add temporal entry                   '
       endif
       IF(ITRC.EQ.0)THEN
         ITEM(MITEM-4)='r Reporting >> OFF                     '
@@ -558,6 +558,7 @@ C File not found so offer option to create a minimal file.
 
 C Write out an equivalent ascii file.
             call usrmsg(' ','Updating the ascii file...','-')
+            write(ltdfa,'(a)') tfile(1:lnblnk(tfile))
             call ewtdfa(itrc,ltdfa,iutdfa,0,ier)
             if(ier.eq.0)then
               write(msgl2,'(2a)') ltdfa(1:lnblnk(ltdfa)),
