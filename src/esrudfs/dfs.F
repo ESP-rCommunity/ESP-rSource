@@ -728,8 +728,8 @@ C Graphs are defined in cfmatl.F.
           ENDIF
         ELSEIF(INO1.EQ.4)THEN
 
-C Write TECPLOT file.
-          call TECPLOTEND
+C Write TECPLOT file for each timestep.
+          call TECPLOTEND(TIM1)
         ELSEIF(INO1.EQ.5)THEN
 
 C Visualise flow.

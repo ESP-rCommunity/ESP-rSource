@@ -303,8 +303,10 @@ C ******** SCANall- scans (3D) arrays
       return
       end
 
-C*****************
-      subroutine tecplotend
+C ******** tecplotend - output of tecplot-readable text files
+Cag@241106
+C Change call to call with parameter "IFRAME" which is the time step!
+      subroutine tecplotend(IFRAME)
 #include "cfd.h"
 
       COMMON/FILEP/IFIL
@@ -324,31 +326,52 @@ C*****************
       COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
      1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
 
+      integer IFRAME
+
       character lflname*72,tfile*72
 
+Cag@241106
+CC      write(*,*) 'TECPLOTEND:IFRAME = ',IFRAME
+C Set filename to include current "frame number" aka. time step
+      IF (IFRAME.le.9) THEN
+        write(lflname,300) IFRAME
+      ELSE IF (IFRAME.le.99) THEN
+        write(lflname,301) IFRAME
+      ELSE
+        write(lflname,302) IFRAME
+      ENDIF
 
-C Ask for file name.
-      tfile='TECend.DAT'
-      lflname='TECend.DAT'
-      CALL EASKS(lflname,'TECPLOT file name?','  ',
-     &                           72,tfile,'TECPL file',IER,0)
+C@ag241106
+C removed EASKS to avoid filename query for time series:
       IUNIT=IFIL+1
       call EFOPSEQ(IUNIT,lflname,4,ier)
 
 C Heading
       write(IUNIT,'(2a)') 'VARIABLES = ', 
      &      '"XP","YP","ZP","Uf","Vf","Wf","Tf","LMA","CTM1","CTM2"'
-      write(IUNIT,'(3(a,i5))')'ZONE F=POINT, I=',ni,', J=',nj,', K=',nk
-     
-      do 100 k=1,nk
-        do 100 j=1,nj
-          do 100 i=1,ni
+Cag@241106
+C extended write format command
+      write(IUNIT,'(5(a,i5))') 'ZONE T="Timestep ',IFRAME, 
+     &      '", STRANDID=1, SOLUTIONTIME=',IFRAME, 
+     &      ', I=',(ni-2),', J=',(nj-2),', K=',(nk-2)
+Cag@241106 increased loop start to "2" and reduced loop runs by "-1". 
+C          This is not checked extensively, however aleviates the 
+C          problem with the output of "zero" cells to tecplot files.    
+      do 100 k=2,nk-1
+        do 100 j=2,nj-1
+          do 100 i=2,ni-1
             write(IUNIT,200)XP(I),YP(J),ZP(K),
      &        Uf(I,J,K),Vf(I,J,K),Wf(I,J,K),Tf(I,J,K),AGEf(I,J,K),
      &        POLCONCf(1,I,J,K),POLCONCf(2,I,J,K)
  100  continue                      
       
  200  format(10E14.6)
+Cag@241106
+C Added formats "300" to "302"
+ 300  format('TECp_',I1,'.dat')
+ 301  format('TECp_',I2,'.dat')
+ 302  format('TECp_',I3,'.dat')
+
       call ERPFREE(IUNIT,ISTAT)
       
       return

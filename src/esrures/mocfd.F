@@ -388,7 +388,8 @@ C redefine name of image.
           do 50 IFRAME=1,NCTS
             call RDCFDAT(IFRAME)
             if (imgtyp.eq.4) then
-              call tecplotend
+CC              write(*,*) 'MCFDM:IFRAME= ',IFRAME
+              call tecplotend(IFRAME)
             else
               call VISMAK(ICOMP,IFRAME)
             endif
