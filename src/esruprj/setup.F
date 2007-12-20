@@ -53,6 +53,7 @@ C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
       character LFIL*96,H*72,longtfile*144,llitem*144,longtfiledos*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
+      character menu*32,doc*248,ureturn*8
 
 C Set initial states to false and clear text buffers.
       MODSIT=.false.
@@ -685,6 +686,18 @@ C Toggle file format upgrade opinion.
 
 C Test button for silent zone read testing.
 
+C Add a choice point here - one to carry on with the current model,
+C one to start a fresh model, one to just list the details of the
+C silent file.
+        h(1)='ESp-r can process a file with so-called silent'
+        h(2)='instructions to create one or more zones with'
+        h(3)='minimal user intervention. '
+        h(4)=' '
+        h(5)='You can ask for a synopsis of the file or process'
+        h(6)='the information in the file. '
+        CALL EASKABCD(' Silent file options',' :',
+     &      'retrieve description','process data','XX','continue',IW,6)
+
 C Allow user to edit a file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
         LFIL=' '
@@ -704,8 +717,22 @@ C If vi then spawn a new window to do the editing in.
           write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
         endif
         IUNIT=IFIL+1
-        call silentread(iunit,longtfile,ier)
-        return
+        if(IW.EQ.1)then
+          call silentread(iunit,longtfile,'?',menu,doc,ureturn,ier)
+          call edisp(iuout,ureturn)
+          call edisp(iuout,menu)
+          call edisp248(iuout,doc,80)
+        elseif(IW.eq.2)then
+          call silentread(iunit,longtfile,'-',menu,doc,ureturn,ier)
+          call edisp(iuout,ureturn)
+          call edisp(iuout,menu)
+          call edisp248(iuout,doc,80)
+          return
+        elseif(IW.eq.3)then
+          continue
+        elseif(IW.eq.4)then
+          continue
+        endif
       ELSEIF(INO1.EQ.13)THEN
 
 C User asked for help.

@@ -251,7 +251,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15, indxcmt*24
       character*10 wkd1, wkd2
-      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act*1
+      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER dmdsdesc*248,bdmds*72,outs*124
@@ -261,6 +261,8 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character calename*32,calentag*12,calendayname*32,loutc*96
       character LWndSupp*72
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
+
+      character act*1  ! a '-' is normal use, a 's' is silent
 
       dimension iav(60)
 
@@ -343,22 +345,25 @@ C Also check about connections file.
 
 C Test to see if model needs to be updated from registration
 C to some other condition.  If first zones added the check where to
-C put the connections.
+C put the connections. If act is '-' then ask, if act is 's' then
+C take the default name for the connections file.
       if(INDCFG.EQ.0)then
         if(NCOMP.eq.1.and.LGEOM(1)(1:4).ne.'dumm')then
           INDCFG=1
 C          call edisp(iuout,'Upgrading from registration to zone.')
           write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
-  289     H(1)='The surface topology of the model is held in'
-          H(2)='a connections file.'
-          DCNN='model.cnn'
-          ltmp=LCNN
-          CALL EASKS(ltmp,' Connections file name?',' ',72,
-     &      DCNN,'system connx file name',IER,2)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LCNN=ltmp
-          else
-            GOTO 289
+          if(act(1:1).eq.'-')then
+  289       H(1)='The surface topology of the model is held in'
+            H(2)='a connections file.'
+            DCNN='model.cnn'
+            ltmp=LCNN
+            CALL EASKS(ltmp,' Connections file name?',' ',72,
+     &        DCNN,'system connx file name',IER,2)
+            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+              LCNN=ltmp
+            else
+              GOTO 289
+            endif
           endif
           if(LPNF(1:4).ne.'UNKN'.and.LPNF(1:2).ne.'  ')then
             INDCFG=3
@@ -810,6 +815,41 @@ C Annual ipv report (if included).
      &      sipvres(1:lnblnk(sipvres))
         endif
       endif
+
+C Building and client address tokens (as in UK national calculation method).
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &  '# Address of building and owner'
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*P-NAME ',
+     &  pjname(1:lnblnk(pjname))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-ADDRESS ',
+     &  baddress(1:lnblnk(baddress))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-CITY ',
+     &  bcity(1:lnblnk(bcity))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-POSTCODE ',
+     &  buildingPC(1:lnblnk(buildingPC))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-NAME ',
+     &  ownername(1:lnblnk(ownername))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-ADDRESS ',
+     &  owneraddr(1:lnblnk(owneraddr))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-CITY ',
+     &  ownercity(1:lnblnk(ownercity))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-POSTCODE ',
+     &  ownerPC(1:lnblnk(ownerPC))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-TELEPHONE ',
+     &  ownertel(1:lnblnk(ownertel))
+
+C Write out contact details of simulation team.
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-NAME ',
+     &  certifname(1:lnblnk(certifname))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-ADDRESS ',
+     &  certaddress(1:lnblnk(certaddress))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-CITY ',
+     &  certcity(1:lnblnk(certcity))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-POSTCODE ',
+     &  certPC(1:lnblnk(certPC))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-TELEPHONE ',
+     &  certTel(1:lnblnk(certTel))
+
 
 C Write project log file related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* PROJ LOG'

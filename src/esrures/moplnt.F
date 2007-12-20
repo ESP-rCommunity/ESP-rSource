@@ -1836,7 +1836,7 @@ C Write graph head and set up axis positions and draw.
         endif
 
         call AXISPOS
-        call AXISDRW(TSTART-1.0,TFINSH,ALABEL,'P')
+        call AXISDRW(TSTART-1.0,TFINSH,ALABEL,'-')
       endif
 
 C Recover and plot data. If listing to file or text feedback then

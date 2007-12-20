@@ -117,7 +117,7 @@ C Set existance of a zone construction file to false.
 
       WRITE(outs,248)LGEOM(ICOMP)(1:LNBLNK(LGEOM(ICOMP)))
   248 FORMAT(' Scanning : ',A)
-      CALL USRMSG(' ',outs,'-')
+      if(itrc.gt.1) CALL USRMSG(' ',outs,'-')
 
 C Read in the related geometry file into common.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -1288,8 +1288,9 @@ C silly name open it and inform.
             goto 98
           else
             CALL EFOPSEQ(IFU,LTWIN(ICOMP),4,IER)
-            call edisp(iuout,' Creating a new TMC file...')
-            call edisp(iuout,LTWIN(ICOMP))
+C Debug
+C            call edisp(iuout,' Creating a new TMC file...')
+C            call edisp(iuout,LTWIN(ICOMP))
           endif
         endif
       ELSE

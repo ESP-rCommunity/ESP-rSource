@@ -516,7 +516,7 @@ C      ENDIF
 C Check for max iterations reached, if so query user about 
 C exporting data to a plot file. 
       IF(NITER.EQ.MAXIT) GOTO 302
-      IF(SORCE.GT.SORMAX.OR.NITER.LT.2) GOTO 300 
+      IF(SORCE.GT.SORMAX.OR.NITER.LT.3) GOTO 300 
   302 continue
       
 C Check convergence.

@@ -59,6 +59,7 @@ C in a new model file.
       SUBROUTINE CLRPRB
 #include "building.h"
 #include "cfd.h"
+#include "sbem.h"
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/AFNZN/zmfn1,zmfn2
@@ -515,6 +516,23 @@ C Clear the linear thermal bridges variables
           totheatloss(ix) = 0.0
     2   CONTINUE
     3 CONTINUE
+
+C Clear sbem string arrays (from sbem.h).
+      pjname=' not yet defined'
+      baddress=' not yet defined'
+      bcity=' not yet defined'
+      buildingPC =' not yet defined'
+      ownername=' not yet defined'
+      ownertel=' not yet defined'
+      owneraddr=' not yet defined'
+      ownercity=' not yet defined'
+      ownerPC=' not yet defined'
+      certifname=' not yet defined'
+      certTel=' not yet defined'
+      certaddress=' not yet defined'
+      certcity=' not yet defined'
+      certPC=' not yet defined'
+
       return
       end
 

@@ -1,11 +1,11 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs an ESP-r 11.3 X11 or GTK distribution on"
+echo "This script installs an ESP-r 11.4 X11 or GTK distribution on"
 echo "a Mac OSX 10.4+ computer which already has the X11, developers"
 echo "environment and the fink environment setup and running. On a"
 echo "PPC Mac this should run natively. On an Intel based Mac it"
-echo "should run in emulation mode."
+echo "should run in emulation mode.  NOT TESTED ON OSX 10.5"
 echo " "
 echo "It includes ESP-r executables, example models and standard"
 echo "databases as well as some helper applications. "
@@ -19,7 +19,7 @@ echo "/usr/esru if it does not already exist."
 echo " "
 
 DSP1=" \n
- You should had administrative access or the installer might not work.\n"
+ You should have administrative access or the installer might not work.\n"
 DSP2=" \n
  Hit return to start reading the licence\n
  \n"
@@ -151,10 +151,10 @@ fi
 cd /opt/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  sudo zcat $ISD/esp-r_X11_11.3_osx.tar.gz | tar xf - 
+  sudo zcat $ISD/esp-r_X11_11.4_osx.tar.gz | tar xf - 
 elif [[ $which = 'b' ]] ; then
   echo " Extracting GTK ESP-r distribution ..."
-  sudo zcat $ISD/esp-r_GTK_11.3_osx.tar.gz | tar xf -
+  sudo zcat $ISD/esp-r_GTK_11.4_osx.tar.gz | tar xf -
 fi
 echo " Extracting ESP-r distribution ...done."
 echo " "

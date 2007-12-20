@@ -42,6 +42,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "sbem.h"
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -189,13 +190,14 @@ C Remember if each zone is fully attributed.
       dimension areaskylt(MCOM),tranper(MCOM),skyper(MCOM)
       dimension wallper(MCOM),slproofper(MCOM),flatroofper(MCOM)
       dimension exposed(MCOM),vexposed(MCOM)
-      dimension items(24)
+      dimension items(25)
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
+      character LFIL*96,llitem*144    ! for editing the QA report file.
       character DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -278,7 +280,7 @@ C Setup the selection menu.
     3 INO=-4
       IER=0
       write(items(1),'(a)')  '1 browse folders '
-      write(items(2),'(2a)') '2 documentation: ',LPRJLG(1:15)
+      write(items(2),'(2a)') '2 model log file ',LPRJLG(1:15)
       items(3) ='3 graphing tool               '
       items(4) ='4 diagram editing tool        '
       items(5) ='5 image viewer                '
@@ -373,14 +375,15 @@ C Setup the selection menu.
         items(19)='m file names >> included'
       endif
       if(destination.eq.0)then
-        items(20)='> report to >> text feedback'
+        items(20)='> QA report to >> text feedback'
       elseif(destination.eq.1)then
-        items(20)='> report to >> text file'
+        items(20)='> QA report to >> text file'
       endif
-      items(21)  ='! generate report       '
-      items(22)  ='  ______________________'
-      items(23)  ='? help                  '
-      items(24)  ='- exit menu             '
+      items(21)  ='! generate QA report       '
+      items(22)  ='* edit the QA report       '
+      items(23)  ='  _________________________'
+      items(24)  ='? help                     '
+      items(25)  ='- exit menu                '
 
 C Help for menu.
       H(1)='Normally reports are generated from a standard pattern'
@@ -417,16 +420,19 @@ C Help for menu.
       h(32)='The primary use of this report is as an aide to check'
       h(33)='models and provide a text based synopsis of the model'
       h(34)='composition. '
+      h(35)=' '
+      h(36)='Once you generate a QA report file you can select the'
+      h(37)='`edit QA report` option and an editor will be launched.'
 
-      call emenu('Model reports',items,24,ino)
+      call emenu('Model reports',items,25,ino)
 
-      if(ino.eq.24)then
+      if(ino.eq.25)then
         if(changedit)then
           continue
         endif
         return
-      elseif(ino.eq.23)then
-        CALL PHELPD('QA overview',34,'-',0,0,IER)
+      elseif(ino.eq.24)then
+        CALL PHELPD('QA overview',37,'-',0,0,IER)
       elseif(ino.eq.1)then
 
 C << need to sort out changing to main project folder >>
@@ -548,7 +554,7 @@ C Execute figure tool.
         endif
       elseif(ino.eq.5)then
 
-C Execute image viewer (xv assumed).
+C Execute image viewer (get tool via prior scan of default file).
         if(fmtexe(1)(1:2).eq.'  ')then
           call usrmsg(
      &    'The external image tool has not be defined. See your',
@@ -835,6 +841,51 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
 
 C Generate the report based on current options.
         goto 55
+      elseif(ino.eq.22)then
+
+C If user just wrote to a file then allow browse and then
+C edit of that QA file.  Use file browser if in GTK mode.
+C If vi then spawn a new window to do the editing in.
+        H(1)='The QA report file can be edited using the current'
+        H(2)='defined text editor (as defined in the default file).'
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        write(LFIL,'(a)') xfile(1:96)
+        llitem=xfile
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LFIL,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'ASCII file name?',
+     &      ' ',144,'xxx.rep','ASCII file',IER,2)
+        else
+          CALL EASKF(LFIL,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 3  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
+        call runit(doit,tmode)
+
       else
 
 C Not one of the standard choices.
@@ -842,7 +893,7 @@ C Not one of the standard choices.
       endif
       goto 3
 
-C Generate the report.
+C Generate the QA report.
   55  call tstamp('>','PRJ: zone summary')
       call dstamp(dstmp)
       call edisp(itu,'Synopsis')
@@ -886,6 +937,40 @@ C Site information.
      &    ' and the ground reflectance is ',GREF,'.'
         call edisp248(itu,outs248,80)
         call edisp(itu,' ')
+
+C Print address for building and client.
+        if(siteinfo.eq.2)then
+          write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
+          call edisp(itu,outs)
+          write(outs,'(2a)')'Building address: ',baddress
+          call edisp(itu,outs)
+          write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+          call edisp(itu,outs)
+          write(outs,'(2a)')'Building Postcode: ',buildingPC  
+          call edisp(itu,outs)    
+          call edisp(itu,' ')
+          write(outs,'(2a)')'Building owner name: ',ownername
+          call edisp(itu,outs)   
+          write(outs,'(2a)')'Building owner telephone: ',ownertel
+          call edisp(itu,outs)   
+          write(outs,'(2a)')'Building owner address: ',owneraddr 
+          call edisp(itu,outs) 
+          write(outs,'(2a)')'Building owner city: ',ownercity 
+          call edisp(itu,outs) 
+          write(outs,'(2a)')'Building owner Postcode: ',ownerPC
+          call edisp(itu,outs)     
+          call edisp(itu,' ')
+          write(outs,'(2a)')'Simulationist name: ',certifname 
+          call edisp(itu,outs)     
+          write(outs,'(2a)')'Simulationist telephone: ',certTel 
+          call edisp(itu,outs)     
+          write(outs,'(2a)')'Simulationist address: ',certaddress   
+          call edisp(itu,outs)   
+          write(outs,'(2a)')'Simulationist city: ',certcity  
+          call edisp(itu,outs)    
+          write(outs,'(2a)')'Simulationist postcode: ',certPC  
+          call edisp(itu,outs)          
+        endif
 
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
@@ -1880,6 +1965,9 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
       if(destination.eq.1)then
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
         destination=0
+        call edisp(iuout,
+     &    'The new QA file can be edited via the `edit file` option.')
+        call edisp(iuout,' ')
       endif
       goto 3
 

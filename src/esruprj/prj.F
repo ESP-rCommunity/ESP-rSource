@@ -43,6 +43,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (SBEM database)
 C default file names for databases
+#include "espriou.h"
+C espriou.h provides currentfile, defdbfl exemfl.
       PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
@@ -86,7 +88,6 @@ C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options.
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -98,10 +99,6 @@ C Indicator of possible focus zone.
 
 C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
-
-C Where exemplars list and default db list are kept.
-      common/exemlst/exemlbl,exemfl
-      common/defdb/dfdblbl,defdbfl
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -164,13 +161,12 @@ C Name of current application
       character*72 LCFGF,H,LPRJLG
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character inf*144,inz*16,inzone*16,LCMDFL*144
+      character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
-      character path*72,upath*72,esprc*72,cfgroot*24,exemplar*144
+      character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
-      character exemlbl*20,exemfl*72,dfdblbl*20,defdbfl*72
       character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
@@ -184,7 +180,11 @@ C Name of current application
       CHARACTER dinstpath*48,dirpath*48
       character useraction*8  ! returned from exemplar access call.
 
-      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+C Passed parameters for pregist.
+      character root*24,mpath*72,folder*12,menu*32,doc*248
+
+C Returned parameters from silentread.
+      character theprimedirective*8
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -197,7 +197,10 @@ C Initialize variables and recover command line arguments.
       LIMIT =24
       IFIL=11
       iuj=IFIL+10
-      call parsfz(MODL,iappw,iappx,iappy,inf,inz)
+
+C Recover command line parameters (terminal, size, config file, zone
+C focus and actions arguments).
+      call parsfza(MODL,iappw,iappx,iappy,inf,inz,act)
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -362,14 +365,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1)then
-          call opencpw
-          call opensetup
-          call updwire(0)
-          call updcapt(1)
-          call updazi(1)
-        endif
+#ifdef X11
+        call opencpw
+C        call opentutorial
+        call opensetup
+        call updwire(0)
+        call updcapt(1)
+        call updazi(1)
+#endif
         call setzscale()
         nifgrey=0
         ncset=0
@@ -383,7 +386,9 @@ C Generate the version report.
       CALL ESPrVersion("summary")
 
 C Find the user's home folder then get user's custom settings
-C if defined.
+C if defined. If there is no .esprc file in the users home folder
+C then the esp-r install folders will be checked by scesprc and
+C esprc may be updated if the alternate version is found.
       call usrhome(upath)
       if(unixok)then
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
@@ -430,7 +435,7 @@ C Write header of the journal file and then close.
 C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
-      call escdef(dfdblbl,defdbfl,IFIL+5,IER)
+      call escdef(IFIL+5,IER)
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
@@ -445,6 +450,14 @@ C and determine if focus is a single zone.
         inzone=inz
       else
         inzone='ALL'
+      endif
+
+C If command line also included a file name after -act
+C then set inact.
+      if(act(1:2).ne.'  ')then
+        inact=act
+      else
+        inact='NONE'
       endif
 
 C Climate db is on channel IFIL (NB when not in use other binary
@@ -489,6 +502,35 @@ C Text/graphic feedback redirection on channel ifil +9
 
 C Project log.
       LPRJLG='job.notes'
+
+C If -actf was included in the command line then see if it
+C is a known command that can be acted on.
+      XST=.false.
+      if(inact(1:10).eq.'silentread')then
+
+C Check to see if the -file parameter is a high level silent input file
+C and if so do what it says.
+        if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LCMDFL,EXIST=XST)
+          if(XST)then
+            write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+            IUNIT=IFIL+1
+            call silentread(iunit,longtfile,'-',menu,doc,
+     &        theprimedirective,ier)
+            call edisp(iuout,theprimedirective)
+            call edisp(iuout,menu)
+            call edisp248(iuout,doc,80)
+            if(theprimedirective(1:3).eq.'new')then
+              call usrmsg('Processing of silent file complete.',
+     &          'Exiting from project manager','W')
+              CALL EPAGEND
+              STOP
+            else
+              goto 3
+            endif
+          endif
+        endif
+      endif
 
 C If an input file has been specified then load it.
       XST=.false.
@@ -899,7 +941,7 @@ C Call rexmpl to get the exemplar. If ier is set to 2 then the
 C user didn't pick anything. If useraction is set to 'browse' then
 C ensure the toggle is set accordingly.
               useraction = ' '
-              call rexmpl(IUF,exemfl,exemplar,useraction,ier)
+              call rexmpl(IUF,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -1055,7 +1097,11 @@ C the model should be updated.
 
 C Start new project, begin with registration.
         call tstamp('>','PRJ: beginning new model')
-        call pregist('i',ier)
+        root=' '
+        mpath=' '
+        folder=' '
+        menu=' '
+        call pregist('i',root,mpath,folder,menu,ier)
       ELSEIF(INO.EQ.10)THEN
 
 C Root name of the model.
@@ -1316,7 +1362,7 @@ C level).
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,tfile*72,ITEMS*36,H*72,key*1
+      character doit*248,tmode*8,tfile*72,ITEMS*34,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
@@ -1385,97 +1431,97 @@ C constructions are known.
         ITEMS(2)='  ___________________________ '
         M=2
       else
-        write(ITEMS(1),'(a,i2,a,i2,a)') 'a simulation presets (',isset,
+        write(ITEMS(1),'(a,i2,a,i2,a)')'a simulation presets (',isset,
      &    ' of',nsset,')'
-        write(ITEMS(2),'(a,a8)')  'b  set name: ',spfdescr(isset)
-        write(ITEMS(3),'(a,i4)')  'c  start-up days:',isstup
+        write(ITEMS(2),'(a,a8)')      'b set name: ',spfdescr(isset)
+        write(ITEMS(3),'(a,i4)')      'c start-up days:',isstup
         if(isbnstep.le.1)then
-          write(ITEMS(4),'(a,i3)')'d  zone timestep/h:',isbnstep
+          write(ITEMS(4),'(a,i2)')    'd zone timestep/h:',isbnstep
         else
           if(isavgh.eq.0)then
-            write(ITEMS(4),'(a,i3,a)')  'd  zone timestep/h:',isbnstep,
+            write(ITEMS(4),'(a,i2,a)')'d zone timestep/h:',isbnstep,
      &        ' each ts saved'
           else
-            write(ITEMS(4),'(a,i3,a)')  'd  zone timestep/h:',isbnstep,
+            write(ITEMS(4),'(a,i2,a)')'d zone timestep/h:',isbnstep,
      &        ' saved 1 ts/hr'
           endif
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          write(ITEMS(5),'(a,i3)')'e  plant timestep/(bldg ts):',
+          write(ITEMS(5),'(a,i2)')    'e plant timestep/(bldg ts):',
      &      ispnstep
         else
-          write(ITEMS(5),'(a)')   'e  plant timestep/(bldg ts): N/A'
+          write(ITEMS(5),'(a)')       'e plant timestep/(bldg ts): N/A'
         endif
-        write(ITEMS(6),'(a,i3)') 'f  result save level:',issave
+        write(ITEMS(6),'(a,i2)')      'f result save level:',issave
 
 C Display the simulation period.
         CALL EDAY(isstday(isset),isstmon(isset),ijdstart)
         call stdate(iyear,ijdstart,descra,descrst)
         CALL EDAY(isfnday(isset),isfnmon(isset),ijdfinish)
         call stdate(iyear,ijdfinish,descrb,descrfn)
-        write(ITEMS(7),'(4a)')'g  from: ',descrst,' - ',descrfn
+        write(ITEMS(7),'(4a)')        'g from: ',descrst,' - ',descrfn
         if(INDCFG.ne.2)then
-          write(ITEMS(8),'(a,a16)')'h  zone results: ',
+          write(ITEMS(8),'(a,a)')     'h zone results: ',
      &      sblres(isset)(1:16)
         else
-          write(ITEMS(8),'(a)')  '   zone results: N/A'
+          write(ITEMS(8),'(a)')       '  zone results: N/A'
         endif
         if(IAIRN.ge.1)then
-          write(ITEMS(9),'(a,a16)')'i  flow results: ',
+          write(ITEMS(9),'(a,a)')     'i flow results: ',
      &      sflres(isset)(1:16)
         else
-          write(ITEMS(9),'(a)')  '   flow results: N/A'
+          write(ITEMS(9),'(a)')       '  flow results: N/A'
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          write(ITEMS(10),'(a,a15)')'j  plant results: ',
+          write(ITEMS(10),'(a,a)')    'j plant results: ',
      &      splres(isset)(1:15)
         else
-          write(ITEMS(10),'(a)')  '   plant results: N/A'
+          write(ITEMS(10),'(a)')      '  plant results: N/A'
         endif
         if(ispmxist.gt.0)then
-          write(ITEMS(11),'(a)')  'k  : '
+          write(ITEMS(11),'(a)')      'k : '
         else
-          write(ITEMS(11),'(a)')  '   : N/A'
+          write(ITEMS(11),'(a)')      '  : N/A'
         endif
         if(MSTROK)then
-          write(ITEMS(12),'(a,a15)')'l  moist. results: ',
+          write(ITEMS(12),'(a,a)')    'l moist. results: ',
      &      smstres(isset)(1:15)
         else
-          write(ITEMS(12),'(a)')  '   moisture results: N/A'
+          write(ITEMS(12),'(a)')      '  moisture results: N/A'
         endif
         if(ientxist.gt.0)then
-          write(ITEMS(13),'(a,a15)')'m  elect. results: ',
+          write(ITEMS(13),'(a,a)')    'm elect. results: ',
      &      selres(isset)(1:15)
         else
-          write(ITEMS(13),'(a)')  '   electrical results: N/A'
+          write(ITEMS(13),'(a)')      '  electrical results: N/A'
         endif
         if(lnblnk(lipvdatf).eq.0)then
-          write(ITEMS(14),'(a)')  '   IPV report   : N/A'
+          write(ITEMS(14),'(a)')      '  IPV report   : N/A'
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          write(ITEMS(14),'(a)')  '   IPV report   : N/A'
+          write(ITEMS(14),'(a)')      '  IPV report   : N/A'
         else
-          write(ITEMS(14),'(a,a15)')'n  IPV report: ',sipvres(1:15)
+          write(ITEMS(14),'(a,a15)')  'n IPV report: ',sipvres(1:15)
         endif    
-        ITEMS(15)='o save or dereference parameters '
-        ITEMS(16)='  ______________________________ '
+        ITEMS(15)  ='o save or dereference parameters '
+        ITEMS(16)  ='  ______________________________ '
         M=16
       endif
       if(INDCFG.eq.2)then
-        ITEMS(M+1) ='p plant only simulation         '
+        ITEMS(M+1) ='p plant only simulation          '
       else
         ITEMS(M+1) ='p integrated simulation          '
       endif
-      ITEMS(M+2) ='r  fluid flow only              '
-      ITEMS(M+3) ='s  visual impact                '
-      ITEMS(M+4) ='t  integrated performance view  '
+      ITEMS(M+2)   ='r fluid flow only                '
+      ITEMS(M+3)   ='s visual impact                  '
+      ITEMS(M+4)   ='t integrated performance view    '
       IF(ISBEM.EQ.1)THEN
-        ITEMS(M+5) ='u  NCM compliance checking     '
+        ITEMS(M+5) ='u NCM compliance checking        '
       ELSE
-        ITEMS(M+5) ='   NCM compliance checking N/A '
+        ITEMS(M+5) ='  NCM compliance checking N/A    '
       ENDIF
-      ITEMS(M+6) ='  ______________________________ '
-      ITEMS(M+7) ='? help                           '
-      ITEMS(M+8) ='- exit this menu                 '
+      ITEMS(M+6)   ='  ______________________________ '
+      ITEMS(M+7)   ='? help                           '
+      ITEMS(M+8)   ='- exit this menu                 '
       MITEM=M+8
 
 C At each pass update for recent parameter changes.
@@ -1499,7 +1545,7 @@ C Help text for this menu.
       H(10)=' '
       H(11)='You can define simulation options such as the assessment'
       H(12)='period prior to commissioning simulations. Several sets'
-      H(13)='can be defined (e.g. standard seasonal assessments). '
+      H(13)='can be defined (e.g. standard seasonal assessments).'
       H(14)='A default set is always available.'
 
       CALL EMENU('Simulation Controller',ITEMS,MITEM,INO)
@@ -1571,6 +1617,8 @@ C an offset from prj start position.
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        brw,' -p ',spfdescr(isset),aut,' &'
           endif
+
+C Debug.
 C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
@@ -1616,6 +1664,8 @@ C an offset from prj start position.
      &        ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
      &        brw,' &'
           endif
+
+C Debug.
 C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
@@ -1653,6 +1703,8 @@ C an offset from prj start position.
           else
             write(doit,'(3a)') 'mfs -mode ',tmode,' -s 0 0 0 &'
           endif
+
+C Debug.
 C          call usrmsg('Beginning flow only assessment via',doit,'-')
           call runit(doit,tmode)
         ELSEIF(IW.EQ.2)THEN
@@ -1671,6 +1723,8 @@ C an offset from prj start position.
           else
             write(doit,'(3a)') 'dfs -mode ',tmode,' -s 0 0 0 &'
           endif
+
+C Debug.
 C          call usrmsg('Beginning CFD only assessment via',doit,'-')
           call runit(doit,tmode)
         ENDIF
@@ -1702,6 +1756,8 @@ C and change any / to \.
           write(doit,'(5a)') 'e2r -mode ',tmode,
      &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
         endif
+
+C Debug.
 C        call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
       elseif(INO.EQ.MITEM-4)then
@@ -1778,7 +1834,6 @@ C Setup one parameter set or several sets to match IPV description.
             issave=4
             isavgh=0
           else
-C            call edisp(iuout,'* Scanning for start-up days.')
             call scntcnst(TDM,istd,TCM,ISTC)
             nsset=1
             isset=1
@@ -1871,22 +1926,27 @@ C Help text for this menu.
         h(4)=' '
         h(5)='Definitions of integrated performance views (see the'
         h(6)='model context menu) might have already set up one,'
-        h(7)='three or five parameter sets. '
+        h(7)='three or five parameter sets.'
         h(8)=' '
         h(9)='Selecting one of the existing sets will load the'
         h(10)='associated parameters and any simulation commissioned'
         h(11)='will use this information.'
         h(12)=' '
-        h(13)='NOTE: if you have run several assessments, you should'
-        h(14)='select the correct set before going on to results '
-        h(15)='analysis. '
+        h(13)='After running an assessment, your next step is to '
+        h(14)='explore the predictions via the results analysis'
+        h(15)='module the correct results file should be identified'
+        h(16)='automatically. '
+        h(17)=' '
+        h(18)='NOTE: if you have run several assessments, you should'
+        h(19)='select the correct set before going on to results '
+        h(20)='analysis. '
 
         CALL EMENU('Parameter sets',dd,ic,IRT)
         if(IRT.ge.ic) then
           INO=-4
           GOTO 3
         elseif(IRT.eq.ic-1) then
-          CALL PHELPD('Simulation sets',15,'-',0,0,IER)
+          CALL PHELPD('Simulation sets',20,'-',0,0,IER)
           goto 170
         elseif(IRT.eq.ic-2.and.nsset.lt.5)then
 
@@ -1895,7 +1955,7 @@ C << note this probably should check to see if there is an IPV >>
 C << description first >>
           h(1)='Typical names are win spr sum. '
           de='win'
-          CALL EASKS(de,' Name for set ?',' ',8,'win','set name',IER,1)
+          CALL EASKS(de,' ','Name for set?',8,'win','set name',IER,1)
           nsset=nsset+1
           isset=nsset
           write(spfdescr(isset),'(a8)')de(1:8)
@@ -1929,7 +1989,6 @@ C << description first >>
         elseif(IRT.ge.1.and.IRT.le.nsset)then
           isset=IRT
         endif
-C        call edisp(iuout,'* Rechecking startup days.')
         call scntcnst(TDM,istd,TCM,ISTC)
       elseif(MITEM.eq.24.and.INO.EQ.2)then
 
@@ -1949,11 +2008,10 @@ C do not allow this set name to be changed.
         if(INDCFG.eq.2)then
           call edisp(iuout,'* Start-up days not applicable to plant.')
         else
-C          call edisp(iuout,'* Rechecking start-up days.')
           call scntcnst(TDM,istd,TCM,ISTC)
           H(1)='The pre-simulation start-up period is required to'
-          H(2)='the effects of initialisation assumptions from the'
-          H(3)='simulation results. The suggested value, which is'
+          H(2)='isolate the effects of initialisation assumptions from'
+          H(3)='the simulation results. The suggested value, which is'
           H(4)='computed automatically, may be overridden.'
           isstupt=isstup
           CALL EASKI(isstupt,' ',
@@ -3545,6 +3603,7 @@ C    and iton=1 images have been displayed.
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
+      integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
 
       logical concat,show,unixok
 
@@ -3588,7 +3647,11 @@ C and change any / to \.  If X11 then an external application is used
 C an double quoting is useful. If GTK then internal function used and
 C quotes are not required.
                     call addpath(limgfil(img),longtfile,concat)
-                    call cmdfiledos(longtfile,longtfiledos,ier)
+                    if(iglib.eq.1)then
+                      call cmdfiledos(longtfile,longtfiledos,ier)
+                    elseif(iglib.eq.2)then
+                      call imgfiledos(longtfile,longtfiledos,ier)
+                    endif
                     longtfile=' '
                     longtfile=longtfiledos
                   endif
@@ -3694,6 +3757,7 @@ C function in lib/esp_draw.c
   99      continue
         endif
       endif
+
       return
       end
 

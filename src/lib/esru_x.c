@@ -1590,7 +1590,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   char *locflist = flist;
   char *locact = act;
   int locnflist = *nflist;
-  static char file_list[60][73];	/* character arrays to hold folder or file names. */
+  static char file_list[100][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
   char act2[8];	/* buffer for act */
 
@@ -1604,7 +1604,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 */
 /* clear the local return string array and reset nflist */
   locnflist = 0;
-  for ( i = 0; i < 59; i++ ) {
+  for ( i = 0; i < 99; i++ ) {
     nwflist[i] = (long int) 0;
     strcpy(file_list[i],
       "                                                                         ");
@@ -1707,7 +1707,11 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
         if (strstr(dirt->d_name,".zip")) foundone = 1;
 /* debug */  fprintf(stderr,"%s is a zip file\n", dirt->d_name);
       }
-      if ((foundone == 1) && (locnflist <= 51)) {	/* add d_name to the fixed string array */
+
+/* the terminal index should match the size of the file_list[] buffer and that
+ * should match the MFFOLD parameter on the fortran side! 
+ */
+      if ((foundone == 1) && (locnflist <= 99)) {	/* add d_name to the fixed string array */
         ic = (int) strlen(dirt->d_name);
         nwflist[locnflist] = ic;	/* remember width of d_name */
         strcpy(file_list[locnflist],dirt->d_name);

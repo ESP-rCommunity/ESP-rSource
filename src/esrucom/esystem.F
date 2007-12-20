@@ -1466,6 +1466,55 @@ C (ie ambigious) set names
 C Annual IPV report depreciated in favour of sipvres.
         continue
         goto 44
+      elseif(WORD(1:7).eq.'*P-NAME')then
+
+C Next tokens relate to building address.
+        CALL EGETRM(OUTSTR,K,pjname,'W','project complience name',IER)
+        goto 44
+      elseif(WORD(1:10).eq.'*B-ADDRESS')then
+        CALL EGETRM(OUTSTR,K,baddress,'W','building address',IER)
+        goto 44
+      elseif(WORD(1:7).eq.'*B-CITY')then
+        CALL EGETRM(OUTSTR,K,bcity,'W','building city',IER)
+        goto 44
+      elseif(WORD(1:11).eq.'*B-POSTCODE')then
+        CALL EGETRM(OUTSTR,K,buildingPC,'W','building post code',IER)
+        goto 44
+      elseif(WORD(1:7).eq.'*O-NAME')then
+
+C Next tokens relate to owner/client address.
+        CALL EGETRM(OUTSTR,K,ownername,'W','owner name',IER)
+        goto 44
+      elseif(WORD(1:10).eq.'*O-ADDRESS')then
+        CALL EGETRM(OUTSTR,K,owneraddr,'W','owner address',IER)
+        goto 44
+      elseif(WORD(1:7).eq.'*O-CITY')then
+        CALL EGETRM(OUTSTR,K,ownercity,'W','owner city',IER)
+        goto 44
+      elseif(WORD(1:11).eq.'*O-POSTCODE')then
+        CALL EGETRM(OUTSTR,K,ownerPC,'W','owner post code',IER)
+        goto 44
+      elseif(WORD(1:12).eq.'*O-TELEPHONE')then
+        CALL EGETRM(OUTSTR,K,ownertel,'W','owner phone',IER)
+        goto 44
+
+C Next tokens relate to simulationist address.
+      elseif(WORD(1:7).eq.'*C-NAME')then
+        CALL EGETRM(OUTSTR,K,certifname,'W','simu staff name',IER)
+        goto 44
+      elseif(WORD(1:12).eq.'*C-TELEPHONE')then
+        CALL EGETRM(OUTSTR,K,certTel,'W','simu staff phone',IER)
+        goto 44
+      elseif(WORD(1:10).eq.'*C-ADDRESS')then
+        CALL EGETRM(OUTSTR,K,certaddress,'W','simu staff address',IER)
+        goto 44
+      elseif(WORD(1:7).eq.'*C-CITY')then
+        CALL EGETRM(OUTSTR,K,certcity,'W','simu staff city',IER)
+        goto 44
+      elseif(WORD(1:11).eq.'*C-POSTCODE')then
+        CALL EGETRM(OUTSTR,K,certPC,'W','simu staff post code',IER)
+        goto 44
+
       elseif(outstr(1:10).eq.'* PROJ LOG')then
 
 C Project log file, read and then go on to fabric/plant description.
