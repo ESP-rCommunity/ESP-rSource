@@ -27,6 +27,7 @@ C  DELZONE: systematically removes a thermal zone.
 C  WARNMOD: provide warnings when model evolves.
 C  SUMRCHG: provides a summary of updates needed after model changes.
 C  POINTTOLINE: determines distance from a 3D point to a 3D line.
+C  silentmodel creates an/or updates a model from passed parameters.
 C  silentzone: creates a zone (or limited complexity) based on parameters
 C              passed to it.
 C  SILENTREAD: Reads silent (compact) zones geometry data.
@@ -48,11 +49,13 @@ C an extrusion. IER=0 OK.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G2/NGL(MS)
+      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
@@ -62,6 +65,7 @@ C an extrusion. IER=0 OK.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -81,6 +85,8 @@ C an extrusion. IER=0 OK.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C << Consider how a more robust cancel facility can
 C << be established. Possibly one that deletes the new zone
@@ -176,8 +182,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
       H(22)=' and a line of known length (to get scaling from).'
       CALL EASKABCD(' ','Base zone geometry on:',
      &    'rectangular plan','polygon plan','general 3D',
-     &    'bitmap',IW2,22)
- 144  IF(IW2.eq.1)THEN
+     &    'bitmap',ishape,22)
+ 144  IF(ishape.eq.1)THEN
         XO=0.
         YO=0.
         ZO=0.
@@ -225,7 +231,7 @@ C Convert box into a gen description.
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
-      ELSEIF(IW2.eq.2)THEN
+      ELSEIF(ishape.eq.2)THEN
 
 C User begins with an extruded shape.
         Z1=0.
@@ -268,7 +274,7 @@ C        call edisp(iuout,'left corner of the enclosure. ')
         h(4)='than trying to correct problems later.'
         CALL ASKOK(' ','Accept base vertices?',OK,dok,4)
         if(.NOT.ok)then
-          IW2=2
+          ishape=2
           goto 144
         endif
 
@@ -292,7 +298,7 @@ C Convert into a gen body and rotate if required.
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
-      IF(IW2.ne.3.and.IW2.ne.4)THEN
+      IF(ishape.ne.3.and.ishape.ne.4)THEN
 
 C << does this fill all of the G5 variables? >>
         CALL FILSUR(iuout,ICOMP,0)
@@ -300,7 +306,7 @@ C << does this fill all of the G5 variables? >>
           NGL(I)=0
    44   CONTINUE
 
-C Update the connection list.
+C Update the connection list and hash.
         ICCC=NCON
         DO 32 ICC=1,NSUR
           ICCC=ICCC+1
@@ -319,10 +325,11 @@ C Update the connection list.
           SSUSE(iccc,1)=SUSE(icc,1)
           SSUSE(iccc,2)=SUSE(icc,2)
           SSPARENT(iccc)=SPARENT(icc)
+          IZSTOCN(icomp,icc)=iccc
    32   CONTINUE
         NCON=ICCC
       endif
-      if(IW2.eq.3)then
+      if(ishape.eq.3)then
 
 C User will begin with a minimal GEN body.
         H(1)='A general polyhedra is appropriate for complex'
@@ -385,7 +392,7 @@ C User will begin with a minimal GEN body.
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=1
 
-C Update the connection list for initial surface.
+C Update the connection list and hash for initial surface.
         ICCC=NCON
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
@@ -403,26 +410,28 @@ C Update the connection list for initial surface.
         SSUSE(iccc,1)=SUSE(1,1)
         SSUSE(iccc,2)=SUSE(1,2)
         SSPARENT(iccc)=SPARENT(1)
+        IZSTOCN(icomp,icc)=iccc
         NCON=ICCC
-      elseif(IW2.eq.4)then
+      elseif(ishape.eq.4)then
 
 C Point and click on a bitmap. After return, re-scan the system
 C configuration file to ensure that all the derived information
 C in the new geometry files is established.
         if(MMOD.eq.8)then
-#ifdef X11
-          call clickonbitmap(icomp,ier) 
-          if(ier.ne.0)then
-            itrc=0
-            MODE='ALL '
-            IAPROB=IPRODB
-            CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
-          endif
-          return
-#else
-          call usrmsg('The clickonbitmap facility is not yet working',
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1)then
+            call clickonbitmap(icomp,ier) 
+            if(ier.ne.0)then
+              itrc=0
+              MODE='ALL '
+              IAPROB=IPRODB
+              CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+            endif
+            return
+          elseif(iglib.eq.2)then
+            call usrmsg('The clickonbitmap facility is not yet working',
      &      'with new graphic library.','W')
-#endif
+          endif
         else
           call usrmsg('Must be in graphic mode to use click on bitmap',
      &      'facility to define vertices or floor plan corners. ','W')
@@ -444,6 +453,21 @@ C High level info for all cases except clickonbitmap.
       IDPN(ICOMP,1)=0
       IDPN(ICOMP,2)=0
       IDPN(ICOMP,3)=0
+      NZSUR(ICOMP)=NSUR  ! update nzsur() it is needed by zgupdate.
+      NZTV(ICOMP)=NTV
+
+C Update the G7 common blocks and then assign ZBASEA.
+      call zgupdate(2,ICOMP,ier)
+      if(ishape.eq.1)then
+        ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+        ZBASEA(icomp)= SSNA(ibcs)
+      elseif(ishape.eq.2)then
+        ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+        ZBASEA(icomp)= SSNA(ibcs)
+      elseif(ishape.eq.3)then
+        ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+        ZBASEA(icomp)= SSNA(ibcs)
+      endif
  
 C Save this to file before passing into the geometry editing facility.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -478,8 +502,6 @@ C Read in control file if defined.
       endif
 
       NCOMP=NCOMP+1
-      NZSUR(ICOMP)=NSUR
-      NZTV(ICOMP)=NTV
       NCCODE(ICOMP)=NCOMP
       if(OKC)then
         icascf(NCOMP)=0
@@ -579,7 +601,9 @@ C Find out if there are geometry files in the ../zones folder.
           if(snpfile(1:2).ne.'  ')then
             write(ltmp,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &        snpfile(1:lnblnk(snpfile))
-            write(6,*) ltmp
+
+C Debug.
+C            write(6,*) ltmp
           else
             write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
           endif
@@ -740,7 +764,9 @@ C Find out if there are operation files in the model ../zones folder.
               if(snpfile(1:2).ne.'  ')then
                 write(ltmp,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
-                write(6,*) ltmp
+
+C Debug.
+C                write(6,*) ltmp
               else
                 LTMP=DFILE
               endif
@@ -798,7 +824,9 @@ C Find out if there are construction files in the model ../zones folder.
               if(snpfile(1:2).ne.'  ')then
                 write(ltmp,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
-                write(6,*) ltmp
+
+C Debug.
+C                write(6,*) ltmp
               else
                 LTMP=DFILE
               endif
@@ -846,7 +874,9 @@ C Find out if there are CAD (zip) files in ../zones folder.
           if(snpfile(1:2).ne.'  ')then
             write(ltmp,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &        snpfile(1:lnblnk(snpfile))
-            write(6,*) ltmp
+
+C Debug.
+C            write(6,*) ltmp
           else
             write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
           endif
@@ -2022,6 +2052,189 @@ C      match=.true.
 C      return
 C      end
 
+C ************* silentmodel
+C silentmodel creates an/or updates a model from passed parameters.
+C The parameters are:
+C action (8 char) as follows: 'new' creates model folders based on information
+C    in root, mpath folder parameters. 'cont' continues with current model,
+C    'update' updates the current model weather data, 'within' assumes that
+C    the current folder will be used.
+C root   (24 char) the root name of the model
+C mpath  (72 char) the path to the folder with cfg file.
+C folder (12 char) model folder layout: 'single' or 'distributed'
+C weather (32 char) the weather file name (no path included)
+
+C Current functionality is to update the climate & site data.
+
+      subroutine silentmodel(action,root,mpath,folder,menu,weather,ier)
+#include "espriou.h"
+#include "esprdbfile.h"
+C esprdbfile.h supplies lclim.
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
+
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+      character dinstpath*48
+
+C Climate data.
+      COMMON/CLMDT0/CLAT,CLONG
+
+      COMMON/C4/XLAT,XLON
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+
+C Passed in parameters.
+      character action*8,root*24,mpath*72,folder*12,menu*32
+      character fs*1           ! file separator
+      character weather*32     ! file name for the location (no path)
+      character subpath*72
+
+      character outs*124
+      logical unixok
+      integer lnw   ! length of weather string.
+
+      IER=0
+
+C Determine operating system
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      subpath=' '
+
+C If the action is `new` then setup model folder(s) and the registration
+C level configuration file via call to pregist in `sn` mode.
+C If action is `cont` then there is no pre-registration task. If action
+C is `update` then there is no pre-registration task.
+C Debug
+C      write(6,*)  'action ',action,' ',root,' ',folder
+C      write(6,*)  'menu ',menu
+C      write(6,*)  'mpath ',mpath
+C      write(6,*)  'weather ',weather
+      if(action(1:3).eq.'new')then
+        call pregist('sn',root,mpath,folder,menu,ier)
+      elseif(action(1:6).eq.'within')then
+
+C Assume the model folders exist when calling pregist.
+        call pregist('sw',root,mpath,folder,menu,ier)
+      elseif(action(1:4).eq.'cont')then
+
+C Assume the folder exists
+        root=' '
+        mpath=' '
+        folder=' '
+      elseif(action(1:6).eq.'update')then
+        root=' '
+        mpath=' '
+        folder=' '
+      endif
+
+C If there is a line with the root name of a climate file look
+C for a match in the current climate location and if there is
+C one set the name of that file, scan it and find its site.
+      if(weather(1:4).eq.'none')then
+        continue
+      else
+
+C First check if the climate file exists in the subpath.
+        if(ICLIM.eq.0)then
+          ICLIM=IFIL
+        endif
+        lnw=lnblnk(weather)
+        write(subpath,'(4a)')
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        write(LCLIM,'(2a)') subpath(1:lnblnk(subpath)),
+     &    weather(1:lnw)
+        write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+        CALL ERPFREE(ICLIM,ISTAT)
+        CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+        if(ISTAT.ge.0)then
+          CALL ERPFREE(ICLIM,ISTAT)
+          goto 75
+        else
+
+C Also look in the folder where the model is being created.
+          write(LCLIM,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &      weather(1:lnw)
+          write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+          CALL ERPFREE(ICLIM,ISTAT)
+          CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+          if(ISTAT.ge.0)then
+            CALL ERPFREE(ICLIM,ISTAT)
+            goto 75
+          else
+
+C Also look in the model dbs folder.
+            write(LCLIM,'(5a)') mpath(1:lnblnk(mpath)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,weather(1:lnw)
+            write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+            CALL ERPFREE(ICLIM,ISTAT)
+            CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+            if(ISTAT.ge.0)then
+              CALL ERPFREE(ICLIM,ISTAT)
+              goto 75
+            else
+              write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
+              CALL ERPFREE(ICLIM,ISTAT)
+              CALL FPRAND(ICLIM,ISTAT,144,0,DCLIM)
+              if(ISTAT.ge.0)then
+                CALL ERPFREE(ICLIM,ISTAT)
+                LCLIM=DCLIM
+                goto 75
+              else
+
+C Fell through, no change in climate and location.
+                call edisp(iuout,'No climate data located.')
+                goto 74
+              endif
+            endif
+          endif
+        endif
+
+  75    continue
+        CALL ERPFREE(ICLIM,ISTAT)
+        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
+        IREC=366
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+        IREC=368
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
+        CALL ERPFREE(ICLIM,ISTAT)
+        XLAT=CLAT
+        XLON=CLONG
+        IYEAR=ICYEAR
+        write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
+     &    'The climate lat is ',clat,' & long diff is ',
+     &    clong,' & Year DN flag ',IYEAR,ICDNGH,
+     &    '. Previously used ',xlat,xlon,'.'
+        call edisp(iuout,outs)
+        CALL EMKCFG('-',IER)
+
+C Fall through point if no climates located.
+  74    continue
+      endif
+
+C Other logic here....
+
+      return
+
+C Error trap. Set ier as two.
+ 1000 WRITE(outs,774)ISTAT
+  774 FORMAT(' Error ',I7,' reading Climate db information.')
+      call edisp(iuout,outs)
+      call edisp(iuout,' ')
+      ier=2
+      RETURN
+
+      end
+
 C ************* silentzone 
 C silentzone creates a zone (or limited complexity) based on parameters passed
 C to it.
@@ -2053,7 +2266,7 @@ C IER=0 OK.
      &  coords,rotateit,nbglz,hasglaze,nbdoor,hasdoor,hasname,
      &  hasconstruction,boundarytype,use,usefile,IER)
 #include "building.h"
-#include "esprdbfile.h"
+C#include "esprdbfile.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       character CTYPE*4
@@ -2067,6 +2280,8 @@ C IER=0 OK.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2151,6 +2366,7 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       integer newsurf   ! index of surface when adding door/glazing
       integer znl       ! length of zone name string.
+      integer ibcs      ! connection associated with base surface
 
 C If browsing then user cannot create a new zone.
       if(browse)then
@@ -2206,14 +2422,14 @@ C << Unix vs Windows needs to be updated >>
 C Choices based on the value of shape. 
       IER=0
       if(shape(1:3).eq.'box')then
-        IW2=1
+        ishape=1
       elseif(shape(1:7).eq.'extrude')then
-        IW2=2
+        ishape=2
       else
         ier=1
         return
       endif
-      IF(IW2.eq.1)THEN
+      IF(ishape.eq.1)THEN
         XO=origin(1)
         YO=origin(2)
         ZO=origin(3)
@@ -2229,7 +2445,7 @@ C Convert box into a gen description.
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
         IZBASELIST(ICOMP)=1
-      ELSEIF(IW2.eq.2)THEN
+      ELSEIF(ishape.eq.2)THEN
 
 C User begins with an extruded shape.
         Z1=origin(1)
@@ -2342,8 +2558,18 @@ C Reset to represent UNKNOWN
       IDPN(ICOMP,1)=0
       IDPN(ICOMP,2)=0
       IDPN(ICOMP,3)=0
-      NZSUR(ICOMP)=NSUR
+      NZSUR(ICOMP)=NSUR  ! update nzsur() it is needed by zgupdate.
       NZTV(ICOMP)=NTV
+
+C Update the G7 common blocks and then if assign ZBASEA.
+      call zgupdate(0,ICOMP,ier)
+      if(ishape.eq.1)then
+        ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+        ZBASEA(icomp)= SSNA(ibcs)
+      elseif(ishape.eq.2)then
+        ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+        ZBASEA(icomp)= SSNA(ibcs)
+      endif
  
 C Save this to file before passing into the geometry editing facility.
 C Use gversion 1.1.
@@ -2376,9 +2602,10 @@ C Read in control file if defined.
         call usrmsg(' ',' ','-')
       endif
 
-C Update the G7 common blocks and then write out configuration file.
+C Update the G7 common blocks and then the configuration file.
+C Use the 's' parameter to emkcfg to avoid asking for cnn file name.
       call zgupdate(0,ICOMP,ier)
-      CALL EMKCFG('-',IER)
+      CALL EMKCFG('s',IER)
 
 C Next, if there are doors make standard calls to insert them into
 C the parent surface. To avoid clashes with any subsequent windows
@@ -2522,7 +2749,7 @@ C the initial description (usefile) and use(3) parameters.
         write(sfile,'(2a)')subpath(1:lnblnk(subpath)),
      &    usefile(1:lnblnk(usefile))
 C Debug.
-        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
+C        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
 
 C Clear commons.
         NAC1=0
@@ -2550,14 +2777,14 @@ C pattern file.
         isource=0
         idest=icomp
         call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
-     &    itrc,ier)
+     &    itrc,'s',ier)
 
         isource=0
         idest=icomp
         icact = use(3)
         iwatt='W-W     '
         itrc=1
-        call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,ier)
+        call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,'s',ier)
 
 C Just in case sort the data.
         call PROCESSOLDCAS(ICOMP,0,iuout,IER)
@@ -2586,9 +2813,12 @@ C Errors when creating string buffers.
  
 C ******************** SILENTREAD 
 C SILENTREAD reads compact zones data from a file. Data input is
-C based on 3rd party generators.
+C based on 3rd party generators. If act is '?' then return a
+C menu and descriptive text block for the file. Otherwise scan
+C and act on the information within the file.
  
-       SUBROUTINE SILENTREAD(IUNIT,LFILE,IER)
+       SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentmenu,silentdoc,
+     &   silentreturndirec,IER)
        integer MSZ   ! number of silent zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
@@ -2598,14 +2828,33 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
 
+      common/rpath/path
+      character*72 path,odir    ! where are folders
+
       common/dllerr/dllsubr,dllmesg
+      character dllsubr*12,dllmesg*124  ! messages if errors in dll
                
-      CHARACTER OUTSTR*124,WORD*32,outs*124
-      character dllsubr*12,dllmesg*124
+      CHARACTER OUTSTR*248,WORD*32,outs*124
       character dstmp*24
-      character weather*144    ! name for the location
-      character*(*) lfile       ! name of the file
-      logical dll
+
+      character act*1  ! action requested.
+      character subpath*72
+
+C At the head of the file is a menu string and a description
+C silentmenu (char 32) and silentdoc (char 248) which can be
+C used by scanning code to identify the contents of a silent file.
+      character silentmenu*32,silentdoc*248
+      character weather*32     ! file name for the location (no path)
+      character*(*) lfile      ! name of the file
+      character fs*1           ! file separator
+
+C For passing to silentmodel.
+      character actions*8,root*24,mpath*72,folder*12
+
+C Same as local variable actions which is passed back to calling code.
+      character silentreturndirec*8
+
+      logical dll,unixok
       real valx,valy      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
@@ -2633,42 +2882,83 @@ C Paremeters passed to:silentzone
 
       IER=0
 
+C Determine operating system
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Get the current folder and display options to the user.
+C first list any files with .cfg in name.
+      odir=' '
+      call usrdir(odir)
+
+C If subpath is less than 72 char with odir + path use that
+C otherwise just use path.
+C Debug...
+C      write(6,*) 'usrdir is ',odir
+C      write(6,*) 'path is ',path
+      subpath=' '
+      lnodir=lnblnk(odir)
+      lnpath=lnblnk(path)
+      if(lnodir+lnpath+1.le.72)then
+        write(subpath,'(3a)') odir(1:lnodir),fs,
+     &  path(1:lnpath)
+      else
+        write(subpath,'(a)') path(1:lnpath)
+      endif
+      write(outs,'(2a)') 'configuration files in ',
+     &  subpath(1:lnblnk(subpath))
+C      write(6,*) outs(1:lnblnk(outs))
+
 C Clear the sz array structures. The logic is to scan all of the
 C zone details and then process the zones after *end is detected
 C in the file.
-      do 42 iz=1,MSZ
-        name(iz) = ' '
-        shape(iz) = ' '
-        szuse(iz,1) = ' '
-        szuse(iz,2) = ' '
-        szuse(iz,3) = ' '
-        usefile(iz) = ' '
-        nbwalls(iz) = 0
-        nbglz(iz) = 0
-        nbdoor(iz) = 0
-        nbcord(iz) = 0
-        rotateit(iz) = 0
-        szorigin(iz,1) = 0.0
-        szorigin(iz,2) = 0.0
-        szorigin(iz,3) = 0.0
-        szsize(iz,1) = 0.0
-        szsize(iz,2) = 0.0
-        szsize(iz,3) = 0.0
-        do 52 isu=1,MS
-          szcoords(iz,isu,1)=0.0
-          szcoords(iz,isu,2)=0.0
-          szhasglaze(iz,isu)=0.0
-          szhasdoor(iz,isu)=0.0
-          szhasconstruction(iz,isu)=' '
-          szhasname(iz,isu)=' '
-          szboundarytype(iz,isu,1)=0
-          szboundarytype(iz,isu,2)=0
-          szboundarytype(iz,isu,3)=0
-  52    continue
-  42  continue
+      if(act(1:1).ne.'?')then
+        actions=' '
+        root=' '
+        folder=' '
+        mpath=' '
+        silentmenu=' '
+        silentdoc=' '
+        weather=' '
+        do 42 iz=1,MSZ
+          name(iz) = ' '
+          shape(iz) = ' '
+          szuse(iz,1) = ' '
+          szuse(iz,2) = ' '
+          szuse(iz,3) = ' '
+          usefile(iz) = ' '
+          nbwalls(iz) = 0
+          nbglz(iz) = 0
+          nbdoor(iz) = 0
+          nbcord(iz) = 0
+          rotateit(iz) = 0
+          szorigin(iz,1) = 0.0
+          szorigin(iz,2) = 0.0
+          szorigin(iz,3) = 0.0
+          szsize(iz,1) = 0.0
+          szsize(iz,2) = 0.0
+          szsize(iz,3) = 0.0
+          do 52 isu=1,MS
+            szcoords(iz,isu,1)=0.0
+            szcoords(iz,isu,2)=0.0
+            szhasglaze(iz,isu)=0.0
+            szhasdoor(iz,isu)=0.0
+            szhasconstruction(iz,isu)=' '
+            szhasname(iz,isu)=' '
+            szboundarytype(iz,isu,1)=0
+            szboundarytype(iz,isu,2)=0
+            szboundarytype(iz,isu,3)=0
+  52      continue
+  42    continue
+      endif
 
       NS=0     ! temporary array for counting surfaces.
       nsz=0
+      weather='none'
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -2693,7 +2983,7 @@ C Initialise geometry data file. and set currentfile.
 
 C Read header lines from file, the 1.1 version looks like: 
 C *silent_input
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'silent line 1',IER)
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'silent line 1',IER)
       IF(IER.NE.0)goto 1001
       if(OUTSTR(1:13).eq.'*silent_input')then
         continue
@@ -2707,15 +2997,44 @@ C file so close the file and set error message.
         return
       endif
 
-C Read weather_station line. If end of file found then jump
+C Read data line. If end of file found then jump
 C to 1000 to see if there are zones to process.
-C *weather_station,dublin
-  43  CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'silent tags',IER)
+  43  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'silent tags',IER)
       IF(IER.NE.0)goto 1000
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','*vertex or *surface tags',IER)
       if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
         CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+
+      elseif(WORD(1:5).eq.'*menu')then
+        CALL EGETRM(OUTSTR,K,silentmenu,'W','silent menu',IER)
+        goto 43
+      elseif(WORD(1:4).eq.'*doc')then
+        CALL EGETRM(OUTSTR,K,silentdoc,'W','silent documentation',IER)
+        if(act(1:1).eq.'?')then
+          return
+        else
+          goto 43
+        endif
+      elseif(WORD(1:7).eq.'*action')then
+
+C An action line is like this:
+C *action,new,boxer,single,/tmp/boxer
+        CALL EGETW(OUTSTR,K,actions,'W','action string',IER)
+        silentreturndirec=actions
+        if(actions(1:3).eq.'new')then
+          CALL EGETW(OUTSTR,K,root,'W','root name',IER)
+          CALL EGETW(OUTSTR,K,folder,'W','folder directive',IER)
+          CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
+
+C Debug.
+C          write(6,*)  's action ',actions,' ',root,' ',folder
+C          write(6,*)  's folder ',folder
+C          write(6,*)  's mpath ',mpath
+        elseif(actions(1:4).eq.'cont')then
+          continue
+        endif
+        goto 43
       elseif(WORD(1:11).eq.'*start_zone')then
         icomp=ncomp+1    ! increment zone index
         nsz=nsz+1
@@ -2875,6 +3194,10 @@ C to the training/pattern folder.
       elseif(WORD(1:8).eq.'*cooling')then
         goto 43
       elseif(WORD(1:16).eq.'*weather_station')then
+
+C If there is a line with the root name of a climate file look
+C for a match in the current climate location and if there is
+C one set the name of that file, scan it and find its site.
         CALL EGETRM(OUTSTR,K,weather,'W','weather name',IER)
         goto 43
       else
@@ -2888,6 +3211,15 @@ C Now close silent data file.
 C Process the data if the end of the file reached or if the
 C *end mark was found.
  1000 CALL ERPFREE(IUNIT,ios)
+
+C Test creation of new model. Note for a single folder option the
+C configuration will be in /tmp/box if mpath is /tmp/box. For the
+C distributed folder option the onfiguration file will be in the
+C folder /tmp/box/cfg if mpath is /tmp/box.
+      call silentmodel(actions,root,mpath,folder,silentmenu,weather,
+     &  ier)
+
+C If there are no zones return.
       if(nsz.eq.0)then
         return
       else

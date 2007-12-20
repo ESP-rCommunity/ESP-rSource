@@ -79,7 +79,6 @@ char tmppth[25];	/* f77 relative path to scratch folder    */
 char capt_wf_exe[73];	/* command to execute for capture wire frame */
 char capt_tf_file[73];	/* file for text feedback buffer dump */
 char capt_all_exe[73];	/* command for capture all of display */
-char captut_exe[73];	/* command for tutorial */
 int browse;	/* if = 0 then user owns, if = 1 user browsing */
 gint xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 

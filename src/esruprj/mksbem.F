@@ -408,21 +408,11 @@ C from it.
         CALL RSBEM
       ELSE
 
-C Ask about building, owner and certifier detail.
-        pjname=' not yet defined'
-        baddress=' not yet defined'
-        bcity=' not yet defined'
-        buildingPC =' not yet defined'
-        ownername=' not yet defined'
-        ownertel=' not yet defined'
-        owneraddr=' not yet defined'
-        ownercity=' not yet defined'
-        ownerPC=' not yet defined'
-        certifname=' not yet defined'
-        certTel=' not yet defined'
-        certaddress=' not yet defined'
-        certcity=' not yet defined'
-        certPC=' not yet defined'
+C Ask about building, owner and certifier detail. Note that
+C the initial call to clrprb will have cleared pjname, baddress,
+C bcity, buildingPC, ownername, ownertel, owneraddr, ownercity
+C and ownerPC. It will also clear certifname, certTel, certaddress
+C and certPC.
         IBSS=1
         IRGG=1
         ISTG=1

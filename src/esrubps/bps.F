@@ -295,6 +295,8 @@ C Variables used to configure h3kreports
       logical bH3K_Rep_Enabled
       logical rep_xmlstatus
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
       CFDOK=.false.
@@ -518,15 +520,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        CALL win3d(menuchw,16,16,4,3,igl,igr,igt,igb,igw,igwh)
-        call opencpw
-        call opentutorial
-        call opensetup
-        call updcapt(1)
-#else
-        CALL win3d(menuchw,16,16,5,4,igl,igr,igt,igb,igw,igwh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          CALL win3d(menuchw,16,16,4,3,igl,igr,igt,igb,igw,igwh)
+          call opencpw
+          call opensetup
+          call updcapt(1)
+        elseif(iglib.eq.2)then
+          CALL win3d(menuchw,16,16,5,4,igl,igr,igt,igb,igw,igwh)
+        endif
         call setzscale()
         mdispl=0
         nifgrey=0

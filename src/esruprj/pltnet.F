@@ -83,7 +83,10 @@ C Help text for this menu.
       h(14)=' (?) Displays this message.'
       h(15)=' (-) Exits to project description.'
 
-      CALL EMENU(' Plant Network',ITEM,NITMS,INO)
+C Uncomment following line of code when graphical interface becomes
+C available, The line setting INO=3 should also be deleted then
+C      CALL EMENU(' Plant Network',ITEM,NITMS,INO)
+      INO=3
       IF(INO.EQ.2)THEN
         h(1)='Graphical network definition is currently  '
         h(2)='functional but is still at an early  '
@@ -119,8 +122,7 @@ C Exit.
         INO=-1
         GOTO 12
       ENDIF
-      goto 10
-
+      return
       end
 
 C ************************* edcomp ***************************

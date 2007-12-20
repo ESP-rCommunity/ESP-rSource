@@ -5,13 +5,10 @@
    Timer(msec) pause_for_milliseconds
    pausems_() pause_for_milliseconds
    pauses_() pause_for_seconds
-   f_to_c_l() confirm Fortran string length
    wwcopen_() open ww commands output file 
    wwcclose_() Close and mark end or ww commands file
    wwcsetstart_() indicate start of a set of drawing commands
    wwcsetend_()	 indicate end of a set of drawing commands
-   ckaccess_() finds access parameters of a file
-   getfilelist_() return list of files in a folder
    curproject_() pass in info on the current project from fortran
    curmodule_() pass in info on the current application from fortran
    userfonts() set fonts for common display tasks
@@ -197,42 +194,8 @@ void pauses_(is)
   return;
 }
 
-/* ************** f_to_c_l() confirm Fortran string length *************** */
-/*
- Since the string length automaticly passed between Fortran and C
- tends to represent the "defined" string length rather than the actual
- string length here is a bit of code to start at the "defined" end
- and work backwards to find the last non-blank character position.
-*/
-void f_to_c_l(msg,f_len,len)
-  char    *msg;         /* character string */
-  int     *f_len;
-  int	  *len;  /* fortran string length,
-                    found position of last non blank character */
-{
-  int lm, sl, n;       /* local string lengths found by test  */
-  int found;
-  sl = (int) strlen(msg);
-  if( sl == (int) *f_len ){
-    n = (int) *f_len;
-  } else if( sl > (int) *f_len ) {
-    n = (int) *f_len;
-  } else if( sl < (int) *f_len ) {
-    n = sl;
-  }
-  found = 0;
-  while(n > 0 && found==0 ) {
-    n--;
-    if ( msg[n] != ' ') found = 1;
-  }
-  if (found==1) {
-    lm = n+1;
-  } else if (found==0 && n == 0) {
-    lm = 1;
-  }
-  *len = (gint) lm;
+/* ******* f_to_c_l() confirm Fortran string length is in esru_nox.c *************** */
 
-} /* f_to_c_l */
 
 /*  wwcopen_() open ww commands output file */
 void wwcopen_(name,len)
@@ -287,264 +250,9 @@ void wwcsetend_()		/* indicate end of a set of drawing commands */
   return;
 }
 
-/* ****** ckaccess_() finds access parameters of a file ********* */
-/* Given a file or folder name returns laccess = 1 if user cannot write
- * it and laccess = 0 if use can write. Also traps error state if file
- * or folder name in error/does not exist etc. Return folder=1 if the
- * name is a folder, otherwise 0.
- */
-void ckaccess_(folder,laccess,lerr,fname,len)
-char *fname;
-int len;	/* string length from fortran */
-long int *lerr,*laccess;
-long int *folder;
-{
- int ilen,i,ok;
- int iaccessu,iaccessg,iaccesso,ifolder;
- int ist_uid,ist_gid,u_uid,u_euid,g_uid,g_euid;
- char name2[80];
- struct stat st;
+/* ****** ckaccess_() finds access parameters of a file and is in esru_nox.c ********* */
 
-/* Work with copy of file name. */
-  ilen = 0;
-  f_to_c_l(fname,&len,&ilen); strncpy(name2,fname,(unsigned int)ilen); name2[ilen] = '\0';
-/*   fprintf(stderr,"file is %s %d %d \n",name2,ilen,len); */
-  i = stat(name2, &st);
-  iaccessu = (st.st_mode&0200); /* returns 0 if u-w */
-  iaccessg = (st.st_mode&0020); /* returns 0 if g-w */
-  iaccesso = (st.st_mode&0002); /* returns 0 if o-w */
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-  if (ifolder != 0) {
-/* fprintf(stderr,"stat says folder %s\n",name2); */ 
-    *folder = 1;  /* name is a folder */
-  } else {
-    *folder = 0;
-  }
-  ist_uid = st.st_uid;  ist_gid = st.st_gid; /* the file or folders owner */
-
-#ifdef MINGW
-  if (i != 0) {
-/*  fprintf(stderr,"Windows - any one can write to it %d\n",iaccesso ); */
-     *folder = 1;  /* name is probably a folder */
-     ok=0; *laccess = ok; return; /* anyone can write anyway, set and return */
-  }
-#else	/* something other than windows */   
-  u_uid = (long) getuid();  u_euid = (long) geteuid(); /* the user id and effective user id */
-  g_uid = (long) getgid();  g_euid = (long) getegid(); /* the group id and effective group id */
-
-/*   fprintf(stderr,"access u g o data %d %d %d\n",iaccessu,iaccessg,iaccesso); */
-/*   fprintf(stderr,"id data %d %d %d %d %d %d \n",ist_uid,ist_gid,u_uid,u_euid,g_uid,g_euid); */
-/*   fprintf(stderr,"access data %d %d \n",st.st_mode,i);  */
-#endif    
-
-/* logic test for permissions */
-  ok = 1;   /* first assume that we can't write to it */
-  if (i != 0) {
-/* */ fprintf(stderr,"unable to get stats on %s\n",name2);
-    *lerr = 1;
-    *folder = -1;
-    ok=1; *laccess = ok; /* error on stats better not write to it */
-    return;
-  } else {
-    *lerr = 0;
-  }
-  if ((iaccessu == 0) && (iaccessg == 0) && (iaccesso == 0)) {
-/* fprintf(stderr,"no one can write to it %d %d %d\n",iaccessu,iaccessg,iaccesso ); */
-    ok=1; *laccess = ok; return; /* no one can write to it */
-  }
-  if (iaccesso != 0 ) {
-/* fprintf(stderr,"any one can write to it %d\n",iaccesso ); */
-    ok=0; *laccess = ok; return; /* anyone can write anyway */
-  }
-  if ((ist_uid == u_uid) && iaccessu != 0 ) {
-/* fprintf(stderr,"user can write to it %d\n",iaccessu); */
-    ok=0; *laccess = ok;  return; /* ok same user and owner and can write */
-  }
-  if ((ist_uid != u_uid) && (ist_gid ==g_uid) && iaccessg != 0 ) {
-/* fprintf(stderr,"group can write to it %d\n",iaccessg); */
-    ok=0;  *laccess = ok;  return; /* ok same group and can write */
-  }
-  *laccess = ok;  /* fell through logic so return */
-/* fprintf(stderr,"fell through access logic %d\n",iaccessg); */
-  return;
-}
-
-/* ********* Return list of files in a folder ********* */
-void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
-  char *folder;	/* folder name passed from fortran */
-  char *act;  /* action to take as follows:
-	`dir` get list of folders, `fil` get list of files in the folder,
-	`cfg` get list of configuration files, `ctl` get list of control files,
-	`afn` get list of air flow networks, `gnf` get list of graphic network files,
-	`res` get list of results files, `mfr` get list of mass flow results 
-	`geo` get list of geometry files, `obs` obstructions file,
-	`opr` get list of operation files, `con` get list of construction files,
-        `vwf` get list of viewfactor files, `tmc` zone optics file,
-	`htc` get list of convection regime files,
-	`shd` get list of shading files, `cgc` casual gain control files,
-	`gdb` generic database, `gda` (gdba) ascii generic database
-	`dba` ascii database,
-	`dbb` binary database or climate file,
-	`xbm` X bitmaps, `gif` gif image files.
-        `ipv` IPV definition file, `rep` IPV report file
-        `qac` QA contents file, `zip` cflo3 zip (geometry) file. 
-    NOTE: the size of the 1st array index in char file_list must be edited to be
-    the same as the parameter MFFOLD in include/espriou.h
- */
-	
-  char *flist;	/* f77 array of returned folders or file names */
-  long int nwflist[];	/* array of character widths for each folder or file name. */
-  long int *nflist;	/* number of folders or file names */
-  int lenfolder,lenact,lenflist;	/* fortran passed lengths */
-{
-/* Local variables   */
-  int ilen,ialen,i,ic,num,ipos;       /* local indicies  */
-  struct stat st;		/* structure for file permissions */
-  struct dirent *dirt;		/* structure for directory contents */
-  DIR *dir;		/* directory structure (from dirent.h) */
-  int ifolder;		/* if nonzero then stat structure says it is a folder */
-  int foundone;		/* set to one if a file matches criteria. */
-
-/* local working string arrays */
-  char *locflist = flist;
-  char *locact = act;
-  int locnflist = *nflist;
-  static char file_list[60][73];	/* character arrays to hold folder or file names. */
-  char name2[80];	/* buffer for folder name */
-  char act2[8];	/* buffer for act */
-
-/* this function takes file or folder names generated by C calls
-   and passes them back to fortran as an array of strings. It
-   also passess back the actual width of each string so that
-   the returned string can be copied to another fortran string
-   array for proper use. As this is coded, fortran lnblnk calls
-   to the returned string *flist will report 72 char width, no matter
-   what the actual length of the string. Thus the use of nwflist[]
-*/
-/* clear the local return string array and reset nflist */
-  locnflist = 0;
-  for ( i = 0; i < 59; i++ ) {
-    nwflist[i] = (long int) 0;
-    strcpy(file_list[i],
-      "                                                                         ");
-  }
-/* Work with copy of folder name. */
-  f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
-  f_to_c_l(act,&lenact,&ialen); strncpy(act2,act,(unsigned int)ialen); act2[ialen] = '\0';
-  i = stat(name2, &st);
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-  if (ifolder == 0) {
-    fprintf(stderr,"folder passed %s %d %d is not a folder.\n",name2,ilen,lenfolder); 
-    return;
-  }
-  if (lenact == 0) {
-    fprintf(stderr,"requested file or folder listing action was blank.\n"); 
-    return;
-  }
-
-/* Open the folder */
-  i = stat(name2, &st);
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-  if ( ifolder != 0 ) {
-    if (NULL == (dir = opendir(name2))) {
-	fprintf(stderr, "%s: cannot read.\n", path);
-	return;
-    }
-  }
-/* Carry on getting information until all folder items have been looked at */
-    while (dirt = readdir(dir)) {
-      foundone = 0;
-/* don't bother with . and .. entries */
-      if (strcmp(".", dirt->d_name) == 0 || strcmp("..", dirt->d_name) == 0) continue;
-
-/* debug     printf("current %s\n", dirt->d_name); */
-      if(strcmp("dir",act2)== 0) { /* If request for folders only, then build this list. */
-        i = stat(dirt->d_name, &st);
-        ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-/* debug     fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
-        if (ifolder != 0 ) foundone = 1;
-      } else if(strcmp("fil",act2)== 0) { /* If request for files only, then build this list. */
-        i = stat(dirt->d_name, &st);
-        ifolder = (st.st_mode&0x8000); /* returns zero if a regular file */
-/* debug     fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
-        if (ifolder == 0 ) foundone = 1;
-      } else if(strcmp("cfg",act2)== 0) { /* If request for cfg files only, then build this list. */
-        if (strstr(dirt->d_name,".cfg")) foundone = 1;
-      } else if(strcmp("ctl",act2)== 0) { /* If request for control files only, then build this list. */
-        if (strstr(dirt->d_name,".ctl")) foundone = 1;
-      } else if(strcmp("afn",act2)== 0) { /* If request for flow files only, then build this list. */
-        if (strstr(dirt->d_name,".afn")) foundone = 1;
-      } else if(strcmp("gnf",act2)== 0) { /* If request for network files only, then build this list. */
-        if (strstr(dirt->d_name,".gnf")) foundone = 1;
-      } else if(strcmp("res",act2)== 0) { /* If request for results files only, then build this list. */
-        if (strstr(dirt->d_name,".res")) foundone = 1;
-      } else if(strcmp("mfr",act2)== 0) { /* If request for flow results files only, then build this list. */
-        if (strstr(dirt->d_name,".mfr")) foundone = 1;
-      } else if(strcmp("geo",act2)== 0) { /* If request for geometry files only, then build this list. */
-        if (strstr(dirt->d_name,".geo")) foundone = 1;
-      } else if(strcmp("opr",act2)== 0) { /* If request for operation files only, then build this list. */
-        if (strstr(dirt->d_name,".opr")) foundone = 1;
-      } else if(strcmp("obs",act2)== 0) { /* If request for obstrucion files only, then build this list. */
-        if (strstr(dirt->d_name,".obs")) foundone = 1;
-      } else if(strcmp("vwf",act2)== 0) { /* If request for viewfactor files only, then build this list. */
-        if (strstr(dirt->d_name,".vwf")) foundone = 1;
-      } else if(strcmp("tmc",act2)== 0) { /* If request for zone optics files only, then build this list. */
-        if (strstr(dirt->d_name,".tmc")) foundone = 1;
-      } else if(strcmp("shd",act2)== 0) { /* If request for zone shading files only, then build this list. */
-        if (strstr(dirt->d_name,".shd")) foundone = 1;
-      } else if(strcmp("cgc",act2)== 0) { /* If request for cas gain ctl files only, then build this list. */
-        if (strstr(dirt->d_name,".cgc")) foundone = 1;
-      } else if(strcmp("htc",act2)== 0) { /* If request for convection regime files only, then build this list. */
-        if (strstr(dirt->d_name,".htc")) foundone = 1;
-        if (strstr(dirt->d_name,".hcc")) foundone = 1;
-      } else if(strcmp("con",act2)== 0) { /* If request for construction files only, then build this list. */
-        if (strstr(dirt->d_name,".con")) {
-/* debug  fprintf(stderr,"%s is a zone constr file\n", dirt->d_name); */
-          foundone = 1;
-        }
-      } else if(strcmp("gdb",act2)== 0) { /* If request for generic db only, then build this list. */
-        if (strstr(dirt->d_name,".gdb")) foundone = 1;
-      } else if(strcmp("gda",act2)== 0) { /* If request for asci generic db only, then build this list. */
-        if (strstr(dirt->d_name,".gdba")) foundone = 1;
-      } else if(strcmp("dba",act2)== 0) { /* If request for asci legacy db only, then build this list. */
-        if (strstr(dirt->d_name,".dba")) foundone = 1;
-        if (strstr(dirt->d_name,".a"))   foundone = 1;
-      } else if(strcmp("xbm",act2)== 0) { /* If request for X pixmap only, then build this list. */
-        if (strstr(dirt->d_name,".xbm")) foundone = 1;
-        if (strstr(dirt->d_name,".XBM")) foundone = 1;
-      } else if(strcmp("gif",act2)== 0) { /* If request for gif images only, then build this list. */
-        if (strstr(dirt->d_name,".gif")) foundone = 1;
-        if (strstr(dirt->d_name,".GIF")) foundone = 1;
-      } else if(strcmp("ipv",act2)== 0) { /* If request for IPV definitions only, then build this list. */
-        if (strstr(dirt->d_name,".ipv")) foundone = 1;
-        if (strstr(dirt->d_name,".IPV")) foundone = 1;
-      } else if(strcmp("rep",act2)== 0) { /* If request for IPV report only, then build this list. */
-        if (strstr(dirt->d_name,".rep")) foundone = 1;
-      } else if(strcmp("qac",act2)== 0) { /* If request for QA contents only, then build this list. */
-        if (strstr(dirt->d_name,".contents")) foundone = 1;
-      } else if(strcmp("zip",act2)== 0) { /* If request for Zip or cflo3, then build this list. */
-        if (strstr(dirt->d_name,".zip")) foundone = 1;
-/* debug   fprintf(stderr,"%s is a zip file\n", dirt->d_name); */
-      }
-      if ((foundone == 1) && (locnflist <= 51)) {	/* add d_name to the fixed string array */
-        ic = (int) strlen(dirt->d_name);
-        nwflist[locnflist] = ic;	/* remember width of d_name */
-        strcpy(file_list[locnflist],dirt->d_name);
-        locnflist = locnflist +1;
-      }
-    }
-/* get recovered folder or file names back into the original fortran array */
-    ipos = 0;
-    strcpy(locflist,
-  "                                                                         ");
-  for(num = 0; num < locnflist; num++) {	/* for each recovered string...  */
-    strncpy(&locflist[ipos],file_list[num],(unsigned int)lenflist);	/* copy to local array */
-    ipos=ipos+lenflist;
-  }
-  *flist = *locflist;	/* copy locflist back to flist */
-  *nflist = locnflist;
-  return;
-}
+/* ****** getfilelist_() returns a list of files in a folder and is in esru_nox.c ********* */
 
 /* curproject_() - pass in info on the current project from fortran */
 void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
@@ -636,17 +344,6 @@ void capexall_(cmd,len_cmd)
   int  l_m;
   f_to_c_l(cmd,&len_cmd,&l_m); strncpy(capt_all_exe,cmd,(unsigned int)l_m);	/* copy to static array */
   capt_all_exe[l_m] = '\0';
-  return;
-}
-
-/* captut - tutorial indicator */
-void captut_(cmd,len_cmd)
-  char      *cmd;         /* f77 message    */
-  int  len_cmd;           /* length of string from f77    */
-{
-  int  l_m;
-  f_to_c_l(cmd,&len_cmd,&l_m); strncpy(captut_exe,cmd,(unsigned int)l_m);	/* copy to static array */
-  captut_exe[l_m] = '\0';
   return;
 }
 

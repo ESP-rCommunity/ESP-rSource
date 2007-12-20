@@ -74,6 +74,10 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+      character dinstpath*48
+
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT/GTNAME
@@ -103,23 +107,25 @@ C end indices for each zone.
       dimension VIEWLIM(6),GRSPC(3),IVALS(MCOM)
 
       CHARACTER*72 H
-      CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3,fname*72,DESC*48
+      CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3,DESC*48
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
-      character phrase*124,WORD*48,msg*72,ltmp*72
+      character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
       character zname*12,zdesc*64,zn*12,BLKNAME*8,BLKMAT*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S8*8
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      character longtfile*144,fname*96
 
       logical xbmorigin,xbmnorth,xbmscale,xbmgrid,xbmload,xbmsnap
       logical trimmed,completed,unique,CLOSEX,CLOSEY,addinganother
       logical clx0,cly0,clx1,cly1,clxm1,clym1
+      logical unixok
 
 C Signal first entry to subroutine with justentered as true, once
 C an object has been saved the set justentered to false.
@@ -730,25 +736,56 @@ C Load an X11 bitmap file (user required to convert to the format).
      &    'c medium for gridding','d medium with ticks for gridding',
      &    'e large for gridding','f large with ticks for gridding',
      &    'g user defined bitmap',' ',' ',' ',' ',' ',inptb,idno,9)
+
+C << the xbm files should be located via the installed path >>
+        call isunix(unixok)
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
+        endif
         if(inptb.eq.1)then
-          fname='/usr/esru/lib/40x40_notick.xbm'
+          write(fname,'(5a)') dinstpath(1:lnblnk(dinstpath)),fs,'lib',
+     &      fs,'40x40_notick.xbm'
         elseif(inptb.eq.2)then
-          fname='/usr/esru/lib/40x40.xbm'
+          write(fname,'(5a)') dinstpath(1:lnblnk(dinstpath)),fs,'lib',
+     &      fs,'40x40.xbm'
         elseif(inptb.eq.3)then
-          fname='/usr/esru/lib/50x50_notick.xbm'
+          write(fname,'(5a)') dinstpath(1:lnblnk(dinstpath)),fs,'lib',
+     &      fs,'50x50_notick.xbm'
         elseif(inptb.eq.4)then
-          fname='/usr/esru/lib/50x50.xbm'
+          write(fname,'(5a)') dinstpath(1:lnblnk(dinstpath)),fs,'lib',
+     &      fs,'50x50.xbm'
         elseif(inptb.eq.5)then
-          fname='/usr/esru/lib/60x60_notick.xbm'
+          write(fname,'(5a)') dinstpath(1:lnblnk(dinstpath)),fs,'lib',
+     &      fs,'60x60_notick.xbm'
         elseif(inptb.eq.6)then
-          fname='/usr/esru/lib/60x60.xbm'
+          write(fname,'(5a)') dinstpath(1:lnblnk(dinstpath)),fs,'lib',
+     &      fs,'60x60.xbm'
         elseif(inptb.eq.7)then
-          fname='./ '
+          write(fname,'(2a)') '.',fs
         else
           goto 142
         endif
-        CALL EASKS(fname,' X11 bitmap file name ? ',' ',72,'xxxxx',
-     &    'bitmap file',IER,3)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        write(longtfile,'(a)') fname(1:lnblnk(fname))
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(fname,'X11 bitmap file name?',
+     &      ' ',96,'xxx.xbm','bitmap file',IER,3)
+          write(longtfile,'(a)') fname(1:lnblnk(fname))
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtfile,'X11 bitmap file name?',
+     &      ' ',144,'xxx.xbm','bitmap file',IER,3)
+          write(fname,'(a)') longtfile(1:95)
+        else
+          CALL EASKF(fname,'X11 bitmap file name?',
+     &      ' ',96,'xxx.xbm','bitmap file',IER,3)
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 142  ! redisplay menu.
+        endif
         if(fname(1:2).ne.'  ')then
 
 C See what size the bitmap is and if it is an Xll bitmap.

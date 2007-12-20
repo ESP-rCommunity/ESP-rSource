@@ -104,6 +104,8 @@ C Name of current application
       character path*72,upath*72,outs*124,fs*1
       character act*16,actf*72,action*16,msgl2*124,outs248*248
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Assume defaults: trace off (ITRC=0), date format is DOY,
 C time format is 10h00.
       call ezero
@@ -213,11 +215,11 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opentutorial
-        call opensetup
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+        endif
         call setzscale()
         mdispl=0
         nifgrey=0
@@ -461,7 +463,7 @@ C Set the menu control text.
       if(OPTDF)then
         ITEM(MITEM-5)  ='* add, delete, copy temporal entry     '
       else
-        ITEM(MITEM-5)  ='*                                      '
+        ITEM(MITEM-5)  ='* add temporal entry                   '
       endif
       IF(ITRC.EQ.0)THEN
         ITEM(MITEM-4)='r Reporting >> OFF                     '
@@ -556,6 +558,7 @@ C File not found so offer option to create a minimal file.
 
 C Write out an equivalent ascii file.
             call usrmsg(' ','Updating the ascii file...','-')
+            write(ltdfa,'(a)') tfile(1:lnblnk(tfile))
             call ewtdfa(itrc,ltdfa,iutdfa,0,ier)
             if(ier.eq.0)then
               write(msgl2,'(2a)') ltdfa(1:lnblnk(ltdfa)),

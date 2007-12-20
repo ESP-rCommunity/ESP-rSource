@@ -27,7 +27,7 @@ C           checking as passed parameters.
 C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
-C EASKS248: Edit a long (248 char) string in sections.
+C  EASKS248: Edit a long (248 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
@@ -102,6 +102,7 @@ C  getsecs: Get computer clock seconds.
 C  EGETW:  Finds first word after pos k in a string (' ' ',' '|' or tab separated).
 C  iEGetArrW: integer function that breaks a string into an array.
 C  EGETP:  Finds first phrase after pos k in a string (tab separated).
+C  EGETDQ:  Finds first quoted phrase after pos k in a string (delimeter separated).
 C  EGETWI: As EGETW for an integer with range checking & error messages.
 C  EGETWR: As EGETW for a real with range checking & error messages.
 C  EGETWRA: Recovers (IRVA) reals of real array (RVA) from an ASCII file.
@@ -210,6 +211,18 @@ C  fCtoR_err: Coaxes a string into a float, with some simple error reprting
 C  iCtoi:   Coaxes a string into an integer
 C  iCtoi_err: Coaxes a string into an integer, with some simple error reprting
 C
+
+C Dummy subroutines and functions matching calling parameters used
+C in esru_x.c so that #ifdef statements are not required for GTK
+C compile of ESP-r. This same code is found in esru_fc.f which is
+C used in the text-only compile.
+C       opencpw place copyright button on screen
+C       opensetup place setup button on screen
+C       updcapt() notify level for capture buttons
+C       updazi() notify level for azimuth button
+C       feedbox() open feedback background box
+C       opengdisp opens a scrolling text display area.
+
 
 C ******************** EASKI ********************
 C EASKI is a facility for asking the user for an integer which
@@ -5843,15 +5856,30 @@ C terminal type 8.
       dimension dh(60),lh(30),exh(60)
       CHARACTER*(*) MSG,OTHER
       CHARACTER h*72,outs*73,dh*72,lh*73,exh*72
-      character tut_path*25,ltut*72,IA*3
+      character tut_path*72,ltut*72,IA*3,fs*1,localdh*72
       logical extra,XST
+      logical unixok
       integer ltf  ! position of last character in the string.
+      integer ln     ! last actual character in instpath (of espinstalldir.h)
+
+C The following include statment is placed after the common block
+C definitions to avoid compile errors.
+#include "espinstalldir.h"
 
 C dh is duplicate help list, lh is the list (page) to be displayed.
 C exh is 'show me more' text array read in from external file.
       extra = .false.
+      ln=lnblnk(instpath)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       if(OTHER(1:1).ne.'-')then
-        tut_path='/usr/esru/tutorial/'
+        write(tut_path,'(4a)')instpath(1:ln),fs,'tutorial',fs
         write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
@@ -5866,6 +5894,8 @@ C exh is 'show me more' text array read in from external file.
           else
             extra = .false.
           endif
+        else
+          extra = .false.
         endif
         CALL ERPFREE(IFTUT,ISTAT)
       endif
@@ -5907,9 +5937,18 @@ C exh is 'show me more' text array read in from external file.
         CALL PHELPW(NHELP,IHW,IER)
         call dupphelp(NHELP)
         if(extra)then
-            CALL egphelpscroll(IBX,IBY,IPFLG,1,iuresp)
-          if(iuresp.eq.1)then
+          CALL egphelpscroll(IBX,IBY,IPFLG,1,iuresp)
+          if(OTHER(1:1).ne.'-')then
+
+C Use showmeh to find out how many lines of additional help (nhi)
+C there are and then copy from the string array exh into the
+C help buffer via calls to updhelp.
             call SHOWMEH(IFTUT,LTUT,OTHER,nhi,ihw2,exh,IER)
+            call clrhelp
+            DO 50 I=1,nhi
+              localdh=exh(I)
+              call updhelp(localdh)
+   50       CONTINUE
             CALL egphelpscroll(IBX,IBY,IPFLG,0,iuresp)
           endif
         else
@@ -6884,6 +6923,105 @@ C comma is found.
       endif
       GOTO 100
    1  write(6,*) 'EGETP: error writing warning re: ',STRING
+
+      END
+
+C ***************** EGETDQ
+C EGETDQ gets first quoted PHRASE after position K from the STRING of
+C characters. Phrases are separated by tabs or commas. Provides a warning
+C message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'.  The string returned has the quotes removed.
+C Note it uses an internal string buffer which assumes that the
+C phrase is less than 248 characters long.
+      SUBROUTINE EGETDQ(STRING,K,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) PHRASE, STRING, MSG
+      CHARACTER ACT*1,A*1,B*1,loutstr*124
+      character dq*1,sqleft*1,sqright*1
+      character buffer*248
+      integer lnofstr
+
+      dq = char(34)  ! double quote
+      sqleft = char(96)  ! single quote left
+      sqright = char(39)  ! single quote right
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      ier=0
+      PHRASE=' '
+      LS=LEN(STRING)
+      LW=LEN(PHRASE)
+      L=0
+
+C Start by skipping blanks and tabs before the PHRASE.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+
+C Copy PHRASE from STRING, character by character until tab or a
+C comma is found.
+   20 L=L+1
+      IF(L.GT.LW) GOTO 100
+      PHRASE(L:L)=A
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      GOTO 20
+
+  100 continue
+
+C Test if the first and last characters are double or single quotes
+      A=PHRASE(1:1)
+      B=PHRASE(L:L)
+      if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+        if(B.eq.dq.or.B.eq.sqright.or.B.eq.sqleft)then
+          lnofstr=lnblnk(PHRASE)-1
+          write(buffer,'(a)') PHRASE(2:lnofstr)
+          write(phrase,'(a)') buffer(1:lnblnk(buffer))
+        endif
+      endif
+      RETURN
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILUREW: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+   1  write(6,*) 'EGETDQ: error writing warning re: ',STRING
 
       END
 
@@ -11129,6 +11267,39 @@ C.....upon error, report to user.
         call edisp248(iUout, cMsg,80)
 
       endif
+      return
+      end
+
+C ********* dummy subroutines and functions to match what is found
+C in esru_fc.f
+
+C opencpw place copyright button on screen
+      subroutine opencpw
+      return
+      end
+
+C opensetup place setup button on screen
+      subroutine opensetup
+      return
+      end
+
+C updcapt() notify level for capture buttons
+      subroutine updcapt(iavail)
+      return
+      end
+
+C updazi() notify level for azimuth button
+      subroutine updazi(iavail)
+      return
+      end
+
+C feedbox() open feedback background box
+      subroutine feedbox(menu_char,id_lines,igw,igh)
+      return
+      end
+
+C opengdisp opens a scrolling text display area.
+      subroutine opengdisp(menu_char,idispl_l,idial_l,igdw,igdh)
       return
       end
 

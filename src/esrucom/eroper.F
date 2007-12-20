@@ -1388,7 +1388,7 @@ C If version 1 write out header.
      &  '  # latest file modification '
       endif
       WRITE(IUO,30,IOSTAT=IOS,ERR=1)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),OPFIL(:lnblnk(OPFIL))
+     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),OPFIL(1:lnblnk(OPFIL))
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
 C Write the common block data to the file.
@@ -2487,13 +2487,23 @@ C aparvar is reactive power component VAr.
 
 C Logical for testing whether there is any difference in electrical gains.
       logical bpfA,bpwrA,bbvoltA
+      real floor
 
-C Floor area is required.
-      FLOOR=ZBASEA(ICOMP)
-      write(outs,'(a,a,a,F6.1,a)') 'The base area of ',
-     &  zname(icomp)(1:lnblnk(zname(icomp))),
-     &  ' is',FLOOR,'m^2.'
-      call edisp(iuout,outs)
+C Warn user if the zone base area is still zero.
+      call eclose(ZBASEA(ICOMP),0.0,0.01,close)
+      if(close)then
+        FLOOR=1.0
+        write(outs,'(3a,F6.1,a)') 'The base area of ',
+     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    ' has been set to ',FLOOR,'m^2.'
+        call edisp(iuout,outs)
+      else
+        FLOOR=ZBASEA(ICOMP)
+        write(outs,'(3a,F6.1,a)') 'The base area of ',
+     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    ' is',FLOOR,'m^2.'
+        call edisp(iuout,outs)
+      endif
 
 C Remember how may of each.
       LNCAS1=NCAS1

@@ -90,9 +90,9 @@ C ************
       return
       end
 
-      subroutine windcl(n,ir,ig,ib)
-      return
-      end
+C      subroutine windcl(n,ir,ig,ib)
+C      return
+C      end
 
       subroutine f_to_c_l(msg,if_len,ilen)
       character*(*) msg
@@ -101,14 +101,14 @@ C ************
       return
       end
 
-      subroutine winlod(name,itime,lix,liy)
-      character*(*) name
-      return
-      end
+C      subroutine winlod(name,itime,lix,liy)
+C      character*(*) name
+C      return
+C      end
 
-      subroutine showlogo(itime,lix,liy)
-      return
-      end
+C      subroutine showlogo(itime,lix,liy)
+C      return
+C      end
 
       subroutine wwcopen(name)
       character*(*) name
@@ -130,14 +130,14 @@ C ************
       return
       end
 
-      subroutine ckaccess(folder,laccess,lerr,fname)
-      integer folder, laccess,lerr
-      character*(*) fname
-      folder = 1
-      lerr = 0
-      laccess = 0
-      return
-      end
+C      subroutine ckaccess(folder,laccess,lerr,fname)
+C      integer folder, laccess,lerr
+C      character*(*) fname
+C      folder = 1
+C      lerr = 0
+C      laccess = 0
+C      return
+C      end
 
       subroutine wstxpt(ix,iy,buff)
       character*(*) buff
@@ -346,17 +346,17 @@ C      write(6,*) opta
       return
       end
 
-      subroutine espad(limit,limtty,line)
-      return
-      end
+C      subroutine espad(limit,limtty,line)
+C      return
+C      end
 
       subroutine egdispclr
       return
       end
 
-      subroutine trackview(ichar,irx,iry)
-      return
-      end
+C      subroutine trackview(ichar,irx,iry)
+C      return
+C      end
 
       subroutine eline(ix,iy,ioperation)
       return
@@ -410,9 +410,9 @@ C      write(6,*) opta
       return
       end
 
-      subroutine ecirarc(x,y,ths,thf,r,num,di)
-      return
-      end
+C      subroutine ecirarc(x,y,ths,thf,r,num,di)
+C      return
+C      end
 
       subroutine ecirc(ix,iy,irad,ioperation)
       return
@@ -466,19 +466,19 @@ C      write(6,*) opta
       return
       end
 
-      subroutine evwmenu(titleptr,impx,impy,iwth,irpx,irpy,
-     &  ino,ipflg,iuresp)
-      character*(*) titleptr
-      return
-      end
+C      subroutine evwmenu(titleptr,impx,impy,iwth,irpx,irpy,
+C     &  ino,ipflg,iuresp)
+C      character*(*) titleptr
+C      return
+C      end
 
 C      subroutine aux_menu
 C      return
 C      end
 
-      subroutine refreshenv
-      return
-      end
+C      subroutine refreshenv
+C      return
+C      end
 
       subroutine opentutorial
       return
@@ -488,10 +488,10 @@ C      end
       return
       end
 
-      subroutine opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,
-     &  iicfgn,iicfgc,iicfgdfn)
-      return
-      end
+C      subroutine opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,
+C     &  iicfgn,iicfgc,iicfgdfn)
+C      return
+C      end
 
       subroutine opensetup
       return
@@ -534,12 +534,12 @@ C      end
       return
       end
 
-      subroutine findrtb(iright,itop,ibottom)
-      iright=0
-      itop=0
-      ibottom=0
-      return
-      end
+C      subroutine findrtb(iright,itop,ibottom)
+C      iright=0
+C      itop=0
+C      ibottom=0
+C      return
+C      end
 
       subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
      &  ftmppth,ibrowse)
@@ -570,17 +570,17 @@ C      end
       return
       end
 
-      subroutine nwkgflg(ngf)
-      return
-      end
+C      subroutine nwkgflg(ngf)
+C      return
+C      end
 
-      subroutine fprofma(sstr,nstr,title,list,nlist,listtypes,impx,
-     &  impy,impcwth,iswidth,listact,ino,nhelp)
-      character*(*) sstr(*),list(*)
-      character*(*) title,listtypes
-      dimension iswidth(nlist),listact(nlist)
-      return
-      end
+C      subroutine fprofma(sstr,nstr,title,list,nlist,listtypes,impx,
+C     &  impy,impcwth,iswidth,listact,ino,nhelp)
+C      character*(*) sstr(*),list(*)
+C      character*(*) title,listtypes
+C      dimension iswidth(nlist),listact(nlist)
+C      return
+C      end
 
 C Dummy subroutine for a function available in GTK for displaying images
 C in a pop-up window.
@@ -589,32 +589,32 @@ C      character*(*) head,topic,act,longtfile
 C      return
 C      end
 
-      subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
-      character*(*) fname
-      integer ixoffset,iyoffset,iwidth,ihight,
-     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
-      return
-      end
+C      subroutine winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
+C     &            inuma, inumb,ixbul,iybul,ixblr,iyblr)
+C      character*(*) fname
+C      integer ixoffset,iyoffset,iwidth,ihight,
+C     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
+C      return
+C      end
 
-      subroutine checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
-     &      inuma,inumb,ixbul,iybul,ixblr,iyblr)
-      character*(*) fname
-      integer ixoffset,iyoffset,iwidth,ihight,
-     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
-      return
-      end
+C      subroutine checklodpart(fname,ixoffset,iyoffset,iwidth,ihight,
+C     &      inuma,inumb,ixbul,iybul,ixblr,iyblr)
+C      character*(*) fname
+C      integer ixoffset,iyoffset,iwidth,ihight,
+C     &            inuma, inumb,ixbul,iybul,ixblr,iyblr
+C      return
+C      end
 
       subroutine findviewtext(icx,line,isize,ix,iy)
       integer icx,line,isize,ix,iy
       return
       end 
 
-      subroutine getfilelist(subpath,action,listf,nwlistf,nlistf)
-      character*(*) subpath, action, listf
-      integer nwlistf(50),nlistf
-      return
-      end
+C      subroutine getfilelist(subpath,action,listf,nwlistf,nlistf)
+C      character*(*) subpath, action, listf
+C      integer nwlistf(50),nlistf
+C      return
+C      end
       
 C A zero says there is neither X11 or GTK available.
       integer function iXavail()

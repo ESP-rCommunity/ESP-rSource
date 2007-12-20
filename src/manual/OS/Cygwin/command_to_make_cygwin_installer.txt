@@ -1,5 +1,5 @@
 
-April 2007 version of notes
+November 2007 version of notes
 
 Do a typcial default install within the src folder
 that has been export from the svn repository (use export
@@ -9,27 +9,36 @@ a computer you know has all of the xml support libraries).
 
 ./Install --debug
 
+To remove the .svn (hidden) folders from the compiled
+file folders go to /usr/esru/esp-r and issue the following
+two commands:
+  find . -name .svn -print > which_svn
+  
+  rm -rf `cat which_svn`
+
 After building X11 version create a tar file:
-tar cf esp-r_v11.3_X11_cygwin.tar bin docs esp-r lib tutorial
+tar cf esp-r_v11.4_X11_cygwin.tar bin docs esp-r lib tutorial
 
 then gzip the file and move it into precompiled_for_cygwin folder.
-gzip -9 esp-r_v11.3_X11_cygwin.tar
-mv esp-r_v11.3_X11_cygwin.tar.gz precompiled_for_cygwin
+gzip -9 esp-r_v11.4_X11_cygwin.tar
+mv esp-r_v11.4_X11_cygwin.tar.gz precompiled_for_cygwin
 
 suggest doing a cleanup of the executables and object files before
 building the GTK version.  If you want to back up the esp-r
 main distribution folder then
 mv /home/esru/esp-r /home/esru/esp-r_X11
 
-After building GTK version this creates tar file:
-tar cf esp-r_v11.3_GTK_cygwin.tar bin docs esp-r lib tutorial
-gzip -9 esp-r_v11.3_GTK_cygwin.tar
-mv esp-r_v11.3_GTK_cygwin.tar.gz precompiled_for_cygwin
+After building GTK version and removing the .svn folders the
+following commands will create the tar file:
+tar cf esp-r_v11.4_GTK_cygwin.tar bin docs esp-r lib tutorial
 
 then gzip the file and also move it into precompiled_for_cygwin folder.
+gzip -9 esp-r_v11.4_GTK_cygwin.tar
+mv esp-r_v11.4_GTK_cygwin.tar.gz precompiled_for_cygwin
 
 Remember to remove any older *.tar.gz files from the precompiled_for_cygwin
 folder so that are not included in the installer run file.
 
 the next line creates combined installer (user is asked which version to extract).
-/home/esru/src/makeself-2.1.4/makeself.sh precompiled_for_cygwin esp-r_v11.3_cygwin_precomp.run "ESP-r V11.3 distribution for cygwin (standard install location)" ./setup
+/home/esru/src/makeself-2.1.4/makeself.sh precompiled_for_cygwin
+esp-r_v11.4_cygwin_precomp.run "ESP-r V11.4 distribution for cygwin (standard install location)" ./setup

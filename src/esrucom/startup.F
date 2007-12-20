@@ -67,9 +67,6 @@ C A set of possible cad packages: labels and executables.
 C Report generator: label and executable.
       common/rep3rd/replbl,repexe
 
-C External tutorial.
-      common/tutopts/tutlbl,tutexe
-
 C Save journal. journoo = ON or OFF
       common/journopt/journio,iuj,journcmd,jfile
 
@@ -95,7 +92,6 @@ C Where validation tests are kept.
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48
       character foldlbl*20,foldexe*48
-      character tutlbl*20,tutexe*96
       character vldlbl*20,vldfl*72 
       character journcmd*20,jfile*72
 
@@ -125,8 +121,6 @@ C initial values because they will not be used.
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
-        tutlbl='Tutorial'
-        tutexe=' '
         journcmd=' '
         jfile=' '
         imgtyp=1
@@ -153,8 +147,6 @@ C temporary files in the users home folder.
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
-        tutlbl='Tutorial'
-        tutexe='netscape http://www.esru.strath.ac.uk &'
         journcmd=' '
         jfile=' '
 
@@ -288,13 +280,8 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         if(itrc.gt.0)call edisp(iuout,outs)
       elseif(WORD(1:13).eq.'*tutorial_app')then
 
-C Tutorial application.
-        CALL EGETP(OUTSTR,K,tutlbl,'W','tutorial lbl',IER)
-        CALL EGETP(OUTSTR,K,tutexe,'W','tutorial exe',IER)
-        write(outs,'(a,a,2x,a)')' Tutorial : ',tutlbl,
-     &    tutexe(1:lnblnk(tutexe))
-        if(itrc.gt.0)call edisp(iuout,outs)
-        call captut(tutexe)
+C Tutorial application depreciated.
+        continue
       elseif(WORD(1:8).eq.'*journal')then
 
 C Turn journaling on/off.
@@ -963,10 +950,6 @@ C Help message for parpsf.
         call edisp(iuout,' ')
         call edisp(iuout,' -help :this help message. ')
         return
-      elseif(appn(1:3).eq.'cfg')then
-        call edisp(iuout,'The topology checking module. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <configuration file>]')
       elseif(appn(1:3).eq.'dfs')then
         call edisp(iuout,'The stand-alone domain flow module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1028,12 +1011,14 @@ C Help message for parpsf.
       elseif(appn(1:3).eq.'prj')then
         call edisp(iuout,'The project manager.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <configuration file>]')
+        call edisp(iuout,
+     &     '       [-file <configuration>|<silent command>]')
         call edisp(iuout,'       [-zone <name|index>]')
-      elseif(appn(1:3).eq.'pro')then
-        call edisp(iuout,'The event profiles database manager. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <profiles db>]')
+        call edisp(iuout,'       [-act {silentread}] ')
+        call edisp(iuout,' (where -act silentread assumes -file <name>')
+        call edisp(iuout,'  is high-level model creation directives')
+        call edisp(iuout,'  file. Otherwise the -file <name> is')
+        call edisp(iuout,'  assumed to be a model configuration file)')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1509,14 +1494,11 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'focused on zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1596,7 +1578,8 @@ C  to be passed to the program from the invocation line.
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24,outs*248,zone*16
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,zone*16
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1782,6 +1765,103 @@ C Display detailed build information and then quit
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
 C        call edisp248(iuout,outs,90)
+        return
+      endif
+      end
+
+C ********* partfa (equivalent to partf with an action parameter)
+C  Allowing terminal, file and action arguments
+C  to be passed to the program from the invocation line.  
+C  Logic allows for the -file token to be optional.
+      subroutine partfa(termtype,inf,act)
+      COMMON/OUTIN/IUOUT,IUIN
+
+      integer termtype
+      character*48 prog
+      integer iargc,m
+      character argument*72,mode*8,inf*144,appn*24,outs*248,act*16
+
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
+      inf  = 'UNKNOWN'
+      act = 'NONE'
+      argument = ' '
+
+C Get arguments from command line: if one parameter.
+      if(m.eq.0)then
+        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
+        call edisp248(iuout,outs,90)
+        return
+      elseif(m.ge.1)then
+  41    i= i+1
+        if(i.gt.m)goto 42
+        call getarg(i,argument)
+
+        if(argument(1:5).eq.'-help')then
+          call parpsfh(appn)
+          stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit
+          CALL ESPrVersion("summary")
+          stop
+        elseif( argument(1:10) .eq. '-buildinfo' ) then
+C Display detailed build information and then quit
+          CALL ESPrVersion("details")
+          stop
+        elseif(argument(1:5).eq.'-mode')then
+          i=i+1
+          call getarg(i,argument)
+          if(argument(1:4).eq.'text')then
+            termtype = -1
+            mode = 'text'
+          elseif(argument(1:4).eq.'page')then
+            termtype = -2
+            mode = 'page'
+          elseif(argument(1:5).eq.'graph')then
+            termtype = 8
+            mode = 'graphic'
+          elseif(argument(1:6).eq.'script')then
+            termtype = -6
+            mode = 'script'
+          endif
+        elseif(argument(1:5).eq.'-file')then
+          i=i+1
+          call getarg(i,inf)
+        elseif(argument(1:5).eq.'-act ')then
+          i=i+1
+          call getarg(i,act)
+        else
+
+C Assume argument is an input file without the -file token.
+          write(inf,'(a)') argument(1:lnblnk(argument))
+        endif
+        goto 41
+
+  42    continue
+        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
+        call edisp248(iuout,outs,90)
         return
       endif
       end

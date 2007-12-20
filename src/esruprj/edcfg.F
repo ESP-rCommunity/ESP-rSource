@@ -143,7 +143,7 @@ C Controls.
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,H*72,ITEMS*38,t24*24,ETEXT*82
+      character LCFGF*72,H*72,ITEMS*34,t24*24,ETEXT*82
       character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp,DSBEM
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -180,15 +180,15 @@ C are active.
       ictl=0
       ictl=ncf+ncl+ncc+ngf
       IER=0
-      WRITE(ITEMS(1),'(A,A20)') ' cfg file: ',LCFGF(1:22)
+      WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
       IF(INDCFG.EQ.0)THEN 
-        ITEMS(2)= 'a modelling domains >> registration'
+        ITEMS(2)= 'a model domains >> registration'
       ELSEIF(INDCFG.EQ.1)THEN
-        ITEMS(2)= 'a modelling domains >> building only'
+        ITEMS(2)= 'a model domains >> building only'
       ELSEIF(INDCFG.EQ.2)THEN
-        ITEMS(2)= 'a modelling domains >> plant only'
+        ITEMS(2)= 'a model domains >> plant only'
       ELSEIF(INDCFG.EQ.3)THEN
-        ITEMS(2)= 'l modelling domains >> building/plant'
+        ITEMS(2)= 'a model domains >> building/plant'
       ENDIF
       ITEMS(3)   ='b model context                '
       ITEMS(4)   =' _____________________________ '
@@ -245,7 +245,7 @@ C are active.
       ITEMS(21)  ='o visualisation                '
       ITEMS(22)  ='p simulation                   '
       ITEMS(23)  ='q results analysis             '
-      ITEMS(24)  ='r results reporting            '
+      ITEMS(24)  ='r results & QA reporting       '
       ITEMS(25)  =' _____________________________ '
       ITEMS(26)  ='! save model                   '
       ITEMS(27)  ='? help                         '
@@ -261,12 +261,17 @@ C Help text for this menu.
       H(6)=' '
       H(7)='The structure of this menu reflects the entities of a'
       H(8)='system configuration file. The options may be used to'
-      H(9)='define a problem for simulation.  For example, it is'
+      H(9)='define a model to be simulated.  For example, it is'
       H(10)='possible to initially define a single building zone and'
       H(11)='then add further zones, plant and control later. It is'
       H(12)='also possible to increase the resolution of a model by,'
       H(13)='adding in a CFD domain to represent zone air movement'
       H(14)='or plant component working fluid flow.'
+      H(15)=' '
+      H(16)='The `actions` section includes comissioning assessments'
+      H(17)='of the model, recovering performance indidators, as'
+      H(18)='well as generating QA reports on the composition of'
+      H(19)='the model. '
 
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
@@ -312,7 +317,7 @@ C Exit back to calling menu and clear dialogue box.
       ELSEIF(INO.EQ.nitems-1)THEN
 
 C Help text for the menu.
-        CALL PHELPD('configuration images',14,'-',0,0,IER)
+        CALL PHELPD('configuration images',19,'-',0,0,IER)
         goto 3
       ELSEIF(INO.EQ.nitems-2)THEN
 
@@ -3271,7 +3276,8 @@ C selected an exemplar model.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
 #include "esprdbfile.h"
-#include "espriou.h"  ! for parameter MFFOLD
+#include "espriou.h"  
+C espriou.h for parameter MFFOLD
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -3313,6 +3319,9 @@ C Defaults.
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
+
+C Passed parameters for pregist.
+      character root*24,mpath*72,folder*12,menu*32
 
       integer igraphiclib  ! external definition
 
@@ -3543,7 +3552,8 @@ C configuration files.
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,t144)
         if(ifold.eq.1.and.icerr.eq.0)then
-          write(cfgroot,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+          lex=MIN0(lnblnk(LCMDFL),24)
+          write(cfgroot,'(a)') LCMDFL(1:lex)
           subpath=' '
           call usrdir(odir)
           write(subpath,'(3a)') odir(1:lnblnk(odir)),fs,
@@ -3894,10 +3904,14 @@ C Scan the model topology and report on any problems encountered.
           return
         endif
 
-C Clear any previous model in memory.
+C Clear any previous model in memory and call pregisst in interactive
+C mode (with blanks for the parameters).
         call clrprb
-
-        call pregist('i',ier)
+        root=' '
+        mpath=' '
+        folder=' '
+        menu=' '
+        call pregist('i',root,mpath,folder,menu,ier)
         IF(IER.LT.0)RETURN
 
         CFGOK=.TRUE.

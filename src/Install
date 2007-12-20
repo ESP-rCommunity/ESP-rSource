@@ -1118,10 +1118,7 @@ corrupted_tree="no"
 if [ "$create_espr_dir" = "no" ]; then
    
 
-     
-  if [ ! -d $ESPdir/../bin ]            || 
-     [ ! -d $ESPdir/../lib ]            ||
-     [ ! -d $ESPdir ]                   ||
+  if [ ! -d $ESPdir ]                   ||
      [ ! -d $ESPdir/bin ]               ||
      [ ! -d $ESPdir/climate ]           ||
      [ ! -d $ESPdir/databases ]         ||
@@ -1139,10 +1136,6 @@ if [ "$create_espr_dir" = "no" ]; then
       echo " The ESP-r directory tree does not exist at ${DESTdir},"
       echo " or may have been corrupted. The following directories are"
       echo " required: "
-      echo "    $DESTdir/bin"
-      echo "    $DESTdir/bin/Radiance"
-      echo "    $DESTdir/lib"
-      echo "    $DESTdir/lib/Radiance"
       echo "    $ESPdir"
       echo "    $ESPdir/bin "
       echo "    $ESPdir/climate "
@@ -1194,29 +1187,6 @@ if [ "$corrupted_tree" = "yes" ] || [ "$create_espr_dir" = "yes" ]; then
       echo " "
       exit
     fi
-  fi
-
-  # Add  bin, bin/Radiance, lib & lib/Radiance directories.
-  # NOTE: Installing these files into the DESTdir location
-  # is undesrable, and may lead to system instability. At the 
-  # very least, we're polluting the user's home directory, and 
-  # might potentially cause portions of the system to fail if the 
-  # user specifies a /usr or /usr/local installation path!
-  # An alternative should be sought as soon as possible!
-  if [ ! -d $DESTdir/bin ]; then
-    mkdir $DESTdir/bin
-  fi
-
-  if [ ! -d $DESTdir/bin/Radiance ]; then
-    mkdir $DESTdir/bin/Radiance
-  fi
-
-  if [ ! -d $DESTdir/lib ]; then
-    mkdir $DESTdir/lib
-  fi
-
-  if [ ! -d $DESTdir/lib/Radiance ]; then
-    mkdir $DESTdir/lib/Radiance
   fi
 
   rm -fr $ESPdir
@@ -1584,7 +1554,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1607,7 +1577,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1630,7 +1600,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1653,7 +1623,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1676,7 +1646,7 @@ if [ "$install_training" = "yes" ]; then
     echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
     echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
     echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
-    echo "*prm ${ESPdir}/databases/constr.db2" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
     echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
     echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
     echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
@@ -1700,7 +1670,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1719,7 +1688,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1738,7 +1706,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1757,7 +1724,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
     echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
     echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,netscape http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,nedit" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1776,7 +1742,6 @@ if [ "$install_training" = "yes" ]; then
     echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
     echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
     echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
-    echo "*tutorial_app,Tutorial,iexplore.exe http://www.esru.strath.ac.uk &" >> ${ESPdir}/esprc
     echo "*journal,OFF" >> ${ESPdir}/esprc
     echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
     echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
@@ -1788,8 +1753,8 @@ if [ "$install_training" = "yes" ]; then
   fi
   
      echo " "
-     echo "Installing standard bitmaps into ${DESTdir}/lib ..."
-     cp ${SRCdir}/bitmaps/*.xbm ${DESTdir}/lib
+     echo "Installing standard bitmaps into ${ESPdir}/lib ..."
+     cp ${SRCdir}/bitmaps/*.xbm ${ESPdir}/lib
      echo " "
      echo "Installing training models ..."
      echo " "
@@ -1893,9 +1858,9 @@ if [ "$install_training" = "yes" ]; then
      echo "... done."
   
      echo "Installing tutorial files ..."
-     rm -rf ${DESTdir}/tutorial
-     mkdir ${DESTdir}/tutorial
-     cp -r ${SRCdir}/tutorial/* ${DESTdir}/tutorial
+     rm -rf ${ESPdir}/tutorial
+     mkdir ${ESPdir}/tutorial
+     cp -r ${SRCdir}/tutorial/* ${ESPdir}/tutorial
      echo "... done."
   
 fi

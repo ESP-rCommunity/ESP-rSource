@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C filelist.F contains:
 C  browsefilelist: presents user with list of files recovered from
 C    a call to getfilelist to select from. 
-C  clearfilelist: clears a string array (char*72 listf(50))
+C  clearfilelist: clears a string array (char*72 listf(100))
 C    used before call to getfilelist.
 C  copyfilelist: takes string array returned from getfilelist and copies
 C    it into a string array suitable for use on fortran side.
@@ -42,7 +42,8 @@ C parameter nlist is the number of files matching criteria.
 C parameter ier returned as 2 if problem writing file name path.
 
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
-#include "espriou.h"  ! for parameter MFFOLD
+#include "espriou.h"
+C espriou.h for parameter MFFOLD
 
       common/pophelp/h(60)
       common/uhome/upath
@@ -409,6 +410,7 @@ C act: (char*1) `l` as list, `p` as packed line(s).
       common/OUTIN/IUOUT,IUIN
       character*(*) title
       character act*1,t96*96
+      integer iasize,nlist
       character*72 listf(iasize)
 
       if(nlist.eq.0)then
@@ -417,8 +419,6 @@ C act: (char*1) `l` as list, `p` as packed line(s).
         call edisp(iuout,title)
         if(act.eq.'l')then
           do 42 i=1,nlist
-C            lln=MAX0(lnblnk(listf(i)),1)
-C            call edisp(iuout,listf(i)(1:lln))
             call edisp(iuout,listf(i))
   42      continue
           return

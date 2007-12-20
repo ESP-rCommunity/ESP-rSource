@@ -405,6 +405,7 @@ C Arrays for sorting domains from (see code for comments).
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -938,10 +939,11 @@ C Visualize gridding.
 
 C Restore standard graphics window variables.
           if(MMOD.EQ.8)then
-#ifdef X11
-            CALL feedbox(menuchw,2,igfw,igfh)
-            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+            if(iglib.eq.1)then
+              CALL feedbox(menuchw,2,igfw,igfh)
+              CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+            endif
             CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
             call startbuffer()
 
@@ -1713,6 +1715,8 @@ C IER=0 indicates no error.
       logical MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
 
@@ -1801,10 +1805,11 @@ C View the current gridding.
 
 C Restore standard graphics window variables.
           if(MMOD.EQ.8)then
-#ifdef X11
-            CALL feedbox(menuchw,2,igfw,igfh)
-            CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+            iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+            if(iglib.eq.1)then
+              CALL feedbox(menuchw,2,igfw,igfh)
+              CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+            endif
             CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
             call startbuffer()
 

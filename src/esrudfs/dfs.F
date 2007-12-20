@@ -115,6 +115,8 @@ C Material data arrays.
       LOGICAL SIMOK,OK,dok,GGDH
       LOGICAL areaSSO
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
 C Clear 'conflated only' commons.
       do 2 I=1,MCOM
         zname(I)=' '
@@ -288,13 +290,13 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,10,12,4,4,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-        call opencpw
-        call opensetup
-        call opentutorial
-        call updcapt(1)
-        call updazi(1)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+          call updcapt(1)
+          call updazi(1)
+        endif
         call setgscale()
         call setcscale()
         mdispl=0

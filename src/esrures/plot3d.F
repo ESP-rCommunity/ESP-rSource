@@ -601,6 +601,8 @@ C series data ie. timesteps-vs-day-vs-data.
       character detail*72,zname*12,zdesc*64
       logical close,zlist
 
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
       DATA LNAME/'MASK.DAT'/
 
 C Generate a descriptive string for the time period to be displayed
@@ -610,11 +612,12 @@ C pixel references for calls to viewtext.
       CALL HDSTEP(SDESCR)
 
       IF(MMOD.EQ.8)THEN
-#ifdef X11
-        call winclr
-        call feedbox(menuchw,2,igfw,igfh)
-        call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-#endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call winclr
+          call feedbox(menuchw,2,igfw,igfh)
+          call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
+        endif
         call win3d(menuchw,9,16,7,2,igl,igr,igt,igb,igw,igwh)
         call startbuffer()
         call usrmsg(' ',' ','-')
