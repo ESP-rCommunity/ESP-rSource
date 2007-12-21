@@ -1065,6 +1065,9 @@ C If ICAAS not known use strings held in zmfn1 zmfn2.
         if(.NOT.KNOWN)then
 
 C Write packed string of the network node associated with each zone.
+C << this needs to use a while statement style to get as many lines >>
+C << of data. But really it should be writing out the name of the  >>
+C << flow node and only a zero when there is not flow node. >>
           ipos=1
           call ailist(ipos,ncomp,ICAAS,MCOM,'C',outs,loutlen,itrunc)
           write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=2) outs(1:loutlen)

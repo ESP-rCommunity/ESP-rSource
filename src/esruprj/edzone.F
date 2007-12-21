@@ -2711,10 +2711,11 @@ C section of the string DESC.
 C If no errors then proceed to create constructions files. The
 C file name is already known, assume that attribution is complete
 C so write the header of construction file so something exists and then
-C call edcon to complete the process.
+C call edcon to complete the process. If the file already exists
+C it should be overwritten.
       IUF=IFIL+2
       LTHRM(ICOMP)=CFILE
-      CALL EFOPSEQ(IUF,LTHRM(ICOMP),4,IER)
+      CALL EFOPSEQ(IUF,LTHRM(ICOMP),3,IER)
       WRITE(IUF,31,IOSTAT=IOS,ERR=146)
      &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),CFILE(1:lnblnk(CFILE))
   31  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
