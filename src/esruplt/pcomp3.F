@@ -886,7 +886,7 @@ C           18 Azimuth of surface or tracking axis (degrees)
      &IHUM(MT),IDIFF,ITMPF,IDNRF,IVELF,IDIRF,IHUMF
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
-      DIMENSION XIN(15),PAR(15),OUT(20),INFO(10),sav1(20)
+      DIMENSION xin(15),par(15),OUT(20),INFO(10),sav1(20)
 
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)

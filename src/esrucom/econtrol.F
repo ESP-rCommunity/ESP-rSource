@@ -2758,6 +2758,9 @@ C Plant control law.
         IF(IPCLAW(II,JJ,KK).EQ.8) SSTR='On-Off control.'
         IF(IPCLAW(II,JJ,KK).EQ.9) SSTR='Multi-sensor on-off.'
         IF(IPCLAW(II,JJ,KK).EQ.10) SSTR='Cogen. controller'
+        IF(IPCLAW(II,JJ,KK).EQ.14) SSTR='Multi-sensor '
+        IF(IPCLAW(II,JJ,KK).EQ.15) SSTR='PI Room Ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.16) SSTR='Amb Temp Cmpnstn ctrl'
         message='not yet coded for system controls.'
         return
       ENDIF
@@ -2815,6 +2818,8 @@ C          call edisp248(6,message,80)
 
 C Set short SSTR and then begin to build up the longer message (lmsg)
 C based on the miscel data items.
+C << this report does not recognise a single sensor NOT control
+C << or a single sensor SLAVE control.
           SSTR='multi sensor on/off      '
           cm(1)=fmiscd(II,JJ,KK,1)
           nitems=nint(cm(1))

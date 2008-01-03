@@ -565,10 +565,19 @@ C Referenced item was not in the materials hash list. Write zeros.
           RSI=DRAIR(IFOC,IL,1)
         ELSE
 
-C Also report on thermal resistance (m^2K/W) of the layer.
-          RSI=DTHK(IFOC,IL)/DBCON
+C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
+C is zero then avoid divide by zero.
+          if(dbcon.gt.0.0)then
+            RSI=DTHK(IFOC,IL)/DBCON
+          else
+            RSI=1.0
+          endif
           PNAM(IL)=NAM
-          RT=RT+DTHK(IFOC,IL)/DBCON
+          if(dbcon.gt.0.0)then
+            RT=RT+DTHK(IFOC,IL)/DBCON
+          else
+            RT=1.0
+          endif
         ENDIF
 
 C Reporting.

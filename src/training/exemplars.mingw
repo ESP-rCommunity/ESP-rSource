@@ -130,14 +130,6 @@
 *group	real projects
 *help	A set of models of consulting projects.
 *item
-*name	Glenview Residential Home conservatory
-*cfg	C:\Esru\esp-r\training\glenview\cfg\glenview.cfg
-*root	C:\Esru\esp-r\training\glenview
-*item
-*name	Queens Building, Leicester, England
-*cfg	C:\Esru\Projects\Dl-e\Queens\cfg\queens_ab.cfg
-*root	C:\Esru\Projects\Dl-e\Queens
-*item
 *name	Section of office building (base case), Ottawa Canada 
 *cfg	C:\Esru\esp-r\training\office_vent\cfg\office_vent.cfg
 *root	C:\Esru\esp-r\training\office_vent

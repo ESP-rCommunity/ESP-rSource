@@ -101,7 +101,8 @@ C    and returns 1 if first date is more current, 0 if the same, otherwise -1.
 C  getsecs: Get computer clock seconds.
 C  EGETW:  Finds first word after pos k in a string (' ' ',' '|' or tab separated).
 C  iEGetArrW: integer function that breaks a string into an array.
-C  EGETP:  Finds first phrase after pos k in a string (tab separated).
+C  EGETP:  Finds first phrase after pos k in a string (delimeter separated).
+C  EGETDQ:  Finds first quoted phrase after pos k in a string (delimeter separated).
 C  EGETWI: As EGETW for an integer with range checking & error messages.
 C  EGETWR: As EGETW for a real with range checking & error messages.
 C  EGETWRA: Recovers (IRVA) reals of real array (RVA) from an ASCII file.
@@ -114,6 +115,10 @@ C EGETAGWRA recovers (IRVA) reals of real array (RVA) from a string
 C   TSTR (from position K) and if TSTR does not hold all of the array then
 C   it continues reading from an ASCII file (unit IAF) reading as
 C   many lines as necessary to recover the data.
+C EGETAGWSA recovers (ISVA) phrases into string array (SVA) from a string
+C   TSTR (from position K) and if TSTR does not hold all of the array then
+C   it continues reading from an ASCII file (unit IAF) reading as
+C   many lines as necessary to recover the data
 C  EGETRM: Returns the remainder (RSTR with no leading blanks) from
 C          a text string (TSTR) after position k.
 C  EPERSTR: creates three strings representing the start and
@@ -265,7 +270,7 @@ C Remember value passed in in case of a cancel.
 C Generate help and default strings.
       CALL INTSTR(IDEFLT,STR2,IW2,IER)
       WRITE(DSTR,27,iostat=ios,err=1)STR2(1:IW2)
-   27 FORMAT(' The default value (',a,') will be used.')
+   27 FORMAT('The default value (',a,') will be used.')
 
       CALL INTSTR(IVAL,STR2,IW2,IER)
       CALL INTSTR(IDEFLT,STR1,IW1,IER)
@@ -275,8 +280,8 @@ C Generate help and default strings.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
    64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   65   FORMAT('Default (d):',a,' or Current (ok):',a)
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
       ENDIF
 
 C Begin with prompts.
@@ -311,13 +316,13 @@ C leading blanks from string returned.
 C A 'D' or 'd' detected, set to default value.
           call edisp(iuout,DSTR)
           IVAL=IDEFLT
-          call usrmsg('  ','  ','-')
+C          call usrmsg('  ','  ','-')
           RETURN
         elseif(idef.eq.2)then
 
 C Cancel button was pressed, reset ival as ivalold and mark as cancel. 
           IVAL=ivalold
-          call usrmsg('User requested a cancel for dialog',PROMP1,'-')
+C          call usrmsg('User requested a cancel for dialog',PROMP1,'-')
           ier=-3
           RETURN
         ENDIF
@@ -363,7 +368,7 @@ C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing integer value.
           CALL INTSTR(IVAL,STR2,IW2,IER)
           WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT(' The existing value (',a,') will be used.')
+   55     FORMAT('The existing value (',a,') will be used.')
           RETURN
         ENDIF
       ENDIF
@@ -372,7 +377,7 @@ C Decode the string into an integer.
       read(WORD,*,ERR=999)IVALT
       CALL INTSTR(IVALT,STR1,IW1,IFLAG)
       IF(IFLAG.NE.0)THEN
-        CALL USRMSG(' ',' Did not understand, try again.','-')
+        CALL USRMSG(' ','Did not understand, try again.','-')
         IFLAG=0
         GOTO 20
       ENDIF
@@ -383,10 +388,11 @@ C Check IVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,28,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
+   28   FORMAT('The input value for `',a,'` (',a,
+     &         ') should be greater than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,' Is this OK?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -404,10 +410,11 @@ C Check IVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,39,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   39   FORMAT(' The value of ',a,' (',a,')',' is greater than ',a,'!')
+   39   FORMAT('The input value for `',a,'` (',a,')',
+     &         ' should be less than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.true.
-          CALL ASKOK(OUTSTR,' Is this ok?',OK,DOK,NHELP)
+          CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
           IVAL=IVALT
           IF(.NOT.OK)GOTO 20
           IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
@@ -428,7 +435,7 @@ C Return to calling module
       IF(MMOD.EQ.8)call usrmsg('  ','  ','-')
       RETURN
 
-999   CALL USRMSG(' ',' Did not understand, try again.','-')
+999   CALL USRMSG(' ','Did not understand, try again.','-')
       GOTO 20
    1  write(6,*) 'EASKI: error composing message or prompt.'
       return
@@ -514,13 +521,13 @@ C Generate help and default strings.
       CALL REL16STR(RVAL,STR2,IW2,IER)
       IF(NHELP.GT.0)THEN
         WRITE(H(NHELP+1),63,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
-   63   FORMAT('(Current value: ',a,'; Default value: ',a,')')
+   63   FORMAT('Current value is (',a,'); Default value is (',a,').')
       ELSE
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
    64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
-   65   FORMAT('(Current value: ',a,'; Default value: ',a,')')
+        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+   65   FORMAT('Current value is (',a,'); Default value is (',a,').')
       ENDIF
 
 C Begin with prompts.
@@ -552,8 +559,8 @@ C leading blanks from string returned.
 
 C A 'D' or 'd' detected, set to default value.
           call edisp(iuout,DSTR)
-          call edisp(iuout,' ')
           RVAL=DEFLT
+C          call usrmsg('  ','  ','-')
           RETURN
         ENDIF
         IF(WORD.EQ.' ')THEN
@@ -579,7 +586,6 @@ C In text mode, remind user of current value.
 
 C A 'D' or 'd' detected, set to default value.
             call edisp(iuout,DSTR)
-            call edisp(iuout,' ')
             RVAL=DEFLT
             RETURN
           ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
@@ -599,7 +605,7 @@ C A carriage return or line feed encountered, assume user wishes to
 C use prior/existing real value.
           CALL REL16STR(RVAL,STR2,IW2,IER)
           WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT(' The existing value (',a,') will be used.')
+   55     FORMAT('The existing value (',a,') will be used.')
           RETURN
         ENDIF
       ENDIF
@@ -619,7 +625,8 @@ C Check RVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,28,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   28   FORMAT(' The value of ',a,' (',a,') is less than ',a,'!')
+   28   FORMAT('The input value for `',a,'` (',a,
+     &         ') should be greater than ',a,'!')
         IF(MINACT.EQ.'W')THEN
           DOK=.false.
           CALL ASKOK(OUTSTR,'Is this OK?',OK,DOK,NHELP)
@@ -640,7 +647,8 @@ C Check RVALT against minimum and respond based on MINACT.
         LN=max(1,LNBLNK(ERMSG))
         WRITE(OUTSTR,39,iostat=ios,err=1)ERMSG(1:LN),
      &    STR1(1:IW1),STR2(1:IW2)
-   39   FORMAT('The value of ',a,' (',a,')',' is greater than ',a,'!')
+   39   FORMAT('The input value for `',a,'` (',a,
+     &         ')',' should be less than ',a,'!')
         IF(MAXACT.EQ.'W')THEN
           DOK=.false.
           CALL ASKOK(OUTSTR,'Is this ok?',OK,DOK,NHELP)
@@ -670,7 +678,6 @@ C Return to calling module
 
  999  WRITE(outs,*) 'EASKR: invalid real or > 16 chars: ',RVAL
       call edisp(iuout,outs)
-      call edisp(iuout,' ')
       RETURN
 
       END
@@ -6506,6 +6513,105 @@ C comma is found.
 
       END
 
+C ***************** EGETDQ
+C EGETDQ gets first quoted PHRASE after position K from the STRING of
+C characters. Phrases are separated by tabs or commas. Provides a warning
+C message if ACT='W', a failure message if ACT='F' and does
+C no message if ACT='-'.  The string returned has the quotes removed.
+C Note it uses an internal string buffer which assumes that the
+C phrase is less than 248 characters long.
+      SUBROUTINE EGETDQ(STRING,K,PHRASE,ACT,MSG,ier)
+#include "espriou.h"
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*(*) PHRASE, STRING, MSG
+      CHARACTER ACT*1,A*1,B*1,loutstr*124
+      character dq*1,sqleft*1,sqright*1
+      character buffer*248
+      integer lnofstr
+
+      dq = char(34)  ! double quote
+      sqleft = char(96)  ! single quote left
+      sqright = char(39)  ! single quote right
+
+C LS is th maximum length of STRING, L the current position,
+C LW the maximum length of PHRASE.
+      ier=0
+      PHRASE=' '
+      LS=LEN(STRING)
+      LW=LEN(PHRASE)
+      L=0
+
+C Start by skipping blanks and tabs before the PHRASE.
+   10 K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
+
+C Copy PHRASE from STRING, character by character until tab or a
+C comma is found.
+   20 L=L+1
+      IF(L.GT.LW) GOTO 100
+      PHRASE(L:L)=A
+      K=K+1
+      IF(K.GT.LS) GOTO 999
+      A=STRING(K:K)
+      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      GOTO 20
+
+  100 continue
+
+C Test if the first and last characters are double or single quotes
+      A=PHRASE(1:1)
+      B=PHRASE(L:L)
+      if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+        if(B.eq.dq.or.B.eq.sqright.or.B.eq.sqleft)then
+          lnofstr=lnblnk(PHRASE)-1
+          write(buffer,'(a)') PHRASE(2:lnofstr)
+          write(phrase,'(a)') buffer(1:lnblnk(buffer))
+        endif
+      endif
+      RETURN
+
+  999 if(ACT.EQ.'-')then
+        RETURN
+      elseif(ACT.EQ.'W')then
+        ier=1
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'WARNING: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      elseif(ACT.EQ.'F')then
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5a)',IOSTAT=IOS,ERR=1)
+     &      'FAILURE: in ',currentfile(1:LN),
+     &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
+        else
+          WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
+     &      'FAILUREW: Past end of line for ',
+     &      MSG(1:LNM),' (phrase) in...'
+        endif
+      endif
+      CALL EDISP248(iuout,loutstr,100)
+      if(lnblnk(STRING).gt.123)then
+        CALL EDISP248(iuout,STRING,100)
+      else
+        CALL EDISP(iuout,STRING)
+      endif
+      GOTO 100
+   1  write(6,*) 'EGETDQ: error writing warning re: ',STRING
+
+      END
+
 C ***************** EGETWI
 C EGETWI gets first word after position K from the STRING of
 C characters and converts it into an integer IV, tests it against
@@ -7059,6 +7165,93 @@ C word, otherwise read another line from the file.
    1  write(6,*) 'EGETWRA: error writing warning re: ',OUTS
       end
 
+
+C *************** EGETAGWSA
+C EGETAGWSA recovers (ISVA) phrases into string array (SVA) from a string
+C TSTR (from position K) and if TSTR does not hold all of the array then
+C it continues reading from an ASCII file (unit IAF) reading as
+C many lines as necessary to recover the data
+
+C The string array SVN is an array of inisz items assumed to be less than
+C or equal to *32 characters (that is the size of the buffer). This is
+C flexable enough to work with phrases (and so it requires comma or
+C tab separation in the file).
+
+C IER=2 if EOF is reached before ISVA items have been parsed. IER=1 if
+C there was a problem reading it. Each value is tested against
+C a blank stringt and provides a warning message if SACT='W', a failure
+C message if SACT='F' and does no blank checking if RACT='-'.
+C Phrases may be separated by commas, or tab: phrase,phrase,phrase or
+C phrase, phrase, phrase, or phrase<tab>phrase<tab>phrase are all valid.
+C Note: all reads are able to accept commented files.
+      SUBROUTINE EGETAGWSA(TSTR,K,IAF,ISVA,SVA,inisz,SACT,MSG,IER)
+      common/OUTIN/IUOUT,IUIN
+      dimension SVA(inisz)
+      CHARACTER*(*) SVA
+      CHARACTER*(*) TSTR,MSG
+      CHARACTER OUTS*248,SACT*1,MSG1*124,buffer*32
+      logical swapover
+
+      IF(ISVA.LE.0)GOTO 99
+
+C LN is the actual length of TSTR.
+      ier=0
+      LN=max(1,lnblnk(TSTR))
+
+C Initially set swapover = false. When TSTR exhaused set swapover
+C = true and read from outs.
+      swapover=.false.
+      DO 12 KV=1,ISVA
+
+C If character position is < actual length of string parse another
+C word, otherwise read another line from the file.
+        IF(K.LT.LN)THEN
+          if(swapover)then
+            CALL EGETP(OUTS,K,buffer,SACT,MSG,IERV)
+          else
+            CALL EGETP(TSTR,K,buffer,SACT,MSG,IERV)
+          endif
+          IF(IERV.NE.0) THEN
+            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+            LN=max(1,LNBLNK(OUTS))
+            IF(IER.NE.0)RETURN
+            K=0
+            CALL EGETP(OUTS,K,buffer,SACT,MSG,IERV)
+            swapover=.true.
+          ENDIF
+        ELSE
+          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+          LN=max(1,LNBLNK(OUTS))
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETP(OUTS,K,buffer,SACT,MSG,IERV)
+          swapover=.true.
+        ENDIF
+        IF(IERV.NE.0) GOTO 1001
+        write(SVA(KV),'(a)') buffer(1:lnblnk(buffer))
+   12 CONTINUE
+
+  100 RETURN
+
+   99 CALL EDISP(iuout,' array size zero, skipping read.')
+      GOTO 100
+
+ 1001 LNM=max(1,lnblnk(MSG))
+      WRITE(MSG1,1002,IOSTAT=IOS,ERR=1)MSG(1:LNM),buffer,K
+ 1002 FORMAT(' Problem reading ',A,' phrase= ',A,' @ pos ',
+     &       I3,' in the string:')
+      CALL EDISP(iuout,MSG1)
+      if(LNM.ge.124)then
+        write(6,*) 'EGETAGWSA: error writing: ',OUTS
+      else
+        CALL EDISP(iuout,OUTS)
+      endif
+      IER=1
+      GOTO 100
+   1  write(6,*) 'EGETAGWSA: error writing warning re: ',OUTS
+      end
+
+
 C ***************** EGETRM
 C EGETRM returns the remainder of a text string TSTR after position k
 C in RSTR where RSTR has no leading blanks.
@@ -7453,12 +7646,12 @@ C of array size (inisz) and builds a packed string (pckstr) and
 C returns pckstr and written character width (length). If itrunc
 C is zero then all items written, else the index of the last item
 C which was written. Delm is delimeter between items. It is assumed
-C that each string array item is less than 24 characters wide.
+C that each string array item is less than 32 characters wide.
 
       SUBROUTINE ASLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
       dimension list(inisz)
       character*(*) pckstr,list
-      CHARACTER item*24,delm*1
+      CHARACTER item*32,delm*1
 
       itrunc=0
       LS=LEN(pckstr)
@@ -7472,7 +7665,7 @@ C the space available.
       ixl=0
       do 43 i=inst,inil
         lna=max(1,LNBLNK(list(i)))
-        if(lna.gt.24) lna=24
+        if(lna.gt.32) lna=32
         write(item,'(a)') list(i)(1:lna)
 
 C Write next portion of pckstr and if not at the end write a
@@ -8692,10 +8885,10 @@ C   -1.1       -2
 
 C ******************** EAZALT
 C EAZALT computes the solar azimuth and altitude angles at the current
-C time (REAL).   The 'ISUNUP' variable determines whether the sun
-C is up (=1) or down (=0).   The solar angles are computed relative
-C to local mean time (ie Greenwich is the reference time zone for
-C Britain).
+C time (REAL). The 'ISUNUP' variable determines whether the sun
+C is up (=1) or down (=0). The solar angles are computed relative
+C to local mean time (e.g. Greenwich is the reference time zone for
+C the UK).
       SUBROUTINE EAZALTS(TIMEH,ID,SLAT,SLON,ISUNUP,SAZI1,SALT1)
       logical CLOSE
       SAZI1=0.

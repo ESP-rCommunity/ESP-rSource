@@ -113,8 +113,8 @@ C For the time-step controller type 6:
 
 C For shading/ insolation:
       PARAMETER (MB=80)
-      PARAMETER (MOX=20)
-      PARAMETER (MOZ=20)
+      PARAMETER (MOX=50)
+      PARAMETER (MOZ=50)
 
 C 'misur' is the maximum number of insolated surfaces.
       parameter (misur=6)

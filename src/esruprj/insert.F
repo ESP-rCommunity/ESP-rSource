@@ -1816,11 +1816,12 @@ C Depending on act.
         ENDIF
         PERC = XO
 
-C Determine surface length and height.
+C Determine surface length and height. Comment out feedback since
+C it is silent percentage.
         CALL SURLEHI(IS,XYMAX,ZMAX)
-        Write(outs,'(a,f4.1,a,f4.1,a)') 'Surface lenght = ',XYMAX,
-     &      ' m, surface height = ',ZMAX,' m.'
-        call edisp(itru,outs)
+C        Write(outs,'(a,f5.1,a,f4.1,a)') 'Surface length = ',XYMAX,
+C     &      ' m, surface height = ',ZMAX,' m.'
+C        call edisp(itru,outs)
 
 C Determine opening width, height, X offset and z offset.
         XW=(XYMAX*SQRT(PERC))/10
@@ -1851,7 +1852,7 @@ C edited to a thick line if currently in graphics mode.
 
 C Remind use of parent surface length and height (bounding box).
       CALL SURLEHI(IS,XYMAX,ZMAX)
-      Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+      Write(outs,'(a,f7.3,a,f6.3,a)') 'Parent surface width = ',
      &  XYMAX,' m, and height = ',ZMAX,' m.'
       call edisp(itru,outs)
 

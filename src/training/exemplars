@@ -177,22 +177,6 @@
 *group	real projects
 *help	These models were built for use in consultancy/research projects.
 *item
-*name	Glenview residential home, Inverness, Scotland
-*cfg	/usr/esru/esp-r/training/glenview/cfg/glenview.cfg
-*root	/usr/esru/esp-r/training/glenview
-*item
-*name	Queens Building, Leicester, England
-*cfg	/usr/esru/Projects/Dl-e/Queens/cfg/queens_ab.cfg
-*root	/usr/esru/Projects/Dl-e/Queens
-*item
-*name	Teaching Hospital, Thessaloniki, Greece
-*cfg	/usr/esru/Projects/Solar_h/CT024/cfg/athens_a.cfg
-*root	/usr/esru/Projects/Solar_h/CT024
-*item
-*name	READ Building, Regensburg, Germany
-*cfg	/usr/esru/Projects/Solar_h/CT319/regen-g2g.cfg
-*root	/usr/esru/Projects/Solar_h/CT319
-*item
 *name	Office building section, Ottawa, Canada 
 *cfg	/usr/esru/esp-r/training/office_vent/cfg/office_vent.cfg
 *root	/usr/esru/esp-r/training/office_vent

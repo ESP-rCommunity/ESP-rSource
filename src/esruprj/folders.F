@@ -27,8 +27,16 @@ C           model.
 C  EDBUILD: edits building information for system configuration file.
 
 C ********** pregist
-C Register a new project. Parameter act = 'i' then initial pass.
-      subroutine pregist(act,ier)
+C Register a new project. Parameter act = 'i ' then initial pass,
+C if 'e ' then provide editing menu, if 'sn' use passed parameters
+C for the root and path and folder layout to create a new model,
+C if 'sc' silent continue, if 'sw' then pased root and folder layout
+C but model is assumed to be created silently within the current folder.
+C root (24 char) root name (for 'sn' case)
+C mpath (72 char) path to model folder (for 'sn' case)
+C folder (12 char) is 'single' or 'distributed' folder structure
+C menu (32 char) brief title of model
+      subroutine pregist(act,root,mpath,folder,menu,ier)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
@@ -70,6 +78,9 @@ C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
       dimension nwlistf(MFFOLD)
 
+C Passed in parameters.
+      character root*24,mpath*72,folder*12,menu*32
+
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok,clkok
 
@@ -81,7 +92,7 @@ C Calendar.
       character doit*248,tfile*72,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
-      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*1
+      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*2
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
@@ -89,6 +100,7 @@ C Calendar.
       character subpath*72,action*3,outs*124
 
       integer iyeart    ! for local editing
+      integer lnmp,lncr ! for with of mpath & cfgroot strings
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -104,40 +116,59 @@ C Ask for source file, brief description and log file. Offer
 C editing of log file, images, hypertext link and results summary.
       IER=0
 
-  289 H(1)='The model configuration file holds the definition'
-      H(2)='of the building, plant and control systems to be'
-      H(3)='simulated, including references to associated files.'
-      h(4)='The name you supply will be used as the root name'
-      h(5)='for the various files corresponding to the model'
-      h(6)='you will later establish. Up to 24 characters allowed.'
-      LCFTMP='  '
-      CALL EASKSCMD(LCFTMP,' ','Model root name?',
+  289 if(act(1:2).eq.'sc')then
+
+C Silent continue, there is nothing to do (currently).
+        return
+      elseif(act(1:2).eq.'sn')then
+
+C Silent new.
+C the pre-registration process.
+        write(6,*)  ' pregist ',root,' ',folder
+        write(6,*)  ' pregist ',mpath
+        write(LCFTMP,'(a)') root(1:lnblnk(root))
+      elseif(act(1:2).eq.'sw')then
+
+C Silent within.
+C the pre-registration process.
+        write(6,*)  ' pregist ',root,' ',folder
+        write(6,*)  ' pregist ',mpath
+        write(LCFTMP,'(a)') root(1:lnblnk(root))
+
+      elseif(act(1:1).eq.'i')then
+
+        H(1)='The model configuration file holds the definition'
+        H(2)='of the building, plant and control systems to be'
+        H(3)='simulated, including references to associated files.'
+        h(4)='The name you supply will be used as the root name'
+        h(5)='for the various files corresponding to the model'
+        h(6)='you will later establish. Up to 24 characters allowed.'
+        LCFTMP='  '
+        CALL EASKSCMD(LCFTMP,' ','Model root name?',
      &     'cancel',clkok,24,'new_model','model root name',IER,6)
-      call usrmsg(' ',' ','-')
-      if(clkok)then
-        return         ! User selected cancel.
-      else
+        call usrmsg(' ',' ','-')
+        if(clkok) return         ! User selected cancel.
 
 C Trap for blank root name.
         IF(LCFTMP(1:2).EQ.'  '.or.LCFTMP(1:4).eq.'UNKN')GOTO 289
+      endif
 
 C User did not cancel so instantiate data for new model.
-        call clrprb
-        icfgv=3
-        INDCFG=0
-        XLAT=55.9
-        SLAT=55.9
-        XLON=-4.1
-        SLON=-4.1
-        IXPOS=1
-        GREF=0.2
-        NCOMP=0
-        noimg=0
-        LPNF='UNKNOWN'
-        LPRJLG='UNKNOWN'
-        nbdaytype=0
-        call st2file(LCFTMP,LCMDFL)
-      endif
+      call clrprb
+      icfgv=3
+      INDCFG=0
+      XLAT=55.9
+      SLAT=55.9
+      XLON=-4.1
+      SLON=-4.1
+      IXPOS=1
+      GREF=0.2
+      NCOMP=0
+      noimg=0
+      LPNF='UNKNOWN'
+      LPRJLG='UNKNOWN'
+      nbdaytype=0
+      call st2file(LCFTMP,LCMDFL)
 
 C Derive the model root name from this.
 C If sting > 4 char it might have a .cfg attached, otherwise add.
@@ -167,8 +198,14 @@ C Check existance of this file (should not overwrite an existing file).
         h(4)=' '
         h(5)='If you want to create a new model variant say no and'
         h(6)='enter a different file name.'
-        call askok('There is an existing configuration with',
-     &  'this name. Do you want to overwrite it? ',OK,dok,6)
+        if(act(1:2).eq.'sn')then
+          OK=.true.
+        elseif(act(1:2).eq.'sw')then
+          OK=.true.
+        elseif(act(1:1).eq.'i')then
+          call askok('There is an existing configuration with',
+     &    'this name. Do you want to overwrite it? ',OK,dok,6)
+        endif
         if(.not.OK)goto 289
       endif
 
@@ -176,41 +213,189 @@ C Ask where to put it.
 C Get the current folder and display options to the user.
       odir=' '
       call usrdir(odir)
+      if(act(1:2).eq.'sw')then
+        if(folder(1:6).eq.'single')then
+
+C Assume all types of files go in the current folder. Set path
+C variable to equal mpath (which was passed into this subroutine).
+          lnmp=lnblnk(mpath)
+          write(path,'(a)') mpath(1:lnmp)
+          write(zonepth,'(2a)')'.',fs
+          write(netpth,'(2a)')'.',fs
+          write(ctlpth,'(2a)')'.',fs
+          write(imgpth,'(2a)')'.',fs
+          write(radpth,'(2a)')'.',fs
+          write(docpth,'(2a)')'.',fs
+          write(tmppth,'(2a)')'.',fs
+          write(dbspth,'(2a)')'.',fs
+
+C Re-establish pwd and then project folders.
+          call edisp(iuout,
+     &        'System configuration file is located in folder:')
+          call edisp(iuout,path)
+
+C Write out the model log file and then jump past the standard
+C dialogs.
+          uname=' '
+          call usrname(uname)
+          call usrdir(pwd)
+          write(LSNAM,'(a)') menu(1:lnblnk(menu))
+          write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+          write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+          IUNIT=IFIL+1
+          CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+          write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
+          write(iunit,'(2a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+          write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
+          write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
+          call dstamp(dstmp)
+          write(iunit,'(2a)')'Date: ',dstmp
+          write(iunit,'(a)')'Client: '
+          write(iunit,'(a)')'Project reference: '
+          write(iunit,'(a)')'_____________________________'
+          write(iunit,'(a)')'Notes: '
+          write(iunit,'(a)')'_____________________________'
+          CALL ERPFREE(IUNIT,ISTAT)
+          goto 77
+        endif
+
+      elseif(act(1:2).eq.'sn')then
+
+        if(folder(1:6).eq.'single')then
+
+C Assume all types of files go in the single project folder (mpath).
+          lnmp=lnblnk(mpath)
+          write(doit,'(2a)') 'mkdir ',mpath(1:lnmp)
+          call usrmsg('Creating model folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          call usrmsg('  ','  ','-')
+          write(zonepth,'(2a)')'.',fs
+          write(netpth,'(2a)')'.',fs
+          write(ctlpth,'(2a)')'.',fs
+          write(imgpth,'(2a)')'.',fs
+          write(radpth,'(2a)')'.',fs
+          write(docpth,'(2a)')'.',fs
+          write(tmppth,'(2a)')'.',fs
+          write(dbspth,'(2a)')'.',fs
+
+C Re-establish pwd and then project folders.
+          write(path,'(2a)')mpath(1:lnblnk(mpath)),fs
+          call edisp(iuout,
+     &        'System configuration file is located in folder:')
+          call edisp(iuout,path)
+
+        elseif(folder(1:11).eq.'distributed')then
+
+C Create the folder mpath and inside that the standard folders.
+          lnmp=lnblnk(mpath)
+          write(doit,'(2a)') 'mkdir ',mpath(1:lnmp)
+          call usrmsg('Creating model folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          call usrmsg('  ','  ','-')
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'cfg'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'rad'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
+          call usrmsg('Creating folder:',doit,'-')
+          call runit(doit,'-')
+          call pausems(400)
+
+          write(zonepth,'(3a)')'..',fs,'zones'
+          write(netpth,'(3a)')'..',fs,'nets'
+          write(ctlpth,'(3a)')'..',fs,'ctl'
+          write(imgpth,'(3a)')'..',fs,'images'
+          write(radpth,'(3a)')'..',fs,'rad'
+          write(docpth,'(3a)')'..',fs,'doc'
+          write(tmppth,'(3a)')'..',fs,'tmp'
+          write(dbspth,'(3a)')'..',fs,'dbs'
+
+C Re-establish pwd and then project folders.
+          write(path,'(4a)')mpath(1:lnblnk(mpath)),fs,'cfg',fs
+          call edisp(iuout,
+     &        'System configuration file is located in folder:')
+          call edisp(iuout,path)
+        endif 
+
+C Write out the model log file.
+        uname=' '
+        call usrname(uname)
+        call usrdir(pwd)
+        write(LSNAM,'(a)') menu(1:lnblnk(menu))
+        write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+        IUNIT=IFIL+1
+        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
+        write(iunit,'(2a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+        write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
+        write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
+        call dstamp(dstmp)
+        write(iunit,'(2a)')'Date: ',dstmp
+        write(iunit,'(a)')'Client: '
+        write(iunit,'(a)')'Project reference: '
+        write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'_____________________________'
+        CALL ERPFREE(IUNIT,ISTAT)
+        goto 77
+
+      elseif(act(1:1).eq.'i')then
 
 C Offer choice of single folder or standard set of folders to hold
 C the model description.
+        H(1)='ESP-r organises a model within a standard set of folders.'
+        H(2)=' '
+        H(3)='Based on information you have supplied,'
+        H(4)=' '
+        lncr=lnblnk(cfgroot)
+        write(H(5),'(3x,2a)')cfgroot(1:lncr),' (project folder)'
+        write(H(6),'(3x,2a)')cfgroot(1:lncr),'/cfg (system files)'
+        write(H(7),'(3x,2a)')cfgroot(1:lncr),'/ctl (control files)'
+        write(H(8),'(3x,2a)')cfgroot(1:lncr),'/zones (zone files)'
+        write(H(9),'(3x,2a)')cfgroot(1:lncr),'/nets (networks)'
+        write(H(10),'(3x,2a)')cfgroot(1:lncr),'/doc (reports and notes)'
+        write(H(11),'(3x,2a)')cfgroot(1:lncr),'/tmp (odds+ends)'
+        write(H(12),'(3x,2a)')cfgroot(1:lncr),'/dbs (project databases)'
+        H(13)=' '
+        H(14)='will be created. '
+        H(15)=' '
+        H(16)='Or, if the model will be small (one or two zones)'
+        H(17)='all the files can be in one folder shown below:'
+        H(18)=' '
+        write(H(19),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
+     &    ' (project folder)'
+        CALL EASKABC(' Create model in:',
+     &    '(see help)','single folder','standard set of folders',
+     &    'cancel',IW,19)
+      endif
 
-      H(1)='ESP-r organises a model within a standard set of folders.'
-      H(2)=' '
-      H(3)='Based on information you have supplied,'
-      H(4)=' '
-      write(H(5),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  ' (project folder)'
-      write(H(6),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/cfg (system files)'
-      write(H(7),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/ctl (control files)'
-      write(H(8),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/zones (zone files)'
-      write(H(9),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/nets (networks)'
-      write(H(10),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/doc (reports and notes)'
-      write(H(11),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/tmp (odds+ends)'
-      write(H(12),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  '/dbs (project databases)'
-      H(13)=' '
-      H(14)='will be created. '
-      H(15)=' '
-      H(16)='Or, if the model will be small (one or two zones)'
-      H(17)='all the files can be in one folder shown below:'
-      H(18)=' '
-      write(H(19),'(3x,a,a)')cfgroot(1:lnblnk(cfgroot)),
-     &  ' (project folder)'
-      CALL EASKABC(' Create model in:',
-     &   '(see help)','single folder','standard set of folders',
-     &   'cancel',IW,19)
       if(IW.eq.1)then
 
 C Assume all types of files go in the single project folder.
@@ -222,8 +407,9 @@ C Assume all types of files go in the single project folder.
         write(docpth,'(2a)')'.',fs
         write(tmppth,'(2a)')'.',fs
         write(dbspth,'(2a)')'.',fs
-        write(odir,'(a)')cfgroot(1:lnblnk(cfgroot))
-        write(doit,'(2a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot))
+        lncr=lnblnk(cfgroot)
+        write(odir,'(a)')cfgroot(1:lncr)
+        write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
@@ -232,12 +418,11 @@ C Assume all types of files go in the single project folder.
 C Re-establish pwd and then project folders.
         odir=' '
         call usrdir(odir)
-        write(path,'(4a)')odir(1:lnblnk(odir)),fs,
-     &      cfgroot(1:lnblnk(cfgroot)),fs
+        write(path,'(4a)')odir(1:lnblnk(odir)),fs,cfgroot(1:lncr),fs
         call edisp(iuout,
      &        'System configuration file is located in folder:')
         call edisp(iuout,path)
-        write(path,'(2a)') cfgroot(1:lnblnk(cfgroot)),fs
+        write(path,'(2a)') cfgroot(1:lncr),fs
         write(outs,'(2a)') 'Resetting path to: ',path
         call edisp(iuout,outs)
 
@@ -252,48 +437,45 @@ C Setup the various paths to distributed folders and then create.
         write(docpth,'(3a)')'..',fs,'doc'
         write(tmppth,'(3a)')'..',fs,'tmp'
         write(dbspth,'(3a)')'..',fs,'dbs'
-        write(odir,'(a)')cfgroot(1:lnblnk(cfgroot))
-        write(doit,'(2a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot))
+        lncr=lnblnk(cfgroot)
+        write(odir,'(a)')cfgroot(1:lncr)
+        write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'cfg'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'cfg'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'ctl'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'ctl'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
-     &      'zones'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'zones'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
-     &      'nets'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'nets'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
-     &      'images'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'images'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'doc'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'doc'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,
-     &      'tmp'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'tmp'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'rad'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'rad'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lnblnk(cfgroot)),fs,'dbs'
+        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'dbs'
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
@@ -307,7 +489,7 @@ C Re-establish pwd and then project folders.
         call edisp(iuout,
      &        'System configuration file is located in folder:')
         call edisp(iuout,path)
-        write(path,'(4a)') cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
+        write(path,'(4a)') cfgroot(1:lncr),fs,'cfg',fs
         write(outs,'(2a)') 'Resetting path to: ',path
         call edisp(iuout,outs)
 
@@ -465,7 +647,8 @@ C Provide a listing of the current contents of the ../images folder.
           endif
         endif
       endif
-      if(act.eq.'i')then
+
+      if(act(1:1).eq.'i')then
 
 C Ask for site position.
         H(1)='Site latitude in degrees, where North is +ve, e.g. 55.9'
@@ -511,25 +694,25 @@ C          call edisp(iuout,' ')
         H(4)='menu option accessed via the `browse/edit/simulate`'
         H(5)='option of the present menu.'
         CALL PHELPD('new site',5,'-',0,0,IER)
+      endif
 
 C Create a system configuration file based on the registration
 C information.
-        call tstamp('>','PRJ: create configuration')
-        call tstamp('>',LCFGF)
-        CALL EMKCFG('-',IER)
-        if(ier.eq.0)then
-          CFGOK=.TRUE.
+   77 call tstamp('>','PRJ: create configuration')
+      call tstamp('>',LCFGF)
+      CALL EMKCFG('-',IER)
+      if(ier.eq.0)then
+        CFGOK=.TRUE.
 
 C Open core of databases if not already done so.
-          if(MLDBOK.and.MATDBOK.and.OPTKOK)then
-            continue
-          else
-            call opendb(ier)
-            if(ier.ne.0)then
-              call usrmsg('Possible problem with the Constructions',
+        if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+          continue
+        else
+          call opendb(ier)
+          if(ier.ne.0)then
+            call usrmsg('Possible problem with the Constructions',
      &               'or Optical Properties db. Please check.','W')
-              ier = 0
-            endif
+            ier = 0
           endif
         endif
         return

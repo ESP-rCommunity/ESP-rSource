@@ -1,12 +1,12 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs the X11 or GTK ESP-r distribution version 11.3"
+echo "This script installs the X11 or GTK ESP-r distribution version 11.4"
 echo "on a Windows computer which already has the Cygwin emulation"
 echo "environment up and running."
 echo " "
 echo "The installation includes ESP-r executables, example models"
-echo "and standard databases."
+echo "and standard databases (up to 28 zones allowed in a model)."
 echo " "
 echo "Consider being Administrator when running this installer"
 echo "(or a user who has administrative privilages)."
@@ -132,7 +132,7 @@ fi
 cd /home/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_v11.3_X11_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_v11.4_X11_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
   echo "copy helper applications..."
   cp $ISD/xv.exe /bin
@@ -142,7 +142,7 @@ if [[ $which = 'a' ]] ; then
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_v11.3_GTK_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_v11.4_GTK_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
@@ -169,6 +169,7 @@ cp $ISD/new_profile /etc/profile
 echo "copy and backup profile... done."
 
 echo " "
+echo "   PLEASE READ THIS CAREFULLY   "
 echo "Assuming your PC has all the users setup for Windows "
 echo "issue the following two commands to ensure that each can use cygwin: "
 echo " mkgroup -l >/etc/group "
