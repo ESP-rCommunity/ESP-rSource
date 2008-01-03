@@ -701,7 +701,7 @@ C 'simulation toggles' menu.
 
 c This common block is used to define the sky temperature calculation method
       COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
+      integer iExt_longwave_flg    ! 0 = Martin & Berdahl (1984);
                                    ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
                                    ! 2 = Cole (?);
                                    ! 3 = Czeplak & Kasten (1987);               
@@ -828,7 +828,7 @@ C Make up strings for the current set of toggles.
         ITEMG(30)=  'w Solar radiation data >> half-hour cent'
       endif
       if(iExt_longwave_flg.eq.0)then
-        ITEMG(31)=   'x Ext. longwave rad >> Berdahl & Martin'
+        ITEMG(31)=   'x Ext. longwave rad >> Martin & Berdahl'
       elseif(iExt_longwave_flg.eq.1)then
         ITEMG(31)=   'x Ext. longwave rad >> Clarke          '
       elseif(iExt_longwave_flg.eq.2)then
@@ -1298,13 +1298,13 @@ C centered.
         H(1) = 'At the moment there are 5 available calculations '
         H(2) = 'of the sky temperature to be used for the external '
         H(3) = 'longwave radiation calculations. The default used '
-        H(4) = 'in ESP-r is Berdahl & Martin. A useful reference is: '
-        H(5) = ' Berdahl & Martin, 1984. "Characteristics of infrared '
+        H(4) = 'in ESP-r is Martin & Berdahl. A useful reference is: '
+        H(5) = ' Martin & Berdahl, 1984. "Characteristics of infrared '
         H(6) = 'sky radiation in the United States". Solar Energy, '
         H(7) = 'Vol. 33, pp. 321-336.'
 
         call easki(iExt_longwave_flg,
-     &    ' External longwave calculation 0) Berdahl & Martin, ',
+     &    ' External longwave calculation 0) Martin & Berdahl, ',
      &    ' 1) Clarke, 2) Cole, 3) Czeplak & Kasten, 4) Swinbank-clear, 
      &5) Swinbank-bldng',
      &    0,'F',5,'F',0,'ext lngwave method',IER,7)  

@@ -308,7 +308,7 @@ C used.
       
 c This common block is used to define the sky temperature calculation method
       COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
+      integer iExt_longwave_flg    ! 0 = Martin & Berdahl (1984);
                                    ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
                                    ! 2 = Cole (?);
                                    ! 3 = Czeplak & Kasten (1987);               
@@ -566,7 +566,7 @@ C For zero RF set dew point temperature to 293.
 C Here provide the different sky temperature options
       IF(iExt_longwave_flg.EQ.0)THEN
 
-C Use default Berdahl & Martin calculation
+C Use default Martin & Berdahl calculation
 C Clear sky condition:
         PI = 4.0 * ATAN(1.0)
         TIM=2*PI*IHRF/24
