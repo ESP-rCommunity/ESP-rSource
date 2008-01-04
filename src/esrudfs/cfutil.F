@@ -25,6 +25,7 @@ C  REAPRN - Read and write property fields in a binary sequential file.
 C  SCAN3dI- scanns an (3D) array in planes of I=const 
 C  SCANall- scans (3D) arrays AP, AE, AW, An, AS, AH, AL, SU, SP, AP
 C  tecplotend- used for display plotting with 3rd party tools.
+C  paraviewend- used for CFD postprocessing with ParaView
 
 C ********************* PRNPHI *********************
 C PRNPHI - Write the field values of varibles in ASCII format.
@@ -77,10 +78,12 @@ C  PHOTON (PHOENICS graphic analyser)
       RINNER=0.0
       WRITE(ifl,110)RINNER
       WRITE(ifl,120)
-120   FORMAT(' P1  P2  U1  U2  V1  V2  W1  W2  R1  R2  RS  KE  EP  H1  H  
-     &2  C1  C2  C3  C4',/,' C5  C6  C7  C8  C9  C10 C11 C12 C13 C14 C15 
-     & C16 C17 C18 C19 C20 C21 C22 C23',/,' C24 C25 C26 C27 C28 C29 C30 
-     &C31 C32 C33 C34 C35')
+120   FORMAT('** whatever **')
+C120   FORMAT(' P1  P2  U1  U2  V1  V2  W1  W2  R1  R2  RS  KE  EP  H1
+C     &  C1  C2  C3  C4 C5  C6  C7  C8  C9  C10 C11 C12 C13 C14 C15
+C     & C16 C17 C18 C19 C20 C21 C22 C23 C24 C25 C26 C27 C28 C29 C30
+C     & C31 C32 C33 C34 C35')
+
       WRITE(ifl,110)(XU(I),I=3,NI)
       WRITE(ifl,110)(YV(I),I=3,NJ)
       WRITE(ifl,110)(ZW(I),I=3,NK)
@@ -376,3 +379,125 @@ C Added formats "300" to "302"
       
       return
       end
+
+C ********************************************************************
+C *   paraviewend - output of paraview-readable text files
+C     ag@040108
+C
+C Output CFD results for ParaView post-processing. See www.paraview.org
+C for details of the program ParaView.
+C
+C Call with parameter "IFRAME" which is the time step!
+      subroutine paraviewend(IFRAME)
+#include "cfd.h"
+
+      COMMON/FILEP/IFIL
+      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
+     1            Wf(ntcelx,ntcely,ntcelz),
+     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
+     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+      COMMON/LOCAGE/AGEf(ntcelx,ntcely,ntcelz) 
+      COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
+     1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
+     2            DZHP(ntcelz),DZPL(ntcelz),
+     3            SEW(ntcelx),SNS(ntcely),SHL(ntcelz),
+     4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
+      COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
+      COMMON/CFDPOL/POLCONCp(MCTM,ntcelx,ntcely,ntcelz),
+     1              POLCONCf(MCTM,ntcelx,ntcely,ntcelz)
+
+      integer IFRAME
+
+C 'lflname' is the name of the current output file
+      character lflname*72
+
+C Set current filename to include current "frame number" (time step).
+C Cascade through possible lengths to avoid white space in
+C file name
+      IF (IFRAME.le.9) THEN
+        write(lflname,300) IFRAME
+      ELSE IF (IFRAME.le.99) THEN
+        write(lflname,301) IFRAME
+      ELSE
+        write(lflname,302) IFRAME
+      ENDIF
+
+C Check and open data output file (?)
+      IUNIT=IFIL+1
+      call EFOPSEQ(IUNIT,lflname,4,ier)
+
+C Write the '.vtk' header (total of 4 lines)
+C It would be sexy to be able to enter the text for line 2
+C from the ESP-r interface ...
+      write(IUNIT,'(a)') '# vtk DataFile Version 3.0'
+      write(IUNIT,'(a)') 'ESP-r CFD output'
+      write(IUNIT,'(a)') 'ASCII'
+      write(IUNIT,'(a)') 'DATASET RECTILINEAR_GRID'
+
+C Increase loop starts to "2" and reduced loop runs by "-1".
+C I.e., cut off one slice off each face of the CFD region
+C (equivalent to  2 elements per dimension). This is not checked 
+C extensively, however aleviates the problem with the output of 
+C "zero" cells to paraview files.    
+
+      write(IUNIT,'(3(a,i3))') 'DIMENSIONS ',(ni-2),' ',
+     &          (nj-2),' ',(nk-2)
+
+C Write the x coordinates
+      write(IUNIT,'(a,i3,a)') 'X_COORDINATES ',(ni-2),' float'
+
+      do 100 i=2,ni-1
+            write(IUNIT,200)XP(I)
+ 100  continue                      
+
+C Write the y coordinates
+      write(IUNIT,'(a,i3,a)') 'Y_COORDINATES ',(nj-2),' float'
+
+      do 101 j=2,nj-1
+            write(IUNIT,200)YP(J)
+ 101  continue                      
+
+C Write the z coordinates
+      write(IUNIT,'(a,i3,a)') 'Z_COORDINATES ',(nk-2),' float'
+
+      do 102 k=2,nk-1
+            write(IUNIT,200)ZP(K)
+ 102  continue                      
+
+C Write data header followed by data
+C Begin with temperature
+      write(IUNIT,'(a,i6)') 'Point_DATA ',(ni-2)*(nj-2)*(nk-2)
+      write(IUNIT,'(a)') 'SCALARS temperature float'
+      write(IUNIT,'(a)') 'LOOKUP_TABLE default'
+
+      do 103 k=2,nk-1
+        do 103 j=2,nj-1
+          do 103 i=2,ni-1
+            write(IUNIT,200)Tf(I,J,K)
+ 103  continue                      
+
+C Continue with velocity
+      write(IUNIT,'(a)') 'VECTORS velocity float'
+
+      do 104 k=2,nk-1
+        do 104 j=2,nj-1
+          do 104 i=2,ni-1
+            write(IUNIT,201)Uf(I,J,K),Vf(I,J,K),Wf(I,J,K)
+ 104  continue                      
+
+C Formats
+ 200  format(1E14.6)
+ 201  format(3E14.6)
+ 
+ 300  format('ParaView_',I1,'.vtk')
+ 301  format('ParaView_',I2,'.vtk')
+ 302  format('ParaView_',I3,'.vtk')
+
+C Free the file handle
+      call ERPFREE(IUNIT,ISTAT)
+      
+      return
+      end
+

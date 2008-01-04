@@ -324,7 +324,8 @@ C  imgtyp = 4 : TECplot data file.
       elseif (imgtyp.eq.3) then
         ITEM(2)='b Image format >>screen3d'
       elseif (imgtyp.eq.4) then
-        ITEM(2)='b Output format >>TECplot'
+C        ITEM(2)='b Output format >>TECplot'
+        ITEM(2)='b Output format >>ParaView'
       endif
       ITEM(3)=' ----------------------- '
 
@@ -388,8 +389,8 @@ C redefine name of image.
           do 50 IFRAME=1,NCTS
             call RDCFDAT(IFRAME)
             if (imgtyp.eq.4) then
-CC              write(*,*) 'MCFDM:IFRAME= ',IFRAME
-              call tecplotend(IFRAME)
+C              call tecplotend(IFRAME)
+              call paraviewend(IFRAME)
             else
               call VISMAK(ICOMP,IFRAME)
             endif
