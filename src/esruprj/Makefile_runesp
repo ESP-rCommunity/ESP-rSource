@@ -24,7 +24,7 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mksbem.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
-	psychro.o rcdblist.o readTrnsys.o rwipv.o sort.o startup.o tdfile.o
+	psychro.o rcdblist.o readTrnsys.o rwipv.o rwsbem.o sort.o startup.o tdfile.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -143,6 +143,9 @@ readTrnsys.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -164,7 +167,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	c2fdum.F ctlwrt.F ctread.F econtrol.F edzone.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
+	c2fdum.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F \
-	readTrnsys.F
+	rwsbem.F readTrnsys.F
 

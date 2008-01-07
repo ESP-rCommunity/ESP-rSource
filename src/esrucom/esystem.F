@@ -99,7 +99,7 @@ C           - contain the zone and surface numbers at which each
 C             connection terminates (if corresponding ICT=3)
 C           - contain pointers to ground temps (if corresponding ICT=4)
 C IAIRN   - building air flow simulation index (1=legacy on, 2=graphic)
-C ICAAS   - fluid (= air) flow network node associated with each building 
+C ICAAS   - fluid (= air) flow network node index associated with each building 
 C           zone. NB fluid flow network and building zones need not be 
 C           matched.
 C IFLWN   - plant fluid flow simulation index (1 = on).

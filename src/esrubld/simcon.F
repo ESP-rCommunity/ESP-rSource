@@ -542,9 +542,17 @@ C see comment in MZCLMP.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     !- 0 = hour-centered; 1 = half-hour centered.
 
-
+c This common block is used to define the sky temperature calculation method
+      COMMON/EXLONGWV/iExt_longwave_flg
+      integer iExt_longwave_flg    ! 0 = Martin & Berdahl (1984);
+                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
+                                   ! 2 = Cole (?);
+                                   ! 3 = Czeplak & Kasten (1987);               
+                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
+                                   ! 5 = Swinbank (clear - uses wet bulb T);       
+                                                                                                                                                    
       CHARACTER*72 LAPROB,H,vsnam,lfil,entflnam
-      CHARACTER*40 ITEMG(33)
+      CHARACTER*40 ITEMG(34)
       character SALT*51,zname*12,zdesc*64,spflnam*72,outs*124
       character HCALT*42
 
@@ -661,10 +669,23 @@ C Make up strings for the current set of toggles.
       else
         ITEMG(30)=  'w Solar radiation data >> half-hour cent'
       endif
-      ITEMG(31)=    '  ________________________________      '      
-      ITEMG(32)=    '? help                                  '
-      ITEMG(33)=    '- exit to simul menu                    '
-      NITMS=33
+      if(iExt_longwave_flg.eq.0)then
+        ITEMG(31)=   'x Ext. longwave rad >> Martin & Berdahl'
+      elseif(iExt_longwave_flg.eq.1)then
+        ITEMG(31)=   'x Ext. longwave rad >> Clarke          '
+      elseif(iExt_longwave_flg.eq.2)then
+        ITEMG(31)=   'x Ext. longwave rad >> Cole            '
+      elseif(iExt_longwave_flg.eq.3)then
+        ITEMG(31)=   'x Ext. longwave rad >> Czeplak & Kasten'
+      elseif(iExt_longwave_flg.eq.4)then
+        ITEMG(31)=   'x Ext. longwave rad >>  Swinbank-clear'
+      elseif(iExt_longwave_flg.eq.5)then
+        ITEMG(31)=   'x Ext. longwave rad >>  Swinbank-bldng'
+      endif
+      ITEMG(32)=    '  ________________________________      '      
+      ITEMG(33)=    '? help                                  '
+      ITEMG(34)=    '- exit to simul menu                    '
+      NITMS=34
 
 C Help text for this menu.
       H(1) ='Most simulations do not require special settings. A set'
@@ -1064,6 +1085,24 @@ C centered.
 
         call easki(iSlr_half_hr_flg,' Solar data 0) hour-centered, ',
      &    ' 1) half-hour centered',0,'F',1,'F',0,'solar data',IER,11)
+
+      elseif(INO.eq.31)then
+
+C Determine if solar radiation data is to be treated as half-hour
+C centered.
+        H(1) = 'At the moment there are 5 available calculations '
+        H(2) = 'of the sky temperature to be used for the external '
+        H(3) = 'longwave radiation calculations. The default used '
+        H(4) = 'in ESP-r is Martin & Berdahl. A useful reference is: '
+        H(5) = ' Martin & Berdahl, 1984. "Characteristics of infrared '
+        H(6) = 'sky radiation in the United States". Solar Energy, '
+        H(7) = 'Vol. 33, pp. 321-336.'
+
+        call easki(iExt_longwave_flg,
+     &    ' External longwave calculation 0) Martin & Berdahl, ',
+     &    ' 1) Clarke, 2) Cole, 3) Czeplak & Kasten, 4) Swinbank-clear, 
+     &5) Swinbank-bldng',
+     &    0,'F',5,'F',0,'ext lngwave method',IER,5)  
 
       elseif(INO.eq.(NITMS-1))then
 

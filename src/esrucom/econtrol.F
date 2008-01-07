@@ -2818,6 +2818,8 @@ C          call edisp248(6,message,80)
 
 C Set short SSTR and then begin to build up the longer message (lmsg)
 C based on the miscel data items.
+C << this report does not recognise a single sensor NOT control
+C << or a single sensor SLAVE control.
           SSTR='multi sensor on/off      '
           cm(1)=fmiscd(II,JJ,KK,1)
           nitems=nint(cm(1))
