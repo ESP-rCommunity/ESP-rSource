@@ -568,37 +568,43 @@ C tag in case it has spaces.
         CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
         rotateit(nsz)=rot
         goto 43
-      elseif(WORD(1:10).eq.'*Roof type')then
+      elseif(WORD(1:10).eq.'*Roof type'.or.
+     &       WORD(1:10).eq.'*roof type')then
         goto 43
-      elseif(WORD(1:10).eq.'*Window(N)')then
+      elseif(WORD(1:10).eq.'*Window(N)'.or.
+     &       WORD(1:10).eq.'*window(n)')then
 
 C A window on the North is the 3rd surface in the zone
         CALL EGETWR(OUTSTR,K,glzpercent(3),0.,0.,'-','glz surf 1',IER)
         glzin3 = .true.
         szhasglaze(nsz,3)=glzpercent(3)
         goto 43
-      elseif(WORD(1:10).eq.'*Window(S)')then
+      elseif(WORD(1:10).eq.'*Window(S)'.or.
+     &       WORD(1:10).eq.'*window(s)')then
 
 C A window on the (South 1st surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(1),0.,0.,'-','glz surf 1',IER)
         glzin1 = .true.
         szhasglaze(nsz,1)=glzpercent(1)
         goto 43
-      elseif(WORD(1:10).eq.'*Window(E)')then
+      elseif(WORD(1:10).eq.'*Window(E)'.or.
+     &       WORD(1:10).eq.'*window(e)')then
 
 C A window on the (East 2nd surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(2),0.,0.,'-','glz surf 2',IER)
         glzin2 = .true.
         szhasglaze(nsz,2)=glzpercent(2)
         goto 43
-      elseif(WORD(1:10).eq.'*Window(W)')then
+      elseif(WORD(1:10).eq.'*Window(W)'.or.
+     &       WORD(1:10).eq.'*window(w)')then
 
 C A window on the (West 4th surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(4),0.,0.,'-','glz surf 2',IER)
         glzin4 = .true.
         szhasglaze(nsz,4)=glzpercent(4)
         goto 43
-      elseif(WORD(1:10).eq.'*Window(R)')then
+      elseif(WORD(1:10).eq.'*Window(R)'.or.
+     &       WORD(1:10).eq.'*window(r)')then
 
 C A window on the (Roof 5th surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(5),0.,0.,'-','glz surf 2',IER)
@@ -639,7 +645,8 @@ C        write(6,*) 'sp density ',densityof(3)
         CALL EGETWR(OUTSTR,K,densityof(1),0.,0.,'-','ocup density',IER)
         write(6,*) 'occupant density ',densityof(1)
         goto 43
-      elseif(WORD(1:9).eq.'*Lighting')then
+      elseif(WORD(1:9).eq.'*Lighting'.or.
+     &       WORD(1:9).eq.'*lighting')then
         goto 43
       elseif(WORD(1:17).eq.'*Summer_set_point'.or.
      &       WORD(1:17).eq.'*summer_set_point')then
@@ -834,13 +841,14 @@ C Set values of simulation parameter set for an annual simulation.
       issave=4   ! save full energy balance (might reduce to 2 later)
       isavgh=0   ! save every timestep
       spfdescr(1)='ann'  ! set named ann
-      isstday(1)=2
+      isstday(1)=1
       isstmon(1)=1
       isfnday(1)=31
       isfnmon(1)=12
 
-C Setup the name and path to the standard results file.
-      theresult = 'the_results.res'
+C Setup the name and path to the standard results file based on
+C the root name of the model.
+      write(theresult,'(2a)') root(1:lnblnk(root)),'.res'
       call isunix(unixok)
       if(unixok)then
         call addpath(theresult,longtfile,concat)
@@ -969,70 +977,70 @@ C Establish the name of the zone operations file.
      &  '     9   # no Weekday casual gains'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    1,   0,   9,      0.0,      0.0, 0.500, 0.500'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
-     &  '   -1,   9,  21,',densityof(1),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    1,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    2,   0,   9,      0.0,      0.0, 0.500, 0.500'
+     &  '   -1,   0,   9,',densityof(1),'       0.0, 0.200, 0.800'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
-     &  '   -2,   9,  21,',densityof(2),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    2,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    3,   0,   9,      0.0,      0.0, 0.500, 0.500'
+     &  '   -1,   9,  21,',densityof(1),'       0.0, 0.200, 0.800'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -1,  21,  24,',densityof(1),'       0.0, 0.200, 0.800'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,   0,   9,',densityof(2),'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,   9,  19,',densityof(2)*0.1,'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,  19,  24,',densityof(2),'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -3,   0,   9,',densityof(3),'       0.0, 0.500, 0.500'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
      &  '   -3,   9,  21,',densityof(3),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    3,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -3,  21,  24,',densityof(3),'       0.0, 0.500, 0.500'
 
+      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '     9   # no Saturday casual gains'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Sat: type, start, stop, sens, latent, rad_frac, conv_frac'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    1,   0,   9,      0.0,      0.0, 0.500, 0.500'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
-     &  '   -1,   9,  21,',densityof(1),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    1,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    2,   0,   9,      0.0,      0.0, 0.500, 0.500'
+     &  '   -1,   0,   9,',densityof(1),'       0.0, 0.200, 0.800'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
-     &  '   -2,   9,  21,',densityof(2),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    2,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    3,   0,   9,      0.0,      0.0, 0.500, 0.500'
+     &  '   -1,   9,  21,',densityof(1),'       0.0, 0.200, 0.800'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -1,  21,  24,',densityof(1),'       0.0, 0.200, 0.800'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,   0,   7,',densityof(2),'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,   7,  19,',densityof(2)*0.1,'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,  19,  24,',densityof(2),'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -3,   0,   9,',densityof(3),'       0.0, 0.500, 0.500'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
      &  '   -3,   9,  21,',densityof(3),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    3,  21,  24,      0.0,      0.0, 0.500, 0.500'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -3,  21,  24,',densityof(3),'       0.0, 0.500, 0.500'
 
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '     9   # no Sunday casual gains'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Sun: type, start, stop, sens, latent, rad_frac, conv_frac'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    1,   0,   9,      0.0,      0.0, 0.500, 0.500'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
-     &  '   -1,   9,  21,',densityof(1),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    1,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    2,   0,   9,      0.0,      0.0, 0.500, 0.500'
+     &  '   -1,   0,   9,',densityof(1),'       0.0, 0.200, 0.800'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
-     &  '   -2,   9,  21,',densityof(2),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    2,  21,  24,      0.0,      0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    3,   0,   9,      0.0,      0.0, 0.500, 0.500'
+     &  '   -1,   9,  21,',densityof(1),'       0.0, 0.200, 0.800'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -1,  21,  24,',densityof(1),'       0.0, 0.200, 0.800'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,   0,   7,',densityof(2),'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,   7,  19,',densityof(2)*0.1,'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -2,  19,  24,',densityof(2),'       0.0, 0.600, 0.400'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -3,   0,   9,',densityof(3),'       0.0, 0.500, 0.500'
       WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
      &  '   -3,   9,  21,',densityof(3),'       0.0, 0.500, 0.500'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '    3,  21,  24,      0.0,      0.0, 0.500, 0.500'
+      WRITE(IUO,'(A,F9.1,A)',IOSTAT=IOS,ERR=1)
+     &  '   -3,  21,  24,',densityof(3),'       0.0, 0.500, 0.500'
 
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Labels for gain types'
@@ -1157,6 +1165,8 @@ C typical day with free float outside of occupied period.
       common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -1165,6 +1175,8 @@ C typical day with free float outside of occupied period.
       character fs*1
       logical unixok
       dimension setpoints(2)
+      integer izone   ! index of the assumed zone.
+      real heatcap,coolcap ! heating and cooling capacities.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1172,6 +1184,16 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(47)
       else
         fs = char(92)
+      endif
+
+C Assume control appied to 1st zone in model. 
+      izone = 1
+      if(ZBASEA(izone).gt.1.0)then
+        heatcap= 140.0 * ZBASEA(izone)
+        coolcap= 60.0 * ZBASEA(izone)
+      else
+        heatcap= 100000.0
+        coolcap= 100000.0
       endif
 
 C Establish the name of the control file.
@@ -1210,25 +1232,18 @@ C Establish the name of the control file.
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      & '    1  365  # valid Tue-01-Jan - Tue-31-Dec'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     & '     3  # No. of periods in day'
+     & '     1  # No. of periods in day'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     & '    0    2   0.000  # ctl type, law (free floating), start @'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     & '      0.  # No. of data items'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     & '    0    1   9.000  # ctl type, law (basic control), start @'
+     & '    0    1   0.000  # ctl type, law (basic control), start @'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      & '      7.  # No. of data items'
 
-C In the next line we need to do a better job at setting the heating
-C and cooling capacity.  Try first for a per m2 multiplier.
-      WRITE(IUO,'(A,2F7.3,a)',IOSTAT=IOS,ERR=1)
-     & '  10000.000 0.000 10000.000 0.000 ',setpoints(1),setpoints(2),
-     & ' 0.000'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     & '    0    2  21.000  # ctl type, law (free floating), start @'
-      WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     & '      0.  # No. of data items'
+C In the next line we set the heating and cooling capacity based
+C on 30W/m2 of floor area.
+      WRITE(IUO,'(F11.3,A,F11.3,a,2F7.3,a)',IOSTAT=IOS,ERR=1)
+     &  heatcap,' 0.000 ',coolcap,' 0.000 ',setpoints(1),setpoints(2),
+     &  ' 0.000'
+
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      & '# Function:Zone links'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
