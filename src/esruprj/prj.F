@@ -4081,11 +4081,11 @@ C Create SBEM notional building based on currently loaded model
         H(6)='    Email: esru@strath.ac.uk  '
         H(7)='    Tele: +44 141 548 3986  '
         H(8)='    Fax:  +44 141 552 8513  '
-        call easki(IPASS,' ',' Password (see help)? ',
-     &    0,'-',0,'-',0,'password',IER,8)
-        if (IPASS.eq.101) then
+C        call easki(IPASS,' ',' Password (see help)? ',
+C     &    0,'-',0,'-',0,'password',IER,8)
+C        if (IPASS.eq.101) then
           CALL EMKSBM
-        endif
+C        endif
       ELSEIF(INO.EQ.6)THEN
         CALL PHELPD('version intro',36,'-',0,0,IER)
         GOTO 200

@@ -925,3 +925,133 @@ C This subroutine is passed A as a vector with n+1 rows
  2    CONTINUE
       RETURN
       END
+
+C **************
+C Subroutine APPRDIFFUSE is used to approximate diffuse
+C solar radiation data from Global horizontal data based on Muneer's model
+C See "Solar radiation and daylight models" book from Muneer 
+C (1997) - ISBN: 0-7506-2495-7
+C and Erbs, Klein and Duffie model: see Solar energy Journal Vol. 28,
+C pp.293-302
+C IGLOBH is the global horizontal value to be passed in (in w/m2)
+C DRAD is the approximated diffuse value to be returned (in w/m2)
+C LONGITUDE is the climate longitude (west: positive)
+C DIFFGRNWCH is the local time difference from Greenwich. Assumes
+C that west is positive (e.g. use -2 for Greece)
+      SUBROUTINE APPRDIFFUSE(IYEAR,IMT,IDAY,IHR,IGLOBH,LONGITUDE,
+     &           DIFFGRNWCH,DRAD)
+
+C RADTYP Common might be needed in order to specify that climate
+C is based on global horizontal and not direct normal. At the moment
+C this is specified in MKOREANCLM when this is subroutine is used
+C      COMMON/RADTYP/IDNGH
+
+      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/APPRDIFF/iapprox_diff
+
+C IME specifies the minute
+      real IME,LONGITUDE
+
+      DTOR=3.14159/180.0 
+
+C Minute input is needed. At the moment IME is assumed 1.0
+      IME=1.0
+      IF (IMT.GT.2) THEN
+        IYR1=IYEAR
+        IMT1=IMT-3
+      ELSE
+        IYR1=IYEAR-1
+        IMT1=IMT+9
+      ENDIF 
+
+      XLCT=(1.0*IHR)+(1.0*IME/60.0)
+      UT=XLCT+DIFFGRNWCH
+      INTT1=INT(30.6*IMT1+0.5)
+      INTT2=INT(365.25*(IYR1-1976))
+      SMLT=((UT/24.0)+IDAY+INTT1+INTT2-8707.5)/36525.0
+      EPSILN=23.4393-0.013*SMLT
+      CAPG=357.528+35999.050*SMLT
+      IF(CAPG.GT.360.0) THEN
+        G360=CAPG-INT(CAPG/360.0)*360.0
+      ELSE
+        G360=CAPG
+      ENDIF
+      CAPC=1.915*SIN(G360*DTOR)+0.020*SIN(2*G360*DTOR)
+      CAPL=280.460+36000.770*SMLT+CAPC
+      IF(CAPL.GT.360.0) THEN
+        XL360=CAPL-INT(CAPL/360.0)*360.0
+      ELSE
+        XL360=CAPL
+      ENDIF
+      ALPHA=
+     &  XL360-2.466*SIN(2*XL360*DTOR)+0.053*SIN(4*XL360*DTOR)
+      GHA=15.0*UT-180.0-CAPC+XL360-ALPHA
+      IF(GHA.GT.360.0) THEN
+        GHA360=GHA-INT(GHA/360.0)*360.0
+      ELSE
+        GHA360=GHA
+      ENDIF
+      DEC=ATAN(TAN(EPSILN*DTOR)*SIN(ALPHA*DTOR))/DTOR
+      SHA=GHA360-(LONGITUDE)
+
+C Muneer has the Calculation of the Apparent Solar Time
+C but espr method does not use it - just commented here
+C      AST=12.0+(SHA/15.0)
+
+C Calculate SOLar ALTitude 
+      TRM111=SIN(CLAT*DTOR)*SIN(DEC*DTOR)
+      TRM112=
+     &  COS(CLAT*DTOR)*COS(DEC*DTOR)*COS((SHA+180.0)*DTOR)
+      TRM11=TRM111-TRM112
+      SOLALT=ASIN(TRM11)/DTOR  
+
+C Calculate Day Number
+      DN1=(IDAY+INTT1+INTT2)
+      IMT9=1
+      IYR1=IYEAR-1
+      IMT1=IMT9+9
+      INTT1=INT(30.6*IMT1+0.5)
+      INTT2=INT(365.25*(IYR1-1976))
+      DN2=(INTT1+INTT2)
+      DN=DN1-DN2
+
+C Calculate horizontal Extraterrestrial irRADiance
+      ERAD=
+     &  1353.0*(1.+0.033*COS(0.0172024*DN))*SIN(SOLALT*DTOR) 
+
+C Muneer has the next line for other purposes - just commented here
+C      XMAXI0=1353.0*(1.+0.033*COS(0.0172024*DN))
+
+C Calculate horizontal Diffuse irRADiance
+      GRAD=IGLOBH
+      XKT=GRAD/ERAD 
+      IF(iapprox_diff.EQ.1)THEN
+
+C Muneer model.
+        DIFRAT=0.98
+        IF(XKT.GT.0.2.AND.XKT.LE.1.0) THEN
+          DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
+     &    -(12.7616*XKT**3)+9.7166*XKT**4
+        ELSEIF(XKT.GT.1.0) THEN
+          XKT=1.0
+          DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
+     &    -(12.7616*XKT**3)+(9.7166*XKT**4)
+        ENDIF
+      ELSEIF(iapprox_diff.EQ.2)THEN
+
+C Erbs, Klein and Duffie model.
+        IF(XKT.LE.0.22)THEN
+          DIFRAT=1.0-0.09*XKT
+        ELSEIF(XKT.GT.0.22.AND.XKT.LE.0.8)THEN
+          DIFRAT=0.9511-(0.1604*XKT)+(4.388*XKT**2)
+     &    -(16.638*XKT**3)+(12.336*XKT**4)
+        ELSEIF(XKT.GT.0.8)THEN
+          DIFRAT=0.165
+        ENDIF
+      ELSE
+        iapprox_diff=1
+      ENDIF
+      DRAD=GRAD*DIFRAT
+
+      RETURN
+      END
