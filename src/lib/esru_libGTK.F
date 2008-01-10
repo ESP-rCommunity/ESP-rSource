@@ -115,7 +115,11 @@ C EGETAGWRA recovers (IRVA) reals of real array (RVA) from a string
 C   TSTR (from position K) and if TSTR does not hold all of the array then
 C   it continues reading from an ASCII file (unit IAF) reading as
 C   many lines as necessary to recover the data.
-C EGETAGWSA recovers (ISVA) phrases into string array (SVA) from a string
+C EGETAGWSA recovers (ISVA) words into string array (SVA) from a string
+C   TSTR (from position K) and if TSTR does not hold all of the array then
+C   it continues reading from an ASCII file (unit IAF) reading as
+C   many lines as necessary to recover the data
+C EGETAGWPA recovers (ISVA) phrases into string array (SVA) from a string
 C   TSTR (from position K) and if TSTR does not hold all of the array then
 C   it continues reading from an ASCII file (unit IAF) reading as
 C   many lines as necessary to recover the data
@@ -7572,9 +7576,93 @@ C word, otherwise read another line from the file.
    1  write(6,*) 'EGETAGWRA: error writing warning re: ',OUTS
       end
 
-
 C *************** EGETAGWSA
-C EGETAGWSA recovers (ISVA) phrases into string array (SVA) from a string
+C EGETAGWSA recovers (ISVA) words into string array (SVA) from a string
+C TSTR (from position K) and if TSTR does not hold all of the array then
+C it continues reading from an ASCII file (unit IAF) reading as
+C many lines as necessary to recover the data
+
+C The string array SVN is an array of inisz words assumed to be less than
+C or equal to *32 characters (that is the size of the buffer). This 
+C will work with space or comma or tab separations.
+
+C IER=2 if EOF is reached before ISVA items have been parsed. IER=1 if
+C there was a problem reading it. Each value is tested against
+C a blank stringt and provides a warning message if SACT='W', a failure
+C message if SACT='F' and does no blank checking if SACT='-'.
+C Phrases may be separated by spaces commas, or tab: word,word,word or
+C word, word, word, or word<tab>word<tab>word are all valid.
+C Note: all reads are able to accept commented files.
+      SUBROUTINE EGETAGWSA(TSTR,K,IAF,ISVA,SVA,inisz,SACT,MSG,IER)
+      common/OUTIN/IUOUT,IUIN
+      dimension SVA(inisz)
+      CHARACTER*(*) SVA
+      CHARACTER*(*) TSTR,MSG
+      CHARACTER OUTS*248,SACT*1,MSG1*124,buffer*32
+      logical swapover
+
+      IF(ISVA.LE.0)GOTO 99
+
+C LN is the actual length of TSTR.
+      ier=0
+      LN=max(1,lnblnk(TSTR))
+
+C Initially set swapover = false. When TSTR exhaused set swapover
+C = true and read from outs.
+      swapover=.false.
+      DO 12 KV=1,ISVA
+
+C If character position is < actual length of string parse another
+C word, otherwise read another line from the file.
+        IF(K.LT.LN)THEN
+          if(swapover)then
+            CALL EGETW(OUTS,K,buffer,SACT,MSG,IERV)
+          else
+            CALL EGETW(TSTR,K,buffer,SACT,MSG,IERV)
+          endif
+          IF(IERV.NE.0) THEN
+            CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+            LN=max(1,LNBLNK(OUTS))
+            IF(IER.NE.0)RETURN
+            K=0
+            CALL EGETW(OUTS,K,buffer,SACT,MSG,IERV)
+            swapover=.true.
+          ENDIF
+        ELSE
+          CALL LSTRIPC(IAF,OUTS,0,ND,0,MSG,IER)
+          LN=max(1,LNBLNK(OUTS))
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETW(OUTS,K,buffer,SACT,MSG,IERV)
+          swapover=.true.
+        ENDIF
+        IF(IERV.NE.0) GOTO 1001
+        write(SVA(KV),'(a)') buffer(1:lnblnk(buffer))
+   12 CONTINUE
+
+  100 RETURN
+
+   99 CALL EDISP(iuout,' array size zero, skipping read.')
+      GOTO 100
+
+ 1001 LNM=max(1,lnblnk(MSG))
+      WRITE(MSG1,1002,IOSTAT=IOS,ERR=1)MSG(1:LNM),buffer,K
+ 1002 FORMAT(' Problem reading ',A,' word= ',A,' @ pos ',
+     &       I3,' in the string:')
+      CALL EDISP(iuout,MSG1)
+      if(LNM.ge.124)then
+        write(6,*) 'EGETAGWSA: error writing: ',OUTS
+      else
+        CALL EDISP(iuout,OUTS)
+      endif
+      IER=1
+      GOTO 100
+   1  write(6,*) 'EGETAGWSA: error writing warning re: ',OUTS
+      end
+
+
+C *************** EGETAGWPA
+C EGETAGWPA recovers (ISVA) phrases into string array (SVA) from a string
 C TSTR (from position K) and if TSTR does not hold all of the array then
 C it continues reading from an ASCII file (unit IAF) reading as
 C many lines as necessary to recover the data
@@ -7591,7 +7679,7 @@ C message if SACT='F' and does no blank checking if RACT='-'.
 C Phrases may be separated by commas, or tab: phrase,phrase,phrase or
 C phrase, phrase, phrase, or phrase<tab>phrase<tab>phrase are all valid.
 C Note: all reads are able to accept commented files.
-      SUBROUTINE EGETAGWSA(TSTR,K,IAF,ISVA,SVA,inisz,SACT,MSG,IER)
+      SUBROUTINE EGETAGWPA(TSTR,K,IAF,ISVA,SVA,inisz,SACT,MSG,IER)
       common/OUTIN/IUOUT,IUIN
       dimension SVA(inisz)
       CHARACTER*(*) SVA
@@ -7649,13 +7737,13 @@ C word, otherwise read another line from the file.
      &       I3,' in the string:')
       CALL EDISP(iuout,MSG1)
       if(LNM.ge.124)then
-        write(6,*) 'EGETAGWSA: error writing: ',OUTS
+        write(6,*) 'EGETAGWPA: error writing: ',OUTS
       else
         CALL EDISP(iuout,OUTS)
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETAGWSA: error writing warning re: ',OUTS
+   1  write(6,*) 'EGETAGWPA: error writing warning re: ',OUTS
       end
 
 C ***************** EGETRM

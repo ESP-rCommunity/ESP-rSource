@@ -161,11 +161,11 @@ C Begin with high level menu.
       ITEMS(19)=                'p integrated performance view    '
       ITEMS(20)=                '  ___________________________    '
       ITEMS(21)=                'q pressure coefficients calc.    '
-      ITEMS(22)=                'r imposed measured data          '
+      ITEMS(22)=                'r impose  measured data          '
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
       ITEMS(25)=                ' _____________________________ '
-      ITEMS(26)=                's UK NCM specifications         '
+      ITEMS(26)=                't UK NCM specifications         '
       ITEMS(27)=                ' _____________________________ '
       ITEMS(28)=                '? help                           '
       ITEMS(29)=                '- exit this menu                 '

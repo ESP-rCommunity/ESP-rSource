@@ -49,7 +49,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/pophelp/h(60)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/AFNZN/zmfn1,zmfn2
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -69,7 +68,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER*33 ITEM1(24)
       CHARACTER LAPROB*72,LCFGF*72
       CHARACTER H*72,LTMP*72,zname*12,zdesc*64,outs*124,outstr*124
-      character zmfn1*124,zmfn2*124,cfgroot*24
+      character cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
@@ -573,9 +572,6 @@ C Link nodes and zones.
           endif
   33    CONTINUE
 
-C Clear zmfn1 & zmfn2 so that updated data will be written in cfg file.
-        zmfn1 = ' '
-        zmfn2 = ' '
       ELSEIF(INO.EQ.21)THEN
         CALL MFLIST(iuout)
       ELSEIF(INO.EQ.22)THEN
@@ -638,8 +634,6 @@ C << to a graphic network flow file.
           found=.false.
           do 42 in=1,NCOMP
             if(ICAAS(in).ne.0)then
-              zmfn1 = ' '
-              zmfn2 = ' '
               found=.true.
             endif
   42      continue

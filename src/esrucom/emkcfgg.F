@@ -93,7 +93,7 @@ C Special materials file flag
       common/entfile/entflnam,ientxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/AFNZN/zmfn1,zmfn2
+      COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -221,7 +221,6 @@ C Generic databases from esprdbfile.h.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character zmfn1*124,zmfn2*124
       character imgfmt*4,imgfoc*4,limgfil*72
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
@@ -239,6 +238,11 @@ C Generic databases from esprdbfile.h.
       character calename*32,calentag*12,calendayname*32,loutc*96
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
 
+C An array of mass flow nodes for writing.
+      CHARACTER NDNAM*12
+      character namen*12
+      dimension namen(mcom)
+
       dimension iav(60)
 
       logical KNOWN,dogrnd
@@ -246,6 +250,13 @@ C Generic databases from esprdbfile.h.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
+
+C Control for writing out multi-climate sim presets
+      logical bMY_set_open 
+
+      integer itrunc  ! to indicate there is a continuation line.
+      integer ipos    ! position in flow node string buffer
+      integer lnouts   ! location at end of flow node string buffer
 
       IUF=IFIL+1
       IER=0
@@ -877,27 +888,27 @@ C Write airflow model description
   808 FORMAT(I7,'   # fluid flow network:  ')
       IF(IAIRN.ge.1)then
 
-C Note this only writes node number not node name: needs upgrading.
-C If ICAAS not known use strings held in zmfn1 zmfn2.
+C Make up an array of node names to write out substituting a
+C zero where there is no association.
         WRITE(IFCFG,'(A,A)',IOSTAT=IOS,ERR=2)
      &    LAPROB(:LNBLNK(LAPROB)),'    # leakage description'
+        do 777 j=1,ncomp
+          if(ICAAS(J).ne.0)then
+            namen(j)=NDNAM(ICAAS(J))
+          else
+            namen(j)='0'
+          endif
+  777   continue
 
-        KNOWN=.FALSE.
-        if(zmfn1.ne.' ')then
-          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)zmfn1(:LNBLNK(zmfn1))
-          KNOWN=.TRUE.
-        endif
-        if(zmfn2.ne.' ')then
-          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)zmfn2(:LNBLNK(zmfn2))
-          KNOWN=.TRUE.
-        endif
-        if(.NOT.KNOWN)then
+        itrunc=1
+        ipos=1
+        do while (itrunc.ne.0)
+          lnouts=1
+          call aslist(ipos,ncomp,namen,MCOM,'C',outs,lnouts,itrunc)
+          write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=2) outs(1:lnouts)
+          ipos=itrunc+1
+        end do
 
-C Write packed string of the network node associated with each zone.
-          ipos=1
-          call ailist(ipos,ncomp,ICAAS,MCOM,'C',outs,loutlen,itrunc)
-          write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=2) outs(1:loutlen)
-        endif
       endif
  9021 if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
 
