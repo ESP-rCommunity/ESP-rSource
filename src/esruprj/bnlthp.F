@@ -367,7 +367,7 @@ C Delete the thermal configuration file.
           CALL FINDFIL(LNLTHP,XST)
           IF(XST)THEN
             CALL EFOPSEQ(IUNIT,LNLTHP,3,IER)
-            CALL EFDELET(IUNIT,ISTAT)
+            CALL EFDELET(IUNIT,IOS)
           ENDIF
           LNLTHP=' '
           INTHPS=.FALSE.
@@ -598,7 +598,7 @@ C Loading a thermal data file ,which contains a list of thermal
 C equations, in order to modify it, copy from it and/ or list the
 C contents.
       ELSEIF(INO.EQ.M+9)THEN
-        IF(INDEX1.EQ.1)CALL ERPFREE(IUNIT,ISTAT)
+        IF(INDEX1.EQ.1)CALL ERPFREE(IUNIT,IOS)
         H(1)='  Enter the name of the thermal file to be loaded.'
         CALL EASKS(THFIL,' Thermal data file name ?',' ',72,' ',
      &       ' thermal file ',IER,1)
@@ -609,7 +609,7 @@ C contents.
 
 C While reading (loading) the thermal data file, display its contents 
 C in the text feedback window.
-   55  READ(IUNIT,'(A95)',IOSTAT=ISTAT,END=56)OUTSTR
+   55  READ(IUNIT,'(A95)',IOSTAT=IOS,END=56)OUTSTR
        MLIN=MLIN+1
        CALL  EDISP(IUOUT,OUTSTR)
        GOTO 55
@@ -621,10 +621,15 @@ C already loaded.
       ELSEIF(INO.EQ.M+10)THEN
         IF(INDEX1.EQ.1)THEN
           REWIND(IUNIT,ERR=999)
-   57     READ(IUNIT,'(A95)',IOSTAT=ISTAT,END=58)OUTSTR
+   57     READ(IUNIT,'(A95)',IOSTAT=IOS,END=58)OUTSTR
           CALL  EDISP(IUOUT,OUTSTR)
           GOTO 57
-   58     CONTINUE
+   58     if(IOS.eq.2)then
+            CALL USRMSG(' ',
+     &        'Permissions reading thermal equations data file!','W')
+          else
+            continue
+          endif
         ELSE
           CALL USRMSG(' ',' No thermal file yet loaded!','W')
         ENDIF
@@ -647,7 +652,7 @@ C thermal data file.
           ILIN=INUM*2
           REWIND(IUNIT,ERR=999)
           DO 60 I4=1,ILIN-1
-            READ(IUNIT,'(A95)',IOSTAT=ISTAT,END=991)OUTSTR
+            READ(IUNIT,'(A95)',IOSTAT=IOS,END=991)OUTSTR
    60    CONTINUE
          CALL STRIPC(IUNIT,OUTSTR,13,ND,1,'coefficients',IER)
          IF(IER.NE.0)GOTO 10
@@ -681,12 +686,12 @@ C the loaded thermal data file.
           IF(INO2.GT.3.AND.INO2.LT.(M+4))THEN
             REWIND(IUNIT,ERR=999)
             MLIN=0
-   75       READ(IUNIT,'(A95)',IOSTAT=ISTAT,END=77)OUTSTR
+   75       READ(IUNIT,'(A95)',IOSTAT=IOS,END=77)OUTSTR
             MLIN=MLIN+1
             GOTO 75
    77       MNUM=MLIN/2
-            WRITE(IUNIT,'(A2,A72)',IOSTAT=ISTAT,ERR=1000)'# ',TITLE
-            WRITE(IUNIT,78,IOSTAT=ISTAT,ERR=1000)MNUM+1,
+            WRITE(IUNIT,'(A2,A72)',IOSTAT=IOS,ERR=1000)'# ',TITLE
+            WRITE(IUNIT,78,IOSTAT=IOS,ERR=1000)MNUM+1,
      &      INT(BTHDT(ITHF,INO2-3,1)),(BTHDT(ITHF,INO2-3,K),K=2,12)
    78       FORMAT(1X,I2,1X,I1,2(1X,F7.2),1X,F8.3,4(1X,F8.5,1X,F6.2))
             MLIN=MLIN+2
@@ -705,7 +710,7 @@ C Display the help message.
 C Return to the non-linear properties menu and close the thermal data
 C file if it was loaded.
       ELSEIF(INO.EQ.M+15)THEN
-        IF(INDEX1.EQ.1)CALL ERPFREE(IUNIT,ISTAT)
+        IF(INDEX1.EQ.1)CALL ERPFREE(IUNIT,IOS)
         CALL USRMSG(' ',' ','-')
         RETURN
       ENDIF
@@ -715,11 +720,26 @@ C thermal equations menu.
       GOTO 10
 
 C Error messages
-  991 CALL USRMSG(' ',' Error in the thermal equations data file!','W')
+  991 if(IOS.eq.2)then
+        CALL USRMSG(' ',
+     &    'Permissions error in thermal equations data file!','W')
+      else
+        CALL USRMSG(' ','Error in thermal equations data file!','W')
+      endif
       GOTO 10
-  999 CALL USRMSG(' ',' Error rewinding thermal data file!','W')
+  999 if(IOS.eq.2)then
+        CALL USRMSG(' ',
+     &    'Permissions error rewinding thermal data file!','W')
+      else
+        CALL USRMSG(' ','Error rewinding thermal data file!','W')
+      endif
       GOTO 10
- 1000 CALL USRMSG(' ',' Error modifying thermal data file!','W')
+ 1000 if(IOS.eq.2)then
+        CALL USRMSG(' ',
+     &    'Permissions error modifying thermal data file!','W')
+      else
+        CALL USRMSG(' ','Error modifying thermal data file!','W')
+      endif
       GOTO 10
       END
 

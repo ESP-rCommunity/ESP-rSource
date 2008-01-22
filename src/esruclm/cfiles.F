@@ -472,6 +472,10 @@ C Open the ASCII file for reading.
         ier = 1
         return
       endif
+
+C Initialiase defaults for easkr
+      longit_for_diffuse_calcs=0.
+      differ_from_Greenwich=0.
       
 C Set the radiation flag to Global horizontal      
       IDNGH=123

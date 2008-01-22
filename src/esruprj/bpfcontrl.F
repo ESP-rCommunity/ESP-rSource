@@ -2571,8 +2571,14 @@ C Extract from working array to bmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing miscellaneous data.','W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' ',
+     &    'Permission issue writing miscellaneous data.','W')
+      else
+        CALL USRMSG(' ','Problem writing miscellaneous data.','W')
+      endif
       return
+
       END
 
 C *********** EPCNTRL
@@ -4226,7 +4232,12 @@ C Extract from working array to gmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing miscellaeeous data.','W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' ','Permissions issue writing miscellaeeous data.',
+     &    'W')
+      else
+        CALL USRMSG(' ','Problem writing miscellaeeous data.','W')
+      endif
       RETURN
       END
 

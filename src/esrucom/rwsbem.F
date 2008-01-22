@@ -49,12 +49,15 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      CHARACTER*124 OUTSTR
+      CHARACTER OUTSTR*124,LOUTSTR*248
       CHARACTER*42 WORD,FUELNAM
       CHARACTER SYSNAM*60
+      CHARACTER*40 ACTNAME
+      CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
+      CHARACTER*96 ACTDOC  ! to hold documentation string for activity
 
 C Initialise counters
-      IDEBUG=0
+      IDEBUG=1
       IFUEL=0
       ISYS=0
       IHSYS=0
@@ -214,8 +217,11 @@ C redundant because default SFP for all systems is the same
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVACGUIDE-SFP',IER)
       GOTO 5
 
-C Read SBEM building types and corresponding building type index
-C Interestingly there are 3 indices for 29 building types
+C Read SBEM building list order index (this is what the activities
+C list below points back to), building types index and corresponding
+C building type description. building types index 1 is for
+C residential, 2 is for places of assembly and offices and shops
+C and 3 is for industrial and storage.
  6    CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM bldg type',IER)
       IF(OUTSTR(1:16).NE.'*bldg_type_start')then
         CONTINUE ! WARNING MsG TO GO HERE
@@ -223,8 +229,17 @@ C Interestingly there are 3 indices for 29 building types
       DO 80 IBT=1,MBT
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM bldg type',IER)
         K=0
-        CALL EGETWI(OUTSTR,K,IBTYPNDX(IBT),0,0,'-','nb items',IER)
-        BTYPNAME(IBT)=OUTSTR(3:45)
+        CALL EGETWI(OUTSTR,K,ival,0,0,'-',
+     &    'bldg order in list',IER)
+        CALL EGETWI(OUTSTR,K,IBTYPNDX(IBT),0,0,'-',
+     &    'bldg type index 1-2-3',IER)
+        call egetrm(outstr,K,BTYPNAME(IBT),'W',
+     &    'building type name',IER)
+
+C Debug...
+        IF(IDEBUG.EQ.1)THEN
+          write(6,*)ibt,ival,IBTYPNDX(IBT),' ',BTYPNAME(IBT)
+        ENDIF
  80   CONTINUE
 
 C Read end of building type information
@@ -304,9 +319,9 @@ C Read DHW generators, efficiencies and BRUKL indices
       DHWGEN(IBT)=OUTSTR(1:25)
       K=25
       CALL EGETWR(OUTSTR,K,DHWEFF(IBT,1),-1.,1.,'W',
-     &'system eff before 1998',IER)
+     &  'system eff before 1998',IER)
       CALL EGETWR(OUTSTR,K,DHWEFF(IBT,2),-1.,1.,'W',
-     &'system eff after 1998',IER)
+     &  'system eff after 1998',IER)
       DO 90 IBR=1,MWS
         CALL EGETWI(OUTSTR,K,IBRUKLW(IBT,IBR),0,0,'-',
      &  'BRUKL DHW indices',IER)
@@ -320,32 +335,91 @@ C Debug...
       IBT=IBT+1
       GOTO 15
 
-C Read activity types sorted by building type
+C Read activity types sorted by building type. The data is
+C in three parts: the number of corresponding
+C buildings that use this activity, a quoted string
+C which has the name of the room type, followed by one
+C data line for each corespinding building type which
+C holds the static data associated with the activity.
  16   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Activity types',IER)
       IF(OUTSTR(1:23).NE.'*activities_by_building')then
-        CONTINUE ! WARNING MsG TO GO HERE   
+        call usrmsg('expecting *activities_by_building and got...',
+     &    outstr,'W')  
       endif   
       IAT=1
  17   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Activity types',IER)
       IF(OUTSTR(1:19).EQ.'*end_activities_by_')GOTO 18
       K=0
-      CALL EGETWI(OUTSTR,K,NTSTR,0,0,'-','no. text strings',IER)
-      CALL EGETWI(OUTSTR,K,NCBTP,0,0,'-','crrspnd bld typ',IER)
-      ILEN=1
-      DO 100 ITSTR=1,NTSTR
-        CALL EGETW(OUTSTR,K,WORD,'W','system name',IER)
-        WRITE(SYSNAM,'(A,1X,A)')SYSNAM(1:ILEN),
-     &    WORD(1:lnblnk(WORD))
-        ILEN=LNBLNK(WORD)+ILEN+1
- 100  CONTINUE
-      ATYPNAME(IAT)=SYSNAM(1:40)
+      CALL EGETWI(OUTSTR,K,NCBTP,0,0,'-','correspnd bld types',IER)
+      call egetdq(OUTSTR,K,ACTNAME,'-','room activity type',IER)
+      ATYPNAME(IAT)=ACTNAME
+      ACTNAME=' '
 
 C Debug...
       IF(IDEBUG.EQ.1)THEN
-        WRITE(6,*)IAT,' ',ATYPNAME(IAT)
+        WRITE(6,*)IAT,NCBTP,' ',ATYPNAME(IAT)
       ENDIF
+
+C For each of the corresponding building types read in the static
+C data as follows:
+C a) building order indices from the *bldg_type_start section of the file
+C b) index of the activity
+C c) quoted string name of activity (roomactname)
+C d) b_type order index (same as A) (bld_order_index)
+C e) occupant density people/m2 (occupant_dens)
+C f) metabolic rate W/person/m2 (metabolic_rate)
+C g) skip cooling setpoint
+C h) skip heating set point
+C i) skip set back
+C j) outside air per person litres/sec/person (fresh_air)
+C k) lighting lux (lighting_lux)
+C l) equipment W/m2  (equip_gain)
+C m) domestic hot water litres/day/m2 (dhw_litres)
+C n) skip humidity minimum %
+C o) skip humidity maximum %
+C p) quoted string description (roomactdoc)
+C q) occupant latent percentage (of the whole gain) (latent_ocup_percent)
+C r) equipment latent percentage (of the whole gain) (latent_equip_percent)
+C s) lighting display W/m2  (display_lighting)
       DO 130 ICBTP=1,NCBTP
-        CALL EGETWI(OUTSTR,K,IBTN,0,0,'-','crrspnd bld typ index',IER)
+        CALL LSTRIPC(IUF,LOUTSTR,0,ND,1,'Activity types',IER)
+        K=0
+        CALL EGETWI(LOUTSTR,K,IBTN,0,0,'-','crrspnd bld typ index',IER)
+        CALL EGETWI(LOUTSTR,K,iactindex,0,0,'-','activity index',IER)
+        call egetdq(LOUTSTR,K,ACTLNAME,'-','room activity type',IER)
+        write(roomactname(iactindex),'(a)') ACTLNAME(1:lnblnk(ACTLNAME))
+        CALL EGETWI(LOUTSTR,K,index,0,0,'-','crrspnd bld typ index',IER)
+        bld_order_index(iactindex)=index
+        CALL EGETWR(LOUTSTR,K,VAL,0.,10.,'W','occupant density',IER)
+        occupant_dens(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','metabolic rate',IER)
+        metabolic_rate(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','cooling setpoint',IER)
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','heating setpoint',IER)
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','set-back',IER)
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','outside air per prs',IER)
+        fresh_air(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,10000.,'W','lighting lux',IER)
+        lighting_lux(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','equipment W/m2',IER)
+        equip_gain(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W',
+     &    'domestic hot water litres/day/m2',IER)
+        dhw_litres(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','humidity minimum %',IER)
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','humidity max %',IER)
+        call egetdq(LOUTSTR,K,ACTDOC,'-','activity description',IER)
+        write(roomactdoc(iactindex),'(a)') ACTDOC(1:lnblnk(ACTDOC))
+
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W',
+     &    'occupant latent percentage',IER)
+        latent_ocup_percent(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W',
+     &    'equipment latent percentage',IER)
+        latent_equip_percent(iactindex)=VAL
+        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','lighting displ W/m2',IER)
+        display_lighting(iactindex)=VAL
+
         IATYPNDX(IAT,IBTN)=1
         IF(IDEBUG.EQ.1)THEN
           IF(IATYPNDX(IAT,IBTN).EQ.1)WRITE(6,*)' btypes ',BTYPNAME(IBTN)

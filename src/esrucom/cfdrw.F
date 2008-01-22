@@ -466,7 +466,11 @@ C Close file.
 
       return
 
- 3    CALL USRMSG(' File write error in ',LCFD(izone),'W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' File permission error in ',LCFD(izone),'W')
+      else
+        CALL USRMSG(' File write error in ',LCFD(izone),'W')
+      endif
       IER=1
       CALL ERPFREE(IUF,ISTAT)
       return

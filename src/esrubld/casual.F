@@ -364,8 +364,8 @@ C For lighting heat gains assume latent gains are zero
         QLIGHTLATN=0
 C	QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
 
-	QCASC(2)=QOCCCASC+QEQUIPCASC
-        QCASR(2)=QOCCCASR+QEQUIPCASR
+	QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
+        QCASR(2)=QOCCCASR+QEQUIPCASR+QLIGHTCASR
         QLATN(2)=QOCCLATN+QEQUIPLATN+QLIGHTLATN
         if(traceok)then
           write(outs,*)'TOTAL OCCUPANT gains from temporal db=',
