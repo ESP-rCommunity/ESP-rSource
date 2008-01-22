@@ -2180,16 +2180,14 @@ C Newer control files have an extra item related to humidity control.
             if(nint(cm(12)).eq.1)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
-     &          'W min heating cap ',cm(3),
-     &          'W max cooling cap ',cm(4),
-     &          'W min cooling cap ',cm(5),
-     &          'W. Heating sp ',cm(6),
-     &          'C cooling sp ',cm(7),
-     &          'C and moisture inj RH control with upper sp',
-     &          cm(8),'(%) lower sp ',cm(9),
-     &          '(%) max humidification rate ',cm(10),
-     &          '(g/s) max dehumidification rate ',cm(11),'(g/s).'
+     &          msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
+     &          'W mn heat cap',cm(3),'W mx cool cap',cm(4),
+     &          'W mn cool cap',cm(5),'W. Heat sp',cm(6),
+     &          'C cool sp',cm(7),
+     &          'C & moist inj RH ctl hi sp',
+     &          cm(8),'(%) low sp',cm(9),
+     &          '(%) max humid ',cm(10),
+     &          '(g/s) max dehumid ',cm(11),'(g/s).'
             elseif(nint(cm(12)).eq.2)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a)') 
@@ -2199,7 +2197,7 @@ C Newer control files have an extra item related to humidity control.
      &          'W min heaing cap ',cm(5),
      &          'W. Heating sp ',cm(6),
      &          'C cooling sp ',cm(7),
-     &          'C and T based RH ctl with upper sp ',
+     &          'C and T based RH ctl upper sp ',
      &          cm(8),'(%) lower sp ',cm(9),'(%).'
             elseif(nint(cm(12)).eq.0)then
             write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
@@ -2818,6 +2816,8 @@ C          call edisp248(6,message,80)
 
 C Set short SSTR and then begin to build up the longer message (lmsg)
 C based on the miscel data items.
+C << this report does not recognise a single sensor NOT control
+C << or a single sensor SLAVE control.
           SSTR='multi sensor on/off      '
           cm(1)=fmiscd(II,JJ,KK,1)
           nitems=nint(cm(1))

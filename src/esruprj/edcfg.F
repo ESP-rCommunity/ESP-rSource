@@ -109,7 +109,6 @@ C Controls.
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/AFNZN/zmfn1,zmfn2
       COMMON/MFLOW2/NDNAM(0:MNOD)
       common/MFLDOC/DEPRE(MPRD)
       COMMON/NWKGRD/GRMAX(3),GRSPC(3),GRLYRH(MLYRS)
@@ -144,7 +143,7 @@ C Controls.
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
       character LCFGF*72,H*72,ITEMS*34,t24*24,ETEXT*82
-      character zmfn1*124,zmfn2*124,NDNAM*12,LFIL*72
+      character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp,DSBEM
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
@@ -861,10 +860,6 @@ C Link nodes and zones.
               endif
             endif
   33      CONTINUE
-
-C Clear zmfn1 & zmfn2 so that updated data will be written in cfg file.
-          zmfn1 = ' '
-          zmfn2 = ' '
 
 C Save the configuration file so that connections and graphic mass flow
 C network are know.

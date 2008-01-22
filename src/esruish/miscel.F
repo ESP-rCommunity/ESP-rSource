@@ -27,102 +27,103 @@ C POINT1   determine if a point is within the target surface
 C POINT2   determine if a point is within a shadow polygon.
 
 C ************* AREA 
-      SUBROUTINE AREA(N,X,Y,A)
-C AREA calculates the area for any polygon where N is the number
-C of points, X & Y are arrays of coordinates around the surface 
-C and A is the calculated area.
+C Calculates the area of a surface comprising 'n' vertices
+C and coordinates 'x & y'; the calculated area is 'a'.
+
+      subroutine area(n,x,y,a)
 #include "building.h"
-      DIMENSION X(MV),Y(MV)
-      A=0
-      DA=(X(2)-X(1))**2+(Y(2)-Y(1))**2
-      DO 10 I=3,N
-      DB=(X(I)-X(1))**2+(Y(I)-Y(1))**2
-      DC=(X(I)-X(I-1))**2+(Y(I)-Y(I-1))**2
-      SI=(Y(1)-Y(I-1))*(X(I)-X(I-1))-
-     &   (Y(I)-Y(I-1))*(X(1)-X(I-1))
-      IF(SI.GT.0.)SI=1.
-      IF(SI.LT.0.)SI=-1.
-      IF(abs(SI).lt.0.0001)GO TO 10
+
+      dimension x(mv),y(mv)
+
+      a=0
+      da=(x(2)-x(1))**2+(y(2)-y(1))**2
+      do 10 i=3,n
+         db=(x(i)-x(1))**2+(y(i)-y(1))**2
+         dc=(x(i)-x(i-1))**2+(y(i)-y(i-1))**2
+         si=(y(1)-y(i-1))*(x(i)-x(i-1))-(y(i)-y(i-1))*(x(1)-x(i-1))
+         if(si.gt.0.)si=1.
+         if(si.lt.0.)si=-1.
+         if(abs(si).lt.0.0001)goto 1
 
 C Check square root is not negative.
-      temp=2.*(DA*DB+DB*DC+DC*DA)-(DA*DA+DB*DB+DC*DC)
-      if (temp.gt.0.00001)then
-        AREX=.25*SQRT(temp)
-      else
-        AREX=0.0
-      endif
-      A=A+SI*AREX
-  10  DA=DB
-      A=ABS(A)
-      RETURN
-      END
+         temp=2.*(da*db+db*dc+dc*da)-(da*da+db*db+dc*dc)
+         if(temp.gt.0.00001)then
+            arex=.25*sqrt(temp)
+         else
+            arex=0.0
+         endif
+         a=a+si*arex
+    1    da=db
+   10 continue
+      a=abs(a)
+      return
+      end
 
 C *************** MESH ***********************
-C 'MESH' Computes the centre point X & Z coordinate of each rectangular
-C grid square of a mesh superimposed on the opaque surface in question
-C and any associated windows.
-      SUBROUTINE MESH(ITS)
+C Computes the centre point 'x & y' coordinates for each rectangular
+C grid cell as superimposed on the target surface.
+
+      subroutine mesh(its)
 #include "building.h"
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
-      COMMON/GRID3/OGRIDA(MS)
-      CHARACTER BLKNAME*8,BLKMAT*12
 
-C Derive bounding box (in 2D) for surface ITS. First find max and min
-C X & Z values for this surface by scanning each vertex.
-      XMAX=-1.E+10
-      ZMAX=-1.E+10
-      XMIN=1.E+10
-      ZMIN=1.E+10
-      NV=NVER(ITS)
-      DO 10 I=1,NV
-        XMAX=AMAX1(XMAX,XFT(I))
-        ZMAX=AMAX1(ZMAX,ZFT(I))
-        XMIN=AMIN1(XMIN,XFT(I))
-        ZMIN=AMIN1(ZMIN,ZFT(I))
-   10 CONTINUE
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/g1t/xft(mv),zft(mv)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/grid3/ogrida(ms)
+      common/grid11/xop(mox,moz),zop(mox,moz)
+      character blkname*8,blkmat*12
 
-C Mesh length and height is given by:
-      DXMESH=XMAX-XMIN
-      DZMESH=ZMAX-ZMIN
+C Derive bounding box (in 2d) for surface its. First find max and min
+C x & y values for this surface by scanning each vertex.
+      xmax=-1.E+10
+      zmax=-1.E+10
+      xmin=1.E+10
+      zmin=1.E+10
+      nv=nver(its)
+      do 10 i=1,nv
+         xmax=amax1(xmax,xft(i))
+         zmax=amax1(zmax,zft(i))
+         xmin=amin1(xmin,xft(i))
+         zmin=amin1(zmin,zft(i))
+   10 continue
+
+C Mesh length and height.
+      dxmesh=xmax-xmin
+      dzmesh=zmax-zmin
 
 C Establish grid interval for this surface. Ogrida is the area of
-C one grid square.
-      DIVX=DXMESH/NOX
-      DIVZ=DZMESH/NOZ
-      OGRIDA(ITS)=DIVX*DIVZ
+C one grid cell.
+      divx=dxmesh/nox
+      divz=dzmesh/noz
+      ogrida(its)=divx*divz
 
-C Compute X & Z values for centre point of each grid square.
-      DO 20 I=1,NOX
-        DO 30 J=1,NOZ
-          XOP(I,J)=DIVX/2.+(I-1)*DIVX
-          ZOP(I,J)=DIVZ/2.+(J-1)*DIVZ
-   30   CONTINUE
-   20 CONTINUE
-
-      RETURN
-      END
+C Compute x & y values for centre point of each grid cell.
+      do 20 i=1,nox
+         do 30 j=1,noz
+            xop(i,j)=divx/2.+(i-1)*divx
+            zop(i,j)=divz/2.+(j-1)*divz
+   30    continue
+   20 continue
+      return
+      end
 
 C ******************** PICKSSUR 
-C PICKSSUR selects surfaces for shading & insolation analysis.
-C IZONE is the focus zone, NP is the number of surfaces selected,
-C act = 's or S' for shading, act = 'i or I' for insolation,
-C act = 'l or L' for view shading surfs, act = '-' for no selection. 
-C IVA array of selections. Uses information from ZONDF.
+C Selects surfaces for shading & insolation analysis.
+C 'izone' is the target zone, 'np' the number of surfaces selected,
+C 'act' = 's or S' for shading, 'act' = 'i or I' for insolation,
+C 'act' = 'l or L' for view shading surfaces and 'act' = '-' for
+C no selection.  'iva' is the array of selections.
 
-      SUBROUTINE PICKSSUR(IZONE,NP,act,IVA,IER)
+      subroutine pickssur(izone,np,act,iva,ier)
 #include "building.h"
 
       common/pophelp/h(60)
-      COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/CONTR/MON,ISC(MS),IYD
+      common/c1/ncomp,ncon
+      common/c20/nzsur(mcom),nztv(mcom)
+      common/c24/izstocn(mcom,ms)
+      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
+     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/contr/mon,isc(ms),iyd
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation;
 C iaplic(3) toggle for assessment where:
@@ -130,20 +131,20 @@ C                      1 is 'all_applicable' and
 C                      0 is manual selection of surfaces.
 C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
 C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
-      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
-     &       nsurfinso(MCOM),isurfinso(MCOM,MS)
+      common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),lstsfcalc(mcom,ms),
+     &       nsurfinso(mcom),isurfinso(mcom,ms)
 
-      DIMENSION STMP(MS),IVA(MS),IVALS(MS)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
-      character H*72,STMP*33,act*1
+      dimension stmp(ms),iva(ms),ivals(ms)
+      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
+     &          ssparent*12,ssuse*8
+      character h*72,stmp*33,act*1
 
-      IER=0
-      IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
-        CALL USRMSG(' ',' Zone number out of range! ','W')
-        IER=1
-        RETURN
-      ENDIF
+      ier=0
+      if(izone.gt.ncomp.or.izone.eq.0)then
+         call usrmsg(' ',' Zone number out of range! ','W')
+         ier=1
+         return
+      endif
 
  43   h(1) ='A shading analysis computes the temporal patterns of'
       h(2) ='shading on exterior surfaces, while an insolation'
@@ -158,246 +159,250 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       h(11)='    transparent. If it is an internal surface it will'
       h(12)='    be processed as if external.'
       if(act.eq.'s'.or.act.eq.'S')then
-         CALL EASKABC(' ','Shading options:',
+         call easkabc(' ','Shading options:',
      &          'all applicable surfaces','select surface(s)',
-     &          'cancel',IIC,12)
+     &          'cancel',iic,12)
          if(iic.eq.1)iaplic(izone,1)=1
          if(iic.eq.2)iaplic(izone,1)=0
       elseif(act.eq.'i'.or.act.eq.'I')then
-         CALL EASKABC(' ','Insolation options:',
-     &          'all applicable surfaces','select surface(s)',
-     &          'cancel',IIC,12)
+         call easkabc(' ','Insolation options:',
+     &          'all applicable sources','select source(s)',
+     &          'cancel',iic,12)
          if(iic.eq.1)iaplic(izone,2)=1
          if(iic.eq.2)iaplic(izone,2)=0
       elseif(act.eq.'l'.or.act.eq.'L')then
-        IIC=4
+         iic=4
       else
-        IIC=2
+         iic=2
       endif
 
 C Clear return array.
-      do 14 i=1,NZSUR(IZONE)
-        IVA(I)=0
+      do 14 i=1,nzsur(izone)
+         iva(i)=0
   14  continue
 
 C Process initial selection.
-      if(IIC.eq.3)then
-        return
-      elseif(IIC.eq.1)then
-        if(act.eq.'s'.or.act.eq.'S')then
-          NP=0
-          DO 13 I=1,NZSUR(IZONE)
-            ICN=IZSTOCN(izone,i)
-            if(SSOTHER(icn,1)(1:5).eq.'EXTER')then
-              NP=NP+1
-              IVA(NP)=I
-            endif
-  13      continue
-          if(NP.eq.0)then
-            CALL usrmsg('No applicable surfaces found!',' ','W')
-            goto 43
-          endif
-          return
-        elseif(act.eq.'i'.or.act.eq.'I')then
-          NP=0
-          DO 15 I=1,NZSUR(IZONE)
-            ICN=IZSTOCN(izone,i)
-            if(SSOTHER(icn,1)(1:5).eq.'EXTER'.and.
-     &         SSOTF(icn)(1:4).ne.'OPAQ')then
-              NP=NP+1
-              IVA(NP)=I
-            endif
-   15     continue
-          if(NP.eq.0)then
-            CALL usrmsg('No applicable surfaces found!',' ','W')
-            goto 43
-          endif
-          return
-        endif
-      elseif(IIC.eq.2)then
-        INPIC=NZSUR(IZONE)
-        DO 11 I=1,INPIC
-         ICN=IZSTOCN(izone,i)
+      if(iic.eq.3)then
+         return
+      elseif(iic.eq.1)then
          if(act.eq.'s'.or.act.eq.'S')then
-           if(SSOTHER(ICN,1)(1:5).eq.'EXTER')then
-             write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
-     &         SSOTHER(ICN,1)(1:15)
-           else
-             write(STMP(I),'(2a)')SSNAME(ICN),' not applicable'
-           endif
-         elseif(act.eq.'-')then
-           write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
-     &       SSOTHER(ICN,1)(1:15)
+            np=0
+            do 13 i=1,nzsur(izone)
+               icn=izstocn(izone,i)
+               if(ssother(icn,1)(1:5).eq.'EXTER')then
+                  np=np+1
+                 iva(np)=i
+               endif
+  13        continue
+            if(np.eq.0)then
+               call usrmsg('No applicable surfaces found!',' ','W')
+               goto 43
+            endif
+            return
          elseif(act.eq.'i'.or.act.eq.'I')then
-           if(SSOTHER(ICN,1)(1:5).eq.'EXTER'.and.
-     &        SSOTF(ICN)(1:4).ne.'OPAQ')then
-             write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
-     &         SSOTHER(ICN,1)(1:15)
-           else
-             write(STMP(I),'(a,a)')SSNAME(ICN),' not applicable'
-           endif
+            np=0
+            do 15 i=1,nzsur(izone)
+               icn=izstocn(izone,i)
+               if(ssother(icn,1)(1:5).eq.'EXTER'.and.
+     &                    ssotf(icn)(1:4).ne.'OPAQ')then
+                  np=np+1
+                  iva(np)=i
+               endif
+   15       continue
+            if(np.eq.0)then
+               call usrmsg('No applicable surfaces found!',' ','W')
+               goto 43
+            endif
+            return
          endif
-         IVA(I)=0
-   11   CONTINUE
+      elseif(iic.eq.2)then
+         inpic=nzsur(izone)
+         do 11 i=1,inpic
+            icn=izstocn(izone,i)
+            if(act.eq.'s'.or.act.eq.'S')then
+               if(ssother(ICN,1)(1:5).eq.'EXTER')then
+                  write(stmp(I),'(5a)')ssname(icn),'|',ssotf(icn)(1:4),
+     &                             '|',ssother(icn,1)(1:15)
+               else
+                  write(stmp(I),'(2a)')ssname(icn),' not applicable'
+               endif
+            elseif(act.eq.'-')then
+               write(stmp(i),'(5a)')ssname(icn),'|',ssotf(icn)(1:4),
+     &                             '|',ssother(icn,1)(1:15)
+            elseif(act.eq.'i'.or.act.eq.'I')then
+               if(ssother(icn,1)(1:5).eq.'EXTER'.and.
+     &                           ssotf(icn)(1:4).ne.'OPAQ')then
+                  write(stmp(i),'(5a)')ssname(icn),'|',ssotf(icn)(1:4),
+     &                             '|',ssother(icn,1)(1:15)
+               else
+                  write(stmp(i),'(2a)')ssname(icn),' not applicable'
+               endif
+            endif
+            iva(i)=0
+   11    continue
 
-        H(1)='Pick one, several or all surfaces for inclusion'
-        H(2)='in analysis.'
-        CALL EPICKS(INPIC,IVALS,' ','Surface(s) to include',
-     &   33,NZSUR(IZONE),STMP,'Surface(s) to include?',IER,2)
-        if(INPIC.eq.0)then
-          RETURN
-        else
-          NP=INPIC
-          DO 12 I=1,NP
-            IVA(I)=IVALS(I)
-   12     CONTINUE
-        endif
+         h(1)='Pick one, several or all surfaces for inclusion'
+         h(2)='in analysis.'
+         call epicks(inpic,ivals,' ','Surface(s) to include',
+     &        33,nzsur(izone),stmp,'Surface(s) to include?',ier,2)
+         if(inpic.eq.0)then
+            return
+         else
+            np=inpic
+            do 12 i=1,np
+               iva(i)=ivals(i)
+   12       continue
+         endif
 
-      elseif(IIC.eq.4)then
-        INPIC=NZSUR(IZONE)
-        DO 21 I=1,INPIC
-          ICN=IZSTOCN(izone,i)
-          if(ISC(I).EQ.1)then
-            write(STMP(I),'(5a)')SSNAME(ICN),'|',SSOTF(ICN)(1:4),'|',
-     &         SSOTHER(ICN,1)(1:15)
-          else
-            write(STMP(I),'(a,a)')SSNAME(ICN),' not assessed'
-          endif
-          IVA(I)=0
-   21   CONTINUE
-        INPIC=1
-        H(1)='Only surfaces that have been assessed are listed.'
-        CALL EPICKS(INPIC,IVALS,' ','Surface to View',
-     &   33,NZSUR(IZONE),STMP,'Surface(s) to view?',IER,1)
-        if(INPIC.eq.0)then
-          RETURN
-        else
-          NP=INPIC
-          IVA(1)=IVALS(1)
-        endif
-
+      elseif(iic.eq.4)then
+         inpic=nzsur(izone)
+         do 21 i=1,inpic
+            icn=izstocn(izone,i)
+            if(isc(i).eq.1)then
+               write(stmp(i),'(5a)')ssname(icn),'|',ssotf(icn)(1:4),
+     &                         '|',ssother(icn,1)(1:15)
+            else
+               write(stmp(i),'(2a)')ssname(icn),' not assessed'
+            endif
+            iva(i)=0
+   21    continue
+         inpic=1
+         h(1)='Only surfaces that have been assessed are listed.'
+         call epicks(inpic,ivals,' ','Surface to View',
+     &           33,nzsur(izone),stmp,'Surface(s) to view?',ier,1)
+         if(inpic.eq.0)then
+            return
+         else
+            np=inpic
+            iva(1)=ivals(1)
+         endif
       endif
-      RETURN
-      END
+      return
+      end
 
 C ******************** ASKDAY 
-C ASKDAY is a standard call to enquire a date. 
-C Returns IMO (month), IDO (day of month), IJDAY (day of year).
-C IFDAY is a toggle to control the display and input of periods -
-C       0 = Julian day, 1 or 2 = day of month.
-      SUBROUTINE ASKDAY(IFDAY,IMO,IDO,IJDAY,IER)
+C Returns 'imo' (month), 'ido' (day of month) and 'ijday' (day of year).
+C 'ifday' is a toggle controlling the display and input of periods:
+C 0 = Julian day, 1 or 2 = day of month.
 
-      COMMON/OUTIN/IUOUT,IUIN
+      subroutine askday(ifday,imo,ido,ijday,ier)
+
+      common/outin/iuout,iuin
       common/pophelp/h(60)
 
-      character H*72
-      DIMENSION ID(12)
-      DATA ID/31,28,31,30,31,30,31,31,30,31,30,31/
+      character h*72
+      dimension id(12)
+      data id/31,28,31,30,31,30,31,31,30,31,30,31/
 
-      IER=0
-      H(1)='The date is either specified as a day and month number or'
-      H(2)='as a year day in Julian notation (Jan 1 = 1, Dec 31 = 365).'
-  281 IF(IFDAY.EQ.0)THEN
-        CALL EASKI(IJDAY,' ','Year day?',
-     &             1,'F',365,'F',1,'start day',IER,2)
-        CALL EDAYR(IJDAY,IDO,IMO)
-        if(IER.ne.0)goto 281
-      ELSE
-        CALL EASKI(IMO,' ', 'Month number?',
-     &             1,'F',12,'F',1,'end day',IER,2)
-        CALL EASKI(IDO,' ', 'Day of the month?',
-     &             1,'F',31,'F',1,'start day',IER,2)
-        CALL EDAY(IDO,IMO,IJDAY)
-      ENDIF
+      ier=0
+      h(1)='The date is either specified as a day and month number or'
+      h(2)='as a year day in Julian notation (Jan 1 = 1, Dec 31 = 365).'
+    1 if(ifday.eq.0)then
+         call easki(ijday,' ','Year day?',
+     &              1,'F',365,'F',1,'start day',ier,2)
+         call edayr(ijday,ido,imo)
+         if(ier.ne.0)goto 1
+      else
+         call easki(imo,' ', 'Month number?',
+     &              1,'F',12,'F',1,'end day',ier,2)
+         call easki(ido,' ', 'Day of the month?',
+     &              1,'F',31,'F',1,'start day',ier,2)
+         call eday(ido,imo,ijday)
+      endif
 
 C Check range.
-      IF(IDO.GT.ID(IMO))THEN
-        call edisp(iuout,'Day past end of month! Respecify.')
-        goto 281
-      ENDIF
-      CALL EDAY(IDO,IMO,IJDAY)
-
-      RETURN
-      END
+      if(ido.gt.id(imo))then
+         call edisp(iuout,'Day past end of month! Respecify.')
+         goto 1
+      endif
+      call eday(ido,imo,ijday)
+      return
+      end
 
 C ************* POINT1 **********************
 C Determines if a specified point is within or outwith the
 C target surface.
-      SUBROUTINE POINT1(IS,XX,ZZ,IANS)
+
+      subroutine point1(is,xx,zz,ians)
 #include "building.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G1T/XFT(MV),ZFT(MV)
-      DIMENSION C(2*MV+2)
-      IANS=0
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/g1t/xft(mv),zft(mv)
 
-C Determine if point XX,ZZ is within this face.
-      NP=NVER(IS)
-      DO 10 I=1,NP
-        II=2*I-1
-        C(II)=XFT(I)
-        II=II+1
-        C(II)=ZFT(I)
-   10 CONTINUE
-      LAST1=2*NP+1
-      LAST2=2*NP+2
-      C(LAST1)=XFT(1)
-      C(LAST2)=ZFT(1)
-      LN=0
-      IP=NP+1
-      DO 20 I=2,IP
-        N=2*I
-        IF((C(N-2)-ZZ)*(ZZ-C(N)))20,1,2
-    2   IF((ZZ-C(N-2))*(C(N-1)-C(N-3))/(C(N)-C(N-2))+C(N-3)-XX)20,3,4
-    1   IF(C(N-2)-C(N))5,6,7
-    6   IF((C(N-3)-XX)*(XX-C(N-1)))20,3,3
-    5   IF((ZZ-C(N-2))*(C(N-1)-C(N-3))/(C(N)-C(N-2))+C(N-3)-XX)20,3,8
-    7   IF((ZZ-C(N-2))*(C(N-1)-C(N-3))/(C(N)-C(N-2))+C(N-3)-XX)20,3,9
-    9   LN=LN-2
-    8   LN=LN-1
-    4   LN=LN+2
-   20 CONTINUE
-      IF((LN/4)*4.NE.LN)goto 3
+      dimension c(2*mv+2)
+
+      ians=0
+
+C Determine if point xx,zz is within surface 'is'.
+      np=nver(is)
+      do 10 i=1,np
+         ii=2*i-1
+         c(ii)=xft(i)
+         ii=ii+1
+         c(ii)=zft(i)
+   10 continue
+      last1=2*np+1
+      last2=2*np+2
+      c(last1)=xft(1)
+      c(last2)=zft(1)
+      ln=0
+      ip=np+1
+      do 20 i=2,ip
+         n=2*i
+         if((c(n-2)-zz)*(zz-c(n)))20,1,2
+    2    if((zz-c(n-2))*(c(n-1)-c(n-3))/(c(n)-c(n-2))+c(n-3)-xx)20,3,4
+    1    if(c(n-2)-c(n))5,6,7
+    6    if((c(n-3)-xx)*(xx-c(n-1)))20,3,3
+    5    if((zz-c(n-2))*(c(n-1)-c(n-3))/(c(n)-c(n-2))+c(n-3)-xx)20,3,8
+    7    if((zz-c(n-2))*(c(n-1)-c(n-3))/(c(n)-c(n-2))+c(n-3)-xx)20,3,9
+    9    ln=ln-2
+    8    ln=ln-1
+    4    ln=ln+2
+   20 continue
+      if((ln/4)*4.ne.ln)goto 3
       goto 11
-    3 IANS=1
-   11 RETURN
-      END
+    3 ians=1
+   11 return
+      end
 
 C ************* POINT2 **********************
-C Determines if the specified point (XX,ZZ) is within or  outwith
-C the shadow polygon in common SHAD2.
-      SUBROUTINE POINT2(XX,ZZ,IANS)
-      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
-      DIMENSION C(12)
+C Determines if point xx,zz is within or outwith the shadow polygon
+C xs,zs.
 
-      IANS=0
-      NP=NPOINT
-      DO 10 I=1,NP
-        II=2*I-1
-        C(II)=XS(I)
-        II=II+1
-        C(II)=ZS(I)
-   10 CONTINUE
-      LAST1=2*NP+1
-      LAST2=2*NP+2
-      C(LAST1)=XS(1)
-      C(LAST2)=ZS(1)
-      LN=0
-      IP=NP+1
-      DO 20 I=2,IP
-        N=2*I
-        IF((C(N-2)-ZZ)*(ZZ-C(N)))20,1,2
-    2   IF((ZZ-C(N-2))*(C(N-1)-C(N-3))/(C(N)-C(N-2))+C(N-3)-XX)20,3,4
-    1   IF(C(N-2)-C(N))5,6,7
-    6   IF((C(N-3)-XX)*(XX-C(N-1)))20,3,3
-    5   IF((ZZ-C(N-2))*(C(N-1)-C(N-3))/(C(N)-C(N-2))+C(N-3)-XX)20,3,8
-    7   IF((ZZ-C(N-2))*(C(N-1)-C(N-3))/(C(N)-C(N-2))+C(N-3)-XX)20,3,9
-    9   LN=LN-2
-    8   LN=LN-1
-    4   LN=LN+2
-   20 CONTINUE
-      IF((LN/4)*4.NE.LN)goto 3
+      subroutine point2(xx,zz,ians)
+
+      common/shad2/ishd,npoint,xs(5),zs(5)
+
+      dimension c(12)
+
+      ians=0
+      np=npoint
+      do 10 i=1,np
+         ii=2*i-1
+         c(ii)=xs(i)
+         ii=ii+1
+         c(ii)=zs(i)
+   10 continue
+      last1=2*np+1
+      last2=2*np+2
+      c(last1)=xs(1)
+      c(last2)=zs(1)
+      ln=0
+      ip=np+1
+      do 20 i=2,ip
+         n=2*i
+         if((c(n-2)-zz)*(zz-c(n)))20,1,2
+    2    if((zz-c(n-2))*(c(n-1)-c(n-3))/(c(n)-c(n-2))+c(n-3)-xx)20,3,4
+    1    if(c(n-2)-c(n))5,6,7
+    6    if((c(n-3)-xx)*(xx-c(n-1)))20,3,3
+    5    if((zz-c(n-2))*(c(n-1)-c(n-3))/(c(n)-c(n-2))+c(n-3)-xx)20,3,8
+    7    if((zz-c(n-2))*(c(n-1)-c(n-3))/(c(n)-c(n-2))+c(n-3)-xx)20,3,9
+    9    ln=ln-2
+    8    ln=ln-1
+    4    ln=ln+2
+   20 continue
+      if((ln/4)*4.ne.ln)goto 3
       goto 11
-    3 IANS=1
-   11 RETURN
-      END
+    3 ians=1
+   11 return
+      end

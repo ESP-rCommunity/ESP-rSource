@@ -5293,7 +5293,7 @@ C Mark the nodal temperatures for iteration.
          CSVI(INOD2,1)=CSVF(INOD2,1)
          TS=CSVF(INOD1,1)
          TX=CSVF(INOD2,1)
-
+         T_rad_mean=0.5*(TS+TX)
 
 C Then calculate radiator heat emission Q	 
            IF(TS.GT.TE)THEN
@@ -5400,7 +5400,7 @@ C Trace output
             WRITE(ITU,*) ' C1     = ',C1,' (W/K)'
             WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
             WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
-            WRITE(ITU,*) ' T_rad_mean = ',TS,' (C)'
+            WRITE(ITU,*) ' T_rad_mean = ',T_rad_mean,' (C)'
             WRITE(ITU,*) ' TE     = ',TE,' (C)'
             WRITE(ITU,*) ' Q      = ',Q,' (W)'
          END IF

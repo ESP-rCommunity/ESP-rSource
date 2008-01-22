@@ -192,9 +192,6 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C ZMFN1 (124 char) holds first line of flow node->zone links
-C ZMFN2 (124 char) holds second line of flow node->zone links
-      COMMON/AFNZN/zmfn1,zmfn2
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
@@ -403,7 +400,7 @@ C is a logical flag, .true. restricts update/save options.
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
-      character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
+      character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
@@ -2124,7 +2121,6 @@ C older file. Try reading another line or two to get to list.
 
 C Then, zone by zone, split this string into seperate names or numbers
 C reading a second line if necessary.
-        if(ND.le.NCOMP)zmfn1=OUTSTR
         K=0
         DO 35 ICOMP=1,NCOMP
           CALL EGETW(OUTSTR,K,WORD,'W','node name',IERV)
@@ -2133,7 +2129,6 @@ C reading a second line if necessary.
             CALL EDISP(iuout,' reading continuation line...')
             CALL STRIPC(IUC,OUTSTR,0,ND,0,'2nd node-zone',IER)
             IF(IER.NE.0)goto 1
-            zmfn2=OUTSTR
             CALL EGETW(OUTSTR,K,WORD,'W','node name',IERV)
           ENDIF
           IF(IERV.NE.0) GOTO 1

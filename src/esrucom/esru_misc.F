@@ -62,8 +62,6 @@ C in a new model file.
 #include "sbem.h"
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      COMMON/AFNZN/zmfn1,zmfn2
-
       character CTYPE*4
       real gversion
       integer igupgrade
@@ -245,7 +243,6 @@ C   losspercent and is assumed to apply to all zones in the model.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character hvacfile*72,LAIM2*72,LBSIMP*72
-      character zmfn1*124,zmfn2*124
       CHARACTER lradcf*72,ctldoc*248,LCTLF*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
       character dmdsdesc*248,bdmds*72
@@ -267,8 +264,6 @@ C Initial assumption is no SHOCC files.
 
       LPRJLG='job.notes'
       LPNF='UNKNOWN'
-      zmfn1=' '
-      zmfn2=' '
       LGDCVS='UNKNOWN'
       LGDCNC='UNKNOWN'
       LGDNDC='UNKNOWN'
@@ -1115,8 +1110,8 @@ C Read surface test grid information and check ranges.
       CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
-      CALL EGETWI(OUTSTR,K,NOX,4,20,'F','opq grid X',IER)
-      CALL EGETWI(OUTSTR,K,NOZ,4,20,'F','opq grid Z',IER)
+      CALL EGETWI(OUTSTR,K,NOX,4,50,'F','opq grid X',IER)
+      CALL EGETWI(OUTSTR,K,NOZ,4,50,'F','opq grid Z',IER)
       CALL EGETWI(OUTSTR,K,NGX,4,10,'F','win grid X',IER)
       CALL EGETWI(OUTSTR,K,NGZ,4,10,'F','win grid Z',IER)
 

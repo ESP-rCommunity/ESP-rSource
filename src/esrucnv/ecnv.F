@@ -1199,7 +1199,6 @@ C file so that output file can be written from commons.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/AFNZN/zmfn1,zmfn2
       common/cctlnm/ctldoc,lctlf
       COMMON/LOG/LPRJLG
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -1211,7 +1210,6 @@ C file so that output file can be written from commons.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LAPROB*72,LPNF*72,LPRJLG*72
       CHARACTER imgfmt*4,imgfoc*4,limgfil*72
-      character zmfn1*124,zmfn2*124
       character lradcf*72,ctldoc*248,LCTLF*72
       character GTGEOM*72,GTNAME*15
       character*10 wkd1, wkd2
@@ -1225,8 +1223,6 @@ C file so that output file can be written from commons.
       LPCDB =DPCDB
       LPRJLG='job.notes'
       LPNF='UNKNOWN'
-      zmfn1=' '
-      zmfn2=' '
       lradcf='UNKNOWN'
       LCTLF=' '
       CTLDOC='no overall project control specified (yet)'

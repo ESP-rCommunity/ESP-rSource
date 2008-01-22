@@ -198,8 +198,14 @@ C Check existance of this file (should not overwrite an existing file).
         h(4)=' '
         h(5)='If you want to create a new model variant say no and'
         h(6)='enter a different file name.'
-        call askok('There is an existing configuration with',
-     &  'this name. Do you want to overwrite it? ',OK,dok,6)
+        if(act(1:2).eq.'sn')then
+          OK=.true.
+        elseif(act(1:2).eq.'sw')then
+          OK=.true.
+        elseif(act(1:1).eq.'i')then
+          call askok('There is an existing configuration with',
+     &    'this name. Do you want to overwrite it? ',OK,dok,6)
+        endif
         if(.not.OK)goto 289
       endif
 

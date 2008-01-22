@@ -18,486 +18,461 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C GRAPH.F contains the following drawing routines for ESRUSHD:
+C GRAPH.F contains the following routines.
+C GRAPH:  Uses FACDRW to display the target surface
+C         and SHDDRW to superimpose any direct shading.
+C FACDRW: Draws the target surface elevation.
+C SHDDRW: Plots point on a surface to represent the
+C         directly shaded shaded portion.
+C SITPLN: Scales and draws the site plan showing zone and
+C         obstructions.
+C SUNPLT: Draws a Mercator sun-path diagram.
 
-C GRAPH:  Displays surface and superimposes the shaded areas.
-C FACDRW: Draws the elevation of a surface.
-C SHDDRW: Plots point on a surface to represent shaded portion.
-C SITPLN: Scales and draws the site plan showing zone & obstructions.
-C SUNPLT: draws a Mercator sun path diagram.
+C ********** GRAPH **********
+C Uses FACDRW to display the target surface and SHDDRW
+C to superimpose any direct shading.
 
-C This code makes use of library facilities from esrulib.a .
-
-C ************* GRAPH *************************
-C Displays a selected body surface as a normal elevation
-C and superimposes the shading patterns if any.
-      SUBROUTINE GRAPH(ICOMP)
+      subroutine graph(icomp)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+      common/outin/iuout,iuin
+      common/filep/ifil
       common/pophelp/h(60)
-      COMMON/FILEP/IFIL
+      common/spad/mmod,limit,limtty
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/g1t/xft(mv),zft(mv)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/headl/irecs(ms)
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/HEADL/IRECS(MS)
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      character blkname*8,blkmat*12,outs*124,h*72
+      dimension ioshd(mox,moz),iva(ms)
+      logical ok,dok
 
-      CHARACTER BLKNAME*8,BLKMAT*12,outs*124,h*72
-      logical OK,dok
+      iunit=ifil
 
-      DIMENSION IOSHD(MOX,MOZ),IVA(MS)
-
-C Assume there are no default windows.
-      ngldum=0
-
-      IUNIT=IFIL
-
-   23 CALL PICKSSUR(ICOMP,NP,'L',IVA,IER)
-      if(NP.eq.0)then
-        goto 5
+    2 call pickssur(icomp,np,'L',iva,ier)
+      if(np.eq.0)then
+        goto 1
       else
-        IS=IVA(1)
+        is=iva(1)
       endif
 
 C Retrieve surface transformed coordinates.
-      NV=NVER(IS)
-      IREC=IRECS(IS)
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(XFT(I),I=1,NV)
-      IREC=IREC+1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(ZFT(I),I=1,NV)
-      IREC=IREC+1
+      nv=nver(is)
+      irec=irecs(is)
+      read(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
+      irec=irec+1
+      read(iunit,rec=irec,iostat=istat,err=1000)(zft(i),i=1,nv)
+      irec=irec+1
 
-C Set up mesh centre points in case of first entry.
-      CALL MESH(IS)
+C Set up mesh centre points.
+      call mesh(is)
 
-C The right offset for the graphic box is the character width of the menu.
-      IER=0
-      IF(MMOD.LT.8)THEN
-        CALL USRMSG('Not in graphic mode!',' ','W')
-        RETURN
-      ENDIF
+C Make the right offset for the graphic box is the character
+C width of the menu.
+      ier=0
+      if(mmod.lt.8)then
+        call usrmsg('Not in graphic mode!',' ','W')
+        return
+      endif
 
 C Clear the viewing box, draw its border and return the offsets
-C which define it. The win3d parameters match those in FACDRW
-C and SITPLN.
+C that define it. The win3d parameters match those in facdrw
+C and sitpln.
       call startbuffer()
-      CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
 
-C Update the equation of the plane, its transforms etc. are in
-C COMMONS TRNSF & G1T.
-      CALL TRNSF1(IS)
+C Update the plane equation.
+      call trnsf1(is)
 
-C Find MAX & MIN surface coordinates.
-      XMAX=-1.E+8
-      ZMAX=-1.E+8
-      ZMIN=1.E+8
-      XMIN=1.E+8
-      DO 10 I=1,NV
-        XMAX=AMAX1(XMAX,XFT(I))
-        ZMAX=AMAX1(ZMAX,ZFT(I))
-        XMIN=AMIN1(XMIN,XFT(I))
-        ZMIN=AMIN1(ZMIN,ZFT(I))
-   10 CONTINUE
+C Find maximum & minimum surface coordinates.
+      xmax=-1.E+8
+      zmax=-1.E+8
+      xmin=1.E+8
+      zmin=1.E+8
+      do 10 i=1,nv
+        xmax=amax1(xmax,xft(i))
+        zmax=amax1(zmax,zft(i))
+        xmin=amin1(xmin,xft(i))
+        zmin=amin1(zmin,zft(i))
+   10 continue
 
 C Reopen the dialogue box.
-      IF(MMOD.EQ.8)CALL usrmsg(' ',' ','-')
+      if(mmod.eq.8)call usrmsg(' ',' ','-')
 
-C Determine scaling ratios for the drawing and axis.
-      CALL axiscale(igw,igwh,XMIN,XMAX,ZMIN,ZMAX,xsc,ysc,sca,
-     &              Xadd,Zadd)
+C Determine scaling ratios.
+      call axiscale(igw,igwh,xmin,xmax,zmin,zmax,xsc,ysc,sca,Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,sca,igb,Zadd,sca)
 
 C Output start hour.
-      IH=1
-      H(1)='Give the the hour as an integer between 1 and 24.'
-      CALL EASKI(IH,' ','Output start hour?',
-     &     1,'F',24,'F',1,'output start',IER,0)
+      ih=1
+      h(1)='Give the hour as an integer between 1 and 24.'
+      call easki(ih,' ','Output start hour?',
+     &     1,'F',24,'F',1,'output start',ier,0)
 
 C Hour-by-hour.
-      DO 20 J=1,24
-      JJ=J
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)ISUNUP
-      IREC=IREC+1
-      IF(ISUNUP.EQ.0)goto 20
+      do 20 j=1,24
+         read(iunit,rec=irec,iostat=istat,err=1000)isunup
+         irec=irec+1
+         if(isunup.eq.0)goto 20
 
-C Is surface totally shaded, totally insolated or mixed?
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)INDS
-      IREC=IREC+1
-      IF(INDS.EQ.0)goto 12
-      IF(INDS.EQ.-1)goto 13
+C inds dictates whether direct shading is total, partial or zero.
+         read(iunit,rec=irec,iostat=istat,err=1000)inds
+         irec=irec+1
 
-C No shading case.
-      IF(J.LT.IH)goto 20
-      CALL FACDRW(JJ,ICOMP,IS,NV,XMIN,XMAX,ZMIN,ZMAX,Xadd,Zadd,SCA)
-      goto 14
+C No direct shading.
+         if(inds.eq.-2)then
+            irec=irec+1
+            if(j.lt.ih)goto 20
+            call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
+     &                                               Xadd,Zadd,sca)
 
-C Fully shaded case.
-   13 IF(J.LT.IH)goto 20
-      CALL FACDRW(JJ,ICOMP,IS,NV,XMIN,XMAX,ZMIN,ZMAX,Xadd,Zadd,SCA)
-      CALL SHDDRW(IS,1,IOSHD)
-      goto 14
+C Total direct shading.
+         elseif(inds.eq.-1)then
+            irec=irec+1
+            if(j.lt.ih)goto 20
+            call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
+     &                                               Xadd,Zadd,sca)
+            call shddrw(is,1,ioshd)
 
-C Mixed shading/insolation case.
-   12 IF(J.LT.IH)goto 15
-      goto 16
-   15 IREC=IREC+NOX+NGLDUM*NGX/2
-      IF((NGX/2)*2.NE.NGX.AND.NGLDUM.GT.0)IREC=IREC+1
-      goto 20
-   16 DO 30 K=1,NOX
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(IOSHD(K,L),L=1,NOZ)
-      IREC=IREC+1
-   30 CONTINUE
-      IREC=IREC+NGLDUM*NGX/2
-      IF((NGX/2)*2.NE.NGX.AND.NGLDUM.GT.0)IREC=IREC+1
+C Partial direct shading.
+         elseif(inds.eq.0)then
+            if(j.lt.ih)then
+               irec=irec+nox+1
+               goto 20
+            endif
+            do 30 k=1,nox
+               read(iunit,rec=irec,iostat=istat,err=1000)
+     &                                            (ioshd(k,l),l=1,noz)
+               irec=irec+1
+   30       continue
+            irec=irec+1
+            call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
+     &                                               Xadd,Zadd,sca)
+            call shddrw(is,2,ioshd)
+         endif
 
-      CALL FACDRW(JJ,ICOMP,IS,NV,XMIN,XMAX,ZMIN,ZMAX,Xadd,Zadd,SCA)
-      CALL SHDDRW(IS,2,IOSHD)
+         dok=.true.
+         call askok(' ','Next hour?',ok,dok,0)
+         if(.not.ok)goto 1
+   20 continue
 
-   14 CONTINUE
-      dok=.true.
-      h(1)='Option to pause while you consider the data.'
-      CALL ASKOK(' ','Continue?',OK,dok,1)
-      if(.NOT.OK)then
-        dok=.true.
-        h(1)='Option to consider additional surfaces.'
-        CALL ASKOK(' ','Consider another surface?',OK,dok,1)
-        IF(OK)goto  23
-        goto 19
-      endif
-   20 CONTINUE
-    5 CONTINUE
+    1 dok=.true.
+      call askok(' ','Consider another surface?',ok,dok,0)
+      if(.not.ok)return
+      goto 2
 
-      dok=.true.
-      h(1)='Option to consider additional surfaces.'
-      CALL ASKOK(' ',' Consider another surface?',OK,dok,1)
-      IF(OK)goto 23
-   19 RETURN
-
- 1001 WRITE(outs,25)IREC
-   25 FORMAT('Transitional shading file error in GRAPH - record',I4)
+ 1000 write(outs,1001)irec
+ 1001 format('GRAPH: Zone transitional shading file error, record',i4)
       call edisp(iuout,outs)
-      goto 19
-      END
+      return
+      end
 
-C ************* FACDRW *****************
-C FACDRW draws the elevation of the surface.
-      SUBROUTINE FACDRW(IHOUR,ICOMP,ISUR,NV,XMIN,XMAX,ZMIN,ZMAX,
-     &            Xadd,Zadd,SCA)
+C ********** FACDRW **********
+C Draws the elevation of the target surface.
+
+      subroutine facdrw(ihour,icomp,isur,nv,xmin,xmax,zmin,zmax,
+     &                                                Xadd,Zadd,sca)
 #include "building.h"
 
-      COMMON/CONTR/MON,ISC(MS),IYD
-      COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      DIMENSION MTHNAM(12)
+      common/contr/mon,isc(ms),iyd
+      common/g1T/xft(mv),zft(mv)
+      common/c24/izstocn(mcom,ms)
+      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
+     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
-      CHARACTER*72 ETEXT
-      CHARACTER*3 MTHNAM
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
-      integer icn  ! connection number for this surface.
+      dimension month(12)
+      character*72 etext*72,month*3
+      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
+     &          ssparent*12,ssuse*8
 
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C Display header information.
-      CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
-      ICN=IZSTOCN(icomp,isur)
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      icn=izstocn(icomp,isur)
 
-      WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(ICN)
-    1 FORMAT('Shading pattern: ',A3,', hour',I3,', surface',I3,
+      write(etext,1)month(mon),ihour,isur,ssname(icn)
+    1 format('Direct shading: ',a3,', @ ',i2,':00, Surface ',i2,
      &       ' (',a,').')
-      CALL viewtext(ETEXT,1,1,2)
+      call viewtext(etext,1,1,2)
 
-C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
+C Draw horizontal axis and move to start point.
+      call horaxis(xmin,xmax,igl,igr,igb,Xadd,sca,0,'Horizontal')
 
-C Draw a scale vertical axis.
-      CALL vrtaxis(ZMIN,ZMAX,igl,igb,igt,Zadd,sca,0,0,'^ Z axis')
+C Draw vertical axis.
+      call vrtaxis(zmin,zmax,igl,igb,igt,Zadd,sca,0,0,'Vertical')
 
-
-C DRAW ZONE FACE.
-      call etplot(XFT(1),ZFT(1),0,0)
-
-      DO 10 I=2,NV
-        call etplot(XFT(I),ZFT(I),1,0)
-   10 CONTINUE
-      call etplot(XFT(1),ZFT(1),1,0)
+C Draw target surface.
+      call etplot(xft(1),zft(1),0,0)
+      do 10 i=2,nv
+         call etplot(xft(i),zft(i),1,0)
+   10 continue
+      call etplot(xft(1),zft(1),1,0)
       call forceflush()
+      return
+      end
 
-      RETURN
-      END
+C ********** SHDDRW **********
+C Plots points on target surface representing direct shaded portion.
 
-C ************* SHDDRW *****************
-C SHDDRW plots point on a surface to represent shaded portion.
-C ISHAD=1 100 PERCENT SHADING. ISHAD=2 MIXED SHADING/INSOLATION CASE.
-C << 100% case should test for point within surface >>.
-      SUBROUTINE SHDDRW(IS,ISHAD,IOSHD)
+      subroutine shddrw(is,ishad,ioshd)
 #include "building.h"
 
-      COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      DIMENSION IOSHD(MOX,MOZ)
-      CHARACTER BLKNAME*8,BLKMAT*12
+      common/grid11/xop(mox,moz),zop(mox,moz)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      dimension ioshd(mox,moz)
+      character blkname*8,blkmat*12
 
-      DO 10 I=1,NOX
-        DO 20 J=1,NOZ
-          IF(ISHAD.EQ.1)then
-            CALL POINT1(IS,XOP(I,J),ZOP(I,J),IANS)
-            IF(IANS.EQ.0)goto 20
-            goto 1
-          endif
-          IF(IOSHD(I,J).EQ.1)goto 1
-          goto 20
-    1     call u2pixel(XOP(I,J),ZOP(I,J),ix,iy)
-          call edwline(ix-1,iy,ix+1,iy)
-   20   CONTINUE
-   10 CONTINUE
+      do 10 i=1,nox
+         do 20 j=1,noz
+
+C ishad=2 corresponds to the partial shading case, while ishad=1
+C corresponds to 100% shading for which ioshd points falling outwith
+C the surface polygon will not have been set to -1.
+            if(ishad.eq.1)then
+               call point1(is,xop(i,j),zop(i,j),ians)
+               if(ians.eq.0)goto 20
+               goto 1
+            endif
+            if(ioshd(i,j).eq.1)goto 1
+            goto 20
+    1       call u2pixel(xop(i,j),zop(i,j),ix,iy)
+            call edwline(ix-1,iy,ix+1,iy)
+   20    continue
+   10 continue
       call forceflush()
+      return
+      end
 
-      RETURN
-      END
-
-C ************* SITPLN *****************
-C SITPLN Scales and draws the site plan showing the object boundary
+C ********** SITPLN **********
+C Scales and draws the site plan showing the object boundary
 C and the surrounding obstruction blocks.
-      SUBROUTINE SITPLN(ICOMP)
+
+      subroutine sitpln(icomp)
 #include "building.h"
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
+      common/spad/mmod,limit,limtty
+      common/outin/iuout,iuin
+      common/filep/ifil
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      common/precz/zname(mcom),zdesc(mcom)
+      common/prec8/slat,slon
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      common/gfont/ifs,itfs,imfs
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC8/SLAT,SLON
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GFONT/IFS,ITFS,IMFS
-
-      CHARACTER zname*12,sstr*72,blabel*4,BLKNAME*8,BLKMAT*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      character tz*13,zdesc*64
-      logical newgeo  ! to use for testing if new/old geometry file.
+      character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
+      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
+      character tz*13,zdesc*64,ctype*4
+      logical newgeo  ! used to test for new/old geometry file.
 
 C The right offset for the graphic box is the character width
 C of the menu. Also allow 2 text lines at the bottom for future
 C dialogue. Axiscale is in wwlib.c.
-      IER=0
-      IF(MMOD.LT.8)THEN
-        CALL USRMSG('Not in graphic mode.',' ','W')
-        RETURN
-      ENDIF
-      newgeo=.false.  ! assume older format geometry.
+      ier=0
+      if(mmod.lt.8)then
+        call usrmsg('Not in graphic mode!',' ','W')
+        return
+      endif
+      newgeo=.false.  ! assume old geometry format.
 
 C Define a viewing box, draw its border after clearing it and
-C return the offsets which define it.
-      CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+C return the offsets that define it.
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       call startbuffer()
 
 C Reopen the dialogue box.
-      CALL USRMSG(' ',' ','-')
+      call usrmsg(' ',' ','-')
 
-C Check the max & min of the zone in question, first re-read
-C geometry file.
+C Re-read zone geometry file and establish the maximum and minimum
+C vertix values.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+        call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       else
-        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+        call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       endif
-      XMX=-1.E+8
-      YMX=-1.E+8
-      XMN=1.E+8
-      YMN=1.E+8
-      DO 302 I=1,NTV
-        XMN=AMIN1(XMN,X(I))
-        YMN=AMIN1(YMN,Y(I))
-        XMX=AMAX1(XMX,X(I))
-        YMX=AMAX1(YMX,Y(I))
-  302 CONTINUE
+      xmx=-1.E+8
+      ymx=-1.E+8
+      xmn=1.E+8
+      ymn=1.E+8
+      do 10 i=1,ntv
+         xmn=amin1(xmn,x(i))
+         ymn=amin1(ymn,y(i))
+         xmx=amax1(xmx,x(i))
+         ymx=amax1(ymx,y(i))
+   10 continue
 
-C Check for max and min site coordinates. First convert obstruction
-C block geometry into GEN (via common G1).
-      DO 301 IB=1,MB
-        CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),ANG(IB))
-        DO 300 I=1,NTV
-          XMN=AMIN1(XMN,X(I))
-          YMN=AMIN1(YMN,Y(I))
-          XMX=AMAX1(XMX,X(I))
-          YMX=AMAX1(YMX,Y(I))
-  300   CONTINUE
-  301 CONTINUE
+C Convert obstruction block geometry to GEN format (/g1/) and
+C establish maximum and minimum site coordinates.
+      do 20 i=1,nb
+         call erecc(xo(i),yo(i),zo(i),dx(i),dy(i),dz(i),ang(i))
+         do 30 j=1,ntv
+            xmn=amin1(xmn,x(j))
+            ymn=amin1(ymn,y(j))
+            xmx=amax1(xmx,x(j))
+            ymx=amax1(ymx,y(j))
+   30    continue
+   20 continue
 
 C Determine scaling ratios for the drawing and axis.
-      CALL axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,
-     &              Xadd,Yadd)
+      call axiscale(igw,igwh,xmn,xmx,ymn,ymx,xsc,ysc,sca,Xadd,Yadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
+      call horaxis(xmn,xmx,igl,igr,igb,Xadd,sca,1,'East ->')
 
 C Draw a scale vertical axis.
-      CALL vrtaxis(YMN,YMX,igl,igb,igt,Yadd,sca,1,0,'^ North')
+      call vrtaxis(ymn,ymx,igl,igb,igt,Yadd,sca,1,0,'^ North')
 
-C Re-read in the geometry file and plot it. Move to first vertex and
-C give the zone name.
+C Re-read the geometry file, plot it and move to the first vertex and
+C output the zone name.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+         call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       else
-        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+         call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+      endif
+      call u2pixel(x(1),y(1),ix,iy)
+      call etplot(x(1),y(1),0,0)
+      if(lnblnk(zname(icomp)).gt.1)then
+         write(tz,'(a)')zname(icomp)
+         call winfnt(itfs)
+         call wstxpt(ix+2,iy-2,tz)
+      else
+         call winfnt(itfs)
+         call wstxpt(ix+2,iy-2,'Target')
       endif
 
-      call u2pixel(X(1),Y(1),ix,iy)
-      call etplot(X(1),Y(1),0,0)
-      IF(LNBLNK(zname(ICOMP)).GT.1)THEN
-        write(tz,'(A)')zname(ICOMP)
-        call winfnt(ITFS)
-        call wstxpt(ix+2,iy-2,tz)
-      ELSE
-        call winfnt(ITFS)
-        call wstxpt(ix+2,iy-2,'Target')
-      ENDIF
+      do 40 i=1,nsur
+         j=jvn(i,1)
+         call etplot(x(j),y(j),0,0)
+         k=nver(i)
+         do 50 l=2,k
+            m=jvn(i,l)
+            call etplot(x(m),y(m),-302,0)
+   50    continue
+           call etplot(X(J),Y(J),-302,0)
+   40 continue
 
-      DO 400 I=1,NSUR
-        J=JVN(I,1)
-        call etplot(X(J),Y(J),0,0)
+C Convert obstruction block geometry to GEN format (/g1/) and plot.
+      if(nb.eq.0)goto 1
+      do 60 ib= 1,nb
+         call erecc(xo(ib),yo(ib),zo(ib),dx(ib),dy(ib),dz(ib),ang(ib))
+         do 70 i=1,nsur
+            j=jvn(i,1)
+            call etplot(x(j),y(j),0,0)
+            k=nver(i)
+            do 80 l=2,k
+               m=jvn(i,l)
+               call etplot(x(m),y(m),1,0)
+   80       continue
+            call etplot(X(J),Y(J),1,0)
+   70    continue
 
-        K=NVER(I)
-        DO 50 L=2,K
-          M=JVN(I,L)
-          call etplot(X(M),Y(M),-302,0)
-   50   CONTINUE
-          call etplot(X(J),Y(J),-302,0)
-  400 CONTINUE
-
-C Now draw each obstruction block by first converting to GEN (COMMON G1)
-C and plotting.
-      if(NB.eq.0)goto 421
-      DO 420 IB= 1,NB
-        CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),ANG(IB))
-        DO 422 I=1,NSUR
-          J=JVN(I,1)
-          call etplot(X(J),Y(J),0,0)
-          K=NVER(I)
-          DO 424 L=2,K
-            M=JVN(I,L)
-            call etplot(X(M),Y(M),1,0)
-  424     CONTINUE
-          call etplot(X(J),Y(J),1,0)
-  422   CONTINUE
-
-        call u2pixel(X(J),Y(J),ix,iy)
-        WRITE(blabel,423)IB
-  423   FORMAT('B',I2)
-        call wstxpt(ix+2,iy-2,blabel)
-  420 CONTINUE
-
+         call u2pixel(X(J),Y(J),ix,iy)
+         write(blabel,2)ib
+    2    format('B',i2)
+         call wstxpt(ix+2,iy-2,blabel)
+   60 continue
 
 C Print labels and return to default font.
-  421 call winfnt(IFS)
-      WRITE(sstr,425)SLAT,SLON
-  425 FORMAT('Site Plan at Latitude ',F5.1,', Longitude ',F4.1)
-      iy = igt-5
-      ix = igl
+    1 call winfnt(ifs)
+      write(sstr,3)slat,slon
+    3 format('Site Plan, Latitude ',f5.1,', Longitude ',f4.1)
+      iy=igt-5
+      ix=igl
       call wstxpt(ix,iy,sstr)
       call forceflush()
 
-      RETURN
-      END
+      return
+      end
 
-C ********** sunplt
-C This routine draws a mercator sun path diagram
-      SUBROUTINE SUNPLT(IJDAY,IER)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+C ********** SUNPLT **********
+C Draws a Mercator sun path diagram.
 
-      COMMON/PREC8/SLAT,SLON
-      COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      subroutine sunplt(ijday)
 
-      DIMENSION MTHNAM(12)
+      common/spad/mmod,limit,limtty
+      common/prec8/slat,slon
+      common/gfont/ifs,itfs,imfs
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
-      CHARACTER ETEXT*72,BLAB*3,MTHNAM*3
-      logical ABOVE
+      character etext*72,blab*3,month*3
+      dimension month(12)
+      logical above
 
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &            'Sep','Oct','Nov','Dec'/
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &           'Sep','Oct','Nov','Dec'/
 
 C Clear the viewing box, draw its border and return the offsets
-C which define it.
-      CALL win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
+C that define it.
+      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
 
 C Reopen the dialogue box.
-      IF(MMOD.EQ.8)CALL usrmsg(' ',' ','-')
+      if(mmod.eq.8)call usrmsg(' ',' ','-')
 
-C Determine scaling ratios for the drawing and axis.
-      CALL axiscale(igw,igwh,0.,360.,0.,90.,xsc,ysc,sca,
-     &              Xadd,Yadd)
+C Determine scaling ratios.
+      call axiscale(igw,igwh,0.,360.,0.,90.,xsc,ysc,sca,Xadd,Yadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 
-C Draw a scale horizontal axis.
-      CALL horaxis(0.,360.,igl,igr,igb,Xadd,xsc,0,
-     &            'Azimuth (0=North, 180=South)')
+C Draw horizontal axis.
+      call horaxis(0.,360.,igl,igr,igb,Xadd,xsc,0,
+     &             'Azimuth deg.')
 
-C Draw a scale vertical axis on left and right.
-      CALL vrtaxis(0.,90.,igl,igb,igt,Yadd,ysc,0,0,'Altitude')
-      CALL vrtaxis(0.,90.,igr,igb,igt,Yadd,ysc,0,1,':')
+C Draw vertical axes on left and right.
+      call vrtaxis(0.,90.,igl,igb,igt,Yadd,ysc,0,0,'Altitude deg.')
+      call vrtaxis(0.,90.,igr,igb,igt,Yadd,ysc,0,1,' ')
 
-C Generate a heading for the view.
-      CALL EDAYR(IJDAY,IDO,IMO)
-      CALL viewtext('Mercator Sun Plot',2,1,IFS)
-      WRITE(ETEXT,'(A,I2,1X,A3,A,F6.1,A,F5.1)')
-     &   'Date: ',IDO,MTHNAM(IMO),' at Latitude',slat,', Logitude',slon
-      CALL viewtext(ETEXT,3,1,IFS)
+C Output a heading for the view.
+      call edayr(ijday,ido,imo)
+      call viewtext('Mercator Sun Plot',2,1,ifs)
+      write(etext,'(i2,1x,a3,a,f6.1,a,f5.1)')ido,month(imo),
+     &                ' at Latitude',slat,', Longitude',slon
+      call viewtext(etext,3,1,ifs)
 
 C Plot sun path, for each hour of the day get the azimuth and
 C elevation and plot that position on the graph with a symbol and
 C time indication.
-      ABOVE=.FALSE.
-      DO 2100 IHR=1,24
-        STIME=FLOAT(IHR)
-        SAZI=0.0
-        SALT=0.0
-        CALL EAZALTS(STIME,IJDAY,SLAT,SLON,ISUNUP,SAZI,SALT)
-        IF(SALT.GT.0)then
-          if(.NOT.ABOVE)then
-            call etplot(SAZI,SALT,0,0)
-            ABOVE=.TRUE.
-          endif
-          ICLKHR=IHR
-          IF(IHR.GT.12)ICLKHR=IHR-12
-          IF(ICLKHR.GT.9)then
-            write(BLAB,'(I2)')ICLKHR
-            call etlabel(BLAB,SAZI,SALT,4,ITFS)
-          else
-            write(BLAB,'(I1)')ICLKHR
-            call etlabel(BLAB,SAZI,SALT,4,ITFS)
-          endif
+      above=.false.
+      do 10 ihr=1,24
+         stime=float(ihr)
+         sazi=0.0
+         salt=0.0
+         call eazalts(stime,ijday,slat,slon,isunup,sazi,salt)
+         if(salt.gt.0)then
+            if(.not.above)then
+               call etplot(sazi,salt,0,0)
+               above=.true.
+            endif
+            iclkhr=ihr
+            if(ihr.gt.12)iclkhr=ihr-12
+            if(iclkhr.gt.9)then
+               write(blab,'(i2)')iclkhr
+               call etlabel(blab,sazi,salt,4,itfs)
+            else
+               write(blab,'(i1)')iclkhr
+               call etlabel(blab,sazi,salt,4,itfs)
+            endif
 
-C Plot a symbol at the positon of the sun.
-          call etplot(SAZI,SALT,1,6)
-        endif
- 2100 CONTINUE
+C Plot a symbol at the sun position.
+            call etplot(sazi,salt,1,6)
+         endif
+   10 continue
       call forceflush()
-
-      RETURN
-      END
+      return
+      end

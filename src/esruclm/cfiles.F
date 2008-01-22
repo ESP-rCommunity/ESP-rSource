@@ -436,11 +436,14 @@ C silent is a logical toggle, if .true. then do not interact with user.
 #include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
+      common/pophelp/h(60)
+      
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
+      COMMON/APPRDIFF/iapprox_diff
+
       dimension ICLM(24,6)
 
       CHARACTER CLMLOC*30,LASCI*72,outs*124,OUTSTR*400
@@ -450,7 +453,11 @@ C silent is a logical toggle, if .true. then do not interact with user.
       integer iday     ! day of month of scan
       integer ih       ! hour counter
       integer ijday    ! julian day
-      integer idif,itmp,idnr,ivel,idir,ihum
+      integer idif,itmp,ivel,idir,ihum
+
+      character h*72
+      real longit_for_diffuse_calcs,differ_from_Greenwich
+      integer IDRAD
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -465,7 +472,41 @@ C Open the ASCII file for reading.
         ier = 1
         return
       endif
+      
+C Set the radiation flag to Global horizontal      
+      IDNGH=123
+      H(1)='The climate longitude does not necessarily have to '
+      H(2)='match the site latitude.  However, the difference '
+      H(3)='should not be great or simulation results may be '
+      H(4)='open to question.'
+      CALL EASKR(longit_for_diffuse_calcs,' ',
+     &           ' Climate longitude ? (west: positive) ',
+     &           -180.0,'W',180.0,'W',30.0,'climate longitude',IER,4)
 
+      H(1)='The local time difference from Greenwich is needed.'
+      H(2)='Assume west is positive (e.g. use -2 for Greece) '
+      CALL EASKR(differ_from_Greenwich,' ',
+     &           ' Time difference from Greenwich? (west: positive) ',
+     &           -24.0,'W',24.0,'W',0.0,'time_difference',IER,2)
+
+C Export climate data to ASCII file (with similar name).
+        h(1)='The default conversion model is based on a publication'
+        h(2)='from Muneer: Solar Radiation and Daylight models (1997)'
+        h(3)='ISBN: 0-7506-2495-7.'
+        h(4)='The Erbs, Klein and Duffie model is based on empirical '
+        h(5)='correlations, documented in: Erbs D.G., Klein S.A., '
+        h(6)='Duffie J.A. 1982. Estimation of the diffuse radiation'
+        h(7)='fraction for hourly, daily and monthly-average global '
+        h(8)='radiation. Solar Energy 28: pp.293-302.'
+        call easkab
+     &   (' There are two available models to approximate diffuse:',' ',
+     &    'Muneer (default)','Erms/Klein/Duffie',IDIFF,8)
+        if(IDIFF.eq.1)then
+          iapprox_diff=1
+        elseif(IDIFF.eq.2)then  
+          iapprox_diff=2
+        endif
+                
 C Read a line of the file.
  42   CALL STRIPC400(IUNIT,OUTSTR,0,ND,1,'data line',IER)
       if(ier.lt.0) goto 48
@@ -548,12 +589,32 @@ C Read 24 hours of humidity and assign to ICLM.
 
 C Clear solar values.
       idif=0
-      idnr=0
-      do 47 ih=1,24
+      ighr=0
+      do 47 ih=1,5
         ICLM(ih,1)=idif
-        ICLM(ih,3)=idnr
+        ICLM(ih,3)=ighr
  47   continue
 
+      do 147 ih=6,20
+        CALL EGETWI(OUTSTR,K,IGLOBH,0,100,'-','GLOB_HORIZO',IER)
+
+C Convert MJ/m2 to W/m2
+C        IGLOBH=IGLOBH/3600
+        ICLM(ih,3)=IGLOBH
+        CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
+     &      longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
+        IDRAD=NINT(DRAD)
+        ICLM(ih,1)=IDRAD
+ 147  continue
+
+C Clear solar values.
+      idif=0
+      ighr=0
+      do 247 ih=21,24
+        ICLM(ih,1)=idif
+        ICLM(ih,3)=ighr
+ 247  continue
+ 
 C Convert month and day to julian day.
       call eday(iday,imonth,ijday)
 
