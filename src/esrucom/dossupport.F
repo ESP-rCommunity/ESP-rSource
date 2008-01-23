@@ -126,9 +126,15 @@ C There are no blanks in either source or destination strings.
       return
 
 C Errors.
- 552  call usrmsg(
+ 552  if(IOS.eq.2)then
+        call usrmsg(
+     &  'Permissions error creating the dos copy command: ',
+     &  doit,'W')
+      else
+        call usrmsg(
      &  'Error creating the dos copy command (might not work)',
      &  doit,'W')
+      endif
       ier=1
       return
       end
@@ -224,9 +230,15 @@ C There are no blanks in either source or destination strings.
 
 C Errors.
  552  lsn=MIN0(lnblnk(ldoit),248)
-      call lusrmsg(
+      if(IOS.eq.2)then
+        call lusrmsg(
+     &  'Permission issue creating the dos copy command: ',
+     &  ldoit(1:lsn),'W')
+      else
+        call lusrmsg(
      &  'Error creating the dos copy command (might not work)',
      &  ldoit(1:lsn),'W')
+      endif
       ier=1
       return
       end
@@ -289,8 +301,13 @@ C Debug the file name.
       return
 
 C Errors.
- 552  call usrmsg('Error creating dos file name (might not work)',
+ 552  if(IOS.eq.2)then
+        call usrmsg('Permissions issue creating dos file name: ',
      &  patched,'W')
+      else
+        call usrmsg('Error creating dos file name (might not work)',
+     &  patched,'W')
+      endif
       ier=1
       return
       end
@@ -348,8 +365,13 @@ C Debug the file name.
       return
 
 C Errors.
- 552  call usrmsg('Error creating dos file name (might not work)',
+ 552  if(IOS.eq.2)then
+        call usrmsg('Permissions issue creating dos file name: ',
      &  patched,'W')
+      else
+        call usrmsg('Error creating dos file name (might not work)',
+     &  patched,'W')
+      endif
       ier=1
       return
       end

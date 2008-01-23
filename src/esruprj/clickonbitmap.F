@@ -2536,7 +2536,12 @@ C Reset justentered so the `create more` option is shown.
       goto 3
 
 C Error.
-  99  call edisp(iuout,'problem determining bitmap file type.')
+  99  if(IOS.eq.2)then
+        call edisp(iuout,
+     &    'permissions problem determining bitmap file type.')
+      else
+        call edisp(iuout,'problem determining bitmap file type.')
+      endif
       goto 3
 
       end

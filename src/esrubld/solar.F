@@ -215,7 +215,8 @@ C in elevation and azimuth.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       COMMON/SHAD2/ISHD(MCOM),IGCS(MCOM,MS),PO(MCOM,MS,MT),
-     & IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),pinsst(mcom,mgt,mt,misur)
+     & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
+     & pinsst(mcom,mgt,mt,misur)
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
      &ARP(MCOM,MS),ARF(MCOM,MS)
@@ -2520,7 +2521,8 @@ C Shading file record width found in mzshin.
       common/rsolmax/maxrec(mcom)
 
       COMMON/SHAD2/ISHD(MCOM),IGCS(MCOM,MS),PO(MCOM,MS,MT),
-     & IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),pinsst(mcom,mgt,mt,misur)
+     & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
+     & pinsst(mcom,mgt,mt,misur)
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LS,LUTIL
       DIMENSION ISS(12),ISADD(12)
@@ -2561,26 +2563,15 @@ c Read opaque surface shading information.
   101   DO 20 J=1,NC
           READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(PO(I,J,K),K=1,24)
           IREC=IREC+1
+          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(POF(I,J,K),K=1,24)
+          IREC=IREC+1
    20   CONTINUE
 
-c Now read default window shading information for those
-c arrangements considered << not used test doing without this read >>.
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(IGCS(I,J),J=1,NC)
-        IRM=IREC
-
-C 'ISUM' sums the number of default windows handled in total.
-C Default windows are no longer considered in ish so skip related
-C data structures here.
-        ISUM=0
         IF(ISHD(I).EQ.1)goto 1
 
-c Now read internal insolation information.
-        IRM=IRM+ISUM+1
         goto 103
-  102   IRM=ISADD(IM)
-  103   ISUM=0
-        IREC=IRM
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(IGCI(I,J),J=1,NC)
+  102   IREC=IREC+2*NC
+  103   READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(IGCI(I,J),J=1,NC)
         irec=irec+1
 
 C Calculate number of transparent surfaces that have insolation information.
@@ -2597,7 +2588,7 @@ C Calculate number of transparent surfaces that have insolation information.
 
 C insst()=0, the whole surface is shaded; insst()=-1, the sun is not up,
 C   otherwise the index of the surface being insolated.
-C pinsst(i,j,k) proportion insolated from source k at hr m to insolated
+C pinsst() proportion insolated from source k at hr m to insolated
 C   surf n, for the receiving surface
         do 200 k=1,nw
           do 201 n=1,misur
@@ -2610,10 +2601,6 @@ C   surf n, for the receiving surface
      &        (pinsst(i,k,m,n),m=1,24)
             IREC=IREC+1
   202     continue
-          do 203 n=1,misur
-C pinwst not used so skip past these records.
-            IREC=IREC+1
-  203     continue
   200   CONTINUE
 
 c Free shading file.

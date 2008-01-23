@@ -989,7 +989,6 @@ C Anchor data.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/AFNZN/zmfn1,zmfn2
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
@@ -1006,7 +1005,7 @@ C Anchor data.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER H*72,zname*12,zdesc*64,ctldoc*248,LCTLF*72,outs*124
-      character zmfn1*124,zmfn2*124,ltmp*72,NDNAM*12
+      character ltmp*72,NDNAM*12
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
 
@@ -1106,8 +1105,6 @@ C Any node-zone links to subsequent zones need to be decremented.
                 ICAAS(IX)=ICAAS(IX)-1
               endif
   246       continue
-            zmfn1=' '
-            zmfn2=' '
           endif
         endif
       endif

@@ -2141,7 +2141,7 @@ C Surface list. Write as a packed list comma separated.
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# surf attributes:'
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
-     &  '#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN'
+     &  '#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN'
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
      &  '#  child of (surface name), useage (pair of tags) '
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
@@ -3580,13 +3580,13 @@ C << the parent surface.
             isgrandchild(isur,nbchild(isur))=1
             childname(isur,1)=SSNAME(JCC)
 C Debug...
-            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
-     &        childname(isur,1)
+C            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
+C     &        childname(isur,1)
           endif
  105      continue
  102    CONTINUE
  101  CONTINUE
-      write(6,*) 'nbchild ',nbchild
+C      write(6,*) 'nbchild ',nbchild
       RETURN
       END
 

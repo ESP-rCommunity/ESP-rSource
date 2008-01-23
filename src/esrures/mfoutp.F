@@ -110,22 +110,22 @@ C        write(6,*) 'iairn,lafres ',iairn,lafres
         if(iairn.ge.1)then
 
 C If there was a flow network defined ask for the flow results file.
-C If it is currently UNKNOWN then set the initial name to the name
-C of the zone results file, but with ending changed to .mfr
+C Assume standard naming convention (*.mfr for flow results), if the
+C user specified a different flow results file then he will have to
+C specify it here as well.
           lrf=lnblnk(RFILE)
           lrf3=lrf-3
           lrf4=lrf-4
-          if(LAFRES(1:4).eq.'UNKN') then
-            if(RFILE(lrf3:lrf).eq.'.res')then
-              write(LTMPC,'(2a)') RFILE(1:lrf4),'.mfr'
-            else
-              LTMPC=LAFRES
-            endif
+          LRFW=LNBLNK(LAFRES)
+          if(RFILE(lrf3:lrf).eq.'.res')then
+            write(LTMPC,'(2a)') RFILE(1:lrf4),'.mfr'
+          else
+            LTMPC=LAFRES
           endif
           h(1)='If a network flow simulation was also undertaken'
           h(2)='you are asked for the name of the flow results file.'
-          h(3)='If the name is not known the name of the zone results'
-          h(4)='file is provided for further editing.'
+          h(3)='A default name is provided which can be used if you'
+          h(4)='did not modify it when undertaking the simulation.'
  22       call EASKS(LTMPC,'Flow library name?','(see help)',72,LAFRES,
      &               'flow library file',IER,4)
           if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then

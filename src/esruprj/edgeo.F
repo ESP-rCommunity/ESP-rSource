@@ -3963,7 +3963,7 @@ C Tell the user the current use of the surface.
       call edisp(iuout,outs)
 
 C Help for the various choices.
-      h(1)='For QA and code complence purposes as well as to'
+      h(1)='For QA and code compliance purposes as well as to'
       h(2)='help auto-generate air flow networks ESP-r allows'
       h(3)='you to attach SEMANTIC tags to surfaces in a zone.'
       h(4)=' '

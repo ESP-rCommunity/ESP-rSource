@@ -384,7 +384,11 @@ C Write control data and compact, if very long then use two lines.
    12 CALL ERPFREE(IUNIT,ios)
       RETURN
 
-    1 call edisp(iuout,'  Write error in routine CTLWRT')
+    1 if(IOS.eq.2)then
+        call edisp(iuout,'Write permission error in routine CTLWRT')
+      else
+        call edisp(iuout,'Write error in routine CTLWRT')
+      endif
       IER=1
       goto 12
 

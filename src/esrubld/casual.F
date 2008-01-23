@@ -47,6 +47,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
       subroutine mzcasi(icomp)
 #include "building.h"
 #include "tdf2.h"
+#include "sbem.h"
 #include "power.h"
 
       common/tc/itc,icnt
@@ -154,7 +155,9 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C Using the TOTOCCUP as a shortcut for the total occupant gains
 C that are taken from the activities temporal data
       REAL QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN,QTOTEQUIP,QEQUIPCASC
-      REAL QEQUIPCASR,QEQUIPLATN
+      REAL QEQUIPCASR,QEQUIPLATN,QTOTLIGHT,QLIGHTCASC,QLIGHTCASR
+      REAL QLIGHTLATN
+      INTEGER ILIGHT_IN_SBEMDB
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
 
@@ -337,15 +340,33 @@ C C Get the casual sensible gains from equipment (using the percentage of
 C latent equipment gains)
         QEQUIPCASC=(QTOTEQUIP-((QTOTEQUIP*ITMAR(1,5))/100))/2
 
-C Convective and radiative occupant gains are the same at the moment (50%)
+C Convective and radiative equipment gains are the same at the moment (50%)
         QEQUIPCASR=QEQUIPCASC
         QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100)        
+        
+C Read information from ncm file. Need type of light and then a value
+C taken from sbem.db1 will be combined with a TDF static data        
+        CALL SBEMPR(IER)
+        CALL RSBEM
+        ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
 
-C	QTOTGAIN=QTOTOCCUP+QTOTEQUIP
+C Multiply lux levels (static tdf) with fraction schedule and 
+C a value (in w/m2/100lux) taken from ncm file for the specific type of lights
+        QTOTLIGHT=
+     &  PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
+     &  ZBASEA(ICOMP)
 
-	QCASC(2)=QOCCCASC+QEQUIPCASC
-        QCASR(2)=QOCCCASR+QEQUIPCASR
-        QLATN(2)=QOCCLATN+QEQUIPLATN
+C Convective and radiative equipment gains are the same at the moment (50%)
+        QLIGHTCASC=QTOTLIGHT/2
+        QLIGHTCASR=QLIGHTCASC
+
+C For lighting heat gains assume latent gains are zero
+        QLIGHTLATN=0
+C	QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
+
+	QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
+        QCASR(2)=QOCCCASR+QEQUIPCASR+QLIGHTCASR
+        QLATN(2)=QOCCLATN+QEQUIPLATN+QLIGHTLATN
         if(traceok)then
           write(outs,*)'TOTAL OCCUPANT gains from temporal db=',
      &    QTOTOCCUP
