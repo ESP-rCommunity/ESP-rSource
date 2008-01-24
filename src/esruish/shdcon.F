@@ -41,6 +41,10 @@ C Sets up the parameters relating to shading computation.
       common/outin/iuout,iuin
       common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
+
+      character ctype*4
+      real gversion
+      integer igupgrade
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
@@ -66,7 +70,7 @@ C isurfinso() list of insolation sources.
       character*3 month(12)
       character ssmlcn*32,ssvfc*4,ssotf*32,ssother*24,ssname*12,ssuse*8
       character ssparent*12
-      character act*1,paction*16,h*72,ctype*4
+      character act*1,paction*16,h*72
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
 

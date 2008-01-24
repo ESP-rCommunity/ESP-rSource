@@ -47,6 +47,9 @@ C                 in common.
       common/pophelp/h(60)
       common/filep/ifil
 
+      character ctype*4
+      real gversion
+      integer igupgrade
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
@@ -61,11 +64,20 @@ C                 in common.
       common/tmc/itmc(ms),nwins
       common/sif1/insrts,insrti
       common/ract/paction
+
+C iaplic(1) toggle for shading;
+C iaplic(2) toggle for insolation;
+C iaplic(3) toggle for assessment where:
+C     1 is 'all_applicable',
+C     0 is manual selection of surfaces.
+C nsurfcalc number of shaded surfaces, lstsfcalc() list of applicable
+C surfaces, nsurfinso numberof insolation sources, isurfinso() list
+C of insolation sources.
       common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),
      &       lstsfcalc(mcom,ms),nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension month(12),iavdec(12),iva(ms)
-      character zname*12,ctype*4
+      character zname*12
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
       character paction*16
@@ -289,11 +301,11 @@ C file.
 
 C Since this file exists, there must have been a matching
 C obstruction file and therefore the data in common /GS6/
-C can be used.
+C can be used. If act = 's' then assume default grid density.
          ishadf=1
       else
          ishadf=0
-         if(mon.eq.mons)call igeoms
+         if(mon.eq.mons)call igeoms(act)
       endif
 
 C Commence computation for each specified month and allow user to
@@ -314,16 +326,16 @@ C update the zone shading & insolation db.
 
 C ********** IGEOMS **********
 C Establishes the surface grid if a zone transitional shading
-C file does not exist.
+C file does not exist. If act is 's' then treat silently.
 
-      subroutine igeoms
+      subroutine igeoms(act)
 #include "building.h"
 
       common/pophelp/h(60)
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tmc/itmc(ms),nwins
-      character blkname*8,blkmat*12,H*72
+      character blkname*8,blkmat*12,H*72,act*1
 
 C Set default grid. Note ngx and ngz relate to old style default
 C windows and are no longer used.
@@ -338,6 +350,13 @@ C Prompt user for opaque grid size because not previously set.
         if(itmc(i).ne.0)nwins=nwins+1
    10 continue
       if(nwins.eq.0)return
+
+C If silent mode use default values.
+      if(act(1:1).eq.'s')then
+        nox=20
+        noz=20
+        return
+      endif
 
 C Surface X grid density. 
       h(1)='In order to determine the insolation distribution'

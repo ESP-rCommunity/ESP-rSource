@@ -106,6 +106,10 @@ C Sets up defaults and offers main menu.
       common/contr/mon,isc(ms),iyd
       common/data1/ical
       common/mtfile/ltrns,multic,mons,monf
+
+      character ctype*4
+      real gversion
+      integer igupgrade
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/c1/ncomp,ncon
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
@@ -155,7 +159,7 @@ C Material data arrays.
       character*72 lname,ltrns,tbase,h
       character*72 lcfgf,lsnam,lproj,lgeom,lshad,lthrm,lutil
       character*72 lview,lhcco,ltwin,lcgcin,zobs
-      character items*26,ctype*4,cAppName*12
+      character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
       character descrh*5,descrd*5,zname*12,zdesc*64,inf*144,lcmdfl*144
       character path*72,upath*72,esprc*72,cfgroot*24

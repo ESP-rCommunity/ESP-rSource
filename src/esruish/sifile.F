@@ -512,26 +512,26 @@ C Retain previous data if not to be overwritten.
 C Move/write hourly insolation factor for each of the misur
 C surfaces that can potentially be insolated.
          do 60 j=1,misur
-            if(new.eq.1)then
+           if(new.eq.1)then
 
 C Retain previous data if not to be overwritten.
-               if(itmc(i).eq.0)then
-                  read(ifilsi,rec=ireco,iostat=istat,err=1000)
+             if(itmc(i).eq.0)then
+                read(ifilsi,rec=ireco,iostat=istat,err=1000)
      &                                        (pinsstx(k),k=1,24)
-                  ireco=ireco+1
-                  write(ifilsi,rec=irecn,iostat=istat,err=1000)
+                ireco=ireco+1
+                write(ifilsi,rec=irecn,iostat=istat,err=1000)
      &                                        (pinsstx(k),k=1,24)
-                  irecn=irecn+1
-                else
-                  write(ifilsi,rec=irecn,iostat=istat,err=1000)
+                irecn=irecn+1
+             else
+                write(ifilsi,rec=irecn,iostat=istat,err=1000)
      &                                        (pinsst(isrc,k,j),k=1,24)
-                  irecn=irecn+1
-                endif
-            else
-               write(ifilsi,rec=ireco,iostat=istat,err=1000)
+                irecn=irecn+1
+             endif
+           else
+              write(ifilsi,rec=ireco,iostat=istat,err=1000)
      &                                        (pinsst(isrc,k,j),k=1,24)
-               ireco=ireco+1
-            endif
+              ireco=ireco+1
+           endif
    60    continue
    40 continue
       if(new.eq.1)then
