@@ -1,17 +1,6 @@
 C NCM Array sizing integers
-      integer MFT
-      integer MPT
-      integer MHT
-      integer MHC
-      integer MCS
-      integer MSS
-      integer MBT
-      integer MREG
-      integer MSTG
-      integer MSBT
-      integer MDW
-      integer MWS
-      integer MNS
+      integer MFT, MPT, MHT, MHC, MCS, MSS, MBT, MREG, MSTG, MSBT
+      integer MDW, MWS, MNS, MAC, MACL, MILS
       PARAMETER (MFT=12)    ! max. fuel types
       PARAMETER (MPT=32)    ! max. system types
       PARAMETER (MHT=25)    ! max. HVAC system types
@@ -28,6 +17,7 @@ C NCM Array sizing integers
                             ! max. activities allowed in the model
                             ! This is kept equal to max zones normally allowed
       PARAMETER (MAC=65)    ! max. activity types 
+      PARAMETER (MACL=525)  ! max. activity types (global list) 
       PARAMETER (MILS=10)   ! max. lighting types
 
 C NCM common blocks for reading SBEM database
@@ -61,6 +51,26 @@ C Strings
 C Real numbers
       COMMON/SBEM06/ROOFFR,WALLFR,BINF50,HGEF(MNS),CGEF(MNS),SFPHS(MNS),
      &HWEF(MNS)
+
+C Activities global list
+      INTEGER bld_order_index ! building order indices from the *bldg_type_start section of the file
+      REAL occupant_dens  ! occupant density people/m2
+      REAL metabolic_rate ! metabolic rate W/person/m2
+      REAL fresh_air      ! outside air per person litres/sec/person
+      REAL lighting_lux   ! lighting lux
+      REAL equip_gain     ! equipment W/m2 
+      REAL dhw_litres     ! domestic hot water litres/day/m2
+      REAL latent_ocup_percent ! occupant latent percentage (of the whole gain)
+      REAL latent_equip_percent ! equipment latent percentage (of the whole gain)
+      REAL display_lighting ! lighting display W/m2
+      common/actglob/bld_order_index(MACL),occupant_dens(MACL),
+     &  metabolic_rate(MACL),fresh_air(MACL),lighting_lux(MACL),
+     &  equip_gain(MACL),dhw_litres(MACL),latent_ocup_percent(MACL),
+     &  latent_equip_percent(MACL),display_lighting(MACL)
+
+      character*72 roomactname ! the quoted string naming the activity
+      character*96 roomactdoc  ! a quote description of activity
+      common/actglobtext/roomactname(MACL),roomactdoc(MACL)
 
 C Project specific *.ncm file variables
       INTEGER ISBEM     ! a value of 1 signals that isbem data exists

@@ -968,13 +968,13 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
 C grossarea holds the gross area of the parent + its children.
       dimension grossarea(MS)
-      real childwindowarea
-      real childroofwindowarea
-      real childdoorarea
-      real childdisplayarea
-      real parentwallarea
-      real parentroofarea
-      integer IDEBUG
+C      real childwindowarea
+C      real childroofwindowarea
+C      real childdoorarea
+C      real childdisplayarea
+C      real parentwallarea
+C      real parentroofarea
+C      integer IDEBUG
 
       DIMENSION IACT(MCON),COE(3),POINT(3),TRANS(3),KVER(MS),LVER(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),TARSURF(MCON)
@@ -984,7 +984,7 @@ C grossarea holds the gross area of the parent + its children.
       LOGICAL MODIFY,MODLEN,MODBND,FOUND,FOUNDA
 
 C Initialise variables
-      IDEBUG=0
+C      IDEBUG=0
       dok=.true.
       GUESS='any_type'
 
@@ -1539,22 +1539,22 @@ C default values.
 
 C Update common blocks G6 & G7
                     call adjcbg6g7('+',ix,icon)
-		    IC1(ICON)=ICOMP
-		    IE1(ICON)=NSUR
-		    ICT(ICON)=0
-		    IC2(ICON)=0
-		    IE2(ICON)=0
-		    IZSTOCN(icomp,nsur)=icon
-		    SSNAME(ICON)=SNAME(ICOMP,NSUR)
-		    SSOTF(ICON)=SOTF(NSUR)
-		    SSMLCN(ICON)=SMLCN(NSUR)
-		    SSVFC(ICON)=SVFC(NSUR)
-		    SSOTHER(ICON,1)=SOTHER(NSUR,1)
-		    SSOTHER(ICON,2)=SOTHER(NSUR,2)
-		    SSOTHER(ICON,3)=SOTHER(NSUR,3)
-		    SSUSE(ICON,1)=SUSE(NSUR,1)
-		    SSUSE(ICON,2)=SUSE(NSUR,2)
-		    SSPARENT(ICON)=SPARENT(NSUR)
+                    IC1(ICON)=ICOMP
+                    IE1(ICON)=NSUR
+                    ICT(ICON)=0
+                    IC2(ICON)=0
+                    IE2(ICON)=0
+                    IZSTOCN(icomp,nsur)=icon
+                    SSNAME(ICON)=SNAME(ICOMP,NSUR)
+                    SSOTF(ICON)=SOTF(NSUR)
+                    SSMLCN(ICON)=SMLCN(NSUR)
+                    SSVFC(ICON)=SVFC(NSUR)
+                    SSOTHER(ICON,1)=SOTHER(NSUR,1)
+                    SSOTHER(ICON,2)=SOTHER(NSUR,2)
+                    SSOTHER(ICON,3)=SOTHER(NSUR,3)
+                    SSUSE(ICON,1)=SUSE(NSUR,1)
+                    SSUSE(ICON,2)=SUSE(NSUR,2)
+                    SSPARENT(ICON)=SPARENT(NSUR)
 
 C Now update the G7 common block to reflect new surface.
                     call zgupdate(2,icomp,ier)

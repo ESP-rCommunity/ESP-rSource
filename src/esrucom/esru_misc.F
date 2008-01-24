@@ -1110,8 +1110,8 @@ C Read surface test grid information and check ranges.
       CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
-      CALL EGETWI(OUTSTR,K,NOX,4,20,'F','opq grid X',IER)
-      CALL EGETWI(OUTSTR,K,NOZ,4,20,'F','opq grid Z',IER)
+      CALL EGETWI(OUTSTR,K,NOX,4,50,'F','opq grid X',IER)
+      CALL EGETWI(OUTSTR,K,NOZ,4,50,'F','opq grid Z',IER)
       CALL EGETWI(OUTSTR,K,NGX,4,10,'F','win grid X',IER)
       CALL EGETWI(OUTSTR,K,NGZ,4,10,'F','win grid Z',IER)
 
