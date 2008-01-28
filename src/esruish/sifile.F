@@ -86,7 +86,7 @@ C inscon when the user changes the insolation directive.
      &              itw(mcom),icgc(mcom),iobs(mcom)
       common/ract/paction
 
-      dimension isadd(12),ishd(12)
+      dimension isadd(12),ishd(12),idum(ms)
       character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil,fname
       character outs*124,paction*16
       logical xst
@@ -144,13 +144,21 @@ C try again at maxrec=24 and then at ms words wide.
 C If new file, fill first record with zeros so that it will be
 C interpreted later as empty.
         call efopran(ifilsi,fname,maxrec,3,ier)
-        irec=1
         do 10 i=1,12
-          ishd(i)=0
-          isadd(i)=0
+          if(i.gt.12)then
+             idum(i)=0
+          else
+             idum(i)=0
+             ishd(i)=0
+             isadd(i)=0
+          endif
   10    continue
+        irec=1
         write(ifilsi,rec=irec,iostat=istat,err=1001)(ishd(i),i=1,12),
      &                                              (isadd(i),i=1,12)
+        irec=4
+        write(ifilsi,rec=irec,iostat=istat,err=1001)
+     &                                     (idum(i),i=1,nzsur(icomp))
       endif
 
 C Return after advising user and setting insrts & instri to 0 to
