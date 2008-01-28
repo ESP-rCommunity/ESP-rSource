@@ -366,7 +366,9 @@ C Set number of chosen sets to zero and clear array NSNO.
  5    continue
       IUNIT=IFIL
 
-C Determine how many result-sets are held in database.
+C Determine how many result-sets are held in database. Note
+C that izver = 3 or earlier does not include explicit separate
+C casual gains data items.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
 C      write(6,*) 'uncertainty analysis method ',IMET

@@ -56,6 +56,8 @@ C  GZTMS:  read zone air and surf temps at a timestep/halfstep.
 C  GZSOLA: read one timestep solar absorption inside & outside.
 C  GSURFB: read one timestep surface balance data (save=4 only)
 C  G4ALLS: read one timesteps selected data for surfaces (save=4 only).
+C  Getallcas: read one timestep of the total conv/radiant and separate
+C     casual gain conv/rad/latent data for a zone and control fraction.
 C  GFIXED: read days single fixed surface balance items.
 C  MMAPER: calculate maximum, minimum and average values for current period.
 C  HASHL   calculate offset to base record at each timestep and zone.
@@ -1315,6 +1317,8 @@ C qlwrbd = outside longwave to buildings,
 C qlwrsk = outside longwave to sky, qswrde = outside shortwave radiation
 C CALLS: MOREC1 MOREC2
 
+C << ?? extend to recover separate radiant casual gains ?? >>
+
       SUBROUTINE GSURFB(IDAY,IZONE,ISFN,ITS,TSout,qswrdi,qlwrdi,qconvi,
      &          qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,
      &          qlwrsk,qswrde)
@@ -1460,6 +1464,91 @@ C requested recovery day and recover values for all timesteps.
     7 format(' G4FLUX: error reading surface ',I2,
      &       ' temperature at record',I5)
          call edisp(iuout,outs)
+      CALL EPWAIT
+      goto 8
+
+      END
+
+C ******************** getallcas ********************
+C Getallcas is a low level routine to read one timestep of the
+C total conv/radiant and separate casual gain conv/rad/latent
+C data for a zone and control fraction.
+C Given IDAY, IZONE & ITS it returns:
+C QCASR the total radiant of all gains
+C QCASC the total convective of all gains
+C QCASL the total latent of all gains
+C FRAC the fraction controlled (0.0-1.0)
+C perocupc,perlightc,perequipc,otherc: sensible con for occup lights equip other.
+C perocupr,perlightr,perequipr,otherr: sensible rad for occup lights equip other.
+C perocupl,perlightl,perequipl,otherl: latent for occup lights equip other.
+C theonectld (integer index) if non-zero the index of the gain to control.
+
+      SUBROUTINE getallcas(IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,FRAC,
+     & perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     & perequipr,otherr,perocupl,perlightl,perequipl,otherl,theonectld)
+#include "building.h"
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
+
+      character outs*124
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
+      real X1,X2,X3,X4,X5
+      DIMENSION XD(MS+7) ! for scanning past unneeded data
+
+      IUNIT=IFIL
+      if(iz.eq.0.or.iday.eq.0.or.iset.eq.0.or.its.eq.0)then
+        call edisp(iuout,
+     &    'Error: One of the getallcas parameters is zero.')
+        write(outs,'(a,i3,a,i2,a,i2)') 'iday= ',iday,' zone= ',iz,
+     &    ' set= ',iset
+        call edisp(iuout,outs)
+        return
+      endif
+
+C Get ZTMS only if save is level 2 - 4.
+      IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
+        IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZ)+IHASHS(ISET)
+        NN=NZSUR(IZ)
+        NA=NZSUR(IZ)+7
+        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (XD(I),I=1,NA),
+     &    perocupc,perlightc,perequipc,otherc     
+        IREC=IREC+1
+        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (XD(I),I=1,NA),
+     &    perocupr,perlightr,perequipr,otherr
+        IREC=IREC+1
+        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (XD(I),I=1,NN),
+     &    QCASR,QCASC,X1,X2,FRAC,X3,X4,perocupl,perlightl,
+     &    perequipl,otherl,theonectld
+
+C Make up QCASL from the separate latent gains.
+        QCASL=perocupl+perlightl+perequipl
+
+C Dummy use of the temporary variables.
+        X5=X1+X2+X3+X4+XD(1)
+
+C Debug.
+C        write(6,*) 'getallcas: ',IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,
+C     &    FRAC,perocupc,perlightc,perequipc,otherc,
+C     &    perocupr,perlightr,perequipr,otherr,
+C     &    perocupl,perlightl,perequipl,otherl,theonectld
+      ELSE
+         call edisp(iuout,
+     & 'getallcas: Save option does not allow access to casual gains.')
+      ENDIF
+
+    8 RETURN
+ 1000 write(outs,7)IREC
+    7 format(' getallcas: error reading casual gain data @ rec',I5)
+      call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
 

@@ -32,8 +32,10 @@ m
 b # reactive power
 j
 b # convective casual gains
+-
 j
 c # radiant casual gains
+-
 d # solar processes
 a # entering from outside
 d
@@ -41,26 +43,35 @@ c # solar absorbed
 i # zone rh
 j # casual gains
 a # all
+-
 j
 b # convective portion
+-
 j
 c # radiant portion
+-
 j
-d # total occupant gain
+e # total occupant gain
+-
 j
-e # total lighting gain
+i # total lighting gain
+-
 j
-f # total small power
+m # total small power
+-
 -
 -
 c # timestep reports
 g # perf metrics
 j # casual
-d # total occupant
+e # total occupant
+-
 j
-e # total lighting
+i # total lighting
+-
 j
-f # total small power
+m # total small power
+-
 ! # list data
 -
 -

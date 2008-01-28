@@ -258,28 +258,28 @@ C over-write) or create a new file.
         RETURN
       ENDIF
 
-      WRITE(IFILG,30,IOSTAT=ISTAT,ERR=1003)
+      WRITE(IFILG,30,IOSTAT=IOS,ERR=1003)
      &  GTNAME(1:lnblnk(GTNAME)),GENFIL(1:lnblnk(GENFIL))
   30  FORMAT('# ground topology of ',a,' defined in: ',a)
 
 C File is always a GRN type as this is representation in common.
-      WRITE(IFILG,'(4a)',IOSTAT=ISTAT,ERR=1003)
+      WRITE(IFILG,'(4a)',IOSTAT=IOS,ERR=1003)
      &  'GRN',',',GTNAME,'   # type   topology name'
 
 C Vertex coordinates.
-        WRITE(IFILG,'(I4,I4,A)',IOSTAT=ISTAT,ERR=1003)
+        WRITE(IFILG,'(I4,I4,A)',IOSTAT=IOS,ERR=1003)
      &       NGTV,NGT,'  # vertices & surfaces '
-        WRITE(IFILG,32,IOSTAT=ISTAT,ERR=1003)
+        WRITE(IFILG,32,IOSTAT=IOS,ERR=1003)
   32    FORMAT('#  X co-ord, Y co-ord, Z co-ord ')
         DO 960 I = 1,NGTV
           if(ivedge(I).eq.1)then
-            WRITE(outl,'(3f10.4)',IOSTAT=ISTAT,ERR=1003)XGT(I),
+            WRITE(outl,'(3f10.4)',IOSTAT=IOS,ERR=1003)XGT(I),
      &        YGT(I),ZGT(I)
             call SDELIM(outl,outld,'C',IW)
             WRITE(IFILG,'(2a,i3)',IOSTAT=IOS,ERR=1003)
      &        outld(1:lnblnk(outld)),'  e  # vert ',I
           else
-            WRITE(outl,'(3f10.4)',IOSTAT=ISTAT,ERR=1003)XGT(I),
+            WRITE(outl,'(3f10.4)',IOSTAT=IOS,ERR=1003)XGT(I),
      &        YGT(I),ZGT(I)
             call SDELIM(outl,outld,'C',IW)
             WRITE(IFILG,'(2a,i3)',IOSTAT=IOS,ERR=1003)
@@ -287,7 +287,7 @@ C Vertex coordinates.
           endif
 960     CONTINUE
 
-        WRITE(IFILG,34,IOSTAT=ISTAT,ERR=1003)
+        WRITE(IFILG,34,IOSTAT=IOS,ERR=1003)
   34    FORMAT('# no of vertices followed by list of associated vert')
         DO 970 I = 1,NGT
           WRITE(outstr,5650)NGVER(I),(JGVN(I,J),J=1,NGVER(I))
@@ -297,9 +297,9 @@ C Vertex coordinates.
 
 C Optional surface information.  Begin by inserting default information
 C if for some reason there are blanks remaining.
-        WRITE(IFILG,'(a)',IOSTAT=ISTAT,ERR=1003)
+        WRITE(IFILG,'(a)',IOSTAT=IOS,ERR=1003)
      &    '# surface attributes follow: '
-        WRITE(IFILG,'(a)',IOSTAT=ISTAT,ERR=1003)
+        WRITE(IFILG,'(a)',IOSTAT=IOS,ERR=1003)
      &    '# id  surface   construction '
         DO 102 I=1,NGT
           IF(GSNAME(I)(1:2).EQ.'  ')THEN
@@ -308,17 +308,21 @@ C if for some reason there are blanks remaining.
             IF(I.GT.99)WRITE(GSNAME(I),'(a,i3)')'gt-',I
           ENDIF
           IF(GMLCN(I)(1:2).EQ.'  ')GMLCN(I)='UNKNOWN'
-          WRITE(outl,'(I3,1x,A6,1x,A15)',IOSTAT=ISTAT,ERR=1003) I,
+          WRITE(outl,'(I3,1x,A6,1x,A15)',IOSTAT=IOS,ERR=1003) I,
      &      GSNAME(I),GMLCN(I)
           call SDELIM(outl,outld,'C',IW)
           WRITE(IFILG,'(a)',IOSTAT=IOS,ERR=1003) outld(1:lnblnk(outld))
   102   CONTINUE
 
-   99 CALL ERPFREE(IFILG,ISTAT)
+   99 CALL ERPFREE(IFILG,IOS)
       RETURN
 
 C Error messages.
- 1003 CALL USRMSG(' File write error in ',GENFIL,'W')
+ 1003 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write in ',GENFIL,'W')
+      else
+        CALL USRMSG('File write error in ',GENFIL,'W')
+      endif
       IER=1
       GOTO 99
 

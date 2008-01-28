@@ -1201,15 +1201,26 @@ C      endif
       return
 
 C Internal read errors.
- 1001 WRITE(OUTSTR,'(a,i3)') 
+ 1001 if(IOS.eq.2)then
+        WRITE(OUTSTR,'(a,i3)') 
+     &  ' Permissions during conversion temp/node value @ icon ',I
+      else
+        WRITE(OUTSTR,'(a,i3)') 
      &  ' Failed: conversion of temperature/node value @ icon ',I
+      endif
       CALL EDISP(iuout,OUTSTR)
       ier=1
       RETURN
 
 C Internal read errors.
- 1002 WRITE(OUTSTR,'(3a,i3)') 
+ 1002 if(IOS.eq.2)then
+        WRITE(OUTSTR,'(3a,i3)') 
+     &  ' Permissions: icon atribute ',atrerr(1:lnblnk(atrerr)),
+     &  ' @ icon ',I
+      else
+        WRITE(OUTSTR,'(3a,i3)') 
      &  ' Failed: icon atribute ',atrerr(1:lnblnk(atrerr)),' @ icon ',I
+      endif
       CALL EDISP(iuout,OUTSTR)
       ier=1
       RETURN
@@ -1572,7 +1583,11 @@ Close the file and return
       RETURN
 
 C Error trap.
-    1 write(outs,'(a)') ' Error writing network file. '
+    1 if(IOS.eq.2)then
+        write(outs,'(a)') 'No permission to write network file.'
+      else
+        write(outs,'(a)') 'Error writing network file.'
+      endif
       call edisp(iuout,outs)
       CALL ERPFREE(INUNIT,IOS)
       return

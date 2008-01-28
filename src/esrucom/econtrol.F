@@ -3067,7 +3067,11 @@ C For zone & flow controls list out the verbose decoding of the misc items.
    30 CONTINUE
       return
 
- 3    CALL USRMSG(' ',' Problem generating report. ','W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' ','Permission error generating report.','W')
+      else
+        CALL USRMSG(' ','Problem generating report.','W')
+      endif
       return
       end
 

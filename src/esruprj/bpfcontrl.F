@@ -2595,7 +2595,7 @@ C Edit plant control function II.
      &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
      &       pmiscd(mcl,mpcdt,mpcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
-      DIMENSION SALT(41),IVALS(41),PSALT(11),IPVALS(11)
+      DIMENSION SALT(42),IVALS(42),PSALT(17),IPVALS(17)
       CHARACTER*84 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,PSALT*40,KEY*1
@@ -2763,6 +2763,7 @@ C of if:elseif:else recover.
         SALT(39)='senses dif hor sol rad    actuates flux'
         SALT(40)='senses ext rel hum        actuates flux'
         SALT(41)='senses contaminant conc   actuates flow'
+        SALT(42)='senses control loops    actuates either '
 
         call edisp(iuout,' Current controller type: ')
         call edisp(iuout,SALT(IPCTYP(II,JJ,KK)+1))
@@ -2772,7 +2773,7 @@ C of if:elseif:else recover.
         H(3)='be actuated and what is being sensed. This information'
         H(4)='will be used later when setting the control actions.'
         CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
-     &         40,41,SALT,'controller type',IER,4)
+     &         40,42,SALT,'controller type',IER,4)
         if(ix.ne.0)IPCTYP(II,JJ,KK)=IVALS(1)-1
         ictyp=IPCTYP(II,JJ,KK)
 
@@ -2788,7 +2789,16 @@ C Plant contol law.
         PSALT(9)= 'On-off controller'
         PSALT(10)='Multi-sensor on-off controller'
 C DG controller
-        PSALT(11)='Cogeneration system controller'
+        PSALT(11)='CCHP Cogeneration system controller'
+C        PSALT(12)='Hydrogen demand controller'
+C        PSALT(13)='Derive signal from boundary condition'
+C        PSALT(14)='Adsorption storage unit controller'
+C Multisensor for loops (control type is 
+C determined in loops that this sensor senses)
+        PSALT(12)='Multi-sensor (senses loops)'
+        PSALT(13)='PI Room Control'
+        PSALT(14)='Outside temperature compensation control'
+
         write(outs,'(a,a)')' Current control law: ',
      &                      PSALT(IPCLAW(II,JJ,KK)+1)
         call edisp(iuout,outs)
@@ -2837,13 +2847,29 @@ C DG controller
         H(42)=' type 38 is senses dif hor sol rad actuates flux'
         H(43)=' type 39 is senses ext rel hum actuates flux'
         H(44)=' type 33 is senses contaminant conc actuates flow'
-        H(45)='See ESP-r Data Model section 9 for details. '
-        CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
-     &         40,11,PSALT,'control law',IER,45)
-        
-        if(ix.ne.0)iclaw=IPVALS(1)-1
-        IPCLAW(II,JJ,KK)=iclaw
+        H(45)=' type 41 is senses other loops actuates either'
+        H(46)='See ESP-r Data Model section 9 for details. '
 
+ 910    IF(IPCTYP(II,JJ,KK).NE.41)THEN
+          CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
+     &         40,14,PSALT,'control law',IER,46)
+          if(ix.ne.0)iclaw=IPVALS(1)-1
+
+C Skip controllers (11-13) that are not included in the interface
+          IF(ICLAW.GE.11)ICLAW=ICLAW+3
+        ELSE
+          iclaw=14
+        ENDIF
+        IPCLAW(II,JJ,KK)=iclaw
+        IF(IPCTYP(II,JJ,KK).NE.41.AND.IPCLAW(II,JJ,KK).EQ.14)THEN
+          H(1)='This control type only works with multisensing of'
+          H(2)='control loops. The control type will be set to '
+          H(3)='sensing other control loops action (type 41) '
+          CALL PHELPD('control type help',3,'-',0,0,IER)
+          IPCTYP(II,JJ,KK)=41
+        ENDIF
+
+        IF(ICLAW.LT.14.AND.ICLAW.GT.10)GOTO 63
   62    H(1)='See ESP-r Data Model section 9 for details. '
         CALL EASKR(tcps,' ',' Period start time ? ',
      &    0.,'F',24.,'F',0.,'plant control start',IER,1)
@@ -2861,7 +2887,7 @@ C DG controller
         endif
 
 C Make assumptions about the additional data that will be required.
-        H(1)='See ESP-r Data Model section 9 for details. '
+ 63     H(1)='See ESP-r Data Model section 9 for details. '
         if(IPCLAW(II,JJ,KK).eq.0)then
            
 C Period switch off control.
@@ -3000,7 +3026,7 @@ C Define mode, number of items, std items, then mode specific items.
           elseif(I2.eq.3.or.I2.eq.-3)then
             CALL EASKR(cm(7),' ',' Integral action time [secs]?',
      &          1.,'F',0.,'-',900.,' integral action time',IER,0)
-          elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then               
+          elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
             CALL EASKR(cm(8),' ',' Integral action time [secs]?',
      &          1.,'F',0.,'-',900.,' integral action time',IER,0)
             CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
@@ -3127,7 +3153,7 @@ C Define mode, number of items, std items, then mode specific items.
           elseif(I2.eq.3.or.I2.eq.-3)then
               CALL EASKR(cm(7),' ',' Integral action time [seconds]?',
      &            1.,'F',0.,'-',900.,' integral action time',IER,0)
-            elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then               
+            elseif(I2.eq.4.or.I2.eq.-4.or.I2.eq.5.or.I2.eq.-5)then
               CALL EASKR(cm(8),' ',' Integral action time [seconds]?',
      &             1.,'F',0.,'-',900.,' integral action time',IER,0)
               CALL EASKR(cm(11),' ',' Derivative action time [secs]?',
@@ -3390,6 +3416,186 @@ C Weighted auxiliary sensors mode,
           endif
         elseif(IPCLAW(II,JJ,KK).eq.10)then
           CALL DG_controller_menu(cm)
+        elseif(IPCLAW(II,JJ,KK).GE.11.AND.IPCLAW(II,JJ,KK).LE.13)then
+
+C Controllers not supported through the interface yet
+          GOTO 910
+        elseif(IPCLAW(II,JJ,KK).eq.14)then
+
+C Mutilsensor of control loops
+          H(1)='You will be asked to state how many control loops you'
+          H(2)='want to sense for this controller. For each loop that'
+          H(3)='you specify you will asked a logical relationship'
+          H(4)='with the next loop (.AND. or .OR.) e.g. loop 4 .AND.'
+          H(5)='loop 7 will give the logical outcome of loop4 and 7'
+          H(6)='based on their states at that time.'
+          H(7)='The actuator for this component will have its control'
+          H(8)='data modified at run time if the multisensor gives'
+          H(9)='an ON signal. The value of this signal must be given'
+          H(10)='alongwith the index of the control data item e.g.'
+          H(11)='whether control data item no. 1 or 2 is being set'
+          H(12)=' '
+          H(13)='Additionally there is provision to set an overrun'
+          H(14)='time. This is the time for which the component / '
+          H(15)='parameter actuated by this loop will be on after'
+          H(16)='the control loop sensor goes off.'
+          CALL EASKI(NCLP,' ',' No. of control loops to sense ',
+     &      2,'-',4,'-',2,'no. of misc data items',IER,11)
+          cm(1)=real(NCLP*2+3)
+          DO 1454 ICLP=1,NCLP
+            CALL EASKI(ICLN,' ',' Select control loops number',
+     &      1,'-',mcl,'-',1,'ctl loop number',IER,11)
+            CM(ICLP*2)=ICLN
+            IF(ICLP.NE.NCLP)THEN
+              CALL EASKAB('Logical relationship with next loop',' ',
+     &        '.OR.','.AND.',iad,11)
+              CM(ICLP*2+1)=IAD
+            ENDIF
+ 1454     CONTINUE
+          TONV=CM(NCLP*2+1)
+          CALL EASKR(TONV,' ',' Signal value at ON ',
+     &        1.,'-',1.,'-',1.,'signal on value',IER,11)
+          CM(NCLP*2+1)=TONV              
+
+          TONV=CM(NCLP*2+2)
+          CALL EASKR(TONV,' ',' Signal value at OFF ',
+     &        1.,'-',1.,'-',1.,'signal off value',IER,11)
+          CM(NCLP*2+2)=TONV              
+
+          TONV=CM(NCLP*2+3)
+          CALL EASKI(ICDAT,' ','Which control item to set at ON'
+     &        ,1,'-',1,'-',1,'CDATA for component',IER,11)
+          CM(NCLP*2+3)=REAL(ICDAT)
+
+          TONV=CM(NCLP*2+4)
+          CALL EASKR(TONV,' ',' Overrun time (min)',
+     &        1.,'-',1.,'-',1.,' Overrun time (min)',IER,11)
+          CM(NCLP*2+4)=TONV
+        elseif(IPCLAW(II,JJ,KK).eq.15)then
+
+C Proportional Integral Room controller
+          H(1) ='This control law is a simplified PI controller '
+          H(2) ='specially adapted to room control of wet central'
+          H(3) ='heating (WCH) systems. It can be used to control the'
+          H(4) ='BDATA items of a plant component using PI action.'
+          H(5) ='Alternately it can be used in TPMPI (time proportional'
+          H(6) ='modulating proportional integral) mode. In this mode '
+          H(7) ='BDATA items are not modified but ON time is controlled'
+          H(8) ='For the implementation it was developed it was used'
+          H(9) ='to control the upper boiler temperature limit of a'
+          H(10)='WCH boiler depending on the output temperature of a'
+          H(11)='thermostat.'
+          H(12)='Control inputs are: '
+          H(13)='Setpoint nominal T_st (default value 21)'
+          H(14)='Sensed condition T_sen (from sensor definition)'
+          H(15)='Setpoint max T_max (default value 90)'
+          H(16)='Setpoint min T_min (default value 20)'
+          H(17)='Proportional band PB (default value 1)'
+          H(18)='Bdata item number of actuated plant component, the' 
+          H(19)='value of this parameter will be changed by this '
+          H(20)='controller index BDATA (default value 10)'
+          H(21)='Integral reset time AIRT (default value 1)'
+          H(22)='DELTA=T_sen-T_st'
+          H(23)='Integral summation of delta SDELTA'
+          H(24)='At simulation run time BDATA value will be '
+          H(25)='modified according to the following logic:'
+          H(26)='BDATA=(T_max-T_min)*(DELTA/PB+SDELTA/(PB*AIRT)'
+          H(27)='       + 0.5*(T_max+T_min)'
+          H(28)='If BDATA is bigger than T_max it is reset to T_max or'
+          H(29)='If BDATA is smaller than T_min it is reset to T_min'
+          H(30)='Optionally an additional control loop can be specified'
+          H(31)='it this loop is active then BDATA item number is '
+          H(32)='reset to a user defined static value, if you dont'
+          H(33)='want to specify an optional loop leave its value = 0'
+          H(34)=' '
+          H(35)='The TPMPI mode of operation becomes active if cycle'
+          H(36)='time is stated to be more than zero.'
+          H(37)=' '
+          H(38)=' '
+          H(39)=' '
+          H(40)=' '
+          H(41)=' '
+          H(42)=' '
+          H(43)=' '
+          CM(1)=8.0
+          call edisp(iuout,' ')
+          call edisp(iuout,' current control parameters are:')
+          call edisp(iuout,
+     &      ' nominal, max, min, prop band, BDATA, reset time')
+ 101      WRITE(HOLD,'(8(F5.2,1X))')CM(2),CM(3),CM(4),CM(5),CM(6),CM(7)
+     &       ,CM(8),CM(9)
+          CALL EDISP(IUOUT,HOLD)
+          CALL EASKS(HOLD,
+     &    ' nominal, max, min, prop band, BDATA, reset time (sec)',
+     &    'optional control loop, static value (see help)',
+     &    60,HOLD,'PI room ctrlr',IER,30)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),1.,1.,'-','Setpoint nominal ',IER)
+          CALL EGETWR(HOLD,K,cm(3),1.,1.,'-','Setpoint max',IER)
+          CALL EGETWR(HOLD,K,cm(4),1.,1.,'-','Setpoint min',IER)
+          CALL EGETWR(HOLD,K,cm(5),1.E-6,1.E6,'F','Prop band',IER)
+          CALL EGETWR(HOLD,K,cm(6),1.,1.,'-','BDATA item #',IER)
+          CALL EGETWR(HOLD,K,cm(7),1.E-6,1.E6,'F','Int reset time',IER)
+          CALL EGETWR(HOLD,K,cm(8),1.,1.,'-','optional cntrl loop',IER)
+          CALL EGETWR(HOLD,K,cm(9),1.,1.,'-','BDATA static value',IER)
+          if(ier.ne.0)goto 101
+        elseif(IPCLAW(II,JJ,KK).eq.16)then
+
+C Outside temperature compensation controller
+          H(1) ='This controller modifies BDATA parameters of a plant'
+          H(2) ='component at simulation runtime. It was originally '
+          H(3) ='used to control boiler upper temperature limit for '
+          H(4) ='wet central heating systems.'
+          H(5) ='The following parameters are used:'
+          H(6) ='coefficients alpha, beta, gamma with default values'
+          H(7) =' (3.5 2. and 0. respectively)'
+          H(8) ='Nominal temperature 1 = T_st1 (default value 20)'
+          H(9) ='Nominal temperature = T_st (default value 21)'
+          H(10)='Setpoint max T_max (default value 90)'
+          H(11)='Setpoint min T_min (default value 20)'
+          H(12)='ambient temperature T_amb (from climate file)'
+          H(13)='Sensed condition T_sen (from sensor definition)'
+          H(14)='Bdata item number of actuated plant component, the' 
+          H(15)='value of this parameter will be changed by this '
+          H(16)='controller index BDATA (default value 10)'
+          H(17)='At simulation run time the BDATA value will be'
+          H(18)='BDATA=T_st1+BETA*(T_st1-TFP)+ALPHA+GAMMA*(T_st-T_sen)'
+          H(19)='If BDATA is bigger than T_max it is reset to T_max or'
+          H(20)='If BDATA is smaller than T_min it is reset to T_min'
+          H(21)='Optionally an additional control loop can be specified'
+          H(22)='it this loop is active then BDATA item number is '
+          H(23)='reset to a user defined static value, if you dont'
+          H(24)='want to specify an optional loop leave its value = 0'
+          cm(1)=10.
+          call edisp(iuout,' ')
+          call edisp(iuout,' current control parameters are:')
+          call edisp(iuout,'alpha, beta, gamma')
+  111     write(HOLD,'(3(F5.2,1X))')cm(2),cm(3),cm(4)
+          CALL EDISP(IUOUT,HOLD)
+          CALL EASKS(HOLD,'alpha, beta, gamma',
+     &    '(see help)',60,HOLD,'OTC ctrlr',IER,24)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),1.,1.,'-','alpha ',IER)
+          CALL EGETWR(HOLD,K,cm(3),1.,1.,'-','beta',IER)
+          CALL EGETWR(HOLD,K,cm(4),1.,1.,'-','gamma',IER)
+          call edisp(iuout,' further control parameters are:')
+          call edisp(iuout,'nominal1, nominal, max, min, BDATA')
+          IF(IER.NE.0)GOTO 111
+  121     WRITE(HOLD,'(7(F5.2,1X))')CM(5),CM(6),CM(7),CM(8),
+     &    CM(9),CM(10),CM(11)
+          CALL EDISP(IUOUT,HOLD)
+          CALL EASKS(HOLD,'nominal1, nominal, max, min, BDATA',
+     &    'optional control loop, static value (see help)'
+     &    ,60,HOLD,'OTC ctrlr',IER,24)
+          K=0
+          CALL EGETWR(HOLD,K,cm(5),1.,1.,'-','nominal1',IER)
+          CALL EGETWR(HOLD,K,cm(6),1.,1.,'-','nominal',IER)
+          CALL EGETWR(HOLD,K,cm(7),1.,1.,'-','max',IER)
+          CALL EGETWR(HOLD,K,cm(8),1.,1.,'-','min',IER)
+          CALL EGETWR(HOLD,K,cm(9),1.,1.,'-','BDATA item #',IER)
+          CALL EGETWR(HOLD,K,cm(10),1.,1.,'-','optional cntrl loop',IER)
+          CALL EGETWR(HOLD,K,cm(11),1.,1.,'-','BDATA static value',IER)
+          IF(IER.NE.0)GOTO 121
         endif
 
 C Extract from working array to pmiscd() common structure
