@@ -3409,7 +3409,7 @@ C materials db or from the.
           ELSE
             NAM='  '
             IR = iel + 1
-            READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,
+            READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)DBCON,DBDEN,DBSHT,E,
      &        A,DRV,NAM
             PNAM(j)=NAM(1:20)
           ENDIF
@@ -3465,8 +3465,13 @@ C Ask for the nodal location, first calculate a location at centre.
 
       return
 
- 105  write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
+ 105  if(IOS.eq.2)then
+        write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
+     &    ' permission error @ record ',IR,' in file',IFMAT
+      else
+        write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
      &    ' read error @ record ',IR,' in file',IFMAT
+      endif
       call edisp(iuout,outs)
       write(outs,'(A,6f9.3)') ' with data ',DBCON,DBDEN,DBSHT,E,A,DRV
       call edisp(iuout,outs)
@@ -3714,7 +3719,11 @@ C First try to use t124 string (so have room for zones label).
         return
       endif
 
-   1  write(6,*) 'ZARLIST: error writing zone names: ',outs
+   1  if(IOS.eq.2)then
+        write(6,*) 'ZARLIST: no permission to write zone names: ',outs
+      else
+        write(6,*) 'ZARLIST: error writing zone names: ',outs
+      endif
       ierr=1
       return
       END

@@ -99,6 +99,15 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       COMMON/COE34L/QLAT(MCOM)
       COMMON/GRSD130/QCASRS(MCOM)
 
+C Common for occupant/lighting/equipment sensible convective, sensible
+C radiant and latent W for future and present in each zone.
+      real ctlperocupc,ctlperocupr,ctlperocupl ! occupant after control applied
+      real ctlperlightc,ctlperlightr,ctlperlightl ! lighting after control applied
+      real ctlequipc,ctlequipr,ctlequipl ! equipment after control applied
+      common/applyctl/ctlperocupc(MCOM,2),ctlperocupr(MCOM,2),
+     &  ctlperocupl(MCOM,2),ctlperlightc(MCOM,2),ctlperlightr(MCOM,2),
+     &  ctlperlightl(MCOM,2),ctlequipc(MCOM,2),ctlequipr(MCOM,2),
+     &  ctlequipl(MCOM,2) 
 
 C Common for HOT3000 electrical-network -> casual-gain coupling
 C Symopsys: E_to_G_coupling: boolian indicating coupling exists
@@ -129,11 +138,11 @@ C TCGS - start time of gain (zone, day type, gain type, period)
 C CGSENR - sensible gain radiant portion (zone, day type, gain type, period)
 C CGSENC - sensible gain convective portion (zone, day type, gain type, period)
 C CGLAT - latent gain (zone, day type, gain type, period)
-C CGCTL - gain control fraction (present/future, gain type)
+C CGCTL - gain control fraction (zone, present/future, gain type)
 C ICGCTL - pointer to controlled gain type.
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
      &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
-     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(2,MGTY)
+     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
       COMMON/LIGHTS/ICGCTL(MCOM)
       common/CASGNSE/ELQ(MCOM,MDTY,MGTY,MGPER,MPHAS),
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
@@ -160,7 +169,7 @@ C that are taken from the activities temporal data
       INTEGER ILIGHT_IN_SBEMDB
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
-
+      REAL QCASLT  ! to hold the summation of pres + future latent
 
       DIMENSION QLATN(2),VAL(MBITS+2)
 
@@ -218,8 +227,8 @@ C Zero zone power loads and update present control fractions.
       DO 9 ITY=1,MGTY
         PEZON(ICOMP,ITY)=0.
         QEZON(ICOMP,ITY)=0.
-        CGCTL(1,ITY)=CGCTL(2,ITY)
-        CGCTL(2,ITY)=1.0
+        CGCTL(ICOMP,1,ITY)=CGCTL(ICOMP,2,ITY)
+        CGCTL(ICOMP,2,ITY)=1.0
   9   CONTINUE
 
 C Update present values.
@@ -272,7 +281,7 @@ C new day control period:
           if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
           if (IPOINT.NE.0) then
             call INTLUM(ICOMP,FRAC)
-            CGCTL(2,ICGCTL(ICOMP))=FRAC
+            CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
           endif
         endif
       endif
@@ -285,12 +294,25 @@ C NB tdf and time step file should have electrical data added to the
 C   definition.
       if(ICASUAL(icomp).ne.0)then
 
-C Data in temporal database (1 column of gains).
+C Data in temporal database (1 column of gains). Also
+C instanciate the future value of equipment casual gain so that
+C it can be used within MZLS3. Equipment is an arbitrary choice.
         IFOC=ICASUAL(icomp)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         QCASC(2)=VAL(ISD)
+        ctlperocupc(icomp,2)=0.0
+        ctlperlightc(icomp,2)=0.0
+        ctlequipc(icomp,2)=VAL(ISD)
+
         QCASR(2)=VAL(ISD+1)
+        ctlperocupr(icomp,2)=0.0
+        ctlperlightr(icomp,2)=0.0
+        ctlequipr(icomp,2)=VAL(ISD+1)
+
         QLATN(2)=VAL(ISD+2)
+        ctlperocupl(icomp,2)=0.0
+        ctlperlightl(icomp,2)=0.0
+        ctlequipl(icomp,2)=VAL(ISD+2)
         if(traceok)then
           write(outs,*)'casual gains from temporal db=',
      &          VAL(ISD),VAL(ISD+1),VAL(ISD+2)
@@ -298,12 +320,25 @@ C Data in temporal database (1 column of gains).
         endif
       elseif(ICASUAL3(icomp).ne.0)then
 
-C Data in temporal database (3 columns of gains).
+C Data in temporal database (3 columns of gains). Also
+C instanciate the future value of each casual gain so that
+C it can be used within MZLS3.
         IFOC=ICASUAL3(icomp)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         QCASC(2)=VAL(ISD)+VAL(ISD+3)+VAL(ISD+6)
+        ctlperocupc(icomp,2)=VAL(ISD)
+        ctlperlightc(icomp,2)=VAL(ISD+3)
+        ctlequipc(icomp,2)=VAL(ISD+6)
+
         QCASR(2)=VAL(ISD+1)+VAL(ISD+4)+VAL(ISD+7)
+        ctlperocupr(icomp,2)=VAL(ISD+1)
+        ctlperlightr(icomp,2)=VAL(ISD+4)
+        ctlequipr(icomp,2)=VAL(ISD+7)
+
         QLATN(2)=VAL(ISD+2)+VAL(ISD+5)+VAL(ISD+8)
+        ctlperocupl(icomp,2)=VAL(ISD+2)
+        ctlperlightl(icomp,2)=VAL(ISD+5)
+        ctlequipl(icomp,2)=VAL(ISD+8)
         if(traceok)then
           write(outs,*)'separate casual gains from temporal db=',
      &        VAL(ISD),VAL(ISD+1),VAL(ISD+2),VAL(ISD+3),VAL(ISD+4),
@@ -362,14 +397,32 @@ C Convective and radiative equipment gains are the same at the moment (50%)
 
 C For lighting heat gains assume latent gains are zero
         QLIGHTLATN=0
-C	QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
+C       QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
 
-	QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
+        QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
         QCASR(2)=QOCCCASR+QEQUIPCASR+QLIGHTCASR
         QLATN(2)=QOCCLATN+QEQUIPLATN+QLIGHTLATN
+
+C Instanciate the future value of each casual gain so that
+C it can be used within MZLS3.
+        ctlperocupc(icomp,2)=QOCCCASC
+        ctlperlightc(icomp,2)=QLIGHTCASC
+        ctlequipc(icomp,2)=QEQUIPCASC
+        ctlperocupr(icomp,2)=QOCCCASR
+        ctlperlightr(icomp,2)=QLIGHTCASR
+        ctlequipr(icomp,2)=QEQUIPCASR
+        ctlperocupl(icomp,2)=QOCCLATN
+        ctlperlightl(icomp,2)=QLIGHTLATN
+        ctlequipl(icomp,2)=QEQUIPLATN
         if(traceok)then
           write(outs,*)'TOTAL OCCUPANT gains from temporal db=',
-     &    QTOTOCCUP
+     &      QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN
+          call edisp(itu,outs)
+          write(outs,*)'TOTAL LIGHTING gains from temporal db=',
+     &      QTOTLIGHT,QLIGHTCASC,QLIGHTCASR,QLIGHTLATN
+          call edisp(itu,outs)
+          write(outs,*)'TOTAL EQUIPMENT gains from temporal db=',
+     &      QTOTEQUIP,QEQUIPCASC,QEQUIPCASR,QEQUIPLATN
           call edisp(itu,outs)
         endif
       else
@@ -400,9 +453,12 @@ C Calculate the current period id.
 C Set future casual gain values if there is periods defined.
           if(IPER.gt.0)then
             if(shcon.lt.0.) then
-              QCASC(2)=QCASC(2)+CGSENC(ICOMP,IDAY,IGN,IPER)*CGCTL(2,IGN)
-              QCASR(2)=QCASR(2)+CGSENR(ICOMP,IDAY,IGN,IPER)*CGCTL(2,IGN)
-              QLATN(2)=QLATN(2)+CGLAT(ICOMP,IDAY,IGN,IPER)*CGCTL(2,IGN)
+              QCASC(2)=QCASC(2)+CGSENC(ICOMP,IDAY,IGN,IPER)*
+     &                 CGCTL(ICOMP,2,IGN)
+              QCASR(2)=QCASR(2)+CGSENR(ICOMP,IDAY,IGN,IPER)*
+     &                 CGCTL(ICOMP,2,IGN)
+              QLATN(2)=QLATN(2)+CGLAT(ICOMP,IDAY,IGN,IPER)*
+     &                 CGCTL(ICOMP,2,IGN)
             else
 
 C Instead of using fracf, add-on shcon,shrad,shlat for SHOCC.
@@ -412,16 +468,17 @@ C Instead of using fracf, add-on shcon,shrad,shlat for SHOCC.
 
 C Quick fix: cgctl variable is used within eletrical network
 C so if SHOCC load, then cgctl equals shcon/CGCSENC ratio.
-              CGCTL(2,IGN)=shcon/CGSENC(ICOMP,IDAY,IGN,IPER)
+              CGCTL(ICOMP,2,IGN)=shcon/CGSENC(ICOMP,IDAY,IGN,IPER)
             endif
 
 C Debug...
-C            if (ICOMP.eq.1) then
-C              write (6,*) 'match ',DSTR,BTIMEF,IPER,IGN
-C              write (6,*) 'Time    Zone   Period   GainSen'
-C              write (6,*) BTIMEF,ICOMP,IPER,CGSENC(ICOMP,IDAY,IGN,IPER)
-C              write (6,*) QCASC,QCASR,QLATN,' ctl:',CGCTL
-C            endif
+            if(traceok)then
+C              write(itu,*) 'match ',DSTR,BTIMEF,IPER,IGN,IDAY,ICOMP
+C              write(itu,*) 'Time    Zone   Period   GainSen'
+C              write(itu,*) BTIMEF,ICOMP,IPER,CGSENC(ICOMP,IDAY,IGN,IPER)
+C              write(itu,*) QCASC,QCASR,QLATN,' ctl:',CGCTL(ICOMP,1,1),
+C     &          CGCTL(ICOMP,2,1),CGCTL(ICOMP,1,2),CGCTL(ICOMP,2,2)  
+            endif
 
 C Set future electrical loads.
             if (BTIMEF.le.TCGS(ICOMP,IDAY,IGN,IPER+1).and.
@@ -431,15 +488,15 @@ C Set future electrical loads.
 C loop through power consumption for each phase.
                 DO 75 IPH=1,MPHAS
                   PEZON(ICOMP,IGN)=PEZON(ICOMP,IGN)-
-     &                    ELQ(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(2,IGN)
+     &              ELQ(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(ICOMP,2,IGN)
                   QEZON(ICOMP,IGN)=QEZON(ICOMP,IGN)-
-     &                    ELR(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(2,IGN)
+     &              ELR(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(ICOMP,2,IGN)
 
 C Keep track of electrical loads for trace.
                   RP(ICOMP,2,IGN,IPH)=RP(ICOMP,2,IGN,IPH)+
-     &                       ELQ(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(2,IGN)
+     &              ELQ(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(ICOMP,2,IGN)
                   QP(ICOMP,2,IGN,IPH)=QP(ICOMP,2,IGN,IPH)+
-     &                       ELR(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(2,IGN)
+     &              ELR(ICOMP,IDAY,IGN,IPER,IPH)*CGCTL(ICOMP,2,IGN)
   75            CONTINUE
               ENDIF 
             endif
@@ -551,6 +608,7 @@ C variables to W/m^2.
       QCASR(1)=QCASR(1)/ZOA(ICOMP)
       QCASR(2)=QCASR(2)/ZOA(ICOMP)
       QCASRS(ICOMP)=QCASR(2)
+      QCASLT=QLATN(1)+QLATN(2)
 
 C Trace output ?
       if(.NOT.traceok)goto 999
@@ -561,25 +619,28 @@ C Output computed results.
       call edisp(itu,outs)
       call edisp(itu,' ')
       call edisp(itu,' Control fraction for each type:')
-      write(outs,'(a,10f7.4)') 'Present: ',(CGCTL(1,I),I=1,MGTY)
+      write(outs,'(a,10f7.4)') 'Present: ',(CGCTL(icomp,1,I),I=1,MGTY)
       call edisp(itu,outs)
-      write(outs,'(a,10f7.4)') 'Future : ',(CGCTL(2,I),I=1,MGTY)
+      write(outs,'(a,10f7.4)') 'Future : ',(CGCTL(icomp,2,I),I=1,MGTY)
       call edisp(itu,outs)
       call edisp(itu,' ')
-      write(outs,'(15X,A)')'|      Radiant       |    Convection      |'
+      write(outs,'(15X,A)')
+     & '|      Radiant       |    Convection      |    Latent         '
       call edisp(itu,outs)
-      write(outs,'(15X,A)')'|   Present   Future |  Present    Future |'
+      write(outs,'(15X,A)')
+     & '|   Present   Future |  Present   Future  |  Present    Future'
       call edisp(itu,outs)
 
 C Display radiant contribution as Watts.
       RWP=QCASR(1)*ZOA(ICOMP)
       RWF=QCASR(2)*ZOA(ICOMP)
       RW=QCASRT(icomp)*ZOA(ICOMP)
-      write (outs,9994) RWP,RWF,QCASC(1),QCASC(2)
- 9994 format(' Total gain    |',2F10.2,'|',2F10.2,'|')
+      write (outs,9994) RWP,RWF,QCASC(1),QCASC(2),QLATN(1),QLATN(2)
+ 9994 format(' Total gain    |',2F10.2,'|',2F10.2,'|',2F10.2)
       call edisp(itu,outs)
-      write (outs,9996) RW,QCASCT
- 9996 format(' Summation     |   ',F10.2,'W      |   ',F10.2,'W      |')
+      write (outs,9996) RW,QCASCT,QCASLT
+ 9996 format(' Summation     |   ',F10.2,'W      |   ',F10.2,
+     &                                   'W      |   ',F10.2)
       call edisp(itu,outs)
 
 C Output the electrical results for the zone

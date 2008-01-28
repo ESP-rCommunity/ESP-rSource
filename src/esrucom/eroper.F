@@ -2932,15 +2932,15 @@ C And if there is no power at the timestep reset PF to zero.
               BVOLT1(NELwk) = bvoltA(IP,ITYP)
               IPHAS1(NELwk) = iphasA(IP,ITYP)
               if(itrc.ge.1)then
-                WRITE(itru,5470,IOSTAT=IOS)ICGTYP(IP,ITYP),ihst,ihcg,
-     &            CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
+                WRITE(itru,5470,IOSTAT=IOS,ERR=1)ICGTYP(IP,ITYP),ihst,
+     &            ihcg,CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
      &            CONFAC(IP,ITYP),pfA(IP,ITYP),ipfA(IP,ITYP),
      &            pwrA(IP,ITYP),bvoltA(IP,ITYP),iphasA(IP,ITYP)
               endif
             else
               if(itrc.ge.1)then
-                WRITE(itru,5460,IOSTAT=IOS)ICGTYP(IP,ITYP),ihst,ihcg,
-     &          CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
+                WRITE(itru,5460,IOSTAT=IOS,ERR=1)ICGTYP(IP,ITYP),ihst,
+     &          ihcg,CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
      &          CONFAC(IP,ITYP)
               endif
             endif
@@ -3044,15 +3044,15 @@ C Assign values.
               BVOLT2(NELsat) = bvoltA(IP,ITYP)
               IPHAS2(NELsat) = iphasA(IP,ITYP)
               if(itrc.ge.1)then
-                WRITE(itru,5470,IOSTAT=IOS)ICGTYP(IP,ITYP),ihst,ihcg,
-     &            CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
+                WRITE(itru,5470,IOSTAT=IOS,ERR=1)ICGTYP(IP,ITYP),ihst,
+     &            ihcg,CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
      &            CONFAC(IP,ITYP),pfA(IP,ITYP),ipfA(IP,ITYP),
      &            pwrA(IP,ITYP),bvoltA(IP,ITYP),iphasA(IP,ITYP)
               endif
             else
               if(itrc.ge.1)then
-                WRITE(itru,5460,IOSTAT=IOS)ICGTYP(IP,ITYP),ihst,ihcg,
-     &            CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
+                WRITE(itru,5460,IOSTAT=IOS,ERR=1)ICGTYP(IP,ITYP),ihst,
+     &            ihcg,CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
      &            CONFAC(IP,ITYP)
               endif
             endif
@@ -3153,15 +3153,15 @@ C Assign values.
               BVOLT3(NELsun) = bvoltA(IP,ITYP)
               IPHAS3(NELsun) = iphasA(IP,ITYP)
               if(itrc.ge.1)then
-                WRITE(itru,5470,IOSTAT=IOS)ICGTYP(IP,ITYP),ihst,ihcg,
-     &            CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
+                WRITE(itru,5470,IOSTAT=IOS,ERR=1)ICGTYP(IP,ITYP),ihst,
+     &            ihcg,CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
      &            CONFAC(IP,ITYP),pfA(IP,ITYP),ipfA(IP,ITYP),
      &            pwrA(IP,ITYP),bvoltA(IP,ITYP),iphasA(IP,ITYP)
               endif
             else
               if(itrc.ge.1)then
-                WRITE(itru,5460,IOSTAT=IOS)ICGTYP(IP,ITYP),ihst,ihcg,
-     &            CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
+                WRITE(itru,5460,IOSTAT=IOS,ERR=1)ICGTYP(IP,ITYP),ihst,
+     &            ihcg,CMGSA(IP,ITYP),CMGLA(IP,ITYP),RADFAC(IP,ITYP),
      &            CONFAC(IP,ITYP)
               endif
             endif
@@ -3179,6 +3179,14 @@ C See if any periods have been added.
       if(LNCAS3.ne.NCAS3)call edisp(iuout,'Sundays updated.')
 
       return
+
+  1   if(IOS.eq.2)then
+        write(6,*) 'PROCESSOLDCAS: permission error writing strings.'
+      else
+        write(6,*) 'PROCESSOLDCAS: error writing warning or strings.'
+      endif
+      return
+
       end
 
 c ******************** PRECOMP ********************

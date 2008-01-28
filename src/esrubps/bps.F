@@ -608,9 +608,12 @@ C Initialize once per hour storage of results counter.
       irdact=0
       irdcm=1
 
-C Record length of binary results file.
+C Record length of binary results file. izver is the
+C version of the zone results file. izver < 2 lacked
+C some records. izver < 4 do not include explicit separate
+C conv/rad/latent gain fields for each casual gain type.
       nzrl = MZRL
-      izver = 3
+      izver = 4
 
 C Record length of plant results file.
 C Parameter 'nprecl' as defined in 'plant.h'.

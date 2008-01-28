@@ -456,7 +456,7 @@ C TCGS - start time of gain (zone, day type, gain type, period)
 C CGSENR - sensible gain radiant portion (zone, day type, gain type, period)
 C CGSENC - sensible gain convective portion (zone, day type, gain type, period)
 C CGLAT - latent gain (zone, day type, gain type, period)
-C CGCTL - gain control fraction (present/future, gain type)
+C CGCTL - gain control fraction (zone, present/future, gain type)
 
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
@@ -498,7 +498,7 @@ C Commons for electrical data
 C Derived casual gain and electrical data.
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
      &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
-     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(2,MGTY)
+     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
       common/CASGNSE/ELQ(MCOM,MDTY,MGTY,MGPER,MPHAS),
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
 
@@ -565,8 +565,8 @@ C Zero derived gains.
       do 110 ID=1,MDTY
         do 120 IG=1,MGTY
           NCGPER(ICOMP,ID,IG)=0
-          CGCTL(1,IG)=1.
-          CGCTL(2,IG)=1.
+          CGCTL(ICOMP,1,IG)=1.
+          CGCTL(ICOMP,2,IG)=1.
           do 130 IP=1,MGPER
             TCGS(ICOMP,ID,IG,IP)=0.
             CGSENC(ICOMP,ID,IG,IP)=0.

@@ -124,6 +124,10 @@ C Significant figure reporting limit (NSIGFIG).
       
 C Name of current application
       common/APPNAME/cAppName
+
+C IEEE callback (Solaris)
+C      external SIGFPE_bps      
+C      integer SIGFPE_bps      
       
       character cAppName*12      
       
@@ -239,6 +243,18 @@ C Needed for CFD 3-D views.
       VIEWM(2)=10.
       VIEWM(3)=10.
       ANG=40.
+
+C If your compiler does not support floating-point arithmetic
+C according to ANSI/IEEE Std 754-1985 comment out the following code.
+
+C Initialize mode, status, and signal handling for IEEE arithmetic.
+C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
+C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
+C           only if: Sun-3 f77 with -f68881 or -ffpa option
+C                or: Sun-4 f77.
+C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+C      ieeer=ieee_handler('set','common',SIGFPE_bps)
+C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
 
 C Initialise output device.
       MMOD=MODL
@@ -777,3 +793,17 @@ C Dummy routines from common3dv.F
       ier=0
       return
       end
+
+C In support of floating point exceptions. Comment out for NON SOLAIRS.
+C      integer function SIGFPE_bps(sig,code,context)
+C      integer sig,code,context(5)
+C      character label*16
+C      if(loc(code).eq.208) label = 'invalid'
+C      if(loc(code).eq.200) label = 'division by zero'
+C      if(loc(code).eq.212) label = 'overflow'
+C      if(loc(code).eq.204) label = 'underflow'
+C      if(loc(code).eq.196) label = 'inexact'
+C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+C      SIGFPE_bps = loc(code)
+C      end
+

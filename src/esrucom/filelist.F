@@ -338,12 +338,23 @@ C          write(sfile,'(a)')relative(1:lnblnk(relative))
       return
 
 C Errors when creating string buffers.
-   1  write(6,*) 'browsefilelist: error creating subpath: ',subpath
+   1  if(IOS.eq.2)then
+        write(6,*) 'browsefilelist: no permission to creat subpath: ',
+     &    subpath
+      else
+        write(6,*) 'browsefilelist: error creating subpath: ',subpath
+      endif
       ier=2
       return
 
-   2  write(6,*) 'browsefilelist: error creating relative path: ',
+   2  if(IOS.eq.2)then
+        write(6,*) 
+     &  'browsefilelist: no permission to create relative path: ',
      &  relative
+      else
+        write(6,*) 'browsefilelist: error creating relative path: ',
+     &  relative
+      endif
       ier=2
       return
 
