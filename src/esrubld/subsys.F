@@ -1412,6 +1412,16 @@ c is set to zero, then when this value is greater than 0., it's effect on the in
 c space is accounted for here.
         CVIF = CVIF + outdoor_air_inf_cond(ICOMP)
 
+
+C Use procedure IMS_ZoneCharVentilation to compute the effective
+C conductance associated with IMS-induced ventilation for the current
+C zone.
+        call IMS_ZoneCharVentilation( iComp,
+     &                                fIMSZoneVentConductance,
+     &                                fIMSZoneVaporChangeRate )
+        CVIF = CVIF + fIMSZoneVentConductance
+
+
 C Now zone-coupling advection.
 C NB TIA? holds the normalised (to external air temperature)
 C ventilation conductance in case an air flow network exists.

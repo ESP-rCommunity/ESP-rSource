@@ -1863,7 +1863,7 @@ C-----------------------------------------------------------------------
      &       0.0, 1.0,
      &       bFound,
      &       bInLimits )
-     
+
 C-----------------------------------------------------------------------
 C     Controls power
 C-----------------------------------------------------------------------
@@ -1909,9 +1909,10 @@ C.....Default BCD flags to true; reset them to false if a
 C.....critical column is not found.
       bIMS_DHWLoadsDefinedInBCD( iSystem ) = .true.
       bIMS_SHLoadsDefinedInBCD( iSystem )  = .true.
-      
+      bIMS_OATempDefinedInBCD( iSystem )   = .true.
+
 C.....DHW flow rates
-      cIMS_BcdDhwFlow( iSystem ) = 
+      cIMS_BcdDhwFlow( iSystem ) =
      &        cHVAC_FindCToken( iSystem,
      &                          'dhw-bcd-flow',
      &                          'User imposed DHW flow rate',
@@ -1946,7 +1947,7 @@ C.....DHW flow rates
      &                          bFound )
 
       if ( .not. bFound ) bIMS_DHWLoadsDefinedInBCD( iSystem ) = .false.
-
+C.....Space heating load
       cIMS_BcdSHLoad( iSystem ) =
      &        cHVAC_FindCToken( iSystem,
      &                          'sh-bcd-load',
@@ -1954,8 +1955,17 @@ C.....DHW flow rates
      &                          .false.,
      &                          bFound )
 
-
       if ( .not. bFound ) bIMS_SHLoadsDefinedInBCD( iSystem ) = .false.
+
+C.....Outside air temperature 
+      cIMS_BcdOATemp( iSystem ) =
+     &        cHVAC_FindCToken( iSystem,
+     &                          'OA-bcd-temp',
+     &                          'User imposed OA temperature (oC)',
+     &                          .false.,
+     &                          bFound )
+
+      if ( .not. bFound ) bIMS_OATempDefinedInBCD( iSystem ) = .false.
 
       return
       end

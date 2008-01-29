@@ -204,23 +204,23 @@ C-----------------------------------------------------------------------
         case ( iIMS_CondensingTank )
 
           fIMS_FlueSkinLossRatio(iSystem) = 0.0
-        
+
         case ( iIMS_ConventionalTank )
 
           if ( iFuel_Type(iSystem) == iOil )
      &           fIMS_FlueSkinLossRatio(iSystem) = 0.468
 
-          if ( iFuel_Type(iSystem) == iNaturalGas ) 
+          if ( iFuel_Type(iSystem) == iNaturalGas )
      &           fIMS_FlueSkinLossRatio(iSystem) = 0.314
 
         case ( iIMS_InducedDraftFanTank )
 
           fIMS_FlueSkinLossRatio(iSystem) = 0.490
-        
+
         case ( iIMS_InstantaneousHeater )
 
           fIMS_FlueSkinLossRatio(iSystem) = 0.588
-          
+
         case ( iIMS_TanklessHeater      )
 
           fIMS_FlueSkinLossRatio(iSystem) = 1.0
@@ -357,7 +357,168 @@ C-----------------------------------------------------------------------
       return
       end
 
-C=IMS_CharVentilation===================================================
+
+C=IMS_ZoneCharVentilation===============================================
+C
+C SYNOPSYS:
+C
+C This routine characterizes the ventilation loads associated for
+C a given zone that can be attributed to all IMS systems
+C
+C INPUTS:
+C
+C   - iZone: Zone index
+C
+C OUTPUTS:
+C
+C   - fIMSVentConductance: Ventilation load expressed as a
+C                          conductance (W/oC)
+C   - fVaporChangeRate:    Total rate of change in zone air-point
+C                          mosture balance (kg/s)
+C
+C=======================================================================
+      subroutine IMS_ZoneCharVentilation( iZone,
+     &                                    fZoneVentConductance,
+     &                                    fZoneVaporChangeRate )
+      implicit none
+#include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "IMS_common.h"
+C-----------------------------------------------------------------------
+C     Passed variables
+C-----------------------------------------------------------------------
+      integer iZone                 ! Zone index
+      real fZoneVentConductance     ! Ventilation load (W/K)
+      real fZoneVaporChangeRate     ! Rate of change in zone
+                                    !   moisture balance
+
+C-----------------------------------------------------------------------
+C     ESP-r global variables
+C-----------------------------------------------------------------------
+C.....Building conditions:
+      common/fvala/tfa,qfa
+      real tfa(mcom)           ! Future zone temperature
+      real qfa(mcom)           ! Not used in current context.
+
+C-----------------------------------------------------------------------
+C     Local variables
+C-----------------------------------------------------------------------
+      integer iSystem               ! System counter
+
+      real fZoneVentFlow            ! Total ventilation flow (kg/s)
+                                    !   for the given zone
+
+      real fZoneVentLoad            ! Total ventilation load in
+                                    !   given zone (W)
+
+      real fSysVentFlow             ! Ventilation flow rate for
+                                    !   a given system (kg/s)
+
+      real fSysVentLoad             ! Thermal load assoiated with
+                                    !   a given system (W)
+
+      real fSysVaporChangeRate      ! Moisture balance change rate
+                                    !   associated with IMS device.
+
+      real fOATemperature           ! Outside air temperature (oC)
+
+      real fZoneCapacityFraction    ! Fraction of IMS capacity used
+                                    !   by current zone (-)
+
+      integer iZone_Count           ! Counter for zone search loop
+
+      logical bNumsAreClose         ! Flag for close-to-zero comparison
+
+C-----------------------------------------------------------------------
+C     Establish Ventilation loads for the current zone associated
+C     with linked IMS devices.
+C-----------------------------------------------------------------------
+
+C.....Initialize ventilation flow to zero.
+      fZoneVentFlow        = 0.       ! (kg/s)
+      fZoneVentLoad        = 0.       ! (W)
+      fZoneVaporChangeRate = 0.       ! (kg/s)
+
+C.....Loop through all mechanical systems...
+      search_for_IMS: do iSystem = 1, num_hvac_sys
+
+C........And check if each is an IMS...
+        is_IMS: if ( iHVAC_type(iSystem) == iSysIMS_P10 ) then
+
+C-----------------------------------------------------------------------
+C         Loop through the IMS system's zone links, and establish
+C         the fraction of system capacity the current zone recieves.
+C-----------------------------------------------------------------------
+
+C.........Default zone capacity fraction to zero.
+          fZoneCapacityFraction = 0.0
+
+          find_zone: do iZone_Count = 1, num_sys_zones(iSystem)
+
+C...........Does system serve current zone?
+            zone_match:
+     &      if ( isys_zone_num(iSystem,iZone_Count) == iZone ) then
+
+C.............Yes! Save zone capacity fraction...
+              fZoneCapacityFraction =
+     &                   sys_zone_cap_frac(iSystem,iZone_count)
+
+C.............and call IMS_SysCharVentilation to compute
+C.............the ventilation flow rate and load associated
+C.............with the IMS system...
+              call IMS_SysCharVentilation( iSystem,
+     &                                     iMode_LowVent,
+     &                                     fSysVentFlow,
+     &                                     fSysVentLoad,
+     &                                     fSysVaporChangeRate,
+     &                                     fOATemperature )
+
+C.............then append computed system ventilation to zone 
+C.............ventilation arrays.
+
+              fZoneVentFlow = fZoneVentFlow
+     &          + fZoneCapacityFraction * fSysVentFlow
+
+              fZoneVentLoad = fZoneVentFlow
+     &          + fZoneCapacityFraction * fSysVentLoad
+
+              fZoneVaporChangeRate = fZoneVaporChangeRate
+     &          + fZoneCapacityFraction * fSysVaporChangeRate
+
+            endif zone_match
+
+          enddo find_zone
+
+        endif is_IMS
+
+      enddo search_for_IMS
+
+C-----------------------------------------------------------------------
+C     Now compute "effective conductance". Here, we're linearizing
+C     the ventilation load as a function of indoor and outdoor
+C     temperatures:
+C
+C                                       [Ventilation load]
+C     [ventilaton "conductance"] = -------------------------------
+C                                  [Zone temp.] - [ ambient temp.]
+C
+C-----------------------------------------------------------------------
+
+      call eclose ( tfa(iZone), fOATemperature, 0.01, bNumsAreClose )
+
+      if ( bNumsAreClose ) then
+        fZoneVentConductance = 0.0
+      else
+        fZoneVentConductance = fZoneVentLoad
+     &         / abs( tfa(iZone) - fOATemperature )          ! (W/K)
+      endif
+
+      return
+      end subroutine IMS_ZoneCharVentilation
+
+
+C=IMS_SysCharVentilation================================================
 C
 C SYNOPSYS:
 C This procedure characterizes the ventilation operation of the IMS
@@ -375,13 +536,15 @@ C  - fVentFlow:        Ventilation flow rate (kg/s)
 C  - fVentLoad:        Thermal load associated with ventilation (W)
 C  - fVaporChangeRate: Total rate of change in building air-point
 C                      mosture balance (kg/s)
+C  - fDBTemp_amb:      Outside air temperature (oC)
 C
 C=======================================================================
-      subroutine IMS_CharVentilation(iSystem,
-     &                               iVentMode,
-     &                               fVentFlow,
-     &                               fVentLoad,
-     &                               fVaporChangeRate)
+      subroutine IMS_SysCharVentilation(iSystem,
+     &                                  iVentMode,
+     &                                  fVentFlow,
+     &                                  fVentLoad,
+     &                                  fVaporChangeRate,
+     &                                  fDBTemp_amb)
       implicit none
 #include "building.h"
 #include "hvac_parameters.h"
@@ -397,6 +560,8 @@ C-----------------------------------------------------------------------
       integer iVentMode       ! Ventilation mode. 
       real fVaporChangeRate   ! Rate of change in zone moisture balance
                               !  (kg/s)
+      real fDBTemp_amb        ! Supply air temperature.
+
 C-----------------------------------------------------------------------
 C     ESP-r commons
 C-----------------------------------------------------------------------
@@ -427,10 +592,10 @@ C.....Building conditions:
 C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
-      
+
 C.....Climatic and Zone conditions
-      real fDBTemp_amb,        ! Ambient and zone dry bulb temperatures (K)
-     &     fDBTemp_zone
+      real fDBTemp_zone      ! Ambient and zone dry bulb temperatures (K)
+! 
 
       real fPPres_amb,         ! Ambient and zone dry-air parital
      &     fPPres_zone         !    pressures (kPa)
@@ -450,7 +615,7 @@ C.....Climatic and Zone conditions
      &     fEA_HeatCapacity    !   (W/oC)
 
       real fHR_zone, fHR_amb   ! Ambient and zone humidity ratios (kg/kg)
-     
+
       logical bUnConverged     ! Controls for ventilation iteration
 
       real fVentHREfficiency   ! Heat recovery efficiency (-)
@@ -460,6 +625,10 @@ C.....Climatic and Zone conditions
       real fQVentLoad          ! Additional space-heating load
                                !   associated with ventilation (W)
 
+      real fDay                ! Current time step expressed as a
+                               !   real fraction of the day.
+
+
 C.....Initialization flag for h3kreprots module
       logical bH3KReportsInitialized(max_sys)
       save bH3KReportsInitialized
@@ -467,6 +636,7 @@ C.....Initialization flag for h3kreprots module
 
       data ( bH3KReportsInitialized(iNumber),
      &       iNumber=1,max_sys ) / max_sys * .false. /
+
 C.....Storage string.
       character*128 cRootName(max_sys)
       save cRootName
@@ -479,6 +649,9 @@ C     Named constants
 C-----------------------------------------------------------------------
       real fIG_R_air           ! Ideal gas constant for air
       parameter ( fIG_R_air = 0.2870 ) ! kJ/kg K
+
+      integer iStep
+      parameter ( iStep = 1 )
 
 C-----------------------------------------------------------------------
 C     References
@@ -499,6 +672,43 @@ C-----------------------------------------------------------------------
       real Atm_Pressure        ! Function returing atmospheric pressure
 
       integer LNBlnk           ! Returns length of a string.
+
+      real fGet_BC_data_by_name ! Query bcd database
+
+      real fConvert_current_TS_to_DAY ! Returns current day (and
+                                      !   fraction thereof) as a real
+                                      !   number.
+
+C-----------------------------------------------------------------------
+C     Check if outside air temperature is specified in .bcd file, 
+C-----------------------------------------------------------------------
+      collect_sh_BCD: if (bIMS_SHLoadsDefinedInBCD(iSystem)) then
+C---------------------------------------------------------------
+C       Collect specified space-heating load from bcd file.
+C---------------------------------------------------------------
+
+C.......Use function fConvert_current_TS_to_DAY to express
+C.......current day (and fraction thereof) as a real number.
+C.......The BCD facility uses this parameter to determine the
+C.......appropriate row.
+        fDay = fConvert_current_TS_to_DAY()
+
+C.......Collect ambinent temperature (oC)
+        fDBTemp_amb = fGet_BC_data_by_name(
+     &                      cIMS_BcdOATemp(iSystem),
+     &                      fDay,
+     &                      iStep,
+     &                      'IMS_CharPerformance(): '
+     &                        //'Recovering IMS boundry '
+     &                        //'conditions from .bcd File.'
+     &                    )
+
+      else
+
+C.......Use ambient temperature from climate file.
+        fDBTemp_amb  = tf                       ! (oC)
+
+      endif collect_sh_BCD
 
 C-----------------------------------------------------------------------
 C     Characterize ventilation operation
@@ -525,7 +735,6 @@ C-----------------------------------------------------------------------
 
 C.........Collect outside and return-air temperatures, humidity ratios
 
-          fDBTemp_amb  = tf                       ! (oC)
           fDBTemp_zone = Ret_Air_Temp(iSystem)    ! (oC)
 
           fHR_amb  = Hum_Ratio_OA( fDBTemp_amb, hf, site_altitude ) ! (kg/kg)
@@ -788,16 +997,15 @@ C         Vent load = ( 1 - Vent-HR-efficiency )
 C
 C                        * max-spec-heat * ( Zone temp - OA temp )
 C
-C                      - 0.5 * ( fan vent power )
-C
-C         See eqn 24 in Ferguson et al. (2007)
+C         See eqn 24 in Ferguson et al. (2007). Note, the
+C         effects of fan power are accounted for in the 'additional
+C         heat transfer to space' section in the IMS_CharPerformance
+C         subroutine 
 C-----------------------------------------------------------------------
 
           fVentLoad =   ( 1.0 - fVentHREfficiency )
      &              * MAX ( fFA_HeatCapacity, fEA_HeatCapacity )
      &              * ( fDBTemp_zone - fDBTemp_amb )
-     &              - 0.5 * fIMS_VentPower(iSystem, iVentMode)
-
 
         case default
 
@@ -821,7 +1029,7 @@ C-----------------------------------------------------------------------
 
         write (cRootName(iSystem),cFormat)
      &        'plant/CETC_HVAC/system_' , iSystem,
-     &        '(IMS)'
+     &        '_IMS'
 
         iStrLen(iSystem) = lnblnk( cRootName( iSystem ) )
 
@@ -850,9 +1058,16 @@ C-----------------------------------------------------------------------
      &    'units','(kg/kg)',
      &    'Humidity ratio of fresh air' )
 
+      call add_to_xml_reporting(
+     &    fVentLoad,
+     &    cRootName(iSystem)(1:iStrLen(iSystem))
+     &       // '/vent/thermal_load',
+     &    'units','(W)',
+     &    'Thermal load associated with IMS ventilation' )
+
 
       return
-      end subroutine IMS_CharVentilation
+      end subroutine IMS_SysCharVentilation
 
 C=======================================================================
 C IMS_CharPerformance
@@ -889,7 +1104,7 @@ C=======================================================================
      &                                fOutFuelPower,
      &                                fOutElecPower,
      &                                fOutFanPower,
-     &                                fOutVentPower, 
+     &                                fOutVentPower,
      &                                fOutAddGains )
 
       implicit none
@@ -1149,6 +1364,27 @@ C.......Space heating loads
           endif
 
         endif sh_BCD_check
+
+
+        vent_BCD_check: if ( bIMS_OATempDefinedInBCD(iSystem) ) then
+
+          if ( .not.
+     &         bInquire_BC_Name_Exists(cIMS_BcdOATemp(iSystem))
+     &        ) then
+
+            write (cMsg, '(A,A,A)')
+     &        ' Error parsing IMS model specified outdoor air '
+     &      //' temperature boundary condition. Column "',
+     &        cIMS_BcdOATemp(iSystem)
+     &             (1:lnblnk(cIMS_BcdOATemp(iSystem))),
+     &         '" was not found in .bcd file.'
+
+            call edisp248(iuout, cMsg, 80)
+            bBCDNotFound = .true.
+
+          endif
+
+        endif vent_BCD_check
 
 C.......Were all columns found correctly?
         BCD_not_found: if ( bBCDNotFound ) then
@@ -1515,7 +1751,7 @@ C-----------------------------------------------------------------------
 
         if ( fPLR_SpaceH > 1.0 ) fPLR_SpaceH = 1.0
         if ( fPLR_SpaceH < 0.0 ) fPLR_SpaceH = 0.0
-        
+
 
 C-----------------------------------------------------------------------
 C       Next, estimate Space-heating efficiency and power
@@ -1575,7 +1811,7 @@ C        power =  ( fan power ) + ( auxiliary systems power )
 C                     ( ventilation power ) + ( controls power )
 C-----------------------------------------------------------------------
 
-        fSpaceHPower = fFanPower + fAuxPower 
+        fSpaceHPower = fFanPower + fAuxPower
      &                           + fIMS_VentPower(iSystem,iVentMode)
      &                           + fIMS_ControlsPower(iSystem)     ! (W)
 
@@ -1584,7 +1820,6 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     And compute fuel flows and power consumption for combined space
 C     and water heating mode [See Table 1. in Ferguson et al. (2007)]
-C
 C-----------------------------------------------------------------------
       space_and_water_heating: if ( bSpaceAndWaterLoad ) then
 
@@ -1592,8 +1827,8 @@ C-----------------------------------------------------------------------
 
         fSpaceWaterHPower =   fIMS_ControlsPower(iSystem)
      &                      + fIMS_VentPower(iSystem,iVentMode)
-     &                      + fSpaceHPower
-     &                      + fWaterHPower
+     &                      + fFanPower + fAuxPower
+     &                      + fWaterHIncPower
 
       else
 
@@ -1618,15 +1853,14 @@ C.......Water heating requirement exceeds burner capacity
      &if ( fQFuel_SH > fIMS_NominalBurnerInput(iSystem) ) then
 C.......Space heating requirement exceeds burner capacity
         fQFuel_SH = fIMS_NominalBurnerInput(iSystem)
-
       endif SH_burner_capacity_exceeded
 
-      SWH_burner_capacity_exceeded: if ( bSpaceAndWaterLoad .and.
-     &   fQFuel_SWH > fIMS_NominalBurnerInput( iSystem ) ) then
+      SWH_burner_capacity_exceeded:
+     &if ( bSpaceAndWaterLoad .and.
+     &     fQFuel_SWH > fIMS_NominalBurnerInput( iSystem ) ) then
 C.......Combined space and water heating requirement exceeds
 C.......capacity. Compute actual fuel energy used.
         fQFuel_SWH = fIMS_NominalBurnerInput ( iSystem )
-      
       endif SWH_burner_capacity_exceeded
 
 C-----------------------------------------------------------------------
@@ -1664,6 +1898,7 @@ C-----------------------------------------------------------------------
 
       fOutAddGains =  fIMS_WaterHSkinLoss( iSystem )
      &           + fIMS_ControlsPower ( iSystem )
+     &           + 0.5 * fIMS_VentPower(iSystem, iVentMode)
      &           + fQSpaceH_deficit
      &           + fTS_NoDemand * ( fDistPower )
      &           + fTS_FracWaterH * ( fWaterHIncPower + fDistPower )
@@ -1674,13 +1909,13 @@ C-----------------------------------------------------------------------
 C     Compute total fuel and electric use
 C-----------------------------------------------------------------------
       fOutFuelPower =   fTS_FracSpaceH * fQFuel_SH
-     &             + fTS_FracWaterH * fQFuel_WH
-     &             + fTS_FracSpaceWaterH * fQFuel_SWH
+     &                + fTS_FracWaterH * fQFuel_WH
+     &                + fTS_FracSpaceWaterH * fQFuel_SWH
 
       fOutElecPower =   fTS_NoDemand * fNoDemandPower
-     &             + fTS_FracWaterH * fWaterHPower
-     &             + fTS_FracSpaceH * fSpaceHPower
-     &             + fTS_FracSpaceWaterH * fSpaceWaterHPower
+     &                + fTS_FracWaterH * fWaterHPower
+     &                + fTS_FracSpaceH * fSpaceHPower
+     &                + fTS_FracSpaceWaterH * fSpaceWaterHPower
 
       fOutFanPower = fFanPower
      &                  * ( fTS_FracSpaceH + fTS_FracSpaceWaterH )
@@ -1746,7 +1981,7 @@ C-----------------------------------------------------------------------
 
         write (cRootName(iSystem),cFormat)
      &        'plant/CETC_HVAC/system_' , iSystem,
-     &        '(IMS)'
+     &        '_IMS'
 
         iStrLen(iSystem) = lnblnk( cRootName( iSystem ) )
 
@@ -1760,7 +1995,6 @@ C-----------------------------------------------------------------------
      &       // '/loads/space_heating',
      &    'units','(W)',
      &    'Space-heating load placed on IMS unit' )
-
       call add_to_xml_reporting(
      &    fWaterHLoad,
      &    cRootName(iSystem)(1:iStrLen(iSystem))
@@ -1775,8 +2009,9 @@ C-----------------------------------------------------------------------
 !      &    'units','(W)',
 !      &    'Ventilation load placed on IMS unit' )
 
+
       call add_to_xml_reporting(
-     &    fPLR_SpaceH,
+     &    fSpaceHEff,
      &    cRootName(iSystem)(1:iStrLen(iSystem))
      &       // '/efficiency/space_heating',
      &    'units','(-)',

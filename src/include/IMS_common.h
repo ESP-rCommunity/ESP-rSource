@@ -175,6 +175,9 @@ C.....  DHW supply temperature
 C.....  Space heating load
       logical bIMS_SHLoadsDefinedInBCD(max_sys)
       character*248 cIMS_BcdSHLoad(max_sys)
+C.....  Ventilation conditions
+      logical bIMS_OATempDefinedInBCD(max_sys)
+      character*248 cIMS_BcdOATemp(max_sys)
 
 C.....General model input common
       common/IMS_General_inputs/
@@ -207,4 +210,6 @@ C.....General model input common
      &   bIMS_DHWLoadsDefinedInBCD,
      &   bIMS_SHLoadsDefinedInBCD,
      &   cIMS_BcdSHLoad,
-     &   cIMS_BcdDhwLoadDuration
+     &   cIMS_BcdDhwLoadDuration,
+     &   bIMS_OATempDefinedInBCD,
+     &   cIMS_BcdOATemp
