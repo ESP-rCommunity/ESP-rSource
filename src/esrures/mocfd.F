@@ -314,6 +314,7 @@ C  imgtyp = 1 : 2d slice in Xbitmap format to file.
 C  imgtyp = 2 : 2d slice in Xpixmap format to file.
 C  imgtyp = 3 : 3d image drawn on screen.
 C  imgtyp = 4 : TECplot data file.
+C  imgtyp = 5 : ParaView data file.
       ITEM(1)='a Output period'
       if (imgtyp.eq.0) then
         ITEM(2)='b Image format >>screen2d'
@@ -324,7 +325,8 @@ C  imgtyp = 4 : TECplot data file.
       elseif (imgtyp.eq.3) then
         ITEM(2)='b Image format >>screen3d'
       elseif (imgtyp.eq.4) then
-C        ITEM(2)='b Output format >>TECplot'
+        ITEM(2)='b Output format >>TECplot'
+      elseif (imgtyp.eq.5) then
         ITEM(2)='b Output format >>ParaView'
       endif
       ITEM(3)=' ----------------------- '
@@ -389,8 +391,9 @@ C redefine name of image.
           do 50 IFRAME=1,NCTS
             call RDCFDAT(IFRAME)
             if (imgtyp.eq.4) then
-C              call tecplotend(IFRAME)
-              call paraviewend(IFRAME)
+	     call tecplotend(IFRAME)
+	     ELSEif (imgtyp.eq.5) then
+               call paraviewend(IFRAME)
             else
               call VISMAK(ICOMP,IFRAME)
             endif
@@ -567,7 +570,7 @@ C Output period.
 C Image format.
       ELSEIF(INO.eq.2) then
         imgtyp=imgtyp+1
-        if (imgtyp.gt.4) imgtyp=0
+        if (imgtyp.gt.5) imgtyp=0
 
 C Existing image selected.
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN

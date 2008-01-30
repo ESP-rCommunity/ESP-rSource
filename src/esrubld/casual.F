@@ -399,13 +399,8 @@ C For lighting heat gains assume latent gains are zero
         QLIGHTLATN=0
 C       QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
 
-<<<<<<< .working
-	QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
-        QCASR(2)=QOCCCASR+QEQUIPCASR+QLIGHTCASR
-=======
         QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
         QCASR(2)=QOCCCASR+QEQUIPCASR+QLIGHTCASR
->>>>>>> .merge-right.r2400
         QLATN(2)=QOCCLATN+QEQUIPLATN+QLIGHTLATN
 
 C Instanciate the future value of each casual gain so that
