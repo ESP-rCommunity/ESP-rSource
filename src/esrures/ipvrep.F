@@ -195,7 +195,7 @@ C not know about idmdinc() so this needs to be applied.
       call FINDFIL(bdmds,XST)
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
-        CALL ERBDMD(0,iuout,IUO,IER)
+        CALL ERBDMD(0,IUO,IER)
         dmdsok=.true.
       else
         dmdsok=.false.
@@ -477,12 +477,12 @@ C If text output the set tab to a space and delimeter to -.
 C If the first or only season then write out a heading.
       if(iseas.eq.1)then
         if(ipvform.eq.1.or.ipvform.eq.2)then
-          WRITE(outs,'(2A,i1,a,i1)',IOSTAT=ISTAT,ERR=1) '*IPV_REPORT',
+          WRITE(outs,'(2A,i1,a,i1)',IOSTAT=IOS,ERR=1) '*IPV_REPORT',
      &      tab,ipvversion,tab,ipvform
           call edisp(itru,outs)
           call edisp(itru,lipvdatf)
         elseif(ipvform.eq.3)then
-          WRITE(outs,'(3A)',IOSTAT=ISTAT,ERR=1) '*IPV_REPORT',tab,
+          WRITE(outs,'(3A)',IOSTAT=IOS,ERR=1) '*IPV_REPORT',tab,
      &      lipvdatf(1:lnblnk(lipvdatf))
           call edisp(itru,outs)
         endif
@@ -508,7 +508,7 @@ C Open the climate file and get its location name.
         IUNITC=IFIL+5
         CALL FPRAND(IUNITC,ISTAT,144,1,LCLIM)
         IRECC=367
-        READ(IUNITC,REC=IRECC,IOSTAT=ISTAT,ERR=102)CLMLOC
+        READ(IUNITC,REC=IRECC,IOSTAT=IOS,ERR=102)CLMLOC
         CALL  ERPFREE(IUNITC,ISTAT)
         write(outs,'(a,a1,a)') '*climate',tab,CLMLOC
         call edisp(itru,outs)
@@ -527,27 +527,26 @@ C Write synopsis out as one long string.
         endif
         call edisp(itru,' ')
 
-        WRITE(outs,'(2A,i3)',IOSTAT=ISTAT,ERR=1)'*simulations',tab,
+        WRITE(outs,'(2A,i3)',IOSTAT=IOS,ERR=1)'*simulations',tab,
      &    nipvassmt
         call edisp(itru,outs)
         call edisp(itru,'# start & finish days for each season')
         do 44 ij=1,nipvassmt
           call stdate(iyear,ipvastjd(ij),descr,descrst)
           call stdate(iyear,ipvafnjd(ij),descr,descrfn)
-          WRITE(outs,'(2a,i4,3a,i4,2a)',IOSTAT=ISTAT,ERR=1)
+          WRITE(outs,'(2a,i4,3a,i4,2a)',IOSTAT=IOS,ERR=1)
      &      descrst,' ',iyear,tab,descrfn,' ',iyear,
      &      tab,ipvadesc(ij)
           call edisp(itru,outs)
  44     continue
         call edisp(itru,'  ')
-        WRITE(outs,'(A,i3)',IOSTAT=ISTAT,ERR=1)'*days',
-     &    nipvdispjd
+        WRITE(outs,'(A,i3)',IOSTAT=IOS,ERR=1)'*days',nipvdispjd
         call eddisp(itru,outs)
         call edisp(itru,'# list of days with detailed information')
         if(nipvdispjd.ge.1)then
           do 944 L=1,nipvdispjd
             call stdate(iyear,ipvdispjd(L),descr,descrst)
-            WRITE(outs,'(2a,i4)',IOSTAT=ISTAT,ERR=1) 
+            WRITE(outs,'(2a,i4)',IOSTAT=IOS,ERR=1) 
      &        descrst,' ',iyear
             call edisp(itru,outs)
   944     continue
@@ -558,7 +557,7 @@ C If the first or only season then write concept of group here.
 C Loop first through any demand sets and then loop through any metrics.
       if(iseas.eq.1)then
         call edisp(itru,'  ')
-        WRITE(outs,'(2A,i2)',IOSTAT=ISTAT,ERR=1)'*groups',tab,neds+nms
+        WRITE(outs,'(2A,i2)',IOSTAT=IOS,ERR=1)'*groups',tab,neds+nms
         call edisp(itru,outs)
         call edisp(itru,'# group name & number of zones & zone names')
         if(neds.gt.0)then
@@ -583,7 +582,7 @@ C Use longer outs string length in case of longer list.
      &         (zname(izedg(ij,ik)),ik=1,nzedg(ij))
     5         FORMAT(20(a12,' '))
               call sdelim(outlsc,outlsd,'C',IW)
-              WRITE(outsl,'(3A)',IOSTAT=ISTAT,ERR=1)
+              WRITE(outsl,'(3A)',IOSTAT=IOS,ERR=1)
      &          outsn(1:lnblnk(outsn)),tab,outlsd(1:lnblnk(outlsd))
               call edisp(itru,outsl)
             endif
@@ -604,7 +603,7 @@ C Use longer string length in case of many zones.
               WRITE(outlsc,5,iostat=ios,err=1)
      &         (zname(izmg(ij,ik)),ik=1,nzmg(ij))
               call sdelim(outlsc,outlsd,'C',IW)
-              WRITE(outsl,'(3A)',IOSTAT=ISTAT,ERR=1)
+              WRITE(outsl,'(3A)',IOSTAT=IOS,ERR=1)
      &          outsn(1:lnblnk(outsn)),tab,outlsd(1:lnblnk(outlsd))
               call edisp(itru,outsl)
             endif
@@ -616,7 +615,7 @@ C Use longer string length in case of many zones.
 C Depending on the current season, write a tag that will give
 C later data scanning code a point to look for.
       call edisp(itru,' ')
-      WRITE(outs,'(2A,i2,2a)',IOSTAT=ISTAT,ERR=1)'*assessment',tab,
+      WRITE(outs,'(2A,i2,2a)',IOSTAT=IOS,ERR=1)'*assessment',tab,
      &  iseas,tab,ipvadesc(iseas)
       call edisp(itru,outs)
       IOH1=1
@@ -729,7 +728,7 @@ C First write diversified total. The IGET number is fixed at 70.
         call edisp(itru,outs)
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting (unctld)',tab,
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
@@ -748,7 +747,7 @@ C Write diffuse total. The IGET number is fixed at 70.
         call edisp(itru,outs)
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting (unctld)',tab,
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
@@ -769,7 +768,7 @@ C Write maximum in any one zone. The IGET number is fixed at 70.
         call edisp(itru,outs)
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting (unctld)',tab,
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
@@ -790,7 +789,7 @@ C Note: the diversified minimums are reports.
         call edisp(itru,outs)
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting (unctld)',tab,
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
@@ -810,7 +809,7 @@ C The IGET number is fixed at 70.
         call edisp(itru,outs)
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting (unctld)',tab,
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
@@ -885,7 +884,7 @@ C The IGET number is fixed at 71.
         if(pvok)then
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
           call edisp(itru,outs)
-          write(outs,'(17A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+          write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
@@ -896,7 +895,7 @@ C The IGET number is fixed at 71.
         else
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
           call edisp(itru,outs)
-          write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+          write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
@@ -918,7 +917,7 @@ C The IGET number is fixed at 71.
         if(pvok)then
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
           call edisp(itru,outs)
-          write(outs,'(17A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+          write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
@@ -929,7 +928,7 @@ C The IGET number is fixed at 71.
         else
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
           call edisp(itru,outs)
-          write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+          write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
@@ -950,7 +949,7 @@ C The IGET number is fixed at 71.
         call edisp(itru,outs)
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &    'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &    'Hot water'
@@ -980,7 +979,7 @@ C The IGET number is fixed at 71.
         if(pvok)then
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
           call edisp(itru,outs)
-          write(outs,'(17A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+          write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
@@ -991,7 +990,7 @@ C The IGET number is fixed at 71.
         else
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
           call edisp(itru,outs)
-          write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+          write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
@@ -1200,7 +1199,7 @@ C Next grab the stats for current metric.
 C Guth report.
                write(outs,'(7a)') '*format',tab,'table',tab,'13',tab,'2'
                call edisp(itru,outs)
-               write(outs,'(5A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,'xx',
+               write(outs,'(5A)',IOSTAT=IOS,ERR=1) '*fields',tab,'xx',
      &           tab,'yy'
                 call edisp(itru,outs)
                 call edisp(itru,'*data ')
@@ -1224,7 +1223,7 @@ C Guth report.
 C Daylight factors.
                 write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'2'
                 call edisp(itru,outs)
-                write(outs,'(5A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+                write(outs,'(5A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &            'xx',tab,'yy'
                 call edisp(itru,outs)
                 call edisp(itru,'*data ')
@@ -1234,7 +1233,7 @@ C Daylight factors.
               else
                 write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'2'
                 call edisp(itru,outs)
-                write(outs,'(5A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+                write(outs,'(5A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &            'xx',tab,'yy'
                 call edisp(itru,outs)
                 call edisp(itru,'*data ')
@@ -1256,7 +1255,7 @@ C Write stats for current metric.
               call edisp(itru,outs)
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
               call edisp(itru,outs)
-              write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+              write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'heating',tab,'heathours',tab,'cooling',tab,
      &          'coolinghours',tab,'latentheat',tab,
      &          'latentheathours',tab,'latentcooling',tab,
@@ -1282,7 +1281,7 @@ C Write stats for current metric.
               if(imetget(ig).eq.1.or.imetget(ig).eq.6)then
                 write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'3'
                 call edisp(itru,outs)
-                write(outs,'(7A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+                write(outs,'(7A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &            'maximum',tab,'minimum',tab,'average'
                 call edisp(itru,outs)
                 write(outs,'(a,3F12.3)')'*data ',XMAX(1),XMIN(1),XAVE(1)
@@ -1290,7 +1289,7 @@ C Write stats for current metric.
               else
                 write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
                 call edisp(itru,outs)
-                write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+                write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &            'maximum',tab,'minimum',tab,'average',tab,
      &            'diversified_max',tab,'distributed_max',tab,
      &            'diversified_min',tab,'distributed_min'
@@ -1362,7 +1361,7 @@ C There is information to display for this day.
         CALL EDAY(IOD1,IOM1,IODS)
         CALL EDAY(IOD2,IOM2,IODF)
         call stdate(iyear,ipvdispjd(ik),descr,descrst)
-        WRITE(outs,'(4a,i4)',IOSTAT=ISTAT,ERR=1)'*day_to_display',tab,
+        WRITE(outs,'(4a,i4)',IOSTAT=IOS,ERR=1)'*day_to_display',tab,
      &    descrst,' ',iyear
         call edisp(itru,outs)
 
@@ -1469,7 +1468,7 @@ C Write out timestep demands.
           call edisp(itru,outs)
           write(outs,'(7a)') '*format',tab,'tabular',tab,'24',tab,'7'
           call edisp(itru,outs)
-          write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,'Time',
+          write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,'Time',
      &      tab,'Heating',tab,'Cooling',tab,'Lighting',tab,'Fans',tab,
      &      'Small Power',tab,'Hot water'
           call edisp(itru,outs)
@@ -1556,13 +1555,13 @@ C data and the hourly format.
           if(pvok)then
             write(outs,'(7a)') '*format',tab,'tabular',tab,'24',tab,'9'
             call edisp(itru,outs)
-            write(outs,'(19A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+            write(outs,'(19A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &       'Time',tab,'Occup',tab,'Lighting',tab,'Small Power',tab,
      &       'Fans',tab,'Pumps',tab,'Lifts',tab,'Hot water',tab,'PV'
           else
             write(outs,'(7a)') '*format',tab,'tabular',tab,'24',tab,'8'
             call edisp(itru,outs)
-            write(outs,'(17A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+            write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &       'Time',tab,'Occup',tab,'Lighting',tab,'Small Power',tab,
      &       'Fans',tab,'Pumps',tab,'Lifts',tab,'Hot water'
           endif
@@ -1811,7 +1810,7 @@ C Set hour format flag to julian decimal for following reports.
               write(outs,'(6a,i2)') '*format',tab,'tabular',
      &          tab,'24',tab,nzmg(ig)+1
               call edisp(itru,outs)
-              write(outs,'(32A)',IOSTAT=ISTAT,ERR=1) '*fields Time ',
+              write(outs,'(32A)',IOSTAT=IOS,ERR=1) '*fields Time ',
      &          (ZNAME(izmg(ig,j)),j=1,nzmg(ig))
               call eddisp(itru,outs)
               call edisp(itru,'*data ')
@@ -1896,10 +1895,19 @@ C Silent mode: re-establish the initial periods and return.
         endif
       endif
 
- 1    CALL USRMSG(' Problem writing IPV report.',' ','W')
+ 1    if(IOS.eq.2)then
+        CALL USRMSG('No permission to write IPV report.',' ','W')
+      else
+        CALL USRMSG('Problem writing IPV report.',' ','W')
+      endif
       CALL  ERPFREE(ixunit,ISTAT)
       return
-  102 call usrmsg(' ',' Climate file cannot be assigned.','W')
+
+  102 if(IOS.eq.2)then
+        call usrmsg(' ','No permission to read climate file.','W')
+      else
+        call usrmsg(' ','Climate file cannot be assigned.','W')
+      endif
       CALL  ERPFREE(ixunit,ISTAT)
       return
 
@@ -1963,7 +1971,7 @@ C Read project demands file if it exists.
       call FINDFIL(bdmds,XST)
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
-        CALL ERBDMD(0,iuout,IUO,IER)
+        CALL ERBDMD(0,IUO,IER)
         dmdsok=.true.
       else
         dmdsok=.false.
@@ -2087,7 +2095,7 @@ C << find an iget number for this >>
             if(tpv.gt.0.001)then
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
               call edisp(itru,outs)
-              write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+              write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
      &          'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
               call edisp(itru,outs)
@@ -2097,7 +2105,7 @@ C << find an iget number for this >>
             else
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
               call edisp(itru,outs)
-              write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+              write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
      &          'Fans',tab,'Small Power',tab,'Hot water'
               call edisp(itru,outs)
@@ -2122,7 +2130,7 @@ C Report for the total building as well
             if(tpv.gt.0.001)then
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
               call edisp(itru,outs)
-              write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+              write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
      &          'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
               call edisp(itru,outs)
@@ -2132,7 +2140,7 @@ C Report for the total building as well
             else
               write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
               call edisp(itru,outs)
-              write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+              write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
      &          'Fans',tab,'Small Power',tab,'Hot water'
               call edisp(itru,outs)
@@ -2198,7 +2206,7 @@ C << find an iget number for this >>
       if(tpv.gt.0.001)then
         write(outs,'(7a)') '*format',tab,'table',tab,'2',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
         call edisp(itru,outs)
@@ -2208,7 +2216,7 @@ C << find an iget number for this >>
       else
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
-        write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water'
         call edisp(itru,outs)
@@ -2231,7 +2239,7 @@ C << find an iget number for this >>
       if(tpv.gt.0.001)then
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
         call edisp(itru,outs)
@@ -2241,7 +2249,7 @@ C << find an iget number for this >>
       else
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
-        write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water'
         call edisp(itru,outs)
@@ -2279,7 +2287,7 @@ C IGET = 74 IPV maximum power capacity (W/m^2)
       if(PVC.gt.0.001)then
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
         call edisp(itru,outs)
@@ -2288,7 +2296,7 @@ C IGET = 74 IPV maximum power capacity (W/m^2)
       else
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
-        write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water'
         call edisp(itru,outs)
@@ -2316,7 +2324,7 @@ C IGET = 74 IPV maximum power capacity (kW)
       if(PVC.gt.0.001)then
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
         call edisp(itru,outs)
@@ -2325,7 +2333,7 @@ C IGET = 74 IPV maximum power capacity (kW)
       else
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
-        write(outs,'(13A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+        write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water'
         call edisp(itru,outs)
@@ -2345,7 +2353,7 @@ C Convert from g/m^2/yr to kg/m^2/yr
       call edisp(itru,outs)
       write(outs,'(7a)') '*format',tab,'table',tab,'3',tab,'6'
       call edisp(itru,outs)
-      write(outs,'(21A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+      write(outs,'(21A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &  'Pollutant',tab,'CO2',tab,'NOx',tab,'SOx',tab,
      &  'Heating',tab,'Cooling',tab,'Lighting',tab,
      &  'Fans',tab,'Small Power',tab,'Hot water'
@@ -2429,7 +2437,7 @@ C Convert from g/m^2/yr to kg/yr
       call edisp(itru,outs)
       write(outs,'(7a)') '*format',tab,'table',tab,'3',tab,'6'
       call edisp(itru,outs)
-      write(outs,'(21A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,
+      write(outs,'(21A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &  'Pollutant',tab,'CO2',tab,'NOx',tab,'SOx',tab,
      &  'Heating',tab,'Cooling',tab,'Lighting',tab,
      &  'Fans',tab,'Small Power',tab,'Hot water'
@@ -2548,7 +2556,11 @@ C Write the distribution of resultant temperature in each bin for each season.
       call ipvexp(xfile,ixopen,ixunit,'a','T','Tabular',IER)
       return
 
- 1    CALL USRMSG(' Problem writing IPV report.',' ','W')
+ 1    if(IOS.eq.2)then
+        CALL USRMSG('No permission to write IPV report.',' ','W')
+      else
+        CALL USRMSG('Problem writing IPV report.',' ','W')
+      endif
       CALL  ERPFREE(ixunit,ISTAT)
       return
       end
@@ -3233,13 +3245,13 @@ C Find out how many hours in the tabular report.
       if(pvok)then
         write(outs,'(4a,i4,2a)') '*format',tab,'tabular',tab,ihr,tab,'7'
         call edisp(itru,outs)
-        write(outs,'(17A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,'Time',
+        write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,'Time',
      &  tab,'Heating',tab,'Cooling',tab,'Lighting',tab,
      &  'Fans pumps lifts',tab,'Small Power',tab,'Hot water',tab,'PV'
       else
         write(outs,'(4a,i4,2a)') '*format',tab,'tabular',tab,ihr,tab,'6'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=ISTAT,ERR=1) '*fields',tab,'Time',
+        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,'Time',
      &  tab,'Heating',tab,'Cooling',tab,'Lighting',tab,
      &  'Fans pumps lifts',tab,'Small Power',tab,'Hot water'
       endif
@@ -3383,7 +3395,11 @@ C Write out hourly results.
       call edisp(itru,' ')
       return
 
- 1    CALL USRMSG(' Problem writing aggregate data.',' ','W')
+ 1    if(IOS.eq.2)then
+        CALL USRMSG('No permission to write aggregate data..',' ','W')
+      else
+        CALL USRMSG('Problem writing aggregate data.',' ','W')
+      endif
       CALL  ERPFREE(ixunit,ISTAT)
       return
       end

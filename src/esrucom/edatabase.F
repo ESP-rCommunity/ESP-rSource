@@ -42,6 +42,7 @@ C DRAIR is the air gap layer resistance for 3 orientations.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)

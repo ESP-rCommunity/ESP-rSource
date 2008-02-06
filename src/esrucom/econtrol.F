@@ -1809,7 +1809,7 @@ C control file sensors, actuator, control types, control laws.
 #include "control.h"
 #include "power.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -2090,7 +2090,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 #include "control.h"
 #include "power.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
      &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
@@ -2491,7 +2491,7 @@ C many aux sensors and whether there is a weighting factor.
      &          ' scale ',cm(12),' offset ',cm(13)
             endif
             call SDELIM(lmsg,message,'S',IW)
-            call edisp248(6,message,90)
+C            call edisp248(6,message,90)
           elseif(nint(cm(6)).eq.2)then
             write(lmsg,'(4(a,f8.0),a,f3.0,4a)')
      &        ' match temperature (ideal): max heat cp ',cm(2),
@@ -2500,7 +2500,7 @@ C many aux sensors and whether there is a weighting factor.
      &        msg1(1:lnblnk(msg1)),SSTRB(1:lnblnk(SSTRB)),
      &        ' & ',SSTRB1(1:lnblnk(SSTRB1))
             call SDELIM(lmsg,message,'S',IW)
-            call edisp248(6,message,90)
+C            call edisp248(6,message,90)
           endif
         ELSEIF(IBCLAW(II,JJ,KK).EQ.12)then
           SSTR='match temp - on-off'
@@ -2891,7 +2891,7 @@ C Nicol Occupant resopnse model for control
         elseif(IFCLAW(II,JJ,KK).EQ.4)then
           SSTR='Nicol alg version 1.0 '
           cm(2)=fmiscd(II,JJ,KK,2)
-	  iPGT=ifsn(ii,3)
+          iPGT=ifsn(ii,3)
           write(lmsg,'(2A,F4.2,2A)')SSTR,
      &    'with running mean response parameter of ',cm(2),
      &    ' measuring operative temp of node ',NDNAM(iPGT)

@@ -3628,7 +3628,7 @@ C operation file is old, sort the periods via processoldcas.
               GC(J2)=0.0
   204       CONTINUE
             IUNIT=IFIL+1
-            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER)
+            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
             if(ip3ver.eq.0)then
               write(outs,'(a,i2,a)') 
      &          'Operation file for zone ',IGETNO(KGET,2),
@@ -3666,7 +3666,7 @@ C operation file is old, sort the periods.
               GC(J2)=0.0
   203       CONTINUE
             IUNIT=IFIL+1
-            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER)
+            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
             if(ip3ver.eq.0)then
               write(outs,'(a,i2,a)') 
      &          'Operation file for zone ',IGETNO(KGET,2),
@@ -3818,8 +3818,7 @@ C area to 1.
         endif
           
 C Read in the zone geometry, construction data, zone operational data,
-C utility file, and casual gain control file. << Work towards not reading
-C zone files >>
+C and casual gain control file. << Work towards not reading zone files >>
         IUNIT=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
@@ -3828,15 +3827,22 @@ C zone files >>
           call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
         endif
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,0,IUOUT,IER)
-        CALL EROPER(0,iuout,iunit,iz,IER)
-        if(ip3ver.eq.0)then
-          write(outs,'(a,i2,a)') 
-     &      'Operation file for zone ',IGETNO(KGET,2),
-     &      ' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+
+C If izver is 4 or greater then assume direct read of data, otherwise
+C read the zone operation file.
+        if(izver.eq.4)then
+          continue
+        else
+          CALL EROPER(0,iuout,iunit,iz,IER) ! for older results files.
+          if(ip3ver.eq.0)then
+            write(outs,'(a,i2,a)') 
+     &        'Operation file for zone ',IGETNO(KGET,2),
+     &        ' periods being sorted!'
+            call edisp(iuout,outs)
+            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+          endif
+          IF(ICGC(IZ).EQ.1)CALL ercgcf(0,iuout,LCGCIN(iz),IZ,ier)
         endif
-        IF(ICGC(IZ).EQ.1)CALL ercgcf(0,iuout,LCGCIN(iz),IZ,ier)
 
 C Set default surface absorbtivity.
         absorb=1.0
@@ -3852,6 +3858,9 @@ C Radiant plant is area AND emissivity weighted.
 C Get inside casual radiant for this surface and store
 C requested uncontrolled and controlled types 1,2,3
 C from temporary storage in VAL3(15,?) to VAL3(20,?).
+
+C << is there a way to use data from GSURFB for this ?? >>
+
           CALL ZCASR(IZ,IS,IDAY)
           DO 199 JTS=ISTART,IEND
             IF(IPK.EQ.5)GVAL(JTS)=VAL3(15,JTS)
@@ -3901,7 +3910,8 @@ C no radiant plant component.
           DO 198 JTS=ISTART,IEND
             CALL GSURFB(IDAY,IZ,IS,JTS,TSout,qswrdi,
      &         qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
-     &         qlwrde,qlwrbd,qlwrsk,qswrde)
+     &         qlwrde,qlwrbd,qlwrsk,qswrde,avqcrioc,avqcrili,
+     &         avqcrisp,avqcrioth)
             if(IPK.eq.1)then
               GVAL(JTS)=qcondi/SAREA
             elseif(IPK.eq.2)then

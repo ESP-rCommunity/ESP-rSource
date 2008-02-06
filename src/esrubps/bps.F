@@ -728,7 +728,7 @@ C No confiburation file passed, if in dll mode return otherwise continue.
 C Initialize the thermal and gridding variables.
         IF(INPOK.AND.INTHPS)THEN
           CALL THZERO
-          CALL THERMR(LNLTHP,IUNIT,IUOUT,ITRC,IER)
+          CALL THERMR(LNLTHP,IUNIT,ITRC,IER)
           IF(IER.NE.0)INPOK=.FALSE.
         ENDIF
         IF(INPOK.AND.IGR1D)CALL READ1D(LGRD1D,IUNIT,IUOUT,ITRC,IER)
@@ -838,7 +838,7 @@ C have been detected.
 C initialize the thermal and gridding variables variables.
         IF(INPOK.AND.INTHPS)THEN
           CALL THZERO
-          CALL THERMR(LNLTHP,IUNIT,IUOUT,ITRC,IER)
+          CALL THERMR(LNLTHP,IUNIT,ITRC,IER)
           IF(IER.NE.0)INPOK=.FALSE.
         ENDIF
         IF(INPOK.AND.IGR1D)CALL READ1D(LGRD1D,IUNIT,IUOUT,ITRC,IER)

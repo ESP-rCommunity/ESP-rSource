@@ -378,12 +378,13 @@ C Once per hour storage of separate convective, radiant and latent W
 C for each casual gain type after controls have been applied.
       real sctlperocupc,sctlperocupr,sctlperocupl,sctlperlightc
       real sctlperlightr,sctlperlightl,sctlperequipc,sctlperequipr
-      real sctlperequipl
+      real sctlperequipl,sctlperothc,sctlperothr,sctlperothl
       common/rdccas/sctlperocupc(MCOM),sctlperocupr(MCOM),
      &            sctlperocupl(MCOM),sctlperlightc(MCOM),
      &            sctlperlightr(MCOM),sctlperlightl(MCOM),
      &            sctlperequipc(MCOM),sctlperequipr(MCOM),
-     &            sctlperequipl(MCOM)
+     &            sctlperequipl(MCOM),sctlperothc(MCOM),
+     &            sctlperothr(MCOM),sctlperothl(MCOM)
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -453,6 +454,9 @@ C involve storage of results at higher frequency.
         sctlperequipc(ICOMP)=0.
         sctlperequipr(ICOMP)=0.
         sctlperequipl(ICOMP)=0.
+        sctlperothc(ICOMP)=0.
+        sctlperothr(ICOMP)=0.
+        sctlperothl(ICOMP)=0.
 
         do 102 ISF=1,MS
           sTMS(icomp,isf)=0.0
@@ -712,12 +716,13 @@ C Once per hour storage of separate convective, radiant and latent W
 C for each casual gain type after controls have been applied.
       real sctlperocupc,sctlperocupr,sctlperocupl,sctlperlightc
       real sctlperlightr,sctlperlightl,sctlperequipc,sctlperequipr
-      real sctlperequipl
+      real sctlperequipl,sctlperothc,sctlperothr,sctlperothl
       common/rdccas/sctlperocupc(MCOM),sctlperocupr(MCOM),
      &            sctlperocupl(MCOM),sctlperlightc(MCOM),
      &            sctlperlightr(MCOM),sctlperlightl(MCOM),
      &            sctlperequipc(MCOM),sctlperequipr(MCOM),
-     &            sctlperequipl(MCOM)
+     &            sctlperequipl(MCOM),sctlperothc(MCOM),
+     &            sctlperothr(MCOM),sctlperothl(MCOM)
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -1495,15 +1500,18 @@ C the future value until after the trace logic (i.e. after 700).
 
 C Get the ratio between the W for occup/lighting and small power
 C to use when writing out surface energy balance data.
-        avgradtot=avgctlperequipr+avgctlperlightr+avgctlperocupr
+        avgradtot=avgctlperequipr+avgctlperlightr+avgctlperocupr+
+     &            avgctlotherr
         if(avgradtot.lt.0.001)then
           fracrlight=1.0
           fracrocup=1.0
           fracrequip=1.0
+          fracroth=1.0
         else
           fracrlight=avgctlperlightr/avgradtot
           fracrocup=avgctlperocupr/avgradtot
           fracrequip=avgctlperequipr/avgradtot
+          fracroth=avgctlotherr/avgradtot
         endif 
 
 C Loop through all of the surfaces and get the convective flux at
@@ -1671,20 +1679,26 @@ C Save back the current written out values of separate casual gains.
           sctlperequipc(ICOMP)=sctlperequipc(ICOMP)+avgctlperequipc
           sctlperequipr(ICOMP)=sctlperequipr(ICOMP)+avgctlperequipr
           sctlperequipl(ICOMP)=sctlperequipl(ICOMP)+avgctlperequipl
+          sctlperothc(ICOMP)=sctlperothc(ICOMP)+avgctlotherc
+          sctlperothr(ICOMP)=sctlperothr(ICOMP)+avgctlotherr
+          sctlperothl(ICOMP)=sctlperothl(ICOMP)+avgctlotherl
 
 C Debug
-C          write(6,'(A,2i2,6F9.2)') 
+C          write(6,'(A,2i2,8F9.2)') 
 C     &    ' Casual acum ocup/light/equip convec',icomp,irdnow,
 C     &    sctlperocupc(icomp),sctlperlightc(icomp),ctlperequipc(icomp),
-C     &    avgctlperocupc,avgctlperlightc,avgctlperequipc
+C     &    sctlperothc(icomp),avgctlperocupc,avgctlperlightc,
+C     &    avgctlperequipc,avgctlotherc
 
           if(irdnow.eq.1) then
 
 C Debug
-C            write(6,'(A,2i2,3F9.2)') 
-C     &        ' Casual written ocup/light/equip convec',icomp,irdnow,
-C     &        sctlperocupc(icomp)/irdc,sctlperlightc(icomp)/irdc,
-C     &        ctlperequipc(icomp)/irdc
+C            write(6,'(A,2i2,4F9.2)') 
+C     &        ' Casual written ocup/light/equip/other convec',
+C     &        icomp,irdnow,sctlperocupc(icomp)/irdc,
+C     &        sctlperlightc(icomp)/irdc,
+C     &        ctlperequipc(icomp)/irdc,
+C     &        sctlperothc(icomp)/irdc
 
             irdc=irdcb(ICOMP)
             WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
@@ -1693,7 +1707,7 @@ C     &        ctlperequipc(icomp)/irdc
      &        sQV2(ICOMP)/irdc,sTMCON(ICOMP)/irdc,soutopq(ICOMP)/irdc,
      &        souttrn(ICOMP)/irdc,sctlperocupc(ICOMP)/irdc,
      &        sctlperlightc(ICOMP)/irdc,sctlperequipc(ICOMP)/irdc,
-     &        avgctlotherc,sqair(ICOMP)/irdc
+     &        sctlperothc(ICOMP)/irdc,sqair(ICOMP)/irdc
 
             IREC=IREC+1
             WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
@@ -1702,7 +1716,7 @@ C     &        ctlperequipc(icomp)/irdc
      &        sQSA(ICOMP)/irdc,(sQSI(ICOMP,I)/irdc,I=1,NSUR),
      &        sopqin(ICOMP)/irdc,strnin(ICOMP)/irdc,
      &        sctlperocupr(ICOMP)/irdc,sctlperlightr(ICOMP)/irdc,
-     &        sctlperequipr(ICOMP)/irdc,avgctlotherr,
+     &        sctlperequipr(ICOMP)/irdc,sctlperothr(ICOMP)/irdc,
      &        sqbridge(ICOMP)/irdc
             IREC=IREC+1
 
@@ -1712,7 +1726,8 @@ C     &        ctlperequipc(icomp)/irdc
      &        sZRH(ICOMP)/irdc,sZLL(ICOMP)/irdc,sFRAC(ICOMP)/irdc,
      &        sSPM1(ICOMP)/irdc,sSPM2(ICOMP)/irdc,
      &        sctlperocupl(ICOMP)/irdc,sctlperlightl(ICOMP)/irdc,
-     &        sctlperequipl(ICOMP)/irdc,avgctlotherl,theonectld
+     &        sctlperequipl(ICOMP)/irdc,sctlperothl(ICOMP)/irdc,
+     &        theonectld
             IREC=IREC+1
 
 C Reset the saved values after having written the data.
@@ -1753,6 +1768,9 @@ C Reset the saved values after having written the data.
             sctlperequipc(ICOMP)=0.
             sctlperequipr(ICOMP)=0.
             sctlperequipl(ICOMP)=0.
+            sctlperothc(ICOMP)=0.
+            sctlperothr(ICOMP)=0.
+            sctlperothl(ICOMP)=0.
           endif
         endif
 
@@ -1836,11 +1854,16 @@ C << surfaces into one record.
      &              avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
      &              avqlwrsk,avqswrde
               else
+
+C For izver >=4 also include the explicit radiant casual gains
+C for occupants, lights, small power and other so no calculations
+C are needed to reconstitute the radiant casual gains.
                 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
      &              avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
      &              avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
      &              avqlwrsk,avqswrde,avqcri*fracrocup,
-     &              avqcri*fracrlight,avqcri*fracrequip
+     &              avqcri*fracrlight,avqcri*fracrequip,
+     &              avqcri*fracroth
               endif
               IREC=IREC+1
             else
