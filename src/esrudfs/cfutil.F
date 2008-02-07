@@ -135,9 +135,6 @@ C REAOLD - Read variable fields in the previous time-step.
 
       CHARACTER*6 FLAG2
 
-      LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT
-      LOGICAL IZEROT,IZanKE,IMITZ
-
       READ(ifl)NI,NJ,NK
       NIM1=NI-1
       NJM1=NJ-1
@@ -150,27 +147,21 @@ C REAOLD - Read variable fields in the previous time-step.
         READ(ifl)((P(I,J,K),J=1,NJ),I=1,NI)
         if(flag2(1:1).EQ.'T')then
           READ(ifl)((Up(I,J,K),J=1,NJ),I=1,NI)
-c          incalU=.true.
         endif
         if(flag2(2:2).EQ.'T')then
           READ(ifl)((Vp(i,j,K),J=1,NJ),I=1,NI)
-c          incalV=.true.
         endif
         if(flag2(3:3).EQ.'T')then
           READ(ifl)((Wp(i,j,K),J=1,NJ),I=1,NI)
-c          incalW=.true.
         endif
         if(flag2(4:4).EQ.'T')then
           READ(ifl)((TEp(i,j,K),J=1,NJ),I=1,NI)
-c          incalK=.true.
         endif
         if(flag2(5:5).EQ.'T')then
           READ(ifl)((EDp(i,j,K),J=1,NJ),I=1,NI)
-c          incalD=.true.
         endif
         if(flag2(6:6).EQ.'T')then
-        READ(ifl)((Tp(i,j,K),J=1,NJ),I=1,NI)
-c          incalT=.true.
+          READ(ifl)((Tp(i,j,K),J=1,NJ),I=1,NI)
         endif
         READ(ifl)((DENp(i,j,K),J=1,NJ),I=1,NI)
 20    CONTINUE               

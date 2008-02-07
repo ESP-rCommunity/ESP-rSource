@@ -73,21 +73,33 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       CHARACTER*9 TITLE1(17)
 
       newgeo=.false.  ! assume older format geometry.
-      LABELS(1)=' Infiltration air load    '
-      LABELS(2)=' Ventilation air load     '
-      LABELS(3)=' N/A                      '
-      LABELS(4)=' N/A                      '
-      LABELS(5)=' N/A                      '
-      LABELS(6)=' Uncontr`d casual type 1  '
-      LABELS(7)=' Uncontr`d casual type 2  '
-      LABELS(8)=' Uncontr`d casual type 3  '
-      LABELS(9)=' Controlled casual type 1 '
-      LABELS(10)=' Controlled casual type 2 '
-      LABELS(11)=' Controlled casual type 3 '
-      LABELS(12)=' Opaque MLC convec: ext   '
-      LABELS(13)=' Opaque MLC convec: int   '
-      LABELS(14)=' Transp MLC convec: ext   '
-      LABELS(15)=' Transp MLC convec: int   '
+
+C Read in the geometry file to refresh surface attributes.
+      iunit=ifil+1
+      call eclose(gversion(izone),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+      else
+        call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+      endif
+      idwins=0
+
+C Generate the labels for the interface and report.
+      LABELS(1) =' Infiltration air load    '
+      LABELS(2) =' Ventilation air load     '
+      LABELS(3) =' N/A                      '
+      LABELS(4) =' N/A                      '
+      LABELS(5) =' N/A                      '
+      write(LABELS(6),'(2a)') ' Uncontr`d casual ',lodlabel(izone,1)
+      write(LABELS(7),'(2a)') ' Uncontr`d casual ',lodlabel(izone,2)
+      write(LABELS(8),'(2a)') ' Uncontr`d casual ',lodlabel(izone,3)
+      LABELS(9) =' Controlled casual gain   '
+      LABELS(10)=' Thermal bridge (linear)  '
+      LABELS(11)=' Storage at air point     '
+      LABELS(12)=' Opaque surf convec: ext  '
+      LABELS(13)=' Opaque surf convec: ptn  '
+      LABELS(14)=' Transp surf convec: ext  '
+      LABELS(15)=' Transp surf convec: ptn  '
       LABELS(16)=' Convec portion of plant  '
       LABELS(17)=' Totals                   '
       TITLE1(1)='|Infiltr '
@@ -95,12 +107,12 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       TITLE1(3)='|W cnd ex'
       TITLE1(4)='|W cnd in'
       TITLE1(5)='|AirP sol'
-      TITLE1(6)='|UC cas 1'
-      TITLE1(7)='|UC cas 2'
-      TITLE1(8)='|UC cas 3'
-      TITLE1(9)='|Ct cas 1'
-      TITLE1(10)='|Ct cas 2'
-      TITLE1(11)='|Ct cas 3'
+      write(TITLE1(6),'(a,a)')'|UC',lodlabel(izone,1)
+      write(TITLE1(7),'(a,a)')'|UC',lodlabel(izone,2)
+      write(TITLE1(8),'(a,a)')'|UC',lodlabel(izone,3)
+      TITLE1(9)='|Ctl cas '
+      TITLE1(10)='|Th brdg'
+      TITLE1(11)='|Storage'
       TITLE1(12)='|O MLC ex'
       TITLE1(13)='|O MLC in'
       TITLE1(14)='|T MLC ex'
@@ -115,16 +127,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       elseif(delim.eq.'C')then
         sp=','
       endif
-
-C Read in the geometry file to refresh surface attributes.
-      iunit=ifil+1
-      call eclose(gversion(izone),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
-      else
-        call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
-      endif
-      idwins=0
 
 C Reset display unit if redirecting output.
       itru = icout
@@ -185,20 +187,6 @@ C Determine the plant type for this zone.
 C Perform ZONE sums and averages.
       CALL MOZSUM(IZONE,IANZSE)
 
-C Substitute labels for the casual gains (LABELS 6-8)
-      write(LABELS(6),'(1x,a,a)')lodlabel(izone,1),' casual gains'
-      write(LABELS(7),'(1x,a,a)')lodlabel(izone,2),' casual gains'
-      write(LABELS(8),'(1x,a,a)')lodlabel(izone,3),' casual gains'
-      write(LABELS(9),'(a,a)')' Controlled ',lodlabel(izone,1)
-      write(LABELS(10),'(a,a)')' Controlled ',lodlabel(izone,2)
-      write(LABELS(11),'(a,a)')' Controlled ',lodlabel(izone,3)
-      write(TITLE1(6),'(a,a)')'|UC',lodlabel(izone,1)
-      write(TITLE1(7),'(a,a)')'|UC',lodlabel(izone,2)
-      write(TITLE1(8),'(a,a)')'|UC',lodlabel(izone,3)
-      write(TITLE1(9),'(a,a)')'|Ct',lodlabel(izone,1)
-      write(TITLE1(10),'(a,a)')'|Ct',lodlabel(izone,2)
-      write(TITLE1(11),'(a,a)')'|Ct',lodlabel(izone,3)
-
 C Print out the results.
       DO 150 I=1,16
         IF(I.LT.16)goto 82
@@ -227,10 +215,10 @@ C the convective portion.
   818   CONTINUE
 
 C No windows, don't bother with rows 3,4,5. If no casual gain control
-C don`t bother with rows 9,10,11.
+C don`t bother with row 9.
    82   if(i.eq.3.or.i.eq.4.or.i.eq.5)then
           continue
-        elseif(ICGC(izone).eq.0.and.(i.eq.9.or.i.eq.10.or.i.eq.11))then
+        elseif(ICGC(izone).eq.0.and.(i.eq.9))then
           continue
         else
           IF(IANZSE.EQ.1)THEN
@@ -307,6 +295,7 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      common/recver/izver,ipver,iever
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -328,21 +317,27 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 
       TCMULT=NOUT/(NTS*1000.)
 
+C If izver >= 4 then there is no need to read the operation file.
+      if(izver.eq.4)then
+        continue
+      else
+
 C Assume that the operation file name has been read in via MOINIT.
 C Read in the zone operational file data.
-      IUNIT=IFIL+1
-      CALL EROPER(0,iuout,iunit,izone,IER)
-      if(ip3ver.eq.0)then
-        write(outs,'(a,i2,a)') 
+        IUNIT=IFIL+1
+        CALL EROPER(0,iuout,iunit,izone,IER) ! for older results files.
+        if(ip3ver.eq.0)then
+          write(outs,'(a,i2,a)') 
      &    'Operation file for zone ',izone,' periods being sorted!'
-        call edisp(iuout,outs)
-        call PROCESSOLDCAS(izone,0,iuout,IER)
-      endif
-      IF(IER.EQ.1)RETURN
+          call edisp(iuout,outs)
+          call PROCESSOLDCAS(izone,0,iuout,IER)
+        endif
+        IF(IER.EQ.1)RETURN
 
 C Read casual gain control file for this zone.
-      IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
-      IF(IER.EQ.1)RETURN
+        IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
+        IF(IER.EQ.1)RETURN
+      endif
 
 C Initialise summation locations: VAL2(I,J) is used to store summations
 C where I=1 to 16 (one for each flowpath) and J=1 to 6 (representing
@@ -526,16 +521,24 @@ C use the exact values from the results library.
 
 C Get casual gains.
 C For each time step move the timestep values from VAL3() into the
-C required VAL1() slots for this report.
+C required VAL1() slots for this report. There is only one type of
+C casual gain controled at any point in time so dump those into
+C the slot VAL1(9 ,I).
       CALL ZCASC(IZONE,IDAY)
       DO 50, I=1,IEND
         VAL1(6 ,I)=VAL3(15,I)
         VAL1(7 ,I)=VAL3(16,I)
         VAL1(8 ,I)=VAL3(17,I)
-        VAL1(9 ,I)=VAL3(18,I)
-        VAL1(10,I)=VAL3(19,I)
-        VAL1(11,I)=VAL3(20,I)
+        VAL1(9 ,I)=VAL3(18,I)+VAL3(19,I)+VAL3(20,I)
    50 CONTINUE
+
+C Get thermal bridge portion into VAL1(10,I)
+      CALL GTBR(IDAY,IZONE,ISET)
+      CALL XTVAL1(GVAL,ISTART,IEND,10)
+
+C Get storage at air point into VAL1(11,I)
+      CALL GAIRSTOR(IDAY,IZONE,ISET)
+      CALL XTVAL1(GVAL,ISTART,IEND,11)
 
       RETURN
       END

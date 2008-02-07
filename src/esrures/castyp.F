@@ -26,8 +26,6 @@ C ZCASR:  returns one day's timestep values of all (surface) rad casual gains vi
 C CASRT:  returns one day's timstep values of all zone rad casual gains 
 C ZCASCF: returns one day's unaveraged values of convective casual gains via VAL3. 
 
-CC << update logic to test for izver when dealing with casual gains >>
-
 C ******************** ZCASC ********************
 
 C ZCASC reconstructs one day's values of each of 
@@ -78,7 +76,7 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
-      character outs*124
+C      character outs*124
       logical found
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -200,7 +198,7 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
 C          T2=FLOAT(I2)
           DO 20 J=1,NTS
@@ -211,9 +209,9 @@ C          T2=FLOAT(I2)
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C Get convective columns of the temporal item.
@@ -261,9 +259,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -272,9 +270,9 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C .............Get convective columns of the temporal item.
@@ -457,7 +455,7 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
-      character outs*124
+C      character outs*124
       logical found
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -585,9 +583,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -596,8 +594,8 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
 C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
@@ -647,9 +645,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -658,9 +656,9 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
@@ -966,9 +964,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -977,9 +975,9 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
@@ -1028,9 +1026,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -1039,9 +1037,9 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
@@ -1785,9 +1783,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -1795,9 +1793,9 @@ C TFL is is the last timestep of the previous day.
             T=T1+Y1/Y2
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IJDAY.EQ.1)IDP=365
-            IF(IJDAY.GT.1)IDP=IJDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IJDAY.EQ.1)IDP=365
+C            IF(IJDAY.GT.1)IDP=IJDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C Get future timestep convective columns of the temporal item.
@@ -1836,9 +1834,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -1846,9 +1844,9 @@ C TFL is is the last timestep of the previous day.
             T=T1+Y1/Y2
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IJDAY.EQ.1)IDP=365
-            IF(IJDAY.GT.1)IDP=IJDAY-1
-            TFL=24.0-(1./real(NTS))
+C            IF(IJDAY.EQ.1)IDP=365
+C            IF(IJDAY.GT.1)IDP=IJDAY-1
+C            TFL=24.0-(1./real(NTS))
 C            LTSOD=24*NTS
 
 C Get future timestep convective columns of the temporal item.

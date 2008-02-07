@@ -1060,7 +1060,7 @@ C ******************************* THERMS ******************************
 C THERMS saves a non-linear thermophysical properties configuration
 C file.
 C *********************************************************************
-      SUBROUTINE THERMS(FLTHRM,IIN,IOUT,ITRC,IER)
+      SUBROUTINE THERMS(FLTHRM,IIN,ITRC,IER)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1088,7 +1088,7 @@ C Open existing ASCII construction data file as unit IIN.
    10 CONTINUE
    92 FORMAT(2X,I1,2X,I1,2(1X,F7.2),1X,F10.4,4(1X,F9.6,1X,F6.2))
       IF(ITRC.NE.0)THEN
-       CALL EDISP(IOUT,' Thermal configuration file successfuly saved!')
+       CALL EDISP(IUOUT,'Thermal configuration file successfuly saved!')
       ENDIF
       CALL ERPFREE(IIN,ISTAT)
       RETURN
@@ -1098,7 +1098,7 @@ C ****************************** THERMR *******************************
 C THERMR reads a non-linear thermophysical properties configuration
 C file.
 C *********************************************************************
-      SUBROUTINE THERMR(FLTHRM,IIN,IOUT,ITRC,IER)
+      SUBROUTINE THERMR(FLTHRM,IIN,ITRC,IER)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1183,7 +1183,7 @@ C Open existing ASCII construction data file as unit IIN.
    40   CONTINUE
    20 CONTINUE
       IF(ITRC.NE.0)THEN
-        CALL EDISP(IOUT,' Thermal configuration file successfuly read!')
+        CALL EDISP(IUOUT,'Thermal configuration file successfuly read!')
       ENDIF
       CALL ERPFREE(IIN,ISTAT)
       RETURN
@@ -1293,7 +1293,9 @@ C there should be 1369 data lines.
         CALL EGETWI(OUTSTR,K,IV1,1,37,'W','bi-angles',IER)
         CALL EGETWI(OUTSTR,K,IV2,1,37,'W','bi-angles',IER)
         NGANGS(ibitype)=iv1
-        if(iv1.eq.37)idataloop=1369
+
+C << idataloop is not yet used >>
+C        if(iv1.eq.37)idataloop=1369
         goto 42
       elseif(WORD(1:12).eq.'*data')then
   44    CALL STRIPC(IUA,OUTSTR,99,ND,1,'bi-optic data',IER)
