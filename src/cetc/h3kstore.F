@@ -918,60 +918,29 @@ C     CFD
 
 C     Once per hour storage of results, averaged over that hour.
       common/rdcgen/irdact
-        INTEGER irdact
+      INTEGER irdact
 
-      common/rdcbld/irdcb,sTMA,sTMCON,sQM,
-     &     sTMS,sQSI,sQSE,
-     &     sQV1,sQV2,sQW1,sQW2,
-     &     sZONPP,sZONQP,sQSA,sQCASR,
-     &     sQCASC,sZRH,sFRAC,
-     &     sTMC,sZLL,sSPM1,sSPM2,
-     &     sqswrdi,sqlwrdi,sqconvi,
-     &     sqcondi,sqstori,sqstore,
-     &     sqconde,sqconve,sqlwrde,
-     &     sqlwrbd,sqlwrsk,sqswrde,
-     &     soutopq,souttrn,sopqin,strnin
+C To match code in esrubld/blibsv.F
+      INTEGER irdcb
+      REAL sTMA,sTMCON,sQM,sTMS,sQSI,sQSE,sQV1,sQV2,sQW1,sQW2
+      REAL sZONPP,sZONQP,sQSA,sQCASR,sQCASC,sZRH,sFRAC
+      REAL sTMC,sZLL,sSPM1,sSPM2,sqswrdi,sqlwrdi,sqconvi
+      REAL sqcondi,sqstori,sqstore,sqconde,sqconve,sqlwrde
+      REAL sqlwrbd,sqlwrsk,sqswrde,soutopq,souttrn,sopqin,strnin
+      REAL sqair,sqbridge
+      common/rdcbld/irdcb(MCOM),sTMA(MCOM),sTMCON(MCOM),sQM(MCOM),
+     &            sTMS(MCOM,MS),sQSI(MCOM,MS),sQSE(MCOM,MS),
+     &            sQV1(MCOM),sQV2(MCOM),sQW1(MCOM),sQW2(MCOM),
+     &            sZONPP(MCOM),sZONQP(MCOM),sQSA(MCOM),sQCASR(MCOM),
+     &            sQCASC(MCOM),sZRH(MCOM),sFRAC(MCOM),
+     &            sTMC(MCOM,MS,MN),sZLL(MCOM),sSPM1(MCOM),sSPM2(MCOM),
+     &            sqswrdi(MCOM,MS),sqlwrdi(MCOM,MS),sqconvi(MCOM,MS),
+     &            sqcondi(MCOM,MS),sqstori(MCOM,MS),sqstore(MCOM,MS),
+     &            sqconde(MCOM,MS),sqconve(MCOM,MS),sqlwrde(MCOM,MS),
+     &            sqlwrbd(MCOM,MS),sqlwrsk(MCOM,MS),sqswrde(MCOM,MS),
+     &            soutopq(MCOM),souttrn(MCOM),sopqin(MCOM),
+     &            strnin(MCOM),sqair(MCOM),sqbridge(MCOM)
 
-
-
-        INTEGER IRDCB(MCOM)
-        REAL    STMA(MCOM)
-        REAL    STMCON(MCOM)
-        REAL    SQM(MCOM)
-        REAL    STMS(MCOM,MS)
-        REAL    SQSI(MCOM,MS)
-        REAL    SQSE(MCOM,MS)
-        REAL    SQV1(MCOM)
-        REAL    SQV2(MCOM)
-        REAL    SQW1(MCOM)
-        REAL    SQW2(MCOM)
-        REAL    SZONPP(MCOM)
-        REAL    SZONQP(MCOM)
-        REAL    SQSA(MCOM)
-        REAL    SQCASR(MCOM)
-        REAL    SQCASC(MCOM)
-        REAL    SZRH(MCOM)
-        REAL    SFRAC(MCOM)
-        REAL    STMC(MCOM,MS,MN)
-        REAL    SZLL(MCOM)
-        REAL    SQSWRDI(MCOM,MS)
-        REAL    SQLWRDI(MCOM,MS)
-        REAL    SQCONVI(MCOM,MS)
-        REAL    SQCONDI(MCOM,MS)
-        REAL    SQSTORI(MCOM,MS)
-        REAL    SQSTORE(MCOM,MS)
-        REAL    SQCONDE(MCOM,MS)
-        REAL    SQCONVE(MCOM,MS)
-        REAL    SQLWRDE(MCOM,MS)
-        REAL    SQLWRBD(MCOM,MS)
-        REAL    SQLWRSK(MCOM,MS)
-        REAL    SQSWRDE(MCOM,MS)
-        REAL    SOUTOPQ(MCOM)
-        REAL    SOUTTRN(MCOM)
-        REAL    SOPQIN(MCOM)
-        REAL    STRNIN(MCOM)
-        REAL    sSPM1(MCOM)
-        REAL    sSPM2(MCOM)
 
       character outs*144
       CHARACTER LCFGF*72

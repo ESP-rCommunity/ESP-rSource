@@ -85,6 +85,10 @@ C Sets up defaults and offers main menu.
 #include "building.h"
 #include "esprdbfile.h"
 
+C IEEE callback (Solaris)
+      external SIGFPE_bps      
+      integer SIGFPE_bps      
+
       common/outin/iuout,iuin
       common/tracech/icout
       common/filech/ixopen,ixunit,ixpunit
@@ -245,6 +249,18 @@ C Image option flags.
       ifs=1
       itfs=1
       imfs=1
+
+C If your compiler does not support floating-point arithmetic
+C according to ANSI/IEEE Std 754-1985 comment out the following code.
+
+C Initialize mode, status, and signal handling for IEEE arithmetic.
+C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
+C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
+C           only if: Sun-3 f77 with -f68881 or -ffpa option
+C                or: Sun-4 f77.
+      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+      ieeer=ieee_handler('set','common',SIGFPE_bps)
+      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
 
 C Initialise terminal and flags.
       mmod=modl
@@ -1166,4 +1182,17 @@ C Dummy routine (needed for call back from c.
       character focus*4
      
       return
+      end
+
+C In support of floating point exceptions.
+      integer function SIGFPE_bps(sig,code,context)
+      integer sig,code,context(5)
+      character label*16
+      if(loc(code).eq.208) label = 'invalid'
+      if(loc(code).eq.200) label = 'division by zero'
+      if(loc(code).eq.212) label = 'overflow'
+      if(loc(code).eq.204) label = 'underflow'
+      if(loc(code).eq.196) label = 'inexact'
+      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+      SIGFPE_bps = loc(code)
       end

@@ -283,7 +283,7 @@ C Altitude.
 C Azimuth.
       dx=xt2-xt1
       dy=yt2-yt1
-      arg=abs(dy/dx)
+      arg=abs(dy/dx)   ! division by zero possible here
       angl=atan(arg)/r
       if(dx.gt.0.0.and.dy.lt.0.0)then
          sazi2=90.+angl

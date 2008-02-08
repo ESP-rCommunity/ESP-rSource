@@ -93,8 +93,8 @@ C MZS is the number of items to report/select in res.
       PARAMETER (MZS=90)
 
 C MZRL is associated with data taking up all fields of a zone
-C results library (i.e. is = nzrl). Should be larger of either MCOM or MS+7 or 36.
-      PARAMETER (MZRL=39)
+C results library (i.e. is = nzrl). Should be larger of either MCOM or MS+12 or 36.
+      PARAMETER (MZRL=44)
 
 C If MS changes, so should MEQ (MS+1) and MTR (MS+4).
       PARAMETER (MEQ=33)

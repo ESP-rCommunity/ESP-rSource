@@ -138,7 +138,7 @@ C Read the complete building thermal and geometical data.
     6     CONTINUE
         ENDIF
     5 CONTINUE
-      IF(INTHPS)CALL THERMR(LNLTHP,IUNIT,IUOUT,ITRC,IER)
+      IF(INTHPS)CALL THERMR(LNLTHP,IUNIT,ITRC,IER)
       ITHF=1
    10 CALL USRMSG(' ',' Select from the menu!','-')
       ino=-3
@@ -346,7 +346,7 @@ C file.
         CALL EASKS(ltmp,' Thermal configuration file name ?',' ',
      &               72,' ',' thermal confg. file ',IER,1)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') LNLTHP=ltmp
-        CALL THERMR(LNLTHP,IUNIT,IUOUT,ITRC,IER)
+        CALL THERMR(LNLTHP,IUNIT,ITRC,IER)
 
 C Save the defined thermal configuration into a file.
       ELSEIF(INO.EQ.11)THEN
@@ -355,7 +355,7 @@ C Save the defined thermal configuration into a file.
         CALL EASKS(ltmp,' Thermal configuration file name ?',' ',
      &               72,' ',' thermal confg. file ',IER,1)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') LNLTHP=ltmp
-        CALL THERMS(LNLTHP,IUNIT,IUOUT,ITRC,IER)
+        CALL THERMS(LNLTHP,IUNIT,ITRC,IER)
         IF(IER.EQ.0)THEN
           INTHPS=.TRUE.
           SAVEOK=.TRUE.

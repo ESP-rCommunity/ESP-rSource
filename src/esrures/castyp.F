@@ -31,8 +31,9 @@ C ******************** ZCASC ********************
 C ZCASC reconstructs one day's values of each of 
 C the uncontrolled and controlled convective casual gains for a zone.
 C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
-C The method used shifts information from the operations file into the
-C equivalent of bps timestep averaging.
+C For izver <4 the method used shifts information from the operations
+C file into the equivalent of bps timestep averaging. For izver >=4 the
+C data is read directly from the data fields.
 C The parameter IDAY is 
 C VAL3(15,?) holds uncontrolled convective casual type 1.
 C VAL3(16,?) holds uncontrolled convective casual type 2.
@@ -45,6 +46,8 @@ C VAL3(20,?) holds controlled convective casual type 3.
 #include "building.h"
 #include "tdf2.h"
 
+C      COMMON/OUTIN/IUOUT,IUIN
+      common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -54,8 +57,6 @@ C VAL3(20,?) holds controlled convective casual type 3.
 C Hold this for each zone.
       COMMON/CASPD/DUCCT1(MCOM),DUCCT2(MCOM),DUCCT3(MCOM),
      &             DUCRT1(MCOM),DUCRT2(MCOM),DUCRT3(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
@@ -75,8 +76,15 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
-      character outs*124
+C      character outs*124
       logical found
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
 C Set chosen result set.
       ISET=ISIM
@@ -89,17 +97,88 @@ C Initialise 'present values'.
       PUCCT3=0.0
       ICCP=0
 
-C Check to see if there is a temporal casual gain 
-C entry for this zone (the values are explicitly saved).
+C If izver >= 4 the read the data directly.
+      if(izver.eq.4)then
+        found = .false.
+        if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
+        if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
+        if(IACTIV(izone).ne.0)found = .true.   ! if UK activity item
+        if(found)then
+          DO 141, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      theonectld)
+
+C For gains from casual there is no option for control and theonectld
+C should be zero.
+            VAL3(15,I)=perocupc
+            VAL3(16,I)=perlightc
+            VAL3(17,I)=perequipc
+            VAL3(18,I)=0.0
+            VAL3(19,I)=0.0
+            VAL3(20,I)=0.0
+  141     continue
+          return
+        else
+
+C Assume that the original description was from a zone operation file.
+          DO 142, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      theonectld)
+
+C Depending on whether there is a controlled casual gain fill the
+C 18/19/20 slots with what was recovered from getallcas because
+C the explicit data already takes into account that control has
+C been applied.
+            if(theonectld.eq.0)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=perequipc
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.1)then
+              VAL3(15,I)=0.0
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=perequipc
+              VAL3(18,I)=perocupc
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.2)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=0.0
+              VAL3(17,I)=perequipc
+              VAL3(18,I)=0.0
+              VAL3(19,I)=perlightc
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.3)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=0.0
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perequipc
+            endif
+  142     continue
+          return
+        endif
+      endif
+
+C Check to see if there is a temporal (single) casual gain 
+C entry for this zone (the values are explicitly saved) and
+C place this in the equipment casual gain.
       found = .false.
       if(ICASUAL(izone).ne.0)found = .true.
       IF(found)THEN
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         DO 151, I=1,IEND
-          VAL3(15,I)=VAL3(21,I)
+          VAL3(15,I)=0.0
           VAL3(16,I)=0.0
-          VAL3(17,I)=0.0
+          VAL3(17,I)=VAL3(21,I)
           VAL3(18,I)=0.0
           VAL3(19,I)=0.0
           VAL3(20,I)=0.0
@@ -119,9 +198,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -130,10 +209,10 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get convective columns of the temporal item.
             itdi=ICASUAL3(izone)
@@ -180,9 +259,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -191,10 +270,10 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C .............Get convective columns of the temporal item.
             itdi=IACTIV(izone)
@@ -247,7 +326,7 @@ C on the casual gain at the last timestep of the previous day.
 C If IDAY is equal to the first day of the simulation then there is no
 C previous day so assume DUCCT?= current day.
       IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
@@ -259,20 +338,20 @@ C previous day so assume DUCCT?= current day.
 C Need to get the last timestep of the previous day to have the last 
 C timestep for interpolation before recovering the convective casual 
 C gain for the day in question.
-        CALL GCASC(IDAY-1,IZONE,ISET)
+        CALL GCASC(IDAY-1,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY-1,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
         DUCCT1(izone)=UCCT1
         DUCCT2(izone)=UCCT2
         DUCCT3(izone)=UCCT3
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
 
 C Subsequent recovery day - information on previous day has already
 C been saved so proceed to get convective casual gain for IDAY.
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ENDIF
 
@@ -346,6 +425,8 @@ C VAL3(20,?) holds controlled radiant casual type 3.
 #include "building.h"
 #include "tdf2.h"
 
+C      COMMON/OUTIN/IUOUT,IUIN
+      common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -355,8 +436,6 @@ C VAL3(20,?) holds controlled radiant casual type 3.
       COMMON/AVRAGE/IDAVER
       COMMON/CASPD/DUCCT1(MCOM),DUCCT2(MCOM),DUCCT3(MCOM),
      &             DUCRT1(MCOM),DUCRT2(MCOM),DUCRT3(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
 C Temporal db commons.
@@ -376,19 +455,20 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
-      character outs*124
+C      character outs*124
       logical found
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
       IEND=24*NTS
 
 C Set chosen result set.
       ISET=ISIM
-
-C Initialise 'present values'.
-      PUCRT1=0.0
-      PUCRT2=0.0
-      PUCRT3=0.0
-      ICCP=0
 
 C Radiant casual gains are area AND emissivity weighted.
       emarea=0.0
@@ -396,19 +476,94 @@ C Radiant casual gains are area AND emissivity weighted.
         emarea=emarea+sna(izone,kk)*EMISI(kk)
   80  continue
 
-C Check to see if there is a temporal casual gain 
+C If izver >= 4 the read the data directly and multiply the radiant
+C value by SCALE. Similar pattern of code used elsewhere for izver >=4.
+      if(izver.eq.4)then
+        found = .false.
+        if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
+        if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
+        if(IACTIV(izone).ne.0)found = .true.   ! if UK activity item
+        SCALE=sna(IZONE,ISFN)*EMISI(ISFN)/emarea
+        if(found)then
+          DO 141, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &       perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &       perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &       theonectld)
+            VAL3(15,I)=perocupr*SCALE
+            VAL3(16,I)=perlightr*SCALE
+            VAL3(17,I)=perequipr*SCALE
+            VAL3(18,I)=0.0
+            VAL3(19,I)=0.0
+            VAL3(20,I)=0.0
+  141     continue
+          return
+        else
+
+C Assume that the original description was from a zone operation file.
+          DO 142, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      theonectld)
+
+C Depending on whether there is a controlled casual gain fill the
+C 18/19/20 slots with what was recovered from getallcas because
+C the explicit data already takes into account that control has
+C been applied.
+            if(theonectld.eq.0)then
+              VAL3(15,I)=perocupr*SCALE
+              VAL3(16,I)=perlightr*SCALE
+              VAL3(17,I)=perequipr*SCALE
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.1)then
+              VAL3(15,I)=0.0
+              VAL3(16,I)=perlightr*SCALE
+              VAL3(17,I)=perequipr*SCALE
+              VAL3(18,I)=perocupr*SCALE
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.2)then
+              VAL3(15,I)=perocupr*SCALE
+              VAL3(16,I)=0.0
+              VAL3(17,I)=perequipr*SCALE
+              VAL3(18,I)=0.0
+              VAL3(19,I)=perlightr*SCALE
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.3)then
+              VAL3(15,I)=perocupr*SCALE
+              VAL3(16,I)=perlightr*SCALE
+              VAL3(17,I)=0.0
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perequipr*SCALE
+            endif
+  142     continue
+          return
+        endif
+      endif
+
+C Initialise 'present values'.
+      PUCRT1=0.0
+      PUCRT2=0.0
+      PUCRT3=0.0
+      ICCP=0
+
+C Check to see if there is a temporal single casual gain 
 C entry for this zone (the values are explicitly saved).
-C If temporal CASUALT set type 2 & 3 and controlled radiant gains to 0.0.
+C If temporal CASUALT set type 1 & 2 and controlled radiant gains to 0.0.
       found = .false.
       if(ICASUAL(izone).ne.0)found = .true.
       IF(found)THEN
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         SCALE=sna(IZONE,ISFN)*EMISI(ISFN)/emarea
         DO 151, I=1,IEND
-          VAL3(15,I)=VAL3(21,I)*SCALE
+          VAL3(15,I)=0.0
           VAL3(16,I)=0.0
-          VAL3(17,I)=0.0
+          VAL3(17,I)=VAL3(21,I)*SCALE
           VAL3(18,I)=0.0
           VAL3(19,I)=0.0
           VAL3(20,I)=0.0
@@ -428,9 +583,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -439,10 +594,10 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
             itdi=ICASUAL3(izone)
@@ -490,9 +645,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -501,10 +656,10 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
 C Important: At the moment a 50% radiant/convective split is
@@ -564,7 +719,7 @@ C on the casual gain at the last timestep of the previous day.
 C If IDAY is equal to the first day of the simulation then there is no
 C previous day so assume DUCRT?= current day.
       IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
@@ -576,20 +731,20 @@ C previous day so assume DUCRT?= current day.
 C Need to get the last timestep of the previous day to have the last 
 C timestep for interpolation before recovering the radiant casual 
 C gain for the day in question.
-        CALL GCASR(IDAY-1,IZONE,ISET)
+        CALL GCASR(IDAY-1,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY-1,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
         DUCRT1(izone)=UCCRT1
         DUCRT2(izone)=UCCRT2
         DUCRT3(izone)=UCCRT3
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
 
 C Subsequent recovery day - information on the previous day has already
 C been saved so proceed to get convective casual gain for IDAY.
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ENDIF
 
@@ -661,6 +816,7 @@ C VAL3(20,?) holds controlled casual type 3.
 #include "building.h"
 #include "tdf2.h"
 
+      common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -668,8 +824,6 @@ C VAL3(20,?) holds controlled casual type 3.
       COMMON/AVRAGE/IDAVER
       COMMON/CASPD/DUCCT1(MCOM),DUCCT2(MCOM),DUCCT3(MCOM),
      &             DUCRT1(MCOM),DUCRT2(MCOM),DUCRT3(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
@@ -689,13 +843,90 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
-      character outs*124
+C      character outs*124
       logical found
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
       IEND=24*NTS
 
 C Set chosen result set.
       ISET=ISIM
+
+C If izver >= 4 the read the data directly.
+      if(izver.eq.4)then
+        found = .false.
+        if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
+        if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
+        if(IACTIV(izone).ne.0)found = .true.   ! if UK activity item
+        if(found)then
+          DO 141, I=1,IEND
+            call getallcas(IDAY,IZ,ISET,JTS,QCASR,QCASC,QCASL,FRAC,
+     &       perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &       perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &       theonectld)
+
+C For gains from casual there is no option for control and theonectld
+C should be zero.
+            VAL3(15,I)=perocupr
+            VAL3(16,I)=perlightr
+            VAL3(17,I)=perequipr
+            VAL3(18,I)=0.0
+            VAL3(19,I)=0.0
+            VAL3(20,I)=0.0
+  141     continue
+          return
+        else
+
+C Assume that the original description was from a zone operation file.
+          DO 142, I=1,IEND
+            call getallcas(IDAY,IZ,ISET,JTS,QCASR,QCASC,QCASL,FRAC,
+     &       perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &       perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &       theonectld)
+
+C Depending on whether there is a controlled casual gain fill the
+C 18/19/20 slots with what was recovered from getallcas because
+C the explicit data already takes into account that control has
+C been applied.
+            if(theonectld.eq.0)then
+              VAL3(15,I)=perocupr
+              VAL3(16,I)=perlightr
+              VAL3(17,I)=perequipr
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.1)then
+              VAL3(15,I)=0.0
+              VAL3(16,I)=perlightr
+              VAL3(17,I)=perequipr
+              VAL3(18,I)=perocupr
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.2)then
+              VAL3(15,I)=perocupr
+              VAL3(16,I)=0.0
+              VAL3(17,I)=perequipr
+              VAL3(18,I)=0.0
+              VAL3(19,I)=perlightr
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.3)then
+              VAL3(15,I)=perocupr
+              VAL3(16,I)=perlightr
+              VAL3(17,I)=0.0
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perequipr
+            endif
+  142     continue
+          return
+        endif
+      endif
 
 C Initialise 'present values'.
       PUCRT1=0.0
@@ -709,7 +940,7 @@ C If temporal CASUALT set type 2 & 3 and controlled radiant gains to 0.0.
       found = .false.
       if(ICASUAL(izone).ne.0)found = .true.
       IF(found)THEN
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         DO 151, I=1,IEND
           VAL3(15,I)=VAL3(21,I)
@@ -733,9 +964,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -744,10 +975,10 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
             itdi=ICASUAL3(izone)
@@ -772,9 +1003,9 @@ C Get radiant columns of the temporal item.
             VAL3(20,IJ)=0.0
 
 C Debug...TIME=T TIMEF=TF TIMP=TP in case reqd for single timestep.
-            call DATIME(IJ,TIME)
-            TIMEF=real(IJ)/real(NTS)
-            TIMEP=TIMEF - (1./real(NTS))
+C            call DATIME(IJ,TIME)
+C            TIMEF=real(IJ)/real(NTS)
+C            TIMEP=TIMEF - (1./real(NTS))
 C          WRITE(OUTS,'(A,I3,6F6.2,I4,3F8.2)') 'IJ T TP TF TFL ID Vc ',
 C     &      IJ,T,TP,TF,TIME,TIMEF,TIMEP,IDAY,VAL3(15,IJ),VAL3(16,IJ),
 C     &      VAL3(17,IJ)
@@ -795,9 +1026,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -806,10 +1037,10 @@ C TFL is is the last timestep of the previous day.
             IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IDAY.EQ.1)IDP=365
-            IF(IDAY.GT.1)IDP=IDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IDAY.EQ.1)IDP=365
+C            IF(IDAY.GT.1)IDP=IDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get radiant columns of the temporal item.
 C Important: At the moment a 50% radiant/convective split is
@@ -849,9 +1080,9 @@ C a decision on the calculation of the lighting gains>>
             VAL3(20,IJ)=0.0
             
 C Debug...TIME=T TIMEF=TF TIMP=TP in case reqd for single timestep.
-            call DATIME(IJ,TIME)
-            TIMEF=real(IJ)/real(NTS)
-            TIMEP=TIMEF - (1./real(NTS))
+C            call DATIME(IJ,TIME)
+C            TIMEF=real(IJ)/real(NTS)
+C            TIMEP=TIMEF - (1./real(NTS))
 C          WRITE(OUTS,'(A,I3,6F6.2,I4,3F8.2)') 'IJ T TP TF TFL ID Vc ',
 C     &      IJ,T,TP,TF,TIME,TIMEF,TIMEP,IDAY,VAL3(15,IJ),VAL3(16,IJ),
 C     &      VAL3(17,IJ)
@@ -866,7 +1097,7 @@ C on the casual gain at the last timestep of the previous day.
 C If IDAY is equal to the first day of the simulation then there is no
 C previous day so assume DUCRT?= current day.
       IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
@@ -878,20 +1109,20 @@ C previous day so assume DUCRT?= current day.
 C Need to get the last timestep of the previous day to have the last 
 C timestep for interpolation before recovering the radiant casual 
 C gain for the day in question.
-        CALL GCASR(IDAY-1,IZONE,ISET)
+        CALL GCASR(IDAY-1,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         CALL CASTYP(IZONE,IDAY-1,IEND,UCCT1,UCCT2,UCCT3,
      &              UCCRT1,UCCRT2,UCCRT3,ICC)
         DUCRT1(izone)=UCCRT1
         DUCRT2(izone)=UCCRT2
         DUCRT3(izone)=UCCRT3
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
 
 C Subsequent recovery day - information on the previous day has already
 C been saved so proceed to get radiant casual gain for IDAY.
-        CALL GCASR(IDAY,IZONE,ISET)
+        CALL GCASR(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ENDIF
 
@@ -955,14 +1186,20 @@ C UCCRT1 uncontrolled casual radiant type 1,
 C UCCRT2 uncontrolled casual radiant type 2,
 C UCCRT3 uncontrolled casual radiant type 3,
 C ICC, controlled casual type
-C However, because of the averaging in bps, the beginning and ending
+C IF izver >=4 then use direct reads via getallcas and test
+C the values of theonectld. If theonectld non-zero set that
+C casual gain to zero (because the controlled has been dealt
+C with separately.
+
+C With older versions, however, because of the averaging in bps, the beginning and ending
 C of each period will have to be shifted in the calling routine.  This
 C will be corrected in the revised results library.
       SUBROUTINE CASTYP(IZ,IDAY,ITSTEP,UCCT1,UCCT2,UCCT3,
      &                  UCCRT1,UCCRT2,UCCRT3,ICC)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+      common/recver/izver,ipver,iever
+C      COMMON/OUTIN/IUOUT,IUIN
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
@@ -982,6 +1219,13 @@ C will be corrected in the revised results library.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
 C Assume that IYEAR is available via RESDEF.
 C Determine whether IDAY is a weekday, Saturday or Sunday.
@@ -998,6 +1242,54 @@ C Find the hour of the day and initialise the values to be returned.
       UCCRT2=0.
       UCCT3=0.
       UCCRT3=0.
+
+C Set chosen result set.
+      ISET=ISIM
+
+C If izver >= 4 the read the data directly.
+      if(izver.eq.4)then
+
+C Assume that the original description was from a zone operation file.
+        call getallcas(IDAY,IZ,ISET,ITSTEP,QCASR,QCASC,QCASL,FRAC,
+     &    perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &    perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &    theonectld)
+
+C Depending on whether there is a controlled casual gain fill the
+C 18/19/20 slots with what was recovered from getallcas because
+C the explicit data already takes into account that control has
+C been applied.
+        if(theonectld.eq.0)then
+          UCCT1=perocupc
+          UCCT2=perlightc
+          UCCT3=perequipc
+          UCCRT1=perocupr
+          UCCRT2=perlightr
+          UCCRT3=perequipr
+        elseif(theonectld.eq.1)then
+          UCCT1=0.0
+          UCCT2=perlightc
+          UCCT3=perequipc
+          UCCRT1=0.0
+          UCCRT2=perlightr
+          UCCRT3=perequipr
+        elseif(theonectld.eq.2)then
+          UCCT1=perocupc
+          UCCT2=0.0
+          UCCT3=perequipc
+          UCCRT1=perocupr
+          UCCRT2=0.0
+          UCCRT3=perequipr
+        elseif(theonectld.eq.3)then
+          UCCT1=perocupc
+          UCCT2=perlightc
+          UCCT3=0.0
+          UCCRT1=perocupr
+          UCCRT2=perlightr
+          UCCRT3=0.0
+        endif
+        return
+      endif
 
 C Note: Because there can be more than one casual gain of each
 C type in a zone, UCCRT1 etc. need to be summed.
@@ -1347,12 +1639,13 @@ C VAL3(20,?) holds controlled casual type 3.
 #include "building.h"
 #include "tdf2.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
+      common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
 C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
@@ -1371,8 +1664,15 @@ C TDFINT are ranges allowed for integer fields in the instance.
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
-      character outs*124
+C      character outs*124
       logical found
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
 C Set chosen result set.
       ISET=ISIM
@@ -1382,17 +1682,88 @@ C Set chosen result set.
 C Initialise 'present values'.
       ICCP=0
 
+C If izver >= 4 the read the data directly.
+      if(izver.eq.4)then
+        found = .false.
+        if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
+        if(ICASUAL3(izone).ne.0.and.IJDAY.ne.0)found = .true.  ! if separate casual item
+        if(IACTIV(izone).ne.0.and.IJDAY.ne.0)found = .true.   ! if UK activity item
+        if(IACTIV(izone).ne.0)found = .true.
+        if(found)then
+          DO 141, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      theonectld)
+
+C For gains from casual there is no option for control and theonectld
+C should be zero.
+            VAL3(15,I)=perocupc
+            VAL3(16,I)=perlightc
+            VAL3(17,I)=perequipc
+            VAL3(18,I)=0.0
+            VAL3(19,I)=0.0
+            VAL3(20,I)=0.0
+  141     continue
+          return
+        else
+
+C Assume that the original description was from a zone operation file.
+          DO 142, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      theonectld)
+
+C Depending on whether there is a controlled casual gain fill the
+C 18/19/20 slots with what was recovered from getallcas because
+C the explicit data already takes into account that control has
+C been applied.
+            if(theonectld.eq.0)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=perequipc
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.1)then
+              VAL3(15,I)=0.0
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=perequipc
+              VAL3(18,I)=perocupc
+              VAL3(19,I)=0.0
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.2)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=0.0
+              VAL3(17,I)=perequipc
+              VAL3(18,I)=0.0
+              VAL3(19,I)=perlightc
+              VAL3(20,I)=0.0
+            elseif(theonectld.eq.3)then
+              VAL3(15,I)=perocupc
+              VAL3(16,I)=perlightc
+              VAL3(17,I)=0.0
+              VAL3(18,I)=0.0
+              VAL3(19,I)=0.0
+              VAL3(20,I)=perequipc
+            endif
+  142     continue
+          return
+        endif
+      endif
+
 C Check to see if there is a temporal database casual gain 
 C entry for this zone (the values are explicitly saved).
       found = .false.
       if(ICASUAL(izone).ne.0)found = .true.
       IF(found)THEN
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
         DO 151, I=1,IEND
-          VAL3(15,I)=VAL3(21,I)
+          VAL3(15,I)=0.0
           VAL3(16,I)=0.0
-          VAL3(17,I)=0.0
+          VAL3(17,I)=VAL3(21,I)
           VAL3(18,I)=0.0
           VAL3(19,I)=0.0
           VAL3(20,I)=0.0
@@ -1412,9 +1783,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 10 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 20 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -1422,10 +1793,10 @@ C TFL is is the last timestep of the previous day.
             T=T1+Y1/Y2
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IJDAY.EQ.1)IDP=365
-            IF(IJDAY.GT.1)IDP=IJDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IJDAY.EQ.1)IDP=365
+C            IF(IJDAY.GT.1)IDP=IJDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get future timestep convective columns of the temporal item.
             itdi=ICASUAL3(izone)
@@ -1463,9 +1834,9 @@ C TFL is is the last timestep of the previous day.
         IJ=0
         DO 110 I=1,24
           I1=I-1
-          I2=I
+C          I2=I
           T1=FLOAT(I1)
-          T2=FLOAT(I2)
+C          T2=FLOAT(I2)
           DO 120 J=1,NTS
             IJ=IJ+1
             Y1=FLOAT(J)
@@ -1473,10 +1844,10 @@ C TFL is is the last timestep of the previous day.
             T=T1+Y1/Y2
             TF = real(IJ)/Y2 
             TP = TF - (1./Y2)
-            IF(IJDAY.EQ.1)IDP=365
-            IF(IJDAY.GT.1)IDP=IJDAY-1
-            TFL=24.0-(1./real(NTS))
-            LTSOD=24*NTS
+C            IF(IJDAY.EQ.1)IDP=365
+C            IF(IJDAY.GT.1)IDP=IJDAY-1
+C            TFL=24.0-(1./real(NTS))
+C            LTSOD=24*NTS
 
 C Get future timestep convective columns of the temporal item.
             itdi=IACTIV(izone)
@@ -1509,13 +1880,13 @@ C            CALL EDISP(IUOUT,OUTS)
       ENDIF
 
       IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ELSEIF(IDAY.GT.IODS)THEN
-        CALL GCASC(IDAY,IZONE,ISET)
+        CALL GCASC(IDAY,IZONE,ISET) ! for older versions.
         CALL XTVAL3(GVAL,1,IEND,21)
       ENDIF
 

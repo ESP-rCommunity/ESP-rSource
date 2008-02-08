@@ -152,7 +152,7 @@ C That is if record 32=-1.
         call EFOPRAN(iunit,LTMP,nprl,1,IER)
         if(ier.eq.0) then
            irec=32
-           read(iunit,rec=irec,iostat=istat)iftype
+           read(iunit,rec=irec,iostat=ios,err=13)iftype
            IPLIB=1
            if(iftype.eq.-1) return
         endif
@@ -164,7 +164,7 @@ C as the simulator uses.
         iftype=0
         call EFOPRAN(iunit,LTMP,nzrl,1,IER)
         irec=1
-        read(iunit,rec=irec,iostat=istat)nsim,nreclx
+        read(iunit,rec=irec,iostat=ios,err=13)nsim,nreclx
         if (nreclx.lt.nzrl) then
           nzrl = nreclx
           close(iunit)
@@ -202,7 +202,7 @@ C        write(6,*) 'MORFIL: path reset to ',path
 C Establish if this database contains result-sets.
       INIT2=1
       IREC=1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=7)NSIM,nzrl,izver,IMET
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=7)NSIM,nzrl,izver,IMET
       IF(NSIM.EQ.0)then
         H(1)='Take extreme caution in using incomplete or corrupt '
         H(2)='results libraries. '
@@ -232,8 +232,13 @@ C Establish if this database contains result-sets.
       INIT2=1
       GOTO 8
 
-    7 call usrmsg(' Unable to read number of simulation result',
-     &            ' sets from the library.','W')
+    7 if(ios.eq.2)then
+        call usrmsg('No permission to read number of simulation',
+     &            'result sets from the library.','W')
+      else
+        call usrmsg('Unable to read number of simulation result',
+     &            'sets from the library.','W')
+      endif
       GOTO 6
 
 C Read in all file names and miscellaneous data associated
@@ -272,6 +277,13 @@ C as -3 so set iftype to -2 to signal a problem.
       endif
 
 C Note: flow results are opened at call to mfoutp.
+
+C Error messages.
+   13 if(IOS.eq.2)then
+        CALL USRMSG('No permission to read library header',' ','W')
+      else
+        CALL USRMSG('File read error in library header',' ','W')
+      endif
       RETURN
       END
 
@@ -366,9 +378,11 @@ C Set number of chosen sets to zero and clear array NSNO.
  5    continue
       IUNIT=IFIL
 
-C Determine how many result-sets are held in database.
+C Determine how many result-sets are held in database. Note
+C that izver = 3 or earlier does not include explicit separate
+C casual gains data items.
       IREC=1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver,IMET
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NSIM,nzrl,izver,IMET
 C      write(6,*) 'uncertainty analysis method ',IMET
 
 C If there is more than one result-set then check to see if ISAVE=const for 
@@ -399,7 +413,7 @@ C Read and display information on all result-sets.
 
 C Read result-set start address.
           TNAME=' '
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST1,NST2,TNAME
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
           if (izver.eq.0) TNAME=' Undefined '
           write(RSNAME(I),'(a40)') TNAME(1:40)
   
@@ -415,7 +429,7 @@ C In the case of factorial uncertainty analysis decode result set name.
   
 C Read simulation start and finish days and control name.
           IREC=NST1
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ID1,IM1,ID2,
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,
      &                IM2,ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
      &                iSlr_half_hr_flg
           write(outs,711)I,SCNAME,ID1,IM1,ID2,IM2,NTS,
@@ -432,11 +446,11 @@ C same for all sets.
         DO 10 I=1,NSIM
           IREC=I+1
           TNAME=' '
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST1,NST2,TNAME
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
           if (izver.eq.0) TNAME=' Undefined '
           write(RSNAME(I),'(a40)') TNAME(1:40)
           IREC=NST1
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ID1,IM1,ID2,IM2,
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,IM2,
      &              ISDS,ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst,
      &              iSlr_half_hr_flg
           if(I.eq.1) ISVO=ISAVE
@@ -513,12 +527,12 @@ C Set NS to zero to prohibit access to sensetivity analysis section of res.
 C Read details of this result-set.
       IREC=ISIM+1
       TNAME = '  '
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST1,NST2,TNAME
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NST1,NST2,TNAME
       if (izver.eq.0) TNAME=' Undefined '
       write(RSNAME(ISIM),'(a40)') TNAME(1:40)
       ISTADD=NST2
       IREC=NST1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ID1,IM1,ID2,IM2,ISDS,
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ID1,IM1,ID2,IM2,ISDS,
      &ISDF,NTS,ISAVE,SCNAME,IDAVER,itcnst, iSlr_half_hr_flg
 
 C Set|Control   |Start |Finish| Time   | Save |Average|Pre|Aid memoire
@@ -539,14 +553,14 @@ C no.| name     | day  | day  |steps/hr|option| Flag  |sim|
       IF(SCNAME(1:5).NE.'NONE ') THEN
         NCP=NCOMP
         IF(NCOMP.GT.20)NCP=20
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ICASCF(I),I=1,NCP)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ICASCF(I),I=1,NCP)
         IREC=IREC+1
         IF(NCOMP.GT.20) THEN
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+          READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)
      &                                         (ICASCF(I),I=21,NCOMP)
           IREC=IREC+1
         ENDIF
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCTLF
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCTLF
         IREC=IREC+1
       ENDIF
 
@@ -566,7 +580,12 @@ C Reconstruct the results library hash variables before returning.
       CALL HASHL
       RETURN
 
- 1000 write(outs,'(A,I5)')' MORESS: library error at record',IREC
+ 1000 if(IOS.eq.2)then
+        write(outs,'(A,I5)')
+     &    'MORESS: no permission to read library at record',IREC
+      else
+        write(outs,'(A,I5)')'MORESS: library error at record',IREC
+      endif
       call edisp(iuout,outs)
       RETURN
       END
@@ -830,7 +849,11 @@ C ier is zero if no problems and -3 if user issued a cancel.
       common/recver/izver,ipver,iever
       common/rpath/path
       COMMON/C1/NCOMP,NCON
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      common/C21/IFCFG,cfgroot,LCFGF
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -846,9 +869,6 @@ C      COMMON/RECV7/ZOA(MCOM)
       COMMON/RECVBP/IBP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/C21/IFCFG,cfgroot,LCFGF
       common/hcthry/ihct,icorexhct
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -869,11 +889,11 @@ C longtmp is the model configuration file with full path.
       IUNIT=IFIL
       IREC=ISTREC+2
       IBP=1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCOMP,NCON
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
       IREC=IREC+1
       IF(NCOMP.GT.0)goto 3
       IBP=2
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCOMP,NSUR,NELT,
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NSUR,NELT,
      &NWIN,NDOOR
       IREC=IREC+1
       DO 300 LL=1,NCOMP
@@ -884,18 +904,18 @@ C longtmp is the model configuration file with full path.
   301   CONTINUE
   300 CONTINUE
       goto 4
-    3 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSNAM
+    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LSNAM
       IREC=IREC+1
       NCP=NCOMP
       IF(NCP.GT.20)NCP=20
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),I=1,NCP)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCCODE(I),I=1,NCP)
       IREC=IREC+1
       IF(NCOMP.LE.20)goto 4
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),I=21,NCOMP)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCCODE(I),I=21,NCOMP)
       IREC=IREC+1
 
 C Recover CLIMATE file name used at simulation time.
-    4 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
+    4 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCLIM
       IREC=IREC+1
 
 C Jump over header block records containing data not
@@ -904,27 +924,27 @@ C required at present.
       X=FLOAT(NCON)/20.
       IJ=INT(X)+1
       DO 1030 I=1,NCOMP
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LPROJ(I)
       IREC=IREC+1
 
  1030 CONTINUE
 
 C Added to save the name of each zone geometry file in LGEOM(MCOM).
       DO 1031 I=1,NCOMP
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)CHDUM
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)CHDUM
         LGEOM(I)=CHDUM
         IREC=IREC+1
  1031 CONTINUE
 
 C Added to save the name of each zone LSHAD file.
       DO 1032 I=1,NCOMP
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LSHAD(I)
         IREC=IREC+1
  1032 CONTINUE
 
 C Added to save the name of each zone thermal properties file.
       DO 1033 I=1,NCOMP
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LTHRM(I)
         IREC=IREC+1
  1033 CONTINUE
 
@@ -934,43 +954,43 @@ C     IREC=IREC+3*NCOMP
         J1=I*20-19
         J2=I*20
         IF(I.EQ.IJ)J2=NCON
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IC1(J),J=J1,J2)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(IC1(J),J=J1,J2)
         IREC=IREC+1
   104 CONTINUE
       DO 105 I=1,IJ
         J1=I*20-19
         J2=I*20
         IF(I.EQ.IJ)J2=NCON
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IE1(J),J=J1,J2)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(IE1(J),J=J1,J2)
         IREC=IREC+1
   105 CONTINUE
       DO 106 I=1,IJ
         J1=I*20-19
         J2=I*20
         IF(I.EQ.IJ)J2=NCON
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ICT(J),J=J1,J2)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ICT(J),J=J1,J2)
         IREC=IREC+1
   106 CONTINUE
       DO 107 I=1,IJ
         J1=I*20-19
         J2=I*20
         IF(I.EQ.IJ)J2=NCON
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IC2(J),J=J1,J2)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(IC2(J),J=J1,J2)
         IREC=IREC+1
   107 CONTINUE
       DO 108 I=1,IJ
         J1=I*20-19
         J2=I*20
         IF(I.EQ.IJ)J=NCON
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(IE2(J),J=J1,J2)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(IE2(J),J=J1,J2)
         IREC=IREC+1
   108 CONTINUE
       DO 20 I=1,NCOMP
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)znpad
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)znpad
         write(ZNAME(I),'(a)') znpad(1:12)
         IREC=IREC+1
    20 CONTINUE
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCONST(I),I=1,NCP)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=1,NCP)
 
 C Also assing NZSUR common.
       do 1108 i=1,NCP
@@ -979,7 +999,7 @@ C Also assing NZSUR common.
       IREC=IREC+1
 
       IF(NCOMP.LE.20)goto 202
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCONST(I),I=21,NCOMP)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=21,NCOMP)
       do 1109 i=21,NCOMP
         NZSUR(i)=NCONST(i)
  1109 continue
@@ -990,12 +1010,12 @@ C      write(6,*) 'nzsur=',nzsur
       IREC=IREC+1
   202 DO 30 I=1,NCOMP
         NN=NCONST(I)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NELTS(I,J),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NELTS(I,J),J=1,NN)
         IREC=IREC+1
    30 CONTINUE
       DO 40 I=1,NCOMP
         NN=NCONST(I)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NGAPS(I,J),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NGAPS(I,J),J=1,NN)
         IREC=IREC+1
    40 CONTINUE
       DO 50 I=1,NCOMP
@@ -1004,23 +1024,23 @@ C      write(6,*) 'nzsur=',nzsur
 
 C Read for all three possible air gaps.
           if(J.LE.(NN-5))then
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+            READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)
      &        (NPGAP(I,J,K),K=1,MGP),(NPGAP(I,J+1,K),K=1,MGP),
      &        (NPGAP(I,J+2,K),K=1,MGP),(NPGAP(I,J+3,K),K=1,MGP),
      &        (NPGAP(I,J+4,K),K=1,MGP)
           elseif(J.eq.(NN-4))then
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+            READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)
      &        (NPGAP(I,J,K),K=1,MGP),(NPGAP(I,J+1,K),K=1,MGP),
      &        (NPGAP(I,J+2,K),K=1,MGP),(NPGAP(I,J+3,K),K=1,MGP)
           elseif(J.eq.(NN-3))then
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+            READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)
      &        (NPGAP(I,J,K),K=1,MGP),(NPGAP(I,J+1,K),K=1,MGP),
      &        (NPGAP(I,J+2,K),K=1,MGP)
           elseif(J.eq.(NN-2))then
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+            READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)
      &        (NPGAP(I,J,K),K=1,MGP),(NPGAP(I,J+1,K),K=1,MGP)
           elseif(J.eq.(NN-1))then
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+            READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)
      &        (NPGAP(I,J,K),K=1,MGP)
           endif
           IREC=IREC+1
@@ -1034,12 +1054,12 @@ C else read in transparent and floor areas as described.
       else
       
 C Read floor area of each zone.
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ZBASEA(I),I=1,NCOMP)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
 C Read area of transparent surfaces connected to external type BC.
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ZTRANA(I),I=1,NCOMP)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
       endif
@@ -1047,59 +1067,59 @@ C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
 C Read surface areas.
       DO 90 I=1,NCOMP
         NN=NCONST(I)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(SNA(I,J),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(SNA(I,J),J=1,NN)
         IREC=IREC+1
    90 CONTINUE
 
 C ZOA Not needed.
       DO 100 I=1,NCOMP
-C        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZOA(I)
+C        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZOA(I)
         IREC=IREC+1
   100 CONTINUE
       DO 110 I=1,NCOMP
         NN=NCONST(I)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(CHARDM(I,J),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(CHARDM(I,J),J=1,NN)
         IREC=IREC+1
   110 CONTINUE
       DO 120 I=1,NCOMP
         NN=NCONST(I)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(PAZI(I,J),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(PAZI(I,J),J=1,NN)
         IREC=IREC+1
   120 CONTINUE
       DO 130 I=1,NCOMP
         NN=NCONST(I)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(PELV(I,J),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(PELV(I,J),J=1,NN)
         IREC=IREC+1
   130 CONTINUE
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NHCFP(I),I=1,NCP)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NHCFP(I),I=1,NCP)
       IREC=IREC+1
       IF(NCOMP.LE.20)goto 203
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NHCFP(I),I=21,NCOMP)
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NHCFP(I),I=21,NCOMP)
       IREC=IREC+1
   203 DO 150 I=1,NCOMP
        IF(NHCFP(I).EQ.0)goto 150
        NN=NCONST(I)
        NP=NHCFP(I)
        DO 160 K=1,NP
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)HCFPST(I,K),
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)HCFPST(I,K),
      &      HCFPFT(I,K),(HCFVI(I,J,K),J=1,NN)
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(HCFVE(I,J,K),J=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(HCFVE(I,J,K),J=1,NN)
         IREC=IREC+1
   160  CONTINUE
   150 CONTINUE
 
 C Read inside and outside indices of heat transfer coef. (by default
 C each is one)
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)IHCT,ICOREXHCT
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)IHCT,ICOREXHCT
       IREC=IREC+1
 
 C Read the full path of the configuration file associated with
 C this model.
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NAME
+      READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1001)NAME
       IF(NAME.EQ.'CONFIG')THEN
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1006)longtmp
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1006)longtmp
 C        write(6,*) longtmp
         IREC=IREC+1
       ELSE
@@ -1145,6 +1165,13 @@ C Extract path from cfg file name and check that we can find it.
         ELSE
           CFGOK=.TRUE.
         ENDIF
+
+C If izver is >=4 then the only information needed from the zone
+C operation file is the user name for each casual gain type. Scan
+C this information.
+        DO 43 IZONE=1,NCOMP
+          CALL EROPER(0,iuout,IAPROB,izone,IER)
+  43    CONTINUE
       ELSE
 
 C Not found, might be in a remote folder.  Warn user first.
@@ -1184,7 +1211,7 @@ C but if using GTK then we need the full length to avoid truncation.
       ENDIF
 
       DO 140 I=1,NCOMP
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZGAE(I),ZGAI(I),
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZGAE(I),ZGAI(I),
      &  xdum,xdum
         IREC=IREC+1
   140 CONTINUE
@@ -1213,21 +1240,36 @@ C Climate file not found - ask user for name.
 
 C Also recover the solar radiation flag from the climate file.
       IRECC=366
-      READ(IUNITC,REC=IRECC,IOSTAT=ISTAT,ERR=102)IYEAR,IRT
+      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,IRT
       IRTYPE=0
       IF(IRT.EQ.123)IRTYPE=1
 
     2 RETURN
 
-  102 call usrmsg(' ',' Climate file cannot be assigned.','W')
+  102 if(IOS.eq.2)then
+        call usrmsg(' ',
+     &    'No permission to read year from climate file.','W')
+      else
+        call usrmsg(' ','Error readint year from climate file.','W')
+      endif
       ier=-4
       goto 2
- 1000 write(outs,'(A,I4)')'MOINIT: error @ rec ',IREC
+ 1000 if(IOS.eq.2)then
+        write(outs,'(A,I4)')'MOINIT: no permission to read @ rec ',IREC
+      else
+        write(outs,'(A,I4)')'MOINIT: read error @ rec ',IREC
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       ier=-5
       goto 2
- 1001 write(outs,'(A,I4)')'MOINIT: error @ rec ',IREC
+ 1001 if(IOS.eq.2)then
+        write(outs,'(A,I4)')
+     &    'MOINIT: no permission to read model name @ rec ',IREC
+      else
+        write(outs,'(A,I4)')
+     &    'MOINIT: error getting model name @ rec ',IREC
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       ier=-5

@@ -1,8 +1,9 @@
 C Include file for network flow.
 C Updated December 2005 for additional nodes, components and control laws.
+C Updated January 2007 for additional connections.
 
 C Maximum number of nodes, components, connections.
-      PARAMETER (MNOD=70,MCMP=80,MCNN=99)
+      PARAMETER (MNOD=70,MCMP=80,MCNN=199)
 C Maximum number of node supplementary data items
       PARAMETER (MNDS=2)
 C Number of valid fluid flow component types

@@ -565,6 +565,7 @@ C gains and losses.
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
 
+
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
       character outs*124,zname*12,zdesc*64,prompt*124,outsl*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -573,11 +574,15 @@ C gains and losses.
       character SLABEL*32,GLABEL*20
 
       DIMENSION VAL(12),TVAL(12,12)
-      DIMENSION NDYMTH(12), CQ(MTS), CQOUT(MTS)
+      DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
+
+C Set chosen result set.
+      ISET=ISIM
+      IEND=24*NTS
 
 C Generate descriptive strings & output general header information.
 C If output to file alter the edisp unit number.
@@ -610,8 +615,7 @@ C Call the menu of choices (this also sets some default options).
 C Recover 100Wh vs kWh from IGETNO().
       IR=IGETNO(1,4)
 
-C Set chosen result set.
-      ISET=ISIM
+C Set header text.
       CALL HDDATE(PDESCR)
       CALL HDSTEP(SDESCR)
       call edisp(itru,' ')
@@ -730,13 +734,15 @@ C in terms of surface so negate it to have contribution to air node.
      &        'recovery of convection data.','W')
           endif
 
-C Get casual gains.
-          CALL GCASC(JD,IZN,ISET)
+C Get casual gains. Unlike other facilities, only the total
+C casual convective and radiant are required so there is
+C little overhead with the GCASC and GCASR method.
+          CALL GCASC(JD,IZN,ISET) ! for older versions.
           CALL FLTIAV(JD,GVAL,CQ,NEL)
           CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
           VAL(5)=VAL(5)+SGT+SLT
 
-          CALL GCASR(JD,IZN,ISET)
+          CALL GCASR(JD,IZN,ISET) ! for older versions.
           CALL FLTIAV(JD,GVAL,CQ,NEL)
           CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
           VAL(6)=VAL(6)+SGT+SLT
