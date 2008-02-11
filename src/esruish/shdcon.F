@@ -20,284 +20,668 @@ C Boston, MA 02111-1307 USA.
 
 C SHDCON.F contains the following routines:
 
-C SHDCON: Controls shading computation.
-C SHDTST: Tests each grid centre point of a user-specified grid to
-C         establish if it is within the target surface and shadow
-C         polygon.
+C SHDCON: Sets up the parameters relating to shading computation.
+C SHADC:  Implements the shading computation.
 C DECOMP: Generates a modified shadow polygon for the case where the
 C         projected surface crosses the plane of the target surface.
 C INTERSECT: Determines the intersection point between the YT=0
 C            plane and a line.
+C SHDTST: Tests each grid centre point of a user-specified grid to
+C         establish if it is within the target surface and shadow
+C         polygon.
 
-C **************** SHDCON
-C Main controller for the shading computation.
+C ********** SHDCON **********
+C Sets up the parameters relating to shading computation.
 
-      SUBROUTINE SHDCON(ICOMP)
+      subroutine shdcon(icomp,ier,act)
 #include "building.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GS5/NB,XO(MB),Y0(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
-      COMMON/SANGL1/SAZI1,SALT1
-      COMMON/PREC8/SLAT,SLON
-      COMMON/SHAD1/ISUNUP
-      COMMON/CONTR/MON,ISC(MS),IYD
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/IHTIME/IHOUR
-      COMMON/SHAD3/IOSHD(MOX,MOZ)
-      COMMON/SANGL2/SAZI2,SALT2
+      common/filep/ifiL
+      common/pophelp/h(60)
+      common/outin/iuout,iuin
+      common/c20/nzsur(mcom),nztv(mcom)
+      common/c24/izstocn(mcom,ms)
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
+      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
+     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/data1/ical
+      common/contr/mon,isc(ms),iyd
+      common/mtfile/ltrns,multic,mons,monf
+      common/sif1/insrts,insrti
       common/ract/paction
-      CHARACTER BLKNAME*8,BLKMAT*12,outs*124,paction*16
-      CHARACTER*3 MTHNAM(12)
 
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+C iaplic(1) toggle for shading;
+C iaplic(2) toggle for insolation;
+C iaplic(3) toggle for assessment where:
+C         1 is 'all_applicable',
+C         0 is manual selection of surfaces.
+C nsurfcalc is number of shaded surfaces, lstsfcalc() list of
+C applicable surfaces, nsurfinso number of insolation sources and
+C isurfinso() list of insolation sources.
+      common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),lstsfcalc(mcom,ms),
+     &       nsurfinso(mcom),isurfinso(mcom,ms)
+
+      dimension irecs(ms),iavdec(12),iva(ms)
+      character ltrns*72,tbase*72,outs*124
+      character*3 month(12)
+      character ssmlcn*32,ssvfc*4,ssotf*32,ssother*24,ssname*12,ssuse*8
+      character ssparent*12
+      character act*1,paction*16,h*72,ctype*4
+      logical ok,dok
+      logical newgeo  ! Used to test for new/old geometry file.
+
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-      if(NB.eq.0)then
+      newgeo=.false.  ! assume older format geometry.
+      ier=0
+      iunit=ifil
+
+   35 call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C If new format geometry and iaplic(icomp,1) already equals 1 then
+C all applicable surfaces were set in the zone geometry file.
+      if(newgeo)then
+         if(iaplic(icomp,1).eq.1)then
+            np=nsurfcalc(icomp)
+            do 41 j=1,np
+               iva(j)=lstsfcalc(icomp,j)
+   41       continue
+
+C Set up isc array (surfaces included in the shading analysis).
+            icont=0
+            do 42 i=1,nzsur(icomp)
+               isc(i)=0
+               do 43 j=1,np
+                 if(i.eq.iva(j))isc(i)=1
+   43          continue
+               if(isc(i).eq.1)icont=1
+   42       continue
+
+         elseif(iaplic(icomp,1).eq.0)then
+
+C If iaplic(icomp,1) is zero and nsurfcalc is non-zero then user
+C has manually selected surfaces so fill arrays. If zero then
+C the user effectively said no shading should be calculated
+C so just clear () and () arrays.
+            np=nsurfcalc(icomp)
+            if(np.eq.0)then
+               do 44 i=1,nzsur(icomp)
+                 isc(i)=0
+   44          continue
+            else
+               do 45 j=1,np
+                  iva(j)=lstsfcalc(icomp,j)
+   45          continue
+
+C Set up isc array (surfaces included in the shading analysis).
+               icont=0
+               do 46 i=1,nzsur(icomp)
+                  isc(i)=0
+                  do 47 j=1,np
+                     if(i.eq.iva(j))isc(i)=1
+   47             continue
+                  if(isc(i).EQ.1)icont=1
+   46          continue
+            endif
+         endif
+      else
+
+C Older geometry file, user is required to set preferences for 
+C surfaces to include or, in the case of silent action, just
+C do 'all appliable' surfaces.
+         if(act.eq.'s'.or.paction(1:11).eq.'recalculate')then
+
+C Clear return array and select all applicable surfaces.
+            do 14 i=1,nzsur(icomp)
+               iva(I)=0
+   14       continue
+            np=0
+            do 13 i=1,nzsur(icomp)
+               icn=izstocn(icomp,i)
+               if(ssother(icn,1)(1:5).eq.'EXTER')then
+                  np=np+1
+                  iva(np)=i
+               endif
+   13       continue
+            if(np.eq.0)then
+               call usrmsg('No enternal surfaces found!',' ','W')
+               return
+            endif
+            iaplic(icomp,1)=1
+         else
+            call edisp(iuout,' ')
+            call edisp(iuout,'Select external surfaces to include in')
+            call edisp(iuout,'the direct/duffuse shading calculation.')
+            call pickssur(icomp,np,'s',iva,ier)
+            if(ier.ne.0)return
+         endif
+
+C Set up isc array (surfaces included in the shading analysis).
+         icont=0
+         do 110 i=1,nzsur(icomp)
+            isc(i)=0
+            do 120 j=1,np
+               if(i.eq.iva(j))isc(i)=1
+  120       continue
+            if(isc(i).eq.1)icont=1
+  110    continue
+
+C Fill ishdirec array.
+         nsurfcalc(icomp)=np
+         do 121 j=1,np
+            lstsfcalc(icomp,j)=iva(j)
+  121    continue
+      endif
+
+C Check that at least one surface has been chosen or gleaned
+C from the geometry file.
+      if(icont.eq.0)then
+         if(newgeo)then
+            call edisp(iuout,
+     &        'No shaded surfaces in zone geometry file - skipping!')
+            return
+         else
+            if(act.eq.'s')then
+               call edisp(iuout,'No surfaces, shading skipped!')
+               ical=1
+               return
+            else
+               h(1)='Surfaces that might be shaded need to be'
+               h(2)='selected or the computations cannot be performed.'
+               dok=.true.
+               call askok('No surfaces selected!','Re-specify?',
+     &                       ok,dok,2)
+               if(ok)goto 35
+               call edisp(iuout,'Shading computation abandoned!')
+               ical=1
+               return
+            endif
+         endif
+      endif
+
+C Calculate shading for specified period.
+      multic=2
+      if(paction(1:13).ne.'update_silent')then
+         call edisp(iuout,' ')
+         call edisp(iuout,
+     &   'A zone transitional shading file will be opened for each')
+         call edisp(iuout,
+     &   'computation month to store surface shading data that')
+         call edisp(iuout,
+     &   'are required by the internal surface insolation algorithm.')
+         call edisp(iuout,
+     &   'These file are named ?Jan, ?Feb etc., where `?` is the')
+         call edisp(iuout,
+     &   'zone base name. These files will be automatically deleted')
+         call edisp(iuout,
+     &   'when the Shading & Insolation program is exited normally')
+         call edisp(iuout,
+     &   '(otherwise they may be deleted manually).')
+      endif
+
+      if(act.eq.'s')then
+         mons=1
+         monf=12
+         mon=mons
+      else
+         h(1)='An integer value between 1 and 12. For each month a'
+         h(2)='24 hour calculation of direct and diffuse shading on'
+         h(3)='external surfaces will be undertaken for the day of'
+         h(4)='average solar declination.'
+         call easki(mons,' ','Start month number?',
+     &              1,'F',12,'F',1,'start month',ier,4)
+         if(ier.ne.0)return
+         call easki(monf,' ','End month number?',
+     &              mons,'F',12,'F',1,'end month',ier,4)
+         if(ier.ne.0)return
+         if(mons.eq.monf)multic=0
+      endif
+      do 601 mon=mons,monf
+
+C Convert day of average solar declination in month to a year
+C day number.
+         iday=iavdec(mon)
+         call eday(iday,mon,iyd)
+
+C As a separate file will need to be created for each month of a 
+C simulation, append 'Jan' or 'Feb' to the end of the base name to
+C identify them. Close any previous file on iunit and open a new one.
+         tbase=ltrns(1:lnblnk(ltrns))//month(mon)
+         irecw=ms+5
+         call efopran(iunit,tbase,irecw,3,ier)
+
+C Write the first record of the zone transitional shading file.
+         irec=1
+         do 801 I=1,ms
+            irecs(I)=0
+  801    continue
+         write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,ms)
+         call tfile1(icomp)
+         call shadc(icomp)
+         ical=1
+         insrts=0
+         call ssave(ier)
+         if(ier.ne.0)then
+            call usrmsg('Error condition detected during file save!',
+     &                  'Terminating calculation.','W')
+            return
+         endif
+  601 continue
+      return
+
+ 1000 write(outs,21)irec
+   21 format('SHDCON: Zone Transitional Shading file error, record',i6)
+      call edisp(iuout,outs)
+      return
+      end
+
+C ********** SHADC **********
+C Calculates the direct and diffuse shading. Called from shdcon.
+
+      subroutine shadc(icomp)
+#include "building.h"
+
+      common/tracech/icout
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/prec8/slat,slon
+      common/shad1/isunup
+      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa
+      common/grid11/xop(mox,moz),zop(mox,moz)
+      common/contr/mon,isc(ms),iyd
+      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/ihtime/ihour
+      common/sangl1/sazi1,salt1
+      common/sangl2/sazi2,salt2
+      common/ract/paction
+
+      dimension month(12),npz(8),alt(8),azi(8)
+      character blkname*8,blkmat*12,outs*124,paction*16
+      character month*3,mode*3
+      logical tok
+
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &           'Sep','Oct','Nov','Dec'/
+
+C Sky vault discretisation.
+      data npz/30,60,84,108,126,138,144,145/
+      data alt/6.,18.,30.,42.,54.,66.,78.,90./
+      data azi/12.,12.,15.,15.,20.,30.,60.,0./
+
+C If trace requested enable writing.
+      tok=.false.
+      if(icout.eq.33)tok=.true.
+
+      if(nb.eq.0)then
          call usrmsg('No obstruction blocks defined so',
      &               'exiting from shading calculation.','W')
          return
       endif
 
-C Commence computation for each target surface in turn.
-      KOUNT=0
-      DO 10 I=1,NSUR
-        IF(ISC(I).EQ.1)KOUNT=KOUNT+1
-   10 CONTINUE
-      KOUNT=KOUNT*24
-      KIND=0
-      INDCOM=0
-      DO 20 ITSUR=1,NSUR
-         IF(ISC(ITSUR).EQ.0)goto 20
+C idifc determines whether diffuse shading is calculated only
+C once (=0) or at every time step (=1).
+      idifc=1
+      init=0
+      indcom=0
+      kind=0
+      knt=0
+      ksu=0
+
+C ksu is the number of sun-up hours
+      do 10 i=1,24
+         stime=float(i)
+         call eazalts(stime,iyd,slat,slon,isunup,sazi,salt)
+         if(isunup.eq.1)ksu=ksu+1
+   10 continue
+
+C knt is the total number of target surfaces in zone.
+      do 11 i=1,nsur
+         if(isc(i).eq.1)knt=knt+1
+   11 continue
+
+C Estimate simulaton extent (surface-hours) to support the
+C progress report.         
+      kt=ksu*knt
+
+C Commence direct (mode=dir) and diffuse (mode=dif) shading computation
+C for each target surface in turn.
+      do 20 itsur=1,nsur
+
+C Skip if surface is not selected by user.
+         if(isc(itsur).eq.0)goto 20
+         if(paction(1:13).ne.'update_silent')then
+            call usrmsg(' ',' ','-')
+         endif
+
+C Trace output.
+         if(tok)then
+            call edisp(icout,' ')
+            write(outs,9998)itsur
+ 9998       format('*** SHADC: processing target surface ',I2)
+            call edisp(icout,outs)
+         endif
 
 C Partially derive transformation equations by computing time
 C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
-         CALL TRNSF1(ITSUR)
+         call trnsf1(itsur)
 
-C Transfer transformed surface coordinates to transitional
+C Transfer transformed surface coordinates to zone transitional
 C shading file.
-         CALL TFILE2(ITSUR)
+         call tfile2(itsur)
 
 C Set up target surface mesh.
-         CALL MESH(ITSUR)
+         call mesh(itsur)
 
 C Proceed hour-by-hour.
-         DO 30 IHR=1,24
-            IHOUR=IHR
-            STIME=FLOAT(IHOUR)
+         do 30 ihr=1,24
+
+C Reset foshd each hour, setting any grid point not within surface
+C to -1.0.
+            do 401 i=1,nox
+               do 402 j=1,noz
+                  call point1(itsur,xop(i,j),zop(i,j),ians)
+                  foshd(i,j)=0
+                  if(ians.eq.0)foshd(i,j)=-1.0
+  402          continue
+  401       continue
+
+            ihour=ihr
+            stime=float(ihour)
 
 C Determine the solar azimuth and altitude angles relative to the
 C original coordinate system.
-            CALL EAZALTS(STIME,IYD,SLAT,SLON,ISUN,SAZI,SALT)
-            SAZI1=SAZI
-            SALT1=SALT
-            ISUNUP=ISUN
+            call eazalts(stime,iyd,slat,slon,isunup,sazi1,salt1)
 
-C Abandon shading calculation if before sunrise or after sunset.
-            IF(ISUNUP.EQ.0)goto 1
+C Remember sun position for this hour.
+            sazir=sazi1
+            saltr=salt1
+
+C Abandon calculation for this hour if before sunrise or after sunset.
+            if(isunup.eq.0)then
+               mode='abn'
+               call tfile3(icomp,itsur,mode)
+
+C Trace output.
+               if(tok)then
+                  call edisp(icout,' ')
+                  write(outs,9997)ihour
+ 9997             format('*** SHADC: Sun not up at ',I2)
+                  call edisp(icout,outs)
+               endif
+               goto 30
+            endif
+
+C Compute direct (ip=1) then diffuse (ip=2,146, i.e. 145 sky
+C patches) shading. Where the latter is not time dependent
+C (e.g. geometry is time invariant and sky irradiance distribution
+C is handled by bps), initiate only for the first sun-up time
+C step. gssa, the overall shading on target surface, is initialised
+C here for use in shdtst.
+            do 40 ip=1,146
+
+C Reset ioshd before each sun or sky patch loop, setting any
+C grid point not within target surface to -1.
+              do 403 i=1,nox
+                 do 404 j=1,noz
+                    call point1(itsur,xop(i,j),zop(i,j),ians)
+                    ioshd(i,j)=0
+                    if(ians.eq.0)ioshd(i,j)=-1
+  404            continue
+  403         continue
+
+C Direct case.
+               if(ip.eq.1)then
+                  mode='dir'
+                  gssa=0.0
+C Trace output.
+                  if(tok)then
+                     call edisp(icout,' ')
+                     write(outs,9996)ihour
+ 9996                format(
+     &                '*** SHADC: calculating direct shading at ',i2)
+                     call edisp(icout,outs)
+                  endif
+
+C Diffuse case (only initilise gssa at start of sky vault processing).
+               else
+                  mode='dif'
+                  if(ip.eq.2)gssa=0.0
+C Trace output.
+                  if(tok)then
+                     call edisp(icout,' ')
+                     write(outs,9995)ihour,ip-1
+ 9995                format(
+     &                  '*** SHADC: calculating diffuse shading at ',
+     &                       i2,' for patch ',i3)
+                     call edisp(icout,outs)
+                  endif
+
+C Test whether to calculate diffuse shading again at next hour.
+                  if(idifc.eq.0.and.init.eq.1)goto 1
+                  iptch=ip-1
+                  if(iptch.ge.1.and.iptch.le.30) nzone = 1
+                  if(iptch.ge.31.and.iptch.le.60) nzone = 2
+                  if(iptch.ge.61.and.iptch.le.84) nzone = 3
+                  if(iptch.ge.85.and.iptch.le.108) nzone = 4
+                  if(iptch.ge.109.and.iptch.le.126) nzone = 5
+                  if(iptch.ge.127.and.iptch.le.138) nzone = 6
+                  if(iptch.ge.139.and.iptch.le.144) nzone = 7
+                  if(iptch.eq.145) nzone = 8
+                  if(nzone.eq.8) then
+                     ptazi = 0.0
+                     ptalt = 90.0
+                  elseif(nzone.eq.1) then
+                     ptazi = azi(nzone)*(iptch - 1)
+                     ptalt = alt(nzone)
+                  else
+                     ptazi = azi(nzone)*((iptch - npz(nzone-1)) - 1)
+                     ptalt = alt(nzone)
+                  endif
+C If current sky patch is also sun position then exclude from
+C calculation.
+                  diff1=abs(sazir-ptazi)
+                  diff2=abs(saltr-ptalt)
+                  if(diff1.le.6.0.and.diff2.le.6.0)goto 40
+                  sazi1=ptazi
+                  salt1=ptalt
+               endif
 
 C Compute pseudo solar angles relative to the local surface
 C coordinate system.
-            CALL TRNSF2(IHOUR)
+               call trnsf2(ihour)
 
-C Terminate shading calculation if transformed surface faces away
-C from the sun.
-            IF(SAZI2.LE.90.0.OR.SAZI2.GE.270.0.
-     &           OR.ABS(SALT2).GT.90.)goto 2
+C Do not initiate projections if transformed surface faces away
+C from the sun or sky patch.
+               if(sazi2.le.90.0.or.sazi2.ge.270.0
+     &              .or.abs(salt2).gt.90.0)goto 2
 
-C Complete projection transformation on an obstruction block (IBN)
-C and surface-by-surface (IBS) basis.
-            DO 40 IBN=1,NB
+C Complete projection transformation on an obstruction block (ibn)
+C and surface-by-surface (ibs) basis.
+               do 50 ibn=1,nb
 
 C Compute X, Y and Z coordinates of obstruction block corners 
 C relative to the original site coordinate system.
-              CALL CORNR(IBN)
+                 call cornr(ibn)
 
 C Project obstruction block surface, form intersection with plane
 C of target surface if necessary, then determine target surface
-C shading polygon.
-              do 50 IBS=1,6
-                CALL TRNSF3(IBN,IBS)
-                CALL DECOMP(IBN,IBS,ITSUR)
-                CALL SHDTST(ITSUR)
-   50        continue 
-   40       CONTINUE
-            goto 1
+C shading.
+                 do 60 ibs=1,6
+                   call trnsf3(ibn,ibs)
+                   call decomp(ibn,ibs,itsur)
+                   call shdtst(itsur)
+   60            continue 
+   50          continue		! obstruction block loop
 
-C Surface cannot see sun.
-    2       DO 60 I=1,NOX
-              DO 70 J=1,NOZ
-                IOSHD(I,J)=1
-   70         CONTINUE
-   60       CONTINUE
+C For direct shading case, transfer intermediate results (ioshd)
+C to zone transitional shading file and determine overall surface
+C direct shading (pso).
+               if(mode.eq.'dir')then
+                  call tfile3(icomp,itsur,mode)
 
-C Transfer results to transitional shading file.
-    1       CALL TFILE3(ICOMP,ITSUR)
-            KIND=KIND+1
-            CALCOM=FLOAT(KIND)/FLOAT(KOUNT)
-            WRITE(outs,'(A,A3,A)')'`',MTHNAM(MON),
-     &                            '` shading calculation commenced:'
-            IF(CALCOM.GT.0.95)THEN
-               IF(INDCOM.EQ.4)goto 30
-               INDCOM=INDCOM+1
-               if(paction(1:13).ne.'update_silent')then
-                  CALL USRMSG(outs,' almost complete','P')
+C For diffuse shading case, establish sky patch contribution to
+C each target surface grid point (foshd) and determine overall
+C diffuse surface shading if last sky patch has just been
+C considered (psof).
+               elseif(mode.eq.'dif')then
+                  do 70 i=1,nox
+                     do 80 j=1,noz
+                        if(ioshd(i,j).eq.-1)goto 80
+                        foshd(i,j)=foshd(i,j)+float(ioshd(i,j))/145.0
+   80                continue
+   70             continue
+                  if(iptch.eq.145)call tfile3(icomp,itsur,mode)
                endif
-            ELSEIF(CALCOM.GT.0.75)THEN
-               IF(INDCOM.EQ.3)goto 30
-               INDCOM=INDCOM+1
+               goto 40
+
+C Surface cannot see sun or sky patch.
+    2          do 90 i=1,nox
+                  do 100 j=1,noz
+                     if(ioshd(i,j).eq.-1)goto 100
+                     if(mode.eq.'dir')ioshd(i,j)=1
+                     if(mode.eq.'dif')foshd(i,j)=foshd(i,j)+1.0/145.0
+  100             continue
+   90          continue
+               if(ip.eq.1.or.ip.eq.146)call tfile3(icomp,itsur,mode)
+   40       continue        ! sky patch loop
+
+C Indicate that sky vault has been processes once in case idifc = 0
+C (i.e. time invariant geometry and sky irradiance distribution).
+            init=1
+
+C Output calculation progress report.
+    1       kind=kind+1
+            calcom=float(kind)/float(kt)
+            write(outs,'(a,a3,a)')'`',month(mon),
+     &                         '` shading calculation commenced:'
+            if(calcom.ge.0.95)then
+               if(indcom.eq.4)goto 30
+               indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  CALL USRMSG(outs,' 75% Complete','-')
+                  call usrmsg(outs,' complete','P')
                endif
-            ELSEIF(CALCOM.GT.0.50)THEN
-               IF(INDCOM.EQ.2)goto 30
-               INDCOM=INDCOM+1
+            elseif(calcom.ge.0.75)then
+               if(indcom.eq.3)goto 30
+               indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  CALL USRMSG(outs,' 50% Complete','-')
+                  call usrmsg(outs,' 75% complete','-')
                endif
-            ELSEIF(CALCOM.GT.0.25)THEN
-               IF(INDCOM.EQ.1)goto 30
-               INDCOM=INDCOM+1
+            elseif(calcom.ge.0.50)then
+               if(indcom.eq.2)goto 30
+               indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  CALL USRMSG(outs,' 25% Complete','-')
+                  call usrmsg(outs,' 50% complete','-')
                endif
-            ENDIF
-   30    CONTINUE
-   20 CONTINUE
+            elseif(calcom.ge.0.25)then
+               if(indcom.eq.1)goto 30
+               indcom=indcom+1
+               if(paction(1:13).ne.'update_silent')then
+                  call usrmsg(outs,' 25% complete','-')
+               endif
+            endif
 
-      RETURN
-      END
+   30    continue           ! hour loop
+   20 continue              ! target surface loop
+      return
+      end
 
-C ****************** SHDTST *****************
-C SHDTST tests each grid centre point of a user-specified grid to establish
-C if it is within the target surface and shadow polygon.
-      SUBROUTINE SHDTST(ITSUR)
-#include "building.h"
-
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
-      COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
-      COMMON/SHAD3/IOSHD(MOX,MOZ)
-      CHARACTER BLKNAME*8,BLKMAT*12
-
-      IF(ISHD.EQ.0)RETURN
-
-C For each opaque surface grid point, test whether it is within 
-C the target surface. If it is, then test for whether also within
-C the shadow polygon.
-      DO 10 I=1,NOX
-        DO 20 J=1,NOZ
-
-C Is point within face ITSUR?
-          CALL POINT1(ITSUR,XOP(I,J),ZOP(I,J),IANS)
-          IF(IANS.EQ.0)goto 20
-
-C Is point within shadow polygon?
-          CALL POINT2(XOP(I,J),ZOP(I,J),IANS)
-          IF(IANS.EQ.0)goto 20
-          IOSHD(I,J)=1
-   20   CONTINUE
-   10 CONTINUE
-
-C Assuming no default windows so return.
-      RETURN
-      END
-
-C **********************  DECOMP **********************
+C **********  DECOMP **********
 C If a projected surface crosses the target plane the intersection
 C points are located and a modified shadow polygon produced.
-      SUBROUTINE DECOMP(IBN,IBS,ITSUR)
-#include "building.h"
 
-      COMMON/OUTPCH/ICOUT
-      COMMON/TRANSFORM/XT(4),YT(4),ZT(4)
-      COMMON/PROJ/XP(4),YP(4),ZP(4)
-      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
-      COMMON/GS5/NB,XO(MB),Y0(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),ANG(MB)
-      CHARACTER CASE*40
-      character outs*124
+      subroutine decomp(ibn,ibs,itsur)
+
+      common/tracech/icout
+      common/transform/xt(4),yt(4),zt(4)
+      common/proj/xp(4),yp(4),zp(4)
+      common/shad2/ishd,npoint,xs(5),zs(5)
+
+      character case*40,outs*124
       logical tok
-      dimension IPC(4)
+      dimension ipc(4)
 
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-C If one or more of the 4 projected point YP values are > 0 then the
-C obstruction block surface crosses the X`Z` plane. Depending on the
+C If one or more of the 4 projected point yp values are > 0 then the
+C obstruction block surface crosses the x`z` plane. Depending on the
 C number of points that satisfy this condition, the surface is either
 C partially or fully behind the target surface.
 
-C Initialise array (IPC) that holds points that cross plane.
-      DO 10 I=1,4
-         IPC(I)=0
-   10 CONTINUE
+C Initialise array (ipc) that holds points that cross plane.
+      do 10 i=1,4
+         ipc(i)=0
+   10 continue
 
-C Count number of points that cross plane (ISCNT) and set
-C ISHD=1 to indicate that SHDTST should process the generated
+C Count number of points that cross plane (iscnt) and set
+C ishd=1 to indicate that shdtst should process the generated
 C shadow polygon.
-      ISHD=1
-      ISCNT=0
-      DO 20 I=1,4
-        XS(I)=XP(I)
-        ZS(I)=ZP(I)
-        IF(YT(I).GT.0.0)THEN
-          ISCNT=ISCNT+1
-          IPC(ISCNT)=I
-        ELSE
+      ishd=1
+      iscnt=0
+      do 20 i=1,4
+        xs(i)=xp(i)
+        zs(i)=zp(i)
+        if(yt(i).gt.0.0)then
+          iscnt=iscnt+1
+          ipc(iscnt)=i
+        else
 C Remember point not excluded for use in following 3 point
 C exclusion case vertex reordering.
-          INX3=I
-        ENDIF
-   20 CONTINUE
+          inx3=i
+        endif
+   20 continue
 
 C For the case of 3 excluded points, possibly rearrange order
 C to ensure correct intersection line selection.
-      IF(ISCNT.EQ.3)THEN
-         IF(INX3.eq.2)THEN
-            IPC(1)=3
-            IPC(2)=4
-            IPC(3)=1
-         ELSEIF(INX3.eq.3)THEN
-            IPC(1)=4
-            IPC(2)=1
-            IPC(3)=2
-         ENDIF
-      ENDIF
+      if(iscnt.eq.3)then
+         if(inx3.EQ.2)then
+            ipc(1)=3
+            ipc(2)=4
+            ipc(3)=1
+         elseif(inx3.EQ.3)then
+            ipc(1)=4
+            ipc(2)=1
+            ipc(3)=2
+         endif
+      endif
 
-C *** CASE A: No points cross => 4 point shadow polygon.
-      IF(ISCNT.EQ.0)then
-         CASE='Intersection case: no points cross.'
-         NPOINT=4
-         do 30 I=1,4
+C *** Case A: No points cross => 4 point shadow polygon.
+      if(iscnt.eq.0)then
+         case='Intersection case: no points cross.'
+         npoint=4
+         do 30 i=1,4
 C Shadow polygon is projected surface.
-            XS(I)=XP(I)
-            ZS(I)=ZP(I)
+            xs(i)=xp(i)
+            zs(i)=zp(i)
    30    continue
          goto 1
 
-C *** CASE B: 1 point crosses => 2 intersection points and a 5 point
+C *** Case B: 1 point crosses => 2 intersection points and a 5 point
 C shadow polygon.
-      ELSEIF(ISCNT.EQ.1)THEN
-         CASE='Intersection case: 1 point crosses.'
-         NPOINT=5
+      elseif(iscnt.eq.1)then
+         case='Intersection case: 1 point crosses.'
+         npoint=5
 C 1st line intersection.
-         IP1=IPC(1)
-         IP2=IP1-1
-         if(IP2.eq.0)IP2=4
-         call intersect(IP1,IP2,XI,ZI)
+         ip1=ipc(1)
+         ip2=ip1-1
+         if(ip2.eq.0)ip2=4
+         call intersect(ip1,ip2,xi,zi)
 C Point replaces excluded point.
-         XS(IP1)=XI
-         ZS(IP1)=ZI
+         xs(ip1)=xi
+         zs(ip1)=zi
 C 2nd line intersection.
-         IP1=IPC(1)
-         IP2=IP1+1
-         if(IP2.eq.5)IP2=1
-         call intersect(IP1,IP2,XI,ZI)
+         ip1=ipc(1)
+         ip2=ip1+1
+         if(ip2.EQ.5)ip2=1
+         call intersect(ip1,ip2,xi,zi)
 C Point replaces next (anticlockwise) ordered point with subsequent
 C points reordered.
-         xs(IP2)=XI
-         zs(IP2)=ZI
-         if(IP2.EQ.1)then
+         xs(ip2)=xi
+         zs(ip2)=zi
+         if(ip2.eq.1)then
             xs(5)=xs(4)
             xs(4)=xs(3)
             xs(3)=xs(2)
@@ -307,7 +691,7 @@ C points reordered.
             zs(3)=zs(2)
             zs(2)=zs(1)
          endif 
-         if(IP2.EQ.2)then
+         if(ip2.eq.2)then
             xs(5)=xs(4)
             xs(4)=xs(3)
             xs(3)=xs(2)
@@ -315,130 +699,129 @@ C points reordered.
             zs(4)=zs(3)
             zs(3)=zs(2)
          endif 
-         if(IP2.EQ.3)then
+         if(ip2.eq.3)then
             xs(5)=xs(4)
             xs(4)=xs(3)
             zs(5)=zs(4)
             zs(4)=zs(3)
          endif 
-         if(IP2.EQ.4)then
+         if(ip2.eq.4)then
             xs(5)=xs(4)
             zs(5)=zs(4)
          endif 
          goto 1
 
-C *** CASE C: 2 points cross => 2 intersection points and a 4 point
+C *** Case C: 2 points cross => 2 intersection points and a 4 point
 C shadow polygon.
-      ELSEIF(ISCNT.EQ.2)THEN
-         CASE='Intersection case: 2 points cross.'
-         NPOINT=4
+      elseif(iscnt.eq.2)then
+         Case='Intersection case: 2 points cross.'
+         npoint=4
 C 1st line intersection.
-         IP1=IPC(1)
-         IP2=IP1-1
-         if(IP2.eq.0)IP2=4
-         if(IP2.eq.IPC(2))then
-            IP2=IP1+1
-            if(IP2.eq.5)IP2=1
+         ip1=ipc(1)
+         ip2=ip1-1
+         if(ip2.eq.0)ip2=4
+         if(ip2.eq.ipc(2))then
+            ip2=ip1+1
+            if(ip2.eq.5)ip2=1
          endif
-         call intersect(IP1,IP2,XI,ZI)
+         call intersect(ip1,ip2,xi,zi)
 C Point replaces 1st excluded point.
-         XS(IP1)=XI
-         ZS(IP1)=ZI
+         xs(ip1)=xi
+         zs(ip1)=zi
 C 2nd line intersection.
-         IP1=IPC(2)
-         IP2=IP1+1
-         if(IP2.eq.5)IP2=1
-         if(IP2.eq.IPC(1))then
-            IP2=IP1-1
-            if(IP2.eq.0)IP2=4
+         ip1=ipc(2)
+         ip2=ip1+1
+         if(ip2.eq.5)ip2=1
+         if(ip2.eq.ipc(1))then
+            ip2=ip1-1
+            if(ip2.eq.0)ip2=4
          endif
-         call intersect(IP1,IP2,XI,ZI)
+         call intersect(ip1,ip2,xi,zi)
 C Point replaces 2nd excluded point.
-         XS(IP1)=XI
-         ZS(IP1)=ZI
+         xs(ip1)=xi
+         zs(ip1)=zi
          goto 1
 
-C *** CASE D: 3 points cross => 2 intersection points and a 3 point
+C *** Case D: 3 points cross => 2 intersection points and a 3 point
 C shadow polygon.
-      ELSEIF(ISCNT.EQ.3)THEN
-         CASE='Intersection case: 3 points cross.'
-         NPOINT=3
+      elseif(iscnt.eq.3)then
+         case='Intersection case: 3 points cross.'
+         npoint=3
          do 40 i=1,4
-            if(IPC(i).eq.0)then
+            if(ipc(i).eq.0)then
 C Non-excluded point becomes 1st shadow point.
                xs(1)=xp(i)
                zs(1)=zp(i)
             endif
    40    continue
 C 1st line intersection.
-         IP1=IPC(1)
-         IP2=IP1-1
-         if(IP2.eq.0)IP2=4
-C         CALL ADJVN(IP1,IP2,1)
-         call intersect(IP1,IP2,XI,ZI)
+         ip1=ipc(1)
+         ip2=ip1-1
+         if(ip2.eq.0)ip2=4
+         call intersect(ip1,ip2,xi,zi)
 C Point becomes 2nd shadow point.
-         XS(2)=XI
-         ZS(2)=ZI
+         xs(2)=xi
+         zs(2)=zi
 C 2nd line intersection.
-         IP1=IPC(3)
-         IP2=IP1+1
-         if(IP2.eq.5)IP2=1
-C         CALL ADJVN(IP1,IP2,2)
-         call intersect(IP1,IP2,XI,ZI)
+         ip1=ipc(3)
+         ip2=ip1+1
+         if(ip2.eq.5)ip2=1
+         call intersect(ip1,ip2,xi,zi)
 C Point becomes 2nd shadow point.
-         XS(3)=XI
-         ZS(3)=ZI
+         xs(3)=xi
+         zs(3)=zi
          goto 1
 
-C *** CASE E: Entire surface crosses plane => abandon.
-      ELSEIF(ISCNT.EQ.4)then
-C Tell SHDTST to abandon shadow polygon.
-         ISHD=0
-         CASE='Intersection case: all points cross.'
-         NPOINT=0
+C *** Case E: Entire surface crosses plane => abandon.
+      elseif(iscnt.eq.4)then
+C Tell shdtst to abandon shadow polygon.
+         ishd=0
+         case='Intersection case: all points cross.'
+         npoint=0
          goto 1
-      ENDIF
+      endif
 
 C Trace output.
-   1  IF(.NOT.tok)goto 9999
+   1  if(.not.tok)goto 9999
       call edisp(icout,' ')
-      write(outs,9998)ITSUR,IBN,IBS
- 9998 FORMAT('*** DECOMP: Target surface ',I2,
-     &       '; obstruction block ',I2,', surface ',I2,'.')
+      write(outs,9998)itsur,ibn,ibs
+ 9998 format('*** DECOMP: Target surface ',i2,
+     &       '; obstruction block ',i2,', surface ',i2,'.')
       call edisp(icout,outs)
       call edisp(icout,case)
-      if(ISCNT.NE.0)then
-         write(outs,'(A,4I2)')'Excluded vertices =',(IPC(I),I=1,ISCNT)
+      if(iscnt.ne.0)then
+         write(outs,'(a,4i2)')'Excluded vertices =',(ipc(i),i=1,iscnt)
          call edisp(icout,outs)
       endif
       call edisp(icout,'Shadow polygon (XS,ZS):')
       call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
-      if(NPOINT.eq.0)then
+      if(npoint.eq.0)then
          call edisp(icout,'None')
          goto 9999
       endif
-      do 9997 I=1,NPOINT
-         write(outs,'(I2,F10.1,F20.1)')I,XS(I),ZS(I)
+      do 9997 I=1,npoint
+         write(outs,'(i2,f10.1,f20.1)')i,xs(i),zs(i)
          call edisp(icout,outs)
  9997 continue
 
- 9999 RETURN
-      END
+ 9999 return
+      end
 
-C **********************  INTERSECT
+C **********  INTERSECT **********
 C Determines coordinates of intersection point of YT=0 plane and
 C a given line. Uses formula:
 C
-C X = X1 + (Y1.X1-Y1.X2)
+C x = x1 + (y1.x1-y1.x2)
 C          -------------  
-C             (Y2-Y1)
+C             (y2-y1)
 
-      subroutine intersect(IP1,IP2,XI,ZI)
+      subroutine intersect(ip1,ip2,xi,zi)
 
-      COMMON/OUTPCH/ICOUT
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TRANSFORM/XT(4),YT(4),ZT(4)
-      COMMON/SHAD2/ISHD,NPOINT,XS(5),ZS(5)
+      common/tracech/icout
+      common/outin/iuout,iuin
+      common/transform/xt(4),yt(4),zt(4)
+      common/shad2/ishd,npoint,xs(5),zs(5)
+
       character outs*124
       logical tok
 
@@ -448,43 +831,78 @@ C             (Y2-Y1)
 C Determine intersection points in transformed coordinate system. Note
 C that the transformed coordinates are also the projected coordinates
 C because the intersection points are in the plane of the target surface.
-C In all cases YI=0.0.
+C In all cases yi=0.0.
 
-C Ensure that line crosses YT=0 plane by ensuring that end point
-C YT values have different sign.
-      if((YT(IP1).gt.0.0.and.YT(IP2).gt.0.0).or.
-     &  (YT(IP1).lt.0.0.and.YT(IP2).lt.0.0))then
+C Ensure that line crosses yt=0 plane by ensuring that end point
+C yt values have different sign.
+      if((yt(ip1).gt.0.0.and.yt(ip2).gt.0.0).or.
+     &  (yt(ip1).lt.0.0.and.yt(ip2).lt.0.0))then
          call edisp(iuout,
-     &      'INTERSECT ERROR: line does not cross YT=0 plane!')
+     &      'INTERSECT ERROR: line does not cross yt=0 plane!')
 
-C Tell SHDTST that shadow polygon should be abandoned.
-         ISHD=0
+C Tell shdtst that shadow polygon should be abandoned.
+         ishd=0
          goto 1
       endif
 
 C Avoid divide by 0.
-      diff=YT(IP2)-YT(IP1)
-      if(ABS(diff).lt.1.E-5)diff=1.E-5
+      diff=yt(ip2)-yt(ip1)
+      if(abs(diff).lt.1.E-5)diff=1.E-5
 
 C Intersection point.
-       XI=XT(IP1)+(((YT(IP1)*XT(IP1))-(YT(IP1)*XT(IP2)))/diff)
-       ZI=ZT(IP1)+(((YT(IP1)*ZT(IP1))-(YT(IP1)*ZT(IP2)))/diff)
+       xi=xt(ip1)+(((yt(ip1)*xt(ip1))-(yt(ip1)*xt(ip2)))/diff)
+       zi=zt(ip1)+(((yt(ip1)*zt(ip1))-(yt(ip1)*zt(ip2)))/diff)
 
 C Trace output.
-   1  IF(.NOT.tok)goto 9999
+   1  if(.not.tok)goto 9999
       call edisp(icout,' ')
-      if(ISHD.eq.1)call edisp(icout,
-     &       '*** INTERSECT: line crosses YT=0 plane.')
-      if(ISHD.eq.0)call edisp(icout,
-     &       '*** INTERSECT: line does not cross YT=0 plane.')
-      write(outs,'(A,I1,A,I1)')'Line = ',IP1,' - ',IP2
+      if(ishd.eq.1)call edisp(icout,
+     &       '*** INTERSECT: line crosses yt=0 plane.')
+      if(ishd.eq.0)call edisp(icout,
+     &       '*** INTERSECT: line does not cross yt=0 plane.')
+      write(outs,'(a,i1,a,i1)')'Line = ',ip1,' - ',ip2
       call edisp(icout,outs)
-      write(outs,'(A,3F10.3)')'Point 1 = ',XT(IP1),YT(IP1),ZT(IP1)
+      write(outs,'(a,3f10.3)')'Point 1 = ',xt(ip1),yt(ip1),zt(ip1)
       call edisp(icout,outs)
-      write(outs,'(A,3F10.3)')'Point 2 = ',XT(IP2),YT(IP2),ZT(IP2)
+      write(outs,'(a,3f10.3)')'Point 2 = ',xt(ip2),yt(ip2),zt(ip2)
       call edisp(icout,outs)
-      write(outs,'(A,2F10.3)')'Intersection = ',XI,ZI
+      write(outs,'(a,2f10.3)')'Intersection = ',xi,zi
       call edisp(icout,outs)
 
- 9999 RETURN
-      END
+ 9999 return
+      end
+
+C ********** SHDTST **********
+C Tests each grid centre point of a user-specified grid to
+C establish if it is within the target surface and shadow polygon.
+
+      subroutine shdtst(itsur)
+#include "building.h"
+
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/shad2/ishd,npoint,xs(5),zs(5)
+      common/grid11/xop(mox,moz),zop(mox,moz)
+      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa
+      character blkname*8,blkmat*12
+
+      if(ishd.eq.0)return
+
+C For each opaque surface grid point, test whether it is within 
+C the target surface. If it is, then test whether also within
+C the shadow polygon.
+      do 10 i=1,nox
+         do 20 j=1,noz
+            if(ioshd(i,j).eq.-1)goto 20
+C Is point within surface itsur?
+            call point1(itsur,xop(i,j),zop(i,j),ians)
+            if(ians.eq.0)goto 20
+
+C Is point within shadow polygon held in shad2?
+            call point2(xop(i,j),zop(i,j),ians)
+            if(ians.eq.0)goto 20
+            ioshd(i,j)=1
+   20    continue
+   10 continue
+
+      return
+      end

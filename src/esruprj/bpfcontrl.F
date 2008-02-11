@@ -2571,8 +2571,14 @@ C Extract from working array to bmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing miscellaneous data.','W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' ',
+     &    'Permission issue writing miscellaneous data.','W')
+      else
+        CALL USRMSG(' ','Problem writing miscellaneous data.','W')
+      endif
       return
+
       END
 
 C *********** EPCNTRL
@@ -2840,10 +2846,10 @@ C determined in loops that this sensor senses)
         H(41)=' type 37 is senses dir nor sol rad actuates flux'
         H(42)=' type 38 is senses dif hor sol rad actuates flux'
         H(43)=' type 39 is senses ext rel hum actuates flux'
-        H(44)=' type 40 is senses contaminant conc actuates flow'
+        H(44)=' type 33 is senses contaminant conc actuates flow'
         H(45)=' type 41 is senses other loops actuates either'
         H(46)='See ESP-r Data Model section 9 for details. '
-        
+
  910    IF(IPCTYP(II,JJ,KK).NE.41)THEN
           CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
      &         40,14,PSALT,'control law',IER,46)
@@ -3922,11 +3928,11 @@ C Miscellaneous data for multi sensor flow controller.
           H(8)= '    1 item for action flag (1=direct, -1=inverse)'
           H(9)= '    1 item for fraction ON (currently not implemented)'
           H(10)='    1 item for logical action (AND/OR/NOT/SLAVE)'
-          H(11)='  The connection/component will CHANGE from'
-          H(12)='  the default position when the sensed value'
-          H(13)='  is above the set-point. In case the inverse'
-          H(14)='  action flag is -1, the CHANGE will take place'
-          H(15)='  when the sensed value is below the set-point.'
+          H(11)='The connection/component will CHANGE from the default'
+          H(12)='position when the sensed value is above the set-point'
+          H(13)='if action flag is DIRECT. In case the action flag is'
+          H(14)='set to INVERSE, the CHANGE will take place when the'
+          H(15)='sensed value is below the set-point.'
           H(16)=' '
           H(17)='This CHANGE when it takes place will switch the  '
           H(18)='connection from its default position (open or'
@@ -3946,9 +3952,9 @@ C Miscellaneous data for multi sensor flow controller.
           H(32)='Note that logical action of sensor3 is irrelevant'
           H(33)=' '
           H(34)='If the NOT/SLAVE option is selected the output of this'
-          H(35)='control loop will be inverse/same of the flow '
-          H(36)='connection defined. Controls on this flow connection'
-          H(37)='must be defined before the NOT/SLAVE loop (this loop)'
+          H(35)='control loop will be inverse/same of flow connection'
+          H(36)='defined. Any controls on this flow connection must be'
+          H(37)='defined before the NOT/SLAVE loop (i.e. this loop) '
           H(38)=' '
           H(39)='The sensor details are essentially the same as '
           H(40)='required in a control point sensor ie. '
@@ -3982,10 +3988,14 @@ C<< To include feed back to text feedback area using USRMSG
           OK=.true.
           IF(NSEN.EQ.1)
      &    CALL ASKOK('You have chosen just one sensor, the only option',
-     &    'for mulitsensing is the NOT option. Is this correct?',OK,
-     &    dok,56)
+     &    'for mulitsensing is the NOT/SLAVE option. Is this correct?'
+     &    ,OK,dok,56)
           IF(.NOT.OK)THEN
             GOTO 56
+          ELSEIF(NSEN.EQ.1)THEN
+            INOT=1
+            CALL EASKAB('Choose whether NOT or SLAVE',' ','NOT','SLAVE'
+     &      ,INOT,56)
           ENDIF
           IF(NSEN.EQ.1)GOTO 69
  
@@ -4037,9 +4047,13 @@ C Auxiliary sensor details,
             CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
      &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,56)
             write(msg2,'(a,f5.2)') ' setpoint ',cm(ndx+4)
- 57         CALL EASKR(cm(ndx+5),' ',' Aux sensor inverse action ? ',
-     &        -1.,'F',1.,'F',0.,' Aux sensor inverse action',IER,56)
-            if(int(cm(ndx+5)).eq.0)goto 57
+            CALL EASKAB('Action Flag (see help)',' ','Direct',
+     &      'Inverse',IW,56)
+            IF(IW.EQ.1)THEN
+              cm(ndx+5)=1.0
+            ELSEIF(IW.EQ.2)THEN
+              cm(ndx+5)=-1.0
+            ENDIF
             if(int(cm(ndx+5)).eq.-1)msg3=' inverse action'
             if(int(cm(ndx+5)).eq.1) msg3=' direct action'
 
@@ -4074,15 +4088,14 @@ C Echo back to the user what they just put in.
 C For the NOT option allow to read in sensed flow connection
   69      INODE=0
           NNPK=1
-          prmpt1='Choose connection for NOT/SLAVE action'
+          prmpt1='Choose connection'
           prmpt2=' '
           CALL ASKMFCON(INODE,NNPK,ICPK,prmpt1,prmpt2)
-          cm(6)=real(icpk(1))
-          CALL EASKAB(
-     &    'Does the actuated element follow this connection (SLAVE)',
-     &    ' or is it the inverse (NOT)? ',
-     &    'SLAVE','NOT',iad,56)
-          IF(IAD.EQ.1)CM(6)=-1.*CM(6)
+          IF(INOT.EQ.2)THEN
+            cm(6)=-1.*real(icpk(1))
+          ELSE
+            cm(6)=real(icpk(1))
+          ENDIF
 
 C Adaptive behavioural model as detailed in Comfort Driven Adaptive
 C Window Opening Behaviour and the Influence of Building Design. Tuohy,
@@ -4425,7 +4438,12 @@ C Extract from working array to gmiscd() common structure
       call usrmsg(' ',' ','-')
       GOTO 92
 
- 3    CALL USRMSG(' ','Problem writing miscellaeeous data.','W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' ','Permissions issue writing miscellaeeous data.',
+     &    'W')
+      else
+        CALL USRMSG(' ','Problem writing miscellaeeous data.','W')
+      endif
       RETURN
       END
 

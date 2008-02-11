@@ -251,7 +251,7 @@ C Change zone.
 
 C Find the day to analyse.
         H(1)='Comfort is analysed for a single day at a time. '
-        write(TSTR,'(3X,I3,I4)',IOSTAT=ISTAT,ERR=1)IDCO,IMCO
+        write(TSTR,'(3X,I3,I4)',IOSTAT=IOS,ERR=1)IDCO,IMCO
     8   CALL EASKS(TSTR,' ',' Day and month numbers ? ',
      &      24,'1 1 ','day & month no',IER,1)
         K=0
@@ -383,13 +383,13 @@ C If output to file alter the edisp unit number.
         call edisp(itru,
      &   '       mean vote based on ET rather then TO.')
         call edisp(itru,'  ')
-        write(outs,'(A,A,A,I3,A,I3)',IOSTAT=ISTAT,ERR=1)
+        write(outs,'(A,A,A,I3,A,I3)',IOSTAT=IOS,ERR=1)
      &    ' Comfort assessment for ',
      &    zname(IZONE)(:lnblnk(zname(IZONE))),' on  Day',IDCO,
      &    ' of month',IMCO
         call edisp(itru,outs)
         call edisp(itru,' ')
-        write(outs,172,IOSTAT=ISTAT,ERR=1)ACTL,CLO,WVEL
+        write(outs,172,IOSTAT=IOS,ERR=1)ACTL,CLO,WVEL
   172   FORMAT(' Activity level ',F6.2,', Clothing level',F6.2,
      &         ', Air speed',F6.2)
         call edisp(itru,outs)
@@ -440,7 +440,7 @@ C        write(6,*)'icmfrt,izone,iday,ih,ioc',icmfrt,izone,iday,ih,ioc
 c Verbal category only printed if activity level is sedentary.
         IF(ACTL.GE.100.)ICMFRT=11
         if(act.eq.'V')then
-          write(outs,106,IOSTAT=ISTAT,ERR=1)TIME,TAIR,TMRT,RH,SET,PME,
+          write(outs,106,IOSTAT=IOS,ERR=1)TIME,TAIR,TMRT,RH,SET,PME,
      &      PMV,XPPD,DESC(ICMFRT)
   106     FORMAT(F4.1,2X,F5.1,2X,F6.1,1X,F6.0,2X,F5.1,2X,F5.2,1X,
      &           F6.2,1X,F5.0,2X,A25)
@@ -486,7 +486,11 @@ C (to test for occupancy in the next pass).
       endif
 
       RETURN
-   1  write(6,*) 'MOCMFT: error in internal string handling. '
+   1  if(IOS.eq.2)then
+         write(6,*) 'MOCMFT: no permission to write string.'
+      else
+         write(6,*) 'MOCMFT: error in internal string handling.'
+      endif
       END
 
 c ******************** LETDRIVER ********************
@@ -591,17 +595,17 @@ c Select ICL or IM (IDD=1 for ICL input, 2 for IM input).
       if(idd.eq.2) im=icl
 
 c Call initial values subroutine.
-      call letinit(ta,erftr,vel,rhpa,act,clo)
+      call letinit(ta,vel,act,clo)
 
 c Simulation of body temperature regulation.  Loop (1 min. time increments).
 c itime,itim = total exposure time, integrated time since start.
       itim=0
   100 itim=itim+1
-      call letloop(ta,erftr,vel,rhpa,act,clo)
+      call letloop(ta,act,clo)
 
 c Compute indices only every isteps minutes.
       if(mod(itim,isteps).ne.0) goto 30
-      call letindex(ta,erftr,vel,rhpa,act,clo,set,pme,pmv)
+      call letindex(ta,vel,rhpa,act,clo,set,pme,pmv)
 
       xppd = ppd(pmv)
 
@@ -633,7 +637,7 @@ c PART II: Initial Values Subroutine 'LETINIT.f'
 c Compute initial physiological and heat transfer variables.
 c Variables in common block LET2 are computed in this routine.
 
-      subroutine letinit(ta,erftr,vel,rhpa,act,clo)
+      subroutine letinit(ta,vel,act,clo)
 
       real lr,icl,im,kclo
 #include "gagge.h"
@@ -717,7 +721,7 @@ c physiological data from previous time step and current environmental
 c conditions.
 c Variables in common block LET3 are computed in this routine.
 
-      subroutine letloop(ta,erftr,vel,rhpa,act,clo)
+      subroutine letloop(ta,act,clo)
       real lr,icl,im,kclo
 #include "gagge.h"
 
@@ -761,7 +765,7 @@ c 58.2 W.min/(kg.K). Therm. capacities (TCCR, TCSK) in W.min/K.
 c Temperature changes in 1 minute (DTSK, DTCR) in K/min.
       dtsk=(hfsk*1.8)/tcsk
       dtcr=(hfcr*1.8)/tccr
-      dtbm=alpha*dtsk+(1.-alpha)*dtcr
+c      dtbm=alpha*dtsk+(1.-alpha)*dtcr
       tsk=tsk+dtsk
       pssk=vdd(tsk)
       tcr=tcr+dtcr
@@ -929,7 +933,7 @@ C Inputs to this routine are the physiological data from
 C the temperature regulation simulation part.
 C Variables in common block LET3 are computed in this routine.
 
-      subroutine letindex(ta,erftr,vel,rhpa,act,clo,set,pme,pmv)
+      subroutine letindex(ta,vel,rhpa,act,clo,set,pme,pmv)
 
       real lr,icl,ias,ims,icls,im,kclo,kclos
 #include "gagge.h"
@@ -1267,6 +1271,7 @@ C if sub-hour casual gains definitions are implemented.
       COMMON/FILEP/IFIL
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      common/recver/izver,ipver,iever
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
@@ -1336,12 +1341,18 @@ C current simulation.
         isunfn=24
       endif
       do 42, izone = 1,ncomp
-        CALL EROPER(0,iuout,IFIL+1,izone,IER)
-        if(ip3ver.eq.0)then
-          write(outs,'(a,i2,a)') 
+
+C If izver >= 4 the read the data directly.
+        if(izver.eq.4)then
+          continue
+        else
+          CALL EROPER(0,iuout,IFIL+1,izone,IER)  ! for older library
+          if(ip3ver.eq.0)then
+            write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout,IER)
+            call edisp(iuout,outs)
+            call PROCESSOLDCAS(izone,0,iuout,IER)
+          endif
         endif
 
 C Get periods for weekday, and two weekend days. If no casual gains
@@ -1423,13 +1434,17 @@ C        write(6,*) 'ioucpz (sun)',(ioucpz(izone,j),j=49,72)
 
 C ******** getocup
 C Looks up occupancy patterns and returns in ioc for a given zone/day/hour.
+
+C << todo - use of explicit read of casual gains >>
+
       subroutine getocup(izone,iday,ih,ioc,ier)
 #include "building.h"
 #include "tdf2.h"
 
+      common/recver/izver,ipver,iever
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       common/c1/ncomp,ncon
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
@@ -1454,6 +1469,13 @@ C.........END: USED FOR ACTIVITY TDF DATA.....................
       DIMENSION VAL(MBITS+2)
       character outs*124
       logical found,close15,close16,close17
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
 C Range testing.
       if(izone.lt.1.or.izone.gt.ncomp.or.ih.lt.1)then
@@ -1466,6 +1488,9 @@ C Range testing.
         ier=1
         return
       endif
+
+      IEND=24*NTS
+      ISET=ISIM
 
 C If assumption of occupied all hours then return 1.
       if(iocut.eq.0)then
@@ -1484,10 +1509,39 @@ C Find day of week.
         ioc=ioucpz(izone,ih)
       endif
 
-C If there are separate temporal casual gains then explicitly
-C gather information for this zone and day via call to ZCASCF
-C and then check itt (the timestep). If close to zero then
-C zone is not occupied.
+C If izver >= 4 the read the data directly for the exceptional
+C cases of temporal gains.
+      if(izver.eq.4)then
+        found = .false.
+        if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
+        if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
+        if(IACTIV(izone).ne.0)found = .true.   ! if UK activity item
+        if(found)then
+          DO 141, I=1,IEND
+            call getallcas(IDAY,IZONE,ISET,I,QCASR,QCASC,QCASL,FRAC,
+     &      perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     &      perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+     &      theonectld)
+            call eclose(perocupc,0.0,0.1,close15)
+            call eclose(perocupr,0.0,0.1,close16)
+            call eclose(perocupl,0.0,0.1,close17)
+            ioc=1
+            if(iocut.eq.1)then
+              if(close15) ioc=0
+            elseif(iocut.eq.2)then
+              if(close16) ioc=0
+            elseif(iocut.eq.3)then
+              if(close17) ioc=0
+            endif
+            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+  141     continue
+          return
+        endif
+      endif
+
+C Older format results file. If there are separate temporal casual
+C gains then explicitly gather information for this zone and day.
+C If close to zero then zone is not occupied.
       found = .false.
       if(ICASUAL3(izone).ne.0)found = .true.
       if(found)then
@@ -1513,24 +1567,8 @@ C zone is not occupied.
           if(close17) ioc=0
         endif
         if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
-C << Next section redundant and inefficient.
-C        CALL ZCASCF(IZONE,IDWK,iday)
-C        itt=ih*NTS
-C        call eclose(VAL3(15,itt),0.0,0.1,close15)
-C        call eclose(VAL3(16,itt),0.0,0.1,close16)
-C        call eclose(VAL3(17,itt),0.0,0.1,close17)
-C        ioc=1
-C        if(iocut.eq.1)then
-C          if(close15) ioc=0
-C        elseif(iocut.eq.2)then
-C          if(close16) ioc=0
-C        elseif(iocut.eq.3)then
-C          if(close17) ioc=0
-C        endif
-C        if(ioc.gt.0) write(6,*) ' Found temporal occupancy @',itt
+        return
       endif
-      return
 
 C Following now the same pattern as the CASUAL3T for the "ACTIVITY" tdf
 C entity.
@@ -1565,8 +1603,8 @@ C a decision on the calculation of the lighting gains>>
           if(close17) ioc=0
         endif
         if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
       endif
+
       return
       end
 
@@ -1622,7 +1660,7 @@ C If iflag is returned as -1 then outside bounds of algorithm.
       SUBROUTINE DISCOMF(iflag,XX,PPD)
 
 C At the time of testing lets know what input parameter we have: 
-C	write(6,*)'flag, XX=',iflag,XX 
+C    write(6,*)'flag, XX=',iflag,XX 
 
 C Assume nobody is dissatisfied.
       PPD=0.0 

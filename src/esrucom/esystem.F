@@ -201,9 +201,6 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C ZMFN1 (124 char) holds first line of flow node->zone links
-C ZMFN2 (124 char) holds second line of flow node->zone links
-      COMMON/AFNZN/zmfn1,zmfn2
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
@@ -474,7 +471,7 @@ c This common block is used to define the sky temperature calculation method
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
-      character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
+      character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
@@ -1480,7 +1477,7 @@ C (ie ambigious) set names
 C Annual IPV report depreciated in favour of sipvres.
         continue
         goto 44
-      elseif(WORD(1:7).eq.'*P-NAME')then
+      elseif(WORD(1:7).eq.'*B-NAME')then
 
 C Next tokens relate to building address.
         CALL EGETRM(OUTSTR,K,pjname,'W','project complience name',IER)
@@ -2369,21 +2366,20 @@ C older file. Try reading another line or two to get to list.
         endif
 
 C Then, zone by zone, split this string into seperate names or numbers
-C reading a second line if necessary.
-        if(ND.le.NCOMP)zmfn1=OUTSTR
+C reading more lines if necessary. Substitute call to egetagwpa if/when
+C list is written as comma separated phrases (if and when zone and
+C flow node names are longer phrases)
         K=0
-        DO 35 ICOMP=1,NCOMP
-          CALL EGETW(OUTSTR,K,WORD,'W','node name or node index',IERV)
-          IF(IERV.NE.0) THEN
-            K=0
-            CALL EDISP(iuout,' reading continuation line...')
-            CALL STRIPC(IUC,OUTSTR,0,ND,0,'2nd node-zone',IER)
-            IF(IER.NE.0)goto 1
-            zmfn2=OUTSTR
-            CALL EGETW(OUTSTR,K,WORD,'W','node name or index',IERV)
-          ENDIF
-          IF(IERV.NE.0) GOTO 1
-          NODID=WORD(1:12)
+        isva=ncomp
+        inisz=MCOM
+        call egetagwsa(outstr,k,IUC,isva,namen,inisz,'W',
+     &    'node name or node index',ierv)
+
+C For each zone take namen() and check it against the node
+C names in the flow network as well as recognise zero as
+C a zone with no flow node.
+        do 35 icomp=1,ncomp
+          NODID=namen(icomp)(1:12)
 
 C See if what we have is a valid fluid network node name.
           INOD=0
@@ -2397,11 +2393,12 @@ C Right, it is a valid fluid network node name.
           GOTO 35
 
 C No, it is not. Now tranform what we have into a number.
-   33     read(WORD,*,ERR=1)ICAAS(ICOMP)
+   33     read(namen(icomp),*,ERR=1)ICAAS(ICOMP)
    35   CONTINUE
 
 C Reporting. Make temporary arrays for zone and node names which
-C are then written out in packed format (the first 117 chars).
+C are then written out in packed format (the first 117 chars) on
+C as many pairs of lines as needed.
         IF(ITRC.GE.1)THEN
           do 777 j=1,ncomp
             namez(j)=zname(j)
@@ -2412,15 +2409,19 @@ C are then written out in packed format (the first 117 chars).
             endif
   777     continue
 
-C << this may need to be in a do while loop >>
-          CALL EDISP(iuout,' Thermal zone/flow node association:')
+          itrunc=1
           ipos=1
-          call aslist(ipos,NCOMP,namez,MCOM,'S',t117,louts,itrunc)
-          WRITE(OUTS,'(2a)') ' Zone >',t117(1:louts)
-          CALL EDISP(iuout,OUTS)
-          call aslist(ipos,NCOMP,namen,MCOM,'S',t117,louts,itrunc)
-          WRITE(OUTS,'(2a)')' Node >',t117(1:louts)
-          CALL EDISP(iuout,OUTS)
+          do while (itrunc.ne.0)
+            louts=1
+            CALL EDISP(iuout,' Thermal zone/flow node association:')
+            call aslist(ipos,NCOMP,namez,MCOM,'S',t117,louts,itrunc)
+            WRITE(OUTS,'(2a)') ' Zone >',t117(1:louts)
+            CALL EDISP(iuout,OUTS)
+            call aslist(ipos,NCOMP,namen,MCOM,'S',t117,louts,itrunc)
+            WRITE(OUTS,'(2a)')' Node >',t117(1:louts)
+            CALL EDISP(iuout,OUTS)
+            ipos=itrunc+1
+          end do
         ENDIF
       ENDIF
 

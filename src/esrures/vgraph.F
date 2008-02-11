@@ -49,59 +49,59 @@ C time-dependent variables to be plotted for one or more zones.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       LOGICAL MODIFY,MODLEN,MODBND
 
-      CHARACTER*16 ITEM(42)
-      character VITEM*16,HITEM*16,xfile*144,tg*1,delim*1,h*72
+      CHARACTER*24 ITEM(42)
+      character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1,h*72
 
       MODIFY=.FALSE.
       VITEM=' '
       HITEM=' '
 
-      ITEM(1) ='2 Result set    '
-      ITEM(2) ='3 Define period '
-      ITEM(3) ='4 Define zones  '
-      ITEM(4) ='  ...........   '
-      ITEM(5) ='a T air inside  '
-      ITEM(6) ='b T air outside '
-      ITEM(7) ='c T control pt  '
-      ITEM(8) ='d T surface in  '
-      ITEM(9) ='e T surface ex  '
-      ITEM(10)='f Resultant temp'
-      ITEM(11)='g Mean rad temp '
-      ITEM(12)='h T intra-surf  '
-      ITEM(13)='i N/A...        '
-      ITEM(14)='j N/A....       '
-      ITEM(15)='  ...........   '
-      ITEM(16)='k Plant inj/extr'
-      ITEM(17)='l Infiltration  '
-      ITEM(18)='m Ventilation   '
-      ITEM(19)='n N/A...        '
-      ITEM(20)='o N/A...        '
-      ITEM(21)='p N/A...        '
-      ITEM(22)='q Casual gains  '
-      ITEM(23)='r Surface convec'
-      ITEM(24)='s Surface longwv'
-      ITEM(25)='t Ext surf solar'
-      ITEM(26)='u Int surf solar'
-      ITEM(27)='v Zone RH       '
-      ITEM(28)='w Zone condens  '
-      ITEM(29)='  ...........   '
-      ITEM(30)='5 Solar direct  '
-      ITEM(31)='6 Solar diffuse '
-      ITEM(32)='7 Wind speed    '
-      ITEM(33)='8 Wind direction'
-      ITEM(34)='9 Ambient RH%   '
-      item(35)='+ Dew point T   '
-      item(36)='  ...........   '
-      item(37)='! Draw graph    '
-      item(38)='= Set axis scale'
-      item(39)='/ Clear all     '
-      item(40)='# Set units     '
+      ITEM(1) ='2 Result set            '
+      ITEM(2) ='3 Define period         '
+      ITEM(3) ='4 Define zones          '
+      ITEM(4) ='  ___________________   '
+      ITEM(5) ='a Temp air inside       '
+      ITEM(6) ='b Temp air outside      '
+      ITEM(7) ='c Temp control point    '
+      ITEM(8) ='d Temp surface in (face)'
+      ITEM(9) ='e Temp surface ex (face)'
+      ITEM(10)='f Resultant temperature '
+      ITEM(11)='g Mean radiant temp     '
+      ITEM(12)='h Temp intra-surf       '
+      ITEM(13)='i N/A...                '
+      ITEM(14)='j N/A....               '
+      ITEM(15)='  ___________________   '
+      ITEM(16)='k Plant inject/extract  '
+      ITEM(17)='l Infiltration          '
+      ITEM(18)='m Ventilation (betwn zn)'
+      ITEM(19)='n N/A...                '
+      ITEM(20)='o N/A...                '
+      ITEM(21)='p N/A...                '
+      ITEM(22)='q Casual gains          '
+      ITEM(23)='r Surface convection    '
+      ITEM(24)='s Surface longwave rad  '
+      ITEM(25)='t Solar at ext face surf'
+      ITEM(26)='u Solar at int face surf'
+      ITEM(27)='v Zone RH               '
+      ITEM(28)='w Zone condensation     '
+      ITEM(29)='  ___________________   '
+      ITEM(30)='5 Solar direct radiation'
+      ITEM(31)='6 Solar diffuse rad     '
+      ITEM(32)='7 Wind speed            '
+      ITEM(33)='8 Wind direction        '
+      ITEM(34)='9 Ambient RH%           '
+      item(35)='+ Dew point Temp        '
+      item(36)='  ___________________   '
+      item(37)='! Draw graph            '
+      item(38)='= Set axis scale        '
+      item(39)='/ Clear all selections  '
+      item(40)='# Set units             '
       if(ixopen.eq.1)then
-        item(41)='> Echo >> file  '
+        item(41)='> Echo >> file        '
       elseif(ixopen.eq.0)then
-        item(41)='> Echo >> screen'
+        item(41)='> Echo >> screen      '
       endif
-      item(42)='- Exit          '
+      item(42)='- Exit                  '
 
       CONVER=1000.
 
@@ -215,7 +215,7 @@ C axis values.
    32 call edisp(iuout,' Maximum and minimum values for the,')
       call edisp(iuout,' vertical and horizontal axes in turn ?')
       CALL EPROMPT
-      READ(IUIN,*,IOSTAT=ISTAT,ERR=26)YMV,YNV,YMH,YNH
+      READ(IUIN,*,IOSTAT=IOS,ERR=26)YMV,YNV,YMH,YNH
 
 C Check for max. < min.
       IF(YMV.LT.YNV.OR.YMH.LT.YNH)goto 27
@@ -472,12 +472,13 @@ C      =29  - dew point temperature
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       DIMENSION XD(MS),YDUM(MS)
+      character outs*124
 
       IUNIT=IFIL
 
       DO 99 I=1,NZ
-      IZ=NZNO(I)
-      IF(IZ.EQ.IZONE)IP=I
+        IZ=NZNO(I)
+        IF(IZ.EQ.IZONE)IP=I
    99 CONTINUE
 
 C Compute start record address for requested recovery day.
@@ -503,7 +504,7 @@ C Zone located: read appropriate values.
      &23,24,25,34,26,27,331,332,28,29,31,32,33,333),IGET
 
 C Internal air temperature.
-    6 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)XD(1)
+    6 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)XD(1)
       IF(I12.EQ.1)VAL1(1,I)=XD(1)
       IF(I12.EQ.2)VAL2(1,I)=XD(1)
       goto 34
@@ -515,18 +516,18 @@ C External air temperature.
 
 C Control point temperature.
     8 goto (35,37,37,37),ISAVE
-   35 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)XD(1),XD(2)
+   35 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)XD(1),XD(2)
       IF(I12.EQ.1)VAL1(1,I)=XD(2)
       IF(I12.EQ.2)VAL2(1,I)=XD(2)
       goto 34
-   37 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)XD(1),XD(2),
+   37 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)XD(1),XD(2),
      &(XD(K),K=1,NN),XD(1),XD(2),XD(3)
       IF(I12.EQ.1)VAL1(1,I)=XD(3)
       IF(I12.EQ.2)VAL2(1,I)=XD(3)
       goto 34
 
 C Internal surface temperature.
-    9 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,2),
+    9 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,2),
      &(XD(K),K=1,NN)
       KK=IVCON(IP)
       IF(I12.EQ.1)VAL1(1,I)=XD(KK)
@@ -536,7 +537,7 @@ C Internal surface temperature.
 C External surface temperature.
    11 IREC=IREC+3
       DO 60 K=1,NN
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)XD(K)
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)XD(K)
       IREC=IREC+1
    60 CONTINUE
       KK=IVCON(IP)
@@ -545,10 +546,10 @@ C External surface temperature.
       goto 30
 
 C Resultant temperature.
-   12 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)T,XD(1),
+   12 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)T,XD(1),
      &(XD(K),K=1,NN)
       IREC=IREC+1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(YDUM(K),K=1,5)
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(YDUM(K),K=1,5)
       CALL MORESL(IC,T,XD,YDUM,NN,TRESL)
       IF(I12.EQ.1)VAL1(1,I)=TRESL
       IF(I12.EQ.2)VAL2(1,I)=TRESL
@@ -556,10 +557,10 @@ C Resultant temperature.
       goto 34
 
 C Mean radiant temperature.
-   13 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)T,XD(1),(XD(K),
+   13 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)T,XD(1),(XD(K),
      &K=1,NN)
       IREC=IREC+1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(YDUM(K),K=1,5)
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(YDUM(K),K=1,5)
       CALL MOMNRD(IC,T,XD,YDUM,NN,TMNRD)
       IF(I12.EQ.1)VAL1(1,I)=TMNRD
       IF(I12.EQ.2)VAL2(1,I)=TMNRD
@@ -576,7 +577,7 @@ C      IELM=IVELT(IP)
       IREC=IREC+1
       goto 40
    42 NNODE=2*NELTS(J,K)
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(KK),KK=1,NNODE)
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(KK),KK=1,NNODE)
       IF(I12.EQ.1)VAL1(1,I)=XD(INODE)
       IF(I12.EQ.2)VAL2(1,I)=XD(INODE)
    40 CONTINUE
@@ -584,9 +585,9 @@ C      IELM=IVELT(IP)
       goto 30
 
 C Window inside surface temperature for external and internal windows.
-   15 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)T
+   15 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)T
       IREC=IREC+1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)QE,QI
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)QE,QI
 
       DIVE=1.
       DIVI=1.
@@ -617,24 +618,24 @@ C Internal surface temperature for internal windows.
 
 C Plant capacity.
    17 IF(ISAVE.EQ.1)goto 53
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,2)
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,2)
       IF(I12.EQ.1)VAL1(1,I)=XD(2)/CONVER
       IF(I12.EQ.2)VAL2(1,I)=XD(2)/CONVER
       goto 34
-   53 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,2),XD(1)
+   53 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,2),XD(1)
       IF(I12.EQ.1)VAL1(1,I)=XD(1)/CONVER
       IF(I12.EQ.2)VAL2(1,I)=XD(1)/CONVER
       goto 34
 
 C Infiltration.
-   18 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,2),
+   18 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,2),
      &(XD(K),K=1,NN),XD(1)
       IF(I12.EQ.1)VAL1(1,I)=XD(1)/CONVER
       IF(I12.EQ.2)VAL2(1,I)=XD(1)/CONVER
       goto 34
 
 C Ventilation.
-   19 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,2),
+   19 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,2),
      &(XD(K),K=1,NN),XD(1),XD(1)
       IF(I12.EQ.1)VAL1(1,I)=XD(1)/CONVER
       IF(I12.EQ.2)VAL2(1,I)=XD(1)/CONVER
@@ -657,7 +658,7 @@ C Window solar absorption.
 
 C Casual gains: convective and radiant.
    24 IREC=IREC+2
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,NN),
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,NN),
      &XD(1),XD(2)
       IF(IVCON(IP).EQ.2)XD(1)=XD(1)/CONVER
       IF(IVCON(IP).EQ.1)XD(1)=XD(2)/CONVER
@@ -676,7 +677,7 @@ C << results library.
 
 C External surface solar absorption.
    26 IREC=IREC+2
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,NN)
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,NN)
       KK=IVCON(IP)
       IF(I12.EQ.1)VAL1(K,I)=XD(KK)/CONVER
       IF(I12.EQ.2)VAL2(K,I)=XD(KK)/CONVER
@@ -685,7 +686,7 @@ C External surface solar absorption.
 
 C Internal surface solar absorption.
    27 IREC=IREC+1
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,5),
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,5),
      &(XD(K),K=1,NN)
       KK=IVCON(IP)
       IF(I12.EQ.1)VAL1(K,I)=XD(KK)/CONVER
@@ -720,7 +721,7 @@ C Relative humidity.
 
 C Zone relative humidity.
   331 IREC=IREC+2
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,NN),
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,NN),
      &XD(1),XD(2),XD(3)
       IF(I12.EQ.1)VAL1(1,I)=XD(3)
       IF(I12.EQ.2)VAL2(1,I)=XD(3)
@@ -729,7 +730,7 @@ C Zone relative humidity.
 
 C Zone condensation value.
   332 IREC=IREC+2
-      READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,NN),
+      READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,NN),
      &(XD(K),K=1,2),XD(1),XD(2)
       IF(I12.EQ.1)VAL1(1,I)=XD(2)
       IF(I12.EQ.2)VAL2(1,I)=XD(2)
@@ -737,7 +738,7 @@ C Zone condensation value.
       goto 34
 
 C Zone dew point temperature.
-  333 READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)XD(1)
+  333 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)XD(1)
       CALL MODEWP(XD(1),VPSAT(IP),DPT)
       IF(I12.EQ.1)VAL1(1,I)=DPT
       IF(I12.EQ.2)VAL2(1,I)=DPT
@@ -746,17 +747,20 @@ C Zone dew point temperature.
   301 IF(IDAY.EQ.ISDF.AND.NOUT.GT.1)goto 302
       goto 30
   302 DO 303 I1=1,NOUT
-      VAL1(1,I1)=VAL1(1,I)
-      VAL2(1,I1)=VAL2(1,I)
+        VAL1(1,I1)=VAL1(1,I)
+        VAL2(1,I1)=VAL2(1,I)
   303 CONTINUE
    30 CONTINUE
    20 CONTINUE
 
    56 RETURN
- 1000 CALL ELINC(1)
-      WRITE(IUOUT,55)IREC
-   55 FORMAT(' VGGET: library error at record',I5)
-      CALL EPWAIT
+ 1000 if(IOS.eq.2)then
+        WRITE(outs,'(a,i5)')
+     &    ' VGGET: no permission to read library at record',IREC
+      else
+        WRITE(outs,'(a,i5)')' VGGET: library error at record',IREC
+      endif
+      call edisp(iuout,outs)
       goto 56
       END
 
@@ -776,7 +780,7 @@ C VGDRW initiates axis drawing and displays all requested profiles.
      &              IVPOS(MCOM),IVNOD(MCOM),VPSAT(MCOM)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-      character VITEM*16,HITEM*16
+      character VITEM*24,HITEM*24
 
 C Initiate graph axis drawing.
       CALL VAXIS(VITEM,HITEM)
@@ -863,7 +867,7 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
 
       COMMON/VGRAF1/YMAXV,YMINV,YMAXH,YMINH
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      character VITEM*16,HITEM*16,VIT*16,HIT*16
+      character VITEM*24,HITEM*24,VIT*24,HIT*24
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -914,7 +918,7 @@ C to graphical result display.
 
       CHARACTER ETEXT*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,VITEM*16,HITEM*16
+      CHARACTER PDESCR*60,SDESCR*44,VITEM*24,HITEM*24
       CHARACTER outsd*80,outsd1*81
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -934,10 +938,10 @@ C and the simulation and output timesteps.
         call startbuffer()
       ENDIF
 
-      WRITE(ETEXT,'(1X,A44,A,A22)')SDESCR,' Lib:',RFILE
+      WRITE(ETEXT,'(1X,A44,A,A22)')SDESCR,' Lib:',RFILE(1:22)
       CALL viewtext(ETEXT,1,0,1)
 
-      WRITE(ETEXT,'(A60)')PDESCR
+      WRITE(ETEXT,'(1X,A60)')PDESCR
       CALL viewtext(ETEXT,2,0,1)
 
       call znlist(outsd,len,ierr) 
@@ -946,8 +950,8 @@ C and the simulation and output timesteps.
         CALL viewtext(outsd1,3,0,1)
       endif
 
-      WRITE(ETEXT,9)VITEM,HITEM
-    9 FORMAT('            Variables: Vert=',A16,' Horiz=',A16)
+      WRITE(ETEXT,'(4a)')' Variables: Vert=',
+     &  VITEM(1:lnblnk(VITEM)),'  Horiz=',HITEM(1:lnblnk(HITEM))
       CALL viewtext(ETEXT,4,0,1)
 
       RETURN

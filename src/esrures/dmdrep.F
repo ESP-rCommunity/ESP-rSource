@@ -40,7 +40,7 @@ C           -4 Fan per w/m2, -5. Pumps per w/m2  -6. Lifts w/m^2,
 C           -7. DHW w/m^2
 C Maximum number of demands/day       MC=20
 
-      SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
+      SUBROUTINE ERBDMD(ITRC,IUO,IER)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -321,8 +321,6 @@ C demands.
       SUBROUTINE DMDSTOT(XMAX,XMIN,XTOT,XAVE)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
-
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
@@ -355,7 +353,7 @@ C offset is 14
           IX=I+14
           NDTS=24*NTS
           DO 421 J = 1,NDTS,NOUT
-            ih=J/NTS
+C            ih=J/NTS
             IF(IDAY.LE.IODS.AND.(FLOAT(J)/NTS).LT.IOH1)goto 421
 
             IF (VAL3(IX,J).GT.XMAX(i)) XMAX(i)=VAL3(IX,J)
@@ -375,9 +373,6 @@ C Calculate averages.
         endif
  20   continue
       call usrmsg(prompte,' ','-')
-      return
-
- 2    CALL USRMSG(' Problem extracting data.',' ','W')
       return
 
       END
@@ -403,7 +398,6 @@ C VAL3(21,?) holds DHW demands.
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-      COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       common/demandd/dhddt1,dhddt2,dhddt3,dhddt4,dhddt5,dhddt6,dhddt7
 
       IEND=24*NTS

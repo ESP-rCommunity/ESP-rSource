@@ -1809,7 +1809,7 @@ C control file sensors, actuator, control types, control laws.
 #include "control.h"
 #include "power.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -2090,7 +2090,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 #include "control.h"
 #include "power.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
      &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
@@ -2180,16 +2180,14 @@ C Newer control files have an extra item related to humidity control.
             if(nint(cm(12)).eq.1)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a,f6.2,a,f6.2,a)') 
-     &          msg1(1:lnblnk(msg1)),' max heating cap ',cm(2),
-     &          'W min heating cap ',cm(3),
-     &          'W max cooling cap ',cm(4),
-     &          'W min cooling cap ',cm(5),
-     &          'W. Heating sp ',cm(6),
-     &          'C cooling sp ',cm(7),
-     &          'C and moisture inj RH control with upper sp',
-     &          cm(8),'(%) lower sp ',cm(9),
-     &          '(%) max humidification rate ',cm(10),
-     &          '(g/s) max dehumidification rate ',cm(11),'(g/s).'
+     &          msg1(1:lnblnk(msg1)),' mx heat cap',cm(2),
+     &          'W mn heat cap',cm(3),'W mx cool cap',cm(4),
+     &          'W mn cool cap',cm(5),'W. Heat sp',cm(6),
+     &          'C cool sp',cm(7),
+     &          'C & moist inj RH ctl hi sp',
+     &          cm(8),'(%) low sp',cm(9),
+     &          '(%) max humid ',cm(10),
+     &          '(g/s) max dehumid ',cm(11),'(g/s).'
             elseif(nint(cm(12)).eq.2)then
               write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,
      &          a,f7.2,a,f5.1,a,f5.1,a)') 
@@ -2199,7 +2197,7 @@ C Newer control files have an extra item related to humidity control.
      &          'W min heaing cap ',cm(5),
      &          'W. Heating sp ',cm(6),
      &          'C cooling sp ',cm(7),
-     &          'C and T based RH ctl with upper sp ',
+     &          'C and T based RH ctl upper sp ',
      &          cm(8),'(%) lower sp ',cm(9),'(%).'
             elseif(nint(cm(12)).eq.0)then
             write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1,a,f7.2,a,f7.2,a)') 
@@ -2493,7 +2491,7 @@ C many aux sensors and whether there is a weighting factor.
      &          ' scale ',cm(12),' offset ',cm(13)
             endif
             call SDELIM(lmsg,message,'S',IW)
-            call edisp248(6,message,90)
+C            call edisp248(6,message,90)
           elseif(nint(cm(6)).eq.2)then
             write(lmsg,'(4(a,f8.0),a,f3.0,4a)')
      &        ' match temperature (ideal): max heat cp ',cm(2),
@@ -2502,7 +2500,7 @@ C many aux sensors and whether there is a weighting factor.
      &        msg1(1:lnblnk(msg1)),SSTRB(1:lnblnk(SSTRB)),
      &        ' & ',SSTRB1(1:lnblnk(SSTRB1))
             call SDELIM(lmsg,message,'S',IW)
-            call edisp248(6,message,90)
+C            call edisp248(6,message,90)
           endif
         ELSEIF(IBCLAW(II,JJ,KK).EQ.12)then
           SSTR='match temp - on-off'
@@ -2893,7 +2891,7 @@ C Nicol Occupant resopnse model for control
         elseif(IFCLAW(II,JJ,KK).EQ.4)then
           SSTR='Nicol alg version 1.0 '
           cm(2)=fmiscd(II,JJ,KK,2)
-	  iPGT=ifsn(ii,3)
+          iPGT=ifsn(ii,3)
           write(lmsg,'(2A,F4.2,2A)')SSTR,
      &    'with running mean response parameter of ',cm(2),
      &    ' measuring operative temp of node ',NDNAM(iPGT)
@@ -3069,7 +3067,11 @@ C For zone & flow controls list out the verbose decoding of the misc items.
    30 CONTINUE
       return
 
- 3    CALL USRMSG(' ',' Problem generating report. ','W')
+ 3    if(IOS.eq.2)then
+        CALL USRMSG(' ','Permission error generating report.','W')
+      else
+        CALL USRMSG(' ','Problem generating report.','W')
+      endif
       return
       end
 

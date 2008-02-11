@@ -1148,16 +1148,16 @@ C then reset it to 1.0.
 
 C Error messages.
    13 if(IOS.eq.2)then
-        CALL USRMSG(' No permission to write ',GENFIL,'W')
+        CALL USRMSG('No permission to write ',GENFIL,'W')
       else
-        CALL USRMSG(' File write error in ',GENFIL,'W')
+        CALL USRMSG('File write error in ',GENFIL,'W')
       endif
       IER=1
       GOTO 99
    14 if(IOS.eq.2)then
-        CALL USRMSG(' No prmission to write array in ',GENFIL,'W')
+        CALL USRMSG('No prmission to write array in ',GENFIL,'W')
       else
-        CALL USRMSG(' Long arrary write error in ',GENFIL,'W')
+        CALL USRMSG('Long arrary write error in ',GENFIL,'W')
       endif
       IER=1
       GOTO 99
@@ -2141,7 +2141,7 @@ C Surface list. Write as a packed list comma separated.
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# surf attributes:'
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
-     &  '#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN'
+     &  '#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN'
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
      &  '#  child of (surface name), useage (pair of tags) '
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
@@ -2326,16 +2326,16 @@ C then reset it to 1.1.
 
 C Error messages.
    13 if(IOS.eq.2)then
-        CALL USRMSG(' No permission to write ',GENFIL,'W')
+        CALL USRMSG('No permission to write ',GENFIL,'W')
       else
-        CALL USRMSG(' File write error in ',GENFIL,'W')
+        CALL USRMSG('File write error in ',GENFIL,'W')
       endif
       IER=1
       GOTO 99
    14 if(IOS.eq.2)then
-        CALL USRMSG(' No prmission to write array in ',GENFIL,'W')
+        CALL USRMSG('No prmission to write array in ',GENFIL,'W')
       else
-        CALL USRMSG(' Long arrary write error in ',GENFIL,'W')
+        CALL USRMSG('Long arrary write error in ',GENFIL,'W')
       endif
       IER=1
       GOTO 99
@@ -3580,13 +3580,13 @@ C << the parent surface.
             isgrandchild(isur,nbchild(isur))=1
             childname(isur,1)=SSNAME(JCC)
 C Debug...
-            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
-     &        childname(isur,1)
+C            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
+C     &        childname(isur,1)
           endif
  105      continue
  102    CONTINUE
  101  CONTINUE
-      write(6,*) 'nbchild ',nbchild
+C      write(6,*) 'nbchild ',nbchild
       RETURN
       END
 
@@ -4132,7 +4132,12 @@ C Write indices into one packed string sdescr (i.e. truncate).
         return
       endif
 
-   1  write(6,*) 'SURLIST: error writing surface names: ',sdescr
+   1  if(IOS.eq.2)then
+        write(6,*) 'SURLIST: permission error writing surface names:',
+     &    sdescr
+      else
+        write(6,*) 'SURLIST: error writing surface names: ',sdescr
+      endif
       ierr=1
       return
       END

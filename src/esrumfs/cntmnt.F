@@ -415,7 +415,7 @@ C Simulation time commons
 C Operations file commons
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
      &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
-     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(2,MGTY)
+     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
 
 C Mass flow and Contaminant commons
       COMMON/MFLOW1/NNOD,NCMP,NCNN

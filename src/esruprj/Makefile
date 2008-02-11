@@ -28,7 +28,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
-	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o sendd.o \
+	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o rwsbem.o sendd.o \
 	  sendflt.o senrwl.o sensa.o setup.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
 	  readTrnsys.o
 	   
@@ -180,6 +180,9 @@ rcdblist.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 senrwl.F:
 	rm -f senrwl.F
 	ln -s $(COMdir)/senrwl.F .
@@ -230,7 +233,7 @@ clean:
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
-	senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
+	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
 
 
 

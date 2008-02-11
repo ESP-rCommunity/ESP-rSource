@@ -21,7 +21,6 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines which recreate
 C data included in sim but not saved in the results library.
 C  MOGCFG  reports and checks main files associated with simulation.
-C  MZCGCF  reads in the casual gain control file.
 
 C ******************** MOGCFG ********************
 
@@ -39,7 +38,6 @@ C MZINPT code in espbps/input.f.
       COMMON/FILEP/IFIL
       common/trc/itrc
 
-
       character CTYPE*4
       real gversion
       integer igupgrade
@@ -54,6 +52,7 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/recver/izver,ipver,iever
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -114,22 +113,27 @@ C Not found, might be in a remote folder.  Warn user first.
         RETURN
       ENDIF
 
-C Check the geometry and utility files by reading them in.
+C Check the geometry and operation files by reading them in. Note,
+C if izver >=4 the zone operation file is not needed.
       call usrmsg(' ',' Checking existence of descriptive files...','-')
       DO 30 J=1,NCOMP
         IUNIT=IFIL+1
-        CALL EROPER(0,iuout,IUNIT,J,IER)
-        if(ip3ver.eq.0)then
-          write(outs,'(a,i2,a)') 
-     &      'Operation file for zone ',J,' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(J,0,iuout,IER)
-        endif
         call eclose(gversion(J),1.1,0.01,newgeo)
         if(newgeo)then
           call georead(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+        endif
+        if(izver.eq.4)then
+          continue
+        else
+          CALL EROPER(0,iuout,IUNIT,J,IER)  ! for older library versions
+          if(ip3ver.eq.0)then
+            write(outs,'(a,i2,a)') 
+     &      'Operation file for zone ',J,' periods being sorted!'
+            call edisp(iuout,outs)
+            call PROCESSOLDCAS(J,0,iuout,IER)
+          endif
         endif
    30 CONTINUE
       call usrmsg(' ',
@@ -193,20 +197,17 @@ C SYNOPF displays the names of the files used in a simulation
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCTLF
 
       CHARACTER*248 CTLDOC
-      CHARACTER*21 LABELS(10)
+      CHARACTER*21 LABELS(7)
 
       character outs*124
 
       DATA LABELS/' Zone operation    : ',
      &            ' Zone geometry     : ',
      &            ' Zone construction : ',
-     &            ' Zone utilities    : ',
      &            ' Zone view factor  : ',
      &            ' Zone shad/insolat : ',
      &            ' Zone transp walls : ',
-     &            ' Zone cas gain ctrl: ',
-     &            ' Zone casual gain  : ',
-     &            ' Zone blind/shutter: '/
+     &            ' Zone cas gain ctrl: '/
 
 C Echo names of files for visual check.
       write(outs,59)LSNAM
@@ -228,19 +229,19 @@ C Echo names of files for visual check.
         write(outs,86)LABELS(3),LTHRM(I)
         call edisp(iuout,outs)
         IF(IVF(I).EQ.1)THEN
-          write(outs,86)LABELS(5),LVIEW(I)
+          write(outs,86)LABELS(4),LVIEW(I)
           call edisp(iuout,outs)
         ENDIF
         IF(ISI(I).EQ.1)THEN
-          write(outs,86)LABELS(6),LSHAD(I)
+          write(outs,86)LABELS(5),LSHAD(I)
           call edisp(iuout,outs)
         ENDIF
         IF(ITW(I).EQ.1)THEN
-          write(outs,86)LABELS(7),LTWIN(I)
+          write(outs,86)LABELS(6),LTWIN(I)
           call edisp(iuout,outs)
         ENDIF
         IF(ICGC(I).EQ.1)THEN
-          write(outs,86)LABELS(8),LCGCIN(I)
+          write(outs,86)LABELS(7),LCGCIN(I)
           call edisp(iuout,outs)
         ENDIF
    10 CONTINUE

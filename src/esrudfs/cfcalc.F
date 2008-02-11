@@ -113,7 +113,7 @@ C CFCALC - CFD solution manager.
 
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
      &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
-     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(2,MGTY)
+     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/btime/btimep,btimef
@@ -263,7 +263,7 @@ C Calculate the current period id for identified casual gain.
             endif
  30       continue
           VOLHeat(IV,ICFD)=CGSENC(ICP,IDAY,IGN,IPER)*
-     &                           CGCTL(2,IGN)*Fcasgn(IV,ICFD)
+     &                     CGCTL(ICP,2,IGN)*Fcasgn(IV,ICFD)
         endif
  10   continue
 

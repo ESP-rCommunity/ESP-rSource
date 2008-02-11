@@ -2008,6 +2008,11 @@ C ******************** CASDIST ********************
 
 C Reporting of casual gains distribution (radiant and convective)
 C within current zone set.
+
+C << Future update would be to read the explicit radiant gains for
+C << each surface if save level 4 so that the zone construction
+C << file does not need to be scanned to get the surface emissivity.
+
       SUBROUTINE CASDIST(act)
 
 #include "building.h"
@@ -2019,6 +2024,7 @@ C within current zone set.
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
+      common/recver/izver,ipver,iever
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/loadlabel/lodlabel(mcom,7)
@@ -2164,17 +2170,24 @@ C Output general header information.
         call edisp(itru,' ')
         call edisp(itru,outs)
 
+C If izver >= 4 reads data directly so zone operation file not necessary.
+        if(izver.eq.4)then
+          continue
+        else
+
 C Prepare to recover information from results library.
-        IUNIT=IFIL+1
-        CALL EROPER(0,iuout,iunit,izone,IER)
-        if(ip3ver.eq.0)then
-          write(outs,'(a,i2,a)') 
+          IUNIT=IFIL+1
+          CALL EROPER(0,iuout,iunit,izone,IER)  ! for older results library
+          if(ip3ver.eq.0)then
+            write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout,IER)
+            call edisp(iuout,outs)
+            call PROCESSOLDCAS(izone,0,iuout,IER)
+          endif
+          IF(IER.EQ.1)RETURN
+          IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),
+     &      IZONE,ier)
         endif
-        IF(IER.EQ.1)RETURN
-        IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
 
         N=24*NTS
         TCMULT=FLOAT(NOUT)/(FLOAT(NTS)*1000.)
@@ -2209,7 +2222,7 @@ C Initialise summation locations: VAL1(I,J).
   202   CONTINUE
 
 C Find the total surface area * emissivity in each surface
-C connection class.
+C connection class. << This could be simplified with new izver. >>
         SURFAE=0.
         SURFAI=0.
         SURFAG=0.

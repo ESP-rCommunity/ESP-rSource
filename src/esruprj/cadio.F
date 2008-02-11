@@ -1329,7 +1329,11 @@ C name begins with ../ .
       return
 
 C Error.
-    2 CALL USRMSG(' Problem writing tar names entry',lf,'W')
+    2 if(IOS.eq.2)then
+        CALL USRMSG('Permissions issue writing tar names entry',lf,'W')
+      else
+        CALL USRMSG('Problem writing tar names entry',lf,'W')
+      endif
       call ERPFREE(IUNIT,ISTAT)
       return
 
@@ -2073,9 +2077,17 @@ C mingw version of tar.
 #endif
       return
 
-    2 CALL USRMSG(' Problem writing data',' ','W')
+    2 if(IOS.eq.2)then
+        CALL USRMSG('Permission issue writing data',' ','W')
+      else
+        CALL USRMSG('Problem writing data',' ','W')
+      endif
       call ERPFREE(IUNIT,ISTAT)
       return
-    3 CALL USRMSG(' Problem writing archive command.',' ','W')
+    3 if(IOS.eq.2)then
+        CALL USRMSG('Permission issue writing archive command.',' ','W')
+      else
+        CALL USRMSG('Problem writing archive command.',' ','W')
+      endif
       return
       end

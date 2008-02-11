@@ -18,173 +18,173 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C TRNSFI.F of ish.  This file contains the following routines:
-C TRNSF1I: Sets up the coefficients of the coordinate transformation
-C          equations.
-C TRNSF2I: Expresses the solar azimuth and altitude angles relative to
-C          the transformed coordinate system.
-C TRNSF3I: Projects a window vertex and expresses the result relative
-C          to the transformed coordinate system.
+C TRNSFI.F comprises:
+C TRNSF1I - Sets up the coefficients of the coordinate transformation
+C           equations.
+C TRNSF2I - Expresses the solar azimuth and altitude angles relative to
+C           the transformed coordinate system.
+C TRNSF3I - Projects a window vertex and expresses the result relative
+C           to the transformed coordinate system.
 
 C ************** TRNSF1I
 C Sets up the coefficients of the transform equations
-C (translation + Z- then X- then Y-axis rotations) that move
+C (translation + z- then x- then y-axis rotations) that move
 C the site coordinate system to the local surface under
-C consideration. The X and Z coordinates of this object body
+C consideration. The x and z coordinates of this object body
 C face are then re-expressed in terms of the new local
-C coordinate system for use in POINT.
+C coordinate system for use in point. This routine is
+C essentially a copy of trnsf1.
 
-C This routine is essentially a copy of TRNSF1.
-
-      SUBROUTINE TRNSF1I(IS)
+      subroutine trnsf1i(is)
 #include "building.h"
 
-      COMMON/OUTPCH/ICOUT
-      COMMON/TC/ITC,ICNT
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PANGL/PAZI,PELV,PTILT
-      COMMON/TRNSF/A(5),B(3),C(5),XOR,YOR,ZOR
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G1T/XFT(MV),ZFT(MV)
-      DIMENSION YFT(MV)
+      common/tracech/icout
+      common/pangl/pazi,pelv,ptilt
+      common/trnsf/a(5),b(3),c(5),xor,yor,zor
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/g1t/xft(mv),zft(mv)
+
+      dimension yft(mv)
       character outs*124
       logical tok
 
-      PI = 4.0 * ATAN(1.0)
-      R=PI/180.
+      pi=4.0*atan(1.0)
+      r=pi/180.
 
 C If verbose trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-C Compute the surface azimuth (PAZI), elevation (PELV)
-C X-axis tilt (PTILT) angles.
-      CALL PANGS(IS)
+C Compute the surface azimuth (pazi), elevation (pelv)
+C x-axis tilt (ptilt) angles.
+      call pangs(is)
 
-C Convert PAZI, PELV and PTILT to the required coordinate axis
+C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
-C    X-axis - BE related to PELV
-C    Y-axis - GA related to PTILT
-C    Z-axis - AL related to PAZI
+C    x-axis - be related to pelv
+C    y-axis - ga related to ptilt
+C    z-axis - al related to pazi
 C Convention: positive angle is anticlockwise when looking along
 C the axis towards the origin.
-      IQ=INT(PAZI/90.0)
-      IF(IQ.EQ.0) goto 1
-      goto (1,1,2,2),IQ
-    1 AL=(180.0-PAZI)*R
+      iq=int(pazi/90.0)
+      if(iq.eq.0) goto 1
+      goto (1,1,2,2),iq
+    1 al=(180.0-pazi)*r
       goto 3
-    2 AL=-(PAZI-180.0)*R
-    3 BE=-PELV*R
-      GA=-PTILT*R
+    2 al=-(pazi-180.0)*r
+    3 be=-pelv*r
+      ga=-ptilt*r
 
 C Set up transform equation coefficients.
-C Transformation order: Z-axis (AL from PAZI) then
-C X-axis (BE from PELV) then Y-axis (GA from PTILT)
+C Transformation order: z-axis (al from pazi) then
+C x-axis (be from pelv) then y-axis (ga from ptilt)
 C rotation.
-      A(1)=COS(AL)*COS(GA)
-      A(2)=SIN(AL)*COS(GA)
-      A(3)=SIN(AL)*SIN(BE)*SIN(GA)
-      A(4)=COS(AL)*SIN(BE)*SIN(GA)
-      A(5)=COS(BE)*SIN(GA)
-      B(1)=SIN(AL)*COS(BE)
-      B(2)=COS(AL)*COS(BE)
-      B(3)=SIN(BE)
-      C(1)=COS(AL)*SIN(GA)
-      C(2)=SIN(AL)*SIN(GA)
-      C(3)=SIN(AL)*SIN(BE)*COS(GA)
-      C(4)=COS(AL)*SIN(BE)*COS(GA)
-      C(5)=COS(BE)*COS(GA)
-      IP1=JVN(IS,1)
-      XOR=X(IP1)
-      YOR=Y(IP1)
-      ZOR=Z(IP1)
+      a(1)=cos(al)*cos(ga)
+      a(2)=sin(al)*cos(ga)
+      a(3)=sin(al)*sin(be)*sin(ga)
+      a(4)=cos(al)*sin(be)*sin(ga)
+      a(5)=cos(be)*sin(ga)
+      b(1)=sin(al)*cos(be)
+      b(2)=cos(al)*cos(be)
+      b(3)=sin(be)
+      c(1)=cos(al)*sin(ga)
+      c(2)=sin(al)*sin(ga)
+      c(3)=sin(al)*sin(be)*cos(ga)
+      c(4)=cos(al)*sin(be)*cos(ga)
+      c(5)=cos(be)*cos(ga)
+      ip1=jvn(is,1)
+      xor=x(ip1)
+      yor=y(ip1)
+      zor=z(ip1)
 
 C Transform target surface coordinates.
-      DO 10 I=1,NVER(IS)
-        XS=X(JVN(IS,I))
-        YS=Y(JVN(IS,I))
-        ZS=Z(JVN(IS,I))
+      do 10 i=1,nver(is)
+         xs=x(jvn(is,i))
+         ys=y(jvn(is,i))
+         zs=z(jvn(is,i))
 
 C Transformed X.
-        XFT(I)=(XS-XOR)*A(1)+(YS-YOR)*A(2)-(XS-XOR)*A(3)
-     &         +(YS-YOR)*A(4)-(ZS-ZOR)*A(5)
+         xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
+     &          +(ys-yor)*a(4)-(zs-zor)*a(5)
 
 C Transformed Y.
-        YFT(I)=-(XS-XOR)*B(1)+(YS-YOR)*B(2)+(ZS-ZOR)*B(3)
+         yft(i)=-(xs-xor)*b(1)+(ys-yor)*b(2)+(zs-zor)*b(3)
 
 C Transformed Z.
-        ZFT(I)=(XS-XOR)*C(1)+(YS-YOR)*C(2)+(XS-XOR)*C(3)
-     &         -(YS-YOR)*C(4)+(ZS-ZOR)*C(5)
+         zft(i)=(xs-xor)*c(1)+(ys-yor)*c(2)+(xs-xor)*c(3)
+     &          -(ys-yor)*c(4)+(zs-zor)*c(5)
 
 C Transformed Y value should be zero; error if not.
-        if(abs(YFT(I)).gt.1.E-5)then
-           call edisp(icout,' ')
-           write(outs,8888)IS
- 8888      format('TRNSF1I: Surface ',I2,' is probably not coplanar!')
-           call edisp(icout,outs)
-           write(outs,8887)I,XS,YS,ZS
- 8887      format('Vertex ',I2,', which has coordinates ',3F11.6,',')
-           call edisp(icout,outs)
-           write(outs,8886)YFT(I)
- 8886      format('has transformed Y value of ',F11.6,
-     &            ' (should be 0).')
-           call edisp(icout,outs)
-        endif
-
-   10 CONTINUE
+         if(abs(yft(i)).gt.1.E-5)then
+             call edisp(icout,' ')
+             write(outs,9999)is
+ 9999        format('TRNSF1I: Surface ',i2,
+     &                          ' is probably not coplanar!')
+             call edisp(icout,outs)
+             write(outs,9998)i,xs,ys,zs
+ 9998        format('Vertex ',i2,', which has coordinates ',3f11.6,',')
+             call edisp(icout,outs)
+             write(outs,9997)yft(i)
+ 9997        format('has transformed Y value of ',f11.6,
+     &              ' (should be 0).')
+             call edisp(icout,outs)
+         endif
+   10 continue
 
 C Trace output.
-      IF(.not.tok)goto  9999
-      call edisp(icout,' ')
-      WRITE(outs,9998)IS,PAZI,PELV,PTILT
- 9998 FORMAT('*** TRNSF1I: Surface ',I2,': PAZI= ',F5.1,'; PELV= ',
-     &       F5.1,'; PTILT= ',F5.1)
-      call edisp(icout,outs)
-      call edisp(icout,' ')
-      call edisp(icout,'Axis translations & rotations:')
-      WRITE(outs,'(A,2X,3F8.1)')'X, Y & Z translations -',XOR,YOR,ZOR
-      call edisp(icout,outs)
-      WRITE(outs,'(A,2X,3F8.1)')'X (BE), Y (GA) & Z (AL) rotations -',
-     &            BE/R,GA/R,AL/R
-      call edisp(icout,outs)
-      call edisp(icout,'ZXY transform equation coefficients:')
-      WRITE(outs,'(A,2X,5F8.1)')'A -',(A(I),I=1,5)
-      call edisp(icout,outs)
-      WRITE(outs,'(A,2X,5F8.1)')'B -',(B(I),I=1,3)
-      call edisp(icout,outs)
-      WRITE(outs,'(A,2X,5F8.1)')'C -',(C(I),I=1,5)
-      call edisp(icout,outs)
-      call edisp(icout,'Original XYZ coordinates:')
-      do 9995 I=1,NVER(IS)
-        XS=X(JVN(IS,I))
-        YS=Y(JVN(IS,I))
-        ZS=Z(JVN(IS,I))
-        WRITE(outs,'(I2,2X,3F8.1)')I,XS,YS,ZS
-        call edisp(icout,outs)
- 9995 continue
-      call edisp(icout,'Transformed X`Y`Z` coordinates:')
-      do 9994 I=1,NVER(IS)
-        WRITE(outs,'(I2,2X,3F8.1)')I,XFT(I),YFT(I),ZFT(I)
-        call edisp(icout,outs)
- 9994 continue
-
- 9999 RETURN
-      END
+      if(tok)then
+         call edisp(icout,' ')
+         write(outs,9996)is,pazi,pelv,ptilt
+ 9996    format('*** TRNSF1I: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
+     &          f5.1,'; PTILT= ',f5.1)
+         call edisp(icout,outs)
+         call edisp(icout,' ')
+         call edisp(icout,'Axis translations & rotations:')
+         write(outs,'(a,2x,3f8.1)')'X, Y & Z translations -',
+     &                             xor,yor,zor
+         call edisp(icout,outs)
+         write(outs,'(a,2x,3f8.1)')
+     &         'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
+         call edisp(icout,outs)
+         call edisp(icout,'ZXY transform equation coefficients:')
+         write(outs,'(a,2x,5f8.1)')'A -',(a(i),i=1,5)
+         call edisp(icout,outs)
+         write(outs,'(a,2x,5f8.1)')'B -',(b(i),i=1,3)
+         call edisp(icout,outs)
+         write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
+         call edisp(icout,outs)
+         call edisp(icout,'Original XYZ coordinates:')
+         do 9995 i=1,nver(is)
+            xs=x(jvn(is,i))
+            ys=y(jvn(is,i))
+            zs=z(jvn(is,i))
+            write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
+            call edisp(icout,outs)
+ 9995    continue
+         call edisp(icout,'Transformed X`Y`Z` coordinates:')
+         do 9994 i=1,nver(is)
+            write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
+            call edisp(icout,outs)
+ 9994    continue
+      endif
+      return
+      end
 
 C ************** TRNSF2I 
-C Convert solar angles (SAZI1 and SALT1) in original coordinate
-C system to corresponding angles (SAZI2,SALT2) in transformed
+C Convert solar angles (sazi1 and salt1) in original coordinate
+C system to corresponding angles (sazi2,salt2) in transformed
 C coordinate system to allow obstruction point projections
-C in new coordinate system in TRNSF3I.
+C in new coordinate system in trnsf3i. This routine is essentially
+C a copy of trnsf2.
 
-C This routine is essentially a copy of TRNSF2.
+      subroutine trnsf2i(ihr)
 
-      SUBROUTINE TRNSF2I(IHR)
-      COMMON/OUTPCH/ICOUT
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TRNSF/A(5),B(3),C(5),XOR,YOR,ZOR
-      COMMON/SANGL1/SAZI1,SALT1
-      COMMON/SANGL2/SAZI2,SALT2
+      common/outin/iuout,iuin
+      common/tracech/icout
+      common/trnsf/a(5),b(3),c(5),xor,yor,zor
+      common/sangl1/sazi1,salt1
+      common/sangl2/sazi2,salt2
+
       character outs*124
       logical tok
 
@@ -192,174 +192,173 @@ C If verbose trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-      PI = 4.0 * ATAN(1.0)
-      R = PI/180.
-      TSR=SIN(SALT1*R)/COS(SALT1*R)
+      pi=4.0*atan(1.0)
+      r=pi/180.
+      tsr=sin(salt1*r)/cos(salt1*r)
 
 C Establish a line from the site origin to a point 'far'
-C away at the appropriate solar angles (SAZI1 and SALT1).
-      X1=0.
-      Y1=0.
-      Z1=0.
+C away at the appropriate solar angles (sazi1 and salt1).
+      x1=0.
+      y1=0.
+      z1=0.
 
 C Dependent on which quadrant sun is in, convert sun position
-C to a distant point (X2,Y2,Z2) for later transformation to the
-C new coordinate system, along with point (X1,Y1,Z1), to give
+C to a distant point (x2,y2,z2) for later transformation to the
+C new coordinate system, along with point (x1,y1,z1), to give
 C the solar incindence line in this new system.
-      IF(SAZI1.LT.90.)THEN
-        ANG=90.-SAZI1
-        TANG=SIN(ANG*R)/COS(ANG*R)
-        Y2=5000.
-        Z2=5000.*TSR/SIN(ANG*R)
-        X2=5000./TANG
-      ELSEIF(SAZI1.GT.90..AND.SAZI1.LT.180.)THEN
-        ANG=SAZI1-90.
-        TANG=SIN(ANG*R)/COS(ANG*R)
-        Y2=-5000.
-        Z2=5000.*TSR/SIN(ANG*R)
-        X2=5000./TANG
-      ELSEIF(SAZI1.GT.180..AND.SAZI1.LT.270.)THEN
-        ANG=SAZI1-180.
-        TANG=SIN(ANG*R)/COS(ANG*R)
-        Y2=-5000.
-        Z2=5000.*TSR/COS(ANG*R)
-        X2=-5000.*TANG
-      ELSEIF(SAZI1.GT.270.)THEN
-        ANG=SAZI1-270.
-        TANG=SIN(ANG*R)/COS(ANG*R)
-        Y2=5000.
-        Z2=5000.*TSR/COS(ANG*R)
-        X2=-5000./TANG
-      ENDIF
+      if(sazi1.lt.90.)then
+         ang=90.-sazi1
+         tang=sin(ang*r)/cos(ang*r)
+         y2=5000.
+         z2=5000.*tsr/sin(ang*r)
+         x2=5000./tang
+      elseif(sazi1.gt.90..and.sazi1.lt.180.)then
+         ang=sazi1-90.
+         tang=sin(ang*r)/cos(ang*r)
+         y2=-5000.
+         z2=5000.*tsr/sin(ang*r)
+         x2=5000./tang
+      elseif(sazi1.gt.180..and.sazi1.lt.270.)then
+         ang=sazi1-180.
+         tang=sin(ang*r)/cos(ang*r)
+         y2=-5000.
+         z2=5000.*tsr/cos(ang*r)
+         x2=-5000.*tang
+      elseif(sazi1.gt.270.)then
+         ang=sazi1-270.
+         tang=sin(ang*r)/cos(ang*r)
+         y2=5000.
+         z2=5000.*tsr/cos(ang*r)
+         x2=-5000./tang
+      endif
 
-      IF(SAZI1.LT.90.001.AND.SAZI1.GT.89.999)THEN
-        Y2=0.
-        X2=5000.
-        Z2=5000.*TSR
-      ELSEIF(SAZI1.LT.180.001.AND.SAZI1.GT.179.999)THEN
-        Y2=-5000.
-        X2=0.
-        Z2=5000.*TSR
-      ELSEIF(SAZI1.LT.270.001.AND.SAZI1.GT.269.999)THEN
-        X2=-5000.
-        Y2=0.
-        Z2=5000.*TSR
-      ENDIF
+      if(sazi1.lt.90.001.and.sazi1.gt.89.999)then
+         y2=0.
+         x2=5000.
+         z2=5000.*tsr
+      elseif(sazi1.lt.180.001.and.sazi1.gt.179.999)then
+         y2=-5000.
+         x2=0.
+         z2=5000.*tsr
+      elseif(sazi1.lt.270.001.and.sazi1.gt.269.999)then
+         x2=-5000.
+         y2=0.
+         z2=5000.*tsr
+      endif
 
-C Translate/rotate both points (in order Z-, X- then
-C Y-axis rotation) to new coordinate system.
+C Translate/rotate both points (in order z-, x- then
+C y-axis rotation) to new coordinate system.
 
-C Transformed X.
-      XT1=(X1-XOR)*A(1)+(Y1-YOR)*A(2)-(X1-XOR)*A(3)+
-     &         (Y1-YOR)*A(4)-(Z1-ZOR)*A(5)
-      XT2=(X2-XOR)*A(1)+(Y2-YOR)*A(2)-(X2-XOR)*A(3)+
-     &         (Y2-YOR)*A(4)-(Z2-ZOR)*A(5)
+C Transformed x.
+      xt1=(x1-xor)*a(1)+(y1-yor)*a(2)-(x1-xor)*a(3)+
+     &         (y1-yor)*a(4)-(z1-zor)*a(5)
+      xt2=(x2-xor)*a(1)+(y2-yor)*a(2)-(x2-xor)*a(3)+
+     &         (y2-yor)*a(4)-(z2-zor)*a(5)
 
-C Transformed Y.
-      YT1=-(X1-XOR)*B(1)+(Y1-YOR)*B(2)+(Z1-ZOR)*B(3)
-      YT2=-(X2-XOR)*B(1)+(Y2-YOR)*B(2)+(Z2-ZOR)*B(3)
+C Transformed y.
+      yt1=-(x1-xor)*b(1)+(y1-yor)*b(2)+(z1-zor)*b(3)
+      yt2=-(x2-xor)*b(1)+(y2-yor)*b(2)+(z2-zor)*b(3)
 
-C Transformed Z.
-      ZT1=(X1-XOR)*C(1)+(Y1-YOR)*C(2)+(X1-XOR)*C(3)-
-     &         (Y1-YOR)*C(4)+(Z1-ZOR)*C(5)
-      ZT2=(X2-XOR)*C(1)+(Y2-YOR)*C(2)+(X2-XOR)*C(3)-
-     &         (Y2-YOR)*C(4)+(Z2-ZOR)*C(5)
+C Transformed z.
+      zt1=(x1-xor)*c(1)+(y1-yor)*c(2)+(x1-xor)*c(3)-
+     &         (y1-yor)*c(4)+(z1-zor)*c(5)
+      zt2=(x2-xor)*c(1)+(y2-yor)*c(2)+(x2-xor)*c(3)-
+     &         (y2-yor)*c(4)+(z2-zor)*c(5)
 
 C Convert transformed points back to pseudo solar angles
-C (SAZI2 and SALT2) expressed relative to the transformed
+C (sazi2 and salt2) expressed relative to the transformed
 C coordinate system.
-      DIST=SQRT((XT2-XT1)**2+(YT2-YT1)**2+(ZT2-ZT1)**2)
-      DZ=ZT2-ZT1
-      if((DIST.LT..0001.AND.DIST.GT.-.0001).or.
-     &   (DZ.LT..0001.AND.DZ.GT.-.0001))then
+      dist=sqrt((xt2-xt1)**2+(yt2-yt1)**2+(zt2-zt1)**2)
+      dz=zt2-zt1
+      if((dist.lt..0001.and.dist.gt.-.0001).or.
+     &           (dz.lt..0001.and.dz.gt.-.0001))then
          call edisp(iuout,'TRNSF2: Sun position transformation error!')
       endif
 
 C Altitude.
-      ARG=DZ/DIST
-      SALT2=ASIN(ARG)/R
-      if(DZ.lt.0.)SALT2=-SALT2
+      arg=dz/dist
+      salt2=asin(arg)/r
+      if(dz.lt.0.0)salt2=-salt2
 
 C Azimuth.
-      DX=XT2-XT1
-      DY=YT2-YT1
-      ARG=ABS(DY/DX)
-      ANGL=ATAN(ARG)/R
-      IF(DX.GT.0..AND.DY.LT.0.)THEN
-        SAZI2=90.+ANGL
-      ELSEIF(DX.GT.0..AND.DY.GT.0.)THEN
-        SAZI2=90.-ANGL
-      ELSEIF(DX.LT.0..AND.DY.GT.0.)THEN
-        SAZI2=270.+ANGL
-      ELSEIF(DX.LT.0..AND.DY.LT.0.)THEN
-        SAZI2=270.-ANGL
-      ENDIF
+      dx=xt2-xt1
+      dy=yt2-yt1
+      arg=abs(dy/dx)
+      angl=atan(arg)/r
+      if(dx.gt.0..and.dy.lt.0.)then
+         sazi2=90.0+angl
+      elseif(dx.gt.0.0.and.dy.gt.0.0)then
+         sazi2=90.0-angl
+      elseif(dx.lt.0.0.and.dy.gt.0.0)then
+         sazi2=270.0+angl
+      elseif(dx.lt.0.0.and.dy.lt.0.0)then
+         sazi2=270.0-angl
+      endif
 
 C Special cases:
 C 1. When transformed solar azimuth is normal to the
 C transformed surface.
-      IF(DX.LT..001.AND.DX.GT.-.001)THEN
-        SAZI2=0.
+      if(dx.lt.0.001.and.dx.gt.-0.001)then
+         sazi2=0.0
 
 C 2. When surface is facing away from the transformed sun.
-        IF(DY.LT.0.)SAZI2=180.
+         if(dy.lt.0.0)sazi2=180.0
 
 C 3. When the transformed solar azimuth is parallel to
 C the transformed surface. 
-      ELSEIF(DY.LT..001.AND.DY.GT.-.001)THEN
-        SAZI2=90.
-        IF(DX.LT.0.)SAZI2=270.
-      ENDIF
+      elseif(dy.lt.0.001.and.dy.gt.-0.001)then
+         sazi2=90.0
+         if(dx.lt.0.)sazi2=270.0
+      endif
 
 C C Trace output.
-      IF(.not.tok)goto 9999
-      call edisp(icout,' ')
-      WRITE(outs,9998)IHR
- 9998 FORMAT('*** TRNSF2I: Solar angle transformation at hour ',I2)
-      call edisp(icout,outs)
-      call edisp(icout,' ')
-      WRITE(outs,9997)
- 9997 FORMAT('Intermediate calculations:')
-      call edisp(icout,outs)
-      WRITE(outs,9996)X1,Y1,Z1,X2,Y2,Z2
- 9996 FORMAT('X1,Y1,Z1= ',3F8.1,'; X2,Y2,Z2= ',3F8.1)
-      call edisp(icout,outs)
-      WRITE(outs,9995)XT1,YT1,ZT1,XT2,YT2,ZT2
- 9995 FORMAT('XT1,YT1,ZT1= ',3F8.1,'; XT2,YT2,ZT2= ',3F8.1)
-      call edisp(icout,outs)
-      WRITE(outs,9994)DX,DY,DZ
- 9994 FORMAT('DX= ',F8.1,'; DY= ',F8.1,'; DZ= ',F8.1)
-      call edisp(icout,outs)
-      WRITE(outs,9993)DIST,ANGL
- 9993 FORMAT('DIST= ',F8.1,'; ANGL= ',F8.1)
-      call edisp(icout,outs)
-      call edisp(icout,' ')
-      WRITE(outs,9992)SAZI1,SAZI2
- 9992 FORMAT('Solar azimuth of ',F8.1,' transforms to ',F6.1)
-      call edisp(icout,outs)
-      WRITE(outs,9991)SALT1,SALT2
- 9991 FORMAT('Solar altitude of ',F6.1,' transforms to ',F6.1)
-      call edisp(icout,outs)
-
- 9999 RETURN
-      END
+      if(tok)then
+         call edisp(icout,' ')
+         write(outs,9999)ihr
+ 9999    format('*** TRNSF2I: Solar angle transformation at hour ',i2)
+         call edisp(icout,outs)
+         call edisp(icout,' ')
+         write(outs,9998)
+ 9998    format('Intermediate calculations:')
+         call edisp(icout,outs)
+         write(outs,9997)x1,y1,z1,x2,y2,z2
+ 9997    format('X1,Y1,Z1= ',3f8.1,'; X2,Y2,Z2= ',3f8.1)
+         call edisp(icout,outs)
+         write(outs,9996)xt1,yt1,zt1,xt2,yt2,zt2
+ 9996    format('XT1,YT1,ZT1= ',3f8.1,'; XT2,YT2,ZT2= ',3f8.1)
+         call edisp(icout,outs)
+         write(outs,9995)dx,dy,dz
+ 9995    format('DX= ',f8.1,'; DY= ',f8.1,'; DZ= ',f8.1)
+         call edisp(icout,outs)
+         write(outs,9994)dist,angl
+ 9994    format('DIST= ',f8.1,'; ANGL= ',f8.1)
+         call edisp(icout,outs)
+         call edisp(icout,' ')
+         write(outs,9993)sazi1,sazi2
+ 9993    format('Solar azimuth of ',f8.1,' transforms to ',f6.1)
+         call edisp(icout,outs)
+         write(outs,9992)salt1,salt2
+ 9992    format('Solar altitude of ',f6.1,' transforms to ',f6.1)
+         call edisp(icout,outs)
+      endif
+      return
+      end
 
 C ************** TRNSF3I
-C Projects the given window vertex (XXW,YYW,ZZW) onto the
+C Projects the given window vertex (xxw,yyw,zzw) onto the
 C plane of the object body face under consideration. The projected
-C are specified relative to the local face coordinate system.  The
-C Y-coordinate is left unprojected but in the new coordinate system.
-
-C This reoutine is similar to TRNSF3 but with window grid points
+C points are specified relative to the local face coordinate system.
+C The y-coordinate is left unprojected but in the new coordinate system.
+C This routine is similar to trnsf3 but with window grid points used
 C instead of obstruction surface vertices.
 
-      SUBROUTINE TRNSF3I(XXW,YYW,ZZW)
+      subroutine trnsf3i(xxw,yyw,zzw)
 
-      COMMON/TC/ITC,ICNT
-      COMMON/OUTPCH/ICOUT
-      COMMON/TRNSF/A(5),B(3),C(5),XOR,YOR,ZOR
-      COMMON/SANGL2/SAZI2,SALT2
-      COMMON/PROJI/XP,YP,ZP
+      common/tracech/icout
+      common/trnsf/a(5),b(3),c(5),xor,yor,zor
+      common/sangl2/sazi2,salt2
+      common/proji/xp,yp,zp
+
       character outs*124
       logical tok
 
@@ -367,75 +366,75 @@ C If verbose trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-      PI = 4.0 * ATAN(1.0)
-      R=PI/180.
+      pi=4.0*atan(1.0)
+      r=pi/180.
 
-C Establish projection angles, ETA1 and ETA2, which related to the
-C pseudo azimuth, SAZI2, and pseudo altitude, SALT2, respectively.
-      ETA1=180-SAZI2
-      ETA2=SALT2
+C Establish projection angles, eta1 and eta2, which related to the
+C pseudo azimuth, sazi2, and pseudo altitude, salt2, respectively.
+      eta1=180.0-sazi2
+      eta2=salt2
 
 C Establish trigonometric coefficients for use in the following
-C projection transforms: TA1 and TA2 are -ve for +ve values
-C of ETA1 and ETA2 respectively.
-      A1=ABS(ETA1*R)
-      SA1=SIN(A1)
-      CA1=COS(A1)
-      IF(ABS(CA1).LT.0.00001)CA1=0.00001
-      TA1=SA1/CA1
-      IF(ETA1.gt.0.0)TA1=-TA1
+C projection transforms: ta1 and ta2 are -ve for +ve values
+C of eta1 and eta2 respectively.
+      a1=abs(eta1*r)
+      sa1=sin(a1)
+      ca1=cos(a1)
+      if(abs(ca1).lt.0.00001)ca1=0.00001
+      ta1=sa1/ca1
+      if(eta1.gt.0.0)ta1=-ta1
 
-      A2=ABS(ETA2*R)
-      SA2=SIN(A2)
-      CA2=COS(A2)
-      IF(ABS(CA2).LT..00001)CA2=.00001
-      TA2=SA2/CA2
-      IF(ETA2.gt.0.0)TA2=-TA2
+      a2=abs(eta2*r)
+      sa2=sin(a2)
+      ca2=cos(a2)
+      if(abs(ca2).lt.0.00001)ca2=0.00001
+      ta2=sa2/ca2
+      if(eta2.gt.0.0)ta2=-ta2
 
 C Perform translation then projection transformation
 
-C Transform Y (no need to project).
-      YT=-(XXW-XOR)*B(1)+(YYW-YOR)*B(2)+(ZZW-ZOR)*B(3)
-      YP=YT
+C Transform y (no need to project).
+      yt=-(xxw-xor)*b(1)+(yyw-yor)*b(2)+(zzw-zor)*b(3)
+      yp=yt
 
-C TA1 and TA2 above assume that YT is +ve whereas it will be
-C -ve. XMULT imposes the necessary correction (N.B. switched from
-C shading case because coordinate systems are different.
-      XMULT=1.0
-      IF(YT.gt.0.0)XMULT=-1.0
+C ta1 and ta2 above assume that yt is +ve whereas it will be
+C -ve; xmult imposes the necessary correction (N.B. switched from
+C shading case because coordinate systems are different).
+      xmult=1.0
+      if(yt.gt.0.0)xmult=-1.0
 
-C Transform and project X.
-      XT=(XXW-XOR)*A(1)+(YYW-YOR)*A(2)-(XXW-XOR)*A(3)
-     &      +(YYW-YOR)*A(4)-(ZZW-ZOR)*A(5)
-      XP=XT+YT*TA1*XMULT
+C Transform and project x.
+      xt=(xxw-xor)*a(1)+(yyw-yor)*a(2)-(xxw-xor)*a(3)
+     &      +(yyw-yor)*a(4)-(zzw-zor)*a(5)
+      xp=xt+yt*ta1*xmult
 
-C Tranform and project Z.
-      ZT=(XXW-XOR)*C(1)+(YYW-YOR)*C(2)+(XXW-XOR)*C(3)
-     &      -(YYW-YOR)*C(4)+(ZZW-ZOR)*C(5)
-      ZP=YT*TA2/CA1*XMULT+ZT
+C Tranform and project z.
+      zt=(xxw-xor)*c(1)+(yyw-yor)*c(2)+(xxw-xor)*c(3)
+     &      -(yyw-yor)*c(4)+(zzw-zor)*c(5)
+      zp=yt*ta2/ca1*xmult+zt
 
 C Trace output.
-      IF(.not.tok)goto 9999
-      call edisp(icout,' ')
-      write(outs,9998)
- 9998 format('*** TRNSF3I: point projection.')
-      call edisp(icout,outs)
-      call edisp(icout,' ')
-      call edisp(icout,'X,Y,Z coordinates:')
-      write(outs,'(3F8.1)')XXW,YYW,ZZW
-      call edisp(icout,outs)
-      call edisp(icout,'X`,Y`,Z` coordinates:')
-      write(outs,'(3F8.1)')XT,YT,ZT
-      call edisp(icout,outs)
-      write(outs,9997)ETA1,ETA2
- 9997 format('Pseudo solar angles: ETA1= ',F8.1,'; ETA2= ',F8.1)
-      call edisp(icout,outs)
-      write(outs,9996)TA1,TA2
- 9996 format('TA1= ',F8.1,'; TA2= ',F8.1)
-      call edisp(icout,outs)
-      call edisp(icout,'XP,YP,ZP coordinates:')
-      write(outs,'(3F8.1)')XP,YP,ZP
-      call edisp(icout,outs)
-
- 9999 RETURN
-      END
+      if(tok)then
+         call edisp(icout,' ')
+         write(outs,9999)
+ 9999    format('*** TRNSF3I: point projection.')
+         call edisp(icout,outs)
+         call edisp(icout,' ')
+         call edisp(icout,'X,Y,Z coordinates:')
+         write(outs,'(3f8.1)')xxw,yyw,zzw
+         call edisp(icout,outs)
+         call edisp(icout,'X`,Y`,Z` coordinates:')
+         write(outs,'(3f8.1)')xt,yt,zt
+         call edisp(icout,outs)
+         write(outs,9998)eta1,eta2
+ 9998    format('Pseudo solar angles: ETA1= ',f8.1,'; ETA2= ',f8.1)
+         call edisp(icout,outs)
+         write(outs,9997)ta1,ta2
+ 9997    format('TA1= ',f8.1,'; TA2= ',f8.1)
+         call edisp(icout,outs)
+         call edisp(icout,'XP,YP,ZP coordinates:')
+         write(outs,'(3f8.1)')xp,yp,zp
+         call edisp(icout,outs)
+      endif
+      return
+      end

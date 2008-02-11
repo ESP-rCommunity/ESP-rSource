@@ -1,7 +1,6 @@
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
-MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
 PROG = ish$(EXE)
@@ -10,12 +9,13 @@ PROG = ish$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o comput.o cread3dv.o ctlexp.o \
-	  ctread.o dossupport.o e3dviews.o econstr.o edatabase.o edcondb.o egeometry.o \
-	  emfnetw.o enetmisc.o eroper.o esru_misc.o esystem.o files.o graph.o inscom.o \
+OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
+	  ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o \
+	  edatabase.o edcondb.o egeometry.o emfnetw.o enetmisc.o \
+	  esru_misc.o esystem.o sifile.o eroper.o graph.o inscon.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelev.o pltcfg.o \
-	  readTrnsys.o shdcon.o silist.o \
-	  sort.o startup.o synop.o tfiles.o trnsf.o trnsfi.o winshd.o
+	  readTrnsys.o shdcon.o sifops.o sort.o startup.o synop.o \
+	  trnfile.o trnsfs.o trnsfi.o ashrae.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -110,7 +110,8 @@ install:
 
 clean:
 	rm -f core $(PROG) $(OBJECTS) \
-	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
-	e3dviews.F econstr.F edcondb.F edatabase.F egeometry.F emfnetw.F enetmisc.F \
-	enetrewr.F esru_misc.F esystem.F eroper.F item.F mfcdat.F nwkrewr.F \
-	plelev.F readTrnsys.F sort.F startup.F tdfile.F pltcfg.F 
+	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F \
+	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \
+	egeometry.F emfnetw.F enetmisc.F enetrewr.F esru_misc.F esystem.F \
+	eroper.F item.F mfcdat.F nwkrewr.F plelev.F readTrnsys.F sort.F \
+	startup.F tdfile.F pltcfg.F 

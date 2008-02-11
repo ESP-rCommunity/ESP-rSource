@@ -95,7 +95,7 @@ C Special materials file flag
       common/entfile/entflnam,ientxist
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/AFNZN/zmfn1,zmfn2
+      COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -253,7 +253,6 @@ c This common block is used to define the sky temperature calculation method
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character zmfn1*124,zmfn2*124
       character imgfmt*4,imgfoc*4,limgfil*72
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
@@ -272,11 +271,16 @@ c This common block is used to define the sky temperature calculation method
       character LWndSupp*72
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
 
+C An array of mass flow nodes for writing.
+      CHARACTER NDNAM*12
+      character namen*12
+      dimension namen(mcom)
+
       character act*1  ! a '-' is normal use, a 's' is silent
 
       dimension iav(60)
 
-      logical KNOWN,dogrnd
+      logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
@@ -284,6 +288,10 @@ c This common block is used to define the sky temperature calculation method
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
+
+      integer itrunc  ! to indicate there is a continuation line.
+      integer ipos    ! position in flow node string buffer
+      integer lnouts   ! location at end of flow node string buffer
       
       IUF=IFIL+1
       IER=0
@@ -848,34 +856,34 @@ C Annual ipv report (if included).
 
 C Building and client address tokens (as in UK national calculation method).
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
-     &  '# Address of building and owner'
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*P-NAME ',
+     &  '# Address of building, owner and certifier'
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-NAME      ',
      &  pjname(1:lnblnk(pjname))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-ADDRESS ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-ADDRESS   ',
      &  baddress(1:lnblnk(baddress))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-CITY ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-CITY      ',
      &  bcity(1:lnblnk(bcity))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-POSTCODE ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*B-POSTCODE  ',
      &  buildingPC(1:lnblnk(buildingPC))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-NAME ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-NAME      ',
      &  ownername(1:lnblnk(ownername))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-ADDRESS ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-ADDRESS   ',
      &  owneraddr(1:lnblnk(owneraddr))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-CITY ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-CITY      ',
      &  ownercity(1:lnblnk(ownercity))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-POSTCODE ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-POSTCODE  ',
      &  ownerPC(1:lnblnk(ownerPC))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*O-TELEPHONE ',
      &  ownertel(1:lnblnk(ownertel))
 
 C Write out contact details of simulation team.
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-NAME ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-NAME      ',
      &  certifname(1:lnblnk(certifname))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-ADDRESS ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-ADDRESS   ',
      &  certaddress(1:lnblnk(certaddress))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-CITY ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-CITY      ',
      &  certcity(1:lnblnk(certcity))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-POSTCODE ',
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-POSTCODE  ',
      &  certPC(1:lnblnk(certPC))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*C-TELEPHONE ',
      &  certTel(1:lnblnk(certTel))
@@ -1078,30 +1086,27 @@ C Write airflow model description
   808 FORMAT(I7,'   # fluid flow network:  ')
       IF(IAIRN.ge.1)then
 
-C Note this only writes node number not node name: needs upgrading.
-C If ICAAS not known use strings held in zmfn1 zmfn2.
+C Make up an array of node names to write out substituting a
+C zero where there is no association.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)
      &    LAPROB(1:LNBLNK(LAPROB)),'    # leakage description'
+        do 777 j=1,ncomp
+          if(ICAAS(J).ne.0)then
+            namen(j)=NDNAM(ICAAS(J))
+          else
+            namen(j)='0'
+          endif
+  777   continue
 
-        KNOWN=.FALSE.
-        if(zmfn1.ne.' ')then
-          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)zmfn1(1:LNBLNK(zmfn1))
-          KNOWN=.TRUE.
-        endif
-        if(zmfn2.ne.' ')then
-          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)zmfn2(1:LNBLNK(zmfn2))
-          KNOWN=.TRUE.
-        endif
-        if(.NOT.KNOWN)then
+        itrunc=1
+        ipos=1
+        do while (itrunc.ne.0)
+          lnouts=1
+          call aslist(ipos,ncomp,namen,MCOM,'C',outs,lnouts,itrunc)
+          write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=2) outs(1:lnouts)
+          ipos=itrunc+1
+        end do
 
-C Write packed string of the network node associated with each zone.
-C << this needs to use a while statement style to get as many lines >>
-C << of data. But really it should be writing out the name of the  >>
-C << flow node and only a zero when there is not flow node. >>
-          ipos=1
-          call ailist(ipos,ncomp,ICAAS,MCOM,'C',outs,loutlen,itrunc)
-          write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=2) outs(1:loutlen)
-        endif
       endif
  9021 if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
 

@@ -6,6 +6,12 @@ C Parameters misur and maxwin added 1.11.91
 C Parameters mcub, mgc,mpatch added 9.05.92
 C Parameters mgrt, mgtv added 31.03.95
 C 32 Surface version 07.00
+C 42 Surface version 05.03
+C 62 Surface version 06.04
+C 40 zone 62 surface version 03.05
+C 42 zone 62 surface version 04.07 updated
+C 52 zone 62 surface version 01.08 updated
+
 C Used in the ESP suite of programs written by staff of the
 C Energy Simulation Research Unit of the University of Strathclyde.
 
@@ -23,9 +29,9 @@ C Type declarations
       integer MDTY,MGTY,MGPER
 
 C For the building:
-      PARAMETER (MCOM=28)
-      PARAMETER (MCON=800)
-      PARAMETER (MTV=250)
+      PARAMETER (MCOM=52)
+      PARAMETER (MCON=2000)
+      PARAMETER (MTV=200)
       PARAMETER (MV=24)
       PARAMETER (ME=8)
       PARAMETER (MGP=3)
@@ -40,11 +46,11 @@ C For the building:
 
 C 'mgt' is the maximum number of insolated glazings and
 C this should be set to the same as MS. 
-      PARAMETER (MGT=32)
+      PARAMETER (MGT=62)
       PARAMETER (MCT=3)
       PARAMETER (MTRACE=60)
       PARAMETER (MGRDP=10)
-      
+
 C Casual gains limits.
       PARAMETER (MDTY=3)
       PARAMETER (MGTY=7)
@@ -85,20 +91,20 @@ C Ground topology
 C Change next 2 settings to increase/ reduce
 C number of surfaces. MSM is MS+6 for viewfactor
 C calculations. Also set MNSBZ in cfd.h to equal MS.
-      PARAMETER (MST=32)
-      PARAMETER (MS=32)
-      PARAMETER (MSM=38)
+      PARAMETER (MST=62)
+      PARAMETER (MS=62)
+      PARAMETER (MSM=68)
 
 C MZS is the number of items to report/select in res.
       PARAMETER (MZS=90)
 
 C MZRL is associated with data taking up all fields of a zone
 C results library (i.e. is = nzrl). Should be larger of either MCOM or MS+12 or 36.
-      PARAMETER (MZRL=44)
+      PARAMETER (MZRL=74)
 
 C If MS changes, so should MEQ (MS+1) and MTR (MS+4).
-      PARAMETER (MEQ=33)
-      PARAMETER (MTR=36)
+      PARAMETER (MEQ=63)
+      PARAMETER (MTR=66)
 
 C Multilayered construction limit
       PARAMETER (MMLC=80)
@@ -116,12 +122,12 @@ C For shading/ insolation:
       PARAMETER (MOX=50)
       PARAMETER (MOZ=50)
 
-C 'misur' is the maximum number of insolated surfaces.
-      parameter (misur=6)
+C 'misur' is the maximum number of surfaces insolated from one source.
+      parameter (misur=10)
 
 C For mrt calculations:
 C 'mcub' is the number of MRT sensors in a zone.
-      PARAMETER (MCUB=4,MGC=1600,MPATCH=200)
+      PARAMETER (MCUB=4,MGC=26000,MPATCH=200)
 
 C For variable thermophysical properties:
       PARAMETER (MTHF=12,MTHEQ=3,MDATA=12)

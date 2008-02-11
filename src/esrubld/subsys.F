@@ -1107,6 +1107,8 @@ C                 external temperature (for use in MZLS3).
 
 C TDF commons.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
@@ -1118,6 +1120,9 @@ C TDF commons.
      &TIA2(MCOM,MT),CVI3(MCOM,MT),CVV3(MCOM,MT),ICC3(MCOM,MT),
      &TIA3(MCOM,MT)
 
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
+     
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -1322,6 +1327,38 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
   602   CONTINUE
         XX3=CVIF*TF+SUM*X
         CVVFM=SUM
+
+C If UK ncm calculations then use fresh air requirements from
+C file (tdf) plus user defined infiltration values. Care should be
+C taken when IZIVENT is also greater than 0. 
+      elseif(IACTIV(ICOMP).ne.0)then
+
+C Note: set trace to verbose for testing.
+        ICF=0
+        itrc=0
+        itdi=IACTIV(ICOMP)
+        IFOC=itdi
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)       
+
+C Multiply: outdoor air value from tdf (based on fresh air requirements
+C in l/s/pers)*Occupants density (pers/m2)*occupancy fraction*zone area
+        ACI=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))*
+     &      VAL(ISD)*ZBASEA(ICOMP)
+
+C Convert l/s to ach
+        ACI=ACI*(3600.0/1000)/VOL(ICOMP)
+
+        CVVF=0.
+        SUM=0.
+        CVIF=0.33*VOL(ICOMP)*ACI        
+        IF(ACI.LE.0.)CVIF=0.
+
+C set x=0 for now. Not used at the moment but attempting
+C to follow similar patter as the classic ventilation
+C entry in tdf
+        X=0. 
+        XX3=CVIF*TF+SUM*X
+        CVVFM=0.
       else
 
 C By interpolation determine the conductances at 'TIME':

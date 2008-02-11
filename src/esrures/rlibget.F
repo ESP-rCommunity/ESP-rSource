@@ -52,10 +52,14 @@ C  GPCR1:  read zone real power consumption.
 C  GPCQ2:  read zone reactive power consumption.
 C  GSOLABS: read total solar absorbed in zone.
 C  GQSE:   read solar absorbed on outside surface.
+C  GTBR:   read thermal bridge flux for zone.
+C GAIRSTOR reads heat stored in the zone air node
 C  GZTMS:  read zone air and surf temps at a timestep/halfstep.
 C  GZSOLA: read one timestep solar absorption inside & outside.
 C  GSURFB: read one timestep surface balance data (save=4 only)
 C  G4ALLS: read one timesteps selected data for surfaces (save=4 only).
+C  Getallcas: read one timestep of the total conv/radiant and separate
+C     casual gain conv/rad/latent data for a zone and control fraction.
 C  GFIXED: read days single fixed surface balance items.
 C  MMAPER: calculate maximum, minimum and average values for current period.
 C  HASHL   calculate offset to base record at each timestep and zone.
@@ -90,7 +94,7 @@ C address for requested recovery day and recover all timesteps.
           IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+IHASHS(ISET)+2
           NN=NZSUR(IZONE)
           JB1=NN+5
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=5)(XD(K),K=1,JB1)
+          READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=5)(XD(K),K=1,JB1)
 
 C Test that 0.0 < FRAC > 1.0.
           IF(XD(JB1).GE.0.0.AND.XD(JB1).LE.1.0)THEN
@@ -104,9 +108,15 @@ C Express fraction as a percentage.
 
 C Error in reading frac, probably from an old version of bps so reread
 C this record and assign an assumed value to FRAC.
-    5     JB1=NN+4
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(K),K=1,JB1)
-           GVAL(I)=100.0
+    5     if(IOS.eq.2)then
+            CALL USRMSG(
+     &        'No permission to read value of casual gain fraction',
+     &        ' ','W')
+          else
+            JB1=NN+4
+            READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(K),K=1,JB1)
+            GVAL(I)=100.0
+          endif
     6     CONTINUE
    20   CONTINUE
       ELSE
@@ -116,8 +126,13 @@ C this record and assign an assumed value to FRAC.
       ENDIF
 
     8 RETURN
- 1000 write(outs,7)IREC
-    7 format(' GCFRAC: error reading FRAC at record',I5,'.')
+ 1000 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &    ' GCFRAC: no permission to read FRAC at record',IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &    ' GCFRAC: error reading FRAC at record',IREC,'.'
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1132,6 +1147,66 @@ C Get QSE only if save is level 2 -4.
       RETURN
       END
 
+C ******************** GTBR ********************
+C GTBR reads flux associated with thermal bridges in a zone
+C from results library for a given day and zone.
+C Given IDAY, IZONE returns value at each time step in common GVAL.
+C CALLS: GFIXED
+
+      SUBROUTINE GTBR(IDAY,IZONE,ISET)
+#include "building.h"
+      common/recver/izver,ipver,iever
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+
+C Get thermal bridge data only if save is level 2 -4.
+      if(izver.lt.4)then
+        call edisp(iuout,
+     &   'GTBR: Library version does not include thermal bridge.')
+        return
+      endif
+      IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
+        IRJUMP = 1
+        ICJUMP=NZSUR(IZONE)+12
+        CALL GFIXED(IDAY,IZONE,ISET,IRJUMP,ICJUMP)
+      ELSE
+         call edisp(iuout,
+     &   'GTBR: Save option does not allow access to thermal bridge.')
+      ENDIF
+      RETURN
+      END
+
+C ******************** GAIRSTOR ********************
+C GAIRSTOR reads heat stored in the zone air node (due to temp fluxuations)
+C from results library for a given day and zone.
+C Given IDAY, IZONE returns value at each time step in common GVAL.
+C CALLS: GFIXED
+
+      SUBROUTINE GAIRSTOR(IDAY,IZONE,ISET)
+#include "building.h"
+      common/recver/izver,ipver,iever
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+
+C Get heat stored in the zone air only if save is level 2 -4.
+      if(izver.lt.4)then
+        call edisp(iuout,
+     &   'GAIRSTOR: Library version does not include air storage.')
+        return
+      endif
+      IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
+        IRJUMP = 0
+        ICJUMP=NZSUR(IZONE)+12
+        CALL GFIXED(IDAY,IZONE,ISET,IRJUMP,ICJUMP)
+      ELSE
+        call edisp(iuout,
+     &   'GAIRSTOR: Save option does not allow access to air storage.')
+      ENDIF
+      RETURN
+      END
+
 C ******************** GZTMS ********************
 C GZTMS is a low level routine to read from the results library ZTMS
 C (the temperatures at the inside & outside face of all surfaces
@@ -1166,12 +1241,12 @@ C Get ZTMS only if save is level 2 - 4.
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZ)+IHASHS(ISET)
         NN=NZSUR(IZ)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)
      &            TMA,X1,(ZTMS(K),K=1,NN),X2,X3,TMCON
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)QW1,QW2,X1,X2,QSA
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)QW1,QW2,X1,X2,QSA
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(XD(I),I=1,NN),
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(XD(I),I=1,NN),
      &    X1,X2,RH
         IREC=IREC+1
 
@@ -1179,7 +1254,7 @@ C Read first node temp (outside surface) for each surf in zone
 C if save level is 3 or 4, otherwise set ZTMSO to 0.
         DO 80 K=1,NN
           if(ISAVE.GT.2.AND.ISAVE.LE.4)THEN
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZTMSO(K)
+            READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)ZTMSO(K)
             IREC=IREC+1
           else
             ZTMSO(K)=0.0
@@ -1191,8 +1266,13 @@ C if save level is 3 or 4, otherwise set ZTMSO to 0.
       ENDIF
 
     8 RETURN
- 1000 write(outs,7)IREC
-    7 format(' GZTMS: error reading ZTMS (zone temps at record',I5)
+ 1000 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &    ' GZTMS: no permission to read ZTMS at record',IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &    ' GZTMS: error reading ZTMS at record',IREC,'.'
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1228,10 +1308,10 @@ C Only if save is level 2 - 4.
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZ)
         NN=NZSUR(IZ)
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)QW1,QW2,X1,X2,QSA,
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)QW1,QW2,X1,X2,QSA,
      &    (QI(K),K=1,NN)
         IREC=IREC+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(QE(I),I=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(QE(I),I=1,NN)
 
         TQE=0.
         TQI=0.
@@ -1245,8 +1325,13 @@ C Only if save is level 2 - 4.
       ENDIF
 
     8 RETURN
- 1000 write(outs,7)IREC
-    7 format(' GZTMS: error reading ZTMS (zone temps at record',I5)
+ 1000 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &    ' GZSOLA: no permission to read data at record',IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &    ' GZSOLA: error reading data at record',IREC,'.'
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1282,16 +1367,21 @@ C temperatures, clear atmc and read node data.
         IRJUMP = 3+(ISFN-1)
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZONE)+IRJUMP
         NN=2*NELTS(IZONE,ISFN)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ATMC(K),K=1,NN)
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)(ATMC(K),K=1,NN)
       ELSE
          call edisp(iuout,
      &   ' GATMC: Save option does not allow access to ATMC.')
       ENDIF
 
     8 RETURN
- 1000 write(outs,7)IREC
-    7 format(' GATMC: error reading ATMC (all node temperatures) at',
-     &       ' record',I5)
+ 1000 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &  'GATMC: no permission to read ATMC (all node temp) at record',
+     &   IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &  'GATMC: error reading ATMC (all node temp) at record',IREC,'.'
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1313,17 +1403,22 @@ C qstore heat storage @ other side, qconde = other side conduction,
 C qconve = otherside convection, qlwrde = outside longwave to ground,
 C qlwrbd = outside longwave to buildings,
 C qlwrsk = outside longwave to sky, qswrde = outside shortwave radiation
-C CALLS: MOREC1 MOREC2
 
+C For izver >=4 the following are explicitly recovered:
+C avqcrioc = occupant radiant casual gain absorbed at surface
+C avqcrili = lighting radiant casual gain absorbed at surface
+C avqcrisp = small power radiant casual gain absorbed at surface
+C avqcrioth = other radiant casual gain absorbed at surface
       SUBROUTINE GSURFB(IDAY,IZONE,ISFN,ITS,TSout,qswrdi,qlwrdi,qconvi,
-     &          qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,
-     &          qlwrsk,qswrde)
+     &  qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,qlwrsk,
+     &  qswrde,avqcrioc,avqcrili,avqcrisp,avqcrioth)
 #include "building.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
+      common/recver/izver,ipver,iever
 
       character outs*124
 
@@ -1333,10 +1428,26 @@ C Get only if save is level 4, then compute start record address.
       IF(ISAVE.EQ.4)THEN
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZONE)+3+(ISFN-1)
         NN=NZSUR(IZONE)
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TSout,qswrdi,
+        if(izver.lt.4)then
+          READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)TSout,qswrdi,
      &          qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
      &          qlwrde,qlwrbd,qlwrsk,qswrde
+          avqcrioc=0.0
+          avqcrili=0.0
+          avqcrisp=0.0
+          avqcrioth=0.0
+        else
+          READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)TSout,qswrdi,
+     &          qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
+     &          qlwrde,qlwrbd,qlwrsk,qswrde,avqcrioc,avqcrili,
+     &          avqcrisp,avqcrioth
+        endif
 
+C Debug.
+C        write(6,*) 'GSURFB data at ',IDAY,IZONE,ISFN,ITS,TSout,qswrdi,
+C     &    qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
+C     &    qlwrde,qlwrbd,qlwrsk,qswrde,avqcrioc,avqcrili,
+C     &    avqcrisp,avqcrioth
       ELSE
          call edisp(iuout,
      &   ' GSURFB: Save option does not allow access')
@@ -1344,10 +1455,15 @@ C Get only if save is level 4, then compute start record address.
       ENDIF
 
     8 RETURN
- 1000 write(outs,7)ISFN,IREC
-    7 format(' GSURFB: error reading surface ',I2,
-     &       ' balance data at record',I5)
-         call edisp(iuout,outs)
+ 1000 if(IOS.eq.2)then
+        write(outs,'(a,i3,a,i5)')
+     &    'GSURFB: no permission to read surface ',
+     &    ISFN,' balance data at record',IREC
+      else
+        write(outs,'(a,i3,a,i5)')'GSURFB: error reading surface ',
+     &    ISFN,' balance data at record',IREC
+      endif
+      call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
 
@@ -1386,7 +1502,7 @@ C Get only if save is level 4, then compute start record address.
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZONE)+3
         NN=NZSUR(IZONE)
         DO 40 ISN=1,NN
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=100)(XD(JX),JX=1,IGET)
+          READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=100)(XD(JX),JX=1,IGET)
           FLUX(ISN)=XD(IGET)
           IREC=IREC+1
    40   CONTINUE
@@ -1399,9 +1515,14 @@ C Get only if save is level 4, then compute start record address.
       ENDIF
 
     8 RETURN
-  100 write(outs,7)IREC
-    7 format(' G4ALLS: error reading surface ',
-     &       ' balance data at record',I5)
+  100 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &    'G4ALLSG: no permission to read surface balance at record',
+     &    IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &    'G4ALLS: error reading surface balance at record',IREC,'.'
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1445,7 +1566,7 @@ C requested recovery day and recover values for all timesteps.
           FLUX(I)=0.
           IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+3+(ISFN-1)
 
-          READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(XD(K),K=1,IGET)
+          READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(XD(K),K=1,IGET)
           FLUX(I)=XD(IGET)
    20   CONTINUE
 
@@ -1456,10 +1577,106 @@ C requested recovery day and recover values for all timesteps.
       ENDIF
 
     8 RETURN
-   99 write(outs,7)ISFN,IREC
-    7 format(' G4FLUX: error reading surface ',I2,
-     &       ' temperature at record',I5)
-         call edisp(iuout,outs)
+   99 if(IOS.eq.2)then
+        write(outs,'(a,i3,a,i5)')
+     &    'G4FLUX: no permission to read surface ',
+     &    ISFN,' temerature at record',IREC
+      else
+        write(outs,'(a,i3,a,i5)')'G4FLUX: error reading surface ',
+     &    ISFN,' temperature at record',IREC
+      endif
+      call edisp(iuout,outs)
+      CALL EPWAIT
+      goto 8
+
+      END
+
+C ******************** getallcas ********************
+C Getallcas is a low level routine to read one timestep of the
+C total conv/radiant and separate casual gain conv/rad/latent
+C data for a zone and control fraction.
+C Given IDAY, IZONE & ITS it returns:
+C QCASR the total radiant of all gains
+C QCASC the total convective of all gains
+C QCASL the total latent of all gains
+C FRAC the fraction controlled (0.0-1.0)
+C perocupc,perlightc,perequipc,otherc: sensible con for occup lights equip other.
+C perocupr,perlightr,perequipr,otherr: sensible rad for occup lights equip other.
+C perocupl,perlightl,perequipl,otherl: latent for occup lights equip other.
+C theonectld (integer index) if non-zero the index of the gain to control.
+
+      SUBROUTINE getallcas(IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,FRAC,
+     & perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+     & perequipr,otherr,perocupl,perlightl,perequipl,otherl,theonectld)
+#include "building.h"
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
+
+      character outs*124
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
+      real X1,X2,X3,X4,X5
+      DIMENSION XD(MS+7) ! for scanning past unneeded data
+
+      IUNIT=IFIL
+      if(iz.eq.0.or.iday.eq.0.or.iset.eq.0.or.its.eq.0)then
+        call edisp(iuout,
+     &    'Error: One of the getallcas parameters is zero.')
+        write(outs,'(a,i3,a,i2,a,i2)') 'iday= ',iday,' zone= ',iz,
+     &    ' set= ',iset
+        call edisp(iuout,outs)
+        return
+      endif
+
+C Get ZTMS only if save is level 2 - 4.
+      IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
+        IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZ)+IHASHS(ISET)
+        NN=NZSUR(IZ)
+        NA=NZSUR(IZ)+7
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NA),
+     &    perocupc,perlightc,perequipc,otherc     
+        IREC=IREC+1
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NA),
+     &    perocupr,perlightr,perequipr,otherr
+        IREC=IREC+1
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000) (XD(I),I=1,NN),
+     &    QCASR,QCASC,X1,X2,FRAC,X3,X4,perocupl,perlightl,
+     &    perequipl,otherl,theonectld
+
+C Make up QCASL from the separate latent gains.
+        QCASL=perocupl+perlightl+perequipl
+
+C Dummy use of the temporary variables.
+        X5=X1+X2+X3+X4+XD(1)
+
+C Debug.
+C        write(6,*) 'getallcas: ',IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,
+C     &    FRAC,perocupc,perlightc,perequipc,otherc,
+C     &    perocupr,perlightr,perequipr,otherr,
+C     &    perocupl,perlightl,perequipl,otherl,theonectld
+      ELSE
+         call edisp(iuout,
+     & 'getallcas: Save option does not allow access to casual gains.')
+      ENDIF
+
+    8 RETURN
+ 1000 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &    'getallcas: no permission to read casual gains at record',
+     &     IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &    'getallcas: error reading casual gains at record',IREC,'.'
+      endif
+      call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
 
@@ -1498,7 +1715,7 @@ C Get data only if save is level 1 - 4.
 C Return the record number using hash.
 
             IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+IHASHS(ISET)+IRJ
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(XD(K),K=1,ICJ)
+            READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(XD(K),K=1,ICJ)
             GVAL(I)=XD(ICJ)
    20     CONTINUE
 C         write(6,*) iset,izone,irj,icj,irec,(GVAL(I),i=1,12)
@@ -1510,8 +1727,13 @@ C         write(6,*) iset,izone,irj,icj,irec,(GVAL(I),i=1,12)
       ENDIF
 
     8 RETURN
-   99 write(outs,7)IREC
-    7 format(' GFIXED: error at record',I5)
+   99 if(IOS.eq.2)then
+        write(outs,'(a,i5,a)')
+     &    ' GFIXED: no permission to read at record',IREC,'.'
+      else
+        write(outs,'(a,i5,a)')
+     &    ' GFIXED: error reading at record',IREC,'.'
+      endif
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1611,28 +1833,28 @@ C Within requested output period.
 
 C Read first record and set values, make up potential error messages.
             IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZONE)+IHASHS(ISIM)
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(DATA(1,K),K=1,NZI)
+            READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(DATA(1,K),K=1,NZI)
             IREC=IREC+1
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(DATA(2,K),K=1,NZI)
+            READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(DATA(2,K),K=1,NZI)
             IREC=IREC+1
-            READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(DATA(3,K),K=1,NZI3)
+            READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(DATA(3,K),K=1,NZI3)
 
 C Average over required time steps.
             if (NOUT.gt.1) then
               do 400 IV=2,NOUT
                 J=ITS+IV-1
                 IREC=IHASHD(IDAY)+IHASHT(J)+IHASHZ(IZONE)+IHASHS(ISIM)
-                READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=98)(XD(K),K=1,NZI)
+                READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=98)(XD(K),K=1,NZI)
                 do 500 K=1,NZI
                   DATA(1,K)=DATA(1,K)+XD(K)
  500            continue
                 IREC=IREC+1
-                READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=98)(XD(K),K=1,NZI)
+                READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=98)(XD(K),K=1,NZI)
                 do 501 K=1,NZI
                   DATA(2,K)=DATA(2,K)+XD(K)
  501            continue
                 IREC=IREC+1
-                READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=98)(XD(K),K=1,NZI3)
+                READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=98)(XD(K),K=1,NZI3)
                 do 502 K=1,NZI3
                   DATA(3,K)=DATA(3,K)+XD(K)
  502            continue
@@ -1689,12 +1911,24 @@ C Calculate average values for period.
 
       return
 
-  99  write(outs,'(a,4i6)') 'MMAPER: scanning data @ rec ',
-     &  IREC,NZI,IZONE,ISIM
+  99  if(IOS.eq.2)then
+        write(outs,'(a,4i6)') 
+     &    'MMAPER: no permission to scan data @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      else
+        write(outs,'(a,4i6)') 'MMAPER: scanning data @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      endif
       call usrmsg(outs,' cannot continue results recovery.','F')
       return
-  98  write(outs,'(a,4i6)') 'MMAPER: scanning xd @ rec ',
-     &  IREC,NZI,IZONE,ISIM
+  98  if(IOS.eq.2)then
+        write(outs,'(a,4i6)') 
+     &    'MMAPER: no permission to scan xd @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      else
+        write(outs,'(a,4i6)') 'MMAPER: scanning xd @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      endif
       call usrmsg(outs,' cannot continue results recovery.','F')
       return
       end
@@ -1767,13 +2001,18 @@ C base case (which should equal zero).
  61   continue
       DO 60, I=1,NSIM
         IREC=I+1
-        READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NST1,NST2
+        READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)NST1,NST2
         IHASHS(I)=NST2-IBASE
    60 CONTINUE
 
     8 RETURN
 
- 1000 write(outs,'(A,I5)')' HASHL: library error at record',IREC
+ 1000 if(IOS.eq.2)then
+        write(outs,'(A,I5)')
+     &    'HASHL: no permission to scan library at record',IREC
+      else
+        write(outs,'(A,I5)')'HASHL: library error at record',IREC
+      endif
       call edisp(iuout,outs)
 
       RETURN

@@ -38,7 +38,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  moistr.o monitor.o montrb.o mstmsc.o mzmrx5.o mzoutp.o nwkrewr.o \
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
-	  reslib.o rnor.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
+	  reslib.o rnor.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
 	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
 	  MechVentIN.o CentralVentSys.o \
@@ -400,6 +400,9 @@ psychro.F:
 rnor.F:
 	rm -f rnor.F
 	ln -s $(COMdir)/rnor.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 senrwl.F:
 	rm -f senrwl.F
 	ln -s $(COMdir)/senrwl.F .
@@ -701,7 +704,7 @@ clean:
 	mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
 	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
 	pmatrx.F pplib.F ppsub.F precal.F \
-	psychro.F rnor.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
+	psychro.F rnor.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
 	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \

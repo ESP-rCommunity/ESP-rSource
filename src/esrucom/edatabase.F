@@ -42,6 +42,7 @@ C DRAIR is the air gap layer resistance for 3 orientations.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
@@ -98,7 +99,7 @@ C had been previously opened and failed.
 
 C Also check to see if the file has correct info in 
           IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+          READ(IFMAT,REC=IREC,IOSTAT=IOS,ERR=1000)NCLASS,
      &     (ICLN(I),I=1,30)
           if(NCLASS.LE.0)then
             goto 1000   ! no classifications so try alternatives
@@ -107,7 +108,13 @@ C Also check to see if the file has correct info in
             matver = 0.0
             goto 139  !  a binary file found so carry on.
           endif
- 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+ 1000     if(IOS.eq.2)then
+            write(6,*) 
+     &      'ERMLDB: permission issue during read of material classes.'
+            CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          else
+            CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          endif
           call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
@@ -858,9 +865,9 @@ C reference is to material db 0 (air).
       DBSHT=0.0
       IF(IEL.NE.0)THEN
         IR=((IEL-1)/20)*20+1
-        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)TITL
+        READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)TITL
         IR = IEL + 1
-        READ(IFMAT,REC=IR,IOSTAT=ISTAT,ERR=105)DBCON,DBDEN,DBSHT,E,A,
+        READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)DBCON,DBDEN,DBSHT,E,A,
      &       DRV,PNAM
 
 C If all values are still 0.0 then not an actual element.
@@ -885,8 +892,13 @@ C Air layer encountered so put in zeroes.
       ENDIF
 
   99  RETURN
- 105  write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
+ 105  if(IOS.eq.2)then
+        write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
      &    ' read error @ record ',IR,' on file unit ',IFMAT
+      else
+        write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
+     &    ' permission error @ record ',IR,' on file unit ',IFMAT
+      endif
       call edisp(itru,outs)
       IER=1
       CALL ERPFREE(IFMAT,ISTAT)

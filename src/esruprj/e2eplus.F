@@ -2434,27 +2434,57 @@ C Error.
       return
 
 C Error messages from header.
-    2 CALL USRMSG(' Problem writing EnergyPlus header',' ','W')
+    2 if(IOS.eq.2)then
+        CALL USRMSG('Permissions issue writing EnergyPlus header',
+     &    ' ','W')
+      else
+        CALL USRMSG('Problem writing EnergyPlus header',' ','W')
+      endif
       return
 
 C Error messages from materials.
-    3 CALL USRMSG(' Problem writing EnergyPlus materials',' ','W')
+    3 if(IOS.eq.2)then
+        CALL USRMSG('Permissions issue writing EnergyPlus materials',
+     &    ' ','W')
+      else
+        CALL USRMSG('Problem writing EnergyPlus materials',' ','W')
+      endif
       return
 
 C Error messages from constructions.
-    4 CALL USRMSG(' Problem writing EnergyPlus construction',' ','W')
+    4 if(IOS.eq.2)then
+        CALL USRMSG('Permission issue writing EnergyPlus construction',
+     &    ' ','W')
+      else
+        CALL USRMSG('Problem writing EnergyPlus construction',' ','W')
+      endif
       return
 
 C Error messages from zones.
-    5 CALL USRMSG(' Problem writing EnergyPlus zones',' ','W')
+    5 if(IOS.eq.2)then
+        CALL USRMSG('Permission issue writing EnergyPlus zones',
+     &    ' ','W')
+      else
+        CALL USRMSG('Problem writing EnergyPlus zones',' ','W')
+      endif
       return
 
 C Error messages from zones.
-    6 CALL USRMSG(' Problem writing EnergyPlus surfaces',' ','W')
+    6 if(IOS.eq.2)then
+        CALL USRMSG('Permission issue writing EnergyPlus surfaces',
+     &    ' ','W')
+      else
+        CALL USRMSG('Problem writing EnergyPlus surfaces',' ','W')
+      endif
       return
 
 C Error messages from zones.
-    7 CALL USRMSG(' Problem writing EnergyPlus schedules',' ','W')
+    7 if(IOS.eq.2)then
+        CALL USRMSG('Permission issue writing EnergyPlus schedules',
+     &    ' ','W')
+      else
+        CALL USRMSG('Problem writing EnergyPlus schedules',' ','W')
+      endif
       return
 
       end
