@@ -754,13 +754,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -776,7 +776,11 @@ C        call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parpsf: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parpsf: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parpsf: error extracting parameters.'
+      endif
       return
       end
 
@@ -861,13 +865,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,infa)
@@ -885,7 +889,11 @@ C        call edisp(iuout,outs)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parpsff: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parpsff: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parpsff: error extracting parameters.'
+      endif
       return
       end
 
@@ -1163,13 +1171,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -1202,7 +1210,11 @@ C        call edisp(iuout,outs)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parpsf: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parsim: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parsim: error extracting parameters.'
+      endif
       return
       end
 
@@ -1290,13 +1302,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -1322,7 +1334,11 @@ C        call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parres: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parres: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parres: error extracting parameters.'
+      endif
       return
       end
 
@@ -1410,13 +1426,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -1446,7 +1462,11 @@ C        call edisp(iuout,outs)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parclm: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parclm: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parclm: error extracting parameters.'
+      endif
       return
       end
 
@@ -1535,13 +1555,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -1564,7 +1584,11 @@ C        call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parsfza: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parsfza: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parsfza: error extracting parameters.'
+      endif
       return
       end
 
@@ -1650,13 +1674,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -1675,7 +1699,11 @@ C        call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parsfz: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parsfz: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parsfz: error extracting parameters.'
+      endif
       return
       end
 
@@ -1956,13 +1984,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -1989,7 +2017,11 @@ C        call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parspza: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parspza: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parspza: error extracting parameters.'
+      endif
       return
       end
 
@@ -2077,13 +2109,13 @@ C Display detailed build information and then quit
         elseif(argument(1:2).eq.'-s')then
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappw
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappx
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
           i=i+1
           call getarg(i,argument)
-          read(argument,*,IOSTAT=ISTAT,ERR=2)iappy
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
         elseif(argument(1:5).eq.'-file')then
           i=i+1
           call getarg(i,inf)
@@ -2105,7 +2137,11 @@ C        call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  write(6,'(a)') 'parsfact: error extracting parameters.'
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parsfact: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parsfact: error extracting parameters.'
+      endif
       return
       end
 

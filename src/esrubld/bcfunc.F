@@ -2699,9 +2699,10 @@ C Set IPLT to 1 in case of heating and to 2 in case of cooling.
       END IF
       TCONT=TFUT
 
-C Note flux max, min argument to this call set to QFUT, QFUT to prevent 
-C unessesary iteration, which had previously led to plant/building flux 
-C mismatch. (reverted by JWH pending investigation by Nick).
+C Note flux max, min argument to this call set to QFUT (instead of QMX),
+C and QFUT instead of QMN to prevent unessesary iteration, 
+C which had previously led to plant/building flux mismatch.
+C Reverted by JWH to use QMX and QMN pending investigation by Nick Kelly.
       IF(IBAN(ICF,1).EQ.-2) CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &                                  IPLT,QMX,QMN,TFUT,QFUT)
 
@@ -5278,7 +5279,7 @@ C Fatal error test:
         IBMSN(ICF,L,4)=INT(BMISCD(ICF,IDTYP,IPER,12+6*(L-1)))
         AUXHSP(L)=BMISCD(ICF,IDTYP,IPER,13+6*(L-1))
         AUXCSP(L)=BMISCD(ICF,IDTYP,IPER,14+6*(L-1))
-10    CONTINUE
+ 10   CONTINUE
       
 C Start with assuming that neither heating nor cooling
 C of the current zone is needed, and then
@@ -5296,7 +5297,7 @@ C heating or cooling is demanded.
          AUXSEN=TAUXSN(ICF,L)
          IF(AUXSEN.LT.AUXHSP(L)) IHEATING=1
          IF(AUXSEN.GT.AUXCSP(L)) ICOOLING=1
-20    CONTINUE
+ 20   CONTINUE
 
 C Check whether neither heating nor cooling required.
       IF(IHEATING.EQ.0.AND.ICOOLING.EQ.0)goto 1000
@@ -5344,7 +5345,7 @@ C Is this capacity available ?
 
 C If auxiliary zones demand cooling and actuation zone is > cooling
 C set point then Temp. too high, cool to CSP.
-    1 if(ICOOLING.EQ.1.and.TCTL.GT.CSP)then
+      if(ICOOLING.EQ.1.and.TCTL.GT.CSP)then
         Q=(BB3-BB1*CSP)/BB2
         IPLT=2
         QMX=QCM
@@ -5425,7 +5426,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       COMMON/FILEP/IFIL
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
@@ -5571,7 +5572,6 @@ C Dump output
         write(6,*) ' Qbas    ',Qbas,' (W)'
         write(6,*) ' ----------------------'
       endif
-   10 continue
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -5586,10 +5586,12 @@ C Trace output.
       endif
 
       return
-   99 call edisp(iuout,' BCL20: data incomplete.')
-      call epwait
-      call epagend
-      STOP
+
+C The fatal error test commented out so this block is as well.
+C   99 call edisp(iuout,' BCL20: data incomplete.')
+C      call epwait
+C      call epagend
+C      STOP
       END
 
 C ******************** BCL21
@@ -5602,20 +5604,16 @@ C deliver proportionally).
 
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
      &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
      &BMISCD(MCF,MBCDT,MBCDP,MISC)
-      COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
-     &TAUXSN(MCF,MSEN)
       
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
      
@@ -5751,7 +5749,6 @@ C << the energy balance reported in esrures is off a bit >>
      &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
      &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
      &BMISCD(MCF,MBCDT,MBCDP,MISC)
-      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/MBINFO/ZMBI(MCOM,4)
@@ -5971,12 +5968,12 @@ C Read setpoints from tdf here (CSP and HSP)
 C "COLUMNSETP" is an integer specifying the column where the setpoints
 C should be read from. This could be the ISD but when calling the RCTDFB it
 C seems that is always set to 2 (and it is also used in few other places as 2).
-       COLUMNSETP=BMISCD(ICF,IDTYP,IPER,2)
+       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
        itdi=IACTIV(ICF)
        IFOC=itdi
        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
        HSP=VAL(COLUMNSETP)
-       COLUMNSETP=BMISCD(ICF,IDTYP,IPER,3)
+       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
        CSP=VAL(COLUMNSETP)
 
@@ -6062,7 +6059,6 @@ C climate file commons
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
      &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
@@ -6167,8 +6163,8 @@ C CB = Comfort band
       QHN=BMISCD(ICF,IDTYP,IPER,3)
       QCM=-BMISCD(ICF,IDTYP,IPER,4)
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
-      HSP=BMISCD(ICF,IDTYP,IPER,6)
-      CSP=BMISCD(ICF,IDTYP,IPER,7)
+C      HSP=BMISCD(ICF,IDTYP,IPER,6)
+C      CSP=BMISCD(ICF,IDTYP,IPER,7)
       ALPHA=BMISCD(ICF,IDTYP,IPER,8)
       CB=BMISCD(ICF,IDTYP,IPER,9)
       

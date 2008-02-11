@@ -24,7 +24,7 @@ C  MOSCAS  Selection/control for surface causal energy breakdown.
 C  MOSCS1  Display breakdown by plant status.
 C  MOSCS2  Display breakdown as normal gain/loss.
 C  MOSSUM  Collect/sum surface causal data.
-C  MOSRGT  Get data from results lib.
+C  MOSRGT  Get surface data from results lib.
 
 C ******************** MOSCAS ********************
 C MOSCAS process breakdown data for surfaces.
@@ -39,6 +39,7 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       COMMON/AVRAGE/IDAVER
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -82,23 +83,29 @@ C Read in the zone geometry data.
         call egomin(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
       endif
 
-C Assume that the operation file name has been read in via MOINIT.
-C Read in the zone operational file data.
-      CALL EROPER(0,iuout,iunit,izone,IER)
-      if(ip3ver.eq.0)then
-        write(outs,'(a,i2,a)') 
-     &    'Operation file for zone ',izone,' periods being sorted!'
-        call edisp(iuout,outs)
-        call PROCESSOLDCAS(izone,0,iuout,IER)
-      endif
-      IF(IER.EQ.1)RETURN
-
 C Read (silently) construction file to get surface emissivities.
       CALL ECONST(LTHRM(IZONE),IUNIT,IZONE,0,IUOUT,IER)
       IF(IER.NE.0)RETURN
 
+C If izver >= 4 then there is no need to read the operation file.
+      if(izver.gt.4)then
+        continue
+      else
+
+C Assume that the operation file name has been read in via MOINIT.
+C Read in the zone operational file data.
+        CALL EROPER(0,iuout,iunit,izone,IER) ! for older files
+        if(ip3ver.eq.0)then
+          write(outs,'(a,i2,a)') 
+     &    'Operation file for zone ',izone,' periods being sorted!'
+          call edisp(iuout,outs)
+          call PROCESSOLDCAS(izone,0,iuout,IER)
+        endif
+        IF(IER.EQ.1)RETURN
+
 C Read casual gain control file.
-      IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
+        IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
+      endif
 
 C Determine which surface is of interest.
       if(isfn.eq.0)CALL ASKSUR(IZONE,ISFN)
@@ -176,20 +183,20 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
       CHARACTER*9 TITLE1(16)
       character outs*124,lodlabel*6
 
-C Initial labels, 8-13 will be overwritten if user labels are available.
-      LABELS(1)=' Conductive flux  '
-      LABELS(2)=' Convective flux  '
-      LABELS(3)=' Longwave rad int '
-      LABELS(4)=' LW rad ext >bldg '
-      LABELS(5)=' LW rad ext >sky  '
-      LABELS(6)=' LW rad ext >grnd '
-      LABELS(7)=' Shortwave rad.   '
-      LABELS(8)=' Unctrl cas typ 1 '
-      LABELS(9)='        cas typ 2 '
-      LABELS(10)='        cas typ 3 '
-      LABELS(11)=' Cntrld cas typ 1 '
-      LABELS(12)='        cas typ 2 '
-      LABELS(13)='        cas typ 3 '
+C Initial labels using user defined labels if available.
+      LABELS(1) =' Conductive flux  '
+      LABELS(2) =' Convective flux  '
+      LABELS(3) =' Longwave rad int '
+      LABELS(4) =' LW rad ext >bldg '
+      LABELS(5) =' LW rad ext >sky  '
+      LABELS(6) =' LW rad ext >grnd '
+      LABELS(7) =' Shortwave rad.   '
+      write(LABELS(8),'(1x,a,a)')lodlabel(izone,1),' casual gn'
+      write(LABELS(9),'(1x,a,a)')lodlabel(izone,2),' casual gn'
+      write(LABELS(10),'(1x,a,a)')lodlabel(izone,3),' casual gn'
+      LABELS(11)=' Controled casual '
+      LABELS(12)=' N/A              '
+      LABELS(13)=' N/A              '
       LABELS(14)=' Heat stored      '
       LABELS(15)=' Plant            '
       LABELS(16)=' Totals           '
@@ -200,12 +207,12 @@ C Initial labels, 8-13 will be overwritten if user labels are available.
       TITLE1(5)='|LW >sky '
       TITLE1(6)='|LW >grnd'
       TITLE1(7)='|SW rad  '
-      TITLE1(8)='|UC cas 1'
-      TITLE1(9)='|UC cas 2'
-      TITLE1(10)='|UC cas 3'
-      TITLE1(11)='|Ct cas 1'
-      TITLE1(12)='|Ct cas 2'
-      TITLE1(13)='|Ct cas 3'
+      write(TITLE1(8),'(a,a)')'|UC',lodlabel(izone,1)
+      write(TITLE1(9),'(a,a)')'|UC',lodlabel(izone,2)
+      write(TITLE1(10),'(a,a)')'|UC',lodlabel(izone,3)
+      TITLE1(11)='|Cnt cas '
+      TITLE1(12)='|        '
+      TITLE1(13)='|        '
       TITLE1(14)='|Heat str'
       TITLE1(15)='|Plant   '
       TITLE1(16)='|........'
@@ -233,20 +240,6 @@ C Perform sums and averages for this surface (IUSERD passed as a dummy).
         IUSERD(I,2)=0
    10 CONTINUE
       CALL MOSSUM(IZONE,ISFN,IANZSE,IE,IUSERD)
-
-C Substitute labels for the casual gains (LABELS 6-8)
-      write(LABELS(8),'(1x,a,a)')lodlabel(izone,1),' casual gn'
-      write(LABELS(9),'(1x,a,a)')lodlabel(izone,2),' casual gn'
-      write(LABELS(10),'(1x,a,a)')lodlabel(izone,3),' casual gn'
-      write(LABELS(11),'(a,a)')' Controlled ',lodlabel(izone,1)
-      write(LABELS(12),'(a,a)')' Controlled ',lodlabel(izone,2)
-      write(LABELS(13),'(a,a)')' Controlled ',lodlabel(izone,3)
-      write(TITLE1(8),'(a,a)')'|UC',lodlabel(izone,1)
-      write(TITLE1(9),'(a,a)')'|UC',lodlabel(izone,2)
-      write(TITLE1(10),'(a,a)')'|UC',lodlabel(izone,3)
-      write(TITLE1(11),'(a,a)')'|Ct',lodlabel(izone,1)
-      write(TITLE1(12),'(a,a)')'|Ct',lodlabel(izone,2)
-      write(TITLE1(13),'(a,a)')'|Ct',lodlabel(izone,3)
 
 C Output results.
       DO 152 I=1,3
@@ -312,12 +305,12 @@ C Initial labels, 8-13 will be overwritten if user labels are available.
       LABELS(5)=' LW rad ext >sky  '
       LABELS(6)=' LW rad ext >grnd '
       LABELS(7)=' Shortwave rad.   '
-      LABELS(8)=' Unctrl cas typ 1 '
-      LABELS(9)='        cas typ 2 '
-      LABELS(10)='        cas typ 3 '
-      LABELS(11)=' Cntrld cas typ 1 '
-      LABELS(12)='        cas typ 2 '
-      LABELS(13)='        cas typ 3 '
+      write(LABELS(8),'(1x,a,a)')lodlabel(izone,1),' casual gn'
+      write(LABELS(9),'(1x,a,a)')lodlabel(izone,2),' casual gn'
+      write(LABELS(10),'(1x,a,a)')lodlabel(izone,3),' casual gn'
+      LABELS(11)=' Controled casual '
+      LABELS(12)=' N/A              '
+      LABELS(13)=' N/A              '
       LABELS(14)=' Heat stored      '
       LABELS(15)=' Plant            '
       LABELS(16)=' Totals           '
@@ -357,14 +350,6 @@ C Perform sums and averages for this surface (IUSERD passed as a dummy).
    10 CONTINUE
       CALL MOSSUM(IZONE,ISFN,IANZSE,IE,IUSERD)
 
-C Substitute labels for the casual gains (LABELS 6-8)
-      write(LABELS(8),'(1x,a,a)')lodlabel(izone,1),' casual gn'
-      write(LABELS(9),'(1x,a,a)')lodlabel(izone,2),' casual gn'
-      write(LABELS(10),'(1x,a,a)')lodlabel(izone,3),' casual gn'
-      write(LABELS(11),'(a,a)')' Controlled ',lodlabel(izone,1)
-      write(LABELS(12),'(a,a)')' Controlled ',lodlabel(izone,2)
-      write(LABELS(13),'(a,a)')' Controlled ',lodlabel(izone,3)
-
 C Output results.
       IF(IE.EQ.0)THEN
         WRITE(outs,81)LABELS(1),(VAL2(1,J),J=1,2),(VAL2(13,J),J=1,2)
@@ -381,7 +366,9 @@ C Output results.
         CALL EDISP(itru,outs)
         WRITE(outs,81)LABELS(7),(VAL2(4,J),J=1,2),(VAL2(18,J),J=1,2)
         CALL EDISP(itru,outs)
-        DO 150 I=8,13
+
+C Skip un-used slots 12 and 13.
+        DO 150 I=8,11
           WRITE(outs,84)LABELS(I),(VAL2(I-3,J),J=1,2)
           CALL EDISP(itru,outs)
   150   CONTINUE
@@ -403,9 +390,12 @@ C Output results.
         WRITE(outs,86)LABELS(6)
         CALL EDISP(itru,outs)
 
+C Skip over the unused items 12 and 13.
         DO 151 I=7,15
-          WRITE(outs,81)LABELS(I),(VAL2(I-3,J),J=1,2)
-          CALL EDISP(itru,outs)
+          if(i.ne.12.and.i.ne.13)then
+            WRITE(outs,81)LABELS(I),(VAL2(I-3,J),J=1,2)
+            CALL EDISP(itru,outs)
+          endif
   151   CONTINUE
 
       ENDIF
@@ -558,6 +548,10 @@ C for surface flux breakdown for any requested zone and day.
 C This will require quite a bit of work; try to include some
 C of the surface convection, conduction, storage calcs here.
 
+C Includes test code to read the explicit radiant gains by
+C type. This is work-in-progress and has been commented out
+C until the glitches have been sorted.
+
       SUBROUTINE MOSRGT(IZONE,ISFN,IDAY,IE)
 #include "building.h"
 
@@ -565,6 +559,7 @@ C of the surface convection, conduction, storage calcs here.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
+C      common/recver/izver,ipver,iever
 
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
      &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
@@ -573,6 +568,14 @@ C of the surface convection, conduction, storage calcs here.
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
+
+C      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+C      real FRAC ! controlled fraction.
+C      real perocupc,perocupr,perocupl ! average occupant to write out
+C      real perlightc,perlightr,perlightl ! average lighting to write out
+C      real perequipc,perequipr,perequipl ! average equipment to write out
+C      real otherc,otherr,otherl ! average other (future expansion) to write out
+C      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
 C Set chosen result set.
       ISET=ISIM
@@ -592,9 +595,9 @@ C   Shortwave rad.   ',4     18
 C   Unctrl cas typ 1 ',5
 C          cas typ 2 ',6
 C          cas typ 3 ',7
-C   Cntrld cas typ 1 ',8
-C          cas typ 2 ',9
-C          cas typ 3 ',10
+C   Cntrld casual    ',8
+C                    ',9
+C                    ',10
 C   Heat stored       ,11    19
 C   Plant             ,12    20
 C   Zone plant        ,21
@@ -618,11 +621,22 @@ C Radiant plant is area AND emissivity weighted.
 C Find looping range for the day in question.
       CALL CHKTIME(IDAY,ISTART,IEND)
 
-C Try the new surface balance save options 4 get.
+C If izver is 4 then recover casual gain formation at start of
+C the day (to find out which casual gain is controlled). Then
+C use the explicitly saved radiant data.
+C      if(izver.ge.4)then
+C        IT=1
+C        call getallcas(IDAY,IZONE,ISET,IT,QCASR,QCASC,QCASL,FRAC,
+C     &    perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
+C     &    perequipr,otherr,perocupl,perlightl,perequipl,otherl,
+C     &    theonectld)
+C      endif
+
+C Collect each of the surface balance fluxes.
       DO 198 IT=ISTART,IEND
         CALL GSURFB(IDAY,IZONE,ISFN,IT,TSout,qswrdi,qlwrdi,qconvi,
-     &          qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,
-     &          qlwrsk,qswrde)
+     &    qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,
+     &    qlwrsk,qswrde,avqcrioc,avqcrili,avqcrisp,avqcrioth)
         VAL1(4,IT)=qswrdi
         VAL1(3,IT)=qlwrdi
         VAL1(2,IT)=qconvi
@@ -635,6 +649,40 @@ C Try the new surface balance save options 4 get.
         VAL1(15,IT)=qlwrbd
         VAL1(16,IT)=qlwrsk
         VAL1(18,IT)=qswrde
+
+C Include the radiant casual directly if izver >=4. Use slot
+C VAL1(8,I) for which ever one is the controlled gain.
+C        if(izver.ge.4)then
+C          if(theonectld.eq.0)then
+C            VAL1(5,IT)=avqcrioc
+C            VAL1(6,IT)=avqcrili
+C            VAL1(7,IT)=avqcrisp
+C            VAL1(8,IT)=0.0
+C            VAL1(9,IT)=0.0
+C            VAL1(10,IT)=0.0
+C          elseif(theonectld.eq.1)then
+C            VAL1(5,IT)=0.0
+C            VAL1(6,IT)=avqcrili
+C            VAL1(7,IT)=avqcrisp
+C            VAL1(8,IT)=avqcrioc
+C            VAL1(9,IT)=0.0
+C            VAL1(10,IT)=0.0
+C          elseif(theonectld.eq.2)then
+C            VAL1(5,IT)=avqcrioc
+C            VAL1(6,IT)=0.0
+C            VAL1(7,IT)=avqcrisp
+C            VAL1(8,IT)=avqcrili
+C            VAL1(9,IT)=0.0
+C            VAL1(10,IT)=0.0
+C          elseif(theonectld.eq.3)then
+C            VAL1(5,IT)=avqcrioc
+C            VAL1(6,IT)=avqcrili
+C            VAL1(7,IT)=0.0
+C            VAL1(8,IT)=avqcrisp
+C            VAL1(9,IT)=0.0
+C            VAL1(10,IT)=0.0
+C          endif
+C        endif
   198 CONTINUE
 
 C Get zone air temperature, store in VAL1(22,N).
@@ -647,16 +695,19 @@ C Get inside surface temperature.
       CALL XTVAL1(GVAL,ISTART,IEND,23)
 
 C Get inside casual radiant amount for this surface and store
-C uncontrolled and controlled types 1,2,3 in VAL1(5,I) to VAL1(10,I).
-      CALL ZCASR(IZONE,ISFN,IDAY)
-      DO 28 I=1,N
+C uncontrolled types 1,2,3 and controlled in VAL1(5,I) to VAL1(8,I).
+C As there is only one controlled lump all to slot VAL1(8,I).
+C      if(izver.lt.4)then
+        CALL ZCASR(IZONE,ISFN,IDAY)
+        DO 28 I=1,N
           VAL1(5,I)=VAL3(15,I)
           VAL1(6,I)=VAL3(16,I)
           VAL1(7,I)=VAL3(17,I)
-          VAL1(8,I)=VAL3(18,I)
-          VAL1(9,I)=VAL3(19,I)
-          VAL1(10,I)=VAL3(20,I)
-   28 CONTINUE
+          VAL1(8,I)=VAL3(18,I)+VAL3(19,I)+VAL3(20,I)
+          VAL1(9,I)=0.0
+          VAL1(10,I)=0.0
+   28   CONTINUE
+C      endif
 
 C Get the plant injection at each time step, save zone amount in
 C VAL1(21,N) for use in sorting by plant heating/cooling/off and

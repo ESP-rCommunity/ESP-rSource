@@ -85,78 +85,78 @@ C Open any existing file by this name or create a new file.
         RETURN
       ENDIF
       ipvversion=4
-      WRITE(ifu,'(2A,i1,a,i1)',IOSTAT=ISTAT,ERR=1003)'*IPV',tab,
+      WRITE(ifu,'(2A,i1,a,i1)',IOSTAT=IOS,ERR=1003)'*IPV',tab,
      &  ipvversion,tab,ipvform
-      WRITE(ifu,'(3A)',IOSTAT=ISTAT,ERR=1003)'*title',tab,ipvtitl
-      WRITE(ifu,'(3A)',IOSTAT=ISTAT,ERR=1003)'*version',tab,ipvvers
+      WRITE(ifu,'(3A)',IOSTAT=IOS,ERR=1003)'*title',tab,ipvtitl
+      WRITE(ifu,'(3A)',IOSTAT=IOS,ERR=1003)'*version',tab,ipvvers
       call dstamp(dstmp)
-      write(ifu,'(3a)',IOSTAT=ISTAT,ERR=1003)'*date',tab,dstmp
+      write(ifu,'(3a)',IOSTAT=IOS,ERR=1003)'*date',tab,dstmp
 
 C Note: ipvsynop might be a long line.
-      WRITE(ifu,'(3A)',IOSTAT=ISTAT,ERR=1003)'*synop',tab,
+      WRITE(ifu,'(3A)',IOSTAT=IOS,ERR=1003)'*synop',tab,
      &  ipvsynop(1:lnblnk(ipvsynop))
-      WRITE(outsn,'(A,I2)',IOSTAT=ISTAT,ERR=1003) '*images',nipvimg
+      WRITE(outsn,'(A,I2)',IOSTAT=IOS,ERR=1003) '*images',nipvimg
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
       if(nipvimg.gt.0)then
         do 42 i=1,nipvimg
-          WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)lipvimg(i)
+          WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)lipvimg(i)
   42    continue
       endif
 
 C Loop through each assessment period.
-      WRITE(outsn,'(A,i3)',IOSTAT=ISTAT,ERR=1003)'*simulations',
+      WRITE(outsn,'(A,i3)',IOSTAT=IOS,ERR=1003)'*simulations',
      &  nipvassmt
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
       do 44 ij=1,nipvassmt
 
 C Write comma separated for first two fields and append description.
-        WRITE(outs,'(a,2i4)',IOSTAT=ISTAT,ERR=1003)'*period',
+        WRITE(outs,'(a,2i4)',IOSTAT=IOS,ERR=1003)'*period',
      &    ipvastjd(ij),ipvafnjd(ij)
         call SDELIM(outs,outsn,'C',IW)
-        WRITE(ifu,'(3a)',IOSTAT=ISTAT,ERR=1003) outsn(1:lnblnk(outsn)),
+        WRITE(ifu,'(3a)',IOSTAT=IOS,ERR=1003) outsn(1:lnblnk(outsn)),
      &    tab,ipvadesc(ij)
  44   continue
-      WRITE(outsn,'(A,i3,10I4)',IOSTAT=ISTAT,ERR=1003)'*display_days',
+      WRITE(outsn,'(A,i3,10I4)',IOSTAT=IOS,ERR=1003)'*display_days',
      &   nipvdispjd,(ipvdispjd(L),L=1,nipvdispjd)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
 
 C Write ratios for each climatic season.
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)
      & 'season multipliers: heating|cooling|lights|fans|smallp|DWH'
-      WRITE(outsn,'(A,6F8.3)',IOSTAT=ISTAT,ERR=1003)'*win1',ddmheat(1),
+      WRITE(outsn,'(A,6F8.3)',IOSTAT=IOS,ERR=1003)'*win1',ddmheat(1),
      &  ddmcool(1),ddmlight(1),ddmfan(1),ddmsmlpw(1),ddmdhw(1)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
 
-      WRITE(outsn,'(A,6F8.3)',IOSTAT=ISTAT,ERR=1003)'*spr',ddmheat(2),
+      WRITE(outsn,'(A,6F8.3)',IOSTAT=IOS,ERR=1003)'*spr',ddmheat(2),
      &  ddmcool(2),ddmlight(2),ddmfan(2),ddmsmlpw(2),ddmdhw(2)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
 
-      WRITE(outsn,'(A,6F8.3)',IOSTAT=ISTAT,ERR=1003)'*sum',ddmheat(3),
+      WRITE(outsn,'(A,6F8.3)',IOSTAT=IOS,ERR=1003)'*sum',ddmheat(3),
      &  ddmcool(3),ddmlight(3),ddmfan(3),ddmsmlpw(3),ddmdhw(3)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
 
-      WRITE(outsn,'(A,6F8.3)',IOSTAT=ISTAT,ERR=1003)'*aut',ddmheat(4),
+      WRITE(outsn,'(A,6F8.3)',IOSTAT=IOS,ERR=1003)'*aut',ddmheat(4),
      &  ddmcool(4),ddmlight(4),ddmfan(4),ddmsmlpw(4),ddmdhw(4)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
 
-      WRITE(outsn,'(A,6F8.3)',IOSTAT=ISTAT,ERR=1003)'*win2',ddmheat(5),
+      WRITE(outsn,'(A,6F8.3)',IOSTAT=IOS,ERR=1003)'*win2',ddmheat(5),
      &  ddmcool(5),ddmlight(5),ddmfan(5),ddmsmlpw(5),ddmdhw(5)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
 
 C Write number of metrics followed for data for each.
-      WRITE(outsn,'(a,i3)',IOSTAT=ISTAT,ERR=1003)'*metrics',nms
+      WRITE(outsn,'(a,i3)',IOSTAT=IOS,ERR=1003)'*metrics',nms
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003) outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003) outsd(1:lnblnk(outsd))
       if(nms.gt.0)then
-        WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)
+        WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)
      &  '# metric data: metric index, nb zones, 2 miscel , floor area'
         do 28 ijj=1,nms
           lnd=lnblnk(msdoc(ijj))
@@ -164,28 +164,28 @@ C Write number of metrics followed for data for each.
           lng=lnblnk(metrglbl(ijj))
           if(ijj.le.9)then
             WRITE(outsn,'(A,i1,4i4,F8.1,2F7.3,4a)',
-     &       IOSTAT=ISTAT,ERR=1003)'*metric_',ijj,imetget(ijj),
+     &       IOSTAT=IOS,ERR=1003)'*metric_',ijj,imetget(ijj),
      &       imetmsc(ijj,1),imetmsc(ijj,2),nzmg(ijj),emgflr(ijj),
      &       emgsca(ijj),emgwtg(ijj),' ',msdoc(ijj)(1:lnd),' ',
      &       metgroup(ijj)(1:lnz)
             call SDELIM(outsn,outsd,'C',IW)
-            WRITE(ifu,'(4A)',IOSTAT=ISTAT,ERR=1003)
+            WRITE(ifu,'(4A)',IOSTAT=IOS,ERR=1003)
      &        outsd(1:lnblnk(outsd)),tab,metrglbl(ijj)(1:lng)
           else
             WRITE(outsn,'(A,i2,4i4,F8.1,2F7.3,4a)',
-     &       IOSTAT=ISTAT,ERR=1003)'*metric_',ijj,imetget(ijj),
+     &       IOSTAT=IOS,ERR=1003)'*metric_',ijj,imetget(ijj),
      &       imetmsc(ijj,1),imetmsc(ijj,2),nzmg(ijj),emgflr(ijj),
      &       emgsca(ijj),emgwtg(ijj),' ',msdoc(ijj)(1:lnd),' ',
      &       metgroup(ijj)(1:lnz)
             call SDELIM(outsn,outsd,'C',IW)
-            WRITE(ifu,'(4A)',IOSTAT=ISTAT,ERR=1003)
+            WRITE(ifu,'(4A)',IOSTAT=IOS,ERR=1003)
      &        outsd(1:lnblnk(outsd)),tab,metrglbl(ijj)(1:lng)
           endif
           if(nzmg(ijj).gt.0)then
-            WRITE(outs,*,IOSTAT=ISTAT,ERR=1003)
+            WRITE(outs,*,IOSTAT=IOS,ERR=1003)
      &        (izmg(ijj,L),L=1,nzmg(ijj))
             call SDELIM(outs,outsd,'C',IW)
-            WRITE(ifu,'(2x,A)',IOSTAT=ISTAT,ERR=1003)
+            WRITE(ifu,'(2x,A)',IOSTAT=IOS,ERR=1003)
      &        outsd(1:lnblnk(outsd))
           endif
   28    continue
@@ -193,54 +193,54 @@ C Write number of metrics followed for data for each.
 
 C Loop through each demand set and write out associated data.
       if(neds.gt.0)then
-        WRITE(ifu,'(2A,i2,a)',IOSTAT=ISTAT,ERR=1003)'*demand_sets',tab,
+        WRITE(ifu,'(2A,i2,a)',IOSTAT=IOS,ERR=1003)'*demand_sets',tab,
      &    neds,'  # number of energy demand sets'
         do 43 ij=1,neds
 
 C Write set of energy (demand/capacity) associated data.
-          WRITE(ifu,'(2a)',IOSTAT=ISTAT,ERR=1003) '# nb. zones,',
+          WRITE(ifu,'(2a)',IOSTAT=IOS,ERR=1003) '# nb. zones,',
      &      ' 2 miscel, aggregate_toggle floor area, scaling descrip'
           if(ij.le.9)then
-            WRITE(outsn,'(A,i1,4I4,F8.1,F7.3,2a)',IOSTAT=ISTAT,ERR=1003)
+            WRITE(outsn,'(A,i1,4I4,F8.1,F7.3,2a)',IOSTAT=IOS,ERR=1003)
      &      '*energy_',ij,nzedg(ij),idgmsc(ij,1),idgmsc(ij,2),iaggr,
      &      edgflr(ij),edgsca(ij),' ',zedsdoc(ij)(1:lnblnk(zedsdoc(ij)))
             call SDELIM(outsn,outsd,'C',IW)
-            WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)outsd(1:lnblnk(outsd))
+            WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)outsd(1:lnblnk(outsd))
           else
-            WRITE(outsn,'(A,i2,4I4,F8.1,F7.3,2a)',IOSTAT=ISTAT,ERR=1003)
+            WRITE(outsn,'(A,i2,4I4,F8.1,F7.3,2a)',IOSTAT=IOS,ERR=1003)
      &      '*energy_',ij,nzedg(ij),idgmsc(ij,1),idgmsc(ij,2),iaggr,
      &      edgflr(ij),edgsca(ij),' ',zedsdoc(ij)(1:lnblnk(zedsdoc(ij)))
             call SDELIM(outsn,outsd,'C',IW)
-            WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)outsd(1:lnblnk(outsd))
+            WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)outsd(1:lnblnk(outsd))
           endif
           if(nzedg(ij).gt.0)then
-            WRITE(outsn,*,IOSTAT=ISTAT,ERR=1003)
+            WRITE(outsn,*,IOSTAT=IOS,ERR=1003)
      &        (izedg(ij,L),L=1,nzedg(ij))
             call SDELIM(outsn,outsd,'C',IW)
-            WRITE(ifu,'(2x,A)',IOSTAT=ISTAT,ERR=1003)
+            WRITE(ifu,'(2x,A)',IOSTAT=IOS,ERR=1003)
      &        outsd(1:lnblnk(outsd))
           endif
   43    continue
       endif
 
 C Write nonspecific demands data.
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)
      &'# non-specific demands: occup/light/sm pwr/fans/pumps/lifts/dhw'
-      WRITE(outsn,'(A,7I4)',IOSTAT=ISTAT,ERR=1003)'*dmds',idmdinc(1),
+      WRITE(outsn,'(A,7I4)',IOSTAT=IOS,ERR=1003)'*dmds',idmdinc(1),
      & idmdinc(2),idmdinc(3),idmdinc(4),idmdinc(5),idmdinc(6),idmdinc(7)
       call SDELIM(outsn,outsd,'C',IW)
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)outsd(1:lnblnk(outsd))
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)outsd(1:lnblnk(outsd))
 
-      WRITE(ifu,'(A)',IOSTAT=ISTAT,ERR=1003)'*end'
+      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)'*end'
 
   999 CALL  ERPFREE(ifu,ISTAT)
       return
 
- 1003 if(istat.eq.2)then
-        CALL USRMSG(' Not premitted to write IPV data.',' ','W')
+ 1003 if(ios.eq.2)then
+        CALL USRMSG('No premissopm to write IPV data.',' ','W')
         GOTO 999
       else
-        CALL USRMSG(' Problem writing IPV data.',' ','W')
+        CALL USRMSG('Problem writing IPV data.',' ','W')
         GOTO 999
       endif
 

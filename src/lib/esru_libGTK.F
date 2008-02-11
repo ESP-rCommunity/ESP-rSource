@@ -457,7 +457,12 @@ C Return to calling module
 
 999   CALL USRMSG(' ',' Did not understand, try again.','-')
       GOTO 20
-   1  write(6,*) 'EASKI: error composing message or prompt.'
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EASKI: permission error composing prompt.'
+      else
+        write(6,*) 'EASKI: error composing message or prompt.'
+      endif
       return
 
       END
@@ -699,11 +704,21 @@ C Return to calling module
       RETURN
  89   CALL USRMSG(' ','Did not understand, try again.','-')
       GOTO 20
-   1  write(6,*) 'EASKR: error composing message or prompt.'
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EASKR: permission error composing prompt.'
+      else
+        write(6,*) 'EASKR: error composing message or prompt.'
+      endif
       return
 
- 999  WRITE(outs,*) 'EASKR: invalid real or > 16 chars: ',RVAL
-      call edisp(iuout,outs)
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) 'EASKR: write permission or invalid real: ',RVAL
+        call edisp(iuout,outs)
+      else
+        WRITE(outs,*) 'EASKR: invalid real or > 16 chars: ',RVAL
+        call edisp(iuout,outs)
+      endif
       call edisp(iuout,' ')
       RETURN
 
@@ -934,7 +949,12 @@ C Return to calling module
       RETURN
  89   CALL USRMSG(' ',' Did not understand, try again..','-')
       GOTO 20
-   1  write(6,*) 'EASKE: error composing message or prompt.'
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKE: permissions exception while composing prompt.'
+      else
+        write(6,*) 'EASKE: error composing message or prompt.'
+      endif
       return
 
       END
@@ -1142,11 +1162,26 @@ C Must have input a character string.
       ENDIF
 
       RETURN
-   1  write(6,*) 'EASKF: error composing message or prompt.'
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKF: permissions exception while composing prompt.'
+      else
+        write(6,*) 'EASKF: error composing message or prompt.'
+      endif
       return
-   2  write(6,*) 'EASKF: error composing prompt.'
+   2  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKF: permissions exception while composing prompt.'
+      else
+        write(6,*) 'EASKF: error composing prompt.'
+      endif
       return
-   3  write(6,*) 'EASKF: error writing file name.'
+   3  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKF: permissions exception while writing file name.'
+      else
+        write(6,*) 'EASKF: error writing file name.'
+      endif
       return
       END
 
@@ -1348,9 +1383,19 @@ C Must have input a character string.
       ENDIF
 
       RETURN
-   1  write(6,*) 'EASKS: error composing message or prompt.'
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKS: permissions exception while composing prompt.'
+      else
+        write(6,*) 'EASKS: error composing message or prompt.'
+      endif
       return
-   2  write(6,*) 'EASKS: error composing prompt.'
+   2  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKS: permissions exception while composing prompt.'
+      else
+        write(6,*) 'EASKS: error composing prompt.'
+      endif
       return
       END
 
@@ -1561,7 +1606,13 @@ C When writing out the combined text, put a space between each section.
         endif
       endif
       return
-   1  write(6,*) 'EASKS248: error composing message or prompt.'
+
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'EASKS248: permissions exception while composing prompt.'
+      else
+        write(6,*) 'EASKS248: error composing message or prompt.'
+      endif
       return
       end
 
@@ -2975,7 +3026,12 @@ C Not one of the legal menu choices.
       IVERT=-2
       goto 92
 
-   1  write(6,*) 'MENUATOL: error composing message or prompt.'
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'MENUATOL: permissions exception while composing prompt.'
+      else
+        write(6,*) 'MENUATOL: error composing message or prompt.'
+      endif
       return
 
       END
@@ -3087,7 +3143,12 @@ C of help supplied and then provide the prompt again.
       ENDIF
       RETURN
 
-   1  write(6,*) 'ASKOK: error in dialog '
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'ASKOK: permissions exception while composing prompt.'
+      else
+        write(6,*) 'ASKOK: error composing prompt.'
+      endif
       RETURN
       END
 
@@ -3830,9 +3891,15 @@ C          call edisp(iuout,' No folder separator found.')
 
       return
 
-   1  call edisp(iuout,
-     &  'fdroot: error composing path or file from string.')
-      call edisp(iuout,fstring)
+   1  if(IOS.eq.2)then
+        call edisp(iuout,
+     &  'fdroot: permission error composing path or file from string.')
+        call edisp(iuout,fstring)
+      else
+        call edisp(iuout,
+     &    'fdroot: error composing path or file from string.')
+        call edisp(iuout,fstring)
+      endif
       return
       end
 
@@ -4235,8 +4302,12 @@ C Special case: unix absolute path being used on windows - substitute c: for ini
         tfile=sfile
       endif
       return
-C   1  write(outs,*) 'addpath: error writing file name: ',tfile
-   1  call lusrmsg('addpath: error writing file name',tfile,'W')
+   1  if(IOS.eq.2)then
+        call lusrmsg('addpath: permission error writing file name',
+     &    tfile,'W')
+      else
+        call lusrmsg('addpath: error writing file name',tfile,'W')
+      endif
       return
       end
 
@@ -4300,9 +4371,17 @@ C assign WORDS.
       endif
       IF(C.EQ.' ')GOTO 102
       GOTO 20
-   1  write(6,*) 'GETTOKENS: error in internal write: ',A
+   1  if(IOS.eq.2)then
+        write(6,*) 'GETTOKENS: permission error in internal write: ',A
+      else
+        write(6,*) 'GETTOKENS: error in internal write: ',A
+      endif
       return
-   2  write(6,*) 'GETTOKENS: error in getting token: ',A
+   2  if(IOS.eq.2)then
+        write(6,*) 'GETTOKENS: permission error in getting token: ',A
+      else
+        write(6,*) 'GETTOKENS: error in getting token: ',A
+      endif
       return
 
       END
@@ -4815,7 +4894,13 @@ C Open the dialogue box and begin message.
         ENDIF
       ENDIF
       RETURN
-  500 call edisp(iout,'Error reading terminal type.  Try again.')
+
+  500 if(IOS.eq.2)then
+        call edisp(iout,
+     &    'Permission error reading terminal type. Try again.')
+      else
+        call edisp(iout,'Error reading terminal type. Try again.')
+      endif
       goto 10
       END
 
@@ -4923,9 +5008,17 @@ C TEST REPLY IS IN MENU
           IF(ICUR-32.EQ.IFIRST(ITEMS(JNO)))RETURN
   24    CONTINUE
       ENDIF
-   1  call edisp(IUOUT,'emenu: error composing prompt.')
+   1  if(IOS.eq.2)then
+        call edisp(IUOUT,'emenu: permission error composing prompt.')
+      else
+        call edisp(IUOUT,'emenu: error composing prompt.')
+      endif
       return
-   2  call edisp(IUOUT,'emenu: error composing item.')
+   2  if(IOS.eq.2)then
+        call edisp(IUOUT,'emenu: permission error composing item.')
+      else
+        call edisp(IUOUT,'emenu: error composing item.')
+      endif
       return
       END
 
@@ -5102,7 +5195,12 @@ C << Place to try pop-up version of msgbox. >>
         endif
         RETURN
       ENDIF
-    1 call edisp(iuout,'USRMSG: error composing prompt. ')
+
+   1  if(IOS.eq.2)then
+        call edisp(IUOUT,'USRMSG: permission error composing prompt.')
+      else
+        call edisp(IUOUT,'USRMSG: error composing prompt.')
+      endif
       return
       END
 
@@ -5228,7 +5326,12 @@ C Place in text window since about to exit from program.
         endif
         RETURN
       ENDIF
-    1 call edisp(iuout,'USRMSG: error composing prompt. ')
+
+   1  if(IOS.eq.2)then
+        call edisp(IUOUT,'LUSRMSG: permission error composing prompt.')
+      else
+        call edisp(IUOUT,'LUSRMSG: error composing prompt.')
+      endif
       return
       END
 
@@ -5299,9 +5402,17 @@ C Write this to standard text window.
       ENDIF
 
       RETURN
-   1  write(6,*) 'edisp: error writing text: ',MSG
+   1  if(IOS.eq.2)then
+        write(6,*) 'edisp: permission error writing text: ',MSG
+      else
+        write(6,*) 'edisp: error writing text: ',MSG
+      endif
       return
-   2  write(6,*) 'edisp: error writing text: ',WWMSG
+   2  if(IOS.eq.2)then
+        write(6,*) 'edisp: permission error writing text: ',WWMSG
+      else
+        write(6,*) 'edisp: error writing text: ',WWMSG
+      endif
       return
       END
 
@@ -5628,9 +5739,17 @@ C impx impy before recalling fprofma.
       endif
       return
 
-   1  call usrmsg('Could not open/write dump file...',tfile,'W')
+   1  if(IOS.eq.2)then
+        call usrmsg('Permissions open/write dump file...',tfile,'W')
+      else
+        call usrmsg('Could not open/write dump file...',tfile,'W')
+      endif
       return
-   2  call usrmsg('Could not append to dump file...',tfile,'W')
+   2  if(IOS.eq.2)then
+        call usrmsg('Permissions for append to dump file...',tfile,'W')
+      else
+        call usrmsg('Could not append to dump file...',tfile,'W')
+      endif
       return
 
       end
@@ -6122,7 +6241,11 @@ C current line index.
    64 FORMAT('No help available for ',a,'.')
       RETURN
 
-   1  write(6,*) 'EHELPD: error writing help message '
+   1  if(IOS.eq.2)then
+        write(6,*) 'EHELPD: permission error writing help message'
+      else
+        write(6,*) 'EHELPD: error writing help message'
+      endif
       return
       END
 
@@ -6240,9 +6363,19 @@ C Look for particular topic and read/display until next "*tut_".
       CALL ERPFREE(IFTUT,ISTAT)
       return
 
-   1  write(6,*) 'showmeh: error writing additional help messages. '
+   1  if(IOS.eq.2)then
+        write(6,*) 
+     &  'showmeh: permission error writing additional help messages.'
+      else
+        write(6,*) 'showmeh: error writing additional help messages.'
+      endif
       return
-   2  write(6,*) 'showmeh: error writing show me more message '
+   2  if(IOS.eq.2)then
+        write(6,*) 
+     &  'showmeh: permission error writing show me more message'
+      else
+        write(6,*) 'showmeh: error writing show me more message'
+      endif
       return
 
   102 IER=0
@@ -6353,7 +6486,11 @@ C Actual read of ASCII file.
       goto 7
 
 C End of file encountered, close the file and return to menu.
-  102 CALL USRMSG(' ',' End of file reached!','-')
+  102 if(IOS.eq.2)then
+        CALL USRMSG(' ',' Permission issue at End of file.','-')
+      else
+        CALL USRMSG(' ',' End of file reached!','-')
+      endif
       CALL ERPFREE(IUNIT,ISTAT)
       return
       end
@@ -6499,9 +6636,20 @@ C If there is a journal file append the current message to it and close.
       endif
 
       return
-   1  call edisp(iuout,'Error opening journal file, continuing.')
+
+   1  if(IOS.eq.2)then
+        call edisp(iuout,
+     &  'Permission issue while opening journal file, continuing.')
+      else
+        call edisp(iuout,'Error opening journal file, continuing.')
+      endif
       return
-   2  call edisp(iuout,'Error updating journal file, continuing.')
+   2  if(IOS.eq.2)then
+        call edisp(iuout,
+     &  'Permission issue while updating journal file, continuing.')
+      else
+        call edisp(iuout,'Error updating journal file, continuing.')
+      endif
       close(iuj)
       return
       end
@@ -6530,7 +6678,12 @@ C Unix date function.
       ictime=time()
       write(date_str,'(A)',iostat=ios,err=1) ectime(ictime)
       return
-   1  write(6,*) 'dstamp: error getting time. '
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'dstamp: permission error getting time. '
+      else
+        write(6,*) 'dstamp: error getting time. '
+      endif
       return
       end
 
@@ -6641,11 +6794,23 @@ C Compare the second of the minute.
       endif
       return
 
- 1002 call edisp(6,'comparedate: error extracting hour.')
+ 1002 if(IOS.eq.2)then
+        call edisp(6,'comparedate: permission error extracting hour.')
+      else
+        call edisp(6,'comparedate: error extracting hour.')
+      endif
       return
- 1003 call edisp(6,'comparedate: error extracting minute.')
+ 1003 if(IOS.eq.2)then
+        call edisp(6,'comparedate: permission error extracting minute.')
+      else
+        call edisp(6,'comparedate: error extracting minute.')
+      endif
       return
- 1004 call edisp(6,'comparedate: error extracting second.')
+ 1004 if(IOS.eq.2)then
+        call edisp(6,'comparedate: permission error extracting second.')
+      else
+        call edisp(6,'comparedate: error extracting second.')
+      endif
       return
       end
 
@@ -6852,7 +7017,13 @@ C Copy WORD from STRING, character by character until separator found.
         CALL EDISP(iuout,STRING)
       endif
       GOTO 100
-   1  write(6,*) 'EGETW: error writing warning re: ',STRING
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETW: permission error writing warning re: ',STRING
+      else
+        write(6,*) 'EGETW: error writing warning re: ',STRING
+      endif
+      return
 
       END
 
@@ -6930,14 +7101,20 @@ C comma is found.
         CALL EDISP(iuout,STRING)
       endif
       GOTO 100
-   1  write(6,*) 'EGETP: error writing warning re: ',STRING
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETP: permission error writing warning re: ',STRING
+      else
+        write(6,*) 'EGETP: error writing warning re: ',STRING
+      endif
+      return
 
       END
 
 C ***************** EGETDQ
 C EGETDQ gets first quoted PHRASE after position K from the STRING of
-C characters. Phrases are separated by tabs or commas. Provides a warning
-C message if ACT='W', a failure message if ACT='F' and does
+C characters. Phrases can contain spaces and commas but not tabs.
+C Provides a warning message if ACT='W', a failure message if ACT='F' and
 C no message if ACT='-'.  The string returned has the quotes removed.
 C Note it uses an internal string buffer which assumes that the
 C phrase is less than 248 characters long.
@@ -6969,15 +7146,23 @@ C Start by skipping blanks and tabs before the PHRASE.
       A=STRING(K:K)
       IF(A.EQ.' '.OR.A.EQ.','.OR.(ICHAR(A).EQ.9)) GOTO 10
 
-C Copy PHRASE from STRING, character by character until tab or a
-C comma is found.
+C Copy PHRASE from STRING, character by character until 
+C a double quote or single quote is found (a quoted phrase 
+C could include a comma, but not a tab)
    20 L=L+1
       IF(L.GT.LW) GOTO 100
       PHRASE(L:L)=A
       K=K+1
       IF(K.GT.LS) GOTO 999
       A=STRING(K:K)
-      IF(ICHAR(A).EQ.9.or.A.eq.',') GO TO 100
+      IF(ICHAR(A).EQ.9) GO TO 100
+      if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
+
+C Found a quote so increment L add quote it to the phrase and then process.
+        L=L+1
+        PHRASE(L:L)=A
+        GOTO 100
+      endif
       GOTO 20
 
   100 continue
@@ -6988,6 +7173,10 @@ C Test if the first and last characters are double or single quotes
       if(A.eq.dq.or.A.eq.sqleft.or.A.eq.sqright)then
         if(B.eq.dq.or.B.eq.sqright.or.B.eq.sqleft)then
           lnofstr=lnblnk(PHRASE)-1
+          write(buffer,'(a)') PHRASE(2:lnofstr)
+          write(phrase,'(a)') buffer(1:lnblnk(buffer))
+        else
+          lnofstr=lnblnk(PHRASE)
           write(buffer,'(a)') PHRASE(2:lnofstr)
           write(phrase,'(a)') buffer(1:lnblnk(buffer))
         endif
@@ -7018,7 +7207,7 @@ C Test if the first and last characters are double or single quotes
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
           WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILUREW: Past end of line for ',
+     &      'FAILURE: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
       endif
@@ -7029,7 +7218,13 @@ C Test if the first and last characters are double or single quotes
         CALL EDISP(iuout,STRING)
       endif
       GOTO 100
-   1  write(6,*) 'EGETDQ: error writing warning re: ',STRING
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETDQ: permission error writing warning re:',STRING
+      else
+        write(6,*) 'EGETDQ: error writing warning re: ',STRING
+      endif
+      return
 
       END
 
@@ -7155,7 +7350,13 @@ C Check IV against minimum and respond based on ACT.
       CALL EDISP248(iuout,loutstr,100)
       IER=2
       GOTO 100
-   1  write(6,*) 'EGETWI: error writing warning re: ',WORD
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETWI: permission error writing warning re:',STRING
+      else
+        write(6,*) 'EGETWI: error writing warning re: ',STRING
+      endif
+      return
 
       END
 
@@ -7285,7 +7486,13 @@ C Check RV against minimum and respond based on RACT.
       CALL EDISP248(iuout,LOUTSTR,100)
       IER=2
       GOTO 100
-   1  write(6,*) 'EGETWR: error writing warning re: ',STRING
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETWR: permission error writing warning re:',STRING
+      else
+        write(6,*) 'EGETWR: error writing warning re: ',STRING
+      endif
+      return
 
       END
 
@@ -7355,7 +7562,13 @@ C word, otherwise read another line from the file.
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETWRA: error writing warning re: ',OUTS
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETWRA: permission error writing warning re:',OUTS
+      else
+        write(6,*) 'EGETWRA: error writing warning re: ',OUTS
+      endif
+      return
 
       END
 
@@ -7426,7 +7639,13 @@ C word, otherwise read another line from the file.
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETWIA: error writing warning re: ',OUTS
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETWIA: permission error writing warning re:',OUTS
+      else
+        write(6,*) 'EGETWIA: error writing warning re: ',OUTS
+      endif
+      return
 
       END
 
@@ -7505,7 +7724,14 @@ C word, otherwise read another line from the file.
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETAGWIA: error writing warning re: ',OUTS
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETAGWIA: permission error writing warning ',OUTS
+      else
+        write(6,*) 'EGETAGWIA: error writing warning re: ',OUTS
+      endif
+      return
+
       end
 
 C *************** EGETAGWRA
@@ -7584,7 +7810,14 @@ C word, otherwise read another line from the file.
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETAGWRA: error writing warning re: ',OUTS
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETAGWRA: permission error writing warning ',OUTS
+      else
+        write(6,*) 'EGETAGWRA: error writing warning re: ',OUTS
+      endif
+      return
+
       end
 
 C *************** EGETAGWSA
@@ -7668,7 +7901,14 @@ C word, otherwise read another line from the file.
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETAGWSA: error writing warning re: ',OUTS
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETAGWSA: permission error writing warning ',OUTS
+      else
+        write(6,*) 'EGETAGWSA: error writing warning re: ',OUTS
+      endif
+      return
+
       end
 
 
@@ -7754,7 +7994,14 @@ C word, otherwise read another line from the file.
       endif
       IER=1
       GOTO 100
-   1  write(6,*) 'EGETAGWPA: error writing warning re: ',OUTS
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETAGWPA: permission error writing warning ',OUTS
+      else
+        write(6,*) 'EGETAGWPA: error writing warning re: ',OUTS
+      endif
+      return
+
       end
 
 C ***************** EGETRM
@@ -7828,8 +8075,15 @@ C of RSTR or TSTR.
         CALL EDISP(iuout,TSTR)
       endif
       GOTO 100
-   1  write(loutstr,*) 'EGETRM: error writing warning re: ',RSTR
+
+   1  if(IOS.eq.2)then
+        write(loutstr,*) 'EGETRM: permission error writing warning ',
+     &    RSTR
+      else
+        write(loutstr,*) 'EGETRM: error writing warning re: ',RSTR
+      endif
       call edisp248(iuout,loutstr,100)
+      return
 
       END
 
@@ -7915,7 +8169,11 @@ C real value.
   100 ISWD=max(1,LNBLNK(FSTR))
       RETURN
 
- 999  WRITE(outs,*) ' RELSTR: invalid real or > 12 char: ',RELIN
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) ' RELSTR: permission issue: ',RELIN
+      else
+        WRITE(outs,*) ' RELSTR: invalid real or > 12 char: ',RELIN
+      endif
       call edisp(iuout,outs)
       IFLAG=1
       RETURN
@@ -7974,7 +8232,11 @@ C real value.
   100 ISWD=max(1,LNBLNK(FSTR))
       RETURN
 
- 999  WRITE(outs,*) ' REL16STR: invalid real or > 16 char: ',RELIN
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) ' REL16STR: permission issue: ',RELIN
+      else
+        WRITE(outs,*) ' REL16STR: invalid real or > 12 char: ',RELIN
+      endif
       call edisp(iuout,outs)
       IFLAG=1
       RETURN
@@ -8429,7 +8691,12 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'STRIPC: permission error writing warning ',OUTSTR
+      else
+        write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
+      endif
 
       END
 C ******************** LSTRIPC_LN
@@ -8568,7 +8835,13 @@ C But if last line is non-blank, parse contents anyways.
         CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'LSTRIPC: permission error writing warning ',OUTSTR
+      else
+        write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+      endif
+      return
 
       END
 
@@ -8664,7 +8937,13 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'LSTRIPC: permission error writing warning ',OUTSTR
+      else
+        write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+      endif
+      return
 
       END
 
@@ -8702,7 +8981,13 @@ C Loop character by character until separator is found.
       IF(K.GE.LNBLNK(B))RETURN
       IF(C.EQ.' ') GOTO 102
       GOTO 20
-   1  write(6,*) 'CHITMS: error in internal write: ',A
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'CHITMS: permission error in internal write: ',A
+      else
+        write(6,*) 'CHITMS: error in internal write: ',A
+      endif
+      return
  
       END
 
@@ -8739,7 +9024,13 @@ C Loop character by character until separator is found.
       IF(K.GE.LNBLNK(B))RETURN
       IF(C.EQ.' ') GOTO 102
       GOTO 20
-   1  write(6,*) 'CHITMS: error in internal write: ',A
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'LCHITMS: permission error in internal write: ',A
+      else
+        write(6,*) 'LCHITMS: error in internal write: ',A
+      endif
+      return
 
       END
 
@@ -8776,7 +9067,13 @@ C Loop character by character until separator is found.
       IF(K.GE.LNBLNK(B))RETURN
       IF(C.EQ.' ') GOTO 102
       GOTO 20
-   1  write(6,*) 'CHITMS: error in internal write: ',A
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'CHITMS400: permission error in internal write: ',A
+      else
+        write(6,*) 'CHITMS400: error in internal write: ',A
+      endif
+      return
 
       END
 
@@ -9132,48 +9429,55 @@ C Generate view period string based on IBDOY,IEDOY,BTIM,ETIM
       FD1=FLOAT(IBDOY)+TIMER1
       FD2=FLOAT(IEDOY)+TIMER2
       IF(IFTIME.EQ.0)THEN
-        WRITE(PERST1,1,IOSTAT=ISTAT,ERR=10)T1H,T2H
+        WRITE(PERST1,1,IOSTAT=IOS,ERR=10)T1H,T2H
     1   FORMAT(' ',A5,'  ',A5,' ')
       ELSEIF(IFTIME.EQ.1)THEN
-        WRITE(PERST1,1,IOSTAT=ISTAT,ERR=10)T1D,T2D
+        WRITE(PERST1,1,IOSTAT=IOS,ERR=10)T1D,T2D
       ELSEIF(IFTIME.EQ.2)THEN
-        WRITE(PERST1,2,IOSTAT=ISTAT,ERR=10)TIMER1,TIMER2
+        WRITE(PERST1,2,IOSTAT=IOS,ERR=10)TIMER1,TIMER2
     2   FORMAT(2F7.4)
       ENDIF
 
       IF(IFDAY.EQ.0)THEN
-        WRITE(PERST3,3,IOSTAT=ISTAT,ERR=10)IBDOY,IEDOY,IYEAR
+        WRITE(PERST3,3,IOSTAT=IOS,ERR=10)IBDOY,IEDOY,IYEAR
     3   FORMAT('period: DOY ',I3,' to DOY ',I3,', ',I4)
         IF(IFTIME.EQ.0)THEN
-          WRITE(PERST2,4,IOSTAT=ISTAT,ERR=10)IBDOY,T1H,IEDOY,T2H
+          WRITE(PERST2,4,IOSTAT=IOS,ERR=10)IBDOY,T1H,IEDOY,T2H
     4     FORMAT('period: DOY ',I3,' @ ',A5,' to DOY ',I3,' @ ',A5)
         ELSEIF(IFTIME.EQ.1)THEN
-          WRITE(PERST2,4,IOSTAT=ISTAT,ERR=10)IBDOY,T1D,IEDOY,T2D
+          WRITE(PERST2,4,IOSTAT=IOS,ERR=10)IBDOY,T1D,IEDOY,T2D
         ELSEIF(IFTIME.EQ.2)THEN
-          WRITE(PERST2,5,IOSTAT=ISTAT,ERR=10)FD1,FD2
+          WRITE(PERST2,5,IOSTAT=IOS,ERR=10)FD1,FD2
     5     FORMAT('period: DOY ',F10.6,' to DOY ',F10.6)
         ENDIF
       ELSEIF(IFDAY.EQ.1)THEN
-        WRITE(PERST3,6,IOSTAT=ISTAT,ERR=10)DS,DE,IYEAR
+        WRITE(PERST3,6,IOSTAT=IOS,ERR=10)DS,DE,IYEAR
     6   FORMAT('period: ',A7,' to ',A7,', ',I4)
         IF(IFTIME.EQ.0)THEN
-          WRITE(PERST2,7,IOSTAT=ISTAT,ERR=10)DS,T1H,DE,T2H
+          WRITE(PERST2,7,IOSTAT=IOS,ERR=10)DS,T1H,DE,T2H
     7     FORMAT('period: ',A7,' @ ',A5,' to ',A7,' @ ',A5)
         ELSE
-          WRITE(PERST2,7,IOSTAT=ISTAT,ERR=10)DS,T1D,DE,T2D
+          WRITE(PERST2,7,IOSTAT=IOS,ERR=10)DS,T1D,DE,T2D
         ENDIF
       ELSEIF(IFDAY.EQ.2)THEN
-        WRITE(PERST3,8,IOSTAT=ISTAT,ERR=10)DS1,DE1,IYEAR
+        WRITE(PERST3,8,IOSTAT=IOS,ERR=10)DS1,DE1,IYEAR
     8   FORMAT('period: ',A10,' to ',A10,', ',I4)
         IF(IFTIME.EQ.0)THEN
-          WRITE(PERST2,9,IOSTAT=ISTAT,ERR=10)DS1,T1H,DE1,T2H
+          WRITE(PERST2,9,IOSTAT=IOS,ERR=10)DS1,T1H,DE1,T2H
     9     FORMAT('period: ',A10,'@',A5,' - ',A10,'@',A5)
         ELSE
-          WRITE(PERST2,9,IOSTAT=ISTAT,ERR=10)DS1,T1D,DE1,T2D
+          WRITE(PERST2,9,IOSTAT=IOS,ERR=10)DS1,T1D,DE1,T2D
         ENDIF
       ENDIF
       RETURN
-  10  write(6,*) 'EPERSTR: error writing warning or strings.'
+
+  10  if(IOS.eq.2)then
+        write(6,*) 'EPERSTR: permission error writing strings.'
+      else
+        write(6,*) 'EPERSTR: error writing warning or strings.'
+      endif
+      return
+
       END
 
 C ******************** STDATE
@@ -9232,10 +9536,17 @@ C 1=no averaging. NTS is the number of timesteps per hour.
       TIMER=TIMER-ADJUST
       MIN=INT((TIMER-AINT(TIMER))*60.)
       WRITE(DESCRH,'(i2.2,a,i2.2)',ERR=1)INT(TIMER),'h',MIN
-      WRITE(DESCRD,'(f5.2)',IOSTAT=ISTAT,ERR=1)TIMER
+      WRITE(DESCRD,'(f5.2)',IOSTAT=IOS,ERR=1)TIMER
       TIMER=TIMER/24.0
       RETURN
- 1    call usrmsg('ESTIME: problem writing time strings.',' ','W')
+
+ 1    if(IOS.eq.2)then
+        call usrmsg('ESTIME: permission writing time strings.',' ','W')
+      else
+        call usrmsg('ESTIME: problem writing time strings.',' ','W')
+      endif
+      return
+
       END
 
 C ******************** EDTIME
@@ -9247,10 +9558,17 @@ C As well as the time as a fraction of a day TIMER.
 
       MIN=INT((TIME-AINT(TIME))*60.)
       WRITE(DESCRH,'(i2.2,a,i2.2)',ERR=1)INT(TIME),'h',MIN
-      WRITE(DESCRD,'(f5.2)',IOSTAT=ISTAT,ERR=1)TIME
+      WRITE(DESCRD,'(f5.2)',IOSTAT=IOS,ERR=1)TIME
       TIMER=TIME/24.0
       RETURN
- 1    call usrmsg('EDTIME: problem writing time strings.',' ','W')
+
+ 1    if(IOS.eq.2)then
+        call usrmsg('EDTIME: permission writing time strings.',' ','W')
+      else
+        call usrmsg('EDTIME: problem writing time strings.',' ','W')
+      endif
+      return
+
       END
 
 C *********************** EDAYR

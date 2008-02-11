@@ -64,6 +64,13 @@ C user-specified variable.
       DIMENSION DATA(10),CQ(MTS)
       CHARACTER LNAME*72,outs*124,H*72,zname*12,zdesc*64,etxt*10
       logical zlist
+      real QCASR,QCASC,QCASL  ! total radiant/convective/latent
+      real FRAC ! controlled fraction.
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real equipc,equipr,equipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
       DATA ITITLX/'Time-steps'/
       DATA ITITLZ/'Year day  '/
@@ -449,9 +456,30 @@ C display file.
           CALL GQV2(ID,NZNO(1),ISET)
           CALL XTVAL1(GVAL,ISTART,IEND,1)
         elseif(IGET.eq.15)then
-          if(ICRCG.eq.1)CALL GCASC(ID,NZNO(1),ISET)
-          if(ICRCG.eq.2)CALL GCASR(ID,NZNO(1),ISET)
-          CALL XTVAL1(GVAL,ISTART,IEND,1)
+          if(izver.eq.4)then
+
+C If izver >= 4 the read the data directly.
+            DO 202 J2=ISTART,IEND
+              call getallcas(ID,NZNO(1),ISET,J2,QCASR,QCASC,QCASL,
+     &          FRAC,perocupc,perlightc,equipc,otherc,perocupr,
+     &          perlightr,equipr,otherr,perocupl,perlightl,equipl,
+     &          otherl,theonectld)
+              if(ICRCG.eq.1)then
+                GVAL(J2)=QCASC        ! Total casual gain convective (W)
+              elseif(ICRCG.eq.2)then
+                GVAL(J2)=QCASR        ! Total casual gain radiant (W)
+              endif
+  202       continue
+            CALL XTVAL1(GVAL,ISTART,IEND,1)
+          else
+            if(ICRCG.eq.1)then
+              CALL GCASC(ID,NZNO(1),ISET)  ! for older versions
+              CALL XTVAL1(GVAL,ISTART,IEND,1)
+            elseif(ICRCG.eq.2)then
+              CALL GCASR(ID,NZNO(1),ISET)  ! for older versions
+              CALL XTVAL1(GVAL,ISTART,IEND,1)
+            endif
+          endif
         elseif(IGET.eq.16)then
 
 C Surface convection inside.

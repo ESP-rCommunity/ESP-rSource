@@ -1352,6 +1352,11 @@ C Convert l/s to ach
         SUM=0.
         CVIF=0.33*VOL(ICOMP)*ACI        
         IF(ACI.LE.0.)CVIF=0.
+
+C set x=0 for now. Not used at the moment but attempting
+C to follow similar patter as the classic ventilation
+C entry in tdf
+        X=0. 
         XX3=CVIF*TF+SUM*X
         CVVFM=0.
       else

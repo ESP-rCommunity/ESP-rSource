@@ -1322,23 +1322,23 @@ C MFWRIT Fluid flow model file: dump data to file.
       REWIND(IFPRB,ERR=999)
 
 C Number of nodes, components, interconnections and wind reduction.
-      WRITE(IFPRB,1010,IOSTAT=ISTAT,ERR=999) NNOD,NCMP,NCNN,WRED
+      WRITE(IFPRB,1010,IOSTAT=IOS,ERR=999) NNOD,NCMP,NCNN,WRED
  1010 FORMAT(3I5,4X,F5.3,4X,
      &      '(nodes, components, connections, wind reduction)')
 
 C Node data.
 C      IF(NNOD.EQ.0) GOTO 999
-      WRITE(IFPRB,1020,IOSTAT=ISTAT,ERR=999)
+      WRITE(IFPRB,1020,IOSTAT=IOS,ERR=999)
  1020 FORMAT(' Node         Fld. Type',
      &       '   Height    Temperature    Data_1       Data_2')
 
       DO 30 INOD=1,NNOD
       IF(ITND(INOD).EQ.0) THEN
-         WRITE(IFPRB,1030,IOSTAT=ISTAT,ERR=999)
+         WRITE(IFPRB,1030,IOSTAT=IOS,ERR=999)
      &         NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),HNOD(INOD),
      &         TNOD(INOD),SUPNOD(INOD,1),SUPNOD(INOD,2)
       ELSE
-         WRITE(IFPRB,10301,IOSTAT=ISTAT,ERR=999)
+         WRITE(IFPRB,10301,IOSTAT=IOS,ERR=999)
      &         NDNAM(INOD),NDFLD(INOD),NDTYP(INOD),HNOD(INOD),
      &         NDNAM(ITND(INOD)),SUPNOD(INOD,1),SUPNOD(INOD,2)
       END IF
@@ -1348,14 +1348,14 @@ C      IF(NNOD.EQ.0) GOTO 999
 
 C Component data
 C      IF(NCMP.EQ.0) GOTO 999
-      WRITE(IFPRB,1040,IOSTAT=ISTAT,ERR=999)
+      WRITE(IFPRB,1040,IOSTAT=IOS,ERR=999)
  1040 FORMAT(' Component    Type C+ L+ Description')
 
       DO 50 ICMP=1,NCMP
-        WRITE(IFPRB,1050,IOSTAT=ISTAT,ERR=999)
+        WRITE(IFPRB,1050,IOSTAT=IOS,ERR=999)
      &      CMNAM(ICMP),ITPCMP(ICMP),ISDCMP(ICMP),ISDCNN(ICMP),
      &      LTPCMP(ICMP)
-        WRITE(IFPRB,   *,IOSTAT=ISTAT,ERR=999)
+        WRITE(IFPRB,   *,IOSTAT=IOS,ERR=999)
      &      (SUPCMP(ICMP,I), I=1,ISDCMP(ICMP))
    50 CONTINUE
  1050 FORMAT(1X,A12,I5,I3,I3,1X,A)
@@ -1367,7 +1367,7 @@ C << are used. Probably does not have to be written.
  1060 FORMAT(' +Node         dHght   -Node         dHght',
      &'   via Component')
 
-      WRITE(IFPRB,1070,IOSTAT=ISTAT,ERR=999)
+      WRITE(IFPRB,1070,IOSTAT=IOS,ERR=999)
      &     (NDNAM(NODPS(ICNN)),HGTPS(ICNN),
      &      NDNAM(NODNE(ICNN)),HGTNE(ICNN),
      &       CMNAM(ITPCON(ICNN)),
@@ -1378,9 +1378,13 @@ C << are used. Probably does not have to be written.
   100 RETURN
 
 C Error trap on write error
-  999 CALL USRMSG(' ',
+  999 if(IOS.eq.2)then
+        CALL USRMSG(' ',
+     &  ' MFWRIT: no permission to write fluid flow file!','W')
+      else
+        CALL USRMSG(' ',
      &  ' MFWRIT: error writing fluid flow file!','W')
-      call usrmsg(' ',' ','-')
+      endif
       GOTO 100
 
       END
