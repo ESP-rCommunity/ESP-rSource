@@ -100,15 +100,20 @@ C     MTRNPARV: Maximum number of trnsys parameters that will be
 C               changed by esp-r (defined in trnsys.h)
       COMMON/TRNSYSPAR/NTRNPAR(MTRNCOM),
      &                 ITRNP_POS(MTRNCOM,MTRNPARV),
-     &                 ITRNP_LNK(MTRNCOM,MTRNPARV),
-     &                 ITRNP_CAT(MTRNCOM,MTRNPARV)
+     &                 ITRNP_CAT(MTRNCOM,MTRNPARV),
+     &                 ITRNP_LNK1(MTRNCOM,MTRNPARV),
+     &                 ITRNP_LNK2(MTRNCOM,MTRNPARV)
       INTEGER NTRNPAR    !number of parameters
       INTEGER ITRNP_POS  !positions for those parameters changed by esp-r
-      INTEGER ITRNP_LNK  !information linked to changeable parameters
-C                        !This information is used to know the applied
-C                        ! temperature.
       INTEGER ITRNP_CAT  !category of the changeable parameter
 C                        ! (ie.,specific heat or density)
+      INTEGER ITRNP_LNK1  !information linked to changeable parameters
+C                        !This information may be a variable position,
+C                        !an additional output position of this componnet
+C                        !or a component number.
+      INTEGER ITRNP_LNK2 !information linked to changeable parameters
+C                        !Currently, this information is used for the
+C                        !additional output position of another componnet
 
 C Common for TRNSYS inputs
 C     MTRNXIN: Maximum number of variables for a TRNSYS type
@@ -135,7 +140,7 @@ C            (Both are defined in plant.h)
      &                 ITRNO_PS1_LNK(MTRNCOM,MNODEC),
      &                 ITRNO_PS2_LNK(MTRNCOM,MNODEC),
      &                 ITRNO_ADD_LNK(MTRNCOM,MPCRES),
-     &                 TRN_ADD_DESC(MPCRES)
+     &                 TRN_ADD_DESC(MTRNCOM,MPCRES)
       INTEGER ITRNO_T_LNK      !trnsys output position for temperature
       INTEGER ITRNO_PS1_LNK    !trnsys output or input position for 1st phase mass
       INTEGER ITRNO_PS2_LNK    !trnsys output or input position for 2nd phase mass
@@ -251,26 +256,6 @@ C------------------
       END IF
 
       ITRNTYPE(NTRNCMP) = ival
-
-C------------------------------------------------
-C Read component type: single- or meta- component
-C------------------------------------------------
-C     Assume single component for the current stage
-      k=0
-      CALL STRIPC(IUNIT,outstr,0,nd,1,'TRNSYS Data File',ier)
-      IF (ier .NE. 0) GOTO 1000
-
-      CALL EGETW(outstr,k,word,'W','header tags',ier)
-      IF (word(1:14) .NE. 'Component-Type') THEN
-         CALL edisp(IUOUT,' Header Component-Type wrong.')
-         GOTO 1000
-      END IF
-
-      CALL EGETWI(outstr,k,ival,0,0,'F',' Component type ',ier)
-      IF (ier .NE. 0) THEN
-        CALL edisp(IUOUT,' Cannot read component type ')
-        GOTO 1000
-      END IF
 
 C----------------------
 C Read number of nodes 
@@ -411,23 +396,41 @@ C     Parameter will not change within esp-r
         ADATA(IPCOMP,i) = val
       ELSE IF (word(1:1) .EQ. 'N' .OR. word(1:1) .EQ. 'n')  THEN
 C     Parameter will change within esp-r
-C     A changeable paprameter usually refers to the thermal
-C     physical properties of the connected fluid or the fluid of
-C     the trnsys component.
-C     If the changeable parameter belongs to the connected fluid,
-C     variable position is used to track the temperature of the
-C     connected fluid. The linked connections (node + coupling)
-C     are not used directly in order to save storage space. In
-C     this case, ITRNP_LNK is positive
-C     If the changeable parameter belongs to the fluid of the trnsys
-C     component, the additional output is employed to track the
-C     temperature of the fluid.In this case, ITRNP_LNK is negative.
+C     A changeable paprameter may be the surrounding temperature,
+C     the thermal physical properties, or the additional output of
+C     another component.
+C     If the parameter refers to a thermal physical property, the
+C     associated temperature needs to be known. This temperature
+C     could be that of the connected fluid or the fluid of the trnsys
+C     component itself. 
+C       If the changeable parameter belongs to the connected fluid,
+C       variable position is used to track the temperature of the
+C       connected fluid. In this case, ITRNP_LNK is positive.
+C       If the changeable parameter belongs to the fluid of the trnsys
+C       component, the additional output is employed to track the
+C       temperature of the fluid.In this case, ITRNP_LNK is negative.
+C
+C    If the parameter refers to the additional output of another
+C    component, the component no and the index of that additional
+C    ouput should be provided.
 
         iParv = iParv + 1
         ITRNP_POS(NTRNCMP,iParv) = i
+
+        CALL EGETWI(outstr,k,ival,1,8,'-',' parameter type',ier)
+          if (ier .NE. 0) then
+          MSG = ' Cannot read '//msgTemp(1:3)//' parameter type.'
+          CALL edisp(IUOUT,MSG)
+          GOTO 1000
+          end if
+        ITRNP_CAT(NTRNCMP,iParv) = ival
+
+C    The case that thermal physical parameters vary with temperature
+        IF(ITRNP_CAT(NTRNCMP,iParv) .GE. 1 .AND.
+     &     ITRNP_CAT(NTRNCMP,iParv) .LE. 6) THEN
 C    MPCRES: Maximum number plant component additional output variables
 C             defined in plant.h
-        CALL EGETWI(outstr,k,ival,-MPCRES,MTRNXIN,'F',
+          CALL EGETWI(outstr,k,ival,-MPCRES,MTRNXIN,'F',
      &             ' linked variable ',ier)
           if (ier .NE. 0) then
           MSG = ' Cannot read ' // msgTemp(1:3) // 
@@ -435,24 +438,26 @@ C             defined in plant.h
           CALL edisp(IUOUT,MSG)
           GOTO 1000
           end if
-        ITRNP_LNK(NTRNCMP,iParv) = ival
-
-        CALL EGETWI(outstr,k,ival,1,7,'-',' property type',ier)
+          ITRNP_LNK1(NTRNCMP,iParv) = ival
+C    The case that the parameter is the additional output of another component
+        ELSEIF(ITRNP_CAT(NTRNCMP,iParv) .EQ. 8) THEN
+          CALL EGETWI(outstr,k,ival,1,NPCOMP,'F','linked comp.',ier)
           if (ier .NE. 0) then
-          MSG = ' Cannot read '//msgTemp(1:3)//' par. property type.'
+          MSG = ' Cannot read '//msgTemp(1:3)//' par linked comp.'
           CALL edisp(IUOUT,MSG)
           GOTO 1000
           end if
-        ITRNP_CAT(NTRNCMP,iParv) = ival
+          ITRNP_LNK1(NTRNCMP,iParv) = ival
 
-C       Check the agreement between ITRNP_LNK and ITRNP_CAT
-C       ITRNP_LNK = 0 means that this changeable parameter is not linked 
-C       with trnsys inputs or outputs. This is currently the case for 
-C       ITRNP_CAT = 7 (environment temp.).
-        IF(ITRNP_LNK(NTRNCMP,iParv) .EQ. 0 .AND. ival .NE. 7) THEN
-           MSG = 'Mismatch between link and property type.'
-           CALL edisp(IUOUT,MSG)
-           GOTO 1000
+          CALL EGETWI(outstr,k,ival,1,MPCRES,'F',
+     &             ' linked add. output ',ier)
+          if (ier .NE. 0) then
+          MSG = ' Cannot read ' // msgTemp(1:3) // 
+     &          ' input linked additional output.'
+          CALL edisp(IUOUT,MSG)
+          GOTO 1000
+          end if
+          ITRNP_LNK2(NTRNCMP,iParv) = ival
         END IF
 
         CALL EGETW(outstr,k,word,'W',' Unit code',ier)
@@ -464,6 +469,8 @@ C       ITRNP_CAT = 7 (environment temp.).
 
 C        check the unit code is correct
 C        Note that ival=ITRNP_CAT(NTRNCMP,iParv)
+          ival = ITRNP_CAT(NTRNCMP,iParv)
+
           if(ival .GE. 1 .AND. ival .LE. 3) then
 C          specific heat
              if(word(1:2) .NE. 'CP' .AND. word(1:2) .NE. 'cp') then
@@ -928,7 +935,7 @@ C     Read additional output map one by one. Each occupies a line.
         GOTO 1000
       END IF
 
-      TRN_ADD_DESC(i) = word(1:80)
+      TRN_ADD_DESC(NTRNCMP,i) = word(1:80)
 
       CALL EGETWI(outstr,k,ival, 1, MTRNOUT,'F',
      &           ' Additional output position ',ier)
