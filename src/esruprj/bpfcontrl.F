@@ -875,6 +875,8 @@ C Edit sensor location.
             IPSN(II,1)=isn1
             IPSN(II,2)=isn2
             IPSN(II,3)=isn3
+            IPSN(II,4)=isn4
+            IPSN(II,5)=isn5
           elseif(icfoc.eq.2)then
             isn1=IFSN(II,1)
             isn2=IFSN(II,2)
@@ -4680,25 +4682,6 @@ C Offer the user a cancel option.
         H(4)='If you choose cancel the controller data will not be'
         H(5)='altered and you will be returned to the main menu. '
         isn3T=isn3
-        CALL EASKI(isn3T,' ',' Plant component node for sensor ? ',
-     &      0,'F',0,'-',1,'plant node no',IERI,5)
-        if(ieri.eq.-3) goto 3
-        H(1)='This value specifies the 2nd plant component index '
-        H(2)='in the plant network definition file. This is used '
-        H(3)='only with a controller that senses temp diff' 
-        H(4)='between two plant components'
-        isn4T=isn4 
-        CALL EASKI(isn4T,' ',' 2nd Plant component index for sensor? ',
-     &      0,'F',0,'-',1,'plant comp no',IERI,4)
-        if(ieri.eq.-3) goto 3
-        H(1)='This value specifies the 2nd plant component node (see '
-        H(2)='the plant component database). This is used only with ' 
-        H(3)='a controller that senses temp diff between two ' 
-        H(4)='plant components'
-        isn5T=isn5
-        CALL EASKI(isn5T,' ',' 2nd Plant component node for sensor? ',
-     &      0,'F',0,'-',1,'plant node no',IERI,4)
-        if(ieri.eq.-3) goto 3
 
         if(nnodes(ip).eq.1) then
           ISN3T=1
@@ -4707,13 +4690,67 @@ C Offer the user a cancel option.
            if(knode.eq.0) goto 3
            ISN3T=knode
         endif
-        
+
+
+C Optionally allow user to detect the temperature between
+C two nodes. 
+        H(1)='When measuring the temperature in a node of a plant'
+        H(2)='component, a sensor can compare this value to the'
+        H(3)='temperature in another node in the plant network.'
+        H(4)='Choosing `yes` configures the sensor to measure the'
+        H(5)='difference in temperature between two nodes, while'
+        H(6)='`no` configures the sensor to report the temperature'
+        H(7)='in one node.'
+
+        call EAskAB('Does sensor measure the temperature ',
+     &              'difference between two nodes?',
+     &              'yes', 'no', iWhich, 7 )
+
+
+
+C If user has requested measurement of temperature difference,
+C determine second component and node. 
+        if ( iWhich == 1 ) then
+C User has opted ti measure temperature difference
+C          H(1)='This value specifies the second plant component '
+C          H(2)='index in the plant network definition file. The '
+C          H(3)='temperature of a node in this plant component   '
+C          H(4)='will be subtracted from the temperature in the  '
+C          H(5)='first plant component.'
+C          H(6)=' '
+C          H(7)='If you choose cancel, a second component will not '
+C          H(8)='be specified, and the sensor will only report the '
+C          H(9)='the temperature measured in one plant component.'
+          
+C Get plant component index
+          CALL ASKPCMP('Plant component for sensor ? ','-',IP,IER)
+          isn4T=IP
+
+C Get node in plant component
+          if(IP == 0 ) then
+            ISN5T = 0
+          elseif ( nnodes(ip) == 1) then
+            ISN5T=1
+          elseif(nnodes(ip) > 1) then
+            call getnod(ip,knode)
+            ISN5T=knode
+          endif
+
+        else
+C User has declined to measure difference between nodes.
+          ISN4T = 0
+          ISN5T = 0
+
+        endif
+
 C If the user has not canceled instanciate from temporary values.
         nsup=0
-        if(icfoc.eq.2)nsup=0
         isn1=isn1T
         isn2=isn2T
         isn3=isn3T
+        isn4=isn4T
+        isn5=isn5T
+        
       elseif(ivert.eq.1.and.icfoc.eq.3)then
 
 C Sensed condition does not matter.
