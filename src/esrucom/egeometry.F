@@ -2722,8 +2722,13 @@ C the connections file).
      &        'dC &',IE2(ICON),'W rad'
           ELSEIF(ICT(ICON).EQ.3)THEN
             icc=IZSTOCN(IC2(ICON),IE2(ICON))
-            SST2=SSNAME(icc)
-            ZST2=zname(IC2(ICON))
+            if(icc.gt.0)then
+              SST2=SSNAME(icc)
+              ZST2=zname(IC2(ICON))
+            else
+              SST2='not_known'
+              ZST2='not_known'
+            endif
             WRITE(OTHSTR,'(4a)')'||< ',SST2(1:LNBLNK(SST2)),':',
      &        ZST2(1:LNBLNK(ZST2))
           ELSEIF(ICT(ICON).EQ.4)THEN
@@ -2782,7 +2787,7 @@ C require a recent scan of zone geometry.
       zoa=0.0
       do 42 ij=1,nzsur(icomp)
         ic=izstocn(icomp,ij)
-        zoa=zoa+ssna(ic)
+        if(ic.gt.0)zoa=zoa+ssna(ic)
   42  continue
       call edisp(itu,' ')
 
