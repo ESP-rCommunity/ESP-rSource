@@ -545,7 +545,7 @@ C Surface X & Z grid density.
   42    HOLD=' '
         WRITE(HOLD,'(1x,2i5)')NOX,NOZ
         CALL EASKS(HOLD,' Surface X & Z grid density:',' ',
-     &     24,' 15 15  ','surf grid',IER,6)
+     &     24,' 20 20  ','surf grid',IER,6)
         K=0
         CALL EGETWI(HOLD,K,NOX,4,MOX,'W','surf x grid',IER)
         CALL EGETWI(HOLD,K,NOZ,4,MOZ,'W','surf z grid',IER)
@@ -658,8 +658,8 @@ C If we need to make a dummy obstruction file do this.
           BANG(1)=0
           BLKNAME(1)='First'
           BLKMAT(1)='NONE'
-          NOX=15
-          NOZ=15
+          NOX=20
+          NOZ=20
           NGX=10
           NGZ=10
           CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
@@ -754,8 +754,8 @@ C Provide default values for the new obstructions file.
         BANG(1)=0
         BLKNAME(1)='First'
         BLKMAT(1)='NONE'
-        NOX=15
-        NOZ=15
+        NOX=20
+        NOZ=20
         NGX=10
         NGZ=10
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)

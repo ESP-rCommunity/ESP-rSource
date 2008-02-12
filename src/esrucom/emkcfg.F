@@ -96,6 +96,7 @@ C Special materials file flag
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
+      COMMON/AFNZN/zmfn1,zmfn2
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -233,6 +234,19 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
+      
+c This common block is used to define the sky temperature calculation method
+      COMMON/EXLONGWV/iExt_longwave_flg
+      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
+                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
+                                   ! 2 = Cole (?);
+                                   ! 3 = Czeplak & Kasten (1987);               
+                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
+                                   ! 5 = Swinbank (clear - uses wet bulb T); 
+
+C Indicies of simulation toggles for inside and outside hc coef.
+      common/hcthry/ihct,icorexhct
+
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
@@ -243,6 +257,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
+      character zmfn1*124,zmfn2*124
       character imgfmt*4,imgfoc*4,limgfil*72
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
@@ -270,7 +285,7 @@ C An array of mass flow nodes for writing.
 
       dimension iav(60)
 
-      logical dogrnd
+      logical KNOWN,dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
@@ -526,6 +541,74 @@ C Solar radiation (half hour data) flag.
         WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*slr_half_hr  ',
      &    iSlr_half_hr_flg,'  # solar timing half-hour centred'
       endif
+
+C Sky temperature flag.
+      if(iExt_longwave_flg.eq.1)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Clarke calculation'
+      elseif(iExt_longwave_flg.eq.2)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Cole calculation'
+      elseif(iExt_longwave_flg.eq.3)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Czeplak & Kasten calculation'
+      elseif(iExt_longwave_flg.eq.4)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Swinbank (clear - db T) calculation'
+      elseif(iExt_longwave_flg.eq.5)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
+     &    iExt_longwave_flg,'  # Swinbank (clear - wb T) calculation'
+      else
+        iExt_longwave_flg=0
+      endif
+
+C External convection flag.
+      if(icorexhct.eq.2)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # M.Yazdanan MoWiTT low rise hc'
+      elseif(icorexhct.eq.3)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Aya Hagishima hc'
+      elseif(icorexhct.eq.4)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Ya Liu (roof wind speed) hc'
+      elseif(icorexhct.eq.5)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Ya Liu (raw wind speed) hc'
+      elseif(icorexhct.eq.6)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  #  Ya Liu (weather station wind speed) hc'
+      elseif(icorexhct.eq.7)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Loveday (roof wind speed) hc'
+      elseif(icorexhct.eq.8)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Loveday (raw wind speed) hc'
+      elseif(icorexhct.eq.9)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # CIBSE guide hc'
+      elseif(icorexhct.eq.10)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Loveday (mixed) hc'
+      elseif(icorexhct.eq.11)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # British Standatd'
+      elseif(icorexhct.eq.12)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # ASHRAE Task group hc'
+      elseif(icorexhct.eq.13)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Sturrock hc'
+      elseif(icorexhct.eq.14)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # Keith Nicol hc'
+      elseif(icorexhct.eq.15)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exte_conv_alg  ',
+     &    icorexhct,'  # S.E.G. Jayamaha hc'
+      else
+        icorexhct=1
+      endif
+
 
 C SHOCC: library file.
       IF ( bSHOCCed ) then
@@ -1077,6 +1160,23 @@ C zero where there is no association.
           ipos=itrunc+1
         end do
 
+
+        KNOWN=.FALSE.
+        if(zmfn1.ne.' ')then
+          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)zmfn1(1:LNBLNK(zmfn1))
+          KNOWN=.TRUE.
+        endif
+        if(zmfn2.ne.' ')then
+          WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)zmfn2(1:LNBLNK(zmfn2))
+          KNOWN=.TRUE.
+        endif
+        if(.NOT.KNOWN)then
+
+C Write packed string of the network node associated with each zone.
+          ipos=1
+          call ailist(ipos,ncomp,ICAAS,MCOM,'C',outs,loutlen,itrunc)
+          write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=2) outs(1:loutlen)
+        endif
       endif
  9021 if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
 
