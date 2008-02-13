@@ -45,13 +45,12 @@ Section 4: List of implemented unit code
 Record         Description of fields
 --------------------------------------------------------------
 1              trnsys type number
-2              component type
-3              number of nodes
-4              node connections
-5              variable types (ISV values)
-6              number of trnsys parameters
-7              1st parameter definition
-8-->K          repeat record 7 for each trnsys parameter
+2              number of nodes
+3              node connections
+4              variable types (ISV values)
+5              number of trnsys parameters
+6              1st parameter definition
+7-->K          repeat record 6 for each trnsys parameter
 K+1            number of trnsys inputs
 K+2            1st trnsys input definition
 K+3-->L        repeat record K+2 for each trnsys input
@@ -86,20 +85,9 @@ Syntax:
 Comments:
 "TRNSYS-Type" is a keyword and the integer represents the trnsys type number, between 1 and 999.
 
+
 ==========
 Record 2:
-==========
-Syntax:
- Component-Type,   0
-
-Comments:
-"Component-Type" is a keyword and the integer indicates whether this is a single or meta component.
-     0 : single component
-     1 : meta component
-Only single component is allowed in the current stage
-
-==========
-Record 3:
 ==========
 Syntax:
  Nodes-Number,   ?[I]
@@ -114,7 +102,7 @@ trnsys type 60 with an esp-r network, the number of the nodes can be indicated a
 number of water inlets and immersed heat exchangers.
 
 ==========
-Record 4:
+Record 3:
 ==========
 Syntax:
  Node-Connection,   ?[I],  ?[I],  ... ,?[I]    #Nodes-Number integers
@@ -127,7 +115,7 @@ range between -1 and MPCONC (defined in plant.h). The integers should be provide
      -1 : only leaving connections allowed
 
 ==========
-Record 5:
+Record 4:
 ==========
 Syntax:
  Variable-Type,     ?[I],  ?[I],  ... ,?[I]   #Nodes-Number integers
@@ -143,7 +131,7 @@ ISV value which defines nodal fluid type & coefficient generator model capabilit
      20<=ISV<30  model suitable for energy + two phase mass balances
 
 ==========
-Record 6:
+Record 5:
 ==========
 Syntax:
  Parameters,     ?[I]
@@ -153,7 +141,7 @@ Comments:
 and MADATA (defined in plant.h).
 
 =============
-Record 7 to K:
+Record 6 to K:
 =============
 Syntax:
  ID,      description,    type(= Y or N),    type-dependent-fields
@@ -169,27 +157,13 @@ type=Y implies that the parameter does not change within esp-r. A user provided 
 
        1,   1st parameter description, Y,  56.78
 
-type=N implies that the parameter changes within esp-r. A changeable parameter may be the environment
-       temperature or the thermal physical properties that vary with temperatures. In this case, the
-       syntax is:
+type=N implies that the parameter changes within esp-r. A changeable parameter may be the surrounding
+       temperature, the thermal physical properties, or the additional output of another component.
+       In this case, the syntax is:
 
-       ID,   description, N, ?[I], ?[I], ?[C*3]
+       ID,   description, N, ?[I], (?[I], ?[I]), ?[C*3]
 
-       The first integer indicates how the parameter changes its value and it is defined as:
-       0 : the parameter indicates environment temperature
-      >0 : the parameter indicates a thermal physical property that varies with temperature and the
-           temperature of specified receiving fluid is applied. In esp-r, the receiving fluid's temperature
-           can be easily traced with the node and coupling. However, this requires two additional inputs.
-           In order to save storage space, the linked variable position is employed to track the temperature
-           of the receiving fluid. This is possible because receiving fluids must be reflected in trnsys inputs.
-           Thus, the positive integer indicates the linked variable position.
-      <0 : the parameter indicates a thermal physical property that varies with temperature and the
-           temperature somewhere in the trnsys component is applied. The specified temperature of the trnsys
-           component needs to be tracked with its additional output. In other words, if a trnsys parameter changes
-           with the temperature in the trnsys component, this temperature has to be available in the component's
-           additional ouputs. Thus, the negative number indicates the position of the additional output.
-
-       The second integer implies the property type, defined as:
+       The first integer indicates the changeable parameter type, defined as:
        1 : specific heat of dry air
        2 : specific heat of water vapour
        3 : specific heat of water
@@ -197,25 +171,51 @@ type=N implies that the parameter changes within esp-r. A changeable parameter m
        5 : density of water vapour
        6 : density of water
        7 : environment temperature
+       8 : additional output of another component
+
+       If the changeable parameter type (the 1st integer) lies in the range between 1 and 6, the second integer
+       but not the third integer is needed. The second integer can be either positive or negative.
+      >0 : the parameter indicates a thermal physical property that varies with temperature and the
+           temperature of specified receiving fluid is applied. In esp-r, the receiving fluid's temperature
+           can be easily traced with the node and coupling. The linked variable position is employed to track
+           the temperature of the receiving fluid. This is possible because receiving fluids must be reflected 
+           in trnsys inputs. Thus, the positive integer indicates the linked variable position.
+      <0 : the parameter indicates a thermal physical property that varies with temperature and the
+           temperature somewhere in the trnsys component is applied. The specified temperature of the trnsys
+           component needs to be tracked with its additional output. In other words, if a trnsys parameter changes
+           with the temperature in the trnsys component, this temperature has to be available in the component's
+           additional ouputs. Thus, the negative number indicates the position of the additional output.
+
+       If the changeable parameter type (the 1st integer) is equal to 7, neither the second nor the third integer
+       is needed. 
+
+       If the changeable parameter type (the 1st integer) is equal to 8, both the second and the the third integers
+       are needed. The second integer indicates the component no while the third integer indicates the index of the
+       additional output. 
 
        The 3-character string defines the unit code of that parameter in trnsys. The unit code is required to
        make the conversion between esp-r and trnsys if they have different units. Implemented unit codes are
        listed at the end of this file.
 
-       Three examples are provided here to illustrate the above points.
+       Four examples are provided here to illustrate the above points.
 
        1st example: if the 1st parameter indicates the environment temperature, the syntax is:
-       1,   1st parameter description,    N,  0, 7
+       1,   1st parameter description,    N,  7,  TE1
 
        2nd example: if the 1st paramter indicates the density of receiving water at its 1st coupling of the 2nd
        node. Meanwhile, the 1st coupling of the 2nd node is reflected in the trnsys component's 5th input. In
        this case, the syntax is:
-       1,   1st parameter description,    N,  5, 6
+       1,   1st parameter description,    N,   6,  5, DN1
 
        3rd example: if the 1st parameter indicates the specific heat of water at the specified temperature in
        this trnsys component. Meanwhile, the specified temperature is reflected in its 4th additional output.
        In this case, the syntax is:
-       1,   1st parameter description,    N,  -4, 3
+       1,   1st parameter description,    N,   3,  -4,  CP1
+
+      4th example: if the 1st parameter indicates the 2nd additional output of the 6th component in a plant network.
+       In this case, the syntax is:
+       1,   1st parameter description,    N,   8,   6,   2,  DM1
+
 
 ===========
 Record K+1:
@@ -262,11 +262,16 @@ type is an integer between -3 and 4, its impications are as follows.
        fields contain the linked node, coupling, and the unit code of mass flow rate. For example, if the 1st input
        represents the 2nd phase mass flow rate (kg/hr) of the first coupling of the second node, the syntax is:
        1,    1st input description,   3,   2,  1,   MF1
-   4 : the input is the additional output of a specified component. In this case, the type-dependent fields contain
+   4 : the input is the sum of the 1st and 2nd phase mass flow of an associated external connection. In this case,
+       the type-dependent fields contain the linked node, coupling, and the unit code of mass flow rate. For example,
+       if the 1st input represents the sum of the 1st and 2nd phase mass flow rate (kg/hr) of the first coupling of
+       the second node, the syntax is:
+       1,    1st input description,   4,   2,  1,   MF1
+   5 : the input is the additional output of a specified component. In this case, the type-dependent fields contain
        the component no, the serial number of the additional output of that component, and the unit code. For example,
        if the 1st input represents the 3rd additional output of the seond component in the plant network and its 
        dimension is kJ, the syntax is:
-       1,    1st input description,   4,   3,  2,    EN1
+       1,    1st input description,   4,   2,  3,    EN1
 
 ===========
 Record L+1:
@@ -326,7 +331,7 @@ the syntax is:
 Record N+1:
 ===============
 Syntax:
- Outputs,   ?[I]
+ Additional-Outputs,   ?[I]
 
 Comments:
 "Additional-Outputs" is a keyword. The integer defines the number of additional outputs. This integer has a
