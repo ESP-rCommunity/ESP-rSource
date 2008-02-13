@@ -2243,9 +2243,12 @@ C origin (real * 3) XYZ of the origin in the case of shape=box. For shape=extrud
 C   the 1st value is Z point of base, 2nd is the ceiling Z value, 3rd not used.
 C size (real *3) for shape=box this is the length/width/height (m) and for
 C   shape=extrude this should be zero
-C coords (real array (nbwalls,2)) for shape=box ignore, for shape=extrude the
+C nbpolyc (integer) number of initial coordinates
+C coords (real array (nbwalls,3)) for shape=box ignore, for shape=extrude the
 C   1st value is X and 2nd is Y (in world coordinates) following the normal
-C   floor plan extrusion conventions.
+C   floor plan extrusion conventions. For shape=poly the Z is used.
+C list (integer array (nbwalls,24) equivalent to jvn() for shape=poly
+C nbedges (integer array (nbwalls) equivalent to nver() for shape=poly
 C rotateit (real) angle to rotate the zone using the normal conventions and assuming
 C   rotation is about the site origin
 C hasglaze (real array) for each surface in the initial shape a zero has no glazing
@@ -2259,7 +2262,8 @@ C boundarytype (integer (MS,3) the connection data for each surface.
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,name,shape,nbwalls,origin,size,
+      subroutine silentzone(ICOMP,name,shape,nbwalls,nbedges,nbpolyc,
+     &  list,origin,size,
      &  coords,rotateit,nbglz,hasglaze,nbdoor,hasdoor,hasname,
      &  hasconstruction,boundarytype,use,usefile,IER)
 #include "building.h"
@@ -2324,9 +2328,11 @@ C Paremeters passed in:
       character name*12   ! name given to the zone
       character shape*8   ! box or extrude
       integer nbwalls     ! nb of vertical walls
+      integer nbedges(MS) ! nb of edges per surface in poly shaped zone
+      integer list(MS,24) ! indices of coords making up edges of each surface
       real origin(3)      ! values dependant on shape
       real size(3)        ! values dependant on shape
-      real coords(MS,2)
+      real coords(MS,3)
       real rotateit       ! angle of rotation
       real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS)    ! width of door in each surface of the initial shape
@@ -2422,6 +2428,8 @@ C Choices based on the value of shape.
         ishape=1
       elseif(shape(1:7).eq.'extrude')then
         ishape=2
+      elseif(shape(1:4).eq.'poly')then
+        ishape=3
       else
         ier=1
         return
@@ -2467,6 +2475,36 @@ C Convert into a gen body and rotate if required.
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
         IZBASELIST(ICOMP)=1
+      ELSEIF(ishape.eq.3)THEN
+
+C For a poly shaped zone use similar logic to reading geometry file.
+        NSUR=nbwalls
+        NZSUR(ICOMP)=NSUR
+        NTV=nbpolyc
+        NZTV(ICOMP)=NTV
+        AR=rotateit
+        DO 62 I=1,NTV
+          X(I)=coords(I,1)
+          Y(I)=coords(I,2)
+          Z(I)=coords(I,3)
+   62   CONTINUE
+        DO 10 I=1,NSUR
+          NVER(I)=nbedges(I)
+          DO 12 KV=1,NVER(I)
+            JVN(I,KV)=list(I,KV)
+   12     CONTINUE
+   10   CONTINUE
+        IUZBASEA(icomp)=0
+        IBASES(ICOMP,1)=NSUR  ! initial guess, need to check
+        IZBASELIST(ICOMP)=1
+
+C Rotate if required.
+        if(AR.LT.-.01.OR.AR.GT..01)then
+          x1=X(1)
+          y1=Y(1)
+          CALL ESCROT(AR,x1,y1)
+        endif
+
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite.
@@ -2858,18 +2896,22 @@ C Same as local variable actions which is passed back to calling code.
 C Paremeters passed to:silentzone
       character name*12   ! name given to the zone
       dimension name(MSZ)
-      character shape*8   ! box or extrude
+      character shape*8   ! box or extrude or poly
       dimension shape(MSZ)
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls
+      integer nbedges(MS) ! nb of edges per surface in poly shaped zone
+      integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
+      integer list(MS,24) ! indices of coords making up edges of each surface
+      integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
       integer nbglz(MSZ)       ! nb of windows
       integer nbdoor(MSZ)      ! nb of doors
-      integer nbcord(MSZ)      ! nb of coordinates (for extruded shape)
+      integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
       real size(3),szsize(MSZ,3)        ! values dependant on shape
-      real coords(MS,2),szcoords(MSZ,MS,2) 
+      real coords(MS,3),szcoords(MSZ,MS,3) 
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
       character hasconstruction*32,szhasconstruction*32
@@ -2941,8 +2983,13 @@ C in the file.
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
           do 52 isu=1,MS
+            isznbedges(iz,isu)=0
+            do 54 ivu=1,MV
+              iszlist(iz,isu,ivu)=0
+  54        continue
             szcoords(iz,isu,1)=0.0
             szcoords(iz,isu,2)=0.0
+            szcoords(iz,isu,3)=0.0
             szhasglaze(iz,isu)=0.0
             szhasdoor(iz,isu)=0.0
             szhasconstruction(iz,isu)=' '
@@ -3034,7 +3081,18 @@ C          write(6,*)  's mpath ',mpath
         endif
         goto 43
       elseif(WORD(1:11).eq.'*start_zone')then
-        icomp=ncomp+1    ! increment zone index
+
+C If this is a new model increment icomp. If the model already has
+C zones then set icomp to the next available zone.
+        if(ncomp.eq.0)then
+          icomp=icomp+1      ! new model, ncomp not yet set
+        else
+          if(icomp.eq.0)then
+            icomp=ncomp+1    ! increment existing zone index
+          elseif(icomp.gt.0)then
+            icomp=icomp+1    ! increment index for subsequent zones
+          endif
+        endif
         nsz=nsz+1
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         write(name(nsz),'(a)') WORD(1:12)
@@ -3052,6 +3110,12 @@ C Jump to process the collected data.
         CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','cord-y',IER)
         szcoords(nsz,nbc,1)=valx
         szcoords(nsz,nbc,2)=valy
+        if(shape(nsz)(1:4).eq.'poly')then
+          CALL EGETWR(OUTSTR,K,valz,0.,0.,'-','cord-z',IER)
+          szcoords(nsz,nbc,3)=valz
+        else
+          szcoords(nsz,nbc,3)=0.0
+        endif
         goto 43
       elseif(WORD(1:5).eq.'*door')then
         CALL EGETWI(OUTSTR,K,nbd,0,MS,'W','no of doors',IER)
@@ -3087,6 +3151,8 @@ C surface area to have as glazing.
           nbwalls(nsz)=6
         elseif(WORD(1:7).eq.'extrude')then
           write(shape(nsz),'(a)') 'extrude'
+        elseif(WORD(1:4).eq.'poly')then
+          write(shape(nsz),'(a)') 'poly'
         endif
         NS=0     ! reset number of surfaces and clear arrays.
         goto 43
@@ -3095,6 +3161,9 @@ C surface area to have as glazing.
 C Number of parent surfaces has a meaning for extruded shapes and set to 6 for
 C box shapes.
         if(shape(nsz)(1:7).eq.'extrude')then
+          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
+          nbwalls(nsz)=nbw
+        elseif(shape(nsz)(1:4).eq.'poly')then
           CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
           nbwalls(nsz)=nbw
         else
@@ -3116,6 +3185,10 @@ C box shapes.
           szorigin(nsz,1)=origin(1)
           szorigin(nsz,2)=origin(2)
           szorigin(nsz,3)=origin(3)
+        elseif(shape(nsz)(1:4).eq.'poly')then
+          szorigin(nsz,1)=0.0
+          szorigin(nsz,2)=0.0
+          szorigin(nsz,3)=0.0
         endif
         goto 43
       elseif(WORD(1:7).eq.'*rotate')then
@@ -3131,6 +3204,10 @@ C box shapes.
           szsize(nsz,2)=size(2)
           szsize(nsz,3)=size(3)
         elseif(shape(nsz)(1:7).eq.'extrude')then
+          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
+          szsize(nsz,2)=0.0
+          szsize(nsz,3)=0.0
+        elseif(shape(nsz)(1:4).eq.'poly')then
           szsize(nsz,1)=0.0   ! this is ignored for extruded shape
           szsize(nsz,2)=0.0
           szsize(nsz,3)=0.0
@@ -3157,6 +3234,30 @@ C Read three indices representing boundary condition.
         szboundarytype(nsz,NS,1)=ival1
         szboundarytype(nsz,NS,2)=ival2
         szboundarytype(nsz,NS,3)=ival3
+
+C Note: if shape=poly for the each of the declaired walls the
+C following line should start with the token *list.
+        goto 43
+      elseif(WORD(1:5).eq.'*list')then
+
+C The current value of NS should still point to the surface data
+C that was just scanned. The *list line holds the number of
+C edges and then the index of each coordinate (as in the normal
+C geometry file).
+        CALL EGETWI(OUTSTR,K,ival1,3,MV,'W','nb of edges',IER)
+        isznbedges(nsz,NS)=ival1
+
+C Now proceed to read vertices on one or more lines.
+        DO 12 KV=1,ival1
+          CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
+          IF(IERV.NE.0) THEN
+            call edisp(ITRU,' reading continuation line...')
+            CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'vertex XYZ',IER)
+            K=0
+            CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
+          ENDIF
+          iszlist(nsz,NS,KV)=ival2
+   12   CONTINUE
         goto 43
       elseif(WORD(1:6).eq.'*usage')then
 
@@ -3222,9 +3323,9 @@ C If there are no zones return.
         return
       else
         if(ncomp.eq.0)then
-          icomp=0
+          icomp=0      ! reset because it will be incrmented later
         elseif(ncomp.gt.0)then
-          icomp=ncomp
+          icomp=ncomp  ! for existing model set icomp to next avail zone
         endif
         do 53 isz=1,nsz
 
@@ -3243,8 +3344,13 @@ C        usefile(iz) = ' '
           do 48 isu=1,nbcord(isz)
             coords(isu,1)=szcoords(isz,isu,1)
             coords(isu,2)=szcoords(isz,isu,2)
+            coords(isu,3)=szcoords(isz,isu,3)
   48      continue
           do 49 isu=1,MS
+            nbedges(isu)=isznbedges(isz,isu)
+            do 57 ivu=1,MV
+              list(isu,ivu)=iszlist(isz,isu,ivu)
+  57        continue
             hasglaze(isu)=szhasglaze(isz,isu)
             hasdoor(isu)=szhasdoor(isz,isu)
             hasconstruction(isu)=szhasconstruction(isz,isu)
@@ -3257,7 +3363,8 @@ C        usefile(iz) = ' '
           write(outs,'(2a)') 'Processing ',name(isz)
           call edisp(iuout,outs)
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
-     &      origin,size,coords,rotateit(isz),nbglz(isz),hasglaze,
+     &      nbedges,nbcord(isz),list,origin,size,
+     &      coords,rotateit(isz),nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstruction,
      &      boundarytype,use,usefile(isz),IER)
   53    continue
