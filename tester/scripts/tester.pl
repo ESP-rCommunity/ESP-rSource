@@ -57,7 +57,7 @@ BEGIN{
 #-------------------------------------------------------------------
 sub fatalerror($);
 sub process_case($);
-sub invoke_tests($$$$);
+sub invoke_tests($$$$$);
 sub move_simulation_results($$$$$);
 sub is_empty($);
 sub is_true_false($);
@@ -173,11 +173,11 @@ my $Help_msg = "
          and save the output from the new bps (ie. the second one
          in the command arguments) in an archive.
 
-    --ref_res <PATH>: Use the res found at <PATH> to process save-
-         level 4 files produced by the reference bps
+    --ref_loc <PATH>: Use the res and ish applications found at <PATH>
+         when running the reference version of bps.
 
-    --test_res <PATH>: Use the res found at <PATH> to process save-
-         level 4 files produced by the test bps.
+    --test_loc <PATH>: Use the res and ish applications found at <path>
+         when running the test version of bps.
          
     --no_csv: Don't test csv files.
     
@@ -572,6 +572,10 @@ $cmd_arguements =~ s/-v;/--verbose;/g;
 $cmd_arguements =~ s/-vv;/--very_verbose;/g;
 $cmd_arguements =~ s/-d;/--databases;/g;
 
+# Aliases:
+$cmd_arguements =~ s/--ref_res;/--ref_loc;/g;
+$cmd_arguements =~ s/--test_res;/--test_loc;/g;
+
 # Collate options expecting arguements
 $cmd_arguements =~ s/--databases;/--databases:/g;
 $cmd_arguements =~ s/--adj_tol;/--adj_tol:/g;
@@ -579,8 +583,8 @@ $cmd_arguements =~ s/--path;/--path:/g;
 $cmd_arguements =~ s/--case;/--case:/g;
 $cmd_arguements =~ s/--historical_archive;/--historical_archive:/g;
 $cmd_arguements =~ s/--create_historical_archive;/--create_historical_archive:/g;
-$cmd_arguements =~ s/--ref_res;/--ref_res:/g;
-$cmd_arguements =~ s/--test_res;/--test_res:/g;
+$cmd_arguements =~ s/--ref_loc;/--ref_loc:/g;
+$cmd_arguements =~ s/--test_loc;/--test_loc:/g;
 $cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
@@ -753,18 +757,18 @@ foreach $arg (@processed_args){
       last SWITCH;
     }
 
-    if ( $arg =~ /^--ref_res:/ ){
-      # Path to res for refernece bps 
-      $arg =~ s/--ref_res://g;
-      $gTest_params{"ref_res_path"} = $arg ;
+    if ( $arg =~ /^--ref_loc:/ ){
+      # Path to res for refernece bps
+      $arg =~ s/--ref_loc://g;
+      $gTest_params{"ref_loc"} = $arg ;
     
       last SWITCH;
     }
 
-    if ( $arg =~ /^--test_res:/ ){
+    if ( $arg =~ /^--test_loc:/ ){
       # Path to res for test bps
-      $arg =~ s/--test_res://g;
-      $gTest_params{"test_res_path"} = $arg ;
+      $arg =~ s/--test_loc://g;
+      $gTest_params{"test_loc"} = $arg ;
     
       last SWITCH;
     }
@@ -930,68 +934,78 @@ foreach my $path ( split /;/, $gTest_paths{"helper_apps"} ){
 }
 
 #-----------------------------------------------------------------------
-# Look for custom res files
+# Look for custom res/ish files
 #-----------------------------------------------------------------------
 $gTest_params{"test_res_found"} = 0;
-if ( defined( $gTest_params{"test_res_path"} ) ){
- 
+$gTest_params{"test_ish_found"} = 0;
+
+if ( defined( $gTest_params{"test_loc"} ) ){
+  # Loop through all paths in environment and append specified path
   foreach my $path ( @Env_Paths ){
-  
-    my $combpath = resolve_path ( "$path/$gTest_params{\"test_res_path\"}" );
-    if ( -r "$combpath" &&
-        -x "$combpath"  &&
-          ! $gTest_paths{"test_res_path"} ){
-      # Res was found!        
-      $combpath =~ s/\/res$//g;
-      $gTest_params{"test_res_found"} = 1;
-      $gTest_paths{"test_res_path"} = $combpath;
-  
+    # Only proceed if test_inst_path is not defined. 
+    if ( ! $gTest_paths{"test_loc"} ){
+      
+      # Combine environment and specified paths
+      my $combpath = resolve_path ( "$path/$gTest_params{\"test_loc\"}" );
+
+      # Check if combined path contains res /ish 
+      if ( -r "$combpath/res" && -x "$combpath/res"  ){
+        # Res was found!
+        $gTest_params{"test_res_found"} = 1;
+      }
+      if ( -r "$combpath/ish" && -x "$combpath/ish"  ){
+        # ish was found !
+        $gTest_params{"test_ish_found"} = 1;
+      }
+
+      # Update test path if res/ish were found 
+      if ( $gTest_params{"test_res_found"} ||
+           $gTest_params{"test_ish_found"}    ){
+
+        $gTest_paths{"test_loc"} = $combpath;
+      }
+      
     }
-  
   }
 }
+
 $gTest_params{"ref_res_found"} = 0;
-if ( $gTest_params{"ref_res_path"} ){
+$gTest_params{"ref_ish_found"} = 0;
+if ( defined( $gTest_params{"ref_loc"} ) ){
+  # Loop through all paths in environment and append specified path
   foreach my $path ( @Env_Paths ){
-    my $combpath = resolve_path ( "$path/$gTest_params{\"ref_res_path\"}" );
-    if ( -r "$combpath" &&
-         -x "$combpath" &&
-          ! $gTest_paths{"ref_res_path"} ){
+    # Only proceed if test_inst_path is not defined. 
+    if ( ! $gTest_paths{"ref_inst_path"} ){
+      
+      # Combine environment and specified paths
+      my $combpath = resolve_path ( "$path/$gTest_params{\"ref_loc\"}" );
 
-      # Res was found 
-      $combpath =~ s/\/res$//g;
-      $gTest_params{"ref_res_found"} = 1;
-      $gTest_paths{"ref_res_path"} = $combpath;
+      # Check if combined path contains res /ish 
+      if ( -r "$combpath/res" && -x "$combpath/res"  ){
+        # Res was found!
+        $gTest_params{"ref_res_found"} = 1;
+      }
+      if ( -r "$combpath/ish" && -x "$combpath/ish"  ){
+        # ish was found !
+        $gTest_params{"ref_ish_found"} = 1;
+      }
 
+      # Update test path if res/ish were found 
+      if ( $gTest_params{"ref_res_found"} ||
+           $gTest_params{"ref_ish_found"}    ){
+
+        $gTest_paths{"ref_loc"} = $combpath;
+      }
+      
     }
-
   }
 }
 
-
-#-----------------------------------------------------------------------
-# Lookfor ish
-#-----------------------------------------------------------------------
-$gTest_params{"ish_found"} = 0;
-foreach my $path ( split ( /;/, $gTest_paths{"helper_apps"} ),
-                   $gTest_paths{"esp-r"} ){
-
-  $path = resolve_path ( $path );
-
-  if ( -r "$path/ish" &&
-       -x "$path/ish" &&
-       ! $gTest_params{"ish_found"} ){
-
-    # ISH was found!
-    $gTest_params{"ish_found"} = 1;
-    $gTest_paths{"ish"} = "$path/ish";
-
-  }
+if ( ! defined($gTest_paths{"ref_loc"}) ) {
+  $gTest_paths{"ref_loc"} = $gTest_paths{"esp-r"};
 }
-
-if ( ! $gTest_params{"ish_found"} ){
-  stream_out(" Warning: ish binary not found in paths $gTest_paths{\"helper_apps\"}; $gTest_paths{\"esp-r\"}");
-  stream_out("          Models with shading can not be tested.");
+if ( ! defined($gTest_paths{"test_loc"}) ) {
+  $gTest_paths{"test_loc"} = $gTest_paths{"esp-r"};
 }
 
 #-----------------------------------------------------------------------
@@ -2009,68 +2023,6 @@ sub process_case($){
   }
   close (CFG_FILE);
 
-  #-----------------------------------------------------------------------
-  # Regenerate shading files, if any exist!
-  #-----------------------------------------------------------------------
-  while ( my ($zone, $status ) = each %zone_shading_status ){
-
-    if ( $status ){ 
-      # Open geometry file, and read until zone name is found 
-      my $geometry_file = resolve_path( "$gTest_paths{\"local_models\"}/$model_root_name/cfg/$zone_geo_files{$zone}");
-      open (GEO_FILE, $geometry_file ) or fatalerror("Could not open $geometry_file for reading!");
-  
-      my @file_contents = ();
-      my @file_lines=();
-  
-      read GEO_FILE, my ($file_string), 16384;
-      
-      # Condense double spaces.
-      $file_string =~ s/ +/ /g;
-      
-      # Split lines into array
-      push @file_lines, split /\n/, $file_string;
-      $file_string="";
-  
-      # Loop until zone name is found.
-      while ( ! defined ( $zone_names{$zone} ) ){
-        $file_lines[0] =~ s/\#.*$//g;    # strip inline comments
-        
-        # check if line is not empty
-        if ( $file_lines[0] =~ /[^\s]/ ){
-
-          push @file_contents, split /\s/, $file_lines[0];
-  
-          # Zone name should be second item in file.
-          if ( defined $file_contents[1] ){
-            $zone_names{$zone} = $file_contents[1];
-          }
-       
-        }
-        
-        # move to next line
-        shift @file_lines;
-
-        $zone_names{$zone} = defined ( $file_lines[0] ) ?
-                               $zone_names{$zone} : "UNDEFINED";
-          
-      }
-        
-      if ( $zone_names{$zone} !~ /UNDEFINED/ ){
-        # Invoke ish.
-        if ( ! $gTest_params{"ish_found"} ){
-          fatalerror("ish not found! Shading files cannot be regenerated.");
-        }
-
-        chdir "$gTest_paths{\"local_models\"}/$model_root_name/cfg/";
-        stream_out("   Regenerating shading files for zone \'$zone_names{$zone}\'\n");
-        execute ("$gTest_paths{\"ish\"} -file $model_name\.cfg -act update_silent -zone $zone_names{$zone} -mode text");
-        chdir "$gTest_paths{\"master\"}";
-      }else{
-        stream_out(" The geometry file for zone $zone was not parsed correctly");
-        fatalerror("Zone shading files could not be regenerated");
-      }
-    }
-  }
 
   #-----------------------------------------------------------------------
   # Loop through save levels, modify cfg files, and invoke test procedures
@@ -2101,7 +2053,11 @@ sub process_case($){
     if ( $save_level =~ /4/ ){
       execute ( "mv input.xml input_bak.xml" );
     }
-    invoke_tests($model_name,$model_root_name,"$model_name\_temp.cfg",$save_level);
+    invoke_tests($model_name,
+                 $model_root_name,
+                 "$model_name\_temp.cfg",
+                 $save_level,
+                 \%zone_shading_status);
     if ( $save_level =~ /4/ ){
       execute ( "mv input_bak.xml input.xml" );
     }
@@ -2245,13 +2201,15 @@ sub create_historical_archive(){
 # archive folder, and post-process as required.
 #-------------------------------------------------------------------
 
-sub invoke_tests($$$$){
+sub invoke_tests($$$$$){
 
-  my ($model,$folder,$test_case,$save_level) = @_;
+  my ($model,$folder,$test_case,$save_level,$zone_shading_status) = @_;
+
+
 
   my $model_path  = getcwd();
 
-  my ( $cmd, $sim_msgs, $system_time, $user_time, $real_time, $run_time);
+  my ( $time_start, $time_end, $cmd, $sim_msgs, $system_time, $user_time, $real_time, $run_time);
 
   my @msg_buffer;
   
@@ -2261,17 +2219,31 @@ sub invoke_tests($$$$){
     # was interrupted
     delete_old_files();
 
+    # Loop through zone shading status flag, and regenerate
+    # shading for any 'shaded zones' using reference ish
+    while ( my($zone,$regen) = each ( %$zone_shading_status ) ){
+      if ( $regen ) {
+        stream_out("   Regenerating shading files for zone $zone using $gTest_paths{\"ref_loc\"}/ish ...");
+        $time_start = (times)[2];
+        $cmd = "$gTest_paths{\"ref_loc\"}/ish -mode text -file $test_case -zone $zone -act update_silent";
+        execute($cmd);
+        $time_end = (times)[2];
+        $user_time = $time_end-$time_start;
+        stream_out("   Done. ($user_time seconds on CPU)\n");
+      }
+    }
+
     # run reference binary, and capture results
     stream_out( "   running: $gRef_Test_params{\"test_binary\"} (reference case, save level $save_level) ...");
     $cmd = "$gRef_Test_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
 
-    my ( $time_start ) = (times)[2];
-      
+    $time_start = (times)[2];
+
     execute($cmd);
     # archive output
     move_simulation_results($model_path,$model,$folder,$save_level,"reference",);
       
-    my ( $time_end ) = (times)[2];
+    $time_end = (times)[2];
       
     # Save runtime data
     $user_time = $time_end-$time_start;
@@ -2282,6 +2254,21 @@ sub invoke_tests($$$$){
 
     stream_out("done. $run_time\n");
   }
+
+  # Loop through zone shading status flag, and regenerate
+  # shading for any 'shaded zones' using test ish
+    while ( my($zone,$regen) = each ( %$zone_shading_status ) ){
+      if ( $regen ) {
+        stream_out("   Regenerating shading files for zone $zone using $gTest_paths{\"test_loc\"}/ish ...");
+        $time_start = (times)[2];
+        $cmd = "$gTest_paths{\"test_loc\"}/ish -mode text -file $test_case -zone $zone -act update_silent";
+        execute($cmd);
+        $time_end = (times)[2];
+        $user_time = $time_end-$time_start;
+        stream_out("   Done. ($user_time seconds on CPU)\n");
+      }
+    }
+
   
   # run new bin
   stream_out("   running: $gTest_params{\"test_binary\"} (test case, save level $save_level) ...");
@@ -2292,14 +2279,14 @@ sub invoke_tests($$$$){
 
   $cmd = "$gTest_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
 
-  my ( $time_start ) = (times)[2];
+  $time_start = (times)[2];
 
   execute($cmd);
    
   # archive output
   move_simulation_results($model_path,$model,$folder,$save_level,"test");
   
-  my ( $time_end ) = (times)[2];
+  $time_end = (times)[2];
  
   # Save run-time data
   $user_time = $time_end-$time_start;
@@ -2348,11 +2335,11 @@ sub move_simulation_results($$$$$){
       # possibly use specified res binary to process esru results
       if ( $gTest_params{"ref_res_found"} && $version =~ /reference/ ){
         # use res corresponding to reference bps 
-        execute("$gTest_paths{\"analyse_location\"} $model.bres $gTest_paths{\"ref_res_path\"}");
+        execute("$gTest_paths{\"analyse_location\"} $model.bres $gTest_paths{\"ref_loc\"}");
 
       }elsif ($gTest_params{"test_res_found"} && $version =~ /test/){
         # Use res corresponding to test bps.
-        execute("$gTest_paths{\"analyse_location\"} $model.bres $gTest_paths{\"test_res_path\"}");
+        execute("$gTest_paths{\"analyse_location\"} $model.bres $gTest_paths{\"test_loc\"}");
 
       }else{
         # use default res
