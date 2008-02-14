@@ -197,7 +197,7 @@ if ( LockFile ( $gInputFile, "lock" ) ) {
   # Run tests
   foreach my $branch ( keys %gBranches ){
     
-#     test_branch($branch);
+    test_branch($branch);
   
   }
   
