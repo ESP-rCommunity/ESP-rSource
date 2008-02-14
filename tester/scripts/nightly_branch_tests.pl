@@ -177,7 +177,7 @@ if ( @ARGV ){
       }
             
       fatalerror ("Unknown arguement $arg"); 
-
+      LockFile ($gInputFile, "unlock");
     }
   }
 }
@@ -187,7 +187,7 @@ if ( @ARGV ){
 stream_out (`date`);
 
 if ( LockFile ( $gInputFile, "lock" ) ) {
-          
+
   # Read input file.
   read_data_file($gInputFile);
   
@@ -197,7 +197,7 @@ if ( LockFile ( $gInputFile, "lock" ) ) {
   # Run tests
   foreach my $branch ( keys %gBranches ){
     
-    test_branch($branch);
+#     test_branch($branch);
   
   }
   
@@ -220,13 +220,14 @@ die;
 # Read input file, and attempt to update 'locked' flag 
 #-------------------------------------------------------------------
 sub LockFile($$){
-  
+
   my ($input_file, $action) = @_;
   
   my $FileLockedOk = 0;
   
   # Parse file
- 
+
+  
   open (INPUT, "$input_file" ) or fatalerror ("Could not open $input_file for reading\n");
     
   my ($output) = "";
@@ -281,16 +282,17 @@ sub LockFile($$){
   # Close input, and open output 
   
   close (INPUT);
-  
+
+
   open (OUTPUT, ">$input_file" ) or fatalerror ("Could not open $input_file for writing\n");
+  
+  die;
   
   print OUTPUT $output;
 
   close (OUTPUT);
 
   return $FileLockedOk; 
-  
-  
 
 }
 
@@ -315,7 +317,8 @@ sub test_branch($){
   if ( ! $last_revision ){
     my $svn_out = `svn info`;
     stream_out ("SVN INFO: $svn_out \n");
-    fatalerror ("Unable to collect output from command `svn info`")
+    fatalerror ("Unable to collect output from command `svn info`");
+    LockFile ($gInputFile, "unlock");
   }
     
   $gBranches{$branch}{"test_rev"} = $last_revision;
@@ -470,6 +473,7 @@ sub read_data_file($){
   if ( ! -r $input_file ) {
   
     fatalerror ("Could not open input file \"$input_file\" for reading!");
+    LockFile ($gInputFile, "unlock");
     
   }else{
   
@@ -632,7 +636,6 @@ sub execute($){
 #----------------------------------------------
 sub fatalerror($){
   my ($err_msg) = @_;
-  LockFile ($gInputFile, "unlock");
   print "\ntester.pl -> Fatal error: \n";
   print " >>> $err_msg \n\n";
   die;
