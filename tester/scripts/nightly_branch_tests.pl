@@ -286,8 +286,6 @@ sub LockFile($$){
 
   open (OUTPUT, ">$input_file" ) or fatalerror ("Could not open $input_file for writing\n");
   
-  die;
-  
   print OUTPUT $output;
 
   close (OUTPUT);
