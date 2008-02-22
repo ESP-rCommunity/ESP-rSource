@@ -73,7 +73,6 @@ my %binlist = ( "aco"   =>   "esruaco",
                 "pdb"   =>   "esrupdb",
                 "prj"   =>   "esruprj",     
                 "res"   =>   "esrures",          
-                "tdf"   =>   "esrutdf",         
                 "vew"   =>   "esruvew" );         
 
 my %binalias = ( "vew"    =>   "viewer",
