@@ -86,8 +86,12 @@ C Sets up defaults and offers main menu.
 #include "esprdbfile.h"
 
 C IEEE callback (Solaris)
-C      external SIGFPE_bps      
-C      integer SIGFPE_bps      
+#ifdef SUN
+#ifdef F90
+      external SIGFPE_bps      
+      integer SIGFPE_bps      
+#endif
+#endif
 
       common/outin/iuout,iuin
       common/tracech/icout
@@ -1185,14 +1189,18 @@ C Dummy routine (needed for call back from c.
       end
 
 C In support of floating point exceptions.
-C      integer function SIGFPE_bps(sig,code,context)
-C      integer sig,code,context(5)
-C      character label*16
-C      if(loc(code).eq.208) label = 'invalid'
-C      if(loc(code).eq.200) label = 'division by zero'
-C      if(loc(code).eq.212) label = 'overflow'
-C      if(loc(code).eq.204) label = 'underflow'
-C      if(loc(code).eq.196) label = 'inexact'
-C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
-C      SIGFPE_bps = loc(code)
-C      end
+#ifdef SUN
+#ifdef F90
+      integer function SIGFPE_bps(sig,code,context)
+      integer sig,code,context(5)
+      character label*16
+      if(loc(code).eq.208) label = 'invalid'
+      if(loc(code).eq.200) label = 'division by zero'
+      if(loc(code).eq.212) label = 'overflow'
+      if(loc(code).eq.204) label = 'underflow'
+      if(loc(code).eq.196) label = 'inexact'
+      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+      SIGFPE_bps = loc(code)
+      end
+#endif
+#endif
