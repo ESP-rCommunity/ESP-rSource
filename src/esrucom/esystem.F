@@ -138,7 +138,7 @@ C default file names for databases
 C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)

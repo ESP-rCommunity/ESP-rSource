@@ -104,7 +104,7 @@ C laprob  - fluid flow description file
 #include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
 
       common/er1/ier1

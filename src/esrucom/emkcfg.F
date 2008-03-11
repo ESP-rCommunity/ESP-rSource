@@ -44,7 +44,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
-      PARAMETER (MSTMC=1,MSGAL=1)
+      PARAMETER (MSTMC=20,MSGAL=40)
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

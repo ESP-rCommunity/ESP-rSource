@@ -41,7 +41,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
-      PARAMETER (MSTMC=1,MSGAL=1)
+      PARAMETER (MSTMC=20,MSGAL=40)
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

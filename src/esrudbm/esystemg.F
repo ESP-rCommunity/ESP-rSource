@@ -125,7 +125,7 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)

@@ -174,15 +174,15 @@ C and future time rows. Units: W/m^2
 
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
-C to 1 for the present.
+C to 20 for the present.
 C MSGAL is number of optical sets per optics db item. At present
 C set to 1: later increase to 2 for an alternative set that can be switched.
 C MANH and MANV are the number of angles at which optical data is 
 C held for horizontal/vertical grid data.
 C At present this assumes 5deg bi-directional data from -90 to +90
 C in elevation and azimuth.
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
-
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+      
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/BTIME/BTIMEP,BTIMEF
@@ -304,8 +304,9 @@ C
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
-     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
-
+     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),TMREFLECT(MSTMC,MSGAL,MANH,MANV)
+     
 C Required for WATSUN-PV model
       COMMON/PVANG/fInc_angle(MS)
       REAL fInc_angle          ! Angle of incidence for surface
@@ -756,7 +757,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -1794,7 +1795,7 @@ C the bidirectional case.
       SUBROUTINE MZSCAI(ICOMP,II,CAI,ANGI,IND1,IND2,PSAZI2,
      &           PSELV2,IANGBI1,IANGBI2)
 #include "building.h"
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
 
@@ -1804,7 +1805,8 @@ C the bidirectional case.
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
-     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
+     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),TMREFLECT(MSTMC,MSGAL,MANH,MANV)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       PI = 4.0 * ATAN(1.0)
@@ -3046,7 +3048,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0Â°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K

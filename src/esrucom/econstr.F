@@ -1197,7 +1197,7 @@ C           file.
       subroutine erbiwin(itrc,itru,iua,lua,ier)
 #include "building.h"
 #include "espriou.h"
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
@@ -1213,10 +1213,22 @@ C TMABSDIF(MSTMC,MSGAL,ME) - outdoor side diffuse solar absorptance for each lay
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
-     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
+     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),TMREFLECT(MSTMC,MSGAL,MANH,MANV)
       
       character OUTSTR*124,OUTS*124,LUA*72,WORD*20
       character bidirfile*72,bidirname*12
+
+C New variables are defined below
+      integer ISETTYPE !this might have to be kept in a common block
+                       !It will specify what the set of data is about
+                       !For example 1 can be for 0 degrees slat angle
+                       !Not rules have been defined for this, yet.
+      integer IBIDATATYPE !this will probably have to be kept in a common block
+                          !It will specify what type of data to read
+                          !1: the existing transmittance and at different layers absorptance 
+                          !2: the transmittance, g value and reflectance 
+                          !3: the transmittance and g value only
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1258,16 +1270,45 @@ C Read header.
         goto 42
       elseif(WORD(1:9).eq.'*end_item')then
         goto 42
+
+C 3 options: Te_g_rho, Te_g_only and existing: Te_abs_n_diffuse
+      elseif(WORD(1:9).eq.'*datatype')then
+        CALL EGETW(OUTSTR,K,WORD,'W','bi-type format',IFLAG)
+        if(WORD(1:16).eq.'Te_abs_n_diffuse')then
+
+C Existing format - keep reading as previously for existing bidirectional files        
+          IBIDATATYPE=1
+          goto 42
+        elseif(WORD(1:8).eq.'Te_g_rho')then
+          IBIDATATYPE=2
+
+C expect less columns and different type of data
+          goto 42
+        elseif(WORD(1:9).eq.'Te_g_only')then
+          IBIDATATYPE=3
+
+C expect less columns and different type of data
+          goto 42
+        else
+          IBIDATATYPE=1
+
+C Existing format - keep reading as previously for existing bidirectional files        
+          goto 42        
+        endif
       elseif(WORD(1:7).eq.'*layers')then
         CALL EGETWI(OUTSTR,K,IV,1,8,'W','bi-layers',IER)
         NGNTL(ibitype)=iv
         goto 42
       elseif(WORD(1:5).eq.'*sets')then
-        CALL EGETWI(OUTSTR,K,IV,1,2,'W','bi-sets',IER)
+        CALL EGETWI(OUTSTR,K,IV,1,20,'W','bi-sets',IER)
         NSGALFL(ibitype)=iv
         goto 42
       elseif(WORD(1:10).eq.'*start_set')then
         ibset=ibset+1
+        goto 42
+      elseif(WORD(1:9).eq.'*set_type')then
+        CALL EGETWI(OUTSTR,K,IV,1,100,'W','set types',IER)
+        ISETTYPE=IV
         goto 42
       elseif(WORD(1:8).eq.'*end_set')then
         goto 42
@@ -1315,18 +1356,32 @@ C        if(iv1.eq.37)idataloop=1369
           ihangindex= (IA1/5)+19
           CALL EGETWI(OUTSTR,K,IA2,-90,90,'W','bi-vert ang',IER)
           ivangindex= (IA2/5)+19
-          CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
-          TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
-
-C <<<loop for each layer to get absorpt. etc.>>>>>>
-          do 143 ij=1,NGNTL(ibitype)
-            CALL EGETWR(OUTSTR,K,da,0.,1.,'-','direct abs',IER)
-            TMABSO(ibitype,ibset,ij,ihangindex,ivangindex)=da
- 143      continue
-          CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
-          TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
+          if(IBIDATATYPE.eq.1)then
+            CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
+            TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+            do 143 ij=1,NGNTL(ibitype)
+              CALL EGETWR(OUTSTR,K,da,0.,1.,'-','direct abs',IER)
+              TMABSO(ibitype,ibset,ij,ihangindex,ivangindex)=da
+ 143        continue
+            CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
+            TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
 C          write(6,*) ibitype,ibset,T1,T2
-          goto 44
+            goto 44
+          elseif(IBIDATATYPE.eq.2)then
+            CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
+            TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+            CALL EGETWR(OUTSTR,K,g,0.,1.,'-','g value',IER)
+            TMGVALUE(ibitype,ibset,ihangindex,ivangindex)=g
+            CALL EGETWR(OUTSTR,K,rho,0.,1.,'-','reflectance',IER)
+            TMREFLECT(ibitype,ibset,ihangindex,ivangindex)=rho
+            goto 44
+          elseif(IBIDATATYPE.eq.3)then
+            CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
+            TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+            CALL EGETWR(OUTSTR,K,g,0.,1.,'-','g value',IER)
+            TMGVALUE(ibitype,ibset,ihangindex,ivangindex)=g
+            goto 44
+          endif
         endif
       endif
 

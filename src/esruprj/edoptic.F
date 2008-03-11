@@ -1442,8 +1442,8 @@ C optic properties. These are usually the result of measurements.
 #include "epara.h"
 #include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
-C to 1 for the present.
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
+C to 20 for the present.
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -1511,7 +1511,7 @@ C current menu line index. Build up text strings for the menu.
           call CONXMENU(L,CXITM)
           VERT(M)=' '
           if(NSTMCFL(L).ne.0)then
-            WRITE(VERT(M),'(A1,1x,A42,a,i1)')KEY,CXITM(1:42),'|',
+            WRITE(VERT(M),'(A1,1x,A42,a,i2)')KEY,CXITM(1:42),'|',
      &        NSTMCFL(L)
           else
             WRITE(VERT(M),'(A1,1x,A42,a)')KEY,CXITM(1:42),'| -'
@@ -1621,7 +1621,7 @@ C Display information about the anchors associated with connection.
               h(2)=' '
               h(3)='A cancel request leaves the model unchanged.'
               CALL EASKI(nl,' ',' Which bi-directional type?',
-     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
+     &          0,'F',MSTMC,'F',20,'bi opt types',IERI,3)
               if(ieri.eq.-3)then
                 continue
               else
