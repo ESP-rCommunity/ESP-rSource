@@ -92,11 +92,11 @@ C Flags noting whether casual gain periods are currently sorted.
 C Flag noting whether file was browsed for (so that cfg can be
 C updated when the user exits).
       logical gotviabrowse
-      dimension iper(24),iperf(24)
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER oprdesc*248,ctlstr*24,zname*12,zdesc*64,tcname*248
-      CHARACTER ITEM(12)*32,choices(12)*32,H*72,LTMP*72,GFILE*72
+      character ventdesc*248
+      CHARACTER ITEM(14)*33,choices(12)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -112,6 +112,7 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+      ventdesc=' '
 
 C Initially assume periods are not sorted.
       sorted=.false.
@@ -194,6 +195,7 @@ C Operations file not known, allow user to give name or browse.
         CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
      &         'browse','cancel',iclkok,72,GFILE,
      &          'operations file',IER,16)
+        call usrmsg(' ',' ','-')   ! clear the display
       endif
       if(iclkok.eq.1)then
         sfile=' '
@@ -246,6 +248,8 @@ C      write(6,*) 'lproj is ',lproj(icomp)
       NCAS1=0
       NCAS2=0
       NCAS3=0
+
+C Instanciate prior to scanning the source operation file.
       ctlstr='no control of air flow  '
       oprdesc='no operations notes (yet)'
       IER=0
@@ -479,7 +483,8 @@ C We have all of the directives, do the import.
         if(igu.eq.1.or.igu.eq.2.or.igu.eq.5)then
 
 C Each of these leaves the user to define the casual gains manually.
-          ip3ver=1
+C The from scratch should intially be version 2.
+          ip3ver=2
           h(1)='New operations for this zone. Please check your notes'
           h(2)='and provide initial casual gain period start times'
           h(3)='for each day type (Weekday, Saturday & Sunday) and'
@@ -615,19 +620,41 @@ C Remind users to check their data.
         endif
       ENDIF
 
+C Display different options depending on the version of the file.
   20  write(ITEM(1),'(2a)')   '  zone: ',zname(ICOMP)
-      write(ITEM(2),'(3a)')   'a description: ',oprdesc(1:15),'-'
-      write(ITEM(3),'(2x,a)')    oprdesc(16:44)
-      ITEM(4)=                '  ----------------------------- '
-      ITEM(5)=                'b edit scheduled air flows      '
-      ITEM(6)=                'c edit casual gains             '
-      ITEM(7)=                '  ----------------------------- '    
-      ITEM(8)=                '! list air flow & casual gains  '
-      ITEM(9)=                '  ----------------------------- '
-      ITEM(10)=               '> save air flow & casual gains  '
-      ITEM(11)=               '? help                          '
-      ITEM(12)=               '- exit this menu                '
-      NITEMS=12
+      if(ip3ver.le.2)then
+        write(ITEM(2),'(3a)') 'a description: ',oprdesc(1:16),'-'
+        write(ITEM(3),'(2x,2a)')   oprdesc(17:45),'-'
+        write(ITEM(4),'(2x,2a)')   oprdesc(46:74),'-'
+        write(ITEM(5),'(2x,2a)')   oprdesc(75:103),'-'
+        ITEM(6)=              '  ----------------------------- '
+        ITEM(7)=              'c edit scheduled air flows      '
+        ITEM(8)=              'd edit casual gains             '
+        ITEM(9)=              '  ----------------------------- '    
+        ITEM(10)=             '! list air flow & casual gains  '
+        ITEM(11)=             '  ----------------------------- '
+        ITEM(12)=             '> save air flow & casual gains  '
+        ITEM(13)=             '? help                          '
+        ITEM(14)=             '- exit this menu                '
+        NITEMS=14
+      elseif(ip3ver.eq.3)then
+        write(ITEM(2),'(3a)') 'a inf vent notes: ',
+     &    ventdesc(1:13),'-'
+        write(ITEM(3),'(2x,a)')    ventdesc(14:44)
+        write(ITEM(4),'(3a)') 'b casual notes: ',
+     &    oprdesc(1:15),'-'
+        write(ITEM(5),'(2x,a)')    oprdesc(16:44)
+        ITEM(6)=              '  ----------------------------- '
+        ITEM(7)=              'c edit scheduled air flows      '
+        ITEM(8)=              'd edit casual gains             '
+        ITEM(9)=              '  ----------------------------- '    
+        ITEM(10)=             '! list air flow & casual gains  '
+        ITEM(11)=             '  ----------------------------- '
+        ITEM(12)=             '> save air flow & casual gains  '
+        ITEM(13)=             '? help                          '
+        ITEM(14)=             '- exit this menu                '
+        NITEMS=14
+      endif
 
 C Help text for this menu.
       H(1) ='A summary of the data held within a zone operations file'
@@ -737,26 +764,48 @@ C even if modopr has not been set.
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
+        if(ip3ver.le.2)then
 
 C Edit operation description.
-        H(1)='Notes (<248 char) for schedules of zone air flow and' 
-        H(2)='casual gains can be included in the model. Use this'
-        H(3)='facility to clarify what is happening in the zone.'
-        tcname=oprdesc
-        CALL EASKS248(tcname,' ','Zone operations notes:',
+          H(1)='Notes (<248 char) for schedules of zone air flow and' 
+          H(2)='casual gains can be included in the model. Use this'
+          H(3)='facility to clarify what is happening in the zone.'
+          tcname=oprdesc
+          CALL EASKS248(tcname,' ','Zone operations notes:',
      &          72,'base_case','operation notes',IER,3)
-        if(tcname(1:2).ne.'  ')oprdesc=tcname
-        MODOPR=.true.
-      ELSEIF(INO.EQ.5)THEN
+          if(tcname(1:2).ne.'  ')oprdesc=tcname
+          MODOPR=.true.
+        elseif(ip3ver.eq.3)then
+          H(1)='Notes (<248 char) for schedules of zone air flow can' 
+          H(2)='be included in the model. Use this facility to'
+          H(3)='clarify what is happening in the zone.'
+          tcname=ventdesc
+          CALL EASKS248(tcname,' ','Zone scheduled air notes:',
+     &          72,'base_case','operation notes',IER,3)
+          if(tcname(1:2).ne.'  ')ventdesc=tcname
+          MODOPR=.true.
+        endif
+      ELSEIF(INO.EQ.4)THEN
+        if(ip3ver.eq.3)then
+          H(1)='Notes (<248 char) for schedules of zone air flow and' 
+          H(2)='casual gains can be included in the model. Use this'
+          H(3)='facility to clarify what is happening in the zone.'
+          tcname=oprdesc
+          CALL EASKS248(tcname,' ','Zone operations notes:',
+     &          72,'base_case','operation notes',IER,3)
+          if(tcname(1:2).ne.'  ')oprdesc=tcname
+          MODOPR=.true.
+        endif
+      ELSEIF(INO.EQ.7)THEN
 
 C Edit air flows.
-        CALL EDAIR(ICOMP,IER)
+        CALL EDAIR2(ICOMP,IER)
         MODOPR=.true.
-      ELSEIF(INO.EQ.6)THEN
+      ELSEIF(INO.EQ.8)THEN
 
 C Edit casual gains.
         CALL EDCAS(ICOMP,MODOPR,sorted,IER)
-      ELSEIF(INO.EQ.8)THEN
+      ELSEIF(INO.EQ.10)THEN
 
 C List flows and gains.
         CALL VENTINF(ICOMP,ITRU)
@@ -827,14 +876,16 @@ C ITRC is the trace level, IER=0 is OK.
 #include "building.h"
       common/pophelp/h(60)
       COMMON/PREC2/VOL(MCOM)
+      CHARACTER oprdesc*248,ctlstr*24
       COMMON/P1/oprdesc,ctlstr
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
+      common/p3ver/ip3ver
 
       DIMENSION IVAL(4), IVALS(3), ALT(4),ALTS(3)
-      CHARACTER oprdesc*248,ctlstr*24,hold*40,outs*80,outs2*80
+      CHARACTER hold*40,outs*80,outs2*80
       CHARACTER ALT*32,ALTS*31,H*72
       LOGICAL OK,DOK
 
@@ -853,6 +904,7 @@ C Flow control browse & editing.
         ctlstr='no control of air flow  '
         return
       endif
+
       ALT(1)='zone air temperature (default) '
       ALT(2)='adjacent zone air temperature  '
       ALT(3)='external air temperature       '
@@ -903,35 +955,41 @@ C Flow control browse & editing.
 
 
 C Generate a brief description.
-      IY=ITCTL(ICOMP)
-      if(IY.eq.-14)then
-        ctlstr='infil only: wind speed  '
-      elseif(IY.eq.-13)then
-        ctlstr='infil only: ext db temp '
-      elseif(IY.eq.-12)then
-        ctlstr='infil only: adj zone tmp'
-      elseif(IY.eq.-11)then
-        ctlstr='infil only: zone temp   '
-      elseif(IY.eq.-4)then
-        ctlstr='vent only: wind speed   '
-      elseif(IY.eq.-3)then
-        ctlstr='vent only: ext db temp  '
-      elseif(IY.eq.-2)then
-        ctlstr='vent only: adj zone temp'
-      elseif(IY.eq.-1)then
-        ctlstr='vent only: zone temp    '
-      elseif(IY.eq.4)then
-        ctlstr='infil & vent: wind speed'
-      elseif(IY.eq.3)then
-        ctlstr='infil & vent: ext db T  '
-      elseif(IY.eq.2)then
-        ctlstr='infil & vent: adj zone T'
-      elseif(IY.eq.1)then
-        ctlstr='infil & vent: zone T    '
-      elseif(IY.eq.0)then
-        ctlstr='no control of air flow  '
-      else
-        ctlstr='unknown flow control    '
+      if(ip3ver.le.2)then
+        IY=ITCTL(ICOMP)
+        if(IY.eq.-14)then
+          ctlstr='infil only: wind speed  '
+        elseif(IY.eq.-13)then
+          ctlstr='infil only: ext db temp '
+        elseif(IY.eq.-12)then
+          ctlstr='infil only: adj zone tmp'
+        elseif(IY.eq.-11)then
+          ctlstr='infil only: zone temp   '
+        elseif(IY.eq.-4)then
+          ctlstr='vent only: wind speed   '
+        elseif(IY.eq.-3)then
+          ctlstr='vent only: ext db temp  '
+        elseif(IY.eq.-2)then
+          ctlstr='vent only: adj zone temp'
+        elseif(IY.eq.-1)then
+          ctlstr='vent only: zone temp    '
+        elseif(IY.eq.4)then
+          ctlstr='infil & vent: wind speed'
+        elseif(IY.eq.3)then
+          ctlstr='infil & vent: ext db T  '
+        elseif(IY.eq.2)then
+          ctlstr='infil & vent: adj zone T'
+        elseif(IY.eq.1)then
+          ctlstr='infil & vent: zone T    '
+        elseif(IY.eq.0)then
+          ctlstr='no control of air flow  '
+        else
+          ctlstr='unknown flow control   '
+        endif
+      elseif(ip3ver.eq.3)then
+
+C << to be done >>
+
       endif
 
       H(1)='For temperature control the limit is in degC.'
@@ -1130,11 +1188,13 @@ C Define air flow when the sensed variable is above the high range.
       RETURN
       END
 
-C ********************* EDAIR *********************
-C EDAIR: Edits air flow portion of a zone operations file.
+C ********************* EDAIR2 *********************
+C EDAIR2: Edits air flow portion of a zone operations file.
+C This version toggles between day types and expands the
+C editing options.
 C Returns: NAC*,IACS*,IACF*,ACI*,ACV*,IPT*,TA* data in common.
 C IER=0 is OK.
-      SUBROUTINE EDAIR(ICOMP,IER)
+      SUBROUTINE EDAIR2(ICOMP,IER)
 
 #include "building.h"
 #include "epara.h"
@@ -1149,6 +1209,8 @@ C IER=0 is OK.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
+
+      CHARACTER oprdesc*248,ctlstr*24
       COMMON/P1/oprdesc,ctlstr
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
      &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
@@ -1161,14 +1223,21 @@ C IER=0 is OK.
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
-      character oprdesc*248,ctlstr*24,LTMP*72
+      character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
-      logical XST
+      logical XST,closezero,closeone,closetwo
 
 C Initial menu entry setup.
- 5    MHEAD=4
+      idtyp = 1
+ 5    MHEAD=3
       MCTL=5
-      ILEN=NAC1+NAC2+NAC3
+      if(idtyp.eq.1)then
+        ILEN=NAC1*3
+      elseif(idtyp.eq.2)then 
+        ILEN=NAC2*3
+      elseif(idtyp.eq.3)then
+        ILEN=NAC3*3
+      endif
       IPACT=CREATE
       CALL EKPAGE(IPACT)
       IER=0
@@ -1179,87 +1248,148 @@ C Check and plot air flows.
       if (MMOD.eq.8) call PLTAIR(ICOMP)
 
 C Set up top of menu.
-      if (ITCTL(ICOMP).eq.0) then 
-        write(VERT(1),'(A)') 'a air flow control (none)'
+  44  if (ITCTL(ICOMP).eq.0) then 
+        write(VERT(1),'(A)') '1 air flow control (none)'
       else
-        write(VERT(1),'(2A)') 'a control: ',ctlstr(1:22)
+        write(VERT(1),'(2A)') '1 control: ',ctlstr(1:22)
       endif
       vert(2) =              '  -----------------------------'
-      vert(3) =              ' Start End Infil  Vent Source'
-      write (vert(4),'(a,i2,a)') '  air flow: Weekdays (',NAC1,')'
-      write (vert(5+NAC1),'(a,i2,a)')'  air flow: Saturdays (',NAC2,')'
-      write (vert(6+NAC1+NAC2),'(a,i2,a)') 
-     &                               '  air flow: Sundays (',NAC3,')'
+      if(idtyp.eq.1)then
+        write(vert(3),'(a,i2,a)') '> air flow>> Weekdays (',NAC1,')'
+      elseif(idtyp.eq.2)then 
+        write(vert(3),'(a,i2,a)') '> air flow>> Saturdays (',NAC2,')'
+      elseif(idtyp.eq.3)then
+        write(vert(3),'(a,i2,a)') '> air flow>> Sundays (',NAC3,')'
+      endif
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
       M=MHEAD
 
 C Weekday loop
-      do 10 L=1,NAC1
-        if (L.GE.IST.AND.(L.LE.(IST+MIFULL))) then
+      if(idtyp.eq.1)then
+        istartcount=1
+        iendcount=0
+        do 10 L=1,NAC1
+
+C Ensure that all three lines can be written. If on subsequent
+C pages then check loosely in order to catch an item that 
+C would have otherwise spanned the page divide.
+          iendcount=istartcount+2
+C          if (istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL))) then
+          if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
+            continue
+          elseif(istartcount+2.GE.IST.AND.
+     &          (iendcount.LE.(IST+MIFULL)))then
+            continue
+          else
+            istartcount=iendcount+1
+            goto 10
+          endif
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
+     &      IACS1(L),'-',IACF1(L)
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI1(L)
           M=M+1
           call EMKEY(M-MHEAD,KEY,IER)
           if (IPT1(L).gt.0) then
-            write (VERT(M),303) KEY,IACS1(L),IACF1(L),ACI1(L),
-     &                                     ACV1(L),zname(IPT1(L))(1:10)
+            write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
+     &        ACV1(L),zname(IPT1(L))(1:10)
+          elseif (ACV1(L).lt.0.0001) then 
+            write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
+     &        ACV1(L),'  n/a'
           else
-            if (ACV1(L).lt.0.0001) then 
-              write (VERT(M),323) KEY,IACS1(L),IACF1(L),ACI1(L),
-     &                                                ACV1(L)
-            else
-              write (VERT(M),313) KEY,IACS1(L),IACF1(L),ACI1(L),
-     &                                                ACV1(L),TA1(L)
-            endif
+            write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
+     &        ACV1(L),'@temp:',TA1(L)
           endif
-  303     FORMAT(a,2i4,1x,2f6.2,1x,a)
-  313     FORMAT(a,2i4,1x,2f6.2,1x,f6.1)
-  323     FORMAT(a,2i4,1x,2f6.2,1x,'  n/a')
-        endif
- 10   continue
+          istartcount=iendcount+1
+ 10     continue
 
 C Saturday loop
-      do 20 L=1,NAC2
-        if (L.GE.IST.AND.(L.LE.(IST+MIFULL))) then
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          if (IPT2(L).gt.0) then
-            write (VERT(M+1),303) KEY,IACS2(L),IACF2(L),ACI2(L),
-     &                                     ACV2(L),zname(IPT2(L))(1:10)
-          else
-            if (ACV2(L).lt.0.0001) then 
-              write (VERT(M+1),323) KEY,IACS2(L),IACF2(L),ACI2(L),
-     &                                                ACV2(L)
-            else
-              write (VERT(M+1),313) KEY,IACS2(L),IACF2(L),ACI2(L),
-     &                                                ACV2(L),TA2(L)
-            endif
-          endif
-        endif
- 20   continue
+      elseif(idtyp.eq.2)then 
+        istartcount=1
+        iendcount=0
+        do 20 L=1,NAC2
 
-C Sunday loop
-      do 30 L=1,NAC3
-        if (L.GE.IST.AND.(L.LE.(IST+MIFULL))) then
+C Ensure that all three lines can be written. If on subsequent
+C pages then check back two in order to catch an item that 
+C would have otherwise spanned the page divide.
+          iendcount=istartcount+2
+          if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
+            continue
+          elseif(istartcount+2.GE.IST.AND.
+     &          (iendcount.LE.(IST+MIFULL)))then
+            continue
+          else
+            istartcount=iendcount+1
+            goto 20
+          endif
           M=M+1
           call EMKEY(M-MHEAD,KEY,IER)
-          if (IPT3(L).gt.0) then
-            write (VERT(M+2),303) KEY,IACS3(L),IACF3(L),ACI3(L),
-     &                                     ACV3(L),zname(IPT3(L))(1:10)
+          write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
+     &      IACS2(L),'-',IACF2(L)
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI2(L)
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          if (IPT1(L).gt.0) then
+            write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
+     &        ACV2(L),zname(IPT2(L))(1:10)
+          elseif (ACV1(L).lt.0.0001) then 
+            write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
+     &        ACV2(L),'  n/a'
           else
-            if (ACV3(L).lt.0.0001) then 
-              write (VERT(M+2),323) KEY,IACS3(L),IACF3(L),ACI3(L),
-     &                                                ACV3(L)
-            else
-              write (VERT(M+2),313) KEY,IACS3(L),IACF3(L),ACI3(L),
-     &                                                ACV3(L),TA3(L)
-            endif
+            write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
+     &        ACV2(L),'@temp:',TA2(L)
           endif
-        endif
- 30   continue
+          istartcount=iendcount+1
+ 20     continue
+
+C Sunday loop.
+      elseif(idtyp.eq.3)then
+        istartcount=1
+        iendcount=0
+        do 30 L=1,NAC3
+
+C Ensure that all three lines can be written.
+          iendcount=istartcount+2
+          if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
+            continue
+          elseif(istartcount+2.GE.IST.AND.
+     &          (iendcount.LE.(IST+MIFULL)))then
+            continue
+          else
+            istartcount=iendcount+1
+            goto 30
+          endif
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
+     &      IACS3(L),'-',IACF3(L)
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI3(L)
+          M=M+1
+          call EMKEY(M-MHEAD,KEY,IER)
+          if (IPT1(L).gt.0) then
+            write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
+     &        ACV3(L),zname(IPT3(L))(1:10)
+          elseif (ACV1(L).lt.0.0001) then 
+            write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
+     &        ACV3(L),'  n/a'
+          else
+            write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
+     &        ACV3(L),'@temp:',TA3(L)
+          endif
+          istartcount=iendcount+1
+ 30     continue
+      endif
 
 C Number of actual items displayed.
-      M=M+2
       MVERT=M+MCTL
 
 C If a long list include page facility text.      
@@ -1288,20 +1418,26 @@ C Help text for this menu.
       H(11)='errors.'
       H(12)=' '
       H(13)='The add/delete/copy/import option are as follows.'
-      H(14)=' add - adds a period to one or all day types'
-      H(15)=' delete - deletes one or more periods (within a list'
-      H(16)='   of all periods in all days).'
-      H(17)=' copy - copies Weekdays to Saturdays or Weekdays -> '
-      H(18)='   Sundays or Saturdays -> Sundays'
-      H(19)=' import - copies infiltration, ventilation and control'
-      H(20)='   (or a subset of these data) from another zone.'
+      H(14)=' add - adds a period to one or all day types. BE SURE'
+      H(15)='   to read the extended help messages in this dialog'
+      H(16)='   to understand how to use the add function to insert'
+      H(17)='   a period into a profile.'  
+      H(18)=' '
+      H(19)=' delete - deletes one or more periods (within a list'
+      H(20)='   of all periods in all days).'
       H(21)=' '
-      H(22)='When importing you can specify whether to:'
-      H(23)=' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
-      H(24)='    the source zone is 1.5 ac/h in the destination zone;'
-      H(25)=' b) preserve the volume of air implied by the ac/h in'
-      H(26)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
-      H(27)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+      H(22)=' copy - copies Weekdays to Saturdays or Weekdays -> '
+      H(23)='   Sundays or Saturdays -> Sundays'
+      H(24)=' '
+      H(25)=' import - copies infiltration, ventilation and control'
+      H(26)='   (or a subset of these data) from another zone.'
+      H(27)=' '
+      H(28)='When importing you can specify whether to:'
+      H(29)=' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
+      H(30)='    the source zone is 1.5 ac/h in the destination zone;'
+      H(31)=' b) preserve the volume of air implied by the ac/h in'
+      H(32)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
+      H(33)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
  
 C Now display the menu.
       if(mmod.eq.8)then
@@ -1316,7 +1452,7 @@ C Now display the menu.
       if (IVERT.EQ.MVERT) then
         return
       elseif (IVERT.EQ.(MVERT-1)) then
-        CALL PHELPD('flows menu',27,'-',0,0,IER)
+        CALL PHELPD('flows menu',33,'-',0,0,IER)
       elseif (IVERT.EQ.(MVERT-2)) then
 
 C List current.
@@ -1326,27 +1462,46 @@ C List current.
 C Add delete copy period or import from another zone.
         H(1)='The options: '
         H(2)='The add/delete/copy/import option are as follows.'
-        H(3)=' add - adds a period to one or all day types'
-        H(4)=' delete - deletes one or more periods (within a list'
-        H(5)='   of all periods in all days).'
-        H(6)=' copy - copies Weekdays to Saturdays or Weekdays -> '
-        H(7)='   Sundays or Saturdays -> Sundays'
-        H(8)=' import - copies infiltration, ventilation and control'
-        H(9)='   (or a subset of these data) from another zone.'
+        H(3)=' add - adds a period to one or all day types. IF'
+        H(4)='   there is already a defined period which overlaps'
+        H(5)='   this period then the volumes of air flow will be '
+        H(6)='   summed.  For example: if there is a period from'
+        H(7)='   8h00-24h00 with 1ach infiltration and you want to '
+        H(8)='   add a period 20h00-24h00 with 0.5 the time from '
+        H(9)='   20h00-24h00 will become 1.5 ach.'
         H(10)=' '
-        H(11)='When importing you can specify whether to:'
-        H(12)=' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
-        H(13)='    the source zone is 1.5 ac/h in the destination zone;'
-        H(14)=' b) preserve the volume of air implied by the ac/h in'
-        H(15)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
-        H(16)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
-        CALL EASKATOG(' ','Options:',
+        H(11)='   If you want to adjust the profile so the inserted'
+        H(12)='   period has a different value then initailly'
+        H(13)='   give 0.0 for the flows. After the periods have'
+        H(14)='   been revised then edit the newly created period.'
+        H(15)='  '
+        H(16)='   The alternative approach is to edit the start and'
+        H(17)='   end time of the existing period so that a gap is'
+        H(18)='   created and then use the add facility to fill in'
+        H(19)='   the gap.'
+        H(20)=' '
+        H(21)=' delete - deletes one or more periods (within a list'
+        H(22)='   of all periods in all days).'
+        H(23)=' '
+        H(24)=' copy - copies Weekdays to Saturdays or Weekdays -> '
+        H(25)='   Sundays or Saturdays -> Sundays'
+        H(26)=' '
+        H(27)=' import - copies infiltration, ventilation and control'
+        H(28)='   (or a subset of these data) from another zone.'
+        H(29)=' '
+        H(30)='When importing you can specify whether to:'
+        H(31)=' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
+        H(32)='    the source zone is 1.5 ac/h in the destination zone;'
+        H(33)=' b) preserve the volume of air implied by the ac/h in'
+        H(34)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
+        H(35)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+        CALL EASKATOG(' ','Options (see help):',
      &    'add period','delete period','copy period',
-     &    'import from other zone','import pattern','cancel',' ',IW,16)
+     &    'import from other zone','import pattern','cancel',' ',IW,35)
         if (IW.EQ.1) then 
           call EASKATOG(' ','New air flow period is for day type:',
      &      'Weekdays','Saturdays','Sundays','All','Cancel',
-     &      ' ',' ',IW,16)
+     &      ' ',' ',IW,35)
           if (IW.ne.5) then
             if (IW.eq.1) then
               if(NAC1.eq.MA)then
@@ -1354,7 +1509,7 @@ C Add delete copy period or import from another zone.
               else
                 IDT=1
                 IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER)
+                call EDAIRFL(ICOMP,IDT,IPER,-1)
               endif
             elseif (IW.eq.2) then
               if(NAC2.eq.MA)then
@@ -1362,7 +1517,7 @@ C Add delete copy period or import from another zone.
               else
                 IDT=2
                 IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER)
+                call EDAIRFL(ICOMP,IDT,IPER,-1)
               endif
             elseif (IW.eq.3) then
               if(NAC3.eq.MA)then
@@ -1370,9 +1525,11 @@ C Add delete copy period or import from another zone.
               else
                 IDT=3
                 IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER)
+                call EDAIRFL(ICOMP,IDT,IPER,-1)
               endif
             elseif (IW.eq.4) then
+
+C Add a period to all day types.
               if(NAC1.eq.MA)then
                 call usrmsg(' ','Sorry, too many Weekday periods.','W')
               elseif(NAC2.eq.MA)then
@@ -1382,7 +1539,7 @@ C Add delete copy period or import from another zone.
               else
                 IDT=4
                 IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER)
+                call EDAIRFL(ICOMP,IDT,IPER,-1)
               endif
             elseif (IW.eq.5) then
               continue
@@ -1500,32 +1657,61 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
+          if(idtyp.eq.1)then
+            ILEN=NAC1*3
+          elseif(idtyp.eq.2)then 
+            ILEN=NAC2*3
+          elseif(idtyp.eq.3)then
+            ILEN=NAC3*3
+          endif
+          goto 44
         ENDIF
       elseif (IVERT.EQ.1) then
 
 C Control of air flow.
         call EDAFCTL(ICOMP,IER)
+      elseif (IVERT.EQ.3) then
+
+C Increment the daytype focus.
+        idtyp = idtyp + 1
+        if(idtyp.gt.3) idtyp = 1
+        goto 5
       elseif (IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1)) then
 
 C Edit block identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,I,IO)
 
-C Check for illegal selection first.
-        if (I.ne.(NAC1+1).and.I.ne.(NAC1+NAC2+2)) then 
-
 C Depending on currently defined gains work out day type of selected
-C item. Also calculate period index in day type.
-          if ((I-2).gt.(NAC1+NAC2)) then
-            IDT=3
-            IPER=I-2-NAC1-NAC2
-          elseif ((I-1).gt.(NAC1)) then
-            IDT=2
-            IPER=I-1-NAC1
-          else
-            IDT=1
-            IPER=I
-          endif
-          call EDAIRFL(ICOMP,IDT,IPER)
+C item. Also calculate period index in day type. Adjust for 2nd page
+        if(ipm.eq.2.and.I.gt.1) I=I-1  ! adjust for 2nd page
+        if(ipm.eq.3.and.I.gt.1) I=I-2  ! adjust for 3rd page
+        if(ipm.eq.4.and.I.gt.1) I=I-3  ! adjust for 4th page
+
+C Items are in groups of 3. If i/3 has no remainder I is 3,6,9,etc.
+C so the period is just the nearest integer to I/3.0. If there is
+C a remainder then I is 1,2 or 4,5 and it is one more than the
+C nearest integer.
+        trymod=amod(real(I),3.0)
+        call eclose(trymod,0.0,0.001,closezero)
+        call eclose(trymod,1.0,0.001,closeone)
+        call eclose(trymod,2.0,0.001,closetwo)
+        if(closezero.or.closetwo)then
+          try=real(I)/3.0
+          iper=nint(try)
+        endif
+        if(closeone)then
+          try=real(I)/3.0
+          iper=nint(try)+1
+        endif
+        IDT=idtyp
+        if(closeone)then
+          call EDAIRFL(ICOMP,IDT,IPER,1)
+        endif
+        if(closetwo)then
+          call EDAIRFL(ICOMP,IDT,IPER,2)
+        endif
+        if(closezero)then
+          call EDAIRFL(ICOMP,IDT,IPER,0)
         endif
       endif
 
@@ -1539,8 +1725,10 @@ C EDAIRFL - edit scheduled air flow data.
 C  ICOMP zone number
 C  IDT day type
 C  IPER period (=0 then new)
+C  itype is what attributes to edit (=-1 all, =1 period,
+C     =2 infil, =0 ventilation.
 
-      subroutine EDAIRFL(ICOMP,IDT,IPER)
+      subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1592,143 +1780,156 @@ C If new period then set defaults otherwise get data from common.
         ACV=ACV3(IPER)
         IPT=IPT3(IPER)
         TA=TA3(IPER)
-      ENDIF
+      endif
 
 C Ask for start and finish times.
- 10   write (OUTS,'(A)') 'Start and finish hours for period?'
-      write (HOLD,'(2i5,a)') IACS,IACF,'  '
-      h(1)='Period during which air flow applies.'
-      CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
-      K=0
-      CALL EGETWI(HOLD,K,IVS,0,24,'F','period start',IER)
-      CALL EGETWI(HOLD,K,IVF,IVS+1,24,'F','period end',IER)
-      if (IER.ne.0) goto 10
-      IACS=IVS
-      IACF=IVF
+      if(itype.eq.-1.or.itype.eq.1)then
+ 10     write (OUTS,'(A)') 'Start and finish hours for period?'
+        write (HOLD,'(2i5,a)') IACS,IACF,'  '
+        h(1)='Period during which air flow applies.'
+        CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
+        K=0
+        CALL EGETWI(HOLD,K,IVS,0,24,'F','period start',IER)
+        CALL EGETWI(HOLD,K,IVF,IVS+1,24,'F','period end',IER)
+        if (IER.ne.0) goto 10
+        IACS=IVS
+        IACF=IVF
+      endif
 
 C Ask for infiltration and ventilation flow rates.
 C Can be specified as:ac/h or m^3/s.
-      h(1)='An air flow rate can be specified in air change per hour'
-      h(4)='or m^3/s.'
-      IGU=1
-      CALL EASKAB(' ','Air flow specified in:','AC/h',
+      if(itype.eq.-1.or.itype.eq.2.or.itype.eq.0)then
+        h(1)='An air flow rate can be specified in air change per '
+        h(4)='hour or m^3/s.'
+        IGU=1
+        CALL EASKAB(' ','Air flow specified in:','AC/h',
      &     'm^3/s',IGU,2)
-      if (IGU.eq.1) then
-
-C Flow as ac/h.
- 20     XACH=ACI
-        h(1)='Supply the infiltration rate in ac/h.'
-        call EASKR(XACH,' ','Infiltration rate?',
-     &        0.0,'F',10.0,'W',0.5,'infil rate ach',IERI,1)
-        if(IERI.eq.0)then
-          ACI=XACH
-        elseif(ieri.eq.-3)then
-          call edisp(iuout,'Cancel not implemented.')
-        else
-          goto 20
-        endif
-        
- 22     XACH=ACV
-        h(1)='Supply the ventilation rate in ac/h relative'
-        h(2)='to the volume of the receiving zone.'
-        call EASKR(XACH,' ','Ventilation rate?',
-     &       0.0,'F',10.0,'W',0.0,'vent rate ach',IERI,2)
-        if(IERI.eq.0)then
-          ACV=XACH
-        elseif(ieri.eq.-3)then
-          call edisp(iuout,'Cancel not implemented.')
-        else
-          goto 22
-        endif
-      elseif (IGU.eq.2) then
-
-C Flow as m^3/s.
- 30     XACH=ACI*VOL(ICOMP)/3600.
-        h(1)='Supply the infiltration rate in m^3/s.'
-        call EASKR(XACH,' ','Infiltration rate?',
-     &       0.0,'F',10.0,'W',0.0,'inf rate m3s',IERI,1)
-        if(IERI.eq.0)then
-          ACI=XACH*3600.0/VOL(ICOMP)
-        elseif(ieri.eq.-3)then
-          call edisp(iuout,'Cancel not implemented.')
-        else
-          goto 30
-        endif
-
-        XACH= ACV*VOL(ICOMP)/3600.
-        h(1)='Supply the ventilation rate in m^3/s relative.'
-        h(2)='to the volume of the receiving zone.'
-        call EASKR(XACH,' ','Ventilation rate?',
-     &       0.0,'F',10.0,'W',0.0,'vent rate m3s',IERI,2)
-        if(IERI.eq.0)then
-          ACV=XACH*3600.0/VOL(ICOMP)
-        elseif(ieri.eq.-3)then
-          call edisp(iuout,'Cancel not implemented.')
-        else
-          goto 30
-        endif
-      endif
-
-      if (ACV.gt.0.0) then
-
-C Ask for source zone/ temperature.
-        CALL EASKABC(' ','Ventilation air temperature:',
-     &    'other modelled zone','constant',
-     &    'ambient',IGU,0)
         if (IGU.eq.1) then
 
-C Present zone list.
- 38       IV=IPT
-          call askzone(IV,IPT,'Ventilation from which zone?',
-     &     'Source Zone','-','Ventilation definition requires a zone.',
-     &     ier)
-          if (IER.ne.0.or.IV.eq.ICOMP) then
-            write (OUTS,'(3a)')  'the current zone (',
-     &        ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
-            call USRMSG('The selected zone should be different from',
-     &        outs,'W')
-            goto 38
+          if(itype.eq.-1.or.itype.eq.2)then
+C Flow as ac/h.
+ 20         XACH=ACI
+            h(1)='Supply the infiltration rate in ac/h.'
+            call EASKR(XACH,' ','Infiltration rate?',
+     &        0.0,'W',10.0,'W',0.5,'infil rate ach',IERI,1)
+            if(IERI.eq.0)then
+              ACI=XACH
+            elseif(ieri.eq.-3)then
+              call edisp(iuout,'Cancel not implemented.')
+            else
+              goto 20
+            endif
           endif
-          ratio = VOL(ICOMP)/VOL(IV)
-          write (OUTS,'(a,F8.3,a)') 
-     &      'Ventilation (ac/h where 1 ac/h in current zone =',
-     &      ratio,' ac/h in source zone)'
-          call EDISP(IUOUT,OUTS)
-          write (OUTS,'(a,F8.2,a,F8.2,a)') 
-     &      '(Current zone volume =',VOL(icomp),
-     &      'Source zone volume =',VOL(iv),')'
-          call EDISP(IUOUT,OUTS)
-          IPT=IV
-          TA=0.
+        
+          if(itype.eq.-1.or.itype.eq.0)then
+ 22         XACH=ACV
+            h(1)='Supply the ventilation rate in ac/h relative'
+            h(2)='to the volume of the receiving zone.'
+            call EASKR(XACH,' ','Ventilation rate?',
+     &        0.0,'W',10.0,'W',0.0,'vent rate ach',IERI,2)
+            if(IERI.eq.0)then
+              ACV=XACH
+            elseif(ieri.eq.-3)then
+              call edisp(iuout,'Cancel not implemented.')
+            else
+              goto 22
+            endif
+          endif
         elseif (IGU.eq.2) then
 
-C Ask for source temperature.
- 40       XTA=  TA
-          h(1)='Supply the ventilation air temperature in degC.'
-          call EASKR(XTA,' ','Supply temperature?',
-     &      0.0,'F',50.0,'W',0.5,'vent src temp',IERI,1)
-          if(IERI.eq.0)then
-            IPT=0
-            TA=XTA
-          elseif(ieri.eq.-3)then
-            call edisp(iuout,'Cancel not implemented.')
-          else
-            goto 40
+C Flow as m^3/s.
+ 30       if(itype.eq.-1.or.itype.eq.2)then
+            XACH=ACI*VOL(ICOMP)/3600.
+            h(1)='Supply the infiltration rate in m^3/s.'
+            call EASKR(XACH,' ','Infiltration rate?',
+     &        0.0,'W',10.0,'W',0.0,'inf rate m3s',IERI,1)
+            if(IERI.eq.0)then
+              ACI=XACH*3600.0/VOL(ICOMP)
+            elseif(ieri.eq.-3)then
+              call edisp(iuout,'Cancel not implemented.')
+            else
+              goto 30
+            endif
           endif
-        elseif (IGU.eq.3) then
 
-C Set vent to zero and increase infiltration.
-          call USRMSG('Supply of outside air being treated as',
-     &     'infiltration. Updating infiltration flow rate.','W')
-          ACI=ACI+ACV
-          ACV=0
-          IPT=0
-          TA=0.0
+          if(itype.eq.-1.or.itype.eq.0)then
+            XACH= ACV*VOL(ICOMP)/3600.
+            h(1)='Supply the ventilation rate in m^3/s relative.'
+            h(2)='to the volume of the receiving zone.'
+            call EASKR(XACH,' ','Ventilation rate?',
+     &        0.0,'W',10.0,'W',0.0,'vent rate m3s',IERI,2)
+            if(IERI.eq.0)then
+              ACV=XACH*3600.0/VOL(ICOMP)
+            elseif(ieri.eq.-3)then
+              call edisp(iuout,'Cancel not implemented.')
+            else
+              goto 30
+            endif
+          endif
         endif
       endif
 
-C Check that a flow rate has been defined.
-      if (ACI.lt.0.00001.and.ACV.lt.0.00001) return
+C If the ventilation rate is greater than zero then further
+C checks are carried out.
+      if(itype.eq.-1.or.itype.eq.0)then
+        if (ACV.gt.0.0) then
+
+C Ask for source zone/ temperature.
+          CALL EASKABC(' ','Ventilation air temperature:',
+     &      'other modelled zone','constant',
+     &      'ambient',IGU,0)
+          if (IGU.eq.1) then
+
+C Present zone list.
+ 38         IV=IPT
+            call askzone(IV,IPT,'Ventilation from which zone?',
+     &     'Source Zone','-','Ventilation definition requires a zone.',
+     &       ier)
+            if (IER.ne.0.or.IV.eq.ICOMP) then
+              write (OUTS,'(3a)')  'the current zone (',
+     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+              call USRMSG('The selected zone should be different from',
+     &          outs,'W')
+              goto 38
+            endif
+            ratio = VOL(ICOMP)/VOL(IV)
+            write (OUTS,'(a,F8.3,a)') 
+     &        'Ventilation (ac/h where 1 ac/h in current zone =',
+     &        ratio,' ac/h in source zone)'
+            call EDISP(IUOUT,OUTS)
+            write (OUTS,'(a,F8.2,a,F8.2,a)') 
+     &        '(Current zone volume =',VOL(icomp),
+     &        'Source zone volume =',VOL(iv),')'
+            call EDISP(IUOUT,OUTS)
+            IPT=IV
+            TA=0.
+          elseif (IGU.eq.2) then
+
+C Ask for source temperature.
+ 40         XTA=  TA
+            h(1)='Supply the ventilation air temperature in degC.'
+            call EASKR(XTA,' ','Supply temperature?',
+     &        0.0,'F',50.0,'W',0.5,'vent src temp',IERI,1)
+            if(IERI.eq.0)then
+              IPT=0
+              TA=XTA
+            elseif(ieri.eq.-3)then
+              call edisp(iuout,'Cancel not implemented.')
+            else
+              goto 40
+            endif
+          elseif (IGU.eq.3) then
+
+C Set vent to zero and increase infiltration.
+            call USRMSG('Supply of outside air being treated as',
+     &       'infiltration. Updating infiltration flow rate.','W')
+            ACI=ACI+ACV
+            ACV=0
+            IPT=0
+            TA=0.0
+          endif
+        endif
+      endif
 
 C If day type 4 then add data to all day types.
       if (IDT.eq.4) then
@@ -2121,6 +2322,7 @@ C LPROJ   - zone scheduling (operation file)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
+      CHARACTER oprdesc*248,ctlstr*24
       COMMON/P1/oprdesc,ctlstr
       COMMON/P1C/oprdescc,ctlstrc
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
@@ -2146,7 +2348,7 @@ C Scratch copy of air flow pattern from an operations file.
       character*(*) sfile
       character zname*12,zdesc*64,h*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,ctlstrc*24
+      CHARACTER oprdescc*248,ctlstrc*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
@@ -2246,6 +2448,7 @@ C for weekdays, saturdays, sundays.
       endif
 
 C Copy air flow control into local variables.
+
       ctlstrc=ctlstr
       ITCTLC=ITCTL(isource)
       TLOC=TLO(isource)
@@ -4786,9 +4989,8 @@ C Copy periods.
 C ********************* IMPORTZCASG *********************
 C IMPORTZCASG - import a casual gain regime from zone isource to
 C zone idest based on act and iwatt
-C act (8 char) = 'allcas' copies all casual gain types
+C actcas (8 char) = 'allcas' copies all casual gain types
 C       descriptions (this will need a QA by the user in case of conflicts).
-C actcas = ??
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
 C   e.g. 123W in source zone is also 123W in destination zone.
@@ -4825,6 +5027,7 @@ C LPROJ   - zone scheduling (operation file)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
       common/p3ver/ip3ver
+      CHARACTER oprdesc*248,ctlstr*24
       COMMON/P1/oprdesc,ctlstr
       COMMON/P1C/oprdescc,ctlstrc
       COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
@@ -4873,7 +5076,7 @@ C Storage arrays for weekdays, saturdays, sundays
      &  iphas3c(mc)
 
       character*(*) sfile
-      CHARACTER oprdesc*248,oprdescc*248,ctlstr*24,ctlstrc*24
+      CHARACTER oprdescc*248,ctlstrc*24
       character h*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72

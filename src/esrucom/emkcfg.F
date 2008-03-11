@@ -1206,10 +1206,17 @@ C Trap out of range IC1 and IE1 variables.
      &         I4,' W rad')
       ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
         ICM=IZSTOCN(IC2(ICON),IE2(ICON))
-        SST2=SSNAME(ICM)
-        lsn2=lnblnk(SST2)
-        ZST2=zname(IC2(ICON))
-        lzn2=lnblnk(ZST2)
+        if(ICM.gt.0)then
+          SST2=SSNAME(ICM)
+          lsn2=lnblnk(SST2)
+          ZST2=zname(IC2(ICON))
+          lzn2=lnblnk(ZST2)
+        else
+          SST2='not_known'
+          lsn2=lnblnk(SST2)
+          ZST2='not_known'
+          lzn2=lnblnk(ZST2)
+        endif
         WRITE(CXSTR,8982)ICON,SST1(1:lsn1),ZST1(1:lzn1),
      &                        SST2(1:lsn2),ZST2(1:lzn2)
  8982   FORMAT(I4,1X,a,' in ',a,' >|< ',a,' in ',a)

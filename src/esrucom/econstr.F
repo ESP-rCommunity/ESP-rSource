@@ -1317,6 +1317,8 @@ C        if(iv1.eq.37)idataloop=1369
           ivangindex= (IA2/5)+19
           CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
           TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+
+C <<<loop for each layer to get absorpt. etc.>>>>>>
           do 143 ij=1,NGNTL(ibitype)
             CALL EGETWR(OUTSTR,K,da,0.,1.,'-','direct abs',IER)
             TMABSO(ibitype,ibset,ij,ihangindex,ivangindex)=da

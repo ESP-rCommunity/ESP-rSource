@@ -111,6 +111,7 @@ C General image option flags for use with cadjview.
       ITSNR=1
       ITGRD=1
       GRDIS=0.0
+      ITRC=0
 
 C On first entry, see if the list is consistent with geometry. If
 C prob is .true. then there is at least some inconsistency. The value
@@ -186,7 +187,7 @@ C the connections list.
 
 C Refresh the global data arrays used during the checking.
       NZONES=NCOMP
-      CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+      CALL ZDATA (0,IER,NZONES,ISFSUM)
 
 C Set for redraw if image on first entry (if refresh set to after
 C each edit). Set flag for updating geometry file (for changed
@@ -515,7 +516,7 @@ C of connections re-establish the IZSTOCN array.
 C Re-establish arrays of zone data now that there are possibly
 C different numbers of connections.
           NZONES=NCOMP
-          CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+          CALL ZDATA (0,IER,NZONES,ISFSUM)
 
 C Check if user wants to re-establish connection data from surface
 C attributes.

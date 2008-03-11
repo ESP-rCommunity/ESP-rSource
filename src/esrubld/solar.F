@@ -236,7 +236,8 @@ C at the next time-step.
       COMMON/COE32S/QSLIF(MCOM,MS),QSLEF(MCOM,MS),QTMCAF(MCOM,MS,MN)
       COMMON/COE32SV/QSLIP(MCOM,MS),QSLEP(MCOM,MS),QTMCAP(MCOM,MS,MN)
 
-      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS)
+      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS),
+     &                                                    EXSHADF(MS)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
@@ -561,8 +562,10 @@ C Now we have the external radiation on each surface.
       DO 4 I=1,NC
         IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
           POO=0.0
+          POFF=0.0
         ELSE
           POO=PO(ICOMP,I,IHRF)
+          POFF=POF(ICOMP,I,IHRF)
         ENDIF
 
 C----------------------BLIND CONTROL - EXTERNAL SURFACES
@@ -753,7 +756,8 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default optics),
+C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default
+C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
                       xx2 = 0.
@@ -762,7 +766,8 @@ C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default optics),
                    endif
                    
                    zero=0.
-                   call mzwinp(xx1,1.,xx2,zero,ind1(i),angi(i),xd,dummy)
+                   call mzwinp(xx1,1.,xx2,zero,ind1(i),angi(i),xd,
+     &                                                          dummy)
                    td = sraddo(i)*(1.- poo)*xd
 
 C We now have direct transmission, td, through TMC.
@@ -783,14 +788,16 @@ C - if IBCSUR()=0, then current surface.
 C POO/POO2 contains shading factor on corresponding opaque surface.
                   ISUR=IBCSUR(ICOMP,ITMC)
                   IF(ISUR.EQ.0)THEN
-                    RAD=(SRADDO(I)*(1.-POO))+SRADF(I)
+                    RAD=SRADDO(I)*(1.-POO)+SRADF(I)*(1-POFF)
                   ELSE
                     IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
                       POO2=0.0
+                      POFF2=0.0
                     ELSE
                       POO2=PO(ICOMP,ISUR,IHRF)
+                      POFF2=POF(ICOMP,ISUR,IHRF)
                     ENDIF
-                    RAD=(SRADDO(ISUR)*(1.-POO2))+SRADF(ISUR)
+                    RAD=SRADDO(ISUR)*(1.-POO2)+SRADF(ISUR)*(1.-POFF2)
                   ENDIF
                   IF(RAD.GT.BACTPT(ICOMP,K,ITMC))THEN
                     IBOFOT(ICOMP,I)=1
@@ -858,12 +865,13 @@ C Not external construction.
             QSOLE(I,2)=(SRADDO(I)+SRADF(I))*AE(ICOMP,I)
           ELSE
             QSOLE(I,2)=SRADDO(I)*AE(ICOMP,I)*(1.-PO(ICOMP,I,IHRF))+
-     &      SRADF(I)*AE(ICOMP,I)
+     &      SRADF(I)*AE(ICOMP,I)*(1.-POF(ICOMP,I,IHRF))
           ENDIF
           EXSHAD(I)=PO(ICOMP,I,IHRF)
-          EXRAD(I)=SRADDO(I)*(1.-EXSHAD(I))+SRADF(I)
+          EXSHADF(I)=POF(ICOMP,I,IHRF)
           EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
-          EXDIF(I)=SRADF(I)
+          EXDIF(I)=SRADF(I)*(1.-EXSHADF(I))
+          EXRAD(I)=EXDIR(I)+EXDIF(I)
 C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
           call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
           if ( bCloseToZero ) then
@@ -996,18 +1004,21 @@ C Get diffuse absorptance.
             ENDIF
               IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
                 POO=0.
+                POFF=0.
               ELSE
                 POO=PO(ICOMP,I,IHRF)
+                POFF=POF(ICOMP,I,IHRF)
               ENDIF
               DAB=SRADDO(I)*(1.-POO)*ABD
-              FAB=SRADF(I)*ABF
+              FAB=SRADF(I)*(1.-POFF)*ABF
 C              write (6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
 C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
 
               EXSHAD(I)=PO(ICOMP,I,IHRF)
-              EXRAD(I)=SRADDO(I)*(1.-EXSHAD(I))+SRADF(I)
+              EXSHADF(I)=POF(ICOMP,I,IHRF)
               EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
-              EXDIF(I)=SRADF(I)
+              EXDIF(I)=SRADF(I)*(1.-EXSHADF(I))
+              EXRAD(I)=EXDIR(I)+SRADF(I)
 C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
              call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
              if ( bCloseToZero ) then
@@ -1154,17 +1165,20 @@ C Get diffuse transmission from common block.
               XF=THTSOB(1,1)
             ENDIF
 
-C Calculate diffuse transmission.
-            TFF=SRADF(I)*SNA(ICOMP,I)*XF
-            tfftrace(i)=tff
-
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
               POO=0.
+              POFF=0.
             ELSE
               POO=PO(ICOMP,I,IHRF)
+              POFF=POF(ICOMP,I,IHRF)
             ENDIF
 
-C For bidirectional data, add in the direct-diffuse component to the diffuse transmission.
+C Calculate diffuse transmission.
+            TFF=SRADF(I)*SNA(ICOMP,I)*XF*(1.-POFF)
+            tfftrace(i)=tff
+
+C For bidirectional data, add in the direct-diffuse component to the
+C diffuse transmission.
             if(IBIDIR.NE.0)then
               TFF=TFF+SRADDO(I)*(1.-POO)*SNA(ICOMP,I)*DTOD 
               tfftrace(i)=tff

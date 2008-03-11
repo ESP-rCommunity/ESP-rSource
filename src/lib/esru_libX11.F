@@ -9817,6 +9817,7 @@ C ************* EVSET
 C EVSET provides setup environment for wire frame view w/in prj.
 C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
+
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
 #include "espriou.h"
@@ -9862,14 +9863,16 @@ C ITPPSW current view - perspective/plan/south/west
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK
       logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
-      DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7),MTHNAM(12)
+      DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7)
       CHARACTER ITEMS*32,H*72,zname*12,zdesc*64,LFIL*72,outs*124
       CHARACTER FALT*37,MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1
       CHARACTER DESC*48,head*19
 
-      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+      dimension mthnam(12),iavdec(12)
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
+      data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C If not in graphic mode return.
@@ -10294,19 +10297,13 @@ C          call usrmsg(' ','Starting perspective viewer.','-')
         endif
       ELSEIF(IVERT.EQ.21)THEN
 
-C Draw the zones and any obstructions based on sun
-C position. Confirm the lat, long, request day and time,
-C compute positon and update the view.
-C        write(outs,'(A,F6.2,A,F6.2)')
-C     &  ' Current latitude = ',SLAT,', longitude difference = ',SLON
-C        call edisp(iuout,' ')
-C        call edisp(iuout,outs)
-C        call edisp(iuout,' ')
-C        call edisp(iuout,' Date and time for the view... ')
+C Draw the zones and any obstructions based on sun position
+C at user specified time (offer 11 am on day of average solar
+C declination in June).
         NTS=1
         IMO=6
-        IDO=21
-        STIME=12.
+        IDO=iavdec(IMO)
+        STIME=11.
 
 C Use the ASKTIM in esru_lib.F (as opposed to ASKRTIM in esrures/utils.F).
   67    CALL ASKTIM(2,NTS,IMO,IDO,IJDAY,STIME,IT,IER)
@@ -10324,8 +10321,8 @@ C Use the ASKTIM in esru_lib.F (as opposed to ASKRTIM in esrures/utils.F).
 C Generate a heading for the view.
           CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
           WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
-     &      ' View: ',IDO,MTHNAM(IMO),' @',DESCRH,
-     &      '  azimuth:',SAZI,' elevation:',SALT
+     &      ' View: ',IDO,MTHNAM(IMO),' @ ',DESCRH,
+     &      ' Solar azimuth',SAZI,', elevation',SALT
           CALL viewtext(ETEXT,2,1,IFS)
           CALL EASKAB(' ','New view point:',
      &        'next hour','exit',IW,0)

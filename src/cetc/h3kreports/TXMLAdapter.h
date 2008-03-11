@@ -36,7 +36,7 @@ public:
 	std::string GetFirstNodeValue(std::string nodeName, TXMLNode parentNode);
 	
 	///Convienience method to return value of the set of nodes with name matching nodeName 
-	std::vector<std::string> GetNodeValues(std::string nodeName, TXMLNode parentNode);
+	void GetNodeValues(std::string nodeName, TXMLNode parentNode, std::vector<std::string> &names);
 	
 	///Returns all children nodes of node with name equal to name. If name is "", all children nodes will be returned
 	std::vector<TXMLNode> GetChildren(TXMLNode node, std::string name);
