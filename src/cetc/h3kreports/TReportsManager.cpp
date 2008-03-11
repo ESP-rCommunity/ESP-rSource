@@ -510,8 +510,6 @@ TReportsManager::TReportsManager(  )
     
 }
 
-
-
 /**
  * Update all data at the end of a timestep, and perform avg/bin operations
    operations as necessary
@@ -1174,17 +1172,16 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   }
 
   // Nodes to appear in out.xml
-  m_nodes = inputXML.GetNodeValues("log_variable", inputXML.RootNode());
+  inputXML.GetNodeValues("log_variable", inputXML.RootNode(),m_nodes);
 
-  
   // Nodes to appear in out.csv
-  m_step_nodes = inputXML.GetNodeValues("step_variable", inputXML.RootNode());
+  inputXML.GetNodeValues("step_variable", inputXML.RootNode(),m_step_nodes);
 
   // Nodes to appear in out.summary
-  m_summary_nodes = inputXML.GetNodeValues("summary_variable", inputXML.RootNode());
+  inputXML.GetNodeValues("summary_variable", inputXML.RootNode(),m_summary_nodes);
 
   // Sytlesheet list for multiple transforms.
-  m_stylesheet_list = inputXML.GetNodeValues("style_sheet", inputXML.RootNode());
+  inputXML.GetNodeValues("style_sheet", inputXML.RootNode(),m_stylesheet_list);
 
   // Should style sheet be linked?
   m_params["link_style_sheet"] = inputXML.GetFirstNodeValue("link_style_sheet", inputXML.RootNode() );
@@ -1328,11 +1325,13 @@ void TReportsManager::SetFlags(){
   }
   
   // Optionally store data on disk
-  if ( m_params["save_to_disk"] == "false" ){
-      bSaveToDisk = false;
-  }else if (m_params["save_to_disk"] == "true" ){
-      bSaveToDisk = true;
-  }  
+  if ( m_params["save_to_disk"] == "true" ){
+     bSaveToDisk = true;
+  }else{
+    m_params["save_to_disk"] = "false";
+    bSaveToDisk = false;
+  }
+
   return;
 }
 

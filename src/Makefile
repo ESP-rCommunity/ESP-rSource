@@ -13,17 +13,14 @@ allnoX: libnoX $(PROGRAMS)
 
 libX11:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sourcesX11 ; \
 	$(MAKE) the_libX11
 
 libGTK:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sourcesGTK ; \
 	$(MAKE) the_libGTK
 
 libnoX:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sourcesnoX ; \
 	$(MAKE) the_libnoX
 
 # PROGRAMS:
