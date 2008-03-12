@@ -1210,11 +1210,20 @@ C   and each layer and each angle.
 C THTSOB(MSTMC,MSGAL) - outdoor side direct solar trans (diff to diff)
 C THRSOB(MSTMC,MSGAL) - outdoor side solar refl (diff to diff)
 C TMABSDIF(MSTMC,MSGAL,ME) - outdoor side diffuse solar absorptance for each layer
+c TMGVALUE(MSTMC,MSGAL,MANH,MANV) - total solar energy transmittance (g value)
+C TMREFLECT(MSTMC,MSGAL,MANH,MANV) - Reflectance
+C TUVALUE(MSTMC,MSGAL) - U value based on experimental Re and Ri
+C TREXTERNAL(MSTMC,MSGAL) - experimental external thermal resistance (from
+C                          measuremnts)
+C TRINTERNAL(MSTMC,MSGAL) - experimental internal thermal resistance (from
+C                          measuremnts)
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
      &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
-     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),TMREFLECT(MSTMC,MSGAL,MANH,MANV)
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
       
       character OUTSTR*124,OUTS*124,LUA*72,WORD*20
       character bidirfile*72,bidirname*12
@@ -1229,6 +1238,9 @@ C New variables are defined below
                           !1: the existing transmittance and at different layers absorptance 
                           !2: the transmittance, g value and reflectance 
                           !3: the transmittance and g value only
+
+C explicit definition of some variables used in the egetwr 
+      real Uvalue_bi, Ri, Re
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1315,6 +1327,18 @@ C Existing format - keep reading as previously for existing bidirectional files
       elseif(WORD(1:9).eq.'*end_file')then
         CALL ERPFREE(IUA,ISTAT)
         return
+      elseif(WORD(1:7).eq.'*Uvalue')then
+        CALL EGETWR(OUTSTR,K,Uvalue_bi,0.,1.,'-','u value ',IER)
+        TUVALUE(ibitype,ibset)=Uvalue_bi
+        goto 42
+      elseif(WORD(1:10).eq.'*Rexternal')then
+        CALL EGETWR(OUTSTR,K,Re,0.,1.,'-','Re experimental ',IER)
+        TREXTERNAL(ibitype,ibset)=Re
+        goto 42
+      elseif(WORD(1:10).eq.'*Rinternal')then
+        CALL EGETWR(OUTSTR,K,Ri,0.,1.,'-','Ri experimental ',IER)
+        TRINTERNAL(ibitype,ibset)=Ri
+        goto 42
       elseif(WORD(1:12).eq.'*diffuse_abs')then
 
 C Get diffuse abs for each layer.

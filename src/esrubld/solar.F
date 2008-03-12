@@ -305,8 +305,10 @@ C
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
      &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
-     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),TMREFLECT(MSTMC,MSGAL,MANH,MANV)
-     
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
+        
 C Required for WATSUN-PV model
       COMMON/PVANG/fInc_angle(MS)
       REAL fInc_angle          ! Angle of incidence for surface
@@ -923,6 +925,7 @@ C************************
                   IF(IBIDIR.EQ.0) THEN
                    XX1=TMCA(ICOMP,ITMC,J,IND1(I))
                   ELSE
+
 C Bidirectional data available.
 C XX1 is the absorptance for those available array elements that
 C are less than the actual solar azimuth and elevation angles.
@@ -942,6 +945,7 @@ C are less than the actual solar azimuth and elevation angles.
                   ELSEIF(IBIDIR.EQ.0)THEN
                     XX2=TMCA(ICOMP,ITMC,J,IND2(I))
                   ELSE
+
 C Bidirectional case.
 C Note: if angle is +90, set XX2=XX1 etc.
                     IF(IND1(I).eq.MANH)then
@@ -1806,7 +1810,9 @@ C the bidirectional case.
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
      &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
-     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),TMREFLECT(MSTMC,MSGAL,MANH,MANV)
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       PI = 4.0 * ATAN(1.0)
