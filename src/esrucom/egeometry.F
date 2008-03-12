@@ -3648,6 +3648,7 @@ C SSURVN is point 1 unit vectpr off of surface COG along the normal.
       character SSPARENT*12,h*72,outs*124
 
       integer lng     ! length of geometry file name
+      integer itrct   ! temporary trace level
       newgeo=.false.  ! assume older geometry format
 
 C Assuming this routine is called in order: read in the geometry file
@@ -3676,8 +3677,8 @@ C using georead or egomin and pass across into the appropriate array.
 
 C Find current zone geometric information and fill common G7 & PREC2
 C NOTE: this was done in ersys call so it might not be needed here.
-        itrc=0
-        call zgupdate(itrc,icomp,ier)
+        itrct=0
+        call zgupdate(itrct,icomp,ier)
 
 C Find co-planer surfaces and edges of similar materials.
         call suredgeadj(itrc,'-',icomp,ier)

@@ -125,15 +125,20 @@ TXMLNode TXMLAdapter::RootNode()
 
 std::string TXMLAdapter::GetFirstNodeValue(std::string nodeName, TXMLNode parentNode)
 {
-        vector<string> result = GetNodeValues(nodeName, parentNode);
-        if(result.size() > 0)
-                return result[0];
-        else return string();
+
+        std::vector<string> names;
+        std::string result;
+        
+        GetNodeValues(nodeName, parentNode, names);
+        
+        if(names.size() > 0){ result=names[0]; }
+        else{ result=string(); }
+
+        return result;
 }
 
-std::vector<std::string> TXMLAdapter::GetNodeValues(const std::string nodeName, TXMLNode parentNode)
+void TXMLAdapter::GetNodeValues(const std::string nodeName, TXMLNode parentNode, vector<string> &names)
 {
-        vector<string> *names = new vector<string>;
         
         xmlChar *key;
         xmlNodePtr cur  = RootNode();
@@ -142,14 +147,14 @@ std::vector<std::string> TXMLAdapter::GetNodeValues(const std::string nodeName, 
                  if ((xmlStrEqual(cur->name, (const xmlChar *) nodeName.c_str()))) {
                          key = xmlNodeListGetString(m_document, cur->xmlChildrenNode, 1);                         
                          if ( (const char*)key != NULL ){
-                           names->push_back((const char*)key);
+                           names.push_back((const char*)key);
                          }
                          xmlFree(key);
                  }
                  cur = cur->next;
         }
         
-        return *names;
+        return;
 }
 
 std::vector<TXMLNode> TXMLAdapter::GetChildren(TXMLNode node, std::string name)

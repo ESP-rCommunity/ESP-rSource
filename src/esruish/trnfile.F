@@ -422,11 +422,12 @@ C and computes the overall direct and diffuse shading factors.
       common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/shad1/isunup
-      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa
+      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       common/find/irecl
       common/ihtime/ihour
       common/data2/pso(ms,mt),psof(ms,mt)
       common/c24/izstocn(mcom,ms)
+      common/data1/ical,idifc,init
 
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
@@ -438,6 +439,17 @@ C If trace requested enable writing.
       if(icout.eq.33)tok=.true.
 
       iunit=ifil
+
+C mode = dup; therefore use diffuse shading factors as calculated
+C for last hour.
+      if(mode.eq.'dup')then
+         psof(is,ihour)=psof(is,ihour-1)
+         irec=irecl
+         write(iunit,rec=irec,iostat=istat,err=1000)pso(is,ihour),
+     &                                              psof(is,ihour)
+         irecl=irec+1
+         goto 9999
+      endif
 
 C mode = dif; therefore this routine is only called after all sky
 C patches have been processed.
@@ -509,7 +521,14 @@ C Calculate gross surface area, gsa.
       call area(nv,xft,zft,gsa)
 
       if(mode.eq.'dir')pso(is,ihour)=gssa/gsa
-      if(mode.eq.'dif')psof(is,ihour)=gssa/gsa
+      if(mode.eq.'dif')then
+C Adjust diffuse shading to relate only to the sky portion that is
+C visible to the target surface. This is required because the calculation
+C of the diffuse irradiance in bps does not include the obscured
+C sky portion.
+         adj=145.0/(145.0-float(ipexcl))
+         psof(is,ihour)=gssa*adj/gsa
+      endif
       icn=izstocn(icomp,is)
 
     3 irecl=irec
@@ -549,7 +568,7 @@ C Check for inappropriate shading values.
       endif
 
 C Trace output.
-      if(.not.tok)return
+ 9999 if(.not.tok)return
       call edisp(icout,' ')
       write(outs,9998)mode
  9998 format('*** TFILE3: mode ',a,'.')

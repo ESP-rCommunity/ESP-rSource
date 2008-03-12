@@ -34,6 +34,7 @@ C a zone transitional shading file.
       common/outin/iuout,iuin
       common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
+      common/prec8/slat,slon
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
@@ -44,12 +45,13 @@ C a zone transitional shading file.
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,mt),psof(ms,mt)
 
-      dimension month(12)
+      dimension month(12),iavdec(12)
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
       character blkname*8,blkmat*12,outs*124,month*3,sn*12
       logical ok,dok
 
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
@@ -62,8 +64,10 @@ C If output to file, alter the edisp unit number.
       endif
 
       iunit=ifil
+
       call edisp(itru,' ')
-      write(outs,'(3a)')'External surface shading for ',month(mon),'.'
+      write(outs,'(a,i2,1x,2a)')'External surface shading for ',
+     &                           iavdec(mon),month(mon),'.'
       call edisp(itru,outs)
 
 C Retrieve shading information from zone transitional shading file
@@ -72,7 +76,8 @@ C and display on a surface-by-surface basis.
         if(isc(i).eq.0)goto 10
         icn=izstocn(icomp,i)
 
-C shddt & shdft are shading summations,ishdh is number of sun-up hours. 
+C shddt & shdft are shading summations, ishdh is number of sun-up
+C hours. 
         shddt=0
         shdft=0
         ishdh=0
@@ -81,20 +86,23 @@ C Write output header information.
         sn=ssname(icn)
         write(outs,'(a,i2,3a)') 'Surface ',i,' (',sn(1:lnblnk(sn)),')'
         call edisp(itru,outs)
-        write(outs,'(3a)') ' Hour   Direct   Diffuse'
+        write(outs,'(3a)') ' Hour   Direct   Diffuse   Solar   Solar'
         call edisp(itru,outs)
-        write(outs,'(3a)') '        Shading  Shading'
+        write(outs,'(3a)')
+     &                 '        Shading  Shading   Azimuth Altitude'
         call edisp(itru,outs)
 
 C Recover calculated shading for the current surface hour-by-hour.
         irec=irecs(i)+2
         iprint=0
         do 20 j=1,24
+           stime=float(j)
+           call eazalts(stime,iyd,slat,slon,isunupx,sazi,salt)
            read(iunit,rec=irec,iostat=istat,err=1000)isunup
            irec=irec+1
            if(isunup.eq.0)then			! Sun not up.
               if(iprint.eq.2)then
-                 write(outs,'(i2,a)')J,':00   After sun-set'
+                 write(outs,'(i2,a)')j,':00   After sun-set'
                  call edisp(itru,outs)
 C Don't write again.
                  iprint=-1
@@ -105,9 +113,10 @@ C Don't write again.
               psof(i,j)=0.0
            else					! Sun up.
               if(iprint.eq.1)then
-                 write(outs,'(I2,A)')J-1,':00   Before sun-rise'
+                 write(outs,'(i2,a)')j-1,':00   Before sun-rise'
                  call edisp(itru,outs)
               endif
+
 C inds indicates whether direct shading is total, partial or zero.
               read(iunit,rec=irec,iostat=istat,err=1000)inds
               irec=irec+1
@@ -118,21 +127,22 @@ C No direct shading.
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1
-                 write(outs,'(i2,a,f8.1,a)')j,':00     0.0%',
-     &                                     psof(i,j)*100,'%'
+                 write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
+     &                    ':00     0.0%',psof(i,j)*100.0,'%',sazi,salt
                  call edisp(itru,outs)
+                 shdft=shdft+psof(i,j)*100.0
                  ishdh=ishdh+1
 
 C Total direct shading.
               elseif(inds.eq.-1)then
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
-     &                                                      psof(i,j)
+     &                                                     psof(i,j)
                  irec=irec+1
-                 write(outs,'(i2,a,f8.1,a)')J,':00   100.0%',
-     &                                     psof(i,j)*100,'%'
+                 write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
+     &                    ':00   100.0%',psof(i,j)*100.0,'%',sazi,salt
                  call edisp(itru,outs)
-                 shddt=shddt+100.
-                 shdft=shdft+100.
+                 shddt=shddt+100.0
+                 shdft=shdft+psof(i,j)*100.0
                  ishdh=ishdh+1
 
 C Partial direct shading: increment irec by nox to skip over
@@ -142,12 +152,12 @@ C ioshd array.
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1
-                 shddt=shddt+pso(i,j)*100.
-                 shdft=shdft+psof(i,j)*100.
-                 ishdh=ishdh+1
-                 write(outs,'(i2,a,f8.1,a,f8.1,a)')J,':00',
-     &                      pso(i,j)*100,'%',psof(i,j)*100,'%'
+                 write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
+     &                pso(i,j)*100.0,'%',psof(i,j)*100.0,'%',sazi,salt
                  call edisp(itru,outs)
+                 shddt=shddt+pso(i,j)*100.0
+                 shdft=shdft+psof(i,j)*100.0
+                 ishdh=ishdh+1
               endif
            endif
    20   continue
@@ -185,6 +195,7 @@ C Outputs information on internal surface insolation.
 
       common/outin/iuout,iuin
       common/filech/ixopen,ixunit,ixpunit
+      common/prec8/slat,slon
       common/contr/mon,isc(ms),iyd
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
@@ -197,16 +208,17 @@ C Outputs information on internal surface insolation.
       character month*3,outs*124,sn*12
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      dimension month(12)
+      dimension month(12),iavdec(12)
       logical close,ok,dok
 
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
 
       if(isadd(mon).eq.0.or.ishd(mon).eq.1)then
-         call edisp(itru,' ')
+         call edisp(iuout,' ')
          write(outs,'(3a)')'No insolation data for ',month(mon),'!'
-         call edisp(itru,outs)
+         call edisp(iuout,outs)
          return
       endif
 
@@ -218,7 +230,8 @@ C If output to file, alter the edisp unit number.
 
       kount=0
       call edisp(itru,' ')
-      write(outs,'(3a)')'Internal surface insolation for ',month(mon),
+      write(outs,'(a,i2,1x,2a)')'Internal surface insolation for ',
+     &                           iavdec(mon),month(mon),
      &                  '.'
       call edisp(itru,outs)
 
@@ -233,11 +246,15 @@ C ntmc is 0 or 1.
          write(outs,'(a,i2,3a)') 'Source surface is ',i,' (',
      &                           sn(1:lnblnk(sn)),').'
          call edisp(itru,outs)
-         call edisp(itru,' Hour  Source   Receiving     Proportion')
-         call edisp(itru,'       Shading  Surface       Received')
+         call edisp(itru,
+     & ' Hour  Source   Receiving     Proportion   Solar   Solar')
+         call edisp(itru,
+     & '       Shading  Surface       Received     Azimuth Altitude')
 
          iprint=0
          do 20 j=1,24
+            stime=float(j)
+            call eazalts(stime,iyd,slat,slon,isunupx,sazi,salt)
 C Sun not up.
             if(insst(kount,j,1).eq.-1)then
                if(iprint.eq.2)then
@@ -254,7 +271,7 @@ C Surface shaded.
                   write(outs,'(i2,a)')j-1,':00  Before sun-rise'
                   call edisp(itru,outs)
                endif
-               write(outs,'(i2,a)')  j,':00  100.0%'
+               write(outs,'(i2,a,28x,2f8.1)')  j,':00  100.0%',sazi,salt
                call edisp(itru,outs)
                iprint=2
 C Surface insolated.
@@ -264,8 +281,8 @@ C Surface insolated.
                   call edisp(itru,outs)
                endif
                if(pso(i,j).gt.0.999)then
-                  write(outs,1000)j
- 1000             format(i2,':00 100.0%')
+                  write(outs,1000)j,sazi,salt
+ 1000             format(i2,':00 100.0%',2f8.1)
                   call edisp(itru,outs)
                else
                   do 30 k=1,misur
@@ -278,9 +295,9 @@ C non zero pinsst.
                            icm=izstocn(icomp,l)
                            sn=ssname(icm)
                            write(outs,1001)j,pso(i,j)*100.0,l,
-     &                             sn(1:7),pinsst(kount,j,k)*100.0
+     &                       sn(1:7),pinsst(kount,j,k)*100.0,sazi,salt
  1001                      format(i2,':00',f6.1,'%   ',i2,' (',a,')',
-     &                             f9.1,'%')
+     &                             f9.1,'%',4x,2f8.1)
                            call edisp(itru,outs)
                         else
                            l=insst(kount,j,k)

@@ -55,8 +55,8 @@ C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-      pi = 4.0 * atan(1.0)
-      r = pi/180.0
+      pi=4.0*atan(1.0)
+      r=pi/180.0
 
 C Compute the surface azimuth (pazi), elevation (pelv)
 C X-axis tilt (ptilt) angles.
@@ -79,8 +79,8 @@ C the axis towards the origin.
       ga=-ptilt*r
 
 C Set up transform equation coefficients.
-C Transformation order: Z-axis (al from pazi) then
-C x-axis (be from pelv) then Y-axis (ga from ptilt)
+C Transformation order: z-axis (al from pazi) then
+C x-axis (be from pelv) then y-axis (ga from ptilt)
 C rotation.
       a(1)=cos(al)*cos(ga)
       a(2)=sin(al)*cos(ga)
@@ -117,11 +117,11 @@ C Transformed z.
          zft(i)=(xs-xor)*c(1)+(ys-yor)*c(2)+(xs-xor)*c(3)
      &          -(ys-yor)*c(4)+(zs-zor)*c(5)
 
-C Transformed Y value should be zero; error if not.
+C Transformed y value should be zero; error if not.
          if(abs(yft(i)).gt.1.E-5)then
             call edisp(icout,' ')
             write(outs,9999)is
- 9999       format('TRNSF1: Surface ',I2,' is probably not coplanar!')
+ 9999       format('TRNSF1: Surface ',i2,' is probably not coplanar!')
             call edisp(icout,outs)
             write(outs,9998)i,xs,ys,zs
  9998       format('Vertex ',i2,', which has coordinates ',3f11.6,',')
@@ -174,9 +174,9 @@ C Trace output.
 
 C ************** TRNSF2 
 C Convert solar angles (sazi1 and salt1) in original coordinate
-C system to corresponding angles (sazi2,salt2) in transformed
-C coordinate system to allow obstruction point projections
-C in new coordinate system in TRNSF3.
+C system to corresponding angles (sazi2 and salt2) in transformed
+C coordinate system (target external surface) to allow obstruction
+C point projections in new coordinate system in trnsf3.
 
       subroutine trnsf2(ihr)
 
@@ -192,7 +192,7 @@ C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-      pi = 4.0 * atan(1.0)
+      pi=4.0*atan(1.0)
       r=pi/180.0
       tsr=sin(salt1*r)/cos(salt1*r)
 
@@ -205,7 +205,7 @@ C away at the appropriate solar angles (sazi1 and salt1).
 C Dependent on which quadrant sun is in, convert sun position
 C to a distant point (x2,y2,z2) for later transformation to the
 C new coordinate system, along with point (x1,y1,z1), to give
-C the solar incindence line in this new system.
+C the solar incidence line in this new system.
       if(sazi1.lt.90.0)then
          ang=90.0-sazi1
          tang=sin(ang*r)/cos(ang*r)
@@ -218,7 +218,7 @@ C the solar incindence line in this new system.
          y2=-5000.
          z2=5000.*tsr/sin(ang*r)
          x2=5000./tang
-      elseif(sazi1.gt.180.0.and.sazi1.lt.270.0)theN
+      elseif(sazi1.gt.180.0.and.sazi1.lt.270.0)then
          ang=sazi1-180.0
          tang=sin(ang*r)/cos(ang*r)
          y2=-5000.
@@ -249,7 +249,7 @@ C the solar incindence line in this new system.
 C Translate/rotate both points (in order z-, x- then
 C y-axis rotation) to new coordinate system.
 
-c Transformed x.
+C Transformed x.
       xt1=(x1-xor)*a(1)+(y1-yor)*a(2)-(x1-xor)*a(3)+
      &         (y1-yor)*a(4)-(z1-zor)*a(5)
       xt2=(x2-xor)*a(1)+(y2-yor)*a(2)-(x2-xor)*a(3)+
@@ -283,32 +283,26 @@ C Altitude.
 C Azimuth.
       dx=xt2-xt1
       dy=yt2-yt1
-      arg=abs(dy/dx)   ! division by zero possible here
-      angl=atan(arg)/r
-      if(dx.gt.0.0.and.dy.lt.0.0)then
-         sazi2=90.+angl
-      elseif(dx.gt.0.0.and.dy.gt.0.0)then
-         sazi2=90.-angl
-      elseif(dx.lt.0.0.and.dy.gt.0.0)then
-         sazi2=270.+angl
-      elseif(dx.lt.0.0.and.dy.lt.0.0)then
-         sazi2=270.-angl
-      endif
-
-C Special cases:
-C 1. When transformed solar azimuth is normal to the
-C transformed surface.
-      if(dx.lt..001.and.dx.gt.-.001)then
+      if(dx.lt.0.001.and.dx.gt.-0.001)then
+C Transformed solar azimuth is normal to the transformed surface.
          sazi2=0.
-
-C 2. When surface is facing away from the transformed sun.
          if(dy.lt.0.)sazi2=180.
-
-C 3. When the transformed solar azimuth is parallel to
-C the transformed surface. 
       elseif(dy.lt.0.001.and.dy.gt.-0.001)then
+C Transformed solar azimuth is parallel to the transformed surface. 
          sazi2=90.
          if(dx.lt.0.)sazi2=270.
+      else
+         arg=abs(dy/dx)
+         angl=atan(arg)/r
+         if(dx.gt.0.0.and.dy.lt.0.0)then
+            sazi2=90.+angl
+         elseif(dx.gt.0.0.and.dy.gt.0.0)then
+            sazi2=90.-angl
+         elseif(dx.lt.0.0.and.dy.gt.0.0)then
+            sazi2=270.+angl
+         elseif(dx.lt.0.0.and.dy.lt.0.0)then
+            sazi2=270.-angl
+         endif
       endif
 
 C Trace output.
@@ -350,7 +344,7 @@ C the plane of the target surface. The projected points are specified
 C relative to the local face coordinate system. The y-coordinate is
 C left unprojected but in the new coordinate system.
 
-      subroutine trnsf3(ibn,ibs)
+      subroutine trnsf3(ihr,ibn,ibs)
 
       common/tracech/icout
       common/obs/xc(8),yc(8),zc(8)
@@ -395,7 +389,7 @@ C eta1 and eta2 respectively.
       a2=abs(eta2*r)
       sa2=sin(a2)
       ca2=cos(a2)
-      if(abs(ca2).lt..00001)ca2=.00001
+      if(abs(ca2).lt.0.00001)ca2=0.00001
       ta2=sa2/ca2
       if(eta2.GT.0.0)ta2=-ta2
 
@@ -431,9 +425,9 @@ C Tranform and project z.
 C Trace output.
       if(tok)then
          call edisp(icout,' ')
-         write(outs,9999)ibn,ibs
+         write(outs,9999)ibn,ibs,ihr
  9999    format('*** TRNSF3: projection of obstruction block ',i2,
-     &          ', surface ',i2,'.')
+     &          ', surface ',i2,', hour ',i2,'.')
          call edisp(icout,outs)
          call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
          call edisp(icout,'X,Y,Z coordinates:')

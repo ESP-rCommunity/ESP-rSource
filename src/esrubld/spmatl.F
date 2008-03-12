@@ -149,7 +149,8 @@ C Special materials
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
      &ARP(MCOM,MS),ARF(MCOM,MS)  
 
-      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS)      
+      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS),
+     &                                                    EXSHADF(MS)      
 
       REAL VOC,ISC,VMP,IMP,QREF,TREF,SCELL,PBRCH,EMPV,VALF,
      &E,K,DF1,DF2,DF,IO,IL,VMP1,VMP2,VMP3,VMP4,
@@ -487,7 +488,8 @@ C Special materials
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
-      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS)      
+      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS),
+     &                                                    EXSHADF(MS)      
 
       COMPLEX VSPM
 
@@ -2009,12 +2011,14 @@ C Special materials
       real    arp            !- present time adjacent incident radiation
       real    arf            !- future time adjacent incident radiation
 
-      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS)
+      COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS),
+     &                                                    EXSHADF(MS)
       real    exrad          !- total solar radiation incident on surface per unit area (includes shading effects)
       real    exdir          !- direct solar radiation incident on surface per unit area (includes shading effects)
       real    exdif          !- diffuse solar radiation incident on surface per unit area (shading effect
                              !- does not apply on diffuse component)
-      real    exshad         !- shaded portion expressed as a factor b/w 0 and 1 of surface
+      real    exshad         !- direct shaded portion expressed as a factor b/w 0 and 1 of surface
+      real    exshadf        !- diffuse shaded portion expressed as a factor b/w 0 and 1 of surface
 
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),

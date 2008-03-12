@@ -448,7 +448,7 @@ C  - bCriticalErr: flag indicating if a critical error was
 C    encountered.
 C
 C----------------------------------------------------------------------      
-      subroutine Check_MY_clm_db(bAutoOK,cAction,bCriticalErr)
+      subroutine Check_MY_clm_db(bAutoOK,cActionPass,bCriticalErr)
       implicit none
 #include "building.h"
 #include "MultiYear_simulations.h"      
@@ -459,7 +459,7 @@ C External functions.
 C Passed arguements
       logical bCriticalErr
       logical bAutoOK
-      character*16 cAction
+      character*(*) cActionPass
 
 C----------------------------------------------------------------------
 C     ESP-r variables 
@@ -480,11 +480,18 @@ C.....Flags for file status
       integer iYr_buf             ! year buffer
       character*124 cMsg          ! message to be displayed to buffer
       character*124 cContext      ! contextual message
+      character*16 cAction
 
 C----------------------------------------------------------------------
 C     Initialze context buffer
 C----------------------------------------------------------------------
       write (cContext, '(A)') ' Verifying multi-year climate db: '
+
+C----------------------------------------------------------------------
+C     Truncate cAction, if necessary
+C----------------------------------------------------------------------
+      write (cAction, '(A)') cActionPass(1:min(lnblnk(cActionPass),16))
+
 C----------------------------------------------------------------------
 C.    Have sufficient records been defined?
 C----------------------------------------------------------------------
@@ -1312,7 +1319,7 @@ C  - bFileExists - flag indicating that file was found
 C  - bCreate  - flag indicating file should be created
 C
 C----------------------------------------------------------------------      
-      subroutine Spec_MY_clm_db(cAction,bFileExists,bCreate)
+      subroutine Spec_MY_clm_db(cActionPass,bFileExists,bCreate)
       implicit none
 
 #include "building.h"
@@ -1324,6 +1331,7 @@ C External functions.
 C Passed arguements
       logical bFileExists
       logical bCreate
+      character*(*) cActionPass
       character*16 cAction
       
 C----------------------------------------------------------------------
@@ -1360,6 +1368,8 @@ C----------------------------------------------------------------------
       H(3) = 'should be read during a multi-year simulation.'
       H(4) = 'Climate files can be added to a multi-year'
       H(5) = 'database using the project manager (prj).'
+
+      write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
 
 C----------------------------------------------------------------------
 C     User must attempt to define the database. If they fail on
@@ -1504,7 +1514,7 @@ C
 C  - bOrderChanged: flag indicating if records were out of order
 C
 C----------------------------------------------------------------------      
-      subroutine Sort_MY_clm_db(cContext,cAction,bOrderChanged)
+      subroutine Sort_MY_clm_db(cContext,cActionPass,bOrderChanged)
       implicit none
 #include "building.h"
 #include "MultiYear_simulations.h"      
@@ -1525,11 +1535,17 @@ C----------------------------------------------------------------------
       
       logical bSorted, bInOrder   ! flags for sorting loop
 
-
+      character*(*) cActionPass
       integer iYr_buf             ! year buffer
       character*72 cFile_buf      ! file name buffer
       character*124 cContext      ! contextual buffer
       character*16 cAction        ! Action to be undertaken
+
+C External functions.     
+      integer lnblnk
+
+      write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
+
 C----------------------------------------------------------------------
 C     Check if clm files have been defined in order, and sort if
 C     if necessary.
@@ -1629,7 +1645,7 @@ C    encountered.
 C  - bContigious: Flag indicating if file was contigious 
 C
 C----------------------------------------------------------------------      
-      subroutine Fill_MY_clm_db(cContext,cAction,
+      subroutine Fill_MY_clm_db(cContext,cActionPass,
      &                          bCriticalErr,bNonContigious)
       implicit none
 #include "building.h"
@@ -1657,12 +1673,16 @@ C----------------------------------------------------------------------
       character*248 cFile_buf     ! file name buffer
       character*124 cMsg, cContext !msg buffers
       character*16 cAction        ! action flag
-      
+      character*(*) cActionPass
       logical bDone               ! Loop control
       logical bOK                 ! Misc flag
-    
-      bNonContigious   = .false.
 
+C External functions.     
+      integer lnblnk
+
+      write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
+
+      bNonContigious   = .false.
 
 C---------------------------------------------------------------------
 C     Have too many years been specified?
@@ -1757,7 +1777,7 @@ C
 C  - bDuplicates: Flag indicating if file was contigious
 C
 C----------------------------------------------------------------------      
-      subroutine Prune_MY_clm_db(cContext,cAction,bDuplicates)
+      subroutine Prune_MY_clm_db(cContext,cActionPass,bDuplicates)
       implicit none
 #include "building.h"
 #include "MultiYear_simulations.h"      
@@ -1765,7 +1785,8 @@ C----------------------------------------------------------------------
 C     Passed variable
 C----------------------------------------------------------------------
       logical bDuplicates
-      character*72 cAction
+      character*(*) cActionPass
+      character*16 cAction
 C----------------------------------------------------------------------
 C     ESP-r variables 
 C----------------------------------------------------------------------
@@ -1787,8 +1808,11 @@ C.....Flags for file status
       character*124 cContext      ! context message
       logical bDone               ! Loop control
       logical bOK                 ! Misc flag
-      
 
+C External functions.     
+      integer lnblnk
+
+      write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
 C----------------------------------------------------------------------
 C     Are years contigious?
 C----------------------------------------------------------------------

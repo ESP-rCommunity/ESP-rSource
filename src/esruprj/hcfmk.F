@@ -1071,6 +1071,7 @@ C IOPT: 1 = VAV with CV heating, 2 = VAV with VV heating, 3 = CV variable T.
       CHARACTER*25 ITEM(15)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical ok,dok
+      real airflow   ! temprary value for editing
 
 C These approaches are active for all time-steps of the simulation
 C (i.e. there is only one convection-calculation control period).
@@ -1159,6 +1160,7 @@ C and minimum and maximum allowable diffuser temperatures.
         h(2)='zone. This is expressed in terms of zone air changes per'
         h(3)='hour.'
         WRITE(outs,'(a)')' air flow rate in ac/h'
+        airflow=CVdata(IPER,1,2)  ! give it a typical value
         CALL EASKR(airflow,outs,' ',
      &             3.0,'W',100.,'W',3.0,'ac/h',IER,3)
         do 51 ISUR=1,NZSUR(ICOMP)
@@ -1169,6 +1171,7 @@ C and minimum and maximum allowable diffuser temperatures.
         h(2)='by the system to the zone. This is the design temperature'
         h(3)='for cooling and is measured at the diffuser.'
         WRITE(outs,'(a)')' minimum supply air temp'
+        Tmin=CVdata(IPER,1,4)  ! give it a typical value
         CALL EASKR(Tmin,outs,' ',
      &             5.0,'W',30.,'W',13.0,'min T',IER,3)
         do 52 ISUR=1,NZSUR(ICOMP)
@@ -1179,6 +1182,7 @@ C and minimum and maximum allowable diffuser temperatures.
         h(2)='by the system to the zone. This is the design temperature'
         h(3)='for heating and is measured at the diffuser.'
         WRITE(outs,'(a)')' maximum supply air temp'
+        Tmax=CVdata(IPER,1,3)  ! give it a typical value
         CALL EASKR(Tmax,outs,' ',
      &             5.0,'W',80.,'W',43.0,'max T',IER,3)
         do 53 ISUR=1,NZSUR(ICOMP)
@@ -1194,6 +1198,7 @@ C and maximum air flow rates.
         h(1)='Enter the temperature at which air is supplied to the'
         h(2)='zone when the system is cooling.'
         WRITE(outs,'(a)')' diffuser setpoint temp for cooling'
+        Tmin=CVdata(IPER,1,2)  ! give it a typical value
         CALL EASKR(Tmin,outs,' ',
      &             5.0,'W',30.,'W',13.0,'setpoint T',IER,2)
         do 54 ISUR=1,NZSUR(ICOMP)
@@ -1206,6 +1211,7 @@ C and maximum air flow rates.
         h(4)='position. This is expressed in terms of zone air'
         h(5)='changes per hour.'
         WRITE(outs,'(a)')' min air flow rate in ac/h'
+        airflow=CVdata(IPER,1,3) ! give it a typical value
         CALL EASKR(airflow,outs,' ',
      &             3.0,'W',100.,'W',3.0,'ac/h',IER,5)
         do 55 ISUR=1,NZSUR(ICOMP)
@@ -1217,6 +1223,7 @@ C and maximum air flow rates.
         h(3)='dampers in the VAV box are at their max position. This'
         h(4)='is expressed in terms of zone air changes per hour.'
         WRITE(outs,'(a)')' max air flow rate in ac/h'
+        airflow=CVdata(IPER,1,4) ! give it a typical value
         CALL EASKR(airflow,outs,' ',
      &             3.0,'W',100.,'W',9.0,'ac/h',IER,4)
         do 56 ISUR=1,NZSUR(ICOMP)
@@ -1231,6 +1238,7 @@ C and maximum air flow rates.
         h(6)='supplied from another source (e.g. baseboard heaters)'
         h(7)='which does not affect the flow regime.'
         WRITE(outs,'(a)')' max diffuser temperature'
+        Tmax=CVdata(IPER,1,6) ! give it a typical value
         CALL EASKR(Tmax,outs,' ',
      &             15.0,'W',80.,'W',43.0,'max supply T',IER,7)
         do 57 ISUR=1,NZSUR(ICOMP)
@@ -1682,6 +1690,7 @@ C and minimum and maximum allowable diffuser temperatures.
         h(2)='zone. This is expressed in terms of zone air changes per'
         h(3)='hour.'
         WRITE(outs,'(a)')' air flow rate in ac/h'
+        airflow=CVdata(IPER,1,2)   ! give it a typical value
         CALL EASKR(airflow,outs,' ',
      &             3.0,'W',100.,'W',3.0,'ac/h',IER,3)
         do 51 ISUR=1,NZSUR(ICOMP)
@@ -1692,6 +1701,7 @@ C and minimum and maximum allowable diffuser temperatures.
         h(2)='by the system to the zone. This is the design temperature'
         h(3)='for cooling and is measured at the diffuser.'
         WRITE(outs,'(a)')' minimum supply air temp'
+        Tmin=CVdata(IPER,1,4)   ! give it a typical value 
         CALL EASKR(Tmin,outs,' ',
      &             5.0,'W',30.,'W',13.0,'min T',IER,3)
         do 52 ISUR=1,NZSUR(ICOMP)
@@ -1702,6 +1712,7 @@ C and minimum and maximum allowable diffuser temperatures.
         h(2)='by the system to the zone. This is the design temperature'
         h(3)='for heating and is measured at the diffuser.'
         WRITE(outs,'(a)')' maximum supply air temp'
+        Tmax=CVdata(IPER,1,3)   ! give it a typical value 
         CALL EASKR(Tmax,outs,' ',
      &             5.0,'W',80.,'W',43.0,'max T',IER,3)
         do 53 ISUR=1,NZSUR(ICOMP)
@@ -1717,6 +1728,7 @@ C and maximum air flow rates.
         h(1)='Enter the temperature at which air is supplied to the'
         h(2)='zone when the system is cooling.'
         WRITE(outs,'(a)')' diffuser setpoint temp for cooling'
+        Tmin=CVdata(IPER,1,2)   ! give it a typical value 
         CALL EASKR(Tmin,outs,' ',
      &             5.0,'W',30.,'W',13.0,'setpoint T',IER,2)
         do 54 ISUR=1,NZSUR(ICOMP)
@@ -1729,6 +1741,7 @@ C and maximum air flow rates.
         h(4)='position. This is expressed in terms of zone air'
         h(5)='changes per hour.'
         WRITE(outs,'(a)')' min air flow rate in ac/h'
+        airflow=CVdata(IPER,1,3)  ! give it a typical value
         CALL EASKR(airflow,outs,' ',
      &             3.0,'W',100.,'W',3.0,'ac/h',IER,5)
         do 55 ISUR=1,NZSUR(ICOMP)
@@ -1740,6 +1753,7 @@ C and maximum air flow rates.
         h(3)='dampers in the VAV box are at their max position. This'
         h(4)='is expressed in terms of zone air changes per hour.'
         WRITE(outs,'(a)')' max air flow rate in ac/h'
+        airflow = CVdata(IPER,1,4)  ! give it a typical value
         CALL EASKR(airflow,outs,' ',
      &             3.0,'W',100.,'W',9.0,'ac/h',IER,4)
         do 56 ISUR=1,NZSUR(ICOMP)
@@ -1754,6 +1768,7 @@ C and maximum air flow rates.
         h(6)='supplied from another source (e.g. baseboard heaters)'
         h(7)='which does not affect the flow regime.'
         WRITE(outs,'(a)')' max diffuser temperature'
+        Tmax=CVdata(IPER,1,6)  ! give it a typical value
         CALL EASKR(Tmax,outs,' ',
      &             15.0,'W',80.,'W',43.0,'max supply T',IER,7)
         do 57 ISUR=1,NZSUR(ICOMP)
@@ -2019,6 +2034,7 @@ C Given a velocity, give approx hc for flow || with face.
         H(6)='For comparison, typcial inside correlations based on '
         H(7)='Alamdari & Hammond (assuming 1 degree C delta T and a'
         H(8)='typical surface dimension of 2m.). '
+        V1=0.15
         CALL EASKR(V1,' ','Air velocity (m/s) [see help message] : ',
      &          0.,'F',24.,'F',0.15,'air velocity',IER,8)
         V=V1
