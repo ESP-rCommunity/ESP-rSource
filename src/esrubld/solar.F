@@ -344,8 +344,9 @@ C Bidirectional data
                           !1: the existing transmittance and at different layers absorptance 
                           !2: the transmittance, g value and reflectance 
                           !3: the transmittance and g value only
-      REAL EFF_TOT_ABS,XREFLECT_interp,XGVALUE_interp
-                          
+      REAL EFF_TOT_ABS,XREFLECT_interp,XGVALUE_interp,qi_bidirectional
+      REAL a_inner_layer,Rs_glazing,a_outer_layer                    
+
       ZAREA=ZOA(ICOMP)
 
 C      write (6,*) 'solar ',btimef
@@ -1238,8 +1239,34 @@ C or g,te only)
      &               IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
      &               XGVALUE_interp)
 C                write(6,*) XGVALUE_interp
-
 C End of interpolation for bidirectional data
+
+C Solar flux for bidirectional data (experimental conditions)
+C will be g value - transmittance
+                qi_bidirectional=XGVALUE_interp-XD
+
+C Calulate the thermal resistance of the glazing based on the U values
+C Re and Ri values defined in the bidirectional data file
+C<<<<<<<<Make this Rs an array????>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+                Rs_glazing=(1/TUVALUE(IBIDIR,1))-TREXTERNAL(IBIDIR,1)-
+     &                     TRINTERNAL(IBIDIR,1)
+
+C Calculate the effective absorptance of the inner layer (based on
+C the experimental bidirectional data)
+                a_inner_layer=(qi_bidirectional*(TREXTERNAL(IBIDIR,1)+
+     &                      Rs_glazing+TRINTERNAL(IBIDIR,1))-
+     &                      EFF_TOT_ABS*TREXTERNAL(IBIDIR,1))/Rs_glazing
+
+C Calculate the effective absorptance of the outer layer (based on
+C the experimental bidirectional data)
+                a_outer_layer=(EFF_TOT_ABS*(TREXTERNAL(IBIDIR,1)+
+     &                      Rs_glazing)-qi_bidirectional*
+     &                      (TREXTERNAL(IBIDIR,1)+Rs_glazing+
+     &                      TRINTERNAL(IBIDIR,1)))/Rs_glazing
+
+              write(6,*) Rs_glazing,'  ',qi_bidirectional
+              write(6,*) a_inner_layer,'  ', a_outer_layer
+          
               ENDIF
             ENDIF
  
