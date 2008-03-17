@@ -344,7 +344,7 @@ C Bidirectional data
                           !1: the existing transmittance and at different layers absorptance 
                           !2: the transmittance, g value and reflectance 
                           !3: the transmittance and g value only
-      REAL EFF_TOT_ABS,XREFLECT_interp
+      REAL EFF_TOT_ABS,XREFLECT_interp,XGVALUE_interp
                           
       ZAREA=ZOA(ICOMP)
 
@@ -1211,8 +1211,38 @@ C Need to interpolate the reflectance for bidirectional data
               ELSEIF(IBIDATATYPE.EQ.3)THEN
                 EFF_TOT_ABS=0.5*(1-XD)
               ENDIF              
-            ENDIF
 
+C Now interpolate the g-values to use for the calculation of
+C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
+C or g,te only)            
+              IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN   
+                XGVALUE1=TMGVALUE(IBIDIR,1,IND1(I),IND2(I))
+                IF(IND1(I).eq.MANH)then
+                  XGVALUE2=XGVALUE1
+                ELSE
+                  XGVALUE2=TMGVALUE(IBIDIR,1,IND1(I)+1,IND2(I))
+                ENDIF
+                IF(IND2(I).eq.MANV)then
+                  XGVALUE3=XGVALUE1
+                ELSE
+                  XGVALUE3=TMGVALUE(IBIDIR,1,IND1(I),IND2(I)+1)
+                ENDIF
+                IF(IND1(I).eq.MANH)then
+                  XGVALUE4=XGVALUE3
+                ELSEIF(IND2(I).eq.MANV)then
+                  XGVALUE4=XGVALUE2
+                ELSE
+                  XGVALUE4=TMGVALUE(IBIDIR,1,IND1(I)+1,IND2(I)+1)
+                ENDIF                
+                CALL MZWINP2(XGVALUE1,XGVALUE2,XGVALUE3,XGVALUE4,
+     &               IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
+     &               XGVALUE_interp)
+C                write(6,*) XGVALUE_interp
+
+C End of interpolation for bidirectional data
+              ENDIF
+            ENDIF
+ 
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
               POO=0.
               POFF=0.
