@@ -337,6 +337,15 @@ C tfftrace is the diffuse transmission at the current timestep for each surface.
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
+C Bidirectional data
+      COMMON/BITYPE/IBIDATATYPE   
+      integer IBIDATATYPE !this will probably have to be kept in a common block
+                          !It will specify what type of data to read
+                          !1: the existing transmittance and at different layers absorptance 
+                          !2: the transmittance, g value and reflectance 
+                          !3: the transmittance and g value only
+      REAL EFF_TOT_ABS,XREFLECT_interp
+                          
       ZAREA=ZOA(ICOMP)
 
 C      write (6,*) 'solar ',btimef
@@ -1166,8 +1175,42 @@ C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
      &                     PSAZI2(I),PSELV2(I),XD)
               CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
      &                     PSAZI2(I),PSELV2(I),DTOD)
+
 C Get diffuse transmission from common block.
               XF=THTSOB(1,1)
+
+C Get effective total absorptance from the interpolation of the solar
+C transmittance according to a method defined by Fraunhofer.
+C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
+C or g,te only)
+              IF(IBIDATATYPE.EQ.2)THEN            
+
+C Need to interpolate the reflectance for bidirectional data
+                XX1=TMREFLECT(IBIDIR,1,IND1(I),IND2(I))
+                IF(IND1(I).eq.MANH)then
+                  XX2=XX1
+                ELSE
+                  XX2=TMREFLECT(IBIDIR,1,IND1(I)+1,IND2(I))
+                ENDIF
+                IF(IND2(I).eq.MANV)then
+                  XX3=XX1
+                ELSE
+                  XX3=TMREFLECT(IBIDIR,1,IND1(I),IND2(I)+1)
+                ENDIF
+                IF(IND1(I).eq.MANH)then
+                  XX4=XX3
+                ELSEIF(IND2(I).eq.MANV)then
+                  XX4=XX2
+                ELSE
+                  XX4=TMREFLECT(IBIDIR,1,IND1(I)+1,IND2(I)+1)
+                ENDIF                
+                CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
+     &                       PSAZI2(I),PSELV2(I),XREFLECT_interp)                
+
+                EFF_TOT_ABS=1-XD-XREFLECT_interp
+              ELSEIF(IBIDATATYPE.EQ.3)THEN
+                EFF_TOT_ABS=0.5*(1-XD)
+              ENDIF              
             ENDIF
 
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN

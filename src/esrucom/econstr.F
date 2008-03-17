@@ -1224,7 +1224,7 @@ C                          measuremnts)
      &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
      &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
      &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
-      
+      COMMON/BITYPE/IBIDATATYPE       
       character OUTSTR*124,OUTS*124,LUA*72,WORD*20
       character bidirfile*72,bidirname*12
 
