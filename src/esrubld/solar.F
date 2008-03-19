@@ -337,7 +337,7 @@ C tfftrace is the diffuse transmission at the current timestep for each surface.
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
-C Bidirectional data
+C Bidirectional data - explicit definitions:
       COMMON/BITYPE/IBIDATATYPE   
       integer IBIDATATYPE !this will probably have to be kept in a common block
                           !It will specify what type of data to read
@@ -345,8 +345,15 @@ C Bidirectional data
                           !2: the transmittance, g value and reflectance 
                           !3: the transmittance and g value only
       REAL EFF_TOT_ABS,XREFLECT_interp,XGVALUE_interp,qi_bidirectional
-      REAL a_inner_layer,Rs_glazing,a_outer_layer                    
-
+      REAL a_inner_layer,Rs_glazing,a_outer_layer, X_tr_interp                   
+      REAL X_tr1_bitype2and3,X_tr2_bitype2and3,X_tr3_bitype2and3
+      REAL X_tr4_bitype2and3 !Using it for the interpolation of transmittance in...
+                             !cases of bidirectional data type 2 and 3. This is... 
+                             !a different variable than the one used for type 1 
+                             !(i.e. XX1, XX2, XX3, XX4) to avoid mixing up in complex
+                             !situations.
+                             
+      
       ZAREA=ZOA(ICOMP)
 
 C      write (6,*) 'solar ',btimef
@@ -911,6 +918,113 @@ C Set a local flag if bidirectional data available for this surface.
             KP=NBPONT(ICOMP,I)
             INODE=1
 
+C Interpolate transmittance and g values in case of bidirectional
+C data type 2 and 3. Also interpolate reflectance in the case of
+C data type 3. Do this outside the loop of NE (per layer).
+            IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+              X_tr1_bitype2and3=TMTSOD(IBIDIR,1,IND1(I),IND2(I))
+              XGVALUE1=TMGVALUE(IBIDIR,1,IND1(I),IND2(I))
+              IF(IBIDATATYPE.EQ.2)THEN            
+C Need to interpolate the reflectance for bidirectional data
+                XX1=TMREFLECT(IBIDIR,1,IND1(I),IND2(I))
+              ENDIF           
+              IF(IND1(I).eq.MANH)THEN
+                X_tr2_bitype2and3=X_tr1_bitype2and3              
+                XGVALUE2=XGVALUE1
+                IF(IBIDATATYPE.EQ.2)THEN 
+                  XX2=XX1
+                ENDIF
+              ELSE
+                X_tr2_bitype2and3=TMTSOD(IBIDIR,1,IND1(I)+1,IND2(I))
+                 XGVALUE2=TMGVALUE(IBIDIR,1,IND1(I)+1,IND2(I))
+                IF(IBIDATATYPE.EQ.2)THEN
+                  XX2=TMREFLECT(IBIDIR,1,IND1(I)+1,IND2(I)) 
+                ENDIF                               
+              ENDIF
+              IF(IND2(I).eq.MANV)THEN
+                X_tr3_bitype2and3=X_tr1_bitype2and3
+                XGVALUE3=XGVALUE1
+                IF(IBIDATATYPE.EQ.2)THEN                
+                  XX3=XX1
+                ENDIF
+              ELSE
+                X_tr3_bitype2and3=TMTSOD(IBIDIR,1,IND1(I),IND2(I)+1)
+                XGVALUE3=TMGVALUE(IBIDIR,1,IND1(I),IND2(I)+1)
+                IF(IBIDATATYPE.EQ.2)THEN
+                  XX3=TMREFLECT(IBIDIR,1,IND1(I),IND2(I)+1)
+                ENDIF                                            
+              ENDIF
+              IF(IND1(I).eq.MANH)THEN
+                X_tr4_bitype2and3=X_tr3_bitype2and3
+                XGVALUE4=XGVALUE3
+                IF(IBIDATATYPE.EQ.2)THEN   
+                  XX4=XX3
+                ENDIF                                
+              ELSEIF(IND2(I).eq.MANV)THEN
+                X_tr4_bitype2and3=X_tr2_bitype2and3
+                XGVALUE4=XGVALUE2
+                IF(IBIDATATYPE.EQ.2)THEN
+                  XX4=XX2 
+                ENDIF                               
+              ELSE
+                X_tr4_bitype2and3=TMTSOD(IBIDIR,1,IND1(I)+1,IND2(I)+1)
+                XGVALUE4=TMGVALUE(IBIDIR,1,IND1(I)+1,IND2(I)+1)
+                IF(IBIDATATYPE.EQ.2)THEN   
+                   XX4=TMREFLECT(IBIDIR,1,IND1(I)+1,IND2(I)+1)   
+                ENDIF                         
+              ENDIF
+
+C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
+C X_tr_interp should be the same as XD that is used in the TMC loop afterwards.
+C<<< Consider doing the interpolation only once>>>>>
+              CALL MZWINP2(X_tr1_bitype2and3,X_tr2_bitype2and3,
+     &                    X_tr3_bitype2and3,X_tr4_bitype2and3,
+     &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
+     &                    X_tr_interp)
+              CALL MZWINP2(XGVALUE1,XGVALUE2,XGVALUE3,XGVALUE4,
+     &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
+     &                    XGVALUE_interp)     
+              IF(IBIDATATYPE.EQ.2)THEN
+                CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
+     &                    PSAZI2(I),PSELV2(I),XREFLECT_interp) 
+              ENDIF                
+C End of interpolation for bidirectional data
+
+C Get effective total absorptance from the interpolation of the solar
+C transmittance according to a method defined by Fraunhofer.
+C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
+C or g,te only)
+              IF(IBIDATATYPE.EQ.2)THEN   
+                EFF_TOT_ABS=1-X_tr_interp-XREFLECT_interp
+              ELSEIF(IBIDATATYPE.EQ.3)THEN
+                EFF_TOT_ABS=0.5*(1-X_tr_interp)
+              ENDIF  
+
+C Solar flux for bidirectional data (experimental conditions)
+C will be g value - transmittance
+              qi_bidirectional=XGVALUE_interp-XD
+
+C Calulate the thermal resistance of the glazing based on the U values
+C Re and Ri values defined in the bidirectional data file
+              Rs_glazing=(1/TUVALUE(IBIDIR,1))-TREXTERNAL(IBIDIR,1)-
+     &                   TRINTERNAL(IBIDIR,1)
+
+C Calculate the effective absorptance of the inner layer (based on
+C the experimental bidirectional data)
+              a_inner_layer=(qi_bidirectional*(TREXTERNAL(IBIDIR,1)+
+     &                      Rs_glazing+TRINTERNAL(IBIDIR,1))-
+     &                      EFF_TOT_ABS*TREXTERNAL(IBIDIR,1))/Rs_glazing
+
+C Calculate the effective absorptance of the outer layer (based on
+C the experimental bidirectional data)
+              a_outer_layer=(EFF_TOT_ABS*(TREXTERNAL(IBIDIR,1)+
+     &                      Rs_glazing)-qi_bidirectional*
+     &                      (TREXTERNAL(IBIDIR,1)+Rs_glazing+
+     &                      TRINTERNAL(IBIDIR,1)))/Rs_glazing
+
+              write(6,*) Rs_glazing,'  ',qi_bidirectional
+              write(6,*) a_inner_layer,'  ', a_outer_layer
+            ENDIF             
             DO 40 J=1,NE
               NNOD=NNDL(ICOMP,I,J)
               FNNOD=FLOAT(NNOD)
@@ -937,9 +1051,11 @@ C************************
                   ELSE
 
 C Bidirectional data available.
+                    IF(IBIDATATYPE.EQ.1)THEN
 C XX1 is the absorptance for those available array elements that
 C are less than the actual solar azimuth and elevation angles.
-                   XX1=TMABSO(IBIDIR,1,J,IND1(I),IND2(I))
+                      XX1=TMABSO(IBIDIR,1,J,IND1(I),IND2(I))
+                    ENDIF
                   ENDIF
                 ENDIF
 
@@ -956,24 +1072,26 @@ C are less than the actual solar azimuth and elevation angles.
                     XX2=TMCA(ICOMP,ITMC,J,IND2(I))
                   ELSE
 
-C Bidirectional case.
+C Bidirectional case - TYPE 1 DATA  (absorptances are available)
 C Note: if angle is +90, set XX2=XX1 etc.
-                    IF(IND1(I).eq.MANH)then
-                     XX2=XX1
-                     ELSE
-                     XX2=TMABSO(ITMC,1,J,IND1(I)+1,IND2(I))
-                    ENDIF
-                    IF(IND2(I).eq.MANV)then
-                     XX3=XX1
-                    ELSE
-                     XX3=TMABSO(ITMC,1,J,IND1(I),IND2(I)+1)
-                    ENDIF
-                    IF(IND1(I).eq.MANH)then
-                     XX4=XX3
-                    ELSEIF(IND2(I).eq.MANV)then
-                     XX4=XX2
-                    ELSE
-                     XX4=TMABSO(ITMC,1,J,IND1(I)+1,IND2(I)+1)
+                    IF(IBIDATATYPE.EQ.1)THEN
+                      IF(IND1(I).eq.MANH)then
+                        XX2=XX1
+                       ELSE
+                        XX2=TMABSO(ITMC,1,J,IND1(I)+1,IND2(I))
+                      ENDIF
+                      IF(IND2(I).eq.MANV)then
+                        XX3=XX1
+                      ELSE
+                        XX3=TMABSO(ITMC,1,J,IND1(I),IND2(I)+1)
+                      ENDIF
+                      IF(IND1(I).eq.MANH)then
+                        XX4=XX3
+                      ELSEIF(IND2(I).eq.MANV)then
+                        XX4=XX2
+                      ELSE
+                        XX4=TMABSO(ITMC,1,J,IND1(I)+1,IND2(I)+1)
+                      ENDIF
                     ENDIF
                   ENDIF
                 ENDIF
@@ -1011,9 +1129,31 @@ C Call MZWINP to interpolate between two values.
               CALL MZWINP(XX1,1.,XX2,ZERO,IND1(I),ANGI(I),ABD,DUMMY)
               CALL MZWINP(YY1,1.,YY2,ZERO,2,51.0,ABF,DUMMY)
             ELSE
+              IF(IBIDATATYPE.EQ.1)THEN
+
+C Absorptance is included in the bidirectional data file
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
-              CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
+                CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
      &                     PSAZI2(I),PSELV2(I),ABD)
+
+C Bidirectional data with transmittance and g values (plus reflectance
+C in some cases)
+              ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+
+C Always applicable for a 3-layer glazing
+C for external layer assign the calculated absorptance on the outer layer
+                IF(J.EQ.1)THEN
+                  ABD=a_outer_layer
+
+C Assign 0 for middle gas layer                
+                ELSEIF(J.EQ.2)THEN
+                  ABD=0
+
+C for internal layer assign the calculated absorptance on the inner layer
+                ELSEIF(J.EQ.3)THEN
+                  ABD=a_inner_layer
+                ENDIF                
+              ENDIF 
 C Get diffuse absorptance.
               ABF=TMABSDIF(IBIDIR,1,J)
             ENDIF
@@ -1107,6 +1247,7 @@ C XX? is the direct-direct component; YY? is the direct-diffuse component
                 ELSEIF(IBIDIR.EQ.0)THEN
                   XX2=TMCT(ICOMP,ITMC,IND2(I))
                 ELSE
+C<<<<<<<<<<<<<<CHECK IF THIS HAS TO BE MOVED OR LIMITED TO DATATYPE 1>>>>>>>>>>>>>>>>
 C Bidirectional case.
                   IF(IND1(I).eq.MANH)then
                     XX2=XX1
@@ -1171,6 +1312,8 @@ C Call MZWINP to interpolate between two values.
               CALL MZWINP(XX1,1.,XX2,ZERO,IND1(I),ANGI(I),XD,DUMMY)
               CALL MZWINP(YY1,1.,YY2,ZERO,2,51.0,XF,DUMMY)
             ELSE
+C<<<<<<<<<<<<<<<here add IBIDATYPE CONDITIONS>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
               CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
      &                     PSAZI2(I),PSELV2(I),XD)
@@ -1179,95 +1322,6 @@ C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
 
 C Get diffuse transmission from common block.
               XF=THTSOB(1,1)
-
-C Get effective total absorptance from the interpolation of the solar
-C transmittance according to a method defined by Fraunhofer.
-C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
-C or g,te only)
-              IF(IBIDATATYPE.EQ.2)THEN            
-
-C Need to interpolate the reflectance for bidirectional data
-                XX1=TMREFLECT(IBIDIR,1,IND1(I),IND2(I))
-                IF(IND1(I).eq.MANH)then
-                  XX2=XX1
-                ELSE
-                  XX2=TMREFLECT(IBIDIR,1,IND1(I)+1,IND2(I))
-                ENDIF
-                IF(IND2(I).eq.MANV)then
-                  XX3=XX1
-                ELSE
-                  XX3=TMREFLECT(IBIDIR,1,IND1(I),IND2(I)+1)
-                ENDIF
-                IF(IND1(I).eq.MANH)then
-                  XX4=XX3
-                ELSEIF(IND2(I).eq.MANV)then
-                  XX4=XX2
-                ELSE
-                  XX4=TMREFLECT(IBIDIR,1,IND1(I)+1,IND2(I)+1)
-                ENDIF                
-                CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
-     &                       PSAZI2(I),PSELV2(I),XREFLECT_interp)                
-
-                EFF_TOT_ABS=1-XD-XREFLECT_interp
-              ELSEIF(IBIDATATYPE.EQ.3)THEN
-                EFF_TOT_ABS=0.5*(1-XD)
-              ENDIF              
-
-C Now interpolate the g-values to use for the calculation of
-C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
-C or g,te only)            
-              IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN   
-                XGVALUE1=TMGVALUE(IBIDIR,1,IND1(I),IND2(I))
-                IF(IND1(I).eq.MANH)then
-                  XGVALUE2=XGVALUE1
-                ELSE
-                  XGVALUE2=TMGVALUE(IBIDIR,1,IND1(I)+1,IND2(I))
-                ENDIF
-                IF(IND2(I).eq.MANV)then
-                  XGVALUE3=XGVALUE1
-                ELSE
-                  XGVALUE3=TMGVALUE(IBIDIR,1,IND1(I),IND2(I)+1)
-                ENDIF
-                IF(IND1(I).eq.MANH)then
-                  XGVALUE4=XGVALUE3
-                ELSEIF(IND2(I).eq.MANV)then
-                  XGVALUE4=XGVALUE2
-                ELSE
-                  XGVALUE4=TMGVALUE(IBIDIR,1,IND1(I)+1,IND2(I)+1)
-                ENDIF                
-                CALL MZWINP2(XGVALUE1,XGVALUE2,XGVALUE3,XGVALUE4,
-     &               IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
-     &               XGVALUE_interp)
-C                write(6,*) XGVALUE_interp
-C End of interpolation for bidirectional data
-
-C Solar flux for bidirectional data (experimental conditions)
-C will be g value - transmittance
-                qi_bidirectional=XGVALUE_interp-XD
-
-C Calulate the thermal resistance of the glazing based on the U values
-C Re and Ri values defined in the bidirectional data file
-C<<<<<<<<Make this Rs an array????>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
-                Rs_glazing=(1/TUVALUE(IBIDIR,1))-TREXTERNAL(IBIDIR,1)-
-     &                     TRINTERNAL(IBIDIR,1)
-
-C Calculate the effective absorptance of the inner layer (based on
-C the experimental bidirectional data)
-                a_inner_layer=(qi_bidirectional*(TREXTERNAL(IBIDIR,1)+
-     &                      Rs_glazing+TRINTERNAL(IBIDIR,1))-
-     &                      EFF_TOT_ABS*TREXTERNAL(IBIDIR,1))/Rs_glazing
-
-C Calculate the effective absorptance of the outer layer (based on
-C the experimental bidirectional data)
-                a_outer_layer=(EFF_TOT_ABS*(TREXTERNAL(IBIDIR,1)+
-     &                      Rs_glazing)-qi_bidirectional*
-     &                      (TREXTERNAL(IBIDIR,1)+Rs_glazing+
-     &                      TRINTERNAL(IBIDIR,1)))/Rs_glazing
-
-              write(6,*) Rs_glazing,'  ',qi_bidirectional
-              write(6,*) a_inner_layer,'  ', a_outer_layer
-          
-              ENDIF
             ENDIF
  
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
