@@ -976,7 +976,6 @@ C Need to interpolate the reflectance for bidirectional data
 
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
 C X_tr_interp should be the same as XD that is used in the TMC loop afterwards.
-C<<< Consider doing the interpolation only once>>>>>
               CALL MZWINP2(X_tr1_bitype2and3,X_tr2_bitype2and3,
      &                    X_tr3_bitype2and3,X_tr4_bitype2and3,
      &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
@@ -1002,7 +1001,7 @@ C or g,te only)
 
 C Solar flux for bidirectional data (experimental conditions)
 C will be g value - transmittance
-              qi_bidirectional=XGVALUE_interp-XD
+              qi_bidirectional=XGVALUE_interp-X_tr_interp
 
 C Calulate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
@@ -1147,7 +1146,7 @@ C for external layer assign the calculated absorptance on the outer layer
 
 C Assign 0 for middle gas layer                
                 ELSEIF(J.EQ.2)THEN
-                  ABD=0
+                  ABD=0.
 
 C for internal layer assign the calculated absorptance on the inner layer
                 ELSEIF(J.EQ.3)THEN
@@ -1247,7 +1246,6 @@ C XX? is the direct-direct component; YY? is the direct-diffuse component
                 ELSEIF(IBIDIR.EQ.0)THEN
                   XX2=TMCT(ICOMP,ITMC,IND2(I))
                 ELSE
-C<<<<<<<<<<<<<<CHECK IF THIS HAS TO BE MOVED OR LIMITED TO DATATYPE 1>>>>>>>>>>>>>>>>
 C Bidirectional case.
                   IF(IND1(I).eq.MANH)then
                     XX2=XX1
@@ -1312,14 +1310,16 @@ C Call MZWINP to interpolate between two values.
               CALL MZWINP(XX1,1.,XX2,ZERO,IND1(I),ANGI(I),XD,DUMMY)
               CALL MZWINP(YY1,1.,YY2,ZERO,2,51.0,XF,DUMMY)
             ELSE
-C<<<<<<<<<<<<<<<here add IBIDATYPE CONDITIONS>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
               CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
-     &                     PSAZI2(I),PSELV2(I),XD)
-              CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
-     &                     PSAZI2(I),PSELV2(I),DTOD)
-
+     &                       PSAZI2(I),PSELV2(I),XD)
+              IF(IBIDATATYPE.EQ.1)THEN
+                CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
+     &                       PSAZI2(I),PSELV2(I),DTOD)
+              ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                DTOD=0.
+              ENDIF
 C Get diffuse transmission from common block.
               XF=THTSOB(1,1)
             ENDIF
