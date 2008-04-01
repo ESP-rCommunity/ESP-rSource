@@ -56,14 +56,14 @@ C     X2= value of climatic parameter at time T2
 C TDF commons.
       COMMON/TDFFLG/ITEMSTD
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
 C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -86,7 +86,7 @@ C 'simulation toggles' menu.
 
       DIMENSION IDIF(MT),ITMP(MT),IDNR(MT),IVEL(MT),IDIR(MT),IHUM(MT)
       DIMENSION VAL(MBITS+2)
-      CHARACTER OUTS*124,DBTAG*12,DBTASK*12,DBZN*15
+      CHARACTER OUTS*124,DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       LOGICAL OK
 
 C Access climate file to recover climatic data for requested

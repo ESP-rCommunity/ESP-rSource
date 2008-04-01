@@ -1094,7 +1094,9 @@ C temporal data to be associated with a model.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/appw/iappw,iappx,iappy
-
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)  
+     
 C TDF related.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1102,7 +1104,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
       common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
@@ -1120,10 +1122,16 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
       character*72 LTDF,LTDFA,DLTDF
-      character DBTAG*12,DBTASK*12,DBZN*15
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character path*72,zname*12,zdesc*64,OUTSTR*124,HDR*12
-      character longtfile*144,longtfiledos*144
+      CHARACTER longtfile*144,longtfiledos*144
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+
+C Action to pass to tdfedit. Prior 'update' option moved into
+C esrub2e rather than invoking tdf.
+C << thought required to transition between functionality of >>
+C << the module tdf to the in-built functionality            >>
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1423,10 +1431,11 @@ C List associations.
             call edisp(iuout,' Temporal entities currently used...')
             call edisp(iuout,'  ________________________________')
             call edisp(iuout,'  |temporal    |generic |associated')
-            call edisp(iuout,'  |entity name |type    |with      ')
+            call edisp(iuout,
+     &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
-              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L)
-   29         FORMAT(i2,1X,A12,1X,A8,1X,A16)
+              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+   29         FORMAT(i2,1X,A12,1X,A8,5X,A16,A16)
               call edisp(iuout,outs)
   28        continue
             call edisp(iuout,' ')
@@ -1489,9 +1498,10 @@ C Befor management option list current db items and then associations.
           call edisp(iuout,' ')
           call edisp(iuout,'  _____Temporal entities used_____')
           call edisp(iuout,'  |temporal    |generic |associated')
-          call edisp(iuout,'  |entity name |type    |with      ')
+          call edisp(iuout,
+     &           '  |entity name |type    |with   zone &     surface ')
           do 228, l=1,ITEMSTD
-            WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L)
+            WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
             call edisp(iuout,outs)
   228     continue
           call edisp(iuout,' ')
@@ -1499,7 +1509,7 @@ C Befor management option list current db items and then associations.
           call edisp(iuout,'Currently no temporal items are used.')
         endif
 
-C Manage the list of DBTAG/DBTASK/DBZN.
+C Manage the list of DBTAG/DBTASK/DBZN/DBSN.
         h(1)='Existing associations can be removed or new '
         h(2)='associations between temporal entities and '
         h(3)='model zones and/or controls can be added. '
@@ -1535,6 +1545,7 @@ C Delete an association and move others up.
               DBTAG(idv)=DBTAG(idv+1)
               DBTASK(idv)=DBTASK(idv+1)
               DBZN(idv)=DBZN(idv+1)
+              DBSN(idv)=DBSN(idv+1)
   791       continue
           endif
           ITEMSTD=ITEMSTD-1
@@ -1558,7 +1569,8 @@ C Add association or edit current association.
 
 C Reset itemstd to the item to be edited.
               call edisp(iuout,'The association details are:')
-              WRITE(outs,29)ite,DBTAG(ite),DBTASK(ite),DBZN(ite)
+              WRITE(outs,29)ite,DBTAG(ite),DBTASK(ite),DBZN(ite),
+     &             DBSN(ite)
               call edisp(iuout,outs)
               h(1)='Select the index of the temporal item you wish'
               h(2)='to associate. '
@@ -1588,6 +1600,7 @@ C Depending on the type of the data, ask for associated zone.
      &      'Related zone','-','Casual gains requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 250
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
           elseif(TTYPE(it)(1:6).eq.'ZIVENT')then
 
 C Use DBZN to indicate that tdf ventilation associated with a zone.
@@ -1602,6 +1615,7 @@ C << need to support the no ventilation case? >>
             else
               write(DBZN(ITE),'(a)') zname(IC)(1:12)
             endif
+            DBSN(ITE)='ALL'            
           elseif(TTYPE(it)(1:6).eq.'RAIRVL')then
 
 C << Think about this, it might need to know about which surfaces
@@ -1612,6 +1626,7 @@ C << the velocity should be associated with an outside surface?
      &        'Related zone','-','Air velocity requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 252
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:6).eq.'CTLSTA')then
 
 C << Think about what this could be used for...if could be a number
@@ -1622,6 +1637,7 @@ C << between 0.0 and 1.0 giving ON fraction.
      &        'Related zone','-','Set point requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
 
 C Depending on the type of the data, ask for associated zone.
@@ -1748,7 +1764,7 @@ C Update the control file and link the control loop to the correct zone.
             call usrmsg(
      &        'Updating model control for temporal link...done.',
      &        ' ','-')
-
+            DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:6).eq.'SETPTT')then
 
 C If there is no control file warn the user to create one first.
@@ -1949,8 +1965,26 @@ C Update the control file and link the control loop to the correct zone.
             call usrmsg(
      &        'Updating model control for temporal link...done.',
      &        ' ','-')
+            DBSN(ITE)='ALL'
+          elseif(TTYPE(it)(1:8).eq.'BIDIRSET')then
+
+C Depending on the type of data, ask for associated surface 
+C(at the moment only bidirectional - in future vertical solar 
+C radiation data can be added based on the same structure).
+            IC=-1
+ 352        izdef=0
+            call askzone(ic,izdef,
+     &        ' Related zone for bidirectional data set?',
+     &        'Related zone','-','Optical sets require a zone.',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 352
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &           'Select surface for bidirectional dataset',' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 352
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           else
             DBZN(ITE)='ALL'
+            DBSN(ITE)='ALL'            
           endif
           if(itro.eq.2)then
             dok=.false.

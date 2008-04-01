@@ -145,7 +145,7 @@ C  ipvsynop= up to 248 characters of text.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
       logical bndrysxc,context,bound
@@ -214,7 +214,7 @@ C Remember if each zone is fully attributed.
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
       character ipvsynop*248,oprdesc*248,ctlstr*24
       CHARACTER dmdsdesc*248,bdmds*72
-      character DBTAG*12,DBTASK*12,DBZN*15
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
@@ -1162,10 +1162,11 @@ C If temporal data associated with the model report it.
             call edisp(itu,' Temporal entities currently used...')
             call edisp(itu,'  ________________________________')
             call edisp(itu,'  |temporal    |generic |associated')
-            call edisp(itu,'  |entity name |type    |with      ')
+            call edisp(iuout,
+     &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
-              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L)
-   29         FORMAT(i2,1X,A12,1X,A8,1X,A16)
+              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+   29         FORMAT(i2,1X,A12,1X,A8,5X,A16,A16)
               call edisp(itu,outs)
   28        continue
             call edisp(itu,' ')

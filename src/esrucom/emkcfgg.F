@@ -129,7 +129,7 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -226,7 +226,7 @@ C Generic databases from esprdbfile.h.
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15, indxcmt*24
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -644,11 +644,11 @@ C Write temporal db information.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*tdf  ',
      &    LTDF(1:lnblnk(LTDF))
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
-     &    '# tdf item id, item type, <related zone> '
+     &    '# tdf item id, item type, <related zone>, <related surface> '
         if(ITEMSTD.gt.0)then
           do 27 L=1,ITEMSTD
-            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L)
-  29        FORMAT(A12,1X,A8,1X,A16)
+            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+  29        FORMAT(A12,1X,A8,1X,2A16)
   27      continue
         endif
         WRITE(IFCFG,'(A)')'* end tdf'
