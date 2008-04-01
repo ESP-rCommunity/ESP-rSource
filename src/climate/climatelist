@@ -117,7 +117,7 @@ Typical winter week begins Mon  3 Dec
 *item
 *name	Belfast IWEC WMO 039170
 *aide	Belfast (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_belfast
+*dbfl	/usr/esru/esp-r/climate/uk_belfast_iwec
 *avail	ONLINE
 *winter_s 3  1  27  2  31 10  31 12
 *spring_s 28 2   8  5  5   9  30 10
@@ -190,7 +190,7 @@ Typical winter week begins Mon 26 Nov
 *item
 *name	Birmingham IWEC WMO 035340
 *aide	Birmingham (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_birmingham
+*dbfl	/usr/esru/esp-r/climate/uk_birmingham_iwec
 *avail	ONLINE
 *winter_s 2  1  26  3  30  10  31 12
 *spring_s 27 3  14  5  28  9  29 10
@@ -644,7 +644,7 @@ Typical winter week begins Mon 17 Dec
 *item
 *name	Jersey CH ISL IWEC WMO 038950
 *aide	Jersey (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_channel_islands
+*dbfl	/usr/esru/esp-r/climate/uk_channel_islands_iwec
 *avail	ONLINE
 *winter_s 2  1  18  3  29  10  31 12
 *spring_s 19 3  6  5  17  9  28 10
@@ -718,7 +718,7 @@ Typical winter week begins Mon  5 Nov
 *item
 *name	Finningley IWEC WMO 033600
 *aide	Finningley UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_finningley
+*dbfl	/usr/esru/esp-r/climate/uk_finningley_iwec
 *avail	ONLINE
 *winter_s 2  1  19  3  30  10  31 12
 *spring_s 20 3  14  5  18  9  29 10
@@ -792,7 +792,7 @@ Typical winter week begins Mon-17-Dec
 *item
 *name	Gatwick IWEC WMO 037760
 *aide	London Gatwick UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_gatwick
+*dbfl	/usr/esru/esp-r/climate/uk_gatwick_iwec
 *avail	ONLINE
 *winter_s 1  1  17  3  28  10  31 12
 *spring_s 18 3  12  5  19  8  27 10
@@ -906,7 +906,7 @@ Typical winter week begins Tue-19-Nov
 *item
 *name	Hemsby UK IWEC WMO 034960
 *aide	Hemsby UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_hemsby
+*dbfl	/usr/esru/esp-r/climate/uk_hemsby_iwec
 *avail	ONLINE
 *winter_s 2  1  19  3  30  10  31 12
 *spring_s 20 3  14  5  21  8  29 10
@@ -1334,7 +1334,7 @@ The solar radiation is Direct Normal. Dry bulb temperatures:
 *item
 *name	Oban UK IWEC WMO 034960
 *aide	Oban UK (sourced from IWEC/DoE)
-*dbfl	/usr/esru/esp-r/climate/uk_oban
+*dbfl	/usr/esru/esp-r/climate/uk_oban_iwec
 *avail	ONLINE
 *winter_s 3  1  20  3  31  10  31 12
 *spring_s 21 3  15  5  19  9  30 10

@@ -275,6 +275,7 @@ C as -3 so set iftype to -2 to signal a problem.
      &    'will cause problems. Try re-running the simulation.',
      &    'W')
       endif
+      return
 
 C Note: flow results are opened at call to mfoutp.
 
