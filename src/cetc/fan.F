@@ -130,7 +130,12 @@ c fan size is set by cooling and heating capacities.
      &         .and.(iunit_function(isys) .eq. 2))
      &         .or.((ihvac_type(isys) .eq. 9)
      &         .and.(iunit_function(isys) .eq. 2))) then
-        power1 = fan_power(isys_num_heating(isys))
+
+        if ( isys_num_heating(isys) == 0 ) then
+          power1 = 0.
+        else
+          power1 = fan_power(isys_num_heating(isys))
+        endif
         power2 = 0.0467 * ss_capacity(isys)
         FAN_SIZE = amax1(power1,power2)
       endif

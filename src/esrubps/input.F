@@ -869,6 +869,13 @@ C Uncertainty common.
       COMMON/UA5/IMET,ISIM,NRSIM
       common/spmfxst/ispmxist,spflnam 
 
+C Thermal bridge common block is described in esruprj/edgeo.F.
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent
+
 C Dll mode error subroutine and error details.
       common/dllerr/dllsubr,dllmesg
 
@@ -944,6 +951,9 @@ C translate the casual gains.
           call edisp(iuout,outs)
           call PROCESSOLDCAS(IZ,itrc,itu,IER)
         endif
+
+C Zero the thermal bridge heat loss before (perhaps) reading in from geometry file.
+        totheatloss(IZ)=0.0
 
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then

@@ -48,12 +48,12 @@ C essentially a copy of trnsf1.
       character outs*124
       logical tok
 
-      pi=4.0*atan(1.0)
-      r=pi/180.
-
-C If verbose trace requested enable writing.
+C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
+
+      pi=4.0*atan(1.0)
+      r=pi/180.
 
 C Compute the surface azimuth (pazi), elevation (pelv)
 C x-axis tilt (ptilt) angles.
@@ -103,18 +103,18 @@ C Transform target surface coordinates.
          ys=y(jvn(is,i))
          zs=z(jvn(is,i))
 
-C Transformed X.
+C Transformed x.
          xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
      &          +(ys-yor)*a(4)-(zs-zor)*a(5)
 
-C Transformed Y.
+C Transformed y.
          yft(i)=-(xs-xor)*b(1)+(ys-yor)*b(2)+(zs-zor)*b(3)
 
-C Transformed Z.
+C Transformed z.
          zft(i)=(xs-xor)*c(1)+(ys-yor)*c(2)+(xs-xor)*c(3)
      &          -(ys-yor)*c(4)+(zs-zor)*c(5)
 
-C Transformed Y value should be zero; error if not.
+C Transformed y value should be zero; error if not.
          if(abs(yft(i)).gt.1.E-5)then
              call edisp(icout,' ')
              write(outs,9999)is
@@ -172,10 +172,10 @@ C Trace output.
 
 C ************** TRNSF2I 
 C Convert solar angles (sazi1 and salt1) in original coordinate
-C system to corresponding angles (sazi2,salt2) in transformed
-C coordinate system to allow obstruction point projections
-C in new coordinate system in trnsf3i. This routine is essentially
-C a copy of trnsf2.
+C system to corresponding angles (sazi2 and salt2) in transformed
+C coordinate system (target internal surface) to allow TMC grid
+C point projections in new coordinate system in trnsf3i. This
+C routine is essentially a copy of trnsf2 used for shading.
 
       subroutine trnsf2i(ihr)
 
@@ -188,7 +188,7 @@ C a copy of trnsf2.
       character outs*124
       logical tok
 
-C If verbose trace requested enable writing.
+C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
@@ -205,7 +205,7 @@ C away at the appropriate solar angles (sazi1 and salt1).
 C Dependent on which quadrant sun is in, convert sun position
 C to a distant point (x2,y2,z2) for later transformation to the
 C new coordinate system, along with point (x1,y1,z1), to give
-C the solar incindence line in this new system.
+C the solar incidence line in this new system.
       if(sazi1.lt.90.)then
          ang=90.-sazi1
          tang=sin(ang*r)/cos(ang*r)
@@ -213,7 +213,7 @@ C the solar incindence line in this new system.
          z2=5000.*tsr/sin(ang*r)
          x2=5000./tang
       elseif(sazi1.gt.90..and.sazi1.lt.180.)then
-         ang=sazi1-90.
+         ang=sazi1-90.0
          tang=sin(ang*r)/cos(ang*r)
          y2=-5000.
          z2=5000.*tsr/sin(ang*r)
@@ -225,10 +225,10 @@ C the solar incindence line in this new system.
          z2=5000.*tsr/cos(ang*r)
          x2=-5000.*tang
       elseif(sazi1.gt.270.)then
-         ang=sazi1-270.
+         ang=sazi1-270.0
          tang=sin(ang*r)/cos(ang*r)
          y2=5000.
-         z2=5000.*tsr/cos(ang*r)
+         z2=5000.*tsr/sin(ang*r)
          x2=-5000./tang
       endif
 
@@ -270,48 +270,42 @@ C (sazi2 and salt2) expressed relative to the transformed
 C coordinate system.
       dist=sqrt((xt2-xt1)**2+(yt2-yt1)**2+(zt2-zt1)**2)
       dz=zt2-zt1
-      if((dist.lt..0001.and.dist.gt.-.0001).or.
-     &           (dz.lt..0001.and.dz.gt.-.0001))then
-         call edisp(iuout,'TRNSF2: Sun position transformation error!')
+      if(abs(dist).lt.0.0001)then
+        call edisp(icout,' ')
+        call edisp(iuout,'TRNSF2I: Sun position transformation error!')
       endif
 
 C Altitude.
-      arg=dz/dist
+      arg=abs(dz)/dist
       salt2=asin(arg)/r
       if(dz.lt.0.0)salt2=-salt2
 
 C Azimuth.
       dx=xt2-xt1
       dy=yt2-yt1
-      arg=abs(dy/dx)
-      angl=atan(arg)/r
-      if(dx.gt.0..and.dy.lt.0.)then
-         sazi2=90.0+angl
-      elseif(dx.gt.0.0.and.dy.gt.0.0)then
-         sazi2=90.0-angl
-      elseif(dx.lt.0.0.and.dy.gt.0.0)then
-         sazi2=270.0+angl
-      elseif(dx.lt.0.0.and.dy.lt.0.0)then
-         sazi2=270.0-angl
-      endif
-
-C Special cases:
-C 1. When transformed solar azimuth is normal to the
-C transformed surface.
       if(dx.lt.0.001.and.dx.gt.-0.001)then
-         sazi2=0.0
-
-C 2. When surface is facing away from the transformed sun.
-         if(dy.lt.0.0)sazi2=180.0
-
-C 3. When the transformed solar azimuth is parallel to
-C the transformed surface. 
+C Transformed solar azimuth is normal to the transformed surface.
+         sazi2=0.
+         if(dy.lt.0.)sazi2=180.
       elseif(dy.lt.0.001.and.dy.gt.-0.001)then
-         sazi2=90.0
-         if(dx.lt.0.)sazi2=270.0
+C Transformed solar azimuth is parallel to the transformed surface. 
+         sazi2=90.
+         if(dx.lt.0.)sazi2=270.
+      else
+         arg=abs(dy/dx)
+         angl=atan(arg)/r
+         if(dx.gt.0.0.and.dy.lt.0.0)then
+            sazi2=90.+angl
+         elseif(dx.gt.0.0.and.dy.gt.0.0)then
+            sazi2=90.-angl
+         elseif(dx.lt.0.0.and.dy.gt.0.0)then
+            sazi2=270.+angl
+         elseif(dx.lt.0.0.and.dy.lt.0.0)then
+            sazi2=270.-angl
+         endif
       endif
 
-C C Trace output.
+C Trace output.
       if(tok)then
          call edisp(icout,' ')
          write(outs,9999)ihr
@@ -345,19 +339,20 @@ C C Trace output.
       end
 
 C ************** TRNSF3I
-C Projects the given window vertex (xxw,yyw,zzw) onto the
-C plane of the object body face under consideration. The projected
-C points are specified relative to the local face coordinate system.
+C Projects the given window grid point (xxw,yyw,zzw) onto the
+C internal surface under consideration. The projected points are
+C specified relative to the local internal surface coordinate system.
 C The y-coordinate is left unprojected but in the new coordinate system.
 C This routine is similar to trnsf3 but with window grid points used
-C instead of obstruction surface vertices.
+C instead of obstruction block surface vertices.
 
-      subroutine trnsf3i(xxw,yyw,zzw)
+      subroutine trnsf3i(ihr,intsur,ipass,xxw,yyw,zzw)
 
       common/tracech/icout
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/sangl2/sazi2,salt2
       common/proji/xp,yp,zp
+      common/save3i/ta1,ta2,ca1,xmult,eta1,eta2
 
       character outs*124
       logical tok
@@ -366,11 +361,15 @@ C If verbose trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
+C Jump to projection if after first entry for current source
+C surface.
+      if(ipass.eq.1)goto 1
+
       pi=4.0*atan(1.0)
       r=pi/180.
 
 C Establish projection angles, eta1 and eta2, which related to the
-C pseudo azimuth, sazi2, and pseudo altitude, salt2, respectively.
+C pseudo azimuth and altitude, sazi2 and salt2, respectively.
       eta1=180.0-sazi2
       eta2=salt2
 
@@ -394,7 +393,7 @@ C of eta1 and eta2 respectively.
 C Perform translation then projection transformation
 
 C Transform y (no need to project).
-      yt=-(xxw-xor)*b(1)+(yyw-yor)*b(2)+(zzw-zor)*b(3)
+    1 yt=-(xxw-xor)*b(1)+(yyw-yor)*b(2)+(zzw-zor)*b(3)
       yp=yt
 
 C ta1 and ta2 above assume that yt is +ve whereas it will be
@@ -413,26 +412,27 @@ C Tranform and project z.
      &      -(yyw-yor)*c(4)+(zzw-zor)*c(5)
       zp=yt*ta2/ca1*xmult+zt
 
-C Trace output.
-      if(tok)then
+C Trace output (only for 1st grid point in source surface).
+      if(tok.and.ipass.eq.0)then
          call edisp(icout,' ')
-         write(outs,9999)
- 9999    format('*** TRNSF3I: point projection.')
+         write(outs,9999)intsur,ihr
+ 9999    format('*** TRNSF3I: 1st point projection to surface ',
+     &          i2,' for hour ',i2,'.')
          call edisp(icout,outs)
          call edisp(icout,' ')
-         call edisp(icout,'X,Y,Z coordinates:')
+         call edisp(icout,'x,y,z coordinates:')
          write(outs,'(3f8.1)')xxw,yyw,zzw
          call edisp(icout,outs)
-         call edisp(icout,'X`,Y`,Z` coordinates:')
+         call edisp(icout,'x`,y`,z` coordinates:')
          write(outs,'(3f8.1)')xt,yt,zt
          call edisp(icout,outs)
          write(outs,9998)eta1,eta2
- 9998    format('Pseudo solar angles: ETA1= ',f8.1,'; ETA2= ',f8.1)
+ 9998    format('Pseudo solar angles: eta1= ',f8.1,'; eta2= ',f8.1)
          call edisp(icout,outs)
          write(outs,9997)ta1,ta2
- 9997    format('TA1= ',f8.1,'; TA2= ',f8.1)
+ 9997    format('ta1= ',f8.1,'; ta2= ',f8.1)
          call edisp(icout,outs)
-         call edisp(icout,'XP,YP,ZP coordinates:')
+         call edisp(icout,'xp,yp,zp coordinates:')
          write(outs,'(3f8.1)')xp,yp,zp
          call edisp(icout,outs)
       endif

@@ -108,9 +108,10 @@ C Common for TRNSYS general information
 C Common for TRNSYS parameters
       COMMON/TRNSYSPAR/NTRNPAR(MTRNCOM),
      &                 ITRNP_POS(MTRNCOM,MTRNPARV),
-     &                 ITRNP_LNK(MTRNCOM,MTRNPARV),
-     &                 ITRNP_CAT(MTRNCOM,MTRNPARV)
-      INTEGER NTRNPAR, ITRNP_POS, ITRNP_LNK, ITRNP_CAT
+     &                 ITRNP_CAT(MTRNCOM,MTRNPARV),
+     &                 ITRNP_LNK1(MTRNCOM,MTRNPARV),
+     &                 ITRNP_LNK2(MTRNCOM,MTRNPARV)
+      INTEGER NTRNPAR, ITRNP_POS,ITRNP_CAT,ITRNP_LNK1,ITRNP_LNK2
 
 C Common for TRNSYS inputs
       COMMON/TRNSYSINP/NTRNXIN(MTRNCOM),
@@ -248,7 +249,7 @@ C 2. The additional output must exist for that component.
 C  NTRNXIN(): number of inputs for a trnsys type
       DO i=1, NTRNXIN(iTRNCOM)
          iCat = ITRNX_CAT(iTRNCOM,i)
-         IF(iCat .EQ. 4) THEN 
+         IF(iCat .EQ. 5) THEN 
 C        input is linked to the additional output of a specified component
             iLnk1 = ITRNX_LNK1(iTRNCOM,i)   ! component
             iLnk2 = ITRNX_LNK2(iTRNCOM,i)   ! additional output id
@@ -298,49 +299,82 @@ C on those trnsys parameters that need to be updated within esp-r.
       mistake = .false.
 
       DO i=1, MTRNPARV
-         iPos = ITRNP_POS(iTRNCOM,i)
+        iPos = ITRNP_POS(iTRNCOM,i)
 
 C        iPos = -1 indicates the end of changable parameters
-         IF(iPos .EQ. -1) EXIT
+        IF(iPos .EQ. -1) EXIT
 
-         iLnk1 = ITRNP_LNK(iTRNCOM,i)
+        iCat = ITRNP_CAT(iTRNCOM,i)
+        iLnk1 = ITRNP_LNK1(iTRNCOM,i)
 
 C     Check the linked input or additional output exist
 C     This check was not performed in TRNPMXT because parameters
 C     are read before inputs and additional outputs
+C
+        IF(iCat .EQ. 8) THEN
+C   The parameter is the additional output of another component.
+C   Check that additional output exists.
+C
+           iLnk2 = ITRNP_LNK2(iTRNCOM,i)
 
+           IF( iLnk2 .GT. NAPDAT(iLnk1)) THEN
+           WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
+           WRITE(IUOUT,*) ' parameter-linked additional output ',
+     &             ' does not exist'
+           STOP ' trnsys_static_temp: unresolvable error'
+           END IF
+        ELSE IF(iCat .GE. 1 .AND. iCat .LE. 6) THEN
+C  The thermal physical parameter changes with a temperature.
+C  This temperature may be with the fluid of an external conncetion
+C  or with a specified place in the component itself.
+C  Therefore, the associated temperature can be obtained via two ways
+C   First, the linked external conncetion. Since an external
+C         connection must be reflected in TRNSYS inputs, the
+C         linked input is used to trace the connection.
+C   Second, the additional output of this component. This additional
+C         ouput gives the temperature at some specified place.
+C
+C The above two cases are implemented separately.
+C
+C    Changeable parameter linked to input
+          IF(iLnk1 .GT. 0) THEN
+C
 C    Check that the linked input exist
-         IF(iLnk1 .GT. NTRNXIN(iTRNCOM)) THEN
+            IF(iLnk1 .GT. NTRNXIN(iTRNCOM)) THEN
             WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
             WRITE(IUOUT,*)  i, ' parameter linked input NOT exist'
             STOP ' trnsys_static_temp: unresolvable error'
-         END IF
-
-C    Check that the linked additional output exist
-         IF(-iLnk1 .GT. NAPDAT(IPCOMP)) THEN
-            WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
-            WRITE(IUOUT,*)  i, ' parameter linked additional output',
-     &                         ' NOT exist'
-            STOP ' trnsys_static_temp: unresolvable error'
-         END IF
-
-         iCat = ITRNP_CAT(iTRNCOM,i)
-
-         IF(iLnk1 .GT. 0) THEN
-C         Changeable parameter linked to input
+            END IF
+C
+C      Get the variable index for the referred connection
             iNod = ITRNX_LNK1(iTRNCOM,iLnk1)
             iCon = ITRNX_LNK2(iTRNCOM,iLnk1)
             net_cndx = ICONDX(IPCOMP,iNod,iCon)
             num_ISV = ICONTP(net_cndx)
-         ELSE IF(iLnk1 .LT. 0) THEN
-C        Changeable parameter linked to additional output
+
+C    Changeable parameter linked to additional output
+          ELSE IF(iLnk1 .LT. 0) THEN
+C
+C    Check that the linked additional output exist
+            IF(-iLnk1 .GT. NAPDAT(IPCOMP)) THEN
+            WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
+            WRITE(IUOUT,*)  i, ' parameter linked additional output',
+     &                         ' NOT exist'
+            STOP ' trnsys_static_temp: unresolvable error'
+            END IF
+
 C        Since there is no way to derive the node from additional output,
 C        the first node is assumed to be a representative to obtain the ISV
 C        value. However, this may be not the case if the nodes have different
 C        ISV values. This needs further improvement.
 C        Potential source of error
             num_ISV = ISV(IPCOMP, 1)
-         END IF
+
+          ELSE
+            WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
+            WRITE(IUOUT,*)  i, ' parameter iLnk1 cannot be zero'
+            STOP ' trnsys_static_temp: unresolvable error'
+          END IF   ! --> IF(iLnk1 .GT. 0)
 
 C If a parameter corresponds to water properties, the sending
 C node or the representative node of this component should be water.
@@ -348,22 +382,24 @@ C If a parameter corresponds to dry air properties, the sending
 C node or the representative node of this component should be air.
 C Water vapor needs further consideration in the future
 
-         IF(iCat .EQ. 3 .OR. iCat .EQ. 6) THEN
+          IF(iCat .EQ. 3 .OR. iCat .EQ. 6) THEN
 C         water properties required, so sending node should be water
             IF(num_ISV .NE. 20) THEN
                mistake=.true.
                EXIT
             END IF
-         ELSE IF(iCat .EQ. 1 .OR. iCat .EQ. 4) THEN
+          ELSE IF(iCat .EQ. 1 .OR. iCat .EQ. 4) THEN
 C         dry air properties required, so sending node should be air
             IF(num_ISV .NE. 21) THEN
                mistake=.true.
                EXIT
             END IF
-         ELSE
+          ELSE
 C         other situations to be considered
-         END IF
-      END DO
+          END IF  ! --> IF(iCat .EQ. 3 .OR. iCat .EQ. 6)
+        END IF   ! --> IF(iCat .EQ. 8)
+      END DO     ! --> DO i=1, MTRNPARV
+
 
 
       IF(mistake)THEN
@@ -563,9 +599,10 @@ C Common for TRNSYS general information
 C Common for TRNSYS parameters
       COMMON/TRNSYSPAR/NTRNPAR(MTRNCOM),
      &                 ITRNP_POS(MTRNCOM,MTRNPARV),
-     &                 ITRNP_LNK(MTRNCOM,MTRNPARV),
-     &                 ITRNP_CAT(MTRNCOM,MTRNPARV)
-      INTEGER NTRNPAR, ITRNP_POS, ITRNP_LNK, ITRNP_CAT
+     &                 ITRNP_CAT(MTRNCOM,MTRNPARV),
+     &                 ITRNP_LNK1(MTRNCOM,MTRNPARV),
+     &                 ITRNP_LNK2(MTRNCOM,MTRNPARV)
+      INTEGER NTRNPAR, ITRNP_POS, ITRNP_CAT,ITRNP_LNK1, ITRNP_LNK2
 
 C Common for TRNSYS inputs
       COMMON/TRNSYSINP/NTRNXIN(MTRNCOM),
@@ -581,7 +618,7 @@ C Common for TRNSYS outputs
      &                 ITRNO_PS1_LNK(MTRNCOM,MNODEC),
      &                 ITRNO_PS2_LNK(MTRNCOM,MNODEC),
      &                 ITRNO_ADD_LNK(MTRNCOM,MPCRES),
-     &                 TRN_ADD_DESC(MPCRES)
+     &                 TRN_ADD_DESC(MTRNCOM,MPCRES)
       INTEGER ITRNO_T_LNK, ITRNO_PS1_LNK,
      &        ITRNO_PS2_LNK, ITRNO_ADD_LNK
       CHARACTER TRN_ADD_DESC*80
@@ -607,6 +644,11 @@ C Common for unit conversions between TRNSYS and esp-r
 C Common for TRNSYS types
       COMMON/TRNSYSTYPE/INFO_SHORT(MTRNCOM,4)
       INTEGER INFO_SHORT    !store info(6), info(9), info(10) and info(12)
+
+C Common for TRNSYS inputs and outputs
+      COMMON/TRNSYSSTORE/outStore(MTRNCOM,MTRNOUT),
+     &                   inStore(MTRNCOM,MTRNXIN)
+      DOUBLE PRECISION outStore, inStore
 
 
 C Transferred parameters
@@ -788,24 +830,29 @@ C Update those time-dependent parameters
 
          IF(iPos .EQ. -1) EXIT
 
-         iLnk1 = ITRNP_LNK(iTRNCOM,i)
          iCat = ITRNP_CAT(iTRNCOM,i)
+         iLnk1 = ITRNP_LNK1(iTRNCOM,i)
 
-         IF(iLnk1 .GT. 0) THEN
+         IF(iCat .GE. 1 .AND. iCat .LE. 6) THEN
+C   A thermal physical paramter that varies with temperature
+           IF(iLnk1 .GT. 0) THEN
 C        temperature of external connected fluids
             iNod = ITRNX_LNK1(iTRNCOM,iLnk1)
             iCon = ITRNX_LNK2(iTRNCOM,iLnk1)
             net_cndx = ICONDX(IPCOMP,iNod,iCon)
             parTemp = CONVAR(net_cndx,1)
-         ELSE IF(iLnk1 .LT. 0) THEN
+           ELSE IF(iLnk1 .LT. 0) THEN
 C        temperature within this component
 C        this temperature is specified by the additional output
 C        of this trnsys component
             parTemp = PCAOUT(IPCOMP,-iLnk1)
-C        iLnk = 0 means the parameter refers to the environment temperature,
-C        and it is not linked with other information.
+           END IF
+         ELSE IF(iCat .EQ. 8) THEN
+C    the additional output of another component
+           iLnk2 = ITRNP_LNK2(iTRNCOM,i)
          END IF
 
+C   Change the parameter's value according to its type
          IF(iCat .EQ. 1) THEN
 C           specific heat of dry air
             par(iPos) = DBLE(SHTFLD(1, parTemp))
@@ -827,6 +874,9 @@ C           density of water
          ELSE IF(iCat .EQ. 7) THEN
 C           environment temperature
             par(iPos) = DBLE(PCNTMF(IPCOMP))
+         ELSE IF(iCat .EQ. 8) THEN
+C           additional output of a specified component
+            par(iPos) = DBLE(PCAOUT(iLnk1,iLnk2))
 
 C New category of time-dependent parameters inserted here
 
@@ -866,7 +916,7 @@ C        linked to control
          ELSE IF(iCat .EQ. -3) THEN
 C        linked to outdoor temperature
             xin(i) = DBLE(TF)
-         ELSE IF(iCat .GE. 1 .AND. iCat .LE. 3) THEN
+         ELSE IF(iCat .GE. 1 .AND. iCat .LE. 4) THEN
 C        linked to a given connection
             iNod = ITRNX_LNK1(iTRNCOM,i)
             iCon = ITRNX_LNK2(iTRNCOM,i)
@@ -877,11 +927,15 @@ C           temperature
             ELSE IF (iCat .EQ. 2) THEN
 C           1st phase mass flow
             xin(i) = DBLE(PCONDR(net_cndx) * CONVAR(net_cndx,2))
-            ELSE
+            ELSE IF (iCat .EQ. 3) THEN
 C           2nd phas mass flow
             xin(i) = DBLE(PCONDR(net_cndx) * CONVAR(net_cndx,3))
+            ELSE   ! (iCat =4)
+C           the sum of 1st and 2nd mass flow
+            xin(i) = DBLE(PCONDR(net_cndx) * CONVAR(net_cndx,2)
+     &                    + PCONDR(net_cndx) * CONVAR(net_cndx,3))
             END IF
-         ELSE IF(iCat .EQ. 4) THEN
+         ELSE IF(iCat .EQ. 5) THEN
 C        linked to additional ouput
             iLnk1 = ITRNX_LNK1(iTRNCOM,i)   ! component
             iLnk2 = ITRNX_LNK2(iTRNCOM,i)   ! additional output id
@@ -1097,6 +1151,21 @@ C  Calling other trnsys type subroutines inserted here
 
  1000 CONTINUE       ! alternate return from trnsys type
 
+
+C  Save TRNSYS inputs and outputs in the common block. This operation
+C  is essential if multiple TRNSYS componets are used in a plant network.
+      IF(ISTATS .EQ. iCall_State) THEN
+
+         DO i=1, INFO_SHORT(iTRNCOM,1)
+            outStore(iTRNCOM,i) = out(i)
+         END DO
+
+         DO i=1, NTRNXIN(iTRNCOM)
+            inStore(iTRNCOM, i) = xin(i)
+         END DO
+      END IF
+
+
 C It is usually unnecessary to check trnsys error since trnsys types
 C call ErrorFound() function when a message is reported.
 C      CALL checkTrnsysError(iTRNCOM, nType)
@@ -1121,7 +1190,8 @@ C     Energy balance
      &                               valueMultiply, valueAdd)
 
             iOut = ITRNO_T_LNK(iTRNCOM,i)
-            COUT(nnode+i) = out(iOut) * valueMultiply + valueAdd
+            COUT(nnode+i) = REAL(outStore(iTRNCOM,iOut)
+     &                         * valueMultiply + valueAdd)
          END DO
       ELSE IF(ISTATS .EQ. 2) THEN
 C     First phase mass balance
@@ -1132,9 +1202,11 @@ C     First phase mass balance
 
             iOut = ITRNO_PS1_LNK(iTRNCOM,i)
             if(iOut .GT. 0) then         ! map to trnsys output
-               COUT(nnode+i) = out(iOut) * valueMultiply + valueAdd
+               COUT(nnode+i) = REAL(outStore(iTRNCOM,iOut)
+     &                             * valueMultiply + valueAdd)
             else if(iOut .LT. 0) then    ! map to trnsys input
-               COUT(nnode+i) = xin(-iOut) * valueMultiply + valueAdd
+               COUT(nnode+i) = REAL(inStore(iTRNCOM,-iOut)
+     &                              * valueMultiply + valueAdd)
             else                         ! map to zero
                COUT(nnode+i) = 0.
             end if
@@ -1148,9 +1220,11 @@ C     Second phase mass balance
 
             iOut = ITRNO_PS2_LNK(iTRNCOM,i)
             if(iOut .GT. 0) then         ! map to trnsys output
-               COUT(nnode+i) = out(iOut) * valueMultiply + valueAdd
+               COUT(nnode+i) = REAL(outStore(iTRNCOM,iOut)
+     &                              * valueMultiply + valueAdd)
             else if(iOut .LT. 0) then    ! map to trnsys input
-               COUT(nnode+i) = xin(-iOut) * valueMultiply + valueAdd
+               COUT(nnode+i) = REAL(inStore(iTRNCOM,-iOut)
+     &                              * valueMultiply + valueAdd)
             else                         ! map to zero
                COUT(nnode+i) = 0.
             end if
@@ -1163,7 +1237,7 @@ C    Unit conversion is not carried out purposely here to
 C    facilitate future validation work
       DO i=1, NAPDAT(IPCOMP)
          iOut = ITRNO_ADD_LNK(iTRNCOM,i)
-         PCAOUT(IPCOMP,i) = out(iOut)
+         PCAOUT(IPCOMP,i) = REAL(outStore(iTRNCOM,iOut))
       END DO
 
 
@@ -1191,8 +1265,8 @@ C Complete trace if trace output requested.
 
            WRITE(ITU,*) '--- Additional Output ---'
            DO i=1, NAPDAT(IPCOMP)
-              WRITE(ITU,*) TRN_ADD_DESC(i),' = ',PCAOUT(IPCOMP,i),
-     &                     TRNO_ADD_UNT(iTRNCOM,i)
+              WRITE(ITU,*) TRN_ADD_DESC(iTRNCOM,i),' = ',
+     &                    PCAOUT(IPCOMP,i), TRNO_ADD_UNT(iTRNCOM,i)
            END DO
         END IF
         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
@@ -1219,14 +1293,14 @@ C     Format string as: 'plant/NAME/misc_data'
 
       DO i=1, NAPDAT(IPCOMP)
          WRITE(H3K_rep_NAME,'(A,A,A)') 
-     &      root_name(1:lnblnk(root_name)), '/',TRN_ADD_DESC(i)
+     &     root_name(1:lnblnk(root_name)), '/',TRN_ADD_DESC(iTRNCOM,i)
 
          CALL add_to_xml_reporting(
      &                   PCAOUT(IPCOMP,i),
      &                   H3K_rep_name,
      &                   'units',
      &                   TRNO_ADD_UNT(iTRNCOM,i),
-     &                   TRN_ADD_DESC(i) )
+     &                   TRN_ADD_DESC(iTRNCOM,i) )
       END DO
 
 

@@ -433,12 +433,17 @@ C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls
+      integer nbedges(MS)      ! nb of edges per surface in poly shaped zone
+      integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
+      integer list(MS,24)      ! indices of coords making up edges of each surface
+      integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
       integer nbglz(MSZ)       ! nb of windows
       integer nbdoor(MSZ)      ! nb of doors
+      integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
       real size(3),szsize(MSZ,3)        ! values dependant on shape
-      real coords(MS,2)
+      real coords(MS,3)
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
       character hasconstruction*32,szhasconstruction*32
@@ -499,6 +504,7 @@ C Clear the sz array structures.
         nbwalls(iz) = 0
         nbglz(iz) = 0
         nbdoor(iz) = 0
+        nbcord(iz) = 0
         rotateit(iz) = 0
         szorigin(iz,1) = 0.0
         szorigin(iz,2) = 0.0
@@ -507,6 +513,10 @@ C Clear the sz array structures.
         szsize(iz,2) = 0.0
         szsize(iz,3) = 0.0
         do 52 isu=1,MS
+          isznbedges(iz,isu)=0
+          do 54 ivu=1,MV
+            iszlist(iz,isu,ivu)=0
+  54      continue
           szhasglaze(iz,isu)=0.0
           szhasdoor(iz,isu)=0.0
           szhasconstruction(iz,isu)=' '
@@ -806,6 +816,10 @@ C Generate the zone and zone files.
 
 C Fill surface arrays.
       do 49 isu=1,MS
+        nbedges(isu)=isznbedges(iz,isu)
+        do 57 ivu=1,MV
+          list(isu,ivu)=iszlist(iz,isu,ivu)
+  57    continue
         hasglaze(isu)=szhasglaze(isz,isu)
         hasdoor(isu)=szhasdoor(isz,isu)
         hasconstruction(isu)=szhasconstruction(isz,isu)
@@ -818,7 +832,8 @@ C Fill surface arrays.
       write(outs,'(2a)') 'Processing ',name(isz)
       call edisp(iuout,outs)
       call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
-     &    origin,size,coords,rotateit(isz),nbglz(isz),hasglaze,
+     &    nbedges,nbcord(isz),list,origin,size,
+     &    coords,rotateit(isz),nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasname,hasconstruction,
      &    boundarytype,use,usefile(isz),IER)
 

@@ -286,6 +286,7 @@ C Read component description from database.
           READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) pcdesc(ipcomp)
 
 C Determine number of control parameters
+
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'no of ctl',IER)
           IF(IER.NE.0)RETURN
           K=0
@@ -344,7 +345,8 @@ C of miscellaneous data items.
             IREC1=NPCDAT(IPCOMP,2)
             READ(IUNIT1,REC=IREC1,IOSTAT=ISTAT,ERR=950)
      &        AA,ICODE,CEDATE,NNODE,NMATX,NMISC
-
+C Save number of nodes associated with each component
+            NPCDAT(iPComp,8) = NNODE
 C Check to see if required number of items is specified
             if(npi(ipcomp).ne.nmisc) then
               write(OUTS,707)ipcomp
@@ -503,8 +505,8 @@ C     trnsys input file has not been read yet.
 C     The skip of this check will not cause any problem because the same
 C     check is performed in MZPMXT.
          IF(NPREF(ipc1(ipcon)) .NE. 85) THEN
-         read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,nnodes
-         if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.nnodes) goto 914
+         read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,NumNod
+         if(ipn1(ipcon).lt.1.or.ipn1(ipcon).gt.NumNod) goto 914
          END IF
 
          if(ipct(ipcon).lt.1.or.ipct(ipcon).gt.4) goto 913
@@ -517,8 +519,8 @@ C     trnsys input file has not been read yet.
 C     The skip of this check will not cause any problem because the same
 C     check is performed in MZPMXT.
          IF(NPREF(ipc2(ipcon)) .NE. 85) THEN
-         read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,nnodes
-         if(ipn2(ipcon).lt.1.or.ipn2(ipcon).gt.nnodes) goto 914
+         read(iunit1,rec=irec,iostat=istat,err=950) a,b,c,d,e,f,NumNod
+         if(ipn2(ipcon).lt.1.or.ipn2(ipcon).gt.NumNod) goto 914
          END IF
 
          if(pcondr(ipcon).lt.0..or.pcondr(ipcon).gt.1.) goto 925
@@ -575,14 +577,15 @@ C  Since a trnsys component has dummy values in the plant database,
 C  its number of nodes needs to be read from an data file.
 C  Another method is to purposely set a large number (ie., MNODEC)
 C  in the database. In this case, reading file can be avoided here.
-            CALL readTrnsysNodes(id_trnsysCMP,nnodes)
+            CALL readTrnsysNodes(id_trnsysCMP,NumNod)
+
             ELSE
             READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
-     &           nnodes
+     &           NumNod
             END IF
             if(cntdat(icont,1).lt.0.0.or.cntdat(icont,1).gt.
      &            float(npcomp).or.cntdat(icont,2).lt.0.0.or.
-     &            cntdat(icont,2).gt.float(nnodes)) goto 916
+     &            cntdat(icont,2).gt.float(NumNod)) goto 916
           ENDIF
 
 C Reporting.
