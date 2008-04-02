@@ -32,7 +32,7 @@ C IER=0 OK, IER=1 problem.
       DIMENSION ISGGT(23),IVAL(23)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
-      CHARACTER KEY*1,ISGGT*34,FOCUS*8,h*72
+      CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
 
 C Read the generic descriptions to see what is available.
       IER=0
@@ -46,7 +46,7 @@ C Read the generic descriptions to see what is available.
         WRITE(ISGGT(M),72)KEY,GMENUS(IT),GTYPES(IT)
    72   FORMAT(A1,1X,A16,1x,A8)
     3 CONTINUE
-      ISGGT(1)  ='  Description          TAG     '
+      ISGGT(1)  ='  Description       TAG     '
       ISGGT(M+1)='? Help                      '
       ISGGT(M+2)='- Exit                      '
 
