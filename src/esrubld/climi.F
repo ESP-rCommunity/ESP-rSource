@@ -192,8 +192,6 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       DIMENSION X1B(6),X2B(6),X1P(6),X2P(6)
       DIMENSION VAL(MBITS+2)
 
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-
 C IOPT=2 ie screen wet bulb temerature required
 C PATMOS set here as a tempory measure.
       IOPT=2

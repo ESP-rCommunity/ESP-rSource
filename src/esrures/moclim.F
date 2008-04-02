@@ -86,7 +86,7 @@ C 'simulation toggles' menu.
 
       DIMENSION IDIF(MT),ITMP(MT),IDNR(MT),IVEL(MT),IDIR(MT),IHUM(MT)
       DIMENSION VAL(MBITS+2)
-      CHARACTER OUTS*124,DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
+      CHARACTER OUTS*124
       LOGICAL OK
 
 C Access climate file to recover climatic data for requested
