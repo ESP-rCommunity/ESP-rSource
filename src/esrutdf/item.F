@@ -31,7 +31,7 @@ C IER=0 OK, IER=1 problem.
       COMMON/TDFGH2/GTYPES(20),GMENUS(20)
       DIMENSION ISGGT(23),IVAL(23)
       LOGICAL FOUND
-      CHARACTER GMENUS*20,GTYPES*8
+      CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*34,FOCUS*8,h*72
 
 C Read the generic descriptions to see what is available.
@@ -44,7 +44,7 @@ C Read the generic descriptions to see what is available.
         CALL EMKEY(M,KEY,IER)
         IVAL(M)=IT
         WRITE(ISGGT(M),72)KEY,GMENUS(IT),GTYPES(IT)
-   72   FORMAT(A1,1X,A20,1x,A8)
+   72   FORMAT(A1,1X,A16,1x,A8)
     3 CONTINUE
       ISGGT(1)  ='  Description          TAG     '
       ISGGT(M+1)='? Help                      '
@@ -88,7 +88,7 @@ C In the case of FOCUS='ALL' IFOC is not used.
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
-C  GMENUS(): 20 char descriptive text for use in selection menus.
+C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
       COMMON/TDFGH2/GTYPES(20),GMENUS(20)
 
@@ -115,7 +115,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
       COMMON/TDFG6/IALT(MBITS)
 
-      CHARACTER GMENUS*20,GTYPES*8
+      CHARACTER GMENUS*16,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32
       CHARACTER FOCUS*8,WORD*20
@@ -162,7 +162,7 @@ C Pick up the arrays used for displaying current generic items.
       GTYPES(19)='ACTIVITY'
       GMENUS(19)='Activity Type:'
       GTYPES(20)='BIDIRSET'
-      GMENUS(20)='Bidirectional set:'       
+      GMENUS(20)='Optical set:'       
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
