@@ -98,7 +98,7 @@ C Commons added for ISO 15099 algorithm
       logical dotrace
 
       DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA,veloc
-      DOUBLE PRECISION NUSS,RAS,vel2
+      DOUBLE PRECISION NUSS,RAS,vel2,CNUS
 
 
 C Trace output. If there is a zone htc file note that data may
@@ -106,6 +106,7 @@ C be superceeded by user specifications.
       dotrace=.false.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
+      IF(IZNTRC(ICOMP).NE.1)goto 9999 ! check if zone output is rq'd
       IF( IHC(ICOMP).EQ.1 ) THEN
         write(outs,'(A,I4,a,i2,a,i2,a)')
      &    ' Subroutine HTBUOY  Trace output',ICNT,
@@ -378,9 +379,9 @@ C Air entering from outdoors.
         RAS=1000.0*9.81*BETA*ABS(TFS(ICOMP,ISUR)-TF)*
      &      CWIDTH**3.0*RHOAIR*CPAIR/(NUAIR*LAMBAIR)
          
-        IF(RAS.le.1.0E4) THEN
+        IF(RAS.le.1.0E+04) THEN
           NUSS=1.0+1.7596678E-10*RAS**2.2984755
-        ELSEIF ((RAS.gt.1.0E4).AND.(RAS.le.5.0E4))THEN
+        ELSEIF ((RAS.gt.1.0E+04).AND.(RAS.le.5.0E+04))THEN
           NUSS=0.028154*RAS**0.4134
         ELSE
            NUSS=0.0673838*RAS**0.3333
@@ -413,9 +414,9 @@ C Air entering from another building zone.
         RAS=1000.0*9.81*BETA*ABS(TFS(ICOMP,ISUR)-TFA(IAORZ))*
      &     CWIDTH**3.0*RHOAIR*CPAIR/(NUAIR*LAMBAIR)
          
-        IF(RAS.le.1.0E4) THEN
+        IF(RAS.le.1.0E+04) THEN
           NUSS=1.0+1.7596678E-10*RAS**2.2984755
-        ELSEIF ((RAS.gt.1.0E4).AND.(RAS.le.5.0E4)) THEN
+        ELSEIF ((RAS.gt.1.0E+04).AND.(RAS.le.5.0E+04)) THEN
           NUSS=0.028154*RAS**0.4134
         ELSE
            NUSS=0.0673838*RAS**0.3333
