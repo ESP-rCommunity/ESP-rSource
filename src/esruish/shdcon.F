@@ -36,7 +36,7 @@ C Sets up the parameters relating to shading computation.
       subroutine shdcon(icomp,ier,act)
 #include "building.h"
 
-      common/filep/ifiL
+      common/filep/ifil
       common/pophelp/h(60)
       common/outin/iuout,iuin
       common/c20/nzsur(mcom),nztv(mcom)
@@ -44,20 +44,21 @@ C Sets up the parameters relating to shading computation.
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/data1/ical
       common/contr/mon,isc(ms),iyd
       common/mtfile/ltrns,multic,mons,monf
-      common/sif1/insrts,insrti
       common/ract/paction
 
 C iaplic(1) toggle for shading;
 C iaplic(2) toggle for insolation;
+C           where 1 means consider all applicable surfaces and 0
+C           means manual selection of surfaces.
 C iaplic(3) toggle for assessment where:
 C         1 is 'all_applicable',
 C         0 is manual selection of surfaces.
-C nsurfcalc is number of shaded surfaces, lstsfcalc() list of
-C applicable surfaces, nsurfinso number of insolation sources and
-C isurfinso() list of insolation sources.
+C nsurfcalc is number of shaded surfaces.
+C lstsfcalc list of applicable surfaces.
+C nsurfinso number of insolation sources.
+C isurfinso list of insolation sources.
       common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),lstsfcalc(mcom,ms),
      &       nsurfinso(mcom),isurfinso(mcom,ms)
 
@@ -70,17 +71,18 @@ C isurfinso() list of insolation sources.
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
 
+C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-      newgeo=.false.  ! assume older format geometry.
+      newgeo=.false.  ! Assume older format geometry.
       ier=0
       iunit=ifil
 
    35 call eclose(gversion(icomp),1.1,0.01,newgeo)
 
-C If new format geometry and iaplic(icomp,1) already equals 1 then
+C If new format geometry and iaplic(icomp,1) equals 1 then
 C all applicable surfaces were set in the zone geometry file.
       if(newgeo)then
          if(iaplic(icomp,1).eq.1)then
@@ -99,12 +101,11 @@ C Set up isc array (surfaces included in the shading analysis).
                if(isc(i).eq.1)icont=1
    42       continue
 
-         elseif(iaplic(icomp,1).eq.0)then
-
-C If iaplic(icomp,1) is zero and nsurfcalc is non-zero then user
-C has manually selected surfaces so fill arrays. If zero then
+C If iaplic(icomp,1) is 0 and nsurfcalc is non-zero then user
+C has manually selected surfaces so fill arrays. If both 0 then
 C the user effectively said no shading should be calculated
-C so just clear () and () arrays.
+C so just clear isc() array.
+         elseif(iaplic(icomp,1).eq.0)then
             np=nsurfcalc(icomp)
             if(np.eq.0)then
                do 44 i=1,nzsur(icomp)
@@ -135,7 +136,7 @@ C do 'all appliable' surfaces.
 
 C Clear return array and select all applicable surfaces.
             do 14 i=1,nzsur(icomp)
-               iva(I)=0
+               iva(i)=0
    14       continue
             np=0
             do 13 i=1,nzsur(icomp)
@@ -176,7 +177,7 @@ C Fill ishdirec array.
       endif
 
 C Check that at least one surface has been chosen or gleaned
-C from the geometry file.
+C from the zone geometry file.
       if(icont.eq.0)then
          if(newgeo)then
             call edisp(iuout,
@@ -185,7 +186,6 @@ C from the geometry file.
          else
             if(act.eq.'s')then
                call edisp(iuout,'No surfaces, shading skipped!')
-               ical=1
                return
             else
                h(1)='Surfaces that might be shaded need to be'
@@ -195,7 +195,6 @@ C from the geometry file.
      &                       ok,dok,2)
                if(ok)goto 35
                call edisp(iuout,'Shading computation abandoned!')
-               ical=1
                return
             endif
          endif
@@ -254,14 +253,12 @@ C identify them. Close any previous file on iunit and open a new one.
 
 C Write the first record of the zone transitional shading file.
          irec=1
-         do 801 I=1,ms
-            irecs(I)=0
+         do 801 i=1,ms
+            irecs(i)=0
   801    continue
          write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,ms)
          call tfile1(icomp)
          call shadc(icomp)
-         ical=1
-         insrts=0
          call ssave(ier)
          if(ier.ne.0)then
             call usrmsg('Error condition detected during file save!',
@@ -278,7 +275,7 @@ C Write the first record of the zone transitional shading file.
       end
 
 C ********** SHADC **********
-C Calculates the direct and diffuse shading. Called from shdcon.
+C Calculates the direct and diffuse solar shading. Called from shdcon.
 
       subroutine shadc(icomp)
 #include "building.h"
@@ -287,7 +284,7 @@ C Calculates the direct and diffuse shading. Called from shdcon.
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/prec8/slat,slon
       common/shad1/isunup
-      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa
+      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/contr/mon,isc(ms),iyd
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
@@ -296,6 +293,10 @@ C Calculates the direct and diffuse shading. Called from shdcon.
       common/sangl1/sazi1,salt1
       common/sangl2/sazi2,salt2
       common/ract/paction
+
+C ical = 0 indicates that no insolation calculations have been
+C performed and is set to 1 when they have.
+      common/data1/ical,idifc,init
 
       dimension month(12),npz(8),alt(8),azi(8)
       character blkname*8,blkmat*12,outs*124,paction*16
@@ -320,10 +321,7 @@ C If trace requested enable writing.
          return
       endif
 
-C idifc determines whether diffuse shading is calculated only
-C once (=0) or at every time step (=1).
-      idifc=1
-      init=0
+      ical=0
       indcom=0
       kind=0
       knt=0
@@ -348,6 +346,7 @@ C progress report.
 C Commence direct (mode=dir) and diffuse (mode=dif) shading computation
 C for each target surface in turn.
       do 20 itsur=1,nsur
+         init=0
 
 C Skip if surface is not selected by user.
          if(isc(itsur).eq.0)goto 20
@@ -414,6 +413,10 @@ C Trace output.
                goto 30
             endif
 
+C Initialise ipexcl, the number of sky patched 'behind' the
+C target surface.
+            ipexcl=0
+
 C Compute direct (ip=1) then diffuse (ip=2,146, i.e. 145 sky
 C patches) shading. Where the latter is not time dependent
 C (e.g. geometry is time invariant and sky irradiance distribution
@@ -459,8 +462,12 @@ C Trace output.
                      call edisp(icout,outs)
                   endif
 
-C Test whether to calculate diffuse shading again at next hour.
-                  if(idifc.eq.0.and.init.eq.1)goto 1
+C Test whether to calculate diffuse shading again after first sun-up hour.
+                  if(idifc.eq.0.and.init.eq.1)then
+                     mode='dup'
+                     call tfile3(icomp,itsur,mode)
+                     goto 1
+                  endif
                   iptch=ip-1
                   if(iptch.ge.1.and.iptch.le.30) nzone = 1
                   if(iptch.ge.31.and.iptch.le.60) nzone = 2
@@ -510,7 +517,7 @@ C Project obstruction block surface, form intersection with plane
 C of target surface if necessary, then determine target surface
 C shading.
                  do 60 ibs=1,6
-                   call trnsf3(ibn,ibs)
+                   call trnsf3(ihour,ibn,ibs)
                    call decomp(ibn,ibs,itsur)
                    call shdtst(itsur)
    60            continue 
@@ -538,13 +545,20 @@ C considered (psof).
                goto 40
 
 C Surface cannot see sun or sky patch.
-    2          do 90 i=1,nox
-                  do 100 j=1,noz
-                     if(ioshd(i,j).eq.-1)goto 100
-                     if(mode.eq.'dir')ioshd(i,j)=1
-                     if(mode.eq.'dif')foshd(i,j)=foshd(i,j)+1.0/145.0
-  100             continue
-   90          continue
+    2          if(mode.eq.'dir')then
+                  do 90 i=1,nox
+                     do 100 j=1,noz
+                        if(ioshd(i,j).eq.-1)goto 100
+                        if(mode.eq.'dir')ioshd(i,j)=1
+C                       if(mode.eq.'dif')foshd(i,j)=foshd(i,j)+1.0/145.0
+  100                continue
+   90             continue
+               elseif(mode.eq.'dif')then
+C Ipexcl counts the number of sky patches that are behind the target
+C surface. It is used in tfile3 to ensure that the diffuse shading
+C factor relates only to the visible sky portion.
+                  ipexcl=ipexcl+1
+               endif
                if(ip.eq.1.or.ip.eq.146)call tfile3(icomp,itsur,mode)
    40       continue        ! sky patch loop
 
@@ -567,24 +581,25 @@ C Output calculation progress report.
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete','-')
+                  call usrmsg(outs,' 75% complete','P')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete','-')
+                  call usrmsg(outs,' 50% complete','P')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete','-')
+                  call usrmsg(outs,' 25% complete','P')
                endif
             endif
 
    30    continue           ! hour loop
    20 continue              ! target surface loop
+      ical =1
       return
       end
 
@@ -882,7 +897,7 @@ C establish if it is within the target surface and shadow polygon.
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/shad2/ishd,npoint,xs(5),zs(5)
       common/grid11/xop(mox,moz),zop(mox,moz)
-      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa
+      common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       character blkname*8,blkmat*12
 
       if(ishd.eq.0)return
@@ -892,10 +907,8 @@ C the target surface. If it is, then test whether also within
 C the shadow polygon.
       do 10 i=1,nox
          do 20 j=1,noz
-            if(ioshd(i,j).eq.-1)goto 20
 C Is point within surface itsur?
-            call point1(itsur,xop(i,j),zop(i,j),ians)
-            if(ians.eq.0)goto 20
+            if(ioshd(i,j).eq.-1)goto 20
 
 C Is point within shadow polygon held in shad2?
             call point2(xop(i,j),zop(i,j),ians)

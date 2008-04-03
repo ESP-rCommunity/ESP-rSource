@@ -84,6 +84,16 @@ C Sets up defaults and offers main menu.
       program ish
 #include "building.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+C espriou.h provides currentfile, defdbfl exemfl.
+
+C IEEE callback (Solaris)
+#ifdef SUN
+#ifdef F90
+      external SIGFPE_bps      
+      integer SIGFPE_bps      
+#endif
+#endif
 
       common/outin/iuout,iuin
       common/tracech/icout
@@ -104,7 +114,7 @@ C Sets up defaults and offers main menu.
       common/ray3/modify,modlen,modbnd
       common/fopened/cfgok,mldbok,matdbok,ctlok,optkok
       common/contr/mon,isc(ms),iyd
-      common/data1/ical
+      common/data1/ical,idifc,init
       common/mtfile/ltrns,multic,mons,monf
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/c1/ncomp,ncon
@@ -120,15 +130,12 @@ C Sets up defaults and offers main menu.
 C Path to model and command line file (if any).
       common/rpath/path
       common/uhome/upath
-      common/udot/esprc
       common/rcmd/lcmdfl
 
 C Indicator of possible focus zone and action to take.
       common/rzone/inzone
       common/ract/paction
 
-C Where default db lists are kept.
-      common/defdb/dfdblbl,defdbfl
       common/precz/zname(mcom),zdesc(mcom)
       common/prec8/slat,slon
 
@@ -151,15 +158,14 @@ C Material data arrays.
      &  matdbdate,matdbdoc,matcatname(mgcl),matcatdoc(mgcl)
 
       real matver
-      dimension month(12),items(22),isadd(12),ishd(12)
+      dimension month(12),items(23),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
       character*72 lcfgf,lsnam,lproj,lgeom,lshad,lthrm,lutil
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character items*26,ctype*4,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
       character descrh*5,descrd*5,zname*12,zdesc*64,inf*144,lcmdfl*144
-      character path*72,upath*72,esprc*72,cfgroot*24
-      character dfdblbl*20,defdbfl*72
+      character path*72,upath*72,cfgroot*24
       character inz*16,inzone*16,zn*12,pact*16,paction*16,outstr*124
       character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf,dsbem
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
@@ -169,6 +175,7 @@ C Material data arrays.
       logical modify,modlen,modbnd,xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
 
+      data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
 
@@ -198,6 +205,11 @@ C ifcfg  - system configuration file
       lname='SHDTRN'
       zn='UNKNOWN'
       call parsfza(modl,iappw,iappx,iappy,inf,inz,pact)
+
+C Set sky type to isotropic as default (idifc = 0): diffuse shading
+C is then calculated only once per day rather than at each time step
+C if the sky id anisotropic (idifc = 1).
+      idifc=0
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -241,6 +253,22 @@ C Image option flags.
       ifs=1
       itfs=1
       imfs=1
+
+C If your compiler does not support floating-point arithmetic
+C according to ANSI/IEEE Std 754-1985 comment out the following code.
+
+C Initialize mode, status, and signal handling for IEEE arithmetic.
+C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
+C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
+C           only if: Sun-3 f77 with -f68881 or -ffpa option
+C                or: Sun-4 f77.
+#ifdef SUN
+#ifdef F90
+      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+      ieeer=ieee_handler('set','common',SIGFPE_bps)
+      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+#endif
+#endif
 
 C Initialise terminal and flags.
       mmod=modl
@@ -547,39 +575,44 @@ C Display opening menu.
       items(6)=                 'd Mercator sun path       '
       items(7)=                 'e view from sun/site plan '
       items(8) =                '  _______________________ '
-      items(9)=                 'f calculate shading       '
-      items(10)=                'g shading synopsis        '
-      items(11)=                'h shadow image            '
-      items(12) =               '  _______________________ '
-      items(13)=                'i calculate insolation    '
-      items(14)=                'j insolation synopsis     '
-      items(15) =               '  _______________________ '
-      items(16)=                'k shd/ins db contents     '
-      items(17) =               '  _______________________ '
+      if(idifc.eq.0)then
+         items(9)=              'f sky type << isotropic   '
+      elseif(idifc.eq.1)then
+         items(9)=              'f sky type << anisotropic '
+      endif
+      items(10)=                'g calculate shading       '
+      items(11)=                'h shading synopsis        '
+      items(12)=                'i shadow image            '
+      items(13) =               '  _______________________ '
+      items(14)=                'j calculate insolation    '
+      items(15)=                'k insolation synopsis     '
+      items(16) =               '  _______________________ '
+      items(17)=                'l shd/ins db contents     '
+      items(18) =               '  _______________________ '
       if(itc.eq.0)then
-         items(18)=              'l trace output >> none    '
+         items(19)=              'm trace output >> none    '
       elseif(itc.eq.1)then
-         items(18)=              'l trace output >> fort.33 '
+         items(19)=              'm trace output >> fort.33 '
       endif
       if(ixopen.eq.1)then
-         items(19)='> outputs >> file       '
+         items(20)='> outputs >> file       '
       elseif(ixopen.eq.0)then
-         items(19)='> outputs >> screen     '
+         items(20)='> outputs >> screen     '
       endif
-      items(20)=                '! browse zone surfaces    '
-      items(21)=                '? help                    '
-      items(22)=                '- exit Shading/Insolation '
+      items(21)=                '! browse zone surfaces    '
+      items(22)=                '? help                    '
+      items(23)=                '- exit Shading/Insolation '
 
 C If zone has not been selected disallow calculations and views.
       if(zn(1:4).eq.'UNKN')then
-         items(9) =              'f  ...                    '
-         items(10)=              'g  ...                    '
+         items(10) =             'g  ...                    '
          items(11)=              'h  ...                    '
-         items(13)=              'i  ...                    '
+         items(12)=              'i  ...                    '
          items(14)=              'j  ...                    '
-         items(16)=              'k  ...                    '
+         items(15)=              'k  ...                    '
+         items(17)=              'l  ...                    '
       endif
-      nitems = 22
+      nitems = 23
 
 C Use askabout to instantiate the initial help messages
 C (2nd parameter is 1).
@@ -736,8 +769,19 @@ C Generate a heading for the view.
             endif
          endif
 
-C Calculate direct and diffuse shading on specified external surfaces.
+C Toggle sky type.
       elseif(inos.eq.9)then
+         call easkab(' ','Sky type:','isotropic','anisotropic',iw,0)
+C Isotropic sky.
+         if(iw.eq.1)then
+            idifc=0
+C Anisotropic sky.
+         elseif(iw.eq.2)then
+            idifc=1
+         endif
+
+C Calculate direct and diffuse shading on specified external surfaces.
+      elseif(inos.eq.10)then
          if(zn(1:4).eq.'UNKN') then
             call edisp(iuout,'Select a zone first!')
             goto 201
@@ -757,7 +801,7 @@ C If there is already data in the file ask user what to do.
                h(2)='contains data. New computations can overwrite'
                h(3)='these data or another file may be created.'
                call easkabc('Zone Shading & Insolation db has data!',
-     &           'Options:','overwrite','create new db','cancel',iw,3)
+     &           'Options:','update','create new db','cancel',iw,3)
                if(iw.eq.1)then
                   continue
                elseif(iw.eq.2)then
@@ -787,18 +831,19 @@ C If there is already data in the file ask user what to do.
 
 C Synopsis of surface shading calculation results (uses information held
 C in the zone transitional shading file).
-      elseif(inos.eq.10)then
+      elseif(inos.eq.11)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
             goto 201
          else
             call tstamp('>','Ish: shading synopsis')
-   65       h(1)='The month is specified as an integer with'
+            h(1)='The month is specified as an integer with'
             h(2)='January = 1, February = 2 and so on.'
             mon=mons
   202       call easki(mon,' ','Computation month number?',
      &           1,'F',12,'F',1,'month number',ier,2)
-            if(ier.ne.0)goto 65
+            if(ier.ne.0)goto 201
+            call eday(iavdec(mon),mon,iyd)
 
 C Allow for number of surfaces within the zone transitional shading
 C file.
@@ -834,7 +879,7 @@ C shading file.
 
 C Plot surface shading patterns using information in zone transitional
 C shading file.
-      elseif(inos.eq.11)then
+      elseif(inos.eq.12)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
             goto 201
@@ -845,6 +890,7 @@ C shading file.
   203       call easki(mon,' ','Computation month number?',
      &                 1,'F',12,'F',1,'month number',ier,2)
             if(ier.ne.0)goto 66
+            call eday(iavdec(mon),mon,iyd)
 
 C Allow for number of surfaces within the zone transitional shading
 C file.
@@ -876,7 +922,7 @@ C file.
 
 C Calculate insolation of internal surfaces due to specified external 
 C source surfaces.
-      elseif(inos.eq.13)then
+      elseif(inos.eq.14)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
             goto 201
@@ -895,7 +941,7 @@ C source surfaces.
                h(2)='contains data. New computations can overwrite'
                h(3)='these data or another file may be created.'
                call easkabc('Zone Shading & Insolation db has data!',
-     &           'Options:','overwrite','create new db','cancel',iw,3)
+     &           'Options:','update','create new db','cancel',iw,3)
                if(iw.eq.1)then
                   continue
                elseif(iw.eq.2)then
@@ -925,8 +971,8 @@ C source surfaces.
          endif
 
 C Synopsis of insolation calculation results (based on information
-C held in the zone shading & insolation db.
-      elseif(inos.eq.14)then
+C held in the zone shading & insolation db.)
+      elseif(inos.eq.15)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,' ')
             call edisp(iuout,'Select a zone first!')
@@ -938,7 +984,9 @@ C held in the zone shading & insolation db.
             mon=mons
   204       call easki(mon,' ','Month number?',
      &                 1,'F',12,'F',1,'ins comp month',ier,2)
-            if(ier.ne.0)goto 204
+            if(ier.ne.0)goto 201
+            call eday(iavdec(mon),mon,iyd)
+
             call sifrd(icomp,mon,ier)
             call insynp(icomp)
             if(mon.lt.12)then
@@ -952,7 +1000,7 @@ C held in the zone shading & insolation db.
          endif
 
 C Edit/import/export/list.
-      elseif(inos.eq.16)then
+      elseif(inos.eq.17)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
             goto 201
@@ -961,7 +1009,7 @@ C Edit/import/export/list.
          endif
 
 C Set trace level displayed in opening menu and main menu.
-      elseif(inos.eq.18)then
+      elseif(inos.eq.19)then
          itc=itc+1
          if(itc.gt.1)then
             itc=0
@@ -972,7 +1020,7 @@ C Set trace level displayed in opening menu and main menu.
 
 C Redirect synoptic outputs and result of ASHRAE method to a
 C user specified file.
-      elseif(inos.eq.19)then
+      elseif(inos.eq.20)then
          if(ixopen.eq.0)then
             write(xfile,'(2a)')zname(icomp)(1:lnblnk(zname(icomp))),
      &                         '.txt'  ! initial file name
@@ -981,19 +1029,19 @@ C user specified file.
          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Report',ier)
 
 C Surface summary: print header, followed by surface information.
-      elseif(inos.eq.20)then
+      elseif(inos.eq.21)then
          call tstamp('>','Ish: list surface attributes')
          context=.false.
          call surinfo(icomp,iuout,context)
 
 C Help via the askabout facility in esru_ask.F - 0 requests display.
-      elseif(inos.eq.21)then
+      elseif(inos.eq.22)then
          call askabout('ish ',0)
 
 C Exit program: if nothing has been done, delete the transitional
 C shading file; if a single or multi-month calculation has been done
 C then offer to save or delete.
-      elseif(inos.eq.22)then
+      elseif(inos.eq.23)then
          iunit=ifil
          if(multic.eq.0)then
             call efdelet(iunit,istat)
@@ -1163,3 +1211,20 @@ C Dummy routine (needed for call back from c.
      
       return
       end
+
+C In support of floating point exceptions.
+#ifdef SUN
+#ifdef F90
+      integer function SIGFPE_bps(sig,code,context)
+      integer sig,code,context(5)
+      character label*16
+      if(loc(code).eq.208) label = 'invalid'
+      if(loc(code).eq.200) label = 'division by zero'
+      if(loc(code).eq.212) label = 'overflow'
+      if(loc(code).eq.204) label = 'underflow'
+      if(loc(code).eq.196) label = 'inexact'
+      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+      SIGFPE_bps = loc(code)
+      end
+#endif
+#endif

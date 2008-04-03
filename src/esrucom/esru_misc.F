@@ -2654,6 +2654,9 @@ C if it has been sorted and notify user.
                 elseif(ip3ver.eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
+                elseif(ip3ver.eq.2)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined)'
                 endif
               else
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
@@ -2941,6 +2944,9 @@ C if it has been sorted and notify user.
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver.eq.1)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined)'
+                elseif(ip3ver.eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif

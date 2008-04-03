@@ -71,14 +71,6 @@ C Opens a zone shading & insolation db.
 
       common/outin/iuout,iuin
       common/filep/ifil
-      
-C insrts - if 0 then shading data has not yet been saved;
-C is set to 1 after data is written and reset to 0 in shdcon
-C when the user changes the shading directive.
-C insrti - if 0 then insolation data has not yet been saved;
-C is set to 1 after data has been written and reset to 0 in
-C inscon when the user changes the insolation directive.
-      common/sif1/insrts,insrti
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -86,7 +78,7 @@ C inscon when the user changes the insolation directive.
      &              itw(mcom),icgc(mcom),iobs(mcom)
       common/ract/paction
 
-      dimension isadd(12),ishd(12)
+      dimension isadd(12),ishd(12),idum(ms)
       character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil,fname
       character outs*124,paction*16
       logical xst
@@ -141,11 +133,10 @@ C try again at maxrec=24 and then at ms words wide.
         endif
       else
 
-C If new file, fill first record with zeros so that it will be
+C If new file, fill records 1 and 4 with zeros so that dbt will be
 C interpreted later as empty.
         call efopran(ifilsi,fname,maxrec,3,ier)
-        irec=1
-        do 10 i=1,12
+        do 10 i=1,maxrec
           ishd(i)=0
           isadd(i)=0
   10    continue
@@ -153,15 +144,12 @@ C interpreted later as empty.
      &                                              (isadd(i),i=1,12)
       endif
 
-C Return after advising user and setting insrts & instri to 0 to
-C indicate to shadcon and inscon that no data have yet been saved.
+C Return after advising user.
       if(paction(1:13).ne.'update_silent')then
         call edisp(iuout,' ')
         write(outs,'(3a)')'Opened ',fname,'.'
         call edisp(iuout,outs)
       endif
-      insrts=0
-      insrti=0
       return
 
  1000 call edisp(iuout,' ')
@@ -190,16 +178,18 @@ C once per day-month.
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/data1/ical
+      common/data1/ical,idifc,init
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/contr/mon,isc(ms),iyd
       common/pophelp/h(60)
-      common/sif1/insrts,insrti
       common/data2/pso(ms,24),psof(ms,24)
 
-      dimension isadd(12),ishd(12)
-      character outs*124,h*72
+      dimension isadd(12),ishd(12),month(12)
+      character outs*124,h*72,month*3
       logical ok,dok
+
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &           'Sep','Oct','Nov','Dec'/
 
 C SI db unit number.
       ifilsi=ifil+3
@@ -230,24 +220,18 @@ C irecx:   next available record in db.
 C nsurs:   number of zone surfaces in model when db first created.
 C msurs:   maximum number of internal insolated surfaces in model
 C          when db first created.
-    1 if(isadd(mon).eq.0)isadd(mon)=irecx
 
 C Consistency check.
-      irec=2
+    1 irec=2
       read(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
       if(nsur.ne.nsurs.or.msurs.ne.misur)goto 1002
+
+      if(isadd(mon).eq.0)isadd(mon)=irecx
 
 C Confirm that there are shading data to be saved.
     2 if(ical.eq.0)then
          call edisp(iuout,' ')
          call edisp(iuout,'No shading data to be saved!')
-         return
-      endif
-
-C Check that data have not been saved already.
-      if(insrts.ne.0)then
-         call edisp(iuout,' ')
-         call edisp(iuout,'Shading data have already been saved!')
          return
       endif
 
@@ -278,6 +262,7 @@ C or not), write out 24 hours of direct then diffuse shading data.
         write(ifilsi,rec=irec,iostat=istat,err=1000)(psof(i,j),j=1,24)
         irec=irec+1
    20 continue
+      irecx=irec
 
 C Re-write header records to record changes.
       irec=1
@@ -285,14 +270,14 @@ C Re-write header records to record changes.
      &                                            (isadd(i),i=1,12)
       irec=2
       write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsur,misur
-      insrts=1
 
 C Return to menu.
+      ical=0
       return
 
 C Error handling.
  1000 write(outs,1001)irec
- 1001 format('SSAVE: Zone Shading & Insolation db error, record',i5)
+ 1001 format('SSAVE: Zone Shading & Insolation db error, record',i8)
       call edisp(iuout,' ')
       call edisp(iuout,outs)
       ier=1
@@ -315,7 +300,7 @@ C once per day-month.
 #include "building.h"
 
       common/outin/iuout,iuin
-      common/data1/ical
+      common/data1/ical,idifc,init
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/contr/mon,isc(ms),iyd
       common/pophelp/h(60)
@@ -323,15 +308,16 @@ C once per day-month.
       common/tmc/itmc(ms),nwins
       common/stins/insst(mgt,24,misur),pinsst(mgt,24,misur),
      &             shadst(mgt,24)
-      common/sif1/insrts,insrti
       common/ract/paction
 
       dimension pso(ms,24),psof(ms,24),insstx(24),pinsstx(24)
-      character outs*124,paction*16,h*72
+      dimension isadd(12),ishd(12),ioffs(ms),ntmc(ms),month(12)
+      character outs*124,paction*16,h*72,month*3
       logical ok,dok,close
 
-      dimension isadd(12),ishd(12),ioffs(ms),ntmc(ms)
-      
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &           'Sep','Oct','Nov','Dec'/
+
 C SI db unit number.
       ifilsi=ifil+3
       ier=0
@@ -341,15 +327,14 @@ C SI db unit number.
      &                                        (isadd(i),i=1,12)
 
 C Check for contents.
-      multi=0
       do 10 i=1,12
-        if(ishd(i).ne.0)multi=1
         if(ishd(i).ne.0.or.isadd(i).ne.0)goto 1
    10 continue
    
 C db has no data.
       irecx=5
       isadd(mon)=irecx
+      multi=0
       goto 2
 
 C db has data.
@@ -364,23 +349,27 @@ C msurs: maximum number of internal insolated surfaces in model
 C        when db first created.
 C ntmc:  0 - surface is not an insolation source;
 C        1 - surface is an insolation source.
+C multi: indicates if data already exists for the current
+C        month (yes = 1) and is used to determine if db
+C        records need to be moved to accommodate an
+C        expanded dataset.
+
+C Consistency check.
     1 irec=2
       read(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
-C Consistency check.
       if(nsur.ne.nsurs.or.msurs.ne.misur)goto 1002
-      if(isadd(mon).eq.0)isadd(mon)=irecx
+
+      if(isadd(mon).eq.0)then
+         isadd(mon)=irecx
+         multi=0
+      else
+         multi=1
+      endif
 
 C Confirm that there are insolation data is to be saved.
     2 if(ical.eq.0)then
          call edisp(iuout,' ')
          call edisp(iuout,'No insolation data to be saved!')
-         return
-      endif
-
-C Check that data have not been saved already.
-      if(insrti.ne.0)then
-         call edisp(iuout,' ')
-         call edisp(iuout,'Insolation data have already been saved!')
          return
       endif
 
@@ -391,19 +380,22 @@ C for yes).
       irec=4
       read(ifilsi,rec=irec,iostat=istat,err=1000)(ntmc(i),i=1,nsur)
       if(paction(1:13).ne.'update_silent')call edisp(iuout,' ')
+      ishdt=ishd(mon)
       do 20 i=1,nsur
          if(itmc(i).ne.0)then
-            if(ntmc(i).eq.0)then
+            if(ntmc(i).eq.0.or.(ishdt.eq.0.or.ishdt.eq.1))then
                if(multi.eq.1)new=1
                if(paction(1:13).ne.'update_silent')then
-                  write(outs,'(a,i2)')
-     &               'Adding db entry for insolation source surface ',i
+                  write(outs,'(3a,i2)')
+     &                          'Adding db entry for ',month(mon),
+     &                          ', insolation source surface ',i
                   call edisp(iuout,outs)
                endif
             else
                if(paction(1:13).ne.'update_silent')then
-                  write(outs,'(a,i2)')
-     &            'Replacing db entry for insolation source surface ',i
+                  write(outs,'(3a,i2)')
+     &                          'Replacing db entry for ',month(mon),
+     &                          ', insolation source surface ',i
                   call edisp(iuout,outs)
                endif
             endif
@@ -411,7 +403,6 @@ C for yes).
    20 continue
 
 C Possibly update saved data index.
-      ishdt=ishd(mon)
       if(ishdt.eq.0.or.ishdt.eq.1)then
          ishd(mon)=ishd(mon)+2
          if(multi.eq.1)new=1
@@ -423,8 +414,8 @@ C Possibly update saved data index.
          h(4)='the replacement of existing entries you may wish'
          h(5)='to replace the current Zone Shading & Insolation db'
          h(6)='with a new one.'
-         write(outs,'(a,i2,a)')
-     &       'Insolation data already saved for month ',mon,'.' 
+         write(outs,'(3a)')
+     &       'Insolation data already saved for month ',month(mon),'.' 
          call askok(outs,'OK to overwrite/append?',ok,dok,6)
          if(.not.ok)return
       endif
@@ -548,12 +539,12 @@ C Write header items to capture potential changes.
       write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsur,misur
       irec=4
       write(ifilsi,rec=irec,iostat=istat,err=1000)(itmc(i),i=1,nsur)
-      insrti=1
+      ical=0
       return
 
 C Error handling.
  1000 write(outs,1001)irec
- 1001 format('ISAVE: Zone Shading & Insolation db error, record',I6)
+ 1001 format('ISAVE: Zone Shading & Insolation db error, record',i8)
       call edisp(iuout,' ')
       call edisp(iuout,outs)
       ier=1

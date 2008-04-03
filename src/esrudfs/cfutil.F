@@ -441,21 +441,21 @@ C Write the x coordinates
 
       do 100 i=2,ni-1
             write(IUNIT,200)XP(I)
- 100  continue                      
+ 100  continue
 
 C Write the y coordinates
       write(IUNIT,'(a,i3,a)') 'Y_COORDINATES ',(nj-2),' float'
 
       do 101 j=2,nj-1
             write(IUNIT,200)YP(J)
- 101  continue                      
+ 101  continue
 
 C Write the z coordinates
       write(IUNIT,'(a,i3,a)') 'Z_COORDINATES ',(nk-2),' float'
 
       do 102 k=2,nk-1
             write(IUNIT,200)ZP(K)
- 102  continue                      
+ 102  continue
 
 C Write data header followed by data
 C Begin with temperature
@@ -467,7 +467,7 @@ C Begin with temperature
         do 103 j=2,nj-1
           do 103 i=2,ni-1
             write(IUNIT,200)Tf(I,J,K)
- 103  continue                      
+ 103  continue
 
 C Continue with velocity
       write(IUNIT,'(a)') 'VECTORS velocity float'
@@ -476,7 +476,7 @@ C Continue with velocity
         do 104 j=2,nj-1
           do 104 i=2,ni-1
             write(IUNIT,201)Uf(I,J,K),Vf(I,J,K),Wf(I,J,K)
- 104  continue                      
+ 104  continue
 
 C Formats
  200  format(1E14.6)
@@ -488,7 +488,6 @@ C Formats
 
 C Free the file handle
       call ERPFREE(IUNIT,ISTAT)
-      
       return
       end
 

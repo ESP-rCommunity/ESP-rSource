@@ -191,6 +191,7 @@ class TReportsManager
    * The constructor is private because we're a Singleton
    */
   TReportsManager(  );
+ ~TReportsManager(  );
 	
   /**
    * 

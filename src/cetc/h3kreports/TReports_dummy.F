@@ -42,9 +42,9 @@ C Logical function indicating that H3KREPORTS is not available
       END 
 
 
-      SUBROUTINE REP_UPDATE(DUMMY1, DUMMY2, DUMMY3)
+      SUBROUTINE REP_UPDATE(DUMMY1, DUMMY2, DUMMY3, DUMMY4)
       REAL DUMMY2
-      INTEGER DUMMY1, DUMMY3
+      INTEGER DUMMY1, DUMMY3, DUMMY4
 
         ! Do nothing
         

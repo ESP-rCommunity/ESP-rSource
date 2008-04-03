@@ -61,7 +61,9 @@ C Check square root is not negative.
 
 C *************** MESH ***********************
 C Computes the centre point 'x & y' coordinates for each rectangular
-C grid cell as superimposed on the target surface.
+C grid cell as superimposed on the target surface. Note that some of
+C these points will lie outside a non-rectangular target surface; such
+C points are later excluded.
 
       subroutine mesh(its)
 #include "building.h"
@@ -73,7 +75,7 @@ C grid cell as superimposed on the target surface.
       common/grid11/xop(mox,moz),zop(mox,moz)
       character blkname*8,blkmat*12
 
-C Derive bounding box (in 2d) for surface its. First find max and min
+C Derive bounding box (in 2d) for surface 'its'. First find max and min
 C x & y values for this surface by scanning each vertex.
       xmax=-1.E+10
       zmax=-1.E+10
