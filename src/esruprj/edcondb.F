@@ -1991,7 +1991,17 @@ C Add a construction. Update this to account for OPAQ/TRAN.
           moddb = .true.
           chgdb=.true.
           NMLC=NMLC+1
-          DESC(NMLC)='UNKNOWN'
+
+C Ask for name of the new construction
+          h(1)='Although you only have 12 characters to work with'
+          h(2)='try and create a useful name for the construction'
+          h(3)='that is not a duplicate of an existing name. '
+          T14='  '
+          CALL EASKS(T14,' ',' Name of construction? ',
+     &      14,' ','Construction name',IER,3)
+          write(T12,'(a)') T14(1:12)
+          call st2name(T12,DESC(NMLC))
+
           LAYERS(NMLC)=1
           IPR(NMLC,1)=1
           DTHK(NMLC,1)=0.10
@@ -2440,8 +2450,11 @@ C Check that mlc name has no illegal characters.
       endif
 
 C If T12 is `UNKNOWN` and MLCSYM is blank then we have a new
-C construction.
-      if(T12(1:4).eq.'UNKN'.and.MLCSYM(1:2).eq.' ')then
+C construction. If we got this far with a blank MLCSYM then
+C set it to SYMMETRIC.
+      if(T12(1:4).eq.'UNKN'.and.MLCSYM(1:2).eq.'  ')then
+        MLCSYM='SYMMETRIC'
+      elseif(MLCSYM(1:2).eq.'  ')then
         MLCSYM='SYMMETRIC'
       endif
 
