@@ -205,6 +205,12 @@ C in elevation and azimuth.
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
      &              TVTR2(MCOM,MTMC,MBP)
 
+C Optical control associated with each connection.
+      common/iconopt/icnopta(MCON)
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
@@ -787,7 +793,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/mÂ²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÃÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -1387,13 +1393,15 @@ C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
               IF(IBIDATATYPE.EQ.1)THEN
                 CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
      &                       PSAZI2(I),PSELV2(I),DTOD)
-              ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
-                DTOD=0.
-              ENDIF
 
 C<<<<<<<<<<<<<Check for changing the 1 for THTSOB as more than one files are allowed>>>>>>>>
 C Get diffuse transmission from common block.
               XF=THTSOB(1,IBISET_timestep)
+              ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                DTOD=0.
+C<<<<<<<<<<<<<<<<for Paul: to calculate XF (CURRENTLY SET TO 0)
+                XF=0.                 
+              ENDIF
             ENDIF 
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
               POO=0.
@@ -3281,7 +3289,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0Â°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0ÃÂ°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
