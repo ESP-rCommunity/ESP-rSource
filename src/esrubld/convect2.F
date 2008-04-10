@@ -73,6 +73,7 @@ C Room Surfaces', Energy and Buildings, 30 233-244.
       SUBROUTINE HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HEIGHT,APRAT)
 
 #include "building.h"
+#include "net_flow.h"
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -92,13 +93,16 @@ C Commons to support vertical channel hc regime.
 
 C Commons added for ISO 15099 algorithm
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
 
       character outs*124
       logical dotrace
 
       DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA,veloc
       DOUBLE PRECISION NUSS,RAS,vel2,CNUS
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION FLIN,FLUT
 
 
 C Trace output. If there is a zone htc file note that data may
@@ -356,7 +360,7 @@ C Air entering from another building zone.
      &     TFS(ICOMP,ISUR),TFA(IAORZ),CWIDTH,CHEIGHT,RAS,CNUS,HC
           call edisp(itu,outs)
         endif
-	
+
       ELSEIF((ICOR.EQ.17).AND.(IAORZ.EQ.0))THEN
 
 C ISO 15099 correlation for buoyancy driven flow in vertical channels.
@@ -399,9 +403,8 @@ C Air entering from outdoors.
         endif
       ELSEIF((ICOR.EQ.17).AND.(IAORZ.GT.0))THEN
 
-C ISO 15099 correlation for buoyancy driven flow in vertical channels.
-C
-C Air entering from another building zone.
+C ISO 15099 correlation for buoyancy driven flow in vertical channels w/
+C air entering from another building zone.
         PR=0.707
         LAMBAIR=0.0263  ! W/(m K)
         RHOAIR=1.174     ! kg/m3
@@ -424,10 +427,22 @@ C Air entering from another building zone.
 
         NUSS=MAX(NUSS,(0.242*(RAS*CWIDTH/CHEIGHT)**0.272))
 
-C Get flow rate through channel and calculate average velocity
-        IF ((ICAAS(ICOMP).gt.0).and.(ICAAS(IAORZ).gt.0)) THEN
-           call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),veloc,vel2)
-           veloc=veloc*CHEIGHT/3600./VOL(ICOMP)
+C Get flow rate through channel from air flow network and calculate average velocity
+C
+        IF (IAIRN.ne.0) THEN
+          IF ((ICAAS(ICOMP).gt.0).and.(ICAAS(IAORZ).gt.0)) THEN
+           write(*,*)ICAAS(ICOMP),ICAAS(IAORZ)
+C             veloc=CHEIGHT*SAFLW(ICAAS(ICOMP))/RHOAIR/VOL(ICOMP)
+             veloc=SAFLW(3)
+C             call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),FLIN,FLUT)
+            call MFSNFL(2,3,4,FLIN,FLUT)
+            veloc=REAL(FLIN)*CHEIGHT/3600./VOL(ICOMP)
+            if(dotrace) then
+                write(outs,'(A,I8,F8.2,2E10.3)') 'ICMP,ICAS,vel,FLIN ',
+     &           ICOMP,ICAAS(ICOMP),veloc,REAL(FLIN)
+                call edisp(itu,outs)
+             endif
+          ENDIF
         ENDIF
 
 C eqn. 111 from final draft
