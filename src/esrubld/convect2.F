@@ -69,6 +69,7 @@ C The Awbi and Hatton correlations are from:
 C Awbi H.B. and Hatton A. (1999), `Natural Convection from Heated
 C Room Surfaces', Energy and Buildings, 30 233-244.
 
+C The ISO 15099:2003 correlations.
 
       SUBROUTINE HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HEIGHT,APRAT)
 
@@ -95,6 +96,8 @@ C Commons added for ISO 15099 algorithm
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
+
+      CHARACTER LAPROB*72
 
       character outs*124
       logical dotrace
@@ -363,14 +366,17 @@ C Air entering from another building zone.
 
       ELSEIF((ICOR.EQ.17).AND.(IAORZ.EQ.0))THEN
 
-C ISO 15099 correlation for buoyancy driven flow in vertical channels.
-C Eqns. taken from "final draft" version 2003, sec. 5.3 and eqn. 111.
-C CWIDTH is the Channel width and CHEIGHT the channel height
-C PR is the Prandtl number, RAS is the Rayleigh rumber based on channel 
+C ISO 15099 correlation for buoyancy driven flow in ventilated vertical 
+C channels. Eqns. taken from version 2003, sec. 5.3 and eqn. 111.
+C CWIDTH is the Channel width and CHEIGHT the channel height. Hereby,
+C it is generally assumed the the ventilated vertical channel is split into more 
+C than one zone.
+C PR is the Prandtl number, RAS is the Rayleigh number based on channel 
 C width and NUSS the corresponding Nusselt number
-C Air properties fixed to dry air values at 300 K and 101325 Pa.
+C Air properties are fixed to dry air values at 300 K and 101325 Pa.
 C
-C Air entering from outdoors.
+C Air entering from outdoors, i.e. the "lowermost" zone of the vertical
+C channel.
         PR=0.707
         LAMBAIR=0.0263  ! W/(m K)
         RHOAIR=1.174     ! kg/m3
@@ -390,6 +396,12 @@ C Air entering from outdoors.
         ELSE
            NUSS=0.0673838*RAS**0.3333
         ENDIF
+
+C If air is entering from the ambient, it is assumed that the velocity is zero.
+C This assumption is based on the approach of most buoyancy heat transfer 
+C algorithms according to literature. These do not take a superimposed "forced" 
+C flow into account, which seems plausible for the "first" or "lowermost" zone
+C of a multi-zone stacked channel.
 
         NUSS=MAX(NUSS,(0.242*(RAS*CWIDTH/CHEIGHT)**0.272))
 
@@ -428,31 +440,27 @@ C air entering from another building zone.
         NUSS=MAX(NUSS,(0.242*(RAS*CWIDTH/CHEIGHT)**0.272))
 
 C Get flow rate through channel from air flow network and calculate average velocity
-C
         IF (IAIRN.ne.0) THEN
           IF ((ICAAS(ICOMP).gt.0).and.(ICAAS(IAORZ).gt.0)) THEN
-           write(*,*)ICAAS(ICOMP),ICAAS(IAORZ)
-C             veloc=CHEIGHT*SAFLW(ICAAS(ICOMP))/RHOAIR/VOL(ICOMP)
-             veloc=SAFLW(3)
-C             call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),FLIN,FLUT)
-            call MFSNFL(2,3,4,FLIN,FLUT)
+            call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),FLIN,FLUT)
             veloc=REAL(FLIN)*CHEIGHT/3600./VOL(ICOMP)
             if(dotrace) then
-                write(outs,'(A,I8,F8.2,2E10.3)') 'ICMP,ICAS,vel,FLIN ',
-     &           ICOMP,ICAAS(ICOMP),veloc,REAL(FLIN)
+                write(outs,'(A,4I5,3E10.3)') 
+     &         'ICOMP,ICAAS(ICOMP),IAORZ,ICAAS(IAORZ),Vol,veloc,FLIN ',
+     &         ICOMP,ICAAS(ICOMP),IAORZ,ICAAS(IAORZ),
+     &         VOL(ICOMP),veloc,REAL(FLIN)
                 call edisp(itu,outs)
              endif
           ENDIF
         ENDIF
 
-C eqn. 111 from final draft
+C eqn. 111 from ISO 15099:2003
         HC=2.0*NUSS*LAMBAIR/CWIDTH + 4.0*veloc
 
         if(dotrace) then
-          write(outs,'(A,4E10.3,E12.4,E12.4,F5.2,E10.3)')
-     &     '15099: TS,TA,CWIDTH,CHEIGHT,RAS,NUS,HC,vel ',
-     &     TFS(ICOMP,ISUR),TFA(IAORZ),CWIDTH,CHEIGHT,RAS,
-     &     NUSS,HC,veloc
+          write(outs,'(A,4E10.3,E12.4,E12.4,F5.2)')
+     &     '15099: TS,TA,CWIDTH,CHEIGHT,RAS,NUS,HC',
+     &     TFS(ICOMP,ISUR),TFA(IAORZ),CWIDTH,CHEIGHT,RAS,NUSS,HC
           call edisp(itu,outs)
         endif
       ELSEIF(ICOR.EQ.30)THEN
