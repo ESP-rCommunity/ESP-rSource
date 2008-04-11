@@ -1365,7 +1365,7 @@ C << check if NDNAM(NDSCNN(ICNN,1)) and NDNAM(NDSCNN(ICNN,2))
 C << are used. Probably does not have to be written.
       WRITE(IFPRB,1060,ERR=999)
  1060 FORMAT(' +Node         dHght   -Node         dHght',
-     &'   via Component')
+     & '   via Component')
 
       WRITE(IFPRB,1070,IOSTAT=IOS,ERR=999)
      &     (NDNAM(NODPS(ICNN)),HGTPS(ICNN),
