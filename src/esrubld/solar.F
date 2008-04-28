@@ -316,6 +316,14 @@ C
      &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
      &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
 
+C Common block for treatment of diffuse radiation for bi-directional
+C types 2 and 3.
+      COMMON/OPTDAT2/DF_TX_SKY(MSTMC,MSGAL),DF_G_SKY(MSTMC,MSGAL),
+     &  DF_RF_SKY(MSTMC,MSGAL),DF_TX_GND(MSTMC,MSGAL), 
+     &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
+     &  a_dfSKYinner(MSTMC,MSGAL),a_dfGNDinner(MSTMC,MSGAL),
+     &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
+
 C Tdf common block to allow using different bidirectional datasets
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
@@ -337,7 +345,7 @@ C Required for WATSUN-PV model
       CHARACTER SPARENT*12
 
       DIMENSION QIABS(MS),IANS(MS),IND1(MS),IND2(MS),ANGI(MS),
-     &SRADDO(MS),SRADF(MS)
+     &SRADDO(MS),SRADF(MS),SKYDIF(MS),GRDDIF(MS)
       DIMENSION PSAZI2(MS),PSELV2(MS),IANGBI1(MS),IANGBI2(MS)
       dimension inssur(misur),pinsur(misur)
 
@@ -360,7 +368,7 @@ C Bidirectional data - explicit definitions:
                           !3: the transmittance and g value only     
       COMMON/trc/itrc ! needed to recover tdf data
       REAL EFF_TOT_ABS,XREFLECT_interp,XGVALUE_interp,qi_bidirectional
-      REAL a_inner_layer,Rs_glazing,a_outer_layer, X_tr_interp                   
+      REAL a_inner_layer,Rs_glazing,a_outer_layer, X_tr_interp
       REAL X_tr1_bitype2and3,X_tr2_bitype2and3,X_tr3_bitype2and3
       REAL X_tr4_bitype2and3 !Using it for the interpolation of transmittance in...
                              !cases of bidirectional data type 2 and 3. This is... 
@@ -369,7 +377,7 @@ C Bidirectional data - explicit definitions:
                              !situations.
       integer IBISET_timestep !the bidirectional dataset number to use. 
                               !Use the number specified in tdf if exists. Otherwise use the 1st dataset. 
-      DIMENSION VAL(MBITS+2)                                                      
+      DIMENSION VAL(MBITS+2)                         
       
       ZAREA=ZOA(ICOMP)
 
@@ -550,7 +558,8 @@ C Store angle of incidence in COMMON block variable; required by WATSUN-PV model
 C SOLAR PROCESSING: incident comprises direct, sky diffuse
 C and ground reflected components. Calculate direct (SRADDO)
 C and diffuse (SRADF) on surface ISRF.
-          CALL MZSRAD(ICOMP,ISRF,QD,QF,CAI,SRADDO(ISRF),SRADF(ISRF))
+          CALL MZSRAD(ICOMP,ISRF,QD,QF,CAI,SRADDO(ISRF),SRADF(ISRF),
+     &         SKYDIF(ISRF),GRDDIF(ISRF))
 
 C Surface is self-shaded; no direct radiation.
           IF(IANS(ISRF).EQ.1)SRADDO(ISRF)=0.
@@ -793,7 +802,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/mÃÂ²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÃÂÃÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -915,8 +924,6 @@ C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
              EXDIR(I) = 0.
              EXDIF(I) = 0.
           endif
-
-
         ENDIF
    6  CONTINUE
 
@@ -952,7 +959,8 @@ C data type 3. Do this outside the loop of NE (per layer).
               X_tr1_bitype2and3=
      &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
               XGVALUE1=TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
-              IF(IBIDATATYPE.EQ.2)THEN            
+              IF(IBIDATATYPE.EQ.2)THEN  
+          
 C Need to interpolate the reflectance for bidirectional data
                 XX1=TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
               ENDIF           
@@ -1040,7 +1048,7 @@ C Solar flux for bidirectional data (experimental conditions)
 C will be g value - transmittance
               qi_bidirectional=XGVALUE_interp-X_tr_interp
 
-C Calulate the thermal resistance of the glazing based on the U values
+C Calculate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
 C Trap also the zeros in case of corrupted data (will result to
 C a non-realistic Rs_glazing)
@@ -1199,26 +1207,40 @@ C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
                 CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
      &                     PSAZI2(I),PSELV2(I),ABD)
 
+C Get diffuse absorptance.
+                ABF=TMABSDIF(IBIDIR,IBISET_timestep,J)
+
 C Bidirectional data with transmittance and g values (plus reflectance
 C in some cases)
               ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
 
-C Always applicable for a 3-layer glazing
-C for external layer assign the calculated absorptance on the outer layer
+C Always applicable for a 3-layer glazing.
+C For external layer assign the calculated absorptance on the outer layer.
                 IF(J.EQ.1)THEN
                   ABD=a_outer_layer
 
+C Use separate absorptivities for diffuse radiation from outside to inside.
+                  ABFSKY=a_dfSKYouter(IBIDIR,IBISET_timestep)
+                  ABFGND=a_dfGNDouter(IBIDIR,IBISET_timestep)
+
+C Use average absorptivity for diffuse radiation from inside to outside.
+                  ABF=(ABFSKY+ABFGND)/2.
+
 C Assign 0 for middle gas layer                
                 ELSEIF(J.EQ.2)THEN
-                  ABD=0.
+                  ABD=0.0
+                  ABFSKY=0.0
+                  ABFGND=0.0
+                  ABF=0.0
 
-C for internal layer assign the calculated absorptance on the inner layer
+C For internal layer assign the calculated absorptance on the inner layer
                 ELSEIF(J.EQ.3)THEN
                   ABD=a_inner_layer
-                ENDIF                
+                  ABFSKY=a_dfSKYinner(IBIDIR,IBISET_timestep)
+                  ABFGND=a_dfGNDinner(IBIDIR,IBISET_timestep)
+                  ABF=(ABFSKY+ABFGND)/2.
+                ENDIF                   
               ENDIF 
-C Get diffuse absorptance.
-              ABF=TMABSDIF(IBIDIR,IBISET_timestep,J)
             ENDIF
               IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
                 POO=0.
@@ -1229,6 +1251,9 @@ C Get diffuse absorptance.
               ENDIF
               DAB=SRADDO(I)*(1.-POO)*ABD
               FAB=SRADF(I)*(1.-POFF)*ABF
+              IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                FAB=(SKYDIF(I)*ABFSKY+GRDDIF(I)*ABFGND)*(1.-POFF)
+              ENDIF
 C              write (6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
 C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
 
@@ -1237,6 +1262,7 @@ C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
               EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
               EXDIF(I)=SRADF(I)*(1.-EXSHADF(I))
               EXRAD(I)=EXDIR(I)+SRADF(I)
+
 C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
              call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
              if ( bCloseToZero ) then
@@ -1394,13 +1420,17 @@ C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
                 CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
      &                       PSAZI2(I),PSELV2(I),DTOD)
 
-C<<<<<<<<<<<<<Check for changing the 1 for THTSOB as more than one files are allowed>>>>>>>>
 C Get diffuse transmission from common block.
-              XF=THTSOB(1,IBISET_timestep)
+                XF=THTSOB(IBIDIR,IBISET_timestep)
               ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
                 DTOD=0.
-C<<<<<<<<<<<<<<<<for Paul: to calculate XF (CURRENTLY SET TO 0)
-                XF=0.                 
+
+C Use separate transmittances for diffuse radiation from outside to inside.
+                XFSKY=DF_TX_SKY(IBIDIR,IBISET_timestep)
+                XFGND=DF_TX_GND(IBIDIR,IBISET_timestep)
+
+C Use XF for diffuse radiation travelling from inside to outside.
+                XF=(XFSKY+XFGND)/2.0
               ENDIF
             ENDIF 
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
@@ -1413,6 +1443,9 @@ C<<<<<<<<<<<<<<<<for Paul: to calculate XF (CURRENTLY SET TO 0)
 
 C Calculate diffuse transmission.
             TFF=SRADF(I)*SNA(ICOMP,I)*XF*(1.-POFF)
+            IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+            TFF=(SKYDIF(I)*XFSKY+GRDDIF(I)*XFGND)*SNA(ICOMP,I)*(1.-POFF)
+            ENDIF
             tfftrace(i)=tff
 
 C For bidirectional data, add in the direct-diffuse component to the
@@ -2116,14 +2149,14 @@ C IANGBI1 and IANGBI2 are the angles corresponding to the IND1,IND2 array elemen
       END
 
 C ******************** MZSRAD *********************
-C  SOLAR PROCESSING: Subroutine that sets slope of 
+C SOLAR PROCESSING: Subroutine that sets slope of 
 C surface then calls appropriate subroutine to determine
-C direct and diffuse components solar radiation. This 
+C direct and diffuse components of solar radiation. This 
 C subroutine was part of MZSRAD0. It was separated to
-C accomodate call for MZSRAD0 from subroutine 
+C accommodate call for MZSRAD0 from subroutine 
 C "simple_solar_coll_coeff_gen".
 
-      SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF)
+      SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 #include "building.h"
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -2133,7 +2166,7 @@ C Slope of surface
 
 C Call subroutine to determine direct and diffuse solar
 C radiation
-      CALL MZSRAD0(BETA,QD,QF,CAI,SRADDO,SRADF)
+      CALL MZSRAD0(BETA,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 
       RETURN
       END
@@ -2142,7 +2175,7 @@ C ******************** MZSRAD0 ********************
 C  SOLAR PROCESSING: incident comprises direct, sky diffuse
 C  and ground reflected components.
 
-      SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF)
+      SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 #include "building.h"
 
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -2533,7 +2566,7 @@ C MZTMCA computes the absorptions and transmissions for a TMC
 C It assumes that the radiation is incident from inside the
 C room whereas TMC's are defined from the outside. The relative
 C absorptivities are thus reversed by an approximate method which
-C assumes that the refectivity is the same from each element of
+C assumes that the reflectivity is the same from each element of
 C the TMC.
 
 C RAD   is radiation incident on the TMC in W/m^2.
@@ -2599,7 +2632,7 @@ C If IBOFOT()=1 the blind/shutter or If IBOFOT()=2 linear is on.
 
 C Now calculate the absolute absorptivities (approximate method
 C assumes that total reflectivity is the same in both directions
-C for shortwave.
+C for shortwave).
       ABFABS(1)=ABF(1)
       IF (NE.GT.1)THEN
         DO 2 L=2,NE
@@ -3289,7 +3322,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0ÃÂ°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0ÃÂÃÂ°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
