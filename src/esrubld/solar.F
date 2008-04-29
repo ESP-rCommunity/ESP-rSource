@@ -802,7 +802,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/mÃÂÃÂ²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÃÂÃÂÃÂÃÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -942,155 +942,162 @@ C Set a local flag if bidirectional data available for this surface.
             KP=NBPONT(ICOMP,I)
             INODE=1
 
+C Bidirectional case
+            if(IBIDIR.NE.0)then
+
 C If there is a tdf item that defines which bidirectional dataset 
 C to use then use it. Otherwise use the first set.
-            if(IBIDIRS(ICOMP,I).ne.0)then
-              IFOC=IBIDIRS(ICOMP,I)
-              CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-              IBISET_timestep=VAL(ISD)
-            else
-              IBISET_timestep=1
-            endif
+              if(IBIDIRS(ICOMP,I).ne.0)then
+                IFOC=IBIDIRS(ICOMP,I)
+                CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+                IBISET_timestep=VAL(ISD)
+              else
+                IBISET_timestep=1
+              endif
 
 C Interpolate transmittance and g values in case of bidirectional
 C data type 2 and 3. Also interpolate reflectance in the case of
 C data type 3. Do this outside the loop of NE (per layer).
-            IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
-              X_tr1_bitype2and3=
-     &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
-              XGVALUE1=TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
-              IF(IBIDATATYPE.EQ.2)THEN  
-          
+              IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                X_tr1_bitype2and3=
+     &               TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                XGVALUE1=
+     &               TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                IF(IBIDATATYPE.EQ.2)THEN            
 C Need to interpolate the reflectance for bidirectional data
-                XX1=TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
-              ENDIF           
-              IF(IND1(I).eq.MANH)THEN
-                X_tr2_bitype2and3=X_tr1_bitype2and3              
-                XGVALUE2=XGVALUE1
-                IF(IBIDATATYPE.EQ.2)THEN 
-                  XX2=XX1
-                ENDIF
-              ELSE
-                X_tr2_bitype2and3=
+                  XX1=TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                ENDIF           
+                IF(IND1(I).eq.MANH)THEN
+                  X_tr2_bitype2and3=X_tr1_bitype2and3              
+                  XGVALUE2=XGVALUE1
+                  IF(IBIDATATYPE.EQ.2)THEN 
+                    XX2=XX1
+                  ENDIF
+                ELSE
+                  X_tr2_bitype2and3=
      &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
-                XGVALUE2=
+                  XGVALUE2=
      &             TMGVALUE(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
-                IF(IBIDATATYPE.EQ.2)THEN
-                  XX2=
-     &             TMREFLECT(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)) 
-                ENDIF                               
-              ENDIF
-              IF(IND2(I).eq.MANV)THEN
-                X_tr3_bitype2and3=X_tr1_bitype2and3
-                XGVALUE3=XGVALUE1
-                IF(IBIDATATYPE.EQ.2)THEN                
-                  XX3=XX1
+                  IF(IBIDATATYPE.EQ.2)THEN
+                    XX2=
+     &               TMREFLECT(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
+                  ENDIF                               
                 ENDIF
-              ELSE
-                X_tr3_bitype2and3=
+                IF(IND2(I).eq.MANV)THEN
+                  X_tr3_bitype2and3=X_tr1_bitype2and3
+                  XGVALUE3=XGVALUE1
+                  IF(IBIDATATYPE.EQ.2)THEN                
+                    XX3=XX1
+                  ENDIF
+                ELSE
+                  X_tr3_bitype2and3=
      &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
-                XGVALUE3=
+                  XGVALUE3=
      &             TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
-                IF(IBIDATATYPE.EQ.2)THEN
-                  XX3=
-     &             TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
-                ENDIF                                            
-              ENDIF
-              IF(IND1(I).eq.MANH)THEN
-                X_tr4_bitype2and3=X_tr3_bitype2and3
-                XGVALUE4=XGVALUE3
-                IF(IBIDATATYPE.EQ.2)THEN   
-                  XX4=XX3
-                ENDIF                                
-              ELSEIF(IND2(I).eq.MANV)THEN
-                X_tr4_bitype2and3=X_tr2_bitype2and3
-                XGVALUE4=XGVALUE2
-                IF(IBIDATATYPE.EQ.2)THEN
-                  XX4=XX2 
-                ENDIF                               
-              ELSE
-                X_tr4_bitype2and3=
+                  IF(IBIDATATYPE.EQ.2)THEN
+                    XX3=
+     &               TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
+                  ENDIF                                            
+                ENDIF
+                IF(IND1(I).eq.MANH)THEN
+                  X_tr4_bitype2and3=X_tr3_bitype2and3
+                  XGVALUE4=XGVALUE3
+                  IF(IBIDATATYPE.EQ.2)THEN   
+                    XX4=XX3
+                  ENDIF                                
+                ELSEIF(IND2(I).eq.MANV)THEN
+                  X_tr4_bitype2and3=X_tr2_bitype2and3
+                  XGVALUE4=XGVALUE2
+                  IF(IBIDATATYPE.EQ.2)THEN
+                    XX4=XX2 
+                  ENDIF                               
+                ELSE
+                  X_tr4_bitype2and3=
      &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
-                XGVALUE4=
+                  XGVALUE4=
      &             TMGVALUE(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
-                IF(IBIDATATYPE.EQ.2)THEN   
-                   XX4=
-     &             TMREFLECT(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)   
-                ENDIF                         
-              ENDIF
+                  IF(IBIDATATYPE.EQ.2)THEN   
+                     XX4=
+     &             TMREFLECT(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
+                  ENDIF                         
+                ENDIF
 
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
 C X_tr_interp should be the same as XD that is used in the TMC loop afterwards.
-              CALL MZWINP2(X_tr1_bitype2and3,X_tr2_bitype2and3,
+                CALL MZWINP2(X_tr1_bitype2and3,X_tr2_bitype2and3,
      &                    X_tr3_bitype2and3,X_tr4_bitype2and3,
      &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
      &                    X_tr_interp)
-              CALL MZWINP2(XGVALUE1,XGVALUE2,XGVALUE3,XGVALUE4,
+                CALL MZWINP2(XGVALUE1,XGVALUE2,XGVALUE3,XGVALUE4,
      &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
      &                    XGVALUE_interp)     
-              IF(IBIDATATYPE.EQ.2)THEN
-                CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
+                IF(IBIDATATYPE.EQ.2)THEN
+                  CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
      &                    PSAZI2(I),PSELV2(I),XREFLECT_interp) 
-              ENDIF                
+                ENDIF                
 C End of interpolation for bidirectional data
 
 C Get effective total absorptance from the interpolation of the solar
 C transmittance according to a method defined by Fraunhofer.
 C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
 C or g,te only)
-              IF(IBIDATATYPE.EQ.2)THEN   
-                EFF_TOT_ABS=1-X_tr_interp-XREFLECT_interp
-              ELSEIF(IBIDATATYPE.EQ.3)THEN
-                EFF_TOT_ABS=0.5*(1-X_tr_interp)
-              ENDIF  
+                IF(IBIDATATYPE.EQ.2)THEN   
+                  EFF_TOT_ABS=1-X_tr_interp-XREFLECT_interp
+                ELSEIF(IBIDATATYPE.EQ.3)THEN
+                  EFF_TOT_ABS=0.5*(1-X_tr_interp)
+                ENDIF  
 
 C Solar flux for bidirectional data (experimental conditions)
 C will be g value - transmittance
-              qi_bidirectional=XGVALUE_interp-X_tr_interp
+                qi_bidirectional=XGVALUE_interp-X_tr_interp
 
 C Calculate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
 C Trap also the zeros in case of corrupted data (will result to
 C a non-realistic Rs_glazing)
-              if(TUVALUE(IBIDIR,IBISET_timestep).eq.0.)then
-                Rs_glazing=0-TREXTERNAL(IBIDIR,IBISET_timestep)-
-     &             TRINTERNAL(IBIDIR,IBISET_timestep)
-              else
-                Rs_glazing=(1/TUVALUE(IBIDIR,IBISET_timestep))-
-     &             TREXTERNAL(IBIDIR,IBISET_timestep)-
-     &             TRINTERNAL(IBIDIR,IBISET_timestep)
-              endif
+                if(TUVALUE(IBIDIR,IBISET_timestep).eq.0.)then
+                  Rs_glazing=0-TREXTERNAL(IBIDIR,IBISET_timestep)-
+     &               TRINTERNAL(IBIDIR,IBISET_timestep)
+                else
+                  Rs_glazing=(1/TUVALUE(IBIDIR,IBISET_timestep))-
+     &               TREXTERNAL(IBIDIR,IBISET_timestep)-
+     &               TRINTERNAL(IBIDIR,IBISET_timestep)
+                endif
 
 C Calculate the effective absorptance of the inner layer (based on
 C the experimental bidirectional data)
 C abs_in=(qi*(Re+Rs+Ri)-abs_tot*Re)/Rs
 C Trap also the zeros in case of corrupted data
-              if(Rs_glazing.eq.0.) then
-                a_inner_layer=0.
-              else
-                a_inner_layer=
-     &          (qi_bidirectional*(TREXTERNAL(IBIDIR,IBISET_timestep)+
-     &          Rs_glazing+TRINTERNAL(IBIDIR,IBISET_timestep))-
-     &          EFF_TOT_ABS*TREXTERNAL(IBIDIR,IBISET_timestep))/
-     &          Rs_glazing
-              endif
+                if(Rs_glazing.eq.0.) then
+                  a_inner_layer=0.
+                else
+                  a_inner_layer=
+     &            (qi_bidirectional*(TREXTERNAL(IBIDIR,IBISET_timestep)+
+     &            Rs_glazing+TRINTERNAL(IBIDIR,IBISET_timestep))-
+     &            EFF_TOT_ABS*TREXTERNAL(IBIDIR,IBISET_timestep))/
+     &            Rs_glazing
+                endif
 
 C Calculate the effective absorptance of the outer layer (based on
 C the experimental bidirectional data)
 C abs_out=abs_tot*(Re+Rs)-qi(Re+Rs+Ri)/Rs
 C Trap also the zeros in case of corrupted data
-              if(Rs_glazing.eq.0.) then
-                a_outer_layer=0.
-              else
-                a_outer_layer=
-     &          (EFF_TOT_ABS*(TREXTERNAL(IBIDIR,IBISET_timestep)+
-     &          Rs_glazing)-qi_bidirectional*
-     &          (TREXTERNAL(IBIDIR,IBISET_timestep)+Rs_glazing+
-     &          TRINTERNAL(IBIDIR,IBISET_timestep)))/Rs_glazing
-              endif
+                if(Rs_glazing.eq.0.)then
+                  a_outer_layer=0.
+                else
+                  a_outer_layer=
+     &            (EFF_TOT_ABS*(TREXTERNAL(IBIDIR,IBISET_timestep)+
+     &            Rs_glazing)-qi_bidirectional*
+     &            (TREXTERNAL(IBIDIR,IBISET_timestep)+Rs_glazing+
+     &            TRINTERNAL(IBIDIR,IBISET_timestep)))/Rs_glazing
+                endif
 
 C              write(6,*) Rs_glazing,'  ',qi_bidirectional
 C              write(6,*) a_inner_layer,'  ', a_outer_layer
+
+C End of Bidirectional case
+              endif
+              
             ENDIF             
             DO 40 J=1,NE
               NNOD=NNDL(ICOMP,I,J)
@@ -1294,16 +1301,22 @@ C zone was processed. Results held in common ADJC2.
 C Set a local flag if bidirectional data available for this surface.
         IBIDIR=NSTMCFL(IZSTOCN(ICOMP,I))
 
+C Bidirectional case
+        if(IBIDIR.NE.0)then
+
 C If there is a tdf item that defines which bidirectional dataset 
 C to use then use it. Otherwise use the first set.
-        if(IBIDIRS(ICOMP,I).ne.0)then
-          IFOC=IBIDIRS(ICOMP,I)
-          CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-          IBISET_timestep=VAL(ISD)
-        else
-          IBISET_timestep=1
-        endif  
+          if(IBIDIRS(ICOMP,I).ne.0)then
+            IFOC=IBIDIRS(ICOMP,I)
+            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+            IBISET_timestep=VAL(ISD)
+          else
+            IBISET_timestep=1
+          endif  
 
+C End of bidirectional case
+        endif
+        
         ITMC=ITMCFL(ICOMP,I)
         if (IE(ICOMP,I).ge.0.and.ITMC.gt.0) then
 
@@ -3322,7 +3335,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0ÃÂÃÂ°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0ÃÂÃÂÃÂÃÂ°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
