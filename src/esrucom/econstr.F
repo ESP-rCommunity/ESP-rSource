@@ -1442,7 +1442,7 @@ C (i.e. do not use data for 0deg elevation).
             DO 203 ivangindex=20,37
               SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,ivangindex)
               SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,ivangindex)
-              IF (IBIDATATYPE.eq.3)then
+              IF (IBIDATATYPE.eq.2)then
                 SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,ivangindex)
               ENDIF
   203       CONTINUE
@@ -1459,7 +1459,7 @@ C Now repeat for ground reflected properties.
             DO 205 ivangindex=1,18
               SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,ivangindex)
               SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,ivangindex)
-              IF (IBIDATATYPE.eq.3)then
+              IF (IBIDATATYPE.eq.2)then
                 SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,ivangindex)
               ENDIF
   205       CONTINUE
@@ -1467,8 +1467,6 @@ C Now repeat for ground reflected properties.
           DF_TX_GND(ibidir,ibset)=SUM1/(37*18)
           DF_G_GND(ibidir,ibset)=SUM2/(37*18)
           DF_RF_GND(ibidir,ibset)=SUM3/(37*18)
-  201   CONTINUE
-  200   CONTINUE
 
 C Calculate the layer absorptances for bidirectional datatypes 2 and 3
 C for both the sky and ground reflected components of diffuse radiation.
@@ -1542,6 +1540,8 @@ C Trap also the zeros in case of corrupted data
      &      (TREXTERNAL(ibidir,ibset)+Rs_glazing+
      &      TRINTERNAL(ibidir,ibset)))/Rs_glazing
         endif
+  201   CONTINUE
+  200   CONTINUE
       ENDIF
 
 c Free file.
