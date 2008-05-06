@@ -145,7 +145,7 @@ Installations on MinGW and OS X are regarded as 'beta'.
                       Solaris  Linux   Cygwin  MinGW    OS X
  -----------------------------------------------------------
  32-bit                  S       S       S       B       S
- 64-bit                  X       X       X       X       X
+ 64-bit                  X       X       B       X       X
  ===========================================================
  S = Stable
  B = Beta testing
@@ -459,29 +459,28 @@ on each of ESP-r's supported platforms:
   ======================================================================
   Platform  Last test date      Notes
   ---------------------------------------------------------------------
-  Linux     2007-11-07 (r2010)  A complete regression test was performed
-                                against last release (2007-04-17, r917).
-                                Small numerical differences were 
-                                introduced to the predictions from the 
-                                photovoltaic model and the explicit
-                                plant pump model. These differences were
-                                anticipated by developers, who modified
-                                these models in r1327 and r1952/1958.
+  Linux     2008-04-21 (r2767)  A complete regression test was performed
+                                against last release (2007-11-07, r2115).
+                                Small numerical differences were
+                                introduced into results from models that
+                                invoke the ish shading tool; the solar
+                                insolation absorbed in the glazing
+                                differed by as much as 3.5 W (or 46%)
+                                These differences were anticipated
+                                by developers, who reconfigured ESP-r's
+                                shading algorithms.
   ----------------------------------------------------------------------
-  Cygwin    2007-11-02 (r1981)  A cross platform test was performed
+  Cygwin    2008-04-21 (r2767)  A cross platform test was performed
                                 comparing Cygwin output to linux
                                 results. No numerical differences were
                                 observed.
   ----------------------------------------------------------------------
-  Solaris   2007-11-02 (r1981)  A cross platform test was performed
-                                comparing Solaris output to linux results.
-                                Trivial numerical differences were
-                                observed in all test cases, while some
-                                non-trivial numerical differences were
-                                observed in in the temperatures of
-                                exterior surfaces in some test cases.
+  Solaris   2008-04-21 (r2767)  A qualitative comparison between
+                                Solaris and Linux versions was undertaken.
+                                Only trace differences were observed
+                                in the results. 
   ----------------------------------------------------------------------
-  OS X      2007-11-02 (r1981)  A qualitative comparison between
+  OS X      2008-04-21 (r2767)  A qualitative comparison between
                                 OS X and Linux versions was undertaken.
                                 Only trace differences were observed
                                 in the results. 
