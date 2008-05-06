@@ -1392,7 +1392,7 @@ C Read references to TDF id's, and then the related tasks and zones.
             CALL EGETW(OUTSTR,K,WORD,'W','related surface',IER)
             DBSN(M)=WORD(1:15)
           endif            
-          WRITE(OUTS,'(A,I2,7A,I2)') ' Tdf item:',M,':',DBTAG(M),
+          WRITE(OUTS,'(A,I2,8A)') ' Tdf item:',M,':',DBTAG(M),
      &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),
      &      'and surface',DBSN(M)
           IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
