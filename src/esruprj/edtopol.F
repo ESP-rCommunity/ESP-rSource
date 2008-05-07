@@ -1444,7 +1444,8 @@ C Only one possible match, inform user and then proceed.
 C Update surface attributes.
             ICN=IZSTOCN(II,JJ)
             if(TOTHER(JS,2)(1:1).ne.'-')then
-              WRITE(icother,'(i2.2)') TOTHER(JS,2)
+              read(TOTHER(JS,2),'(i2.2)')icother
+C              WRITE(icother,'(i2.2)') TOTHER(JS,2)
               if(icother.ne.IC2(icn))then
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
