@@ -1,5 +1,5 @@
 When you have completed the steps outlined in the QA checklist, send a note
-a note to the archivist using the template below.
+to the archivist using the template below.
 
 
 _____________________________________________________________________________
@@ -8,20 +8,28 @@ Revisions to merge into development_branch:
 
 
 Summary of changes:
-- Provide a one or two sentence description of each new feature or bug fix.
-  Use a separate point for each new feature or bug fix.  Do not dwell on the
-  details (these should be contained in the svn log of your sub-branch) but
-  rather provide a high-level description that communicates the significance
-  of the change to users and other developers.
-- If this code affects simulation results, then detail under what
-  circumstances.
-- If this code affects the Project Manager or Results Analyzer, then
-  detail this change from the user's perspective.
-- If the changes will be transparent to the user and do not affect
-  simulation results, then note this.
-- If a new model has been added, then provide a citation to a thesis or
-  a paper that describes its theoretical basis.
-- IMPORTANT: Use proper grammar and spelling.
+- If the submitted code bundles together numerous contributions, then
+  provide a one or two sentence description of each. Use a separate point
+  for each item and clearly indicate whether it provides new functionality
+  for the user, repairs a bug, tidies code, or is a work in progress.  Do not
+  dwell on the details (these should be contained in the svn log of your
+  sub-branch) but rather provide a high-level description that communicates
+  the significance of the change to users and other developers.
+- If new functionality is provided for the user, then indicate whether this
+  affects the Simulator, the Project Manager, the Results Analyzer, etc.
+  If this code affects the Project Manager or Results Analyzer, then
+  detail this change from the user's perspective.  If a new model has been
+  added, then provide a citation to a thesis or a paper that describes its
+  theoretical basis.
+- If a bug has been repaired, then indicate whether this affects the
+  Simulator, the Project Manager, the Results Analyzer, etc.  If it affects
+  simulation results, then detail under what circumstances.
+- If this change tidies code without providing (at this point in time) new
+  functionality or repairing a bug, then clearly indicate this.
+- If this contribution is a work in progress that does not provide (at this
+  point in time) new functionality or repair a bug, then clearly indicate
+  this.
+- IMPORTANT: Use proper grammar and spelling!
 
 
 Testing summary:
