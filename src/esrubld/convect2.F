@@ -94,8 +94,6 @@ C Commons to support vertical channel hc regime.
 
 C Commons added for ISO 15099 algorithm
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
-     &              RESID(MNOD),SAFLW(MNOD)
 
       CHARACTER LAPROB*72
 
@@ -103,7 +101,7 @@ C Commons added for ISO 15099 algorithm
       logical dotrace
 
       DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA,veloc
-      DOUBLE PRECISION NUSS,RAS,vel2,CNUS
+      DOUBLE PRECISION NUSS,RAS,CNUS
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       DOUBLE PRECISION FLIN,FLUT
 
