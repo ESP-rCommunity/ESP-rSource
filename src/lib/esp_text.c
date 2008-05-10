@@ -155,9 +155,10 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
    
    /* 
       Use the h_dialog widget and the contents of the help buffer.
+	  Do not attach to main window as help is displayed behind dialog boxes when called from them.
    */
-   h_dialog = gtk_message_dialog_new (GTK_WINDOW (window),
-      GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_INFO,GTK_BUTTONS_CLOSE,NULL);
+   h_dialog = gtk_message_dialog_new (NULL,
+      GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_INFO,GTK_BUTTONS_CLOSE,"Help...");
 
 /* react to different disp_fnt in order to set the size of the popup box */
    if (disp_fnt == 0 ) {
@@ -193,7 +194,6 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
            pango_font_metrics_get_descent (metrics));
    f_width = PANGO_PIXELS (pango_font_metrics_get_approximate_digit_width (metrics));
    pango_font_metrics_unref (metrics);
-   pango_font_description_free(pfd);
 
    /* fprintf(stderr,"font height and width is %d %d\n", f_height,f_width);  debug */
    menu_pix_wd = (gint) help_width * f_width +20;
@@ -205,56 +205,34 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
      menu_pix_hi = 20 * (f_height + 2) +20;
    }
    /* fprintf(stderr,"help lines chars and pix wd %ld %ld %d\n", help_lines,help_width,menu_pix_wd);  debug */
-   gtk_widget_set_size_request (h_dialog, menu_pix_wd, menu_pix_hi);
+   /* gtk_widget_set_size_request (h_dialog, menu_pix_wd, menu_pix_hi); */
 
 /* implement scrolling (idea from gtkaboutdialog.c)... */
    gtk_dialog_set_default_response (GTK_DIALOG (h_dialog), GTK_BUTTONS_CLOSE);
    sw = gtk_scrolled_window_new (NULL, NULL);
+   gtk_widget_set_size_request (sw, menu_pix_wd, menu_pix_hi);
    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),GTK_SHADOW_IN);
    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
 				   GTK_POLICY_NEVER,GTK_POLICY_AUTOMATIC);
    g_signal_connect (sw, "map", G_CALLBACK (set_policy), NULL);
    gtk_box_pack_start (GTK_BOX (GTK_DIALOG (h_dialog)->vbox), sw, TRUE, TRUE, 0);
 
-   view = gtk_text_view_new ();
-
 /* now set the font size to be used for the text in the scroll box. */
-   if (disp_fnt == 0 ) {
-     pfd = pango_font_description_from_string("Serif,Medium 8");
-     /* fprintf(stderr,"configure font medium 8\n");	 debug */
-   } else if (disp_fnt == 1 ) {	
-     pfd = pango_font_description_from_string("Serif,Medium 10");
-     /* fprintf(stderr,"configure font medium 10\n");	 debug */
-   } else if (disp_fnt == 2 ) {	
-     pfd = pango_font_description_from_string("Serif,Medium 12");
-     /* fprintf(stderr,"configure font medium 12\n");	 debug */
-   } else if (disp_fnt == 3 ) {
-     pfd = pango_font_description_from_string("Serif,Medium 14");
-     /* fprintf(stderr,"configure font medium 14\n");  debug */
-   } else if (disp_fnt == 4 ) {
-     pfd = pango_font_description_from_string("Courier,Medium 8");
-     /* fprintf(stderr,"configure courier medium 8\n");  debug */
-   } else if (disp_fnt == 5 ) {
-     pfd = pango_font_description_from_string("Courier,Medium 10");
-     /* fprintf(stderr,"configure courier medium 10\n");  debug */
-   } else if (disp_fnt == 6 ) {
-     pfd = pango_font_description_from_string("Courier,Medium 12");
-     /* fprintf(stderr,"configure courier medium 12\n");  debug */
-   } else if (disp_fnt == 7 ) {
-     pfd = pango_font_description_from_string("Courier,Medium 14");
-     /* fprintf(stderr,"configure courier medium 14\n");  debug */
-   }
+   view = gtk_text_view_new ();
    gtk_widget_modify_font(view, pfd);
    pango_font_description_free(pfd);
 
-   gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)), 
-			    help, -1);
+   gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)), help, -1);
 
    gtk_text_view_set_left_margin (GTK_TEXT_VIEW (view), 8);
    gtk_text_view_set_right_margin (GTK_TEXT_VIEW (view), 8);
+   gtk_text_view_set_editable(GTK_TEXT_VIEW (view), FALSE);
 
    gtk_container_add (GTK_CONTAINER (sw), view);
    gtk_widget_show_all (h_dialog);
+
+   /* Allow enter key to close dialog box */
+   gtk_dialog_set_default_response (GTK_DIALOG (h_dialog), GTK_RESPONSE_CLOSE);
 
    gtk_dialog_run (GTK_DIALOG (h_dialog));
    gtk_widget_destroy (h_dialog);

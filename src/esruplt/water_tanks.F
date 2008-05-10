@@ -399,6 +399,7 @@ C-------------------------------------------------------------------------------
      &              + tank_fuel_molefrac_C2H6  * molW_C2H6  * HHV_C2H6
      &              + tank_fuel_molefrac_C3H8  * molW_C3H8  * HHV_C3H8
 
+
 C---------------------------------------------------------------------------------
 C Zero fFuel_composition array, and assign compositions 
 C---------------------------------------------------------------------------------
@@ -2780,6 +2781,17 @@ C.......-> set name
      &     H3K_rep_NAME,
      &     'units', '(kg/s)',
      &     'Hot water tank: burner fuel flow rate' )
+
+C.......Volumetric fuel flow at STP.
+C.......-> set name
+        WRITE(H3K_rep_NAME,'(A,A)') 
+     &       root_name(1:lnblnk(root_name)), '/fuel_flow_vol_STP'
+        call add_to_xml_reporting(
+     &     Vdot_fuel_STP_t,
+     &     H3K_rep_NAME,
+     &     'units', '(slpm)',
+     &     'Hot water tank: burner fuel flow rate' )
+
 
 C.......'gross heat input' (lower heating value flow rate)
         WRITE(H3K_rep_NAME,'(A,A)') 

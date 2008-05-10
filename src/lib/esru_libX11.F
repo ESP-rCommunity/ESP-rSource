@@ -10139,7 +10139,8 @@ C Hilight control.
         endif
       ELSEIF(IVERT.EQ.8)THEN
 
-C So what does ITBND=3 (focus on zone) actually mean?
+C So what does ITBND=2 (focus on zone) actually mean because the code
+C below only allows it be 0 or 1?
         ITBND=ITBND+1
         IF(ITBND.GT.1)ITBND=0
         MODIFY=.TRUE.
