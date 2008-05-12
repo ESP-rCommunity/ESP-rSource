@@ -873,6 +873,10 @@ C saved common rather than from the zone file.
         IF(IZ.GT.nzg)GOTO 200
         IVZ=nznog(IZ)
 
+C If zone bounds known jump to next zone.
+        newgeo=.false.  ! assume older format geometry.
+        call eclose(gversion(IVZ),1.1,0.01,newgeo)
+
 C If bounds ok then update project bounds with saved zone values.
         call eclose(ZBFLG(IVZ),1.0,0.001,CLOSE)
         if(CLOSE)then
@@ -897,7 +901,7 @@ C If obstructions are to be drawn, get the name of the
 C obstruction file, read it, transform the obstruction
 C description into a gen body and then get its bounds.
         IF(ITDSP.EQ.0.or.ITDSP.eq.5)THEN
-          IF(IOBS(IVZ).EQ.1)THEN
+          if(IOBS(IVZ).EQ.1)then
             IUF=IFIL+1
             if(itrc.gt.1)then
               WRITE(OUTSTR,'(A,A)')' Bounds: ',
@@ -905,23 +909,29 @@ C description into a gen body and then get its bounds.
               CALL USRMSG(' ',OUTSTR,'-')
             endif
             CALL EGOMST(IUF,ZOBS(IVZ),0,0,IUOUT,IER)
-            DO 301 IB=1,NB
-              CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
-     &                 BANG(IB))
-              DO 302 I=1,NTV
-                IF(ITBND.NE.0)THEN
+          elseif(IOBS(IVZ).EQ.2)then
+
+C Check geometry file version and scan geometry file to get obstructions.
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+            endif
+          endif
+          DO 301 IB=1,NB
+            CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
+     &               BANG(IB))
+            DO 302 I=1,NTV
+              IF(ITBND.NE.0)THEN
 
 C Update the overall model bounds to include any obstructions.
-                  XMN=AMIN1(XMN,X(I))
-                  YMN=AMIN1(YMN,Y(I))
-                  ZMN=AMIN1(ZMN,Z(I))
-                  XMX=AMAX1(XMX,X(I))
-                  YMX=AMAX1(YMX,Y(I))
-                  ZMX=AMAX1(ZMX,Z(I))
-                ENDIF
-  302         CONTINUE
-  301       CONTINUE
-          ENDIF
+                XMN=AMIN1(XMN,X(I))
+                YMN=AMIN1(YMN,Y(I))
+                ZMN=AMIN1(ZMN,Z(I))
+                XMX=AMAX1(XMX,X(I))
+                YMX=AMAX1(YMX,Y(I))
+                ZMX=AMAX1(ZMX,Z(I))
+              ENDIF
+  302       CONTINUE
+  301     CONTINUE
         ENDIF
 
 C If zone bounds known jump to next zone.

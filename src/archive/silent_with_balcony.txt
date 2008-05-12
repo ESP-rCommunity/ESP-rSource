@@ -1,0 +1,66 @@
+*silent_input
+*menu,Creates room with balcony on each side
+*doc,Model of room with balcony on each side model in /tmp/sams3. Mass partitions are included. The connections are pre-defined.
+*action,new,poly,distributed,/tmp/sams3
+*weather_station,dublin
+*start_zone,main
+*shape,box
+*origin,0.0,0.0,0.0  # origin of zone
+*size,9.5,10.5,2.5  # length width height (m)
+*rotate,0.0          # rotation
+*glaze,2,4,80.0,2,80.0           # how many, index of parent and percent
+*surface,front,extern_wall,0,0,0 # surface name, construction, connection type, connection ic2, connection ie2
+*surface,sideR,ceiling,3,3,4 # connection type: 0 external, 1 similar, 2 constant ,3 another, 4 ground, 5 adiabatic 
+*surface,back,extern_wall,0,0,0
+*surface,sideL,ceiling,3,2,2 # connection ic2: zone number connected
+*surface,ROOF,susp_ceil,0,0,0   # connection ie2: surface number on the zone connected
+*surface,floor,floor_1,4,1,0
+*surface,glaz_r,dbl_glz,3,3,8
+*surface,glaz_l,dbl_glz,3,2,7
+*mass,VM,0.1,5.0,0.1,9.3,2.3,180.0,mass_l,door
+*mass,VM,5.0,0.1,0.1,4.7,2.3,90.0,mass_3,door
+*mass,VM,5.0,5.1,0.1,4.7,2.3,90.0,mass_5,door
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,convective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*start_zone,balc_left
+*shape,box
+*origin,-1.4,0.0,0.0  # origin of zone
+*size,1.4,10.5,2.5  # length width height (m)
+*rotate,0.0          # rotation
+*glaze,2,4,80.0,2,80.0 
+*surface,front,extern_wall,0,0,0 # surface name, construction, connection type, connection ic2, connection ie2
+*surface,sideR,ceiling_rev,3,1,4
+*surface,back,extern_wall,0,0,0 
+*surface,sideL,extern_wall,0,0,0  # connection ic2: zone number connected
+*surface,ROOF,susp_ceil,0,0,0   # connection ie2: surface number on the zone connected
+*surface,floor,floor_1,4,1,0 # connection type: 0 external, 1 similar, 2 constant ,3 another, 4 ground, 5 adiabatic 
+*surface,glaz_r,dbl_glz,3,1,8
+*surface,glaz_l,dbl_glz,0,0,0
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,convective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*start_zone,balc_right
+*shape,box
+*origin,9.5,0.0,0.0  # origin of zone
+*size,1.4,10.5,2.5  # length width height (m)
+*rotate,0.0          # rotation
+*glaze,2,4,80.0,2,80.0 
+*surface,front,extern_wall,0,0,0 # surface name, construction, connection type, connection ic2, connection ie2
+*surface,sideR,extern_wall,0,0,0 # connection ic2: zone number connected
+*surface,back,extern_wall,0,0,0  # (see edzone.F)
+*surface,sideL,ceiling_rev,3,1,2 # connection type: 0 external, 1 similar, 2 constant ,3 another, 4 ground, 5 adiabatic 
+*surface,ROOF,susp_ceil,0,0,0   # connection ie2: surface number on the zone connected
+*surface,floor,floor_1,4,1,0
+*surface,glaz_r,dbl_glz,0,0,0
+*surface,glaz_l,dbl_glz,3,1,7
+*usage,pattern,all,allcas,nothing_in_room.opr   # casual gain pattern
+*environment,convective_night_off  # name of zone control pattern
+*heating,18.0,0.0   # setpoint occupied & unoccupied
+*cooling,26.0,100.0 # setpoint occupied & unoccupied
+*end_zone
+*end

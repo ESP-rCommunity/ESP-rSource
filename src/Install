@@ -112,7 +112,7 @@ skip_ish_calcs="no"        # Skip update of exemplar shading files?
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run tdf vew"
 # (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching

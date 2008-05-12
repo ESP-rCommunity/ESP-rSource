@@ -50,7 +50,7 @@ C Strings
 
 C Real numbers
       COMMON/SBEM06/ROOFFR,WALLFR,BINF50,HGEF(MNS),CGEF(MNS),SFPHS(MNS),
-     &HWEF(MNS)
+     &HWEF(MNS),ACH(MNS) 
 
 C Activities global list
       INTEGER bld_order_index ! building order indices from the *bldg_type_start section of the file
@@ -121,6 +121,7 @@ C Project specific *.ncm file variables
       REAL CGEF     ! cool generatr efficiency/COP
       REAL SFPHS    ! Specific fan power SFP for ventilation W/l/s
       REAL HWEF     ! DHW generator efficiency
+      REAL ACH      ! Air changes per zone
 
 C SBEM database variables
       INTEGER IBTYP     ! this matches the index value in NCM guide table 4

@@ -1880,6 +1880,7 @@ C Quick read, if version 1.1 or newer then the file must be
 C fully read to find the number of surfaces in the zone.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
+          CALL ERPFREE(IUF,ios)
           CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
           IF(IER.NE.0)goto 1
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
@@ -1971,6 +1972,10 @@ C Reporting.
           IF(IOBS(ICOMP).EQ.1)THEN
             WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Obstructions: ',
      &          ZOBS(ICOMP)(1:LNBLNK(ZOBS(ICOMP)))
+            CALL EDISP(iuout,OUTS)
+          ELSEIF(IOBS(ICOMP).EQ.2)THEN
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Obstructions: ',
+     &          ' in zone geometry.'
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(ITW(ICOMP).EQ.1)THEN

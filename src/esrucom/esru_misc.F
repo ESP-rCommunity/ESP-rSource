@@ -863,7 +863,7 @@ C not exist assume no obstructions exist.
         IOBS(IZ)=0
       ELSE
         K=0
-        CALL EGETWI(OUTSTR,K,IOBS(IZ),0,1,'W','obstr flag',IER)
+        CALL EGETWI(OUTSTR,K,IOBS(IZ),0,2,'W','obstr flag',IER)
         IF(IER.NE.0) GOTO 1001
         IF(IOBS(IZ).EQ.1)THEN
           CALL STRIPC(IFIL,OUTSTR,0,ND,0,'obstructions file',IER)
@@ -1110,8 +1110,8 @@ C Read surface test grid information and check ranges.
       CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
-      CALL EGETWI(OUTSTR,K,NOX,4,50,'F','opq grid X',IER)
-      CALL EGETWI(OUTSTR,K,NOZ,4,50,'F','opq grid Z',IER)
+      CALL EGETWI(OUTSTR,K,NOX,4,MOX,'F','opq grid X',IER)
+      CALL EGETWI(OUTSTR,K,NOZ,4,MOZ,'F','opq grid Z',IER)
       CALL EGETWI(OUTSTR,K,NGX,4,10,'F','win grid X',IER)
       CALL EGETWI(OUTSTR,K,NGZ,4,10,'F','win grid Z',IER)
 
@@ -2654,9 +2654,6 @@ C if it has been sorted and notify user.
                 elseif(ip3ver.eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
-                elseif(ip3ver.eq.2)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &              ' (defined)'
                 endif
               else
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
@@ -2944,9 +2941,6 @@ C if it has been sorted and notify user.
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver.eq.1)then
-                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
-     &              ' (defined)'
-                elseif(ip3ver.eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif

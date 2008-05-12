@@ -726,7 +726,63 @@ C Toggle delimeter.
           delim = 'X'
         endif
       elseif(INO.EQ.(NITMS-1)) then
-        CALL PHELPD('Enquire about',54,'-',0,0,IER)
+
+C Display help messages.
+        CALL PHELPD('Enquire about',53,'-',0,0,IER)
+
+        H(1) ='A zone energy balance reports the flux gains and losses'
+        H(2) ='for infiltration, ventilation, occupant/lighting/small'
+        H(3) ='power and controlled casual gains as well as convection'
+        H(4) ='at the inside face of surfaces which have an outside'
+        H(5) ='exposure and convection at the inside face of surfaces'
+        H(6) ='which are connected to other zones or the ground. It'
+        H(7) ='also includes the convection portion of environmental'
+        H(8) ='control systems associated with the zone. '
+        H(9) =' '
+        H(10)='There is a TOTAL line which reports the sum of all '
+        H(11)='gains and the sum of all losses and these should '
+        H(12)='balance each other closely if the model is correct. '
+        H(13)=' '
+        H(14)='An energy balance (from the point of view of the air '
+        H(15)='node of the zone) of all of the flux entering & leaving'
+        H(16)='the air node should balance at each timestep of the '
+        H(17)='simulation. The report is an integration of each of the'
+        H(18)='above types of flux over the period of the assessment. '
+        H(19)=' '
+        H(20)='A flux is positive if it adds heat to the air node of '
+        H(21)='the zone and is negative if it removes heat from the '
+        H(22)='air node of the zone.  For example, if exterior surfaces'
+        H(23)='which are opaque are always colder than the air temp '
+        H(24)='then the report will include losses. '
+        H(25)=' '
+        H(26)='A surface energy balance reports the flux gains & losses'
+        H(27)='at the inside and `other-side` face of the surface for:'
+        H(28)='Conduction (just below the surface), convection, long-'
+        H(29)='wave radiation to other surfaces and at the outside face'
+        H(30)='longwave radiation to other buildings/ground/sky.'
+        H(31)='It also includes the radiant portion of occupants,'
+        H(32)='lighting and small power gains as well as heat stored'
+        H(33)='in the construction and the radiant portion of any'
+        H(34)='environmental control systems associated with the zone.'
+        H(35)=' '
+        H(36)='There is a TOTAL line which reports the sum of all '
+        H(37)='gains and the sum of all losses and these should '
+        H(38)='balance each other closely if the model is correct. '
+        H(39)=' '
+        H(40)='An energy balance (from the point of view of a surface)'
+        H(41)='of all of the flux entering and leaving at each face'
+        H(42)='should balance at each timestep of the simulation.'
+        H(43)='The report is an integration of each of the'
+        H(44)='above types of flux over the period of the assessment.'
+        H(45)=' '
+        H(46)='A flux is positive if it adds heat to surface and is '
+        H(47)='negative if it removes heat from the surface.'
+        H(48)='For example, if exterior surfaces which are opaque'
+        H(49)='are always colder than the air temp the the surface'
+        H(50)='energy balance report will indicate gains at the inside'
+        H(51)='face.'
+        CALL PHELPD('Enquire about',51,'-',0,0,IER)
+
       elseif(INO.EQ.NITMS) then
         RETURN
       else
