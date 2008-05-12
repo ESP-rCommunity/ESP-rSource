@@ -382,15 +382,24 @@ C Convective and radiative equipment gains are the same at the moment (50%)
 C Read information from ncm file. Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
         CALL SBEMPR(IER)
-        CALL RSBEM
-        ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
+        CALL RSBEM     
+        IF(ILIGHTUSER(ICOMP).EQ.0)THEN
+          ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
 
 C Multiply lux levels (static tdf) with fraction schedule and 
 C a value (in w/m2/100lux) taken from ncm file for the specific type of lights
-        QTOTLIGHT=
-     &  PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
-     &  ZBASEA(ICOMP)
+C In PDRL(ILIGHT_IN_SBEMDB,2): 2 means commercial buildings. This is the only option
+C for the moment. Additional logic required to add: 1, which is for industrial
+C buildings in the NCM methodology
+          QTOTLIGHT=
+     &    PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
+     &    ZBASEA(ICOMP)
+        ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
+C User specfied gains from lights (NCM purposes)
+          QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)
+        ENDIF
+        
 C Convective and radiative equipment gains are the same at the moment (50%)
         QLIGHTCASC=QTOTLIGHT/2
         QLIGHTCASR=QLIGHTCASC

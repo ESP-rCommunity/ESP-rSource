@@ -161,12 +161,12 @@ C Begin with high level menu.
       ITEMS(19)=                'p integrated performance view    '
       ITEMS(20)=                '  ___________________________    '
       ITEMS(21)=                'q pressure coefficients calc.    '
-      ITEMS(22)=                'r impose  measured data          '
+      ITEMS(22)=                'r impose measured/temporal data  '
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
-      ITEMS(25)=                ' _____________________________ '
-      ITEMS(26)=                't UK NCM specifications         '
-      ITEMS(27)=                ' _____________________________ '
+      ITEMS(25)=                ' _____________________________   '
+      ITEMS(26)=                't UK NCM specifications          '
+      ITEMS(27)=                ' _____________________________   '
       ITEMS(28)=                '? help                           '
       ITEMS(29)=                '- exit this menu                 '
       nitms=29
@@ -1082,18 +1082,14 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/appw/iappw,iappx,iappy
 
 C TDF related.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
@@ -1112,18 +1108,24 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
 
-      logical MODSIT,browse,OK,dok,concat,unixok
+      logical MODSIT,browse,OK,dok,unixok
       logical FOUND,XST
 
       character H*72,outs*124,ltmp*72,hold*40
-      character doit*124,tmode*8,cfgroot*24,LCFGF*72
+      character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
       character*72 LTDF,LTDFA,DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      character path*72,zname*12,zdesc*64,OUTSTR*124,HDR*12
-      character longtfile*144,longtfiledos*144
+      character zname*12,zdesc*64,OUTSTR*124,HDR*12
+      character*34 ITEMS(7)
+
+C Action to pass to tdfedit. Prior 'update' option moved into
+C esrub2e rather than invoking tdf.
+C << thought required to transition between functionality of >>
+C << the module tdf to the in-built functionality            >>
+       character action*16
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1166,17 +1168,7 @@ C file, what is currently used and other management tasks.
         call edisp(iuout,'udate via the edit/list option.')
         call edisp(iuout,' ')
       elseif(iabs(itdflg).eq.3)then
-
-C If ascii then just scan header and list what is available.
-C        call edisp(iuout,' ')
-C        call edisp(iuout,'Temporal data is available for this model.')
-C        call edisp(iuout,' ')
         continue
-      endif
-      if(ITEMSTD.gt.0)then
-C        call edisp(iuout,
-C     &    'The model references one or more temporal entities.')
-C        call edisp(iuout,' ')
       endif
 
 C Take into account if the user is browsing or can modify the files
@@ -1190,7 +1182,57 @@ C and present a different interface depending on file type.
       H(7)='number of days and for a specified time step. These'
       H(8)='entities, depending on their type, may be associated'
       H(9)='with zones or controls within the model and will'
-      H(10)='replace existing definitions. '
+      H(10)='replace existing definitions.'
+      H(11)=' '
+      H(12)='associations - entities in the temporal file can be'
+      H(13)='  associated with entities in your model depending on'
+      H(14)='  the type of information. For example climate data'
+      H(15)='  is associated with the whole model and infiltration'
+      H(16)='  is associated with a zone.'
+      H(17)=' '
+      H(18)='Currently the following item types are offered: '
+      H(19)=' ALLCLMT - all climate data (includes next 6 items)'
+      H(20)=' BDTEXTT - ambient temperature'
+      H(21)=' WINDVLT - wind velocity'
+      H(22)=' WINDDRT - wind direction'
+      H(23)=' RELHUMT - ambient relative humidity'
+      H(24)=' DIFHSLT - diffuse horizonal radiation'
+      H(25)=' GLOHSLT - global horizonal radiation'
+      H(26)=' DIRSOLT - direct normal solar radiation'
+      H(27)=' SETPTTT - control setpoint temperature'
+      H(28)=' CASUALT - zone casual gains (combined gains)'
+      H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
+      H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
+      H(31)=' '
+      H(32)='manage associations - you can add and delete associations'
+      H(33)='  that have been previously defined. Note this does not'
+      H(34)='  alter the contents of the temporal file.'
+      H(35)=' '
+      H(36)='dereference temporal file - this removes current links'
+      H(37)='  between the model and entities in the temporal file.'
+      H(38)='  It does not remove the temporal file.'
+      H(39)=' '
+      H(40)='create file - you supply a file name, if it exists it'
+      H(41)='  is scanned otherwise a minimal file is created.'
+      H(42)=' '
+      H(43)='edit/list - contents of the current file are presented'
+      H(44)='  and if you have permission you can alter its contents.'
+      H(45)=' '
+      H(46)='General instructions for setting up a temporal file:'
+      H(47)='a) Decide the period of the data (start and end dates)'
+      H(48)='   as well as frequency (1stph to 60 tsph).'
+      H(49)='b) If data is to be imported from a file with columns'
+      H(50)='   of data take a note of which columns are required.'
+      H(51)='c) Plan the names of the temporal entities you will be'
+      H(52)='   be creating as well as which zones or controls in '
+      H(53)='   the model are going to be associates with the'
+      H(54)='   entities in the temporal file.'
+      H(55)=' '
+
+C Begin with high level menu.
+    3 INO=-4
+      IER=0
+
       if(itdflg.eq.0)then
         if(browse)then
           call usrmsg(
@@ -1198,11 +1240,26 @@ C and present a different interface depending on file type.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(11)='At the current time there are no temporal definitions;'
-        H(12)='you must create them before you can use them.'
-        CALL EASKATOG(' ','Temporal file options:',
-     &    'create','use another','n/a','cancel',' ',' ',' ',IRT,12)
-        if(irt.eq.4.or.irt.eq.0)return
+        H(56)='At the current time there are no temporal definitions;'
+        H(57)='you must create them before you can use them.'
+        nbhelp=57
+        WRITE(ITEMS(1),'(A)')'a create temporal entities file'
+        WRITE(ITEMS(2),'(A)')'b select temporal file '
+        WRITE(ITEMS(3),'(A)')'c not applicable '
+        WRITE(ITEMS(4),'(A)')'? help '
+        WRITE(ITEMS(5),'(A)')'- exit '
+        nitms=5
+        CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+        if(irt.EQ.nitms)then
+          return
+        elseif(irt.EQ.nitms-1)then
+          CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+          goto 3
+        elseif(irt.EQ.3)then
+          goto 3
+        elseif(irt.EQ.0)then
+          goto 3
+        endif
       elseif(iabs(itdflg).eq.1)then
         if(browse)then
           call usrmsg(
@@ -1210,49 +1267,116 @@ C and present a different interface depending on file type.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(11)='An outdated file format is associated with the'
-        H(12)='model. Update this by selecting the edit option'
-        H(13)='(or dereferences the temporal definitions from'
-        H(14)='your model).'
-        CALL EASKATOG(' ','Temporal file options:',
-     &    'view/edit','use another','dereference',
-     &    'list associations','manage associations','cancel/exit',
-     &    ' ',IRT,14)
-          if(irt.eq.6.or.irt.eq.0)return
+        H(56)='An outdated file format is associated with the'
+        H(57)='model. Update this by selecting the edit option'
+        H(58)='(or dereferences the temporal definitions from'
+        H(59)='your model).'
+        nbhelp=59
+        WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
+        WRITE(ITEMS(2),'(A)')'b select temporal file '
+        WRITE(ITEMS(3),'(A)')'c dereference temporal file'
+        WRITE(ITEMS(4),'(A)')'d list associations'
+        WRITE(ITEMS(5),'(A)')'e manage associations'
+        WRITE(ITEMS(6),'(A)')'? help '
+        WRITE(ITEMS(7),'(A)')'- exit '
+        nitms=7
+        CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+        if(irt.EQ.nitms)then
+          return
+        elseif(irt.EQ.nitms-1)then
+          CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+          goto 3
+        elseif(irt.EQ.0)then
+          goto 3
+        endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(11)='You may view the temporal data associated with the'
-          H(12)='model by selecting the view entities option.'
-          CALL EASKABCD(' ','Temporal file options:',
-     &    'view entities','n/a','list associations',
-     &    'cancel/exit',IRT,12)
-          if(irt.eq.4.or.irt.eq.2.or.irt.eq.0)return
+          H(56)='You may view the temporal data associated with the'
+          H(57)='model by selecting the view entities option.'
+          nbhelp=57
+          WRITE(ITEMS(1),'(A)')'a view temporal entities'
+          WRITE(ITEMS(2),'(A)')'b not applicable'
+          WRITE(ITEMS(3),'(A)')'c list associations'
+          WRITE(ITEMS(4),'(A)')'? help '
+          WRITE(ITEMS(5),'(A)')'- exit '
+          nitms=5
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.2)then
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         else
-          H(11)='An outdated file format is associated with the'
-          H(12)='model. Update this by selecting the edit entities'
-          H(13)='option (or derefence the temporal derfinition from'
-          H(14)='your model).'
-          CALL EASKATOG(' Temporal definitions file options:',' ',
-     &     'view/edit entities','use another','dereference',
-     &     'list associations','manage associations',
-     &     'cancel/exit',' ',IRT,14)
-          if(irt.eq.6.or.irt.eq.0)return
+          H(56)='An outdated file format is associated with the'
+          H(57)='model. Update this by selecting the edit entities'
+          H(58)='option (or derefence the temporal derfinition from'
+          H(59)='your model).'
+          nbhelp=59
+          WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
+          WRITE(ITEMS(2),'(A)')'b select temporal file '
+          WRITE(ITEMS(3),'(A)')'c dereference temporal file'
+          WRITE(ITEMS(4),'(A)')'d list associations'
+          WRITE(ITEMS(5),'(A)')'e manage associations'
+          WRITE(ITEMS(6),'(A)')'? help '
+          WRITE(ITEMS(7),'(A)')'- exit '
+          nitms=7
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(21)='You can view the temporal data associated with the'
-          H(22)='model via selecting the view entities option.'
-          CALL EASKABCD(' Temporal definitions file options:',' ',
-     &    'view entities','n/a','list associations','cancel/exit',
-     &    IRT,22)
-          if(irt.eq.4.or.irt.eq.2.or.irt.eq.0)return
+          H(56)='You can view the temporal data associated with the'
+          H(57)='model via selecting the view entities option.'
+          nbhelp=57
+          WRITE(ITEMS(1),'(A)')'a view temporal entities'
+          WRITE(ITEMS(2),'(A)')'b not applicable'
+          WRITE(ITEMS(3),'(A)')'c list associations'
+          WRITE(ITEMS(4),'(A)')'? help '
+          WRITE(ITEMS(5),'(A)')'- exit '
+          nitms=5
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.2)then
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         else
-          H(11)='Temporal definitions are available for editing/use.'
-          CALL EASKATOG(' ','Temporal definitions options:',
-     &      'view/edit','use another','dereference',
-     &      'list associations','manage associations','cancel/exit',' ',
-     &      IRT,11)
-          if(irt.eq.6.or.irt.eq.0)return
+          H(56)='Temporal definitions are available for editing/use.'
+          nbhelp=56
+          WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
+          WRITE(ITEMS(2),'(A)')'b select temporal file '
+          WRITE(ITEMS(3),'(A)')'c dereference temporal file'
+          WRITE(ITEMS(4),'(A)')'d list associations'
+          WRITE(ITEMS(5),'(A)')'e manage associations'
+          WRITE(ITEMS(6),'(A)')'? help '
+          WRITE(ITEMS(7),'(A)')'- exit '
+          nitms=7
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         endif
       endif
 
@@ -1284,32 +1408,16 @@ C << the user
 C << might also be a place to generate the initial lines of
 C << asci header with the year of the model etc.
 
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive tdf.
-        call tstamp('>','PRJ: start tdf')
-        doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
-        if(unixok)then
-          call addpath(LTDFA,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LTDFA,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        write(doit,'(5a)') 'tdf -mode ',tmode,' -file ',
-     &    longtfile(:lnblnk(longtfile)),' &'
-        call usrmsg('starting temporal module via',doit,'-')
-        call runit(doit,tmode)
+C Go into the tdf editing menu.
+        action='-'
+        call tdfedit(action,ier)
         goto 42
       elseif(IRT.eq.2)then
 
 C User supplies name of file. Find out its contents (using similar code
 C to ersys) and jump back to the start of this subroutine.
+
+C << later add add a file browse function >>
         if(LTDFA(1:4).eq.'UNKN') LTDFA=DLTDF
         ltmp=LTDFA
         CALL EASKS(ltmp,' ','Temporal definitions file?',
@@ -1405,7 +1513,9 @@ C Dereference or ignore, depending on the file type.
         else
           LTDF='UNKNOWN'
           LTDFA='UNKNOWN'
+          call clrtabc
           itdflg=0
+          NITDF=0
           call usrmsg('Removing temporal references...',' ','-')
           CALL EMKCFG('-',IER)
           call usrmsg('Removing temporal references...done.',' ','-')

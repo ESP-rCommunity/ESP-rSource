@@ -54,7 +54,7 @@ C IFIL base file unit number (set in MAIN of each application).
       CHARACTER SYSNAM*60
       CHARACTER*40 ACTNAME
       CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
-      CHARACTER*96 ACTDOC  ! to hold documentation string for activity
+      CHARACTER*102 ACTDOC  ! to hold documentation string for activity
 
 C Initialise counters
       IDEBUG=1
@@ -527,44 +527,50 @@ C espriou.h provides currentfile.
         K=60
         CALL EGETRM(OUTSTR,K,APCHK,'W','perm compliance checking',IER)
       ENDIF
-      CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-      K=13
-      CALL EGETWI(OUTSTR,K,NCMSYS,0,0,'-','HVAC systems.',IER)
-      IF(NCMSYS.EQ.0)GOTO 1001
-      DO 101 ICMSYS=1,NCMSYS
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-        HVACNAME(ICMSYS)=OUTSTR(1:LNBLNK(OUTSTR))
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,NMSYS,0,0,'-','HVAC systems index.',IER)
-        INCMSYS(ICMSYS)=NMSYS
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'heat generator',IER)
-        K=0        
-        CALL EGETWR(OUTSTR,K,HGEF(ICMSYS),0.,10.,'W','heat eff.',IER)
-        CALL EGETWI(OUTSTR,K,IHGEF(ICMSYS),0,0,'-','heat index.',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL heat gen index',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,IBRUKH(ICMSYS),0,0,'-','fuel type',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'fuel type',IER)
-        K=0        
-        CALL EGETWI(OUTSTR,K,IFTYP(ICMSYS),0,0,'-','fuel type',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'cool generator',IER)
-        K=0        
-        CALL EGETWR(OUTSTR,K,CGEF(ICMSYS),0.,10.,'W','cool eff.',IER)
-        CALL ECLOSE(CGEF(ICMSYS),0.0,1.E-5,NEAR)
-        IF(.NOT.NEAR)
-     &  CALL EGETWI(OUTSTR,K,ICGEF(ICMSYS),0,0,'-','cool index.',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL cool gen index',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,IBRUKC(ICMSYS),0,0,'-','fuel type',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'SFP',IER)
-        K=0        
-        CALL EGETWR(OUTSTR,K,SFPHS(ICMSYS),0.,10.,'W','SFP',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL fan index',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,IBRUKF(ICMSYS),0,0,'-','fuel type',IER)
- 101  CONTINUE
+ 5    CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+      IF(OUTSTR(1:13).EQ.'*HVAC Systems')THEN
+        K=13
+        CALL EGETWI(OUTSTR,K,NCMSYS,0,0,'-','HVAC systems.',IER)
+        IF(NCMSYS.EQ.0)GOTO 1001
+        DO 101 ICMSYS=1,NCMSYS
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+          HVACNAME(ICMSYS)=OUTSTR(1:LNBLNK(OUTSTR))
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,NMSYS,0,0,'-','HVAC systems index.',IER)
+          INCMSYS(ICMSYS)=NMSYS
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'heat generator',IER)
+          K=0        
+          CALL EGETWR(OUTSTR,K,HGEF(ICMSYS),0.,10.,'W','heat eff.',IER)
+          CALL EGETWI(OUTSTR,K,IHGEF(ICMSYS),0,0,'-','heat index.',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL heat gen index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IBRUKH(ICMSYS),0,0,'-','fuel type',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'fuel type',IER)
+          K=0        
+          CALL EGETWI(OUTSTR,K,IFTYP(ICMSYS),0,0,'-','fuel type',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'cool generator',IER)
+          K=0        
+          CALL EGETWR(OUTSTR,K,CGEF(ICMSYS),0.,10.,'W','cool eff.',IER)
+          CALL ECLOSE(CGEF(ICMSYS),0.0,1.E-5,NEAR)
+          IF(.NOT.NEAR)
+     &    CALL EGETWI(OUTSTR,K,ICGEF(ICMSYS),0,0,'-','cool index.',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL cool gen index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IBRUKC(ICMSYS),0,0,'-','fuel type',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'SFP',IER)
+          K=0        
+          CALL EGETWR(OUTSTR,K,SFPHS(ICMSYS),0.,10.,'W','SFP',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL fan index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IBRUKF(ICMSYS),0,0,'-','fuel type',IER)
+ 101    CONTINUE
+      ELSEIF(OUTSTR(1:23).EQ.'*Zone to system linkage')THEN
+        CONTINUE
+      ELSE
+        GOTO 5
+      ENDIF
  1001 CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to systems linkage',IER)
       DO 201 IZ=1,NCOMP
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to systems linkage',IER)
@@ -600,10 +606,29 @@ C espriou.h provides currentfile.
  204  CONTINUE
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'lighting type zone links',IER)
       DO 205 IZ=1,NCOMP
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone-lighting type linkage',IER)
-        K=52
-        CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
-     &  'zone-light type links',IER)
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone-lighting type linkage',
+     &   IER)
+        IF(OUTSTR(1:12).EQ.'User_defined')THEN
+        
+C Check if there is a user defined entry for lighting heat gains
+          ILIGHTUSER(IZ)=1
+          K=86
+          CALL EGETWR(OUTSTR,K,LIGHTWATTAGE(IZ),0.0,0.0,'-',
+     &    'zone-light heat gains',IER)  
+        ELSEIF(OUTSTR(1:12).EQ.'default_type')THEN     
+          ILIGHTUSER(IZ)=0
+          K=66
+          CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
+     &    'zone-light type links',IER)
+        ELSE
+
+C possibly an old format - do the same as the default type
+C goto is avoided here by just using the same code as the "default_type"
+          ILIGHTUSER(IZ)=0
+          K=52
+          CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
+     &    'zone-light type links',IER)
+        ENDIF
  205  CONTINUE
       
       RETURN
@@ -873,13 +898,25 @@ C Write building zone to activity type linkage information
 C Write building zone to lighting type linkage information
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to lighting type linkage'
       DO 106 IZ=1,NCOMP
-        if(ILITYP(IZ).gt.0)then
-          WRITE(IUF,'(3A,1X,I4,1X,A)') 'Zone ',zname(iz),
-     &      ' is linked to lighting type number ',ILITYP(IZ),
+
+C Check if there is a user defined entry for lighting heat gains
+        if(ILIGHTUSER(IZ).eq.1)then
+          WRITE(IUF,'(6A,1X,F7.2)') 'User_defined',' ','Zone',
+     &    zname(iz),
+     &    ' is linked to user defined lighting heat gains of (W): ',
+     &        '  ',LIGHTWATTAGE(IZ)
+             
+C Otherwise take the suggested values (gains) for the specified 
+C lighting type
+        elseif(ILIGHTUSER(IZ).eq.0)then
+          if(ILITYP(IZ).gt.0)then
+            WRITE(IUF,'(5A,1X,I4,1X,A)') 'default_type',' ','Zone',
+     &      zname(iz),' is linked to lighting type number ',ILITYP(IZ),
      &      TLIGHT(ILITYP(IZ))
-        else
-          WRITE(IUF,'(3A)') 'Zone ',zname(iz),
-     &      ' is linked to lighting type number     0 (undefined type)'
+          else
+            WRITE(IUF,'(3A)') 'Zone ',zname(iz),
+     &       ' is linked to lighting type number     0 (undefined type)'
+          endif
         endif
  106  CONTINUE
       CALL ERPFREE(IUF,ISTAT)

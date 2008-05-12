@@ -291,7 +291,7 @@ initalp.F:
 	ln -s $(PLTdir)/initalp.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 lisolv.F:
 	rm -f lisolv.F
 	ln -s $(DFSdir)/lisolv.F .
@@ -432,10 +432,7 @@ subsys.F:
 	ln -s $(BLDdir)/subsys.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
-tdrecbps.F:
-	rm -f tdrecbps.F
-	ln -s $(TDFdir)/tdrecbps.F .
+	ln -s $(COMdir)/tdfile.F .
 trstyp.F:
 	rm -f trstyp.F
 	ln -s $(PLTdir)/trstyp.F .
@@ -706,7 +703,7 @@ clean:
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
-	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
+	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \
