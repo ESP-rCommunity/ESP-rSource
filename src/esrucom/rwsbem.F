@@ -57,7 +57,7 @@ C IFIL base file unit number (set in MAIN of each application).
       CHARACTER*102 ACTDOC  ! to hold documentation string for activity
 
 C Initialise counters
-      IDEBUG=1
+      IDEBUG=0
       IFUEL=0
       ISYS=0
       IHSYS=0

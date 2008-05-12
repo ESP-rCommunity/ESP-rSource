@@ -161,6 +161,7 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
 
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+
 C Using the TOTOCCUP as a shortcut for the total occupant gains
 C that are taken from the activities temporal data
       REAL QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN,QTOTEQUIP,QEQUIPCASC
@@ -195,6 +196,7 @@ C     return the occupant-driven electrical load (excluding
 C     HVAC equipment)
       INTEGER occupant_load 
       PARAMETER (occupant_load = 3)
+
 C.....Named constnats for timerows
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2) 
@@ -378,26 +380,36 @@ C latent equipment gains)
 C Convective and radiative equipment gains are the same at the moment (50%)
         QEQUIPCASR=QEQUIPCASC
         QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100)        
-        
+
+C If UK notional model then assign the value of 3.75 W/m2 per 100 lux. Number of
+C lux and fraction of opearation is still taken from then activity database (tdf).
+C Additional logic in the future should separate office/storage/industrial spaces
+C for notional building that take 3.75 W/m2 per 100 lux from "other spaces 
+C that take 5.2 W/m2 per 100 lux.
+        IF(INOTI.EQ.1)THEN
+          QTOTLIGHT=3.75*(ITMAR(1,6)/100)*VAL(ISD+1)*ZBASEA(ICOMP)
+        ELSE
+
 C Read information from ncm file. Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
-        CALL SBEMPR(IER)
-        CALL RSBEM     
-        IF(ILIGHTUSER(ICOMP).EQ.0)THEN
-          ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
+          CALL SBEMPR(IER)
+          CALL RSBEM     
+          IF(ILIGHTUSER(ICOMP).EQ.0)THEN
+            ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
 
 C Multiply lux levels (static tdf) with fraction schedule and 
 C a value (in w/m2/100lux) taken from ncm file for the specific type of lights
 C In PDRL(ILIGHT_IN_SBEMDB,2): 2 means commercial buildings. This is the only option
 C for the moment. Additional logic required to add: 1, which is for industrial
 C buildings in the NCM methodology
-          QTOTLIGHT=
-     &    PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
-     &    ZBASEA(ICOMP)
-        ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
+            QTOTLIGHT=
+     &      PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
+     &      ZBASEA(ICOMP)
+          ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
 C User specfied gains from lights (NCM purposes)
-          QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)
+            QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)
+          ENDIF
         ENDIF
         
 C Convective and radiative equipment gains are the same at the moment (50%)

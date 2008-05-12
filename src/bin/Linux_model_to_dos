@@ -14,15 +14,15 @@ echo " (cfg zones ctl nets) and standard file names"
 echo " (*.geo *.cfg *.con *.tmc etc.). It does NOT" 
 echo "alter (*.shd or binary databases)"
 echo "  "
-echo "It requires the utility unix2dos." 
+echo "It requires the Linux utility fromdos." 
 echo "  "
 echo "The script searches for forward slashes and converts them to "
 echo "backslashes. It also looks for /usr/esru and replaces it with  "
 echo "c:\esru "
 echo "  "
-echo "This version of Model_2_dos is setup for Unix workstations." 
+echo "This version of Linux_model_2_dos is setup for Linux workstations." 
 echo "  " 
-echo "usage example: Model_2_dos" 
+echo "usage example: Linux_model_2_dos" 
 echo "current model is in $PWD " 
 set x="y"
 echo "Proceed (y/n) ?"
@@ -47,9 +47,9 @@ foreach i ( `ls -d cfg zones nets ctl doc` )
         echo "*" Checking back slash in file $j >>../mprogress
         sed 's/[/]/\\/g' $j > $j-tf1        
         sed 's/\\usr/c:\\/g' $j-tf1 > $j-tf2       
-        unix2dos $j-tf2 $j
+        fromdos -u $j-tf2 $j
         rm -f $j-tf1 $j-tf2
-        echo $j  finished
+        echo "$j  finished"
       endif
     end
     cd ..
@@ -57,7 +57,7 @@ foreach i ( `ls -d cfg zones nets ctl doc` )
 end
 echo "finished folders cfg zones nets ctl..." >>mprogress
 
-echo converting any local multicon databases
+echo "converting any local multicon databases"
 foreach i ( `ls -d dbs databases` )
   if ( -d $i ) then
     echo $i
@@ -70,9 +70,9 @@ foreach i ( `ls -d dbs databases` )
         echo "*" Checking back slash in file $j >>../mprogress
         sed 's/[/]/\\/g' $j > $j-tf1        
         sed 's/\\usr/c:\\/g' $j-tf1 > $j-tf2       
-        unix2dos $j-tf2 $j
+        fromdos -u $j-tf2 $j
         rm -f $j-tf1 $j-tf2
-        echo $j  finished
+        echo "$j  finished"
       endif
     end
     cd ..

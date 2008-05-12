@@ -1999,7 +1999,7 @@ C zone mirroring may require boundary nodes to be updated.
 C Check the file version, if new then allow thermal bridges.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          CALL LINTHBRDG(ICOMP)
+          CALL LINTHBRDG(ICOMP,'-',0.0)
         else
           call usrmsg('Simple thermal bridges not suppored in older',
      &                'format geometry files.','W')
@@ -4103,10 +4103,11 @@ C Setup array of menu strings.
         useopt(7) ='WINDOW NORMAL'
         useopt(8) ='WINDOW DISPLAY '
         useopt(9) ='WINDOW SKYLIGHT'
+        useopt(10)='somthing else'
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,9,useopt,'surface USAGE options',IER,28)
+     &         32,10,useopt,'surface USAGE options',IER,28)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
         if(IOS.eq.1)then
@@ -4127,6 +4128,8 @@ C Setup array of menu strings.
           iuopt=20
         elseif(IOS.eq.9)then
           iuopt=21
+        elseif(IOS.eq.10)then
+          iuopt=23
         endif
 
       elseif(guesstype(1:18).eq.'window_grill_frame')then
@@ -4509,6 +4512,9 @@ C Do not need second tag if generating notional model
       elseif(iuopt.eq.22)then
         SUSE(IS,1)='WINDOW'
         SSUSE(IC,1)='WINDOW'
+      elseif(iuopt.eq.23)then
+        SUSE(IS,1)='-'
+        SSUSE(IC,1)='-'
       endif
 
 C Do not need second tag if generating notional model
@@ -7615,8 +7621,11 @@ C ******************** LINTHBRDG ***************************************
 C LINTHBRDG defines linear thermal bridges for zone psi and lengths.
 C The extra fabric heat loss is calculated at the end
 C Additional information is given in the BRE IP 1/06 document
+C This subroutine may be called from the geometry definition menu using
+C act='-' or when defining the notional model using act='s'. The latter
+C is a silent call and assumes a thermal bridging of 10% (0.1)
  
-      SUBROUTINE LINTHBRDG(ICOMP)
+      SUBROUTINE LINTHBRDG(ICOMP,act,THPER)
 #include "building.h"
  
       COMMON/OUTIN/IUOUT,IUIN
@@ -7631,9 +7640,7 @@ C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      
-        
-      
+
 C Thermal bridge common block: 
 C nbrdg is the number of thermal bridge types in the zone
 C psi is the linear thermal transmittance value, 
@@ -7670,14 +7677,14 @@ C   losspercent and is assumed to apply to all zones in the model.
       character SSPARENT*12
       CHARACTER DESC*48
       CHARACTER outs*124
-      character SIGSTR*12,t16a*16,t16b*16
+      character SIGSTR*12,t16a*16,t16b*16,act*1
       character TBRIDGE*58
       dimension phraselen(16),phrasepsi(16),phrasemenu(16)
       character phraselen*42,phrasepsi*42,phrasemenu*34
       character msg*48  ! to use for default prompt.
 
       real exposed,vexposed,areawall  ! local values for QA
-      real areaslproof,areafltroof
+      real areaslproof,areafltroof,THPER
       real uavwall,uavfltroof,uavslproof
       real uavtotal
       integer lna,lnb
@@ -7687,7 +7694,7 @@ C   losspercent and is assumed to apply to all zones in the model.
       real zerolen,zeropsi  ! for bridge types that have yet to be used.
       logical foundit
 
-      if(nbrdg(icomp).gt.0)then      
+      if(nbrdg(icomp).gt.0)then
          CALL SIGFIG(psi(ICOMP,1),5,RNO,SIGSTR,LSTR)
          CALL SIGFIG(lngth(ICOMP,1),5,RNO,SIGSTR,LSTR)
       endif
@@ -7831,8 +7838,12 @@ C Help text for the menu.
       H(4) ='This was based on the BRE IP 1/06 document'
  
 C Menu control.
-      CALL EMENU('Thermal bridges',TBRIDGE,ISDN,INODA)
-   
+      IF(ACT.EQ.'s')THEN
+        INODA=ISDN-2
+      ELSE
+        CALL EMENU('Thermal bridges',TBRIDGE,ISDN,INODA)
+      ENDIF
+
       IF(INODA.EQ.ISDN)THEN
         totheatloss(icomp) = 0.0
         do 1221 i=1,nbrdg(icomp)
@@ -7934,10 +7945,15 @@ C Is any one of the current thermal bridges type 16 (other type)?
         goto 42
 
       ELSEIF(INODA.EQ.ISDN-2)THEN
-        CALL EASKR(thbrpercent,' ',
-     &  'thermal bridges as a fraction of UA (values from 0 to 1)',
-     &   -0.1,'F',1.0,'W',0.0,'fraction',IER,1)
-
+        IF(ACT.EQ.'s')THEN
+          THBRPERCENT=THPER
+        ELSE
+          CALL EASKR(thbrpercent,' ',
+     &    'thermal bridges as a fraction of UA (values from 0 to 1)',
+     &     -0.1,'F',1.0,'W',0.0,'fraction',IER,1)
+          context=.true.
+          CALL SURINFO(ICOMP,iuout,context)
+        ENDIF
 
 C Find the area of external surfaces
         exposed = 0.0
@@ -7949,13 +7965,8 @@ C Find the area of external surfaces
         uavfltroof = 0.0
         uavslproof = 0.0
         uavtotal =0.0
-
-        context=.true.
-        CALL SURINFO(ICOMP,iuout,context)
-
         DO 2243 IS=1,NZSUR(icomp)
           icc=IZSTOCN(icomp,is)
-   
           if(ICT(icc).eq.0.or.ICT(icc).eq.4)then 
 
 C Check the U value for each external surface.
@@ -7964,7 +7975,8 @@ C exposed walls and floors, pitched roofs, flat roofs
             UVU = 0.0
             UVD = 0.0
             do 1511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+              if((SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))
+     &            .OR.ACT.EQ.'s') then
 
 C Recover the ISO 6946 U values as in prjqa.F.
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
@@ -7999,7 +8011,6 @@ C For floors.
           else
             continue
           endif
-     
  2243   continue       
 
         if(exposed.gt.0.1)then        
@@ -8053,7 +8064,12 @@ C Include the user defined percentage to get the zone's total fabric loss
         write(outs,'(3a)')' Total percentage loss: ',
      &        t16b(1:lnb),' W/K'
         call edisp(iuout,outs)
+      ENDIF
 
+C If called silently then return
+      IF(ACT.EQ.'s')THEN
+        totheatloss(icomp) = losspercent(ICOMP)
+        RETURN
       ENDIF
 
 C return to the thermal bridges menu
@@ -8123,7 +8139,5 @@ C nbrdg and edit.
         lngth(ICOMP,nbrdg(icomp))=lenv
 
       endif
-
       goto 33 
-
       END

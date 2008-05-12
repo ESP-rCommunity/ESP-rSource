@@ -56,7 +56,8 @@ C          block sctl to have been filled for the current period.
       common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
@@ -83,6 +84,11 @@ C Electrical control.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+C Optical controls
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
@@ -1091,6 +1097,9 @@ C of type icfoc.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
 
       if(icfoc.eq.0)then
         ncper=0
