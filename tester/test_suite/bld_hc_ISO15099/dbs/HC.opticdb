@@ -1,0 +1,624 @@
+# optical properties db for transparent,
+# constructions (TMC) and casual gain control
+# 
+# Glazed info follows:
+# 12 char id |  description       | thick | blind
+SC_fictit     :Fictitious 99/99,      4mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.999  0.001  0.001  9.000
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.998 0.998 0.998 0.998 0.998 0.999 0.999 0.999 0.999 0.999
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+DC_8074_04nb  :Clear glass 80/75,     4mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.800  0.120  0.210  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.676 0.651 0.604 0.441 0.201 0.749 0.731 0.687 0.520 0.265
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.113 0.124 0.134 0.148 0.154
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.087 0.094 0.097 0.087 0.062
+# 12 char id |  description       | thick | blind
+DCF7671_06nb  :Clear float 76/71,     6mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.760  0.110  0.280  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.611 0.583 0.534 0.384 0.170 0.711 0.690 0.645 0.487 0.250
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.157 0.172 0.185 0.201 0.202
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.117 0.124 0.127 0.112 0.077
+# 12 char id |  description       | thick | blind
+DCF7671_06ib  :Clear float 76/71,     6mm, int blnd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.070  0.390  0.540  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.060 0.045 0.033 0.019 0.006 0.196 0.182 0.168 0.141 0.097
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.893 0.892 0.890 0.803 0.600
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.004 0.003 0.002 0.002 0.001
+# 12 char id |  description       | thick | blind
+DCF7365_10nb  :Clear float 73/66,    10mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.730  0.100  0.350  2.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.560 0.533 0.488 0.352 0.159 0.657 0.635 0.593 0.449 0.232
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.239 0.258 0.271 0.280 0.258
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.094 0.098 0.099 0.084 0.054
+# 12 char id |  description       | thick | blind
+DSF4554_06nb  :Spectrafloat 45/54,    6mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.450  0.100  0.350  2.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.421 0.395 0.359 0.258 0.112 0.532 0.511 0.478 0.369 0.197
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.375 0.394 0.405 0.403 0.357
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.085 0.088 0.089 0.077 0.049
+# 12 char id |  description       | thick | blind
+DAG6349_06nb  :Antisun green 63/49,   6mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.630  0.060  0.580  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.381 0.353 0.316 0.221 0.096 0.487 0.462 0.425 0.323 0.176
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.502 0.527 0.539 0.522 0.432
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.047 0.046 0.044 0.036 0.023
+# 12 char id |  description       | thick | blind
+DAZ5060_06nb  :Antisun bronze 50/60,  6mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.440  0.060  0.580  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.363 0.328 0.287 0.194 0.079 0.482 0.452 0.412 0.310 0.169
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.505 0.537 0.556 0.550 0.464
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.066 0.065 0.064 0.052 0.031
+# 12 char id |  description       | thick | blind
+DAG4260_06nb  :Antisun grey 42/60,    6mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.370  0.060  0.610  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.328 0.294 0.255 0.171 0.069 0.451 0.421 0.383 0.290 0.160
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.545 0.577 0.594 0.581 0.483
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.063 0.062 0.061 0.049 0.029
+# 12 char id |  description       | thick | blind
+DAZ3348_10nb  :Antisun bronze 33/48, 10mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.290  0.050  0.720  2.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.228 0.196 0.164 0.105 0.041 0.357 0.328 0.295 0.226 0.133
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.684 0.716 0.728 0.692 0.549
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.040 0.038 0.035 0.027 0.015
+# 12 char id |  description       | thick | blind
+DAG2549_10nb  :Antisun grey 25/49,   10mm, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.220  0.040  0.760  2.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.192 0.161 0.132 0.083 0.032 0.326 0.297 0.268 0.207 0.126
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.726 0.755 0.765 0.720 0.563
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.510 0.038 0.035 0.032 0.024 0.014
+# 12 char id |  description       | thick | blind
+DCF7671_6omb  :Clear float 76/71, 6mm open mid blnd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.760  0.110  0.280  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.604 0.578 0.521 0.384 0.170 0.711 0.690 0.645 0.487 0.250
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.157 0.172 0.185 0.201 0.202
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.000 0.110 0.108 0.116 0.121 0.097
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.117 0.124 0.127 0.112 0.077
+# 12 char id |  description       | thick | blind
+DCF7671_06mb  :Clear float 76/71,     6mm, mid blnd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.090  0.390  0.380  2.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.071 0.070 0.073 0.070 0.038 0.233 0.232 0.232 0.218 0.147
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.216 0.234 0.242 0.238 0.209
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.000 0.316 0.309 0.395 0.261 0.181
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.014 0.016 0.018 0.022 0.019
+# 12 char id |  description       | thick | blind
+DCF7671_06tb  :Clear float 76/71,  6mm, trnsul blnd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.120  0.390  0.200  2.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.128 0.125 0.125 0.115 0.062 0.351 0.346 0.334 0.277 0.156
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.201 0.216 0.226 0.232 0.218
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.172 0.181 0.178 0.151 0.097
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.000 0.192 0.183 0.164 0.116 0.052
+# 12 char id |  description       | thick | blind
+DCF7447_06nb  :6_12_6 CF low_e(3) + Krypton
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.743  0.174  0.000  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.471 0.440 0.387 0.258 0.114 0.634 0.613 0.559 0.420 0.217
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.175 0.190 0.205 0.219 0.214
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.172 0.181 0.178 0.151 0.097
+# 12 char id |  description       | thick | blind
+TCF6330_06nb  :6_12_6_12_6 2low_e(2,5) + Krypton
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.630  0.235  0.000  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.294 0.264 0.218 0.122 0.041 0.454 0.429 0.378 0.257 0.123
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.250 0.272 0.289 0.324 0.278
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.109 0.114 0.115 0.103 0.077
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.113 0.115 0.108 0.083 0.039
+# 12 char id |  description       | thick | blind
+DCF6533_06n   :skn-172 St-Roch 1low_e(2)
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.655  0.263  0.000  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.332 0.310 0.273 0.184 0.083 0.406 0.388 0.351 0.254 0.134
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.340 0.354 0.361 0.367 0.294
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.066 0.069 0.069 0.059 0.042
+# 12 char id |  description       | thick | blind
+DCF5246_06n   :Glaverbel_mgs
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.518  0.315  0.720  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.280 0.266 0.248 0.198 0.100 0.419 0.414 0.403 0.352 0.218
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.258 0.263 0.266 0.267 0.250
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.147 0.157 0.164 0.163 0.124
+# 12 char id |  description       | thick | blind
+SCF7747_06n   :Single_low_e
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.770  0.300  0.000  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.430 0.413 0.382 0.298 0.179 0.467 0.452 0.422 0.338 0.210
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.270 0.284 0.289 0.292 0.231
+# 12 char id |  description       | thick | blind
+DCF6741_06n   :dbl_air_low
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.673  0.314  0.000  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.346 0.324 0.287 0.197 0.092 0.418 0.400 0.363 0.268 0.145
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.275 0.290 0.297 0.308 0.251
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.066 0.069 0.069 0.061 0.044
+# 12 char id |  description       | thick | blind
+clear12gvb    :Planibel 12 mm / IGDB 4206
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.860  0.065  0.230  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.705 0.680 0.634 0.513 0.304 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.230 0.248 0.260 0.261 0.230
+# 12 char id |  description       | thick | blind
+DCF5566_06nb  :Planitherm/Clear 55/66, 6/16/6mm, no
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.709  0.158  0.474  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.368 0.341 0.296 0.198 0.082 0.515 0.495 0.449 0.334 0.176
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.310 0.320 0.322 0.308 0.267
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.280 0.303 0.320 0.324 0.290
+# 12 char id |  description       | thick | blind
+ip6834_06nbb  :6_16_6 ipasol low_e(2_5) + Air
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.663  0.408  0.245  1.410
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.295 0.279 0.247 0.167 0.077 0.334 0.319 0.287 0.204 0.105
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.304 0.316 0.320 0.322 0.257
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.027 0.029 0.029 0.025 0.018
+# 12 char id |  description       | thick | blind
+testglasn     :test_sol_extn
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.890  0.070  0.110  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.800 0.800 0.800 0.800 0.800 0.860 0.850 0.800 0.650 0.420
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.100 0.100 0.100 0.100 0.100
+# 12 char id |  description       | thick | blind
+2643_EWS3     :IMF841_6_int, 16 air, cl44_1_gvt
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.300  0.076  0.785  2.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.124 0.117 0.104 0.070 0.032 0.230 0.230 0.230 0.230 0.230
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.785 0.787 0.766 0.694 0.497
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.014 0.014 0.015 0.012 0.009
+# 12 char id |  description       | thick | blind
+2643_EWS2     :cl55_1_gvb_13mmg
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.865  0.066  0.215  5.420
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.718 0.695 0.650 0.527 0.314 0.781 0.761 0.718 0.596 0.375
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.215 0.224 0.235 0.237 0.211
+# 12 char id |  description       | thick | blind
+2643_IWS1     :cl44_1_gvb, 150 air, cl44_1_gvb
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.770  0.109  0.582  4.300
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.582 0.552 0.491 0.343 0.155 0.600 0.600 0.600 0.600 0.600
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.191 0.199 0.213 0.227 0.216
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.118 0.123 0.122 0.105 0.069
+# 12 char id |  description       | thick | blind
+2643_EWS1a    :cl44_1,130 air,clear_06,12 air,golde
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.662  0.198  0.224  1.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.446 0.416 0.352 0.216 0.079 0.500 0.500 0.500 0.500 0.500
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.224 0.244 0.263 0.282 0.268
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.105 0.112 0.114 0.106 0.078
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.027 0.027 0.026 0.021 0.012
+# 12 char id |  description       | thick | blind
+2643_EWS3_ro  :xIMF841_6_int, 16 air, cl44_1_gvt, r
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.347  0.097  0.886  2.700
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.016 0.014 0.012 0.008 0.003 0.100 0.100 0.100 0.100 0.100
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.813 0.819 0.803 0.729 0.551
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.025 0.024 0.022 0.018 0.012
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.048 0.042 0.035 0.023 0.009
+# 12 char id |  description       | thick | blind
+luxguard      :6/16/6 luxg(08lowe) air clearfloatn
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.650  0.180  0.491  1.510
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.322 0.300 0.264 0.177 0.080 0.406 0.386 0.350 0.254 0.135
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.425 0.435 0.438 0.436 0.342
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.066 0.069 0.068 0.057 0.039
+# 12 char id |  description       | thick | blind
+4922_nb       :4922, int blind up (dummy layers!)
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.410  0.097  0.700  0.500
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.182 0.165 0.137 0.076 0.027 0.225 0.213 0.187 0.124 0.059
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.691 0.698 0.685 0.636 0.466
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.016 0.017 0.018 0.016 0.013
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.017 0.022 0.025 0.025 0.014
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+4922_bdc      :4922, int blind down and closed
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.030  0.140  0.850  0.500
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.015 0.011 0.009 0.005 0.002 0.146 0.130 0.114 0.079 0.044
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.710 0.723 0.714 0.659 0.507
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.022 0.022 0.021 0.020 0.019
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.035 0.035 0.032 0.024 0.013
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.078 0.065 0.052 0.030 0.011
+# 12 char id |  description       | thick | blind
+5731_nb       :5731, int blind up (dummy layers!))
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.570  0.089  0.650  0.900
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.222 0.205 0.198 0.111 0.048 0.306 0.295 0.267 0.199 0.109
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.648 0.655 0.644 0.599 0.443
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.041 0.047 0.050 0.050 0.033
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+5731_ib0      :5731, int blind down, slats @ 0degg
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.240  0.088  0.665  0.900
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.247 0.070 0.047 0.026 0.011 0.306 0.295 0.267 0.199 0.109
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.617 0.647 0.649 0.609 0.484
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.049 0.057 0.056 0.045 0.026
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.106 0.047 0.026 0.011
+# 12 char id |  description       | thick | blind
+5731_ibc      :5731, int blind down, slats @ 70deg
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.040  0.160  0.824  0.900
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.016 0.012 0.010 0.006 0.002 0.306 0.295 0.267 0.199 0.109
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.663 0.677 0.671 0.622 0.489
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.073 0.072 0.066 0.051 0.029
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.088 0.073 0.063 0.039 0.015
+# 12 char id |  description       | thick | blind
+4122_nb       :4122, int blind up (dummy layers!))
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.410  0.097  0.700  0.500
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.182 0.165 0.137 0.076 0.027 0.225 0.213 0.187 0.124 0.059
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.691 0.698 0.685 0.636 0.466
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.016 0.017 0.018 0.016 0.013
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.017 0.022 0.025 0.025 0.014
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+refl_slat     :Reflective slat for replacement pr
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.010  0.890  0.100  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.050 0.050 0.050 0.040 0.010 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.050 0.050 0.050 0.030 0.020
+# 12 char id |  description       | thick | blind
+ip6834_nb     :6_16_6 IP68/34, Air, fict for blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.663  0.408  0.245  1.410
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.295 0.279 0.247 0.167 0.077 0.334 0.319 0.287 0.204 0.105
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.304 0.316 0.320 0.322 0.257
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.027 0.029 0.029 0.025 0.018
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+g_nb_iplsS    :6 - fict for blind - 6_16_6 iplSd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.660  0.190  0.271  1.380
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.400 0.369 0.320 0.210 0.091 0.334 0.319 0.287 0.204 0.105
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.271 0.290 0.305 0.310 0.276
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.104 0.116 0.123 0.134 0.095
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.084 0.084 0.078 0.055 0.027
+# 12 char id |  description       | thick | blind
+ip6834_bC     :6_16_6 IP68/34, Air, blind closed
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.030  0.357  0.314  1.410
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.002 0.002 0.001 0.001 0.001 0.334 0.319 0.287 0.204 0.105
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.317 0.330 0.342 0.354 0.340
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.032 0.036 0.038 0.039 0.039
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.500 0.277 0.259 0.232 0.166 0.084
+# 12 char id |  description       | thick | blind
+ip6834_b39    :6_16_6 IP68/34, Air, blind @ 39deg
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.158  0.332  0.310  1.410
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.078 0.084 0.072 0.048 0.025 0.334 0.319 0.287 0.204 0.105
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.310 0.326 0.338 0.353 0.339
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.032 0.034 0.037 0.039 0.040
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.500 0.227 0.268 0.238 0.169 0.085
+# 12 char id |  description       | thick | blind
+g_b39_iplsS   :6 - fict for blind - 6_16_6 iplSd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.160  0.122  0.204  1.200
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.093 0.007 0.007 0.005 0.003 0.334 0.319 0.287 0.204 0.105
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.204 0.221 0.228 0.226 0.198
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.539 0.619 0.573 0.451 0.268
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.024 0.003 0.002 0.002 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.019 0.002 0.002 0.001 0.001
+# 12 char id |  description       | thick | blind
+g_bC_iplsSS   :6 - fict for blind - 6_16_6 iplSdd
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.030  0.167  0.214  1.200
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.002 0.001 0.001 0.001 0.001 0.137 0.131 0.124 0.099 0.063
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.214 0.228 0.233 0.230 0.199
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.617 0.590 0.550 0.438 0.260
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+ip5025_nb     :6_16_6 IP50/25, Air, fict for blinn
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.480  0.245  0.532  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.194 0.183 0.161 0.108 0.049 0.256 0.245 0.223 0.164 0.089
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.532 0.539 0.530 0.496 0.368
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.028 0.030 0.029 0.025 0.018
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+ip5025_b39    :6_16_6 IP50/25, Air, blind @ 39deg
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.114  0.224  0.544  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.052 0.005 0.005 0.003 0.001 0.244 0.221 0.200 0.157 0.104
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.544 0.560 0.563 0.542 0.451
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.032 0.035 0.036 0.038 0.039
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.600 0.149 0.171 0.148 0.102 0.050
+# 12 char id |  description       | thick | blind
+ip5025_bC     :6_16_6 IP50/25, Air, blind closed
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   5  0.030  0.231  0.551  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.010 0.010 0.010 0.010 0.010 0.222 0.208 0.189 0.149 0.098
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.551 0.564 0.566 0.543 0.452
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.035 0.036 0.037 0.038 0.040
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.600 0.182 0.165 0.144 0.100 0.050
+# 12 char id |  description       | thick | blind
+ip5025        :6_16_6 IP50/25, Air, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.480  0.245  0.532  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.194 0.183 0.161 0.108 0.049 0.256 0.245 0.223 0.164 0.089
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.532 0.539 0.530 0.496 0.368
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.028 0.030 0.029 0.025 0.018
+# 12 char id |  description       | thick | blind
+ip-iplE       :55.1_16_8 iplE, Air, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.752  0.197  0.362  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.441 0.092 0.091 0.027 0.136 0.533 0.517 0.475 0.358 0.199
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.273 0.290 0.299 0.295 0.255
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.089 0.092 0.091 0.080 0.056
+# 12 char id |  description       | thick | blind
+ip-iplE_i     : :8 iplE_16_55_1, Air, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.752  0.197  0.362  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.441 0.092 0.091 0.027 0.136 0.533 0.517 0.475 0.358 0.199
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.089 0.092 0.091 0.080 0.056
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.273 0.290 0.299 0.295 0.255
+# 12 char id |  description       | thick | blind
+fictit_blind  :fictititous surfacen
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.990  0.009  0.001  9.000
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.990 0.990 0.990 0.990 0.990 0.990 0.990 0.990 0.990 0.990
+# refr index, absorption @ 5 angles for each tmc layer
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+tran_fictit   :fictitious surface
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.990  0.001  0.001  9.000
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.990 0.990 0.990 0.990 0.990 0.990 0.990 0.990 0.990 0.990
+# refr index, absorption @ 5 angles for each tmc layer
+  1.000 0.001 0.001 0.001 0.001 0.001
+# 12 char id |  description       | thick | blind
+opwht_8       :8mm optiwhite
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.903  0.078  0.049  5.590
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.873 0.858 0.808 0.657 0.402 0.886 0.873 0.823 0.673 0.418
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.049 0.053 0.057 0.060 0.059
+# 12 char id |  description       | thick | blind
+bl75_metgrey  :luxaflex_6055_75slatangle
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.027  0.573  0.397  6.000
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.030 0.015 0.015 0.010 0.010 0.119 0.099 0.099 0.091 0.091
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.397 0.371 0.371 0.363 0.363
+# 12 char id |  description       | thick | blind
+bl75_2345     :luxaflex_2345_75_metgrey
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.004  0.242  0.751  6.000
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.006 0.004 0.007 0.003 0.003 0.198 0.191 0.191 0.188 0.188
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.751 0.735 0.735 0.729 0.729
+# 12 char id |  description       | thick | blind
+optiwht_iso   :8_16_4 optiwhite, Air, no blind
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.796  0.115  0.248  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.000 0.607 0.537 0.369 0.169 0.703 0.677 0.608 0.436 0.223
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.185 0.200 0.215 0.229 0.217
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.064 0.067 0.066 0.057 0.039
+# 12 char id |  description       | thick | blind
+ip5229_55_2   :Interpane 52/29 on 55_2
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.497  0.200  0.550  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.217 0.204 0.180 0.121 0.055 0.285 0.273 0.248 0.183 0.100
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.552 0.559 0.551 0.517 0.385
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.030 0.031 0.031 0.026 0.018
+# 12 char id |  description       | thick | blind
+ip12ovsg76    :Interpane low iron 66_2
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   1  0.901  0.080  0.123  5.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.797 0.782 0.734 0.594 0.361 0.832 0.818 0.771 0.630 0.393
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.123 0.129 0.132 0.130 0.113
+# 12 char id |  description       | thick | blind
+ip7339_li     :Interpane 73/39, low iron
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.728  0.423  0.338  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.391 0.374 0.337 0.246 0.130 0.423 0.408 0.373 0.283 0.165
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.323 0.335 0.346 0.355 0.335
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.014 0.015 0.016 0.017 0.018
+# 12 char id |  description       | thick | blind
+ip7339_li_i   :Interpane 73/39, low iron, inverted
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.728  0.123  0.338  1.400
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.391 0.374 0.337 0.246 0.130 0.423 0.408 0.373 0.283 0.165
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.014 0.015 0.016 0.017 0.018
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.323 0.335 0.346 0.355 0.335

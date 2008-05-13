@@ -1,0 +1,451 @@
+# composite construction db defined in /home/Projects/Tests/DBS/Gartner.constrdb
+# based on materials db /home/Projects/Tests/DBS/Gartner.materialdb
+   76     # no of composites 
+# layers  description   optics name   symmetry tag
+    4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    6    0.1000  Lt brown brick
+  211    0.0750  Glasswool
+    0    0.0500  air  0.170 0.170 0.170
+    2    0.1000  Breeze block
+# layers  description   optics name   symmetry tag
+    2    intern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    2    0.1500  Breeze block
+  103    0.0120  Perlite plasterboard
+# layers  description   optics name   symmetry tag
+    5    partition     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  104    0.0130  Gypsum plaster
+    0    0.0500  air  0.170 0.170 0.170
+   28    0.1000  Block inner (3% mc)
+    0    0.0500  air  0.170 0.170 0.170
+  104    0.0130  Gypsum plaster
+# layers  description   optics name   symmetry tag
+    4    SBox_P1       OPAQ  OPAQUE        SBox_P1_inv   
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0030  Grey cotd aluminium
+    0    0.0400  air  0.180 0.180 0.180
+  216    0.1000  Mineral fibre
+   42    0.0020  Steel
+# layers  description   optics name   symmetry tag
+    2    SBox_P2       OPAQ  OPAQUE        SBox_P2_inv   
+# mat ref thickness (m) mat descr & air gap R
+  216    0.1000  Mineral fibre
+   42    0.0020  Steel
+# layers  description   optics name   symmetry tag
+    1    mass_part     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   35    0.2400  Block white ptd inner (3% mc)
+# layers  description   optics name   symmetry tag
+    3    int_part      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0120  White ptd Gypboard
+    0    0.0200  air  0.010 0.010 0.010
+  108    0.0120  White ptd Gypboard
+# layers  description   optics name   symmetry tag
+    6    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  263    0.2500  Common_earth
+  262    0.1500  Gravel based
+   32    0.1500  Heavy mix concrete
+    0    0.0500  air  0.170 0.170 0.170
+   67    0.0190  Chipboard
+  221    0.0060  Wilton
+# layers  description   optics name   symmetry tag
+    4    floor_1       OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  263    0.1000  Common_earth
+   82    0.1000  Red granite
+   32    0.0500  Heavy mix concrete
+  124    0.0500  Cement screed
+# layers  description   optics name   symmetry tag
+    1    susp_ceil     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  104    0.0130  Gypsum plaster
+# layers  description   optics name   symmetry tag
+    5    susp_floor    OPAQ  OPAQUE        susp_flr_re   
+# mat ref thickness (m) mat descr & air gap R
+  221    0.0060  Wilton
+   67    0.0190  Chipboard
+    0    0.0500  air  0.170 0.170 0.170
+   32    0.1400  Heavy mix concrete
+   42    0.0040  Steel
+# layers  description   optics name   symmetry tag
+    5    susp_flr_re   OPAQ  OPAQUE        susp_floor    
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0040  Steel
+   32    0.1400  Heavy mix concrete
+    0    0.0500  air  0.170 0.170 0.170
+   67    0.0190  Chipboard
+  221    0.0060  Wilton
+# layers  description   optics name   symmetry tag
+    2    ceiling       OPAQ  OPAQUE        ceiling_rev   
+# mat ref thickness (m) mat descr & air gap R
+  211    0.1000  Glasswool
+  150    0.0100  Ceiling (mineral)
+# layers  description   optics name   symmetry tag
+    2    ceiling_rev   OPAQ  OPAQUE        ceiling       
+# mat ref thickness (m) mat descr & air gap R
+  150    0.0100  Ceiling (mineral)
+  211    0.1000  Glasswool
+# layers  description   optics name   symmetry tag
+    5    gyp_blk_ptn   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0130  White ptd Gypboard
+    0    0.0500  air  0.170 0.170 0.170
+   28    0.1000  Block inner (3% mc)
+    0    0.0500  air  0.170 0.170 0.170
+  108    0.0130  White ptd Gypboard
+# layers  description   optics name   symmetry tag
+    3    gyp_gyp_ptn   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  108    0.0120  White ptd Gypboard
+    0    0.0500  air  0.170 0.170 0.170
+  108    0.0120  White ptd Gypboard
+# layers  description   optics name   symmetry tag
+    3    press_floor   OPAQ  OPAQUE        press_ceil    
+# mat ref thickness (m) mat descr & air gap R
+   32    0.2500  Heavy mix concrete
+    0    0.1200  air  0.170 0.160 0.160
+  143    0.0300  Slate
+# layers  description   optics name   symmetry tag
+    3    press_ceil    OPAQ  OPAQUE        press_floor   
+# mat ref thickness (m) mat descr & air gap R
+  143    0.0300  Slate
+    0    0.1200  air  0.170 0.160 0.160
+   32    0.2500  Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    3    Frame         OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0040  Grey cotd aluminium
+  301    0.0350  Std. Frame (equivalent)
+   46    0.0050  Grey cotd aluminium
+# layers  description   optics name   symmetry tag
+    3    alu_frame     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0050  Grey cotd aluminium
+    0    0.0150  air  0.605 0.558 0.605
+   46    0.0050  Grey cotd aluminium
+# layers  description   optics name   symmetry tag
+    1    curt_glz12    TRAN  clear12gvb    SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0120  Plate glass
+# layers  description   optics name   symmetry tag
+    1    glass_edge    OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  282    0.0095  cavity wall insul
+# layers  description   optics name   symmetry tag
+    1    BlindSlat_f   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   49    0.0010  slat_reflective
+# layers  description   optics name   symmetry tag
+    1    BlindSlat_b   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   50    0.0010  slat_standard
+# layers  description   optics name   symmetry tag
+    1    fict_gap_cn   TRAN  SC_fictit     SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  245    0.0010  fict
+# layers  description   optics name   symmetry tag
+    3    dbl_glz2      TRAN  ip6834_06nbb  NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  0.520 0.560 0.520
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    1    fin           OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   54    0.0030  fin
+# layers  description   optics name   symmetry tag
+    1    triangle_a95  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   57    0.0030  triangle_abs_95
+# layers  description   optics name   symmetry tag
+    1    fin_a95       OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   56    0.0030  fin_abs_95
+# layers  description   optics name   symmetry tag
+    1    Abs_100       OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   58    0.0030  Abs_100
+# layers  description   optics name   symmetry tag
+    3    dbl_glz3      TRAN  ip5229_06nbb  NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  249    0.0060  ip5229ne
+    0    0.1100  air  0.532 0.562 0.532
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    int_wa_beige  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    2    0.1500  Breeze block
+  103    0.0120  Perlite plasterboard
+  323    0.0010  beige yellow plaster
+# layers  description   optics name   symmetry tag
+    1    ceil_white    OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  143    0.0200  Slate
+# layers  description   optics name   symmetry tag
+    3    dbl_glplanit  TRAN  planit_06nbb  NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  250    0.0060  Planitherm
+    0    0.0120  air  0.472 0.440 0.440
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    2568_luxguar  TRAN  luxguard      NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  256    0.0060  Luxguard 6mm 2568_Preston
+    0    0.0160  air  0.473 0.473 0.473
+  255    0.0060  clear float 6mm 2568_Preston
+# layers  description   optics name   symmetry tag
+    6    ceil_Preston  OPAQ  OPAQUE        floo_Preston  
+# mat ref thickness (m) mat descr & air gap R
+  364    0.0050  carpet
+  363    0.0030  steel
+    0    0.1000  air  0.170 0.170 0.170
+  362    0.1300  concrete slab
+    0    0.5000  air  0.170 0.170 0.170
+  361    0.0100  ceiling tile
+# layers  description   optics name   symmetry tag
+    6    floo_Preston  OPAQ  OPAQUE        ceil_Preston  
+# mat ref thickness (m) mat descr & air gap R
+  361    0.0100  ceiling tile
+    0    0.5000  air  0.170 0.170 0.170
+  362    0.1300  concrete slab
+    0    0.1000  air  0.170 0.170 0.170
+  363    0.0030  steel
+  364    0.0050  carpet
+# layers  description   optics name   symmetry tag
+    3    extwa_presto  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  366    0.0010  aluminium
+  367    0.1200  insulation
+  366    0.0010  aluminium
+# layers  description   optics name   symmetry tag
+    5    SinkPanel     OPAQ  OPAQUE        SinkPanel_i   
+# mat ref thickness (m) mat descr & air gap R
+   43    0.0030  Aluminium
+  143    0.0160  Slate
+  283    0.0140  air layer 14mm
+  216    0.1000  Mineral fibre
+   43    0.0030  Aluminium
+# layers  description   optics name   symmetry tag
+    3    NoSinkPanel   OPAQ  OPAQUE        NoSnkPanel_i  
+# mat ref thickness (m) mat descr & air gap R
+   43    0.0030  Aluminium
+  216    0.1200  Mineral fibre
+   43    0.0030  Aluminium
+# layers  description   optics name   symmetry tag
+    5    SinkPanel_i   OPAQ  OPAQUE        SinkPanel     
+# mat ref thickness (m) mat descr & air gap R
+   43    0.0030  Aluminium
+  216    0.1000  Mineral fibre
+  283    0.0140  air layer 14mm
+  143    0.0160  Slate
+   43    0.0030  Aluminium
+# layers  description   optics name   symmetry tag
+    1    8mm-float     TRAN  SCF8783_06nb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0080  Plate glass
+# layers  description   optics name   symmetry tag
+    3    NoSinkP_U0.6  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   43    0.0030  Aluminium
+  216    0.0600  Mineral fibre
+   43    0.0030  Aluminium
+# layers  description   optics name   symmetry tag
+    3    NoSinkP_U1.0  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   43    0.0030  Aluminium
+  216    0.0328  Mineral fibre
+   43    0.0030  Aluminium
+# layers  description   optics name   symmetry tag
+    3    6834_U1.5     TRAN  ip6834_06nbb  6834_U1.5_re  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  0.476 0.360 0.476
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    6834_U1.5_re  TRAN  ip6834_06nbb  6834_U1.5     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  4mm clear float
+    0    0.0160  air  0.476 0.360 0.476
+  247    0.0060  ip6834ne
+# layers  description   optics name   symmetry tag
+    3    6834_U0.5     TRAN  ip6834_06nbb  NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  1.800 1.460 1.800
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    frm_U2.33     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   51    0.0030  anodized aluminium
+  211    0.0101  Glasswool
+   51    0.0030  anodized aluminium
+# layers  description   optics name   symmetry tag
+    7    4122_ib       TRAN  4122_nb       NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  258    0.0060  IP5527GR
+    0    0.0160  air  0.900 0.825 0.900
+  243    0.0050  4mm clear float
+    0    0.0160  air  0.900 0.825 0.900
+  256    0.0080  Luxguard 6mm 2568_Preston
+    0    0.0800  air  0.001 0.001 0.001
+  383    0.0010  fictitious
+# layers  description   optics name   symmetry tag
+    7    4922_ibAir    TRAN  4922_nb       NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  258    0.0060  IP5527GR
+    0    0.0160  air  0.470 0.425 0.470
+  243    0.0050  4mm clear float
+    0    0.0160  air  0.480 0.425 0.480
+  256    0.0080  Luxguard 6mm 2568_Preston
+    0    0.0800  air  0.001 0.001 0.001
+  383    0.0010  fictitious
+# layers  description   optics name   symmetry tag
+    5    5731_ib       TRAN  5731_nb       NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  258    0.0060  IP5527GR
+    0    0.0160  air  0.920 0.825 0.920
+  256    0.0080  Luxguard 6mm 2568_Preston
+    0    0.0800  air  0.001 0.001 0.001
+  383    0.0010  fictitious
+# layers  description   optics name   symmetry tag
+    1    Slat_f        TRAN  SC_fictit     SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   49    0.0010  slat_reflective
+# layers  description   optics name   symmetry tag
+    3    6834_U1.8     TRAN  ip6834_06nbb  NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  0.365 0.260 0.365
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    5    6834_bup      TRAN  ip6834_nb     NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  0.370 0.370 0.370
+  243    0.0080  4mm clear float
+    0    0.0800  air  0.001 0.001 0.001
+  383    0.0010  fictitious
+# layers  description   optics name   symmetry tag
+    3    frm_069       OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0050  Grey cotd aluminium
+    0    0.0150  air  1.275 1.275 1.275
+   46    0.0050  Grey cotd aluminium
+# layers  description   optics name   symmetry tag
+    5    5025_bup      TRAN  ip5025_nb     NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  385    0.0060  ip5025_6mm
+    0    0.0160  air  0.370 0.370 0.370
+  243    0.0080  4mm clear float
+    0    0.0800  air  0.001 0.001 0.001
+  383    0.0010  fictitious
+# layers  description   optics name   symmetry tag
+    4    SBox_P1_inv   OPAQ  OPAQUE        SBox_P1       
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0020  Steel
+  216    0.1000  Mineral fibre
+    0    0.0400  air  0.180 0.180 0.180
+   46    0.0030  Grey cotd aluminium
+# layers  description   optics name   symmetry tag
+    2    SBox_P2_inv   OPAQ  OPAQUE        SBox_P2       
+# mat ref thickness (m) mat descr & air gap R
+   42    0.0020  Steel
+  216    0.1000  Mineral fibre
+# layers  description   optics name   symmetry tag
+    5    6834_bCl      TRAN  ip6834_bC     NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  0.480 0.360 0.370
+  243    0.0080  4mm clear float
+    0    0.0800  air  0.001 0.001 0.001
+  384    0.0020  blind_fict
+# layers  description   optics name   symmetry tag
+    3    6834_U1.4     TRAN  ip6834_06nbb  6834_U1.4_in  
+# mat ref thickness (m) mat descr & air gap R
+  247    0.0060  ip6834ne
+    0    0.0160  air  0.526 0.360 0.526
+  243    0.0060  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    6834_U1.4_in  TRAN  ip6834_06nbb  6834_U1.4     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  4mm clear float
+    0    0.0160  air  0.526 0.360 0.526
+  247    0.0060  ip6834ne
+# layers  description   optics name   symmetry tag
+    3    5025_U18      TRAN  ip5025        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  385    0.0060  ip5025_6mm
+    0    0.0160  air  0.370 0.370 0.370
+  243    0.0080  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    iplE_UCW1.5   TRAN  ip-iplE       iplE_UCW1.5i  
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0080  4mm clear float
+    0    0.0160  air  0.720 0.720 0.720
+  243    0.0080  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    iplE_UCW1.5i  TRAN  ip-iplE_i     iplE_UCW1.5   
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0080  4mm clear float
+    0    0.0160  air  0.720 0.720 0.720
+  243    0.0080  4mm clear float
+# layers  description   optics name   symmetry tag
+    1    DoF_blindfic  TRAN  fictit_blind  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  384    0.0010  blind_fict
+# layers  description   optics name   symmetry tag
+    1    DoF_ficthore  TRAN  tran_fictit   SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  383    0.0010  fictitious
+# layers  description   optics name   symmetry tag
+    1    thermTrennn   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   71    0.0200  Softwood
+# layers  description   optics name   symmetry tag
+    1    optwhite8     TRAN  opwht_8        SYMMETRIC    
+# mat ref thickness (m) mat descr & air gap R
+  386    0.0080  optwhite8mm
+# layers  description   optics name   symmetry tag
+    1    blind2345     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  387    0.0005  bl2345_75_metgrey
+# layers  description   optics name   symmetry tag
+    3    optwht_U2.8   TRAN  optiwht_iso   NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0080  4mm clear float
+    0    0.0160  air  0.165 0.165 0.165
+  243    0.0040  4mm clear float
+# layers  description   optics name   symmetry tag
+    3    ip5229_U1.7   TRAN  ip5229_55_2   NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  249    0.0100  ip5229ne
+    0    0.0160  air  0.335 0.335 0.335
+  248    0.0100  float
+# layers  description   optics name   symmetry tag
+    1    fin_alu       OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0030  Grey cotd aluminium
+# layers  description   optics name   symmetry tag
+    1    fin_alu2      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0030  Grey cotd aluminium
+# layers  description   optics name   symmetry tag
+    1    glz12_lowi    TRAN  ip12ovsg76    SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0120  Plate glass
+# layers  description   optics name   symmetry tag
+    3    ip7339_U1.4   TRAN  ip7339_li     ip7339_U1.4i  
+# mat ref thickness (m) mat descr & air gap R
+  248    0.0080  float
+    0    0.0160  air  0.535 0.535 0.535
+  248    0.0128  float
+# layers  description   optics name   symmetry tag
+    3    ip7339_U1.4i  TRAN  ip7339_li_i   ip7339_U1.4   
+# mat ref thickness (m) mat descr & air gap R
+  248    0.0128  float
+    0    0.0160  air  0.535 0.535 0.535
+  248    0.0080  float
