@@ -1,0 +1,34 @@
+*connections  for HC
+*Date Thu Mar 20 10:37:57 2008
+     31   # number of connections
+   1   1   3   3   3  #    1 iCW in TheSpace >|< iCW in TheChannel
+   1   2   1   0   0  #    2 Wall-2 in TheSpace >|< Identical environment
+   1   3   1   0   0  #    3 Wall-3 in TheSpace >|< Identical environment
+   1   4   1   0   0  #    4 Wall-4 in TheSpace >|< Identical environment
+   1   5   3   2   6  #    5 hungCeil in TheSpace >|< hungCeil in hungCeiling
+   1   6   3   2   5  #    6 Base-6 in TheSpace >|< Ceil in hungCeiling
+   2   1   3   3   7  #    7 panelCW in hungCeiling >|< panelCW in TheChannel
+   2   2   1   0   0  #    8 Wall-2 in hungCeiling >|< Identical environment
+   2   3   1   0   0  #    9 Wall-3 in hungCeiling >|< Identical environment
+   2   4   1   0   0  #   10 Wall-4 in hungCeiling >|< Identical environment
+   2   5   3   1   6  #   11 Ceil in hungCeiling >|< Base-6 in TheSpace
+   2   6   3   1   5  #   12 hungCeil in hungCeiling >|< hungCeil in TheSpace
+   3   1   0   0   0  #   13 CurtGlass in TheChannel is External
+   3   2   1   0   0  #   14 Wall-2 in TheChannel >|< Identical environment
+   3   3   3   1   1  #   15 iCW in TheChannel >|< iCW in TheSpace
+   3   4   1   0   0  #   16 Wall-4 in TheChannel >|< Identical environment
+   3   5   3   5   6  #   17 Top-5 in TheChannel >|< Base-6 in mixTop
+   3   6   3   4   5  #   18 Base-6 in TheChannel >|< Top-5 in mixBottom
+   3   7   3   2   1  #   19 panelCW in TheChannel >|< panelCW in hungCeiling
+   4   1   5   0   0  #   20 Wall-1 in mixBottom is adiabatic
+   4   2   5   0   0  #   21 Wall-2 in mixBottom is adiabatic
+   4   3   5   0   0  #   22 Wall-3 in mixBottom is adiabatic
+   4   4   5   0   0  #   23 Wall-4 in mixBottom is adiabatic
+   4   5   3   3   6  #   24 Top-5 in mixBottom >|< Base-6 in TheChannel
+   4   6   5   0   0  #   25 Base-6 in mixBottom is adiabatic
+   5   1   5   0   0  #   26 Wall-1 in mixTop is adiabatic
+   5   2   5   0   0  #   27 Wall-2 in mixTop is adiabatic
+   5   3   5   0   0  #   28 Wall-3 in mixTop is adiabatic
+   5   4   5   0   0  #   29 Wall-4 in mixTop is adiabatic
+   5   5   5   0   0  #   30 Top-5 in mixTop is adiabatic
+   5   6   3   3   5  #   31 Base-6 in mixTop >|< Top-5 in TheChannel

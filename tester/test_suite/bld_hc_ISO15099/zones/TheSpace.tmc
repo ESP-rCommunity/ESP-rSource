@@ -1,0 +1,12 @@
+# transparent properties of TheSpace defined in ../zones/TheSpace.tmc
+   6   # surfaces
+# tmc index for each surface
+1,0,0,0,0,0
+   3  ip6834_06nbb # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.295   0.279   0.247   0.167   0.077   0.663
+# For each layer absorption @ 5 angles
+   0.304   0.316   0.320   0.322   0.257
+   0.001   0.001   0.001   0.001   0.001
+   0.027   0.029   0.029   0.025   0.018
+   0  # optical control flag

@@ -1,0 +1,16 @@
+*HC_CTL for zone TheChannel
+*Date,Thu Mar 20 11:25:19 2008
+   1 # number control intervals
+   7 # number of surfaces
+# (CurtGlass Wall-2 iCW Wall-4 Top-5 Base-6 panelCW)
+  0.00    24.00 # start and end time of interval
+   3 # adaptive calculation control type
+*Doc,convec. vert channel Bar-Cohen from other zone
+   1.  17.  17.   0.  99.  99.  99.  99.
+   1.  17.  17.   0.  99.  99.  99.  99.
+   1.  17.  17.   0.  99.  99.  99.  99.
+   1.  17.  17.   0.  99.  99.  99.  99.
+   1.  -1.  -1.   0.  99.  99.  99.  99.
+   1.  -1.  -1.   0.  99.  99.  99.  99.
+   1.  17.  17.   0.  99.  99.  99.  99.
+  4 0.700 4.200# Air origin zone (+ chan. width and height if Bar-Cohen corr.)

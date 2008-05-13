@@ -1,0 +1,24 @@
+    7    3    7    1.000    (nodes, components, connections, wind reduction)
+ Node         Fld. Type   Height    Temperature    Data_1       Data_2
+ TheSpace        1    0   1.7500       20.000       0.0000       94.502    
+ hungCeiling     1    0   3.9000       20.000       0.0000       18.900    
+ TheChannel      1    0   2.1250       20.000       0.0000       13.388    
+ mixBottom       1    0 -0.12500       20.000       0.0000      0.47251    
+ mixTop          1    0   4.3750       20.000       0.0000      0.47251    
+ ext_bot         1    3 -0.12500       0.0000       9.0000       180.00    
+ ext_top         1    3   4.3750       0.0000       1.0000       180.00    
+ Component    Type C+ L+ Description
+ tiny          120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+  1.  0.000200000009  1.
+ ext_openings  110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+  1.  0.0900000036
+ int_large     110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+  1.  2.5
+ +Node         dHght   -Node         dHght   via Component
+ TheSpace      0.188   TheChannel   -0.188   tiny                                    
+ TheSpace      1.075   hungCeiling  -1.075   ext_openings                            
+ hungCeiling  -0.888   TheChannel    0.888   tiny                                    
+ ext_bot       0.000   mixBottom     0.000   ext_openings                            
+ ext_top       0.000   mixTop        0.000   ext_openings                            
+ mixBottom     1.125   TheChannel   -1.125   int_large                               
+ TheChannel    1.125   mixTop       -1.125   int_large                               

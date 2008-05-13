@@ -1,0 +1,35 @@
+# thermophysical properties of TheSpace defined in ../zones/TheSpace.con
+# no of |air |surface(from geo)| multilayer construction
+# layers|gaps|  no.  name      | database name 
+     3,     1  #  1 iCW          6834_U1.5   
+     1,     0  #  2 Wall-2       mass_part   
+     1,     0  #  3 Wall-3       mass_part   
+     1,     0  #  4 Wall-4       mass_part   
+     1,     0  #  5 hungCeil     ceil_white  
+     5,     1  #  6 Base-6       susp_floor  
+# air gap position & resistance for surface  1
+  2,   0.476,
+# air gap position & resistance for surface  6
+  3,   0.170,
+# conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
+# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
+     1.0000,    2500.0,     750.0,  0.0060,   0,   0.00, 0.00000, 0.00000  #  1  1
+     0.0000,       0.0,       0.0,  0.0160,   0,   0.00, 0.00000, 0.00000  #     2
+     1.0500,    2500.0,     750.0,  0.0060,   0,   0.00, 0.00000, 0.00000  #     3
+     0.5100,    1400.0,    1000.0,  0.2400,   0,   0.00, 0.00000, 0.00000  #  2  1
+     0.5100,    1400.0,    1000.0,  0.2400,   0,   0.00, 0.00000, 0.00000  #  3  1
+     0.5100,    1400.0,    1000.0,  0.2400,   0,   0.00, 0.00000, 0.00000  #  4  1
+     2.0000,    2700.0,     753.0,  0.0200,   0,   0.00, 0.00000, 0.00000  #  5  1
+     0.0600,     186.0,    1360.0,  0.0060,   0,   0.00, 0.00000, 0.00000  #  6  1
+     0.1500,     800.0,    2093.0,  0.0190,   0,   0.00, 0.00000, 0.00000  #     2
+     0.0000,       0.0,       0.0,  0.0500,   0,   0.00, 0.00000, 0.00000  #     3
+     1.4000,    2100.0,     653.0,  0.1400,   0,   0.00, 0.00000, 0.00000  #     4
+    50.0000,    7800.0,     502.0,  0.0040,   0,   0.00, 0.00000, 0.00000  #     5
+# for each surface: inside face emissivity
+ 0.83700,0.90000,0.90000,0.90000,0.95000,0.90000
+# for each surface: outside face emissivity
+ 0.83700,0.90000,0.90000,0.90000,0.95000,0.90000
+# for each surface: inside face solar absorptivity
+ 0.0500000,0.25000,0.25000,0.25000,0.85000,0.20000
+# for each surface: outside face solar absorptivity
+ 0.30400,0.25000,0.25000,0.25000,0.85000,0.60000
