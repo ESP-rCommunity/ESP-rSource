@@ -33,14 +33,33 @@ C sbmedit define high level data associated with UK NCM methodology.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/C1/NCOMP,NCON
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY6/LINSTY(MCON)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
+      integer igupgrade
+      CHARACTER SSPARENT*12,ACT*1,ADF*124
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       dimension IVALSS(29)       ! array to get epicks answer from
       DIMENSION ITEMS(33),ITEMX(9),KSYS(MHT),ITEMH(MCOM+4),PRSSN(MPT)
       DIMENSION KSTR(9),ITHND(MPT),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
-      character outs*124,outs248*248,h*72
+      character outs*124,outs248*248,h*72,CTYPE*4,GUESS*24
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
-      CHARACTER HSYSNM*70,zname*12,zdesc*64,TMPSTR*64
+      CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
+      character*35 ZITEMS(MCOM+4)
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      real Air_infilt,gversion
+      real light_input_watt !user input for heat gains from lights
+                            !instead of using the values from the sbem database
+      LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
 
 C place (temporary?) call to read sbem db
       call sbempr(ier)
@@ -344,8 +363,8 @@ C Enter Scottish building types if Scottish regs to be used
 
 C Enter building permeability
         CALL EASKR(BINF50,
-     &    'Enter building permeability at 50Pa in m3/m2.hour'
-     &    ,' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &    'Enter building permeability at 50Pa in m3/m2.hour',
+     &    ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
         CALL EASKABC(
      &  'Is a compliance check to be performed on the building',
      &  'regarding air permeability value?',
@@ -356,6 +375,52 @@ C Enter building permeability
           APCHK='YES'
         ENDIF
 
+C Enter air changes per hour (or) m3/s for every zone as air leakage
+C This will be added to the ventilation rates taken from the tdf (as
+C minimum fresh air requirements from the activities database)
+C Begin with high level menu.
+    3   INO=-4
+        IER=0
+        DO 111 IZ=1,NCOMP
+          CALL EMKEY(IZ,KEY,IER)
+          WRITE(ZITEMS(IZ),'(A1,1X,A,F6.2)')KEY,
+     &         zname(IZ)(1:lnblnk(zname(IZ))),ACH(IZ)
+ 111    CONTINUE 
+        M=NCOMP
+        ZITEMS(M+1)= ' ______________________________ '
+        ZITEMS(M+2)= '* copy (from operation files): NA'
+        ZITEMS(M+3)= '? help                           '
+        ZITEMS(M+4)= '- exit this menu                 '
+        nitms=M+4
+
+C Help text for this menu.
+        H(1)='Infiltration rates and air leakage can be specified for'
+        H(2)='for every zone in terms of air changes per hour. These'      
+        H(3)='can be also copied from the operation files.'   
+        
+        CALL EMENU('zone air changes',ZITEMS,nitms,INO) 
+        IF(INO.EQ.nitms)THEN
+          continue
+        ELSEIF(INO.EQ.nitms-1)THEN          
+
+C Produce help text for the menu.
+          CALL PHELPD('AIR LEAKAGE',3,'-',0,0,IER)
+          goto 3
+        ELSEIF(INO.EQ.nitms-2)THEN
+
+C Need logic here to copy ach details from the existing operations -
+C but an average 24h value   
+          write(outs,'(A)') ' This facility is currently unavailable'
+          call edisp(iuout,outs)
+          goto 3
+        ELSEIF(INO.GE.1.AND.INO.LT.nitms-3)THEN
+          Air_infilt=0.0
+          CALL EASKR(Air_infilt,' ','air changes for this zone?',
+     &       0.0,'W',30.0,'W',0.0,'air changes for the zone',IER,0)  
+          ACH(INO)=Air_infilt
+          goto 3
+        ENDIF
+
 C Use existing building type if non-zero.
         if(ibusertyp.ne.0)then
           write(outs,'(a,i2,2a)') 'The current building type is ',
@@ -363,7 +428,7 @@ C Use existing building type if non-zero.
           call edisp(iuout,outs)
         else
           write(outs,'(2a)') 'The current building use is undefined',
-     &    'and the NCM guide table 4 is also undefined.'
+     &    ' and the NCM guide table 4 is also undefined.'
           call edisp(iuout,outs)
         endif
         h(1)='For the UK National Calculation Method you are required'
@@ -870,18 +935,81 @@ C Link DHW systems and zones
 
 C Link lighting systems with zones
         DO 160 IZ=1,NCOMP
-          WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
-     &    zname(IZ)(1:lnblnk(zname(IZ)))
-          CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &    70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
-          ILITYP(IZ)=LSYS(1)
+          ILIGHTUSER(IZ)=0
+          CALL EASKABC('Choose one of the options for defining lighting
+     &    heat gains from lights for: ',zname(IZ)(1:lnblnk(zname(IZ))),
+     &    'user defined W/m2 per 100lux','pick from list','continue',
+     &    Iwaylight,2)
+          IF(Iwaylight.EQ.1)THEN
+
+C flag needed for the casual.F to account for lighting gains
+C depending on the way they are specified by the user.
+            ILIGHTUSER(IZ)=1
+            
+C If users pick this then they have to demonstrate that this
+C value is a realistic one
+            light_input_watt=LIGHTWATTAGE(IZ)
+            CALL EASKR(light_input_watt,
+     &      'Enter heat gains from lights in watts (assuming 100% on)
+     &      for zone:',zname(IZ)(1:lnblnk(zname(IZ))),0.,'F',0.,'-',
+     &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)          
+            LIGHTWATTAGE(IZ)=light_input_watt
+          ELSE
+            WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
+     &      zname(IZ)(1:lnblnk(zname(IZ)))
+            CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
+     &      70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
+            ILITYP(IZ)=LSYS(1)
+          ENDIF
  160    CONTINUE
       ELSEIF(KSTR(1).EQ.9)THEN
 
 C Display information
  19     CALL EDISP(IUOUT,'This facility is currently not available')
       ENDIF
-      IF(KSTR(1).GE.1.AND.KSTR(1).LE.6)GOTO 222
+      IF(KSTR(1).GE.1.AND.KSTR(1).LE.9)GOTO 222
+
+C Update all geometry files to version 1.1 from previous
+      GUESS='notional'
+      DO 551 ICOMP=1,NCOMP
+        IUF=IFIL+2
+        CALL ECLOSE(GVERSION(ICOMP),1.1,0.01,NEWGEO)
+        IF(NEWGEO)THEN
+          CALL GEOREAD(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+        ELSE
+          CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+        ENDIF
+        ACT='s'
+
+C Code to loop through each surface to build a hash table so that each
+C surface also knowns its children
+        CALL SURREL(ACT,ICOMP,IER)
+
+C For each surface in this zone
+        DO 552 ISUR=1,NZSUR(ICOMP)
+          ICN=IZSTOCN(ICOMP,ISUR)
+
+C If surface is exterior then check if use is specified if not then ask
+          IF(SSOTHER(ICN,1)(1:8).EQ.'EXTERIOR')THEN
+            ADF=SSUSE(ICN,1)
+            IF(ADF(1:1).EQ.'-')THEN
+              IZGFOC=ICOMP
+              ITRC=0
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              LINSTY(ICN)=2
+              CALL ADJVIEW(ITRC,IER)
+              WRITE(OUTS,'(2A)')'Enter usage for surface ',SSNAME(ICN)
+              CALL EDISP(IUOUT,' ')
+              CALL EDISP(IUOUT,OUTS)
+              CALL EDISP(IUOUT,' ')
+              CALL EDITUSE(ICOMP,ISUR,ICN,GUESS)
+            ENDIF
+          ENDIF
+ 552    CONTINUE
+ 551  CONTINUE
+      CALL GEOWRITE(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+
 
 C Save information to NCM project specific (*.ncm) file
       call mksbem
@@ -894,7 +1022,7 @@ C EMKSBM creates a model variant based on the SBEM methodology. Details
 C of this can be found in relevant EU and UK building regulations. 
 C This subroutine copies the cfg, cnn and mandatory zones files and
 C makes a new model representative of the notional building. 
-C Construction and Materials databases are also copied.
+C UK standard construction and materials databases are also copied.
 C Changes to the model are then made, geometry and construction files
 C are changed and so are the constructions and materials databases. 
 C All networks (plant, airflow, contaminants etc) are removed from the
@@ -902,6 +1030,7 @@ C model.
       SUBROUTINE EMKSBM
 #include "building.h"
 #include "sbem.h"
+#include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -910,12 +1039,6 @@ C model.
       COMMON/RAY6/LINSTY(MCON)
 
       COMMON/C1/NCOMP,NCON
-
-C << G1 is probably not the common block to use for this >>
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -923,12 +1046,17 @@ C << G1 is probably not the common block to use for this >>
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+C << G1 is probably not the common block to use for this >>
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      character CTYPE*4
+      character CTYPE*4,zname*12,zdesc*64
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
@@ -949,7 +1077,10 @@ C G9 holds information on children of a surface.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 
-      CHARACTER*1 ACT
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+
+      CHARACTER*1 ACT,fs
       CHARACTER*4 APE,EXT
       CHARACTER SSPARENT*12,SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -958,8 +1089,8 @@ C G9 holds information on children of a surface.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 sblres,sflres,splres,smstres,sipvres,selres
-      CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,USE*8
-      character doit*248,guesstype*24
+      CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,USE*8,USE2*8
+      character doit*248,guesstype*24,dinstpath*48
       CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
 
 C ivalsv keeps track of new viewfactor files which need analysys
@@ -968,25 +1099,24 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
 C grossarea holds the gross area of the parent + its children.
       dimension grossarea(MS)
-C      real childwindowarea
-C      real childroofwindowarea
-C      real childdoorarea
-C      real childdisplayarea
-C      real parentwallarea
-C      real parentroofarea
-C      integer IDEBUG
-
-      DIMENSION IACT(MCON),COE(3),POINT(3),TRANS(3),KVER(MS),LVER(MS)
+      DIMENSION COE(3),POINT(3),TRANS(3),KVER(MS),LVER(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),TARSURF(MCON)
       logical unixok,docnn,ok,dok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical closeelv ! true if surface is close to vertical
-      LOGICAL MODIFY,MODLEN,MODBND,FOUND,FOUNDA
+      LOGICAL MODIFY,MODLEN,MODBND,FOUND,FOUNDA,QUIET,XST
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Initialise variables
-C      IDEBUG=0
       dok=.true.
-      GUESS='any_type'
+      GUESS='notional'
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -1011,7 +1141,7 @@ C If not then advise user and send him/her back
       H(7) = '   completely bounded by another surface - called parent)'
       H(8) = '   Consider making such a grandchild an independant child'
       H(9) = '   surface within another parent surface (see 4 below)'
-      H(10)= '2. Each exterior surface needs to have a usage. You will'
+      H(10)= '2. *Each exterior surface needs to have a usage. You will'
       H(11)= '   be asked to provide it if not already defined in the'
       H(12)= '   geometry and attributions menu.'
       H(13)= '   Only the following usages can be associated with '
@@ -1030,8 +1160,8 @@ C If not then advise user and send him/her back
       H(26)= ' '
       H(27)= 'When generating the notional model all areas for parents '
       H(28)= 'and children (not glazings) are conserved. Additional '
-      H(29)= 'glaing is added to all exterior surfaces as per UK NCM. '
-      H(30)= ' '
+      H(29)= 'glazing is added to all exterior surfaces as per UK NCM. '
+      H(30)= '* if parent surface is not wall/roof no glazing is added'
       H(31)= 'In order to calculate the required glazed area, gross  '
       H(32)= 'parent area is used (e.g. if a wall has a door in it then'
       H(33)= 'the glazed area is some % of (wall area + door area))'
@@ -1039,20 +1169,29 @@ C If not then advise user and send him/her back
       H(35)= 'If glazing area in original is more than required for  '
       H(36)= 'notional then the same area is retained in notional model'
       H(37)= ' '
-      H(38)= ' '
-      H(39)= ' '
-      H(40)= ' '
-      H(41)= ' '
-      H(42)= ' '
-      CALL PHELPD('SBEM Assumptions',42,'-',0,0,IER)
-      CALL ASKOK('Continue defining notional model? ',' ',OK,dok,42)
+      H(38)= '5. If you have not attributed some use (eg door) to zone'
+      H(39)= '   surfaces then do so before defining a notional model.'
+      H(40)= '   Whereas you will be asked for use of exterior surfaces'
+      H(41)= '   ESP-r makes following assupmtions about interior '
+      H(42)= '   surfaces unless some use is attributed to these'
+      H(43)= ' '
+      H(44)= 'For interior surfaces it is assumed that all vertical '
+      H(45)= 'surfaces are walls. Horizontal interior surfaces are '
+      H(46)= 'internal roofs/ceilings. '
+      H(47)= ' '
+      H(48)= ' '
+      H(49)= ' '
+      H(50)= ' '
+      H(51)= ' '
+      H(52)= ' '
+      
+      CALL PHELPD('SBEM Assumptions',52,'-',0,0,IER)
+      CALL ASKOK('Continue defining notional model? ',' ',OK,dok,52)
       if(.not.OK)return
 
 C The inital task is to make copies of the relevant zone files
 C which is functionally equivalent to the code blocks in subroutine
 C verman for the case of geometry and attribution (ILM=2).
-      call isunix(unixok)
-
 C Assume that a new connections file needs to be created.
       docnn=.true.
 
@@ -1061,6 +1200,19 @@ C Change name of configuration file to filename_not.cfg
       CALL FNCNGR(LCFGF,APE,EXT,NNAME)
       LCFGF=NNAME
   
+C Set flag for cfg file that this is a notional model
+      INOTI=1
+
+C Assign standard databases containing UK NCM materials and constructions
+C These files are UK_notional.constrdb, material.db3.a and optics.db2 
+      WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
+     &FS,'databases',FS,'material.db3.a'
+      WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
+     &FS,'databases',FS,'UK_notional.constrdb'
+      WRITE(LOPTDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
+     &FS,'databases',FS,'optics.db2'
+      call opendb(ier)
+
 C Loop through each zone in the model...
       DO 550 ICOMP=1,NCOMP
         IUF=IFIL+2
@@ -1079,8 +1231,27 @@ C Loop through each zone in the model...
           call emkgeo(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
         endif
 
+C Make a copy of constructions file and tmc file if applicable
+        IUNIT=12
+        QUIET=.FALSE.
+        call FINDFIL(LTHRM(ICOMP),XST)
+        ITRU=6
+        CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,ITRC,ITRU,IER)
+        EXT='.con'
+        CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
+        LTHRM(ICOMP)=NNAME
+        CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,ITRU,QUIET,IER)
+        call FINDFIL(LTWIN(ICOMP),XST)
+        IF(.NOT.XST)GOTO 500
+        IFU=13
+        CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+        EXT='.tmc'
+        CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+        LTWIN(ICOMP)=NNAME
+        CALL MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
+
 C Establish parents of surfaces in this zone (fill common blocks G6 G7)
-        ACT='s'
+ 500    ACT='s'
         CALL SURREL(ACT,ICOMP,IER)
 
 C Remember this geometry file has been done so that a later selection
@@ -1128,7 +1299,7 @@ C ? after copy it is probably not necessary to re-run the viewfactor analysis.
 C          ivalsv(ic)=ivals(IC)
         endif
 
-C If there is a heat transfer regime copy the exiting file
+C If there is a heat transfer regime copy the existing file
 C so that subsequent changes are applied to the new file.
         if(IHC(icomp).eq.1)then
           EXT='.htc'
@@ -1147,7 +1318,7 @@ C so that subsequent changes are applied to the new file.
           LHCCO(ICOMP)=NNAME
         endif
 
-C If there is a casual gain control file copy the exiting file
+C If there is a casual gain control file copy the existing file
 C so that subsequent changes are applied to the new file.
         if(ICGC(icomp).eq.1)then
           EXT='.cgc'
@@ -1166,7 +1337,7 @@ C so that subsequent changes are applied to the new file.
           LCGCIN(ICOMP)=NNAME
         endif
 
-C If there is an obstruction file copy the exiting file
+C If there is an obstruction file copy the existing file
 C so that subsequent changes are applied to the new file.
         if(IOBS(icomp).eq.1)then
           EXT='.obs'
@@ -1183,6 +1354,8 @@ C so that subsequent changes are applied to the new file.
           CALL USRMSG('copying obstruction file via:',doit,'-')
           CALL RUNIT(doit,'-')
           ZOBS(ICOMP)=NNAME
+        elseif(IOBS(icomp).eq.2)then
+          continue   ! obstructions are within zone geometry file.
         endif
  550  CONTINUE
       call edisp(iuout,
@@ -1199,7 +1372,6 @@ C Remind the user that other files have been copied.
         call usrmsg(
      &    'shading files found which will be dependant on future',
      &    'geometry changes. Shading files copied.','W')
-        ishd=1
       endif
       if(ivfwq.eq.1)then
         call usrmsg(
@@ -1231,7 +1403,6 @@ C moisture, electrical and IPV
       EXT='.rep'
       CALL FNCNGR(SIPVRES,APE,EXT,NNAME)
       SIPVRES=NNAME
-      LRCR=2
 
 C Check length of cfgroot string.
       IROOTLEN=LNBLNK(CFGROOT)
@@ -1255,6 +1426,7 @@ C (to read these from ncm file eventually)
       rooffr=0.2
       wallfr=0.4
       GLZFR=0.
+      itrc=0
 
 C Loop through each zone in the model and if ivalsg was set earlier
 C then read in the zone geometry file and re-gather information on
@@ -1292,9 +1464,13 @@ C If surface is exterior then check if use is specified if not then ask
                 CALL INLNST(1)
                 LINSTY(ICN)=2
                 CALL ADJVIEW(ITRC,IER)
-                WRITE(OUTS,'(2A)')'Enter usage for surface ',SSNAME(ICN)
+                ijk=lnblnk(ssname(icn))
+                WRITE(OUTS,'(3A)')'Surface ',SSNAME(ICN)(1:ijk),
+     &          ' has use: something else. Confirm this in which case'
                 CALL EDISP(IUOUT,' ')
                 CALL EDISP(IUOUT,OUTS)
+                CALL EDISP(IUOUT,
+     &          'no glazing will be added to it or select other use')
                 CALL EDISP(IUOUT,' ')
                 CALL EDITUSE(ICOMP,ISUR,ICN,GUESS)
               ENDIF
@@ -1328,9 +1504,11 @@ C For each surface in this zone
             icn=IZSTOCN(icomp,isur)
             ADF=SSPARENT(ICN)
 
-C Figure out if this surface needs additional glazing or not
+C For all exterior surfaces that are also parents
             if(ssother(icn,1)(1:8).eq.'EXTERIOR'.AND.
      &        ADF(1:1).EQ.'-')then
+
+C Figure out if this surface needs additional glazing or not
               GROSAREA=TARSURF(ICN)
               XNETAREA=SSNA(ICN)
               GLAZAREA=GROSAREA-XNETAREA
@@ -1343,6 +1521,7 @@ C Figure out if this surface needs additional glazing or not
                 WRITE(OUTS,'(2A)')SSNAME(ICN),
      &          ' not type WALL or ROOF glazing will not be added to it'
                 CALL EDISP(IUOUT,OUTS)
+                GLZFR=0.0
               ENDIF
 
 C Determine case ICASE
@@ -1374,12 +1553,10 @@ C child (for case 3). This new surface has required glazing area.
                     IF(USE.EQ.'C-WINDOW'.OR.USE.EQ.'S-WINDOW'.OR.
      &                USE(1:6).EQ.'WINDOW')THEN
                       ICASE=1
-                      ICSUR=ICN2
                       ISSUR=ISUR2
                       FOUND=.TRUE.
                     ELSE
                       ICASE=3
-                      ICSUR=ICN2
                       ISSUR=ISUR2
                       FOUND=.TRUE.
                     ENDIF
@@ -1499,7 +1676,6 @@ C Make one child in this surface
                   IELF=IELF+1
                   ICON=IZSTOCN(icomp,nsur)+1
                   NSUR=NSUR+1
-                  NZSUR(ICOMP)=NSUR
                   NZTV(ICOMP)=NTV
                   NGL(NSUR)=0
                   WRITE(SNAME(ICOMP,NSUR),'(2A)')
@@ -1512,7 +1688,7 @@ C Make one child in this surface
                   ELSEIF(ICASE.EQ.3)THEN
                     SCALEFACTOR=SQRT(REQDAREA/SSNA(ICN2))
                   ENDIF
-                  ISUR2=NZSUR(ICOMP)
+                  ISUR2=NSUR
                   DO 2012 NV=1,NVER(ISURF)
                     POINT(1)=X(JVN(ISURF,NV))
                     POINT(2)=Y(JVN(ISURF,NV))
@@ -1533,47 +1709,36 @@ C Make one child in this surface
 C Update the connection list. Move all others up and then insert with
 C default values.
                   guesstype='any_type'
-                  IF(NCON.LT.MCON)THEN
-                    NCON=NCON+1
-                    IX=NCON+1
+                  call addedsurf(icomp,icon,itrc,ier)
 
-C Update common blocks G6 & G7
-                    call adjcbg6g7('+',ix,icon)
-                    IC1(ICON)=ICOMP
-                    IE1(ICON)=NSUR
-                    ICT(ICON)=0
-                    IC2(ICON)=0
-                    IE2(ICON)=0
-                    IZSTOCN(icomp,nsur)=icon
-                    SSNAME(ICON)=SNAME(ICOMP,NSUR)
-                    SSOTF(ICON)=SOTF(NSUR)
-                    SSMLCN(ICON)=SMLCN(NSUR)
-                    SSVFC(ICON)=SVFC(NSUR)
-                    SSOTHER(ICON,1)=SOTHER(NSUR,1)
-                    SSOTHER(ICON,2)=SOTHER(NSUR,2)
-                    SSOTHER(ICON,3)=SOTHER(NSUR,3)
-                    SSUSE(ICON,1)=SUSE(NSUR,1)
-                    SSUSE(ICON,2)=SUSE(NSUR,2)
-                    SSPARENT(ICON)=SPARENT(NSUR)
-
-C Now update the G7 common block to reflect new surface.
-                    call zgupdate(2,icomp,ier)
+C Add surfaces attribution parameters
+                  ICT(ICON)=0
+                  IC2(ICON)=0
+                  IE2(ICON)=0
+                  SSOTHER(ICON,1)='EXTERIOR'
+                  SSOTHER(ICON,2)='0'
+                  SSOTHER(ICON,3)='0'
+                  SSMLCN(ICON)='window_Not_G'
+                  SSPARENT(ICON)=SSNAME(ICN)
+                  SSOTF(ICON)='Glaz_notiona'
+                  SSVFC(ICON)=SSVFC(ICN)
+                  SSUSE(ICON,1)='C-WINDOW'
+                  SSUSE(ICON,2)='-'
 
 C Update connections list before displaying notional model zone
-                    call emkcfg('-',IER)
-                  ENDIF
-                  MODIFY=.TRUE.
+		  call emkcfg('-',IER)
+		  MODIFY=.TRUE.
                 ENDIF
 
 C Display what the notional model looks like
-                modify=.true.
-                CALL INLNST(1)
-                nzg=ncomp
-                do 2312 ic=1,ncomp
-                  nznog(ic)=IC
- 2312           continue
-                izgfoc=ICOMP
-                CALL ADJVIEW(ITRC,IER)
+		modify=.true.
+		CALL INLNST(1)
+		nzg=ncomp
+		do 2312 ic=1,ncomp
+		  nznog(ic)=IC
+ 2312		continue
+		izgfoc=ICOMP
+		CALL ADJVIEW(ITRC,IER)
               ELSE
                 CONTINUE
               ENDIF
@@ -1582,12 +1747,98 @@ C Display what the notional model looks like
         ENDIF
 
 C Write geometry file version 1.1 (1.0 does not support UK NCM)
+        NZSUR(ICOMP)=NSUR
         call zgupdate(itrc,icomp,ier)
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
 
 C Update connections file before going on to the next zone
         call emkcfg('-',IER)
   551 continue
+
+C Change constructions for different surfaces now based on use
+      DO 600 ICOMP=1,NCOMP
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+        DO 601 I=1,NZSUR(icomp)
+          icc=izstocn(icomp,i)
+          USE=SSUSE(ICC,1)
+          USE2=SSUSE(ICC,2)
+          ADF=SSVFC(icc)
+          IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
+            IF(USE(1:4).EQ.'WALL')THEN
+              IF(IRGG.EQ.2)THEN ! Scottish regulations
+                SSMLCN(ICC)='Wall_Scot_no'
+              ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                SSMLCN(icc)='Wall_NI_noti'
+              ELSE ! England and Wales regulations (and omissions)
+                SSMLCN(ICC)='Wall_EW_noti'
+              ENDIF
+            ELSEIF(USE(1:4).EQ.'ROOF')THEN
+              IF(USE2(1:4).EQ.'FLAT')THEN
+                SSMLCN(ICC)='Fl_roof_noti'
+              ELSE
+                IF(IRGG.EQ.2)THEN ! Scottish regulations
+                  SSMLCN(ICC)='SC_Pitch_roo'
+                ELSE ! England, Wales and N. Ireland regulations
+                  SSMLCN(ICC)='EW_notPitch_'
+                ENDIF
+              ENDIF
+            ELSEIF(USE(3:6).EQ.'DOOR')THEN
+              IF(USE(1:1).EQ.'V')THEN
+                SSMLCN(ICC)='Vehicle_door'
+              ELSE
+                SSMLCN(ICC)='opDoorWind_n'
+              ENDIF
+            ELSEIF(USE(3:8).EQ.'WINDOW')THEN
+              IF(USE(1:1).EQ.'D')THEN
+                SSMLCN(ICC)='Not_DisplayG'
+                SSOTF(ICC)='dispGlz_not_modCond'
+              ELSE
+                SSMLCN(ICC)='window_Not_G'
+                SSOTF(ICC)='Glaz_notiona'
+              ENDIF
+            ELSEIF(USE(1:5).EQ.'FLOOR')THEN
+              SSMLCN(ICC)='Sol_grnd_not'
+            ELSE
+              SNM=SSNAME(ICC)
+              WRITE(OUTS,'(3A)')'No relevant use defined for ',
+     &        SNM(1:LNBLNK(SNM)),' setting to use: external wall'
+              CALL EDISP(IUOUT,OUTS)
+              IF(IRGG.EQ.2)THEN ! Scottish regulations
+                SSMLCN(ICC)='Wall_Scot_no'
+              ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                SSMLCN(icc)='Wall_NI_noti'
+              ELSE ! England and Wales regulations (and omissions)
+                SSMLCN(ICC)='Wall_EW_noti'
+              ENDIF
+            ENDIF
+          ELSE
+            IF(USE(1:5).EQ.'FLOOR')THEN
+              SSMLCN(ICC)='pa_fl_notion'
+            ELSEIF(USE(1:4).EQ.'WALL')THEN
+              SSMLCN(ICC)='party_wall_n'
+            ELSEIF(USE(3:8).EQ.'WINDOW')THEN
+              SSMLCN(ICC)='internal_glz'
+              SSOTF(ICC)='Glaz_notiona'
+            ELSEIF(ADF(1:4).EQ.'CEIL'.OR.ADF(1:4).EQ.'FLOR')THEN
+              SSMLCN(ICC)='inv_pa_fl_no'
+            ELSE
+              SNM=SSNAME(ICC)
+              WRITE(OUTS,'(3A)')'No relevant use defined for ',
+     &        SNM(1:LNBLNK(SNM)),' setting internal wall'
+              SSMLCN(ICC)='party_wall_n'
+            ENDIF
+          ENDIF
+ 601    CONTINUE
+
+
+C Add 10% thermal bridge by calling silently appropriate subroutine
+        CALL LINTHBRDG(ICOMP,'s',0.1)
+
+C Write geometry file version 1.1 (1.0 does not support UK NCM)
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+        QUIET=.TRUE.
+        CALL EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
+ 600  CONTINUE
       RETURN
       END
 

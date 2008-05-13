@@ -40,41 +40,6 @@
 #  (b): nrn7 appears to have non-standard X11 header files.
 #
 
-#=====================================================================
-clim_convert()  # converts climate dbs from iwec.a to binary formats
-#=====================================================================
-# Arg_1 = target file 
-# Arg_2 = source file
-{
-
-
-# short=`echo $1 | sed 's/^.*\///g'`
-# city=$short
-# country=$short
-# country=`echo $short | sed 's/_.*$//g;'`
-# city=`echo $short | sed 's/_iwec//g;'`
-# city=`echo $city | sed 's/.iwec//g;'`
-# city=`echo $city | sed 's/_cwec//g;'`
-# city=`echo $city | sed 's/.cwec//g;'`
-# city=`echo $city | sed 's/^.*_//g;'`
-
-# printf "\r   - Creating binary climate databases [$city ($country)]..."
-
-# sed-less version
-
-TargetName=`echo $2 |  sed 's/\.a$//g'`
-printf "\r                                                                            "
-printf "\r   - Creating binary climate databases [${TargetName}]..."
-
-rm -f $1
-$CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
-
-}
-
-#=====================================================================
-# Main script
-#=====================================================================
-
 echo " "
 echo "          ESP-r installation script."
 echo " "
@@ -82,6 +47,7 @@ echo " Please consult the README file before commencing "
 echo " installation.  This script will rebuild the ESP-r"
 echo " modules on your system.  You can abort this process"
 echo " at any time by pressing <control> c."
+echo " "
 
 
 # Set default settings.
@@ -105,14 +71,14 @@ gnu_version="gcc3"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
-skip_ish_calcs="no"        # Skip update of exemplar shading files?
+
 
 #-----------------------------------------------------------
 # List of targets understood by bps
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
 # (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
@@ -165,7 +131,6 @@ if [ $# -ne 0 ]; then
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
-        --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -276,12 +241,6 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --no_training: Skip installation of training models."
   echo " "
-  echo "    --skip_ish_calcs: Skip recalculation of shading files "
-  echo "        associated with training and validation exemplars."
-  echo "        This option significantly shortens the time required"
-  echo "        to install training and validation files, but shading"
-  echo "        files must be updated manually."
-  echo " "
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
   echo "        alternatives are specified in command-line parameters."
@@ -325,6 +284,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
          echo " in /usr/include or /usr/local/include "
          echo " " 
          echo " XML support disabled."
+         echo " "
       fi
    else
     # Add XML include files to include paths
@@ -386,15 +346,14 @@ fi
 #----------------------------------------------------------------------
 
 if [ "$mode" = "interactive" ]; then
-   echo " "
+
    echo " Please answer the following questions. Default answers"
    echo " are in []. To accept the default, press return. "
-
+   echo " "
 
    # Check if platform auto-dectection is enabled, and confirm with user
    if [ "${platform}" = "auto-detect" ]; then
       YN=none;
-      echo " "
       echo " Your computer identifies itself as ${architecture}. "
       echo " Is this information correct (y/n)? [y]"
 
@@ -403,6 +362,7 @@ if [ "$mode" = "interactive" ]; then
          if [ "$YN" != "none" ]; then
             echo ""
             echo "Please answer yes or no  (y/n) [y]."
+            echo ""
          fi
          read YN
       done
@@ -514,7 +474,7 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
      2) compiler=GNU;;
   esac
 else
-  echo " "
+  echo ""
   echo " The GNU compiler set will be used."
 fi
 
@@ -685,13 +645,12 @@ if [ "$mode" = "interactive" ]; then
         echo ""
         echo " Please answer yes or no (y/n)."  
     else
-      echo " "
       echo " ESP-r can optionally retain debugging symbols and "
       echo " object files for use with a debugging program such"
       echo " as GDB."
       echo " " 
     fi
-
+    
     case "${debugging}" in
       yes) echo " Retain debugging symbols? (y/n) [y]";;
       *)   echo " Retain debugging symbols? (y/n) [n]";;
@@ -1283,22 +1242,24 @@ if [ "$mode" = "interactive" ]; then
 fi
 
 
-echo " "
-echo " Installing ESP-r system. This may take some time."
+
+
+
+echo " Installing ESP-r system.  This may take some time."
 
 #--------------------------------------------------------------
 # Get SVN build info for versioning purposes.
 #--------------------------------------------------------------
-
+ 
  echo -n "    - gathering versioning information from svn..."
-
+ 
  # Ensure that build information is always recompiled into 
  # every binary - touch common file startup.F
  touch ${SRCdir}/esrucom/startup.F
-
+ 
  # Get time of build 
  time=`date`
-
+ 
  # Get system information. (host not used at present)
  architecture=`uname -m`
  system=`uname -s`
@@ -1379,9 +1340,9 @@ echo " Installing ESP-r system. This may take some time."
     state="Vanilla"
    fi
    
-   echo " Done."
+   echo "Done."
  else 
-   echo " Unavailable!"
+   echo "Unavailable!"
  fi
  
  
@@ -1512,7 +1473,6 @@ do
       echo " ------------"                    >>$make_msg_file
       make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" -f Makefile  ${target} >>$make_msg_file 2>&1
    else
-      echo ""
       make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" -f Makefile  ${target}
    fi
 
@@ -1575,279 +1535,301 @@ fi
 if [ -f esrupdb/pdb ] ; then
   PDB=${SRCdir}/esrupdb/pdb
 fi
-echo " " 
-echo -n " Installing esprc and default (configuration files) into ${ESPdir}..."
 
-#-----------------------------
-# Write out default ESP-r file
-#-----------------------------
-
-
-# Header tag for default file 
-echo "*ESP-r Defaults" > ${ESPdir}/default
-
-# Installation path?
-echo "*ipth ${ESPdir}" >> ${ESPdir}/default
-
-# Default names for model files (why do they point to explicit paths
-# in the training directory, and what about all the files that aren't
-# included in this list/
-echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
-echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
-echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
-echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
-echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
-
-# Will we install databases?
-case "${install_dbs}" in
-  yes) # Use current installation folder for default databses
-       DBInstDir="${ESPdir}"
-       LinkDB="yes"
-      ;;
-  no) # Check if databases were previously installed in this folder
-      if [ -r ${ESPdir}/databases/pressc.db1 ]; then
-        # They were previously installed. Link to installation folder
-        DBInstDir="${ESPdir}"; LinkDB="yes"
-      else
-        # They were not installed. Perhaps they're available in usr/esru?
-        if [ -r /usr/esru/esp-r/databases/pressc.db1 ]; then
-          DBInstDir="/usr/esru/esp-r"; LinkDB="yes"
-        else
-          LinkDB="no"
-        fi
-      fi 
-      ;;
-esac
-
-if [ "${LinkDB}" = "yes" ]; then
-
-  # Are these default names for results files, or pointers
-  # to example database files?
-  echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
-  echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
-  
-  # Default database file locations?
-  echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
-  echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
-  echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
-  echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
-  echo "*evn ${DBInstDir}/databases/profiles.db2" >> ${ESPdir}/default
-  echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
-  echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
-  echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
-  echo "*icdb ${DBInstDir}/databases/icons.db1" >> ${ESPdir}/default
-  echo "*mldb ${DBInstDir}/databases/mould.db1" >> ${ESPdir}/default
-  echo "*sbem ${DBInstDir}/databases/SBEM.db1" >> ${ESPdir}/default
-
-fi
-
-# End of default file.
-echo "*end" >> ${ESPdir}/default
-
-#-----------------------------------
-# Write out ESP-r configuration file
-#-----------------------------------
-
-echo "*ESPRC" > ${ESPdir}/esprc
-
-echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
-echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
-echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
-echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
-# Image viewer program is platform specific:
-case "${MCTYPE}" in
-  mingw) # Use IE as image viewer (does this work?)
-         echo "*image_display,TIF,iexplore.exe" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
-    ;;
-  *)     # Use xv as image editor (and what if it's not available?)
-         echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
-    ;;
-esac
-echo "*journal,OFF" >> ${ESPdir}/esprc
-# Text editor is platform specific:
-case "${MCTYPE}" in
-  mingw) # Use Wordpad
-         echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
-    ;;
-  *)     # Use nedit --- but what if it's not available?
-         # We could use the value of the EDITOR environment
-         # variable, but it might point to a command-line
-         # editor such as vi/nano that wouldn't initialize
-         # correctly outside a terminal.
-         echo "*editor,editor,nedit" >> ${ESPdir}/esprc
-    ;;
-esac
-echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
-
-# Pointer to exemplar files. Will we install exemplar and validation
-# standards?
-
-case "${install_training}" in
-  yes) # Use current installation folder for default databses
-       TVInstDir="${ESPdir}"
-       LinkTV="yes"
-      ;;
-  no) # Check if training/ were previously installed in this folder
-      if [ -r ${ESPdir}/training/exemplars  ] &&
-         [ -r ${ESPdir}/validation/stds_list ]; then
-        # They were previously installed. Link to installation folder
-        TVInstDir="${ESPdir}"; LinkTV="yes"
-      else
-        # They were not installed. Perhaps they're available in usr/esru?
-        if [ -r /usr/esru/esp-r/training/exemplars  ] &&
-           [ -r /usr/esru/esp-r/validation/stds_list ]; then
-          TVInstDir="/usr/esru/esp-r"; LinkTV="yes"
-        else
-          LinkTV="no"
-        fi
-      fi 
-      ;;
-esac
-
-if [ "${LinkTV}" = "yes" ]; then
-  echo "*exemplars,Exemplars,${TVInstDir}/training/exemplars" >> ${ESPdir}/esprc
-  echo "*validation_stds,Validation standards,${TVInstDir}/validation/stds_list" >> ${ESPdir}/esprc
-fi 
-
-# Pointer to defaults file.
-echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
-
-# Pointer to climate list. Depends on whether databases were installed/found.
-if [ "${LinkDB}" = "yes" ]; then
-  echo "*db_climates,climatelist,${DBInstDir}/climate/climatelist" >> ${ESPdir}/esprc
-fi
-# End of file.
-echo "*end" >> ${ESPdir}/esprc
-
-echo " Done."
-
-#---------------------------------------
-# Write out training files.
-#---------------------------------------
 
 if [ "$install_training" = "yes" ]; then
+  echo " "
+    echo "Installing esprc and default (environment files) into ${ESPdir}..."
+  
+  # Create default file for the OS choice.
+  if [ ${MCTYPE} = sun ]; then
+    echo "*ESP-r Defaults" > ${ESPdir}/default
+    echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+    echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+    echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+    echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+    echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+    echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+    echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+    echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+    echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+    echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
+    echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+    echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
+    echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+    echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+    echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+    echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+    echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
+    echo "*end" >> ${ESPdir}/default
+  elif [ ${MCTYPE} = lin ]; then
+    echo "*ESP-r Defaults" > ${ESPdir}/default
+    echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+    echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+    echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+    echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+    echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+    echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+    echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+    echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+    echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+    echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
+    echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+    echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
+    echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+    echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+    echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+    echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+    echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
+    echo "*end" >> ${ESPdir}/default
+  elif [ ${MCTYPE} = cygw ]; then
+    echo "*ESP-r Defaults" > ${ESPdir}/default
+    echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+    echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+    echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+    echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+    echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+    echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+    echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+    echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+    echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+    echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
+    echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+    echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
+    echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+    echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+    echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+    echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+    echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
+    echo "*end" >> ${ESPdir}/default
+  elif [ ${MCTYPE} = osx ]; then
+    echo "*ESP-r Defaults" > ${ESPdir}/default
+    echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+    echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+    echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+    echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+    echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+    echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+    echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+    echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+    echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+    echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
+    echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+    echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
+    echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+    echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+    echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+    echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+    echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
+    echo "*end" >> ${ESPdir}/default
+  elif [ ${MCTYPE} = mingw ]; then
+    echo "*ESP-r Defaults" > ${ESPdir}/default
+    echo "*ipth ${ESPdir}" >> ${ESPdir}/default
+    echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
+    echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
+    echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+    echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
+    echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
+    echo "*res ${ESPdir}/databases/test.res" >> ${ESPdir}/default
+    echo "*mfr ${ESPdir}/databases/test.mfr" >> ${ESPdir}/default
+    echo "*clm ${ESPdir}/climate/clm67" >> ${ESPdir}/default
+    echo "*prs ${ESPdir}/databases/pressc.db1" >> ${ESPdir}/default
+    echo "*prm ${ESPdir}/databases/material.db3.a" >> ${ESPdir}/default
+    echo "*mlc ${ESPdir}/databases/multicon.db2" >> ${ESPdir}/default
+    echo "*opt ${ESPdir}/databases/optics.db2" >> ${ESPdir}/default
+    echo "*evn ${ESPdir}/databases/profiles.db2" >> ${ESPdir}/default
+    echo "*pdb ${ESPdir}/databases/plantc.db1" >> ${ESPdir}/default
+    echo "*ecdb ${ESPdir}/databases/elcomp.db1" >> ${ESPdir}/default
+    echo "*mcdb ${ESPdir}/databases/mscomp.db1" >> ${ESPdir}/default
+    echo "*icdb ${ESPdir}/databases/icons.db1" >> ${ESPdir}/default
+    echo "*mldb ${ESPdir}/databases/mould.db1" >> ${ESPdir}/default
+    echo "*sbem ${ESPdir}/databases/SBEM.db1" >> ${ESPdir}/default
+    echo "*end" >> ${ESPdir}/default
+  fi
+  
+  # Create esprc file for the OS choice.
+  if [ ${MCTYPE} = sun ]; then
+    echo "*ESPRC" > ${ESPdir}/esprc
+    echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+    echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+    echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+    echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+    echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+    echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+    echo "*journal,OFF" >> ${ESPdir}/esprc
+    echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+    echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+    echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
+    echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
+    echo "*end" >> ${ESPdir}/esprc
+  elif [ ${MCTYPE} = lin ]; then
+    echo "*ESPRC" > ${ESPdir}/esprc
+    echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+    echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+    echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+    echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+    echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+    echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+    echo "*journal,OFF" >> ${ESPdir}/esprc
+    echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+    echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+    echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
+    echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
+    echo "*end" >> ${ESPdir}/esprc
+  elif [ ${MCTYPE} = cygw ]; then
+    echo "*ESPRC" > ${ESPdir}/esprc
+    echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+    echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+    echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+    echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+    echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+    echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+    echo "*journal,OFF" >> ${ESPdir}/esprc
+    echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+    echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+    echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
+    echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
+    echo "*end" >> ${ESPdir}/esprc
+  elif [ ${MCTYPE} = osx ]; then
+    echo "*ESPRC" > ${ESPdir}/esprc
+    echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+    echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+    echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+    echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+    echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+    echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+    echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+    echo "*journal,OFF" >> ${ESPdir}/esprc
+    echo "*editor,editor,nedit" >> ${ESPdir}/esprc
+    echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+    echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
+    echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
+    echo "*end" >> ${ESPdir}/esprc
+  elif [ ${MCTYPE} = mingw ]; then
+    echo "*ESPRC" > ${ESPdir}/esprc
+    echo "*gprn,rectangular dump,import" >> ${ESPdir}/esprc
+    echo "*tprn,Text dump,/tmp/tx_dump" >> ${ESPdir}/esprc
+    echo "*gxwd,screen dump,import -window root" >> ${ESPdir}/esprc
+    echo "*cad,CAD package,xzip,ZIP" >> ${ESPdir}/esprc
+    echo "*image_display,TIF,iexplore.exe" >> ${ESPdir}/esprc
+    echo "*image_display,XBMP,iexplore.exe" >> ${ESPdir}/esprc
+    echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
+    echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
+    echo "*journal,OFF" >> ${ESPdir}/esprc
+    echo "*editor,editor,wordpad.exe" >> ${ESPdir}/esprc
+    echo "*report_gen,Reporting tool,xfs" >> ${ESPdir}/esprc
+    echo "*exemplars,Exemplars,${ESPdir}/training/exemplars" >> ${ESPdir}/esprc
+    echo "*validation_stds,Validation standards,${ESPdir}/validation/stds_list" >> ${ESPdir}/esprc
+    echo "*db_defaults,Defaults,${ESPdir}/default" >> ${ESPdir}/esprc
+    echo "*db_climates,climatelist,${ESPdir}/climate/climatelist" >> ${ESPdir}/esprc
+    echo "*end" >> ${ESPdir}/esprc
+  fi
+  
      echo " "
-     echo " Installing training and validation models. This may take some time."
-     echo -n "   - Installing standard bitmaps into ${ESPdir}/lib..."
+     echo "Installing standard bitmaps into ${ESPdir}/lib ..."
      cp ${SRCdir}/bitmaps/*.xbm ${ESPdir}/lib
-     echo " Done."
-
-     echo -n "   - Removing previous training and validation models..."
+     echo " "
+     echo "Installing training models ..."
+     echo " "
+     echo "Removing previous training and validation models ..."
      rm -rf ${ESPdir}/training ${ESPdir}/validation
-     echo " Done."
-     
-     echo -n "   - Updating materials and climate databases in training models..."
+     echo " "
+     echo "Updating materials and climate databases in training models..."
+     echo " "
      cd ${SRCdir}
-
-     # Note: We're dumping the output to /dev/null, which will suppress
-     #       error messsages that would otherwise warn the user if a
-     #       database failed to install. But this section of the 
-     #       installation script is otherwise so verbose, it's extremely
-     #       unlikely a user (or developer) would ever notice such a
-     #       message.
-     #
-     #       In the future, we could wrap the database conversion commands
-     #       in a low-level script that would silently invoke prj/clm/pdb/ish,
-     #       check if the target binary database was actually created, and
-     #       verify its intregity. The script could then stop when an error
-     #       was encountered, and provide meaningful output to the user.
-     #
-     #       Maybe someday...
-     
-     ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc >/dev/null
+     ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc
+     echo " "
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
-     $CLM -mode text -file dec94.clm -act asci2bin silent dec94_clm.txt >/dev/null
+     $CLM -mode text -file dec94.clm -act asci2bin silent dec94_clm.txt
+     echo " "
+     echo "... done."
+     echo " "
      cd ${SRCdir}
-     ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db >/dev/null
-     ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material >/dev/null
-     echo " Done."
-     echo -n "   - Updating materials and climate databases in validation models..."
+     ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db
+     ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material
+     echo "... done."
+     echo " "
+     echo "Updating materials and climate databases in validation models..."
+     echo " "
      cd ${SRCdir}/validation/CEN/13791/databases
-     $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a >/dev/null
-     $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a >/dev/null
-     $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a >/dev/null
+     $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a
+     $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a
+     $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a
      cd ${SRCdir}
-     ./bin/materials_db_conv validation/CEN/13791/databases prim.db.a prim.db >/dev/null
-     echo " Done."
-     echo -n "   - Copying training and validation models..."
+     ./bin/materials_db_conv validation/CEN/13791/databases prim.db.a prim.db
+     echo " "
+     echo "... done."
+     echo "Copying training and validation models ..."
      cp -r ${SRCdir}/training ${ESPdir}/training
-     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/training/exemplars > ${ESPdir}/training/exemplars
+  sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/training/exemplars > ${ESPdir}/training/exemplars
      cp -r ${SRCdir}/validation ${ESPdir}/validation
-     sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/stds_list > ${ESPdir}/validation/stds_list
-     echo " Done."
-     echo -n "   - Removing versioning information from training and validation files..."
-     find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
-     find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
-     echo " Done."
-     echo -n "   - Removing binary materials db from training models ..."
-     cd ${SRCdir}/
-     rm -f training/cellular_pv/dbs/cellular_pv.materials
-     rm -f training/constr/tp_sub/dbs/tp_sub.material
-     rm -f training/plant/wch/dbs/db_prc
-     rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
-     rm -f validation/CEN/13791/databases/prim.db
-     rm -f validation/CEN/13791/databases/WM_A.clm
-     rm -f validation/CEN/13791/databases/WM_B.clm
-     rm -f validation/CEN/13791/databases/Cond.clm
-     echo " Done."
+  sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/validation/stds_list > ${ESPdir}/validation/stds_list
+     echo "  "
+     echo "Editing training and validation models for current system ..."
+  
   # Update directory names in training models to reflect DESTdir
   #
   # Scan training and validation folders for configuration files.
   #
-
-  echo "   - Updating model shading and database records..."
   cfgnames=(`find ./training ./validation -name "*.cfg" -print`)
-  # Count cfg files
-  cfgcount=`find ./training ./validation -name "*.cfg" -print | wc -l`
   #
   # For each cfg file check for shading dbs
   #
-  cfgnum=0
   for file in "${cfgnames[@]}"; do
-    cfgnum=$((${cfgnum} + 1))
-    printf "      -> model ${cfgnum}/${cfgcount} (${file})"
   #  echo FILE: $file
   #                                      
   # Create a list of zone ref numbers and isi files in this cfg file
+  # 
+    isi=(`egrep '(\*isi\ |\*zon\ )' $file | cut -d# -f1`)
+    hits=${#isi[@]}
+  #  echo HITS: $hits
+    i=0
   #
-
-    if [ "${skip_ish_calcs}" = "no" ]; then
-      isi=(`egrep '(\*isi\ |\*zon\ )' $file | cut -d# -f1`)
-      # Count zones with shading
-      ish_tag_count=(`egrep '(\*isi\ )' $file | cut -d# -f1 | wc -l `)
-      hits=${#isi[@]}
-      
-      i=0
-      #
-      # Get the zone number and check if there is a isi file associated 
-      # with this zone.  The format of the isi variable is 
-      # "*zon  1  *zon  2  *isi  ../zones/xx.shd" and so on where hits 
-      # is the number of words in the list isi.
-      #
-      ish_processed_count=0
-      while [ $((i)) -lt $((hits-2)) ]; do
-      if [ ${isi[$((i))]} == "*zon" ]; then
-    
-        if [ ${isi[$((i+2))]} == "*isi" ]; then
-          ish_processed_count=$((${ish_processed_count}+1))
-
-          printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
-            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
-            shdfile=${file%/*}/${isi[$((i+3))]}
-            mv -f ${shdfile} ${ESPdir}/${shdfile}
-        fi
+  # Get the zone number and check if there is a isi file associated 
+  # with this zone.  The format of the isi variale is 
+  # "*zon  1  *zon  2  *isi  ../zones/xx.shd" and so on where hits 
+  # is the number of words in the list isi.
+  #
+    while [ $((i)) -lt $((hits-2)) ]; do
+    if [ ${isi[$((i))]} == "*zon" ]; then
+  #    echo "Zone" ${isi[$((i+1))]}
+      if [ ${isi[$((i+2))]} == "*isi" ]; then
+        echo "File" $file
+        echo "Zone" ${isi[$((i+1))]} " Shading" ${isi[$((i+3))]}
+        $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent
+        shdfile=${file%/*}/${isi[$((i+3))]}
+        mv -f ${shdfile} ${ESPdir}/${shdfile}
       fi
-      i=2+$(($i))
-      done
     fi
-    printf "\n"
+    i=2+$(($i))
+    done
   #
   # Now update the paths in models to reflect install dir.
   #
@@ -1867,45 +1849,19 @@ if [ "$install_training" = "yes" ]; then
   sed -e 's|/usr/esru|'"${DESTdir}"'|' ${file} > ${ESPdir}/${file:2}
   
   done
-  echo "     Done."
-
-  # Sample result set.
-  echo -n "   - Creating example binary results database..."
-  rm -f ${ESPdir}/databases/test.res
-  $BPS -mode text >/dev/null 2>&1 <<zzz
-a
-d
-y
-c
-${ESPdir}/databases/test.res
-11 7
-17 7
-1
-1
-s
-
-example_results
-y
-y
--
--
-zzz
-     echo " Done."
-     cd ${SRCdir}
- 
+     echo "Editing training and validation models for current system... done."
   
-  echo -n "   - Installing manual files..."
-  rm -rf ${ESPdir}/manual
-  mkdir ${ESPdir}/manual
-  cp -r ${SRCdir}/manual/* ${ESPdir}/manual
-  echo " Done."
-
-  echo -n "   - Installing tutorial files..."
-  rm -rf ${ESPdir}/tutorial
-  mkdir ${ESPdir}/tutorial
-  cp -r ${SRCdir}/tutorial/* ${ESPdir}/tutorial
-  echo " Done."
+     echo "Installing manual files ..."
+     rm -rf ${ESPdir}/manual
+     mkdir ${ESPdir}/manual
+     cp -r ${SRCdir}/manual/* ${ESPdir}/manual
+     echo "... done."
   
+     echo "Installing tutorial files ..."
+     rm -rf ${ESPdir}/tutorial
+     mkdir ${ESPdir}/tutorial
+     cp -r ${SRCdir}/tutorial/* ${ESPdir}/tutorial
+     echo "... done."
   
 fi
 
@@ -1914,33 +1870,30 @@ fi
 ##### Install databases
 
 if [ "$install_dbs" = "yes" ]; then
-
-echo " "
-echo " Installing standard databases. This may take some time."
-
   # remove existing binary databases
-  echo -n "   - Removing existing databases..."
   rm -f ${DESTdir}/esp-r/databases/*
   rm -f ${DESTdir}/esp-r/climate/clm67
   rm -f ${DESTdir}/esp-r/databases/test.res
-  echo " Done."
+  echo " "
   # Construction databases. Note constr.db1 and constr.db2 are merely subsets
   # of constr.db3. Perhaps they can be merged into a single file?
-  echo -n "   - Creating binary materials databases..."
-  ./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1 >/dev/null
-  ./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2 >/dev/null
-  ./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3 >/dev/null
-  ./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb >/dev/null
-  cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a 
-  cp ${SRCdir}/databases/constr.db2.a ${DESTdir}/esp-r/databases/constr.db2.a 
+  echo "Creating binary materials databases ..."
+  ./bin/materials_db_conv databases constr.db1.a ${DESTdir}/esp-r/databases/constr.db1
+  ./bin/materials_db_conv databases constr.db2.a ${DESTdir}/esp-r/databases/constr.db2
+  ./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3
+  ./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb
+  cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
+  cp ${SRCdir}/databases/constr.db2.a ${DESTdir}/esp-r/databases/constr.db2.a
   cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
-  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a 
+  cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a
   cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
-  echo " Done."
+  cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
+  cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
+  echo "... done."
   
      cd ${SRCdir}/databases
   
-     echo -n "   - Creating binary event profiles databases ..."
+     echo "Creating binary event profiles databases ..."
      $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
 g
@@ -1962,9 +1915,9 @@ y
 -
 -
 zzz
-   echo " Done."
+   echo "... done."
 
-   echo -n "   - Creating binary plant components databases..."
+   echo "Creating binary plant components databases ..."
    $PDB -mode text  >/dev/null 2>/dev/null <<zzz
 ${DESTdir}/esp-r/databases/plantc.db1
 c
@@ -1982,12 +1935,10 @@ plantc.db2.a
 e
 -
 zzz
-     echo " Done."
-
-     
-     
-     echo -n "   - Creating PP binary plant components databases ..."
+     echo "... done."
+     echo " "
      rm -f plantc.tt
+     echo "Creating PP binary plant components databases ..."
      $PDB -mode text  >/dev/null 2>/dev/null <<zzz
 ${DESTdir}/esp-r/databases/plantc.tt
 c
@@ -1996,33 +1947,219 @@ plantc.tt.a
 e
 -
 zzz
-   echo " Done."
-
-   echo -n "   - Creating binary climate databases "
+   echo "... done."
+   echo "  "
+   echo "Creating binary climate databases ..."
    cd ${SRCdir}/climate
    cp climatelist ${DESTdir}/esp-r/climate
-   sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPdir}/climate/climatelist   
+sed -e 's|/usr/esru/esp-r|'"${ESPdir}"'|' ${SRCdir}/climate/climatelist > ${ESPdir}/climate/climatelist
+
    cp README ${DESTdir}/esp-r/climate/Readme
    cp README_IWEC ${DESTdir}/esp-r/climate/Readme_iwec
+   echo "... default ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/clm67 -act asci2bin silent clm67.a
 
+   echo "... Albuquerque ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_NM_Albuquerque_iwec -act asci2bin silent USA_NM_Albuquerque_iwec.a
 
-   #Find all assci files (we use the convention of .a)
-   for file in *.a
-   do
-     #Assign asscii file to variable.
-     CLIM_a=${file}
-     #Create binary file name by cutting off the .a suffix.
-     CLIM_b=`echo $file |  sed 's/\.a$//g'`
-     #Convert.
-     clim_convert ${ESPdir}/climate/${CLIM_b} ${CLIM_a}
-   done
-   echo " Done."
+   echo "... Baltimore ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_MD_Baltimore_iwec -act asci2bin silent USA_MD_Baltimore_iwec.a
+
+   echo "... Belfast ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_belfast -act asci2bin silent uk_belfast_iwec.a
+
+   echo "... Berlin ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/deu_berlin_iwec -act asci2bin silent deu_berlin_iwec.a
+
+   echo "... Birmingham ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_birmingham -act asci2bin silent uk_birmingham_iwec.a
+
+   echo "... Boise ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_ID_Boise_iwec -act asci2bin silent USA_ID_Boise_iwec.a
+
+   echo "... Boulder Colorado ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/boulder_colorado.iwec -act asci2bin silent boulder_colorado.iwec.a
+
+   echo "... Brussles ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/bel_brussels_iwec -act asci2bin silent bel_brussels_iwec.a
+
+   echo "... Burlington ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_VT_Burlington_iwec -act asci2bin silent USA_VT_Burlington_iwec.a
+
+   echo "... Calgary ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_AB_Calgary_CWEC -act asci2bin silent CAN_AB_Calgary_CWEC.a
+
+   echo "... Channel Islands ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_channel_islands -act asci2bin silent uk_channel_islands_iwec.a
+
+   echo "... Chicago ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_IL_Chicago_iwec -act asci2bin silent USA_IL_Chicago_iwec.a
+
+   echo "... Copenhagen ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/dnk_copenhagen_iwec -act asci2bin silent dnk_copenhagen_iwec.a
+
+   echo "... Dublin ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/irl_dublin_iwec -act asci2bin silent irl_dublin_iwec.a
+
+   echo "... Dijon ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/FRA_Dijon -act asci2bin silent FRA_Dijon.a
+
+   echo "... Duluth ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_MN_Duluth_iwec -act asci2bin silent USA_MN_Duluth_iwec.a
+
+   echo "... El Paso ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TX_El_Paso_iwec -act asci2bin silent USA_TX_El_Paso_iwec.a
+
+   echo "... Fairbanks ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_AK_Fairbanks_iwec -act asci2bin silent USA_AK_Fairbanks_iwec.a
+
+   echo "... Finningley ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_finningley -act asci2bin silent uk_finningley_iwec.a
+
+   echo "... Firenze-Peretola - ITA ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ITA_Firenze-Peretola_IGDG -act asci2bin silent ITA_Firenze-Peretola_IGDG.a
+
+   echo "... Geneva ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHE_Geneva_IWEC -act asci2bin silent CHE_Geneva_IWEC.a
+
+   echo "... Guangzhou China ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHN_Guangzhou -act asci2bin silent CHN_Guangzhou.a
+
+   echo "... Hemsby ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_hemsby -act asci2bin silent uk_hemsby_iwec.a
+
+   echo "... Hong Kong ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CHN_Hong_Kong_CityUHK -act asci2bin silent CHN_Hong_Kong_CityUHK.a
+
+   echo "... Houston ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TX_Houston_iwec -act asci2bin silent USA_TX_Houston_iwec.a
+
+   echo "... Inchon ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Inchon_IWEC -act asci2bin silent KOR_Inchon_IWEC.a
+
+   echo "... Kangnung ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Kangnung_IWEC -act asci2bin silent KOR_Kangnung_IWEC.a
+
+   echo "... Kwangju ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Kwangju_IWEC -act asci2bin silent KOR_Kwangju_IWEC.a
+
+   echo "... Seoul..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_SeoulAB -act asci2bin silent KOR_SeoulAB.a
+
+   echo "... London Gatwick ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_gatwick -act asci2bin silent uk_gatwick_iwec.a
+
+   echo "... ESP Madrid ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ESP_Madrid_IWEC -act asci2bin silent ESP_Madrid_IWEC.a
+
+   echo "... Memphis ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_TN_Memphis_iwec -act asci2bin silent USA_TN_Memphis_iwec.a
+
+   echo "... Mexico city ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/mex_mexico.city.iwec -act asci2bin silent mex_mexico.city.iwec.a
+
+   echo "... Miami ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_FL_Miami_iwec -act asci2bin silent USA_FL_Miami_iwec.a
+
+   echo "... Montreal ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/can_montreal -act asci2bin silent can_montreal.a
+
+   echo "... Munich ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/deu_munich_iwec -act asci2bin silent deu_munich_iwec.a
+
+   echo "... Oban ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/uk_oban -act asci2bin silent uk_oban_iwec.a
+
+   echo "... Ottawa ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/can_ottawa -act asci2bin silent can_ottawa.a
+
+   echo "... Palermo ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ita_palermo_iwec -act asci2bin silent ita_palermo_iwec.a
+
+   echo "... Paris ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/fra_paris_orly_iwec -act asci2bin silent fra_paris_orly_iwec.a
+
+   echo "... Phoenix ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/USA_AZ_Phoenix_iwec -act asci2bin silent USA_AZ_Phoenix_iwec.a
+
+   echo "... Pisa ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ita_pisa_iwec -act asci2bin silent ita_pisa_iwec.a
+
+   echo "... Porto ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/prt_porto_iwec -act asci2bin silent prt_porto_iwec.a
+
+   echo "... Prague ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CZE_Prague -act asci2bin silent CZE_Prague.a
+
+   echo "... Quebec ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_PQ_Quebec_CWEC -act asci2bin silent CAN_PQ_Quebec_CWEC.a
+
+   echo "... Rome ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/ita_rome_iwec -act asci2bin silent ita_rome_iwec.a
+
+   echo "... Toronto ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_ON_Toronto_CWEC -act asci2bin silent CAN_ON_Toronto_CWEC.a
+
+   echo "... Ulsan ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/KOR_Ulsan_IWEC -act asci2bin silent KOR_Ulsan_IWEC.a
+
+   echo "... Saskatoon ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_SK_Saskatoon_CWEC -act asci2bin silent CAN_SK_Saskatoon_CWEC.a
+
+   echo "... Shearwater ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_NS_Shearwater_CWEC -act asci2bin silent CAN_NS_Shearwater_CWEC.a
+
+   echo "... St.Johns ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_NF_St.Johns_CWEC -act asci2bin silent CAN_NF_St.Johns_CWEC.a
+
+   echo "... Stuttgart ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/deu_stuttgart_iwec -act asci2bin silent deu_stuttgart_iwec.a
+
+   echo "... Sydney ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/aus_sydney_iwec -act asci2bin silent aus_sydney_iwec.a
+
+   echo "... Vancouver ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_BC_Vancouver_CWEC -act asci2bin silent CAN_BC_Vancouver_CWEC.a
+
+   echo "... Wellington ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/nzl_wellington_iwec -act asci2bin silent nzl_wellington_iwec.a
+
+   echo "... Whitehorse ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_YT_Whitehorse_CWEC -act asci2bin silent CAN_YT_Whitehorse_CWEC.a
+
+   echo "... Winnipeg ..."
+   $CLM -mode text -file ${DESTdir}/esp-r/climate/CAN_MB_Winnipeg_CWEC -act asci2bin silent CAN_MB_Winnipeg_CWEC.a
+
+   echo "... done."
 
    cd ${SRCdir}/databases
-   echo -n "   - Copying ASCII databases..."
+   echo "Copying ASCII databases ..."
    cp multicon.db1 multicon.db2 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
-   echo " Done."
+   echo "... done."
 
+   echo "Creating example binary results database ..."
+   echo " "
+   $BPS -mode text >/dev/null 2>/dev/null <<zzz
+a
+d
+y
+c
+${DESTdir}/esp-r/databases/test.res
+11 7
+17 7
+1
+1
+s
+
+example_results
+y
+y
+-
+-
+zzz
+     echo "... done."
+     cd ${SRCdir}
+  
 fi
 
 ##### End Install databases
@@ -2030,9 +2167,9 @@ fi
 ##### If xml support requested install the XSLT files.
 if [ "$xml_support" = "yes" ]; then
 echo " "
-echo -n " Installing xslt files ..."
+echo " Installing xslt files ..."
 cp ${SRCdir}/cetc/h3kreports/xsl/*.xsl ${DESTdir}/esp-r/xsl
-echo " Done."
+echo " ... done." 
 
 fi
 
@@ -2096,14 +2233,27 @@ elif [ ${MCTYPE} = mingw ]; then
   echo "start prj -file %1" >> ${ESPdir}/bin/esp-r.cmd
 fi
 
+echo "  "
+echo "Removing binary materials db from exemplars ..."
+cd ${SRCdir}/
+rm -f training/cellular_pv/dbs/cellular_pv.materials
+rm -f training/constr/tp_sub/dbs/tp_sub.material
+rm -f training/plant/wch/dbs/db_prc
+rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
+rm -f validation/CEN/13791/databases/prim.db
+rm -f validation/CEN/13791/databases/WM_A.clm
+rm -f validation/CEN/13791/databases/WM_B.clm
+rm -f validation/CEN/13791/databases/Cond.clm
+
 echo " "
-echo " Installation complete.  Please consult file ${SRCdir}/env/README."
+echo "Installation complete.  Please consult file ${SRCdir}/env/README."
 echo " "
-echo " NOTE: Be sure that you have updated your PATH environment"
-echo "       to include directives for the location of the ESP-r"
-echo "       executables. You should ensure that: "
-echo "       "${ESPdir}"/bin"
-echo "       is included in the definition."
+echo " "
+echo "NOTE: Be sure that you have updated your PATH environment"
+echo "      to include directives for the location of the ESP-r"
+echo "      executables. You should ensure that: "
+echo "      "${ESPdir}"/bin"
+echo "      is included in the definition."
 echo " "
 
 exit

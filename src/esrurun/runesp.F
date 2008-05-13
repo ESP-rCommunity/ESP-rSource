@@ -432,6 +432,11 @@ C Paremeters passed to:silentzone
       dimension shape(MSZ)
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
+
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character textmass*32 
+      dimension textmass(4,3)
+
       integer nbwalls(MSZ)     ! nb of vertical walls
       integer nbedges(MS)      ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
@@ -442,6 +447,7 @@ C Paremeters passed to:silentzone
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
+      real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real size(3),szsize(MSZ,3)        ! values dependant on shape
       real coords(MS,3)
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
@@ -526,6 +532,20 @@ C Clear the sz array structures.
           szboundarytype(iz,isu,3)=0
   52    continue
   40  continue
+
+C Clear data for internal mass (not currently used).
+      do 158 imu=1,4
+        datamass(imu,1)=0.0
+        datamass(imu,2)=0.0
+        datamass(imu,3)=0.0
+        datamass(imu,4)=0.0
+        datamass(imu,5)=0.0
+        datamass(imu,6)=0.0
+        datamass(imu,7)=0.0
+        textmass(imu,1)=' '
+        textmass(imu,2)=' '
+        textmass(imu,3)=' '
+ 158  continue
 
       NS=0     ! temporary array for counting surfaces.
       nsz=1
@@ -813,6 +833,7 @@ C Generate the zone and zone files.
       use(1)= szuse(isz,1)
       use(2)= szuse(isz,2)
       use(3)= szuse(isz,3)
+      nbmass = 0   ! current mass not supported
 
 C Fill surface arrays.
       do 49 isu=1,MS
@@ -832,10 +853,10 @@ C Fill surface arrays.
       write(outs,'(2a)') 'Processing ',name(isz)
       call edisp(iuout,outs)
       call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
-     &    nbedges,nbcord(isz),list,origin,size,
+     &    nbmass,nbedges,nbcord(isz),list,origin,size,
      &    coords,rotateit(isz),nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasname,hasconstruction,
-     &    boundarytype,use,usefile(isz),IER)
+     &    boundarytype,datamass,textmass,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct
 C density information.

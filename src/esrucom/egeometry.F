@@ -268,7 +268,7 @@ C MLC commons to recover optical property name.
       character SSPARENT*12
       character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
       character dllsubr*12,dllmesg*124
-      character MLCN*12,OTF*4,OPT*12
+      character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
       logical havec24
 
@@ -1185,10 +1185,13 @@ C       anticlockwise order which comprise each surface and the
 C       rotation angle from the site X-axis to east (anticlockwise
 C       +ve).
  
-       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
+      SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
 C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
@@ -1281,10 +1284,27 @@ C Thermal bridge common block is described in esruprj/edgeo.F
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent
 
+C This information was previously/also held in zone obstruction
+C file. The intent is that older models when scanned can be upgraded
+C to hold such information in the zone geometry file.
+
+C NB number of obstruction blocks.
+C X0 Y0 Z0 coordinates of each block origin.
+C DX DY DZ width depth and height of each block
+C BANG block rotation angle.
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+C NOX NOZ gridding resolution of surfaces for shading
+C NGX NGZ not used.
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      character BLKNAME*8,BLKMAT*12
+
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       CHARACTER OUTSTR*124,LGEOM*72,WORD*32,zname*12
-      CHARACTER tmpvfc*4,tmpsot*32,tother*15,tother1*15,tother2*15
+      CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -1292,7 +1312,7 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
-      character OTF*4,OPT*12
+      character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
       logical havec24
 
@@ -1304,7 +1324,8 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       NTV=0    ! counter for vertices, assume no vertices
       NEDGE=0  ! counter for surfaces in the edge list, assume no surfaces
       NS=0     ! temporary array for counting surfaces.
-      NSUR=0
+      NSUR=0   ! reset surface count
+      NB=0     ! reset number of obstructions
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -1883,8 +1904,64 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           goto 62
         elseif(WORD(1:12).eq.'*block_start')then
 
-C << to be done >>
-          goto 62
+C A number of block shapes can be associated with a model as follows:
+C *obs - solar obstruction blocks and
+C *mrt - mean radiant temperature sensor blocks (not yet implemented)
+C *photo - lighting sensor position and vector (not yet implemented)
+
+C If there is a zone obstruction file (iobs() = 1) then there should
+C not be *obs tags in this file.
+C If iobs() = 2 then obstructions were previously imported from a
+C zone obstructions file or are held in this geometry file.
+C If iobs() = 0 then no obstructions yet defined so the value should
+C be incremented to iobs() = 2.
+          if(iobs(icomp).eq.1)then
+            call usrmsg(
+     &      'There is a zone obstructions file as well as block',
+     &      'definitions in this geometry file. Skipping data.','W')
+          endif 
+
+C Following the tag *block_start will be the grid for X and Z. If
+C there are insufficient tokens on line set both to 20.
+          if(ND.gt.2)then
+            CALL EGETWI(OUTSTR,K,NOX,4,20,'F','opq grid X',IER)
+            CALL EGETWI(OUTSTR,K,NOZ,4,20,'F','opq grid Z',IER)
+          else
+            NOX=20
+            NOZ=20
+          endif
+
+C Read another line to get the actual blocks.
+   72     CALL STRIPC(IUNIT,OUTSTR,99,ND,0,'*obs tags',IER)
+          k=0
+          CALL EGETP(OUTSTR,K,phrase,'W','block tag',IER)
+          if(phrase(1:4).eq.'*obs')then
+            if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
+            if(iobs(icomp).eq.0) iobs(icomp)=2
+            NB=NB+1
+            CALL EGETWR(OUTSTR,K,XO(NB),-999.,998.,'W','X org',IER)
+            CALL EGETWR(OUTSTR,K,YO(NB),-999.,998.,'W','Y org',IER)
+            CALL EGETWR(OUTSTR,K,ZO(NB), -99., 99.,'W','Z org',IER)
+            CALL EGETWR(OUTSTR,K,DX(NB),   0., 99.,'W','X dis',IER)
+            CALL EGETWR(OUTSTR,K,DY(NB),   0., 99.,'W','Y dis',IER)
+            CALL EGETWR(OUTSTR,K,DZ(NB),   0., 99.,'W','Z dis',IER)
+            CALL EGETWR(OUTSTR,K,BANG(NB),-359.,359.,'W','rot a',IER)
+            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            BLKNAME(NB)=WORD(1:8)
+            CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            BLKMAT(NB)=WORD(1:12)
+            goto 72
+          elseif(phrase(1:4).eq.'*mrt')then
+
+C << not yet implemented >>
+            goto 72
+          elseif(phrase(1:6).eq.'*photo')then
+
+C << not yet implemented >>
+            goto 72
+          elseif(phrase(1:10).eq.'*end_block')then
+            goto 62
+          endif
         elseif(WORD(1:13).eq.'*visual_start')then
 
 C << to be done >> 
@@ -1993,6 +2070,9 @@ C IR=1 range checking IR=0 no range checking, ITRC unit number for
 C user output, IER=0 OK IER=1 problem. IWF = 3 create/overwrite,=4 check
 C with user before overwriting.
 
+C If iobs()=2 then there are blocks to write out within the
+C geometry file.
+
       SUBROUTINE GEOWRITE(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 #include "espriou.h"
@@ -2031,8 +2111,8 @@ C ZDESC ( char) - zone notes.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-C     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
 C which make up the floor, IUZBASEA signals that the user selected
@@ -2053,6 +2133,19 @@ C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124
       common/dllerr/dllsubr,dllmesg
 
+C NB number of obstruction blocks.
+C X0 Y0 Z0 coordinates of each block origin.
+C DX DY DZ width depth and height of each block
+C BANG block rotation angle.
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+C NOX NOZ gridding resolution of surfaces for shading
+C NGX NGZ not used.
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      character BLKNAME*8,BLKMAT*12
+
       CHARACTER GENFIL*72,zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -2068,11 +2161,13 @@ C Error subroutine and error details for dll mode.
       integer lsot            ! string length of soft()
       logical newgeo  ! to use for testing if new/old geometry file.
       logical havebrdge ! to use for thermal bridge existance.
+      logical hasobstr  !  true if IOBS() is set to 1 and NB > 0
 
       IER=0
       tab=','    ! make the separator a comma.
       newgeo=.false.  ! assume older format geometry.
       havebrdge=.false.
+      hasobstr=.false.
 
 C Check if running in dll mode and get current time stamp.
       call isadll(dll)
@@ -2260,12 +2355,12 @@ C or the losspercent is non-zero.
       if(losspercent(icomp).gt.0.0) havebrdge=.true.
       if(nbrdg(icomp).gt.0.or.havebrdge)then
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
-        WRITE(outs,'(a,F6.3,2F9.1)',IOSTAT=ios,ERR=13) '*bridge_start ',
+        WRITE(outs,'(a,F6.3,2F9.3)',IOSTAT=ios,ERR=13) '*bridge_start ',
      &    thbrpercent,losspercent(icomp),totheatloss(icomp)
         call SDELIM(outs,outsd,'C',IW)
         write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
      &    outsd(1:lnblnk(outsd)),
-     &    '  # user fraction, losspercent W/K and total heat loss K/W'
+     &    '  # user fraction, losspercent W/K and total heat loss W/K'
         if(nbrdg(icomp).gt.0)then
           do 88 itb=1,nbrdg(icomp)
             if(ibrdg(icomp,itb).eq.1)then
@@ -2313,8 +2408,27 @@ C The phrase can have spaces in it so do not pack string.
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*end_bridge'
       endif
 
-C << to here >>
-
+C iobs is 2 if there are block descriptions to include in this zone
+C geometry file also write the NOX and NOZ values.
+      if(IOBS(icomp).eq.2.and.NB.gt.0)then
+        hasobstr=.true.
+      endif
+      if(hasobstr)then
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# block entities:'
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *obs = obstructions'
+        write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
+     &    '*block_start',tab,NOX,NOZ,' # geometric blocks'
+        do 89 ib=1,NB
+          WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &      '*obs',tab,XO(ib),YO(ib),ZO(ib),DX(ib),DY(ib),
+     &      DZ(ib),BANG(ib),BLKNAME(ib),BLKMAT(ib)
+          call SDELIM(outs,outsd,'C',IW)
+          write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &      outsd(1:lnblnk(outsd)),'  # block ',ib
+  89    continue
+        write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*end_block'
+      endif
 
 C If file written with this source and the version number is 1.0
 C then reset it to 1.1.
@@ -2681,6 +2795,11 @@ C Write header based on current version number.
  793    CONTINUE
       endif
       call edisp(ITRU,' ')
+
+C << if newgeo is true then this might be the place to write
+C << out the obstruction information (after data structure has
+C << been updated so the zone does not need to be scanned.
+
       RETURN
       END
 
