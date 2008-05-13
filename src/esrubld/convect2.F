@@ -102,7 +102,6 @@ C Commons added for ISO 15099 algorithm
 
       DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA,veloc
       DOUBLE PRECISION NUSS,RAS,CNUS
-      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       DOUBLE PRECISION FLIN,FLUT
 
 
@@ -367,20 +366,19 @@ C Air entering from another building zone.
 C ISO 15099 correlation for buoyancy driven flow in ventilated vertical 
 C channels. Eqns. taken from version 2003, sec. 5.3 and eqn. 111.
 C CWIDTH is the Channel width and CHEIGHT the channel height. Hereby,
-C it is generally assumed the the ventilated vertical channel is split into more 
-C than one zone.
+C it is generally assumed the the ventilated vertical channel is split into 
+C more than one zone to better model stack effects in an afn.
 C PR is the Prandtl number, RAS is the Rayleigh number based on channel 
 C width and NUSS the corresponding Nusselt number
 C Air properties are fixed to dry air values at 300 K and 101325 Pa.
 C
 C Air entering from outdoors, i.e. the "lowermost" zone of the vertical
-C channel.
+C channel - "forced" velocity is assumed to be zero.
         PR=0.707
         LAMBAIR=0.0263  ! W/(m K)
         RHOAIR=1.174     ! kg/m3
         CPAIR=1.007       ! kJ/(kg K)
         NUAIR=15.72E-6  ! m2/s
-        veloc=0.0           ! m/s
         TFILM=(TFS(ICOMP,ISUR)+TF)/2.0
         BETA=1.0/(TFILM+273.15)
 
@@ -397,13 +395,13 @@ C channel.
 
 C If air is entering from the ambient, it is assumed that the velocity is zero.
 C This assumption is based on the approach of most buoyancy heat transfer 
-C algorithms according to literature. These do not take a superimposed "forced" 
+C algorithms according to literature. These do not take a superimposed "forced"
 C flow into account, which seems plausible for the "first" or "lowermost" zone
 C of a multi-zone stacked channel.
 
         NUSS=MAX(NUSS,(0.242*(RAS*CWIDTH/CHEIGHT)**0.272))
 
-        HC=2.0*NUSS*LAMBAIR/CWIDTH + 4.0*veloc
+        HC=2.0*NUSS*LAMBAIR/CWIDTH
 
         if(dotrace) then
           write(outs,'(A,E10.3,E10.3,E10.3,E10.3,E12.4,E12.4,F5.2)')
@@ -414,7 +412,7 @@ C of a multi-zone stacked channel.
       ELSEIF((ICOR.EQ.17).AND.(IAORZ.GT.0))THEN
 
 C ISO 15099 correlation for buoyancy driven flow in vertical channels w/
-C air entering from another building zone.
+C air entering from another (lower) building zone.
         PR=0.707
         LAMBAIR=0.0263  ! W/(m K)
         RHOAIR=1.174     ! kg/m3
@@ -422,7 +420,7 @@ C air entering from another building zone.
         NUAIR=15.72E-6  ! m2/s
         veloc=0.0           ! m/s
         TFILM=(TFS(ICOMP,ISUR)+TFA(IAORZ))/2.0
-        BETA=1.0/(TFILM+273.15)
+        BETA=1.0/(TFILM+273.15)    ! 1/K
 
         RAS=1000.0*9.81*BETA*ABS(TFS(ICOMP,ISUR)-TFA(IAORZ))*
      &     CWIDTH**3.0*RHOAIR*CPAIR/(NUAIR*LAMBAIR)
