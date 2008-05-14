@@ -283,7 +283,7 @@ C from the surface attributes.
           H(3)='any control of blinds associated with such surfaces.'
           LTWIN(ICOMP)=DFILE
           ltmp=LTWIN(ICOMP)
-          CALL EASKS(ltmp,'TMC file name?',
+          IF(.NOT.QUIET)CALL EASKS(ltmp,'TMC file name?',
      &      ' ',72,DFILE,'TMC file name',IER,3)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LTWIN(ICOMP)=ltmp

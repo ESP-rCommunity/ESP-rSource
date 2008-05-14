@@ -113,9 +113,11 @@ C file and plot it. Move to first vertex and give the zone name.
           call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
         endif
 
-C Check for a utility file and obstructions.
-        IF(IOBS(newfoc).EQ.1)THEN
+C Check for a zone obstructions file.
+        if(IOBS(newfoc).EQ.1)then
           CALL EGOMST(IUF,ZOBS(newfoc),0,0,iuout,IER)
+        elseif(IOBS(newfoc).EQ.2)then
+          continue
         endif
 
         if(direc.eq.'P')then
@@ -219,6 +221,7 @@ C Print labels and return to default font.
 
 C If izgfoc is not zero and nzg is one and there is an obstructions
 C file then reload current zone geometry file before returning.
+C << this may not be necessary if newgeo is true >>
       if(nzg.eq.1.and.izgfoc.gt.0)then
         newfoc=izgfoc
         IF(IOBS(newfoc).EQ.1)THEN

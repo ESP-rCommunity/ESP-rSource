@@ -167,7 +167,7 @@ C Name of current application
       character LAPROB*72
       character ITEMS(27)*34
       character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
-      character ctldoc*248,LCTLF*72,ETEXT*82,lradcf*72,LTDFA*72
+      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
@@ -718,8 +718,11 @@ C            call edisp(iuout,'* Changing focus to specified zone.')
 
 C If there is an obstructions file read it.
             IUF=IFIL+1
-            IF(IOBS(index).EQ.1)CALL EGOMST(IUF,ZOBS(index),IR,ITRC,
-     &         ITRU,IER)
+            if(IOBS(index).EQ.1)then
+              CALL EGOMST(IUF,ZOBS(index),IR,ITRC,ITRU,IER)
+            elseif(IOBS(index).EQ.2)then
+              continue  ! obstructions are in zone geometry file
+            endif
             CALL EDZONE(ITRC,index,IER)
             MODIFY=.TRUE.
           endif
@@ -4192,11 +4195,12 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72,LCNN*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCTLF,LCFD
+      CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
+      character ctldoc*248,lctlf*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot,oldcfgroot
-      CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,CTLDOC*248,OUTSTR*124
+      CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,OUTSTR*124
       CHARACTER APE*4,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
@@ -4358,6 +4362,8 @@ C so that subsequent changes are applied to the new file.
 C              CALL USRMSG('Copying obstruction file via:',doit,'-')
               CALL RUNIT(doit,'-')
               ZOBS(ICOMP)=NNAME
+            elseif(IOBS(icomp).eq.2)then
+              continue
             endif
  17       CONTINUE
           docnn=.true.
@@ -4431,10 +4437,15 @@ C        call edisp(iuout,'* New cfg file will hold new site data.')
 C Shading and insolation choices. First find out if any of the
 C zones curently include shading or obstruction files. If none do then
 C aloow the user to select one or more zones.
+
+C << it would be convenient if the number of obstructions was in
+C << an array so files did not need to be scanned.
+
         ishd=-1
         do 142 iz=1,ncomp
           if(ISI(iz).eq.1)ishd=1
           if(IOBS(iz).eq.1)ishd=1
+          if(IOBS(iz).eq.2)ishd=1
  142    continue
         if(ishd.eq.-1)then
           h(1)='There are no current instructions to evaluate detailed'
@@ -4501,27 +4512,40 @@ C procedure can overwrite. Mark for performing shading calculatons.
           endif
           if(iw.eq.2)then
 
-C Create an obstructions file for each of the selected zones.
+C Create an obstructions file for each of the selected zones if
+C it is an older format geometry file.
 C First create initial name, then mangle it and write block.
             IUF=12
             if(inpic.gt.0)then
               DO 152 IC=1,inpic
                 ICOMP=ivals(IC)
-                if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-                  WRITE(ZOBS(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                call eclose(gversion(icomp),1.1,0.01,newgeo)
+                if(newgeo)then
+
+C If v1.1 geometry file, set iobs=2 and add an initial block via ecrobs.
+                  IOBS(icomp)=2
+                  silent=.true.
+                  CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
+                  call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
                 else
-                  WRITE(ZOBS(icomp),'(3A,A4)') 
-     &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
-                endif
-                EXT='.obs'
-                CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
-                ZOBS(ICOMP)=NNAME
-                silent=.true.
-                CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
-                IF(IOBS(ICOMP).eq.0)then
-                  ZOBS(ICOMP)=' '
+
+C Older format geometry file so use separate zone obstructions file.
+                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                    WRITE(ZOBS(icomp),'(A,A4)')
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                  else
+                    WRITE(ZOBS(icomp),'(3A,A4)') 
+     &                zonepth(1:lnblnk(zonepth)),'/',
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+                  endif
+                  EXT='.obs'
+                  CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
+                  ZOBS(ICOMP)=NNAME
+                  silent=.true.
+                  CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
+                  IF(IOBS(ICOMP).eq.0)then
+                    ZOBS(ICOMP)=' '
+                  endif
                 endif
  152          continue
             endif
@@ -4579,6 +4603,9 @@ C              call edisp(iuout,'* Shading files dereferenced.')
               msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.2)then
+
+C Note: only dereference zones which have separate zone obstruction
+C files (iobs=1). Ignore zones with obstructions within geometry file.
             inpic=0
             call askmultizone(inpic,ivals,
      &        'Select zones do dereference obstructions?',
@@ -4586,7 +4613,7 @@ C              call edisp(iuout,'* Shading files dereferenced.')
             if(inpic.gt.0)then
               DO 154 IC=1,inpic
                 ICOMP=ivals(IC)
-                IOBS(ICOMP)=0
+                if(iobs(icomp).eq.1) IOBS(ICOMP)=0
  154          continue
 C              call edisp(iuout,'* Obstruction files dereferenced.')
               msg1='updating model for shading changes...'
@@ -4620,14 +4647,16 @@ C update the file name and write back out to NNAME file.
             if(inpic.gt.0)then
               DO 156 IC=1,inpic
                 ICOMP=ivals(IC)
-                IF(IOBS(ICOMP).eq.1)then
+                if(IOBS(ICOMP).eq.1)then
                   silent=.true.
                   EXT='.obs'
                   CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
                   ZOBS(ICOMP)=NNAME
                   CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
-                else
+                elseif(IOBS(ICOMP).eq.2)then
+                  continue
+                elseif(IOBS(ICOMP).eq.0)then
 
 C Create an obstruction file name, mangle the name and write
 C out default block.
@@ -4911,15 +4940,23 @@ C Check if geometry file has already been updated.
 
 C material database variant
         LFMULEN=LNBLNK(LFMUL)
-        IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')EXT='.db1'
-        IF(LFMUL(LFMULEN:LFMULEN).EQ.'2')EXT='.db2'
-        IF(LFMUL(LFMULEN:LFMULEN).EQ.'3')EXT='.db3'
-        CALL FNCNGR(LFMUL,APE,EXT,NNAME)
+        IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')THEN
+          EXT='.db1'
+        ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'2')THEN
+          EXT='.db2'
+        ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'3')THEN
+          EXT='.db3'
+        ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'a')THEN
+          EXT='.asc'
+        else
+          EXT='.dbs'
+        endif
 
 C << probably should be limited to project databases >>
         call isunix(unixok)
         call fdroot(LFMUL,msg1,MSG2)
-        WRITE(LFMUL,'(3a)')DBSPTH(1:LNBLNK(DBSPTH)),'/',MSG2
+        WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
+        CALL FNCNGR(NNAME,APE,EXT,NNAME)
         if(unixok)then
           WRITE(DOIT,'(4A)')'cp ',LFMUL(1:LNBLNK(LFMUL)),' ',
      &       NNAME(1:LNBLNK(NNAME))
@@ -4928,11 +4965,46 @@ C << probably should be limited to project databases >>
      &       NNAME(1:LNBLNK(NNAME))
         endif
         LFMUL=NNAME
-C        CALL USRMSG('Copying database via:',doit,'-')
+        CALL EDISP(IUOUT,' ')
+        CALL EDISP(IUOUT,'Copying database via ...')
+        CALL EDISP(IUOUT,DOIT)
         CALL RUNIT(DOIT,'-')
-        msg1='updating model for materials changes...'        
-        call edisp(iuout,
-     &    '* A copy of the Materials db is being made.')
+        call edisp(iuout,' Updating model for materials changes...')
+        CALL EDISP(IUOUT,' ')
+
+C also make automatically constructions database variant
+        LFMATEN=LNBLNK(LFMAT)
+        IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
+          EXT='.db1'
+        ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'2')THEN
+          EXT='.db2'
+        ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'3')THEN
+          EXT='.db3'
+        ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'a')THEN
+          EXT='.asc'
+        else
+          EXT='.dbs'
+        endif
+
+C << probably should be limited to project databases >>
+        call isunix(unixok)
+        call fdroot(LFMAT,msg1,MSG2)
+        WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
+        CALL FNCNGR(NNAME,APE,EXT,NNAME)
+        if(unixok)then
+          WRITE(DOIT,'(4A)')'cp ',LFMAT(1:LNBLNK(LFMAT)),' ',
+     &       NNAME(1:LNBLNK(NNAME))
+        else
+          WRITE(DOIT,'(4A)')'copy /y ',LFMAT(1:LNBLNK(LFMAT)),' ',
+     &       NNAME(1:LNBLNK(NNAME))
+        endif
+        LFMAT=NNAME
+        CALL EDISP(IUOUT,' ')
+        CALL EDISP(IUOUT,'Copying database via ...')
+        CALL EDISP(IUOUT,DOIT)
+        CALL RUNIT(DOIT,'-')
+        call edisp(iuout,' Updating model for constructions changes...')
+        CALL EDISP(IUOUT,' ')
       ELSEIF(M.EQ.11)THEN
 
 C CFD domain
@@ -5197,6 +5269,9 @@ C mould and mycotoxins
         msg1='Updating model for mould and mycotoxins changes...'
       ENDIF
 
+C if notional model generation then return now
+      IF(LRCR.EQ.3)RETURN
+
 C Reached this point after user has selected a topic whether or
 C not any zones were selected.
       h(1)='You may wish to make a number of changes to the'
@@ -5284,7 +5359,7 @@ C before an extension EXT, returning NEWNAM as the new file name
       SUBROUTINE FNCNGR(ORIGNAM,APP,EXT,NEWNAM)
 
       CHARACTER*(*) ORIGNAM,NEWNAM
-      CHARACTER APP*4,EXT*4
+      CHARACTER APP*4,EXT*4,LEXT*6
 
       LCFIL=LNBLNK(ORIGNAM)
       LA=LNBLNK(APP)
@@ -5294,8 +5369,22 @@ C before an extension EXT, returning NEWNAM as the new file name
           IF(LCFIL.GT.(72-3))LCFIL=69
           WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-4),APP(1:la),EXT(1:lx)
         ELSE
-          IF(LCFIL.GT.(72-3))LCFIL=69
-          WRITE(NEWNAM,'(2A)')ORIGNAM(1:LCFIL-4),APP(1:la)
+
+C For ascii files with extension .asc write name assuming a full
+C extension of 6 characters (e.g. materials.db3.a has extension of
+C ".db3.a"
+          IF(EXT.EQ.'.asc')THEN
+            IF(LCFIL.GT.(72-5))LCFIL=65
+            IF(LCFIL.GT.5)THEN
+              LEXT=ORIGNAM(LCFIL-5:LCFIL)
+            ELSE
+              LEXT='small'
+            endif
+            WRITE(NEWNAM,'(3A)')ORIGNAM(1:LCFIL-6),APP(1:LA),LEXT
+          ELSE
+            IF(LCFIL.GT.(72-3))LCFIL=69
+            WRITE(NEWNAM,'(2A)')ORIGNAM(1:LCFIL-4),APP(1:la)
+          ENDIF
         ENDIF
       else
         WRITE(NEWNAM,'(3A)') 'not_yet_defined',APP(1:la),EXT(1:lx)

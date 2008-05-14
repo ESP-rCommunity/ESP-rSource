@@ -40,9 +40,6 @@ C           1= building only, 2= plant only, 3= building and plant.
 
 C ICFGV   - version of the model configuration file.
 
-C XLAT,   - Site latitude and the longitudinal difference between the 
-C XLON      site and the reference time zone (east +ve).
-
 C IXPOS   - Site exposure index :
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
@@ -1256,6 +1253,10 @@ C SBEM database file
 C SBEM project specific file
         CALL EGETW(OUTSTR,K,LASBEM,'W','SBEM db',IER)
         ISBEM=1
+      elseif(WORD(1:4).eq.'*not')then
+
+C Flag to check if notional model or not
+        INOTI=1
       elseif(WORD(1:4).eq.'*nlt')then
 
 C Non-linear thermophysical properties configuration file.
@@ -1908,6 +1909,7 @@ C Quick read, if version 1.1 or newer then the file must be
 C fully read to find the number of surfaces in the zone.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
+          CALL ERPFREE(IUF,ios)
           CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
           IF(IER.NE.0)goto 1
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
@@ -1999,6 +2001,10 @@ C Reporting.
           IF(IOBS(ICOMP).EQ.1)THEN
             WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Obstructions: ',
      &          ZOBS(ICOMP)(1:LNBLNK(ZOBS(ICOMP)))
+            CALL EDISP(iuout,OUTS)
+          ELSEIF(IOBS(ICOMP).EQ.2)THEN
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Obstructions: ',
+     &          ' in zone geometry.'
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(ITW(ICOMP).EQ.1)THEN

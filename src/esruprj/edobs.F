@@ -20,9 +20,15 @@ C Boston, MA 02111-1307 USA.
 
 C edobs.f contains code to allow the editing of site obstructions files.
 
+C << NOTE: transition state in terms of obstruction blocks within v1.1
+C << zone geometry files - several routines are using readgeo calls
+C << to keep the data refreshed so geowrite calls can be made.
+
 C ************* EDOBS 
 C EDOBS: Edit obstruction blocks if there is an obstruction file
-C associated with this zone. If one does not exist then allow user
+C associated with this zone or if there are obstructions held
+C in the version 1.1 zone geometry file. If older geometry file
+C then use separate obstructions file and allow user
 C to create one.
 C Use file unit IPRODB temporarily.
       SUBROUTINE EDOBS(ITRC,ITRU,ICOMP,IER)
@@ -33,6 +39,11 @@ C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
       common/pophelp/h(60)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
@@ -72,54 +83,80 @@ C LPRFDB,IPRODB (for event profile database)
       character docpth*24,tmppth*24,dbspth*24
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
       LOGICAL comold,tmcold,vwfold,ishold,silent,unixok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
 
+      modcfg=.false.
+      ITOBS = 0
+
+C If newer geometry file it may include obstructions. If the value
+C of iobs for this zone is 2 then obstructions were included so
+C re-read the geometry file.
+      IUF=IPRODB
+      newgeo=.false.  ! assume older format geometry.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        CALL ERPFREE(IUF,ios)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
+        if(IOBS(ICOMP).EQ.2)then
+          continue
+        elseif(IOBS(ICOMP).EQ.1)then
+
+C There was an existing zone obstructions file and the obstructions
+C should be transferred into the zone geometry file.
+C << where/when to do this transfer >>
+
+        elseif(IOBS(ICOMP).EQ.0)then
+          IOBS(ICOMP)=2
+          MODIFY=.TRUE.
+        endif
+      else
+
 C Check for obstructions. If file exists ask user to confirm
 C it or dereference it. If it does not exist ask user for
 C a name and or whether it should be ignored.
-      modcfg=.false.
-      ITOBS = 0
-      IUF=IPRODB
-      write(zn,'(A)') zname(ICOMP)
-      IF(IOBS(ICOMP).EQ.1)THEN
-        silent=.false.
-        CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
-        if(IOBS(ICOMP).eq.0)then
-          modcfg=.true.
-          call usrmsg(' updating model to remove obstructions...',
-     &      ' ','-')
-          CALL EMKCFG('-',IER)
-          call usrmsg(' updating model to remove obstructions...done.',
-     &      ' ','-')
-          return
-        endif
-      ELSEIF(IOBS(ICOMP).NE.1)THEN
+        IUF=IPRODB
+        write(zn,'(A)') zname(ICOMP)
+        IF(IOBS(ICOMP).EQ.1)THEN
+          silent=.false.
+          CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
+          if(IOBS(ICOMP).eq.0)then
+            modcfg=.true.
+            call usrmsg('updating model to remove obstructions...',
+     &        ' ','-')
+            CALL EMKCFG('-',IER)
+            call usrmsg('updating model to remove obstructions...done.',
+     &        ' ','-')
+            return
+          endif
+        ELSEIF(IOBS(ICOMP).eq.0)THEN
 
 C There is no mention of obstructions so get name and create a dummy
 C if it doesn't exist. If user dereferenced the iobs will be zero and
 C the model will not have been changed so just return.
-        silent=.false.
-        CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
-        if(IOBS(ICOMP).eq.0)then
-          return
-        else
-          modcfg=.true.
+          silent=.false.
+          CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
+          if(IOBS(ICOMP).eq.0)then
+            return
+          else
+            modcfg=.true.
+          endif
+        ENDIF
+        if(modcfg)then
+          call usrmsg(' updating model to add obstructions...',
+     &      ' ','-')
+          CALL EMKCFG('-',IER)
+          call usrmsg(' updating model to add obstructions...done.',
+     &      ' ','-')
+          MODIFY=.TRUE.
         endif
-      ENDIF
+      endif
 
-      if(modcfg)then
-        call usrmsg(' updating model to add obstructions...',
-     &      ' ','-')
-        CALL EMKCFG('-',IER)
-        call usrmsg(' updating model to add obstructions...done.',
-     &      ' ','-')
-        MODIFY=.TRUE.
-      ENDIF
 
 C Initial rotation values.
-      ANG=0.
+   90 ANG=0.
       x1=0.
       y1=0.
 
@@ -174,9 +211,15 @@ C If a long list include page facility text.
       VERT(M+7)  ='- exit this menu              '
 
 C If a modification has been done then update the obstruction
-C file so that changes can be drawn.  This is necessary because
-C obstructions are not true zones.
-      IF(MODIFY)CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+C file and/or the zone geometry file so that changes can be drawn.
+C This is necessary because obstructions are not true zones.
+      if(MODIFY)then
+        if(newgeo)then
+          call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        else
+          CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+        endif
+      endif
 
 C If editing the obstructions and user has asked for an update of the
 C image then use common block info for the zone as well as for the
@@ -403,16 +446,21 @@ C Build up text strings for the delete menu.
               IF(NB.LT.2)then
 
 C To delete the last obstruction, dereference the file and exit.
-                ZOBS(ICOMP)=' '
-                IOBS(ICOMP)=0
-                call usrmsg(
-     &            ' updating model to remove final obstruction...',
-     &            ' ','-')
-                CALL EMKCFG('-',IER)
-                call usrmsg(
+                if(newgeo)then
+                  IOBS(ICOMP)=0
+                  ZOBS(ICOMP)=' '
+                else
+                  ZOBS(ICOMP)=' '
+                  IOBS(ICOMP)=0
+                  call usrmsg(
+     &              ' updating model to remove final obstruction...',
+     &              ' ','-')
+                  CALL EMKCFG('-',IER)
+                  call usrmsg(
      &            ' updating model to remove final obstruction...done.',
      &            ' ','P')
-                return
+                  return
+                endif
               endif
               if(ID.eq.0)GOTO 92
               DO 791 IDV=ID,NB-1
@@ -445,7 +493,11 @@ C To delete the last obstruction, dereference the file and exit.
             BLKMAT(NB)='NONE'
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
-            CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+            if(newgeo)then
+              call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+            endif
             CALL ADJVIEW(ITRC,IER)
           ELSE
             CALL USRMSG(' ',' Too many obstructions defined!','W')
@@ -510,7 +562,11 @@ C Ask for transform distance for obstruction and then apply.
             BLKMAT(NB)=BLKMAT(IFOC)
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
-            CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+            if(newgeo)then
+              call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+            endif
             CALL ADJVIEW(ITRC,IER)
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
@@ -570,13 +626,21 @@ C Edit block identified by KEYIND.
 
 C ************* ECROBS 
 C ECROBS: Read in existing obstruction file or create a fresh one.
-C If silent is true then either create or deference silently.
+C If silent is true then either create or deference silently. If
+C the geometry file is version 1.1 or greater then it can hold
+C the block information.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -588,11 +652,13 @@ C If silent is true then either create or deference silently.
 
       CHARACTER H*72,BLKNAME*8,BLKMAT*12,LTMP*72,OFILE*72
       character zname*12,zdesc*64
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -600,6 +666,46 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(47)
       else
         fs = char(92)
+      endif
+
+C If newer geometry file it may include obstructions. Update the value
+C iobs() and set makedummy. If the value of iobs for this zone
+C is 1 then scan obstructions file and write to geometry file. If
+C the value of iobs is 2 then there are already obstructions in the
+C geometry file so just return. If the value of iobs for this zone
+C is 0 then set makedummy to true.
+      newgeo=.false.  ! assume older format geometry.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        CALL ERPFREE(IUF,ios)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
+        if(IOBS(ICOMP).EQ.2)then
+          if(NB.eq.0)then
+            makedummy=.true.
+            goto 42
+          else
+            return
+          endif
+        elseif(IOBS(ICOMP).EQ.1)then
+          call FINDFIL(ZOBS(ICOMP),XST)
+          if(XST)then
+            CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+            if(IER.eq.0)then
+              ZOBS(ICOMP)=' '
+              IOBS(ICOMP)=2
+              call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              return
+            else
+              IOBS(ICOMP)=2
+              makedummy=.true.
+              goto 42
+            endif
+          endif
+        elseif(IOBS(ICOMP).EQ.0)then
+          IOBS(ICOMP)=2
+          makedummy=.true.
+          goto 42
+        endif
       endif
 
 C Ask for the obstruction file, if it exists then read it in, if not
@@ -644,26 +750,38 @@ C existing file use it, otherwise add a dummy obstruction file silently.
             makedummy=.true.
           endif
         endif
+      endif
 
-        if(makedummy)then
+ 42   if(makedummy)then
 
 C If we need to make a dummy obstruction file do this.
-          NB=1
-          XO(1)=1.0
-          YO(1)=1.0
-          ZO(1)=0.0
-          DX(1)=1.0
-          DY(1)=1.0
-          DZ(1)=1.0
-          BANG(1)=0
-          BLKNAME(1)='First'
-          BLKMAT(1)='NONE'
-          NOX=20
-          NOZ=20
-          NGX=10
-          NGZ=10
+        NB=1
+        XO(1)=1.0
+        YO(1)=1.0
+        ZO(1)=0.0
+        DX(1)=1.0
+        DY(1)=1.0
+        DZ(1)=1.0
+        BANG(1)=0
+        BLKNAME(1)='First'
+        BLKMAT(1)='NONE'
+        NOX=20
+        NOZ=20
+        NGX=10
+        NGZ=10
+        if(newgeo)then
+          call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          if(IER.eq.0)then
+            return
+          else
+            call usrmsg('Unable to add obstructions to geometry',
+     &        'file. Skipping task.','W')
+            IOBS(ICOMP)=0
+            ier=1
+          endif
+        else
           CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
-          IF(IER.eq.0)then
+          if(IER.eq.0)then
             IOBS(ICOMP)=1
             return
           else
@@ -676,6 +794,13 @@ C If we need to make a dummy obstruction file do this.
         return
       endif
  
+C The next section has not been adapted for newgeo. Would one want
+C to browse for existing obstructions files if newgeo is true? If
+C browse were allowed for newgeo true then the data probably should
+C be included within the geometry file.
+
+C << decision required >>
+
       H(1)='In order to account for external shading devices,'
       H(2)='window reveals, trees, outside walls, etc. in a '
       H(3)='detailed shading analysis the user should'
@@ -772,6 +897,10 @@ C EDOBSB: Edit details of an obstruction block.
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
@@ -782,6 +911,8 @@ C EDOBSB: Edit details of an obstruction block.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -793,12 +924,21 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       DIMENSION VERT(19),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S8*8
       character BLKNAME*8,BLKMAT*12,HOLD*32,DESC*48,outs*124
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Initial values for point at angle facility.
       V1=1.0
       AZ=0.0
       EL=0.0
+
+      newgeo=.false.  ! assume older format geometry.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        CALL ERPFREE(IUF,ios)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
+      endif
 
 C Initial menu entry setup.
       iz=icomp
@@ -809,7 +949,13 @@ C Initial menu entry setup.
 C If a modification has been done then update the obstruction
 C file so that changes can be drawn.  This is necessary because
 C obstructions are not true zones.
-      if(MODIFY)CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      if(MODIFY)then
+        if(newgeo)then
+          call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        else
+          CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+        endif
+      endif
 
 C Extract coordinates for corners for the current block to 
 C display in the command menu.
@@ -995,7 +1141,8 @@ C Now display the menu.
           MODIFY=.TRUE.
         endif
         IF(IER.EQ.1)THEN
-          CALL USRMSG(' ',' A problem was encountered..','W')
+          CALL USRMSG(' ',
+     &    'A problem was encountered with the block construction','W')
         ENDIF
       ELSEIF(IVERT.EQ.18)THEN
         CALL PHELPD('obstr menu',18,'-',0,0,IER)
@@ -1028,9 +1175,15 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1039,7 +1192,9 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
 
       logical clx0,cly0,clx1,cly1,clxm1,clym1
       CHARACTER BLKNAME*8,BLKMAT*12,blkroot*6,mat*12,HOLDS*36,H*72
+      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if ok to add 4 obstructions.
       IUF=IPRODB
@@ -1048,6 +1203,9 @@ C Check if ok to add 4 obstructions.
      &    'in this zone. ','W')
         return
       endif
+
+      newgeo=.false.  ! assume older format geometry.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
 
 C Create working vertices of the selected surface.
 C Cases for 4 sided surfaces and user defined corners.
@@ -1194,7 +1352,11 @@ C Create the head obstruction.
       BANG(NB)=RO
       write(BLKNAME(NB),'(a,a1)')blkroot(1:lnblnk(blkroot)),'h'
       BLKMAT(NB)=mat
-      CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      if(newgeo)then
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+      else
+        CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      endif
 
 C Create the left side fin.
       NB=NB+1
@@ -1207,7 +1369,11 @@ C Create the left side fin.
       BANG(NB)=RO
       write(BLKNAME(NB),'(a,a1)')blkroot(1:lnblnk(blkroot)),'l'
       BLKMAT(NB)=mat
-      CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      if(newgeo)then
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+      else
+        CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      endif
 
 C Create the right side fin.
       NB=NB+1
@@ -1220,7 +1386,11 @@ C Create the right side fin.
       BANG(NB)=RO
       write(BLKNAME(NB),'(a,a1)')blkroot(1:lnblnk(blkroot)),'r'
       BLKMAT(NB)=mat
-      CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      if(newgeo)then
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+      else
+        CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      endif
 
   100 CONTINUE
 

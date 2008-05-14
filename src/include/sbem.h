@@ -41,7 +41,8 @@ C Integers
       COMMON/SBEM04/IBRUKH(MNS),IBRUKC(MNS),IBRUKW(MNS),IBRUKF(MNS),
      &IHGEF(MNS),ICGEF(MNS),IFTYP(MNS),IHLZ(MNS),IDHWS(MNS),IDHFL(MNS),
      &INCMSYS(MNS),IDHWLZ(MNS),IACTYTYP(MNS),ILITYP(MNS),
-     &ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,NDHWSYS
+     &ILIGHTUSER(MNS),ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,INOTI,
+     &NDHWSYS
 
 C Strings
       COMMON/SBEM05/DHWNAME(MNS),HVACNAME(MNS),LASBEM,SBREF,APCHK,
@@ -50,7 +51,7 @@ C Strings
 
 C Real numbers
       COMMON/SBEM06/ROOFFR,WALLFR,BINF50,HGEF(MNS),CGEF(MNS),SFPHS(MNS),
-     &HWEF(MNS)
+     &HWEF(MNS),ACH(MNS),LIGHTWATTAGE(MNS)
 
 C Activities global list
       INTEGER bld_order_index ! building order indices from the *bldg_type_start section of the file
@@ -93,7 +94,9 @@ C Project specific *.ncm file variables
                         ! -N if coupled with HVAC system number N
       INTEGER IACTYTYP  ! activity type index for each zone
       INTEGER ILITYP    ! lighting type index for each zone
-                        
+      INTEGER ILIGHTUSER ! flag for user defined lighting wattage
+      INTEGER INOTI     ! if set to 1 this is a notional model 
+                          
       CHARACTER*72 LASBEM   ! SBEM project specific file name (*.ncm)
       CHARACTER*3  SBREF    ! Scottish Accredited Construction Details followed (yes/no)
       CHARACTER*3  APCHK    ! Compliance of air permeabilty to be checked (yes/no)
@@ -121,6 +124,8 @@ C Project specific *.ncm file variables
       REAL CGEF     ! cool generatr efficiency/COP
       REAL SFPHS    ! Specific fan power SFP for ventilation W/l/s
       REAL HWEF     ! DHW generator efficiency
+      REAL ACH      ! Air changes per zone
+      REAL LIGHTWATTAGE ! Heat gains (Watts) per zone in the cases of user specifies them
 
 C SBEM database variables
       INTEGER IBTYP     ! this matches the index value in NCM guide table 4

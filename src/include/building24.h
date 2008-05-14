@@ -19,7 +19,7 @@ C Type declarations
       integer MEEZ,MXEE,MYEE,MECZ,MXEC,MYEC,MCVV,MNOD3,MCFF3,MNOD3T
       integer MGXYZ,MBTYP,MNM,MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID
       integer MMTR,MBND,MSNOD,MMAT,MIPVM,MIPVA,MSPS
-      integer MDTY,MGTY,MGPER
+      integer MDTY,MGTY,MGPER,MOL,MOCDT,MOCDP,MISCO
 
 C For the building:
       PARAMETER (MCOM=21)
@@ -62,10 +62,14 @@ C Casual gain control settings:
 C Zone control functions, day types, periods in day.
       PARAMETER (MCF=16,MBCDT=10,MBCDP=8)
 
-C MTMC is number of different glazing systems per zone, MGAL is number
-C of optical sets per optics db item and TMC and MANG is the number of
-C angles at which optical data is held.
-      PARAMETER (MTMC=5,MGAL=2,MANG=9)
+C Optical control functions, day types, periods in day, misc data items.
+      PARAMETER (MOL=8,MOCDT=8,MOCDP=6,MISCO=6)
+
+C MTMC is number of different glazing systems per zone, 
+C MGAL is number of optical sets per optics db item 
+C TMC and MANG is the number of angles at which optical data is held, 
+C MGOPT is the maximum size of optic sets in optics database.
+      PARAMETER (MTMC=5,MGAL=2,MANG=9,MGOPT=90)
 
 C MISC is the maximum number of miscellaneous data
 C items for control laws.

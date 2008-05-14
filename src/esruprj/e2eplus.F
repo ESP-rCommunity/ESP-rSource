@@ -324,6 +324,7 @@ C blocks, otherwise set to `MinimalShadowing`.
       havehc=.false.
       do 19 iz=1,ncomp
         if(IOBS(iz).eq.1) haveobs=.true.
+        if(IOBS(iz).eq.2) haveobs=.true.
         if(ISI(iz).eq.1) haveish=.true.
         if(IHC(iz).eq.1)havehc=.true.
   19  continue
@@ -2364,13 +2365,20 @@ C << a door in a wall or as a surface with two windows in it
           endif
   60    continue
 
-C Check if there are obstructions associated with this zone.
+C Check if there are obstructions associated with this zone. If
+C iobs() is 2 and newgeo true then blocks already scanned.
         IF(IOBS(mz).EQ.0)THEN
           continue
         ELSEIF(IOBS(mz).EQ.1)THEN
           IUF=IFIL+1
           CALL EGOMST(IUF,ZOBS(mz),0,0,iuout,IER)
           IF(IER.NE.0) goto 4
+        ELSEIF(IOBS(mz).EQ.2)THEN
+          if(.NOT.newgeo)then
+            call edisp(iuout,'Confused where obstructions are.')
+          endif
+        ENDIF
+        if(NB.gt.0)then
           DO 301 IB=1,NB
             CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &        BANG(IB))

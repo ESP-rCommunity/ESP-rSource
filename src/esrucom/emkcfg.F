@@ -700,6 +700,11 @@ C If SBEM compliance checking is active write name and path of SBEM db
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',DSBEM
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',LASBEM
       ENDIF
+      IF(INOTI.EQ.1)THEN
+        WRITE(OUTS,'(2A)')'*not # UK NCM notional model (10% thermal',
+     &  ' bridges included in all exterior surfaces)'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ENDIF
 
 C Write images if any.
       if(noimg.gt.0)then
