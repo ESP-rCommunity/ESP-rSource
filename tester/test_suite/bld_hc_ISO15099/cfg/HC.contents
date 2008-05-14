@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Test model for user-chosen internal convective
-heat transfer coeffs. defined in HC.cfg generated on Fri Apr 11 15:14:46 2008.
-Notes associated with the model are in HC.log
+This is a synopsis of the model Comparison model for hc ISO 15099 w/o .htc
+file (default hc-s) defined in HC_no-ISO.cfg generated on Wed May 14 14:00:23
+2008. Notes associated with the model are in HC.log
  
 The model is located at latitude   51.50 with a longitude difference of  -0.18
 from the local time meridian. The year used in simulations is 1991 and
@@ -25,16 +25,16 @@ Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate used is: LONDON CIBSE globhor and is held in:
-/home/Projects/Tests/DBS/CIBSE_London_glob and uses hour centred solar data.
+The climate used is: LONDON GATWICK IWEC WMO 037760 and is held in:
+/usr/esru/esp-r/climate/uk_gatwick and uses hour centred solar data.
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /home/Projects/Tests/DBS/Gartner.materialdb
- constructions          : /home/Projects/Tests/DBS/Gartner.constrdb
+ materials              : /usr/esru/esp-r/databases/constr.db1
+ constructions          : /usr/esru/esp-r/databases/multicon.db1
  plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db2
- optical properties     : /home/Projects/Tests/DBS/Gartner.opticdb
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
  
  ____________________________________________________________
  
@@ -126,12 +126,12 @@ ID Zone         Volume|          Surface
  
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  15.8    180.   0. iCW          ip6834 VERT 6834_U1.5    ||< iCW:TheChannel
+  1  15.8    180.   0. iCW          DCF767 VERT dbl_glz      ||< iCW:TheChannel
   2  21.0     90.   0. Wall-2       OPAQUE VERT mass_part    ||< identical environment
   3  15.8      0.   0. Wall-3       OPAQUE VERT mass_part    ||< identical environment
   4  21.0    270.   0. Wall-4       OPAQUE VERT mass_part    ||< identical environment
-  5  27.0      0.  90. hungCeil     OPAQUE CEIL ceil_white   ||< hungCeil:hungCeiling
-  6  27.0      0. -90. Base-6       OPAQUE FLOR susp_floor   ||< Ceil:hungCeiling
+  5  27.0      0.  90. hungCeil     OPAQUE CEIL susp_ceil    ||< hungCeil:hungCeiling
+  6  27.0      0. -90. Base-6       OPAQUE FLOR susp_flr_re  ||< Ceil:hungCeiling
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -157,12 +157,12 @@ no operations notes (yet)
  
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  3.15    180.   0. panelCW      OPAQUE VERT SinkPanel    ||< panelCW:TheChannel
-  2  4.20     90.   0. Wall-2       OPAQUE VERT partition    ||< identical environment
-  3  3.15      0.   0. Wall-3       OPAQUE VERT partition    ||< identical environment
-  4  4.20    270.   0. Wall-4       OPAQUE VERT partition    ||< identical environment
-  5  27.0      0.  90. Ceil         OPAQUE CEIL susp_flr_re  ||< Base-6:TheSpace
-  6  27.0      0. -90. hungCeil     OPAQUE FLOR ceil_white   ||< hungCeil:TheSpace
+  1  3.15    180.   0. panelCW      OPAQUE VERT dummy_pnls   ||< panelCW:TheChannel
+  2  4.20     90.   0. Wall-2       OPAQUE VERT mass_part    ||< identical environment
+  3  3.15      0.   0. Wall-3       OPAQUE VERT mass_part    ||< identical environment
+  4  4.20    270.   0. Wall-4       OPAQUE VERT mass_part    ||< identical environment
+  5  27.0      0.  90. Ceil         OPAQUE CEIL susp_floor   ||< Base-6:TheSpace
+  6  27.0      0. -90. hungCeil     OPAQUE FLOR susp_ceil    ||< hungCeil:TheSpace
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -182,19 +182,19 @@ no operations notes (yet)
  area of 50.5m^2 & approx floor area of 3.15m^2
  TheChannel describes a double facade cavity with air flow
  There is 19.125m2 of exposed surface area, 19.125m2 of which is vertical.
- Glazing is 607.14 % of floor & 100.00 % facade with avg U of 5.382 & UA of 102.94
+ Outside walls are 607.14 % of floor area & avg U of 0.000 & UA of 0.00
  
  A summary of the surfaces in TheChannel( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  19.1    180.   0. CurtGlass    clear1 VERT curt_glz12   ||< external
-  2  2.98     90.   0. Wall-2       OPAQUE VERT alu_frame    ||< identical environment
-  3  15.8      0.   0. iCW          ip6834 VERT 6834_U1.5_re ||< iCW:TheSpace
-  4  2.98    270.   0. Wall-4       OPAQUE VERT alu_frame    ||< identical environment
-  5  3.15      0.  90. Top-5        OPAQUE CEIL alu_frame    ||< Base-6:mixTop
-  6  3.15      0. -90. Base-6       OPAQUE FLOR alu_frame    ||< Top-5:mixBottom
-  7  3.38    360.   0. panelCW      OPAQUE VERT SinkPanel_i  ||< panelCW:hungCeiling
+  1  19.1    180.   0. CurtGlass    OPAQUE VERT d_glz        ||< external
+  2  2.98     90.   0. Wall-2       OPAQUE VERT door         ||< identical environment
+  3  15.8      0.   0. iCW          DCF767 VERT dbl_glz      ||< iCW:TheSpace
+  4  2.98    270.   0. Wall-4       OPAQUE VERT door         ||< identical environment
+  5  3.15      0.  90. Top-5        OPAQUE CEIL door         ||< Base-6:mixTop
+  6  3.15      0. -90. Base-6       OPAQUE FLOR door         ||< Top-5:mixBottom
+  7  3.38    360.   0. panelCW      OPAQUE VERT dummy_pnls   ||< panelCW:hungCeiling
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -202,21 +202,6 @@ no operations notes (yet)
  No insolation analysis requested.
  
  
- 
- Number of control periods:  1
- Number of surfaces = 7
- 
- Period  1 start   0.00 finish  24.00
- Adaptive (mixed) convection regime
- convec. vert channel Bar-Cohen from other zone
- Surface  Orientation ----- Inside -----     ----- Outside -----
- 1 CurtGlass    (VERT)   1.  17.  17.   0.     99.  99.  99.  99.
- 2 Wall-2       (VERT)   1.  17.  17.   0.     99.  99.  99.  99.
- 3 iCW          (VERT)   1.  17.  17.   0.     99.  99.  99.  99.
- 4 Wall-4       (VERT)   1.  17.  17.   0.     99.  99.  99.  99.
- 5 Top-5        (CEIL)   1.  -1.  -1.   0.     99.  99.  99.  99.
- 6 Base-6       (FLOR)   1.  -1.  -1.   0.     99.  99.  99.  99.
- 7 panelCW      (VERT)   1.  17.  17.   0.     99.  99.  99.  99.
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: TheChannel
  
@@ -235,12 +220,12 @@ no operations notes (yet)
  
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  0.675   180.   0. Wall-1       OPAQUE VERT alu_frame    ||< adiabatic
-  2  0.105    90.   0. Wall-2       OPAQUE VERT alu_frame    ||< adiabatic
-  3  0.675   360.   0. Wall-3       OPAQUE VERT alu_frame    ||< adiabatic
-  4  0.105   270.   0. Wall-4       OPAQUE VERT alu_frame    ||< adiabatic
-  5  3.15      0.  90. Top-5        OPAQUE CEIL alu_frame    ||< Base-6:TheChannel
-  6  3.15      0. -90. Base-6       OPAQUE FLOR alu_frame    ||< adiabatic
+  1  0.675   180.   0. Wall-1       OPAQUE VERT door         ||< adiabatic
+  2  0.105    90.   0. Wall-2       OPAQUE VERT door         ||< adiabatic
+  3  0.675   360.   0. Wall-3       OPAQUE VERT door         ||< adiabatic
+  4  0.105   270.   0. Wall-4       OPAQUE VERT door         ||< adiabatic
+  5  3.15      0.  90. Top-5        OPAQUE CEIL door         ||< Base-6:TheChannel
+  6  3.15      0. -90. Base-6       OPAQUE FLOR door         ||< adiabatic
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -264,12 +249,12 @@ no operations notes (yet)
  
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  0.675   180.   0. Wall-1       OPAQUE VERT alu_frame    ||< adiabatic
-  2  0.105    90.   0. Wall-2       OPAQUE VERT alu_frame    ||< adiabatic
-  3  0.675   360.   0. Wall-3       OPAQUE VERT alu_frame    ||< adiabatic
-  4  0.105   270.   0. Wall-4       OPAQUE VERT alu_frame    ||< adiabatic
-  5  3.15      0.  90. Top-5        OPAQUE CEIL alu_frame    ||< adiabatic
-  6  3.15      0. -90. Base-6       OPAQUE FLOR alu_frame    ||< Top-5:TheChannel
+  1  0.675   180.   0. Wall-1       OPAQUE VERT door         ||< adiabatic
+  2  0.105    90.   0. Wall-2       OPAQUE VERT door         ||< adiabatic
+  3  0.675   360.   0. Wall-3       OPAQUE VERT door         ||< adiabatic
+  4  0.105   270.   0. Wall-4       OPAQUE VERT door         ||< adiabatic
+  5  3.15      0.  90. Top-5        OPAQUE CEIL door         ||< adiabatic
+  6  3.15      0. -90. Base-6       OPAQUE FLOR door         ||< Top-5:TheChannel
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -279,34 +264,49 @@ no operations notes (yet)
  
  ____________________________________________________________
  
- Project floor area is 63.450m2, wall area is 0.00m2, window area is 19.125m2.
+ Project floor area is 63.450m2, wall area is 19.125m2, window area is 0.00m2.
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
  There is 19.125m2 of outside surface area, 19.125m2 of which is vertical.
  
- Glazing is 30.142 % of floor & 100.00 % facade with avg U of 5.382 & UA of 102.94
+ Outside walls are 30.142 % of floor area & avg U of 0.000 & UA of 0.00
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: partition
+ Details of opaque construction: door
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster
-    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 Block inner (3% mc)
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.302  1.355  1.238 (partition)  1.166
- Total area of partition is     11.55
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ Total area of door is     27.97
  
- Details of opaque construction: mass_part
+ Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   35  240.0     0.510  1400.  1000. 0.90 0.25    10.  0.47 Block white ptd inner (3% mc)
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.561  1.638  1.469 (partition)  1.369
- Total area of mass_part is     57.75
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of dbl_glz is     31.50
+ 
+ Details of opaque construction: susp_ceil
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster
+ ISO 6946 U values (horiz/upward/downward heat flow)=  4.976  5.850  4.150 (partition)  3.437
+ Total area of susp_ceil is     54.00
  
  Details of opaque construction: susp_floor
  
@@ -315,8 +315,8 @@ no operations notes (yet)
  Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
     2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   32  140.0     1.400  2100.   653. 0.90 0.45    19.  0.10 Heavy mix concrete
- Int    42    4.0    50.000  7800.   502. 0.90 0.20 19200.  0.00 Steel
+    4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete
+ Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_floor is     27.00
  
@@ -324,105 +324,28 @@ no operations notes (yet)
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    4.0    50.000  7800.   502. 0.90 0.20 19200.  0.00 Steel
-    2   32  140.0     1.400  2100.   653. 0.90 0.45    19.  0.10 Heavy mix concrete
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_flr_re is     27.00
  
- Details of opaque construction: alu_frame
- 
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    46    5.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium
-    2    0   15.0     0.000     0.     0. 0.99 0.99     1.  0.61 air  0.61 0.56 0.61
- Int    46    5.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.290  1.342  1.227 (partition)  1.156
- Total area of alu_frame is     27.97
- 
- Details of transparent construction: curt_glz12   with clear12gvb   optics.
- 
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  242   12.0     0.760  2710.   837. 0.83 0.05 19200.  0.02 Plate glass
- ISO 6946 U values (horiz/upward/downward heat flow)=  5.382  6.419  4.429 (partition)  3.626
- 
- Planibel 12 mm / IGDB 4206: with id of: clear12gvb
- with 1 layers [including air gaps] and visible trn: 0.86
- Direct transmission @ 0, 40, 55, 70, 80 deg
-   0.705 0.680 0.634 0.513 0.304
- Layer| absorption @ 0, 40, 55, 70, 80 deg
-    1  0.230 0.248 0.260 0.261 0.230
- Total area of curt_glz12 is     19.12
- 
- Details of opaque construction: ceil_white
- 
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  143   20.0     2.000  2700.   753. 0.95 0.85    48.  0.01 Slate
- ISO 6946 U values (horiz/upward/downward heat flow)=  5.556  6.667  4.545 (partition)  3.704
- Total area of ceil_white is     54.00
- 
- Details of opaque construction: SinkPanel
+ Details of opaque construction: dummy_pnls
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
-    2  143   16.0     2.000  2700.   753. 0.95 0.85    48.  0.01 Slate
-    3  283   14.0     0.082     1.   300. 0.90 0.01     1.  0.17 air layer 14mm
-    4  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 Mineral fibre
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt
  Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.351  0.355  0.346 (partition)  0.340
- Total area of SinkPanel is      3.15
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ Total area of dummy_pnls is      6.53
  
- Details of opaque construction: SinkPanel_i
- 
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
-    2  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 Mineral fibre
-    3  283   14.0     0.082     1.   300. 0.90 0.01     1.  0.17 air layer 14mm
-    4  143   16.0     2.000  2700.   753. 0.95 0.85    48.  0.01 Slate
- Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.351  0.355  0.346 (partition)  0.340
- Total area of SinkPanel_i is      3.38
- 
- Details of transparent construction: 6834_U1.5    with ip6834_06nbb optics.
+ Details of opaque construction: mass_part
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   247    6.0     1.000  2500.   750. 0.84 0.30 19200.  0.01 ip6834ne
-    2    0   16.0     0.000     0.     0. 0.99 0.99     1.  0.48 air  0.48 0.36 0.48
- Int   243    6.0     1.050  2500.   750. 0.84 0.05 19200.  0.01 4mm clear float
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.520  1.593  1.433 (partition)  1.337
- 
- 6_16_6 ipasol low_e(2_5) + Air: with id of: ip6834_06nbb
- with 3 layers [including air gaps] and visible trn: 0.66
- Direct transmission @ 0, 40, 55, 70, 80 deg
-   0.295 0.279 0.247 0.167 0.077
- Layer| absorption @ 0, 40, 55, 70, 80 deg
-    1  0.304 0.316 0.320 0.322 0.257
-    2  0.001 0.001 0.001 0.001 0.001
-    3  0.027 0.029 0.029 0.025 0.018
- Total area of 6834_U1.5 is     15.75
- 
- Details of transparent construction: 6834_U1.5_re with ip6834_06nbb optics.
- 
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   243    6.0     1.050  2500.   750. 0.84 0.05 19200.  0.01 4mm clear float
-    2    0   16.0     0.000     0.     0. 0.99 0.99     1.  0.48 air  0.48 0.36 0.48
- Int   247    6.0     1.000  2500.   750. 0.84 0.30 19200.  0.01 ip6834ne
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.520  1.593  1.433 (partition)  1.337
- 
- 6_16_6 ipasol low_e(2_5) + Air: with id of: ip6834_06nbb
- with 3 layers [including air gaps] and visible trn: 0.66
- Direct transmission @ 0, 40, 55, 70, 80 deg
-   0.295 0.279 0.247 0.167 0.077
- Layer| absorption @ 0, 40, 55, 70, 80 deg
-    1  0.304 0.316 0.320 0.322 0.257
-    2  0.001 0.001 0.001 0.001 0.001
-    3  0.027 0.029 0.029 0.025 0.018
- Total area of 6834_U1.5_re is     15.75
+    1   28  240.0     0.510  1400.  1000. 0.90 0.65    10.  0.47 Block inner (3% mc)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.561  1.638  1.469 (partition)  1.369
+ Total area of mass_part is     69.30

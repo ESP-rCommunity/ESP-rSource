@@ -4,7 +4,7 @@ ISO 15099 covers the calculation of the thermal performance of multi layered tra
 
 Among other algorithms, this standard gives one for the calculation of the convective heat transfer in vertical ventilated channels. This algorithm combines buoyant and "forced" components.
 
-By defining a heat transfer coefficients file in ESP-r - typically a file with ending .htc - one can invoke this algorithm in ESP-r.
+By defining a heat transfer coefficients file in ESP-r - typically a file with ending .htc - one can invoke this algorithm in ESP-r. As it is necessary to define from which air flow network zone the air enters the zone under consideration and this asignment is fixed, one should define three intervals in the .htc file as given in the example. The "from zone" is then typically correct, if it is below the zone under consideration.
 
 This exemplar uses the feature described. The eqns. used are taken from version 2003, sec. 5.3 and eqn. 111.
 Relevant parameters are CWIDTH - the Channel width and CHEIGHT - the channel height. Hereby,
