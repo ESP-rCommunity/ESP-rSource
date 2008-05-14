@@ -25,11 +25,11 @@ GEN  hungCeiling  hungCeiling describes the void of the hung ceiling  # type, na
 # surface attributes follow: 
 # id  surface      geom  loc/  construction environment
 # no  name         type  posn  name         other side
-  1, panelCW       OPAQ  VERT  SinkPanel    ANOTHER        
-  2, Wall-2        OPAQ  VERT  partition    SIMILAR        
-  3, Wall-3        OPAQ  VERT  partition    SIMILAR        
-  4, Wall-4        OPAQ  VERT  partition    SIMILAR        
-  5, Ceil          OPAQ  CEIL  susp_flr_re  ANOTHER        
-  6, hungCeil      OPAQ  FLOR  ceil_white   ANOTHER        
+  1, panelCW       OPAQ  VERT  dummy_pnls   ANOTHER        
+  2, Wall-2        OPAQ  VERT  mass_part    SIMILAR        
+  3, Wall-3        OPAQ  VERT  mass_part    SIMILAR        
+  4, Wall-4        OPAQ  VERT  mass_part    SIMILAR        
+  5, Ceil          OPAQ  CEIL  susp_floor   ANOTHER        
+  6, hungCeil      OPAQ  FLOR  susp_ceil    ANOTHER        
 # base
   6  0  0  0  0  0    27.00 0

@@ -25,11 +25,11 @@ GEN  mixBottom  mixBottom describes the "mixing box" at inlet  # type, name, des
 # surface attributes follow: 
 # id  surface      geom  loc/  construction environment
 # no  name         type  posn  name         other side
-  1, Wall-1        OPAQ  VERT  alu_frame    ADIABATIC      
-  2, Wall-2        OPAQ  VERT  alu_frame    ADIABATIC      
-  3, Wall-3        OPAQ  VERT  alu_frame    ADIABATIC      
-  4, Wall-4        OPAQ  VERT  alu_frame    ADIABATIC      
-  5, Top-5         OPAQ  CEIL  alu_frame    ANOTHER        
-  6, Base-6        OPAQ  FLOR  alu_frame    ADIABATIC      
+  1, Wall-1        OPAQ  VERT  door         ADIABATIC      
+  2, Wall-2        OPAQ  VERT  door         ADIABATIC      
+  3, Wall-3        OPAQ  VERT  door         ADIABATIC      
+  4, Wall-4        OPAQ  VERT  door         ADIABATIC      
+  5, Top-5         OPAQ  CEIL  door         ANOTHER        
+  6, Base-6        OPAQ  FLOR  door         ADIABATIC      
 # base
   6  0  0  0  0  0     3.15 0

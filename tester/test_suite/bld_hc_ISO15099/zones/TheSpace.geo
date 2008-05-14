@@ -25,11 +25,11 @@ GEN  TheSpace  TheSpace describes a dummy office space behind a double facade  #
 # surface attributes follow: 
 # id  surface      geom  loc/  construction environment
 # no  name         type  posn  name         other side
-  1, iCW           TRAN  VERT  6834_U1.5    ANOTHER        
+  1, iCW           TRAN  VERT  dbl_glz      ANOTHER        
   2, Wall-2        OPAQ  VERT  mass_part    SIMILAR        
   3, Wall-3        OPAQ  VERT  mass_part    SIMILAR        
   4, Wall-4        OPAQ  VERT  mass_part    SIMILAR        
-  5, hungCeil      OPAQ  CEIL  ceil_white   ANOTHER        
-  6, Base-6        OPAQ  FLOR  susp_floor   ANOTHER        
+  5, hungCeil      OPAQ  CEIL  susp_ceil    ANOTHER        
+  6, Base-6        OPAQ  FLOR  susp_flr_re  ANOTHER        
 # base
   6  0  0  0  0  0    27.00 0

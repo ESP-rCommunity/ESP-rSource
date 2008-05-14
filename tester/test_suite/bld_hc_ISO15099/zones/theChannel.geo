@@ -28,12 +28,12 @@ GEN  TheChannel  TheChannel describes a double facade cavity with air flow  # ty
 # surface attributes follow: 
 # id  surface      geom  loc/  construction environment
 # no  name         type  posn  name         other side
-  1, CurtGlass     TRAN  VERT  curt_glz12   EXTERIOR       
-  2, Wall-2        OPAQ  VERT  alu_frame    SIMILAR        
-  3, iCW           TRAN  VERT  6834_U1.5_re ANOTHER        
-  4, Wall-4        OPAQ  VERT  alu_frame    SIMILAR        
-  5, Top-5         OPAQ  CEIL  alu_frame    ANOTHER        
-  6, Base-6        OPAQ  FLOR  alu_frame    ANOTHER        
-  7, panelCW       OPAQ  VERT  SinkPanel_i  ANOTHER        
+  1, CurtGlass     TRAN  VERT  d_glz        EXTERIOR       
+  2, Wall-2        OPAQ  VERT  door         SIMILAR        
+  3, iCW           TRAN  VERT  dbl_glz      ANOTHER        
+  4, Wall-4        OPAQ  VERT  door         SIMILAR        
+  5, Top-5         OPAQ  CEIL  door         ANOTHER        
+  6, Base-6        OPAQ  FLOR  door         ANOTHER        
+  7, panelCW       OPAQ  VERT  dummy_pnls   ANOTHER        
 # base
   6  0  0  0  0  0     3.15 0
