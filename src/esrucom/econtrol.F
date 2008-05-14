@@ -323,7 +323,7 @@ C Error subroutine and error details for dll mode.
       character ZNAME*12,zdesc*64
       character dllsubr*12,dllmesg*124,outs*124,t40*40
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,LOUTSTR*248
+      character glctldoc*248,opticdoc*248,LOUTSTR*248
       logical close,pbyfil,bfngn,pcfngn,global,glbrwd,dll
 
       logical first_run_done
