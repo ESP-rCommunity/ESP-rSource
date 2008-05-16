@@ -426,7 +426,7 @@ $gTest_paths{'results'}      = "./results_output";       # path to results folde
 $gTest_paths{'test_suite'}   = "../test_suite/";         # path to test suite
 $gTest_paths{'single_case'}  = "";                       # Path to an individual test case
 $gTest_paths{'esp-r'}        = "/usr/esru/esp-r/bin";    # path to standard esp-r
-$gTest_paths{'helper_apps'}  = ".;../../validation/QA/benchmark_model/cfg";
+$gTest_paths{'helper_apps'}  = ".;../../src/validation/QA/benchmark_model/cfg";
                                                          # paths in which to find helper apps
                                                          #   helper scripts.
 $gTest_paths{'default_dbs'}  = "/usr/esru/esp-r";
