@@ -9,36 +9,38 @@ a users computer with minimal interaction.
 First compile a standard version of esp-r (X11 version) in the standard location
 which on OSX should be /opt/esru.
 
+  ./Install -d /opt/esru --compiler_version -3.3
+
 Second go to /opt/esru and clean up the subversion information in
 the installed files via the follwing command:
   find . -name .svn -print >which_svn
   rm -rf `cat which_svn`
 
-Then create a tar file of the bin docs esp-r lib and tutorial
-folders (the example below includes a date string in the name of the tar file.
-
 Create a folder /opt/precompiled_for_osx
 
-sudo tar cf esp-r_X11_11.4_osx.tar bin esp-r lib tutorial
+Then create a tar file of the esp-r folders (the example below 
+includes a date string in the name of the tar file.
+
+sudo tar cf esp-r_X11_11.5_osx.tar esp-r
 
 gzip -9 that tar file and move it into /opt/precompiled_for_osx.
-  
-Clear the standard source location:
- make clean
 
-and compile a new GTK version of esp-r.
-  ./Install --debug -d /opt/esru
+A similar process is taken for the GTK version.  
 
-Clean up the .svn in the installed location.
+Either removed the /opt/esru/esp-r folder or at least
+remove the executables from the /opt/esru/esp-r/bin folder.
 
-Clean up the compiled distribution via the following commands:
- cd /opt/esru
- find . -name .svn -print >which_svn
- rm -rf `cat which_svn`
+Clear the source (via a make clean) and compile a new GTK 
+version of esp-r.
+  ./Install -d /opt/esru --compiler_version -3.3
+ 
+Again remove the subversion files from the /opt/esru folders.
 
-Make a tar file and gzip it and place it in the 
-precompiled_for_osx folder and edit the setup script to
-include the specific name of the files that have been giziped.
+Create the tar file of the distribution and gzip it and
+place it in the precompiled_for_osx folder. 
+
+Edit the setup script to include the specific names of the 
+tar files that have been giziped.
 
 In folder /opt/precompiled_for_osx along with the gziped tar files
 there are several other files as follows:
@@ -54,7 +56,7 @@ files are helper applications that setup_osx is going to copy.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-sudo /users/jon/bin/makeself-2.1.4/makeself.sh precompiled_for_osx esp-r_v11.4_osx_precomp.run "ESP-r V11.4 distribution for OSX (/opt/esru)" ./setup_osx
+sudo /users/jon/bin/makeself-2.1.4/makeself.sh precompiled_for_osx esp-r_v11.5_osx_precomp.run "ESP-r V11.5 distribution for OSX (/opt/esru)" ./setup_osx
 
 The items are as follows makeself.sh is a general script that creates installers. makeself-2.1.4 can
 be downloded from the web and it will create its own executables.  The command includes the full
