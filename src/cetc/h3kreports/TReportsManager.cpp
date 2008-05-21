@@ -1001,19 +1001,24 @@ bool TReportsManager::OutputCSVData( const std::string& outFilePath )
       // Add spaces to make header more "speadsheet friendly"
       temp_text = trim(pos->first);
       while ( temp_text.find("/") != string::npos ){
-         temp_text.replace( temp_text.find("/"), 1, " : ");
+         temp_text.replace( temp_text.find("/"), 1, ":");
       }
       while ( temp_text.find("_") != string::npos ){
          temp_text.replace( temp_text.find("_"), 1, " ");
       }
 
-
       csvFile << temp_text;  //pos->first;
+
+// write out unit
+      csvFile << " ";
+      csvFile << pos->second.RetrieveMeta("units");
+
       csvFile << ", ";
     }
   }
   csvFile << "\n";
 
+/*
   // write out units
   for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
     if( SearchVars(m_step_nodes,
@@ -1025,6 +1030,7 @@ bool TReportsManager::OutputCSVData( const std::string& outFilePath )
     }
   }
   csvFile << "\n";
+*/
 
   // loop through all timesteps
   for (curr_step = step_start; curr_step <  m_step_count ; curr_step++){

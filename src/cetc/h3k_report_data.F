@@ -570,10 +570,26 @@ C.....Zone averaging
       common/avrage/idaver      ! Flag for timestep averaging
       integer idaver
 
+C.....Sky temperature and cloud cover
+      COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
+     &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
+     &TBSUTH,TBEAST,TBWEST
+
+      REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC
+      REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
+      REAL TBSUTH,TBEAST,TBWEST
+
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*12  H3K_format
+      
       INTEGER LNBLNK
+
+C----------------------------------------------------------------------     
+C     References
+C----------------------------------------------------------------------
+      REAL HUMR      ! Function returning the humidity ratio
+      REAL DEWPT    ! Function returning the saturation temperature
 
 C.....The following code is used to transport data to
 C.....the H3K reporting object.
@@ -586,8 +602,8 @@ C.....-> set name
 
       call add_to_xml_reporting (
      &         QFF,
-     &         'climate/solar/Diffuse_horizontal_radiation',
-     &         'units', '(W)',
+     &         'climate/solar/diffuse_horizontal_radiation',
+     &         'units', '(W/m2)',
      &         'Climate diffuse horizontal solar radiation' )
 
 
@@ -598,8 +614,8 @@ C.....-> set name
       call add_to_xml_reporting (
      &         QDF,
      &         H3K_rep_NAME,
-     &         'units', '(W)',
-     &         'Climate diffuse horizontal solar radiation' )
+     &         'units', '(W/m2)',
+     &         'Climate direct normal solar radiation' )
 
 C.....AMBIENT TEMPERATURE
 C.....-> set name
@@ -641,6 +657,47 @@ C.....-> set name
      &         H3K_rep_NAME,
      &         'units', '(degrees)',
      &         'Climate wind direction' )
+
+C.....Cloud Cover
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/cloud_cover'
+      call add_to_xml_reporting (
+     &         CLOUDC,
+     &         H3K_rep_NAME,
+     &         'units', '(fraction)',
+     &         'Climate cloud cover' )
+
+C.....Sky temperature
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/sky_temperature'
+      call add_to_xml_reporting (
+     &         (TSKY-273.15),
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Climate sky temperature' )
+
+C.....Sky temperature depression
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/sky_temperature_depression'
+      call add_to_xml_reporting (
+     &         (TF-(TSKY-273.15)),
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Climate sky temperature depression' )
+
+C.....Ambient air saturation temperature
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/ambient_air_tsat'
+      call add_to_xml_reporting (
+     &         DEWPT(HUMR(TF,HF,1013.),1013.),
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'ambient air saturation temperature' )
+
 
       RETURN
       END
