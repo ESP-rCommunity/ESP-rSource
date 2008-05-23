@@ -685,7 +685,7 @@ C.....-> set name
       call add_to_xml_reporting (
      &         (TF-(TSKY-273.15)),
      &         H3K_rep_NAME,
-     &         'units', '(oC)',
+     &         'units', '(K)',
      &         'Climate sky temperature depression' )
 
 C.....Ambient air saturation temperature

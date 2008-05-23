@@ -308,8 +308,8 @@ C used.
       
 c This common block is used to define the sky temperature calculation method
       COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = Martin & Berdahl (1984);
-                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
+      integer iExt_longwave_flg    ! 0 = 1 = Martin & Berdahl (1984);
+                                   ! NOT AVAILABLE: Clarke ($7.5.4 JC book, 2nd edition, 2001);
                                    ! 2 = Cole (?);
                                    ! 3 = Czeplak & Kasten (1987);               
                                    ! 4 = Swinbank (clear - uses dry bulb T);                  
@@ -564,7 +564,7 @@ C For zero RF set dew point temperature to 293.
       ENDIF
 
 C Here provide the different sky temperature options
-      IF(iExt_longwave_flg.EQ.0)THEN
+      IF((iExt_longwave_flg.EQ.0).or.(iExt_longwave_flg.EQ.1))THEN
 
 C Use default Martin & Berdahl calculation
 C Clear sky condition:
@@ -582,18 +582,18 @@ C Radiation from the atmosphere:
 
 C Assume the atmosphere is a black body emitter:
         TSKY=(RSKY/SBC)**0.25
-      ELSEIF(iExt_longwave_flg.EQ.1)THEN
+CC      ELSEIF(iExt_longwave_flg.EQ.1)THEN
 
 C Use Clarke's calculation
 C Clear sky temperature as in bld #5.4 (after Swinbank).
-        TCSKY=0.05532*((TWBF+ZEROK)**1.5)
+C        TCSKY=0.05532*((TWBF+ZEROK)**1.5)
 
 C Cloudy sky temperature as JC Book.
-        TSKYJC=((1.0-CLOUDC)*TCSKY**4+CLOUDC*(1.0-0.84*CLOUDC)*(0.527+
-     &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
-     &  (TWBF+ZEROK)**4)**0.25
-         TJC=TSKYJC-ZEROK 
-         TSKY=TSKYJC   
+C        TSKYJC=((1.0-CLOUDC)*TCSKY**4+CLOUDC*(1.0-0.84*CLOUDC)*(0.527+
+C     &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
+C     &  (TWBF+ZEROK)**4)**0.25
+c         TJC=TSKYJC-ZEROK 
+C         TSKY=TSKYJC   
       ELSEIF(iExt_longwave_flg.EQ.2)THEN
 
 C Use Cole's calculation
