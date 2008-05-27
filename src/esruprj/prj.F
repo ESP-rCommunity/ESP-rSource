@@ -3702,7 +3702,6 @@ C Setup help text for the popup.
           h(9)='a model. '
           h(10)='Images of type GIF and XBM and ?? are supported.'
           CALL PHELPW(10,IHW,IER)
-          call dupphelp(10)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.

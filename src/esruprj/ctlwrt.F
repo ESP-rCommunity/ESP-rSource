@@ -65,7 +65,7 @@ C an ascii file.
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,ctldoc*248
       character DS*7,DS1*10,DE*7,DE1*10,SSTR*72,SSTR1*72,SSTR2*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248
+      character glctldoc*248,opticdoc*248
       logical Vldtng
 
       IER=0
