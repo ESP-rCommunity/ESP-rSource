@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 #====================================================================
 #====================================================================
 #====================================================================
@@ -1308,7 +1308,9 @@ if ( ! $gTest_params{"compare_two_archives"} ){
 # Create test report. 
 #-----------------------------------------------------------------------
 if ( $gTest_params{"create_report"} &&
-     ( $gTest_params{"compare_versions"} || $gTest_params{"compare_to_archive"} ) ){
+     ( $gTest_params{"compare_versions"}    ||
+       $gTest_params{"compare_to_archive"}  ||
+       $gTest_params{"compare_two_archives"}   ) ){
   create_report();
 }
 
