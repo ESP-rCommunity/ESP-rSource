@@ -45,6 +45,10 @@ C
 #include "building.h"
 #include "net_flow.h"
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
@@ -63,10 +67,10 @@ C Zone moisture balance information.
       COMMON/MBINFO/ZMBI(MCOM,4)
       COMMON/ZCVNT/ZCVENT(MCOM)
 C Hourly ventilation conductances and temperature of incoming air.
-      COMMON/PREC5/
-     &       CVI1(MCOM,MT),CVV1(MCOM,MT),ICC1(MCOM,MT),TIA1(MCOM,MT),
-     &       CVI2(MCOM,MT),CVV2(MCOM,MT),ICC2(MCOM,MT),TIA2(MCOM,MT),
-     &       CVI3(MCOM,MT),CVV3(MCOM,MT),ICC3(MCOM,MT),TIA3(MCOM,MT)
+      COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
+     &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
+      INTEGER ICCN
+      REAL CVIN,CVVN,TIAN
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -86,6 +90,8 @@ C Hourly ventilation conductances and temperature of incoming air.
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       DOUBLE PRECISION PCOF(MNOD,MNOD),TNDL(MNOD),TRHS(MNOD),
      &                                 XNOD(MNOD),XRHS(MNOD)
+      REAL CVI,CVV,CVVM
+      INTEGER IDAY,IDTY
 
 C Initialise AMFR to zero.
       DO 12 JNOD=1,NNOD
@@ -233,17 +239,17 @@ C Start calculating infiltration and ventilation conductances
 C depending on defined fluid flow network and (local) air
 C temperatures.
       DO 49 ICOMP=1,NCOMP
-      IF(ICAAS(ICOMP).NE.0) THEN
-        JNOD=ICAAS(ICOMP)
-      ELSE
-        GOTO 49
-      END IF
+        IF(ICAAS(ICOMP).NE.0) THEN
+          JNOD=ICAAS(ICOMP)
+        ELSE
+          GOTO 49
+        END IF
 
 C For the time being, assume air specific heat to be constant.
-      CP=1006.0
+        CP=1006.0
 
 C Zone infiltration conductance.
-      CVI=AMFR(JNOD,JNOD)*CP
+        CVI=AMFR(JNOD,JNOD)*CP
 
 C Sum zone coupling ventilation conductances.
 C Normalise ventilation conductance to external
@@ -253,45 +259,44 @@ C infiltration.  Also, when temperature of
 C sending node equals outside air then assume
 C this is also infiltration air (ie. adjust
 C infiltration load).
-      CVV=0.0
-      CVVM=0.0
-      DO 40 INOD=1,NNOD
-        call eclose(AMFR(INOD,JNOD),0.00,0.001,close)
-        IF(INOD.EQ.JNOD.OR.close) GOTO 40
-          CVV=CVV+AMFR(INOD,JNOD)*CP
-          IF(ABS(TF).GT.DBLE(SMALL)) THEN
-            CVVM=CVVM+AMFR(INOD,JNOD)*CP*REAL(TNDL(INOD))/TF
-          ELSE
-            CVVM=CVVM+AMFR(INOD,JNOD)*CP*REAL(TNDL(INOD))
-          END IF
-   40 CONTINUE
+        CVV=0.0
+        CVVM=0.0
+        DO 40 INOD=1,NNOD
+          call eclose(AMFR(INOD,JNOD),0.00,0.001,close)
+          IF(INOD.EQ.JNOD.OR.close) GOTO 40
+            CVV=CVV+AMFR(INOD,JNOD)*CP
+            IF(ABS(TF).GT.DBLE(SMALL)) THEN
+              CVVM=CVVM+AMFR(INOD,JNOD)*CP*REAL(TNDL(INOD))/TF
+            ELSE
+              CVVM=CVVM+AMFR(INOD,JNOD)*CP*REAL(TNDL(INOD))
+            ENDIF
+   40   CONTINUE
 
 C Now overwrite appropriate COMMON block PREC5 variable
 C Jump depending on day of week.
-      IF(IHRF.EQ.1) GOTO 42
-      GOTO (44,44,44,44,44,45,46) IDWP
-   42 GOTO (44,44,44,44,44,45,46) IDWF
+        IDAY=IDYP
+        IF(IHRF.EQ.1)IDAY=IDYP+1
+        IF(IDAY.GT.365)IDAY=IDAY-365
+        IDTY=ICALENDER(IDAY)
+        IF(CALENAME(1:7).EQ.'UNKNOWN')THEN
 
-C Weekday.
-   44 CVI1(ICOMP,IHRF)=CVI
-      CVV1(ICOMP,IHRF)=CVV
-      ICC1(ICOMP,IHRF)=0
-      TIA1(ICOMP,IHRF)=CVVM
-      GOTO 49
-
-C Saturday.
-   45 CVI2(ICOMP,IHRF)=CVI
-      CVV2(ICOMP,IHRF)=CVV
-      ICC2(ICOMP,IHRF)=0
-      TIA2(ICOMP,IHRF)=CVVM
-      GOTO 49
-
-C Sunday.
-   46 CVI3(ICOMP,IHRF)=CVI
-      CVV3(ICOMP,IHRF)=CVV
-      ICC3(ICOMP,IHRF)=0
-      TIA3(ICOMP,IHRF)=CVVM
-   49 CONTINUE
+C Day types are legacy (weekday/saturday/sunday)
+          IF(IHRF.EQ.1) GOTO 42
+          GOTO (44,44,44,44,44,45,46) IDWP
+   42     GOTO (44,44,44,44,44,45,46) IDWF
+   44     IDTY=1
+          GOTO 409
+   45     IDTY=2
+          GOTO 409
+   46     IDTY=3
+        ENDIF
+ 
+C Now overwrite appropriate COMMON block PREC5 variable
+ 409    CVIN(IDTY,ICOMP,IHRF)=CVI
+        CVVN(IDTY,ICOMP,IHRF)=CVV
+        ICCN(IDTY,ICOMP,IHRF)=0
+        TIAN(IDTY,ICOMP,IHRF)=CVVM
+ 49   CONTINUE
 
 C Now, zone by zone, check if there is a corresponding mass flow node
 C and if so fill the zone moisture balance array.

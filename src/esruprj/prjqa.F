@@ -2239,7 +2239,7 @@ C If older format ip3ver=0 then force it to write to the
 C current format.
               if(ip3ver.eq.0)then
                 MODOPR=.true.
-                ip3ver=1
+                ip3ver=3
               endif
 
 C Save the file, sorting the periods if necessary.

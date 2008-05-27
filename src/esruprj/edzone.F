@@ -954,10 +954,12 @@ C espriou.h provides currentfile.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
@@ -1303,38 +1305,18 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Weekday air flows.
-        if(NAC1.gt.0)then
-          DO 10 I=1,NAC1
-            if(IPT1(I).eq.IW2)then
-              modopr=.true.
-              IPT1(I)=0
-              ACV1(I)=0.0
-            endif
-10        continue
-        endif
-
-C Saturday air flows.
-        if(NAC2.gt.0)then
-          DO 11 I=1,NAC2
-            if(IPT2(I).eq.IW2)then
-              modopr=.true.
-              IPT2(I)=0
-              ACV2(I)=0.0
-            endif
-11        continue
-        endif
-
-C Sunday air flows.
-        if(NAC3.gt.0)then
-          DO 12 I=1,NAC3
-            if(IPT3(I).eq.IW2)then
-              modopr=.true.
-              IPT3(I)=0
-              ACV3(I)=0.0
-            endif
-12        continue
-        endif
+C Air flows
+        DO 400 IDTY=1,NBDAYTYPE
+          IF(NAC(IDTY).GT.0)THEN
+            DO 10 I=1,NAC(IDTY)
+              IF(IPT(IDTY,I).EQ.IW2)THEN
+                MODOPR=.TRUE.
+                IPT(IDTY,I)=0
+                ACV(IDTY,I)=0.0
+              ENDIF
+ 10         CONTINUE
+          ENDIF
+ 400    CONTINUE
 
 C Update operations file if any changes.
         if(modopr)then
@@ -2273,6 +2255,8 @@ C IER=0 OK.
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 C#include "esprdbfile.h"
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       character CTYPE*4
@@ -2314,15 +2298,17 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character dinstpath*48
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
       common/p3ver/ip3ver
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
       COMMON/P1/oprdesc,ctlstr
       CHARACTER oprdesc*248,ctlstr*24
 
@@ -2891,12 +2877,10 @@ C Debug.
 C        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
 
 C Clear commons.
-        NAC1=0
-        NAC2=0
-        NAC3=0
-        NCAS1=0
-        NCAS2=0
-        NCAS3=0
+        DO 401 IDTY=1,NBDAYTYPE
+          NAC(IDTY)=0
+          NCAS(IDTY)=0
+ 401    CONTINUE
         ctlstr='no control of air flow  '
         oprdesc='no operations notes (yet)'
         lodlabel(icomp,1)='Occupt'
@@ -2909,7 +2893,7 @@ C Clear commons.
 
 C Fill common blocks for new zone based on information in the
 C pattern file.
-        ip3ver=1
+        ip3ver=3
         afact = use(2)
         iflow='ach-ach '
         vflow='ach-ach '
