@@ -113,7 +113,7 @@ my %gRun_Times;            # Run times for simulation
 my $gAll_tests_pass = 1;   # Flag indicating result of all tests.
                            #   (defaulted to 'pass', set to 'fail'
                            #    on first failure).
-
+my @gReportUnitComp;
                                                       
 my $gProcessed_Archive_count=0; # number of archives processed.
                                                       
@@ -541,6 +541,12 @@ $gTolerance{"kW"}              = $gTolerance{"W"}    / 1.0E03;
 $gTolerance{"g/s"}             = $gTolerance{"kg/s"} * 1.0E03;
 $gTolerance{"dimensionless"}   = $gTolerance{"%"};
 $gTolerance{"relative"}        = $gTolerance{"%"};
+
+
+# Array containing list of units for which comparisons should
+# be reported - subset of gTolerance
+
+@gReportUnitComp =( "W", "oC", "GJ", "V", "A", "m/s", "kg/s" );
 
 #-------------------------------------------------------------------
 # Process arguements
@@ -1504,15 +1510,23 @@ sub create_report(){
 
     
     push @output, " XML output: Detailed report ";
-    push @output, " Maximum observed error";
-    push @output, "  - Folder:                 <> $gMax_difference{\"global\"}{\"folder\"}";
-    push @output, "  - Model:                  <> $gMax_difference{\"global\"}{\"model\"}.cfg";
-    push @output, "  - Element:                <> $gMax_difference{\"global\"}{\"element_path\"} ($gMax_difference{\"global\"}{\"attribute\"})";
-    push @output, "  - Relative difference:    <> ".format_my_number($gMax_difference{"global"}{"relative"},15,"%-10.5g")."<> (%)";
-    push @output, "  - Absolute difference:    <> ".format_my_number($gMax_difference{"global"}{"absolute"},15,"%-10.5g")."<> (".$gMax_difference{"global"}{"units"}.")";
-
+    push @output, " Maximum observed error:";
+    foreach my $unit ( @gReportUnitComp ){
+      if ( defined ( $gMax_difference{"global"}{"$unit"} ) ){
+        push @output, "  -> Units:  $unit ";
+        push @output, "       - Folder:                 <> $gMax_difference{\"global\"}{\"$unit\"}{\"folder\"}";
+        push @output, "       - Model:                  <> $gMax_difference{\"global\"}{\"$unit\"}{\"model\"}.cfg";
+        push @output, "       - Element:                <> $gMax_difference{\"global\"}{\"$unit\"}{\"element_path\"} ($gMax_difference{\"global\"}{\"$unit\"}{\"attribute\"})";
+    
+        push @output, "       - Difference:             <> ".sprintf("%\-12s%\-10s<>(<>%\-12s%%)",
+                                                               format_my_number($gMax_difference{"global"}{"$unit"}{"absolute"},15,"%-10.5g"),
+                                                               $unit,
+                                                               format_my_number($gMax_difference{"global"}{"$unit"}{"relative"},15,"%-10.5g"),
+                                                             );
+      }
+    }
     push @output, " ";
-    push @output, "  - Tolerances for comparisons: ";
+    push @output, "  -> Tolerances for comparisons: ";
     $current_rule = " ^^^^^^^^^^^^^^^^^^^^"
                    ."^^^^^^^^^^^^^^^^^^^^"
                    ."^^^^^^^^^^^^^^^^^^^^";
@@ -1550,13 +1564,19 @@ sub create_report(){
         $current_folder = $folder;
         $current_model = $model;
 
-        
         push @output, " TEST CASE $model ($folder)";
         push @output, "  - Folder:                     <> $folder";
         push @output, "  - Model:                      <> $model.cfg";
-        push @output, "  - MAX error observed in:      <> $gMax_difference{\"$folder;$model\"}{\"element_path\"} ($gMax_difference{\"$folder;$model\"}{\"attribute\"})";
-        push @output, "        Relative difference:    <> ".format_my_number($gMax_difference{"$folder;$model"}{"relative"},15,"%-10.5g")."<> (%)";
-        push @output, "        Absolute difference:    <> ".format_my_number($gMax_difference{"$folder;$model"}{"absolute"},15,"%-10.5g")."<> (".$gMax_difference{"$folder;$model"}{"units"}.")";
+        foreach my $unit ( @gReportUnitComp ){
+          if ( defined ( $gMax_difference{"$folder;$model"}{"$unit"} ) ){
+            push @output, sprintf("%\-29s<>%\-12s<>%\-10s(%\-12s%%)","  - MAX error ($unit)"
+                                                                    ,format_my_number($gMax_difference{"$folder;$model"}{"$unit"}{"absolute"},15,"%\-10.5g")
+                                                                    ,$unit
+                                                                    ,format_my_number($gMax_difference{"$folder;$model"}{"$unit"}{"relative"},15,"%\-10.5g")
+                                                                   )
+                                                             ." - observed in:<> $gMax_difference{\"$folder;$model\"}{\"$unit\"}{\"element_path\"} ($gMax_difference{\"$folder;$model\"}{\"$unit\"}{\"attribute\"})";
+          }
+        }
         push @output, $current_rule;
         $current_line  = sprintf  (" %\-80s<>%\-20s[]",
                                    "Elements exhibiting differences", "Units");
@@ -1625,7 +1645,7 @@ sub create_report(){
       # Replace ^ with -
       $line =~ s/\^/-/g;
       # replace <> with ' '
-      $line =~ s/<>/ /g;
+      $line =~ s/<>//g;
       # replace [] with '|'
       $line =~ s/\[\]/|/g;
     }
@@ -2807,30 +2827,29 @@ sub CompareXMLResults($){
 
             $global_fail = 1;
 
-            if ( ! defined ( $gMax_difference{"global"}{"relative"} ) ||
-                  abs($difference{"relative"}) >= $gMax_difference{"global"}{"relative"} ){
-                  $gMax_difference{"global"}{"relative"} = abs($difference{"relative"});
-                  $gMax_difference{"global"}{"absolute"} = abs($difference{"absolute"});
-                  $gMax_difference{"global"}{"folder"} = "$folder";
-                  $gMax_difference{"global"}{"model"}  = "$model";
-                  $gMax_difference{"global"}{"element_path"} = "$element_path";
-                  $gMax_difference{"global"}{"units"} = "$units";
-                  $gMax_difference{"global"}{"attribute"} = "$attribute";
+            if ( ! defined ( $gMax_difference{"global"}{"$units"}{"absolute"} ) ||
+                  abs($difference{"absolute"}) >= $gMax_difference{"global"}{"$units"}{"absolute"} ){
+                  $gMax_difference{"global"}{"$units"}{"relative"} = abs($difference{"relative"});
+                  $gMax_difference{"global"}{"$units"}{"absolute"} = abs($difference{"absolute"});
+                  $gMax_difference{"global"}{"$units"}{"folder"} = "$folder";
+                  $gMax_difference{"global"}{"$units"}{"model"}  = "$model";
+                  $gMax_difference{"global"}{"$units"}{"element_path"} = "$element_path";
+                  $gMax_difference{"global"}{"$units"}{"attribute"} = "$attribute";
+
             }
             
-            if ( ! defined ( $gMax_difference{"$folder;$model"}{"relative"} ) ||
-                  abs($difference{"relative"}) >= $gMax_difference{"$folder;$model"}{"relative"} ){
-                  $gMax_difference{"$folder;$model"}{"absolute"} = abs($difference{"absolute"});
-                  $gMax_difference{"$folder;$model"}{"relative"} = abs($difference{"relative"});
-                  $gMax_difference{"$folder;$model"}{"element_path"} = "$element_path";
-                  $gMax_difference{"$folder;$model"}{"units"} = "$units";
-                  $gMax_difference{"$folder;$model"}{"attribute"} = "$attribute";
-            }
+            if ( ! defined ( $gMax_difference{"$folder;$model"}{"$units"}{"absolute"} ) ||
+                  abs($difference{"absolute"}) >= $gMax_difference{"$folder;$model"}{"$units"}{"absolute"} ){
+                  $gMax_difference{"$folder;$model"}{"$units"}{"absolute"} = abs($difference{"absolute"});
+                  $gMax_difference{"$folder;$model"}{"$units"}{"relative"} = abs($difference{"relative"});
+                  $gMax_difference{"$folder;$model"}{"$units"}{"element_path"} = "$element_path";
+                  $gMax_difference{"$folder;$model"}{"$units"}{"attribute"} = "$attribute";
+            }                                       
 
             %{$gXML_Failures{"$folder;$model;$element_path;$attribute"}{"difference"}} = %difference;
             $gXML_Failures{"$folder;$model;$element_path;$attribute"}{"units"} = $units;
 
-
+            
 
           }else{
           }
