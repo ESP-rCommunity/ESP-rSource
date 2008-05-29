@@ -177,7 +177,6 @@ C Error subroutine and error details for dll mode.
       real reader
 
       ijk=0
-      IER=0
       ireader=0
       reader=0.0
 
@@ -434,7 +433,7 @@ C Check if electrical data has also been saved.
  600  CONTINUE
 
 C Check to see if gain labels have been added to the end of the file
-    8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
+      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
       IF(ND.NE.3.OR.IERV.ne.0) THEN
         goto 1001
       ELSE
@@ -638,7 +637,6 @@ C Error subroutine and error details for dll mode.
       INTEGER IDTY,IR
       REAL R
 
-      IER=0
       dok=.false.
 
 C Compose help message
@@ -945,8 +943,10 @@ C Error subroutine and error details for dll mode.
       dimension nacc(mdty)
 
       dok=.true.
-      IER=0
       IELFC=0
+
+C Initialise number of day types
+      NDTY=3
 
 C Compose help message
       H(1) ='The number of day types defined in the operations file'

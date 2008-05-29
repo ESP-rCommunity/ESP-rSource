@@ -2964,7 +2964,7 @@ C Now display the menu.
 
 C Import profile.
         IX=1
- 222    CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
+        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
      &  12,NBDAYTYPE,CALENTAG,
      &  'Import a profile for which day type?',IER,18)
         IW=KSTR(1)
@@ -3578,7 +3578,7 @@ C If silent is true then use icgs & icgf parameters.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY,IALL
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IALL
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -3917,7 +3917,6 @@ C Now update common blocks. Loop backwards from
 C Loop back if more than one day type requested
       IF(IALL.EQ.1)THEN
         IDT=IDT+1
-        IGB=0
         IF(IDT.LE.NBDAYTYPE)GOTO 113
       ENDIF
       return
@@ -3934,7 +3933,7 @@ C  ICD - copy (=2) delete (=1) flag
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
@@ -4807,8 +4806,7 @@ C   ier - set to 1 if there was a problem
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
+      INTEGER NCAS,ICGS,ICGF,IDTY
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.

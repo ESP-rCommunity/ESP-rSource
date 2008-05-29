@@ -33,7 +33,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "building.h"
 #include "tdf2.h"
 #include "sbem.h"
-#include "roam.h"
 
       integer igraphiclib  ! external definition
 
@@ -887,7 +886,6 @@ C function of time. Important variables are defined in roam.h
 #include "roam.h"
 
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
 

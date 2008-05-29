@@ -1208,6 +1208,8 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET

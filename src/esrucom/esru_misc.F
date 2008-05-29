@@ -788,7 +788,6 @@ C espriou.h provides currentfile.
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN
 
 C Open the utility file, return if not found.
-      IER=0
       CALL EFOPSEQ(IFIL,LFIL,1,IER)
       IF(IER.LT.0)THEN
         IER=1

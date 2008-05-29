@@ -1097,8 +1097,6 @@ C                 external temperature (for use in MZLS3).
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      common/calena/calename,calentag(MDTY),calendayname(MDTY)
-      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
