@@ -1044,7 +1044,7 @@ if ( $test_regression ) {
   execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r_test "
-           ."--ref_res $ref_esp --test_res $test_esp "
+           ."--ref_loc $ref_esp --test_loc $test_esp "
            ."-p $TestFolder/$src_dirs{\"reference\"}/tester/test_suite/ --save_results -v" );
   
   # Digest results

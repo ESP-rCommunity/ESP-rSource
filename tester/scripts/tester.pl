@@ -944,12 +944,12 @@ foreach my $path ( split /;/, $gTest_paths{"helper_apps"} ){
 #-----------------------------------------------------------------------
 $gTest_params{"test_res_found"} = 0;
 $gTest_params{"test_ish_found"} = 0;
-
 if ( defined( $gTest_params{"test_loc"} ) ){
   # Loop through all paths in environment and append specified path
+  my $pathfound = 0;
   foreach my $path ( @Env_Paths ){
     # Only proceed if test_inst_path is not defined. 
-    if ( ! $gTest_paths{"test_loc"} ){
+    if ( ! $pathfound ){
       
       # Combine environment and specified paths
       my $combpath = resolve_path ( "$path/$gTest_params{\"test_loc\"}" );
@@ -969,6 +969,7 @@ if ( defined( $gTest_params{"test_loc"} ) ){
            $gTest_params{"test_ish_found"}    ){
 
         $gTest_paths{"test_loc"} = $combpath;
+        $pathfound = 1; 
       }
       
     }
@@ -979,9 +980,10 @@ $gTest_params{"ref_res_found"} = 0;
 $gTest_params{"ref_ish_found"} = 0;
 if ( defined( $gTest_params{"ref_loc"} ) ){
   # Loop through all paths in environment and append specified path
+  my $pathfound = 0;
   foreach my $path ( @Env_Paths ){
     # Only proceed if test_inst_path is not defined. 
-    if ( ! $gTest_paths{"ref_inst_path"} ){
+    if ( ! $pathfound ){
       
       # Combine environment and specified paths
       my $combpath = resolve_path ( "$path/$gTest_params{\"ref_loc\"}" );
@@ -1001,6 +1003,7 @@ if ( defined( $gTest_params{"ref_loc"} ) ){
            $gTest_params{"ref_ish_found"}    ){
 
         $gTest_paths{"ref_loc"} = $combpath;
+        $pathfound = 1;
       }
       
     }
