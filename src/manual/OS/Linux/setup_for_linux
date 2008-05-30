@@ -106,8 +106,8 @@ echo " "
 echo " ESP-r is available in two versions:"
 echo " a) the standard X11 implementation"
 echo " b) an implementation using the GTK graphics"
-echo "    library which should be treated as a beta version"
-echo "    because a few functions have not been ported."
+echo "    library which lacks a few functions which"
+echo "    have not been ported."
 echo " "
 echo " select option [a/b]:"
 read which
@@ -131,12 +131,12 @@ fi
 cd /opt/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_X11_11.4_linux.tar.gz | tar xf - 
+  zcat $ISD/esp-r_X11_11.5_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_GTK_11.4_linux.tar.gz | tar xf - 
+  zcat $ISD/esp-r_GTK_11.5_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
@@ -144,11 +144,9 @@ echo " "
 # ln -s /opt/esru /usr/esru
 echo "Setting folder permissions... "
 chmod a+x /opt/esru
-chmod a+x /opt/esru/bin
 chmod a+x /opt/esru/esp-r
 chmod a+x /opt/esru/esp-r/bin
 chmod a+r /opt/esru
-chmod a+r /opt/esru/bin
 chmod a+r /opt/esru/esp-r
 chmod a+r /opt/esru/esp-r/bin
 
@@ -159,6 +157,6 @@ cd $ISD
 
 echo " "
 echo -n " Please wait while the installer performs cleanup..."
-for i in `ls /usr/esru/esp-r/bin`; do echo -n .; sleep 0.5; done;
+for i in `ls /opt/esru/esp-r/bin`; do echo -n .; sleep 0.5; done;
 
 
