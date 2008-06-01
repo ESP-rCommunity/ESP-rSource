@@ -57,8 +57,8 @@ C Descriptive label for a zone load or casual gain types.
       common/b3ver/idmdver
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -271,8 +271,8 @@ C Descriptive label for a zone load or casual gain types.
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
       CHARACTER dmdsdesc*248,outs*124,bdmds*72
       CHARACTER*6 blodlabel

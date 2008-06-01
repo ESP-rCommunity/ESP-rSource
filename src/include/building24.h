@@ -45,12 +45,12 @@ C this should be set to the same as MS.
       PARAMETER (MGRDP=10)
 
 C Casual gains limits.
-      PARAMETER (MDTY=3)
+      PARAMETER (MDTY=10)
       PARAMETER (MGTY=7)
       PARAMETER (MGPER=72)
 
-C Allow for 24 (one per hour) * 3 (day types) * 3 (casual gain types)
-      PARAMETER (MC=72)
+C Allow for 24 (one per hour) * MDTY(day types) * 3 (casual gain types)
+      PARAMETER (MC=72*MDTY)
 
 C Casual gain control settings:
       PARAMETER (MLCOM=4)

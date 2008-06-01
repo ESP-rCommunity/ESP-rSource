@@ -26,7 +26,7 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mksbem.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
-	psychro.o rcdblist.o readTrnsys.o rwipv.o rwsbem.o sort.o \
+	psychro.o rcdblist.o readTrnsys.o rwipv.o rwroam.o rwsbem.o sort.o \
 	startup.o tdfedit.o tdfile.o tdgraph.o
 
 $(PROG): $(OBJECTS)
@@ -251,6 +251,9 @@ readTrnsys.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwroam.F:
+	rm -f rwroam.F
+	ln -s $(COMdir)/rwroam.F .
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -290,6 +293,6 @@ clean:
 	gtopol.F hcfmk.F initalc.F insert.F item.F maintn.F mfcdat.F mfelst.F mfprb1.F mfprb2.F \
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
-	rwipv.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
+	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
 	
 

@@ -3525,6 +3525,7 @@ C This recovers one day.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
            
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =3 with more than 3 day types
       common/p3ver/ip3ver
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

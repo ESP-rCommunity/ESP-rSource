@@ -2920,6 +2920,24 @@ C Nicol Occupant resopnse model for control
      &    'with running mean response parameter of ',cm(2),
      &    ' measuring operative temp of node ',NDNAM(iPGT)
           call SDELIM(lmsg,message,'S',IW)
+
+C PI controller
+        elseif(IFCLAW(II,JJ,KK).EQ.5)then
+          SSTR='PI controller '
+          cm(2)=fmiscd(II,JJ,KK,2)
+          cm(3)=fmiscd(II,JJ,KK,3)
+          cm(4)=fmiscd(II,JJ,KK,4)
+          cm(5)=fmiscd(II,JJ,KK,5)
+          cm(6)=fmiscd(II,JJ,KK,6)
+          cm(7)=fmiscd(II,JJ,KK,7)
+          cm(8)=fmiscd(II,JJ,KK,8)
+          write(lmsg,'(2a,f6.2,a,f6.2,a,f6.2,a,f6.2,a,f8.2,a,f8.2,
+     &    a,f8.2)')
+     &    SSTR(1:lnblnk(SSTR)),' with nominal setpoint=',cm(2),
+     &    '; maximum setpoint=',cm(3),'; maximum setpoint=',cm(4),
+     &    '; proportional band=',cm(5),'; integral reset=',cm(6),
+     &    '; action flag=',cm(7),'; optional multi sensing loop=',cm(8)
+          call SDELIM(lmsg,message,'S',IW)
         endif
         return
       endif
