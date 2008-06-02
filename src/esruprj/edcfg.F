@@ -1195,6 +1195,7 @@ C output, IER=0 indicates no error.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =3 with more than 3 day types
       common/p3ver/ip3ver
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1207,6 +1208,8 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,context
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
@@ -2627,7 +2630,7 @@ C File is older format and assumed to be unsorted.
                     if(browse)then
                       continue
                     else
-                      ip3ver=1
+                      ip3ver=3
                       CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                     endif
                   else
@@ -2635,32 +2638,19 @@ C File is older format and assumed to be unsorted.
 C File is current format and might be unsorted.
                     sorted=.true.
                     problem=.false.
-                    call checksort(icomp,1,problem,ier)
-                    if(problem)then
-                      sorted=.false.
-                      call edisp(iuout,
-     &                  'Weekday casual gains might be unsorted')
-                    endif
-                    problem=.false.
-                    call checksort(icomp,2,problem,ier)
-                    if(problem)then
-                      sorted=.false.
-                      call edisp(iuout,
-     &                  'Saturday casual gains might be unsorted')
-                    endif
-                    problem=.false.
-                    call checksort(icomp,3,problem,ier)
-                    if(problem)then
-                      sorted=.false.
-                      call edisp(iuout,
-     &                  'Sunday casual gains might be unsorted')
-                    endif
+                    DO 400 IDTY=1,NBDAYTYPE
+                      call checksort(icomp,IDTY,problem,ier)
+                      if(problem)then
+                        sorted=.false.
+                        call edisp(iuout,'casual gains may be unsorted')
+                      endif
+ 400                CONTINUE
                     if(.NOT.sorted)then
                       call PROCESSOLDCAS(ICOMP,0,iuout,IER)
                       if(browse)then
                         continue
                       else
-                        ip3ver=1
+                        ip3ver=3
                         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                       endif
                     endif

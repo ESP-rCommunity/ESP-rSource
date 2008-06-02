@@ -29,7 +29,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
-	  rwipv.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
+	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
 	  
 	   
@@ -181,6 +181,9 @@ rcdblist.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwroam.F:
+	rm -f rwroam.F
+	ln -s $(COMdir)/rwroam.F .
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -233,7 +236,7 @@ clean:
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
-	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
+	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
 
 

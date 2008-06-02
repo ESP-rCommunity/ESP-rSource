@@ -84,6 +84,7 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       common/cctlnm/ctldoc,lctlf
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types
       common/p3ver/ip3ver
       COMMON/P1/oprdesc,ctlstr
 

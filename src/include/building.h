@@ -10,6 +10,7 @@ C 42 Surface version 05.03
 C 62 Surface version 06.04
 C 40 zone 62 surface version 03.05
 C 42 zone 62 surface version 04.07 updated
+C 52 zone 62 surface version 01.08 updated
 
 C Used in the ESP suite of programs written by staff of the
 C Energy Simulation Research Unit of the University of Strathclyde.
@@ -51,12 +52,12 @@ C this should be set to the same as MS.
       PARAMETER (MGRDP=10)
 
 C Casual gains limits.
-      PARAMETER (MDTY=3)
+      PARAMETER (MDTY=10)
       PARAMETER (MGTY=7)
       PARAMETER (MGPER=72)
 
-C Allow for 24 (one per hour) * 3 (day types) * 3 (casual gain types)
-      PARAMETER (MC=72)
+C Allow for 24 (one per hour) * MDTY(day types) * 3 (casual gain types)
+      PARAMETER (MC=72*MDTY)
 
 C Casual gain control settings:
       PARAMETER (MLCOM=4)

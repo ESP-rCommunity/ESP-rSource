@@ -2220,7 +2220,8 @@ C Plant commons
 
 C Descriptive label for a zone load or casual gain types.
       COMMON/LOADLABEL/LODLABEL(MCOM,7)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER ICGT
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
@@ -2241,6 +2242,10 @@ C The descriptive strings
       COMMON/ECDESC/ENTYPESTR(MENTYP),PHTYPSTR(MPHATY),ENDESC,
      &ENODTYPSTR(MENOD),HYDESC(MHYCOM),CONECOMDESC(MCONECOM),
      &POWCOMDESC(MPOWCOM)
+
+C Calendar commons
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY,ITAG
 
 C Plant component node connections
       common/pltnds/iplt_conn_nodes(MHYCOM),iplt_dcnode_id(MHYCOM),
@@ -2356,7 +2361,7 @@ C Read in the selected zone's operations data ...
 C Get the appropriate day type and load. 
           H(1)='Each user specified gain type in each zone can be '
           H(2)='associated with a node in the electrical network. '
-          H(3)='The cumulative power power consumption of all the gains'
+          H(3)='The cumulative power consumption of all the gains'
           H(4)='of that type (both absolute and per m2) is then   '
           H(5)='attributed to the node; provided load electrical data '
           H(6)='has been specified.'
@@ -2373,34 +2378,25 @@ C Scan through the zone loads and determine the active types
           IAPPF(3)=0
 
 C Loop through each casual gain and determine if it is applicable or not.
-          DO 14 I=1,MC
-            IF(ICGT1(I).EQ.1.OR.ICGT2(I).EQ.1.OR.ICGT3(I)
-     &.EQ.1.AND.IAPPF(1).EQ.0) THEN
-              TMPTYPSTR(1)=' '
-              IF(LODLABEL(IZ,1)(1:6).NE.'Occupt')THEN
-                TMPTYPSTR(1)=' '
-                WRITE(TMPTYPSTR(1),'(A)') LODLABEL(IZ,1)
-                IAPPF(1)=1
+          IF(NBDAYTYPE.GT.3)THEN
+            CALL EDISP(IUOUT,'More than three day types are not')
+            CALL EDISP(IUOUT,'supported for hybrid power components')
+            CALL EDISP(IUOUT,'Warning generated from subroutine EDEHYB')
+          ENDIF
+          DO 500 IDTY=1,3
+            ITAG=0
+            DO 501 I=1,MC
+              IF(ICGT(IDTY,I).EQ.1)ITAG=1
+              IF(ITAG.EQ.1.AND.IAPPF(IDTY).EQ.0)THEN
+                TMPTYPSTR(IDTY)=' '
+                IF(LODLABEL(IZ,IDTY)(1:6).NE.'Occupt')THEN
+                  TMPTYPSTR(IDTY)=' '
+                  WRITE(TMPTYPSTR(IDTY),'(A)') LODLABEL(IZ,IDTY)
+                  IAPPF(IDTY)=1
+                ENDIF
               ENDIF
-            ENDIF
-            IF(ICGT1(I).EQ.2.OR.ICGT2(I).EQ.2.OR.ICGT3(I)
-     &.EQ.2.AND.IAPPF(2).EQ.0) THEN
-              IF(LODLABEL(IZ,2)(1:6).NE.'Occupt')THEN
-                TMPTYPSTR(2)=' '
-                WRITE(TMPTYPSTR(2),'(A)') LODLABEL(IZ,2)
-                IAPPF(2)=1
-              ENDIF
-            ENDIF
-            IF(ICGT1(I).EQ.3.OR.ICGT2(I).EQ.3.OR.ICGT3(I)
-     &.EQ.3.AND.IAPPF(3).EQ.0) THEN
-              IF(LODLABEL(IZ,3)(1:6).NE.'Occupt')THEN
-               TMPTYPSTR(3)=' '
-               WRITE(TMPTYPSTR(3),'(A)') LODLABEL(IZ,3)
-               IAPPF(3)=1
-              ENDIF
-            ENDIF
-  14      CONTINUE
-
+ 501        CONTINUE
+ 500      CONTINUE
          
 C Replace this with a menu if the number of load types increases.
           CALL USRMSG(' ',' ','-')

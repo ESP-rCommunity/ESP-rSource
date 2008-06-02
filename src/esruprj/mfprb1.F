@@ -2107,10 +2107,12 @@ C << should mode Z be visible when user first enters flow facility? >>
 C LPROJ   - zone scheduling (operation file)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       DIMENSION IVALS(MCOM),IFCAB(MCON)
 
@@ -2137,7 +2139,7 @@ C Variables to keep track of the component index of the standard
 C components needed for a network equivalent of zone operations.
       integer noinfforcurrent,noventforcurrent,crackforcurrent
       integer gr02forcurrent,gr04forcurrent,gr06forcurrent
-      integer nodeforcurrent
+      integer nodeforcurrent,IGN
 
       IF(MODE.EQ.'N')THEN
 
@@ -2467,8 +2469,15 @@ C the index of the zone being considered.
 C Increment nodeforcurrent counter (i.e. the node index that is
 C used with the current zone index.
             nodeforcurrent=nodeforcurrent+1
-
-            if(NAC1.eq.0.and.NAC2.eq.0.and.NAC3.eq.0)then
+            IGN=0
+            DO 1435 IDTY=1,NBDAYTYPE
+              IF(NAC(IDTY).EQ.0.AND.IGN.EQ.0)THEN
+                IGN=0
+              ELSE
+                IGN=1
+              ENDIF
+ 1435       CONTINUE
+            IF(IGN.EQ.0)THEN
 
 C There are no flow periods on any day, write crack connections only.
               WRITE(OUTS,'(A,A12,A)')
@@ -2487,36 +2496,20 @@ C Add the source -> crack -> zone connection.
               NDSCNN(NCNN,2)=0                 
             else
 
-C Loop through weekday, saturday and sunday periods and find
+C Loop through periods for each day type and find
 C the maximum infiltration rate (finfmax) and ventilation rate (fvntmax)
 C Note works if ventilation is always from only one other zone.
-              DO 39 L=1,NAC1
-                acim = (VOL(IZ)*ACI1(L))/3600.0
-                acvm = (VOL(IZ)*ACV1(L))/3600.0
-                if(acim.gt.finfmax(iz)) finfmax(iz)=acim
-                if(acvm.gt.fvntmax(iz))then
-                  fvntmax(iz)=acvm
-                  isrczforvent(iz)=IPT1(L)
-                endif
-  39          continue
-              DO 40 L=1,NAC2
-                acim = (VOL(IZ)*ACI2(L))/3600.0
-                acvm = (VOL(IZ)*ACV2(L))/3600.0
-                if(acim.gt.finfmax(iz)) finfmax(iz)=acim
-                if(acvm.gt.fvntmax(iz))then
-                  fvntmax(iz)=acvm
-                  isrczforvent(iz)=IPT2(L)
-                endif
-  40          continue
-              DO 41 L=1,NAC3
-                acim = (VOL(IZ)*ACI3(L))/3600.0
-                acvm = (VOL(IZ)*ACV3(L))/3600.0
-                if(acim.gt.finfmax(iz)) finfmax(iz)=acim
-                if(acvm.gt.fvntmax(iz))then
-                  fvntmax(iz)=acvm
-                  isrczforvent(iz)=IPT3(L)
-                endif
-  41          continue
+              DO 402 IDTY=1,NBDAYTYPE
+                DO 39 L=1,NAC(IDTY)
+                  acim = (VOL(IZ)*ACI(IDTY,L))/3600.0
+                  acvm = (VOL(IZ)*ACV(IDTY,L))/3600.0
+                  if(acim.gt.finfmax(iz)) finfmax(iz)=acim
+                  if(acvm.gt.fvntmax(iz))then
+                    fvntmax(iz)=acvm
+                    isrczforvent(iz)=IPT(IDTY,L)
+                  endif
+  39            continue
+ 402          CONTINUE
 
 C Debug.
               write(6,*) 'iz finfmax fvntmax isrczforvent',iz,

@@ -1,6 +1,6 @@
 
 The 'run' file is a self-extracting installer
-for a precompiled ESP-r version 11.3. The installer
+for a precompiled ESP-r version 11.5. The installer
 offers two versions of ESP-r - a GTK graphics library
 version and an X11 verision. The GTK version looks and
 feels like the native Windows version of ESP-r but is
@@ -9,21 +9,18 @@ not quite as feature rich as the X11 version.
 On most Linux boxes a file ending in .run will
 be treated as an executable.
 
-Typically the file esp-r_v11.3_linux_precomp.run
+Typically the file esp-r_v11.5_linux_precomp.run
 should be placed in /tmp and run (as root) from 
-that folder via the command ./esp-r_v11.3_linux_precomp.run
+that folder via the command ./esp-r_v11.5_linux_precomp.run
 
 If the installer does not execute you may have to
 issue the following command to change its permissions:
-  chmod a+x ./esp-r_v11.3_linux_precomp.run
+  chmod a+x ./esp-r_v11.5_linux_precomp.run
 
 It will ask you a number of questions and, if
 successful it will place an ESP-r distribution
 in the folders:
-  /opt/esru
-      bin
-      lib
-      esp-r
+  /opt/esru/esp-r/
         bin
 	climate
 	databases
@@ -44,8 +41,8 @@ for an ESP-r module use the -help option with
 the module name e.g. 'mrt -help' (without the quotes).
 
 Note: the ESP-r executables were created on a Linux
-box running Mandriva Linux version 10.0 and they should
-run on most 32-bit recent Linux distributions. The
+box running Ubuntu 7.4 and they should run on
+most 32-bit recent Linux distributions. The
 executables do have dependencies so you might have to
 download a few libraries from your Linux distribution
 site. The libraries are libX11 libg2c libm libc libgcc_s

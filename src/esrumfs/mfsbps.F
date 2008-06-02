@@ -57,7 +57,7 @@ C     CVI?   - hourly ventilation conductance for infiltration air
 C              for weekdays, Saturdays and Sundays respectively
 C     CVV?   - hourly ventilation conductance for ventilation air
 C              for weekdays, Saturdays and Sundays respectively
-C     ICC?   - hourly convection coupling index for weekdays,
+C     ICCZ?  - hourly convection coupling index for weekdays,
 C              Saturdays and Sundays resp.: ICC?=0 ventilation air
 C              at constant temperature (=TIA?) ICC?=N ventilation air
 C              at zone N temperature

@@ -1,22 +1,23 @@
 Steps in making a self extractor:
 
 First compile a standard version of esp-r (X11 version) in the standard location
-which on Linux should be /opt/esru.
+which on Linux should be /opt/esru. The following command is forcing the use
+of the 3.4 version of the GNU compilers
 
-  ./Install --debug -d /opt/esru
+  ./Install -d /opt/esru --compiler_version -3.4
 
 Second go to /opt/esru and clean up the installed folders of svn folders
 via the following commands:
  find . -name .svn -print >which_svn
  rm -rf `cat which_svn`
 
-create a tar file of the bin docs esp-r lib and tutorial
-folders (the example below includes a date string in the name of the tar file.
+create a tar file of the esp-r folder (the example below includes 
+a date string in the name of the tar file.
 
- tar cf esp-r_X11_11.4_linux.tar bin esp-r lib tutorial
- gzip -9 esp-r_X11_11.4_linux.tar
+ tar cf esp-r_X11_11.5_linux.tar esp-r
+ gzip -9 esp-r_X11_11.5_linux.tar
 
-There should be a folder /opt/precompiled_for_linux and the gziped tar file should
+There should be a folder /opt/pre_compiled_for_linux and the gziped tar file should
 be placed in it.
 
 If you want to keep the X11 distribution move the esru to esru_X11
@@ -27,7 +28,7 @@ location:
 
 and compile a new GTK version of esp-r. 
 
-  ./Install --debug -d /opt/esru
+  ./Install -d /opt/esru --compiler_version -3.4
 
 Clean up the .svn in the installed location.
 Clean up the compiled distribution via the following commands:
@@ -37,12 +38,12 @@ Clean up the compiled distribution via the following commands:
 
 make a tar file and gzip it
 
- tar cf esp-r_GTK_11.4_linux.tar bin esp-r lib tutorial
- gzip -9 esp-r_GTK_11.4_linux.tar
+ tar cf esp-r_GTK_11.5_linux.tar esp-r
+ gzip -9 esp-r_GTK_11.5_linux.tar
 
-place it in the precompiled_for_cygwin folder.
+place it in the pre_compiled_for_linux folder.
 
- mv esp-r_GTK_11.4_linux.tar.gz /opt/precompile_for_linux
+ mv esp-r_GTK_11.5_linux.tar.gz /opt/pre_compiled_for_linux
 
 In the precompiled_for_linux folder are a number of files as follows:
 
@@ -56,7 +57,7 @@ slightly to include the specific ...tar.gz files.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-~/bin/makeself-2.1.4/makeself.sh precompiled_for_linux esp-r_v11.4_linux_precomp.run "ESP-r V11.4 distribution for Linux (/opt/esru)" ./setup
+~/bin/makeself-2.1.4/makeself.sh pre_compiled_for_linux esp-r_v11.5_linux_precomp.run "ESP-r V11.5 distribution for Linux (/opt/esru)" ./setup
 
 The items are as follows makeself.sh is a general script that creates installers. makeself-2.1.4 can
 be downloded from the web and it will create its own executables.  The command includes the full
@@ -67,6 +68,6 @@ will be placed on the web). The string in quotes is a message that will be print
 the installer runs. And lastly ./setup is the edited setup script within the precompiled_for_linux
 folder. This script needs to have a chmod a+x done on it.
 
-~/bin/makeself-2.1.4/makeself.sh precompiled_for_linux esp-r_v11.4_linux_precomp.run "ESP-r V11.4 distribution for Linux (/opt/esru)" ./setup
+~/bin/makeself-2.1.4/makeself.sh pre_compiled_for_linux esp-r_v11.5_linux_precomp.run "ESP-r V11.5 distribution for Linux (/opt/esru)" ./setup
 
 It is A REALLY GOOD IDEA to test use of the self-extractor on a clean machine.

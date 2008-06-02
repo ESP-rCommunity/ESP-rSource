@@ -135,6 +135,7 @@ C default file names for databases
 C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
+#include "roam.h"
       PARAMETER (MSTMC=1)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -395,8 +396,8 @@ C Bidirectional raw optical data file.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C DLLSUBR (12 char) name of current subroutine, used in dll silent reporting
 C dllmesg (124 char) tells the details of the DLLSUBR error.
@@ -446,7 +447,7 @@ C The flag (iSlr_half_hr_flg) can be set in the .cfg file or within bps in the
 C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
-      integer iSlr_half_hr_flg     
+      integer iSlr_half_hr_flg,idty    
       
 c This common block is used to define the sky temperature calculation method
       COMMON/EXLONGWV/iExt_longwave_flg
@@ -539,7 +540,7 @@ C Clear the model common blocks.
       LUALF='UNKNOWN'
       MCMPDBFL='UNKNOWN'
       bidirfile='UNKNOWN'
-
+      CALENAME='UNKNOWN'
 
 C Set flag indicating that solar radiation data is hour-centered (default)
 C Variable will be reset if 'slr_half_hr' included in .cfg
@@ -576,6 +577,8 @@ C will be reset if `*gcep' is included in the .cfg file.
       igcep = 0
 C GCEP (end)
 
+C Initialise day types
+      idty=0
 
 C Wind-generated electricity
       iWndSupp = 0
@@ -604,6 +607,20 @@ C Initialize the indices.
       VIEWMI(3)=10.
       ANGI=40.
       initvt=0
+
+C Set day types to default of 3 (weekday/saturday/sunday) and calendar
+C day type tags to default as well. These 3 day types cannot be deleted
+C and more day types if defined will be stored in CALENTAG(4) onwards.
+C this can be modified later. [The IF clause may not be necessary]
+      IF(NBDAYTYPE.LT.3)THEN
+        nbdaytype=3
+      ENDIF
+      CALENTAG(1)='weekday'
+      CALENTAG(2)='saturday'
+      CALENTAG(3)='sunday'
+      CALENDAYNAME(1)='generic weekday'
+      CALENDAYNAME(2)='generic saturday'
+      CALENDAYNAME(3)='generic sunday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -910,6 +927,11 @@ C AIM-2, test and see if it exists.
             call edisp(iuout,outs)
           endif
         endif
+      elseif(WORD(1:8).eq.'*roaming')then
+
+C Changing orientation definition
+        IROAM=1
+        call EGETRM(OUTSTR,K,LROAM,'-','Roaming file name', IER)
       elseif(WORD(1:4).eq.'*tab')then
 
 C Lookup table definition      
@@ -1138,19 +1160,20 @@ C external convection algorithm flag.
 
 C There is a calendar of day types defined read its name.
         CALL EGETRM(OUTSTR,K,calename,'W','calendar name',IER)
-        nbdaytype=0
  443    CALL STRIPC(IUC,OUTSTR,0,ND,1,'calendar data',IER)
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','calendar tag',IFLAG)
         if(WORD(1:9).eq.'*calentag')then
-          nbdaytype=nbdaytype+1
-          CALL EGETP(OUTSTR,K,calentag(nbdaytype),'W','cal tag',IER)
-          CALL EGETP(OUTSTR,K,calendayname(nbdaytype),'W',
+          idty=idty+1
+          CALL EGETP(OUTSTR,K,calentag(idty),'W','cal tag',IER)
+          CALL EGETP(OUTSTR,K,calendayname(idty),'W',
      &      'cal day name',IER)
-          CALL EGETWI(OUTSTR,K,nbcaldays(nbdaytype),1,300,'W',
+          CALL EGETWI(OUTSTR,K,nbcaldays(idty),0,365,'W',
      &      'days assoc with day type',IER)
           goto 443
         elseif(WORD(1:5).eq.'*list')then
+          K=6
+          CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365
             icalender(KV)=IRCC(KV)

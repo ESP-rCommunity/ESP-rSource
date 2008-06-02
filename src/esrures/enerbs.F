@@ -59,6 +59,7 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =3 with more than 3 day types
       common/p3ver/ip3ver
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
