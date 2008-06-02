@@ -30,6 +30,7 @@ C           control details from an annotated ascii file.
 C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
 
+
 C ******************** ECONST 
 C ECONST reads zone thermophysical data from a user-constructed data
 C file as ASCII strings and with or without comments.  LCONS is the
@@ -1430,43 +1431,217 @@ C Could be improved later with a separate calculation for each surface, dependin
 C Do for each bidirectional type (MSTMC).
 C Do for each dataset (MSGAL).
  999  IF(IBIDATATYPE.eq.2.or.IBIDATATYPE.eq.3) then
+        R=ATAN(1.0)/45.0
         DO 200 ibidir=1,ibitype 
         DO 201 ibset=1,NSGALFL(ibitype)
 
-C Average all direct transmittances with solar angle >0 to get sky diffuse properties
-C (i.e. do not use data for 0deg elevation).
+C Firstly, focus on sky diffuse properties, for which solar altitude >=0.
+C Use Trapezoidal Rule twice, for double integral in formula
+C given by Kuhn T E, Energy and Buildings 38 (2006) pp648-660.
+C Note that the integrals for sky and ground are separated in the implementation below.
           SUM1=0.0
           SUM2=0.0
           SUM3=0.0
-          DO 202 ihangindex=1,37
-            DO 203 ivangindex=20,37
+          SUM4=0.0
+          SUM5=0.0
+          SUM6=0.0
+
+C First of all for ivangindex=19 (i.e. solar altitude = 0deg) 
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,19)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,19)*cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,19)*cos(-90.0*R)
+          ENDIF
+
+          DO 202 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,19)*COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,19)*COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,19)*COSMULT1
+            ENDIF
+ 202      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,19)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,19)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,19)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(0.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(0.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(0.0*R))**2
+          SUM1=0.0
+          SUM2=0.0
+          SUM3=0.0
+
+C Now for ivangindex = 20 to 36 (i.e. solar altitude = +5deg to +85deg)         
+          DO 203 ivangindex=20,36
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,ivangindex)*cos(-90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            ENDIF
+            DO 204 ihangindex=2,36
+              COSMULT1=cos(5.0*real(ihangindex-19)*R)
               SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
               SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
               IF (IBIDATATYPE.eq.2)then
                 SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,ivangindex)
+     &                    *COSMULT1
               ENDIF
-  203       CONTINUE
-  202     CONTINUE
-          DF_TX_SKY(ibidir,ibset)=SUM1/(37*18)
-          DF_G_SKY(ibidir,ibset)=SUM2/(37*18)
-          DF_RF_SKY(ibidir,ibset)=SUM3/(37*18)
+204        CONTINUE
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,ivangindex)*cos(90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            ENDIF
+            SUM4=SUM4+SUM1*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM5=SUM5+SUM2*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM6=SUM6+SUM3*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM1=0.0
+            SUM2=0.0
+            SUM3=0.0
+ 203      CONTINUE
+
+C Finally for ivangindex = 37 (i.e. solar altitude = +90deg)
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,37)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,37)
+     &                *cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,37)
+     &                *cos(-90.0*R)
+          ENDIF
+         DO 205 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,37)
+     &               *COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,37)
+     &               *COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,37)
+     &                 *COSMULT1
+            ENDIF
+205      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,37)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,37)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,37)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(90.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(90.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(90.0*R))**2
+    
+C Multiply by constant terms to get diffuse properties.  
+          DF_TX_SKY(ibidir,ibset)=SUM4*0.5/atan(1.0)*(5.0*R)**2
+          DF_G_SKY(ibidir,ibset)=SUM5*0.5/atan(1.0)*(5.0*R)**2
+          DF_RF_SKY(ibidir,ibset)=SUM6*0.5/atan(1.0)*(5.0*R)**2
 
 C Now repeat for ground reflected properties.
           SUM1=0.0
           SUM2=0.0
           SUM3=0.0
-          DO 204 ihangindex=1,37
-            DO 205 ivangindex=1,18
+          SUM4=0.0
+          SUM5=0.0
+          SUM6=0.0
+
+C First of all for ivangindex=1 (i.e. solar altitude = -90deg) 
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,1)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,1)*cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,1)*cos(-90.0*R)
+          ENDIF
+          DO 206 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,1)*COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,1)*COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,1)*COSMULT1
+            ENDIF
+ 206      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,1)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,1)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,9)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(-90.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(-90.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(-90.0*R))**2
+          SUM1=0.0
+          SUM2=0.0
+          SUM3=0.0
+
+C Now for ivangindex = 2 to 18 (i.e. solar altitude = -85deg to -5deg)         
+          DO 207 ivangindex=2,18
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,ivangindex)*cos(-90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            ENDIF
+            DO 208 ihangindex=2,36
+              COSMULT1=cos(5.0*real(ihangindex-19)*R)
               SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
               SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
               IF (IBIDATATYPE.eq.2)then
                 SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,ivangindex)
+     &                    *COSMULT1
               ENDIF
-  205       CONTINUE
-  204     CONTINUE
-          DF_TX_GND(ibidir,ibset)=SUM1/(37*18)
-          DF_G_GND(ibidir,ibset)=SUM2/(37*18)
-          DF_RF_GND(ibidir,ibset)=SUM3/(37*18)
+ 208        CONTINUE
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,ivangindex)*cos(90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            ENDIF
+            SUM4=SUM4+SUM1*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM5=SUM5+SUM2*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM6=SUM6+SUM3*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM1=0.0
+            SUM2=0.0
+            SUM3=0.0
+ 207      CONTINUE
+
+C Finally for ivangindex = 19 (i.e. solar altitude = 0deg)
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,19)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,19)
+     &                *cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,19)
+     &                *cos(-90.0*R)
+          ENDIF
+          DO 209 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,19)
+     &               *COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,19)
+     &               *COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,19)
+     &                 *COSMULT1
+            ENDIF
+ 209      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,19)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,19)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,19)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(0.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(0.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(0.0*R))**2
+    
+C Multiply by constant terms to get diffuse properties.  
+          DF_TX_GND(ibidir,ibset)=SUM4*0.5/atan(1.0)*(5.0*R)**2
+          DF_G_GND(ibidir,ibset)=SUM5*0.5/atan(1.0)*(5.0*R)**2
+          DF_RF_GND(ibidir,ibset)=SUM6*0.5/atan(1.0)*(5.0*R)**2
 
 C Calculate the layer absorptances for bidirectional datatypes 2 and 3
 C for both the sky and ground reflected components of diffuse radiation.
@@ -1489,7 +1664,7 @@ C according to solar azimuth and solar altitude).
 C Solar flux for bidirectional data (experimental conditions)
 C will be g value - transmittance
         qi_SKY_bidir=DF_G_SKY(ibidir,ibset)-DF_TX_SKY(ibidir,ibset)
-        qi_GND_bidir=DF_G_GND(ibidir,ibset)-DF_TX_SKY(ibidir,ibset)
+        qi_GND_bidir=DF_G_GND(ibidir,ibset)-DF_TX_GND(ibidir,ibset)
 
 C Calculate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
@@ -1540,6 +1715,7 @@ C Trap also the zeros in case of corrupted data
      &      (TREXTERNAL(ibidir,ibset)+Rs_glazing+
      &      TRINTERNAL(ibidir,ibset)))/Rs_glazing
         endif
+
   201   CONTINUE
   200   CONTINUE
       ENDIF
@@ -1549,3 +1725,4 @@ c Free file.
       RETURN
   
       end
+
