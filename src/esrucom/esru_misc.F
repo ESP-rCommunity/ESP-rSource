@@ -2575,6 +2575,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types allowed and sorted
       common/p3ver/ip3ver
 
       LOGICAL SELECT,XST
@@ -2877,6 +2878,7 @@ C `-` zone names only.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types allowed and sorted
       common/p3ver/ip3ver
 
       LOGICAL XST,FOUND

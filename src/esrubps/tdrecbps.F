@@ -60,6 +60,9 @@ C Trace output ?
       IF(ITC.LE.0.OR.NSINC.LT.ITC)traceok = .false.
       IF(ITRACE(3).EQ.0.OR.NSINC.GT.ITCF)traceok = .false.
 
+C Set ISDAT to keep consistencdyh with legacy code.
+      ISDAT=2
+
 C Reset error and initialise returned VAL.
       DO 2 I=1,MBITS+2
         VAL(I)=0.0

@@ -44,6 +44,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
+#include "roam.h"
       PARAMETER (MSTMC=20,MSGAL=40)
 
       common/FILEP/IFIL
@@ -226,8 +227,8 @@ C Bidirectional raw optical data file.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -602,18 +603,18 @@ C Write initial view info if other than default.
      &    VIEWMI(1),VIEWMI(2),VIEWMI(3),ANGI
       endif
 
-C Write out calendar if nbdaytype is non-zero.
-      if(nbdaytype.gt.0)then
+C Write out calendar if defined
+      IF(CALENAME(1:7).NE.'UNKNOWN')THEN
         write(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*calename ',
      &    calename(1:lnblnk(calename))
         do 443 icd = 1,nbdaytype
           lct=lnblnk(calentag(icd))
           lctn=lnblnk(calendayname(icd))
           write(IFCFG,'(5a,i3)',IOSTAT=IOS,ERR=2) '*calentag ',
-     &      calentag(icd)(1:lct),',',calendayname(icd)(1:lctn),',',
+     &      calentag(icd)(1:lct),', ',calendayname(icd)(1:lctn),', ',
      &      nbcaldays(icd)
  443    continue
-        write(IFCFG,'(a)',IOSTAT=IOS,ERR=2) '*list'
+        write(IFCFG,'(a,1I4)',IOSTAT=IOS,ERR=2) '*list ',nbdaytype
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
@@ -623,6 +624,11 @@ C Write out calendar if nbdaytype is non-zero.
         end do
         write(IFCFG,'(a)',IOSTAT=IOS,ERR=2) '*end_list'
       endif
+
+C Changing orientation enabled if present
+      IF(IROAM.EQ.1)THEN
+         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*roaming ',LROAM
+      ENDIF
 
 C Write uncertainty analysis library file if known.
       if(lnblnk(LUALF).eq.0)then

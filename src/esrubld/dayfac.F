@@ -35,8 +35,10 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -73,7 +75,7 @@ c Trace output ? Use same slot as zone casual gains.
         WRITE(ITU,9996)ICNT,ICOMP,zname(icomp)
  9996   FORMAT(' Subroutine DAYFAC  Trace output',I4,' Zone',I3,1x,A /)
         ICNT=ICNT+1
-        WRITE(ITU,9989)(NCGTC(ICOMP,I),I=1,3)
+        WRITE(ITU,9989)(NCGTC(ICOMP,I),I=1,NBDAYTYPE)
  9989   FORMAT(' Casual gain type to control during Weekdays  = ',I3,/,
      &   29X,'during Saturdays = ',I3,/,29X,'during Sundays   = ',I3,/)
         DO 9992 N=1,NLITZ(ICOMP)

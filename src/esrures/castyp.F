@@ -1201,17 +1201,13 @@ C will be corrected in the revised results library.
      &                  UCCRT1,UCCRT2,UCCRT3,ICC)
 #include "building.h"
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/recver/izver,ipver,iever
-C      COMMON/OUTIN/IUOUT,IUIN
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -1221,6 +1217,11 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -1296,104 +1297,46 @@ C been applied.
 
 C Note: Because there can be more than one casual gain of each
 C type in a zone, UCCRT1 etc. need to be summed.
-
-C In the case of no casual gain control file.
-      IF(IDWK.EQ.7)THEN
-
-C If a Sunday then check if there are any casual gains at this hour.
-C for occupancy, lighting and equipment.
-        IF(NCAS3.GE.1)THEN
-          DO 10 ICNN=1,NCAS3
-            X7C=CMGS3(ICNN)*CONC3(ICNN)
-            X7R=CMGS3(ICNN)*RADC3(ICNN)
-            IF(HOUR.GT.float(ICGS3(ICNN)).AND.
-     &         HOUR.LE.float(ICGF3(ICNN)))THEN
-              IF(ICGT3(ICNN).EQ.1)THEN
-                UCCT1=UCCT1+X7C
-                UCCRT1=UCCRT1+X7R
-              ELSEIF(ICGT3(ICNN).EQ.2)THEN
-                UCCT2=UCCT2+X7C
-                UCCRT2=UCCRT2+X7R
-              ELSEIF(ICGT3(ICNN).EQ.3)THEN
-                UCCT3=UCCT3+X7C
-                UCCRT3=UCCRT3+X7R
-              ELSEIF(ICGT3(ICNN).EQ.-1)THEN
-                UCCT1=UCCT1+(X7C*ZBASEA(IZ))
-                UCCRT1=UCCRT1+(X7R*ZBASEA(IZ))
-              ELSEIF(ICGT3(ICNN).EQ.-2)THEN
-                UCCT2=UCCT2+(X7C*ZBASEA(IZ))
-                UCCRT2=UCCRT2+(X7R*ZBASEA(IZ))
-              ELSEIF(ICGT3(ICNN).EQ.-3)THEN
-                UCCT3=UCCT3+(X7C*ZBASEA(IZ))
-                UCCRT3=UCCRT3+(X7R*ZBASEA(IZ))
-              ENDIF
-            ENDIF
-   10     CONTINUE
-        ENDIF
-      ELSEIF(IDWK.EQ.6)THEN
-
-C If a Saturday then check if there are any casual gains at this hour.
-C for occupancy, lighting and equipment.
-        IF(NCAS2.GE.1)THEN
-          DO 20 ICNN=1,NCAS2
-            X6C=CMGS2(ICNN)*CONC2(ICNN)
-            X6R=CMGS2(ICNN)*RADC2(ICNN)
-            IF(HOUR.GT.float(ICGS2(ICNN)).AND.
-     &         HOUR.LE.float(ICGF2(ICNN)))THEN
-              IF(ICGT2(ICNN).EQ.1)THEN
-                UCCT1=UCCT1+X6C
-                UCCRT1=UCCRT1+X6R
-              ELSEIF(ICGT2(ICNN).EQ.2)THEN
-                UCCT2=UCCT2+X6C
-                UCCRT2=UCCRT2+X6R
-              ELSEIF(ICGT2(ICNN).EQ.3)THEN
-                UCCT3=UCCT3+X6C
-                UCCRT3=UCCRT3+X6R
-              ELSEIF(ICGT2(ICNN).EQ.-1)THEN
-                UCCT1=UCCT1+(X6C*ZBASEA(IZ))
-                UCCRT1=UCCRT1+(X6R*ZBASEA(IZ))
-              ELSEIF(ICGT2(ICNN).EQ.-2)THEN
-                UCCT2=UCCT2+(X6C*ZBASEA(IZ))
-                UCCRT2=UCCRT2+(X6R*ZBASEA(IZ))
-              ELSEIF(ICGT2(ICNN).EQ.-3)THEN
-                UCCT3=UCCT3+(X6C*ZBASEA(IZ))
-                UCCRT3=UCCRT3+(X6R*ZBASEA(IZ))
-              ENDIF
-            ENDIF
-   20     CONTINUE
+      IF(NBDAYTYPE.LE.3)THEN
+        IDTY=1
+        IF(IDWK.EQ.6)THEN
+          IDTY=2
+        ELSEIF(IDWK.EQ.7)THEN
+          IDTY=3
         ENDIF
       ELSE
+        IDTY=ICALENDER(IDAY)
+      ENDIF
 
-C if a weekday then check if there are any casual gains at this hour.
+C Check if there are any casual gains at this hour.
 C for occupancy, lighting and equipment.
-        IF(NCAS1.GE.1)THEN
-          DO 30 ICNN=1,NCAS1
-            XC=CMGS1(ICNN)*CONC1(ICNN)
-            XR=CMGS1(ICNN)*RADC1(ICNN)
-            IF(HOUR.GT.float(ICGS1(ICNN)).AND.
-     &         HOUR.LE.float(ICGF1(ICNN)))THEN
-              IF(ICGT1(ICNN).EQ.1)THEN
-                UCCT1=UCCT1+XC
-                UCCRT1=UCCRT1+XR
-              ELSEIF(ICGT1(ICNN).EQ.2)THEN
-                UCCT2=UCCT2+XC
-                UCCRT2=UCCRT2+XR
-              ELSEIF(ICGT1(ICNN).EQ.3)THEN
-                UCCT3=UCCT3+XC
-                UCCRT3=UCCRT3+XR
-              ELSEIF(ICGT1(ICNN).EQ.-1)THEN
-                UCCT1=UCCT1+(XC*ZBASEA(IZ))
-                UCCRT1=UCCRT1+(XR*ZBASEA(IZ))
-              ELSEIF(ICGT1(ICNN).EQ.-2)THEN
-                UCCT2=UCCT2+(XC*ZBASEA(IZ))
-                UCCRT2=UCCRT2+(XR*ZBASEA(IZ))
-              ELSEIF(ICGT1(ICNN).EQ.-3)THEN
-                UCCT3=UCCT3+(XC*ZBASEA(IZ))
-                UCCRT3=UCCRT3+(XR*ZBASEA(IZ))
-              ENDIF
+      IF(NCAS(IDTY).GE.1)THEN
+        DO 30 ICNN=1,NCAS(IDTY)
+          XC=CMGS(IDTY,ICNN)*CONC(IDTY,ICNN)
+          XR=CMGS(IDTY,ICNN)*RADC(IDTY,ICNN)
+          IF(HOUR.GT.float(ICGS(IDTY,ICNN)).AND.
+     &       HOUR.LE.float(ICGF(IDTY,ICNN)))THEN
+            IF(ICGT(IDTY,ICNN).EQ.1)THEN
+              UCCT1=UCCT1+XC
+              UCCRT1=UCCRT1+XR
+            ELSEIF(ICGT(IDTY,ICNN).EQ.2)THEN
+              UCCT2=UCCT2+XC
+              UCCRT2=UCCRT2+XR
+            ELSEIF(ICGT(IDTY,ICNN).EQ.3)THEN
+              UCCT3=UCCT3+XC
+              UCCRT3=UCCRT3+XR
+            ELSEIF(ICGT(IDTY,ICNN).EQ.-1)THEN
+              UCCT1=UCCT1+(XC*ZBASEA(IZ))
+              UCCRT1=UCCRT1+(XR*ZBASEA(IZ))
+            ELSEIF(ICGT(IDTY,ICNN).EQ.-2)THEN
+              UCCT2=UCCT2+(XC*ZBASEA(IZ))
+              UCCRT2=UCCRT2+(XR*ZBASEA(IZ))
+            ELSEIF(ICGT(IDTY,ICNN).EQ.-3)THEN
+              UCCT3=UCCT3+(XC*ZBASEA(IZ))
+              UCCRT3=UCCRT3+(XR*ZBASEA(IZ))
             ENDIF
-   30     CONTINUE
-        ENDIF
+          ENDIF
+   30   CONTINUE
       ENDIF
 
 C Alternative calculation method - return only the uncontrolled casual
@@ -1403,220 +1346,83 @@ C Note: only one casual gain type can be controlled in a given
 C zone. However, there may be more than one of that type in
 C existence so they must be summed.
 
-C In the case of casual gain controls, for Sunday, Saturday, weekdays.
+C In the case of casual gain controls
       IF(ICGC(IZ).EQ.1)THEN
-        IF(IDWK.EQ.7)THEN
 
-C If there is more than one period on Sunday, loop for each;
+C If there is more than one period in this day type, loop for each;
 C if there are any casual gains at this hour;
 C if there is a control for type 1 (occupancy), test the control periods;
 C if one of the periods includes HOUR then save magnitudes;
-          IF(NCAS3.GE.1)THEN
-            DO 40 ICNN=1,NCAS3
-              X7C=CMGS3(ICNN)*CONC3(ICNN)
-              X7R=CMGS3(ICNN)*RADC3(ICNN)
-              IF(HOUR.GT.float(ICGS3(ICNN)).AND.
-     &                 HOUR.LE.float(ICGF3(ICNN)))THEN
+        IF(NCAS(IDTY).GE.1)THEN
+          DO 40 ICNN=1,NCAS(IDTY)
+            X7C=CMGS(IDTY,ICNN)*CONC(IDTY,ICNN)
+            X7R=CMGS(IDTY,ICNN)*RADC(IDTY,ICNN)
+            IF(HOUR.GT.float(ICGS(IDTY,ICNN)).AND.
+     &  	     HOUR.LE.float(ICGF(IDTY,ICNN)))THEN
 
 C If time step is in operation period.
-                IF(ICGT3(ICNN).EQ.1.AND.NCGTC(IZ,3).EQ.1)THEN
+              IF(ICGT(IDTY,ICNN).EQ.1.AND.NCGTC(IZ,IDTY).EQ.1)THEN
 
 C If absolute GAINS (W) ARE CONTROLED.
 C If time step in the casual gain controled period then adapt control tag ICC.
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 1
-                ELSEIF(ICGT3(ICNN).EQ.-1.AND.NCGTC(IZ,3).EQ.1)THEN
+                IF(HOUR.GT.float(ICGCS(IZ)).AND.
+     &             HOUR.LE.float(ICGCF(IZ))) ICC= 1
+              ELSEIF(ICGT(IDTY,ICNN).EQ.-1.AND.NCGTC(IZ,IDTY).EQ.1)THEN
 
 C If relative GAINS (W/2) ARE CONTROLED.
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 1
-                ELSEIF(ICGT3(ICNN).EQ.1)THEN
+        	IF(HOUR.GT.float(ICGCS(IZ)).AND.
+     &  	   HOUR.LE.float(ICGCF(IZ))) ICC= 1
+              ELSEIF(ICGT(IDTY,ICNN).EQ.1)THEN
 
 C If absolute GAINS (W) ARE NOT CONTROLED.
-                  UCCT1=UCCT1+X7C
-                  UCCRT1=UCCRT1+X7R
-                ELSEIF(ICGT3(ICNN).EQ.-1)THEN
+        	UCCT1=UCCT1+X7C
+        	UCCRT1=UCCRT1+X7R
+              ELSEIF(ICGT(IDTY,ICNN).EQ.-1)THEN
 
 C If relative GAINS (W/2) ARE NOT CONTROLED.
-                  UCCT1=UCCT1+(X7C*ZBASEA(IZ))
-                  UCCRT1=UCCRT1+(X7R*ZBASEA(IZ))
-                ENDIF
+        	UCCT1=UCCT1+(X7C*ZBASEA(IZ))
+        	UCCRT1=UCCRT1+(X7R*ZBASEA(IZ))
+              ENDIF
 
 C If there is a control for type 2 (lighting), test the control periods.
 C If one of the periods includes HOUR then save magnitudes.
-                IF(ICGT3(ICNN).EQ.2.AND.NCGTC(IZ,3).EQ.2)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 2
-                ELSEIF(ICGT3(ICNN).EQ.-2.AND.NCGTC(IZ,3).EQ.2)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 2
-                ELSEIF(ICGT3(ICNN).EQ.2)THEN
+              IF(ICGT(IDTY,ICNN).EQ.2.AND.NCGTC(IZ,IDTY).EQ.2)THEN
+        	IF(HOUR.GT.float(ICGCS(IZ)).AND.
+     &  	   HOUR.LE.float(ICGCF(IZ))) ICC= 2
+              ELSEIF(ICGT(IDTY,ICNN).EQ.-2.AND.NCGTC(IZ,IDTY).EQ.2)THEN
+        	IF(HOUR.GT.float(ICGCS(IZ)).AND.
+     &  	   HOUR.LE.float(ICGCF(IZ))) ICC= 2
+              ELSEIF(ICGT(IDTY,ICNN).EQ.2)THEN
 
 C Casual gain type 2 is not controlled so set magnitudes.
-                  UCCT2=UCCT2+X7C
-                  UCCRT2=UCCRT2+X7R
-                ELSEIF(ICGT3(ICNN).EQ.-2)THEN
-                  UCCT2=UCCT2+(X7C*ZBASEA(IZ))
-                  UCCRT2=UCCRT2+(X7R*ZBASEA(IZ))
-                ENDIF
+        	UCCT2=UCCT2+X7C
+        	UCCRT2=UCCRT2+X7R
+              ELSEIF(ICGT(IDTY,ICNN).EQ.-2)THEN
+        	UCCT2=UCCT2+(X7C*ZBASEA(IZ))
+        	UCCRT2=UCCRT2+(X7R*ZBASEA(IZ))
+              ENDIF
 
 C If there is a control for type 3 (equipment), test the control periods.
 C If one of the periods includes HOUR then save magnitudes.
-                IF(ICGT3(ICNN).EQ.3.AND.NCGTC(IZ,3).EQ.3)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 3
-                ELSEIF(ICGT3(ICNN).EQ.-3.AND.NCGTC(IZ,3).EQ.3)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 3
-                ELSEIF(ICGT3(ICNN).EQ.3)THEN
+              IF(ICGT(IDTY,ICNN).EQ.3.AND.NCGTC(IZ,IDTY).EQ.3)THEN
+        	IF(HOUR.GT.float(ICGCS(IZ)).AND.
+     &  	   HOUR.LE.float(ICGCF(IZ))) ICC= 3
+              ELSEIF(ICGT(IDTY,ICNN).EQ.-3.AND.NCGTC(IZ,IDTY).EQ.3)THEN
+        	IF(HOUR.GT.float(ICGCS(IZ)).AND.
+     &  	   HOUR.LE.float(ICGCF(IZ))) ICC= 3
+              ELSEIF(ICGT(IDTY,ICNN).EQ.3)THEN
 
 C Casual gain type 3 is not controlled so set magnitudes.
-                  UCCT3=UCCT3+X7C
-                  UCCRT3=UCCRT3+X7R
-                ELSEIF(ICGT3(ICNN).EQ.-3)THEN
-                  UCCT3=UCCT3+(X7C*ZBASEA(IZ))
-                  UCCRT3=UCCRT3+(X7R*ZBASEA(IZ))
-                ENDIF
+        	UCCT3=UCCT3+X7C
+        	UCCRT3=UCCRT3+X7R
+              ELSEIF(ICGT(IDTY,ICNN).EQ.-3)THEN
+        	UCCT3=UCCT3+(X7C*ZBASEA(IZ))
+        	UCCRT3=UCCRT3+(X7R*ZBASEA(IZ))
               ENDIF
-   40       CONTINUE
-          ENDIF
-
-C Saturday
-        ELSEIF(IDWK.EQ.6)THEN
-
-C If there is more than one period during Saturday, loop for each;
-C if there are any casual gains at this hour;
-C if there is a control for type 1 (occupancy), test the control periods;
-C if one of the periods includes HOUR then save magnitudes.
-          IF(NCAS2.GE.1)THEN
-            DO 50 ICNN=1,NCAS2
-              X6C=CMGS2(ICNN)*CONC2(ICNN)
-              X6R=CMGS2(ICNN)*RADC2(ICNN)
-              IF(HOUR.GT.float(ICGS2(ICNN)).AND.
-     &                 HOUR.LE.float(ICGF2(ICNN)))THEN
-                IF(ICGT2(ICNN).EQ.1.AND.NCGTC(IZ,2).EQ.1)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 1
-                ELSEIF(ICGT2(ICNN).EQ.-1.AND.NCGTC(IZ,2).EQ.1)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 1
-                ELSEIF(ICGT2(ICNN).EQ.1)THEN
-
-C Casual gain type 1 is not controlled so set magnitudes.
-                  UCCT1=UCCT1+X6C
-                  UCCRT1=UCCRT1+X6R
-                ELSEIF(ICGT2(ICNN).EQ.-1)THEN
-                  UCCT1=UCCT1+(X6C*ZBASEA(IZ))
-                  UCCRT1=UCCRT1+(X6R*ZBASEA(IZ))
-                ENDIF
-
-C If there is a control for type 2 (lighting), test the control periods.
-C If one of the periods includes HOUR then save magnitudes.
-                IF(ICGT2(ICNN).EQ.2.AND.NCGTC(IZ,2).EQ.2)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 2
-                ELSEIF(ICGT2(ICNN).EQ.-2.AND.NCGTC(IZ,2).EQ.2)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 2
-                ELSEIF(ICGT2(ICNN).EQ.2)THEN
-
-C Casual gain type 2 is not controlled so set magnitudes.
-                  UCCT2=UCCT2+X6C
-                  UCCRT2=UCCRT2+X6R
-                ELSEIF(ICGT2(ICNN).EQ.-2)THEN
-                  UCCT2=UCCT2+(X6C*ZBASEA(IZ))
-                  UCCRT2=UCCRT2+(X6R*ZBASEA(IZ))
-                ENDIF
-
-C If there is a control for type 3 (equipment), test the control periods.
-C If one of the periods includes HOUR then save magnitudes.
-                IF(ICGT2(ICNN).EQ.3.AND.NCGTC(IZ,2).EQ.3)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 3
-                ELSEIF(ICGT2(ICNN).EQ.-3.AND.NCGTC(IZ,2).EQ.3)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 3
-                ELSEIF(ICGT2(ICNN).EQ.3)THEN
-
-C Casual gain type 3 is not controlled so set magnitudes.
-                  UCCT3=UCCT3+X6C
-                  UCCRT3=UCCRT3+X6R
-                ELSEIF(ICGT2(ICNN).EQ.-3)THEN
-                  UCCT3=UCCT3+(X6C*ZBASEA(IZ))
-                  UCCRT3=UCCRT3+(X6R*ZBASEA(IZ))
-                ENDIF
-              ENDIF
-   50       CONTINUE
-          ENDIF
-        ELSE
-
-C If there is more than one period during weekdays, loop for each;
-C if there are any casual gains at this hour;
-C if there is a control for type 1 (occupancy), test the control periods;
-C if one of the periods includes HOUR then save magnitudes.
-          IF(NCAS1.GE.1)THEN
-            DO 60 ICNN=1,NCAS1
-              XC=CMGS1(ICNN)*CONC1(ICNN)
-              XR=CMGS1(ICNN)*RADC1(ICNN)
-              IF(HOUR.GT.float(ICGS1(ICNN)).AND.
-     &                 HOUR.LE.float(ICGF1(ICNN)))THEN
-                IF(ICGT1(ICNN).EQ.1.AND.NCGTC(IZ,1).EQ.1)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 1
-                ELSEIF(ICGT1(ICNN).EQ.-1.AND.NCGTC(IZ,1).EQ.1)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 1
-                ELSEIF(ICGT1(ICNN).EQ.1)THEN
-
-C Casual gain type 1 is not controlled so set magnitudes.
-                  UCCT1=UCCT1+XC
-                  UCCRT1=UCCRT1+XR
-                ELSEIF(ICGT1(ICNN).EQ.-1)THEN
-                  UCCT1=UCCT1+(XC*ZBASEA(IZ))
-                  UCCRT1=UCCRT1+(XR*ZBASEA(IZ))
-                ENDIF
-
-C If there is a control for type 2 (lighting), test the control periods.
-C If one of the periods includes HOUR then save magnitudes.
-                IF(ICGT1(ICNN).EQ.2.AND.NCGTC(IZ,1).EQ.2)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 2
-                ELSEIF(ICGT1(ICNN).EQ.-2.AND.NCGTC(IZ,1).EQ.2)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 2
-                ELSEIF(ICGT1(ICNN).EQ.2)THEN
-
-C Casual gain type 2 is not controlled so set magnitudes.
-                  UCCT2=UCCT2+XC
-                  UCCRT2=UCCRT2+XR
-                ELSEIF(ICGT1(ICNN).EQ.-2)THEN
-                  UCCT2=UCCT2+(XC*ZBASEA(IZ))
-                  UCCRT2=UCCRT2+(XR*ZBASEA(IZ))
-                ENDIF
-
-C If there is a control for type 3 (equipment), test the control periods.
-C If one of the periods includes HOUR then save magnitudes.
-                IF(ICGT1(ICNN).EQ.3.AND.NCGTC(IZ,1).EQ.3)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 3
-                ELSEIF(ICGT1(ICNN).EQ.-3.AND.NCGTC(IZ,1).EQ.3)THEN
-                  IF(HOUR.GT.float(ICGCS(IZ)).AND.
-     &               HOUR.LE.float(ICGCF(IZ))) ICC= 3
-                ELSEIF(ICGT1(ICNN).EQ.3)THEN
-
-C Casual gain type 3 is not controlled so set magnitudes.
-                  UCCT3=UCCT3+XC
-                  UCCRT3=UCCRT3+XR
-                ELSEIF(ICGT1(ICNN).EQ.-3)THEN
-                  UCCT3=UCCT3+(XC*ZBASEA(IZ))
-                  UCCRT3=UCCRT3+(XR*ZBASEA(IZ))
-                ENDIF
-              ENDIF
-   60       CONTINUE
-          ENDIF
+            ENDIF
+   40     CONTINUE
         ENDIF
       ENDIF
-
       RETURN
       END
 

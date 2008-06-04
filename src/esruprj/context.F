@@ -33,6 +33,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "building.h"
 #include "tdf2.h"
 #include "sbem.h"
+#include "roam.h"
 
       integer igraphiclib  ! external definition
 
@@ -72,7 +73,7 @@ C Images.
       COMMON/GT/GTNAME
 
 C Calendar.
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -161,12 +162,12 @@ C Begin with high level menu.
       ITEMS(19)=                'p integrated performance view    '
       ITEMS(20)=                '  ___________________________    '
       ITEMS(21)=                'q pressure coefficients calc.    '
-      ITEMS(22)=                'r impose measured/temporal data  '
+      ITEMS(22)=                'r impose  measured data          '
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
-      ITEMS(25)=                ' _____________________________   '
-      ITEMS(26)=                't UK NCM specifications          '
-      ITEMS(27)=                ' _____________________________   '
+      ITEMS(25)=                't UK NCM specifications          '
+      ITEMS(26)=                'u transient orientation          '
+      ITEMS(27)=                ' _____________________________ '
       ITEMS(28)=                '? help                           '
       ITEMS(29)=                '- exit this menu                 '
       nitms=29
@@ -565,7 +566,7 @@ C and then list the months of the year.
 C Calendar functions. If number of daytypes is zero then
 C initialise. Then enter interactive facility to allow user
 C to define holidays.
-        if(nbdaytype.eq.0)then
+        if(nbdaytype.le.3)then
           act = 'i'
           call calenmanage(act,ier)
         endif
@@ -863,15 +864,122 @@ C          MODSIT=.true.
 C Manage images or browse by listing out current contents of image folder.
         call manageimages(modsit)
 
-      ELSEIF(INO.eq.26)then
+      ELSEIF(INO.eq.25)then
 
 C Enter the definitions for UK NCM related data.
         call sbmedit
+      ELSEIF(INO.eq.26)then
+
+C Changing orientation as a function of time.
+        CALL ROAMING
       ELSE
         GOTO 3
       ENDIF
       GOTO 3
 
+      END
+
+c ****** ROAMING *****
+C This subroutine manages data associated with rotating a model as a
+C function of time. Important variables are defined in roam.h
+      SUBROUTINE ROAMING
+#include "building.h"
+#include "roam.h"
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/POPHELP/H(60)
+
+      CHARACTER*72 h,DFLTNAME,LCFGF,OUTS
+      CHARACTER CFGROOT*24,TEMPSTR*30
+      INTEGER IOK
+      LOGICAL OK,DOK
+
+C Initialise variables
+      IOK=0
+      OK=.FALSE.
+      DOK=.TRUE.
+
+C Help message
+      H(1) ='This facility is used to change orientation of the model'
+      H(2) ='as a function of time. For this purpose a roaming file is'
+      H(3) ='required. This file includes information about locations'
+      H(4) ='that a model will exist at and the times of validity.'
+      H(5) =' '
+      H(6) ='When defining the file for the first time in a model the '
+      H(7) ='user should generate a template (option to do this follows'
+      H(8) ='this message) and use a text editor to add information to '
+      H(9) ='the template. If you have previously defined a roaming '
+      H(10)='file then you can just view its contents within Project'
+      H(11)='Manager. All editing should be done by a third party text'
+      H(12)='editor.'
+      H(13)=' '
+      H(14)=' '
+      H(15)=' '
+      H(16)=' '
+      H(17)=' '
+      H(18)=' '
+      H(19)=' '
+      WRITE(DFLTNAME,'(2A)')CFGROOT(1:LNBLNK(CFGROOT)),'.roam'
+      IF(IROAM.NE.1)THEN
+        LROAM=DFLTNAME
+        IROAM=1
+        CALL PHELPD('Roaming Introduction',19,'-',0,0,IER)
+        CALL EASKAB(' ','Roaming file actions:',
+     &    'create template','cancel and exit',IOK,19)
+        IF(IOK.EQ.1)THEN
+          CALL WROAM
+          CALL RROAM
+        ENDIF
+      ELSE
+        CALL EASKS2CMD(LROAM,' Roaming file? (see help)',
+     &  ' ','dereference','browse',IACT,72,' ','Roaming file',IER,19)
+        IF(IACT.EQ.1)THEN
+          IROAM=0
+          CALL EDISP(IUOUT,'Updating configuration file ...')
+          CALL EMKCFG('-',IER)
+        ELSE
+          CALL RROAM
+        ENDIF
+      ENDIF
+
+C Display file contents
+      CALL ASKOK('View location information?',' ',OK,dok,19)
+      IF(OK)THEN
+        CALL EDISP(IUOUT,' ')
+        WRITE(OUTS,'(A,F3.1)')'ESP-r Roaming file version number ',VERS
+        CALL EDISP(IUOUT,OUTS)
+        CALL EDISP(IUOUT,
+     &  'Location                      Latitude Longitude')
+        DO 1000 ILOC=1,NLOC
+          WRITE(OUTS,'(A30,1X,F5.1,5X,F5.1)')
+     &    LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+          CALL EDISP(IUOUT,OUTS)
+ 1000   CONTINUE
+        CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
+        IF(OK)THEN
+          CALL EDISP(IUOUT,
+     &    'start hr, dy, mth, orientation, day type, location')
+          DO 1100 IPDR=1,NPDR
+            IF(LLOCT(IPDR).EQ.0)THEN
+              TEMPSTR='cruising'
+            ELSE
+              TEMPSTR=LOCRM(LLOCT(IPDR))
+            ENDIF
+            WRITE(OUTS,'(5X,I3,1X,I3,2X,I3,7X,I4,5X,I2,7X,A30)')
+     &      LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
+     &      LDTP(IPDR),TEMPSTR
+          CALL EDISP(IUOUT,OUTS)
+ 1100     CONTINUE
+        ENDIF
+        CALL EDISP(IUOUT,' ')
+      ENDIF
+
+C Update configuration file
+      CALL EDISP(IUOUT,'Updating configuration file ...')
+      CALL EMKCFG('-',IER)
+      RETURN
       END
 
 C ****** manageimages
@@ -2366,13 +2474,14 @@ C icalendar (int*365) for each day, the associated day type
 C act (char*1) action to take 'i' initialise, '-' interactive
       subroutine calenmanage(act,ier)
 #include "epara.h"
+#include "building.h"
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2393,10 +2502,11 @@ C 31
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
       logical modify,browse
+      INTEGER IHL
 
 C If user requested initial calendar.
       if(act.eq.'i'.and.(.NOT.browse))then
-        if(nbdaytype.eq.0)then
+        if(nbdaytype.le.3)then
           calename='standard weekday Sat & Sun'
           nbdaytype=3
           nbcaldays(1)=0
@@ -2535,8 +2645,9 @@ C Manage day types.
         write(citem(mm+4),'(a)') '- exit                               '
         mcvert=mj+nbdaytype+4
         h(1)='This facility allows you to manage day types. You can'
-        h(2)='add or delete (be careful) a day type. To change the '
-        h(3)='details of a day type click on the relevant menu item.'
+        h(2)='add a day type. To change the details of a day type'
+        h(3)='click on the relevant menu item.'
+        icvert=-1
         CALL EMENU('  Day types',citem,mcvert,icvert)
         if(icvert.eq.mcvert)then
           CALL EPMENRC
@@ -2549,11 +2660,15 @@ C Help.
         elseif(icvert.eq.mcvert-2)then
 
 C Add or delete a day type.
-          if(nbdaytype.ge.3.and.nbdaytype.le.10)then
-            h(1)='There can be up to 10 day types. Plese do not '
-            h(2)='delete the basic 3 day types. '
+          if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
+            write(h(1),'(a,i4,a)')'There can be up to ',MDTY,
+     &      ' day types.'
+            h(2)='Day types cannot be deleted (yet) but may not'
+            h(3)='not be assigned to any day at all. The equivalent'
+            h(4)='of deletion is to unassign a day type from all '
+            h(5)='actual days '
             CALL EASKABC(' Options:',' ',
-     &        'add','delete (be careful)','continue',IRT,2)
+     &        'add','delete (not available)','continue',IRT,5)
             if(irt.eq.1)then
               nbdaytype=nbdaytype+1
               nbcaldays(nbdaytype)=0
@@ -2570,7 +2685,6 @@ C Edit calendar day tag and name.
                 if(tcalentag(1:lnblnk(tcalentag)).ne.
      &calentag(nbdaytype)(1:lnblnk(calentag(nbdaytype))))then
                   calentag(nbdaytype)=tcalentag
-                  modify=.true.
                 endif
               endif
               tcalendayn=calendayname(nbdaytype)
@@ -2580,12 +2694,17 @@ C Edit calendar day tag and name.
                 if(tcalendayn(1:lnblnk(tcalendayn)).ne.
      &calendayname(nbdaytype)(1:lnblnk(calendayname(nbdaytype))))then
                   calendayname(nbdaytype)=tcalendayn
-                  modify=.true.
                 endif
               endif
+
+C Update operations data for all zones to include this new day type
+              CALL UPDOPR
+              modify=.true.
               goto 73
             elseif(irt.eq.2)then
-              call edisp(iuout,'Delete not yet implemented!')
+              DO 144 IHL=1,5
+                call edisp(iuout,h(ihl))
+ 144          CONTINUE
               goto 73
             elseif(irt.eq.3)then
               goto 73
@@ -2625,9 +2744,8 @@ C Edit calendar day tag and name.
       ELSEIF(IVERT.EQ.MVERT)THEN
         if(modify.and.(.NOT.browse))then
 
-C << update the model if not browsing >>
-          call edisp(iuout,' ')
-          call edisp(iuout,'Be sure to save model!')
+C update the model if not browsing 
+          CALL EMKCFG('-',IER)
         endif
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
@@ -2685,7 +2803,7 @@ C user can select one or more.
   67    continue
         IX=1
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
-     &    52,nbdaytype,citem,'avail day types',IER,2)
+     &    52,nbdaytype,citem,'available day types',IER,2)
         if(ix.ne.0)then
           idt=idvals(1)
           do 78 ld=1,365
@@ -2776,9 +2894,11 @@ C option is to display in graphic feedback with day types
 C as defined by calenmanage.
 C act (char*1) action to take 't' text feedback, 'g' graphic feedback.
       subroutine calenprint(itru,act,iyear,loopst,loop,ier)
+#include "building.h"
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.

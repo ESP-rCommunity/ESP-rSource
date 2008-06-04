@@ -642,6 +642,46 @@ Winter season is Mon 19 Nov - Mon 31 Dec
 Typical winter week begins Mon 17 Dec
 *help_end
 *item
+*name	Guantanamo Bay CUBA
+*aide	Guantanamo Bay CUBA sourced from DoE web Mar 2008
+*dbfl	/usr/esru/esp-r/climate/CUB_Guantanamo.Bay.NAS_TMY
+*avail	ONLINE
+*winter_s  1  1 28  2  1 11 31 12
+*spring_s  1  3 30  4  1  9 31 10
+*summer_s  1  5 31  8
+*winter_t  9  1 15  1 20 11 26 11
+*spring_t  6  3 12  3  2 10  8 10
+*summer_t 11  7 17  7
+*help_start
+Climate is Guantanamo Bay a CUB
+ Location: 19.90N 14.85E : 1971
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     17.2 @ 4h00 Thu-21       29.4 @13h00 Sat-16    24.1
+ Feb     20.6 @ 7h00 Fri-05       28.9 @14h00 Tue-09    24.4
+ Mar     17.8 @ 7h00 Sat-06       30.6 @13h00 Thu-11    25.3
+ Apr     21.1 @ 7h00 Sun-04       33.3 @14h00 Tue-06    26.6
+ May     21.7 @ 7h00 Tue-25       33.9 @15h00 Sat-01    27.4
+ Jun     23.9 @ 7h00 Sun-06       31.7 @13h00 Sat-12    27.6
+ Jul     22.8 @ 1h00 Sun-18       36.1 @11h00 Wed-28    28.3
+ Aug     23.3 @ 3h00 Sun-29       34.4 @13h00 Mon-16    28.3
+ Sep     22.8 @23h00 Sat-25       35.0 @16h00 Sat-11    27.9
+ Oct     22.2 @ 7h00 Sun-31       32.8 @13h00 Fri-15    27.1
+ Nov     18.9 @ 7h00 Fri-12       32.8 @15h00 Mon-08    26.0
+ Dec     18.9 @ 4h00 Sat-25       31.1 @14h00 Wed-01    24.8
+ Annual  17.2 @ 4h00 Thu-21-Jan   36.1 @11h00 Wed-28-Jul    26.5
+ ---Seasons & typical periods---
+Winter season is Fri-01-Jan - Sun-28-Feb
+Typical winter week begins Sat-09-Jan
+Spring season is Mon-01-Mar - Fri-30-Apr
+Typical spring week begins Sat-06-Mar
+Summer season is Sat-01-May - Tue-31-Aug
+Typical summer week begins Sun-11-Jul
+Autumn season is Wed-01-Sep - Sun-31-Oct
+Typical autumn week begins Sat-02-Oct
+Winter season is Mon-01-Nov - Fri-31-Dec
+Typical winter week begins Sat-20-Nov
+*help_end
+*item
 *name	Jersey CH ISL IWEC WMO 038950
 *aide	Jersey (sourced from IWEC/DoE)
 *dbfl	/usr/esru/esp-r/climate/uk_channel_islands_iwec
@@ -1513,6 +1553,46 @@ Winter season is Mon  5 Nov - Mon 31 Dec
 Typical winter week begins Tue 20 Nov
 *help_end
 *item
+*name	Pinar del Rio - CUB
+*aide	Pinar del Rio - CUB was sourced from DoE website Mar 2008
+*dbfl	/usr/esru/esp-r/climate/CUB_Pinar.del.Rio_SWERA
+*avail	ONLINE
+*winter_s  1  1 28  2  1 11 31 12
+*spring_s  1  3 30  4  1  9 31 10
+*summer_s  1  5 31  8
+*winter_t  9  1 15  1 20 11 26 11
+*spring_t  6  3 12  3  2 10  8 10
+*summer_t 11  7 17  7
+*help_start
+Climate is Pinar del Rio - CUB
+ Location: 22.42N  8.68W : 1998
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     10.9 @ 4h00 Thu-29       30.0 @16h00 Sat-24    21.4
+ Feb     13.4 @ 7h00 Sun-08       30.1 @16h00 Fri-20    22.7
+ Mar     14.0 @ 7h00 Tue-17       31.0 @13h00 Tue-24    23.3
+ Apr     17.3 @ 7h00 Fri-03       32.4 @13h00 Tue-28    24.3
+ May     20.0 @16h00 Wed-13       32.8 @19h00 Wed-06    25.5
+ Jun     20.7 @ 4h00 Mon-15       32.4 @13h00 Thu-11    26.5
+ Jul     21.8 @13h00 Thu-16       34.1 @16h00 Wed-29    26.7
+ Aug     22.1 @ 4h00 Fri-14       34.1 @13h00 Mon-24    27.1
+ Sep     22.2 @16h00 Fri-11       32.6 @13h00 Fri-25    26.2
+ Oct     16.0 @ 7h00 Thu-15       32.0 @13h00 Thu-01    25.5
+ Nov     14.8 @22h00 Sun-22       31.5 @16h00 Fri-13    23.6
+ Dec     12.0 @ 7h00 Mon-28       30.0 @13h00 Thu-03    22.4
+ Annual  10.9 @ 4h00 Thu-29-Jan   34.1 @16h00 Wed-29-Jul    24.6
+ ---Seasons & typical periods---
+Winter season is Thu-01-Jan - Sat-28-Feb
+Typical winter week begins Fri-09-Jan
+Spring season is Sun-01-Mar - Thu-30-Apr
+Typical spring week begins Fri-06-Mar
+Summer season is Fri-01-May - Mon-31-Aug
+Typical summer week begins Sat-11-Jul
+Autumn season is Tue-01-Sep - Sat-31-Oct
+Typical autumn week begins Fri-02-Oct
+Winter season is Sun-01-Nov - Thu-31-Dec
+Typical winter week begins Fri-20-Nov
+*help_end
+*item
 *name	Pisa Italy 2001 IWMO 161580
 *aide	Pisa Italy (sourced from ASHRAE/DoE)
 *dbfl	/usr/esru/esp-r/climate/ita_pisa_iwec
@@ -1698,6 +1778,86 @@ The solar radiation is Direct Normal. Dry bulb temperatures:
  Typical summer week begins Monday 1 June.
  Typical autumn week begins Monday 12 October.
  Typical winter week begins Monday 14 December.
+*help_end
+*item
+*name	SAN_JUAN PR PRI
+*aide	SAN_JUAN PR PRI was sourced from DoE website Mar 2008
+*dbfl	/usr/esru/esp-r/climate/PRI_San.Juan_TMY2
+*avail	ONLINE
+*winter_s  1  1 28  2  1 11 31 12
+*spring_s  1  3 30  4  1  9 31 10
+*summer_s  1  5 31  8
+*winter_t  9  1 15  1 20 11 26 11
+*spring_t  6  3 12  3  2 10  8 10
+*summer_t 11  7 17  7
+*help_start
+Climate is SAN_JUAN PR PRI
+ Location: 18.43N  6.00W : 1970
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     19.4 @ 5h00 Mon-05       28.9 @14h00 Sat-03    24.4
+ Feb     19.4 @ 5h00 Sat-07       30.0 @14h00 Thu-12    24.3
+ Mar     19.4 @ 8h00 Sun-08       31.1 @17h00 Thu-26    25.3
+ Apr     20.0 @ 5h00 Mon-27       32.8 @14h00 Fri-10    25.7
+ May     22.8 @20h00 Thu-07       31.1 @14h00 Wed-27    26.6
+ Jun     22.8 @ 5h00 Tue-02       31.7 @11h00 Fri-26    27.1
+ Jul     22.2 @ 4h00 Mon-20       33.3 @15h00 Sat-04    27.3
+ Aug     22.2 @ 1h00 Sun-02       33.3 @14h00 Thu-06    27.4
+ Sep     23.9 @ 5h00 Thu-03       32.8 @14h00 Tue-01    27.5
+ Oct     23.9 @14h00 Tue-06       32.8 @14h00 Mon-19    27.2
+ Nov     22.2 @ 5h00 Thu-19       31.7 @14h00 Thu-05    26.3
+ Dec     18.9 @ 2h00 Wed-30       31.7 @14h00 Sun-06    24.9
+ Annual  18.9 @ 2h00 Wed-30-Dec   33.3 @15h00 Sat-04-Jul    26.2
+ ---Seasons & typical periods---
+Winter season is Thu-01-Jan - Sat-28-Feb
+Typical winter week begins Fri-09-Jan
+Spring season is Sun-01-Mar - Thu-30-Apr
+Typical spring week begins Fri-06-Mar
+Summer season is Fri-01-May - Mon-31-Aug
+Typical summer week begins Sat-11-Jul
+Autumn season is Tue-01-Sep - Sat-31-Oct
+Typical autumn week begins Fri-02-Oct
+Winter season is Sun-01-Nov - Thu-31-Dec
+Typical winter week begins Fri-20-Nov
+*help_end
+*item
+*name	Santiago de Cuba - CUB
+*aide	Santiago de Cuba - CUB was sourced from DoE website Mar 2008
+*dbfl	/usr/esru/esp-r/climate/CUB_Santiago.de.Cuba_SWERA
+*avail	ONLINE
+*winter_s  1  1 28  2  1 11 31 12
+*spring_s  1  3 30  4  1  9 31 10
+*summer_s  1  5 31  8
+*winter_t  9  1 15  1 20 11 26 11
+*spring_t  6  3 12  3  2 10  8 10
+*summer_t 11  7 17  7
+*help_start
+Climate is Santiago de Cuba - CUB
+ Location: 19.97N  0.85W : 1977
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     14.1 @ 7h00 Thu-20       31.0 @13h00 Thu-06    23.4
+ Feb     15.0 @ 5h00 Sat-05       36.0 @23h00 Wed-02    23.7
+ Mar     17.0 @ 3h00 Wed-23       29.9 @10h00 Tue-08    24.6
+ Apr     19.9 @ 4h00 Fri-01       30.0 @13h00 Sun-03    25.4
+ May     21.0 @ 5h00 Wed-11       31.0 @11h00 Thu-05    26.3
+ Jun     21.5 @ 4h00 Fri-10       31.5 @10h00 Fri-24    26.7
+ Jul     22.4 @ 4h00 Fri-29       32.1 @13h00 Fri-15    27.6
+ Aug     20.0 @ 6h00 Sat-27       64.0 @19h00 Fri-05    27.6
+ Sep      0.0 @22h00 Tue-20       33.0 @13h00 Fri-09    27.0
+ Oct     22.2 @ 7h00 Sun-23       33.0 @11h00 Sun-30    26.9
+ Nov     20.2 @ 4h00 Sun-13       33.0 @22h00 Mon-28    25.9
+ Dec     19.0 @ 6h00 Sat-10       30.2 @13h00 Sun-04    24.5
+ Annual   0.0 @22h00 Tue-20-Sep   64.0 @19h00 Fri-05-Aug    25.8
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Mon-28-Feb
+Typical winter week begins Sun-09-Jan
+Spring season is Tue-01-Mar - Sat-30-Apr
+Typical spring week begins Sun-06-Mar
+Summer season is Sun-01-May - Wed-31-Aug
+Typical summer week begins Mon-11-Jul
+Autumn season is Thu-01-Sep - Mon-31-Oct
+Typical autumn week begins Sun-02-Oct
+Winter season is Tue-01-Nov - Sat-31-Dec
+Typical winter week begins Sun-20-Nov
 *help_end
 *item
 *name	Saskatoon SK CAN

@@ -3651,6 +3651,7 @@ C Edit flow control function II.
 C Portions of multi-sensor feedback message.
       character msg1*24,msg2*24,msg3*24,msg4*24
       logical close1,OK,DOK
+      real ocli
 
 C Number of functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -3808,7 +3809,8 @@ C What is the equivalent for flow.....
      &   'b proportional with hysteresis',
      &   'c range based (for 30 35 40 110 130)',
      &   'd multi-sensor on/off',
-     &   'e human behaviour algorithm ver 1.0',' ',' ',' ',' ',' ',' '
+     &   'e human behaviour algorithm ver 1.0',
+     &   'f proportional and integral ',' ',' ',' ',' ',' '
      &   ,' ',ino,idno,5)
         if(ino.eq.0)then
           continue
@@ -4174,6 +4176,75 @@ C Ask for node associated with operative temperature
           IFSN(II,1)=-3
           IFSN(II,2)=7
           IFSN(II,3)=INPK(1)
+
+C PI controller
+        elseif(iclaw.eq.5)then
+          H(1) ='This control law is a simplified PI controller '
+          H(2) ='Control inputs are: '
+          H(3) ='Setpoint nominal T_st (default value 21)'
+          H(4) ='Sensed condition T_sen (from sensor definition)'
+          H(5) ='max flow fraction Q_max (default value 1)'
+          H(6) ='min flow fraction Q_min (default value 0.3)'
+          H(7) ='Proportional band PB (default value 1)'
+          H(8) ='Integral reset time AIRT (default value 1000)'
+          H(9) =' '
+          H(10)='At simulation run time controlled value will be '
+          H(11)='modified according to the following logic:'
+          H(12)='VALUE=(Q_max-Q_min)*(DELTA/PB+SDELTA/(PB*AIRT))'
+          H(13)='       + 0.5*(Q_max+Q_min)'
+          H(14)='Where DELTA=T_sen-T_st and SDELTA is the '
+          H(15)='Integral summation of DELTA '
+          H(16)='If VALUE is bigger than Q_max it is reset to Q_max or'
+          H(17)='If VALUE is smaller than Q_min it is reset to Q_min'
+          H(18)=' '
+          H(19)='The action flag may be set to direct acting (default) '
+          H(20)='or inverse acting (action of PI will be inverted e.g.'
+          H(21)='instead of closing it will open a valve) '
+          H(22)=' '
+          H(23)='Optionally there is capability to sense using a'
+          H(24)='previously defined multisensing loop. When using '
+          H(25)='this option the usual definition of sensor will be'
+          H(26)='overridden and the output of the multi sensor control'
+          H(27)='loop will be used as the sensed parameter'
+          CALL ECLOSE(CM(1),0.0,0.001,close1)
+          IF(CLOSE1)THEN
+            CM(2)=21
+            CM(3)=1.
+            CM(4)=0.3
+            CM(5)=1.
+            CM(6)=1000.
+          ENDIF
+          CM(1)=8.0
+          call edisp(iuout,' ')
+          call edisp(iuout,' current control parameters are:')
+          call edisp(iuout,
+     &      ' nominal, max flow , min flow , prop band, reset time')
+ 101      WRITE(HOLD,'(5F8.3)')CM(2),CM(3),CM(4),CM(5),CM(6)
+          CALL EDISP(IUOUT,HOLD)
+          CALL EASKS(HOLD,
+     &    ' nominal, max flow, min flow, prop band, reset time (sec)',
+     &    '(see help)',42,HOLD,'PI controller',IER,27)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),1.,1.,'-','Setpoint nominal ',IER)
+          CALL EGETWR(HOLD,K,cm(3),1.,1.,'-','Setpoint max',IER)
+          CALL EGETWR(HOLD,K,cm(4),1.,1.,'-','Setpoint min',IER)
+          CALL EGETWR(HOLD,K,cm(5),1.E-6,1.E6,'F','Prop band',IER)
+          CALL EGETWR(HOLD,K,cm(6),1.E-6,1.E6,'F','Int reset time',IER)
+          IAD=0
+          CALL EASKAB('Action flag (see help)',' ',
+     &    ' direct ',' inverse ',iad,27)
+          IF(IAD.EQ.2)IAD=-1
+          CM(7)=REAL(IAD)
+          IAD=0
+          CM(8)=0.
+          CALL EASKABC('Which sensor to use',' ',
+     &    'this loops sensor','multisensor loop','continue',iad,27)
+          IF(IAD.EQ.2)THEN
+            CALL EASKR(ocli,' ',' control loop index ',
+     &      0.,'-',24.,'-',0.,'control loop index',IER,27)
+            CM(8)=ocli
+          ENDIF
+          if(ier.ne.0)goto 101
 
 C Miscellaneous data for additional flow controllers should follow here.
   70    endif
