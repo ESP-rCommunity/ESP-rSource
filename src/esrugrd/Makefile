@@ -88,7 +88,7 @@ esystem.F:
 	ln -s $(COMdir)/esystem.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -112,7 +112,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
+	ln -s $(COMdir)/tdfile.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi

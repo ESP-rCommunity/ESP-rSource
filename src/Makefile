@@ -3,7 +3,7 @@
 SRCdir=`pwd`
 
 PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd ish mfs \
-	   mld mrt pdb prj res run tdf vew
+	   mld mrt pdb prj res run vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -70,8 +70,6 @@ res:
 	cd $(SRCdir)/esrures; $(MAKE)
 run: 
 	cd $(SRCdir)/esrurun; $(MAKE)
-tdf: 
-	cd $(SRCdir)/esrutdf; $(MAKE)
 vew: 
 	cd $(SRCdir)/esruvew; $(MAKE)
 vww: 
@@ -99,7 +97,6 @@ clean:
 	cd $(SRCdir)/esruprj; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
 	cd $(SRCdir)/esrurun; $(MAKE) clean
-	cd $(SRCdir)/esrutdf; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esruvww; $(MAKE) clean
 	@if [ -f $(SRCdir)/include/espinstalldir.h ]; then rm $(SRCdir)/include/espinstalldir.h; fi
@@ -126,7 +123,6 @@ strip:
 	cd $(SRCdir)/esruprj; $(MAKE) strip
 	cd $(SRCdir)/esrures; $(MAKE) strip
 	cd $(SRCdir)/esrurun; $(MAKE) strip
-	cd $(SRCdir)/esrutdf; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esruvww; $(MAKE) strip
 
@@ -151,7 +147,6 @@ InstBins:
 	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrutdf; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvww; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 

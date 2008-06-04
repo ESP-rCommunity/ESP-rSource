@@ -43,6 +43,8 @@ C sbmedit define high level data associated with UK NCM methodology.
       CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
       character*35 ZITEMS(MCOM+4)
       real Air_infilt
+      real light_input_watt !user input for heat gains from lights
+                                  !instead of using the values from the sbem database
       
 C place (temporary?) call to read sbem db
       call sbempr(ier)
@@ -346,8 +348,8 @@ C Enter Scottish building types if Scottish regs to be used
 
 C Enter building permeability
         CALL EASKR(BINF50,
-     &    'Enter building permeability at 50Pa in m3/m2.hour'
-     &    ,' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &    'Enter building permeability at 50Pa in m3/m2.hour',
+     &    ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
         CALL EASKABC(
      &  'Is a compliance check to be performed on the building',
      &  'regarding air permeability value?',
@@ -918,11 +920,32 @@ C Link DHW systems and zones
 
 C Link lighting systems with zones
         DO 160 IZ=1,NCOMP
-          WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
-     &    zname(IZ)(1:lnblnk(zname(IZ)))
-          CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &    70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
-          ILITYP(IZ)=LSYS(1)
+            ILIGHTUSER(IZ)=0
+          CALL EASKABC('Choose one of the options for defining lighting
+     &heat gains from lights for: ',zname(IZ)(1:lnblnk(zname(IZ))),
+     &      'user defined W/m2 per 100lux','pick from list','continue',
+     &      Iwaylight,2)
+          IF(Iwaylight.EQ.1)THEN
+
+C flag needed for the casual.F to account for lighting gains
+C depending on the way they are specified by the user.
+            ILIGHTUSER(IZ)=1
+            
+C If users pick this then they have to demonstrate that this
+C value is a realistic one
+            light_input_watt=0.0
+            CALL EASKR(light_input_watt,
+     &      'Enter heat gains from lights in watts (assuming 100% on)
+     &for zone',zname(IZ)(1:lnblnk(zname(IZ))),0.,'F',0.,'-',
+     &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)          
+            LIGHTWATTAGE(IZ)=light_input_watt
+          ELSE
+            WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
+     &      zname(IZ)(1:lnblnk(zname(IZ)))
+            CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
+     &      70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
+            ILITYP(IZ)=LSYS(1)
+          ENDIF
  160    CONTINUE
       ELSEIF(KSTR(1).EQ.9)THEN
 

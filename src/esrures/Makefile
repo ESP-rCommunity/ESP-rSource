@@ -100,7 +100,7 @@ initalc.F:
 	ln -s $(CTLdir)/initalc.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -136,10 +136,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
-tdrecres.F:
-	rm -f tdrecres.F
-	ln -s $(TDFdir)/tdrecres.F .
+	ln -s $(COMdir)/tdfile.F .
 TReports_dummy.F:
 	rm -f TReports_dummy.F
 	ln -s $(REPdir)/TReports_dummy.F .
@@ -166,4 +163,4 @@ clean:
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F readTrnsys.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	tdrecres.F visgrd.F visual.F visvec.F TReports_dummy.F
+	visgrd.F visual.F visvec.F TReports_dummy.F

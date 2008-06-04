@@ -270,8 +270,6 @@ C Vertical axis label depending on generic type.
         LABEL1='Watts / sq metre'
       ELSEIF(FOCUS(1:8).EQ.'ACTIVITY')THEN
         LABEL1='fractions & degC'
-      ELSEIF(FOCUS(1:8).EQ.'BIDIRSET')THEN
-        LABEL1='set numb. (1-40)'
       ELSE
 
 C Add in additional generic data definitions here.

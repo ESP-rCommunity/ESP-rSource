@@ -21,12 +21,13 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	dossupport.o e3dviews.o ecasctl.o \
 	econstr.o econtrol.o edatabase.o edcfd.o edcon.o edcondb.o eddb.o \
 	edgeo.o edipv.o edobs.o edonecon.o edoptic.o edpro.o edtopol.o edzone.o egeometry.o egtgeom.o \
-	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o filelist.o \
-	folders.o gtopol.o hcfmk.o initalc.o insert.o item.o mfcdat.o \
+	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o explor.o filelist.o \
+	folders.o gtopol.o hcfmk.o initalc.o insert.o item.o maintn.o mfcdat.o \
 	mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mksbem.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
-	psychro.o rcdblist.o readTrnsys.o rwipv.o rwsbem.o sort.o startup.o tdfile.o
+	psychro.o rcdblist.o readTrnsys.o rwipv.o rwsbem.o sort.o \
+	startup.o tdfedit.o tdfile.o tdgraph.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -160,6 +161,9 @@ eroper.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+explor.F:
+	rm -f explor.F
+	ln -s $(PRJdir)/explor.F .
 filelist.F:
 	rm -f filelist.F
 	ln -s $(COMdir)/filelist.F .
@@ -180,7 +184,10 @@ insert.F:
 	ln -s $(PRJdir)/insert.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
+maintn.F:
+	rm -f maintn.F
+	ln -s $(PRJdir)/maintn.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -255,7 +262,13 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
+	ln -s $(COMdir)/tdfile.F .
+tdgraph.F:
+	rm -f tdgraph.F
+	ln -s $(PRJdir)/tdgraph.F .
+tdfedit.F:
+	rm -f tdfedit.F
+	ln -s $(PRJdir)/tdfedit.F .
 aim2_pretimestep.F:
 	rm -f aim2_pretimestep.F
 	ln -s $(CETCdir)/aim2_pretimestep.F .
@@ -273,10 +286,10 @@ clean:
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \
 	econstr.F econtrol.F edcfd.F edcon.F edcondb.F edatabase.F eddb.F edgeo.F edipv.F \
 	edobs.F edonecon.F edoptic.F edpro.F edtopol.F edzone.F egeometry.F emfnetw.F \
-	egtgeom.F emkcfg.F esru_misc.F eroper.F esystem.F filelist.F folders.F \
-	gtopol.F hcfmk.F initalc.F insert.F item.F mfcdat.F mfelst.F mfprb1.F mfprb2.F \
+	egtgeom.F emkcfg.F esru_misc.F eroper.F esystem.F explor.F filelist.F folders.F \
+	gtopol.F hcfmk.F initalc.F insert.F item.F maintn.F mfcdat.F mfelst.F mfprb1.F mfprb2.F \
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
-	rwipv.F rwsbem.F readTrnsys.F sort.F startup.F tdfile.F \
+	rwipv.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
 	
 
