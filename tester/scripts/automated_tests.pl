@@ -73,7 +73,6 @@ my %binlist = ( "aco"   =>   "esruaco",
                 "pdb"   =>   "esrupdb",
                 "prj"   =>   "esruprj",     
                 "res"   =>   "esrures",          
-                "tdf"   =>   "esrutdf",         
                 "vew"   =>   "esruvew" );         
 
 my %binalias = ( "vew"    =>   "viewer",
@@ -169,6 +168,10 @@ my $synopsys= "
        branch; 'trunk', 'trunk\@r1000', 'development_branch\@HEAD', and
        'branches/development_branch' are all valid.
 
+   -lc, --local-copy /path/to/ESP-r/sandbox:
+       Use the version of EPS-r stored in a local folder instead of
+       checking out code from ESP-r.net.
+
    -a, --addresses abc\@xyz.net,def\@xyx.net,...:
        Mail the results to specified comma-separated recepient list. This
        option requires access a valid SMTP server.
@@ -216,7 +219,7 @@ my $synopsys= "
         \$ \./automated_tests.pl -b abc
         
     Test revison '1220' on branch 'abc' against the same 
-    revision on branch 'ijk'    
+    revision on branch 'ijk':
         
         \$ \./automated_tests.pl -b abc\@1220 -b ijk\@1220
         
@@ -236,7 +239,9 @@ my $synopsys= "
 my $cmd_arguements; 
 
 my @version_stack;
+my @version_type;
 my %revisions;
+my %revision_types;
 my @addresses;
 
 
@@ -286,6 +291,7 @@ if ( @ARGV ){
   # Convert short hand arguements into longhand
   $cmd_arguements =~ s/-a;/--addresses;/g;
   $cmd_arguements =~ s/-b;/--branch;/g;
+  $cmd_arguements =~ s/-lc;/--local-copy;/g;
   $cmd_arguements =~ s/-h;/--help;/g;
   $cmd_arguements =~ s/-v;/--verbose;/g;
   $cmd_arguements =~ s/-vv;/--very-verbose;/g;
@@ -295,6 +301,7 @@ if ( @ARGV ){
   $cmd_arguements =~ s/--smtp;/--smtp:/g;
   $cmd_arguements =~ s/--branch;/--branch:/g;
   $cmd_arguements =~ s/--addresses;/--addresses:/g;
+  $cmd_arguements =~ s/--local-copy;/--local-copy:/g;
   
   # If any options expecting arguements are followed by other
   # options, insert empty arguement:
@@ -335,20 +342,32 @@ if ( @ARGV ){
           $revision .= "\@HEAD";
         }
         # Push revision on to stack
-        push @version_stack, $revision;
+        push @version_stack, "$revision";
+        push @version_type, "remote";
         last SWITCH;
       }
-      
+
+      # Local copy:
+      if ( $arg =~ /^--local-copy:/){
+        my $revision=$arg;
+        $revision =~ s/--local-copy://g;
+        # --branch option must include an arguement
+        if ( ! $revision ) { fatalerror("A branch must be provided with the -local-copy (-lc) option!\n"); }
+        
+        # Push revision on to stack
+        push @version_stack, "$revision";
+        push @version_type, "local";
+        last SWITCH;
+      }
+       
       # Skip portions of test:
       if ($arg =~ /^--skip/ ){
         if ( $arg =~/^--skip-forcheck/ )  { $test_forcheck   = 0; }
         if ( $arg =~/^--skip-builds/ )    { $test_builds     = 0; }
         if ( $arg =~/^--skip-regression/ ){ $test_regression = 0; }
-   
         last SWITCH;
-      
+
       }
-      
       
       # Destination mail
       if ($arg =~ /^--addresses/ ){
@@ -417,28 +436,36 @@ if ( @ARGV ){
   }
 }
 
+# Loop through version stack, and detect type
+
+
+
 # Append default revisions to %revisions hash, if necessary
 for my $count ( scalar(@version_stack) ){
+
   SWITCH:{
     if ( $count == 0 ){
       # Push default reference and test version_stack onto stack
-      %revisions= (  "reference" => $def_ref_rev, 
+      %revisions= (  "reference" => $def_ref_rev,
                      "test"      => $def_test_rev );
-                   
+      %revision_types = ( "reference" => "remote",
+                          "test"      => "remote" );
       last SWITCH;
     }
     if ( $count == 1 ){
       # Place default reference revision at front of stack
-      %revisions= (  "reference" => $def_ref_rev, 
+      %revisions= (  "reference" => $def_ref_rev,
                      "test"      => $version_stack[0] );
-      
+      %revision_types = ( "reference" => "remote",
+                          "test"      => $version_type[0] );
       last SWITCH;
     }
     if ( $count == 2 ){
       # Use provided revisions
       %revisions= (  "reference" => $version_stack[0], 
                      "test"      => $version_stack[1] );
-      
+      %revision_types = ( "reference" => $version_type[0],
+                          "test"      => $version_type[1] );
       last SWITCH;
     }    
     if ( $count > 2 ){
@@ -451,16 +478,16 @@ for my $count ( scalar(@version_stack) ){
 
 }
 
-
-
 # Coerse branch names into /branches/name format.
 while ( my  ( $key, $branch ) = each %revisions ){
-  if ( $branch !~ /^branches/i && $branch !~ /^trunk/i ){
+
+  if ( $branch !~ /^branches/i &&
+       $branch !~ /^trunk/i    &&
+       $revision_types{$key} !~ /local/ ){
+
       $revisions{$key} = "branches/$branch";
   }
 }
-      
-
 
 #------------------------------------------------------------
 # Finished command argument processing and error trapping.
@@ -525,34 +552,52 @@ my %src_dirs;
 if ( $test_forcheck || $test_builds || $test_regression ){
 
   while ( my ($key, $revision ) = each  %revisions ) {
-  
+
     # Label source directories "src_1, src_2", and save in hash
     $src_dirs{$key} ="src_$key";
-    
-    # Progress update 
-    stream_out("Checking out $revision from ESP-r central...");
-    
-    # Split revision from format branch@rev into 'branch' and 'rev'.
-    my ( $branch, $rev ) = split /\@/, $revision; 
-    
-    # Force rev into -rXXX format, unless 'rev' = 'HEAD'.
-    for ($rev) {
-      SWITCH: {
-        if ( /^r/ )       { $rev ="-$rev";  last SWITCH; }
-        if ( /HEAD/ )     { $rev ="";       last SWITCH; }
-        if ( /[0-9]+/ )   { $rev ="-r$rev"; last SWITCH; }
-        fatalerror{"Invalid revision $revision!\n"};
+
+
+    # Determine if revision is a svn repository or local sand-box
+    if ( $revision_types{$key} =~ /remote/ ){
+      
+      # SVN Repository: Progress update
+      stream_out("Checking out $revision from ESP-r central...");
+      
+      # Split revision from format branch@rev into 'branch' and 'rev'.
+      my ( $branch, $rev ) = split /\@/, $revision; 
+      
+      # Force rev into -rXXX format, unless 'rev' = 'HEAD'.
+      for ($rev) {
+        SWITCH: {
+          if ( /^r/ )       { $rev ="-$rev";  last SWITCH; }
+          if ( /HEAD/ )     { $rev ="";       last SWITCH; }
+          if ( /[0-9]+/ )   { $rev ="-r$rev"; last SWITCH; }
+          fatalerror{"Invalid revision $revision!\n"};
+        }
       }
-    }
-    
-    # Pull down source. Skip if source 
-    if ( ! -d $src_dirs{$key} ){
+      
+      # Pull down source. Skip if source 
+      if ( ! -d $src_dirs{$key} ){
+  
+        execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
+      }
+      stream_out("Done\n");
 
-       execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
+    } elsif ( $revision_types{$key} =~ /local/ ) {
+      # Local sand-box
+
+      # SVN Repository: Progress update
+      stream_out("Copying $revision to $src_dirs{$key}...");
+      
+      # Pull down source. Skip if source
+      if ( ! -d $src_dirs{$key} ){
+  
+        execute("cp -fr $revision $src_dirs{$key}");
+      }
+      stream_out("Done\n");
+
     }
-    stream_out("Done\n");
   }
-
 }
 
 #------------------------------------------------------------
@@ -999,14 +1044,14 @@ if ( $test_regression ) {
   execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r_test "
-           ."--ref_res $ref_esp --test_res $test_esp "
+           ."--ref_loc $ref_esp --test_loc $test_esp "
            ."-p $TestFolder/$src_dirs{\"reference\"}/tester/test_suite/ --save_results -v" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
   # Digest test report 
   my $regression_results = `cat bps_test_report.txt`;
-  if ( $regression_results =~ /^ Overall result: Fail/ ) {
+  if ( $regression_results =~ /^ Overall result: Fail/m ) {
     $regression_fail = 1;
   }
   
