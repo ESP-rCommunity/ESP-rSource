@@ -28,7 +28,8 @@ C ******************************************************************************
      &     Vdot_fuel_STP_t,q_burner, q_capture_future, ! <--
      &     m_dot_air_kg_t,m_dot_exh_kg_t,              ! Calculated data for post-processor
      &     Troom_future,        ! <----- Containment temperature           
-     &     q_heatdump_future,   ! <----- Enviromment heat rejection
+     &     q_heatdump_present,  ! <----- Heat rejection from tank (present time row)
+     &     q_heatdump_future,   ! <----- Heat rejection from tank (future time row)
      &     mdot_conn1a_present,mdot_conn1a_future,
      &     mdot_conn1b_present,mdot_conn1b_future,  ! <-- connection mass flow rates
      &     mdot_conn1c_present,mdot_conn1c_future

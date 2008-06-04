@@ -68,6 +68,7 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
    /* Pack widgets and display */
@@ -178,6 +179,7 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
 
@@ -291,6 +293,7 @@ void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1,
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
 
@@ -406,6 +409,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
    /* Pack widgets and display */
@@ -509,6 +513,7 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
    entry = gtk_entry_new ();
 
    /* Define entry box properties */
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
    spinner_adj = (GtkAdjustment *) gtk_adjustment_new (value, -G_MAXFLOAT, G_MAXFLOAT, 0.1, 10., 10.);
@@ -607,6 +612,7 @@ void askint_(char *q1, long int *reply,long int *ier, int lenq1)
    entry = gtk_entry_new ();
 
    /* Define entry box properties */
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
 
    spinner_adj = (GtkAdjustment *) gtk_adjustment_new (value, -G_MAXFLOAT, G_MAXFLOAT, 1., 10., 10.);
@@ -711,6 +717,7 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gtk_text_buffer_insert (buffer, &end, reply_local, -1);     /* insert text in the buffer */
    gtk_text_buffer_get_start_iter (buffer, &start);            /* re-establish start and end of buffer */
    gtk_text_buffer_get_end_iter (buffer, &end);
+   gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
 
    menu_pix_wd = 420;    /* try 420 pixel wide popup */
    menu_pix_hi = 200;    /* try 200 pixel wide popup */

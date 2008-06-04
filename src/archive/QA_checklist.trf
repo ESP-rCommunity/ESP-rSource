@@ -267,7 +267,7 @@ $ svn log --stop-on-copy
 .DE
 .IP 22. 4
 Email the ESP-r archivist (Ian Beausoleil-Morrison,
-ibeausol@nrcan.gc.ca) using the template provided in
+Ian_Beausoleil-Morrison@carleton.ca) using the template provided in
 src/archive/code-contribution.txt.
 .RE
 .NH 1
