@@ -1373,6 +1373,12 @@ C IWC is for optional files, IW is the overall width.
       endif
       ITEMS(8)=               ' _____________________________    '
       ITEMS(9)=               ' extended descriptions ...        '
+
+C If older model indicate solar obstructions. For newer models such
+C data can be in the geometry file. Test for version of geometry file
+C and revise label as appropriate.
+
+C << to be done >>
       if(ZOBS(IZ)(1:7).eq.'UNKNOWN')then
         WRITE(ITEMS(10),'(A)') 'e  obstructions     : '
       else
@@ -1650,88 +1656,98 @@ C Edit zone name - read and then write the geometry file.
         if(LPROJ(IZ).ne.L)modcfg=.true.
         LPROJ(IZ)=L
       ELSEIF(INO.EQ.10)THEN
+
+C If older model then offer browsing. If v1.1 geometry then there
+C is no need for obstruction file.
         if(browse)then
           call usrmsg('Cannot update model while in browse ',
      &                'mode, you must `own` the model!','W')
           goto 3
         endif
-        H(1)='The zone obstructions file contains the geometry of'
-        H(2)='obstruction blocks for use in shading/ insolation'
-        H(3)='calculations. You may browse for existing files.'
-        if(IOBS(IZ).eq.1)then
-          CALL EASKABCD(' For zone obstruction file',' :',
-     &      'edit name','browse','dereference it','continue',IW,3)
-          if(IW.EQ.1)then
-            L=ZOBS(IZ)
-          elseif(IW.EQ.2)then
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
-     &                          iier)
-            if(nfile.gt.0)then
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call usrmsg(
+     &      'Solar obstructions are held in zone geometry file',
+     &      'so this option not applicable.','W')
+        else
+          H(1)='The zone obstructions file contains the geometry of'
+          H(2)='obstruction blocks for use in shading/ insolation'
+          H(3)='calculations. You may browse for existing files.'
+          if(IOBS(IZ).eq.1)then
+            CALL EASKABCD(' For zone obstruction file',' :',
+     &        'edit name','browse','dereference it','continue',IW,3)
+            if(IW.EQ.1)then
+              L=ZOBS(IZ)
+            elseif(IW.EQ.2)then
               sfile=' '
               snpfile=' '
-              call browsefilelist('b','zon','obs',sfile,snpfile,nfile,
+              call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
      &                          iier)
-              if(snpfile(1:2).ne.'  ')then
-                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
-     &            snpfile(1:lnblnk(snpfile))
+              if(nfile.gt.0)then
+                sfile=' '
+                snpfile=' '
+                call browsefilelist('b','zon','obs',sfile,snpfile,
+     &                          nfile,iier)
+                if(snpfile(1:2).ne.'  ')then
+                  write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &              snpfile(1:lnblnk(snpfile))
+                else
+                  L=ZOBS(IZ)
+                endif
               else
                 L=ZOBS(IZ)
               endif
-            else
-              L=ZOBS(IZ)
+            elseif(IW.EQ.3)then
+              ZOBS(IZ)=' '
+              IOBS(IZ)=0
+              modcfg=.TRUE.
+              goto 3
+            elseif(IW.EQ.4)then
+              goto 3
             endif
-          elseif(IW.EQ.3)then
-            ZOBS(IZ)=' '
-            IOBS(IZ)=0
-            modcfg=.TRUE.
-            goto 3
-          elseif(IW.EQ.4)then
-            goto 3
-          endif
-        else
+          else
 
 C There is no zone obstructions file so offer restricted choice.
-          CALL EASKABC(' For zone obstruction file',
-     &      ' :','edit name','browse','continue',IW,3)
-          if(IW.EQ.1)then
-            L=' '
-          elseif(IW.EQ.2)then
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
-     &                          iier)
-            if(nfile.gt.0)then
+            CALL EASKABC(' For zone obstruction file',
+     &        ' :','edit name','browse','continue',IW,3)
+            if(IW.EQ.1)then
+              L=' '
+            elseif(IW.EQ.2)then
               sfile=' '
               snpfile=' '
-              call browsefilelist('b','zon','obs',sfile,snpfile,nfile,
+              call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
      &                          iier)
-              if(snpfile(1:2).ne.'  ')then
-                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
-     &            snpfile(1:lnblnk(snpfile))
+              if(nfile.gt.0)then
+                sfile=' '
+                snpfile=' '
+                call browsefilelist('b','zon','obs',sfile,snpfile,
+     &                          nfile,iier)
+                if(snpfile(1:2).ne.'  ')then
+                  write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &              snpfile(1:lnblnk(snpfile))
+                else
+                  L=ZOBS(IZ)
+                endif
               else
                 L=ZOBS(IZ)
               endif
-            else
-              L=ZOBS(IZ)
+            elseif(IW.EQ.3)then
+              goto 3
             endif
-          elseif(IW.EQ.3)then
-            goto 3
           endif
+          if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+            WRITE(D,'(A,A4)')ZN(1:lnblnk(ZN)),'.obs'
+          else
+            WRITE(D,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &        ZN(1:lnblnk(ZN)),'.obs'
+          endif
+          write(outs,'(3a)')'Obstruction file for ',ZN(1:lnblnk(ZN)),'?'
+   47     CALL EASKS(L,outs,' ',72,D,'Z obstr',IER,3)
+          IF(L(1:1).eq.' '.or.IER.NE.0)GOTO 47
+          ZOBS(IZ)=L
+          IOBS(IZ)=1
+          modcfg=.TRUE.
         endif
-        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(D,'(A,A4)')ZN(1:lnblnk(ZN)),'.obs'
-        else
-          WRITE(D,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      ZN(1:lnblnk(ZN)),'.obs'
-        endif
-        write(outs,'(3a)')' Obstruction file for ',ZN(1:lnblnk(ZN)),' ?'
-   47   CALL EASKS(L,outs,' ',72,D,'Z obstr',IER,3)
-        IF(L(1:1).eq.' '.or.IER.NE.0)GOTO 47
-        ZOBS(IZ)=L
-        IOBS(IZ)=1
-        modcfg=.TRUE.
       ELSEIF(INO.EQ.11)THEN
         if(browse)then
           call usrmsg('Cannot update model while in browse ',

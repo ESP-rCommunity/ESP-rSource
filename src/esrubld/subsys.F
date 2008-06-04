@@ -1090,6 +1090,7 @@ C                 external temperature (for use in MZLS3).
       SUBROUTINE MZVENT(ICOMP)
 #include "building.h"
 #include "tdf2.h"
+#include "sbem.h"
 
 #include "hvac_parameters.h"
 #include "hvac_common.h"
@@ -1348,6 +1349,10 @@ C in l/s/pers)*Occupants density (pers/m2)*occupancy fraction*zone area
 
 C Convert l/s to ach
         ACI=ACI*(3600.0/1000)/VOL(ICOMP)
+
+C Using AIR PERMEABILITY values specified in the NCM file
+        CALL RSBEM
+        ACI=ACI+ACH(ICOMP)
 
         CVVF=0.
         SUM=0.

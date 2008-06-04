@@ -2,8 +2,8 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish mfs \
-	   mld mrt pdb prj res tdf vew
+PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd ish mfs \
+	   mld mrt pdb prj res run tdf vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -13,14 +13,17 @@ allnoX: libnoX $(PROGRAMS)
 
 libX11:
 	cd $(SRCdir)/lib; \
+	$(MAKE) sourcesX11 ; \
 	$(MAKE) the_libX11
 
 libGTK:
 	cd $(SRCdir)/lib; \
+	$(MAKE) sourcesGTK ; \
 	$(MAKE) the_libGTK
 
 libnoX:
 	cd $(SRCdir)/lib; \
+	$(MAKE) sourcesnoX ; \
 	$(MAKE) the_libnoX
 
 # PROGRAMS:
@@ -65,6 +68,8 @@ prj:
 	cd $(SRCdir)/esruprj; $(MAKE)
 res: 
 	cd $(SRCdir)/esrures; $(MAKE)
+run: 
+	cd $(SRCdir)/esrurun; $(MAKE)
 tdf: 
 	cd $(SRCdir)/esrutdf; $(MAKE)
 vew: 
@@ -93,6 +98,7 @@ clean:
 	cd $(SRCdir)/esrupdb; $(MAKE) clean
 	cd $(SRCdir)/esruprj; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
+	cd $(SRCdir)/esrurun; $(MAKE) clean
 	cd $(SRCdir)/esrutdf; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esruvww; $(MAKE) clean
@@ -119,6 +125,7 @@ strip:
 	cd $(SRCdir)/esrupdb; $(MAKE) strip
 	cd $(SRCdir)/esruprj; $(MAKE) strip
 	cd $(SRCdir)/esrures; $(MAKE) strip
+	cd $(SRCdir)/esrurun; $(MAKE) strip
 	cd $(SRCdir)/esrutdf; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esruvww; $(MAKE) strip
@@ -143,6 +150,7 @@ InstBins:
 	cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrutdf; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvww; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install

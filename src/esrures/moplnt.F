@@ -742,7 +742,7 @@ C default file names for databases
       logical XST,ok,dok
 
       IUNITp=ifil+10
-      DFILE='plant.res'
+      DFILE='plant.plr'
 
       ier=0
     6 call edisp(iuout,' ')
@@ -752,6 +752,16 @@ C default file names for databases
         else
           ltmp=' '
         endif
+
+C Assume default plants results name (*.plr) taken from zone results
+C name (*.res)
+	lrf=lnblnk(LTMP)
+	lrf3=lrf-3
+	lrf4=lrf-4
+	if(LTMP(lrf3:lrf).eq.'.res')then
+	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
+	endif
+
         llt=lnblnk(ltmp)
         h(1)='The predictions from solution of a plant/system '
         h(2)='network are held in a binary results file which'

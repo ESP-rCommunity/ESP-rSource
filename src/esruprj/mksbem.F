@@ -40,8 +40,10 @@ C sbmedit define high level data associated with UK NCM methodology.
       DIMENSION KSTR(9),ITHND(MPT),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       character outs*124,outs248*248,h*72
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
-      CHARACTER HSYSNM*70,zname*12,zdesc*64,TMPSTR*64
-
+      CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
+      character*35 ZITEMS(MCOM+4)
+      real Air_infilt
+      
 C place (temporary?) call to read sbem db
       call sbempr(ier)
 
@@ -354,6 +356,52 @@ C Enter building permeability
           APCHK='NO '
         ELSE
           APCHK='YES'
+        ENDIF
+        
+C Enter air changes per hour (or) m3/s for every zone as air leakage
+C This will be added to the ventilation rates taken from the tdf (as
+C minimum fresh air requirements from the activities database)
+C Begin with high level menu.
+    3   INO=-4
+        IER=0
+        DO 111 IZ=1,NCOMP
+          CALL EMKEY(IZ,KEY,IER)
+          WRITE(ZITEMS(IZ),'(A1,1X,A,F6.2)')KEY,
+     &         zname(IZ)(1:lnblnk(zname(IZ))),ACH(IZ)
+ 111    CONTINUE 
+        M=NCOMP
+        ZITEMS(M+1)= ' ______________________________ '
+        ZITEMS(M+2)= '* copy (from operation files): NA'
+        ZITEMS(M+3)= '? help                           '
+        ZITEMS(M+4)= '- exit this menu                 '
+        nitms=M+4
+
+C Help text for this menu.
+        H(1)='Infiltration rates and air leakage can be specified for'
+        H(2)='for every zone in terms of air changes per hour. These'      
+        H(3)='can be also copied from the operation files.'   
+        
+        CALL EMENU('zone air changes',ZITEMS,nitms,INO) 
+        IF(INO.EQ.nitms)THEN
+          continue
+        ELSEIF(INO.EQ.nitms-1)THEN          
+
+C Produce help text for the menu.
+          CALL PHELPD('AIR LEAKAGE',3,'-',0,0,IER)
+          goto 3
+        ELSEIF(INO.EQ.nitms-2)THEN
+
+C Need logic here to copy ach details from the existing operations -
+C but an average 24h value   
+          write(outs,'(A)') ' This facility is currently unavailable'
+          call edisp(iuout,outs)
+          goto 3
+        ELSEIF(INO.GE.1.AND.INO.LT.nitms-3)THEN
+          Air_infilt=0.0
+          CALL EASKR(Air_infilt,' ','air changes for this zone?',
+     &       0.0,'W',30.0,'W',0.0,'air changes for the zone',IER,0)  
+          ACH(INO)=Air_infilt
+          goto 3
         ENDIF
 
 C Use existing building type if non-zero.
@@ -902,6 +950,7 @@ C model.
       SUBROUTINE EMKSBM
 #include "building.h"
 #include "sbem.h"
+#include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -918,7 +967,6 @@ C << G1 is probably not the common block to use for this >>
 
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C3F/LCNN
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -976,7 +1024,8 @@ C      real parentwallarea
 C      real parentroofarea
 C      integer IDEBUG
 
-      DIMENSION IACT(MCON),COE(3),POINT(3),TRANS(3),KVER(MS),LVER(MS)
+C      DIMENSION IACT(MCON)  ! not yet used
+      DIMENSION COE(3),POINT(3),TRANS(3),KVER(MS),LVER(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),TARSURF(MCON)
       logical unixok,docnn,ok,dok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -986,7 +1035,7 @@ C      integer IDEBUG
 C Initialise variables
 C      IDEBUG=0
       dok=.true.
-      GUESS='any_type'
+      GUESS='notional'
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -1061,6 +1110,13 @@ C Change name of configuration file to filename_not.cfg
       CALL FNCNGR(LCFGF,APE,EXT,NNAME)
       LCFGF=NNAME
   
+C Copy standard databases containing UK NCM materials and constructions
+C These files are UK_notional.constrdb and material.db3.a
+C Once a generic method of doing this is developed include statement at
+C the top of this subroutine can be removed (esprdbfiles.h)
+      LFMAT='/usr/esru/esp-r/databases/material.db3.a'
+      LFMUL='/usr/esru/esp-r/databases/UK_notional.constrdb'
+
 C Loop through each zone in the model...
       DO 550 ICOMP=1,NCOMP
         IUF=IFIL+2
@@ -1128,7 +1184,7 @@ C ? after copy it is probably not necessary to re-run the viewfactor analysis.
 C          ivalsv(ic)=ivals(IC)
         endif
 
-C If there is a heat transfer regime copy the exiting file
+C If there is a heat transfer regime copy the existing file
 C so that subsequent changes are applied to the new file.
         if(IHC(icomp).eq.1)then
           EXT='.htc'
@@ -1147,7 +1203,7 @@ C so that subsequent changes are applied to the new file.
           LHCCO(ICOMP)=NNAME
         endif
 
-C If there is a casual gain control file copy the exiting file
+C If there is a casual gain control file copy the existing file
 C so that subsequent changes are applied to the new file.
         if(ICGC(icomp).eq.1)then
           EXT='.cgc'
@@ -1166,7 +1222,7 @@ C so that subsequent changes are applied to the new file.
           LCGCIN(ICOMP)=NNAME
         endif
 
-C If there is an obstruction file copy the exiting file
+C If there is an obstruction file copy the existing file
 C so that subsequent changes are applied to the new file.
         if(IOBS(icomp).eq.1)then
           EXT='.obs'
@@ -1183,6 +1239,8 @@ C so that subsequent changes are applied to the new file.
           CALL USRMSG('copying obstruction file via:',doit,'-')
           CALL RUNIT(doit,'-')
           ZOBS(ICOMP)=NNAME
+        elseif(IOBS(icomp).eq.2)then
+          continue   ! obstructions are within zone geometry file.
         endif
  550  CONTINUE
       call edisp(iuout,
@@ -1199,7 +1257,7 @@ C Remind the user that other files have been copied.
         call usrmsg(
      &    'shading files found which will be dependant on future',
      &    'geometry changes. Shading files copied.','W')
-        ishd=1
+C        ishd=1   ! not yet used
       endif
       if(ivfwq.eq.1)then
         call usrmsg(
@@ -1231,7 +1289,7 @@ C moisture, electrical and IPV
       EXT='.rep'
       CALL FNCNGR(SIPVRES,APE,EXT,NNAME)
       SIPVRES=NNAME
-      LRCR=2
+C      LRCR=2
 
 C Check length of cfgroot string.
       IROOTLEN=LNBLNK(CFGROOT)
@@ -1343,6 +1401,7 @@ C Figure out if this surface needs additional glazing or not
                 WRITE(OUTS,'(2A)')SSNAME(ICN),
      &          ' not type WALL or ROOF glazing will not be added to it'
                 CALL EDISP(IUOUT,OUTS)
+                GLZFR=0.0
               ENDIF
 
 C Determine case ICASE
@@ -1374,12 +1433,12 @@ C child (for case 3). This new surface has required glazing area.
                     IF(USE.EQ.'C-WINDOW'.OR.USE.EQ.'S-WINDOW'.OR.
      &                USE(1:6).EQ.'WINDOW')THEN
                       ICASE=1
-                      ICSUR=ICN2
+C                      ICSUR=ICN2  ! not yet used
                       ISSUR=ISUR2
                       FOUND=.TRUE.
                     ELSE
                       ICASE=3
-                      ICSUR=ICN2
+C                      ICSUR=ICN2  ! not yet used
                       ISSUR=ISUR2
                       FOUND=.TRUE.
                     ENDIF
@@ -1533,35 +1592,10 @@ C Make one child in this surface
 C Update the connection list. Move all others up and then insert with
 C default values.
                   guesstype='any_type'
-                  IF(NCON.LT.MCON)THEN
-                    NCON=NCON+1
-                    IX=NCON+1
-
-C Update common blocks G6 & G7
-                    call adjcbg6g7('+',ix,icon)
-                    IC1(ICON)=ICOMP
-                    IE1(ICON)=NSUR
-                    ICT(ICON)=0
-                    IC2(ICON)=0
-                    IE2(ICON)=0
-                    IZSTOCN(icomp,nsur)=icon
-                    SSNAME(ICON)=SNAME(ICOMP,NSUR)
-                    SSOTF(ICON)=SOTF(NSUR)
-                    SSMLCN(ICON)=SMLCN(NSUR)
-                    SSVFC(ICON)=SVFC(NSUR)
-                    SSOTHER(ICON,1)=SOTHER(NSUR,1)
-                    SSOTHER(ICON,2)=SOTHER(NSUR,2)
-                    SSOTHER(ICON,3)=SOTHER(NSUR,3)
-                    SSUSE(ICON,1)=SUSE(NSUR,1)
-                    SSUSE(ICON,2)=SUSE(NSUR,2)
-                    SSPARENT(ICON)=SPARENT(NSUR)
-
-C Now update the G7 common block to reflect new surface.
-                    call zgupdate(2,icomp,ier)
+                  call addedsurf(icomp,icon,2,ier)
 
 C Update connections list before displaying notional model zone
-                    call emkcfg('-',IER)
-                  ENDIF
+                  call emkcfg('-',IER)
                   MODIFY=.TRUE.
                 ENDIF
 
@@ -1588,6 +1622,8 @@ C Write geometry file version 1.1 (1.0 does not support UK NCM)
 C Update connections file before going on to the next zone
         call emkcfg('-',IER)
   551 continue
+
+
       RETURN
       END
 

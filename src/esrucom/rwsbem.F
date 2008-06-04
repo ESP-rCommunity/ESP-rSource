@@ -739,6 +739,11 @@ C Write high level project specific detail
      &'Compliance check to be performed on air permeability value? ',
      &APCHK 
 
+      DO 205 IZ=1,NCOMP
+        WRITE(IUF,'(2A,F5.2)',IOSTAT=IOS,ERR=3)
+     &  'Zone ',zname(iz),ACH(IZ)
+ 205  CONTINUE
+
 C Write system level detail. This includes names and indices for HVAC
 C system, heat and cool generators, DHW, ventilation fans and fuel. 
 C Also write BRUKL indices as defined in

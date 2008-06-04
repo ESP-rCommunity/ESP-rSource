@@ -26,6 +26,7 @@ C  NEWZONE: controls creation of a new zone via prj or cad or file.
 C  DELZONE: systematically removes a thermal zone.
 C  WARNMOD: provide warnings when model evolves.
 C  SUMRCHG: provides a summary of updates needed after model changes.
+C comissionish: invokes the shading module in a number of modes
 C  POINTTOLINE: determines distance from a 3D point to a 3D line.
 C  silentmodel creates an/or updates a model from passed parameters.
 C  silentzone: creates a zone (or limited complexity) based on parameters
@@ -2239,6 +2240,8 @@ C shape (8 char) box/extrude
 C nbwalls (integer) how many walls (e.g. 4 for a box, 3-20 for extrude). Note
 C   the top surface is assumed to be index nbwalls+1 and the base surface is
 C   assumed to be index nbwalls+2
+C nbmass (integer) how many pairs of mass walls to append to zone. Note these
+C   surfaces are not included in the *surface list
 C origin (real * 3) XYZ of the origin in the case of shape=box. For shape=extrude
 C   the 1st value is Z point of base, 2nd is the ceiling Z value, 3rd not used.
 C size (real *3) for shape=box this is the length/width/height (m) and for
@@ -2259,13 +2262,15 @@ C   no door and a non-zero indicates the width of the door (m).
 C hasname (string array) the surface name for each surface
 C hasconstruction (string array) the name of the MLC to use for each surface
 C boundarytype (integer (MS,3) the connection data for each surface.
+C datamass (real 4*7) values to create mass
+C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,name,shape,nbwalls,nbedges,nbpolyc,
-     &  list,origin,size,
-     &  coords,rotateit,nbglz,hasglaze,nbdoor,hasdoor,hasname,
-     &  hasconstruction,boundarytype,use,usefile,IER)
+      subroutine silentzone(ICOMP,name,shape,nbwalls,nbmass,nbedges,
+     &  nbpolyc,list,origin,size,coords,rotateit,
+     &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstruction,
+     &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 C#include "esprdbfile.h"
       COMMON/FILEP/IFIL
@@ -2331,6 +2336,7 @@ C Paremeters passed in:
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
       real origin(3)      ! values dependant on shape
+      real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real size(3)        ! values dependant on shape
       real coords(MS,3)
       real rotateit       ! angle of rotation
@@ -2343,7 +2349,11 @@ C Paremeters passed in:
       integer boundarytype(MS,3)
       character use*8,usefile*32  ! usage pattern directives
       dimension use(3)
-      
+
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character textmass*32 
+      dimension textmass(4,3)
+     
       DIMENSION XX(MS),YY(MS)
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
@@ -2360,8 +2370,10 @@ C Paremeters passed in:
       character act*2
       character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
+      character sn*12,constr*12,opt*12
       LOGICAL browse,OKC,XST,unixok
       logical willneedtmc  !  if a tmc file will be required.
+      logical closev       !  mass is close to vertical
       LOGICAL QUIET
 
 C Strings for surface attributes to pass to insrec.
@@ -2435,17 +2447,17 @@ C Choices based on the value of shape.
         return
       endif
       IF(ishape.eq.1)THEN
-        XO=origin(1)
-        YO=origin(2)
-        ZO=origin(3)
-        DX=size(1)
-        DY=size(2)
-        DZ=size(3)
+        XOC=origin(1)
+        YOC=origin(2)
+        ZOC=origin(3)
+        DXC=size(1)
+        DYC=size(2)
+        DZC=size(3)
 
         ANG=rotateit
 
 C Convert box into a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,ANG)
+        CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANG)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
@@ -2604,6 +2616,8 @@ C Update the G7 common blocks and then if assign ZBASEA.
       elseif(ishape.eq.2)then
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
+      elseif(ishape.eq.3)then
+        continue ! ??
       endif
  
 C Save this to file before passing into the geometry editing facility.
@@ -2654,8 +2668,8 @@ C parent surface.  Later add logic to better place the door..
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
-            XO=XYMAX-(hasdoor(ids)+0.3)
-            ZO=0.0
+            XOC=XYMAX-(hasdoor(ids)+0.3)
+            ZOC=0.0
             XW=hasdoor(ids)
             if(ZMAX.gt.2.3)then
               ZH=2.1
@@ -2688,8 +2702,42 @@ C section of the string DESC.
             rsuse1='DOOR'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XO,ZO,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
+
+C Connection information needs to be updated.
+            ibcs=IZSTOCN(icomp,newsurf)
+            ICT(ibcs)=boundarytype(newsurf,1)  ! used passed in boundarytype
+            IC2(ibcs)=boundarytype(newsurf,2)
+            IE2(ibcs)=boundarytype(newsurf,3)
+
+C Use boundarytype to instanciate sother & ssother << to be done >>
+            IF(boundarytype(newsurf,1).EQ.0)THEN
+              SOTHER(newsurf,1)='EXTERIOR'
+            ELSEIF(boundarytype(newsurf,1).EQ.1)THEN
+              SOTHER(newsurf,1)='SIMILAR'
+            ELSEIF(boundarytype(newsurf,1).EQ.2)THEN
+              SOTHER(newsurf,1)='CONSTANT'
+            ELSEIF(boundarytype(newsurf,1).EQ.3)THEN
+              SOTHER(newsurf,1)='ANOTHER'
+            ELSEIF(boundarytype(newsurf,1).EQ.4)THEN
+              SOTHER(newsurf,1)='GROUND'
+            ELSEIF(boundarytype(newsurf,1).EQ.5)THEN
+              SOTHER(newsurf,1)='ADIABATIC'
+            ELSEIF(boundarytype(newsurf,1).EQ.6)THEN
+              SOTHER(newsurf,1)='BASESIMP'
+            ELSEIF(boundarytype(newsurf,1).EQ.7)THEN
+              SOTHER(newsurf,1)='IDENT_CEN'
+            ELSE
+
+C Reset to represent UNKNOWN
+              SOTHER(newsurf,1)='UNKNOWN'
+            ENDIF
+            write(SOTHER(newsurf,2),'(i2.2)') boundarytype(newsurf,2)
+            write(SOTHER(newsurf,3),'(i2.2)') boundarytype(newsurf,3)
+            SSOTHER(ibcs,1)=SOTHER(newsurf,1)
+            SSOTHER(ibcs,2)=SOTHER(newsurf,2)
+            SSOTHER(ibcs,3)=SOTHER(newsurf,3)
 
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
@@ -2705,8 +2753,8 @@ C the parent surface as a percentage of area.
             newsurf=nsur+1
             isurf=ids
             act='sp'
-            XO=hasglaze(ids)
-            ZO=0.0
+            XOC=hasglaze(ids)
+            ZOC=0.0
             XW=0.0
             ZH=0.0
             write(rsname,'(a)') hasname(newsurf)
@@ -2734,12 +2782,67 @@ C section of the string DESC.
             rsuse1='C-WINDOW'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XO,ZO,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
+
+C Connection information needs to be updated.
+            ibcs=IZSTOCN(icomp,newsurf)
+            ICT(ibcs)=boundarytype(newsurf,1)  ! used passed in boundarytype
+            IC2(ibcs)=boundarytype(newsurf,2)
+            IE2(ibcs)=boundarytype(newsurf,3)
+
+C Use boundarytype to instanciate sother & ssother << to be done >>
+            IF(boundarytype(newsurf,1).EQ.0)THEN
+              SOTHER(newsurf,1)='EXTERIOR'
+            ELSEIF(boundarytype(newsurf,1).EQ.1)THEN
+              SOTHER(newsurf,1)='SIMILAR'
+            ELSEIF(boundarytype(newsurf,1).EQ.2)THEN
+              SOTHER(newsurf,1)='CONSTANT'
+            ELSEIF(boundarytype(newsurf,1).EQ.3)THEN
+              SOTHER(newsurf,1)='ANOTHER'
+            ELSEIF(boundarytype(newsurf,1).EQ.4)THEN
+              SOTHER(newsurf,1)='GROUND'
+            ELSEIF(boundarytype(newsurf,1).EQ.5)THEN
+              SOTHER(newsurf,1)='ADIABATIC'
+            ELSEIF(boundarytype(newsurf,1).EQ.6)THEN
+              SOTHER(newsurf,1)='BASESIMP'
+            ELSEIF(boundarytype(newsurf,1).EQ.7)THEN
+              SOTHER(newsurf,1)='IDENT_CEN'
+            ELSE
+
+C Reset to represent UNKNOWN
+              SOTHER(newsurf,1)='UNKNOWN'
+            ENDIF
+            write(SOTHER(newsurf,2),'(i2.2)') boundarytype(newsurf,2)
+            write(SOTHER(newsurf,3),'(i2.2)') boundarytype(newsurf,3)
+            SSOTHER(ibcs,1)=SOTHER(newsurf,1)
+            SSOTHER(ibcs,2)=SOTHER(newsurf,2)
+            SSOTHER(ibcs,3)=SOTHER(newsurf,3)
 
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
   77    continue
+      endif
+
+C Next, if there are mass pairs to add make standard calls to insert them.
+      if(nbmass.gt.0)then
+        do 79 imu=1,nbmass
+          call eclose(datamass(imu,1),90.0,0.01,closev)
+          write(SN,'(a)') textmass(imu,1)(1:lnblnk(textmass(imu,1)))
+          write(constr,'(a)') textmass(imu,2)(1:lnblnk(textmass(imu,2)))
+          write(opt,'(a)') textmass(imu,3)(1:lnblnk(textmass(imu,3)))
+          if(closev)then
+            call addmass(1,ICOMP,'VM','s',datamass(imu,2),
+     &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
+     &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
+          else
+            call addmass(1,ICOMP,'HM','s',datamass(imu,2),
+     &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
+     &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
+          endif
+
+          call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+  79    continue
       endif
       CALL EMKCFG('-',IER)
 
@@ -2863,6 +2966,21 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
+C NB number of obstruction blocks.
+C X0 Y0 Z0 coordinates of each block origin.
+C DX DY DZ width depth and height of each block
+C BANG block rotation angle.
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+C NOX NOZ gridding resolution of surfaces for shading
+C NGX NGZ not used.
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      character BLKNAME*8,BLKMAT*12
 
       common/rpath/path
       character*72 path,odir    ! where are folders
@@ -2901,6 +3019,7 @@ C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls
+      integer nbmass(MSZ)      ! nb of paired mass rectangles
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
@@ -2910,10 +3029,27 @@ C Paremeters passed to:silentzone
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
+      real datamass(4,7),sdatamass(MSZ,4,7) ! origin and size and orientations of mass (4 per zone)
       real size(3),szsize(MSZ,3)        ! values dependant on shape
       real coords(MS,3),szcoords(MSZ,MS,3) 
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
+
+      integer nbob  ! nbob number of obstruction blocks.
+      real XOB,YOB,ZOB  ! coordinates of each block origin.
+      real DXOB,DYOB,DZOB  ! width depth and height of each block
+      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
+      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
+
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      character BLOCKNAME*8,BLOCKMAT*12
+      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
+
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character textmass*32,stextmass*32
+      dimension textmass(4,3),stextmass(MSZ,4,3)
+
       character hasconstruction*32,szhasconstruction*32
       dimension hasconstruction(MS),szhasconstruction(MSZ,MS)  ! construction to use for each surface
       character hasname*12,szhasname*12
@@ -2930,6 +3066,10 @@ C Determine operating system
         fs = char(92)
       endif
 
+C Set icomp to zero if there are no zones in the model.
+      if(ncomp.eq.0)then
+        icomp=0
+      endif
 C Get the current folder and display options to the user.
 C first list any files with .cfg in name.
       odir=' '
@@ -2972,6 +3112,7 @@ C in the file.
           szuse(iz,3) = ' '
           usefile(iz) = ' '
           nbwalls(iz) = 0
+          nbmass(iz) = 0
           nbglz(iz) = 0
           nbdoor(iz) = 0
           nbcord(iz) = 0
@@ -2982,6 +3123,18 @@ C in the file.
           szsize(iz,1) = 0.0
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
+          nbob(iz) = 0
+          do 55 ibu=1,MB
+            XOB(iz,ibu) = 0.0
+            YOB(iz,ibu) = 0.0
+            ZOB(iz,ibu) = 0.0
+            DXOB(iz,ibu) = 0.0
+            DYOB(iz,ibu) = 0.0
+            DZOB(iz,ibu) = 0.0
+            BANGOB(iz,ibu) = 0.0
+            BLOCKNAME(iz,ibu) = ' '
+            BLOCKMAT(iz,ibu) = ' '
+  55      continue
           do 52 isu=1,MS
             isznbedges(iz,isu)=0
             do 54 ivu=1,MV
@@ -2998,6 +3151,18 @@ C in the file.
             szboundarytype(iz,isu,2)=0
             szboundarytype(iz,isu,3)=0
   52      continue
+          do 59 imu=1,4
+            sdatamass(iz,imu,1)= 0.0
+            sdatamass(iz,imu,2)= 0.0
+            sdatamass(iz,imu,3)= 0.0
+            sdatamass(iz,imu,4)= 0.0
+            sdatamass(iz,imu,5)= 0.0
+            sdatamass(iz,imu,6)= 0.0
+            sdatamass(iz,imu,7)= 0.0
+            stextmass(iz,imu,1)= ' '
+            stextmass(iz,imu,2)= ' '
+            stextmass(iz,imu,3)= ' '
+  59      continue
   42    continue
       endif
 
@@ -3259,6 +3424,61 @@ C Now proceed to read vertices on one or more lines.
           iszlist(nsz,NS,KV)=ival2
    12   CONTINUE
         goto 43
+      elseif(WORD(1:4).eq.'*obs')then
+
+C An obstruction block to be associated with the current zone.
+        nbob(nsz)=nbob(nsz)+1
+        nob=nbob(nsz)
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
+        XOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
+        YOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
+        ZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
+        DXOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
+        DYOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
+        DZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
+        BANGOB(nsz,nob)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        goto 43
+
+      elseif(WORD(1:5).eq.'*mass')then
+
+C The *mass keyword is followed by 9 tokens as follows:
+        nbmass(nsz)=nbmass(nsz)+1
+        nma=nbmass(nsz)
+        CALL EGETW(OUTSTR,K,WORD,'W','mass vertical or horiz',IER)
+        if(WORD(1:2).eq.'VM'.or.WORD(1:2).eq.'vm')then
+          sdatamass(nsz,nma,1)= 90.0  ! signal vertical
+        elseif(WORD(1:2).eq.'HM'.or.WORD(1:2).eq.'hm')then
+          sdatamass(nsz,nma,1)= 0.0   ! signal horizontal
+        endif
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass X org',IER)
+        sdatamass(nsz,nma,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass Y org',IER)
+        sdatamass(nsz,nma,3)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','mass Z org',IER)
+        sdatamass(nsz,nma,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass X dis',IER)
+        sdatamass(nsz,nma,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass Z dis',IER)
+        sdatamass(nsz,nma,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','mass rotate',IER)
+        sdatamass(nsz,nma,7)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','mass name',IFLAG)
+        write(stextmass(nsz,nma,1),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETW(OUTSTR,K,WORD,'W','mass constr name',IFLAG)
+        write(stextmass(nsz,nma,2),'(a)') WORD(1:lnblnk(WORD))
+        write(stextmass(nsz,nma,3),'(a)') 'OPAQUE'   ! set as opaque
+        goto 43
+
       elseif(WORD(1:6).eq.'*usage')then
 
 C After *usage the next token is 'pattern' (tag indicating that
@@ -3359,14 +3579,51 @@ C        usefile(iz) = ' '
             boundarytype(isu,2)=szboundarytype(isz,isu,2)
             boundarytype(isu,3)=szboundarytype(isz,isu,3)
   49      continue
+          do 158 imu=1,4
+            datamass(imu,1)=sdatamass(isz,imu,1)
+            datamass(imu,2)=sdatamass(isz,imu,2)
+            datamass(imu,3)=sdatamass(isz,imu,3)
+            datamass(imu,4)=sdatamass(isz,imu,4)
+            datamass(imu,5)=sdatamass(isz,imu,5)
+            datamass(imu,6)=sdatamass(isz,imu,6)
+            datamass(imu,7)=sdatamass(isz,imu,7)
+            textmass(imu,1)=stextmass(isz,imu,1)
+            textmass(imu,2)=stextmass(isz,imu,2)
+            textmass(imu,3)=stextmass(isz,imu,3)
+ 158      continue
           icomp=icomp+1
+
+C If there are obstructions fill in relevant common blocks. Set iobs()=2
+C to signal that the common blocks have been instanciated and data should
+C be included in the version 1.1 geometry file.
+          if(nbob(isz).gt.0)then
+            NB=nbob(isz)
+            NOX=20
+            NOZ=20
+            do 58 ib=1,nbob(isz)
+              XO(ib)=XOB(isz,ib)
+              YO(ib)=YOB(isz,ib)
+              ZO(ib)=ZOB(isz,ib)
+              DX(ib)=DXOB(isz,ib)
+              DY(ib)=DYOB(isz,ib)
+              DZ(ib)=DZOB(isz,ib)
+              BANG(ib)=BANGOB(isz,ib)
+              BLKNAME(ib)=BLOCKNAME(isz,ib)
+              BLKMAT(ib)=BLOCKMAT(isz,ib)
+  58        continue
+            iobs(icomp)=2
+          else
+            iobs(icomp)=0
+            NB=0
+          endif
+
           write(outs,'(2a)') 'Processing ',name(isz)
           call edisp(iuout,outs)
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
-     &      nbedges,nbcord(isz),list,origin,size,
+     &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstruction,
-     &      boundarytype,use,usefile(isz),IER)
+     &      boundarytype,datamass,textmass,use,usefile(isz),IER)
   53    continue
       endif
       RETURN

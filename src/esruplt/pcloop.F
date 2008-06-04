@@ -3622,7 +3622,10 @@ C Set this control loop to follow master loop if just one loop is
 C specified
       IF(NCT.EQ.1)THEN
         IMASTER=INT(PMISCD(ICFP,IDTYPP,IPERP,2))
-        IF(LASTOUT(IMASTER).NE.0)ICTL=1
+        IF(LASTOUT(IMASTER).NE.0)then
+          ICTL=1
+          iprevon=1
+        endif
       ELSE
 
 C Work out logical relationship result if more than one master loop
@@ -3663,7 +3666,7 @@ C timestep
       ORT=(PMISCD(ICFP,IDTYPP,IPERP,2*NCT+4))
       NTSOR=INT(ORT*60./TIMSEC)
       IF(NTSOR.NE.0)THEN
-        IF(IPREVON.EQ.1.AND.ICTL.EQ.0)THEN
+        IF(IPREVON.EQ.1.AND.ICTL.EQ.1)THEN
           IOR=1
           ITSOR=0
         ENDIF

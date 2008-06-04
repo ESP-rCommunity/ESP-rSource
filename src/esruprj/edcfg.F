@@ -1441,7 +1441,7 @@ C Transform any MRT sensors associated with this zone.
 
 C If there is an obstructions file, loop through each and
 C transform origin.
-              IF(IOBS(IICOMP).EQ.1)THEN
+              if(IOBS(IICOMP).EQ.1)then
                 dok=.true.
                 write(outs,'(4a)') 'Transforms obstructions of ',
      &            zn(1:lnblnk(zn)),' in ',
@@ -1457,6 +1457,27 @@ C transform origin.
                     ZO(ij)=ZO(ij)+VALZ
   63              continue
                   CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
+                endif
+              elseif(IOBS(IICOMP).EQ.2)then
+
+C If obstructions are held in the geometry file
+C apply the transform and write the file back out.
+                if(newgeo)then
+                  dok=.true.
+                  write(outs,'(2a)') 'Transforms obstructions of ',
+     &              zn(1:lnblnk(zn))
+                  h(1)='You rotated the zone(s) and so will probably'
+                  h(2)='also want to rotate associated obstructions.'
+                  call askok(outs,' ?',OK,dok,2)
+                  if(OK)then
+C                    call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+                    do 64 ij=1,NB
+                      XO(ij)=XO(ij)+VALX
+                      YO(ij)=YO(ij)+VALY
+                      ZO(ij)=ZO(ij)+VALZ
+  64                continue
+                    call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+                  endif
                 endif
               endif
               write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
@@ -1563,7 +1584,7 @@ C Rotate any MRT sensors associated with this zone.
                 endif
 
 C Rotate any obstructions associated with this zone.
-                IF(IOBS(IICOMP).EQ.1)THEN
+                if(IOBS(IICOMP).EQ.1)then
                   dok=.true.
                   h(1)='You rotated the zone and so will probably'
                   h(2)='want to rotate the solar obstructions which'
@@ -1588,6 +1609,42 @@ C Rotate any obstructions associated with this zone.
                       BANG(ij)=BANG(ij)+VAL
   86                continue
                     CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
+                  endif
+                endif
+                write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+     &          '... done.'
+                CALL USRMSG(' ',outs,'-')
+                call sumrchg(IICOMP,'r')
+              elseif(IOBS(IICOMP).EQ.2)then
+
+C If obstructions are held in the geometry file,
+C apply the transform and write the file back out.
+                if(newgeo)then
+                  dok=.true.
+                  write(outs,'(2a)') 'Transforms obstructions of ',
+     &              zn(1:lnblnk(zn))
+                  h(1)='You rotated the zone and so will probably'
+                  h(2)='want to rotate the solar obstructions which'
+                  h(3)='are associated with it as well. '
+                  write(outs,'(2a)') 'Rotate obstructions of ',
+     &              zn(1:lnblnk(zn))
+                  call askok(outs,' ?',OK,dok,3)
+                  if(OK)then
+C                    call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+                    PI = 4.0 * ATAN(1.0)
+                    A=-VAL*PI/180.
+                    CA=COS(A)
+                    SA=SIN(A)
+                    do 87 ij=1,NB
+                      XXX=XO(ij)-X1
+                      YYY=YO(ij)-Y1
+                      XR=XXX*CA+YYY*SA
+                      YR=YYY*CA-XXX*SA
+                      XO(ij)=XR+X1
+                      YO(ij)=YR+Y1
+                      BANG(ij)=BANG(ij)+VAL
+  87                continue
+                    call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
                   endif
                 endif
                 write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
@@ -1813,6 +1870,8 @@ C file and then recover the zone commons.
               endif
               CALL ERCZONE(NCOMP)
             endif
+          elseif(IOBS(ic).eq.2)then
+            continue   ! obstr within geometry file so copy not required.
           endif
 
 C Zone rotations and transforms.
@@ -1979,7 +2038,7 @@ C Do same transformation to obstructions?
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 87 ij=1,NB
+              do 88 ij=1,NB
                 XXX=XO(ij)-X1
                 YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
@@ -1987,7 +2046,7 @@ C Do same transformation to obstructions?
                 XO(ij)=XR+X1
                 YO(ij)=YR+Y1
                 BANG(ij)=BANG(ij)+VAL
-  87          continue
+  88          continue
             endif
             CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
             CALL ERCZONE(NCOMP)
@@ -2436,9 +2495,14 @@ c beeen read in so can include the extended surface `context`.
             CALL INSINFO(IC,ITRU)
           endif
 
-C If there is an obstructions file read it.
+C If there is an obstructions file read it, if obstructions within
+C the zone geometry file nothing more needs to be done.
           IUF=IFIL+1
-          IF(IOBS(IC).EQ.1)CALL EGOMST(IUF,ZOBS(IC),IR,ITRC,ITRU,IER)
+          if(IOBS(IC).EQ.1)then
+            CALL EGOMST(IUF,ZOBS(IC),IR,ITRC,ITRU,IER)
+          elseif(IOBS(IC).EQ.2)then
+            continue
+          endif
         ENDIF
         CALL EDZONE(ITRC,IC,IER)
         MODIFY=.TRUE.

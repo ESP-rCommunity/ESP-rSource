@@ -2013,18 +2013,22 @@ C not browsing.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
       common/p3ver/ip3ver
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character zname*12,zdesc*64,ZN*12
       logical ok,dok,ddok,found,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical allnew  ! if true then all zones are v1.1 or newer.
       logical forceupgrade  ! if any other zone is version 1.1
       logical MODOPR ! to flag if zone operations file needs changing.
 
@@ -2037,16 +2041,29 @@ C Check if Unix-based or DOS based.
       newgeo=.false.  ! assume older format geometry.
       sorted=.false.  ! assume casual gains not sorted.
 
+C Loop through and find out if all zone geometry files are
+C v1.1 or newer (so set igupgrade=2). If so then there is
+C no need for an upgrade.
+      allnew=.true.
+      do 775 iz=1,ncomp
+        if(gversion(iz).lt.1.1) allnew=.false.
+  775 continue
+      if(allnew)then
+        igupgrade=2
+        forceupgrade=.false.
+      else
+
 C Loop through and find out if any zone geometry files are
 C version 1.0 and also if the upgrade policy is non-zero.
 C So if the model is mixed then force an upgrade. If the
 C igupgrade was set to 2 in preferences also force an upgrade.
-      forceupgrade=.false.
-      do 777 iz=1,ncomp
-        if(gversion(iz).gt.1.0) forceupgrade=.true.
-  777 continue
-      if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
-      if(igupgrade.eq.2) forceupgrade=.true.
+        forceupgrade=.false.
+        do 777 iz=1,ncomp
+          if(gversion(iz).gt.1.0) forceupgrade=.true.
+  777   continue
+        if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
+        if(igupgrade.eq.2) forceupgrade=.true.
+      endif
 
       if(forceupgrade)then
         dok=.true.
@@ -2101,7 +2118,21 @@ C see if there are shading and obstruction files.
   679             continue
                   call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
                 endif
-              endif 
+              endif
+
+C If there is a v1.1 geometry file and iobs() is 1 then the
+C obstructions need to be moved into the geometry file and
+C zobs() cleared for this zone..
+              if(iobs(iz).eq.0)then
+                continue
+              elseif(iobs(iz).eq.1)then
+                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
+                iobs(iz)=2
+                zobs(iz)=' '
+                call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+              elseif(iobs(iz).eq.2)then
+                continue
+              endif
             else
 
 C On first entry for version 1.0 several common blocks need to be
@@ -2150,6 +2181,19 @@ C Otherwise assume all applicable for shading and insolation.
               gversion(iz) =1.1
               newgeo = .true.
               call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+
+C If iobs() is 1 then the obstructions need to be moved into the
+C geometry file and zobs() cleared for this zone..
+              if(iobs(iz).eq.0)then
+                continue
+              elseif(iobs(iz).eq.1)then
+                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
+                iobs(iz)=2
+                zobs(iz)=' '
+                call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+              elseif(iobs(iz).eq.2)then
+                continue
+              endif
             endif
 
 C The documentation in the zone construction and tmc files might
