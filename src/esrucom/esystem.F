@@ -25,6 +25,8 @@ C  CONXINFO: returns an English description of the inter-connections
 C            in the configuration file. 
 C  HZSTOCON: Scans the current connections list and builds array
 C            IZSTOCN(MCOMP,MS) holding the connection index.
+C findwhichdbpath: takes a database file name and checks to see if
+C            the path is local or absolute or standard database folder.
 
 
 C ******************** ERSYS 
@@ -456,6 +458,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
+      character lworking*144
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
@@ -489,6 +492,9 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LWndSupp*72
       character HDR*12
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -794,8 +800,16 @@ C If '* CONFIGURATION' found then read in the databases.
         endif
       endif
 
-C Read databases until '* PROJ LOG' found.
+C Read databases until '* PROJ LOG' found.  If starts with *std
+C then set the whichdbpath variable to signal that it is in
+C the standard location. If tag does not start with *std then
+C check the intial portion of the file name to see if it is
+C local or absolute and if absolute whether it matches the
+C standard path.
   44  continue
+      lndbp=lnblnk(standarddbpath)
+      call isunix(unixok)
+
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'db names',IER)
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','db names',IFLAG)
@@ -804,7 +818,46 @@ C Read databases until '* PROJ LOG' found.
       elseif(WORD(1:4).eq.'*mlc')then
         CALL EGETRM(OUTSTR,K,LFMUL,'W','multilayer db',IER)
       elseif(WORD(1:4).eq.'*opt')then
+        CALL EGETRM(OUTSTR,K,lworking,'W','optical db',IER)
+
+C Process the file name folloing *opt and depending on its path
+C set the LOPTDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('opt',lltmp,ier)
+
+C        lnwkg=lnblnk(lworking)
+C        if(unixok)then
+C          if(lworking(1:7).eq.'../dbs/')then
+C            ipathoptdb=1  ! local folder for optical database
+C            write(LOPTDB,'(a)') lworking(1:lnwkg)
+C          elseif(lworking(1:lndbp).eq.standarddbpath(1:lndbp))then
+
+C The initial part of the path matches so only save the file name w/o path.
+C            ipathoptdb=2
+C            write(LOPTDB,'(a)') lworking(lndbp+2:lnwkg)
+C          else
+C            ipathoptdb=0
+C            write(LOPTDB,'(a)') lworking(1:lnwkg)
+C          endif
+C        else
+C          if(lworking(1:7).eq.'..\\dbs\\')then
+C            ipathoptdb=1  ! local folder for optical database
+C            write(LOPTDB,'(a)') lworking(1:lnwkg)
+C          elseif(lworking(1:lndbp).eq.standarddbpath(1:lndbp))then
+C            ipathoptdb=2
+C            write(LOPTDB,'(a)') lworking(lndbp+2:lnwkg)
+C          else
+C            ipathoptdb=0
+C            write(LOPTDB,'(a)') lworking(1:lnwkg)
+C          endif
+C        endif
+        write(6,*) lworking
+        write(6,*) loptdb
+        write(6,*) ' ersys ipathoptdb is ',ipathoptdb
+      elseif(WORD(1:7).eq.'*stdopt')then
+        ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(OUTSTR,K,LOPTDB,'W','optical db',IER)
+        write(6,*) loptdb
+        write(6,*) 'ipathoptdb is ',ipathoptdb
       elseif(WORD(1:4).eq.'*prs')then
         CALL EGETRM(OUTSTR,K,LAPRES,'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*evn')then
@@ -2840,3 +2893,77 @@ C Check if ianc is a known anchor and then if there is a list.
         return
       endif
       end
+
+C ******* findwhichdbpath
+C findwhichdbpath takes a database file name and checks to
+C see if the path is local or absolute or standard database folder.
+C Depending on which database (the parameter topic) the
+C common block file string and whichdbpath variable is updated. 
+      subroutine findwhichdbpath(topic,file,ier)
+#include "esprdbfile.h"
+
+C Currently works only with optical database.
+      character*(*) file
+      character fs*1
+      character topic*3 ! identify which type of database
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+      lndbp=lnblnk(standarddbpath)
+      call isunix(unixok)
+      lnwkg=lnblnk(file)
+      if(unixok)then
+        if(file(1:7).eq.'../dbs/')then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=1  ! local folder for optical database
+            write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
+          endif
+        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
+
+C The initial part of the path matches so only save the file name w/o path.
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=2
+            write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
+          endif
+        else
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=0
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          endif
+        endif
+      else
+        if(file(1:7).eq.'..\\dbs\\')then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=1  ! local folder for optical database
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          endif
+        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=2
+            write(LOPTDB,'(a)') file(lndbp+2:lnwkg) ! without path
+          endif
+        else
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=0
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          endif
+        endif
+      endif
+      write(6,*) file
+      if(topic(1:3).eq.'opt')then
+        write(6,*) loptdb
+        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+      endif
+
+      return
+      end
+

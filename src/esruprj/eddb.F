@@ -113,7 +113,13 @@ C Begin with menu of default dbs.
       WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
       WRITE(ITEMS(8),'(2A)')'f plant components       : ',LPCDB(1:44)
       WRITE(ITEMS(9),'(2A)')'g event profiles         : ',LPRFDB(1:44)
-      WRITE(ITEMS(10),'(2A)')'h optical properties     : ',LOPTDB(1:44)
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        WRITE(ITEMS(10),'(2A)')'h optical properties     : ',
+     &    LOPTDB(1:44)
+      elseif(ipathoptdb.eq.2)then
+        WRITE(ITEMS(10),'(2A)')'h std optical properties : ',
+     &    LOPTDB(1:44)
+      endif
       WRITE(ITEMS(11),'(A)')'i mould & mycotoxins     : None'
       ITEMS(12)='  _______________________________ '
       ITEMS(13)='? help                            '
@@ -2882,13 +2888,17 @@ C This facility offers browsing for GTK version.
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
       character GTYPE*12,GDESCR*36,SOPT*12
-      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
+      character lpath*72,fname*72 ! for use with fdroot
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2904,10 +2914,29 @@ C Setup string buffer with distribution database folder name.
       ldirpath=lnblnk(dirpath)
 
 C Remember the initial file name in case user choice fails.
-      moddb=.false.
-      lprev=LOPTDB
 
-  50  lltmp=LOPTDB
+C Take into account the current value of whichdbpath.
+      moddb=.false.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        lprev=LOPTDB
+      elseif(ipathoptdb.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    loptdb(1:lnblnk(loptdb))
+      endif
+C Debug.
+C      write(6,*) 'previous optics ',lprev(1:lnblnk(lprev))
+
+  50  continue
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        lltmp=LOPTDB  ! use as is
+      elseif(ipathoptdb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    loptdb(1:lnblnk(loptdb))  ! prepend db folder path
+      endif
+C Debug.
+C      write(6,*) 'temp optics ',lltmp(1:lnblnk(lltmp))
+
       H(1)='The optical properties of multilayer constructions'
       H(2)='are defined in an optical database.  The data include'
       H(3)='angular (0, 40, 55, 70, 80 degrees from normal) solar' 
@@ -2959,7 +2988,14 @@ C If GTK library then there are additional options so include in help.
         H(34)=' '
       endif
       CALL ERPFREE(IOPTDB,ISTAT)
-      call addpath(LLTMP,longtfile,concat)
+
+C If local or absolute path call addpath otherwise if a standard
+C database then set longtfile equal to LLTMP.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        call addpath(LLTMP,longtfile,concat)
+      else
+        longtfile=LLTMP
+      endif
       ltf=max(1,LNBLNK(longtfile))
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
@@ -2984,7 +3020,7 @@ C If db does not exist locally offer limited choices.
         idno=2
         isw=0
         call MENUATOL(outs,'Optical Properties db',
-     &    ' ',' )',
+     &    ' ',' ',
      &    'c create new db','d copy the default db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.true.
@@ -3027,9 +3063,10 @@ C Act on the users choice. If no choice, return to main menu.
         return
       elseif(isw.eq.1)then
 
-C If file exists read it and enter editing facility.
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
         if(XST)then
-          LOPTDB=lltmp
+          call findwhichdbpath('opt',lltmp,ier)
           goto 44
         else
           call usrmsg('No file to browse/edit. Please use one',
@@ -3039,6 +3076,7 @@ C If file exists read it and enter editing facility.
       elseif(isw.eq.2)then
 
 C There is no select by list for optics database.
+        call usrmsg('No list select for optical databases.',' ','-')
         goto 50
       elseif(isw.eq.3)then
 
@@ -3062,12 +3100,14 @@ C be explored).
      &    ' ','cancel',clkok,72,'optics.db','optics database',IER,2)
         if(clkok) return
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          write(LOPTDB,'(a)') ltmp(1:lnblnk(ltmp))
+          write(LOPTDB,'(a)') ltmp(1:lnblnk(ltmp)) ! local so direct asignment
         else
           goto 352
         endif
 
 C Create a minimal optics databases (code similar to edoptic.F).
+C Set the value of ipathoptdb to signal local database.
+        ipathoptdb=1  
         moddb=.true.
         CALL EFOPSEQ(IOPTDB,LOPTDB,4,IER)
         write(IOPTDB,'(a)')'# optical properties db for transparent,'
@@ -3117,7 +3157,7 @@ C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name then do the copy.
 C Use LTMP (short buffer) for the file name as known to esp-r
-C and LCOPY for the system cp call.   
+C and LCOPY for the system cp call.
         if(copydef)then
           write(outs248,'(2a)') 'The source file is:',
      &      DOPTDB(1:lnblnk(DOPTDB))
@@ -3150,7 +3190,7 @@ C and LCOPY for the system cp call.
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
-
+          ipathoptdb=1  ! signal that it is a local database.
           LOPTDB=lltmp
         endif
         h(1)='The suggested name of this database is based on the '
@@ -3205,9 +3245,13 @@ C            call usrmsg('copying default file via',doit,'-')
 
 C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
+C If the file exists with the normal path to model prepended then
+C it should be possible to rebuild the name based on ../dbs.
             call FINDFIL(LCOPY,XST)
             if(XST)then
-              write(LOPTDB,'(a)') LCOPY(1:lnblnk(LCOPY))
+              call fdroot(lcopy,lpath,fname)
+              write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
             else
               write(LOPTDB,'(a)') LTMP(1:lnblnk(LTMP))
             endif
@@ -3229,7 +3273,9 @@ C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
             call FINDFIL(LCOPY,XST)
             if(XST)then
-              write(LOPTDB,'(a)') LCOPY(1:lnblnk(LCOPY))
+              call fdroot(lcopy,lpath,fname)
+              write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
             else
               call FINDFIL(LTMP,XST)
               if(XST)then
@@ -3243,6 +3289,7 @@ C be pre-pended when using most inbuilt file opening calls.
             endif
           endif
           moddb=.true.
+          ipathoptdb=1  ! signal that it is a local database.
           goto 44
         else
           goto 54
@@ -3266,8 +3313,11 @@ C Test the returned file and if it is not readable reset LOPTDB.
      &      144,DOPTDB,'optical properties database',IER,6)
           if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
 
+C << perhaps call fdroot to get the last word in LCOPY and
+C << then add it after ../dbs
           LOPTDB=LCOPY
           moddb=.true.
+          ipathoptdb=1  ! signal that it is a local database.
           goto 44
         else
 
@@ -3289,21 +3339,13 @@ C For X11 and text allow user to type in a file name.
           if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
 
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-            LOPTDB=lltmp
-          else
-            goto 50
-          endif
-          CALL ERPFREE(IOPTDB,ISTAT)
-          call FINDFIL(LOPTDB,XST)
-          IF(XST)THEN
 
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
+C This is another place where we need to check what the user might
+C have edited to be sure of setting the correct location value.
+            call findwhichdbpath('opt',lltmp,ier)
+            moddb=.true.
             goto 44
           else
-            write(outs248,'(2a)') LOPTDB(1:lnblnk(LOPTDB)),
-     &        ' does not appear to exist.'
-            call edisp248(iuout,outs248,100)
             goto 50
           endif
         endif
@@ -3327,7 +3369,9 @@ C call to eroptdb and if this is not successful reset LOPTDB.
      &      144,DOPTDB,'optical properties database',IER,6)
           if(ier.eq.-3) goto 50  ! cancel detected, redisplay menu.
 
-          LOPTDB=LCOPY
+C This is yet another place where we need to check what the user might
+C have edited to be sure of setting the correct location value.
+          call findwhichdbpath('opt',lltmp,ier)
           moddb=.true.
           goto 44
         else

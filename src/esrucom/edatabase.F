@@ -1060,6 +1060,18 @@ C GS (52 char) list of optical database items to select from.
       LOGICAL FOUND
       CHARACTER GS*52,WORD*20,topt*72,outs*124
       CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
+      character lworking*144,fs*1
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Open the optical database, if scanning all items reset the
 C counters for the number of single and double items before scan.
@@ -1079,12 +1091,31 @@ C Reporting.
       FOUND=.FALSE.
       GTYPE=' '
       GDESCR=' '
-      CALL EFOPSEQ(IOPTDB,LOPTDB,1,IER)
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        CALL EFOPSEQ(IOPTDB,LOPTDB,1,IER)
+      elseif(ipathoptdb.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    loptdb(1:lnblnk(loptdb))
+
+C Debug.
+        write(6,*) 'working optics ',lworking
+        CALL EFOPSEQ(IOPTDB,lworking,1,IER)
+      endif
       IF(IER.NE.0)THEN
         IER=1
         RETURN
       ENDIF
-      write(currentfile,'(a)') LOPTDB(1:lnblnk(LOPTDB))
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        write(currentfile,'(a)') LOPTDB(1:lnblnk(LOPTDB))
+      elseif(ipathoptdb.eq.2)then
+        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
+      endif
 
 C Read lines from file, discarding comments. If SOPT = 'ALL' then put
 C in scan mode.  

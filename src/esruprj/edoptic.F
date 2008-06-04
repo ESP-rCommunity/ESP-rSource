@@ -58,9 +58,21 @@ C LPRFDB,IPRODB (for event profile database)
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*144,tg*1,delim*1
       character OUTSTR*124,lfil*72,word*24,outs248*248
+      character lworking*144,fs*1
       dimension RVA(20),IVA(24)
 
       logical moddb,browse,OK,DOK,edt
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER=0
       moddb = .false.
@@ -436,11 +448,29 @@ C Edit item identified by KEYIND - get into common and then into edit common
       GOTO 3
 
 C Deal with file manipulation (shifting data from temp file to db).
+C Open the file based on the current value of whichdbpath variable.
  99   CALL ERPFREE(IOPTDB,ISTAT)
-      CALL EFOPSEQ(IOPTDB,LOPTDB,1,IER)
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        CALL EFOPSEQ(IOPTDB,LOPTDB,1,IER)
+        loptdbl=LOPTDB
+      elseif(ipathoptdb.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    loptdb(1:lnblnk(loptdb))
+
+C Debug.
+        write(6,*) 'EDOPT working optics ',lworking
+        CALL EFOPSEQ(IOPTDB,lworking,1,IER)
+        loptdbl=lworking
+      endif
+
       CALL EFDELET(IOPTDB,ISTAT)
       ioptl=ioptdb
-      loptdbl=LOPTDB
       ioptdb=ifil+1
       LOPTDB='tmpopt'
 

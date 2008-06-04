@@ -29,6 +29,17 @@ C Array of logicals indicating generic database scanned ok.
       common/gendb0/gendbok(MGDB)
       logical gendbok
 
+C Standard path to corporate databases (based on Install data)
+      common/stddbpath/standarddbpath
+      character standarddbpath*72
+
+C Array of integers indicating whether database is defined via
+C an absolute path (zero), local path (one), standard path (2)
+      common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
+     &                   ipathmat,ipathmul,ipathclim
+      integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
+     &                   ipathmat,ipathmul,ipathclim
+
 C LAPRES - (72 char) wind pressure coefficients distribution database
 C iapres  - file unit for wind pressure coef database
       common/APRES/LAPRES,IAPRES
