@@ -1236,6 +1236,7 @@ C and present a different interface depending on file type.
 C Begin with high level menu.
     3 INO=-4
       IER=0
+      IRT=-1
 
       if(itdflg.eq.0)then
         if(browse)then
@@ -1383,7 +1384,7 @@ C Begin with high level menu.
           endif
         endif
       endif
-
+      IF(IRT.LT.1.OR.IRT.GT.7)GOTO 3
   27  continue
       if(IRT.eq.1)then
 

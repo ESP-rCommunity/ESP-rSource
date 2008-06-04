@@ -2,7 +2,16 @@
 *menu,Creates room with balcony on each side
 *doc,Model of room with balcony on each side model in /tmp/sams3. Mass partitions are included. The connections are pre-defined.
 *action,new,poly,distributed,/tmp/sams3
-*weather_station,dublin
+*weather_station,uk_oban
+*site,45.320,0.000,0.0,6 # latitude, long diff, time zone, exposure index (and sky/ground/building exposure)
+*ground_refl_annual,0.20
+# model of ground albido followed by monthly ground reflectance values
+*ground_refl_monthly,2,0.200,0.200,0.200,0.200,0.200,0.200,0.200,0.200,0.200,0.200,0.200,0.200,0.700
+# days with snow (matching ground albido model 2
+*monthly_snow_days,29,27,22,4,0,0,0,0,0,0,4,20
+*monthly_profile,1
+5.00,4.00,3.50,3.60,6.60,10.20,13.00,15.00,15.00,13.00,10.00,7.00
+# start of zone information
 *start_zone,main
 *shape,box
 *origin,0.0,0.0,0.0  # origin of zone

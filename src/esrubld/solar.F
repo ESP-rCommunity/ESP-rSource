@@ -205,12 +205,6 @@ C in elevation and azimuth.
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
      &              TVTR2(MCOM,MTMC,MBP)
 
-C Optical control associated with each connection.
-C      common/iconopt/icnopta(MCON)
-C      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-C     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-C     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
-
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)

@@ -47,16 +47,19 @@ C znctldoc | - Hold a descriptive for the zones, plant, mass flow
 C plctldoc |   and power control regimes.
 C flctldoc |
 C elctldoc |
+C opticdoc |
 
 C ncf   | - Are the number of zone control functions, plant control
 C ncl   |   loops, power flow and  mass flow control functions.
 C ncc   |
 C necl  |
+C nol   |
 
 C ibsn  | - Defines the sensor node associated with any control function
 C ipsn  |   (B), control loop (P),  mass flow control function (F) and power
 C ifsn  |   control function (E) .
 C iesn  |
+C iosn  |
 C           The three locations have the following meaning:
 
 C           i?sn(?,1)> 0; defines a zone where the sensor is located.
@@ -146,21 +149,25 @@ C nbcdt | - Give the number of control day types for each domain.
 C npcdt |   The special case of 0 implies the usual 
 C nfcdt |   Weekday/Saturday/Sunday combination.
 C necdt |   
+C nocdt |   
 
 C ibcdv | - Give the dates of validity (in year day number format)
 C ipcdv |   for each day type.
 C ifcdv | 
 C iecdv |   
+C iocdv |   
 
 C nbcdp | - Give the number of distinct control periods during each
 C npcdp |   day type.   During these periods different control laws 
 C nfcdp |   can prevail.
 C necdp |
+C nocdp |
 
 C tbcps | 
 C tpcps | - Give the start time for each period.
 C tfcps |
 C tecps |
+C tocps |
 
 C ibctyp |- Defines the controller type for each building control function
 C           for day type, and period:
@@ -225,11 +232,13 @@ C iectype| 2: Senses VA actuates ??
 C ibclaw |- Defines the control law which relates the sensor to
 C ipclaw |  the actuator.  A number of control laws are active
 C ifclaw |  and these are defined in routines BCTL, PCTL and FCTL.
+C ioclaw |
 
 C bmiscd |- Hold data required by the control laws. ?MISCD(?,?,?,1)
 C pmiscd |  defines the total number of such items to be read.
 C fmiscd |  In the case of thermophysical properties substitution
 C emiscd |  items 3-5 are the MLC indices for each of the 3 surfaces.
+C omiscd |
 
 C iasocc   1st..n connection index for each mass flow connection 
 C          associated with a component flow control.  Use with 
@@ -257,7 +266,8 @@ C espriou.h provides currentfile.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
@@ -284,6 +294,11 @@ C espriou.h provides currentfile.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+C Optical controls
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
       
@@ -1719,6 +1734,10 @@ c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+
       ncf=0
       do 10 i=1,mcom
         icascf(i)=0
@@ -1841,6 +1860,11 @@ C      COMMON/OUTIN/IUOUT,IUIN
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C Optical controls
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
 
       CHARACTER SSTR*72,SSTRB*48
       CHARACTER WHICH*1,ZNAME*12,ZN*12,zdesc*64
@@ -2950,6 +2974,9 @@ C List one day type of a building/plant/flow/global control.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
 
       character outs*124,SSTR*72,TMP*72,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44

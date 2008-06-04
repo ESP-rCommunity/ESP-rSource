@@ -2355,12 +2355,12 @@ C or the losspercent is non-zero.
       if(losspercent(icomp).gt.0.0) havebrdge=.true.
       if(nbrdg(icomp).gt.0.or.havebrdge)then
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
-        WRITE(outs,'(a,F6.3,2F9.1)',IOSTAT=ios,ERR=13) '*bridge_start ',
+        WRITE(outs,'(a,F6.3,2F9.3)',IOSTAT=ios,ERR=13) '*bridge_start ',
      &    thbrpercent,losspercent(icomp),totheatloss(icomp)
         call SDELIM(outs,outsd,'C',IW)
         write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
      &    outsd(1:lnblnk(outsd)),
-     &    '  # user fraction, losspercent W/K and total heat loss K/W'
+     &    '  # user fraction, losspercent W/K and total heat loss W/K'
         if(nbrdg(icomp).gt.0)then
           do 88 itb=1,nbrdg(icomp)
             if(ibrdg(icomp,itb).eq.1)then

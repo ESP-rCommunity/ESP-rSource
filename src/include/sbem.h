@@ -41,7 +41,8 @@ C Integers
       COMMON/SBEM04/IBRUKH(MNS),IBRUKC(MNS),IBRUKW(MNS),IBRUKF(MNS),
      &IHGEF(MNS),ICGEF(MNS),IFTYP(MNS),IHLZ(MNS),IDHWS(MNS),IDHFL(MNS),
      &INCMSYS(MNS),IDHWLZ(MNS),IACTYTYP(MNS),ILITYP(MNS),
-     &ILIGHTUSER(MNS),ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,NDHWSYS
+     &ILIGHTUSER(MNS),ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,INOTI,
+     &NDHWSYS
 
 C Strings
       COMMON/SBEM05/DHWNAME(MNS),HVACNAME(MNS),LASBEM,SBREF,APCHK,
@@ -94,6 +95,7 @@ C Project specific *.ncm file variables
       INTEGER IACTYTYP  ! activity type index for each zone
       INTEGER ILITYP    ! lighting type index for each zone
       INTEGER ILIGHTUSER ! flag for user defined lighting wattage
+      INTEGER INOTI     ! if set to 1 this is a notional model 
                           
       CHARACTER*72 LASBEM   ! SBEM project specific file name (*.ncm)
       CHARACTER*3  SBREF    ! Scottish Accredited Construction Details followed (yes/no)

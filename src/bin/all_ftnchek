@@ -9,7 +9,7 @@ echo currently working on $PWD
 
 foreach i (esruaco esrub2e esrubps esruc2e esrucfg esruclm esrucnv esrudfs esrudbm \
   esrue2r esrueco esrugrd esruish esrumfs esrumld esrumrt esrunet esrupdb \
-  esruplt esruprj esrures esrutdf esruvew )
+  esruplt esruprj esrures esruvew )
  if ( -d $i ) then
    echo looking at $i
    cd $i

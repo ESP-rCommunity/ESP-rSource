@@ -627,7 +627,8 @@ C ***** Notice that an active description button has been pressed.
 C Control
       common/cctlnm/ctldoc,lctlf
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),

@@ -2966,6 +2966,22 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
+      COMMON/C4/XLAT,XLON
+
+C GREF    - External ground reflectivity.
+C GREF12  - (12) Monthly values of ground reflectivity
+C ITGREF  - Type of ground reflectivity model
+C           1= constant albedo
+C           2= simple model (monthly albedo, number of days with snow on ground
+C           3= advanced model (monthly albedo, snow depth read from file)
+C SREF    - Snow reflectivity
+C NSNOW   - (12) Monthly values of number of days with snow on ground
+C SNFNAM  - *72 Name of the file containing hourly snow depth information
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
+      COMMON/C5R/SKYR,GRDR,BLDR
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      COMMON/PREC8/SLAT,SLON
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -3056,6 +3072,25 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
+C Site related local variables.
+      real sitelat,sitelong  ! latitude and longitude difference
+      logical havesite       ! true if tokens included
+      real groundreflanual   ! ground reflectance (single value)
+      logical havegroundreflanual ! true if ground reflectance included
+      real groundreflmonth(12) ! ground reflectance (monthly vlues)
+      integer groundreflmodel  ! index to ground reflectance model
+      real snowrefl            ! snow reflectivity
+      integer dayswithsnow(12) ! days with snow in each month
+      logical havesnowdays     ! true if days with snow defined
+      integer siteexposureindex  ! same as ixpos
+      character hourlysnowfile*72  ! same as SNFNAM
+      logical havehourlysnowfile   ! true if set
+      real hoursGTM   ! hours before or after GTM 
+      real skyview,groundview,buildingview ! user defined viewfactors
+      real groundtemps(12,MGRDP)
+      real GVA(12)  ! temporary array to hold a dozen values.
+      integer groundtempsets
+      logical havegroundtempsets
       IER=0
 
 C Determine operating system
@@ -3104,6 +3139,17 @@ C in the file.
         silentmenu=' '
         silentdoc=' '
         weather=' '
+        hourlysnowfile=' '
+        groundreflmodel=0
+        skyview=0.0
+        groundview=0.0
+        buildingview=0.0
+        havesite=.false.
+        havegroundreflanual=.false.
+        havesnowdays=.false.
+        havehourlysnowfile=.false.
+        havegroundtempsets=.false.
+        groundtempsets=0
         do 42 iz=1,MSZ
           name(iz) = ' '
           shape(iz) = ' '
@@ -3519,6 +3565,65 @@ C for a match in the current climate location and if there is
 C one set the name of that file, scan it and find its site.
         CALL EGETRM(OUTSTR,K,weather,'W','weather name',IER)
         goto 43
+      elseif(WORD(1:5).eq.'*site')then
+
+C The site line includes latitute, longitude difference from time
+C meridian, time zone (hours before or after GMT), site exposure
+C and if siteexposureindex is 8 then read three more numbers
+C for the general exposure to sky, ground and other buildings. 
+        CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+        CALL EGETWR(OUTSTR,K,sitelong,-15.,15.,'W','Longitude dif',IER)
+        CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
+        CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &    'Site exposure',IER)
+        if(siteexposureindex.eq.8)then
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky exposure',IER)
+          CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
+     &      'Ground exposure',IER)
+          CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
+     &      'Building exposure',IER)
+        endif
+        havesite=.true.
+        goto 43
+      elseif(WORD(1:19).eq.'*ground_refl_annual')then
+        CALL EGETWR(OUTSTR,K,groundreflanual,0.,1.,'W',
+     &    'Ground reflectance annual value',IER)
+        havegroundreflanual=.true.
+        goto 43
+      elseif(WORD(1:20).eq.'*ground_refl_monthly')then
+
+C Ground reflectivity model, no-snow monthly albedos, snow albedo
+        CALL EGETWI(OUTSTR,K,groundreflmodel,1,3,'F',
+     &    'ground refl. model',IER)
+        DO 441 I=1,12
+          CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
+     &      'monthly gr. refl.',IER)
+  441   CONTINUE
+        CALL EGETWR(OUTSTR,K,snowrefl,0.,1.,'W','snow refl.',IER)  
+        goto 43
+      elseif(WORD(1:18).eq.'*monthly_snow_days')then
+
+C Number of days with snow on the ground (if ground refl model 2)
+        DO 442 I=1,12
+          CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
+     &      'days with snow',IER)
+  442   CONTINUE
+        havesnowdays=.true.
+        goto 43
+      elseif(WORD(1:16).eq.'*monthly_profile')then
+
+C Ground monthly temperature profiles. 2nd item is the number of profiles.
+C And this is followed by one line each for each profile.
+        CALL EGETWI(OUTSTR,K,groundtempsets,1,MGRDP,'F','grn prfls',IER)
+        IF(groundtempsets.eq.0) goto 43
+        DO 28 IGRDP=1,groundtempsets
+          CALL EGETWRA(IUNIT,GVA,12,-9.,99.,'W','Gr tmp',IER)
+          DO 29 J=1,12
+            groundtemps(J,IGRDP)=GVA(J)
+   29     CONTINUE
+  28    CONTINUE
+        havegroundtempsets=.true.
+        goto 43
       else
         goto 43
       endif
@@ -3531,12 +3636,55 @@ C Process the data if the end of the file reached or if the
 C *end mark was found.
  1000 CALL ERPFREE(IUNIT,ios)
 
-C Test creation of new model. Note for a single folder option the
+C Create new model. Note for a single folder option the
 C configuration will be in /tmp/box if mpath is /tmp/box. For the
 C distributed folder option the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
       call silentmodel(actions,root,mpath,folder,silentmenu,weather,
      &  ier)
+
+C Add in site information if tokens were included.
+      if(havesite)then
+        XLAT=sitelat
+        SLAT=XLAT
+        XLON=sitelong
+        SLON=XLON
+        IXPOS=siteexposureindex
+        if(IXPOS.EQ.8)then
+          SKYR=skyview
+          GRDR=groundview
+          BLDR=buildingview
+        endif
+      endif
+      if(havegroundreflanual)GREF=groundreflanual
+      if(groundreflmodel.gt.0)then
+        ITGREF=groundreflmodel
+        do 443 i=1,12
+          GREF12(I)=groundreflmonth(I)
+  443   continue
+        SREF=snowrefl
+      endif
+      if(havesnowdays)then
+        do 444 i=1,12
+          NSNOW(I)=dayswithsnow(I)
+  444   continue
+      endif
+      if(havehourlysnowfile)then
+        SNFNAM=hourlysnowfile
+      endif
+      if(havegroundtempsets)then
+        NGRDP=groundtempsets
+        do 128 IGRDP=1,NGRDP
+          DO 129 J=1,12
+            UGRDTP(J,IGRDP)=groundtemps(J,IGRDP)
+  129     CONTINUE
+  128   continue
+      endif
+
+C << location for further system level data >>
+
+C Update configuration file to know about the construction files.
+      CALL EMKCFG('-',IER)
 
 C If there are no zones return.
       if(nsz.eq.0)then

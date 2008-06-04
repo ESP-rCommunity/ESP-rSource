@@ -103,7 +103,8 @@ C LPNF (72 char) plant network file name.
 C AIM-2.
       common/aim2def/iAIM2,LAIM2
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
      &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),

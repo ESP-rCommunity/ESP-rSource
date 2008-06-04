@@ -40,9 +40,6 @@ C           1= building only, 2= plant only, 3= building and plant.
 
 C ICFGV   - version of the model configuration file.
 
-C XLAT,   - Site latitude and the longitudinal difference between the 
-C XLON      site and the reference time zone (east +ve).
-
 C IXPOS   - Site exposure index :
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
@@ -1242,6 +1239,10 @@ C SBEM database file
 C SBEM project specific file
         CALL EGETW(OUTSTR,K,LASBEM,'W','SBEM db',IER)
         ISBEM=1
+      elseif(WORD(1:4).eq.'*not')then
+
+C Flag to check if notional model or not
+        INOTI=1
       elseif(WORD(1:4).eq.'*nlt')then
 
 C Non-linear thermophysical properties configuration file.
