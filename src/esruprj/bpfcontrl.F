@@ -104,7 +104,7 @@ C ipeerptbk is pointer from position in display to day type.
       CHARACTER outs*124,H*72,LASCI*72,zname*12,cfgroot*24
       character zdesc*64
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248
+      character glctldoc*248,opticdoc*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,t248*248,SSTR*72
       character sfile*72,snpfile*72,fs*1

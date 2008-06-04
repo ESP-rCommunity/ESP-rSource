@@ -243,9 +243,9 @@ C   losspercent and is assumed to apply to all zones in the model.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character hvacfile*72,LAIM2*72,LBSIMP*72
-      CHARACTER lradcf*72,ctldoc*248,LCTLF*72
+      character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character dmdsdesc*248,bdmds*72
+      character dmdsdesc*248,bdmds*72,lradcf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -544,7 +544,7 @@ C see if there are images associated with descriptive buttons.
       common/entfile/entflnam, ientxist
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
-      CHARACTER ctldoc*248,LCTLF*72,LCFD*72,entflnam*72
+      CHARACTER ctldoc*248,lctlf*72,LCFD*72,entflnam*72
       character LAPROB*72
       character imgfmt*4,imgfoc*4,limgfil*72
 
@@ -657,10 +657,10 @@ C Images.
       character h*72,act*1
       character imgfmt*4,imgfoc*4,limgfil*72,entflnam*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
-      CHARACTER*72 LAPROB,LPNF,CNTMFIL
-      CHARACTER CTLDOC*248,LCTLF*72,LPRJLG*72
+      CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
+      CHARACTER ctldoc*248,lctlf*72
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,CNTMDESC*124,CONTMNAM*12
+      character glctldoc*248,opticdoc*248,CNTMDESC*124,CONTMNAM*12
 
       call usrmsg('Scanning for related images. Please wait...',' ','-')
       if(act.eq.'r')then
@@ -2655,6 +2655,9 @@ C if it has been sorted and notify user.
                 elseif(ip3ver.eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
+                elseif(ip3ver.eq.2)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined)'
                 endif
               else
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
@@ -2942,6 +2945,9 @@ C if it has been sorted and notify user.
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
                 elseif(ip3ver.eq.1)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined)'
+                elseif(ip3ver.eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
