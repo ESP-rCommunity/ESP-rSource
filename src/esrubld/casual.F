@@ -56,8 +56,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
       common/outin/iuout,iuin
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
-      common/calena/calename,calentag(MDTY),calendayname(MDTY)
-      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
       common/btime/btimep,btimef
 

@@ -477,7 +477,7 @@ C Establish if floor area needs be specified.
  160        CONTINUE
           ENDIF
  400    CONTINUE
- 161   if (INDEX.ne.0) then
+       if (INDEX.ne.0) then
 
 C Floor area is required, if trace level is verbose echo the base area.
           FLOORA(ICOMP)=ZBASEA(ICOMP)

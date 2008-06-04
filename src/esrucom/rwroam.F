@@ -38,19 +38,18 @@ C espriou.h provides currentfile.
 
       COMMON/FILEP/IFIL
       CHARACTER OUTSTR*124
-      INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,IOS,K
+      INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,K,LNBLNK
       LOGICAL GOON
 
 C Read in file and initialise variables
       IPDR=0
       IDEL=0
       ILOC=0
-      IER=0
       IDEBUG=0
       IUF=IFIL+1
       GOON=.TRUE.
       CALL EFOPSEQ(IUF,LROAM,1,IER)
-      write(currentfile,'(A)',IOSTAT=IOS) LROAM(1:lnblnk(LROAM))
+      write(currentfile,'(A)') LROAM(1:lnblnk(LROAM))
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'Roaming file',IER)
 
 C Read version number (currently 0.1)
@@ -101,7 +100,7 @@ C Read start time of each period, location and day type
       END DO
 
 C Debug...
- 80   IF(IDEBUG.EQ.1)THEN
+      IF(IDEBUG.EQ.1)THEN
         WRITE(6,*)'version number = ',VERS
         WRITE(6,*)'Location Latitude Longitude'
         DO 1000 ILOC=1,NLOC
@@ -133,71 +132,70 @@ C espriou.h provides currentfile.
 #include "roam.h"
 
       COMMON/FILEP/IFIL
-      INTEGER IUF,IFIL,IOS,IER
+      INTEGER IUF,IFIL,IER,LNBLNK
 
 C Set output channel
       IUF=IFIL+1
-      IER=0
-      write(currentfile,'(A)',IOSTAT=IOS) LROAM(1:lnblnk(LROAM))
+      write(currentfile,'(A)') LROAM(1:lnblnk(LROAM))
       CALL EFOPSEQ(IUF,LROAM,3,IER)
-      WRITE(IUF,'(A)',IOSTAT=IOS)'*version 0.1'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')'*version 0.1'
+      WRITE(IUF,'(A)')
      &'*location information # latitude, longitude, location'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# Enter your locations starting with latitude and longitude'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# of the locations. Then index number (1,2,3...) & finally'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# the name of the location. Eight sample locations follow next'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# these should be replaced by your own. You can input a maximum'
-      WRITE(IUF,'(A,1X,I4,1X,A)',IOSTAT=IOS)
+      WRITE(IUF,'(A,1X,I4,1X,A)')
      &'# of, ',MLOC,' locations.'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'25.8 -80.3 1 Miami, Florida'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'19.5 -72.0 2 Labadee, Haiti'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'18.5 -78.0 3 Montego Bay, Jamaica'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')'25.8 -80.3 1 Miami, Florida'
+      WRITE(IUF,'(A)')'19.5 -72.0 2 Labadee, Haiti'
+      WRITE(IUF,'(A)')'18.5 -78.0 3 Montego Bay, Jamaica'
+      WRITE(IUF,'(A)')
      &'19.5 -81.5 4 George Town, Grand Cayman'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'20.5 -87.0 5 Cozumel, Mexico'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'18.5 -66.0 6 San Juan, Puerto Rico'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'17.5 -63.0 7 Philipsburg, St. Maartin'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'19.5 -72.0 8 Labadee, Haiti'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'*end_location information'
-      WRITE(IUF,'(2A)',IOSTAT=IOS)'*start hour, day, month, ',
+      WRITE(IUF,'(A)')'20.5 -87.0 5 Cozumel, Mexico'
+      WRITE(IUF,'(A)')'18.5 -66.0 6 San Juan, Puerto Rico'
+      WRITE(IUF,'(A)')'17.5 -63.0 7 Philipsburg, St. Maartin'
+      WRITE(IUF,'(A)')'19.5 -72.0 8 Labadee, Haiti'
+      WRITE(IUF,'(A)')'*end_location information'
+      WRITE(IUF,'(2A)')'*start hour, day, month, ',
      &'orientation, day type, location (0 for cruising)'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# You should now enter the start hour, start day, start month,'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# orientation, day type and location index for each period'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# Orientation is bearing of the model, clockwise from North'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# Day type is an index that indicates which day type to use for'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# that period. These day types and associated profiles are taken'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# from the operations files definitions for each zone'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# Location index is the index (1,2,3...) as defined in the '
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# previous section of this file. 0 should be entered if the '
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# model is moving between two locations for that time.'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# The following seven lines indicate a sample cruising route.'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')
      &'# Delete these lines to add your own. You can input a maximum'
-      WRITE(IUF,'(A,1X,I4,1X,A)',IOSTAT=IOS)
+      WRITE(IUF,'(A,1X,I4,1X,A)')
      &'# of, ',MPDR,' periods.'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'1 1 3 0 1 3'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'18 1 3 0 1 0'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'8 2 3 0 1 4'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'16 2 3 0 1 0'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'10 3 3 0 1 5'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'19 3 3 0 1 0'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'7 5 3 0 1 1'
-      WRITE(IUF,'(A)',IOSTAT=IOS)'*end_temporal information'
-      WRITE(IUF,'(A)',IOSTAT=IOS)
+      WRITE(IUF,'(A)')'1 1 3 0 1 3'
+      WRITE(IUF,'(A)')'18 1 3 0 1 0'
+      WRITE(IUF,'(A)')'8 2 3 0 1 4'
+      WRITE(IUF,'(A)')'16 2 3 0 1 0'
+      WRITE(IUF,'(A)')'10 3 3 0 1 5'
+      WRITE(IUF,'(A)')'19 3 3 0 1 0'
+      WRITE(IUF,'(A)')'7 5 3 0 1 1'
+      WRITE(IUF,'(A)')'*end_temporal information'
+      WRITE(IUF,'(A)')
      &'# Finally you may delete all lines begining with # (optional)'
 
       RETURN
