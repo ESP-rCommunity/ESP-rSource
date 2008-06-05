@@ -822,42 +822,15 @@ C standard path.
 
 C Process the file name folloing *opt and depending on its path
 C set the LOPTDB common block string via call to findwhichdbpath.
-        call findwhichdbpath('opt',lltmp,ier)
+        call findwhichdbpath('opt',lworking,ier)
 
-C        lnwkg=lnblnk(lworking)
-C        if(unixok)then
-C          if(lworking(1:7).eq.'../dbs/')then
-C            ipathoptdb=1  ! local folder for optical database
-C            write(LOPTDB,'(a)') lworking(1:lnwkg)
-C          elseif(lworking(1:lndbp).eq.standarddbpath(1:lndbp))then
-
-C The initial part of the path matches so only save the file name w/o path.
-C            ipathoptdb=2
-C            write(LOPTDB,'(a)') lworking(lndbp+2:lnwkg)
-C          else
-C            ipathoptdb=0
-C            write(LOPTDB,'(a)') lworking(1:lnwkg)
-C          endif
-C        else
-C          if(lworking(1:7).eq.'..\\dbs\\')then
-C            ipathoptdb=1  ! local folder for optical database
-C            write(LOPTDB,'(a)') lworking(1:lnwkg)
-C          elseif(lworking(1:lndbp).eq.standarddbpath(1:lndbp))then
-C            ipathoptdb=2
-C            write(LOPTDB,'(a)') lworking(lndbp+2:lnwkg)
-C          else
-C            ipathoptdb=0
-C            write(LOPTDB,'(a)') lworking(1:lnwkg)
-C          endif
-C        endif
-        write(6,*) lworking
-        write(6,*) loptdb
-        write(6,*) ' ersys ipathoptdb is ',ipathoptdb
+C debug.
+C        write(6,*) lworking
+C        write(6,*) loptdb
+C        write(6,*) ' ersys ipathoptdb is ',ipathoptdb
       elseif(WORD(1:7).eq.'*stdopt')then
         ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(OUTSTR,K,LOPTDB,'W','optical db',IER)
-        write(6,*) loptdb
-        write(6,*) 'ipathoptdb is ',ipathoptdb
       elseif(WORD(1:4).eq.'*prs')then
         CALL EGETRM(OUTSTR,K,LAPRES,'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*evn')then
@@ -2904,23 +2877,20 @@ C common block file string and whichdbpath variable is updated.
 
 C Currently works only with optical database.
       character*(*) file
-      character fs*1
       character topic*3 ! identify which type of database
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
+C Set OS and check that standarddbpath has been set.
       lndbp=lnblnk(standarddbpath)
-      call isunix(unixok)
       lnwkg=lnblnk(file)
+      if(lndbp.lt.1.or.lnwkg.lt.1)then
+        ier=2
+        return
+      endif
+      call isunix(unixok)
+      
       if(unixok)then
         if(file(1:7).eq.'../dbs/')then
           if(topic(1:3).eq.'opt')then
@@ -2958,11 +2928,13 @@ C The initial part of the path matches so only save the file name w/o path.
           endif
         endif
       endif
-      write(6,*) file
-      if(topic(1:3).eq.'opt')then
-        write(6,*) loptdb
-        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-      endif
+
+C Debug.
+C      write(6,*) file
+C      if(topic(1:3).eq.'opt')then
+C        write(6,*) loptdb
+C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+C      endif
 
       return
       end
