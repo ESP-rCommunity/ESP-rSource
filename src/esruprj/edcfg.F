@@ -108,8 +108,7 @@ C Controls.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
