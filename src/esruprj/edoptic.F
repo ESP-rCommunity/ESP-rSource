@@ -1511,7 +1511,7 @@ C current menu line index. Build up text strings for the menu.
           call CONXMENU(L,CXITM)
           VERT(M)=' '
           if(NSTMCFL(L).ne.0)then
-            WRITE(VERT(M),'(A1,1x,A42,a,i2)')KEY,CXITM(1:42),'|',
+            WRITE(VERT(M),'(A1,1x,A42,a,i1)')KEY,CXITM(1:42),'|',
      &        NSTMCFL(L)
           else
             WRITE(VERT(M),'(A1,1x,A42,a)')KEY,CXITM(1:42),'| -'
@@ -1621,7 +1621,7 @@ C Display information about the anchors associated with connection.
               h(2)=' '
               h(3)='A cancel request leaves the model unchanged.'
               CALL EASKI(nl,' ',' Which bi-directional type?',
-     &          0,'F',MSTMC,'F',20,'bi opt types',IERI,3)
+     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
               if(ieri.eq.-3)then
                 continue
               else

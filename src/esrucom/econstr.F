@@ -1218,6 +1218,10 @@ C TREXTERNAL(MSTMC,MSGAL) - experimental external thermal resistance (from
 C                          measurements)
 C TRINTERNAL(MSTMC,MSGAL) - experimental internal thermal resistance (from
 C                          measurements)
+C TMVISUAL(MSTMC,MSGAL) - Visual transmittance for each set in case it is available.
+C                         Will use (in solar.F) default value 0.85 in case it 
+C                         is not included in the dataset. This is only used for 
+C                         daylight controls.
 C DF_TX_SKY is the diffuse transmittance for sky radiation
 C DF_G_SKY is the diffuse g-value for sky radiation
 C DF_RF_SKY is the diffuse reflectance for sky radiation
@@ -1232,7 +1236,8 @@ C   sky and ground diffuse radiation
      &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
      &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
      &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
-     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL),
+     &  TMVISUAL(MSTMC,MSGAL)
       COMMON/BITYPE/IBIDATATYPE       
       COMMON/OPTDAT2/DF_TX_SKY(MSTMC,MSGAL),DF_G_SKY(MSTMC,MSGAL),
      &  DF_RF_SKY(MSTMC,MSGAL),DF_TX_GND(MSTMC,MSGAL), 
@@ -1254,7 +1259,7 @@ C New variables are defined below
                           !3: the transmittance and g value only
 
 C explicit definition of some variables used in the egetwr 
-      real Uvalue_bi, Ri, Re
+      real Uvalue_bi,Ri,Re,visual_transm
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1351,6 +1356,11 @@ C Existing format - keep reading as previously for existing bidirectional files
       elseif(WORD(1:10).eq.'*Rinternal')then
         CALL EGETWR(OUTSTR,K,Ri,0.,1.,'-','Ri experimental ',IER)
         TRINTERNAL(ibitype,ibset)=Ri
+        goto 42
+      elseif(WORD(1:7).eq.'*tauvis')then
+        CALL EGETWR(OUTSTR,K,visual_transm,0.,1.,'-','visual transm ',
+     &              IER)
+        TMVISUAL(ibitype,ibset)=visual_transm
         goto 42
       elseif(WORD(1:12).eq.'*diffuse_abs')then
 

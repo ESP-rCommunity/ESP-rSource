@@ -51,9 +51,13 @@ C an ascii file.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misc)
+
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -335,7 +339,7 @@ C in the case of sensing outside boundary contiditions (ie. -3 sensor)
   401 CONTINUE
 
 C Global.
-    4 IF(NGF.EQ.0)GOTO 12
+    4 IF(NGF.EQ.0)GOTO 13
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* System'
 
 C Global control information.
@@ -384,6 +388,76 @@ C Write control data and compact, if very long then use two lines.
   460     CONTINUE
   450   CONTINUE
   480 CONTINUE
+
+C Optical control information.
+  13  if(NOF.eq.0)goto 12
+      WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* Optics'
+      ln=max(1,LNBLNK(opticdoc))      
+      WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)opticdoc(1:ln)
+
+      WRITE(IUNIT,'(I4,A)',IOSTAT=ios,ERR=1)NOF,'  # No. of controls'
+
+      DO 100 I=1,NOF
+        II=I
+        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control optics'
+        CALL EVCNTRL(5,II,1,1,'S',SSTR)
+        LN=max(1,LNBLNK(SSTR))
+        WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
+        WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IOSN(II,J),J=1,3),
+     &  '  # sensor data'
+        CALL EVCNTRL(5,II,1,1,'A',SSTR)
+        LN=max(1,LNBLNK(SSTR))        
+        WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# actuates ',
+     &     SSTR(1:ln)
+        WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IOAN(II,J),J=1,3),
+     &  '  # actuator data'
+        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &  ' # No. day types'
+        NN=NOCDT(II)
+        IF(NN.EQ.0)NN=3
+
+        DO 200 J=1,NN
+          JJ=J
+          CALL STDATE(IYEAR,IOCDV(II,JJ,1),DS,DS1)
+          CALL STDATE(IYEAR,IOCDV(II,JJ,2),DE,DE1)
+          write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
+          WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)(IOCDV(II,JJ,K),K=1,2),
+     &      outs(1:lnblnk(outs))
+          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)NOCDP(II,JJ),
+     &      '  # No. of periods in day'
+          LL=NOCDP(II,JJ)
+
+          DO 300 K=1,LL
+            KK=K
+            CALL EVCNTRLAW(5,II,JJ,KK,SSTR,SSTR2)
+            LN=max(1,LNBLNK(SSTR))            
+            WRITE(IUNIT,'(2I5,F8.3,3A)',IOSTAT=ios,ERR=1)
+     &        IOCTYP(II,JJ,KK),IOCLAW(II,JJ,KK),TOCPS(II,JJ,KK),
+     &        '  # ctl type, law (',SSTR(1:ln),'), start @'
+            WRITE(IUNIT,'(F8.0,A)',IOSTAT=ios,ERR=1)OMISCD(II,JJ,KK,1),
+     &        '  # No. of data items'
+            NITEMS=INT(OMISCD(II,JJ,KK,1))+1
+            IF(NITEMS.EQ.1)GOTO 300
+
+C Write control data and compact, if very long then use two lines.
+            if(NITEMS.lt.20)then
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (OMISCD(II,JJ,KK,L),L=2,NITEMS)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+            else
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (OMISCD(II,JJ,KK,L),L=2,19)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (OMISCD(II,JJ,KK,L),L=20,nitems)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+            endif
+  300     CONTINUE
+  200   CONTINUE
+  100 CONTINUE
 
    12 CALL ERPFREE(IUNIT,ios)
       RETURN
