@@ -2714,8 +2714,7 @@ C Edit optical control function II.
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/GPICK/GS(MGOPT),nopt
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+C      COMMON/GPICK/GS(MGOPT),nopt
 
 C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
@@ -2728,8 +2727,8 @@ C For optical controls
       CHARACTER*60 VERT2(20)
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248
-      CHARACTER GS*52,SOPT*12
-      DIMENSION IGVAL(60)
+C      CHARACTER GS*52
+C      DIMENSION IGVAL(60)
       logical close1
       logical logic_cminitial ! needed to initialise cmlocal array in order to save values              
       dimension cmlocal(misc)   ! for local editing of cm data.
@@ -2738,6 +2737,7 @@ C For optical controls
       dimension sortset(6),sortmerge(6)   
       real sorting,bsorting,sort_tmp,bsort_tmp,sortset,sortmerge
       integer isortCounter,ibsortCounter
+      integer LL
 
 C Number of optical functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -2748,6 +2748,7 @@ C Optical control day types.
 C<<<<<<Next line is probably dublication.. delete? >>>>>>>>>>>>>>
       LL=nocdp(II,JJ)
 
+      logic_cminitial=.false.
 C Logical needed to initialiase cm arrays
 C This initialiasation applies only to ioclaw=2. It will have to change in the future
       do 952 inmisc=1,6
