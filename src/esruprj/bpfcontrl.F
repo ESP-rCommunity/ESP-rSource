@@ -2738,6 +2738,7 @@ C      DIMENSION IGVAL(60)
       real sorting,bsorting,sort_tmp,bsort_tmp,sortset,sortmerge
       integer isortCounter,ibsortCounter
       integer LL
+      logical bNumsAreEqual
 
 C Number of optical functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -3021,8 +3022,12 @@ C assign (next line only) back the negative values as they were before the sorti
   159       continue
             do 146 ixreturn=1,6
               do 145 ixmatch=1,6
-                if(sorting(ixreturn).eq.cmlocal(ixmatch*2))then
-                  if(sorting(ixreturn).eq.sorting(ixreturn-1))then
+                CALL ECLOSE(sorting(ixreturn),cmlocal(ixmatch*2),0.01,
+     &               bNumsAreEqual)
+                if(bNumsAreEqual)then
+                  CALL ECLOSE(sorting(ixreturn),sorting(ixreturn-1),
+     &               0.01,bNumsAreEqual)                  
+                  if(bNumsAreEqual)then
                     write(outs,'(a,F7.1,a)')' set-point: ',
      &                  cmlocal(ixmatch*2),' was found more than once.'
                     call edisp(iuout,outs)     
@@ -3042,8 +3047,12 @@ C sortmerge will merge sorting and bsorting back together
                   sortmerge(isortCounter)=cmlocal(ixmatch*2)     
                   sortset(isortCounter)=cmlocal(ixmatch*2+1)
                 endif
-                if(bsorting(ixreturn).eq.cmlocal(ixmatch*2))then
-                  if(bsorting(ixreturn).eq.bsorting(ixreturn-1))then
+                CALL ECLOSE(bsorting(ixreturn),cmlocal(ixmatch*2),0.01,
+     &               bNumsAreEqual)
+                if(bNumsAreEqual)then
+                  CALL ECLOSE(bsorting(ixreturn),bsorting(ixreturn-1),
+     &                 0.01,bNumsAreEqual)                
+                  if(bNumsAreEqual)then
                     write(outs,'(a,F7.1,a)')' set-point: ',
      &                  cmlocal(ixmatch*2),' was found more than once.'
                     call edisp(iuout,outs)     
