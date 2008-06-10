@@ -1348,7 +1348,7 @@ C If izver >= 4 the read the data directly.
           continue
         else
           CALL EROPER(0,iuout,IFIL+1,izone,IER)  ! for older library
-          if(ip3ver(izone)eq.0)then
+          if(ip3ver(izone).eq.0)then
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
