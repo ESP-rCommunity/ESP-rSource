@@ -2239,7 +2239,7 @@ C Do cursory check to see if the file is sorted.
 
 C If older format ip3ver=0 then force it to write to the
 C current format.
-              if(ip3ver.eq.0)then
+              if(ip3ver(iz).eq.0)then
                 MODOPR=.true.
                 ip3ver(iz)=2
               endif
