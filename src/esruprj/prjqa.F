@@ -150,7 +150,9 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
 
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
       logical bndrysxc,context,bound
-      COMMON/P1/oprdesc,ctlstr
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Demands notes and file name.
       COMMON/BL1/dmdsdesc,bdmds
@@ -213,7 +215,7 @@ C Remember if each zone is fully attributed.
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
-      character ipvsynop*248,oprdesc*248,ctlstr*24
+      character ipvsynop*248
       CHARACTER dmdsdesc*248,bdmds*72
       character DBTAG*12,DBTASK*12,DBZN*15
       character figlbl*20,figexe*48
@@ -1832,7 +1834,7 @@ C as an earlier one.
               else
                 if(schedinfo.eq.1)then
                   call edisp(itu,' ')
-                  call edisp248(itu,oprdesc,80)
+                  call edisp248(itu,oprdesc(IVALS(IZ)),80)
                 elseif(schedinfo.eq.2)then
                   call edisp(itu,' ')
                   CALL VENTINF(IVALS(IZ),ITU)
@@ -2017,7 +2019,7 @@ C not browsing.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
@@ -2239,7 +2241,7 @@ C If older format ip3ver=0 then force it to write to the
 C current format.
               if(ip3ver.eq.0)then
                 MODOPR=.true.
-                ip3ver=3
+                ip3ver(iz)=2
               endif
 
 C Save the file, sorting the periods if necessary.

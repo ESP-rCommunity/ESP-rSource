@@ -1274,8 +1274,8 @@ C if sub-hour casual gains definitions are implemented.
       common/recver/izver,ipver,iever
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17
       character hold*24,h*72,outs*124
@@ -1348,7 +1348,7 @@ C If izver >= 4 the read the data directly.
           continue
         else
           CALL EROPER(0,iuout,IFIL+1,izone,IER)  ! for older library
-          if(ip3ver.eq.0)then
+          if(ip3ver(izone)eq.0)then
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
