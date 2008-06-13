@@ -192,7 +192,7 @@ C Assume there are no obstructions.
       doobs=.FALSE.
 
       call edisp(IUOUT,' ')
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)

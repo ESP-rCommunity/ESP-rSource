@@ -2,5 +2,16 @@
 <configuration>
 	<hierarchy>tree</hierarchy>
 	<time_step_averaging>false</time_step_averaging>
-	<dump_all_data>true</dump_all_data>
+  <output_dictionary>true</output_dictionary>
+  <report_startup_period_data>true</report_startup_period_data>
+  <enable_xml_wildcards>true</enable_xml_wildcards>
+	<dump_all_data>false</dump_all_data>
+  <step_variable>building/time_step</step_variable>
+  <step_variable>building/zone_*/flux/net_flux</step_variable>
+  <step_variable>plant*</step_variable>
+  <step_variable>*month*</step_variable>
+  <log_variable>building/time_step</log_variable>
+  <log_variable>building/zone_*/flux/net_flux</log_variable>
+  <log_variable>plant*</log_variable>
+
 </configuration>

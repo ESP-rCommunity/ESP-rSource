@@ -562,8 +562,8 @@ C done, ask user to delete the transitional files.
 
 C Not in silent recalculation mode so present application version
 C information.
-      call ESPrVersion("summary")
-      
+      CALL ESPrVersion("summary",cAppName,IUOUT)
+
 C Display opening menu.
   201 ier=0
       inos=-3

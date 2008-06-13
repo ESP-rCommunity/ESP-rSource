@@ -1139,6 +1139,8 @@ C=======================================================================
       REAL SMALL             
       PARAMETER (SMALL=1.0E-15)
 
+      logical bNumsAreClose
+
 C---- Initially set volume fraction of glycol to mass fraction
       VOL_FRACTION_OLD = MASS_FRACTION
 
@@ -1170,10 +1172,20 @@ C---- Glycol volume fraction in mixture
         VOL_FRACTION_NEW = MASS_FRACTION * 
      &               GLY_WATER_DEN / (GLY_DEN + SMALL)
 
-C---- Update error
-        ERROR = 
-     &  abs((VOL_FRACTION_NEW - VOL_FRACTION_OLD) /
+C---- Update error: Check if volume fraction is close to zero
+        call eclose ( VOL_FRACTION_OLD, 0.0, SMALL, bNumsAreClose)
+
+        if ( .not. bNumsAreClose ) then 
+
+          ERROR = 
+     &      abs((VOL_FRACTION_NEW - VOL_FRACTION_OLD) /
      &       VOL_FRACTION_OLD + SMALL)
+
+        else
+
+          ERROR = 0.
+
+        endif
 
 C---- Update previous estimate for volume fraction
         VOL_FRACTION_OLD = VOL_FRACTION_NEW

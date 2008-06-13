@@ -1045,7 +1045,7 @@ if ( $test_regression ) {
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r_test "
            ."--ref_loc $ref_esp --test_loc $test_esp "
-           ."-p $TestFolder/$src_dirs{\"reference\"}/tester/test_suite/ --save_results -v" );
+           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite/ --save_results -v" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";

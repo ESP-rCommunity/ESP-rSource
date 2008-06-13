@@ -167,7 +167,7 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       endif
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       call edisp(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

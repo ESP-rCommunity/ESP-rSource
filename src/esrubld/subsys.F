@@ -82,6 +82,10 @@ C values for use as present values at the next time-step.
 
       DIMENSION QX(MS,MS)
 
+C Function comparing two reals:
+      logical bSPEqual
+
+
 C Set Stefan-Boltzmann constant.
       SBC=56.7E-9
       NC=NCONST(ICOMP)
@@ -117,9 +121,8 @@ C Set future time values.
 C From I to K (/m2 of K).
       T1=TFS(ICOMP,I)+273.16
       T2=TFS(ICOMP,K)+273.16
-      DT=ABS(T1-T2)
-
-      IF(DT.LT..00001)goto 3
+!       DT=ABS(T1-T2)
+      IF(bSPEqual(T1,T2))goto 3
       E1=EI(ICOMP,I)
       E2=EI(ICOMP,K)
       F12=CFB(ICOMP,I,K)
@@ -1370,7 +1373,11 @@ C entry in tdf
 C By interpolation determine the conductances at 'TIME':
 C infiltration first.
         IDAY1=IDYP
-        IF(IT2.EQ.1)IDAY2=IDYP+1
+        IF(IT2.EQ.1) then
+          IDAY2=IDYP+1
+        ELSE
+          IDAY2 = IDYP
+        ENDIF
         IF(IDAY2.GT.365)IDAY2=IDAY2-365
         ID1=ICALENDER(IDAY1)
         ID2=ICALENDER(IDAY2)

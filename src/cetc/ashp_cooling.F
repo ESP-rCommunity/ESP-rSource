@@ -2876,6 +2876,9 @@ c Variables passed in call
 c Local variables
       REAL fan_energy,FAN_ENERGY_CON,outdoor_fan_energy,
      &     compressor_energy
+      logical bCloseToZero
+      real fSmall
+      parameter ( fSmall = 1.0e-02 )
 
 c Find indoor fan electricity consumption for the time step in kWatts
 c 0. is for the plr of the backup system. There is no backup system for an
@@ -2927,8 +2930,17 @@ c Update sum of total coil load
 
 c Average COP which accounts for electricity consumption of compressor and
 c outdoor fan
-      average_cop(isys) = coil_total_load(isys) / 
+
+C.....Trap potential div/0 error:
+      call eclose ( total_elec_consumption(isys)-elec_indoor_fan(isys),
+     &              0.0, fSmall, bCloseToZero )
+
+      if ( bCloseToZero ) then
+        average_cop(isys) = 0.0
+      else
+        average_cop(isys) = coil_total_load(isys) / 
      &      (total_elec_consumption(isys) - elec_indoor_fan(isys))
+      endif 
 
 c Following only activate when air-conditioner model output is desired
 c      write(iuout,*) sys_elec_consumption,elec_indoor_fan(isys),

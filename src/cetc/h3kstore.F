@@ -259,7 +259,6 @@ c     None. Sums up Monthly versions of energy Variables above..
       REAL    PLR
 
 c     Sum up the energy for the timestep.
-
 c     This IF ensures start-up is over.
       IF (bInStartUp()) then
          RETURN
@@ -268,16 +267,17 @@ c     This IF ensures start-up is over.
          CALL H3KSTORE_SUM_PLR_BIN_HOURS(isystem,PLR)
 
 c     Sum up monthly energies
-         fheat_energy_monthly(isystem,imonth) =
+        if ( isystem /= 0 ) then
+          fheat_energy_monthly(isystem,imonth) =
      &        fheat_energy_monthly(isystem,imonth) + fheat_energy
 
-         fcool_energy_monthly(isystem,imonth) =
+          fcool_energy_monthly(isystem,imonth) =
      &        fcool_energy_monthly(isystem,imonth) + fcool_energy
 
-         fpilot_energy_monthly(isystem,imonth) =
+          fpilot_energy_monthly(isystem,imonth) =
      &        fpilot_energy_monthly(isystem,imonth) +fpilot_energy
-
-         return
+        endif
+        return
       ENDIF
       END
 
@@ -533,7 +533,11 @@ c     Common for the number of time steps per hour
       REAL frac_hour,PLR,upper,lower,fhours,iPLR
       INTEGER isystem,iPercent
 c     This IF ensures start-up is over.
-      fhours = total_num_of_hours(isystem)
+      if ( isystem == 0 ) then 
+        fhours = 0
+      else
+        fhours = total_num_of_hours(isystem)
+      endif 
       CALL EDAY(ISD1,ISM1,IODS)
       CALL EDAY(ISD2,ISM2,IODF)
       if (idyp.ge.IODS.and.idyp.le.IODF) then

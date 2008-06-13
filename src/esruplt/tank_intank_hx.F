@@ -782,8 +782,8 @@ C ------determine inside tube heat transfer transfer coefficient
 
 C ------Total heat transfer coefficient of in-tank HX. Based on inside surface
 C-------area of tube available for heat transfer
-        intank_coil_total_Uvalue = 1. / (1. / tube_side_hi +
-     &                    tube_wall_Rvalue + 1. / tank_side_ho)
+        intank_coil_total_Uvalue = 1. / (1. / (tube_side_hi+small) +
+     &                    tube_wall_Rvalue + 1. / (tank_side_ho+small))
 
 C ------Effectiveness of HX
         hx_eff = 1. - exp(-intank_coil_total_Uvalue * 

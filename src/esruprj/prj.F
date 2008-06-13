@@ -385,7 +385,7 @@ C graphic display to compensate.
       ENDIF
 
 C Generate the version report.
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get user's custom settings
 C if defined. If there is no .esprc file in the users home folder

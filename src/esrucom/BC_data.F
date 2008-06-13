@@ -293,7 +293,7 @@ C.....Warn if I/O unit number is in use!
      &       STATUS='REPLACE',
      &       IOSTAT=iFile_write_err)
 
-      
+      inquire ( UNIT=iBC_TmpFile, OPENED=bFile_Open )
       if ( iFile_write_err .eq. 0 ) then
 C.......File opened ok!
 
@@ -1519,7 +1519,7 @@ C     Make sure file is attached
 C----------------------------------------------------------------------
       inquire ( UNIT=iBC_TmpFile, NAME=cFileName, OPENED=bFile_Open )
 
-      if ( bFile_Open .and. cFileName .eq. cBC_TmpFile_name )  then
+      if ( bFile_Open )  then
          read ( UNIT=iBC_TmpFile,
      &          REC=iRow,
      &          IOSTAT=iFile_read_err )
@@ -1760,11 +1760,7 @@ C.....I/O
 
       inquire ( UNIT=iBC_TmpFile, Name=cFileName, OPENED=bFile_Open )
 
-      if ( cFileName .ne. cBC_TmpFile_name ) then
-         write ( cMsg, '(A)' )
-     &     'Temporary file no loger exists!'
-         bError = .true. 
-      elseif ( .not. bFile_Open ) then
+      if ( .not. bFile_Open ) then
 
          open ( UNIT=iBC_TmpFile,
      &          FILE=cBC_TmpFile_name
