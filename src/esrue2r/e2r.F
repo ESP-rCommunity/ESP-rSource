@@ -373,7 +373,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',

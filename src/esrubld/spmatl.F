@@ -159,6 +159,10 @@ C Special materials
       character spmlabel*16, outs*124,spflnam*72,STRSPM*16
       COMPLEX VSPM
 
+      logical bNumsAreClose
+      real fSmall
+      parameter (fSmall=1.0E-05)
+
 C Obtain the relevant panel data from the data base
 C Component manufacturers data.
 
@@ -363,7 +367,12 @@ C PV Panel results output.
        NDATSPM=2        
        DATASPM(ISPMNOD,1)=PVPWR
        STRSPM(ISPMNOD,1)='Power (W)'
-       DATASPM(ISPMNOD,2)=((PVPWR/SAR)/QPNL)*100.
+       call eClose(QPNL,0.,fSmall, bNumsAreClose)
+       if ( bNumsAreClose ) then 
+         DATASPM(ISPMNOD,2) = 0.
+       else
+         DATASPM(ISPMNOD,2)=((PVPWR/SAR)/QPNL)*100.
+       endif
        STRSPM(ISPMNOD,2)='Efficiency (%)'
 
 C Also (as a temporary results recovery measure) pass results output(s) 
@@ -2164,6 +2173,9 @@ C----------------------------------------------------------------------------
       real    fTrans_Ads(5) ! transmission at 5 angles (0,40,55,70,80 degrees) for PV module surface;
                             ! calculated as the sum of the transmission for all layers in the surface
                             ! at each individual angle
+
+      real fSmall
+      parameter ( fSmall = 1.0E-06 )
  
 C Obtain the relevant panel data from the data base
 C Component manufacturers data.
@@ -2402,10 +2414,9 @@ C a converter, calculate the maximum output voltage.
 
 C Note: The WATSUN-PV model assumes that the maximum power point voltage has the same
 C dependancy on cell temperature and incident irradiance as the open circuit voltage.
-
-          fVmp = fVmpRef / iScell *                          !- this value is for the cell
+          fVmp = fVmpRef / float(iScell) *                          !- this value is for the cell
      &           ( 1. - fGamma * ( fTPnl - fTref ) ) *
-     &           MAX( 0., (1. + fBeta*log(fQPnl/fQref)) )
+     &           MAX( 0., (1. + fBeta*log((fQPnl+fSmall)/fQref)) )
 
 C Calculate the maximum module power
          fPVPower = fImpRef * fVmpRef * fIsc * fVoc /

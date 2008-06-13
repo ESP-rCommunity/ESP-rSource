@@ -312,7 +312,7 @@ C Debug
         write(6,*) 'mdispl,ifgrey,ncset,ngset,nzonec ',
      &    mdispl,nifgrey,ncset,ngset,nzonec
       ENDIF
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       call edisp(iuout,' ')
 
 C Find the user's home folder then get user's custom settings.

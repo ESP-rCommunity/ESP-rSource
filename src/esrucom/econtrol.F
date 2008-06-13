@@ -3555,7 +3555,9 @@ C Check to see if component exists
 C Check to see if sensed node exists    
       if(isn3.lt.1.or.isn3.gt.npcdat(isn2,8))goto 1003
       if(isn4.lt.0.or.isn4.gt.npcomp)goto 1009
-      if(isn5.lt.0.or.isn5.gt.npcdat(isn4,8))goto 1010      
+      if ( isn4.gt.1) then
+        if(isn5.lt.0.or.isn5.gt.npcdat(isn4,8))goto 1010
+      endif
       goto 9
 
 C Sensor located externally.

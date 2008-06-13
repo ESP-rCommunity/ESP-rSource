@@ -939,6 +939,7 @@ C.......-> update data
      
 
 C     Stores backup HVAC energy data
+      if ( ibackup_sys_num (i) .ne. 0 ) then
          call H3KSTORE_HVAC_SUBSYS_ENERGY(
 C     ibackup_sys_num(i) give the backup system number for the primary 
 C     system "i"
@@ -954,6 +955,7 @@ C     fPPLR is the Part load ratio of the backup hvac system.
      &        fbPLR)
 c     Stores fan energy, Heating and cooling loads.
 C XML reports.
+
          WRITE(H3K_rep_NAME,'(A,A)') 
      & 		'plant/CETC_HVAC/Secondary_System/',
      &        	HVAC_STRING(ihvac_type(ibackup_sys_num(i)))
@@ -1033,7 +1035,7 @@ C.......-> update data
      &        xmlPLR(1:LNBLNK(xmlPLR))
      &        )        
 
-
+      endif 
 
 
 

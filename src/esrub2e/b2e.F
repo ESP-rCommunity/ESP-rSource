@@ -162,7 +162,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
       call edisp(IUOUT,' ')
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get user's custom settings.
 C Make temporary use of file unit IAF=IFIL+1.

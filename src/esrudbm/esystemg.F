@@ -1214,6 +1214,14 @@ C If 6 items on line also read whether to save only 1stph.
           isavgh=0
         endif
         do 333 iss=1,nsset
+C The following code ensures thea the sXXres varaibles are initialzied
+C to empty strings even if they are not defind in the input file.
+          write(sblres(iss), '(A)')  '  '
+          write(sflres(iss), '(A)')  '  '
+          write(smstres(iss), '(A)') '  '
+          write(splres(iss), '(A)')  '  '
+          write(selres(iss), '(A)')  '  '
+          
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
           K=0
           CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)

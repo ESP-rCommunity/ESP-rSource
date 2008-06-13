@@ -101,7 +101,7 @@ no descrip  # plant descr
      1  # No. of periods in day
     0    8   0.000  # ctl type, law (On-Off control.), start @
       7.  # No. of data items
-  1.000 19.500 20.500 0.0000 0.000 0.000 0.000
+  1.000 19.500 20.500 0.0003 0.000 0.000 0.000
   121  273  # valid Sat  1 May - Thu 30 Sep
      1  # No. of periods in day
     1    8   0.000  # ctl type, law (On-Off control.), start @

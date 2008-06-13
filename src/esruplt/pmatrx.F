@@ -840,6 +840,9 @@ C Logical flag indicating numbers are close
 
 C Logical flag indicating if iteration is required
       logical bIteration_Required
+C Flags indicating the nodes and states requiring iteration.
+      logical bIterationForNodeStates(MPNODE,MPVAR)
+
 
 C HOT30000:end
 C Common for plant side pid controllers
@@ -932,6 +935,7 @@ C Exact plant solutions may require iteration. Set iteration flag to false
 C Check for each node & each state variable if iteration marker set
       DO 32 IPNOD=1,NPNOD
         DO 30 ISTATS=1,MPVAR
+          bIterationForNodeStates(IPNOD,ISTATS) = .false.
 C Check if iteration is requested for this node
           IF(ICSV(IPNOD,ISTATS).NE.0) THEN
 C If so, reset marker
@@ -949,8 +953,9 @@ C Then check absolute error temperature or mass flow rate, respectively
      &           (ISTATS.EQ.3.AND.ABS(CSV-CIN).GT.PERMFL).OR.
      &           (ISTATS.EQ.4.AND.ABS(CSV-CIN).GT.
      &                                 fH2_iteration_tolerance)) THEN
-C State variable is outside absolute bound! Set flag for iteration!
+C State variable is outside absolute bound! Set flags for iteration!
                 bIteration_Required = .true.
+                bIterationForNodeStates(IPNOD,ISTATS) = .true.
 
 C Trace output
                 IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -962,10 +967,6 @@ C Trace output
               ENDIF ! <- matches IF ((ISTATS.EQ. ...
             ENDIF   ! <- matches IF (ABS((CSV-CIN)...
           ENDIF     ! <- matches IF(ICSV(IPNOD...
-
-C This statement is a substitute for the F90 'exit' command. Should save
-C some resources on large plant networks.
-          IF ( bIteration_Required ) GOTO 33
 
    30   CONTINUE
    32 CONTINUE
@@ -1020,12 +1021,19 @@ C some resources on large plant networks.
 
 C     Is iteration required?
    34 IF ( bIteration_Required ) THEN
-
 C Use successive substitution method with relaxation factor = 0.5
-C to establish "new" initial value;
+C to establish "new" initial value for nodes exhibiting instability.
 C refrain from iteration if maximum number of iterations exceeded.
         IF(ITERP.LT.MAXITP) THEN
-          CSVF(IPNOD,ISTATS)=(CIN+CSV)/2.
+          relaxation_loop: DO IPNOD=1,NPNOD
+            DO ISTATS=1,MPVAR
+              if ( bIterationForNodeStates(IPNOD,ISTATS) ) then
+                CSVF(IPNOD,ISTATS)= CSVI(IPNOD,ISTATS)
+     &               + ( CSVF(IPNOD,ISTATS)-CSVI(IPNOD,ISTATS) )/2.
+              endif
+            ENDDO
+          ENDDO relaxation_loop
+
           GOTO 10
         ELSE
           CALL DAYCLK(IDYP,PTIMEF,ICOUT)
@@ -2267,7 +2275,6 @@ C-----------------------------------------------------------------
      &     npnod,               ! # of nodes in network
      &     npmtyp               ! not used in current context
       integer npmcoe, npnod, npmtyp
-
 
       common/pcval/
      &     csvf(mpnode,mpvar),  ! plant state variable future values
