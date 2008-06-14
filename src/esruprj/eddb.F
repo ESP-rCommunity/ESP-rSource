@@ -2808,7 +2808,7 @@ C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
 C return a file (which might be from somewhere else if the user
 C decides to do some browsing). Test this suggested file via
-C call to eroptdb and if this is not successful reset LOPTDB.
+C call to eroptdb and if this is not successful reset LPRFDB.
         if(iglib.eq.2)then
           h(1)='An event profiles database holds named sets of profiles'
           h(2)='in a binary representation. '

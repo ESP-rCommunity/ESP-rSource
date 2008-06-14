@@ -1180,9 +1180,9 @@ C Databases associated with the model.
       if(databaseinfo.gt.0)then
         call edisp(itu,' ')
         call edisp(itu,'Databases associated with the model: ')
-        WRITE(outs,'(2A)')' pressure distributions : ',
+        WRITE(outs248,'(2A)')' pressure distributions : ',
      &    LAPRES(1:lnblnk(LAPRES))
-        call edisp(itu,outs)
+        call edisp248(itu,outs248,100)
         WRITE(outs,'(2A)')' materials              : ',
      &    LFMAT(1:lnblnk(LFMAT))
         call edisp(itu,outs)
