@@ -53,7 +53,8 @@ C an ascii file.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),

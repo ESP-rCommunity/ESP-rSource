@@ -208,7 +208,8 @@ C Optical control associated with each connection.
       common/iconopt/icnopta(MCON)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
