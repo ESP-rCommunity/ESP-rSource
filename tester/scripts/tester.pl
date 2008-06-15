@@ -498,6 +498,10 @@ $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
                         "test_binary",
                         "test_bin_mod_date",
                         "test_bin_md5sum",
+                        "test_bin_svn_src",
+                        "test_bin_compilers",
+                        "test_bin_graphics_lib",
+                        "test_bin_xml_support"
                       );
 
 # List of variables in the XML output that can be compared.                          
@@ -898,6 +902,35 @@ if ( ! $gTest_params{"compare_two_archives"} && `which md5sum ` !~ /no md5sum/ )
 }else{
   $gTest_params{"test_bin_md5sum"} = "unknown";
 }
+if ( ! $gTest_params{"compare_two_archives"} ){
+  my $version_dump = `$gTest_params{'test_binary'} -buildinfo`;
+  my @version_info = split /\n/, $version_dump;
+  foreach my $line (@version_info){
+    SWITCH:
+    {
+      if ( $line =~ /- SVN Source:/ ){
+        $line =~ s/^\s*- SVN Source:\s*//g;
+        $gTest_params{"test_bin_svn_src"} = $line;
+        last SWITCH;
+      }
+      if ( $line =~ /- Compilers:/ ){
+        $line =~ s/^\s*- Compilers:\s*//g;
+        $gTest_params{"test_bin_compilers"} = $line;
+        last SWITCH;
+      }
+      if ( $line =~ /- Graphics Library:/ ){
+        $line =~ s/^\s*- Graphics Library:\s*//g;
+        $gTest_params{"test_bin_graphics_lib"} = $line;
+        last SWITCH;
+      }
+      if ( $line =~ /- XML output:/ ){
+        $line =~ s/^\s*- XML output:\s*//g;
+        $gTest_params{"test_bin_xml_support"} = $line;
+        last SWITCH;
+      }
+    }
+  }
+}
 
 if ( $gRef_Test_params{"test_binary"} && $gTest_params{"compare_versions"} ){
   # get modification dates & md5 checksums for reference file.
@@ -917,6 +950,35 @@ if ( $gRef_Test_params{"test_binary"} && $gTest_params{"compare_versions"} ){
   
   # make a copy of the hostname for reporting purposes
   $gRef_Sys_params{"hostname"} = $gSys_params{"hostname"};
+
+  # Get version information out of each binary
+  my $version_dump = `$gRef_Test_params{'test_binary'} -buildinfo`;
+  my @version_info = split /\n/, $version_dump;
+  foreach my $line (@version_info){
+    SWITCH:
+    {
+      if ( $line =~ /- SVN Source:/ ){
+        $line =~ s/^\s*- SVN Source:\s*//g;
+        $gRef_Test_params{"test_bin_svn_src"} = $line;
+        last SWITCH;
+      }
+      if ( $line =~ /- Compilers:/ ){
+        $line =~ s/^\s*- Compilers:\s*//g;
+        $gRef_Test_params{"test_bin_compilers"} = $line;
+        last SWITCH;
+      }
+      if ( $line =~ /- Graphics Library:/ ){
+        $line =~ s/^\s*- Graphics Library:\s*//g;
+        $gRef_Test_params{"test_bin_graphics_lib"} = $line;
+        last SWITCH;
+      }
+      if ( $line =~ /- XML output:/ ){
+        $line =~ s/^\s*- XML output:\s*//g;
+        $gRef_Test_params{"test_bin_xml_support"} = $line;
+        last SWITCH;
+      }
+    }
+  }
 }
 
 #-----------------------------------------------------------------------
@@ -1417,6 +1479,19 @@ sub create_report(){
   push @output, " bps binaries:";
   push @output, "  - Path:                   <>(reference) <> $gRef_Sys_params{\"hostname\"}:$gRef_Test_params{\"test_binary\"}";
   push @output, "                            <>(test)      <> $gSys_params{\"hostname\"}:$gTest_params{\"test_binary\"}";
+  
+  push @output, "  - SVN source:             <>(reference) <> $gRef_Test_params{\"test_bin_svn_src\"}";
+  push @output, "                            <>(test)      <> $gTest_params{\"test_bin_svn_src\"}";
+
+  push @output, "  - Compilers:              <>(reference) <> $gRef_Test_params{\"test_bin_compilers\"}";
+  push @output, "                            <>(test)      <> $gTest_params{\"test_bin_compilers\"}";
+
+  push @output, "  - Graphics library:       <>(reference) <> $gRef_Test_params{\"test_bin_graphics_lib\"}";
+  push @output, "                            <>(test)      <> $gTest_params{\"test_bin_graphics_lib\"}";
+
+  push @output, "  - XML support:            <>(reference) <> $gRef_Test_params{\"test_bin_xml_support\"}";
+  push @output, "                            <>(test)      <> $gTest_params{\"test_bin_\"}";
+
   push @output, "  - Modifiation date:       <>(reference) <> $gRef_Test_params{\"test_bin_mod_date\"}";
   push @output, "                            <>(test)      <> $gTest_params{\"test_bin_mod_date\"}";
   push @output, "  - MD5 Checksum:           <>(reference) <> $gRef_Test_params{\"test_bin_md5sum\"}";

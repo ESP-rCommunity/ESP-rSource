@@ -557,9 +557,13 @@ C Calculate the SI connection variables:
           PECONTRN(ICON,IPH)=PECONTRNPU(ICON,IPH)*LNPWRBAS
           QECONTRN(ICON,IPH)=QECONTRNPU(ICON,IPH)*LNPWRBAS
           ECONLOS(ICON,IPH)=ECONLOSPU(ICON,IPH)*LNPWRBAS
-          ECONPF(ICON,IPH)=ECONPFPU(ICON,IPH)   
-          CONTRNI(ICON,IPH)=CONTRNIPU(ICON,IPH)*
-     &ENODIBAS(SENOD(ICON,IPH))  
+          ECONPF(ICON,IPH)=ECONPFPU(ICON,IPH)
+          if ( SENOD(ICON,IPH) .ne. 0 ) then
+            CONTRNI(ICON,IPH)=CONTRNIPU(ICON,IPH)*
+     &        ENODIBAS(SENOD(ICON,IPH))
+          else
+            CONTRNI(ICON,IPH)=0.0
+          endif
   30    CONTINUE
 
 C Trace

@@ -17,7 +17,8 @@ OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o c2fdum.o common3dv.o crea
 	readBCF.o readTrnsys.o sort.o startup.o tdfile.o
 
 $(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(F_to_C_flags)
+
 
 arrow.F:
 	rm -f arrow.F

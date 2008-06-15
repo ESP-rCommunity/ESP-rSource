@@ -13,18 +13,35 @@ allnoX: libnoX $(PROGRAMS)
 
 libX11:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sourcesX11 ; \
-	$(MAKE) the_libX11
+	$(MAKE) the_libX11; \
+	$(MAKE) the_libVer
 
 libGTK:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sourcesGTK ; \
-	$(MAKE) the_libGTK
+	$(MAKE) the_libGTK; \
+	$(MAKE) the_libVer
 
 libnoX:
 	cd $(SRCdir)/lib; \
-	$(MAKE) sourcesnoX ; \
-	$(MAKE) the_libnoX
+	$(MAKE) the_libnoX; \
+	$(MAKE) the_libVer
+
+enableGccFPE:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libFPE
+
+disableGccFPE:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoFPE
+
+
+enableXML:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libH3KReports
+	
+disableXML:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoH3KReports
 
 # PROGRAMS:
 
@@ -32,10 +49,8 @@ aco:
 	cd $(SRCdir)/esruaco; $(MAKE)
 b2e: 
 	cd $(SRCdir)/esrub2e; $(MAKE)
-# pass the target 'include_XML/exclude_XML' to build
-# bps with/without H3Kreports.
 bps: 
-	cd $(SRCdir)/esrubps; $(MAKE) $(xml_status)
+	cd $(SRCdir)/esrubps; $(MAKE)
 dbm: 
 	cd $(SRCdir)/esrudbm; $(MAKE)
 dfs: 

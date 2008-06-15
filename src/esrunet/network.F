@@ -354,7 +354,7 @@ C in the c-interface code.
         CALL NWKSMOD(ISE,ICO,IDA)
       ENDIF
 
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Initialise the network on first entry and clear screen and draw grid.
       CALL NWKINIT

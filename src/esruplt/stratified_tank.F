@@ -1291,8 +1291,11 @@ C---- i.e. fill coefficient (i,i) for current section
 C---- Terms corresponding to flows from this section to neighbouring sections
           if (itop .LT. NNodes .AND. Mdot(itop) .GT. 0)
      &      Diag(i) = Diag(i) +  ALPHA*Mdot(itop)*Cp
-          if (ibot .GT. 1 .AND. Mdot(ibot-1) .LT. 0)
-     &      Diag(i) = Diag(i) - ALPHA*Mdot(ibot-1)*Cp
+
+          if (ibot .GT. 1 ) then
+            if ( Mdot(ibot-1) .LT. 0)
+     &        Diag(i) = Diag(i) - ALPHA*Mdot(ibot-1)*Cp
+          endif 
 C---- Terms corresponding to flows from this node to outlets
           if (ibot .LE. NOut0 .AND. NOut0 .LE. itop)
      &      Diag(i) = Diag(i) +  ALPHA*Mdot0*Cp

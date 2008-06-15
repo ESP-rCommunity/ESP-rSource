@@ -1638,7 +1638,7 @@ C Match period name in command line.
       ln=lnblnk(name)
       match=.false.
 
-      do 42 i=1, MSPS
+      do 42 i=1, nsset
         if(name(1:ln).eq.spfdescr(i)(1:lnblnk(spfdescr(i))))then
           match=.true.
 

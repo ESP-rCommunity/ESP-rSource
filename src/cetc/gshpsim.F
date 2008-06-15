@@ -1765,7 +1765,7 @@ c and -1 for cooling
 C Arguments
       REAL ss_cop
       REAL local_EWT
-      REAL GSHP_HP_mode
+      INTEGER GSHP_HP_mode
       REAL cop
 
 

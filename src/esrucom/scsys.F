@@ -860,6 +860,15 @@ C Set flag indicating if set describes a multi-year period
  334      CALL STRIPC(IUC,OUTSTR,0,ND,1,'res names',IER)
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','res tags',IFLAG)
+
+C The following code ensures the sXXres varaibles are initialized
+C to empty strings even if they are not defind in the input file.
+          write(sblres(iss), '(A)') '  '
+          write(sflres(iss), '(A)') '  '
+          write(smstres(iss),'(A)') '  '
+          write(splres(iss), '(A)') '  '
+          write(selres(iss), '(A)') '  '
+          
           if(WORD(1:5).eq.'*sblr')then
             CALL EGETRM(OUTSTR,K,sblres(iss),'W','zone res',IER)
           elseif(WORD(1:5).eq.'*sflr')then

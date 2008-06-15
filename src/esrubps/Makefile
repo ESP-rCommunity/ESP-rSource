@@ -11,7 +11,6 @@ TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
 LIBdir = $(SRCdir)/lib
-COBJECTS =
 PROG = bps$(EXE)
 
 .SUFFIXES: .o .F
@@ -58,47 +57,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o
 
-# Additional C and Fortran objectives needed for H3Kreports
-XML_COBJECTS =TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
-XML_FOBJECTS = ConfigureH3kReports.o
-
-# C and Fortran stubs used to build bps without H3Kreports
-NO_XML_C_STUBS =
-NO_XML_F_STUBS = TReports_dummy.o
-
-# Target to build bps with h3kreports
-include_XML: $(BPS_OBJECTS) $(XML_COBJECTS) $(XML_FOBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(XML_COBJECTS) $(XML_FOBJECTS) $(ULIBS) $(F_to_C_flags)
-
-# Target to build bps without h3kreports
-exclude_XML: $(BPS_OBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS) $(ULIBS) $(F_to_C_flags)
-
-TReportsManager.cpp:
-	rm -f TReportsManager.cpp
-	ln -s $(CETCdir)/h3kreports/TReportsManager.cpp .
-
-TBinnedData.cpp:
-	rm -f TBinnedData.cpp
-	ln -s $(CETCdir)/h3kreports/TBinnedData.cpp .
-
-TVariableData.cpp:
-	rm -f TVariableData.cpp
-	ln -s $(CETCdir)/h3kreports/TVariableData.cpp .
-
-TXMLAdapter.cpp:
-	rm -f TXMLAdapter.cpp
-	ln -s $(CETCdir)/h3kreports/TXMLAdapter.cpp .
-TWildCards.cpp:
-	rm -f TWildCards.cpp
-	ln -s $(CETCdir)/h3kreports/TWildCards.cpp .
-
-TReports_dummy.F:
-	rm -f TReports_dummy.F
-	ln -s $(CETCdir)/h3kreports/TReports_dummy.F .
-ConfigureH3kReports.F:
-	rm -f ConfigureH3kReports.F
-	ln -s $(CETCdir)/h3kreports/ConfigureH3kReports.F .
+$(PROG): $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -678,8 +638,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(BPS_OBJECTS) $(XML_COBJECTS)    \
-	$(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)  \
+	rm -f core $(PROG) $(BPS_OBJECTS) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
@@ -709,9 +668,7 @@ clean:
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \
 	FC_components.F FC_functions.F water_tanks.F h3k_utils.F SetDllParms.F \
 	AIMS.F TAC.F WaterProperties.F DG_controller.F elec_net_utilities.F \
-	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F TBinnedData.cpp \
-	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
-	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
+	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
