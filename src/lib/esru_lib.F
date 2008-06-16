@@ -770,14 +770,14 @@ C Establish signs for arguments, and convert to absolute avalues.
 
       if ( fFloat1 .LT. 0.0 ) then
         iSign1 = -1
-        fFloat1 = fFloat1 * -1.0
+        fFloat1 = fFloat1 * (-1.0)
       else
         iSign1 =  1
       endif
 
       if ( fFloat2 .LT. 0.0 ) then
         iSign2 = -1
-        fFloat2 = fFloat2 * -1.0
+        fFloat2 = fFloat2 * (-1.0)
       else
         iSign2 =  1
       endif 
