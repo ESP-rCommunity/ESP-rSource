@@ -53,7 +53,7 @@ C Defaults.
       CHARACTER H*72,DFILE*72,LTMP*72,lltmp*144
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER OUTSTR*124
+      CHARACTER OUTSTR*124,outs248*248
       logical XST,OK,DOK
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
