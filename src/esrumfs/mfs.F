@@ -607,7 +607,7 @@ C ICLIM,LCLIM (for climate file)
 
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character outs*124
+      character outs*124,outs248*248
 
       PARAMETER (SMALL=1.0E-15)
 
@@ -668,8 +668,8 @@ C Indicate start of simulation and show main calculation parameters
       call edisp(IMFTU,' ESRUmfs simulation commenced with:')
       WRITE(outs,'(A,A)') ' Problem : ',LAPROB(1:LNBLNK(LAPROB))
       call edisp(IMFTU,outs)
-      WRITE(outs,'(A,A)') ' Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
-      call edisp(IMFTU,outs)
+      WRITE(outs248,'(A,A)') ' Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
+      call edisp248(IMFTU,outs,100)
       WRITE(outs,'(A,A)') ' Climate : ',LCLIM(1:LNBLNK(LCLIM))
       call edisp(IMFTU,outs)
       WRITE(outs,'(A,A)') ' Results : ',LAFRES(1:LNBLNK(LAFRES))
