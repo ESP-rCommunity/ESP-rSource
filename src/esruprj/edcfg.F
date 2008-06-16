@@ -240,9 +240,9 @@ C are active.
         WRITE(ITEMS(15),'(A,I2,A)')'l network flow (',ncc,' loops)'
       endif
       if(nof.eq.0)then
-        WRITE(ITEMS(16),'(A)')     'm Optics                '
+        WRITE(ITEMS(16),'(A)')     'm optics                '
       else
-        WRITE(ITEMS(16),'(A,I2,A)')'m Optics (',nof,' loops)'
+        WRITE(ITEMS(16),'(A,I2,A)')'m optics (',nof,' loops)'
       endif
       if(ngf.eq.0)then
         WRITE(ITEMS(17),'(A)')     'n global system '

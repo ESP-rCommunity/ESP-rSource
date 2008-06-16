@@ -2868,9 +2868,9 @@ C function (ie. all periods are the same).
         call edisp(iuout,
      &      'Note: to change this re-edit the optics sensor')
 
-        h(1)='This acts as an On/Off controllers which switch on '
-        h(2)='if sensed value is greater than a set point. '
-        h(3)='Other laws may be added in the future.'
+        h(1)='This acts as a stage controller which changes to '
+        h(2)='another stage if sensed value is greater than '
+        h(3)='a set point. Other laws may be added in the future.'
         
         ino=iclaw
         idno=2
@@ -2958,8 +2958,8 @@ C Number of actual items displayed.
   741     IER=0
           M=6
           MVERT=9
-          CALL EMKEY(M+4,KEY,IER)
           do 963 ibictl_item=1,M
+            CALL EMKEY(ibictl_item,KEY,IER)
             WRITE(VERT2(ibictl_item),'(A1,a,F7.1,2a,F4.0)') KEY,
      &           ' Set-point: ',cmlocal(2*ibictl_item),' & ',
      &           'dataset to use (above set-point): ',
@@ -2975,23 +2975,30 @@ C Help text for this menu.
           H(3) =' used above the set-point. The order of the set-points'
           H(4) ='here does not matter as they will be sorted when they '
           H(5) =' will be processed. It is, however, recommended for QA' 
-          H(6) =' purposes to start from the top using the lower '
-          H(7) =' setpoint and carry on following an ascending order.'
+          H(6) =' purposes to start from the top using the higher '
+          H(7) =' setpoint and carry on following a descending order.'
+          H(8) =' Dataset 1 will always be used unless the control '
+          H(9) =' condition is met.'          
           
 C Now display the menu.
           CALL EMENU('Control for bidirectional datasets',VERT2,MVERT,
      &               IVERT)
           if(IVERT.ge.1.and.IVERT.lt.MVERT-2)then
             H(1)='The value given should relate to the type of sensor'
+            H(2)='(e.g. in oC for temperature sensor, in W/m2 for'
+            H(3)='radiation sensor, etc.).'
             CALL EASKR(cmlocal(ivert*2),' Set-point:',' ',
-     &      -10000.,'F',10000.,'F',-30.,'setpoint',IER,1)            
+     &      -10000.,'F',10000.,'F',-30.,'setpoint',IER,3)            
             I3=int(cmlocal(ivert*2+1))
+            H(1)='The value given should relate to the bidirectional'  
+            H(2)='dataset that will be used above the specified '
+            H(3)='setpoint.'
             CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
-     &       1,'F',40,'F',1,'1st set is default',IERI,2)
+     &       1,'F',40,'F',1,'1st set is default',IERI,3)
             cmlocal(ivert*2+1)=float(I3)
             goto 741
           elseif(IVERT.EQ.MVERT-1)then
-            CALL PHELPD('bidirectional control help',7,'-',0,0,IER)
+            CALL PHELPD('bidirectional control help',9,'-',0,0,IER)
             goto 741
           elseif(IVERT.EQ.MVERT)then
 
@@ -3081,7 +3088,7 @@ C the negatives at the end of the array
             do 144 ipassback=1,6 
               cmlocal(ipassback*2)=sortmerge(ipassback)
               cmlocal(ipassback*2+1)=sortset(ipassback)
-              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
+C              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
   144       continue             
             do 13 ij=1,misc
               cm(ij)=cmlocal(ij)
@@ -5157,8 +5164,8 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.5)then
         WRITE(VERT(1),'(a)') 'a senses current zone db temp         '
         WRITE(VERT(2),'(a)') '  senses an ambient condition...      '
-        WRITE(VERT(3),'(a)') 'b   dry bulb temperature              '
-        WRITE(VERT(4),'(a)') 'c senses incident radiation at surface'
+        WRITE(VERT(3),'(a)') 'b   external dry bulb temperature     '
+        WRITE(VERT(4),'(a)') 'c   incident radiation at ext. surface'
         WRITE(VERT(5),'(a)') 'd senses lux levels                   '
         WRITE(VERT(6),'(a)') '  ------------------------------------'
       endif
@@ -5221,10 +5228,18 @@ C Ask for the specific zone.
      &    'Specific zone',ier)
         CALL EPMENRC
         SELECT=.TRUE.
-        H(1)='This value specifies sensor location in greater'
-        H(2)='detail. If >0 then refers to a specific surface.'
-        CALL EASKABC('Specific location: ',' ','zone air point',
-     &    'surface','continue',IW,2)
+        if(icfoc.ne.5)then
+          H(1)='This value specifies sensor location in greater'
+          H(2)='detail. If >0 then refers to a specific surface.'
+          CALL EASKABC('Specific location: ',' ','zone air point',
+     &      'surface','continue',IW,2)
+        elseif(icfoc.eq.5)then
+
+C For optical controls, always assume zone air point
+          call edisp(iuout,
+     &      ' The location is at the specified zone air point')
+          IW=1
+        endif
         if(IW.eq.1)then
           isn2=0
           isn3=0

@@ -940,7 +940,28 @@ C Bidirectional case
 
 C Call subroutine for controls here
               call mzsctl(ICOMP,I,SRADDO(I),SRADF(I),IBISET_timestep)
-              
+
+C Here it checks if during the control a dataset has been specified
+C that is not included in the file with the data 
+C (for which there are no data). This is done by looking if there are
+C data for internal and external surface resistance and also U value.
+C If these values are 0 then it uses the 1st dataset and ignores the
+C control.
+              if(TRINTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
+     &           TREXTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
+     &           TUVALUE(IBIDIR,IBISET_timestep).eq.0)then
+                 write(outs,'(A,I2,A)')
+     &            'Attempt is made to control dataset no: ',
+     &            IBISET_timestep,
+     &            ' while there are no data for this dataset.'
+                 call edisp(iuout,outs)
+                 write(outs,'(A)')
+     &            'Dataset no: 1 will be used instead of this.'
+                 call edisp(iuout,outs)
+                 IBISET_timestep=1
+              endif
+     
+             
 C Interpolate transmittance and g values in case of bidirectional
 C data type 2 and 3. Also interpolate reflectance in the case of
 C data type 3. Do this outside the loop of NE (per layer).
@@ -950,6 +971,7 @@ C data type 3. Do this outside the loop of NE (per layer).
                 XGVALUE1=
      &               TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
                 IF(IBIDATATYPE.EQ.2)THEN            
+
 C Need to interpolate the reflectance for bidirectional data
                   XX1=TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
                 ENDIF           
@@ -1292,6 +1314,26 @@ C Bidirectional case
 
 C Call subroutine for controls here
           call mzsctl(ICOMP,I,SRADDO(I),SRADF(I),IBISET_timestep)
+
+C Here it checks if during the control a dataset has been specified
+C that is not included in the file with the data 
+C (for which there are no data). This is done by looking if there are
+C data for internal and external surface resistance and also U value.
+C If these values are 0 then it uses the 1st dataset and ignores the
+C control.
+              if(TRINTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
+     &           TREXTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
+     &           TUVALUE(IBIDIR,IBISET_timestep).eq.0)then
+                 write(outs,'(A,I2,A)')
+     &            'Attempt is made to control dataset no: ',
+     &            IBISET_timestep,
+     &            ' while there are no data for this dataset.'
+                 call edisp(iuout,outs)
+                 write(outs,'(A)')
+     &            'Dataset no: 1 will be used instead of this.'
+                 call edisp(iuout,outs)
+                 IBISET_timestep=1
+              endif
 
 C End of bidirectional case
         endif
@@ -3445,6 +3487,8 @@ C Definitions for daylight coefficient patch altitude:
       real TVT,TVT2,TVT3,TVT4,TVT5,TVT6 !Local variables to calculate the visible transmittance 
                                         !for the different daylight setpoints and controls
                                         !(i.e. one for each of the 6 datasets for bidirectional sets)
+      integer i_ctlZone  !This is used when the sensor is located to another zone and indicates 
+                         !which zone. It will take the value of iosn(1,1).
      
 C If there is a tdf item that defines which bidirectional dataset 
 C to use then use it. Otherwise use the first set.
@@ -3541,8 +3585,8 @@ C Current zone temperature sensor
 C<<<Check if instead if iosn(1,1) we should use iosn(iol,1) as in bcfunc.F>>>
 C <<Same for OMISCD>>>>
                   if(iosn(1,1).eq.0)then
-                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
-                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
+C                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
+C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
 
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,2))then                      
@@ -3560,12 +3604,12 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                     else
                       ISET=1
                     endif
-                    write(6,*) 'ISET: ', ISET
+C                    write(6,*) 'ISET: ', ISET
                   elseif(iosn(1,1).eq.-3)then
 
 C Senses outside db.
-                    write(6,*) 'TF: ', TF,'     ','time: ',btimef
-                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
+C                    write(6,*) 'TF: ', TF,'     ','time: ',btimef
+C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
 
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(TF.GT.OMISCD(1,IDTYP,IPER,2))then                      
@@ -3807,6 +3851,32 @@ C and "tidy-up" reasons
                         endif
                       endif
                     endif    
+
+C Sense temperature in another zone
+                  elseif(iosn(1,1).gt.0.and.iosn(1,2).eq.0)then
+                  
+C iosn(1,1) will specify which zone
+                    i_ctlZone=iosn(1,1)
+C Allow max 6 setpoints and datasets to be used for the moment.
+                    if(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,2))then                      
+                      ISET=OMISCD(1,IDTYP,IPER,3)
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,4))then
+                      ISET=OMISCD(1,IDTYP,IPER,5)
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,6))then
+                      ISET=OMISCD(1,IDTYP,IPER,7)                      
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,8))then
+                      ISET=OMISCD(1,IDTYP,IPER,9)
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,10))
+     &                then
+                      ISET=OMISCD(1,IDTYP,IPER,11)
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,12))
+     &                then
+                      ISET=OMISCD(1,IDTYP,IPER,13)
+                    else
+                      ISET=1
+                    endif                  
+
+C End of all the bidirectional control options
                   endif
                 endif
               endif
