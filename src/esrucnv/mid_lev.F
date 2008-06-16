@@ -22,8 +22,11 @@ C Mid level routines for dxf translator.
 
 C ******** block
 c BLOCK processes the block definitions in .dxf file
-c of autocad and create a /tmp/blockdxf2e file for later
+c of Autocad and create a /tmp/blockdxf2e file for later
 c 'INSERT' command use.
+
+C << NOTE: for some computer types there will not be >>
+C << a /tmp folder so work out a different approach >>
       subroutine block(itrc)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -144,6 +147,10 @@ C Note the gcode=10 reads in the x & y block origin
       endif
       write(ioblk,'(a)') 'BLOCK BASE '
       write(ioblk,*) blkxorg,blkyorg,blkzorg
+      
+C If the input string is something other then ENDBLK then
+C parse the set of commands that can be used. Skip those
+C that we cannot use.
  9003 if (instring(1:6).ne.'ENDBLK')then
         elev=dfltelev
         thick = dfltthick
@@ -274,6 +281,8 @@ C Note: all the insert files are assumed to be in local folder.
       znorm = 1.0
       call initmatrix
 
+C Read an entity from DXF file. Depending on the value of gcode
+C process the entity type.
       call readgc
  9001 if (gcode.ne.0)then
         if (gcode.eq.8) then
@@ -369,6 +378,11 @@ C If one of the blocks we know we can skip then do so.
 
 C All imported block definition files come from (blockdxf2e) and a
 C scratch file (block_scratch) for reporting translations.
+
+C << NOTE: to be done >>
+C << there will not be a /tmp folder on Native Windows >>
+C << find another place to put this temporary file >>
+
       write(pbname,'(a)') '/tmp/blockdxf2e'
       write(scratch,'(a)') '/tmp/block_scratch'
       open(ioblk,file=pbname,status='UNKNOWN')
@@ -478,6 +492,7 @@ C If this line is reached then name was not found so add it.
       end
 
 C ******** WRITELC
+C Write the contents of a viewer layer file.
       subroutine writelc
 
       parameter (MAXLAY = 80)
@@ -511,13 +526,19 @@ C ******** WRITELC
       end
 
 C ******* genplin
-C 2 or 3D polyline.
+C genplin - parse a 2 or 3D polyline from information in DXF file.
+
+C << to be done - pass itrc indicator so that debug can be done
+C << more easily.
+
       subroutine genplin
 #include "building.h"
       parameter (MAXPNT = 100)
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
       integer currlay, currcol, oldlay, oldcol
@@ -627,11 +648,14 @@ C << Polylines can probably be treated as surfaces >>
             write(ioout,'(i4)') numd
           elseif(oformat(1:3).eq.'esp')then
 
-C Add a surface to zone.
+C Add a surface to zone and update connection.
             if(head.eq.'OBS_')then
             elseif(head.eq.'BLK_')then
+              continue
             else
               NZSUR(indxzon) = NZSUR(indxzon) + 1
+              NCON=NCON+1
+              IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
             endif
           endif
           do 9006 i = istart, istart+numd-1
@@ -642,7 +666,7 @@ C Add a surface to zone.
  9006     continue
         else
 
-C Dump out the sides as planes.
+C Dump out the sides as planes.  If esp update connections.
           do 9007 i = istart, istart+numd-2
             if(oformat(1:6).eq.'viewer')then
               write(ioout,'(a)') 'PLA (2D extrud)'
@@ -652,6 +676,8 @@ C Dump out the sides as planes.
               elseif(head.eq.'BLK_')then
               else
                 NZSUR(indxzon) = NZSUR(indxzon) + 1
+                NCON=NCON+1
+                IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
               endif
             endif
             coorx = xarray(i)
@@ -692,6 +718,7 @@ C Dump out the sides as planes.
 
 
 C ****** vertex
+C vertex - compose XYZ from data in a DXF file.
       subroutine vertex
 
       parameter (MAXPNT = 100)
