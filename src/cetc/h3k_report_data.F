@@ -2320,3 +2320,158 @@ C Recover the string indicated by iLocation
 
       return
       end
+
+
+C ******************************* H3K Transport Massflow Network Data ************************
+C
+C Created by: Achim Geissler
+C Created on: June 17, 2008
+C Copyright: GaCH
+C ________
+C ABSTRACT:
+C This is the routine used to transport mass flow domain state-variable data to the H3K
+C reporting facilities.
+C
+C**********************************************************************************************
+      subroutine h3k_transport_mfn_data()
+      implicit none
+#include "building.h"
+#include "net_flow.h"
+C.....ESP-r commons
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+
+      CHARACTER LAPROB*72
+
+C.....Local variables
+      integer ii,jj,kk          ! counters
+      integer iNode             ! pointer to current node
+      character*128 char_temp   ! holding variable
+      character*128 Base_Name   ! component base name
+      character*128 Node_Name   ! node name
+      character*128 Connect_name! connection name
+      character*128 H3K_rep_NAME ! XML leaf name
+
+      integer iState, iSim_Type ! node state and supported simulation type
+                                ! (results from ISV_convert)
+      integer iConn_numb        ! index of a given connection
+
+      real temperature          ! air temp (oC), used in humidity calculation
+      real air_flow             ! air flow (kg/s),  used in humidity calculation
+      real moisture_flow        ! moisture flow (kg/s),  used in humidity calculation
+      real humidity_ratio       ! humidity ratio (-)
+
+      integer iLength           ! Length of string
+      integer iLength_tmp       ! Temporary holder of length of string
+
+C.....References
+      integer LNBLNK            ! function returning # of non-blank characters in
+                                ! a string
+
+C.....Named constants
+      integer iProp_temp        ! named constant for temperature properity
+      integer iProp_1st_flow    ! named constant for first phase flow properity
+      integer iProp_2nd_flow    ! named constant for second phase flow properity
+      integer iProp_h2_flow     ! named constant for hydrogen flow
+      parameter ( iProp_temp     = 1,
+     &            iProp_1st_flow = 2,
+     &            iProp_2nd_flow = 3,
+     &            iProp_h2_flow  = 4)
+
+C.....Commons indicating if meta items have been initialized
+      COMMON / H3KmetaInitVal /
+     &     bBuildMeta,
+     &     bClimMeta,
+     &     bTimeMeta,
+     &     bPlantMeta,
+     &     bElectMeta,
+     &     bMFNMeta
+
+      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,
+     &              bElectMeta,bMFNMeta
+
+C.....Loop through all connections in a network
+      do ii = 1, yyyyy
+
+C........Build base name
+         char_temp = pcname(ii)
+         iLength = lnblnk(char_temp)
+         iLength_tmp = iLength
+         write(Base_Name, '(A,A)')
+     &        'plant/',char_temp(1:iLength)
+
+C........Loop through nodes (NPCDAT(i,8)
+         do jj = 1, NPCDAT(ii,8)
+
+C...........Build node name
+            iLength = iLength_tmp  ! Reset string length in case it was incremeted for 2-digit nodes.
+            if(jj<10)then  ! First nine nodes.
+              write(Node_name, '(A,A,I1)')
+     &             Base_Name(1:iLength+6),
+     &             '/node_',jj
+            else           ! This presumes that no plant component will have more than 99 nodes! 
+              write(Node_name, '(A,A,I2)')
+     &             Base_Name(1:iLength+6),
+     &             '/node_',jj
+            endif
+
+C...........Get index of node in overall plant network
+C...........NPCDAT(ii,9) holds pointer to start of
+C...........current plant's nodes
+            iNode = NPCDAT(ii,9) + jj-1
+
+C...........Set attribute for node state:
+C...........ISV contains state and simulation type data
+C...........for each node in network. Function ISV_convert
+C...........breaks this data into managable bits.
+            call isv_convert(ISV(ii,jj),iState,iSim_type)
+
+C...........Set string name to water/air/solid for
+C...........istate = 0/1/9
+            if (iState .eq. 0 ) then
+               char_temp = 'water'
+            elseif (iState .eq. 1 ) then
+               char_temp = 'air'
+            elseif (iState .eq. 2 ) then
+               char_temp = 'hydrogen'
+            elseif (iState .eq. 9 ) then
+               char_temp = 'solid'
+            else
+               char_temp = 'unknown'
+            endif
+
+C...........Transport State variables
+            if(jj<10)then
+              iLength = iLength_tmp
+            else                           ! Longer string length required for 2-digit nodes.
+              iLength = iLength_tmp + 1
+            endif
+
+           !Mass flow (1st phase)
+            if (iState .ne.9) then
+               write(H3K_rep_NAME,'(A,A,A,A)')
+     &              Node_Name(1:iLength+13),
+     &              '/',char_temp(1:LNBLNK(char_temp)),'_flow'
+               call add_to_xml_reporting (
+
+            call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),FLIN,FLUT)
+
+     &            CSVF(iNode,iProp_1st_flow),
+     &            H3K_rep_NAME,
+     &            'units', '(xx/yy)',
+     &            'mfn connection flow' )
+
+
+     
+
+
+
+            endif
+
+
+         enddo                  !<- node loop end
+
+      enddo                     !<- connection loop end
+
+      return
+      end
+

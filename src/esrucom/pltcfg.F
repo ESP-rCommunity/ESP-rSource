@@ -184,6 +184,7 @@ C Electrical details for specified plant components
       CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      
       CHARACTER ZNAME*12,ZDESC*64
+      character loutstr*248,louts*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)
 
@@ -622,8 +623,8 @@ C less this was already done above (building side air flow wanted)
         IF(IAIRN.ge.0) THEN
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'network file',IER)
           LAPROB=OUTSTR(1:72)
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'pressure file',IER)
-          LAPRES=OUTSTR(1:72)
+          CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'pressure file',IER)
+          write(LAPRES,'(a)') LOUTSTR(1:144)
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'mfs res file',IER)
           LAFRES=OUTSTR(1:72)
           IF(IER.NE.0)RETURN
@@ -633,9 +634,9 @@ C Reporting.
             WRITE(OUTS,'(A,A)') '  network file : ',
      &            LAPROB(1:LNBLNK(LAPROB))
             CALL EDISP(itu,OUTS)
-            WRITE(OUTS,'(A,A)') '  press. coeff.: ',
+            WRITE(LOUTS,'(A,A)') '  press. coeff.: ',
      &            LAPRES(1:LNBLNK(LAPRES))
-            CALL EDISP(itu,OUTS)
+            CALL EDISP248(itu,LOUTS,100)
             WRITE(OUTS,'(A,A)') '  results file : ',
      &            LAFRES(1:LNBLNK(LAFRES))
             CALL EDISP(itu,OUTS)

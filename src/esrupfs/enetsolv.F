@@ -792,7 +792,9 @@ C Trace.
       IF(MODE.EQ.'N')THEN
 
 C Solve with [RJACOBEL][EDELTA]=[REMATJZ] no pivoting
-        CALL JSOLVD(RJACOBEL,NELM,MELM,EDELTA,REMATJZ)
+        if ( NELM > 0 ) THEN
+          CALL JSOLVD(RJACOBEL,NELM,MELM,EDELTA,REMATJZ)
+        ENDIF
       ELSE
 
 C Solve [RJACOBEL][EDELTA]=[REMATJZ] with pivoting.

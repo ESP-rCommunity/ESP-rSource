@@ -50,11 +50,13 @@ C Defaults.
 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
-      CHARACTER H*72,DFILE*72,LTMP*72
+      CHARACTER H*72,DFILE*72,LTMP*72,lltmp*144
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER OUTSTR*124
+      CHARACTER OUTSTR*124,outs248*248
       logical XST,OK,DOK
+
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C Initiates filling of valid fluid flow component type arrays
       CALL MFCDAT
@@ -117,9 +119,36 @@ C reason IAPRES is still zero then set to 11.
       H(2)='database of pressure coefficients for surfaces in'
       H(3)='typical positions and within several different exposure'
       H(4)='categories. See the ESP manual for additional info.'
-  288 CALL EASKS(LAPRES,' Wind pressure coefficients db ? ',' ',
-     &     72,DAPRES,'pressure db',IER,4)
-      IF(LAPRES.EQ.' ')GOTO 288
+
+ 288  write(outs248,'(2a)') 'The current source file is:',
+     &  LAPRES(1:lnblnk(LAPRES))
+      call edisp248(iuout,outs248,100)
+      lltmp=LAPRES
+      llt=lnblnk(lltmp)
+      iglib = igraphiclib()
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &      96,DAPRES,'pressure coef database',IER,3)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &      124,DAPRES,'pressure coef database',IER,3)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &      144,DAPRES,'pressure coef database',IER,3)
+        endif
+      elseif(iglib.eq.2)then
+        CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &    144,DAPRES,'pressure coef database',IER,3)
+      else
+        CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &    96,DAPRES,'pressure coef database',IER,3)
+      endif
+
+C  288 CALL EASKS(LAPRES,' Wind pressure coefficients db ? ',' ',
+C     &     72,DAPRES,'pressure db',IER,4)
+      IF(LLTMP.EQ.' ')GOTO 288
+      LAPRES=lltmp
       CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
       IF(IER.NE.0) GOTO 30
       write(currentfile,'(a)') LAPRES(1:lnblnk(LAPRES))

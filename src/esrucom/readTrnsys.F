@@ -118,11 +118,11 @@ C                        !additional output position of another componnet
 C Common for TRNSYS inputs
 C     MTRNXIN: Maximum number of variables for a TRNSYS type
 C              (defined in trnsys.h)
-      COMMON/TRNSYSINP/NTRNXIN(MTRNCOM),
+      COMMON/TRNSYSINP/TRNXIN(MTRNCOM, MTRNXIN),
+     &                 NTRNXIN(MTRNCOM),
      &                 ITRNX_CAT(MTRNCOM,MTRNXIN),
      &                 ITRNX_LNK1(MTRNCOM,MTRNXIN),
-     &                 ITRNX_LNK2(MTRNCOM,MTRNXIN),
-     &                 TRNXIN(MTRNCOM, MTRNXIN)
+     &                 ITRNX_LNK2(MTRNCOM,MTRNXIN)
       INTEGER NTRNXIN            !number of trnsys inputs
       INTEGER ITRNX_CAT          !type of trnsys inputs
       INTEGER ITRNX_LNK1         !associated receiving node or

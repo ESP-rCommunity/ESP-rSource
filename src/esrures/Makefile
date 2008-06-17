@@ -24,7 +24,7 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
 	  resutil.o rlibget.o rwipv.o setres.o sort.o spmatl.o spmisc.o startup.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
-	  vgraph.o visgrd.o visual.o visvec.o TReports_dummy.o
+	  vgraph.o visgrd.o visual.o visvec.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -137,9 +137,7 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
-TReports_dummy.F:
-	rm -f TReports_dummy.F
-	ln -s $(REPdir)/TReports_dummy.F .
+
 visgrd.F:
 	rm -f visgrd.F
 	ln -s $(DFSdir)/visgrd.F .
@@ -163,4 +161,4 @@ clean:
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F readTrnsys.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	visgrd.F visual.F visvec.F TReports_dummy.F
+	visgrd.F visual.F visvec.F

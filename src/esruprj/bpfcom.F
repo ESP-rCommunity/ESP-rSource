@@ -49,7 +49,8 @@ C Add or delete a building/plant/flow control.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       character ACT*1,outs*124,H*72
       dimension rper(30),rperf(30)
@@ -691,7 +692,8 @@ C Add or delete a building/plant/flow/global control day type.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       character h*72
 
@@ -997,7 +999,8 @@ C for add.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       character h*72,act*1
 
@@ -1140,7 +1143,8 @@ C list out the zone/loop associations.
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       character outs*124,SSTR*72,zname*12,zdesc*64
 
@@ -1233,7 +1237,8 @@ C Copies from control commons to working array.
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
       if(icfoc.eq.0)then
@@ -1316,7 +1321,8 @@ C Copies from working array to control commons.
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
       iv1=int(cm(1))

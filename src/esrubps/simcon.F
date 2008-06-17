@@ -155,7 +155,8 @@ C otherwise rewind for use in next simulation.
 C Confirm save with user - only if not in autoexec mode as
 C defined in the simulator perameter file.
 c Send Output to file if save level = 5
-        IF (ISAVE.eq.5) then
+        IF (ISAVE.eq.5 .and.
+     &        ( indcfg == 1 .or. indcfg == 3 ) ) then
           call h3kmzoutp()
         ENDIF
 c Close FC timstep output if open.      

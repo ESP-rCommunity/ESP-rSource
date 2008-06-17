@@ -810,35 +810,37 @@ C col 6: Relative humidity               (Percent)
 
 C If this is a multi-year simulation, we may need to
 C open the approprate climate file.
-        if ( bMY_sim_enabled .and.
-     &    .not. bMY_clm_file_open ( iMY_current_yr_index ) ) then
+        if ( bMY_sim_enabled )then
+          if (.not. bMY_clm_file_open ( iMY_current_yr_index ) ) then
 
 C Close old file, if necessary.
-          if ( iMY_current_yr_index .gt. 1 ) then
-            if ( bMY_clm_file_open ( iMY_current_yr_index - 1) ) 
-     &        call ERpFree( iClim , istat )
-          endif 
+            if ( iMY_current_yr_index .gt. 1 ) then
+              if ( bMY_clm_file_open ( iMY_current_yr_index - 1) ) 
+     &         call ERpFree( iClim , istat )
+            endif 
 
 C Open new file.   
-          call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
-     &                144,0,IER)         
+            call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
+     &                144,0,IER)
 
 C set flag      
-          bMY_clm_file_open ( iMY_current_yr_index ) = .true.
+            bMY_clm_file_open ( iMY_current_yr_index ) = .true.
 
 C In the case that we have a gshp input file, dhw input file, and/or basesimp 
 C input file, then call routines to determine degree days and ground temperature
 C parameters
-          if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
-     &        bsm_flag.or.itank_flag) then         
+            if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
+     &        bsm_flag.or.itank_flag) then
 c If a new climate file is opened, then need to recalculate the number 
 c of annual heating degree days and the average monthly temperatures based on 
 c this new climate information.
-            call CLM_DEG_DAY
+              call CLM_DEG_DAY
 
 C Initialize ground temperature profile parameters
-            call Ground_Temp_Profile
-          endif
+              call Ground_Temp_Profile
+            endif
+
+          endif 
 
         endif
 
@@ -851,22 +853,22 @@ C Note: future year may correspond to another climate file
 C If this is a multi-year simulation, we may need to  open the
 C approprate climate file.
 
-        if ( bMY_sim_enabled .and.
-     &    .not. bMY_clm_file_open ( iMY_future_yr_index ) ) then
+        if ( bMY_sim_enabled ) then
+           if ( .not. bMY_clm_file_open ( iMY_future_yr_index ) ) then
 C Close old file, if necessary.
-          if ( iMY_future_yr_index .gt. 1 ) then
-            if ( bMY_clm_file_open ( iMY_future_yr_index - 1) )
+            if ( iMY_future_yr_index .gt. 1 ) then
+              if ( bMY_clm_file_open ( iMY_future_yr_index - 1) )
      &        call ERpFree( iClim , istat )
-          endif
+            endif
 
 C Open new file.
-          call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
+           call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
      &                144,0,IER)
 
 C Set flag 
-          bMY_clm_file_open ( iMY_future_yr_index ) = .true.
-        endif
-     
+            bMY_clm_file_open ( iMY_future_yr_index ) = .true.
+          endif
+        endif 
 C Future day
         irec=idyf
 

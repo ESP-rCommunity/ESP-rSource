@@ -377,7 +377,7 @@ void add_to_xml_reporting__(float* value,
    bool rep_report_list_(char *sType, char *sSheet,
                           int iTypeLength, int iSheetLength)
    {
-      rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);
+      return rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);
    }
    
    

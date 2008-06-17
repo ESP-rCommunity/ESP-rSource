@@ -123,7 +123,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       call edisp(iuout,' Max no of:  points  surfaces  edges  bodies ')
       write(outs,'(11x,I8,I9,I8,I8)')MPT,MSF,MED,MBB
       call edisp(iuout,outs)

@@ -298,7 +298,8 @@ C espriou.h provides currentfile.
 C Optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
       
@@ -1736,7 +1737,8 @@ c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
 
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       ncf=0
       do 10 i=1,mcom
@@ -1864,7 +1866,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
 C Optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       CHARACTER SSTR*72,SSTRB*48
       CHARACTER WHICH*1,ZNAME*12,ZN*12,zdesc*64
@@ -2994,7 +2997,8 @@ C List one day type of a building/plant/flow/global control.
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioclaw(mol,mocdt,mocdp),omiscd(mol,mocdt,mocdp,misco)
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       character outs*124,SSTR*72,TMP*72,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
@@ -3555,7 +3559,9 @@ C Check to see if component exists
 C Check to see if sensed node exists    
       if(isn3.lt.1.or.isn3.gt.npcdat(isn2,8))goto 1003
       if(isn4.lt.0.or.isn4.gt.npcomp)goto 1009
-      if(isn5.lt.0.or.isn5.gt.npcdat(isn4,8))goto 1010      
+      if ( isn4.gt.1) then
+        if(isn5.lt.0.or.isn5.gt.npcdat(isn4,8))goto 1010
+      endif
       goto 9
 
 C Sensor located externally.
