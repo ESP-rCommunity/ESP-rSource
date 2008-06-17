@@ -95,6 +95,11 @@ C Start writing data, perhaps using more than one record.
          iteml=npcomp-items+1
    10 continue
 
+C << If the climate file and the plant component databases
+C << are going to be 144 characters the file needs to be
+C << EITHER opened at 36 records wide or we need two records
+C << to write each string
+
 C Store climate file name.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCLIM
       IREC=IREC+1

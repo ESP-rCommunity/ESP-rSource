@@ -210,7 +210,7 @@ C For optical controls
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
      &       omiscd(mol,mocdt,mocdp,misc)
-
+     
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
@@ -3857,7 +3857,8 @@ C Sense temperature in another zone
                   
 C iosn(1,1) will specify which zone
                     i_ctlZone=iosn(1,1)
-C Allow max 6 setpoints and datasets to be used for the moment.
+
+C Allow max 6 setpoints and datasets to be used for the moment.                                        
                     if(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=OMISCD(1,IDTYP,IPER,3)
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,4))then

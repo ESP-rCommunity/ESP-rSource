@@ -57,7 +57,7 @@ C For optical controls
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
      &       omiscd(mol,mocdt,mocdp,misc)
-
+     
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),

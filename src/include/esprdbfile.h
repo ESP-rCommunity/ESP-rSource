@@ -29,10 +29,10 @@ C Array of logicals indicating generic database scanned ok.
       common/gendb0/gendbok(MGDB)
       logical gendbok
 
-C LAPRES - (72 char) wind pressure coefficients distribution database
+C LAPRES - (144 char) wind pressure coefficients distribution database
 C iapres  - file unit for wind pressure coef database
       common/APRES/LAPRES,IAPRES
-      character LAPRES*72
+      character LAPRES*144
 
 C LOPTDB - (144 char) optical database file name
 C IOPTDB - unit number of optical database
@@ -67,8 +67,8 @@ C DFCON - default materials, DFMUL - default constructions
 C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character*72 DCLIM,DAPRES,DFCON,DFMUL,DPCDB
-      character DOPTDB*144,DPRFDB*144
+      character*72 DCLIM,DFCON,DFMUL,DPCDB
+      character DOPTDB*144,DPRFDB*144,DAPRES*144
 
 C LSBEM - (72 char) default SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM

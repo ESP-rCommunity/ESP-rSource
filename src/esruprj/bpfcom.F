@@ -1574,7 +1574,7 @@ C For optical controls
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
      &       omiscd(mol,mocdt,mocdp,misc)
-     
+
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
 C Make sure cm(1) is passed properly from bpfcontrl.F when a new i?claw
