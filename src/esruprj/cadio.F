@@ -1734,7 +1734,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.3)then
           LFL=LOPTDB
         elseif(i.eq.4)then
-          LF=LAPRES
+          LFL=LAPRES
         elseif(i.eq.5)then
           LFL=LPRFDB
         elseif(i.eq.6)then
@@ -1742,7 +1742,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LF=LPCDB
         endif
-        if(i.eq.3.or.i.eq.5)then
+        if(i.eq.3.or.i.eq.4.or.i.eq.5)then
           if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
             call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL,ier)
           endif

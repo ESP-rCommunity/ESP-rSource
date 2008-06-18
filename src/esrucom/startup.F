@@ -1963,7 +1963,11 @@ C  to be passed to e2r from the invocation line.
 
       subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
      &  browse)
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
+
+C Application name
+      common/APPNAME/cAppName
+      character*12 cAppName
 
       integer termtype,iappw,iappx,iappy
       character*48 prog
@@ -2024,11 +2028,11 @@ C        call edisp(iuout,outs)
           stop
         elseif(argument(1:8) .eq. '-version' ) then
 C Display version information and then quit
-          CALL ESPrVersion("summary")
+          CALL ESPrVersion("summary",cAppName,IUOUT)
           stop
         elseif( argument(1:10) .eq. '-buildinfo' ) then
 C Display detailed build information and then quit
-          CALL ESPrVersion("details")
+          CALL ESPrVersion("details",cAppName,IUOUT)
           stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1

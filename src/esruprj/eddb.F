@@ -71,7 +71,7 @@ C Default esp-r distribution path.
       logical moddb,browse,modcon,QUIET
       logical unixok,copydef,haveconstr,clkok
 
-      character H*72,LTMP*72,path*72,outs*124
+      character H*72,lltmp*144,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,message*48
@@ -234,7 +234,7 @@ C with save level 5.
       ELSEIF(INO.EQ.5)THEN
 
 C Pressure distribution db.
-  30    LTMP=LAPRES
+  30    LLTMP=LAPRES
         IAPRES=IFIL+1
         H(1)='To enable the calculation of wind-induced surface'
         H(2)='pressures (as required the simulator), this database'
@@ -266,7 +266,7 @@ C Get length of path to where esp-r databases were installed.
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
         linst=lnblnk(linstd)
-        call FINDFIL(LTMP,XST)
+        call FINDFIL(LLTMP,XST)
         IF(.NOT.XST)THEN
           idno=2
           isw=0
@@ -275,7 +275,7 @@ C Get length of path to where esp-r databases were installed.
      &      'c create a new db','d copy the default db',
      &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,24)
           copydef=.true.
-        elseif(LTMP(1:linst).eq.linstd(1:linst))then
+        elseif(LLTMP(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
           idno=1
@@ -304,7 +304,7 @@ C Act on the users choice. If no choice return to main menu.
 
 C If file exists open it, test file type, get number of items and close.
           if(XST)then
-            LAPRES=LTMP
+            LAPRES=LLTMP
             moddb=.true.
             CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
             IF(IER.NE.0) GOTO 30  
@@ -340,12 +340,12 @@ C enter editing facilitiy.
           H(7)='different exposure categories. '
           H(8)=' '
           H(9)='Please supply and confirm the file name.'
-          CALL EASKS(LTMP,' Pressure coefficients database?',
-     &      ' ',72,DAPRES,'pressure coefficients database',IER,9)
+          CALL EASKS(LLTMP,' Pressure coefficients database?',
+     &      ' ',96,DAPRES,'pressure coefficients database',IER,9)
 
 C Check if name ok and if a file exists by that name.
-          if(LTMP(1:2).NE.'  ')then
-            LAPRES=LTMP
+          if(LLTMP(1:2).NE.'  ')then
+            LAPRES=LLTMP
           else
             goto 31
           endif
@@ -376,18 +376,18 @@ C a new db, populate it and present editing facility.
           h(2)='project name. '
           lr=lnblnk(cfgroot)
           if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
+            write(LLTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
           else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+            write(LLTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.pressuredb'
           endif
           clkok=.false.
- 32       CALL EASKSCNCL(LTMP,' New pressure coefficients database?',
-     &      ' ','cancel',clkok,72,DAPRES,
+ 32       CALL EASKSCNCL(LLTMP,' New pressure coefficients database?',
+     &      ' ','cancel',clkok,96,DAPRES,
      &      'pressure coefficients database',IER,2)
           if(clkok) goto 3
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LAPRES=LTMP
+          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+            LAPRES=LLTMP
           else
             goto 32
           endif
@@ -424,18 +424,18 @@ C the file name as known to esp-r and LCOPY for the system cp call.
           h(2)='the project name.'
           lr=lnblnk(cfgroot)
           if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
+            write(LLTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
           else
-            write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+            write(LLTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.pressuredb'
           endif
-  34      CALL EASKS(LTMP,
+  34      CALL EASKS(LLTMP,
      &      'Database name after it is copied into the project?',
-     &      ' ',72,'pressure.db','copied pressure database',IER,2)
+     &      ' ',96,'pressure.db','copied pressure database',IER,2)
           call isunix(unixok)
-          IF(LTMP(1:2).NE.'  ')then
+          IF(LLTMP(1:2).NE.'  ')then
             write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
+     &        LLTMP(1:lnblnk(LLTMP))
             if(copydef)then
               doit = ' '
               if(unixok)then
@@ -452,7 +452,7 @@ C in rootp and upath to '\'.
               endif
 C              call usrmsg('copying default file via',doit,'-')
               call runit(doit,'-')
-              LAPRES=LTMP
+              LAPRES=LLTMP
             else
               doit = ' '
               if(unixok)then
@@ -466,7 +466,7 @@ C Similar logic but using LAPRES.
               endif
 C              call usrmsg('copying file via',doit,'-')
               call runit(doit,'-')
-              LAPRES=LTMP
+              LAPRES=LLTMP
             endif
             moddb=.true.
 C            write(outs,'(2a)') 'Accessing pressure distribution db: ',

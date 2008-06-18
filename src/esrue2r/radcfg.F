@@ -1112,7 +1112,7 @@ C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1128,7 +1128,7 @@ C the daylight factor (act = d|D).
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
       CHARACTER VT*5,act*1
-      character QT*1,OUTSTR*124,tfile*72,LDFGRID*72
+      character OUTSTR*124,tfile*72,LDFGRID*72
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
@@ -1141,8 +1141,6 @@ C If there are no grid points warn the user and check if
 C there is a *.df file or a *.df- file that can be scanned again.
       if(NDFP.eq.0)then
         ITA1 = IFIL+6
-        ITA2 = IFIL+7
-        QT=CHAR(39)
         lnrp=lnblnk(runpath)
 
         call ERPFREE(ITA1,ISTAT)
