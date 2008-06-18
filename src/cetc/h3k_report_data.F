@@ -2338,139 +2338,109 @@ C*******************************************************************************
 #include "building.h"
 #include "net_flow.h"
 C.....ESP-r commons
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+C      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+C      CHARACTER LAPROB*72
 
-      CHARACTER LAPROB*72
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+C Network size
+      integer     NNOD  !  - number of nodes (building zones and/or plant components)
+      Integer     NCMP  ! - number of fluid flow components (flow restrictions)
+      integer     NCNN  ! - number of interconnections (branches)
+C
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      character*12  NDNAM  ! - identifier/name
+C
+      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      integer     NDFLD ! - fluid type (1=air, 2=water)
+      Integer     NDTYP ! - type (0=internal; unknown pressure
+C                                                  1=internal; known total pressure
+C                                                  2=boundary; known total pressure
+C                                                  3=boundary; wind induced pressure; implies NDFLD=1)
+      integer     HNOD  ! - height above datum (m)
+      integer     SUPNOD ! - supplementary data items (max. MNDS)
+C              if NDTYP=0 none
+C                 NDTYP=1 total pressure (Pa)
+C                 NDTYP=2 total pressure (Pa)
+C                         node fluid temperature flag, indicating:
+C                         0: TNOD is constant
+C                         1: TNOD equals DRYB
+C                 NDTYP=3 wind pressure coefficients index
+C                         surface azimuth (degrees clockwise from north)
+C
+      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
+      integer     ITND !  - node temperature index; if ITND(I)=N then TNOD(I)=TNOD(N)
+      real      TNOD  ! - node fluid temperature (C)
 
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      integer     NODPS ! - node number on positive side of connection
+      real     HGTPS ! - height of +ve linkage point relative to NODPS (m)
+      integer     NODNE ! - node number on negative side of connection
+      Real     HGTNE ! - height of -ve linkage point relative to NODNE (m)
+      integer     ITPCON ! - number of linking fluid flow component
+      integer     NDSCNN ! - connection level component supplementary node numbersC Components: fixed input data      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)      character*12     CMNAM ! - identifier/name      Character*60     LTPCMP ! - short description of that typeC Output data
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+C     FLW1   - 1st fluid flow through connection; positive if flow
+C              from NODPS to NODNE (kg/s)
+C     FLW2   - 2nd fluid flow through connection (applicable in case of
+C              e.g. a door); positive if flow from NODPS to NODNE (kg/s)
+C     PRES   - node total pressure (Pa)
+C     RESID  - node fluid mass flow residual (kg/s)
+C     SAFLW  - node coupled sum of absolute mass flow rates (kg/s)
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION FLWIN(MNOD),FLWUT(MNOD)
+      DOUBLE PRECISION FLWINV(MNOD),FLWUTV(MNOD)
 C.....Local variables
-      integer ii,jj,kk          ! counters
-      integer iNode             ! pointer to current node
-      character*128 char_temp   ! holding variable
-      character*128 Base_Name   ! component base name
-      character*128 Node_Name   ! node name
-      character*128 Connect_name! connection name
+      integer ii,jj                           ! counters
+      CHARACTER*12 fluid                ! fluid type ('air' or 'water')
+      character*128 Node_Name     ! node name
+      character*128 Connect_Name ! connection name
       character*128 H3K_rep_NAME ! XML leaf name
-
-      integer iState, iSim_Type ! node state and supported simulation type
-                                ! (results from ISV_convert)
-      integer iConn_numb        ! index of a given connection
-
-      real temperature          ! air temp (oC), used in humidity calculation
-      real air_flow             ! air flow (kg/s),  used in humidity calculation
-      real moisture_flow        ! moisture flow (kg/s),  used in humidity calculation
-      real humidity_ratio       ! humidity ratio (-)
-
-      integer iLength           ! Length of string
-      integer iLength_tmp       ! Temporary holder of length of string
-
+      integer i_negC.....Commons indicating if meta items have been initialized      COMMON / H3KmetaInitVal /     &     bBuildMeta,     &     bClimMeta,     &     bTimeMeta,     &     bPlantMeta,     &     bElectMeta      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
 C.....References
-      integer LNBLNK            ! function returning # of non-blank characters in
+      integer LNBLNK    ! function returning # of non-blank characters in
                                 ! a string
 
-C.....Named constants
-      integer iProp_temp        ! named constant for temperature properity
-      integer iProp_1st_flow    ! named constant for first phase flow properity
-      integer iProp_2nd_flow    ! named constant for second phase flow properity
-      integer iProp_h2_flow     ! named constant for hydrogen flow
-      parameter ( iProp_temp     = 1,
-     &            iProp_1st_flow = 2,
-     &            iProp_2nd_flow = 3,
-     &            iProp_h2_flow  = 4)
+C.....Crude check if there is any flow network
+      IF (NNOD.le.0) THEN        write(*,*)"no flow network to output"        RETURN
+      ENDIF
+C..... Call MFSTFL which sums up all flows in and out of a node ...
+C..... IDIM = 1 => flows in kg/s
+      CALL MFSTFL(1,FLWIN,FLWUT)
+C..... IDIM = 2 => flows in m3/h      CALL MFSTFL(2,FLWINV,FLWUTV)
+C.....Loop through all nodes in a flow network
+      do ii = 1,NNOD
+C...........Set string name to water/air/unknown (the latter shouldn't really happen!)
+         if (NDFLD(ii) .eq. 1 ) then
+            fluid = 'air'
+         elseif (NDFLD(ii) .eq. 2 ) then
+            fluid = 'water'
+         else
+            fluid = 'unknown'
+         endif
 
-C.....Commons indicating if meta items have been initialized
-      COMMON / H3KmetaInitVal /
-     &     bBuildMeta,
-     &     bClimMeta,
-     &     bTimeMeta,
-     &     bPlantMeta,
-     &     bElectMeta,
-     &     bMFNMeta
+C........Build node name
+         write(Node_Name, '(A,A,A,A)')
+     &        'mfn/',fluid(1:LNBLNK(fluid)),'/',     &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
+C.........output node data	! total mass flow entering a node *******************************
+         write(H3K_rep_NAME,'(A,A)')
+     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              '/flowrate'
 
-      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,
-     &              bElectMeta,bMFNMeta
+         call add_to_xml_reporting (
+     &              real(FLWIN(ii)),
+     &              H3K_rep_NAME,
+     &              'units', '(kg/s)',
+     &              'mfn total node flow rate' )
+	! total volume flow entering a node *******************************         write(H3K_rep_NAME,'(A,A)')     &              Node_Name(1:LNBLNK(Node_Name)),     &              '/volflowrate'         call add_to_xml_reporting (     &              real(FLWINV(ii)),     &              H3K_rep_NAME,     &              'units', '(m3/h)',     &              'mfn total node volume flow rate' )C........Build connection nameC........Only use positive side of connectionsC.........Loop through all interconnections in a flow network         do jj = 1,NCNN            if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node               i_neg = NODNE(jj) ! the node on the other side of the conn.               write(Connect_Name, '(A,A,A,A,A,A,A,A,A)')     &             'mfn/',fluid(1:LNBLNK(fluid)),'/',     &             NDNAM(ii)(1:LNBLNK(NDNAM(ii))),'->',     &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),     &             ' (via ',     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+	! pressure drop between nodes of connection ***********************                write(H3K_rep_NAME,'(A,A)')     &             Connect_Name(1:LNBLNK(Connect_Name)),     &             '/Dp'                call add_to_xml_reporting (     &             real(PRES(ii)-PRES(i_neg)),     &             H3K_rep_NAME,     &             'units', '(Pa)',     &             'mfn connection pressure drop' )
+	! flow through connection ****************************************                write(H3K_rep_NAME,'(A,A)')     &             Connect_Name(1:LNBLNK(Connect_Name)),     &             '/flow'                call add_to_xml_reporting (     &             real(FLW1(jj)),     &             H3K_rep_NAME,     &             'units', '(kg/s)',     &             'mfn connection flow rate' )        ! mean velocity at connection (?) *********************************            endif     !<- end if positive side connection for current node         enddo                  !<- connection loop end
+        ! whatever *****************************************************
 
-C.....Loop through all connections in a network
-      do ii = 1, yyyyy
-
-C........Build base name
-         char_temp = pcname(ii)
-         iLength = lnblnk(char_temp)
-         iLength_tmp = iLength
-         write(Base_Name, '(A,A)')
-     &        'plant/',char_temp(1:iLength)
-
-C........Loop through nodes (NPCDAT(i,8)
-         do jj = 1, NPCDAT(ii,8)
-
-C...........Build node name
-            iLength = iLength_tmp  ! Reset string length in case it was incremeted for 2-digit nodes.
-            if(jj<10)then  ! First nine nodes.
-              write(Node_name, '(A,A,I1)')
-     &             Base_Name(1:iLength+6),
-     &             '/node_',jj
-            else           ! This presumes that no plant component will have more than 99 nodes! 
-              write(Node_name, '(A,A,I2)')
-     &             Base_Name(1:iLength+6),
-     &             '/node_',jj
-            endif
-
-C...........Get index of node in overall plant network
-C...........NPCDAT(ii,9) holds pointer to start of
-C...........current plant's nodes
-            iNode = NPCDAT(ii,9) + jj-1
-
-C...........Set attribute for node state:
-C...........ISV contains state and simulation type data
-C...........for each node in network. Function ISV_convert
-C...........breaks this data into managable bits.
-            call isv_convert(ISV(ii,jj),iState,iSim_type)
-
-C...........Set string name to water/air/solid for
-C...........istate = 0/1/9
-            if (iState .eq. 0 ) then
-               char_temp = 'water'
-            elseif (iState .eq. 1 ) then
-               char_temp = 'air'
-            elseif (iState .eq. 2 ) then
-               char_temp = 'hydrogen'
-            elseif (iState .eq. 9 ) then
-               char_temp = 'solid'
-            else
-               char_temp = 'unknown'
-            endif
-
-C...........Transport State variables
-            if(jj<10)then
-              iLength = iLength_tmp
-            else                           ! Longer string length required for 2-digit nodes.
-              iLength = iLength_tmp + 1
-            endif
-
-           !Mass flow (1st phase)
-            if (iState .ne.9) then
-               write(H3K_rep_NAME,'(A,A,A,A)')
-     &              Node_Name(1:iLength+13),
-     &              '/',char_temp(1:LNBLNK(char_temp)),'_flow'
-               call add_to_xml_reporting (
-
-            call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),FLIN,FLUT)
-
-     &            CSVF(iNode,iProp_1st_flow),
-     &            H3K_rep_NAME,
-     &            'units', '(xx/yy)',
-     &            'mfn connection flow' )
-
-
-     
-
-
-
-            endif
-
-
-         enddo                  !<- node loop end
-
-      enddo                     !<- connection loop end
+      enddo                     !<- node loop end
 
       return
       end

@@ -1,6 +1,13 @@
 C Include file for network flow.
 C Updated December 2005 for additional nodes, components and control laws.
 C Updated January 2007 for additional connections.
+C Updated June 2008 for "implicit none" callability
+
+C Type declarations:
+      integer MNOD, MCMP, MCNN, MNDS, MCMV, MCMS, MCNS
+      integer MPOS, MPRD, MPCP, MCC, MFCDT, MFCDP, NMRL
+      integer MFCNLST, MFCNEL, MFRS, MCONTM, MPRODI, MCSD
+      integer MSPMNO, MSRC
 
 C Maximum number of nodes, components, connections.
       PARAMETER (MNOD=70,MCMP=80,MCNN=199)
