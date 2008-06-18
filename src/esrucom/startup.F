@@ -22,7 +22,36 @@ C Subroutines used by all modules for setting up environemt and
 C parsing command lines.
 C  SCESPRC: scans the ESP-r dot file (environment)
 C  ESCDEF : scans the ESP-r defaults definition file
-C  parsepar variants: Parse command lines.
+
+C parsepar variants: Parse command lines.
+C  parpsf: allowa terminal, size and config file arguments
+C         to be passed to the program from the invocation line.  
+C  parpsff: supports terminal, size and two file arguments
+C         to be passed to the program from the invocation line.  
+C  parpsfh: Help message for parpsf.
+C  parsim: allows terminal, size, config file, simulation parameter
+C         file arguments to be passed
+C  parres: allows terminal, size, results file, action and silent arguments
+C         to be passed to res
+C  parclm: allows terminal, size, input file, action and silent arguments
+C         and output (converted) file to be passed to clm
+C parsfza: allows a terminal, size, config file, zone focus and actions arguments
+C         to be passed to the program
+C parsprj: allows terminal, size, config file, zone focus and actions arguments
+C         (including 3 real data) to be passed to the prj
+C parsfz: allows terminal, size, config file, zone focus arguments
+C         to be passed to the program
+C partf: allows terminal and config file arguments
+C         to be passed to the program
+C partfa: allows terminal, file and action arguments
+C         to be passed to the program
+C parse2r: allows terminal, size, config file, scene purpose and actions arguments
+C         to be passed to e2r
+C parsfact: allows terminal, size, file and actions arguments
+C         to be passed to the program
+C parcnv parse command line paramters for ecnv.
+C FINDAPP: given a file name (string) see if it contains one of the
+C          esp-r modules
 
 C ******************** scesprc 
 C scesprc scans the ESP-r dot file which should be located in the
@@ -440,6 +469,7 @@ C cdintglz (char*32) internal glazing/window
       character dinstpath*48,di*48
       logical unixok,dll
 #include "espinstalldir.h"
+
 C Assume default db names (in case of failure to find defaults
 C file or failure reading it).
       call isunix(unixok)
@@ -797,8 +827,8 @@ C Errors.
       end
 
 C ********* parpsff
-C  parpsff supports terminal, size and two file arguments
-C  to be passed to the program from the invocation line.  
+C parpsff supports terminal, size and two file arguments
+C to be passed to the program from the invocation line.  
 
       subroutine parpsff(termtype,iappw,iappx,iappy,infa,infb)
       COMMON/OUTIN/IUOUT,IUIN
@@ -911,7 +941,7 @@ C Errors.
       end
 
 C ****** parpsfh
-C Help message for parpsf.
+C parpsfh: Help message for parpsf.
       subroutine parpsfh(appn)
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
@@ -981,6 +1011,11 @@ C Help message for parpsf.
         call edisp(iuout,'       [-file <configuration file>]')
         call edisp(iuout,'       [-zone <focus zone|index>]')
         call edisp(iuout,'       [-purpose <scene purpose>]')
+        call edisp(iuout,'       [-b {no|yes}]')
+        call edisp(iuout,'  where -b (browse options) are used to')
+        call edisp(iuout,'    indicate that the user has requested')
+        call edisp(iuout,'    a visualization for a model they are')
+        call edisp(iuout,'    browsing.')
       elseif(appn(1:3).eq.'grd')then
         call edisp(iuout,'The 2-D and 3D gridding module.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1089,7 +1124,7 @@ C Help message for parpsf.
       end
 
 C ********* parsim
-C  Allowing terminal, size, config file, simulation parameter file arguments
+C parsim: allows terminal, size, config file, simulation parameter file arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsim(termtype,iappw,iappx,iappy,inf,browse,sps,
@@ -1235,7 +1270,7 @@ C Errors.
       end
 
 C ********* parres
-C  Allowing terminal, size, results file, action and silent arguments
+C parres allows terminal, size, results file, action and silent arguments
 C  to be passed to res from the invocation line.  
 
       subroutine parres(termtype,iappw,iappx,iappy,inf,act,aut,actf)
@@ -1361,8 +1396,8 @@ C Errors.
       end
 
 C ********* parclm
-C  Allowing terminal, size, input file, action and silent arguments
-C  and output (converted) file to be passed to clm from the invocation line.  
+C parclm allows terminal, size, input file, action and silent arguments
+C and output (converted) file to be passed to clm from the invocation line.  
 
       subroutine parclm(termtype,iappw,iappx,iappy,inf,act,aut,ascif)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1616,8 +1651,8 @@ C Errors.
       end
 
 C ********* parsfz (equivalent to startsfz.c)
-C  Allowing terminal, size, config file, zone focus arguments
-C  to be passed to the program from the invocation line.  
+C parsfz allows terminal, size, config file, zone focus arguments
+C to be passed to the program from the invocation line.  
 
       subroutine parsfz(termtype,iappw,iappx,iappy,inf,zone)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1922,21 +1957,20 @@ C Assume argument is an input file without the -file token.
       endif
       end
 
-C ********* parspza 
-C  Allowing terminal, size, config file, scene purpose and actions arguments
-C  to be passed to the program from the invocation line.  
+C ********* parse2r 
+C parse2r allows terminal, size, config file, scene purpose and actions arguments
+C  to be passed to e2r from the invocation line.  
 
-      subroutine parspza(termtype,iappw,iappx,iappy,inf,zone,aim,act)
+      subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
+     &  browse)
       COMMON/OUTIN/IUOUT,IUIN
-C Application name
-      common/APPNAME/cAppName
-      character*12 cAppName
+
       integer termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
-      character argument*72,mode*8,inf*144,appn*24
-      character outs*248,aim*12,act*72,zone*16
-
+      character argument*72,inf*144,appn*24
+      character aim*12,act*72,zone*16,browse*4
+      character outs*248,mode*8
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
@@ -1960,6 +1994,7 @@ C into binary, and set default terminal type as necessary
       iappw = 0
       iappx = 0
       iappy = 0
+      browse = 'no'
       inf  = 'UNKNOWN'
       zone = 'NONE'
       aim = 'NONE'
@@ -1989,11 +2024,11 @@ C        call edisp(iuout,outs)
           stop
         elseif(argument(1:8) .eq. '-version' ) then
 C Display version information and then quit
-          CALL ESPrVersion("summary",cAppName,IUOUT)
+          CALL ESPrVersion("summary")
           stop
         elseif( argument(1:10) .eq. '-buildinfo' ) then
 C Display detailed build information and then quit
-          CALL ESPrVersion("details",cAppName,IUOUT)
+          CALL ESPrVersion("details")
           stop
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
@@ -2033,6 +2068,9 @@ C Display detailed build information and then quit
         elseif(argument(1:4).eq.'-act')then
           i=i+1
           call getarg(i,act)
+        elseif(argument(1:2).eq.'-b')then
+          i=i+1
+          call getarg(i,browse)
         endif
         goto 41
 

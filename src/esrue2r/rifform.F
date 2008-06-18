@@ -33,7 +33,7 @@ C ******* Setup of image quality and calculation options.
       common/rad1m/matfil,rmmfil
       common/rad2/mono,intext,ifocz
       common/radrp/ipicx
-      common/expath/runpath
+      common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -43,7 +43,7 @@ C ******* Setup of image quality and calculation options.
       CHARACTER doit*124,VALT*32
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil
-      character runpath*72
+      character runpath*72,pathtype*24
       character rambfil*72,optnfil*72
       character item*30,h*72,HOLD*24
       character imgqua*6,detlvl*6,llvar*6,penumb*5
@@ -335,7 +335,7 @@ C the test run.
         call edisp(iuout,' Checking rad with the commands:')
 
 C Set file name including path and open.
-        write(fil,'(a,a)') runpath(1:lnblnk(runpath)),
+        write(fil,'(2a)') runpath(1:lnblnk(runpath)),
      &                      RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
         if(ipckvew.ne.0)then
           write(doit,'(4a)') 'rad -n -e -v ',

@@ -37,13 +37,14 @@ C ******* Sky calculations. *******
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skopt*3,outs*124,tfile*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character runpath*72,ltmp72*72,dtmp72*72
+      character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
+      integer lnrp  ! length of run path
 
       DIMENSION ITEM(14)
 
@@ -53,6 +54,7 @@ C ******* Sky calculations. *******
       ITA1 = IFIL+6
       ITA2 = IFIL+7
       ier=0
+      lnrp=lnblnk(runpath)
 
 C Generate a default name for the sky file.
       write (rskyfil,'(a,a4)') 
@@ -68,8 +70,7 @@ C read it otherwise remember name.
      &                                    dtmp72,'sky file name',IER,2)
       if(ltmp72(1:2).eq.'  ')goto 142
       rskyfil=ltmp72
-      write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                       rskyfil(1:lnblnk(rskyfil))
+      write (tfile,'(a,a)') runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
       CALL ERPFREE(ITA2,ISTAT)
       INQUIRE (FILE=tfile,EXIST=XST)
       IF(XST)THEN
@@ -208,11 +209,11 @@ C which includes redirection of output to the sky definition file.
         CALL EASKABC(' Sky description:',' ',
      &              'browse file','edit file','ignore',IW,2)
         if(IW.eq.1)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rskyfil(1:lnblnk(rskyfil))
           call vifile(ITA1,tfile,'b',ier)
         elseif(IW.eq.2)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rskyfil(1:lnblnk(rskyfil))
           call vifile(ITA1,tfile,'e',ier)
         endif
@@ -250,18 +251,19 @@ C wrtsky calls radiance and writes sky info to file.
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character skycmd*124,doit*124,tfile*72,runpath*72
+      character skycmd*124,doit*124,tfile*72,runpath*72,pathtype*24
+      integer lnrp  ! length of run path
 
       logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST
 
+      lnrp=lnblnk(runpath)
       ITA3=IFIL+10
       call edisp(iuout,' creating sky description file.')
-      write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                       rskyfil(1:lnblnk(rskyfil))
+      write(tfile,'(a,a)')runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
         call FPOPEN(ITA3,ISTAT,1,1,tfile)
@@ -306,7 +308,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
       common/radif/irofil,irzfil,imatfil,iglzfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
       logical skydone,outdone,indone,misdone,vewdone,glzdone
@@ -316,8 +318,10 @@ C ACT = 's' silent, ACT = 'i' interactive.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,tfile,runpath
+      character*72 matfil,rmmfil,tfile
+      character runpath*72,pathtype*24
       character item*32,h*72,ACT*1,GTGEOM*72
+      integer lnrp  ! length of run path
 
       ITA1 = IFIL+6
       outdone=.false.
@@ -328,6 +332,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
 C      GTGEOM = 'UNKNOWN'
 
 C Open the primitive, mlc & optics db.
+      lnrp=lnblnk(runpath)
       call opendb(ier)
 
       icomp = nznog(1)
@@ -464,11 +469,11 @@ C the image.
         CALL EASKABC(' Glazing description:',' ',
      &   'browse file','edit file','ignore',IW,2)
         if(IW.eq.1)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          glzfil(1:lnblnk(glzfil))
           call vifile(iglzfil,tfile,'b',ier)
         elseif(IW.eq.2)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          glzfil(1:lnblnk(glzfil))
           call vifile(iglzfil,tfile,'e',ier)
         endif
@@ -478,11 +483,11 @@ C the image.
         CALL EASKABC(' Opaque materials:',' ',
      &   'browse file','edit file',',ignore',IW,2)
         if(IW.eq.1)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          matfil(1:lnblnk(matfil))
           call vifile(imatfil,tfile,'b',ier)
         elseif(IW.eq.2)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          matfil(1:lnblnk(matfil))
           call vifile(imatfil,tfile,'e',ier)
         endif
@@ -496,7 +501,7 @@ C the image.
      &                          rofil(1:lnblnk(rofil))
           call vifile(irofil,tfile,'b',ier)
         elseif(IW.eq.2)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rofil(1:lnblnk(rofil))
           call vifile(irofil,tfile,'e',ier)
         endif
@@ -506,11 +511,11 @@ C the image.
         CALL EASKABC(' Inside opaque description:',' ',
      &   'browse file','edit file','ignore',IW,2)
         if(IW.eq.1)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rzfil(1:lnblnk(rzfil))
           call vifile(irzfil,tfile,'b',ier)
         elseif(IW.eq.2)then
-          write (tfile,'(a,a)') runpath(1:lnblnk(runpath)),
+          write (tfile,'(a,a)') runpath(1:lnrp),
      &                          rzfil(1:lnblnk(rzfil))
           call vifile(irzfil,tfile,'e',ier)
         endif
@@ -600,7 +605,7 @@ C TMC data
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgt/iglzty
       common/radabs/NABS
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
 C Arrays of material properties.
       real matver
@@ -642,9 +647,10 @@ C Arrays of material properties.
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,DESC*48,MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
-      character outsn*124,outsd*124, tfile*72, runpath*72
+      character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
+      integer lnrp  ! length of run path
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
       logical skydone,outdone,indone,misdone,vewdone,glzdone
@@ -656,6 +662,7 @@ C Arrays of material properties.
       ISTAT=0
       IER=0
       newgeo=.false.  ! assume older format geometry.
+      lnrp=lnblnk(runpath)
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat)
@@ -674,8 +681,7 @@ C to treat as 'mkillum'.
      &                             72,dtmp72,'glazing file name',IER,2)
         if(ltmp72(1:2).eq.'  ') goto 10
         glzfil=ltmp72
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                         glzfil(1:lnblnk(glzfil))
+        write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,4,tfile)
 
 C Ask for alternative glazing file.
@@ -697,19 +703,18 @@ C Ask for alternative glazing file.
      &                            72,dtmp72,'glazing file name',IER,3)
             if(ltmp72(1:2).eq.'  ') goto 12
             aglzfil=ltmp72
-            write(atfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                       aglzfil(1:lnblnk(aglzfil))
+            write(atfile,'(a,a)')runpath(1:lnrp),
+     &                           aglzfil(1:lnblnk(aglzfil))
             call FPOPEN(ita2,ISTAT,1,4,atfile)
           endif
         endif
       else
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                         glzfil(1:lnblnk(glzfil))
+        write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,3,tfile)
         if (NABS.gt.0) then
           NBSRIF(IRIFFOC)=NABS
-          write(atfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                       aglzfil(1:lnblnk(aglzfil))
+          write(atfile,'(a,a)')runpath(1:lnrp),
+     &                         aglzfil(1:lnblnk(aglzfil))
           call FPOPEN(ita2,ISTAT,1,3,atfile)
         endif
       endif
@@ -756,12 +761,10 @@ C the existing mlc db and create a set of properties.
      &                          72,dtmp72,'opaque mat file name',IER,3)
         if(ltmp72(1:2).eq.'  ') goto 20
         matfil=ltmp72
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                         matfil(1:lnblnk(matfil))
+        write(tfile,'(a,a)')runpath(1:lnrp),matfil(1:lnblnk(matfil))
         call FPOPEN(imatfil,ISTAT,1,4,tfile)
       else
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                         matfil(1:lnblnk(matfil))
+        write(tfile,'(a,a)')runpath(1:lnrp),matfil(1:lnblnk(matfil))
         call FPOPEN(imatfil,ISTAT,1,3,tfile)
       endif
       IF(ISTAT.LT.0)THEN
@@ -812,12 +815,10 @@ C Open the inside geometry/composition file.
      &                                72,dtmp72,'room file name',IER,2)
         if(ltmp72(1:2).eq.'  ') goto 22
         rzfil=ltmp72
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                          rzfil(1:lnblnk(rzfil))
+        write(tfile,'(a,a)')runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
         call FPOPEN(irzfil,ISTAT,1,4,tfile)
       else
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                          rzfil(1:lnblnk(rzfil))
+        write(tfile,'(a,a)')runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
         call FPOPEN(irzfil,ISTAT,1,3,tfile)
       endif
       IF(IER.LT.0)THEN
@@ -975,12 +976,10 @@ C Open the outsite geometry/composition file.
      &                             72,dtmp72,'outside file name',IER,1)
         if(ltmp72(1:2).eq.'  ') goto 24
         rofil=ltmp72
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                         rofil(1:lnblnk(rofil))
+        write(tfile,'(a,a)')runpath(1:lnrp),rofil(1:lnblnk(rofil))
         call FPOPEN(irofil,ISTAT,1,4,tfile)
       else
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                         rofil(1:lnblnk(rofil))
+        write(tfile,'(a,a)')runpath(1:lnrp),rofil(1:lnblnk(rofil))
         call FPOPEN(irofil,ISTAT,1,3,tfile)
       endif
       IF(IER.LT.0)THEN
@@ -1502,7 +1501,7 @@ C calculation.
       if(nobs.gt.6)then
         write(outs,'(a,i3,a)') 'expanding ',nobs,' obstructions...'
         call usrmsg(outs,' ','-')
-        write(tfile,'(a,a)') runpath(1:lnblnk(runpath)),'exprofil'
+        write(tfile,'(a,a)') runpath(1:lnrp),'exprofil'
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
           call FPOPEN(ITA1,ISTAT,1,3,tfile)
@@ -1513,8 +1512,7 @@ C calculation.
 
 C tfile is used for the backup copy of the outside description - if it 
 C exists delete.
-        write(tfile,'(a,a,a)') runpath(1:lnblnk(runpath)),
-     &                                  rofil(1:lnblnk(rofil)),'-'
+        write(tfile,'(3a)') runpath(1:lnrp),rofil(1:lnblnk(rofil)),'-'
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
           call FPOPEN(ITA1,ISTAT,1,3,tfile)
@@ -1525,12 +1523,12 @@ C Change dir to runpath and expand outside description to tmp file.
 C Make backup of unxepanded file by moving existing file to tfile.
 C xform needs the file preceeded by ./   Pause briefly between
 C runit calls to allow OS to detect new file creation.
-        write(doit,'(5a)') 'cd ',runpath(1:lnblnk(runpath)),
+        write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &    '; xform -e ./',rofil(1:lnblnk(rofil)),' >exprofil'
 C        write(6,*) doit
         call runit(doit,'-')
         call pausems(400)
-        write(doit,'(7a)') 'cd ',runpath(1:lnblnk(runpath)),
+        write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &    '; mv ./',rofil(1:lnblnk(rofil)),' ',
      &    rofil(1:lnblnk(rofil)),'-'
 C        write(6,*) doit
@@ -1542,10 +1540,9 @@ C        write(6,*) doit
 
 C Compact file by opening temporary file and writing it out to the 
 C original outside description file name.
-        write(pfile,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                  rofil(1:lnblnk(rofil))
+        write(pfile,'(a,a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))
         call FPOPEN(irofil,ISTAT,1,3,pfile)
-        write(tfile,'(a,a)') runpath(1:lnblnk(runpath)),'exprofil'
+        write(tfile,'(a,a)') runpath(1:lnrp),'exprofil'
         call FPOPEN(ita1,ISTAT,1,3,tfile)
         call usrmsg('compacting file...',' ','-')
 
