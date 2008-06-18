@@ -795,7 +795,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/mÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/m�],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -944,24 +944,27 @@ C Call subroutine for controls here
 C Here it checks if during the control a dataset has been specified
 C that is not included in the file with the data 
 C (for which there are no data). This is done by looking if there are
-C data for internal and external surface resistance and also U value.
+C data for internal surface resistance and also U value.
 C If these values are 0 then it uses the 1st dataset and ignores the
 C control.
-              if(TRINTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
-     &           TREXTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
-     &           TUVALUE(IBIDIR,IBISET_timestep).eq.0)then
-                 write(outs,'(A,I2,A)')
-     &            'Attempt is made to control dataset no: ',
-     &            IBISET_timestep,
-     &            ' while there are no data for this dataset.'
-                 call edisp(iuout,outs)
-                 write(outs,'(A)')
-     &            'Dataset no: 1 will be used instead of this.'
-                 call edisp(iuout,outs)
-                 IBISET_timestep=1
+              call eclose(TRINTERNAL(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                    bCloseToZero)
+              if (bCloseToZero)then              
+                call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                    bCloseToZero)
+                if (bCloseToZero)then              
+                  write(outs,'(A,I2,A)')
+     &             'Attempt is made to control dataset no: ',
+     &             IBISET_timestep,
+     &             ' while there are no data for this dataset.'
+                  call edisp(iuout,outs)
+                  write(outs,'(A)')
+     &             'Dataset no: 1 will be used instead of this.'
+                  call edisp(iuout,outs)
+                  IBISET_timestep=1
+                endif
               endif
-     
-             
+
 C Interpolate transmittance and g values in case of bidirectional
 C data type 2 and 3. Also interpolate reflectance in the case of
 C data type 3. Do this outside the loop of NE (per layer).
@@ -1100,8 +1103,10 @@ C Trap also the zeros in case of corrupted data
      &            TRINTERNAL(IBIDIR,IBISET_timestep)))/Rs_glazing
                 endif
 
+C Debug
 C              write(6,*) Rs_glazing,'  ',qi_bidirectional
 C              write(6,*) a_inner_layer,'  ', a_outer_layer
+C End Debug
 
 C End of Bidirectional case
               endif
@@ -1318,22 +1323,26 @@ C Call subroutine for controls here
 C Here it checks if during the control a dataset has been specified
 C that is not included in the file with the data 
 C (for which there are no data). This is done by looking if there are
-C data for internal and external surface resistance and also U value.
+C data for internal surface resistance and also U value.
 C If these values are 0 then it uses the 1st dataset and ignores the
 C control.
-              if(TRINTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
-     &           TREXTERNAL(IBIDIR,IBISET_timestep).eq.0.and.
-     &           TUVALUE(IBIDIR,IBISET_timestep).eq.0)then
-                 write(outs,'(A,I2,A)')
-     &            'Attempt is made to control dataset no: ',
-     &            IBISET_timestep,
-     &            ' while there are no data for this dataset.'
-                 call edisp(iuout,outs)
-                 write(outs,'(A)')
-     &            'Dataset no: 1 will be used instead of this.'
-                 call edisp(iuout,outs)
-                 IBISET_timestep=1
-              endif
+          call eclose(TRINTERNAL(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                bCloseToZero)
+          if (bCloseToZero)then              
+            call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                  bCloseToZero)
+            if (bCloseToZero)then              
+              write(outs,'(A,I2,A)')
+     &         'Attempt is made to control dataset no: ',
+     &         IBISET_timestep,
+     &         ' while there are no data for this dataset.'
+              call edisp(iuout,outs)
+              write(outs,'(A)')
+     &         'Dataset no: 1 will be used instead of this.'
+              call edisp(iuout,outs)
+              IBISET_timestep=1 
+            endif
+          endif
 
 C End of bidirectional case
         endif
@@ -3357,7 +3366,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0�C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
@@ -3406,8 +3415,9 @@ C existing and new controls should be added here.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/BTIME/BTIMEP,BTIMEF
 
 C Tdf common block to allow using different bidirectional datasets
@@ -3475,8 +3485,10 @@ C Daylight coeff specific
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
       CHARACTER DESC*48
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
+c      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+c      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
       character outs*124
       character ctl_constrdb_name*72 !to match the name of the controlled construction (from db)
                                      !with the name of the construction of the study
@@ -3500,7 +3512,6 @@ C to use then use it. Otherwise use the first set.
 C Check that there is not any tdf bidirectional item associated with it
 C and that there are common optical controls
       elseif(IBIDIRS(ICOMP,ISURFNumber).eq.0.and.nof.gt.0)then
-
 C Determine year day number of present day
         IF(IHRP.NE.24) THEN
           IDAY=IDYP
@@ -3559,7 +3570,6 @@ C Check number of periods in each day and the start and finish times
             ELSE
               TOF=24.
             ENDIF
-C            write(6,*) TOS,'  ',TOF 
             if(BTIMEF.GT.TOS.AND.BTIMEF.LE.TOF)then
 
 C Call in the future here different subroutines for different controls
@@ -3567,27 +3577,24 @@ C Call in the future here different subroutines for different controls
 
 C<<<<<<< IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC">>>>>>
 C        write(6,*) 'desc', DESC(ictl_constrdbindex_number)
-C        write(6,*) 'smlcn', SMLCN(ISURFNumber)
+C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))  
               write(ctl_constrdb_name,'(a)') 
      &             DESC(ictl_constrdbindex_number)(1:12)      
               write(name_constr_ofStudy,'(a)') 
-     &             SMLCN(ISURFNumber)(1:12)          
-C              write(6,*) IDTYP,'  ',IPER
+     &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)          
 
 C controls start here      
 C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>
               if(ioan(1,1).eq.-5.and.ctl_constrdb_name(1:12).eq.
      &           name_constr_ofStudy(1:12))then
                 if(ioclaw(1,IDTYP,IPER).eq.2)then
-C                  write(6,*) 'truee'
 
 C Current zone temperature sensor
 C<<<Check if instead if iosn(1,1) we should use iosn(iol,1) as in bcfunc.F>>>
-C <<Same for OMISCD>>>>
                   if(iosn(1,1).eq.0)then
 C                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
 C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
-
+ 
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=OMISCD(1,IDTYP,IPER,3)
@@ -3604,13 +3611,9 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                     else
                       ISET=1
                     endif
-C                    write(6,*) 'ISET: ', ISET
                   elseif(iosn(1,1).eq.-3)then
 
 C Senses outside db.
-C                    write(6,*) 'TF: ', TF,'     ','time: ',btimef
-C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
-
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(TF.GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=OMISCD(1,IDTYP,IPER,3)
@@ -3627,13 +3630,11 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                     else
                       ISET=1
                     endif
-                    write(6,*) 'ISET: ', ISET
 
 C Sense incident solar radiation on a surface
 C Find out first which surface
                   elseif(iosn(1,1).eq.icomp.and.iosn(1,2).eq.
-     &                   ISURFNumber)then
-
+     &                   ISURFNumber)then 
 C Calculate now radiation on the surface (as in MZSLGN)
 C First calculate the shading factor on the surface
 C Using the same calculation for POO and POFF as in MZSLGN
@@ -3854,7 +3855,7 @@ C and "tidy-up" reasons
 
 C Sense temperature in another zone
                   elseif(iosn(1,1).gt.0.and.iosn(1,2).eq.0)then
-                  
+                                   
 C iosn(1,1) will specify which zone
                     i_ctlZone=iosn(1,1)
 

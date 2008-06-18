@@ -1259,7 +1259,7 @@ C New variables are defined below
                           !3: the transmittance and g value only
 
 C explicit definition of some variables used in the egetwr 
-      real Uvalue_bi,Ri,Re,visual_transm
+      real Uvalue_bi,Ri,Re,visual_transm 
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1268,6 +1268,39 @@ C explicit definition of some variables used in the egetwr
       ENDIF
       write(currentfile,'(a)') LUA(1:lnblnk(LUA))
 
+C Initiate all parameters needed for simulation to 0
+      do 111 imstmc=1,MSTMC
+        do 222 imsgal=1,MSGAL
+          THTSOB(imstmc,imsgal)=0.
+          TUVALUE(imstmc,imsgal)=0.
+          TREXTERNAL(imstmc,imsgal)=0.
+          TRINTERNAL(imstmc,imsgal)=0.
+          TMVISUAL(imstmc,imsgal)=0.
+          DF_TX_SKY(imstmc,imsgal)=0.
+          DF_G_SKY(imstmc,imsgal)=0.
+          DF_RF_SKY(imstmc,imsgal)=0.
+          DF_TX_GND(imstmc,imsgal)=0.
+          DF_G_GND(imstmc,imsgal)=0.
+          DF_RF_GND(imstmc,imsgal)=0.
+          a_dfSKYinner(imstmc,imsgal)=0.
+          a_dfGNDinner(imstmc,imsgal)=0.
+          a_dfSKYouter(imstmc,imsgal)=0.
+          a_dfGNDouter(imstmc,imsgal)=0.
+          do 333 ime=1,ME
+            TMABSDIF(imstmc,imsgal,ime)=0.
+            do 444 imanh=1,MANH
+              do 555 imanv=1,MANV
+                TMABSO(imstmc,imsgal,ime,imanh,imanv)=0.
+                TMTSOD(imstmc,imsgal,imanh,imanv)=0.
+                TMTSOB(imstmc,imsgal,imanh,imanv)=0.
+                TMGVALUE(imstmc,imsgal,imanh,imanv)=0.
+                TMREFLECT(imstmc,imsgal,imanh,imanv)=0.
+  555         continue 
+  444       continue                
+  333     continue                 
+  222   continue       
+  111 continue
+  
 C Read header.
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'bi-optic header',IER)
       if(outstr(1:14).eq.'*BIDIRECTIONAL')then

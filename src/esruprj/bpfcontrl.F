@@ -6063,9 +6063,16 @@ C Power control sensor not yet implemented, return zeros.
       elseif(ivert.eq.1.and.(icfoc.eq.5))then
 
 C Optics
-C <<<<<< make a suggestion to control specific construction types>>>>>>>>>.
-C<<< 1st item can be -5, 2nd item number of constrction>>>>>>>>
-C<<<< and the third can be 0>>>>>>>>>>>>
+C Make a suggestion to control specific construction types
+C 1st item is -5, 2nd item number of constrction
+C and the third can be 0
+        call edisp(iuout,' ')
+        write(outs,'(2A)') ' Avoid assigning more than one control ',
+     &        'loop with different datasets to the same construction. '
+        call edisp(iuout,outs)
+        write(outs,'(2A)') ' If this mistake is made by users the ',
+     &        'datasets of the first control loop are used.'
+        call edisp(iuout,outs)
         CALL EPMENSV
         call epkmlc(iwhich,'Construction to control?',' ',ierr)
         CALL EPMENRC

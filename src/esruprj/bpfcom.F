@@ -241,7 +241,7 @@ C Global.
 
 C Optics (reset to no optics loops).
           nof=nof-1
-        elseif(icfoc.eq.5.and.ncc.ge.2)then
+        elseif(icfoc.eq.5.and.nof.ge.2)then
 
 C Optical.
           DO 1 IDV=ID,nof-1
@@ -251,7 +251,7 @@ C Optical.
             ioan(IDV,1)=ioan(IDV+1,1)
             ioan(IDV,2)=ioan(IDV+1,2)
             ioan(IDV,3)=ioan(IDV+1,3)
-            if(nfcdt(IDV+1).eq.0)then
+            if(nocdt(IDV+1).eq.0)then
               licc=3
             else
               licc=nocdt(IDV+1)
