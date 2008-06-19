@@ -33,6 +33,8 @@ C h3k_transport_plant_data:     Transports plant domain data
 C
 C h3k_connection_property:      Function returning data for plant connections.
 C
+C h3k_transport_mfn_data:     Transports flow network data
+C
 C *********************************************************************************************
 C
 C ******************************* H3K Init Set Meta *******************************************
@@ -106,7 +108,6 @@ C.....Common variables
       integer ngaps           ! # number of air gaps witin surface (not used)
       integer npgap           ! Location of air gap. (not used)
 
-      
 
 C TPA(MCOM),           ! - present zone air point temperature (oC)
 C QPA(MCOM)            ! - zone air point heat injection (W)
@@ -134,7 +135,7 @@ C.....Gridding common
       integer nndz            ! ? (not used)
       integer nndc            ! # number of nodes within a construction
       integer nndl            ! # of nodes per construction layer
-      
+
 C TPS(MCOM,MS),        ! - present surface temperature (oC)
 C QPS(MCOM)            ! - surface heat injection (W)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -178,13 +179,49 @@ C QFS(MCOM)            ! - surface heat injection (W)
       integer nbcdt
       real tbcps, bmiscd
 
+      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
+     &            ARF(MCOM,MS)
+      integer IE
+      real ATP,ATF,ARP,ARF
+
+      COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
+     &              HCOF(MCOM,MS)
+      real HCIP,HCIF,HCOP,HCOF ! convective heat transfer coefficients "present" and "future"
+                                            ! for "inside" and "outside" surface, each
+
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      integer IVF,ISI,IHC,ITW,ICGC,IOBS ! indices for "is there"
+
+      COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),
+     &              AE(MCOM,MS)
+      real EI,EE,AI,AE ! internal and external emissivity, areas (?)
+
+      COMMON/V2/CFB(MCOM,MST,MST)
+      real CFB ! black body viewfactors
+
+      COMMON/ELWE1/A1(MCOM,MS),B1(MCOM,MS),C1(MCOM,MS)
+      real A1,B1,C1 ! view factors of building, sky and ground of external surfaces
+
+C.....Sky temperature and cloud cover; ground temperature, 
+      COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
+     &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
+     &TBSUTH,TBEAST,TBWEST
+
+      REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC
+      REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
+      REAL TBSUTH,TBEAST,TBWEST
+
 C.....Local variables
       REAL TMA                  ! Mean air point temperature (oC)
+      real trsum
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       INTEGER i_ZnCtl           ! Zone control flag
 
-      INTEGER iSurface, iLayer  ! Counters
-      
+      INTEGER iSurface, iLayer,i_ViewSurface  ! Counters
+
+      real SBC
+
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format
@@ -218,6 +255,8 @@ C.....The following code should determine the zone heat injection
 C.....For each zone regardless of the mechanism used to inject the
 C.....heat. 
 C----------------------------------------------------------------------
+      SBC=56.7E-9 ! Stefan-Boltzmann constant
+
       i_ZnCtl=icascf(i_Zone)
 
       if(i_ZnCtl.ne.0)then
@@ -497,7 +536,104 @@ C........->Report data
      &      'units', '(W)',
      &      'Plant containment radiant heat flux at surface' )
 
+C.......CONVECTIVE COEFFICIENTS
+C........Internal surface convective coefficient.
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',i_Zone,
+     &      '/surface_',iSurface,
+     &      '/HCi'
 
+C........->Report data
+         call add_to_xml_reporting (
+     &      HCIP(i_Zone,iSurface),
+     &      H3K_rep_NAME,
+     &      'units', '(W/(m2 K))',
+     &      'Internal side convective coefficient' )
+
+C........External surface convective coefficient.
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',i_Zone,
+     &      '/surface_',iSurface,
+     &      '/HCe'
+
+C........->Report data
+         call add_to_xml_reporting (
+     &      HCOP(i_Zone,iSurface),
+     &      H3K_rep_NAME,
+     &      'units', '(W/(m2 K))',
+     &      'External side convective coefficient' )
+
+C......MEAN RADIANT TEMPERATURE OF SURROUNDINGS
+C calc plane radiant temp. for each internal surface (w/o and w emissivity)
+         if (IVF(i_Zone) .eq. 1) THEN ! there is a view factor file for this zone
+            trsum = 0.0
+C            wtrsum = 0.0
+            do i_ViewSurface = 1,nzsur(i_Zone)
+C tps(i_zone,iSurface) present (i? e?) surface temp.
+               trsum = trsum + CFB(i_Zone,iSurface,i_ViewSurface)*
+     &                           (TFS(i_Zone,i_ViewSurface)+273.15)**4
+C               wtrsum = wtrsum + EI(i_Zone,i_ViewSurface)*
+C                              CFB(i_Zone,iSurface,i_ViewSurface)*
+C     &                           (TFS(i_Zone,i_ViewSurface)+273.15)**4
+
+            enddo 
+            trsum = trsum**0.25 - 273.15
+C            wtrsum = wtrsum**0.25 - 273.15
+C........Plane radiant temperature 
+C........-> set name
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',i_Zone,
+     &         '/surface_',iSurface,
+     &         '/PRT'
+C........->Report data
+            call add_to_xml_reporting (
+     &         trsum,
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Plane radiant temperature on zone inside face' )
+
+C........Emissivity weighted plane radiant temperature 
+C........-> set name
+C            WRITE(H3K_rep_NAME,H3K_FORMAT)
+C     &         'building/zone_',i_Zone,
+C     &         '/surface_',iSurface,
+C     &         '/wPRT'
+C........->Report data
+C            call add_to_xml_reporting (
+C     &         wtrsum,
+C     &         H3K_rep_NAME,
+C     &         'units', '(oC)',
+C     &         'Emissivity weighted plane radiant temp. (inside face)' )
+
+C.......RADIATION HEAT TRANSFER COEFFICIENTS
+C insert here???
+C How to calc? Available via commons??
+
+         ENDIF ! <- end if viewfactor file present
+
+C calc mean surr. temp of external surfaces
+         if (IE(i_Zone,iSurface) .eq. 0) THEN ! the surfaces faces external
+            trsum = B1(i_Zone,iSurface)*TSKY**4 +
+     &                  C1(i_Zone,iSurface)*(GTF(1)+273.15)**4 +
+     &                    A1(i_Zone,iSurface)*TBAVE**4
+            trsum = trsum**0.25 - 273.15
+C........-> set name
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',i_Zone,
+     &         '/surface_',iSurface,
+     &         '/AmbRT'
+C........->Report data
+            call add_to_xml_reporting (
+     &         trsum,
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Ambient radiant temperature for exterior surface' )
+
+         endif ! <- end if surface faces external
+
+
+C......=====================================================
+C......LAYER DATA
          do iLayer = 1, nndc (i_Zone, iSurface )
             if ( iLayer .gt. 9 ) then
                cLayer_Chars = 'I2'
