@@ -152,7 +152,7 @@ while ( my $line = <INPUT> ){
     if ( $tests =~ /REGRESSION/ ){ $skip_tests =~ s/--REGRESSION//g;    }
   
 
-    my $cmd = "./automated_tests.pl -v ".
+    my $cmd = "nice --adjustment 19 ./automated_tests.pl -v ".
          "--branch $target1 ".
          "--branch $target2 ".
          "--addresses $address $skip_tests";
