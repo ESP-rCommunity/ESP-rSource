@@ -100,8 +100,10 @@ C Commons added for ISO 15099 algorithm
       character outs*124
       logical dotrace
 
-      DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA,veloc
-      DOUBLE PRECISION NUSS,RAS,CNUS
+      real veloc
+
+      REAL PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA
+      REAL NUSS,RAS,CNUS
       DOUBLE PRECISION FLIN,FLUT
 
 
