@@ -24,6 +24,22 @@ C      MZPLS2
 C      MZPLS3
 C      MZPLS4
 
+C Layout of the plant results library
+C Record (number or range start:end), contents (variable name)  # comments
+C  1          NSIM # number of simulaton sets
+C  2          IRCPLP # start record of the CURRENT result set
+C  3:31       NST, IRCPLP # pointer to period information, pointer to data start record
+C  32         -1 # holds index -1 to signal it is plant library
+C  33         NCOMP,NSUR,NELT,NWIN,NDOOR  # to match zone results data fields
+C  34:+nrecs  NPCDAT() # a sequence of nrecs data lines for the components
+C  34+nrecs+1 lclim  # climate file
+C  34+nrecs+2 lpcdb  # plant template file
+C irec=NST    ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,irdact,IS,SCNAME,IDAVER
+C irec=NST+1  # nothing on this record so as to match zone library layout
+C irec=NST+2  LCTLF  # control file if it exists
+C irec=IRCPLP ?:? CSV1M(),CSV2M(),CSV3M() for each node, continue on subsequent records
+C irec= ?:?   spcaout()  # array of additional output data
+
 C ******************** MZPLS1 ********************
 
 C MZPLS1 has the same function as MZLS1; namely the transfer
