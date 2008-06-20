@@ -149,7 +149,7 @@ while ( my $line = <INPUT> ){
 
     if ( $tests =~ /FORCHECK/ )  { $skip_tests =~ s/--skip-forcheck//g; }
     if ( $tests =~ /BUILDS/ )    { $skip_tests =~ s/--skip-builds//g;   }
-    if ( $tests =~ /REGRESSION/ ){ $skip_tests =~ s/--REGRESSION//g;    }
+    if ( $tests =~ /REGRESSION/ ){ $skip_tests =~ s/--skip-regression//g;    }
   
 
     my $cmd = "nice --adjustment 19 ./automated_tests.pl -v ".
