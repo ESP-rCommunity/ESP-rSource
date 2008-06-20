@@ -1075,6 +1075,13 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'  is high-level model creation directives')
         call edisp(iuout,'  file. Otherwise the -file <name> is')
         call edisp(iuout,'  assumed to be a model configuration file)')
+        call edisp(iuout,'       [-act transform < x y z values>] ')
+        call edisp(iuout,' (where -act transform is followed by three')
+        call edisp(iuout,'  values for the transform in X Y Z axis)')
+        call edisp(iuout,'       [-act rotate < angle x y values>] ')
+        call edisp(iuout,' (where -act rotate is followed by the angle')
+        call edisp(iuout,'  degrees +=anticlockwise and the X and Y')
+        call edisp(iuout,'  coordinates to rotate around.)')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1638,6 +1645,158 @@ C Display detailed build information and then quit
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
      &    ' with action ',act(1:lnblnk(act))
 C        call edisp248(iuout,outs,90)
+        return
+      endif
+
+C Errors.
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parsfza: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parsfza: error extracting parameters.'
+      endif
+      return
+      end
+
+C ********* parsprj 
+C Allowing terminal, size, config file, zone focus and actions arguments
+C (including 3 real data) to be passed to the prj from the invocation line.  
+      subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
+     &        data1,data2,data3)
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Application name
+      common/APPNAME/cAppName
+      character*12 cAppName
+
+      integer termtype,iappw,iappx,iappy
+      character*48 prog
+      integer iargc,m
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,zone*16,act*16
+      real data1,data2,data3
+
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
+      iappw = 0
+      iappx = 0
+      iappy = 0
+      inf  = 'UNKNOWN'
+      zone = 'ALL'
+      act = 'NONE'
+      argument = ' '
+      data1=0.0
+      data2=0.0
+      data3=0.0
+
+C Get arguments from command line: if one parameter.
+      if(m.eq.0)then
+        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+     &    data2,data3
+        call edisp248(iuout,outs,90)
+        return
+      elseif(m.ge.1)then
+  41    i= i+1
+        if(i.gt.m)goto 42
+        call getarg(i,argument)
+
+        if(argument(1:5).eq.'-help')then
+          call parpsfh(appn)
+          stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit
+          CALL ESPrVersion("summary",cAppName,IUOUT)
+          stop
+        elseif( argument(1:10) .eq. '-buildinfo' ) then
+C Display detailed build information and then quit
+          CALL ESPrVersion("details",cAppName,IUOUT)
+          stop
+        elseif(argument(1:5).eq.'-mode')then
+          i=i+1
+          call getarg(i,argument)
+          if(argument(1:4).eq.'text')then
+            termtype = -1
+            mode = 'text'
+          elseif(argument(1:4).eq.'page')then
+            termtype = -2
+            mode = 'page'
+          elseif(argument(1:5).eq.'graph')then
+            termtype = 8
+            mode = 'graphic'
+          elseif(argument(1:6).eq.'script')then
+            termtype = -6
+            mode = 'script'
+          endif
+        elseif(argument(1:2).eq.'-s')then
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
+        elseif(argument(1:5).eq.'-file')then
+          i=i+1
+          call getarg(i,inf)
+        elseif(argument(1:5).eq.'-zone')then
+          i=i+1
+          call getarg(i,zone)
+        elseif(argument(1:4).eq.'-act')then
+          i=i+1
+          call getarg(i,act)
+	  if(act(1:6).eq.'rotate')then
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data1
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data2
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data3
+          elseif(act(1:9).eq.'transform')then
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data1
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data2
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data3
+	  endif
+        endif
+        goto 41
+
+  42    continue
+        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+     &    data2,data3
+        call edisp248(iuout,outs,90)
         return
       endif
 

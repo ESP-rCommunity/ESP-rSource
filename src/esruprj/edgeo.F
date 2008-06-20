@@ -149,6 +149,7 @@ C the floor area (one) or it was calculated (zero).
       logical showother,updoth,firstin,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical forceupgrade  ! if any other zone is version 1.1
+      logical silent  ! to signal interactive dependency resolution
 
       real exposed,vexposed,areatran,areawall  ! local values for QA
       real areaslproof,areafltroof,areaskylt
@@ -183,8 +184,9 @@ C On entry to zone level determine its bounds for future comparison.
       write(outs,'(2a)')'PRJ: focus on ',zname(ICOMP)
       call tstamp('>',outs)
 
-C Initialise logic to test for model contiguity changes.`
-      call sumrchg(ICOMP,'i')
+C Initialise logic to test for model contiguity changes.
+      silent= .false.
+      call sumrchg(ICOMP,'i',silent)
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
@@ -687,7 +689,8 @@ C << graphic network flow file to reflect changes in zone volume.
         endif
 
 C Report on model contiguity changes.
-        call sumrchg(ICOMP,'r')
+        silent= .false.
+        call sumrchg(ICOMP,'r',silent)
         RETURN
       ELSEIF(INO.EQ.1)THEN
 
@@ -1337,7 +1340,8 @@ C Finally update the system configuration file if not browsing.
             else
               call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
-            call sumrchg(ICOMP,'r')
+	    silent= .false.
+            call sumrchg(ICOMP,'r',silent)
           endif
           goto 42
         elseif(IS.gt.0)then
@@ -1372,7 +1376,8 @@ C editing facility.
             else
               call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
-            call sumrchg(ICOMP,'r')
+            silent = .false.
+            call sumrchg(ICOMP,'r',silent)
           endif
           MODGEO=.false.
         endif

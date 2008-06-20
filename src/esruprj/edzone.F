@@ -1640,7 +1640,7 @@ C Indications are collected from previous calls to WARNMOD. SUMRCHG
 C should be called with act = 'i' (initialise) when entering a zone and
 C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
-      SUBROUTINE SUMRCHG(ICOMP,act)
+      SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1658,6 +1658,7 @@ C IER=0 OK.
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok
+      logical silent  ! if true then use silent recalc
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1700,17 +1701,23 @@ C Check if Unix-based or DOS based.
      &        LSHAD(ICOMP)(1:lnblnk(LSHAD(ICOMP))),' out of date.'
         endif
         if(nh.gt.1)then
-          CALL PHELPD('files out of date',nh,'-',0,0,IER)
+	  if(.NOT.silent)then
+            CALL PHELPD('files out of date',nh,'-',0,0,IER)
+	  endif  
         endif
       endif
       if(ishold)then
-        DOK=.true.
-        h(1)='Shading should be recalculated if the changes you '
-        h(2)='made affect isolation distribution. When in doubt '
-        h(3)='it is best to recalculate. '
-        CALL EASKABC(' Reflect zone change in shading options:',' ',
+        if(silent)then
+	  IRT=1
+	else
+          DOK=.true.
+          h(1)='Shading should be recalculated if the changes you'
+          h(2)='made affect isolation distribution. When in doubt'
+          h(3)='it is best to recalculate.'
+          CALL EASKABC(' Reflect zone change in shading options:',' ',
      &   'recalculate (silent)','recalculate (interactive)','continue',
      &    IRT,3)
+        endif
         if(IRT.eq.1.or.IRT.eq.2)then
           if(IRT.eq.1) call edisp(iuout,
      & 'When finished control will be returned to the project manager.')
@@ -1727,12 +1734,16 @@ C If existing db out of date the perform recalculation.
         endif
       endif
       if(comold.or.tmcold)then
-        DOK=.true.
-        h(1)='Zone construction files should be rebuilt after '
-        h(2)='surface attributes change or surfaces are added or'
-        h(3)='deleted. '
-        CALL ASKOK('Update the zone construction and/ or TMC files',
+        if(silent)then
+	  ok= .true.
+	else
+          DOK=.true.
+          h(1)='Zone construction files should be rebuilt after '
+          h(2)='surface attributes change or surfaces are added or'
+          h(3)='deleted. '
+          CALL ASKOK('Update the zone construction and/ or TMC files',
      &    'to reflect the changes that you have made?',OK,DOK,3)
+        endif
         if(OK)then
           QUIET=.true.
           itru=iuout

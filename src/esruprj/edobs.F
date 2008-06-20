@@ -82,8 +82,9 @@ C LPRFDB,IPRODB (for event profile database)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
-      LOGICAL comold,tmcold,vwfold,ishold,silent,unixok
+      LOGICAL comold,tmcold,vwfold,ishold,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical silent  ! to signal quiet dependency resolution
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -243,7 +244,8 @@ C Help text for this menu.
 C Now display the menu.
       CALL EMENU('Obstructions',VERT,MVERT,IVERT)
       IF(IVERT.EQ.MVERT)THEN
-        call sumrchg(ICOMP,'r')
+        silent = .false.
+        call sumrchg(ICOMP,'r',silent)
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
         CALL PHELPD('obstr menu',8,'-',0,0,IER)

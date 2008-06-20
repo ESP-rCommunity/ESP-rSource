@@ -187,6 +187,10 @@ C Returned parameters from silentread.
       character theprimedirective*8
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      real d1,d2,d3   ! data used with transfor or rotate command line
+      integer ivals   ! holds list of zones to be rotated or transformed.
+      dimension ivals(MCOM)
+      logical silent  ! for dependency checking on transform or rotate
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -202,7 +206,7 @@ C Initialize variables and recover command line arguments.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-      call parsfza(MODL,iappw,iappx,iappy,inf,inz,act)
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -454,7 +458,7 @@ C and determine if focus is a single zone.
         inzone='ALL'
       endif
 
-C If command line also included a file name after -act
+C If command line also included a key word, file name or data after -act
 C then set inact.
       if(act(1:2).ne.'  ')then
         inact=act
@@ -532,6 +536,74 @@ C and if so do what it says.
             endif
           endif
         endif
+      elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate')then
+        XST=.false.
+        if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LCMDFL,EXIST=XST)
+          if(XST)then
+
+C Call newprb without the need to confirm model but to check its path.
+            itisanexemplar=.false.
+            confirm=.false.
+            ckpath=.true.
+            call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+            if(ier.eq.-3)then
+              call usrmsg('Configuration file could not be loaded.',
+     &          'Exiting from project manager','W')
+              CALL EPAGEND
+              STOP
+            endif
+
+C Open core of databases if not already done so.
+            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+              continue
+            else
+              call opendb(ier)
+              if(ier.ne.0)then
+                call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db. Exiting.','W')
+                CALL EPAGEND
+                STOP
+              endif
+            endif
+
+C Scan control file if one exists.
+            ICTLF=IFIL+1
+            CALL ERPFREE(ICTLF,ISTAT)
+            call FINDFIL(LCTLF,XST)
+            if(XST)then
+              CALL EZCTLR(ICTLF,0,IUOUT,IER)
+            endif
+	    
+C Now implement the transform based on data passed in command line
+C for all the zones in the model. NOTE: in the next line set the
+C value of silent = .false if you want to interact with the transform
+C or rotation.
+C            silent= .false.
+            silent= .true.
+	    inpic=NCOMP
+	    do 29 iz=1,inpic
+	      ivals(iz)=iz
+  29        continue
+  
+C Perform either the transform or rotation.
+            if(inact(1:9).eq.'transform')then
+              call globaltransform(d1,d2,d3,inpic,ivals,
+     &          silent,itru,ier)
+            elseif(inact(1:6).eq.'rotate')then
+              call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
+	    endif
+            if(silent)then 
+              call usrmsg(
+     &          'Processing of transform or rotate complete.',
+     &          'Exiting from project manager','W')
+              CALL EPAGEND
+              STOP
+            else
+              goto 3
+            endif
+          endif
+        endif      
       endif
 
 C If an input file has been specified then load it.
