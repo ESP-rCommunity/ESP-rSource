@@ -29,14 +29,16 @@ C Record (number or range start:end), contents (variable name)  # comments
 C  1          NSIM # number of simulaton sets
 C  2          IRCPLP # start record of the CURRENT result set
 C  3:31       NST, IRCPLP # pointer to period information, pointer to data start record
-C  32         -1 # holds index -1 to signal it is plant library
+C  32         -2,ireccfg  # index to signal it is plant library and pointer to cfg file name
+C             older files will have -1 in this record
 C  33         NCOMP,NSUR,NELT,NWIN,NDOOR  # to match zone results data fields
 C  34:+nrecs  NPCDAT() # a sequence of nrecs data lines for the components
-C  34+nrecs+1 lclim  # climate file
-C  34+nrecs+2 lpcdb  # plant template file
+C  +2         lclim  # climate file (over two records)
+C  +2         lpcdb  # plant template file (over two records)
+C  +2         LCFGF  # model configuration file (over two records)
 C irec=NST    ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,irdact,IS,SCNAME,IDAVER
 C irec=NST+1  # nothing on this record so as to match zone library layout
-C irec=NST+2  LCTLF  # control file if it exists
+C irec=NST+2  LCTLF  # control file if it exists (one record)
 C irec=IRCPLP ?:? CSV1M(),CSV2M(),CSV3M() for each node, continue on subsequent records
 C irec= ?:?   spcaout()  # array of additional output data
 
@@ -61,13 +63,25 @@ C ICLIM,LCLIM (for climate file)
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      common/C21/IFCFG,cfgroot,LCFGF
+
+      character firstbit*72,secondbit*72
+      character cfgroot*24,longtfile*144,LCFGF*72
+      logical concat
+      integer ireccfg   ! where the cfg file name starts.
 
       IUNIT=IFIL+3
+      firstbit=' '   ! to represent 1:72 of string
+      secondbit=' '   ! to represent 73:144 of string
+      longtfile=' '   ! make sure not a null string
+      ireccfg=0       ! we do not yet know where cfg is written
 
-C -1 in record 32 tells res that the results
-C database is for the plant and not building.
+C -1 or -2 in record 32 tells res that the results
+C database is for the plant and not building. The -2
+C signals that long file names are included as well as
+C the model configuration file.
       IREC=32
-      IXX=-1
+      IXX=-2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) IXX
       IREC=IREC+1
 
@@ -91,6 +105,7 @@ C a maximum of NPRECL items. So for more items use next
 C record(s).
 C First find required number of records.
       nrecs=npcomp/nprecl+1
+      write(6,*) nrecs,npcomp,nprecl
 
 C Initialise first item number and number of items left
 C respectively.
@@ -117,17 +132,45 @@ C << EITHER opened at 36 records wide or we need two records
 C << to write each string
 
 C Store climate file name.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCLIM
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCLIM(1:72)
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) secondbit
       IREC=IREC+1
 
 C Store plant component data base file name.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) lpcdb
       IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) secondbit
+      IREC=IREC+1
+      
+C Add the full path to the model configuration file and then write
+C the first and 2nd halfs of the file name.
+      call addpath(LCFGF,longtfile,concat)
+      if(concat)then
+        call edisp(iuout,' ')
+        call edisp(iuout,'Simulation run with configuration file: ')
+        call edisp(iuout,longtfile)
+        call edisp(iuout,' ')
+      endif
+      write(firstbit,'(a)')longtfile(1:72)
+      write(secondbit,'(a)')longtfile(73:144)
+      write(6,*) firstbit
+      write(6,*) secondbit
+      ireccfg=irec       ! we know where cfg is written
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999)firstbit
+      IREC=IREC+1
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999)secondbit
+      IREC=IREC+1
 
-C Set start address for current results set.
+C Set start address for current results set as well as the location of
+C the cfg file name as 2nd item on record 32.
       IRCPLP=IREC
+      write(6,*) ' start for current results set ',IRCPLP,ireccfg
       IREC=2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999)IRCPLP
+      IREC=32
+      IXX=-2
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) IXX,ireccfg
 
   100 RETURN
 
@@ -209,7 +252,12 @@ C to allow match with building library for results recovery.
      &   SCNAME(1:4).NE.'none')THEN
          IREC=IREC+1
          WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCTLF
+         write(6,*) 'control file written to record ',irec
          IREC=IREC+1
+      ELSE
+         IREC=IREC+1
+         write(6,*) 'skipped control file write at record ',irec
+         IREC=IREC+1     
       END IF
 
 C Transfer current record position to library and
@@ -218,12 +266,12 @@ C entry to library.
       IRCPLP=IREC
       IREC=NSIM+2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) NST,IRCPLP
+      write(6,*) ' two start records are ',nst,ircplp
 
   100 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS2: plant results library error',
+  999 WRITE(IUOUT,*) ' MZPLS2: plant results library error',
      &               ' at record',IREC
       call epwait
       GOTO 100
