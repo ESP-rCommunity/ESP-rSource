@@ -88,15 +88,14 @@ C code to be called independently of these routines.
 C
 C**********************************************************************************************
 
-      SUBROUTINE H3K_transport_build_data(i_zone)
+      SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
 
 C.....Passed variable
-      integer i_zone            ! None number
+      integer iZone            ! Zone number
 
 C.....Common variables
-
       common/c20/nzsur(mcom),nztv(mcom)
       integer nzsur           ! # of surfaces in a zone
       integer nztv            ! # of verticies in a zone (not used)
@@ -146,7 +145,7 @@ C QFS(MCOM)            ! - surface heat injection (W)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       REAL TFS, QFS
 
-      COMMON/SETUQ/             ! PLANT heat injection/extration:
+      COMMON/SETUQ/           ! PLANT heat injection/extration:
      &     QPLTP(MCOM),         !  - present (W)
      &     QPLTF(MCOM),         !  - future (W)
      &     CONV(MCOM)           !  - convective ratio
@@ -203,6 +202,9 @@ C QFS(MCOM)            ! - surface heat injection (W)
       COMMON/ELWE1/A1(MCOM,MS),B1(MCOM,MS),C1(MCOM,MS)
       real A1,B1,C1 ! view factors of building, sky and ground of external surfaces
 
+      COMMON/COE31S/HRS(MCOM,MS,MS),ZHRS(MCOM,MS)
+      real HRS,ZHRS
+
 C.....Sky temperature and cloud cover; ground temperature, 
       COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
      &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
@@ -218,15 +220,15 @@ C.....Local variables
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       INTEGER i_ZnCtl           ! Zone control flag
 
-      INTEGER iSurface, iLayer,i_ViewSurface  ! Counters
+      INTEGER iSurface, iNode,iViewSurface  ! Counters
 
       real SBC
 
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cLayer_Chars
-      
+      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+
 C lnblnk is a function returning the index of last non-blank character in a string.
       INTEGER LNBLNK 
 
@@ -257,7 +259,7 @@ C.....heat.
 C----------------------------------------------------------------------
       SBC=56.7E-9 ! Stefan-Boltzmann constant
 
-      i_ZnCtl=icascf(i_Zone)
+      i_ZnCtl=icascf(iZone)
 
       if(i_ZnCtl.ne.0)then
 
@@ -266,31 +268,31 @@ C Determine where heat is injected/extracted
         if ( iban(i_ZnCtl,2) .gt. 0 .and. iban(i_ZnCtl,3) .eq. 0 ) then
 
 c PIN is at surface.
-C         print*, i_zone, 'surface'
-          Q_zone = QFS(i_Zone)
+C         print*, iZone, 'surface'
+          Q_zone = QFS(iZone)
         elseif ( iban(i_ZnCtl,3) .gt. 0 ) then
 
 C PIN is within construction
-C         print*, i_zone, 'constr'
-          Q_zone = QFC(i_Zone)
+C         print*, iZone, 'constr'
+          Q_zone = QFC(iZone)
         elseif ( iban(i_ZnCtl,1) .eq. -1 ) then
 
 C PIN is in a plant component node - not implemented yet.
 
         elseif ( iban(i_ZnCtl,1) .eq. -2 ) then
-C         print*, i_zone, 'mix'
+C         print*, iZone, 'mix'
 C PIN is mix of radiative/convective flux (ie - plant component)
-         Q_zone = QPLTF(i_Zone)
+         Q_zone = QPLTF(iZone)
         else
 
 C PIN is air point
-C         print*, i_zone, 'air point'
-          Q_zone = QFA(i_Zone)
+C         print*, iZone, 'air point'
+          Q_zone = QFA(iZone)
         endif
       else
 
 C A zone with no control 
-C       print*, i_zone, 'no control'
+C       print*, iZone, 'no control'
         Q_zone = 0.0
       endif
 
@@ -301,7 +303,7 @@ C.....
 C.....Any changes to this code should be made within
 C.....the H3Kreports demarcaration comments
 C.....Set format depending on number of zones
-      if ( i_Zone .gt. 9 ) then
+      if ( iZone .gt. 9 ) then
          cZone_Chars = 'I2'
       else
          cZone_Chars = 'I1'
@@ -310,10 +312,10 @@ C.....Set format depending on number of zones
 
 C.....AIR POINT TEMPERATURE
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/air_point/temperature'
       call add_to_xml_reporting (
-     &         TFA(i_Zone),
+     &         TFA(iZone),
      &         H3K_rep_NAME,
      &         'units', '(oC)',
      &         'Zone air-point temperature' )
@@ -321,7 +323,7 @@ C.....-> set name
 
 C.....ZONE HEAT INJECTION / EXTRACTION
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/heat_injection'
       call add_to_xml_reporting (
      &         Q_ZONE,
@@ -344,7 +346,7 @@ C.....-> set name
          Q_Cool = ABS(Q_ZONE)
 
       endif
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/flux/net_flux'
       call add_to_xml_reporting (
      &         Q_ZONE,
@@ -353,7 +355,7 @@ C.....-> set name
      &         'Zone net heat injection/extraction ' )
 
 
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/flux/heat_injection'
       call add_to_xml_reporting (
      &         Q_Heat,
@@ -361,7 +363,7 @@ C.....-> set name
      &         'units', '(W)',
      &         'Zone net heat injection ' )
 
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/flux/heat_extraction'
       call add_to_xml_reporting (
      &         Q_cool,
@@ -372,7 +374,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: net gains from adjacent zones
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/net_from_adjacent_zones'
       call add_to_xml_reporting (
      &         q1adjz(2)-q2adjz(2),
@@ -382,7 +384,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: net gains from ambient
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/net_from_ambient'
       call add_to_xml_reporting (
      &         q1outs(2)-q2lost(2),
@@ -393,7 +395,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: absorbed by glazing
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/absorbed_glazing'
 
       call add_to_xml_reporting (
@@ -404,7 +406,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: absorbed by opaque construction
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/absorbed_opaque_construction'
 
       call add_to_xml_reporting (
@@ -416,7 +418,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: Net total absorbed
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/total_net_absorbed'
       call add_to_xml_reporting (
      &         q2tmc(2)+q2rem(2)+q2wall(2),
@@ -427,14 +429,13 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: Net total gain
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/total_net_gain'
       call add_to_xml_reporting (
      &         q1outs(2)+q1adjz(2)-(q2adjz(2)+q2lost(2)),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Total net solar gains' )
-
 
 
 C.......H3Kreports.(CASUAL_GAINS).start......................
@@ -447,10 +448,10 @@ C.......the H3Kreports demarcaration comments
 
 C.......CONVECTIVE CASUAL GAINS
 C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/convective'
       call add_to_xml_reporting (
-     &         Cas_con_dat(i_Zone),
+     &         Cas_con_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone convective casual gains' )
@@ -458,10 +459,10 @@ C.......-> set name
 
 C.......RADIANT CASUAL GAINS
 C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/radiant'
       call add_to_xml_reporting (
-     &         Cas_rad_dat(i_Zone),
+     &         Cas_rad_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone radatiant casual gains' )
@@ -469,10 +470,10 @@ C.......-> set name
 
 C.......LATENT CASUAL GAINS
 C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/latent'
       call add_to_xml_reporting (
-     &         Cas_lat_dat(i_Zone),
+     &         Cas_lat_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone latient casual gains' )
@@ -480,26 +481,24 @@ C.......-> set name
 
 C.......TOTAL CASUAL GAINS
 C.......-> set name
-        WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+        WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/total'
       call add_to_xml_reporting (
-     &         Cas_lat_dat(i_Zone)
-     &           +  Cas_rad_dat(i_Zone)
-     &           +  Cas_con_dat(i_Zone),
+     &         Cas_lat_dat(iZone)
+     &           +  Cas_rad_dat(iZone)
+     &           +  Cas_con_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone total casual gains '
      &             // '(convective + radiant + latent)' )
 
 
-
 C.......H3Kreports.(CASUAL_GAINS).end........................
-
 
 C---------------------------------------------------------------------
 C     Loop through zone surfaces and MLC layers, reporting data 
 C---------------------------------------------------------------------
-      do iSurface = 1, nzsur(i_Zone)
+      do iSurface = 1, nzsur(iZone)
 
          if ( iSurface .gt. 9 ) then
             cSurf_Chars = 'I2'
@@ -509,29 +508,42 @@ C---------------------------------------------------------------------
          write (H3K_format, '(A,A,A,A,A)')
      &        '(A,',cZone_Chars(1:2),',A,',cSurf_Chars(1:2),',A)'
 
-
 C........Surface temperature 
 C........-> set name
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',i_Zone,
+     &      'building/zone_',iZone,
      &      '/surface_',iSurface,
      &      '/temperature'
 C........->Report data
          call add_to_xml_reporting (
-     &      tfs(i_zone,iSurface),
+     &      tfs(iZone,iSurface),
      &      H3K_rep_NAME,
      &      'units', '(oC)',
      &      'Temperature on zone inside face' )
 
+C........External facing surfaces -> Surface temperature
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',iZone,
+     &         '/surface_',iSurface,
+     &         '/ext. surf. temperature'
+C........->Report data
+            call add_to_xml_reporting (
+     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Temperature on exterior face' )
+         Endif ! if ie = 0
+
 C........Radiant heat injection associated with plant containment.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',i_Zone,
+     &      'building/zone_',iZone,
      &      '/surface_',iSurface,
      &      '/plant_containment_flux'
 
 C........->Report data
          call add_to_xml_reporting (
-     &      fSurface_radiant_gain(i_Zone,iSurface,iFuture),
+     &      fSurface_radiant_gain(iZone,iSurface,iFuture),
      &      H3K_rep_NAME,
      &      'units', '(W)',
      &      'Plant containment radiant heat flux at surface' )
@@ -539,42 +551,42 @@ C........->Report data
 C.......CONVECTIVE COEFFICIENTS
 C........Internal surface convective coefficient.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',i_Zone,
+     &      'building/zone_',iZone,
      &      '/surface_',iSurface,
      &      '/HCi'
 
 C........->Report data
          call add_to_xml_reporting (
-     &      HCIP(i_Zone,iSurface),
+     &      HCIP(iZone,iSurface),
      &      H3K_rep_NAME,
      &      'units', '(W/(m2 K))',
      &      'Internal side convective coefficient' )
 
 C........External surface convective coefficient.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',i_Zone,
+     &      'building/zone_',iZone,
      &      '/surface_',iSurface,
      &      '/HCe'
 
 C........->Report data
          call add_to_xml_reporting (
-     &      HCOP(i_Zone,iSurface),
+     &      HCOP(iZone,iSurface),
      &      H3K_rep_NAME,
      &      'units', '(W/(m2 K))',
      &      'External side convective coefficient' )
 
 C......MEAN RADIANT TEMPERATURE OF SURROUNDINGS
 C calc plane radiant temp. for each internal surface (w/o and w emissivity)
-         if (IVF(i_Zone) .eq. 1) THEN ! there is a view factor file for this zone
+         if (IVF(iZone) .eq. 1) THEN ! there is a view factor file for this zone
             trsum = 0.0
 C            wtrsum = 0.0
-            do i_ViewSurface = 1,nzsur(i_Zone)
-C tps(i_zone,iSurface) present (i? e?) surface temp.
-               trsum = trsum + CFB(i_Zone,iSurface,i_ViewSurface)*
-     &                           (TFS(i_Zone,i_ViewSurface)+273.15)**4
-C               wtrsum = wtrsum + EI(i_Zone,i_ViewSurface)*
-C                              CFB(i_Zone,iSurface,i_ViewSurface)*
-C     &                           (TFS(i_Zone,i_ViewSurface)+273.15)**4
+            do iViewSurface = 1,nzsur(iZone)
+C tps(iZone,iSurface) present (i? e?) surface temp.
+               trsum = trsum + CFB(iZone,iSurface,iViewSurface)*
+     &                           (TFS(iZone,iViewSurface)+273.15)**4
+C               wtrsum = wtrsum + EI(iZone,iViewSurface)*
+C                              CFB(iZone,iSurface,iViewSurface)*
+C     &                           (TFS(iZone,iViewSurface)+273.15)**4
 
             enddo 
             trsum = trsum**0.25 - 273.15
@@ -582,7 +594,7 @@ C            wtrsum = wtrsum**0.25 - 273.15
 C........Plane radiant temperature 
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',i_Zone,
+     &         'building/zone_',iZone,
      &         '/surface_',iSurface,
      &         '/PRT'
 C........->Report data
@@ -595,7 +607,7 @@ C........->Report data
 C........Emissivity weighted plane radiant temperature 
 C........-> set name
 C            WRITE(H3K_rep_NAME,H3K_FORMAT)
-C     &         'building/zone_',i_Zone,
+C     &         'building/zone_',iZone,
 C     &         '/surface_',iSurface,
 C     &         '/wPRT'
 C........->Report data
@@ -605,21 +617,34 @@ C     &         H3K_rep_NAME,
 C     &         'units', '(oC)',
 C     &         'Emissivity weighted plane radiant temp. (inside face)' )
 
-C.......RADIATION HEAT TRANSFER COEFFICIENTS
-C insert here???
-C How to calc? Available via commons??
+C.......RADIATION HEAT TRANSFER COEFFICIENT
+C........-> set name
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',iZone,
+     &         '/surface_',iSurface,
+     &         '/HRi'
+C........->Report data
+            call add_to_xml_reporting (
+C     &         ZHRS(iZone,iSurface)/(TFS(iZone,iSurface)-trsum), ! <= problems with DT approx. zero !
+C          Incropera et. al., page 10:
+     &        EI(iZone,iSurface)*SBC*
+     &            (TFS(iZone,iSurface)+trsum+2*273.15)*
+     &            ((TFS(iZone,iSurface)+273.15)**2+(trsum+273.15)**2),
+     &         H3K_rep_NAME,
+     &         'units', '(W/(m2 K))',
+     &         'Radiant heat transfer coef. (inside face)' )
 
          ENDIF ! <- end if viewfactor file present
 
-C calc mean surr. temp of external surfaces
-         if (IE(i_Zone,iSurface) .eq. 0) THEN ! the surfaces faces external
-            trsum = B1(i_Zone,iSurface)*TSKY**4 +
-     &                  C1(i_Zone,iSurface)*(GTF(1)+273.15)**4 +
-     &                    A1(i_Zone,iSurface)*TBAVE**4
+C calc mean surrounding temp of external surfaces
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surfaces faces external
+            trsum = B1(iZone,iSurface)*TSKY**4 +
+     &                  C1(iZone,iSurface)*(GTF(1)+273.15)**4 +
+     &                    A1(iZone,iSurface)*TBAVE**4
             trsum = trsum**0.25 - 273.15
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',i_Zone,
+     &         'building/zone_',iZone,
      &         '/surface_',iSurface,
      &         '/AmbRT'
 C........->Report data
@@ -631,40 +656,36 @@ C........->Report data
 
          endif ! <- end if surface faces external
 
-
 C......=====================================================
-C......LAYER DATA
-         do iLayer = 1, nndc (i_Zone, iSurface )
-            if ( iLayer .gt. 9 ) then
-               cLayer_Chars = 'I2'
+C......NODE DATA
+         do iNode = 1, (nndc (iZone, iSurface )-1)
+            if ( iNode .gt. 9 ) then
+               cNode_Chars = 'I2'
             else
-               cLayer_Chars = 'I1'
+               cNode_Chars = 'I1'
             endif
             write (H3K_format, '(A,A,A,A,A,A,A)')
      &        '(A,',cZone_Chars(1:2),
      &        ',A,',cSurf_Chars(1:2),
-     &        ',A,',cLayer_Chars(1:2),',A)'
-            
+     &        ',A,',cNode_Chars(1:2),',A)'
 
 C...........MLC layer temperature 
 C...........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',i_Zone,
+     &         'building/zone_',iZone,
      &         '/surface_',iSurface,
-     &         '/layer_',iLayer,
+     &         '/node_',iNode,
      &         '/temperature'
 C...........->Report data     
             call add_to_xml_reporting (
-     &         tfc(i_zone,iSurface,iLayer),
+     &         tfc(iZone,iSurface,iNode),
      &         H3K_rep_NAME,
      &         'units', '(oC)',
      &         'Temperature at node within multilayer construction' )
 
-     
-         
-         enddo
-      enddo
+         enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
 
+      enddo ! <- end iSurface 1,N of iZone
 
       RETURN
       END
