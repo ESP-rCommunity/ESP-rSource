@@ -2299,7 +2299,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -2308,8 +2308,9 @@ C =2 with more than 3 day types
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
-      COMMON/P1/oprdesc,ctlstr
-      CHARACTER oprdesc*248,ctlstr*24
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
       common/loadlabel/lodlabel(mcom,7)
       CHARACTER*6 lodlabel
@@ -2880,8 +2881,10 @@ C Clear commons.
           NAC(IDTY)=0
           NCAS(IDTY)=0
  401    CONTINUE
-        ctlstr='no control of air flow  '
-        oprdesc='no operations notes (yet)'
+        ctlstr(icomp,1)='no control of air flow  '
+        ctlstr(icomp,2)='no control of air flow  '
+        ctlstr(icomp,3)='no control of air flow  '
+        oprdesc(icomp)='no operations notes (yet)'
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt'  
@@ -2891,8 +2894,8 @@ C Clear commons.
         lodlabel(icomp,7)='N/A   '      
 
 C Fill common blocks for new zone based on information in the
-C pattern file.
-        ip3ver=3
+C pattern file. Assume file can be sorted.
+        ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '
         vflow='ach-ach '

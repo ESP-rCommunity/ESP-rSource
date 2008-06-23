@@ -1196,7 +1196,7 @@ C output, IER=0 indicates no error.
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =3 with more than 3 day types
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -2622,7 +2622,7 @@ C << and apply it to another zone.
                   IUO=IFIL+1
                   CALL ERPFREE(IUO,ISTAT)
                   CALL EROPER(0,iuout,IUO,icomp,IER)
-                  if(ip3ver.eq.0)then
+                  if(ip3ver(icomp).eq.0)then
 
 C File is older format and assumed to be unsorted.
                     sorted=.false.
@@ -2630,7 +2630,7 @@ C File is older format and assumed to be unsorted.
                     if(browse)then
                       continue
                     else
-                      ip3ver=3
+                      ip3ver(icomp)=2
                       CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                     endif
                   else
@@ -2650,7 +2650,7 @@ C File is current format and might be unsorted.
                       if(browse)then
                         continue
                       else
-                        ip3ver=3
+                        ip3ver(icomp)=2
                         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                       endif
                     endif

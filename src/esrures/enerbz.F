@@ -307,8 +307,8 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
 
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -327,7 +327,7 @@ C Assume that the operation file name has been read in via MOINIT.
 C Read in the zone operational file data.
         IUNIT=IFIL+1
         CALL EROPER(0,iuout,iunit,izone,IER) ! for older results files.
-        if(ip3ver.eq.0)then
+        if(ip3ver(izone).eq.0)then
           write(outs,'(a,i2,a)') 
      &    'Operation file for zone ',izone,' periods being sorted!'
           call edisp(iuout,outs)

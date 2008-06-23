@@ -2102,8 +2102,8 @@ C << file does not need to be scanned to get the surface emissivity.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -2235,7 +2235,7 @@ C If izver >= 4 reads data directly so zone operation file not necessary.
 C Prepare to recover information from results library.
           IUNIT=IFIL+1
           CALL EROPER(0,iuout,iunit,izone,IER)  ! for older results library
-          if(ip3ver.eq.0)then
+          if(ip3ver(izone).eq.0)then
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
