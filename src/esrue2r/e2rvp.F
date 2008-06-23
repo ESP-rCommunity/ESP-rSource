@@ -342,7 +342,7 @@ C Reconstitute the viewing vector and eye angle.
       elseif(ITPPSW.eq.1)then 
         ITEM(3) =                 'c display >> south elevation  '
       elseif(ITPPSW.eq.2)then
-        ITEM(3) =                 'c display >> west elevation   '
+        ITEM(3) =                 'c display >> east elevation   '
       elseif(ITPPSW.eq.3)then
         ITEM(3) =                 'c display >> perspective      '
       endif
@@ -379,16 +379,16 @@ C Reconstitute the viewing vector and eye angle.
       if(redraw)then
 
 C Draw the problem in plan/elevation with viewcone.
-        if(ITPPSW.eq.1)then
+        if(ITPPSW.eq.0)then
           call PLELEV(IUF,'P',ier)
           call VCONE('P')
-        elseif(ITPPSW.eq.2)then
+        elseif(ITPPSW.eq.1)then
           call PLELEV(IUF,'S',ier)
           call VCONE('S')
-        elseif(ITPPSW.eq.3)then
+        elseif(ITPPSW.eq.2)then
           call PLELEV(IUF,'E',ier)
           call VCONE('E')
-        elseif(ITPPSW.eq.0)then
+        elseif(ITPPSW.eq.3)then
           MODIFY=.TRUE.
           CALL ADJVIEW(ITRC,IER)
           MODLEN=.FALSE.
@@ -459,7 +459,7 @@ C Present list of views.
         H(1)='In plan view you can change the viewing parameters,'
         H(2)='the elevations are primarily for checking. '
         CALL EASKABCD(' View choices: ',' ','plan',
-     &    'south elevation ','west elevation','perspective ?',IW,2)
+     &    'south elevation ','east elevation','perspective ?',IW,2)
         if(IW-1.ne.ITPPSW)redraw =.true.
         ITPPSW=IW-1
       elseif(INO.EQ.5)THEN

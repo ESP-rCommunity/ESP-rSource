@@ -38,6 +38,7 @@ C exportcad: controls model export facilities.
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/appw/iappw,iappx,iappy
+      common/user/browse
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/exporttg/xfile,tg,delim
@@ -45,7 +46,7 @@ C exportcad: controls model export facilities.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
-      logical MODIFY,MODLEN,MODBND,unixok
+      logical MODIFY,MODLEN,MODBND,unixok,browse
 
       DIMENSION ITEMS1(11)
 
@@ -55,6 +56,7 @@ C exportcad: controls model export facilities.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
       character longtfile*144,longtfiledos*144
+      character brw*8   ! to signal model is being browsed
       logical oke
 
       if(.NOT.cfgok)then
@@ -274,6 +276,13 @@ C RADIANCE creation. Starts e2r with current configuration file.
         dok=.true.
         CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,6)
         if(OK)then
+
+C If browsing pass this information to e2r.
+          if(browse)then
+            brw = ' -b yes'
+          else
+            brw = ' -b no '
+          endif
           call tstamp('>','PRJ: export to RADIANCE')
           doit = ' '
           call tchild(ICPMOD)
@@ -287,12 +296,12 @@ C RADIANCE creation. Starts e2r with current configuration file.
             longtfile=longtfiledos
           endif
           if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(a,3i4,3a)') 'e2r -s ',
+            write(doit,'(a,3i4,4a)') 'e2r -s ',
      &        iappw,iappx+35,iappy+40,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),brw,' &'
           else
-            write(doit,'(3a)') 'e2r -s 0 0 0 -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
+            write(doit,'(4a)') 'e2r -s 0 0 0 -file ',
+     &        longtfile(1:lnblnk(longtfile)),brw,' &'
           endif
           call usrmsg('Starting Radiance conversion via',doit,'-')
           call runit(doit,'-')
@@ -1725,7 +1734,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.3)then
           LFL=LOPTDB
         elseif(i.eq.4)then
-          LF=LAPRES
+          LFL=LAPRES
         elseif(i.eq.5)then
           LFL=LPRFDB
         elseif(i.eq.6)then
@@ -1733,7 +1742,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LF=LPCDB
         endif
-        if(i.eq.3.or.i.eq.5)then
+        if(i.eq.3.or.i.eq.4.or.i.eq.5)then
           if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
             call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL,ier)
           endif

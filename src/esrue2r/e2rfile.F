@@ -23,24 +23,29 @@ C Routines to read in various radiance generated files.
 C ******* Default views formation.
       SUBROUTINE RRVEW(ITA2,rviewf,IER)
 
+C espriou.h provides current file.
+#include "espriou.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character OUTSTR*124,WORD*20,rviewf*72,outs*124
-      character tfile*72,runpath*72
+      character tfile*72,runpath*72,pathtype*24
+      integer lnrp  ! length of run path
 
       IER=0
+      lnrp=lnblnk(runpath)
 
 C Attempt to read in rview file, note it is assumed to be one line.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                         rviewf(1:lnblnk(rviewf))
+      write (tfile,'(2a)') runpath(1:lnrp),rviewf(1:lnblnk(rviewf))
       CALL ERPFREE(ITA2,ISTAT)
       call FPOPEN(ITA2,ISTAT,1,0,tfile)
       if (ISTAT.LT.0) then
         call usrmsg(' Problem detected while opening...',rviewf,'W')
         return
       endif
+      write(currentfile,'(a)') tfile(1:lnblnk(tfile))
 
       CALL STRIPC(ITA2,OUTSTR,99,ND,1,'view line',IER)
       IF(IER.eq.2)ier=0
@@ -103,25 +108,31 @@ C RRSKY Read radiance sky file.
 
       SUBROUTINE RRSKY(ITA2,rskyfil,ga,IER)
 
+C espriou.h provides current file.
+#include "espriou.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C4/XLAT,XLON
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character OUTSTR*124,WORD*20,rskyfil*72,outs*124,CMDL*124,skopt*3
-      character tfile*72,runpath*72
+      character tfile*72,runpath*72,pathtype*24
+      integer lnrp  ! length of run path
 
       ier=0
+      lnrp=lnblnk(runpath)
 
 C Attempt to read in sky file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                      rskyfil(1:lnblnk(rskyfil))
+      write (tfile,'(2a)') runpath(1:lnrp),
+     &                     rskyfil(1:lnblnk(rskyfil))
       CALL ERPFREE(ITA2,ISTAT)
       call FPOPEN(ITA2,ISTAT,1,0,tfile)
       if (ISTAT.LT.0) then
         call usrmsg(' Problem detected while opening...',rskyfil,'W')
         return
       endif
+      write(currentfile,'(a)') tfile(1:lnblnk(tfile))
 
 C Read the first line and get past '# '.
       READ(ITA2,'(a)',IOSTAT=ISTAT,END=102)OUTSTR
@@ -133,13 +144,15 @@ C Read the first line and get past '# '.
         call edisp(iuout,' Not a radiance sky file...')
         ier=1
         return
-      endif 
+      endif
+      KT=K   ! there might or might not be a key word -ang
       CALL EGETW(CMDL,KT,WORD,'W','gensky option',IFLAG)
       if(word(1:4).eq.'-ang')then
         CALL EGETWR(CMDL,KT,alts,0.,90.,'W','alt',IER)
         CALL EGETWR(CMDL,KT,azis,-90.,90.,'W','azi',IER)
         write(outs,'(a,2f7.2)') 'Radiance sun alt & azim=',alts,azis
         call edisp(iuout,outs)
+        K=KT  ! reset K so options can be read after the -ang values
       else
         CALL EGETWI(CMDL,K,IMO,1,12,'W','Month',IER)
         CALL EGETWI(CMDL,K,IDO,1,31,'W','Day',IER)
@@ -292,7 +305,7 @@ C IERR=1 if a scene file is missing.
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/radrp/ipicx
 
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character rscedes*72,rzoncmd*60,rupaxis*1
       character imgqua*6,detlvl*6,llvar*6,penumb*5
@@ -301,9 +314,12 @@ C IERR=1 if a scene file is missing.
       character vewcmds*124,rvewsh*10,tvewsh*10,tvewcmds*124
       character OUTS*124,OUTSTR*124,WORD*20,tfile*72
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character tsc*72,tword*10,file*72,RVB*1,runpath*72
+      character tsc*72,tword*10,file*72,RVB*1
+      character runpath*72,pathtype*24
+      integer lnrp  ! length of run path
 
       IERR=0
+      lnrp=lnblnk(runpath)
 
 C Reset render and octree special options.
       crenrp='   '
@@ -324,8 +340,7 @@ C Clear non-default views.
   41  continue
 
 C Attempt to read in rif file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                            file(1:lnblnk(file))
+      write (tfile,'(2a)') runpath(1:lnrp),file(1:lnblnk(file))
       CALL ERPFREE(ITA2,ISTAT)
       call FPOPEN(ITA2,ISTAT,1,0,tfile)
       if (ISTAT.LT.0) then
@@ -469,7 +484,7 @@ C IFC=4 ask before overwriting, IFC=3 overwrite.
       common/e2rf/rambfil,optnfil
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/radgt/iglzty
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character rscedes*72,rzoncmd*60,rupaxis*1,aglzfil*72
@@ -478,13 +493,16 @@ C IFC=4 ask before overwriting, IFC=3 overwrite.
       character crenrp*160,coconv*40
       character vewcmds*124,rvewsh*10
       character*72 matfil,rmmfil,glzfil
-      character*72 file,tfile,runpath
+      character file*72,tfile*72
+      character runpath*72,pathtype*24
+      integer lnrp  ! length of run path
 
       logical XST
 
 C Open rif file.
+      lnrp=lnblnk(runpath)
       IER=0
-      write(tfile,'(2a)')runpath(1:lnblnk(runpath)),file(1:lnblnk(file))
+      write(tfile,'(2a)')runpath(1:lnrp),file(1:lnblnk(file))
       CALL ERPFREE(ITA2,ISTAT)
       call FPOPEN(ITA2,ISTAT,1,IFC,tfile)
       if (ISTAT.LT.0) then
@@ -514,8 +532,7 @@ C defined.
       indxscn = 2
 
 C Sky file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       rskyfil(1:lnblnk(rskyfil))
+      write (tfile,'(2a)') runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
       INQUIRE(FILE=tfile,EXIST=XST)
       if (.not.XST) then
         rscedes(1)='  '
@@ -529,8 +546,7 @@ C Glazing file.
 C First check if alternative glazing specified (in case of blind 
 C shutter control).
       if (IGL.gt.0) then
-        write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       aglzfil(1:lnblnk(aglzfil))
+        write (tfile,'(2a)') runpath(1:lnrp),aglzfil(1:lnblnk(aglzfil))
         INQUIRE(FILE=tfile,EXIST=XST)
         if (.not.XST) then
           rscedes(2)='  '
@@ -545,8 +561,7 @@ C shutter control).
           endif
         endif
       else
-        write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       glzfil(1:lnblnk(glzfil))
+        write (tfile,'(2a)') runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         INQUIRE(FILE=tfile,EXIST=XST)
         if (.not.XST) then
           rscedes(2)='  '
@@ -564,8 +579,7 @@ C shutter control).
 
 C Remaining scene files - only if found is anything written to the rif file(s).
 C Materials file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       matfil(1:lnblnk(matfil))
+      write (tfile,'(2a)') runpath(1:lnrp),matfil(1:lnblnk(matfil))
       INQUIRE(FILE=tfile,EXIST=XST)
       if (XST) then
         indxscn = indxscn + 1
@@ -574,8 +588,7 @@ C Materials file.
       endif
 
 C Outside description file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       rofil(1:lnblnk(rofil))
+      write (tfile,'(2a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))
       INQUIRE(FILE=tfile,EXIST=XST)
       if (XST) then
         indxscn = indxscn + 1
@@ -584,8 +597,7 @@ C Outside description file.
       endif
 
 C Inside description file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       rzfil(1:lnblnk(rzfil))
+      write (tfile,'(2a)') runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
       INQUIRE(FILE=tfile,EXIST=XST)
       if (XST) then
         indxscn = indxscn + 1
@@ -594,8 +606,7 @@ C Inside description file.
       endif
 
 C Misc materials description file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       rmmfil(1:lnblnk(rmmfil))
+      write (tfile,'(2a)') runpath(1:lnrp),rmmfil(1:lnblnk(rmmfil))
       INQUIRE(FILE=tfile,EXIST=XST)
       if (XST) then
         indxscn = indxscn + 1
@@ -604,8 +615,7 @@ C Misc materials description file.
       endif
 
 C Misc scene description file.
-      write (tfile,'(2a)') runpath(1:lnblnk(runpath)),
-     &                                       rmfil(1:lnblnk(rmfil))
+      write (tfile,'(2a)') runpath(1:lnrp),rmfil(1:lnblnk(rmfil))
       INQUIRE(FILE=tfile,EXIST=XST)
       if (XST) then
         indxscn = indxscn + 1
@@ -679,20 +689,21 @@ C terminating character (or later the contents).
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1m/matfil,rmmfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil
-      character cmdname*72,OUTSTR*124,runpath*72,tfile*72
+      character cmdname*72,OUTSTR*124,runpath*72,pathtype*24,tfile*72
+      integer lnrp  ! length of run path
 
       logical XST
       logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ier=0
+      lnrp=lnblnk(runpath)
 
 C Attempt to read in file, note it is assumed to be one line.
-      write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                       cmdname(1:lnblnk(cmdname))
+      write(tfile,'(a,a)')runpath(1:lnrp),cmdname(1:lnblnk(cmdname))
       INQUIRE (FILE=tfile,EXIST=XST)
       if (XST) then
         CALL ERPFREE(ITA3,ISTAT)

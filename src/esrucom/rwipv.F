@@ -253,7 +253,7 @@ C then include initial data for energy demand sets and metrics.
 #include "building.h"
 
 C Comments about common blocks are in ripvdat.
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -374,7 +374,7 @@ C Read IPV data.
 #include "building.h"
 #include "espriou.h"
 
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
 C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
 C           3 is java
       common/IPVFORMAT/ipvform,ipvversion
@@ -442,6 +442,9 @@ C Open any existing file by this name.
       write(currentfile,'(a)') file(1:lnblnk(file))
 
 C Check identity.
+      iper=0
+      imset=0
+      iset=0
       CALL STRIPC(ifu,OUTSTR,99,ND,1,'line 1',IER)
       IF(IER.NE.0)RETURN
       if(OUTSTR(1:5).ne.'* IPV'.and.OUTSTR(1:4).ne.'*IPV')then
