@@ -35,6 +35,7 @@ C EDCASCTL - edit casual gain control data.
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+      common/user/browse
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C1/NCOMP,NCON
@@ -87,6 +88,7 @@ C TMC common block:
       LOGICAL XST,lcouple,ldcoef
       logical MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical browse
 
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
@@ -98,7 +100,7 @@ C TMC common block:
       CHARACTER*72 DLCGCIN,LCFGF
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER info*18,cgcdesc*64
+      CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
 
 C Assume daylight coeffs do need calculated.
@@ -357,6 +359,13 @@ C In special case...
 
       IF (INO.EQ.NITEMS)THEN
 
+C If browsing pass this information to e2r.
+        if(browse)then
+          brw = ' -b yes'
+        else
+          brw = ' -b no '
+        endif
+
 C Check for control using Radiance.
         lcouple=.false.
         DO 560 ILZ=1,NLITZ(ICOMP)
@@ -371,11 +380,13 @@ C Check for control using Radiance.
  8888     call EASKABC('Radiance model for daylight coefficients:',' ',
      &    'Create and edit model','Calculate coeffs','Continue',IW,0)
           if (IW.eq.1) then
-            write(doitl,'(3a,i3,a)')'e2r -file ',LCFGF(1:lnblnk(LCFGF)),
-     &        ' -purpose Day_coef -zone ',ICOMP,' -act Create'
+            write(doitl,'(3a,i3,2a)')'e2r -file ',
+     &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
+     &        ICOMP,' -act Create',brw
           elseif (IW.eq.2) then
-            write(doitl,'(3a,i3,a)')'e2r -file ',LCFGF(1:lnblnk(LCFGF)),
-     &        ' -purpose Day_coef -zone ',ICOMP,' -act Compute &'
+            write(doitl,'(3a,i3,3a)')'e2r -file ',
+     &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
+     &        ICOMP,' -act Compute',brw,' &'
           elseif (IW.eq.3) then
             goto 9999
           endif

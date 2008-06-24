@@ -562,7 +562,6 @@ C     DIMFAC - factor for calculating the appropriate flow dimension
           FLUT=FLUT+FLW2(ICNN)*DIMFAC
         END IF
       END IF
-
    10 CONTINUE
 
       RETURN

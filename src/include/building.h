@@ -29,9 +29,9 @@ C Type declarations
       integer MDTY,MGTY,MGPER,MOL,MOCDT,MOCDP,MISCO
 
 C For the building:
-      PARAMETER (MCOM=48)
-      PARAMETER (MCON=1800)
-      PARAMETER (MTV=200)
+      PARAMETER (MCOM=28)
+      PARAMETER (MCON=1000)
+      PARAMETER (MTV=250)
       PARAMETER (MV=24)
       PARAMETER (ME=8)
       PARAMETER (MGP=3)
@@ -126,7 +126,7 @@ C For shading/ insolation:
       PARAMETER (MOZ=50)
 
 C 'misur' is the maximum number of surfaces insolated from one source.
-      parameter (misur=30)
+      parameter (misur=10)
 
 C For mrt calculations:
 C 'mcub' is the number of MRT sensors in a zone.

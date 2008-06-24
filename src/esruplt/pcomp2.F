@@ -314,6 +314,10 @@ C            1 Inter-node fluid heat capacity rate (W/K)
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
       logical closea
+      logical bNoFlow
+
+      real fQ_node1_frac
+      real fQ_node2_frac
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -390,11 +394,120 @@ C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
 C Inter-node fluid heat capacity rate (W/K)
          PCDATF(IPCOMP,1)=CSVF(INOD1,2)*SHTFLD(3,CSVF(INOD1,1))
 
+C Determine if there's fluid flow in the raditor
+         call eclose  ( PCONDR(ICON1)*CONVAR(ICON1,2),
+     &                  0.0, 1.0E-05, bNoFlow )
+
+C Modification: 2007-11-19 (aferguso)
+C Hensen's original model appended all of the heat emission to the
+C second node's heat balance. Hensen (1991) writes:
+C
+C  " The heat transfer from the radiator to the environment
+C    is assumed to take place between the two nodes, and will
+C    therefore appear only in the energy balance of the second
+C    node (hence, this model still needs refinements because
+C    it suffers from the same problem as indicated before for
+C    the boiler models: ie no heat loss from the first node
+C    when the water flow rate approaches zero). "
+C
+C Since the LMTD method uses the first node temperature to compute
+C compute heat transfer from the radiator, this defect is more severe
+C than Hensen suggests. When there is no flow to the radiator, the
+C model will:
+C
+C   - incorrectly compute the resulting heat transfer, and
+C
+C   - predict outlet temperatures well below the environment
+C     temperature (and often below zero).
+C
+C To correct this behavior, we'll modify the node heat balance
+C equations depending on whether there's flow through the
+C radiator.
+C
+C   - If there's flow through the radiator, we'll use the
+C     same energy balance equations that Hensen originally
+C     proposed (that is, all of the heat transfer is appended
+C     to the second node energy balance).
+C
+C   - Otherwise, we'll divide the computed heat transfer between
+C     the first and second nodes. This will cause both nodes to
+C     approach the the environmental temperaute as they cool.
+C
+C
+C Under no-flow conditions, the heat transfer will be apportioned
+C according to the temperature differences between the nodes
+C and the enviroment:
+C
+C                           [node 1 temp ] - [env. temp]
+C    [node 1 %] = ------------------------------------------------
+C                 [node 1 temp ] + [node 2 temp] - 2 * [env. temp]
+C
+C                           [node 2 temp ] - [env. temp]
+C    [node 2 %] = ------------------------------------------------
+C                 [node 1 temp ] + [node 2 temp] - 2 * [env. temp]
+C
+C We must also ensure the resulting heat transfer does not cool
+C the nodes below the enviroment temperature --- that is:
+C
+C
+C                       [heat capacity] * ([node 1 temp] - [env. temp])
+C   [Q] * [node 1 %] <= -----------------------------------------------
+C                                  [time-step duration]
+C
+C                       [heat capacity] * ([node 2 temp] - [env. temp])
+C   [Q] * [node 2 %] <= -----------------------------------------------
+C                                  [time-step duration]
+C
+C This modification ignores the central issue --- the model's LMTD 
+C basis is not valid under unsteady conditions. But the model's heat
+C transfer predictions when water is flowing through the radiator are
+C unaffected, and with these changes it does provide sensible predictions
+C under no-flow conditions.
+C
+C Reference:
+C
+C Hensen J L M (1991) 'On the thermal interaction of building
+C     structure and heating and ventilating system', PhD Thesis,
+C     Eindhoven University of Technology.
+
+        if ( bNoFlow ) then
+
+          fQ_node1_frac = (TS-TE) / ( TS + TX - 2.0 * TE)
+
+          fQ_node2_frac = (TX-TE) / ( TS + TX - 2.0 * TE)
+
+C Make sure Resulting heat transfer does not cool nodes below environment
+C temperature
+          if ( TS - Q * fQ_node1_frac * TIMSEC / CM < TE ) then
+
+            fQ_node1_frac = CM * (TS-TE) / TIMSEC / Q
+
+          endif
+
+C Make sure Resulting heat transfer does not cool nodes below environment
+C temperature
+          if ( TX - Q * fQ_node2_frac * TIMSEC / CM < TE ) then
+
+            fQ_node2_frac = CM * (TX-TE) / TIMSEC / Q
+
+          endif
+
+
+        else 
+
+          fQ_node1_frac = 0.0
+          fQ_node2_frac = 1.0
+
+        endif
+
+
+
 C Calculate current component time-constant TC
          TC(IPCOMP)=AMAX1(
      &        CM/AMAX1(SMALL,(C1)),
      &        CM/AMAX1(SMALL,(PCDATF(IPCOMP,1)+
-     &                        Q/AMAX1(SMALL,AMAX1(SMALL,(TS-TE))))))
+     &            Q*(fQ_node1_frac + fQ_node2_frac)
+     &            /AMAX1(SMALL,AMAX1(SMALL,(TS-TE))))))
 
 C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
          IF(IMPEXP.EQ.1) THEN
@@ -420,20 +533,27 @@ C  node 2
          COUT(3)=ALPHA*(-PCDATF(IPCOMP,1))-CM/TIMSEC
 C then matrix equation cross-coupling coefficient,
          COUT(4)=ALPHA*C1
-C and then present-time coefficients (ie. right hand sides)
+C and then present-time coefficients (ie. right hand sides). Scale
+C future-time-row Q value by respecitve node fraction.
          COUT(5)=((1.-ALPHA)*PCRP(ICON1)-CM/TIMSEC)*CSVP(INOD1,1)
      &           +(1.-ALPHA)*(-PCRP(ICON1))*PCTP(ICON1)
+     &           +fQ_node1_frac* ALPHA*Q +(1.-ALPHA)*PCQP(INOD1)
          COUT(6)=(1.-ALPHA)*(-PCDATP(IPCOMP,1))*CSVP(INOD1,1)
      &           +((1.-ALPHA)*PCDATP(IPCOMP,1)-CM/TIMSEC)*CSVP(INOD2,1)
-     &           +ALPHA*Q+(1.-ALPHA)*PCQP(INOD2)
+     &           +fQ_node2_frac* ALPHA*Q+(1.-ALPHA)*PCQP(INOD2)
 
-C Store "environment" variables future values
+
+C Store "environment" variables future values. Scale Q value by
+C node fractions.
          PCTF(ICON1)=CONVAR(ICON1,1)
          PCRF(ICON1)=C1
-         PCQF(INOD2)=Q
-
-C Establish "containment loss" data
-         QDATA(IPCOMP)=ALPHA*Q+(1.-ALPHA)*PCQP(INOD2)
+         PCQF(INOD1)=Q * fQ_node1_frac
+         PCQF(INOD2)=Q * fQ_node2_frac
+ 
+C Establish "containment loss" data. Scale Q value by sum
+C of node fractions. 
+         QDATA(IPCOMP)=ALPHA*Q* ( fQ_node1_frac + fQ_node2_frac )
+     &       +(1.-ALPHA)*PCQP(INOD2)
 
 C Establish additional output variables
          PCAOUT(IPCOMP,1)=TE
@@ -475,7 +595,8 @@ C Trace output
             WRITE(ITU,*) ' TX     = ',TX,' (C)'
             WRITE(ITU,*) ' TE     = ',TE,' (C)'
             WRITE(ITU,*) ' DTLM   = ',DTLM,' (K)'
-            WRITE(ITU,*) ' Q      = ',Q,' (W)'
+            WRITE(ITU,*) ' Q      = ',
+     &            Q*(fQ_node1_frac + fQ_node2_frac ),' (W)'
          END IF
          WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
          NITMS=6
@@ -958,7 +1079,7 @@ C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
          PWRQ=PQ
 
 C Now Q is made up of all inefficiencies
-         Q=E
+         Q=(1.-BDATA(IPCOMP,3))*E
 
 C Establish heat capacity of component mass CM (J/K) and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)

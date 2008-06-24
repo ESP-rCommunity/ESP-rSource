@@ -869,11 +869,11 @@ C (Re)Set all surfaces to standard line width.
             endif
 
             write(outs,'(a,a)')'Which zone is associated with ',
-     &       NDNAM(IFNOD)
+     &NDNAM(IFNOD)
             IC=-1
             IZ=-1
             WRITE(OUTS,'(A)') 
-     &       'Select zone to associated with this node. '
+     &'Select zone to associated with this node. '
             CALL ASKZONE(IC,0,OUTS,'Select zone:','-','mfn locate',IER)
             call usrmsg(' ',' ','-')
             if(IC.EQ.0.OR.IC.EQ.-1)then

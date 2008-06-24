@@ -1106,7 +1106,7 @@ C Start new project, begin with registration.
         mpath=' '
         folder=' '
         menu=' '
-        call pregist('i',root,mpath,folder,menu,ier)
+        call pregist('i ',root,mpath,folder,menu,ier)
       ELSEIF(INO.EQ.10)THEN
 
 C Root name of the model.
@@ -1737,6 +1737,14 @@ C          call usrmsg('Beginning CFD only assessment via',doit,'-')
 
 C Visual simulation.  Starts e2r with configuration file. Depending on
 C if Unix or Windows setup the appropriate path.
+
+C If browsing pass this information to e2r.
+        if(browse)then
+          brw = ' -b yes'
+        else
+          brw = ' -b no '
+        endif
+
         call tstamp('>','PRJ: beginning e2r')
         doit = ' '
         call tchild(ICPMOD)
@@ -1754,12 +1762,12 @@ C and change any / to \.
           longtfile=longtfiledos
         endif
         if(iappw.gt.0.and.iappw.le.200)then
-          write(doit,'(3a,3i4,3a)') 'e2r -mode ',tmode,
+          write(doit,'(3a,3i4,4a)') 'e2r -mode ',tmode,
      &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' &'
+     &      longtfile(1:lnblnk(longtfile)),brw,' &'
         else
-          write(doit,'(5a)') 'e2r -mode ',tmode,
-     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
+          write(doit,'(6a)') 'e2r -mode ',tmode,
+     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),brw,' &'
         endif
 
 C Debug.
@@ -2865,7 +2873,6 @@ C write out a single line summary.
  143      CALL STRIPC(ifu,OUTSTR,0,ND,1,'*report',IER)
           IF(IER.NE.0)goto 1
           if(OUTSTR(1:7).eq.'*report')then
-C            write(6,*) outstr(1:lnblnk(outstr))
             K=7
             CALL EGETWI(OUTSTR,K,id1,1,98,'W','iget',IIER)
             if(id1.eq.98)then
@@ -2894,7 +2901,6 @@ C found the correct report, skip title, format, fields lines
                 CALL STRIPC(ifu,OUTSTR,0,ND,1,'*fields',IER)
                 CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
                 k=5
-C                write(6,*) outstr(1:lnblnk(outstr))
                 if(im2)then
                   CALL EGETWR(OUTSTR,K,anu_ht_m2(ipass),0.,0.,'-',
      &              'heat dmd',IER)
@@ -2948,7 +2954,6 @@ C                  call edisp(iuout,'* Confirm building capacity.')
                 CALL STRIPC(ifu,OUTSTR,0,ND,1,'*fields',IER)
                 CALL STRIPC(ifu,OUTSTR,0,ND,1,'*data',IER)
                 k=5
-C                write(6,*) outstr(1:lnblnk(outstr))
                 if(im2)then
                   CALL EGETWR(OUTSTR,K,anu_ht_cap_m2(ipass),0.,0.,'-',
      &              'heat cap',IER)

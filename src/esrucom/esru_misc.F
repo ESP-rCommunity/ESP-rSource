@@ -788,6 +788,7 @@ C espriou.h provides currentfile.
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN
 
 C Open the utility file, return if not found.
+      IER=0
       CALL EFOPSEQ(IFIL,LFIL,1,IER)
       IF(IER.LT.0)THEN
         IER=1
@@ -1150,6 +1151,7 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
+      common/OUTIN/IUOUT,IUIN
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -2575,7 +2577,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
       CHARACTER*(*) prompt,title,errmsg
@@ -2647,15 +2649,15 @@ C if it has been sorted and notify user.
                 IUO=IFIL+1
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
-                if(ip3ver.eq.0)then
+                if(ip3ver(L).eq.0)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
-                elseif(ip3ver.eq.1)then
+                elseif(ip3ver(L).eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
-                elseif(ip3ver.eq.2)then
+                elseif(ip3ver(L).eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
@@ -2878,7 +2880,7 @@ C `-` zone names only.
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
 
       LOGICAL XST,FOUND
       CHARACTER*(*) prompt,title
@@ -2940,15 +2942,15 @@ C if it has been sorted and notify user.
                 IUO=IFIL+1
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
-                if(ip3ver.eq.0)then
+                if(ip3ver(L).eq.0)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
-                elseif(ip3ver.eq.1)then
+                elseif(ip3ver(L).eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
-                elseif(ip3ver.eq.2)then
+                elseif(ip3ver(L).eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif

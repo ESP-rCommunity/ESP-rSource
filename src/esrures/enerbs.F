@@ -59,8 +59,8 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
@@ -96,7 +96,7 @@ C If izver >= 4 then there is no need to read the operation file.
 C Assume that the operation file name has been read in via MOINIT.
 C Read in the zone operational file data.
         CALL EROPER(0,iuout,iunit,izone,IER) ! for older files
-        if(ip3ver.eq.0)then
+        if(ip3ver(izone).eq.0)then
           write(outs,'(a,i2,a)') 
      &    'Operation file for zone ',izone,' periods being sorted!'
           call edisp(iuout,outs)

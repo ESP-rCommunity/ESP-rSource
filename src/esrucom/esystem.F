@@ -199,9 +199,6 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C ZMFN1 (124 char) holds first line of flow node->zone links
-C ZMFN2 (124 char) holds second line of flow node->zone links
-      COMMON/AFNZN/zmfn1,zmfn2
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
@@ -448,18 +445,6 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty    
-      
-c This common block is used to define the sky temperature calculation method
-      COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
-                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
-                                   ! 2 = Cole (?);
-                                   ! 3 = Czeplak & Kasten (1987);               
-                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
-                                   ! 5 = Swinbank (clear - uses wet bulb T); 
-
-C Indicies of simulation toggles for inside and outside hc coef.
-      common/hcthry/ihct,icorexhct
 
 
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
@@ -477,7 +462,6 @@ C Indicies of simulation toggles for inside and outside hc coef.
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character WORD2*20,msgl2*48
-      character zmfn1*124,zmfn2*124
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
@@ -1134,18 +1118,6 @@ C then get the name of the file and test for its existence.
 C Solar radiation (half hour data) flag.
         call egetwi(outstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
-
-      elseif(WORD(1:14).eq.'*sky_temp_calc')then
-
-C Solar radiation (half hour data) flag.
-        call egetwi(outstr,k,iExt_longwave_flg,0,5,'W',
-     &    'sky temper calculation flag',IER)
-
-      elseif(WORD(1:14).eq.'*exte_conv_alg')then
-
-C external convection algorithm flag.
-        call egetwi(outstr,k,icorexhct,0,15,'W',
-     &    'external convection flag',IER)
 
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(OUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)

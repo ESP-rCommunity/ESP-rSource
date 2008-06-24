@@ -1545,13 +1545,14 @@ C 1 degC recalculate TP and UL.
            ITER=ITER+1
            GOTO 20 
          ELSE IF(ITER.GT.50) THEN
-           WRITE(OUTS,*) 'CMP71C : Max number of iterations exceeded'
+           WRITE(OUTS,*)'CMP71C : Max number of iterations
+     &  exceeded'
            CALL EDISP(IUOUT,OUTS)
          ELSE
            CONTINUE
          ENDIF
-
-
+   
+         
 C Calculate the current component time constant TC
          TC(IPCOMP)=CM/AMAX1(SMALL,(C1+UA))
 

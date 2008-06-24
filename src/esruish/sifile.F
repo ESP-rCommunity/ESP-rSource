@@ -137,11 +137,20 @@ C If new file, fill records 1 and 4 with zeros so that dbt will be
 C interpreted later as empty.
         call efopran(ifilsi,fname,maxrec,3,ier)
         do 10 i=1,maxrec
-          ishd(i)=0
-          isadd(i)=0
+          if(i.gt.12)then
+             idum(i)=0
+          else
+             idum(i)=0
+             ishd(i)=0
+             isadd(i)=0
+          endif
   10    continue
+        irec=1
         write(ifilsi,rec=irec,iostat=istat,err=1001)(ishd(i),i=1,12),
      &                                              (isadd(i),i=1,12)
+        irec=4
+        write(ifilsi,rec=irec,iostat=istat,err=1001)
+     &                                     (idum(i),i=1,nzsur(icomp))
       endif
 
 C Return after advising user.
@@ -556,4 +565,3 @@ C Error handling.
       ier=1
       return
       end
-

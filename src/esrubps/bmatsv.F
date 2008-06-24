@@ -1280,10 +1280,8 @@ C Find number of data blocks per hour to be saved.
               ENDIF
 
 C transport miscellaneous simulation data to reporting object
-              if ( bH3K_rep_enabled() ) then
-                 call H3K_transport_build_data(icomp)
-                 call H3K_transport_mfn_data()
-              endif
+              if ( bH3K_rep_enabled() )
+     &           call H3K_transport_build_data(icomp)
 
 C If TSC type 2 is active then find sum of averages for zone air
 C temperature and zone air energy injection.
@@ -1518,9 +1516,8 @@ C Database is not written if save-levels 0 or 5 are active.
               if ( ISAVE .ne. 0 .and. isave .ne.5 ) then
                 CALL ENETLIBSV
               endif
-              if ( bH3K_rep_enabled() ) THEN
-                call H3K_transport_electric_data()
-              ENDIF
+              if ( bH3K_rep_enabled() )
+     &          call H3K_transport_electric_data()
             ENDIF
 
 C For global control, increment pass counter.
