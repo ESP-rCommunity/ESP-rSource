@@ -2506,14 +2506,15 @@ C
       COMMON/MFLOW2/NDNAM(0:MNOD)
       character*12  NDNAM  ! - identifier/name
 C
-      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
+      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),
+     & SUPNOD(MNOD,MNDS)
       integer     NDFLD ! - fluid type (1=air, 2=water)
       Integer     NDTYP ! - type (0=internal; unknown pressure
 C                                                  1=internal; known total pressure
 C                                                  2=boundary; known total pressure
 C                                                  3=boundary; wind induced pressure; implies NDFLD=1)
-      integer     HNOD  ! - height above datum (m)
-      integer     SUPNOD ! - supplementary data items (max. MNDS)
+      REAL          HNOD  ! - height above datum (m)
+      REAL          SUPNOD ! - supplementary data items (max. MNDS)
 C              if NDTYP=0 none
 C                 NDTYP=1 total pressure (Pa)
 C                 NDTYP=2 total pressure (Pa)
