@@ -1028,13 +1028,19 @@ C has to be read. imode=0 - plant only config
 C Read plant component file name (long or short) 
       if(IPLIB.eq.1)then
         IREC=IREC+1
-        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) Lpcdb
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        lnfb=lnblnk(firstbit)
+	write(Lpcdb,'(a)') firstbit(1:lnfb)
+        write(6,*) Lpcdb
       elseif(IPLIB.eq.2)then
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
-        Lpcdb=firstbit   ! until Lpcdb becomes 144 char
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(6,*) Lpcdb
       endif
       
 C If IPLIB is 2 then the model configuration file name will have alread

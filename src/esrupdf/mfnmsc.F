@@ -266,7 +266,7 @@ C LAPRES,IAPRES (for window pressure databases)
       LOGICAL OK,dok
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character H*72,ltmp*72
+      character H*72,lltmp*144,ltmp*72
 
       h(1)='This file is assumed to exist. '
       ltmp=laprob
@@ -288,12 +288,13 @@ C LAPRES,IAPRES (for window pressure databases)
       endif
       IF(.not.ok) goto 220
       h(1)='This file is assumed to exist. '
-      ltmp=lapres
-      CALL EASKS(ltmp,' Wind pressure coefficients db ? ',' ',
-     &        72,' ',' file name',IER,1)
-      if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-        lapres=ltmp
+      lltmp=lapres
+      CALL EASKS(lltmp,' Wind pressure coefficients db ? ',' ',
+     &        96,' ',' file name',IER,1)
+      if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+        lapres=lltmp
       endif
+      
       h(1)='This file is assumed to exist. '
       ltmp=lafres
       CALL EASKS(ltmp,' Mass flow simulation results file ? ',
