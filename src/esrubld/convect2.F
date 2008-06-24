@@ -94,8 +94,6 @@ C Commons to support vertical channel hc regime.
 
 C Commons added for ISO 15099 algorithm
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
-     &              RESID(MNOD),SAFLW(MNOD)
 
       CHARACTER LAPROB*72
 
@@ -104,11 +102,9 @@ C Commons added for ISO 15099 algorithm
 
       real veloc
 
-      DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA
+      DOUBLE PRECISION NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA
       DOUBLE PRECISION NUSS,RAS,vel2,CNUS
       DOUBLE PRECISION FLIN,FLUT
-
-      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
 
 C Trace output. If there is a zone htc file note that data may
 C be superceeded by user specifications.
@@ -341,7 +337,7 @@ C Air properties fixed at 300 K values.
         CNUS=(576*(RAS*CWIDTH/CHEIGHT)**(-2)+
      &        2.87*(RAS*CWIDTH/CHEIGHT)**(-0.5))**(-0.5)
          
-        HC=CNUS*0.0263/CWIDTH       
+        HC=real(CNUS)*0.0263/CWIDTH       
 
         if(dotrace) then
           write(outs,'(A,E10.2,E10.2,F4.1)')'RAS,CNUS,HC ',RAS,CNUS,HC
@@ -357,7 +353,7 @@ C Air entering from another building zone.
         CNUS=(576.0*(RAS*CWIDTH/CHEIGHT)**(-2.0)+
      &        2.87*(RAS*CWIDTH/CHEIGHT)**(-0.5))**(-0.5)
          
-        HC=CNUS*0.0263/CWIDTH 
+        HC=real(CNUS)*0.0263/CWIDTH
 
         if(dotrace) then
           write(outs,'(A,E10.2,E10.2,E10.2,E10.2,E10.2,E10.2,F4.1)')
@@ -379,19 +375,18 @@ C Air properties are fixed to dry air values at 300 K and 101325 Pa.
 C
 C Air entering from outdoors, i.e. the "lowermost" zone of the vertical
 C channel - "forced" velocity is assumed to be zero.
-        PR=0.707
-        LAMBAIR=0.0263  ! W/(m K)
-        RHOAIR=1.174     ! kg/m3
-        CPAIR=1.007       ! kJ/(kg K)
-        NUAIR=15.72E-6  ! m2/s
+        LAMBAIR=2.63D-02  ! W/(m K)
+        RHOAIR=1.174D0     ! kg/m3
+        CPAIR=1.007D0       ! kJ/(kg K)
+        NUAIR=15.72D-6     ! m2/s
         TFILM=(TFS(ICOMP,ISUR)+TF)/2.0
-        BETA=1.0/(TFILM+273.15)
+        BETA=1.0D0/(TFILM+2.7315D02)
 
         RAS=1000.0*9.81*BETA*ABS(TFS(ICOMP,ISUR)-TF)*
      &      CWIDTH**3.0*RHOAIR*CPAIR/(NUAIR*LAMBAIR)
          
         IF(RAS.le.1.0D+04) THEN
-          NUSS=1.0+1.7596678D-10*RAS**2.2984755
+          NUSS=1.0D0+1.7596678D-10*RAS**2.2984755D0
         ELSEIF ((RAS.gt.1.0D+04).AND.(RAS.le.5.0D+04))THEN
           NUSS=0.028154*RAS**0.4134
         ELSE
@@ -406,7 +401,7 @@ C of a multi-zone stacked channel.
 
         NUSS=MAX(real(NUSS),(0.242*(real(RAS)*CWIDTH/CHEIGHT)**0.272))
 
-        HC=2.0*real(NUSS)*LAMBAIR/CWIDTH
+        HC=2.0*real(NUSS*LAMBAIR)/CWIDTH
 
         if(dotrace) then
           write(outs,'(A,E10.3,E10.3,E10.3,E10.3,E12.4,E12.4,F5.2)')
@@ -418,12 +413,11 @@ C of a multi-zone stacked channel.
 
 C ISO 15099 correlation for buoyancy driven flow in vertical channels w/
 C air entering from another (lower) building zone.
-        PR=0.707
-        LAMBAIR=0.0263  ! W/(m K)
-        RHOAIR=1.174     ! kg/m3
-        CPAIR=1.007       ! kJ/(kg K)
-        NUAIR=15.72E-6  ! m2/s
-        veloc=0.0           ! m/s
+        LAMBAIR=2.63D-02  ! W/(m K)
+        RHOAIR=1.174D0     ! kg/m3
+        CPAIR=1.007D0       ! kJ/(kg K)
+        NUAIR=15.72D-6     ! m2/s
+        veloc=0.0              ! m/s
         TFILM=(TFS(ICOMP,ISUR)+TFA(IAORZ))/2.0
         BETA=1.0/(TFILM+273.15)    ! 1/K
 
@@ -456,7 +450,7 @@ C Get flow rate through channel from air flow network and calculate average velo
         ENDIF
 
 C eqn. 111 from ISO 15099:2003
-        HC=2.0*real(NUSS)*LAMBAIR/CWIDTH + 4.0*veloc
+        HC=2.0*real(NUSS*LAMBAIR)/CWIDTH + 4.0*veloc
 
         if(dotrace) then
           write(outs,'(A,4E10.3,E12.4,E12.4,F5.2)')
