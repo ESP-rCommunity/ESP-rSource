@@ -69,10 +69,12 @@ C The Awbi and Hatton correlations are from:
 C Awbi H.B. and Hatton A. (1999), `Natural Convection from Heated
 C Room Surfaces', Energy and Buildings, 30 233-244.
 
+C The ISO 15099:2003 correlations.
 
       SUBROUTINE HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HEIGHT,APRAT)
 
 #include "building.h"
+#include "net_flow.h"
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -90,15 +92,30 @@ C Commons to support vertical channel hc regime.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
 
+C Commons added for ISO 15099 algorithm
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+      CHARACTER LAPROB*72
+
       character outs*124
       logical dotrace
 
+      real veloc
+
+      DOUBLE PRECISION PR,NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA
+      DOUBLE PRECISION NUSS,RAS,vel2,CNUS
+      DOUBLE PRECISION FLIN,FLUT
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
 
 C Trace output. If there is a zone htc file note that data may
 C be superceeded by user specifications.
       dotrace=.false.
       IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
       IF(ITRACE(6).EQ.0.OR.NSINC.GT.ITCF)goto  9999
+      IF(IZNTRC(ICOMP).NE.1)goto 9999 ! check if zone output is rq'd
       IF( IHC(ICOMP).EQ.1 ) THEN
         write(outs,'(A,I4,a,i2,a,i2,a)')
      &    ' Subroutine HTBUOY  Trace output',ICNT,
@@ -334,16 +351,118 @@ C Air properties fixed at 300 K values.
 
 C Bar-Cohen and Rohsenow general correlation for buoyancy driven flow in vertical channels.
 C Air entering from another building zone.
-        RAS=9.8*1/TFA(IAORZ)*ABS(TFS(ICOMP,ISUR)-TFA(IAORZ))*
-     &      CWIDTH**3*0.707/(1.59E-5)**2
+        RAS=9.81/TFA(IAORZ)*ABS(TFS(ICOMP,ISUR)-TFA(IAORZ))*
+     &      CWIDTH**3.0*0.707/(1.59E-5)**2.0
          
-        CNUS=(576*(RAS*CWIDTH/CHEIGHT)**(-2)+
+        CNUS=(576.0*(RAS*CWIDTH/CHEIGHT)**(-2.0)+
      &        2.87*(RAS*CWIDTH/CHEIGHT)**(-0.5))**(-0.5)
          
         HC=CNUS*0.0263/CWIDTH 
 
         if(dotrace) then
-          write(outs,'(A,E10.2,E10.2,F4.1)')'RAS,CNUS,HC ',RAS,CNUS,HC
+          write(outs,'(A,E10.2,E10.2,E10.2,E10.2,E10.2,E10.2,F4.1)')
+     &     'TS,TA,CWIDTH,CHEIGHT,RAS,CNUS,HC ',
+     &     TFS(ICOMP,ISUR),TFA(IAORZ),CWIDTH,CHEIGHT,RAS,CNUS,HC
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF((ICOR.EQ.17).AND.(IAORZ.EQ.0))THEN
+
+C ISO 15099 correlation for buoyancy driven flow in ventilated vertical 
+C channels. Eqns. taken from version 2003, sec. 5.3 and eqn. 111.
+C CWIDTH is the Channel width and CHEIGHT the channel height. Hereby,
+C it is generally assumed the the ventilated vertical channel is split into 
+C more than one zone to better model stack effects in an afn.
+C PR is the Prandtl number, RAS is the Rayleigh number based on channel 
+C width and NUSS the corresponding Nusselt number
+C Air properties are fixed to dry air values at 300 K and 101325 Pa.
+C
+C Air entering from outdoors, i.e. the "lowermost" zone of the vertical
+C channel - "forced" velocity is assumed to be zero.
+        PR=0.707
+        LAMBAIR=0.0263  ! W/(m K)
+        RHOAIR=1.174     ! kg/m3
+        CPAIR=1.007       ! kJ/(kg K)
+        NUAIR=15.72E-6  ! m2/s
+        TFILM=(TFS(ICOMP,ISUR)+TF)/2.0
+        BETA=1.0/(TFILM+273.15)
+
+        RAS=1000.0*9.81*BETA*ABS(TFS(ICOMP,ISUR)-TF)*
+     &      CWIDTH**3.0*RHOAIR*CPAIR/(NUAIR*LAMBAIR)
+         
+        IF(RAS.le.1.0D+04) THEN
+          NUSS=1.0+1.7596678D-10*RAS**2.2984755
+        ELSEIF ((RAS.gt.1.0D+04).AND.(RAS.le.5.0D+04))THEN
+          NUSS=0.028154*RAS**0.4134
+        ELSE
+           NUSS=0.0673838*RAS**0.3333
+        ENDIF
+
+C If air is entering from the ambient, it is assumed that the velocity is zero.
+C This assumption is based on the approach of most buoyancy heat transfer 
+C algorithms according to literature. These do not take a superimposed "forced"
+C flow into account, which seems plausible for the "first" or "lowermost" zone
+C of a multi-zone stacked channel.
+
+        NUSS=MAX(real(NUSS),(0.242*(real(RAS)*CWIDTH/CHEIGHT)**0.272))
+
+        HC=2.0*real(NUSS)*LAMBAIR/CWIDTH
+
+        if(dotrace) then
+          write(outs,'(A,E10.3,E10.3,E10.3,E10.3,E12.4,E12.4,F5.2)')
+     &     '15099: TS,Tamb,CWIDTH,CHEIGHT,RAS,NUS,HC ',
+     &     TFS(ICOMP,ISUR),TF,CWIDTH,CHEIGHT,real(RAS),real(NUSS),HC
+          call edisp(itu,outs)
+        endif
+      ELSEIF((ICOR.EQ.17).AND.(IAORZ.GT.0))THEN
+
+C ISO 15099 correlation for buoyancy driven flow in vertical channels w/
+C air entering from another (lower) building zone.
+        PR=0.707
+        LAMBAIR=0.0263  ! W/(m K)
+        RHOAIR=1.174     ! kg/m3
+        CPAIR=1.007       ! kJ/(kg K)
+        NUAIR=15.72E-6  ! m2/s
+        veloc=0.0           ! m/s
+        TFILM=(TFS(ICOMP,ISUR)+TFA(IAORZ))/2.0
+        BETA=1.0/(TFILM+273.15)    ! 1/K
+
+        RAS=1000.0*9.81*BETA*ABS(TFS(ICOMP,ISUR)-TFA(IAORZ))*
+     &     CWIDTH**3.0*RHOAIR*CPAIR/(NUAIR*LAMBAIR)
+         
+        IF(RAS.le.1.0D+04) THEN
+          NUSS=1.0+1.7596678D-10*RAS**2.2984755
+        ELSEIF ((RAS.gt.1.0D+04).AND.(RAS.le.5.0D+04)) THEN
+          NUSS=0.028154*RAS**0.4134
+        ELSE
+           NUSS=0.0673838*RAS**0.3333
+        ENDIF
+
+        NUSS=MAX(real(NUSS),(0.242*(real(RAS)*CWIDTH/CHEIGHT)**0.272))
+
+C Get flow rate through channel from air flow network and calculate average velocity
+        IF (IAIRN.ne.0) THEN
+          IF ((ICAAS(ICOMP).gt.0).and.(ICAAS(IAORZ).gt.0)) THEN
+            call MFSNFL(2,ICAAS(ICOMP),ICAAS(IAORZ),FLIN,FLUT)
+            veloc=real(FLIN)*CHEIGHT/3600./VOL(ICOMP)
+            if(dotrace) then
+                write(outs,'(A,4I5,3E10.3)') 
+     &         'ICOMP,ICAAS(ICOMP),IAORZ,ICAAS(IAORZ),Vol,veloc,FLIN ',
+     &         ICOMP,ICAAS(ICOMP),IAORZ,ICAAS(IAORZ),
+     &         VOL(ICOMP),veloc,REAL(FLIN)
+                call edisp(itu,outs)
+             endif
+          ENDIF
+        ENDIF
+
+C eqn. 111 from ISO 15099:2003
+        HC=2.0*real(NUSS)*LAMBAIR/CWIDTH + 4.0*veloc
+
+        if(dotrace) then
+          write(outs,'(A,4E10.3,E12.4,E12.4,F5.2)')
+     &     '15099: TS,TA,CWIDTH,CHEIGHT,RAS,NUS,HC',
+     &     TFS(ICOMP,ISUR),TFA(IAORZ),CWIDTH,CHEIGHT,
+     &     real(RAS),real(NUSS),HC
           call edisp(itu,outs)
         endif
       ELSEIF(ICOR.EQ.30)THEN
