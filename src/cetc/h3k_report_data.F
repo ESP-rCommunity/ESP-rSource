@@ -33,6 +33,8 @@ C h3k_transport_plant_data:     Transports plant domain data
 C
 C h3k_connection_property:      Function returning data for plant connections.
 C
+C h3k_transport_mfn_data:     Transports flow network data
+C
 C *********************************************************************************************
 C
 C ******************************* H3K Init Set Meta *******************************************
@@ -86,15 +88,14 @@ C code to be called independently of these routines.
 C
 C**********************************************************************************************
 
-      SUBROUTINE H3K_transport_build_data(i_zone)
+      SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
 
 C.....Passed variable
-      integer i_zone            ! None number
+      integer iZone            ! Zone number
 
 C.....Common variables
-
       common/c20/nzsur(mcom),nztv(mcom)
       integer nzsur           ! # of surfaces in a zone
       integer nztv            ! # of verticies in a zone (not used)
@@ -106,7 +107,6 @@ C.....Common variables
       integer ngaps           ! # number of air gaps witin surface (not used)
       integer npgap           ! Location of air gap. (not used)
 
-      
 
 C TPA(MCOM),           ! - present zone air point temperature (oC)
 C QPA(MCOM)            ! - zone air point heat injection (W)
@@ -134,7 +134,7 @@ C.....Gridding common
       integer nndz            ! ? (not used)
       integer nndc            ! # number of nodes within a construction
       integer nndl            ! # of nodes per construction layer
-      
+
 C TPS(MCOM,MS),        ! - present surface temperature (oC)
 C QPS(MCOM)            ! - surface heat injection (W)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -145,7 +145,7 @@ C QFS(MCOM)            ! - surface heat injection (W)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       REAL TFS, QFS
 
-      COMMON/SETUQ/             ! PLANT heat injection/extration:
+      COMMON/SETUQ/           ! PLANT heat injection/extration:
      &     QPLTP(MCOM),         !  - present (W)
      &     QPLTF(MCOM),         !  - future (W)
      &     CONV(MCOM)           !  - convective ratio
@@ -178,18 +178,57 @@ C QFS(MCOM)            ! - surface heat injection (W)
       integer nbcdt
       real tbcps, bmiscd
 
+      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
+     &            ARF(MCOM,MS)
+      integer IE
+      real ATP,ATF,ARP,ARF
+
+      COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
+     &              HCOF(MCOM,MS)
+      real HCIP,HCIF,HCOP,HCOF ! convective heat transfer coefficients "present" and "future"
+                                            ! for "inside" and "outside" surface, each
+
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      integer IVF,ISI,IHC,ITW,ICGC,IOBS ! indices for "is there"
+
+      COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),
+     &              AE(MCOM,MS)
+      real EI,EE,AI,AE ! internal and external emissivity, areas (?)
+
+      COMMON/V2/CFB(MCOM,MST,MST)
+      real CFB ! black body viewfactors
+
+      COMMON/ELWE1/A1(MCOM,MS),B1(MCOM,MS),C1(MCOM,MS)
+      real A1,B1,C1 ! view factors of building, sky and ground of external surfaces
+
+      COMMON/COE31S/HRS(MCOM,MS,MS),ZHRS(MCOM,MS)
+      real HRS,ZHRS
+
+C.....Sky temperature and cloud cover; ground temperature, 
+      COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
+     &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
+     &TBSUTH,TBEAST,TBWEST
+
+      REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC
+      REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
+      REAL TBSUTH,TBEAST,TBWEST
+
 C.....Local variables
       REAL TMA                  ! Mean air point temperature (oC)
+      real trsum
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       INTEGER i_ZnCtl           ! Zone control flag
 
-      INTEGER iSurface, iLayer  ! Counters
-      
+      INTEGER iSurface, iNode,iViewSurface  ! Counters
+
+      real SBC
+
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cLayer_Chars
-      
+      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+
 C lnblnk is a function returning the index of last non-blank character in a string.
       INTEGER LNBLNK 
 
@@ -218,7 +257,9 @@ C.....The following code should determine the zone heat injection
 C.....For each zone regardless of the mechanism used to inject the
 C.....heat. 
 C----------------------------------------------------------------------
-      i_ZnCtl=icascf(i_Zone)
+      SBC=56.7E-9 ! Stefan-Boltzmann constant
+
+      i_ZnCtl=icascf(iZone)
 
       if(i_ZnCtl.ne.0)then
 
@@ -227,31 +268,31 @@ C Determine where heat is injected/extracted
         if ( iban(i_ZnCtl,2) .gt. 0 .and. iban(i_ZnCtl,3) .eq. 0 ) then
 
 c PIN is at surface.
-C         print*, i_zone, 'surface'
-          Q_zone = QFS(i_Zone)
+C         print*, iZone, 'surface'
+          Q_zone = QFS(iZone)
         elseif ( iban(i_ZnCtl,3) .gt. 0 ) then
 
 C PIN is within construction
-C         print*, i_zone, 'constr'
-          Q_zone = QFC(i_Zone)
+C         print*, iZone, 'constr'
+          Q_zone = QFC(iZone)
         elseif ( iban(i_ZnCtl,1) .eq. -1 ) then
 
 C PIN is in a plant component node - not implemented yet.
 
         elseif ( iban(i_ZnCtl,1) .eq. -2 ) then
-C         print*, i_zone, 'mix'
+C         print*, iZone, 'mix'
 C PIN is mix of radiative/convective flux (ie - plant component)
-         Q_zone = QPLTF(i_Zone)
+         Q_zone = QPLTF(iZone)
         else
 
 C PIN is air point
-C         print*, i_zone, 'air point'
-          Q_zone = QFA(i_Zone)
+C         print*, iZone, 'air point'
+          Q_zone = QFA(iZone)
         endif
       else
 
 C A zone with no control 
-C       print*, i_zone, 'no control'
+C       print*, iZone, 'no control'
         Q_zone = 0.0
       endif
 
@@ -262,7 +303,7 @@ C.....
 C.....Any changes to this code should be made within
 C.....the H3Kreports demarcaration comments
 C.....Set format depending on number of zones
-      if ( i_Zone .gt. 9 ) then
+      if ( iZone .gt. 9 ) then
          cZone_Chars = 'I2'
       else
          cZone_Chars = 'I1'
@@ -271,10 +312,10 @@ C.....Set format depending on number of zones
 
 C.....AIR POINT TEMPERATURE
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/air_point/temperature'
       call add_to_xml_reporting (
-     &         TFA(i_Zone),
+     &         TFA(iZone),
      &         H3K_rep_NAME,
      &         'units', '(oC)',
      &         'Zone air-point temperature' )
@@ -282,7 +323,7 @@ C.....-> set name
 
 C.....ZONE HEAT INJECTION / EXTRACTION
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/heat_injection'
       call add_to_xml_reporting (
      &         Q_ZONE,
@@ -305,7 +346,7 @@ C.....-> set name
          Q_Cool = ABS(Q_ZONE)
 
       endif
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/flux/net_flux'
       call add_to_xml_reporting (
      &         Q_ZONE,
@@ -314,7 +355,7 @@ C.....-> set name
      &         'Zone net heat injection/extraction ' )
 
 
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/flux/heat_injection'
       call add_to_xml_reporting (
      &         Q_Heat,
@@ -322,7 +363,7 @@ C.....-> set name
      &         'units', '(W)',
      &         'Zone net heat injection ' )
 
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/flux/heat_extraction'
       call add_to_xml_reporting (
      &         Q_cool,
@@ -333,7 +374,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: net gains from adjacent zones
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/net_from_adjacent_zones'
       call add_to_xml_reporting (
      &         q1adjz(2)-q2adjz(2),
@@ -343,7 +384,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: net gains from ambient
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/net_from_ambient'
       call add_to_xml_reporting (
      &         q1outs(2)-q2lost(2),
@@ -354,7 +395,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: absorbed by glazing
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/absorbed_glazing'
 
       call add_to_xml_reporting (
@@ -365,7 +406,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: absorbed by opaque construction
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/absorbed_opaque_construction'
 
       call add_to_xml_reporting (
@@ -377,7 +418,7 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: Net total absorbed
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/total_net_absorbed'
       call add_to_xml_reporting (
      &         q2tmc(2)+q2rem(2)+q2wall(2),
@@ -388,14 +429,13 @@ C.....-> set name
 
 C.....ZONE SOLAR GAINS: Net total gain
 C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &     '/solar_gains/total_net_gain'
       call add_to_xml_reporting (
      &         q1outs(2)+q1adjz(2)-(q2adjz(2)+q2lost(2)),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Total net solar gains' )
-
 
 
 C.......H3Kreports.(CASUAL_GAINS).start......................
@@ -408,10 +448,10 @@ C.......the H3Kreports demarcaration comments
 
 C.......CONVECTIVE CASUAL GAINS
 C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/convective'
       call add_to_xml_reporting (
-     &         Cas_con_dat(i_Zone),
+     &         Cas_con_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone convective casual gains' )
@@ -419,10 +459,10 @@ C.......-> set name
 
 C.......RADIANT CASUAL GAINS
 C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/radiant'
       call add_to_xml_reporting (
-     &         Cas_rad_dat(i_Zone),
+     &         Cas_rad_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone radatiant casual gains' )
@@ -430,10 +470,10 @@ C.......-> set name
 
 C.......LATENT CASUAL GAINS
 C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/latent'
       call add_to_xml_reporting (
-     &         Cas_lat_dat(i_Zone),
+     &         Cas_lat_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone latient casual gains' )
@@ -441,26 +481,24 @@ C.......-> set name
 
 C.......TOTAL CASUAL GAINS
 C.......-> set name
-        WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',i_Zone,
+        WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
      &       '/casual_gains/total'
       call add_to_xml_reporting (
-     &         Cas_lat_dat(i_Zone)
-     &           +  Cas_rad_dat(i_Zone)
-     &           +  Cas_con_dat(i_Zone),
+     &         Cas_lat_dat(iZone)
+     &           +  Cas_rad_dat(iZone)
+     &           +  Cas_con_dat(iZone),
      &         H3K_rep_NAME,
      &         'units', '(W)',
      &         'Zone total casual gains '
      &             // '(convective + radiant + latent)' )
 
 
-
 C.......H3Kreports.(CASUAL_GAINS).end........................
-
 
 C---------------------------------------------------------------------
 C     Loop through zone surfaces and MLC layers, reporting data 
 C---------------------------------------------------------------------
-      do iSurface = 1, nzsur(i_Zone)
+      do iSurface = 1, nzsur(iZone)
 
          if ( iSurface .gt. 9 ) then
             cSurf_Chars = 'I2'
@@ -470,65 +508,184 @@ C---------------------------------------------------------------------
          write (H3K_format, '(A,A,A,A,A)')
      &        '(A,',cZone_Chars(1:2),',A,',cSurf_Chars(1:2),',A)'
 
-
 C........Surface temperature 
 C........-> set name
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',i_Zone,
+     &      'building/zone_',iZone,
      &      '/surface_',iSurface,
      &      '/temperature'
 C........->Report data
          call add_to_xml_reporting (
-     &      tfs(i_zone,iSurface),
+     &      tfs(iZone,iSurface),
      &      H3K_rep_NAME,
      &      'units', '(oC)',
      &      'Temperature on zone inside face' )
 
+C........External facing surfaces -> Surface temperature
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',iZone,
+     &         '/surface_',iSurface,
+     &         '/ext. surf. temperature'
+C........->Report data
+            call add_to_xml_reporting (
+     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Temperature on exterior face' )
+         Endif ! if ie = 0
+
 C........Radiant heat injection associated with plant containment.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',i_Zone,
+     &      'building/zone_',iZone,
      &      '/surface_',iSurface,
      &      '/plant_containment_flux'
 
 C........->Report data
          call add_to_xml_reporting (
-     &      fSurface_radiant_gain(i_Zone,iSurface,iFuture),
+     &      fSurface_radiant_gain(iZone,iSurface,iFuture),
      &      H3K_rep_NAME,
      &      'units', '(W)',
      &      'Plant containment radiant heat flux at surface' )
 
+C.......CONVECTIVE COEFFICIENTS
+C........Internal surface convective coefficient.
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',iZone,
+     &      '/surface_',iSurface,
+     &      '/HCi'
 
-         do iLayer = 1, nndc (i_Zone, iSurface )
-            if ( iLayer .gt. 9 ) then
-               cLayer_Chars = 'I2'
+C........->Report data
+         call add_to_xml_reporting (
+     &      HCIP(iZone,iSurface),
+     &      H3K_rep_NAME,
+     &      'units', '(W/(m2 K))',
+     &      'Internal side convective coefficient' )
+
+C........External surface convective coefficient.
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',iZone,
+     &      '/surface_',iSurface,
+     &      '/HCe'
+
+C........->Report data
+         call add_to_xml_reporting (
+     &      HCOP(iZone,iSurface),
+     &      H3K_rep_NAME,
+     &      'units', '(W/(m2 K))',
+     &      'External side convective coefficient' )
+
+C......MEAN RADIANT TEMPERATURE OF SURROUNDINGS
+C calc plane radiant temp. for each internal surface (w/o and w emissivity)
+         if (IVF(iZone) .eq. 1) THEN ! there is a view factor file for this zone
+            trsum = 0.0
+C            wtrsum = 0.0
+            do iViewSurface = 1,nzsur(iZone)
+C tps(iZone,iSurface) present (i? e?) surface temp.
+               trsum = trsum + CFB(iZone,iSurface,iViewSurface)*
+     &                           (TFS(iZone,iViewSurface)+273.15)**4
+C               wtrsum = wtrsum + EI(iZone,iViewSurface)*
+C                              CFB(iZone,iSurface,iViewSurface)*
+C     &                           (TFS(iZone,iViewSurface)+273.15)**4
+
+            enddo 
+            trsum = trsum**0.25 - 273.15
+C            wtrsum = wtrsum**0.25 - 273.15
+C........Plane radiant temperature 
+C........-> set name
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',iZone,
+     &         '/surface_',iSurface,
+     &         '/PRT'
+C........->Report data
+            call add_to_xml_reporting (
+     &         trsum,
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Plane radiant temperature on zone inside face' )
+
+C........Emissivity weighted plane radiant temperature 
+C........-> set name
+C            WRITE(H3K_rep_NAME,H3K_FORMAT)
+C     &         'building/zone_',iZone,
+C     &         '/surface_',iSurface,
+C     &         '/wPRT'
+C........->Report data
+C            call add_to_xml_reporting (
+C     &         wtrsum,
+C     &         H3K_rep_NAME,
+C     &         'units', '(oC)',
+C     &         'Emissivity weighted plane radiant temp. (inside face)' )
+
+C.......RADIATION HEAT TRANSFER COEFFICIENT
+C........-> set name
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',iZone,
+     &         '/surface_',iSurface,
+     &         '/HRi'
+C........->Report data
+            call add_to_xml_reporting (
+C     &         ZHRS(iZone,iSurface)/(TFS(iZone,iSurface)-trsum), ! <= problems with DT approx. zero !
+C          Incropera et. al., page 10:
+     &        EI(iZone,iSurface)*SBC*
+     &            (TFS(iZone,iSurface)+trsum+2*273.15)*
+     &            ((TFS(iZone,iSurface)+273.15)**2+(trsum+273.15)**2),
+     &         H3K_rep_NAME,
+     &         'units', '(W/(m2 K))',
+     &         'Radiant heat transfer coef. (inside face)' )
+
+         ENDIF ! <- end if viewfactor file present
+
+C calc mean surrounding temp of external surfaces
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surfaces faces external
+            trsum = B1(iZone,iSurface)*TSKY**4 +
+     &                  C1(iZone,iSurface)*(GTF(1)+273.15)**4 +
+     &                    A1(iZone,iSurface)*TBAVE**4
+            trsum = trsum**0.25 - 273.15
+C........-> set name
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',iZone,
+     &         '/surface_',iSurface,
+     &         '/AmbRT'
+C........->Report data
+            call add_to_xml_reporting (
+     &         trsum,
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Ambient radiant temperature for exterior surface' )
+
+         endif ! <- end if surface faces external
+
+C......=====================================================
+C......NODE DATA
+         do iNode = 1, (nndc (iZone, iSurface )-1)
+            if ( iNode .gt. 9 ) then
+               cNode_Chars = 'I2'
             else
-               cLayer_Chars = 'I1'
+               cNode_Chars = 'I1'
             endif
             write (H3K_format, '(A,A,A,A,A,A,A)')
      &        '(A,',cZone_Chars(1:2),
      &        ',A,',cSurf_Chars(1:2),
-     &        ',A,',cLayer_Chars(1:2),',A)'
-            
+     &        ',A,',cNode_Chars(1:2),',A)'
 
 C...........MLC layer temperature 
 C...........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',i_Zone,
+     &         'building/zone_',iZone,
      &         '/surface_',iSurface,
-     &         '/layer_',iLayer,
+     &         '/node_',iNode,
      &         '/temperature'
 C...........->Report data     
             call add_to_xml_reporting (
-     &         tfc(i_zone,iSurface,iLayer),
+     &         tfc(iZone,iSurface,iNode),
      &         H3K_rep_NAME,
      &         'units', '(oC)',
      &         'Temperature at node within multilayer construction' )
 
-     
-         
-         enddo
-      enddo
+         enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
 
+      enddo ! <- end iSurface 1,N of iZone
 
       RETURN
       END
@@ -570,10 +727,26 @@ C.....Zone averaging
       common/avrage/idaver      ! Flag for timestep averaging
       integer idaver
 
+C.....Sky temperature and cloud cover
+      COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
+     &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
+     &TBSUTH,TBEAST,TBWEST
+
+      REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC
+      REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
+      REAL TBSUTH,TBEAST,TBWEST
+
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*12  H3K_format
+      
       INTEGER LNBLNK
+
+C----------------------------------------------------------------------     
+C     References
+C----------------------------------------------------------------------
+      REAL HUMR      ! Function returning the humidity ratio
+      REAL DEWPT    ! Function returning the saturation temperature
 
 C.....The following code is used to transport data to
 C.....the H3K reporting object.
@@ -586,8 +759,8 @@ C.....-> set name
 
       call add_to_xml_reporting (
      &         QFF,
-     &         'climate/solar/Diffuse_horizontal_radiation',
-     &         'units', '(W)',
+     &         'climate/solar/diffuse_horizontal_radiation',
+     &         'units', '(W/m2)',
      &         'Climate diffuse horizontal solar radiation' )
 
 
@@ -598,8 +771,8 @@ C.....-> set name
       call add_to_xml_reporting (
      &         QDF,
      &         H3K_rep_NAME,
-     &         'units', '(W)',
-     &         'Climate diffuse horizontal solar radiation' )
+     &         'units', '(W/m2)',
+     &         'Climate direct normal solar radiation' )
 
 C.....AMBIENT TEMPERATURE
 C.....-> set name
@@ -641,6 +814,47 @@ C.....-> set name
      &         H3K_rep_NAME,
      &         'units', '(degrees)',
      &         'Climate wind direction' )
+
+C.....Cloud Cover
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/cloud_cover'
+      call add_to_xml_reporting (
+     &         CLOUDC,
+     &         H3K_rep_NAME,
+     &         'units', '(fraction)',
+     &         'Climate cloud cover' )
+
+C.....Sky temperature
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/sky_temperature'
+      call add_to_xml_reporting (
+     &         (TSKY-273.15),
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'Climate sky temperature' )
+
+C.....Sky temperature depression
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/sky_temperature_depression'
+      call add_to_xml_reporting (
+     &         (TF-(TSKY-273.15)),
+     &         H3K_rep_NAME,
+     &         'units', '(K)',
+     &         'Climate sky temperature depression' )
+
+C.....Ambient air saturation temperature
+C.....-> set name
+      WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &     'climate/ambient_air_tsat'
+      call add_to_xml_reporting (
+     &         DEWPT(HUMR(TF,HF,1013.),1013.),
+     &         H3K_rep_NAME,
+     &         'units', '(oC)',
+     &         'ambient air saturation temperature' )
+
 
       RETURN
       END
@@ -2260,6 +2474,130 @@ C Recover the string indicated by iLocation
         iLength = iLengths (iLocation)
 
       endif
+
+      return
+      end
+
+C ******************************* H3K Transport Massflow Network Data ************************
+C
+C Created by: Achim Geissler
+C Created on: June 17, 2008
+C Copyright: GaCH
+C ________
+C ABSTRACT:
+C This is the routine used to transport mass flow domain state-variable data to the H3K
+C reporting facilities.
+C
+C**********************************************************************************************
+      subroutine h3k_transport_mfn_data()
+      implicit none
+#include "building.h"
+#include "net_flow.h"
+C.....ESP-r commons
+C      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+C      CHARACTER LAPROB*72
+
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+C Network size
+      integer     NNOD  !  - number of nodes (building zones and/or plant components)
+      Integer     NCMP  ! - number of fluid flow components (flow restrictions)
+      integer     NCNN  ! - number of interconnections (branches)
+C
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      character*12  NDNAM  ! - identifier/name
+C
+      COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),
+     & SUPNOD(MNOD,MNDS)
+      integer     NDFLD ! - fluid type (1=air, 2=water)
+      Integer     NDTYP ! - type (0=internal; unknown pressure
+C                                                  1=internal; known total pressure
+C                                                  2=boundary; known total pressure
+C                                                  3=boundary; wind induced pressure; implies NDFLD=1)
+      REAL          HNOD  ! - height above datum (m)
+      REAL          SUPNOD ! - supplementary data items (max. MNDS)
+C              if NDTYP=0 none
+C                 NDTYP=1 total pressure (Pa)
+C                 NDTYP=2 total pressure (Pa)
+C                         node fluid temperature flag, indicating:
+C                         0: TNOD is constant
+C                         1: TNOD equals DRYB
+C                 NDTYP=3 wind pressure coefficients index
+C                         surface azimuth (degrees clockwise from north)
+C
+      COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
+      integer     ITND !  - node temperature index; if ITND(I)=N then TNOD(I)=TNOD(N)
+      real      TNOD  ! - node fluid temperature (C)
+C Components: fixed input data      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)      character*12     CMNAM ! - identifier/name      Character*60     LTPCMP ! - short description of that type      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),     &              SUPCMP(MCMP,MCMS)      integer     ITPCMP ! - type number      integer     ISDCMP  ! - number of supplementary data items (max. MCMS)      integer     ISDCNN  ! - number of connection level supplementary items (max. MCNS)      real         SUPCMP ! - component supplementary data items (1st item = fluid type)C Connections: fixed input data
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      integer     NODPS ! - node number on positive side of connection
+      real          HGTPS ! - height of +ve linkage point relative to NODPS (m)
+      integer     NODNE ! - node number on negative side of connection
+      Real          HGTNE ! - height of -ve linkage point relative to NODNE (m)
+      integer     ITPCON ! - number of linking fluid flow component
+      integer     NDSCNN ! - connection level component supplementary node numbersC Output data
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+C     FLW1   - 1st fluid flow through connection; positive if flow
+C              from NODPS to NODNE (kg/s)
+C     FLW2   - 2nd fluid flow through connection (applicable in case of
+C              e.g. a door); positive if flow from NODPS to NODNE (kg/s)
+C     PRES   - node total pressure (Pa)
+C     RESID  - node fluid mass flow residual (kg/s)
+C     SAFLW  - node coupled sum of absolute mass flow rates (kg/s)
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+      DOUBLE PRECISION FLWIN(MNOD),FLWUT(MNOD)
+      DOUBLE PRECISION FLWINV(MNOD),FLWUTV(MNOD)
+C.....Local variables
+      integer ii,jj                           ! counters
+      CHARACTER*12 fluid                ! fluid type ('air' or 'water')
+      character*128 Node_Name     ! node name
+      character*128 Connect_Name ! connection name
+      character*128 H3K_rep_NAME ! XML leaf name
+      integer i_neg, i_CompType,i_CompIndex      real area,rhon,PI ! component area and fluid density at node, PI            Logical b_noveloc ! logical for velocity calc.C.....Commons indicating if meta items have been initialized      COMMON / H3KmetaInitVal /     &     bBuildMeta,     &     bClimMeta,     &     bTimeMeta,     &     bPlantMeta,     &     bElectMeta      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
+C.....References
+      integer LNBLNK    ! function returning # of non-blank characters in
+                                ! a string
+      real DENSIT         ! function returning the density of a fluid
+C.....Crude check if there is any flow network
+      IF (NNOD.le.0) THEN        write(*,*)"no flow network to output"        RETURN
+      ENDIF
+C..... Call MFSTFL which sums up all flows in and out of a node ...
+C..... IDIM = 1 => flows in kg/s
+      CALL MFSTFL(1,FLWIN,FLWUT)
+C..... IDIM = 2 => flows in m3/h      CALL MFSTFL(2,FLWINV,FLWUTV)
+C.....Loop through all nodes in a flow network
+      do ii = 1,NNOD
+C...........Set string name to water/air/unknown (the latter shouldn't really happen!)
+         if (NDFLD(ii) .eq. 1 ) then
+            fluid = 'air'
+         elseif (NDFLD(ii) .eq. 2 ) then
+            fluid = 'water'
+         else
+            fluid = 'unknown'
+         endif
+
+C........Build node name
+         write(Node_Name, '(A,A,A,A)')
+     &        'mfn/',fluid(1:LNBLNK(fluid)),'/',     &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
+C.........output node data	! total mass flow entering a node *******************************
+         write(H3K_rep_NAME,'(A,A)')
+     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              '/flowrate'
+
+         call add_to_xml_reporting (
+     &              real(FLWIN(ii)),
+     &              H3K_rep_NAME,
+     &              'units', '(kg/s)',
+     &              'mfn total node flow rate' )
+	! total volume flow entering a node *******************************         write(H3K_rep_NAME,'(A,A)')     &              Node_Name(1:LNBLNK(Node_Name)),     &              '/volflowrate'         call add_to_xml_reporting (     &              real(FLWINV(ii)),     &              H3K_rep_NAME,     &              'units', '(m3/h)',     &              'mfn total node volume flow rate' )	! node temperature from flow network *******************************         write(H3K_rep_NAME,'(A,A)')     &              Node_Name(1:LNBLNK(Node_Name)),     &              '/temp'         call add_to_xml_reporting (     &              TNOD(ii),     &              H3K_rep_NAME,     &              'units', '(oC)',     &              'mfn node temperature' )C........Build connection nameC........Only use positive side of connectionsC.........Loop through all interconnections in a flow network         do jj = 1,NCNN            if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node               i_neg = NODNE(jj) ! the node on the other side of the conn.               write(Connect_Name, '(A,A,A,A,A,A,A,A,A)')     &             'mfn/',fluid(1:LNBLNK(fluid)),'/',     &             NDNAM(ii)(1:LNBLNK(NDNAM(ii))),'->',     &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),     &             ' (via ',     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+	! pressure drop between nodes of connection ***********************	       write(H3K_rep_NAME,'(A,A)')     &             Connect_Name(1:LNBLNK(Connect_Name)),     &             '/Dp'               call add_to_xml_reporting (     &             real(PRES(ii)-PRES(i_neg)),     &             H3K_rep_NAME,     &             'units', '(Pa)',     &             'mfn connection pressure drop' )
+	! flow through connection ****************************************               write(H3K_rep_NAME,'(A,A)')     &             Connect_Name(1:LNBLNK(Connect_Name)),     &             '/flow'               call add_to_xml_reporting (     &             real(FLW1(jj)),     &             H3K_rep_NAME,     &             'units', '(kg/s)',     &             'mfn connection flow rate' )        ! velocity at connection *********************************        ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460	! to "no velocity" and added type 211 to "no velocity")        ! Find the related component type and reject those	! connections which are not appropriate.               i_CompIndex=ITPCON(jj)               i_CompType=ITPCMP(i_CompIndex)               b_noveloc=.false.               if (i_CompType .eq. 10 .or. i_CompType .eq. 15 .or.   ! flow resistances     &             i_CompType .eq. 17 .or. i_CompType .eq. 20 .or.   ! of various definitions     &             i_CompType .eq. 25 .or. i_CompType .eq. 30 .or.   ! see mfmach.F, lines     &             i_CompType .eq. 35 .or. i_CompType .eq. 310 .or.  ! 580 ff.     &             i_CompType .eq. 410 .or. i_CompType .eq. 211 .or.     &             i_CompType .eq. 460) then                      ! ** skip this component **		      b_noveloc=.true.               elseif(i_CompType .eq. 40) then      ! common orifice flow component                  area=SUPCMP(i_CompIndex,2)               elseif(i_CompType.eq.50)then   ! laminar pipe volume flow rate                  PI = 4.0 * ATAN(1.0)                  area= PI * (SUPCMP(i_CompIndex,3)*     &                     SUPCMP(i_CompIndex,3))               elseif(i_CompType.eq.110)then  ! specific air flow opening                  area=SUPCMP(i_CompIndex,2)               elseif(i_CompType.eq.120)then  ! specific air flow crack component                  area=SUPCMP(i_CompIndex,2)*SUPCMP(i_CompIndex,3)               elseif(i_CompType.eq.130)then  ! specific air flow door                  area=SUPCMP(i_CompIndex,2)*SUPCMP(i_CompIndex,3)               elseif(i_CompType .eq. 210 .or.  ! general flow conduit (ie. duct or pipe).     &                   i_CompType .eq. 220 .or.  ! flow conduit ending in converging 3-leg junction     &                   i_CompType .eq. 230 .or.  ! flow conduit starting in diverging 3-leg junction     &                   i_CompType .eq. 240 .or.  ! flow conduit ending in converging 4-leg junction     &                   i_CompType .eq. 250)then  ! flow conduit starting in diverging 4-leg junction                  area=SUPCMP(i_CompIndex,3)               elseif(i_CompType .eq. 420)then ! flow corrector (ie. valve or damper) with polynomial flow resistance                  area=SUPCMP(i_CompIndex,2)               else                  area=1.0 ! should'nt really happen ...               endif        ! end code snippet from mfget.F	       if (b_noveloc .eqv. .false.) THEN        ! Now get density of "sending" node. If flw1(jj) is negative, use density of 	! node "i_neg". Densit() returns density in kg/m3                  if (FLW1(jj) .lt. 0) THEN	             rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))                  Else	             rhon=DENSIT(NDFLD(ii),TNOD(ii))	          Endif        ! Finally, write to H3K reporting                  write(H3K_rep_NAME,'(A,A)')     &               Connect_Name(1:LNBLNK(Connect_Name)),     &               '/veloc'                  call add_to_xml_reporting (     &               real(FLW1(jj))/rhon/area,     &               H3K_rep_NAME,     &               'units', '(m/s)',     &               'mfn connection flow velocity' )               endif ! end b_noveloc .true.            endif     !<- end if positive side connection for current node         enddo                  !<- connection loop end
+        ! whatever *****************************************************
+
+      enddo                     !<- node loop end
 
       return
       end
