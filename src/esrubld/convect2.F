@@ -1101,6 +1101,16 @@ C and the user-specified simulation toggle.
 #include "building.h"
       COMMON/HCTHRY/IHCT,icorexhct
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
+     &            ARF(MCOM,MS)
+
+C Set ICOR for `outside' surface if it faces 
+C external.
+       if( inRout.eq.2 .and.
+     &      (IE(ICOMP,ISUR).eq.0) ) THEN
+          ICOR=icorexhct
+          RETURN
+       Endif
 
 C Determine orientation of surface.  ANGLE=0 for walls and other vertical
 C surfaces; ANGLE=-90 for floors; and ANGLE=+90 for ceilings.

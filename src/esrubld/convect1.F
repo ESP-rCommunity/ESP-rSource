@@ -137,7 +137,8 @@ C `Outside' surface faces the exterior environment. If icorexhct is
 C one then use the standard correlation, if icorexhct is two then
 C use the MoWiTT correlation.
           IF( IE(ICOMP,ISUR).eq.0 ) THEN
-            icor = icorexhct
+C            icor = icorexhct
+            ICOR=ICORE(ICOMP,ISUR) ! ICORE is set in INTERR
             CALL HTCEXT(icor,HC,ICOMP,ISUR)
             HCOF(ICOMP,ISUR)=HC
 
@@ -561,9 +562,9 @@ C inRout=2 for `outside'.
       DO 20 inRout=1,2
 
 C No need to assign correlation for `outside' surface if it faces the
-C exterior environment or the ground.
+C the ground.
         if( inRout.eq.2 .and.
-     &      (IE(ICOMP,ISUR).eq.0 .or. IE(ICOMP,ISUR).eq.-4) ) goto 20
+     &      (IE(ICOMP,ISUR).eq.-4) ) goto 20
 
 C No need to assign correlation for `outside' surface if it faces the
 C air point of another zone.  This will be handled by subroutine OUTISIN.
@@ -634,7 +635,7 @@ C can be used for some surfaces while the standard selection (based on
 C simulation toggle, surface orientation, and direction of heat flow)
 C can be used for other surfaces.
 
-C Has the the user has specified a convection (.htc) file for this zone?
+C Has the the user specified a convection (.htc) file for this zone?
       IF( IHC(ICOMP).EQ.1 ) THEN
 
 C Check each control period for `type 2' control.
@@ -1099,6 +1100,7 @@ C `interior' building surfaces.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)
+      common/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
 
 C Each physical surface of the building is modelled with two mlc's: one
 C for each zone bounding the physical surface.  Consequently, the `outside'
@@ -1132,6 +1134,8 @@ C-----------Get the number of the corresponding mlc.
 C-----------Set the `outside' convection coefficient equal to the `inside'
 C-----------coefficient of the neighbouring zone.
             HCOF(ICOMP,ISUR) = HCIF(II1,II2)
+C-----------and keep track in ICORE()
+            ICORE(ICOMP,ISUR) = ICORI(II1,II2)
           endif
 
   101   CONTINUE

@@ -3208,10 +3208,12 @@ C checking.
   114       CONTINUE
           elseif(ICTL(I).eq.2) then
 
-C Correlation indices. << what is upper range? >>
-            CALL EGETWIA(IUF,IHCIA,NS,0,90,'W',
+C Correlation indices. << what is upper range? >>  Note that
+C the `use default value` indicator is -1 to allow that in range
+C checking.
+            CALL EGETWIA(IUF,IHCIA,NS,-1,94,'W',
      &               'inside face hc cor',IER)
-            CALL EGETWIA(IUF,IHCEA,NS,0,90,'W',
+            CALL EGETWIA(IUF,IHCEA,NS,-1,94,'W',
      &               'other face hc cor',IER)
             DO 115 KV=1,NS
               IHCI(I,KV)=IHCIA(KV)
