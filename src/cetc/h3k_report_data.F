@@ -187,6 +187,11 @@ C QFS(MCOM)            ! - surface heat injection (W)
      &              HCOF(MCOM,MS)
       real HCIP,HCIF,HCOP,HCOF ! convective heat transfer coefficients "present" and "future"
                                             ! for "inside" and "outside" surface, each
+C=== 26.06.08
+      COMMON/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
+      integer ICORI,ICORE ! Transfer coefficient index for internal and external face of MLC
+
+C===
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -227,6 +232,7 @@ C.....Local variables
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format
+      CHARACTER*24  H3K_format_HC                                      ! 26.06.08
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
 
 C lnblnk is a function returning the index of last non-blank character in a string.
@@ -507,6 +513,10 @@ C---------------------------------------------------------------------
          endif
          write (H3K_format, '(A,A,A,A,A)')
      &        '(A,',cZone_Chars(1:2),',A,',cSurf_Chars(1:2),',A)'
+C=== 26.06.08
+         write (H3K_format_HC, '(A,A,A,A,A,A,A)')
+     &       '(A,',cZone_Chars(1:2),',A,',cSurf_Chars(1:2),',A,I2,A)'
+C===
 
 C........Surface temperature 
 C........-> set name
@@ -550,10 +560,10 @@ C........->Report data
 
 C.......CONVECTIVE COEFFICIENTS
 C........Internal surface convective coefficient.
-         WRITE(H3K_rep_NAME,H3K_FORMAT)
+         WRITE(H3K_rep_NAME,H3K_format_HC)  ! 26.06.08
      &      'building/zone_',iZone,
      &      '/surface_',iSurface,
-     &      '/HCi'
+     &      '/HCi (icor=',ICORI(iZone,iSurface),')'  ! 26.06.08
 
 C........->Report data
          call add_to_xml_reporting (
@@ -563,10 +573,10 @@ C........->Report data
      &      'Internal side convective coefficient' )
 
 C........External surface convective coefficient.
-         WRITE(H3K_rep_NAME,H3K_FORMAT)
+         WRITE(H3K_rep_NAME,H3K_format_HC)  ! 26.06.08
      &      'building/zone_',iZone,
      &      '/surface_',iSurface,
-     &      '/HCe'
+     &      '/HCe (icor=',ICORE(iZone,iSurface),')' ! 26.06.08
 
 C........->Report data
          call add_to_xml_reporting (
