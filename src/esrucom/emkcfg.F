@@ -482,8 +482,15 @@ C Multiyear climate database
      &    cMY_climate_db_name(1:lnblnk(cMY_climate_db_name))
       endif
 
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
+C Plant database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
+      elseif(ipathpcdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
+     &      LPCDB(1:lnblnk(LPCDB))
+      endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then

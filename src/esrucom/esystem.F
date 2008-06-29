@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -853,8 +853,19 @@ C climate database has been defined.
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
       elseif(WORD(1:4).eq.'*pdb')then
-        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant comp db',IER)
+        CALL EGETRM(LOUTSTR,K,lworking,'W','plant comp db',IER)
+
+C Process the file name folloing *pdb and depending on its path
+C set the LPCDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('pdb',lworking,ier)
+
+C debug.
+        write(6,*) lworking
         write(6,*) lpcdb
+        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
+      elseif(WORD(1:7).eq.'*stdpdb')then
+        ipathpcdb=2  ! standard folder for plant template database
+        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
@@ -2878,11 +2889,12 @@ C ******* findwhichdbpath
 C findwhichdbpath takes a database file name and checks to
 C see if the path is local or absolute or standard database folder.
 C Depending on which database (the parameter topic) the
-C common block file string and whichdbpath variable is updated. 
+C common block file string and whichdbpath variable is updated.
+C topic =  'opt' for optics, 'pdb' for plant component templates
       subroutine findwhichdbpath(topic,file,ier)
 #include "esprdbfile.h"
 
-C Currently works only with optical database.
+C Currently works with optical and plant template database.
       character*(*) file
       character topic*3 ! identify which type of database
       integer lndbp   ! for length of standard database path
@@ -2903,6 +2915,9 @@ C Set OS and check that standarddbpath has been set.
           if(topic(1:3).eq.'opt')then
             ipathoptdb=1  ! local folder for optical database
             write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=1  ! local folder for plant database
+            write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -2910,11 +2925,17 @@ C The initial part of the path matches so only save the file name w/o path.
           if(topic(1:3).eq.'opt')then
             ipathoptdb=2
             write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=2
+            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
             ipathoptdb=0
             write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=0
+            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
           endif
         endif
       else
@@ -2922,26 +2943,38 @@ C The initial part of the path matches so only save the file name w/o path.
           if(topic(1:3).eq.'opt')then
             ipathoptdb=1  ! local folder for optical database
             write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=1  ! local folder for plant database
+            write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
             ipathoptdb=2
             write(LOPTDB,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=2
+            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
             ipathoptdb=0
             write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=0
+            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
           endif
         endif
       endif
 
 C Debug.
-C      write(6,*) file
-C      if(topic(1:3).eq.'opt')then
-C        write(6,*) loptdb
-C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-C      endif
+      write(6,*) file
+      if(topic(1:3).eq.'opt')then
+        write(6,*) loptdb
+        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+      elseif(topic(1:3).eq.'pdb')then
+        write(6,*) LPCDB
+        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+      endif
 
       return
       end

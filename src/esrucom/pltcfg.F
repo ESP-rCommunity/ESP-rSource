@@ -153,6 +153,7 @@ C LPCDB/IPCDB (for plant template database)
       COMMON/outin/iuout,iuin
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
+      COMMON/C6/INDCFG
       COMMON/C8/LPNAM
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
@@ -177,8 +178,8 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
-      LOGICAL close
-      CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24
+      LOGICAL close,unixok
+      CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24,fs*1
       CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
@@ -197,6 +198,20 @@ C containing NMISC.
 
       call usrmsg(' ','Reading plant network description...','P')
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      lndbp=lnblnk(standarddbpath)
+
+C Note: although the configuration file can hold the name of
+C the plant template database with or without path according to
+C whether it is in the standard database folder, the plant network
+C file does not make this distinction.
+
 C Identify plant components database; skip if this is '* Plant' record.
 C The next line is the name of the plant components db, but skip
 C this as the db is contained in the configuration file. Use a longer
@@ -209,15 +224,43 @@ C string buffer as the file name may be long.
       IF(LLTMP.EQ.'* Plant'.OR.LLTMP.EQ.'* PLANT') THEN
         CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
         IF(IER.NE.0)RETURN
+
+C Warn the user if the file in the plant network is different
+C from that of the cfg file plant component database.
         LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
         if(LLTMP(1:lnblnk(LLTMP)).ne.LPCDB(1:lnpcdb))then
           call lusrmsg(
-     &     'Mismatch: plant db in configuration & db in plant network'
-     &,LPCDB,'W')
+     &     'Mismatch: plant db in configuration & db in plant network',
+     &     LPCDB,'W')
         endif
       else
         LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
-        LPCDB=LOUTSTR(1:lnblnk(LOUTSTR))      
+      endif
+
+C If plant only model then we need to actually use the string in the
+C plant network file as the plant template database file name,
+C otherwise the configuration file already has this name.
+      if(INDCFG.eq.2)then
+        call findwhichdbpath('pdb',LLTMP,ier)
+
+C debug.
+        write(6,*) lltmp
+        write(6,*) lpcdb
+        write(6,*) ' pltcfg plant only ipathpcdb is ',ipathpcdb
+      else
+
+C Pay attention to the implied path of the plant template db from cfg file.
+C debug.
+        write(6,*) lpcdb
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lltmp=LPCDB
+        elseif(ipathpcdb.eq.2)then
+          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+        endif
+C Debug.
+        write(6,*) 'temp plant reset ',lltmp(1:lnblnk(lltmp))
+        write(6,*) ' pltcfg ipathpcdb is ',ipathpcdb	
       endif
 
 C Open plant components database on IUNIT1. IRECLN is width of plantdb
