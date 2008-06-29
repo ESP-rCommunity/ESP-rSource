@@ -2256,7 +2256,7 @@ C it should be possible to rebuild the name based on ../dbs.
               write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &          fname(1:lnblnk(fname))
             else
-              write(LOPTDB,'(a)') LTMP(1:lnblnk(LTMP))
+              write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
             endif
           else
             doit = ' '
@@ -2318,9 +2318,16 @@ C Test the returned file and if it is not readable reset LOPTDB.
      &      144,DPCDB,'plant templates database',IER,7)
           if(ier.eq.-3) goto 60  ! cancel detected, redisplay menu.
 
-C << perhaps call fdroot to get the last word in LCOPY and
-C << then add it after ../dbs
-          LPCDB=LCOPY
+C If the file exists with the normal path to model prepended then
+C it should be possible to rebuild the name based on ../dbs.
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
+          endif
           moddb=.true.
           ipathpcdb=1  ! signal that it is a local database.
           goto 44
@@ -2383,7 +2390,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
 C common block lpcdb will have been updated by call to findwhichdbpath.
-          call findwhichdbpath('pdb',lltmp,ier)
+          call findwhichdbpath('pdb',lcopy,ier)
           moddb=.true.
           goto 44
         else
@@ -3439,7 +3446,7 @@ C no need to duplicat the file separator.
      &          DOPTDB(1:lnblnk(DOPTDB)),' ',LCOPY(1:lnblnk(LCOPY))
             else
 
-C Similar dos copy logic but using DOPTDB.
+C Standard dos copy logic.
               message='getting optics db file from '
               call dblongdoscopy(DOPTDB,lcopy,message,doit,ier)
             endif
