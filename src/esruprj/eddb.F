@@ -1939,7 +1939,7 @@ C Setup string buffer with distribution database folder name.
      &    lpcdb(1:lnblnk(lpcdb))
       endif
 C Debug.
-      write(6,*) 'previous plant ',lprev(1:lnblnk(lprev))
+C      write(6,*) 'previous plant ',lprev(1:lnblnk(lprev))
 
   60  continue
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
@@ -1948,8 +1948,6 @@ C Debug.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
       endif
-C Debug.
-      write(6,*) 'temp plant ',lltmp(1:lnblnk(lltmp))
 
       H(1)='The plant components database is a binary, random '
       H(2)='access file holding plant component descriptions to '
@@ -2405,8 +2403,7 @@ C implied path.
         longtfile=lltmp
       endif
 C Debug.
-      write(6,*) 'temp plant b ',lltmp(1:lnblnk(lltmp))
-      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
+C      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
       call EFOPRAN(ipcdb,longtfile,IRECLN,1,IER)
       IF(ier.eq.0)THEN
         IREC = 1

@@ -242,25 +242,16 @@ C plant network file as the plant template database file name,
 C otherwise the configuration file already has this name.
       if(INDCFG.eq.2)then
         call findwhichdbpath('pdb',LLTMP,ier)
-
-C debug.
-        write(6,*) lltmp
-        write(6,*) lpcdb
-        write(6,*) ' pltcfg plant only ipathpcdb is ',ipathpcdb
       else
 
 C Pay attention to the implied path of the plant template db from cfg file.
 C debug.
-        write(6,*) lpcdb
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lltmp=LPCDB
         elseif(ipathpcdb.eq.2)then
           write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
         endif
-C Debug.
-        write(6,*) 'temp plant reset ',lltmp(1:lnblnk(lltmp))
-        write(6,*) ' pltcfg ipathpcdb is ',ipathpcdb	
       endif
 
 C Open plant components database on IUNIT1. IRECLN is width of plantdb
