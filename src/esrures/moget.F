@@ -3526,8 +3526,8 @@ C This recovers one day.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
            
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -3733,7 +3733,7 @@ C operation file is old, sort the periods via processoldcas.
   204       CONTINUE
             IUNIT=IFIL+1
             CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver.eq.0)then
+            if(ip3ver(IGETNO(KGET,2)).eq.0)then
               write(outs,'(a,i2,a)') 
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
@@ -3771,7 +3771,7 @@ C operation file is old, sort the periods.
   203       CONTINUE
             IUNIT=IFIL+1
             CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver.eq.0)then
+            if(ip3ver(IGETNO(KGET,2)).eq.0)then
               write(outs,'(a,i2,a)') 
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
@@ -3938,7 +3938,7 @@ C read the zone operation file.
           continue
         else
           CALL EROPER(0,iuout,iunit,iz,IER) ! for older results files.
-          if(ip3ver.eq.0)then
+          if(ip3ver(iz).eq.0)then
             write(outs,'(a,i2,a)') 
      &        'Operation file for zone ',IGETNO(KGET,2),
      &        ' periods being sorted!'

@@ -47,8 +47,8 @@ C MZINPT code in espbps/input.f.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       common/rpath/path
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
@@ -129,7 +129,7 @@ C if izver >=4 the zone operation file is not needed.
           continue
         else
           CALL EROPER(0,iuout,IUNIT,J,IER)  ! for older library versions
-          if(ip3ver.eq.0)then
+          if(ip3ver(J).eq.0)then
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',J,' periods being sorted!'
             call edisp(iuout,outs)

@@ -135,26 +135,34 @@ C Temporarily find the path and local file name for the results
 C file supplied. Save the current path to lpath and restore this
 C after the results file has been found and loaded so that subsequent
 C scans of cfg and zone files can be accomplished.
-C      write(6,*) 'MORFIL: current path is ',path
-C      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
+      write(6,*) 'MORFIL: current path is ',path
+      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
-C      write(6,*) 'MORFIL: local file is now ',ltmp
-C      write(6,*) 'MORFIL: rev path is ',path
+      write(6,*) 'MORFIL: local file is now ',ltmp
+      write(6,*) 'MORFIL: rev path is ',path
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
-C      write(6,*) 'MORFIL: exist is ',xst
+      write(6,*) 'MORFIL: exist is ',xst
       IF(XST)THEN
 
 C See if this is a plant result file.
-C That is if record 32=-1.
+C That is if record 32=-1 or -2.
         nprl = nprecl
         call EFOPRAN(iunit,LTMP,nprl,1,IER)
         if(ier.eq.0) then
            irec=32
            read(iunit,rec=irec,iostat=ios,err=13)iftype
-           IPLIB=1
-           if(iftype.eq.-1) return
+           if(iftype.eq.-1) then
+             write(6,*) 'MORFIL: older plant ',iftype
+             IPLIB=1
+             return
+           elseif(iftype.eq.-2) then
+             write(6,*) 'MORFIL: newer plant ',iftype
+	     IPLIB=2
+             iftype=-1
+             return
+           endif
         endif
 
 C Else assume this is a building result file. Use same width

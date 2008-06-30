@@ -31,6 +31,12 @@ C  dispimage - displays an image file to screen.
 C  getglr    - recovers view information and runs glare calculation.
 C  getdf     - runs daylight factor calculation.
 
+C Useful block of code:
+C          if(pathtype(1:9).eq.'radinhome')then
+C          elseif(pathtype(1:8).eq.'radincfg')then
+C          elseif(pathtype(1:8).eq.'radinrad')then
+C          endif
+
 C ********************** autorad **********************
 C autorad options:
 C  'Create' - depending on scene purpose create Radiance model
@@ -41,7 +47,7 @@ C  else simulate the scene by calling simscene
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       COMMON/C4/XLAT,XLON
 
@@ -57,7 +63,7 @@ C  else simulate the scene by calling simscene
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character zone*16,aim*12,act*72,LBSRIF*72
-      character outs*124,runpath*72,tfile*72,h*72
+      character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
       logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL fict,XST,OK,DOK
@@ -82,8 +88,8 @@ C Process daylight coefficients seperately as sky file is artificial.
       if (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
 
 C Search for existing 'sky' file. (If found delete)
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                       rskyfil(1:lnblnk(rskyfil))
+        write(tfile,'(2a)')runpath(1:lnblnk(runpath)),
+     &                     rskyfil(1:lnblnk(rskyfil))
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
           call FPOPEN(ITA3,ISTAT,1,0,tfile)
@@ -188,6 +194,8 @@ C Generate <<? default view information ?>> and then the image.
           call getglr
           call dispimage(2)
         elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+
+C Calculate the daylight factors and then diplay them via dfgridlbl.
           call getdf
           call DFGRIDLBL('d')
         endif
@@ -205,7 +213,7 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/uhome/upath
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/e2rf/rambfil,optnfil
@@ -224,12 +232,14 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       character outs*124,doit*124,doitl*256,tfile*72
       character zone*16,aim*12,act*72,LBSRIF*72
       character QT*1
-      character*72 LDFGRID,LTMPFL,LTMPFA,rn,runpath,upath
+      character*72 LDFGRID,LTMPFL,LTMPFA,rn,upath
+      character runpath*72,pathtype*24
 
       dimension npz(8),alt(8),azim(8),solid(8)
 
       logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST,unixok
+      integer lnrp  ! length of run path
 
       data npz/30,60,84,108,126,138,144,145/
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -241,22 +251,23 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       ITA2=IFIL+7
       ITA3=IFIL+10
       call isunix(unixok)
+      lnrp=lnblnk(runpath)
 
 C Simulate scene as defined by aim argument.
       if (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
 
-C Read from transfer file defined as the argument for -act.
+C Read from transfer file defined as the argument for -act from
+C the users home folder.
         if(unixok)then
           write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
-     &               act(1:lnblnk(act)),'  ',runpath(1:lnblnk(runpath))
+     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
         else
           write(doit,'(6a)') 'copy /y ',upath(1:lnblnk(upath)),'/',
-     &               act(1:lnblnk(act)),'  ',runpath(1:lnblnk(runpath))
+     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
         endif
         call runit(doit,'-')
         ier=0
-        write (LTMPFL,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                               act(1:lnblnk(act))
+        write (LTMPFL,'(a,a)') runpath(1:lnrp),act(1:lnblnk(act))
         call FPOPEN(ITA1,ISTAT,1,1,LTMPFL)
         if (ier.ne.0) then 
           call usrmsg('Cannot open transfer file:',act,'F')
@@ -307,8 +318,8 @@ C Error can't simulate switched blinds.
 C Rebuild.
         call touchrif(rn)
 
-C Run rtrace.
-        write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnblnk(runpath)),
+C Run rtrace. << ?? what about pathtype?? >>
+        write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &      '; rtrace -ov -I -h @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
      &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
@@ -319,10 +330,10 @@ C Run rtrace.
 C Copy transfer file back to users homedir (bps is expecting it to be there).
         call isunix(unixok)
         if(unixok)then
-          write(doit,'(5a)') 'cp ',runpath(1:lnblnk(runpath)),
+          write(doit,'(5a)') 'cp ',runpath(1:lnrp),
      &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
         else
-          write(doit,'(5a)') 'copy /y ',runpath(1:lnblnk(runpath)),
+          write(doit,'(5a)') 'copy /y ',runpath(1:lnrp),
      &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
         endif
         call runit(doit,'-')
@@ -335,8 +346,8 @@ C Do for all blind states.
  1234   do 123 IPTCH=1,145
 
 C Search for existing 'sky' file. (If found delete)
-          write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                       rskyfil(1:lnblnk(rskyfil))
+          write(tfile,'(a,a)')runpath(1:lnrp),
+     &                        rskyfil(1:lnblnk(rskyfil))
           INQUIRE (FILE=tfile,EXIST=XST)
           if(XST)then
             call FPOPEN(ITA3,ISTAT,1,0,tfile)
@@ -406,8 +417,7 @@ C Check for output file only for first patch.
 
 C Create temporary file (format: .PID.cmd)
             call esppid(ipid)
-            write(outs,'(a,i7,a)') runpath(1:lnblnk(runpath)),
-     &                                                    ipid,'.dcf'
+            write(outs,'(a,i7,a)') runpath(1:lnrp),ipid,'.dcf'
             call st2file(outs,LTMPFA)
             XST=.FALSE.
             INQUIRE (FILE=LTMPFA(1:lnblnk(LTMPFA)),EXIST=XST)
@@ -426,7 +436,7 @@ C Run rtrace.
      &                      'Run rtrace for patch ',IPTCH
  98      format(2a,i3)
 
-          write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnblnk(runpath)),
+          write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &      '; rtrace -ov -I -h @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
      &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
@@ -514,24 +524,26 @@ C generated by rad -t after removing current octree.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/expath/runpath
+      common/expath/runpath,pathtype
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character doit*124,RIFFILE*72,runpath*72
+      character doit*124,RIFFILE*72,runpath*72,pathtype*24
+      integer lnrp  ! length of run path
 
 C Read current rif file.
       ITA2=IFIL+7
       ITA3=IFIL+10
       call RRIF(ITA2,ITA3,RIFFILE,'s',IERR)
+      lnrp=lnblnk(runpath)
       
 C Remove octree to force rebuild as radiance sometimes gets this wrong.
-      write(doit,'(4a)') 'cd ',runpath(1:lnblnk(runpath)),
+      write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &                   '; rm -f ',octfil(1:lnblnk(octfil))
       call runit(doit,'-')
 
 C Run rad in 'touch up' mode.
-      write(doit,'(4a)') 'cd ',runpath(1:lnblnk(runpath)),
+      write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &                   '; rad -t ',RIFFILE(1:lnblnk(RIFFILE))
       call edisp(iuout,'Radiance feedback is displayed in xterm.')
       call runit(doit,'-')
@@ -639,7 +651,7 @@ C ITP =1 - image only; =2 - glare info to display on image.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/expath/runpath
+      common/expath/runpath,pathtype
       COMMON/C4/XLAT,XLON
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
@@ -657,16 +669,18 @@ C ITP =1 - image only; =2 - glare info to display on image.
       character tpic*72,tpicd*72,tgif*72,tgifd*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character vewcmds*124,rvewsh*10,pf*72,h*72,outs*124,ltmp*72
-      character doit*256,LBSRIF*72, runpath*72
+      character doit*256,LBSRIF*72,runpath*72,pathtype*24
       character imgqua*6,detlvl*6,llvar*6,penumb*5
+      integer lnrp  ! length of run path
 
-      logical XST,anim
+      logical XST,anim,unixok
       CHARACTER*3 NMTHNM(12)
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
 
       ITA2=IFIL+7
       anim=.false.
+      lnrp=lnblnk(runpath)
 
       if (ITP.eq.1) then
 
@@ -686,8 +700,10 @@ C Ask if an animation required.
             H(2)='monitors.  You can adjust the visualisation '
             H(3)='parameters interactively and a summary of commands'
             H(4)='which Radiance understands is provided. '
+            H(5)='  '
+            H(6)='If running on Windows you should choose file option.'
             CALL EASKAB(' ','Image rendering to:','screen','file',
-     &        IWDQ,4)
+     &        IWDQ,6)
           else
             IWDQ=2
           endif
@@ -698,19 +714,42 @@ C If glare put it to file.
         IWDQ=2
       endif
       if(IWDQ.eq.1)then
+      
+C If in unix then use interactive rendering. If Native Windows do
+C not try and display.
+        call isunix(unixok)
         if (ipckvew.eq.-1) then 
-          write(doit,'(5a)') 'cd ',runpath(1:lnblnk(runpath)),
+          if(unixok)then
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -o x11 ',
      &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+          else
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
+     &               '; rad -e ',
+     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+          endif
         elseif (ipckvew.eq.0) then 
-          write(doit,'(5a)') 'cd ',runpath(1:lnblnk(runpath)),
+          if(unixok)then
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -o x11 ',
      &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+          else
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
+     &               '; rad -e ',
+     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+          endif
         else
-          write(doit,'(7a)') 'cd ',runpath(1:lnblnk(runpath)),
+          if(unixok)then
+            write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &               '; rad -e -o x11 -v ',
      &               rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
      &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+          else
+            write(doit,'(7a)') 'cd ',runpath(1:lnrp),
+     &               '; rad -e -v ',
+     &               rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
+     &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
+          endif
         endif
         write(6,*) doit
         call runit(doit,'-')
@@ -807,10 +846,10 @@ C Loop from start and increment until at or past the finish time.
 
 C We will need pic & gif file for this time. Write out and then use
 C sdelim with a N to remove spaces.
-            write(tpic,'(a,2i3,f6.3,a)') runpath(1:lnblnk(runpath)),
+            write(tpic,'(a,2i3,f6.3,a)') runpath(1:lnrp),
      &        IAMO,IADO,CURT,'.pic'
             call sdelim(tpic,tpicd,'N',IW)
-            write(tgif,'(a,2i3,f6.3,a)') runpath(1:lnblnk(runpath)),
+            write(tgif,'(a,2i3,f6.3,a)') runpath(1:lnrp),
      &        IAMO,IADO,CURT,'.gif'
             call sdelim(tgif,tgifd,'N',IW)
 
@@ -818,11 +857,11 @@ C If animation use a standard name for pic file (which is going to
 C be converted into a timestamp named gif file. Any existing pic
 C file should be removed.
             if (ipckvew.gt.0) then
-              write(pf,'(5a)') runpath(1:lnblnk(runpath)),
+              write(pf,'(5a)') runpath(1:lnrp),
      &          picfil(1:lnblnk(picfil)),'_',
      &          rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
             else
-              write(pf,'(3a)') runpath(1:lnblnk(runpath)),
+              write(pf,'(3a)') runpath(1:lnrp),
      &          picfil(1:lnblnk(picfil)),'_X.pic'
             endif
             CALL ERPFREE(ITA2,ISTAT)
@@ -842,13 +881,13 @@ C Save changes to RIF file
 
 C call rad to create image(s) based on current setting of ipckvew.
             if (ipckvew.eq.-1) then 
-              write(doit,'(4a)') 'cd ',runpath(1:lnblnk(runpath)),
+              write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
             elseif (ipckvew.eq.0) then 
-              write(doit,'(4a)') 'cd ',runpath(1:lnblnk(runpath)),
+              write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
             else
-              write(doit,'(6a)') 'cd ',runpath(1:lnblnk(runpath)),
+              write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &        '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
      &        ' ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
             endif
@@ -879,11 +918,11 @@ C Increment the current time.
 
 C See if there is an existing pic file by this name.
           if (ipckvew.gt.0) then
-            write(pf,'(5a)') runpath(1:lnblnk(runpath)),
+            write(pf,'(5a)') runpath(1:lnrp),
      &        picfil(1:lnblnk(picfil)),'_',
      &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
           else
-            write(pf,'(3a)') runpath(1:lnblnk(runpath)),
+            write(pf,'(3a)') runpath(1:lnrp),
      &        picfil(1:lnblnk(picfil)),'_X.pic'
           endif
           CALL ERPFREE(ITA2,ISTAT)
@@ -923,13 +962,13 @@ C Set file name including path and open.
           endif
         endif
         if (ipckvew.eq.-1) then 
-          write(doit,'(4a)') 'cd ',runpath(1:lnblnk(runpath)),
+          write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
         elseif (ipckvew.eq.0) then 
-          write(doit,'(4a)') 'cd ',runpath(1:lnblnk(runpath)),
+          write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
         else
-          write(doit,'(6a)') 'cd ',runpath(1:lnblnk(runpath)),
+          write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &       '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
      &                 ' ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
         endif
@@ -956,19 +995,22 @@ C Assumes that the path to the image is given.
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad2/mono,intext,ifocz
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character doit*124,pf*72,gf*72,ugrf*72,runpath*72,ltmp*72
+      character doit*124,pf*72,gf*72,ugrf*72,ltmp*72
       character vewcmds*124,rvewsh*10,outs*124,outstr*124
+      character runpath*72,pathtype*24
+      integer lnrp  ! length of run path
       
       dimension UGRV(72),UGRANG(72)
       
-      logical XST
+      logical XST,unixok
 
 C Generate picture and glare file names.
+      lnrp=lnblnk(runpath)
       if (ipckvew.gt.0) then
         write(pf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
@@ -980,27 +1022,32 @@ C Generate picture and glare file names.
       endif
 
       if (ITP.eq.1) then
-        call edisp(iuout,' Starting ximage with the commands:')
-        if(mono.eq.0)then
-          write(doit,'(5a)') 'cd ',runpath(1:lnblnk(runpath)),
+        call isunix(unixok)
+        if(unixok)then
+          call edisp(iuout,' Starting ximage with the commands:')
+          if(mono.eq.0)then
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &       '; ximage -m ',pf(1:lnblnk(pf)),' &'
-        elseif(mono.eq.1)then
-          write(doit,'(5a)') 'cd ',runpath(1:lnblnk(runpath)),
+          elseif(mono.eq.1)then
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &       '; ximage -b ',pf(1:lnblnk(pf)),' &'
-        elseif(mono.eq.2)then
-          write(doit,'(5a)') 'cd ',runpath(1:lnblnk(runpath)),
+          elseif(mono.eq.2)then
+            write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &       '; ximage ',pf(1:lnblnk(pf)),' &'
+          endif
+          call runit(doit,'-')
+        else
+          call edisp(iuout,' ximage not available on Windows.')
         endif
-        call runit(doit,'-')
       elseif (ITP.eq.2) then
       
 C First display glare sources on image.
-        write(doit,'(7a)') 'cd ',runpath(1:lnblnk(runpath)),
+        write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &       '; xglaresrc ',pf(1:lnblnk(pf)),' ',gf(1:lnblnk(gf)),' &'
         call runit(doit,'-')
 
 C Calculate UGR from glare file and display to screen.
-        write (doit,'(7a)') 'cd ',runpath(1:lnblnk(runpath)),
+        write (doit,'(7a)') 'cd ',runpath(1:lnrp),
      &      '; glarendx -t ugr -h ',gf(1:lnblnk(gf)),' > ',
      &      gf(1:lnblnk(gf)),'.ugr'
         call runit(doit,'-')
@@ -1009,7 +1056,7 @@ C Read file then display graph.
 C Check for daylight factor results.
         write (ugrf,'(2a)') gf(1:lnblnk(gf)),'.ugr'
         write (ltmp,'(2a)') 
-     &             runpath(1:lnblnk(runpath)),ugrf(1:lnblnk(ugrf))
+     &             runpath(1:lnrp),ugrf(1:lnblnk(ugrf))
         ITA1 = IFIL+6
         call ERPFREE(ITA1,ISTAT)
         call FINDFIL(ltmp,XST)
@@ -1080,7 +1127,7 @@ C getglr recovers view information and runs glare calculation.
 #include "building.h"
 
       COMMON/FILEP/IFIL
-      common/expath/runpath
+      common/expath/runpath,pathtype
 
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -1091,8 +1138,9 @@ C getglr recovers view information and runs glare calculation.
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character vewcmds*124,rvewsh*10,runpath*72,rendopt*200
+      character vewcmds*124,rvewsh*10,rendopt*200
       character word*12,doit*300,ltmp*200,gf*72,pf*72,glst*4
+      character runpath*72,pathtype*24
 
       ITA2 = IFIL+7
       ITA3 = IFIL+10
@@ -1240,14 +1288,15 @@ C Run findglare to identify glare sources.
       end
 
 C ********************** getdf **********************
-C getdf runs daylight factor calculation.
+C getdf runs daylight factor calculation and then displays them.
 
       SUBROUTINE getdf
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/expath/runpath
+      common/expath/runpath,pathtype
+      common/pophelp/h(60)
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -1268,20 +1317,24 @@ C   DFVALS: Daylight factors.
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       CHARACTER LDFGRID*72,df*72,outs*124,ltmp*72,doit*256,LBSRIF*72
-      character QT*1,rambfil*72,optnfil*72,runpath*72,OUTSTR*124
+      character QT*1,rambfil*72,optnfil*72,OUTSTR*124
       character crenrp*160,coconv*40,tfile*72,outsl*160
+      character runpath*72,pathtype*24
+      character h*72
+      integer lnrp  ! length of run path
 
       logical XST,RECALC
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
       QT=CHAR(39)
+      lnrp=lnblnk(runpath)
 
 C Check for daylight factor points - if none then try and read grid file.
       if (NDFP.eq.0) then
         call ERPFREE(ITA1,ISTAT)
-        write(tfile,'(a,a)')runpath(1:lnblnk(runpath)),
-     &                                      LDFGRID(1:lnblnk(LDFGRID))
+        write(tfile,'(a,a)')runpath(1:lnrp),
+     &                      LDFGRID(1:lnblnk(LDFGRID))
         call FPOPEN(ITA1,ISTAT,1,1,tfile)
         if(ISTAT.eq.0)then
   42      CALL STRIPC(ITA1,OUTSTR,0,ND,0,'grid points',IFER)
@@ -1311,9 +1364,17 @@ C Check for daylight factor points - if none then try and read grid file.
 
 C Ask for convergence limit.
       CONV=0.25
+      h(1)='The calculations will strart with one ambient bounce and'
+      h(2)='gradually increase the number of bounces until the change'
+      h(3)='is less than a value (convergence criteria). The smaller'
+      h(4)='the value the longer the calculations will take. '
+      h(5)=' '
+      h(6)='If the display freezes it may be because the underlying'
+      h(7)='rtrace calculations are hung. You may have to kill that'
+      h(8)='process. '
       CALL EASKR(CONV,'Daylight factor convergence criteria',
      &     '(Max total diff between iterations) ',0.00,
-     &     'F',5.0,'W',0.25,'df convergence criteria',IER,0)
+     &     'F',5.0,'W',0.25,'df convergence criteria',IER,8)
 
 C Reset DFVALS to 0.0
       do 5 I=1,500
@@ -1330,9 +1391,11 @@ C Ask if the parameters should be reset.
       XAB=-1.
       call RADPAR('ab',XAB)
       if (XAB.gt.1.5) then
+        h(1)='Sometimes Radiance gets confused. This is one place'
+        h(2)='where starting again can correct this. '
         CALL EASKAB('The rendering parameters would appear to be set',
      &    'from a previous simulation.  Do you want to: ','use them',
-     &                     'start from beginning (recommended)',IWR,0)
+     &                     'start from beginning (recommended)',IWR,2)
         if (IWR.eq.2) then
           write (outsl,'(2a)') crenrp(1:lnblnk(crenrp)),
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
@@ -1346,7 +1409,7 @@ C Ask if the parameters should be reset.
 C Daylight factors output file.
       write (df,'(2a)') SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),'.df'
       call ERPFREE(ITA1,ISTAT)
- 1111 write (ltmp,'(2a)') runpath(1:lnblnk(runpath)),df(1:lnblnk(df))
+ 1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
       call FINDFIL(ltmp,XST)
       if(XST)then
         write(outs,'(2a)')'There is an existing file ',df(1:lnblnk(df))
@@ -1354,9 +1417,11 @@ C Daylight factors output file.
      &                            'choose another name',IWR,0)
         if (IWR.eq.2) then
           ltmp = df
+          h(1)='You have a chance to save the past by giving a'
+          h(2)='slightly different file name for the calculatons.'
  1221     CALL EASKS(ltmp,
      &       'Daylight factors results file name (modify slightly) ?',
-     &                      ' ',72,'xx.df','df resfile name',IER,0)
+     &                      ' ',72,'xx.df','df resfile name',IER,2)
           if(ltmp.ne.'  '.and.ltmp.ne.df) then
             df = ltmp
           else
@@ -1364,7 +1429,7 @@ C Daylight factors output file.
           endif
           goto 1111
         else
-          write(ltmp,'(2a)')runpath(1:lnblnk(runpath)),df(1:lnblnk(df))
+          write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
           call FPOPEN(ITA1,ISTAT,1,1,ltmp)
           CALL EFDELET(ITA1,ISTAT)
         endif
@@ -1373,8 +1438,9 @@ C Daylight factors output file.
 C Open sky file and read ground ambient level.
       call RRSKY(ITA1,rskyfil,ga,IER)
 
-C Call rtrace and calculate daylight factors.
- 99   write(doit,'(4a,1x,6a,f5.2,4a)') 'cd ',runpath(1:lnblnk(runpath)),
+C Call rtrace and calculate daylight factors. This is the point where
+C the logic jumps back to if additional resolution is required.
+ 99   write(doit,'(4a,1x,6a,f5.2,4a)') 'cd ',runpath(1:lnrp),
      &        '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
      &      octfil(1:lnblnk(octfil)),
      &     ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
@@ -1384,7 +1450,7 @@ C Call rtrace and calculate daylight factors.
 
 C Now need to read in daylight factors and store in memory.
       DFmaxdiff=0.
-      write (ltmp,'(2a)') runpath(1:lnblnk(runpath)),df(1:lnblnk(df))
+      write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
       call FPOPEN(ITA1,ISTAT,1,1,ltmp)
       do 10 I=1,NDFP
         call STRIPC(ITA1,OUTSTR,4,ND,0,'DF results',IER)
@@ -1510,6 +1576,7 @@ C Decrease value (last change had no effect) and increase ??.
 
 C Save RIF file and update options file.
       if (RECALC) then
+        call edisp(iuout,'Recalculating with different resolution...')
         IFC=3
         call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
         call touchrif(RIFNAME(IRIFFOC))
@@ -1518,12 +1585,12 @@ C Save RIF file and update options file.
           call touchrif(LBSRIF(IRIFFOC))
         endif
 
-C Move results file and recalculate DFs.
+C Move results file and recalculate DFs. Note this move creates
+C a catch-22 for viewing the DF later on.
         call ERPFREE(ITA1,ISTAT)
-        write(doit,'(7a)') 'cd ',runpath(1:lnblnk(runpath)),'; mv ',
+        write(doit,'(7a)') 'cd ',runpath(1:lnrp),'; mv ',
      &        df(1:lnblnk(df)),' ',df(1:lnblnk(df)),'-'
         call runit(doit,'-')
-        CALL EFDELET(ITA1,ISTAT)
         goto 99
       endif
       call ERPFREE(ITA1,ISTAT)

@@ -830,7 +830,7 @@ C IREP=1 implies no reporting or data checking.
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -946,7 +946,10 @@ C Read contents of the I'th zone data files.
 
 C If a non-sorted operations file has been read warn user and
 C translate the casual gains.
-        if(ip3ver.eq.0)then
+
+C Debug.
+        write(6,*) IZ,IP3VER(IZ)
+        if(ip3ver(iz).eq.0)then
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
           call edisp(iuout,outs)

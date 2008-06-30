@@ -85,8 +85,10 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
-      common/p3ver/ip3ver
-      COMMON/P1/oprdesc,ctlstr
+      common/p3ver/ip3ver(MCOM)
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
@@ -153,7 +155,6 @@ C Arrays of material properties.
       character dstmp*24
       CHARACTER LAPROB*72
       CHARACTER*6 lodlabel
-      character oprdesc*248,ctlstr*24
 
 C iprndx saves unique materials references,
 C thkiprndx holds the thickness of each unique materials reference,
@@ -994,9 +995,12 @@ C     out an until: 24.00 placeholder
         IUO=IFIL+1
         call FINDFIL(LPROJ(mz),XST)
         IF(XST)THEN
+
+C << might not need to call eroper when ip3ver(mz) is working >>
+
           CALL ERPFREE(IUO,ISTAT)
           CALL EROPER(0,iuout,IUO,mz,IER)
-          if(ip3ver.lt.1)then
+          if(ip3ver(mz).lt.1)then
             WRITE(ioout,'(3a)',iostat=ios,err=7) 
      &      '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
      &      ' has old schedules (periods need to be sorted) ======= '
@@ -1071,7 +1075,7 @@ C Start with a comment about zone schedule documentation.
      &    '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
      &    ' schedules follow ======='
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &    '! ',oprdesc(1:lnblnk(oprdesc))
+     &    '! ',oprdesc(mz)(1:lnblnk(oprdesc(mz)))
 
 C Scan each days gains and calculate maximum gain.
 C First clear loadcasp, looping for each gain type.

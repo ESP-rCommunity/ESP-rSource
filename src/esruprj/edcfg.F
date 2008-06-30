@@ -142,6 +142,7 @@ C For optical controls
       logical foundutl,xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer iglib   ! to test for X11 interface
 
       dimension ITEMS(29)
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
@@ -177,6 +178,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Begin with high level menu, see how many networks and control loops
 C are active.
+      IOS=0   ! initial guess
       IUF=IFIL+2
     3 INO=-4
       nets=0
@@ -354,7 +356,7 @@ C in older format.
           call usrmsg('Please re-enter the file name.',' ','W')
           goto 89
         endif
-        if(icfgv.eq.3)then
+        if(icfgv.eq.3.or.icfgv.eq.4)then
           foundutl=.false.
           DO 45 I=1,ncomp
             if(INDUTL(I).ne.0)foundutl=.true.
@@ -533,13 +535,22 @@ C display it before starting up editing facilities.
           H(8)='re-established by rintrosucting the configuration'
           H(9)='file reference.'
           ltmp=LPNF
- 301      CALL EASKSCMD(ltmp,' Plant network definition file?',' ',
-     &      'dereference',clkok,72,DPNF,'plant network file',IER,9)
-          call usrmsg(' ',' ','- ')
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+ 301      if(iglib.eq.2)then
+            CALL EASKSCMD(ltmp,'Plant network definition file?',' ',
+     &        'dereference',clkok,72,DPNF,'plant network file',iser,9)
+            if(clkok)iclkok=2   ! notice dereference button
+            if(iser.eq.-3) goto 3  ! notice GTK cancel button
+          else
+            CALL EASKS2CMD(ltmp,'Plant network definition file?',' ',
+     &      'cancel','dereference',iclkok,72,DPNF,'plant network file',
+     &      iser,9)
+            if(iclkok.eq.1) goto 3    ! notice X11 cancel option
+          endif
 
-C If user wishes to deselect the current file name to
+C If user wishes to deselect the current file, reset name to
 C blank and save the configuration file.
-  46      if(clkok)then
+  46      if(iclkok.eq.2)then
             LPNF='  '
             if(indcfg.eq.3)then
               indcfg=1
@@ -1208,7 +1219,7 @@ C output, IER=0 indicates no error.
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =3 with more than 3 day types
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -1675,7 +1686,9 @@ C                    call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
           endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
+
         elseif(IRT.eq.3)then
+
           call serchrpl('a',itrc,iier)
           if(iier.eq.0)then
             call usrmsg('Surface attribute update',
@@ -2634,7 +2647,7 @@ C << and apply it to another zone.
                   IUO=IFIL+1
                   CALL ERPFREE(IUO,ISTAT)
                   CALL EROPER(0,iuout,IUO,icomp,IER)
-                  if(ip3ver.eq.0)then
+                  if(ip3ver(icomp).eq.0)then
 
 C File is older format and assumed to be unsorted.
                     sorted=.false.
@@ -2642,7 +2655,7 @@ C File is older format and assumed to be unsorted.
                     if(browse)then
                       continue
                     else
-                      ip3ver=3
+                      ip3ver(icomp)=2
                       CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                     endif
                   else
@@ -2662,7 +2675,7 @@ C File is current format and might be unsorted.
                       if(browse)then
                         continue
                       else
-                        ip3ver=3
+                        ip3ver(icomp)=2
                         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                       endif
                     endif
@@ -3843,6 +3856,7 @@ C copy # of plant component nodes from bps to prj commons
           endif
         ENDIF
         NZONES=NCOMP
+        ISFSUM=0
         CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
         call tstamp('>','PRJ: current model')
         call tstamp('>',LCFGF)
@@ -3976,7 +3990,7 @@ C mode (with blanks for the parameters).
         mpath=' '
         folder=' '
         menu=' '
-        call pregist('i',root,mpath,folder,menu,ier)
+        call pregist('i ',root,mpath,folder,menu,ier)
         IF(IER.LT.0)RETURN
 
         CFGOK=.TRUE.
@@ -4014,6 +4028,7 @@ C << it would be clearer if all model I/O happened there >>
       character doit*124,tmode*8,tfile*72,H*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
+      character brw*8   ! to signal model is being browsed
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4069,7 +4084,18 @@ C string to drive VIEWER.
 
 C If in browse mode then run e2r and return, otherwise check rcf name
 C and contents of file on return from e2r.
+
+C If browsing pass this information to e2r.
+        if(browse)then
+          brw = ' -b yes'
+        else
+          brw = ' -b no '
+        endif
         if(.NOT.browse)then
+
+C Some small esp-r models may have all files in the same folder. If
+C that is the case then it is probably not safe to create a separate
+C rad folder. All need multi-folder models will have a rad folder.
 
 C Set rcf name if unknown and set default name. If path for radiance
 C files is ./ then update this to ../rad and create a folder.
@@ -4119,12 +4145,12 @@ C to include the path and create a string to drive e2r.
 C If prj initial size is a % of default, pass this on to child with
 C an offset from prj start position.
         if(iappw.gt.0.and.iappw.le.200)then
-          write(doit,'(3a,3i4,3a)') 'e2r -mode ',tmode,
+          write(doit,'(3a,3i4,4a)') 'e2r -mode ',tmode,
      &      ' -s ',iappw,iappx+35,iappy+40,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' &'
+     &      longtfile(1:lnblnk(longtfile)),brw,' &'
         else
-          write(doit,'(5a)') 'e2r -mode ',tmode,
-     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),' &'
+          write(doit,'(6a)') 'e2r -mode ',tmode,
+     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),brw,' &'
         endif
         call usrmsg('starting Radiance desktop via',doit,'-')
         call runit(doit,tmode)

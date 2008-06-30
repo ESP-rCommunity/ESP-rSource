@@ -38,6 +38,7 @@ C exportcad: controls model export facilities.
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/appw/iappw,iappx,iappy
+      common/user/browse
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/exporttg/xfile,tg,delim
@@ -45,7 +46,7 @@ C exportcad: controls model export facilities.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
-      logical MODIFY,MODLEN,MODBND,unixok
+      logical MODIFY,MODLEN,MODBND,unixok,browse
 
       DIMENSION ITEMS1(11)
 
@@ -55,6 +56,7 @@ C exportcad: controls model export facilities.
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
       character longtfile*144,longtfiledos*144
+      character brw*8   ! to signal model is being browsed
       logical oke
 
       if(.NOT.cfgok)then
@@ -67,17 +69,17 @@ C Check if Unix-based or DOS based.
       call isunix(unixok)
 
    33 INO1=-4
-      ITEMS1(1) ='a to VIEWER  '
-      ITEMS1(2) ='b to DXF     '
-      ITEMS1(3) ='c to XZIP    '
+      ITEMS1(1) ='a to VIEWER (Abacus)       '
+      ITEMS1(2) ='b to DXF (V12)             '
+      ITEMS1(3) ='c to XZIP (Abacus/IES)     '
       ITEMS1(4) ='d to RADIANCE              '
       ITEMS1(5) ='e to xfig (vector ploting) '
       ITEMS1(6) ='f to MicroGDS (THINGS file)'
       ITEMS1(7) ='g to TSBI3                 '
       ITEMS1(8) ='h to EnergyPlus            '
       ITEMS1(9) ='i to VRML #2.0             '
-      ITEMS1(10) ='? help'
-      ITEMS1(11) ='- exit this menu'
+      ITEMS1(10)='? help                     '
+      ITEMS1(11)='- exit this menu           '
 
 C Help text for this menu.
       H(1)='This facility allows you to export the current model'
@@ -85,7 +87,7 @@ C Help text for this menu.
       H(3)='3rd party applications.'
       H(4)=' '
       H(5)='VIEWER, a hidden line perspective program from ABACUS;'
-      H(6)='DXF file;'
+      H(6)='DXF (version 12) file (see the note below);'
       H(7)='XZIP, a CAD program from IES;'
       H(8)='RADIANCE, a lighting simulation program from LBL;'
       H(9)='XFIG, a vector plotting program;'
@@ -96,13 +98,44 @@ C Help text for this menu.
       H(14)='       North America'
       H(15)='VRML Version 2.0, with a matching html file containing'
       H(16)='     surface attributes.'
+      H(17)=' '
+      H(18)='General rules assumed in DXF export: '
+      H(19)='* Each thermal zone has a separate layer and the'
+      H(20)='  layer name is the zone name (<12 char without blanks).'
+      H(21)=' '
+      H(22)='* If a zone includes shading obstruction blocks then'
+      H(23)='  these should be on a separate layer and the name of'
+      H(24)='  the layer should be OBS_ followed by the characters'
+      H(25)='  in the zone layer name. Example the obstructions for'
+      H(26)='  layer MANAGER_A are in OBS_MANAGER_A'
+      H(27)=' '
+      H(28)='* If you want to identify particular surfaces in a zone'
+      H(29)='  as transparent then create and additional layer with'
+      H(30)='  the layer name starting with TRN_. Example transparent'
+      H(31)='  surfaces in MANAGER_A are in TRN_MANAGER_A. If you do'
+      H(32)='  not create this separate layer then you will have to'
+      H(33)='  manually attribute the glass surfaces in ESP-r.'
+      H(34)=' '
+      H(35)='* Shading obstructions are represented via DXF BLOCK'
+      H(36)='  entities. Typically a set of 6 3DFACE objects within'
+      H(37)='  each BLOCK. You could probably also use POLYLINE '
+      H(38)='  entities within a BLOCK.'
+      H(39)=' '
+      H(40)=' * Zone surfaces which are polygons of 4 sides used the'
+      H(41)='   3DFACE entity. Zone surfaces which are triangles or'
+      H(42)='   are > 4 sides use POLYLINE entities.  Or you could use'
+      H(43)='   POLYLINE entities for all zone surfaces.'
+      H(44)=' '
+      H(45)='NOTE: if you are useing Native Windows version the paths'
+      H(46)='to the exported files may not work correctly. '
  
-      CALL EMENU('Export Model',ITEMS1,11,INO1)
+      CALL EMENU('Export Model',ITEMS1,43,INO1)
 
 C Prepare filter command lines with path.
 
-C << the code that creates the initial LFIL is not yet updated to work
-C    with DOS paths with spaces. >>
+C << to be done - the code that creates the initial LFIL is not yet updated
+C << to work with DOS paths with spaces. >>
+
       IF(INO1.NE.10)THEN
       iw=0
        if(path.ne.'./'.and.path.ne.' ')then
@@ -243,6 +276,13 @@ C RADIANCE creation. Starts e2r with current configuration file.
         dok=.true.
         CALL ASKOK(' ','Run RADIANCE conversion tool?',OK,dok,6)
         if(OK)then
+
+C If browsing pass this information to e2r.
+          if(browse)then
+            brw = ' -b yes'
+          else
+            brw = ' -b no '
+          endif
           call tstamp('>','PRJ: export to RADIANCE')
           doit = ' '
           call tchild(ICPMOD)
@@ -256,12 +296,12 @@ C RADIANCE creation. Starts e2r with current configuration file.
             longtfile=longtfiledos
           endif
           if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(a,3i4,3a)') 'e2r -s ',
+            write(doit,'(a,3i4,4a)') 'e2r -s ',
      &        iappw,iappx+35,iappy+40,' -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
+     &        longtfile(1:lnblnk(longtfile)),brw,' &'
           else
-            write(doit,'(3a)') 'e2r -s 0 0 0 -file ',
-     &        longtfile(1:lnblnk(longtfile)),' &'
+            write(doit,'(4a)') 'e2r -s 0 0 0 -file ',
+     &        longtfile(1:lnblnk(longtfile)),brw,' &'
           endif
           call usrmsg('Starting Radiance conversion via',doit,'-')
           call runit(doit,'-')
@@ -472,7 +512,9 @@ C        call edisp(iuout,outs)
 C        call edisp(iuout,'Use a VRML viewer to explore it.')
 
       ELSEIF(INO1.EQ.10)THEN
-       CALL PHELPD('export menu',16,'-',0,0,IER)
+      
+C Pop up the help text.
+       CALL PHELPD('export menu',46,'-',0,0,IER)
 
       ELSEIF(INO1.EQ.11)THEN
         RETURN
@@ -522,26 +564,69 @@ C CAD definition and importing.
       H(2)='may be defined.  The file created will be requested'
       H(3)='later for model importing.'
       H(4)=' '
-      H(5)='If the CAD program creates DXF files then PLEASE'
-      H(6)='refer to the tutorial tool for directions on'
-      H(7)='appropriate use and current constraints.'
+      H(5)='If the CAD program creates DXF files then PLEASE READ'
+      H(6)='the following section for hints and notes on current'
+      H(7)='constraints.'
       H(8)=' '
       H(9)='If the CAD program is able to create ESP compatable'
       H(10)='files then please assign zone names so that the'
       H(11)='conversion process will proceed smoothly.'
       H(12)=' '
+      H(13)='ESP-r currently exports and imports a subset of DXF'
+      H(14)='version 12 entities. ESP-r only deals with 3D entities.'
+      H(15)='The import process will skip most 2D entities because'
+      H(16)='2D has no meaning within simulation. '
+      H(17)=' '
+      H(18)='For a quick exploration of the entity types that ESP-r'
+      H(19)='works with take an existing ESP-r model, export it to'
+      H(20)='DXF and look at the file or import it into a CAD tool.'
+      H(21)=' '
+      H(22)='The import facility assumes that you have registered'
+      H(23)='an initial ESP-r model and that there no thermal'
+      H(24)='zones in the model.  If your current model has zones'
+      H(25)='you are advised to create a new model and add the'
+      H(26)='existing zones after you have imported the CAD data.'
+      H(27)=' '
+      H(28)='General rules: '
+      H(29)='* Each thermal zone has a separate layer and the'
+      H(30)='  layer name is the zone name (<12 char without blanks).'
+      H(31)=' '
+      H(32)='* If a zone includes shading obstruction blocks then'
+      H(33)='  these should be on a separate layer and the name of'
+      H(34)='  the layer should be OBS_ followed by the characters'
+      H(35)='  in the zone layer name. Example the obstructions for'
+      H(36)='  layer MANAGER_A are in OBS_MANAGER_A'
+      H(37)=' '
+      H(38)='* If you want to identify particular surfaces in a zone'
+      H(39)='  as transparent then create and additional layer with'
+      H(40)='  the layer name starting with TRN_. Example transparent'
+      H(41)='  surfaces in MANAGER_A are in TRN_MANAGER_A. If you do'
+      H(42)='  not create this separate layer then you will have to'
+      H(43)='  manually attribute the glass surfaces in ESP-r.'
+      H(44)=' '
+      H(45)='* Shading obstructions are represented via DXF BLOCK'
+      H(46)='  entities. Typically a set of 6 3DFACE objects within'
+      H(47)='  each BLOCK. You could probably also use POLYLINE '
+      H(48)='  entities within a BLOCK.'
+      H(49)=' '
+      H(50)=' * Zone surfaces which are polygons of 4 sides used the'
+      H(51)='   3DFACE entity. Zone surfaces which are triangles or'
+      H(52)='   are > 4 sides use POLYLINE entities.  Or you could use'
+      H(53)='   POLYLINE entities for all zone surfaces.'
+
       if(NCOMP.ne.0)then
 
 C Tell the user to create a model configuration file. If the model is
 C not yet known, check to see if a model has been passed in the
 C command line.
-        H(13)='The current model includes zones.  Please make'
-        H(14)='careful note of any changes you make to the model'
-        H(15)='so that you can restore contiguity when importing'
-        H(16)='from the CAD package.'
-        CALL PHELPD('CAD warning',16,'-',0,0,IER)
+        H(54)=' '
+        H(55)='The current model includes zones.  Please make'
+        H(56)='careful note of any changes you make to the model'
+        H(57)='so that you can restore contiguity when importing'
+        H(58)='from the CAD package.'
+        CALL PHELPD('CAD warning',58,'-',0,0,IER)
       else
-        CALL PHELPD('CAD warning',11,'-',0,0,IER)
+        CALL PHELPD('CAD warning',53,'-',0,0,IER)
       endif
 
 C If there is a currently loaded model then convert it.
@@ -1649,7 +1734,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.3)then
           LFL=LOPTDB
         elseif(i.eq.4)then
-          LF=LAPRES
+          LFL=LAPRES
         elseif(i.eq.5)then
           LFL=LPRFDB
         elseif(i.eq.6)then
@@ -1657,7 +1742,7 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LF=LPCDB
         endif
-        if(i.eq.3.or.i.eq.5)then
+        if(i.eq.3.or.i.eq.4.or.i.eq.5)then
           if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
             call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL,ier)
           endif
