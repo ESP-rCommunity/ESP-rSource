@@ -696,6 +696,7 @@ C     CDATA: 1 Volume flow rate (m^3/s)
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -798,6 +799,11 @@ C Write the power consumption to the common block
          IEMODEL=1
          CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
          PWRQ=PQ
+
+C Pass power consumption to Site Utilities facility
+         fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = ABS(E)
+         call StorePltCompEnergyUse ( IPCOMP, fSUFuelEnergyUse )
+
 C Now Q is made up of all inefficiencies
          Q=E
 

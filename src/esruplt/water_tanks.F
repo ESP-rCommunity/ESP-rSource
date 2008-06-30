@@ -540,6 +540,7 @@ C ------------------------------------------------------------------------------
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -602,6 +603,8 @@ C ------------------------------------------------------------------------------
 
       COMMON/PCTIME/TIMSEC
       REAL TIMSEC
+
+
 
 C     Common for determining if the plant domain has converged
       COMMON/pltcon/bpltcon,lastTStp
@@ -1254,7 +1257,16 @@ C---------No exhaust: make exhaust temperature equal room temperature.
 
 C-------Store time step burner output for h3kstore output
         fSDHW_TSTank_fuel_watts = q_burner
+C......add to XML reporting
+      call add_to_xml_reporting(
+     &         fSDHW_TSTank_fuel_watts,
+     &         'plant/SDHW_summary/DHW_tank_fuel',
+     &         'units','(W)',
+     &         'Fuel burner input to the DHW tank')
 
+C.....Report fuel consumption.
+      fSUFuelEnergyUse( iNaturalGas, iUseUncatagorized) = q_burner
+      call StorePltCompEnergyUse( iPComp, fSUFuelEnergyUse )
 C*********************************************************************************
 C End of energy balance section / Beginning of 1st phase mass balances ***********
 C*********************************************************************************
@@ -1883,6 +1895,7 @@ C ------------------------------------------------------------------------------
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -1961,7 +1974,6 @@ C-------------------------------------------------------------------------------
      &     mdotCp_1b_present
       REAL T_1a_present,T_1b_present
       REAL Rinv,alpha
-      REAL q_element
       REAL part1,part2,part3,part4,part5,part6,part7,part8
 
       INTEGER IPCOMP
@@ -2331,7 +2343,17 @@ C-------------------------------------------------------------------------------
 C Save time step electric element input for solar DHW .h3k output
 C---------------------------------------------------------------------------------
       fSDHW_TSTank_Elec_watts = q_element
-           
+
+C ...add to XML reporting
+      call add_to_xml_reporting(
+     &        fSDHW_TSTank_Elec_watts,
+     &        'plant/SDHW_summary/DHW_tank_elec',
+     &        'units','(W)',
+     &        'Electric element input of the DHW tank')
+C.....Save Elecrical energy use in storage array.
+      fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = q_element
+C.....Pass storage array to Site utilities facility.
+      call StorePltCompEnergyUse( iPComp, fSUFuelEnergyUse )
 C*********************************************************************************
 C End of energy balance section / Beginning of 1st phase mass balances ***********
 C*********************************************************************************
@@ -2620,11 +2642,18 @@ C.....Common contaning diversion ratios for plant network connections
 
       REAL PCONDR,PCONSD
 
+      common/report_loads/fReportDHWLoad(mpcom)
+      real fReportDHWLoad                ! DHW load computed by a plant 
+                                         ! component (W)
+
 C.....Local Variables
       CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
       character*128 root_name    ! root name of component node 
       character*128 hold_name    ! temporary variable for string manipulation
       logical bClose             ! flag for close-to-zero comparison
+
+      integer iNameLen           ! Length of a plant component name
+      integer iBaseLen           ! Length of a string.
 
 C.....Named constants
       integer iTemperature      ! named constant for temperature properity 
@@ -2647,7 +2676,6 @@ C.....Calculated values
 
 C.....References: 
       real H3K_connect_property ! function returning data for a given connection
-      integer lnblnk
       real SHTFLD     
 
 C.....Update future row values using most recently calcuated data obtained
@@ -2657,23 +2685,24 @@ C.....Connection temperatures
       PCTF(con1a) = H3K_connect_property( con1a, iTemperature )
       PCTF(con1b) = H3K_connect_property( con1b, iTemperature ) 
 
-C.....Get component name
-      hold_name = pcname(iComponentIndex) 
+
+      iNameLen = iPltNameLen(iComponentIndex)
+
 C.....Format string as: 'plant/NAME/misc_data'
 
       WRITE(root_name,'(A,A,A)') 
      &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
+     &     pcname(iComponentIndex)(1:iNameLen),
      &     '/misc_data'
 
+      iBaseLen = iNameLen + 16
+
 C.....Water temperature
-      fWater_temperature =  CSVF(node1,iTemperature) 
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/water_temperature'
+      fWater_temperature =  CSVF( node1, iTemperature ) 
+
       call add_to_xml_reporting(
      &     CSVF(node1,iTemperature),
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/water_temperature',
      &     'units', '(oC)',
      &     'Hot water tank water temperature' )
 
@@ -2686,13 +2715,10 @@ C.....Heat injection = flow rate * ( T_in - T_tank)
      &     * ( H3K_connect_property(con1a,iTemperature) -  
      &     fWater_temperature )
       
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/connection_1/heat_injection'
+
       call add_to_xml_reporting(
      &     fConn_heat_injection,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/connection_1/heat_injection',
      &     'units', '(W)',
      &     'Hot water tank connection 1: heat injection' )
       
@@ -2705,38 +2731,29 @@ C.....Heat injection = flow rate * Cp * ( T_in - T_tank)
      &                + fWater_temperature )/2.0)
      &     * ( H3K_connect_property(con1b,iTemperature) -  
      &     fWater_temperature )
-      
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/connection_2/heat_injection'
+
       call add_to_xml_reporting(
      &     fConn_heat_injection,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/connection_2/heat_injection',
      &     'units', '(W)',
      &     'Hot water tank connection 2: heat injection' )
 
 
 C.....DHW draw 
-C.....-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/domestic_hot_water/volumetric_draw'
       call add_to_xml_reporting(
      &     dhw_draw_future,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) //
+     &       '/domestic_hot_water/volumetric_draw',
      &     'units', '(m3/s)',
      &     'Hot water tank: domestic hot water volumetric draw' )
 
 
 C.......DHW make-up temperature 
-C.......-> set name
-      WRITE(H3K_rep_NAME,'(A,A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/domestic_hot_water',
-     &     '/make_up_temperature'
+
       call add_to_xml_reporting(
      &     T_makeup_future,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) //
+     &           '/domestic_hot_water/make_up_temperature',
      &     'units', '(oC)',
      &     'Hot water tank: water make-up temperature' )
 
@@ -2747,110 +2764,106 @@ C.......LOAD = (T - T_makeup) * (m * Cp)
       
       DHW_load = (fWater_temperature - T_makeup_future) 
      &     * mdotCp_DHW_future
-C.......-> set name
-      WRITE(H3K_rep_NAME,'(A,A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/domestic_hot_water',
-     &     '/thermal_load'
+
       call add_to_xml_reporting(
      &     DHW_load,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/domestic_hot_water/thermal_load',
      &     'units', '(W)',
      &     'Hot water tank: domestic hot water thermal load' )
 
+
+      fReportDHWLoad(iComponentIndex) = DHW_load
 C.....Gas-fired tank calculations
       if ( iTankType .eq. iGas_tank ) then
 
 C.......Burner heat procuction
-C.......-> set name
-        WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)),
-     &        '/burner_heat_production'
+
         call add_to_xml_reporting(
      &     q_burner,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/burner_heat_production',
      &     'units', '(W)',
      &     'Hot water tank: rate of burner heat production' )
 
 
 C.......Fuel Flow
-C.......-> set name
-        WRITE(H3K_rep_NAME,'(A,A)') 
-     &       root_name(1:lnblnk(root_name)), '/fuel_flow'
+
         call add_to_xml_reporting(
      &     m_dot_fuel_kg_t,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/fuel_flow',
      &     'units', '(kg/s)',
      &     'Hot water tank: burner fuel flow rate' )
 
 C.......Volumetric fuel flow at STP.
 C.......-> set name
-        WRITE(H3K_rep_NAME,'(A,A)') 
-     &       root_name(1:lnblnk(root_name)), '/fuel_flow_vol_STP'
         call add_to_xml_reporting(
      &     Vdot_fuel_STP_t,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/fuel_flow_vol_STP',
      &     'units', '(slpm)',
      &     'Hot water tank: burner fuel flow rate' )
 
 
 C.......'gross heat input' (lower heating value flow rate)
-        WRITE(H3K_rep_NAME,'(A,A)') 
-     &       root_name(1:lnblnk(root_name)), '/fuel_flow_LHV_value'
+
         call add_to_xml_reporting(
      &     m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/fuel_flow_LHV_value',
      &     'units', '(W)',
      &     'Hot water tank: LHV of fuel used' )
 
      
 C.......Air Flow
-C.......-> set name
-        WRITE(H3K_rep_NAME,'(A,A)') 
-     &       root_name(1:lnblnk(root_name)), '/air_flow'
+
+
         call add_to_xml_reporting(
      &     m_dot_air_kg_t,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/air_flow',
      &     'units', '(kg/s)',
      &     'Hot water tank: burner air flow rate' )
 
 C.......Exhaust Gas
-C.......-> set name
-        WRITE(H3K_rep_NAME,'(A,A)') 
-     &       root_name(1:lnblnk(root_name)), '/exhaust_flow'
+
         call add_to_xml_reporting(
      &     m_dot_exh_kg_t,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/exhaust_flow',
      &     'units', '(kg/s)',
      &     'Hot water tank: burner exhaust flow rate' )
+
+
+        call add_to_xml_reporting(
+     &     m_dot_fuel_kmol_t * LHV_fuel_tank * 1.0E06,
+     &     root_name(1:iBaseLen) // '/energy_input',
+     &     'units', '(W)',
+     &     'Hot water tank: Energy requirements' )
+
 
       
       elseif( iTankType .eq. iEle_tank ) then
 C........Operations specific to electrical tank would go here.
 
+        call add_to_xml_reporting(
+     &     q_element,
+     &     root_name(1:iBaseLen) // '/energy_input',
+     &     'units', '(W)',
+     &     'Hot water tank: Energy requirements'  )
+
 
       endif 
 
 C.......Heat_transfer to water
-C.......-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/heat_transfer_to_water'
+
 
       call add_to_xml_reporting(
      &     q_capture_future,
-     &     H3K_rep_NAME, 
+     &     root_name(1:iBaseLen) // '/heat_transfer_to_water', 
      &     'units', '(W)',
      &     'Hot water tank: rate of heat transfer to water' )
 
 C.......Jacket losses 
       fJacket_losses = tank_UA * (fWater_temperature - Troom_future)
-C.......-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/jacket_losses'
+
       call add_to_xml_reporting(
      &     fJacket_losses,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/jacket_losses',
      &     'units', '(W)',
      &     'Hot water tank: rate of heat loss to surroundings' )
 
@@ -2863,13 +2876,10 @@ C-------------------------------------------------------------------------------
 
      
 C.......Heat dump
-C.......-> set name
-      WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), 
-     &     '/heat_dump'
+
       call add_to_xml_reporting(
      &     q_heatdump_future,
-     &     H3K_rep_NAME,
+     &     root_name(1:iBaseLen) // '/heat_dump',
      &     'units', '(W)',
      &     'Hot water tank: rate at which heat is "dumped" from '
      &      // 'tank to prevent water from boiling.' )

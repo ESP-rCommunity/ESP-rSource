@@ -38,14 +38,19 @@ C Created by: Kamel Haddad
 C Initial Creation Date: February 17th, 2006
 C Copyright CETC 2006
 
-C This subroutine is the coefficient generator for a component used to set the temperature and the
-C draw mass fow rate for the mains water. Temperature is set constant for the whole month with
-C values either set by the user or based on the Moore's model. Draw profiles are based on user 
-C entered values. The component has one connection. The connection can come from a fixed temperature
-C source. The temperature of this source is not used as the temperature of the water for the month
-C is set based on user inputs or the Moore model. The flow rate specified for the incoming connection
-C is also not used. The flow for the hour of the day is set based on user inputs.
-
+C This subroutine is the coefficient generator for a component used to
+C set the temperature for
+C the mains water. Temperature is set constant for the whole month with
+C values either set by the user or based on the Moore's model.
+C The component has one connection, and assumes this connection orginates
+C from the last component in the DHW delivery system (that is, its temperature
+C represents the DHW delivery temperature.) If configured in this way, this
+C component will meaningfully compute the thermal load associated with
+C the domestic hot water service, no matter how many components actually
+C contribute to this service. The flow rate of the upstream connection
+C determines the flow rate through this component, while the temperature
+C of the connection is ignored. 
+C
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     ISTATS     Flag indicating whether energy balance or water mass balance is sought
@@ -58,9 +63,7 @@ C                Flag indicating whether mains water temperature is based on use
 C                the Moore's model
 C     ADATA(IPCOMP,i)
 C                i = 1,12; Water temperature for each month of the year
-C     ADATA(IPCOMP,i)
-C                i = 13,37; Water draw in L/hr for each hour of the day
-
+C
 C OUTPUTS:
 C     COUT       List of matrix coefficients
 C -------------------------------------------------------------------------------------------
@@ -99,6 +102,10 @@ C-----Common for present and future simulation time steps
       COMMON/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 
+C.....ESP-r Commons
+      common/pcnam/pcname(mpcom)        ! Plant component names
+      character*15 pcname
+
 C-----Present and future plant side simulation time steps
       COMMON/PTIME/PTIMEP,PTIMEF
       REAL PTIMEP,PTIMEF
@@ -110,6 +117,23 @@ C-----Plant component connection data
       INTEGER ICONTP ! Type of each connection
       INTEGER ICONDX ! Pointer to connections for each 
                      ! component node
+
+C.....Common containing plant componet mass diversion ratios
+      common/c10/npcon,ipc1(mpcon),ipn1(mpcon),ipct(mpcon),ipc2(mpcon),
+     &            ipn2(mpcon),pcondr(mpcon),pconsd(mpcon,2)
+      integer npcon            ! number of inter-component connections
+      integer ipc1             ! component number defining the receiving
+                               !   component
+      integer ipn1             ! node number defining the receiving component
+      integer ipct             ! plant component inter-connection type
+      integer ipc2             ! component number defining the sending
+                               !   component
+      integer ipn2             ! node number defining the sending component
+      real    pcondr           ! ratio of mass flow rate through the connection
+                               !   and the mass flow rate entering the receiving
+                               !   node for each plant component inter-connection
+      real    pconsd           ! supplementary data for plant component inter-
+                               !   connection
 
 C-----Network and control data
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -129,6 +153,9 @@ C----------------------------------------------------------------------
       REAL fDHW_ColdMainTemp      ! Function for determining mains water
                                   ! temperature for the month
 
+      REAL SHtFld                 ! Function returning specific heat
+                                  !   of air/water/vapour
+
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------
@@ -142,12 +169,20 @@ C----------------------------------------------------------------------
       INTEGER mains_future_hour   ! Future hour for determining mains draw
       LOGICAL close               ! Logical variable used to check how close a number is 
                                   ! to another number
-      REAL mains_draw             ! Mains draw for future hour
       REAL mains_temp             ! Mains temperature for month
       INTEGER mains_node_conn     ! Mains component connection number in the plant network
       INTEGER mains_node_num      ! Mains component node number in the plant network
       INTEGER num_matrix_coeff    ! Total number of matrix coefficients for component
       INTEGER IX1,I                 
+
+      real fConTemp               ! Upstream connection temperature (oC)
+      real fConFlow               ! Upstream connection flow rate (kg/s)
+      real fConCp                 ! Specific heat of water flowing
+                                  !   through unit (J/kg oC)
+      real fDHWLoad               ! Water heater thermal load (W)
+
+      character*128 root_name     ! String for use in reporting
+      integer iNameLen            ! Length of a string
 
 C ----Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -155,8 +190,7 @@ C ----Trace output
      &   ' Entering subroutine mains_temp_draw_profile_coeff_gen'
 
 C ----Initialize pointers to the 1 connections to the mains water
-C-----and the mains water node. These are only used here for the
-C-----trace facility
+C-----and the mains water node.
       mains_node_conn = ICONDX(IPCOMP,1,1)
       mains_node_num = NPCDAT(IPCOMP,9)
 
@@ -198,11 +232,6 @@ C-----draw is hour 1
 
       ENDIF
 
-C-----Set mains draw depending on the future hour. Convert Liters/hour to
-C-----kg/s
-      mains_draw = 
-     &   ADATA(IPCOMP,mains_future_hour + 13) / 3600.
-
 C ----Generate coefficients for energy balance equation
       IF(ISTATS.EQ.1) THEN       
 
@@ -216,17 +245,18 @@ C-------Right-hand side constant term set to the mains temperature
 C-------for the month
         COUT(3) = mains_temp
 
-C-----1st phase mass (ie. "water") mass balance coefficients
+C-----1st phase mass (ie. "water") mass balance coefficients.
+C-----What comes in must go out!
       ELSE IF(ISTATS.EQ.2) THEN
 
 C-----Self coupling coefficient
         COUT(1) = 1.
 
 C-----Cross coupling coefficient
-        COUT(2) = 0.
+        COUT(2) = -1.0 * pcondr ( mains_node_conn )
 
 C-----Right-hand side constant term set to mains draw
-        COUT(3) = mains_draw
+        COUT(3) = 0.0
 
 C-----2nd phase mass (ie. "vapour") mass balance coefficients
       ELSE IF(ISTATS.EQ.3) THEN
@@ -235,6 +265,42 @@ C-----2nd phase mass (ie. "vapour") mass balance coefficients
          COUT(3) = 0.
 
       ENDIF
+
+C-----Compute thermal load associated with water service. This figure
+C-----is only meaningful if the incomming connection represents the
+C-----DHW delivery temperature.
+
+      fConTemp = CONVAR ( mains_node_conn, 1 )  ! (oC)
+      fConFlow = CONVAR ( mains_node_conn, 2 )  ! (kg/s)
+
+C-----Calculate specific heat capactiy
+C-----   = Shtfld ( X , Temperature ) (J/kg oC)
+C-----     where X=1 -> air, X=2 -> vapor, X=3 -> liq. water
+
+      fConCp = Shtfld ( 3, ( fConTemp + mains_temp ) /2 )
+
+C-----Calculate thermal load (W):
+C-----
+C-----   = ( flow tate ) * ( heat capacity )
+C-----                         * ( delivery temp - supply temp ) 
+C-----
+
+      fDHWLoad = fConFlow * fConCp * ( mains_temp - fConTemp )
+
+C-----Report thermal load: Format string as: 'plant/NAME/misc_data'
+
+      WRITE(root_name,'(A,A,A)')
+     &     'plant/',
+     &     pcname(iPComp)(1:iPltNameLen(iPComp)),
+     &     '/misc_data'
+
+      iNameLen = iPltNameLen(iPComp) + 16
+
+      call add_to_xml_reporting(
+     &     fDHWLoad,
+     &     root_name(1:iNameLen) // '/DHW_thermal_load',
+     &     'units', '(W)',
+     &     'Make-up water: thermal load associated with DHW service' )
 
 C-----Trace.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -246,8 +312,6 @@ C-----Trace.
          IF(ISTATS.EQ.1) THEN
             WRITE(ITU,*) ' Mains water temp ',
      &                     mains_temp,' (Deg C)'
-            WRITE(ITU,*) ' Mains water draw = ',
-     &                     mains_draw,' (kg/s)'
          END IF
          WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
          num_matrix_coeff = 3
@@ -651,7 +715,8 @@ C-----draw is hour 1
       ENDIF
 
 C-----Set water draw depending on the future hour. Convert Liters/hour to
-C-----kg/s
+C-----kg/s.
+
       water_draw = ADATA(IPCOMP,future_hour) / 3600.
 
 C ----Generate coefficients for energy balance equation

@@ -215,6 +215,20 @@ c Then this will muliply it by the actual water draw and divide it by the time s
 
 c Note the draw is considered instantaneous ie flow = infinite during draw period
 
+C Save water draw volume in (l/s)
+C
+C                l       # timesteps      1 hour
+C       l/s = -------- * ----------- * ------------
+C             timestep       hour      3600 seconds
+C
+C
+        fDHW_H3K_water_draw = fDHW_WaterDraw * real (iNTSTEP)
+     &                                       * ( 1.0 / 3600.0 ) ! (l/s)
+
+C Save supply and delivery temperatures (oC)
+        fDHW_H3K_supply_temp = fDHW_ColdMainTemp(iMonth)
+        fDHW_H3K_delivery_temp = fHotSupplyTemp
+
       END
 
 
@@ -527,7 +541,12 @@ c report January 1995
      &                  fEnergy 
      &                  + fDHW_FlueLosses()     
      &                  + 0.4 *fDHW_PilotEnergy () 
-  
+
+C.....Save data for H3KReports output
+      fDHW_H3K_energy_requirement = fDHW_FuelEnergyRequired
+     &                                       * real (iNTSTEP)
+     &                                       * ( 1.0 / 3600.0 ) ! (W)
+
       END
 
 c *********************************************************************
@@ -564,8 +583,13 @@ c Portion of Pilot energy that is transmitted to room.
      &    + fDHW_StandByTankLosses()
      &    + fDHW_PipeGains()
      &    + fDHW_PipeLosses()
-     &    + fDHW_PilotEnergyToRoom()  
-             
+     &    + fDHW_PilotEnergyToRoom()
+
+C.....Save energy transfer to room (W)
+      fDHW_H3K_heat_xfer_to_room = fDHW_EnergyToZone
+     &                                       * real (iNTSTEP)
+     &                                       * ( 1.0 / 3600.0 ) ! (W)
+
       END
 
 c *********************************************************************
@@ -819,6 +843,11 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       
       END SELECT
 
+C.....Save standby skin losses (W)
+      fDHW_H3K_skin_loss = fDHW_StandbyTankLosses
+     &                                       * real (iNTSTEP)
+     &                                       * ( 1.0 / 3600.0 ) ! (W)
+
       END
 
 
@@ -946,6 +975,12 @@ c Determine max output for heat injector for timestep.
         fDHW_EnergyInputWater = fDHW_EnergyRequired() 
       ENDIF
       fEnergyinputWater = fDHW_EnergyInputWater
+
+C.....Energy transfer to water
+      fDHW_H3K_energy_transfer_to_water = fEnergyinputWater
+     &                                       * real (iNTSTEP)
+     &                                       * ( 1.0 / 3600.0 ) ! (W)
+      
       END
       
 
@@ -1074,6 +1109,10 @@ c Local variables
      &                    -fDHW_standbyTankLosses())
      &                    * fDHW_FlueGasLossFactor()
       END SELECT
+
+      fDHW_H3K_flue_loss = fDHW_FlueLosses * real (iNTSTEP)
+     &                                     * ( 1.0 / 3600.0 ) ! (W)
+
       END
      
 c *******************************************************************
@@ -1126,34 +1165,41 @@ C Initialise to default values.
 
       fFTank =  fDHW_DOEEFTank()
 
-       
+C For the case of DHW input files with FileVersion numbers greater than 2, the hourly
+C and daily DHW load is defined in the DHW input file, so skip the next section.
+      check_DHW_draws_in_file: if  ( fDHWVersionNumber .ge. 2.0 ) then
+          continue
+
 c This water draw curve was taken from the CSA f379.1-88 Solar Domestic Hot Water Systems.
-      fWaterDrawCurveHourly(1) = 9.
-      fWaterDrawCurveHourly(2) = 7.
-      fWaterDrawCurveHourly(3) = 0.
-      fWaterDrawCurveHourly(4) = 0.
-      fWaterDrawCurveHourly(5) = 0.
-      fWaterDrawCurveHourly(6) = 0.
-      fWaterDrawCurveHourly(7) = 0.
-      fWaterDrawCurveHourly(8) = 8.
-      fWaterDrawCurveHourly(9) = 18.
-      fWaterDrawCurveHourly(10) = 15.
-      fWaterDrawCurveHourly(11) = 16.
-      fWaterDrawCurveHourly(12) = 16.
-      fWaterDrawCurveHourly(13) = 14.
-      fWaterDrawCurveHourly(14) = 13.
-      fWaterDrawCurveHourly(15) = 12.
-      fWaterDrawCurveHourly(16) = 10.
-      fWaterDrawCurveHourly(17) = 9.
-      fWaterDrawCurveHourly(18) = 10.
-      fWaterDrawCurveHourly(19) = 12.
-      fWaterDrawCurveHourly(20) = 16.
-      fWaterDrawCurveHourly(21) = 17.
-      fWaterDrawCurveHourly(22) = 14.
-      fWaterDrawCurveHourly(23) = 12.
-      fWaterDrawCurveHourly(24) = 11.
- 
-      fWaterDrawCurveTotal = 239.0
+      else  
+          fWaterDrawCurveHourly(1) = 9.
+          fWaterDrawCurveHourly(2) = 7.
+          fWaterDrawCurveHourly(3) = 0.
+          fWaterDrawCurveHourly(4) = 0.
+          fWaterDrawCurveHourly(5) = 0.
+          fWaterDrawCurveHourly(6) = 0.
+          fWaterDrawCurveHourly(7) = 0.
+          fWaterDrawCurveHourly(8) = 8.
+          fWaterDrawCurveHourly(9) = 18.
+          fWaterDrawCurveHourly(10) = 15.
+          fWaterDrawCurveHourly(11) = 16.
+          fWaterDrawCurveHourly(12) = 16.
+          fWaterDrawCurveHourly(13) = 14.
+          fWaterDrawCurveHourly(14) = 13.
+          fWaterDrawCurveHourly(15) = 12.
+          fWaterDrawCurveHourly(16) = 10.
+          fWaterDrawCurveHourly(17) = 9.
+          fWaterDrawCurveHourly(18) = 10.
+          fWaterDrawCurveHourly(19) = 12.
+          fWaterDrawCurveHourly(20) = 16.
+          fWaterDrawCurveHourly(21) = 17.
+          fWaterDrawCurveHourly(22) = 14.
+          fWaterDrawCurveHourly(23) = 12.
+          fWaterDrawCurveHourly(24) = 11.
+
+          fWaterDrawCurveTotal = 239.0
+
+      endif check_DHW_draws_in_file
       RETURN
       END
       
@@ -1270,6 +1316,9 @@ c This routine calulates the energy use and sum the values for monthly analysis.
 c This will carry the standy tank losses and the tank teperatures to the next timestep.
       CALL DHW_CarryToNextStep()
 
+C Report data to h3kreports, site-utilities facility
+      call H3KReportDHWModule()
+
       RETURN
       END
       
@@ -1304,9 +1353,8 @@ C Declarations for local variables and variables passed in common blocks.
       character outs*124,OUTSTR*124 
       integer IUOUT,IUIN,IFIL,IUNIT,ISTAT,IER,ND,k,ival
       real val
-      INTEGER   iTankNumber
-      REAL fDHWVersionNumber ! version number of DHW input file      
-      logical error_flag, close, close2
+      INTEGER  iTankNumber
+      logical error_flag, close, close2, close3
 
   
 C Set the version number
@@ -1328,6 +1376,9 @@ c If there is a version number > 0 at the top of the dhw file, the ground temper
 c variables fDHW_ground_temp_avg and fDHW_ground_temp_amp are calculated in 
 c file /esrubld/ground_temp_main.F from the climate data (and DD calculations) 
 c based on Moore's method. 
+
+C Addition of hourly draw profile to dhw input file (JP - Feb 2008)
+C If the version number is > 2, 24 hourly draw profiles are included in the .dhw file.
 
 c Determine the version number of this file.
 c If it is an old file (with no version number or version number = 0), then we 
@@ -1352,11 +1403,12 @@ c-------to read in the number of hot water tanks.
       ELSE   
 c-------if there is no version number, continue with reading dhw data
         continue
+         
       ENDIF
 
       if(.not. error_flag) then
         CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' # of Hot Water Tanks ',IER)
-        if(IER.NE.0)then 
+        if(IER.NE.0)then
           call edisp(IUOUT,' Cannot read DHW Number of Tanks.')
           error_flag = .true.
         endif
@@ -1389,6 +1441,7 @@ c-----If there is no version number associated with the dhw input file, then
 c-----the variables fDHW_ground_temp_avg and fDHW_ground_temp_amp are read in
       CALL ECLOSE(fDHWVersionNumber,0.0,0.0001,CLOSE)
       CALL ECLOSE(fDHWVersionNumber,1.0,0.0001,CLOSE2)
+      CALL ECLOSE(fDHWVersionNumber,2.0,0.0001,CLOSE3)
       IF(CLOSE) then 
 c Read  fDHW_ground_temp_avg of DHW.
         if(.not. error_flag) then
@@ -1413,7 +1466,7 @@ C Read  fDHW_ground_temp_amp of DHW.
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' DHW data',IER)
           IF(IER.NE.0) error_flag = .true.
           K=0
-         endif
+        endif
 
         if(.not. error_flag) then
           CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' 
@@ -1433,10 +1486,10 @@ c Set flag to 0
 c-----If there is a version number associated with the dhw input file, then 
 c-----continue reading in the rest of the .dhw input file as normal.
 c-----In this case the ground average temperature and amplitude are based on
-c-----calculations using the weather file. Values for the ground temperatue
+c-----calculations using the weather file. Values for the ground temperature
 c-----average and amplitude are stored in common Ground_Temp in the include
 c-----file "ground_temp_mains_common"
-      ELSEIF(CLOSE2) THEN
+      ELSEIF(CLOSE2 .or. CLOSE3) THEN
 c In this case the ground temperature evaluation method flag is set to 1
         iDHW_ground_temp_cal_flag = 1
         continue
@@ -1455,7 +1508,7 @@ C Read  fHotSupplyTemp of DHW.
           call edisp(IUOUT,' Cannot read DHW fHotSupplyTemp.')
           error_flag = .true.
         endif
-        fHotSupplyTemp = VAL 
+        fHotSupplyTemp = VAL
       endif
       
 c loop through tanks  (only one tank supported)  
@@ -1608,7 +1661,8 @@ C Read  fBlanket Insulation of DHW.
         endif
 
       END DO
-      
+
+
 C Close DHW input data file.
       if(.not.error_flag) then
         CALL ERPFREE(IUNIT,ISTAT)
@@ -1798,3 +1852,98 @@ c     Should add iterator to go through multiple tanks when that functionality i
       RETURN
       END
 
+C=H3KReportDHWModule====================================================
+C
+C Abstract:
+C
+C This procedure transports data from the DHW module to the
+C H3Kreports and Site Utilities facilities.
+C
+C Inputs: None
+C
+C Outputs: None
+C
+C=======================================================================
+
+      subroutine H3KReportDHWModule()
+      implicit none
+#include "dhw_common.h"
+#include "OffsiteUtilitiesPublic.h"
+
+C.....Store energy requirement in site-utilities facility storage
+C.....array. (W)
+      fSUFuelEnergyUse( iFuelType, iUseDHW ) =
+     &    fDHW_H3K_energy_requirement
+C.....Pass data to storage facility.
+      call StoreSiteEnergyUse(iIdealDHW, fSUFuelEnergyUse )
+
+
+C.....Report interesting parameters:
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_water_draw,
+     &  'plant/ideal_DHW_model/water_draw',
+     &  'units', '(l/s)',
+     &  'Ideal DWH model: timestep-averaged volumetric water draw'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_energy_requirement,
+     &  'plant/ideal_DHW_model/energy_input',
+     &  'units', '(W)',
+     &  'Ideal DWH model: energy requirement'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_supply_temp,
+     &  'plant/ideal_DHW_model/supply_temperature',
+     &  'units', '(oC)',
+     &  'Ideal DHW model: temperature of make-up water'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_delivery_temp,
+     &  'plant/ideal_DHW_model/delivery_temperature',
+     &  'units', '(oC)',
+     &  'Ideal DHW model: temperature at which water is delivered'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_energy_transfer_to_water,
+     &  'plant/ideal_DHW_model/burner_heat_output',
+     &  'units', '(W)',
+     &  'Ideal DHW model: heat delivered by burner'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_skin_loss,
+     &  'plant/ideal_DHW_model/skin_loss',
+     &  'units', '(W)',
+     &  'Ideal DHW model: skin-loss to surroundings'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_flue_loss,
+     &  'plant/ideal_DHW_model/flue_loss',
+     &  'units', '(W)',
+     &  'Ideal DHW model: thermal energy lost in exhaust gases'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_heat_xfer_to_room,
+     &  'plant/ideal_DHW_model/heat_transfer_to_building',
+     &  'units', '(W)',
+     &  'Ideal DHW model: rate of heat transfer to surrounding space'
+     &)
+
+      call add_to_xml_reporting(
+     &  fDHW_H3K_water_draw * 4106.0
+     &      * ( fDHW_H3K_delivery_temp - fDHW_H3K_supply_temp),
+     &  'plant/ideal_DHW_model/water_heating_load',
+     &  'units', '(W)',
+     &  'Ideal DHW model: theoretical minimum heat required to meet'
+     &    // ' water heating requirements'
+     &)
+
+      return
+      end

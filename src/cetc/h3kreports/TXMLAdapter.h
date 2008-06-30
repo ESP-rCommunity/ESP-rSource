@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
@@ -58,9 +59,8 @@ public:
 	  void WriteToFile(std::string filePath);
 	
 	///Write Transformed XML 
-	  void WriteTransformedXML(std::string  sXMLFile, 
-				   std::string  sXSLT_Output_File_Name, 
-				   std::vector<std::string>  m_stylesheet_list);
+	  void WriteTransformedXML(std::string sXMLFile,
+				   std::map<std::string,std::string> m_Stylesheets);
 	
 	
 	void Log();

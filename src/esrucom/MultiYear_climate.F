@@ -1541,7 +1541,6 @@ C----------------------------------------------------------------------
       character*124 cContext      ! contextual buffer
       character*16 cAction        ! Action to be undertaken
 
-C External functions.     
       integer lnblnk
 
       write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
@@ -1680,9 +1679,8 @@ C----------------------------------------------------------------------
 C External functions.     
       integer lnblnk
 
-      write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
-
       bNonContigious   = .false.
+      write (cAction,'(A)') cActionPass(1:min(lnblnk(cActionPass),16))
 
 C---------------------------------------------------------------------
 C     Have too many years been specified?

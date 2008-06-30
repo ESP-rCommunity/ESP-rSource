@@ -519,8 +519,7 @@ C.....-> update meta-data
 
 
 C.....H3Kreports.(timesteps).end.................
-C.....H3Kreports.Set Meta initialization flag
-        call H3K_init_set_meta(.true.)
+
       endif ! <- matches 'if ( bH3K_rep_enabled() )...'
 
 
@@ -540,7 +539,10 @@ C process file if necessary
      &                            bLookup_data_err)
         if ( bLookup_data_err ) bLookup_data_defined = .false.
       endif
-      
+
+C Zero Site energy usage storage array
+      call ZeroFuelEnergyStorageArray()
+
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
@@ -1061,7 +1063,7 @@ C Output current simulation increment if trace on.
 C ** DEBUG ** Write nsinc to screen
 C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
-C           write(outs,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
+C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
 C     &                ' yr:', iMY_current_year
 C           call edisp(itu,outs)
 
@@ -1278,6 +1280,7 @@ C Find number of data blocks per hour to be saved.
               ndbph=ncomp*itstp1
 
               IF (ISAVE.eq.5)then
+                call surbal(icomp)
                 call H3KSTORE_SAVELEVEL5(icomp,iday,itsmus,ndbph)
               ELSE
                 call mzls3(icomp,iday,itsmus,ndbph)
@@ -1290,7 +1293,6 @@ C transport miscellaneous simulation data to reporting object
                     call H3K_transport_mfn_data()
                  endif
               endif
-
 C If TSC type 2 is active then find sum of averages for zone air
 C temperature and zone air energy injection.
               if(itsct.eq.2.and.itsok.eq.1)then
@@ -1352,6 +1354,10 @@ C For type 6 time-step controller, possibly 'rewind' simulation,
                 if(irew)goto 123
               endif
             endif
+
+C Reset h3k zone control action flags
+
+            call h3kReports_reset_zone_flags()
 
 C Building side now complete.
             if(indcfg.eq.1)goto 77
@@ -1541,6 +1547,10 @@ C For global control, increment pass counter.
 C Save boundary condition data, if it exists
             if ( bH3K_rep_enabled() ) call report_BC_data()
 
+C Call SiteUtilities procedure to characterize purchased energy
+C usage
+            call SiteUtilities()
+
 C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting
 C.....object update function to process and
@@ -1566,9 +1576,6 @@ C.....Update reports.
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
             call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
-
-C IF NSINC=1, turn off initialization of h3kreports meta data
-            if (nsinc .eq. 1 ) call  H3K_init_set_meta(.false.)
 
    30     continue
 

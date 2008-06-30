@@ -6,6 +6,7 @@ MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
 TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
+PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
 BLDdir = $(SRCdir)/esrubld
@@ -31,8 +32,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
-	  
-	   
+	  PltDummy.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -214,14 +214,17 @@ DG_controller_menu.F:
 DHW_module.F:
 	rm -f DHW_module.F
 	ln -s $(CETCdir)/DHW_module.F .
-
 ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
+PltDummy.F:
+	rm -f PltDummy.F
+	ln -s $(PLTdir)/PltDummy.F .
+
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
-
+	
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -237,7 +240,8 @@ clean:
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
-	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
+	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
+	PltDummy.F
 
 
 

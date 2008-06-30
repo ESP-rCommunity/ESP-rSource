@@ -35,14 +35,10 @@
 #->   5, 1-node mains water temperature and draw profiles                        
   mains_water       87
     0        # Component has   0 control variable(s).
-   37
+   13
   1.0000       15.000       15.000       15.000       15.000       15.000    
-  15.000       15.000       15.000       15.000       15.000       15.000    
-  15.000       0.0000       0.0000       0.0000       0.0000       0.0000    
-  0.0000       0.0000       10.3         24.8         24.8         44.7         
-  24.9         10.100       5.9000       0.0000       0.0000       14.800
-  24.4         45.400       24.100       30.700       10.300       4.3000       
-  0.0000       
+  15.000       15.000       15.000       15.000       15.000       15.000
+  15.000
 #->   6, variable speed domestic WCH pump; 1 node model                          
   tank_pump         15
     1        # Component has   1 control variable(s).

@@ -85,6 +85,7 @@ c ---
 
        COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
        REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
 c
 c     Implicit None
       INTEGER J
@@ -94,6 +95,10 @@ c     Implicit None
       Real T, HLR, DeltaT, ZoneFraction
       Character Msg*128
       Logical ExitNOW
+
+      real fTempTol
+      parameter ( fTempTol = 0.5 )
+
       
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
@@ -101,6 +106,8 @@ c     Implicit None
       save ExitNOW
       
       Data iCycle / 9990 /
+
+      
       If ( iCycle .lt. 1 ) Then
          Write (Msg,'(a,6f8.2)') 'MECH_VENT_CONTROL - ZF',
      & ( VOL(i), i = 1, 6 )
@@ -129,6 +136,7 @@ c
          TMAIN = TFA(AIM2_ref_zone) ! Indoor temp
 c
          T = TF ! "future" outdoor air temp
+
 c ---
          If ( iCVSType .eq. 2 ) Then ! HRV
 c
@@ -148,7 +156,8 @@ c ---
 c
       Endif ! End of Zone 1 calculations
 c ---
-      If ( iComp .ne.  AIM2_CrawlSpace_zone ) Then
+      If ( iComp .ne.  AIM2_CrawlSpace_zone .and.
+     &     iComp .ne.  AIM2_attic_zone      ) Then
 c
 c Apportion ventilation to each zone.  For now just distribute the air flow
 c in proportion to each room's volume
@@ -166,20 +175,22 @@ c
 c
 c --- Air heat loss rate for zone
 c
+
          HLR = MCP * ( TFA(iComp) - CVSSupplyTemp ) * ZoneFraction
+
 c
 c --- Convert air heat loss rate into an equivalent conductance (to outdoors)
 c
          DeltaT = TFA(iComp) - T
-         If ( Abs(DeltaT) .gt. 0.05 ) 
+
+         If ( Abs(DeltaT) .gt. fTempTol ) 
      &              ZONE_infil_cond = HLR / DeltaT
-          
 c
 c --- Supply Duct heat gain
 c
          If ( iComp .eq. IntDD(1,1) ) Then
 c Supply duct is in zone
-            If ( Abs(DeltaT) .gt. 0.05 ) ZONE_infil_cond =
+            If ( Abs(DeltaT) .gt. fTempTol ) ZONE_infil_cond =
      &                 ZONE_infil_cond + HRVSupDuctHG / DeltaT
          Endif
 c
@@ -187,7 +198,7 @@ c --- Exhaust Duct heat gain
 c
          If ( iComp .eq. IntDD(2,1) ) Then
 c Exhaust duct is in zone
-            If ( Abs(DeltaT) .gt. 0.05 ) ZONE_infil_cond =
+            If ( Abs(DeltaT) .gt. fTempTol ) ZONE_infil_cond =
      &                 ZONE_infil_cond + HRVExhDuctHG / DeltaT
          Endif
 c ---
@@ -203,6 +214,11 @@ c
       iCycle = iCycle + 1
       Return
       END
+
+
+
+C -------------------------------------------------------------------
+C -------------------------------------------------------------------
 c$Message: ' File:Hrv.For'
       Subroutine HRV ( iFun, T )
 c
@@ -217,7 +233,7 @@ c Applicable only to an HRV (Fans only done separately)
 c Develop Duct model Feb/93, Feb 4, 22-26, Mar 12-22, Apr 18
 c Nov 24/93, Feb 17/94, Mar 28/95, Apr 6, November 20, 2000
 c Revise calling methods (for ESPr) Jul 9/01, Jul 10, 12, 13, 26
-c Aug 2, 15, 16, Oct 4, 25, Nov 1
+c Aug 2, 15, 16, Oct 4, 25, Nov 1, Mar 3/08
 c ---
 c
 c      Revised HRV model  UNIES 807-2  Feb 19/93  BcB
@@ -244,6 +260,7 @@ c
       Implicit None
 #include "Ventilation_Data.h"
 #include "SOFC.h"
+#include "OffsiteUtilitiesPublic.h"
 
       Integer iFun
       Real T
@@ -260,11 +277,7 @@ c ---
       Real Tpre, T7, Ts, Te, T2, Tx, T3, Tex
       Real OpTime, Tlow, Thigh
       Character Msg*128
-C.....H3Kreports.(HVAC_ELEC_DEC).start......................
-C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*128 H3K_rep_NAME
-      INTEGER LNBLNK
-C.....H3Kreports.(HVAC_ELEC_DEC).end........................
+
 c ---
       Save MonVar, PreHtr, Type2, m, i, x, TENDEG, U4, U5
 c ---
@@ -274,7 +287,10 @@ c ---
       Save Tpre, T7, Ts, Te, T2, Tx, T3, Tex
       Save OpTime, Tlow, Thigh
       Save Msg
-      Save H3K_rep_NAME
+
+C Used in the xml reporting structure
+C      real fH3KSumEnergyUseElec(iNumUses)        ! Energy consumption assoc. w/ electricuty (W)
+
       
 c
       If ( iFun .eq. 0 ) Then ! HRV INITIALIZATION
@@ -374,15 +390,19 @@ c Pre-heater power
                PrePwr = 0.
             Endif
 c
-c HRV effectiveness
+c --- HRV sensible efficiency
+c
+c The data tables are based on temperature upstream of the preheater
             If ( T7 .lt. TENDEG ) Then
 c
-               eHRV =  aMax1 ( EffHT + dEffdT * ( T7 - TENDEG ), 0. )
+c Mar 3/08     eHRV =  aMax1 ( EffHT + dEffdT * ( T7 - TENDEG ), 0. )
+               eHRV =  aMax1 ( EffHT + dEffdT * ( Tpre - TENDEG ), 0. )
 c For a Type 2, max eff is limited
                If ( Type2 ) eHRV = aMin1 ( eHRV, eHRVmax )
 c
 c Fan power varies with temperature
-               FanPwr = aMax1 ( 0., FPc1 - FPc2 * ( T - TENDEG ) )
+c Mar 3/08     FanPwr = aMax1 ( 0., FPc1 - FPc2 * ( T - TENDEG ) )
+               FanPwr = aMax1 ( 0., FPc1 - FPc2 * ( Tpre - TENDEG ) )
 c ---
             Else ! At or above TENDEG
 c
@@ -451,27 +471,33 @@ c
             TotalPower = 0.
          Endif
 
+         call add_to_xml_reporting(
+     &
+     &       TotalPower,
+     &
+     &      'plant/ideal_hvac_models/HRV/elec_load',
+     &
+     &      'units',
+     &
+     &       '(W)',
+     &
+     &      'Idealized HVAC models: '
+     &      // 'Amount of '
+     &      // ' electricity '
+     &      // ' used by '
+     &      // ' Ventilation/HRV '
+     &      // ' system'
+     &
+     &      )
 
-C.....H3Kreports.(HVAC_ELEC_HRV).start......................
-C........Log HRV  component electric load:
-C........-> Set name
-         WRITE(H3K_rep_NAME,'(A)') 'plant/CETC_HVAC/HRV/elec_load'        
-C.,......-> update meta-data
-         call REP_SET_META(
-     &       H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &       'units',
-     &       '(W)'
-     &       )
 
-C.......-> update data 
-         call REP_REPORT(
-     &        TotalPower,
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &        )
-C.....H3Kreports.(HVAC_ELEC_HRV).end.......................
+C Store aggregate electricity use for reporting in Site Utility facilitity.
+      fSUFuelEnergyUse( iElectricity,iUseHRV )
+     &                   = TotalPower
 
+C     Pass fuel energy stroage data to site utilities
+      call StoreSiteEnergyUse( iIdealVent, fSUFuelEnergyUse )
 
-      CALL H3KSTORE_HRV_DATA !This function stores monthly HRV values for sl5 output
 c
 c1001 Format ( i3, f9.5, 3f8.3, f8.1, 2f8.2, f8.1, 5f8.3,2f8.1,f8.3)
 c
@@ -479,6 +505,10 @@ c
 c
       Return
       END
+
+C ---------------------------------------------------------------------------
+
+
 c$Message: ' File:FaNoHR.For'
       Subroutine FANS_NO_HR ( m, T )
 c
@@ -689,15 +719,15 @@ c This IF ensures start-up is over.
       IF (bInStartUp()) then
         RETURN
       ELSE
-      CALL EDAYR(idyp,IDAYN,imonth)
+         CALL EDAYR(idyp,IDAYN,imonth)
 
 c Sum up monthly energies
 
       
-      fHRV_Elec_Energy(imonth) = 
+         fHRV_Elec_Energy(imonth) = 
      &     fHRV_Elec_Energy(imonth) + TotalPower * 3600./REAL(NTSTEP) !(Watts)
 
 
-      return
+         return
       ENDIF 
       END  

@@ -20,7 +20,6 @@ typedef map<std::string,TVariableData> VariableDataMap;
 
 
 
-
 struct TTimeDataRange
 {
   TTimeData begin;
@@ -191,8 +190,7 @@ class TReportsManager
    * The constructor is private because we're a Singleton
    */
   TReportsManager(  );
- ~TReportsManager(  );
-	
+
   /**
    * 
    */
@@ -242,7 +240,8 @@ class TReportsManager
    */
 		
   VariableDataMap m_variableDataList;
-  /**
+
+    /**
    * The total number of timestep in the simulation
    */
 
@@ -262,6 +261,16 @@ class TReportsManager
   std::vector<std::string> m_summary_nodes;
   // list of xsl styles sheet to be applied..in order.. 
   std::vector<std::string> m_stylesheet_list;
+
+  // Stylesheets and transform files:
+  map<std::string,std::string> m_StyleSheets;
+
+  // list of transform targets.
+  std::vector<std::string> m_xsl_targets;
+
+  // vector indicating which timesteps contain monthly bins
+  std::vector<int> m_month_bin_ts;
+  
   /**
    * Flags for results post-processing options
    */
