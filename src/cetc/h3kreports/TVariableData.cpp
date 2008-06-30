@@ -109,7 +109,8 @@ TVariableData::TVariableData()
 void TVariableData::Set(const double& val,
                         const bool& bTS_averaging,
                         const bool& bSaveToDisk,
-                        const int& timestep)
+                        const int& timestep,
+                        std::vector<int>& m_month_bin_ts)
 {
 
   // The first time this variable is set, 
@@ -136,7 +137,12 @@ void TVariableData::Set(const double& val,
 
   if ( timestep > 0 && bFirstCall ){
       for (ii=0;ii<timestep;ii++){
+
+        //Possibly bin a previous month's worth of data
+        if ( m_month_bin_ts.at(ii) == 1 ){ UpdateMonthly();}
+      
         Update( bSaveToDisk, ii );
+        
       }
   }
 
@@ -502,58 +508,48 @@ void TVariableData::OutputXML(TXMLAdapter *doc,
     }
 
 
-  //Custom manipulation
-  if(Units == "(W)" )
+  //Custom manipulation: Integrate mass/energy flows
+  if(Units == "(W)"       ||
+     Units == "(kg/s)"    ||
+     Units == "(kWh/s)"   ||
+     Units == "(l/s)"     ||
+     Units == "(m3/s)"    ||
+     Units == "(tonne/s)" )
     {
       unsigned int j;
-      double maxGJ = 0;
-      TXMLNode currentNode = doc->AddNode(parentNode, "WattsToGJData", "");
+      double maxTotal = 0;
+      TXMLNode currentNode;
+      // Add node to hold integrated data
+      currentNode = doc->AddNode(parentNode, "integrated_data", "");
+      if (Units == "(W)"      ){ doc->AddAttribute(currentNode, "units", "GJ"    );}
+      if (Units == "(kg/s)"   ){ doc->AddAttribute(currentNode, "units", "kg"    );}
+      if (Units == "(kWh/s)"  ){ doc->AddAttribute(currentNode, "units", "kWh"   );}
+      if (Units == "(l/s)"    ){ doc->AddAttribute(currentNode, "units", "l"     );}
+      if (Units == "(m3/s)"   ){ doc->AddAttribute(currentNode, "units", "m3"    );}
+      if (Units == "(tonne/s)"){ doc->AddAttribute(currentNode, "units", "tonne" );}
+
+      // Integrate monthly bin data
       for(j = 0; j < m_monthly.size(); j++)
         {
           int tSteps;
           if(j > 0) tSteps = (kMonthlyTimesteps[j] - kMonthlyTimesteps[j-1]);
           else tSteps = kMonthlyTimesteps[0];
-          // assume 5 minute timesteps @ 60 seconds/minute
-          double gj = m_monthly[j].Sum() * minsPerStep * 60. / 1e09;
-          if(gj > maxGJ) maxGJ = gj;
-          TXMLNode tNode = doc->AddNode(currentNode, "bin", StringValue(gj));
+          // Integrate data over month
+          double total = m_monthly[j].Sum() * minsPerStep * 60. ;
+          // for W->J, convert result to GJ
+          if ( Units == "(W)"){ total = total / 1e09;}
+          TXMLNode tNode = doc->AddNode(currentNode, "bin", StringValue(total));
           doc->AddAttribute(tNode, "number", StringValue((int)j));
           doc->AddAttribute(tNode, "type", "monthly");
         }
-      // assume 5 minute timesteps @ 60 seconds/minute
-      double gj = m_annual.Sum() * minsPerStep * 60. / 1e09;
-      TXMLNode tNode = doc->AddNode(currentNode, "bin", StringValue(gj));
+      // And integrate annual data 
+      double total = m_annual.Sum() * minsPerStep * 60.;
+      if ( Units == "(W)"){ total = total / 1e09;}
+      TXMLNode tNode = doc->AddNode(currentNode, "bin", StringValue(total));
       doc->AddAttribute(tNode, "type", "annual");
-
-      tNode = doc->AddNode(currentNode, "bin", StringValue(maxGJ));
-      doc->AddAttribute(tNode, "type", "max"); //this is a hint for the XSLT chart generator
     }
 
-  if(Units == "(kg/s)" )
-    {
-      unsigned int j;
-      double maxGJ = 0;
-      TXMLNode currentNode = doc->AddNode(parentNode, "KgPerSToKG", "");
-      for(j = 0; j < m_monthly.size(); j++)
-        {
-          int tSteps;
-          if(j > 0) tSteps = (kMonthlyTimesteps[j] - kMonthlyTimesteps[j-1]);
-          else tSteps = kMonthlyTimesteps[0];
-          // assume 5 minute timesteps @ 60 seconds/minute
-          double gj = m_monthly[j].Sum() * minsPerStep * 60. ;
-          if(gj > maxGJ) maxGJ = gj;
-          TXMLNode tNode = doc->AddNode(currentNode, "bin", StringValue(gj));
-          doc->AddAttribute(tNode, "number", StringValue((int)j));
-          doc->AddAttribute(tNode, "type", "monthly");
-        }
-      // assume 5 minute timesteps @ 60 seconds/minute
-      double gj = m_annual.Sum() * minsPerStep * 60. ;
-      TXMLNode tNode = doc->AddNode(currentNode, "bin", StringValue(gj));
-      doc->AddAttribute(tNode, "type", "annual");
 
-      tNode = doc->AddNode(currentNode, "bin", StringValue(maxGJ));
-      doc->AddAttribute(tNode, "type", "max"); //this is a hint for the XSLT chart generator
-    }
 
   // Output timestep data: presently disabled, as this feature and the
   // ascii csv output are redundant, and the ascii output is compatable with

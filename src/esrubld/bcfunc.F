@@ -79,6 +79,8 @@ C The main building control function executive.
 C Check if running in dll mode.
       call isadll(dll)
 
+
+
 C If actuator is not located in zone then no control is imposed
 C regardless of control function prevailing at this time.
       IF(IBAN(ICF,1).EQ.-1.OR.(IBAN(ICF,1).EQ.-2.AND.IBAN(ICF,2).NE.
@@ -1357,23 +1359,20 @@ C control.
       COMMON/FVALG/GFA(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
-      
-C Common for variable hvac cooling capacity. The cooling
 
-C Common containing variable hvac cooling capacity. The cooling
-C capacity of certain HVAC systems such as heat pumps, changes
-C every time step due to changes in outdoor temperature and
-C indoor humidity.
-C Following common already included via hvac_parameters.h & hvac_common.h
-C      COMMON/hvac_timestep_parameters/outdoor_air_inf_cond(mcom),
-C     &coil_moist_in(mcom),coil_moist_out1(mcom),
-C     &coil_moist_out2(mcom),cont_fun_cool_cap(max_cont_fun),output_flag
-C      REAL outdoor_air_inf_cond,coil_moist_in,coil_moist_out1,
-C     &coil_moist_out2,cont_fun_cool_cap
-C      logical output_flag
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
 
       common/dllerr/dllsubr,dllmesg
-     
+
       character dllsubr*12,dllmesg*124,outs*124
       logical dll,CLOSERH
       LOGICAL AreWindowsOpen
@@ -1439,7 +1438,7 @@ C Trace output
 
       QFUT=0.
       TFUT=TNP
-      
+
 C Added for slave controller...
       Qmst(ICF)=QFUT
 
@@ -1456,16 +1455,25 @@ C QCN = min cooling capacity (W)
 C HSP = heating set point temp. (deg.C)
 C CSP = cooling set point temp. (deg.C)
 
-      QHM=BMISCD(ICF,IDTYP,IPER,2)
+C The variable keeping track of the cooling/heating capacities of the 
+C hvac system for ideal hvac modeling is set to zero at the beginning 
+C of the simulation. If this capacity is found to be greater than zero, 
+C then the cooling/heating capacity of the associated control law for 
+C the zone law needs to be updated. The variable cooling/heating capacity 
+C is set at the approprite HVAC equipment simulation routine.
+
+C Set maximum heating capacity:
+      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
+        QHM=cont_fun_heat_cap(IICOMP)
+      else
+        QHM=BMISCD(ICF,IDTYP,IPER,2)       
+      endif
+
+C Set minimum heating capacity
       QHN=BMISCD(ICF,IDTYP,IPER,3)
 
-C The function keeping track of the variable cooling capacity of the 
-C system is set to zero at the beginning of the simulation. If 
-C this capacity is found to be greater than zero, then the cooling 
-C capacity of the associated control law needs to be updated. The
-C variable cooling capacity is set at the approprite HVAC
-C equipment simulation routine.
-      if(cont_fun_cool_cap(ICF).gt.0 ) then
+C Set maximum cooling capacity:
+      if(cont_fun_cool_cap(IICOMP).gt.0 ) then
 
 C     if the windows are open
 C     ensure that the AC is not used. Note: if window model not active the result of 
@@ -1477,7 +1485,7 @@ C     stratagy.
             QCM = 0.
             QCN = 0.
          else
-            QCM = - cont_fun_cool_cap(ICF)
+            QCM = - cont_fun_cool_cap(IICOMP)
 C     Ensure windows are closed.
             bWindowsAreOpen = .false.
          endif
@@ -1485,10 +1493,30 @@ C     Ensure windows are closed.
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
 
+C Set minimum cooling capacity
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
+
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
-      
+
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
+
+C Set heating flags to true...
+      bZoneHeated(iicomp) = .true.
+      bZoneCooled(iicomp) = .true.
+
+C Setpoints must be between 10oC and 30oC for passive solar computations
+      if ( fHeatSetpoint(iicomp).lt.10.0 .or.
+     &     fHeatSetpoint(iicomp).gt.30.0 ) bZoneHeated(iicomp) = .false.
+      if ( fCoolSetpoint(iicomp).lt.10.0 .or.
+     &     fCoolSetpoint(iicomp).gt.30.0 ) bZoneCooled(iicomp) = .false.
+
+C Capacity must be greater than 1 W for passive solar computations
+       if (  QHM .lt. 1.0 )  bZoneHeated(iicomp) = .false.
+       if (  ABS(QCM) .lt. 1.0 )  bZoneCooled(iicomp) = .false.
+
 C Following lines added to set master zone values for use in slave controller.
 C Each control of type 2 will have values set in case they are referenced
 C as a master control.
@@ -5605,6 +5633,8 @@ C deliver proportionally).
       SUBROUTINE BCL21
 
 #include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -5618,7 +5648,13 @@ C deliver proportionally).
      &BMISCD(MCF,MBCDT,MBCDP,MISC)
       
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
-     
+
+C Commons for identifying wether a zone is heated or cooled.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      integer iMasterZone
       character outs*124  
       logical close
 
@@ -5661,6 +5697,7 @@ C Initialise Qmst
 C sensor location = 'in another zone' i.e. Master Zone. Recover
 C which control law is the master control for that zone.
         imasctlindex= int(BMISCD(ICF,IDTYP,IPER,2))
+        iMasterZone = IBSN(imasctlindex, 1)
         QM=Qmst(imasctlindex)
       elseif (IBSN(ICF,1).EQ.0) then
         call edisp(itu, 
@@ -5669,6 +5706,12 @@ C which control law is the master control for that zone.
         call epagend
         STOP      
       endif
+
+C Collect heating flags and setpoints from master zone
+      bZoneHeated(iicomp)   = bZoneHeated(iMasterZone)
+      bZoneCooled(iicomp)   = bZoneCooled(iMasterZone)
+      fHeatSetpoint(iicomp) = fHeatSetpoint(iMasterZone)
+      fHeatSetpoint(iicomp) = fHeatSetpoint(iMasterZone)
 
       if (QM.GT.0.0) then
 
@@ -5684,8 +5727,24 @@ C PBC - Percentage of Base Capacity delivered to master zone, cooling:
       
 C QHM = base (i.e max) heating capacity (W) for slave
 C QCM = base (i.e max) cooling capacity (W) for slave
-      QHM=BMISCD(ICF,IDTYP,IPER,3)
-      QCM=-BMISCD(ICF,IDTYP,IPER,4)
+
+C If the zone associated with this control function is served by an HVAC system
+C simulated ideally, then use HVAC system heating capacity to update controller
+C heating capacity for time step 
+      if(cont_fun_heat_cap(IICOMP).gt.0.) then
+        QHM=cont_fun_heat_cap(IICOMP)
+      else        
+        QHM=BMISCD(ICF,IDTYP,IPER,3)
+      endif
+      
+C If the zone associated with this control function is served by an HVAC system
+C simulated ideally, then use HVAC system capacity to update controller
+C cooling capacity for time step 
+      if(cont_fun_cool_cap(IICOMP).gt.0.) then
+        QCM=-cont_fun_cool_cap(IICOMP)
+      else        
+        QCM=-BMISCD(ICF,IDTYP,IPER,4)
+      endif
 
 C Using same % value, calculate delivered capacity to slave zone
       if (QM.GT.0.0) then

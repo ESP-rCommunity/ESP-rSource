@@ -92,6 +92,9 @@ c value is passed on to this subroutine in plr_baseboard.
       if(ipriority(isys).eq.1) then
         plr_baseboard = PLR(heating_load,ss_capacity(isys),
      &  fan_power(isys),ifan_operation(isys))
+c Call subroutine to set the controller heating capacity for each zone 
+c served by furnace
+        call SET_CONT_FUNC_HEAT_CAP(isys,ss_capacity(isys))
       endif
 
 c If plr_baseboard > 1, the baseboard does not have enough capacity to meet

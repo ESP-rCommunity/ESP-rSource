@@ -157,7 +157,6 @@ C integral and derivative action variables to zero.
       call epagend
       STOP
 
-   
 C Valid period established; now invoke appropriate control law routine
 C Plant control law 0: ie shut down the plant
    30 IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.0) THEN
@@ -3190,6 +3189,17 @@ C PCL08 is a `Two-Position` controller.
      &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/PCLOP8/LASTOUT(MCL)
 
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and
+C to evaluate passive solar design performance.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
 c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
 c           only once.
@@ -3310,6 +3320,23 @@ C Trace output.
          write(itu,*) ' Leaving subroutine PCL08'
       ENDIF
 
+C Check to see if control is operating on zone temperature, and
+C possibly set zone conditioning flags, as necessary.
+      does_control_manage_zone: if ( iPSn ( iCFP, 1) > 0 ) then
+C Control is managing zone temperature. Set heating or cooling
+C flag depending on iMode variable.
+        if ( iMode == 1 ) then
+          bZoneHeated( iPSn ( iCFP, 1) ) = .true.
+          fHeatSetpoint( iPSn ( iCFP, 1) ) = SPTON
+        endif
+
+        if ( iMode == -1 ) then
+
+          bZoneCooled( iPSn ( iCFP, 1) ) = .true.
+          fCoolSetpoint( iPSn ( iCFP, 1) ) = SPTON
+
+        endif
+      endif does_control_manage_zone
       RETURN
       END
 

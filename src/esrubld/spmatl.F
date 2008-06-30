@@ -2162,10 +2162,6 @@ C----------------------------------------------------------------------------
 
       real    X1, X2, Y1, Y2      !- variables used for interpolation calculations
 
-      character*128 H3K_rep_NAME  ! H3Kreporting object name
-      character*128 root_name     ! root name of component node 
-      character*128 hold_name      ! temporary variable for string manipulation
-
       integer lnblnk              ! implicit function returning the length of a string
 
       integer iNum_layers   ! number of layers in PV module surface
@@ -2176,7 +2172,25 @@ C----------------------------------------------------------------------------
 
       real fSmall
       parameter ( fSmall = 1.0E-06 )
- 
+
+C Parameters for h3kreports reporting
+      integer iNameLen(mspmnod)
+      character*72 cName(mspmnod)
+      logical bInitalized(mspmnod)
+      data bInitalized / mspmnod * .false. /
+
+
+C Store name of special material string in array.
+      if ( .not. bInitalized ( ispmnod ) ) then
+
+        cName ( ispmnod ) = spmlabel(ispmnod)
+
+        iNameLen(ispmnod) = lnblnk(spmlabel(ispmnod))
+
+        bInitalized ( ispmnod ) = .true.
+
+      endif
+
 C Obtain the relevant panel data from the data base
 C Component manufacturers data.
 
@@ -2579,112 +2593,76 @@ C two boundary node absorptions.
 
 C XML output
 
-C Get special component name
-       hold_name = spmlabel(ispmnod)
-C Format sting as: 'spmatl/NAME/misc_data'
-       write(root_name, '(A,A,A)')
-     &     'building/spmatl/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
 
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/eff_irradiance'
-
- 
        call add_to_xml_reporting(fQPnl,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/eff_irradiance/unit_area',
      &  'units',
      &  'W/m2',
-     &  'Effective irradiance on PV module')
-
-
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/incidence_angle'
+     &  'Effective irradiance on PV module (per square meter)')
 
 
        call add_to_xml_reporting(fIncidence_angle,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/incidence_angle',
      &  'units',
      &  '-',
      &  'Angle of incidence')
 
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/transmittance_inc_angle'
-
        call add_to_xml_reporting(fTrans_IncAng,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/transmittance_inc_angle',
      &  'units',
      &  '-',
      &  'Transmittance at angle of incidence')
 
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/transmittance_0'
-
        call add_to_xml_reporting(fTrans_0,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/transmittance_0',
      &  'units',
      &  '-',
      &  'Transmittance at 0 degrees')
 
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/transmittance_60'
-
        call add_to_xml_reporting(fTrans_60,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/transmittance_60',
      &  'units',
-     &  '-',
+     &  '(-)',
      &  'Transmittance at 60 degrees')
 
-
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/total_incident_irradiance'
-
- 
        call add_to_xml_reporting(fQInc,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/total_incident_irradiance/unit_area',
      &  'units',
-     &  'W/m2',
+     &  '(W/m2)',
+     &  'Total incident irradiance on PV module (per square-meter)')
+
+       call add_to_xml_reporting(fQInc * fSurfArea,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/total_incident_irradiance/total',
+     &  'units',
+     &  '(W)',
      &  'Total incident irradiance on PV module')
 
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/direct_incident_irradiance'
-
- 
        call add_to_xml_reporting(exdir(ispmloc(ISPMNOD,2)),
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/direct_incident_irradiance/unit_area',
      &  'units',
-     &  'W/m2',
-     &  'Direct incident irradiance on PV module')
+     &  '(W/m2)',
+     &  'Direct incident irradiance on PV module (per square-meter)')
 
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/diffuse_incident_irradiance'
-
- 
        call add_to_xml_reporting(exdif(ispmloc(ISPMNOD,2)),
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/diffuse_incident_irradiance/unit_area',
      &  'units',
-     &  'W/m2',
-     &  'Diffuse incident irradiance on PV module')
+     &  '(W/m2)',
+     &  'Diffuse incident irradiance on PV module (per square-meter)')
 
-
-
-       write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/pv_power'
-
- 
        call add_to_xml_reporting(fPVPower,
-     &  H3K_rep_name,
+     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
+     &     '/misc_data/pv_power',
      &  'units',
-     &  'W',
+     &  '(W)',
      &  'Power produced PV module')
 
 

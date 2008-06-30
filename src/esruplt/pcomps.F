@@ -92,6 +92,7 @@ C      TAC_1_static_template  3 node (ISV=20) first phase thermally activated co
 C      TAC_coldtank_static_temp  1 node (ISV=20) cold water storage tank for TAC
 C      SOFC_A42_static 7-node (ISV=20) IEA/ECBCS Annex 42 SOFC-cogeneration device
 C      simple_solar_coll_static 1 node (ISV=20) simple solar collector 
+C      NCHE_static_template 2 node (ISV=20) natural convection heat exchanger (NCHE)
 
 C ******************** MZSDAT ********************
 
@@ -296,6 +297,9 @@ C 1-node mains 24-hour flow rate profile
 C 2-node stratified storage tank model
       ELSE IF(ITYPE.EQ.123) THEN
          CALL stratified_tank_static(IPCOMP)
+C 2-node NCHE (natural convection heat exchanger) model
+C     ELSE IF(ITYPE.EQ.124) THEN
+C         CALL NCHE_static_template(IPCOMP)
 
       ELSE
 

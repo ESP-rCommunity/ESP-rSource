@@ -3858,7 +3858,9 @@ C << should this also fill G6?? >>.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-
+      common/SurfInfo/iSurfOrient(MCOM,MS)
+      integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
+      parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -3897,6 +3899,15 @@ C Guess at location based on elevation of surface.
           SUSE(I,1)='-'
           SUSE(I,2)='-'
           SPARENT(I)='-'
+C Set flags for wall/celing/floor
+          if(PELV(I).GE.-0.02.AND.PELV(I).LE.30.0)then
+            iSurfOrient(ICOMP,I) = iSurfWall
+          elseif(PELV(I).GT.30.0.AND.PELV(I).LE.90.02)then
+            iSurfOrient(ICOMP,I) = iSurfCeiling
+          elseif(PELV(I).GE.-90.02.AND.PELV(I).LE.-89.98)then
+            iSurfOrient(ICOMP,I) = iSurfFloor
+          endif
+
    44   CONTINUE
       elseif(ISUR.gt.0)then
         I=ISUR
