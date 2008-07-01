@@ -917,19 +917,17 @@ C-----------------------------------------------------------------------
 C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
-
          call add_to_xml_reporting (
-      &           tfc(iZone,iSurface,1),
-      &          H3K_rep_NAME(1:27) // '/temperature/outside',
-      &          'units', '(oC)',
-      &          'Temperature on external surface' )
+     &          tfc(iZone,iSurface,1),
+     &          H3K_rep_NAME(1:27) // '/temperature/outside',
+     &          'units', '(oC)',
+     &          'Temperature on external surface' )
  
          call add_to_xml_reporting (
-      &          tfs(iZone,iSurface),
-      &          H3K_rep_NAME(1:27) // '/temperature/inside',
-      &          'units', '(oC)',
-      &          'Temperature on internal surface' )
-
+     &          tfs(iZone,iSurface),
+     &          H3K_rep_NAME(1:27) // '/temperature/inside',
+     &          'units', '(oC)',
+     &          'Temperature on internal surface' )
 
       enddo zone_surface_loop
 
