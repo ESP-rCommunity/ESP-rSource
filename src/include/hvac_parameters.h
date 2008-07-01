@@ -4,10 +4,58 @@ c Maximum number of hvac systems that can be declared in the .hvac file
       INTEGER max_sys
       parameter (max_sys = 5)
 
-c Maximum number of control functions that can be defined in the .ctl file
-      INTEGER max_cont_fun
-      parameter (max_cont_fun = 10)
+C Named constants for system types
+      integer iSysFurnace, iSysBoiler, iSysBaseboard, iSysIMS_P10,
+     &        iSysASHP, iSysGSHP, iSysGSHP_GCEP
 
+      parameter (iSysFurnace         = 1,
+     &           iSysBoiler          = 2,
+     &           iSysBaseboard       = 3,
+     &           iSysIMS_P10         = 4,
+     &           iSysASHP            = 7,
+     &           iSysGSHP            = 8,
+     &           iSysGSHP_GCEP       = 9 )
+
+C Named constants for primary/backup
+      integer iHVACPrimarySys, iHVACBackupSys
+      parameter ( iHVACPrimarySys = 1,
+     &            iHVACBackupSys  = 2 )
+
+C Named constants for ASHP operation
+      integer iASHP_heating
+      integer iASHP_cooling
+      parameter( iASHP_heating = 1, iASHP_cooling = 2 )
+
+C Named constants for furnace Types
+      integer iFurn_AdvWoodStove
+      integer iFurn_CatConverter
+      integer iFurn_FlameRetenHead
+      integer iFurn_FlueVentDamper
+      integer iFurn_SparkIgn
+      integer iFurn_SparkIgnVentDamper
+      integer iFurn_ContPilot
+      integer iFurn_Condensing
+      integer iFurn_NonCondensingDirVent
+      integer iFurn_InducedDraft
+      integer iFurn_MidEfficiency
+      integer iFurn_ElecForcedAir
+      integer iFurn_Wood
+      integer iFurn_Oil
+
+      parameter( iFurn_AdvWoodStove             = 1   )
+      parameter( iFurn_CatConverter             = 2   )
+      parameter( iFurn_FlameRetenHead           = 3   )
+      parameter( iFurn_FlueVentDamper           = 4   )
+      parameter( iFurn_SparkIgn                 = 5   )
+      parameter( iFurn_SparkIgnVentDamper       = 6   )
+      parameter( iFurn_ContPilot                = 7   )
+      parameter( iFurn_Condensing               = 8   )
+      parameter( iFurn_NonCondensingDirVent     = 9   )
+      parameter( iFurn_InducedDraft             = 10  )
+      parameter( iFurn_MidEfficiency            = 11  )
+      parameter( iFurn_ElecForcedAir            = 12  )
+      parameter( iFurn_Wood                     = 13  )
+      parameter( iFurn_Oil                      = 14  )
 
 c Maximum number of hvac system types (furnace, heat pump, etc ...). This defines
 c the size of the hvac array ihvac_type
@@ -21,14 +69,9 @@ c the size of the hvac array isys_type
       INTEGER max_hvac_vars
       parameter (max_hvac_vars = 10)
 
-
- 
-
-
 c Maximum number of fuels. This sets the size of the array ifuel_type
       INTEGER max_fuels
       parameter (max_fuels = 6)
-
 
 C Patrice -> Commented out all parameters associated with the GCEP model
 C These are already in GCEP_parameters.h

@@ -2119,6 +2119,13 @@ C Sum the power consumption of all the pumps.
             fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec + 
      &                               (-1 * PCAOUT(pump_IPCOMP(I),1))
          END DO
+
+C.....add to XML ouput
+      call add_to_xml_reporting(
+     &        fTS_Plant_Pump_Elec,
+     &        'plant/SDHW_summary/pump_elec',
+     &        'units', '(W)',
+     &        'SDHW system: Electric consumption of the all pumps' )
       END IF
         
 C The plant matrix converged the previous solver iteration. Therefore, save the results.

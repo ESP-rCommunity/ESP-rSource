@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -22,7 +22,7 @@ C Boston, MA 02111-1307 USA.
 
 c The file contains the following routines:
 c	HVACINPUT  control reading the hvac data from the hvac input file
-c 		   and set the size of the indoor circulation fan if not 
+c 		   and set the size of the indoor circulation fan if not
 c		   specified
 c 	FURNACE_INPUT
 c		   read data for furnace system
@@ -41,10 +41,10 @@ c Initial Creation Date: February 17th 2000
 c Copyright 2000: NRCan Buildings Group
 
 c Subroutine to control reading of data associated with the HVAC system.
-c This routine is called from ERSYS. It is possible to simulate more than 
+c This routine is called from ERSYS. It is possible to simulate more than
 c 1 hvac system serving the building. The routine calls other subroutines
 c to read data for specific hvac systems. The data is stored in common
-c hvac_data. It is called only once when the problem is read in and is 
+c hvac_data. It is called only once when the problem is read in and is
 c used in susequent time step simulations.
 
 c INPUTS:
@@ -62,8 +62,8 @@ c Variable passed in call
       character hvacfile*72
 #include "building.h"
 #include "hvac_parameters.h"
-
 #include "hvac_common.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/FILEP/IFIL
       COMMON/ER/IER
@@ -72,7 +72,7 @@ c Variable passed in call
       INTEGER IUNIT,IFIL,k,IER,ND,ival,i,ISTAT,IUOUT, IUIN
       REAL val
 
-c Define the characters variables associated with the utility 
+c Define the characters variables associated with the utility
 c functions STRIPC,EGETWI,and EGETWR
       character OUTSTR*124,word*124
 
@@ -89,7 +89,7 @@ c the building
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac data',IER)
       CALL EGETWI(OUTSTR,K,ival,1,10,'F',
      &'hvac data: num_hvac_sys',IER)
-      num_hvac_sys=ival 
+      num_hvac_sys=ival
 c Read site altitude
       CALL EGETWR(OUTSTR,K,val,0.,10000.,'F',
      &'hvac input: site_altitude',IER)
@@ -109,6 +109,17 @@ c			=1 primary system
 c			=2 backup system
 c                               
 c   num_sys_zones(i)	total number of zones served by an HVAC system
+
+C Initialize linking flags to zero
+      init_links: do i = 1, num_hvac_sys
+
+        bLinked(i)             = .false.
+        bSuppressThisSystem(i) = .false.
+        iLinkedSystem(i)       = 0
+        bTwoModes(i)           = .false.
+
+      enddo init_links
+
 
 c Read the data associated with each of the HVAC systems
       do 10 i = 1,num_hvac_sys
@@ -140,13 +151,17 @@ c the same as furnace model
 c If hvac system is Baseboards/Hydronics/Plenum Heater, call BASEBOARD_INPUT
         elseif(ihvac_type(i) .eq. 3) then
           call BASEBOARD_INPUT(i)
+C Assume baseboard is electric.
+          ifuel_type(i) = iElectricity
 c If the hvac system is an air-source heat pump, call ASHP_INPUT
         elseif(ihvac_type(i) .eq. 7) then
           call ASHP_INPUT(i)
+          ifuel_type(i) = iElectricity
 c GSHP: begin
 C If the hvac system is a ground-source heat pump, call ASHP_INPUT
         elseif(ihvac_type(i) .eq. 8) then
           call ASHP_INPUT(i)
+          ifuel_type(i) = iElectricity
 C GSHP: end
 
 c GCEP: begin
@@ -154,6 +169,7 @@ C If the hvac system is a ground-source heat pump using the algorithm from Ecole
 C call ASHP_INPUT
         elseif(ihvac_type(i) .eq. 9) then
           call ASHP_INPUT(i)
+          ifuel_type(i) = iElectricity
 C GCEP: end
 
         endif
@@ -863,13 +879,27 @@ c Initialize outdoor air flow array to zero
           k = 0
 
 c Read number associated with heat pump in heating mode
-          CALL EGETWI(OUTSTR,K,ival,1,100,'F',
+          CALL EGETWI(OUTSTR,K,ival,0,100,'F',
      &    'hvac input: isys_num_heating',IER)
           isys_num_heating(i) = ival
-c Read control function number associated with hvac system
-          CALL EGETWI(OUTSTR,K,ival,1,max_cont_fun,'F',
-     &    'hvac input: icontrol_function',IER)
-          icontrol_function(i) = ival
+          if ( isys_num_heating(i) /= 0 .and.
+     &         ihvac_type(i) == ihvac_type(isys_num_heating(i))
+     &        ) then
+              iLinkedSystem(i)       = iVal
+              iLinkedSystem(iVal)    = i
+              bSuppressThisSystem(i) = .true.
+              bLinked(i)             = .true.
+              bTwoModes (iVal)       = .true.
+          endif
+
+c Previous versions of the hvac file included an input for the control
+c function number associated with the hvac system. This is no 
+c longer used but is read here just in case this is an older version file
+          if(ND.gt.1) then
+            CALL EGETWI(OUTSTR,K,ival,1,MCF,'F',
+     &      'hvac input: icontrol_function',IER)
+            icontrol_function(i) = ival
+          endif
 
 c For a heat pump in the cooling mode, it is possible using the 
 c information at rating conditions to determine the bypass factor
@@ -1122,8 +1152,17 @@ c Read number associated with heat pump in heating mode
         CALL EGETWI(OUTSTR,K,ival,1,100,'F',
      &  'hvac input: isys_num_heating',IER)
         isys_num_heating(i) = ival
+           if ( isys_num_heating(i) /= 0 .and.
+     &         ihvac_type(i) == ihvac_type(isys_num_heating(i))
+     &        ) then
+            iLinkedSystem(i)       = iVal
+            iLinkedSystem(iVal)    = i
+            bSuppressThisSystem(i) = .true.
+            bLinked(i)             = .true.
+            bTwoModes (iVal)       = .true.
+        endif
 c Read control function number associated with hvac system
-        CALL EGETWI(OUTSTR,K,ival,1,max_cont_fun,'F',
+        CALL EGETWI(OUTSTR,K,ival,1,MCF,'F',
      &  'hvac input: icontrol_function',IER)
         icontrol_function(i) = ival
 

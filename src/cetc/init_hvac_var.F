@@ -75,8 +75,9 @@ c operation
  20   continue
 
 c Initialize variable cooling capacity of control functions
-      do 30 i = 1,max_cont_fun
+      do 30 i = 1,mcom
         cont_fun_cool_cap(i) = 0.
+        cont_fun_heat_cap(i) = 0.
   30  continue
 
 c Initialize conductance associated with outdoor air flow through HVAC

@@ -32,7 +32,8 @@ C ******************************************************************************
      &     q_heatdump_future,   ! <----- Heat rejection from tank (future time row)
      &     mdot_conn1a_present,mdot_conn1a_future,
      &     mdot_conn1b_present,mdot_conn1b_future,  ! <-- connection mass flow rates
-     &     mdot_conn1c_present,mdot_conn1c_future
+     &     mdot_conn1c_present,mdot_conn1c_future,
+     &     q_element
 
       common/FC_tanks_DHWdraw/DHW_draw_present,
      &  DHW_draw_future,T_makeup_present,T_makeup_future,
@@ -180,9 +181,10 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C Burner heat production/recovery
 C---------------------------------------------------------------------------------
-      REAL q_burner             ! heat produced by gas buener (W)
+      REAL q_burner             ! heat produced by gas burner (W)
       REAL q_capture_present,q_capture_future ! heat recovered on most-recent timestep (W)
 
+      REAL q_element            ! Electric tank electric input.
 C---------------------------------------------------------------------------------
 C Air/Exhaust flow
 C---------------------------------------------------------------------------------

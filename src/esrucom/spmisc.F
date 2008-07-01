@@ -1,7 +1,6 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
-
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
@@ -46,6 +45,8 @@ C Special materials file flag.
 C Path to problem and command line file (if any).
       common/rpath/path
       common/filep/ifil
+
+      real hold_data(mspmdat)
 
       character outs*124,outstr*124,spmlabel*16
       character*72 path,spflnam,H,ltmp*72
@@ -134,43 +135,18 @@ C Read the material miscellaneous data.
         call egetwi(outstr,K,nspmdat,1,mspmdat,'W','-',IER)
         nnodat(I)=nspmdat
         if(IER.ne.0) goto 999
-        istrt=1
-        iend=nspmdatl
+C Recover misellaneous data:
+        call EGetWRA( ispmfil, hold_data, nspmdat,0.,0., '-',
+     &      'special materials file error', IER )
 
- 7      call stripc(ispmfil,outstr,0,ND,0, 
-     &'special materials file error..',IER)
+          do j = 1,nspmdat
+
+            spmdat(I,J) = hold_data(j)
+
+          enddo
+
         if(IER.ne.0) goto 999
-        K=0
-        if(nnodat(i).le.nspmdatl)then
-          k=0
-          do 20 J=1,nnodat(i)
-            call egetwr(outstr,K,var,1.,1.,'-','-',IER)
-            if(IER.ne.0) goto 999 
-            spmdat(I,J)=var           
-  20        continue
-        else
-          K=0
-          do 21 J=istrt,iend
-            call egetwr(outstr,K,var,1.,1.,'-','-',IER)
-            if(IER.ne.0) goto 999 
-            spmdat(I,J)=var           
-  21      continue
-          istrt=istrt+nspmdatl
-          iend=iend+nspmdatl
-          if(iend.gt.nnodat(i))then
-            iend=nnodat(i)
-            call stripc(ispmfil,outstr,0,ND,0, 
-     &'special materials file error..',IER)
-            k=0
-            do 22 J=istrt,iend
-              call egetwr(outstr,K,var,1.,1.,'-','-',IER)
-              if(IER.ne.0) goto 999 
-              spmdat(I,J)=var           
-  22        continue
-          else
-            goto 7
-          endif
-        endif
+
   10  continue
 
   99  close(ispmfil)

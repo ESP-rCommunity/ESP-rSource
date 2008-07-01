@@ -838,6 +838,20 @@ C---- Net collector heat gain
 C---- Store collector net heat gain for h3kstore output
         fSDHW_TScoll_netheatgain_watts = NETHEATGAIN
 
+C.....add to XML ouput
+        call add_to_xml_reporting(
+     &       fSDHW_TScoll_netheatgain_watts,
+     &       'plant/SDHW_summary/recovered_heat',
+     &       'units','(W)',
+     &       'SHDW system: Collector net heat gain')
+
+C.......Report total insolation on collector external surface
+        call add_to_xml_reporting(
+     &          G * COLLAREA,
+     &          'plant/SDHW_summary/available_solar_energy',
+     &          'units','(W)',
+     &          'SDHW system: insolation on collector' )
+
 C---- Call h3k store routine for solar DHW systems
         call H3KSTORE_SDHW
 

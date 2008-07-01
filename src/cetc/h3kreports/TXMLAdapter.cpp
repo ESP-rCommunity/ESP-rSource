@@ -41,14 +41,13 @@ TXMLAdapter::TXMLAdapter(string filePath)
                     <<   " or perhaps build a new one using the menu option. \n\n";
 
             }else{
-            
+
                 if (xmlStrcmp(RootNode()->name, (const xmlChar *) "configuration")) {
                     fprintf(stderr,"input.xml document of the wrong type, root node != configuration");
                     xmlFreeDoc(m_document);
                     return;
                 }
             }
-
        }
 }
 
@@ -81,7 +80,7 @@ TXMLNode TXMLAdapter::AddNode(TXMLNode parent, std::string name, std::string val
         {
                 /*
                 * xmlNewChild() creates a new node, which is "attached" as child node
-        * of root_node node.
+                * of root_node node.
                 */
 
 	  //If this node has no content of its own..ensure a NULL is passed. 
@@ -191,8 +190,7 @@ void TXMLAdapter::Log()
 
 ///Write Transformed XML 
 void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile, 
-                                      std::string  sXSLT_Output_File_Name,
-                                      std::vector<std::string> m_stylesheet_list)
+                                      map<std::string,std::string> m_Stylesheets)
 {       
 
 #ifdef XSL  
@@ -202,41 +200,47 @@ void TXMLAdapter::WriteTransformedXML(std::string  sXMLFile,
   
   //input xml placeholder.
   xmlDocPtr doc;
-  
 
-  //output file. 
-  FILE* outfile;
-  outfile = fopen(sXSLT_Output_File_Name.c_str(),"w");
-  
-  if(outfile==NULL) 
-    {
-      printf(" XSLT output error: can't create XSLT output file.\n");
-      /* fclose(file); DON'T PASS A NULL POINTER TO fclose !! */
-    }
-  else 
-    {
-
-    
     //iterate through the stylesheet list and apply them.
-      std::vector<std::string>::iterator sheet;
-    //set oringinal xml input file to doc.
-      doc = xmlParseFile(sXMLFile.c_str());
-      for( sheet = m_stylesheet_list.begin(); sheet != m_stylesheet_list.end(); ++sheet)
-      {    
-      std::string sXSLTFile = *(sheet);
-      //get stylsheet into cur.    
-      cur = xsltParseStylesheetFile((const xmlChar *)sXSLTFile.c_str());
-      doc = xsltApplyStylesheet(cur, doc  , NULL);
+    std::map<std::string,std::string>::iterator sheet;
+
+
+    for( sheet = m_Stylesheets.begin(); sheet != m_Stylesheets.end(); ++sheet)
+      {
+      //output file
+      FILE* outfile;
+
+      // Get source file and output file from Stylesheet map.
+      //std::string sXSLTFile = sheet->first;
+
+      if ( sheet->second != "none" ){
+
+        //set oringinal xml input file to doc.
+        doc = xmlParseFile(sXMLFile.c_str());
+
+        // Open transform destination file 
+        outfile = fopen(sheet->second.c_str(),"w");
       
+        //get stylsheet into cur.    
+        cur = xsltParseStylesheetFile((const xmlChar *)sheet->first.c_str());
+        // Apply transform
+        doc = xsltApplyStylesheet(cur, doc  , NULL);
+
+        // Write out final result
+        xsltSaveResultToFile( outfile, doc, cur);
+
+        // Close file
+        fclose(outfile);
+
+        //free memory
+        xsltFreeStylesheet(cur);
+        xmlFreeDoc(doc);
+
       }
-      //outptu final result.
-      xsltSaveResultToFile( outfile, doc, cur);
-      fclose(outfile);     
-  
+
     }
-      //free memory
-     xsltFreeStylesheet(cur);
-     xmlFreeDoc(doc); 
+
+
   
 #endif 
   

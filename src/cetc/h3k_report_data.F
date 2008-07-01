@@ -31,48 +31,11 @@ C h3k_report_time:              Transports simulation time parameters
 C
 C h3k_transport_plant_data:     Transports plant domain data
 C
-C h3k_connection_property:      Function returning data for plant connections.
+C h3k_connect_property:      Function returning data for plant connections.
 C
 C h3k_transport_mfn_data:     Transports flow network data
 C
 C *********************************************************************************************
-C
-C ******************************* H3K Init Set Meta *******************************************
-C
-C Created by: Alex Ferguson
-C Created on: March 28, 2004
-C Copyright: CETC
-C ________
-C ABSTRACT:
-C This subroutine sets flags determining if H3K reporting routines should initialize meta
-C varaibles
-C
-C**********************************************************************************************
-      subroutine H3K_init_set_meta(bFlag_Value)
-      implicit none
-
-      COMMON / H3KmetaInitVal /
-     &     bBuildMeta,
-     &     bClimMeta,
-     &     bTimeMeta,
-     &     bPlantMeta,
-     &     bElectMeta
-
-      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
-
-      logical bFlag_Value
-
-C----------------------------------------------------------------------------------------------
-C     Set values:
-C----------------------------------------------------------------------------------------------
-      bBuildMeta =  bFlag_Value
-      bClimMeta  =  bFlag_Value
-      bTimeMeta  =  bFlag_Value
-      bPlantMeta =  bFlag_Value
-      bElectMeta =  bFlag_Value
-      return
-      end
-
 
 C ******************************* H3K Transport Building Data *********************************
 C
@@ -83,19 +46,34 @@ C ________
 C ABSTRACT:
 C This is a very simple routine used to transport miscellanoues building data to the H3K
 C reporting facilities. It duplicates some of the functionality found in CETC's H3Kstore
-C routine and ESRU's MZSL3 routine, but this reduncancy is necessary to permit the this
+C routine and ESRU's MZSL3 routine, but this redundancy is necessary to permit this
 C code to be called independently of these routines.
+C
+C __________
+C REFERENCES:
+C
+C D.M. Sandars and S.W. Barakat (1983), "A method for estimating the
+C   utilization of solar gain through windows", ASHRAE Transactions
+C   Vol 89, Part 1A, pg 12--22.
 C
 C**********************************************************************************************
 
       SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
-
+#include "aim2_common.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
 C.....Common variables
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! number of connections 
+
+C.....Zone volumes.
+      common/prec2/vol(mcom)
+      real vol
+
       common/c20/nzsur(mcom),nztv(mcom)
       integer nzsur           ! # of surfaces in a zone
       integer nztv            ! # of verticies in a zone (not used)
@@ -106,7 +84,6 @@ C.....Common variables
       integer nELts           ! # number of layers per surface (who knew?)
       integer ngaps           ! # number of air gaps witin surface (not used)
       integer npgap           ! Location of air gap. (not used)
-
 
 C TPA(MCOM),           ! - present zone air point temperature (oC)
 C QPA(MCOM)            ! - zone air point heat injection (W)
@@ -128,13 +105,6 @@ C QFC(MCOM)            ! - construction heat injection (W)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       REAL TFC, QFC
 
-C.....Gridding common 
-      common/gr1d01/nnds,nndz(mcom),nndc(mcom,ms),nndl(mcom,ms,me)      
-      integer nnds            ! ? (not used)
-      integer nndz            ! ? (not used)
-      integer nndc            ! # number of nodes within a construction
-      integer nndl            ! # of nodes per construction layer
-
 C TPS(MCOM,MS),        ! - present surface temperature (oC)
 C QPS(MCOM)            ! - surface heat injection (W)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -151,11 +121,112 @@ C QFS(MCOM)            ! - surface heat injection (W)
      &     CONV(MCOM)           !  - convective ratio
       real qpltp, qpltf, conv
 
+C.....Climate data 
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+C QFP Diffuse horizontal radiation - present time row
+C QFF Diffuse horizontal radiation - future time row
+C TP Ambient temperature - present time row
+C TF Ambient temperature - future time row
+C QDP Direct normal radiation - present time row
+C QDF Direct normal radiation - future time row
+C VP Wind velocity - present time row
+C VF Wind velocity - future time row
+C DP Wind direction - present time row
+C DF Wind direction - future time row
+C HP Relative humidity - present time row
+C HF relative humidity - future time row
+      REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
+C.....Surface orientation flags
+      common/SurfInfo/iSurfOrient(MCOM,MS)
+      integer iSurfOrient
+
       COMMON/CasDat/            ! Building casual gains
      &     Cas_Rad_dat(MCOM),   !  - Radiant (W)
      &     Cas_Con_dat(MCOM),   !  - Convective (W)
      &     Cas_Lat_dat(MCOM)    !  - Latent (W)
       real Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
+
+C.....Window properties
+      common/prectc/itmcfl(mcom,ms),tmct(mcom,mtmc,5),
+     &       tmca(mcom,mtmc,me,5),tmcref(mcom,mtmc),tvtr(mcom,mtmc)
+      real tmct, tmca, tmcref, tvtr
+      integer itmcfl
+
+C.....Description of zone control action; these data are used
+C.....in H3Kreports to determine heating, cooling loads and
+C.....to evaluate passive solar design performance.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C.....Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+
+C.....Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
+C.....Ventilation, infiltration data 
+      common/coe39/cvip,cvvp,cvif,cvvf,qvnp,xx3,cvvpm,cvvfm
+      real cvip, cvif           ! Conductances assoc. w/ infiltration
+                                !   on present and future time rows
+      real cvvp, cvvf           ! Conductances assoc. w/ ventilation
+                                !   on present and future time rows
+      real qvnp,xx3,cvvpm,cvvfm ! Not used in current context 
+
+C.....Zone boundary conditions
+      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
+     &            ARF(MCOM,MS)
+
+      integer IE                ! Indicates type of connection for zone
+                                !   surfaces
+      real ARF                  ! Future time-row radiation from
+                                !   an external surface.
+      real ATP,ATF,ARP          ! Not used in current context
+
+C.....Named constants for decoding IE common;
+      integer iBCExternal, iBCInternalSame, iBCInternalConst,
+     &        iBCGround,
+     &        iBCAdiabatic, iBCBASESIMP, iBCCEN13917
+
+      parameter ( iBCExternal      =  0 ,
+     &            iBCInternalSame  = -1 ,
+     &            iBCInternalConst = -2 ,
+     &            iBCGround        = -4 ,
+     &            iBCAdiabatic     = -5 ,
+     &            iBCBASESIMP      = -6 ,
+     &            iBCCEN13917      = -7  )
+
+C.....Named constants for surface types
+      integer iSurfWindow, iSurfFloor, iSurfWall, iSurfCeiling,
+     &        iSurfInternal, iSurfFoundation
+      parameter ( iSurfWall       = 1,
+     &            iSurfFloor      = 2,
+     &            iSurfCeiling    = 3,
+     &            iSurfWindow     = 4,
+     &            iSurfFoundation = 5,
+     &            iSurfInternal   = 6 )
+C.....Variable indicating type of surface. 
+      integer iSurfType
+
+C.....Surface Energy balances.
+      common/SRFBAL/              ! Surface energy balances (W):
+     &         qswrdi(MCOM,MS,2), !  - INT face: radiation: short-wave
+     &         qlwrdi(MCOM,MS,2), !                         long-wave
+     &         qconvi(MCOM,MS,2), !              convection
+     &         qcondi(MCOM,MS,2), !              conduction ?
+     &         qstori(MCOM,MS,2), !              storage ?
+     &         qcri(MCOM,MS,2),   !              radiation: casual gains
+     &         qpltri(MCOM,MS,2), !              radiation: plant comp.
+     &         qstore(MCOM,MS,2), !              energy stored ?
+     &         qconde(MCOM,MS,2), !  - EXT face: conduction
+     &         qconve(MCOM,MS,2), !              convection
+     &         qlwrde(MCOM,MS,2), !              radiation: long-wave to ground
+     &         qlwrbd(MCOM,MS,2), !                         long-wave to buildings
+     &         qlwrsk(MCOM,MS,2), !                         long-wave to sky
+     &         qswrde(MCOM,MS,2)  !                         short wave
+
+      real qswrdi, qlwrdi, qconvi, qcondi, qstori, qcri, qpltri, qstore,
+     &     qconde, qconve, qlwrde, qlwrbd, qlwrsk, qswrde
 
       common/solsum/            ! SOLAR GAINS:
      &     q1adjz(2),           ! - from adjacent zones (W)
@@ -167,31 +238,45 @@ C QFS(MCOM)            ! - surface heat injection (W)
      &     q2rem(2)             ! - Absorbed by roof? (W)
       REAL q1adjz, q1outs, q2adjz, q2lost, q2tmc, q2wall,q2rem
 
+C.....MLC data
+      common/gr1d01/nnds,nndz(mcom),nndc(mcom,ms),nndl(mcom,ms,me)
+      integer nnds             ! - # of nodes per: building
+      integer nndz             !                   zone
+      integer nndc             !                   construction
+      integer nndl             !                   layer
+
+C.....Thermal characteristics of MLC layers
+      common/vthp14/thrmli(mcom,ms,me,7)
+      real ThrMlI
+
+      common/vthp22/thconf(ms,mn),thdnsf(ms,mhcv),thcapf(ms,mhcv)
+      real thconf                    ! Thermal conductivity of layers.
+      real thdnsf, thcapf            ! Not used in this context
+
+C.....Flags for temperature-dependence of MLC themal properties
+      common/vthp32/ivthps,ivthpz(mcom)
+      logical ivthps, ivthpz
+
+C.....Surface area data
+      common/prec1/sna(mcom,ms),zoa(mcom)
+      real sna                 ! Area of a surface
+      real zoa                 ! Total surface area for zone
+
       common/cctl/icascf(mcom)  ! Zone control type
       integer icascf
 
       common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &     ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),                         ! not used
+     &     ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
      &     ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &     bmiscd(mcf,mbcdt,mbcdp,misc)
       integer ncf, ibsn, iban, idcdtl, ibcdv, nbcdp, ibctyp, ibclaw
       integer nbcdt
       real tbcps, bmiscd
 
-      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
-     &            ARF(MCOM,MS)
-      integer IE
-      real ATP,ATF,ARP,ARF
-
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)
       real HCIP,HCIF,HCOP,HCOF ! convective heat transfer coefficients "present" and "future"
                                             ! for "inside" and "outside" surface, each
-C=== 26.06.08
-      COMMON/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
-      integer ICORI,ICORE ! Transfer coefficient index for internal and external face of MLC
-
-C===
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -225,46 +310,224 @@ C.....Local variables
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       INTEGER i_ZnCtl           ! Zone control flag
 
+
       INTEGER iSurface, iNode,iViewSurface  ! Counters
 
-      real SBC
+      real SBC                              ! Stephan-Boltzmann constant
+      parameter ( SBC=56.7E-9 )
 
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format
-      CHARACTER*24  H3K_format_HC                                      ! 26.06.08
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
 
 C lnblnk is a function returning the index of last non-blank character in a string.
-      INTEGER LNBLNK 
+      INTEGER LNBLNK
 
 C.....Timerows (named constants)
       integer iPresent, iFuture
-      parameter (iPresent=1, iFuture=2) 
+      parameter (iPresent=1, iFuture=2)
 
-C.....Commons indicating if meta items have been initialized
-      COMMON / H3KmetaInitVal /
-     &     bBuildMeta,
-     &     bClimMeta,
-     &     bTimeMeta,
-     &     bPlantMeta,
-     &     bElectMeta
+C----------------------------------------------------------------------
+C     Zone heat fluxes, gains (W)
+C----------------------------------------------------------------------
+      real fZoneSolarGains                ! Total solar insolation
+      real fZoneUsefulSolarGains          ! Solar gains coincident with
+                                          !   heaiting loads
+      real fZoneAdverseSolarGains         ! Gains coincident with cooling
 
-      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
+      real fZoneSurfaceFlux               ! Flux across all zone surfaces
 
-C----------------------------------------------------------------------     
+      real fZoneHeatFlux                  ! Sum of conduction+infiltration
+      real fZoneHeatLoad                  !     - when positive
+      real fZoneCoolLoad                  !     - when negative
+      real fZoneHeatFluxAboveGrade        ! Heat flux through above-grade
+                                          !    components 
+      real fZoneHeatLossBelowGrade
+      real fZoneHeatLossAboveGrade
+      real fZoneHeatGainBelowGrade
+      real fZoneHeatGainAboveGrade
+      real fZoneInfiltrationLoad          ! Infiltration load 
+      real fZoneVentilationLoad           ! Ventilation load
+      real fZoneInternalGains             ! Internal gains
+      real fZoneUsefulInternalGains       ! Useful internal gains
+      real fZoneAdverseInternalGains      ! Gains during cooling
+
+      real fZoneHeatLossWindows           ! Heat load metrics for
+      real fZoneHeatLossWalls             !   a zone's windows,
+      real fZoneHeatLossCeiling           !   Ceiling and wall.  (W)
+      real fZoneHeatLossFloor
+      real fZoneHeatLossInfiltration
+      real fZoneHeatLossVentilation
+      real fZoneInfiltrationACH
+
+      real fZoneHeatGainWindows           ! Heat load metrics for
+      real fZoneHeatGainWalls             !   a zone's windows,
+      real fZoneHeatGainCeiling           !   Ceiling and wall.  (W)
+      real fZoneHeatGainFloor
+      real fZoneHeatGainInfiltration
+      real fZoneHeatGainVentilation
+
+      real fSurface_balance_net           ! Net surface energy balance
+
+      real fSurLoss, fSurGain                   ! General loss, gain vars (W)
+
+      real fThickness                ! Thickness of a layer in a MLC
+      real fConductivity             ! Conductivity of MLC layer.
+
+
+C.....Misc Zone parameters returned by zoneinfo
+C      real fSurfArea(MS)          ! Area of each surface`
+C      real fTotalZoneArea         ! Total Zone area
+C      real fSurfAzimuth(MS)       ! Azimuth of each surface
+C      real fSurfElevation(MS)     ! Elevation of each surface
+C      real fTotalZoneVolume       ! Total bounded volume in the zone
+C      integer iDummy              ! Dummy variable.
+
+C.....Save elevations for use later
+C      real fSurfaceElevation(MCOM,MS)
+C      logical bElevationsRecovered(MCOM)
+C      data bElevationsRecovered /MCOM * .false./
+C      save fSurfElevation, bElevationsRecovered
+C      integer iZoneCount, iSurfCount
+
+
+C----------------------------------------------------------------------
+C     Store total building heat fluxes, gains, allowing them to be
+C     added zone-by-zone.
+C----------------------------------------------------------------------
+
+C.....Plant interaction
+      real fSUMHeatInjection                 ! Total heat injection (W)
+      real fSUMHeatExtraction                ! Total heat extraction (W)
+      real fSUMNetFlux                       ! Total net flux (W)
+
+C.....Loads
+      real fSUMNetLoad                       ! Net load 
+      real fSUMHeatLoss                      ! Heating load (W)
+      real fSUMHeatGain                      ! Cooling load (W)
+      real fSUMHeatLossAboveGrade            ! Above-grade heat load (W)
+      real fSUMHeatLossBelowGrade            ! below-grade heat load (W)
+      real fSUMHeatGainAboveGrade            ! Above-grade Cool load (W)
+      real fSUMHeatGainBelowGrade            ! below-grade Cool load (W)
+      real fSUMHeatLossWindows               ! Envelope component
+      real fSUMHeatLossWalls                 !   heat loss (W)
+      real fSUMHeatLossCeiling               !
+      real fSUMHeatLossFloor                 !
+      real fSUMHeatLossInfiltration          !
+      real fSUMHeatLossVentilation
+      real fSUMHeatGainWindows               ! Envelope component
+      real fSUMHeatGainWalls                 !   heat Gain (W)
+      real fSUMHeatGainCeiling               !
+      real fSUMHeatGainFloor                 !
+      real fSUMHeatGainInfiltration          !
+      real fSUMHeatGainVentilation
+
+C.....Gains (W)
+      real fSUMInternalGains                 ! Internal sources
+      real fSUMUsefulInternalGains           !   - coincident with heating
+      real fSUMAdverseInternalGains          !   - coincident with cooling 
+      real fSUMSolarGains                    ! Total solar gains
+      real fSUMUsefulSolarGains              !   - coincident with heating
+      real fSUMAdverseSolarGains             !   - coincident with cooling
+      real fSUMExternalSolarAbsorbtion       ! Total opaque absorbtion
+      real fSUMPassiveSolarFraction          ! Passive solar heating
+                                             !   fraction
+
+
+C.....Air loads (W)
+      real fSUMVentilationLoad               ! Ventilation load (W)
+      real fSUMInfiltrationLoad              ! Infiltration load (W)
+
+      save fSUMHeatInjection,
+     &     fSUMHeatLoss, fSUMHeatGain, fSUMHeatLossAboveGrade,
+     &     fSUMHeatLossBelowGrade, fSUMHeatGainAboveGrade,
+     &     fSUMHeatGainBelowGrade,
+     &     fSUMInternalGains, fSUMSolarGains, fSUMUsefulSolarGains,
+     &     fSUMExternalSolarAbsorbtion, fSUMVentilationLoad,
+     &     fSUMInfiltrationLoad, bBuildingHeated,
+     &     fSUMAdverseInternalGains, fSUMAdverseSolarGains,
+     &     fSUMHeatGainCeiling, fSUMHeatGainWindows, fSUMHeatGainWalls,
+     &     fSUMHeatGainFloor, fSUMHeatLossVentilation,
+     &     fSUMHeatGainVentilation, fSUMHeatLossInfiltration,
+     &     fSUMHeatGainInfiltration
+
+
+
+C----------------------------------------------------------------------
+C     Criteria to determine if solar gains are useful, or not;
+C----------------------------------------------------------------------
+
+      logical bWindowsOpen                    ! Are windows open?
+      real fSwingTemperature                  ! Max permissible
+                                              !    swing temp. (oC)
+      logical bBuildingHeated                 ! Is building heated?
+      ! ( These need to be picked up from other parts of esp-r.
+      !   Hard-coded for now. )
+      parameter ( bWindowsOpen      = .false. )
+      parameter ( fSwingTemperature = 5.0     )
+
+
+C----------------------------------------------------------------------
 C     References
 C----------------------------------------------------------------------
       real fSurface_radiant_gain   ! Function returining the
                                    ! radiant gain on a surface (W)
+
+C----------------------------------------------------------------------
+C     Check zone index. If iZone=1, re-zero running totals for
+C     entire building.
+C----------------------------------------------------------------------
+
+      reset_building_totals: if ( iZone == 1 ) then
+
+        bBuildingHeated                   = .false.
+        fSUMHeatInjection                 = 0.0
+        fSUMHeatExtraction                = 0.0
+        fSUMNetFlux                       = 0.0
+        fSUMNetLoad                       = 0.0
+        fSUMHeatLoss                      = 0.0
+        fSUMHeatGain                      = 0.0
+        fSUMHeatLossAboveGrade            = 0.0
+        fSUMHeatLossBelowGrade            = 0.0
+        fSUMHeatGainAboveGrade            = 0.0
+        fSUMHeatGainBelowGrade            = 0.0
+        fSUMInternalGains                 = 0.0
+        fSUMSolarGains                    = 0.0
+        fSUMUsefulSolarGains              = 0.0
+        fSUMExternalSolarAbsorbtion       = 0.0
+        fSUMUsefulInternalGains           = 0.0
+        fSUMVentilationLoad               = 0.0
+        fSUMInfiltrationLoad              = 0.0
+        fSUMHeatLossWindows               = 0.0
+        fSUMHeatLossWalls                 = 0.0
+        fSUMHeatLossFloor                 = 0.0
+        fSUMHeatLossCeiling               = 0.0
+        fSUMHeatLossInfiltration          = 0.0
+        fSUMHeatLossVentilation           = 0.0
+        fSUMHeatGainWindows               = 0.0
+        fSUMHeatGainWalls                 = 0.0
+        fSUMHeatGainFloor                 = 0.0
+        fSUMHeatGainCeiling               = 0.0
+        fSUMHeatGainInfiltration          = 0.0
+        fSUMAdverseInternalGains          = 0.0
+        fSUMAdverseSolarGains             = 0.0
+        fSUMHeatGainVentilation           = 0.0
+
+      endif reset_building_totals
+
+C.....Pad zone index to 'XX'
+      if ( iZone .gt. 9 ) then
+         write (cZone_Chars,'(I2)') iZone
+      else
+        write (cZone_Chars,'(A,I1)') '0', iZone
+      endif
+
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
 C.....The following code should determine the zone heat injection
 C.....For each zone regardless of the mechanism used to inject the
-C.....heat. 
-C----------------------------------------------------------------------
-      SBC=56.7E-9 ! Stefan-Boltzmann constant
-
+C.....heat.
       i_ZnCtl=icascf(iZone)
 
       if(i_ZnCtl.ne.0)then
@@ -274,72 +537,38 @@ C Determine where heat is injected/extracted
         if ( iban(i_ZnCtl,2) .gt. 0 .and. iban(i_ZnCtl,3) .eq. 0 ) then
 
 c PIN is at surface.
-C         print*, iZone, 'surface'
           Q_zone = QFS(iZone)
+
         elseif ( iban(i_ZnCtl,3) .gt. 0 ) then
 
 C PIN is within construction
-C         print*, iZone, 'constr'
           Q_zone = QFC(iZone)
+
         elseif ( iban(i_ZnCtl,1) .eq. -1 ) then
 
 C PIN is in a plant component node - not implemented yet.
 
         elseif ( iban(i_ZnCtl,1) .eq. -2 ) then
-C         print*, iZone, 'mix'
+
 C PIN is mix of radiative/convective flux (ie - plant component)
          Q_zone = QPLTF(iZone)
+
         else
 
 C PIN is air point
-C         print*, iZone, 'air point'
           Q_zone = QFA(iZone)
+
         endif
       else
 
 C A zone with no control 
-C       print*, iZone, 'no control'
         Q_zone = 0.0
+
       endif
 
-
-C.....The following code is used to transport data to
-C.....the H3K reporting object
-C.....
-C.....Any changes to this code should be made within
-C.....the H3Kreports demarcaration comments
-C.....Set format depending on number of zones
-      if ( iZone .gt. 9 ) then
-         cZone_Chars = 'I2'
-      else
-         cZone_Chars = 'I1'
-      endif
-      write (H3K_format, '(A,A,A)') '(A,', cZone_Chars(1:2), ',A)'
-
-C.....AIR POINT TEMPERATURE
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/air_point/temperature'
-      call add_to_xml_reporting (
-     &         TFA(iZone),
-     &         H3K_rep_NAME,
-     &         'units', '(oC)',
-     &         'Zone air-point temperature' )
-
-
-C.....ZONE HEAT INJECTION / EXTRACTION
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/heat_injection'
-      call add_to_xml_reporting (
-     &         Q_ZONE,
-     &         H3K_rep_NAME,
-     &         'units', '(W)',
-     &         'Zone heat injection (obsolete debugging variable)' )
-
-
-C.....ZONE HEAT INJECTION / EXTRACTION
-C.....-> set name
+C-----------------------------------------------------------------------
+C     Determine if flux is injection or extraction.
+C-----------------------------------------------------------------------
 
       if ( Q_ZONE .GT. 0) then
 
@@ -352,178 +581,1097 @@ C.....-> set name
          Q_Cool = ABS(Q_ZONE)
 
       endif
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/flux/net_flux'
+
+C-----------------------------------------------------------------------
+C     Reset zone energy storage variables to zero.
+C-----------------------------------------------------------------------
+
+      fZoneSurfaceFlux             = 0.0
+      fZoneHeatLossBelowGrade      = 0.0
+      fZoneHeatLossAboveGrade      = 0.0
+      fZoneHeatLossWindows         = 0.0
+      fZoneHeatLossWalls           = 0.0
+      fZoneHeatLossCeiling         = 0.0
+      fZoneHeatLossInfiltration    = 0.0
+      fZoneHeatLossVentilation     = 0.0
+      fZoneHeatLossFloor           = 0.0
+      fZoneHeatGainBelowGrade      = 0.0
+      fZoneHeatGainAboveGrade      = 0.0
+      fZoneHeatGainWindows         = 0.0
+      fZoneHeatGainWalls           = 0.0
+      fZoneHeatGainCeiling         = 0.0
+      fZoneHeatGainInfiltration    = 0.0
+      fZoneHeatGainVentilation     = 0.0
+      fZoneHeatGainFloor           = 0.0
+      fZoneInfiltrationACH         = 0.0
+
+C-----------------------------------------------------------------------
+C     Compute ventilation and infiltration loads
+C
+C         Load = equivlent conductivity * temperature difference
+C
+C-----------------------------------------------------------------------
+      fZoneInfiltrationLoad = cvif * ( tfa(iZone) - tf )
+      fZoneVentilationLoad  = cvvf * ( tfa(iZone) - tf )
+
+        INF_is_zone_heated:
+     &  if ( bZoneHeated(iZone) .and. bZoneCooled(iZone) ) then
+
+          INF_is_flux_positive:
+     &    if ( fZoneInfiltrationLoad > 0.) then
+
+            fZoneHeatLossInfiltration =fZoneInfiltrationLoad
+            fZoneHeatGainInfiltration = 0.0
+
+          else
+
+            fZoneHeatLossInfiltration = 0.0
+            fZoneHeatGainInfiltration = ABS( fZoneInfiltrationLoad )
+
+          endif INF_is_flux_positive
+
+        elseif ( bZoneHeated(iZone) ) then
+
+          fZoneHeatLossInfiltration =fZoneInfiltrationLoad
+          fZoneHeatGainInfiltration = 0.0
+
+        elseif ( bZoneCooled(iZone) ) then
+
+          fZoneHeatLossInfiltration = 0.0
+          fZoneHeatGainInfiltration = ABS( fZoneInfiltrationLoad )
+
+        else
+
+          fZoneHeatLossVentilation = 0.0
+          fZoneHeatGainVentilation = 0.0
+
+        endif INF_is_zone_heated
+
+C.....Collect zone air-changes/hour
+      fZoneInfiltrationACH = AIM2_infil_to_zones(iZone) / VOL(iZone)
+     &                          * 3600.0
+
+C-----------------------------------------------------------------------
+C     Compute external heat loss/heat gain metrics by examining all
+C     surfaces.
+C-----------------------------------------------------------------------
+      zone_surface_loop: do iSurface = 1, nzsur(iZone)
+
+C.......Pad surface index to 'XX'
+        if ( iSurface .gt. 9 ) then
+          write (cSurf_Chars,'(I2)') iSurface
+        else
+          write (cSurf_Chars,'(A,I1)') '0', iSurface
+        endif
+C.......Create base name
+        H3K_rep_NAME = 'building/zone_' // cZone_Chars
+     &                                  // '/surface_'
+     &                                  // cSurf_Chars
+
+
+C-----------------------------------------------------------------------
+C       Estimate heat loss from surface by performing energy
+C       balance on exterior surface node. Equation depends on
+C       whether surface is transparent.
+C-----------------------------------------------------------------------
+        check_for_window: if ( itmcfl( iZone, iSurface ) == 0 ) then
+
+C-----------------------------------------------------------------------
+C       Opaque surface:
+C       Estimate heat loss from surface, based on flux through
+C       outermost node of envelope assembly
+C
+C                  Conductivity
+C           LOSS = ------------  * Surface area * Temperature difference
+C                   Thickness
+C
+C           Thickness = layer thickness / number of nodes
+C
+C      ( Positive values indicate heat loss. )
+C
+C-----------------------------------------------------------------------
+
+
+C.........Conductivity may be temperature dependent.
+          temp_dependent: if ( ivthpz( iSurface ) ) then
+
+            fConductivity = ( THCONf(iSurface,1) + THCONf(iSurface,2) )
+     &                        / 2.0
+
+          else
+
+            fConductivity = THrMlI(iZone,iSurface,1,1)
+
+          endif temp_dependent
+
+
+C.........Compute thickness
+          fThickness = THrMlI( iZone, iSurface, 1, 4 )
+     &                   / float ( NNDL( iZone, iSurface, 1 ) )
+
+C.........Compute flux
+          fSurface_balance_net =   fConductivity
+     &                         / fThickness
+     &                         * sna( iZone, iSurface )
+     &                         * ( TFc( iZone ,iSurface, 2 ) -
+     &                             TFc( iZone, iSurface, 1 )
+     &                            )
+
+        else
+
+C-----------------------------------------------------------------------
+C         Transparent surfaces:
+C
+C           net heat loss =   heat transfer by convection (qconve)
+C                           + short-wave radiation exchange (qswrde)
+C                           + long-wave radiation exhange with
+C                                 buildings (qlwrbd)
+C                           + long-wave radiation exhange with
+C                                 ground (qlwrde)
+C                           + long-wave radiation exhange with
+C                                 sky (qlwrsk)
+C
+C         ( Multiply by -1 to convert from ESP-r to HOT3000 sign
+C           conventions. Positive values of fSurface_balance_net 
+C           indicate heat transfer from the building to the surroundings.
+C-----------------------------------------------------------------------
+
+          fSurface_balance_net =
+     &      ( qconve(iZone,iSurface,2)
+     &        + qlwrde(iZone,iSurface,2)
+     &        + qlwrbd(iZone,iSurface,2)
+     &        + qlwrsk(iZone,iSurface,2)
+     &        + qswrde(iZone,iSurface,2) ) * (-1.0)
+
+
+        endif check_for_window
+        fZoneSurfaceFlux = fZoneSurfaceFlux + fSurface_balance_net
+
+C-----------------------------------------------------------------------
+C       Determine the boundary condition for the surface; check
+C       value of IE common block.
+C-----------------------------------------------------------------------
+        surf_BCs: select case ( IE (iZone, iSurface ) )
+
+          case ( iBCExternal )
+
+C...........Above-grade heat loss
+            call add_to_xml_reporting (
+     &          fSurface_balance_net,
+     &          H3K_rep_NAME(1:27) // '/heat_flux/above_grade/net' ,
+     &          'units', '(W)',
+     &          'Heat transfer through building envelope '
+     &          //'(above-grade)' )
+
+
+C...........Append above grade heat loss to running total
+            fZoneHeatFluxAboveGrade = fZoneHeatFluxAboveGrade +
+     &                                fSurface_balance_net
+
+            if ( itmcfl( iZone, iSurface ) == 0 ) then
+C.............Read surface type from iSurfOreint array
+              iSurfType = iSurfOrient( iZone, iSurface )
+            else
+C.............Surface is transparent
+              iSurfType = iSurfWindow
+            endif
+
+          case ( iBCInternalConst, iBCInternalSame )
+
+C...........Flux to known conditions
+            call add_to_xml_reporting (
+     &          fSurface_balance_net,
+     &          H3K_rep_NAME(1:27) // '/heat_flux/to_specified_BCs/net',
+     &          'units', '(W)',
+     &          'Heat loss to specified boundary conditions' )
+
+            iSurfType = iSurfOrient( iZone, iSurface )
+
+          case ( iBCAdiabatic )
+
+C...........Surface has zero heat transfer
+            iSurfType = iSurfOrient( iZone, iSurface )
+
+          case ( iBCGround, iBCBASESIMP )
+
+C...........Below-grade heat loss
+            call add_to_xml_reporting (
+     &          fSurface_balance_net,
+     &          H3K_rep_NAME(1:27) // '/heat_flux/below_grade/net' ,
+     &          'units', '(W)',
+     &          'Heat transfer through building envelope '
+     &          //'(below-grade)' )
+
+            iSurfType = iSurfFoundation
+
+          case ( iBCCEN13917 )
+
+C...........Heat transfer to CEN partition
+            call add_to_xml_reporting (
+     &          fSurface_balance_net,
+     &          H3K_rep_NAME(1:27) // '/heat_flux/CEN_partition/net' ,
+     &          'units', '(W)',
+     &          'Heat transfer through CEN 13917 partition' )
+
+            iSurfType = iSurfOrient( iZone, iSurface )
+
+          case default
+C...........Internal partition
+            call add_to_xml_reporting (
+     &          fSurface_balance_net,
+     &          H3K_rep_NAME(1:27) // '/heat_flux/above_grade/net' ,
+     &          'units', '(W)',
+     &          'Heat transfer through building envelope '
+     &          //'(above-grade)' )
+
+            iSurfType = iSurfOrient( iZone, iSurface )
+
+        end select surf_BCs
+
+C-----------------------------------------------------------------------
+C       Determine if flux is loss/gain
+C-----------------------------------------------------------------------
+        is_zone_heated:
+     &  if ( bZoneHeated(iZone) .and. bZoneCooled(iZone) ) then
+
+          is_flux_positive:
+     &    if ( fSurface_balance_net > 0.) then
+
+            fSurLoss = fSurface_balance_net
+            fSurGain = 0.0
+
+          else
+
+            fSurLoss = 0.0
+            fSurGain = ABS( fSurface_balance_net )
+
+          endif is_flux_positive
+
+        elseif ( bZoneHeated(iZone) ) then
+
+          fSurLoss = fSurface_balance_net
+          fSurGain = 0.0
+
+        elseif ( bZoneCooled(iZone) ) then
+
+          fSurLoss = 0.0
+          fSurGain = ABS( fSurface_balance_net )
+
+        else
+
+          fSurLoss = 0.0
+          fSurGain = 0.0
+
+        endif is_zone_heated
+C-----------------------------------------------------------------------
+C       Append flux to zone/building total
+C-----------------------------------------------------------------------
+
+        check_surface_type: select case ( iSurfType )
+
+          case ( iSurfFloor )
+
+            fZoneHeatLossFloor = fZoneHeatLossFloor + fSurLoss
+            fZoneHeatGainFloor = fZoneHeatGainFloor + fSurGain
+            fSUMHeatLossFloor  = fSUMHeatLossFloor  + fSurLoss
+            fSUMHeatGainFloor  = fSUMHeatGainFloor  + fSurGain
+
+          case ( iSurfCeiling )
+
+            fZoneHeatLossCeiling =  fZoneHeatLossCeiling + fSurLoss
+            fZoneHeatGainCeiling =  fZoneHeatGainCeiling + fSurGain
+            fSUMHeatLossCeiling  =  fSUMHeatLossCeiling  + fSurLoss
+            fSUMHeatGainCeiling  =  fSUMHeatGainCeiling  + fSurGain
+
+          case ( iSurfWindow )
+
+            fZoneHeatLossWindows = fZoneHeatLossWindows + fSurLoss
+            fZoneHeatGainWindows = fZoneHeatGainWindows + fSurGain
+            fSUMHeatLossWindows  = fSUMHeatLossWindows  + fSurLoss
+            fSUMHeatGainWindows  = fSUMHeatGainWindows  + fSurGain
+
+          case ( iSurfWall )
+
+            fZoneHeatLossWalls = fZoneHeatLossWalls + fSurLoss
+            fZoneHeatGainWalls = fZoneHeatGainWalls + fSurGain
+            fSUMHeatLossWalls  = fSUMHeatLossWalls  + fSurLoss
+            fSUMHeatGainWalls  = fSUMHeatGainWalls  + fSurGain
+
+          case ( iSurfFoundation )
+
+            fZoneHeatLossBelowGrade = fZoneHeatLossBelowGrade + fSurLoss
+            fZoneHeatGainBelowGrade = fZoneHeatGainBelowGrade + fSurGain
+            fSUMHeatLossBelowGrade  = fSUMHeatLossBelowGrade  + fSurLoss
+            fSUMHeatGainBelowGrade  = fSUMHeatGainBelowGrade  + fSurGain
+
+          case default
+
+C...........Unknown surface type.
+
+        end select check_surface_type
+
+C-----------------------------------------------------------------------
+C       Report internal and external surface temperatures
+C-----------------------------------------------------------------------
+
+
+!         call add_to_xml_reporting (
+!      &           tfc(iZone,iSurface,1),
+!      &          H3K_rep_NAME(1:27) // '/temperature/outside',
+!      &          'units', '(oC)',
+!      &          'Temperature on external surface' )
+! 
+!         call add_to_xml_reporting (
+!      &          tfs(iZone,iSurface),
+!      &          H3K_rep_NAME(1:27) // '/temperature/inside',
+!      &          'units', '(oC)',
+!      &          'Temperature on internal surface' )
+
+
+      enddo zone_surface_loop
+
+C-----------------------------------------------------------------------
+C     Now determine if flux through walls is a heating or cooling load:
+C-----------------------------------------------------------------------
+
+      fZoneHeatFlux =   fZoneSurfaceFlux
+     &                + fZoneInfiltrationLoad
+     &                + fZoneVentilationLoad
+
+C-----------------------------------------------------------------------
+C     Compute solar gain metrics
+C-----------------------------------------------------------------------
+
+C.....Zone solar gains:   solar entering from outside (q1outs)
+C                       - solar escaping back to outside (q2lost)
+C                       + solar from other zones (q1adjz)
+C                       - solar to other zones  (q2adjz)
+      fZoneSolarGains =   q1outs(iFuture) - q2lost(iFuture)
+     &                  + q1adjz(iFuture) - q2adjz(iFuture)
+
+C.....Internal gains: sum of convective and radiative gains
+      fZoneInternalGains = Cas_Rad_dat(iZone) + Cas_Con_dat(iZone)
+
+
+C-----------------------------------------------------------------------
+C     Use Sandars and Barakat (1983) method for estimating the
+C     useful solar gain (that is, the solar gains coincident with
+C     heating loads). A solar gain is useful if ESP-r's ventilation
+C     controls have not opened windows, or in the case of models
+C     without air-flow networks, the zone temperature is not greater
+C     than the thermostat setpoint + a pre-determined 'swing temperature'
+C     (above which Sandars and Barakat assume the building will be
+C     ventilated).
+C-----------------------------------------------------------------------
+
+      are_gains_useful:
+     &if ( .not. bWindowsOpen .and.
+     &           bZoneHeated(iZone)  .and.
+     &     TFA(iZone) <= fHeatSetpoint(iZone) + fSwingTemperature ) then
+
+        fZoneUsefulSolarGains    = fZoneSolarGains
+        fZoneUsefulInternalGains = fZoneInternalGains
+
+      else
+
+        fZoneUsefulSolarGains    = 0.0
+        fZoneUsefulInternalGains = 0.0
+
+      endif are_gains_useful
+
+C.....Set flag if zone is heated.
+      if ( bZoneHeated(iZone) ) bBuildingHeated = .true.
+
+C-----------------------------------------------------------------------
+C     And log occurance with adverse solar gains --- those coincident
+C     with cooling loads
+C-----------------------------------------------------------------------
+      are_gains_adverse:
+     &if ( bZoneCooled(iZone) ) then
+
+        fZoneAdverseSolarGains    = fZoneSolarGains
+        fZoneAdverseInternalGains = fZoneInternalGains
+
+      else
+
+        fZoneAdverseSolarGains    = 0.0
+        fZoneAdverseInternalGains = 0.0
+
+      endif are_gains_adverse
+
+C=======================================================================
+C     Compute heating and cooling loads:
+C=======================================================================
+
+      fZoneHeatLoad =   Q_Heat
+     &                + fZoneUsefulSolarGains
+     &                + fZoneUsefulInternalGains
+
+      fZoneCoolLoad =   Q_Cool
+
+
+C=======================================================================
+C     Append zone results to running total for entire building.
+C=======================================================================
+
+C.....Update total building heat injection/extraction variables
+      fSUMHeatInjection  = fSUMHeatInjection  + Q_Heat
+      fSUMHeatExtraction = fSUMHeatExtraction + Q_cool
+      fSUMNetFlux        = fSUMNetFlux        + Q_Zone
+
+C.....Solar gains
+      fSUMSolarGains = fSUMSolarGains + fZoneSolarGains
+
+      fSUMUsefulSolarGains =   fSUMUsefulSolarGains
+     &                       + fZoneUsefulSolarGains
+
+      fSUMAdverseSolarGains =   fSUMAdverseSolarGains
+     &                        + fZoneAdverseSolarGains
+
+C.....Thermal loads
+
+      fSUMNetLoad  = fSUMNetLoad  + fZoneHeatLoad - fZoneCoolLoad
+      fSUMHeatLoss = fSUMHeatLoss + fZoneHeatLoad
+      fSUMHeatGain = fSUMHeatGain + fZoneCoolLoad
+
+
+C.....Air load
+      fSUMVentilationLoad  = fSUMVentilationLoad + fZoneVentilationLoad
+      fSUMInfiltrationLoad =   fSUMInfiltrationLoad
+     &                       + fZoneInfiltrationLoad
+      fSUMHeatLossInfiltration =   fSUMHeatLossInfiltration
+     &                           + fZoneHeatLossInfiltration
+      fSUMHeatLossVentilation =    fSUMHeatLossVentilation
+     &                           + fZoneHeatLossVentilation
+      fSUMHeatGainInfiltration =   fSUMHeatGainInfiltration
+     &                           + fZoneHeatGainInfiltration
+      fSUMHeatGainVentilation =    fSUMHeatGainVentilation
+     &                           + fZoneHeatGainVentilation
+
+C.....Internal gains
+      fSUMInternalGains = fSUMInternalGains + fZoneInternalGains
+
+      fSUMUsefulInternalGains =   fSUMUsefulInternalGains
+     &                          + fZoneUsefulInternalGains
+
+      fSUMAdverseInternalGains =   fSUMAdverseInternalGains
+     &                           + fZoneAdverseInternalGains
+
+C=======================================================================
+C
+C     Pass data to H3KReports
+C
+C=======================================================================
+
+
+C.....The following code is used to transport data to
+C.....the H3K reporting object
+C.....
+C.....Any changes to this code should be made within
+C.....the H3Kreports demarcaration comments
+C.....Set format depending on number of zones
+
+      H3K_rep_NAME = 'building/zone_' // cZone_Chars
+
+C.....AIR POINT TEMPERATURE
+
+      call add_to_xml_reporting (
+     &         TFA(iZone),
+     &         H3K_rep_NAME(1:16)// '/air_point/temperature',
+     &         'units', '(oC)',
+     &         'Zone air-point temperature' )
+
+C.....ZONE HEAT INJECTION / EXTRACTION
+
       call add_to_xml_reporting (
      &         Q_ZONE,
-     &         H3K_rep_NAME,
+     &          H3K_rep_NAME(1:16)//'/supplied_energy/net',
      &         'units', '(W)',
      &         'Zone net heat injection/extraction ' )
 
-
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/flux/heat_injection'
       call add_to_xml_reporting (
      &         Q_Heat,
-     &         H3K_rep_NAME,
+     &         H3K_rep_NAME(1:16)//'/supplied_energy/heating',
      &         'units', '(W)',
      &         'Zone net heat injection ' )
 
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/flux/heat_extraction'
       call add_to_xml_reporting (
      &         Q_cool,
-     &         H3K_rep_NAME,
+     &         H3K_rep_NAME(1:16)//'/supplied_energy/cooling',
      &         'units', '(W)',
      &         'Zone net heat extraction ' )
 
 
-C.....ZONE SOLAR GAINS: net gains from adjacent zones
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/solar_gains/net_from_adjacent_zones'
+C.....Total heating and cooling loads
       call add_to_xml_reporting (
-     &         q1adjz(2)-q2adjz(2),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLoad,
+     &         H3K_rep_NAME(1:16)//'/thermal_loads/heating/total',
      &         'units', '(W)',
-     &         'Net solar gains from adjacent zones' )
-
-C.....ZONE SOLAR GAINS: net gains from ambient
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/solar_gains/net_from_ambient'
-      call add_to_xml_reporting (
-     &         q1outs(2)-q2lost(2),
-     &         H3K_rep_NAME,
-     &         'units', '(W)',
-     &         'Net solar gains from ambient' )
-
-
-C.....ZONE SOLAR GAINS: absorbed by glazing
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/solar_gains/absorbed_glazing'
+     &         'Total heating load ( heat loss trough envelope + '
+     &         // ' ventilation and infiltration loads )' )
 
       call add_to_xml_reporting (
-     &         q2tmc(2),
-     &         H3K_rep_NAME,
+     &         fZoneCoolLoad,
+     &         H3K_rep_NAME(1:16)//'/thermal_loads/cooling/total',
      &         'units', '(W)',
-     &         'Net solar gains absorbed by transparent surfaces' )
-
-C.....ZONE SOLAR GAINS: absorbed by opaque construction
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/solar_gains/absorbed_opaque_construction'
+     &         'Total cooling load ( heat gain trough envelope + '
+     &         // ' ventilation and infiltration loads )' )
 
       call add_to_xml_reporting (
-     &         q2wall(2)+q2rem(2),
-     &         H3K_rep_NAME,
+     &         fZoneHeatFlux,
+     &         H3K_rep_NAME(1:16)//'/thermal_loads/net_load',
      &         'units', '(W)',
-     &         'Net solar gains transmitted by glazing and absorbed'
-     &         // ' on interior surfaces' )
+     &         'Net load ( heat gain/loss trough envelope + '
+     &         // ' ventilation and infiltration loads )' )
 
-C.....ZONE SOLAR GAINS: Net total absorbed
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/solar_gains/total_net_absorbed'
+C.....Envelope heat loss
       call add_to_xml_reporting (
-     &         q2tmc(2)+q2rem(2)+q2wall(2),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLossWindows,
+     &         H3K_rep_NAME(1:16)//'/envelope/windows/heat_loss',
      &         'units', '(W)',
-     &         'Total net absorbed solar gains' )
+     &         'Contribution of windows to heating load' )
 
-
-C.....ZONE SOLAR GAINS: Net total gain
-C.....-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &     '/solar_gains/total_net_gain'
       call add_to_xml_reporting (
-     &         q1outs(2)+q1adjz(2)-(q2adjz(2)+q2lost(2)),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLossWalls,
+     &         H3K_rep_NAME(1:16)//'/envelope/walls/heat_loss',
      &         'units', '(W)',
-     &         'Total net solar gains' )
+     &         'Contribution of walls to heating load' )
 
-
-C.......H3Kreports.(CASUAL_GAINS).start......................
-C.......The following code is used to trasnport data to
-C.......the H3K reporting object
-C.......
-C.......Any changes to this code should be made within
-C.......the H3Kreports demarcaration comments
-
-
-C.......CONVECTIVE CASUAL GAINS
-C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &       '/casual_gains/convective'
       call add_to_xml_reporting (
-     &         Cas_con_dat(iZone),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLossFloor,
+     &         H3K_rep_NAME(1:16)//'/envelope/floors/heat_loss',
      &         'units', '(W)',
-     &         'Zone convective casual gains' )
+     &         'Contribution of overhanging floors to heating load' )
 
 
-C.......RADIANT CASUAL GAINS
-C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &       '/casual_gains/radiant'
       call add_to_xml_reporting (
-     &         Cas_rad_dat(iZone),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLossCeiling,
+     &         H3K_rep_NAME(1:16)//'/envelope/ceilings/heat_loss',
      &         'units', '(W)',
-     &         'Zone radatiant casual gains' )
+     &         'Contribution of Ceilings to heating load' )
 
-
-C.......LATENT CASUAL GAINS
-C.......-> set name
-      WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &       '/casual_gains/latent'
       call add_to_xml_reporting (
-     &         Cas_lat_dat(iZone),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLossBelowGrade,
+     &         H3K_rep_NAME(1:16)//'/envelope/foundation/heat_loss',
      &         'units', '(W)',
-     &         'Zone latient casual gains' )
+     &         'Contribution of foundation to heating load' )
 
-
-C.......TOTAL CASUAL GAINS
-C.......-> set name
-        WRITE(H3K_rep_NAME,H3K_FORMAT)'building/zone_',iZone,
-     &       '/casual_gains/total'
       call add_to_xml_reporting (
-     &         Cas_lat_dat(iZone)
-     &           +  Cas_rad_dat(iZone)
-     &           +  Cas_con_dat(iZone),
-     &         H3K_rep_NAME,
+     &         fZoneHeatLossInfiltration,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/heat_loss',
      &         'units', '(W)',
-     &         'Zone total casual gains '
-     &             // '(convective + radiant + latent)' )
+     &         'Contribution of infiltration to heating load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatLossWalls
+     &           + fZoneHeatLossInfiltration
+     &           + fZoneHeatLossCeiling
+     &           + fZoneHeatLossFloor
+     &           + fZoneHeatLossWindows
+     &           + fZoneHeatLossBelowGrade,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/all_components/heat_loss',
+     &         'units', '(W)',
+     &         'Heat lost through all components of envelope' )
+
+C.....Zone air change rate (AIM2)
+      call add_to_xml_reporting (
+     &         fZoneInfiltrationACH,
+     &         H3K_rep_NAME(1:16)//'/envelope/infiltration/'
+     &                           //'air_changes_per_hour',
+     &         'units', '(ACH)',
+     &         'Zone infiltration (air changes per hour)')
+
+! Not sure if this is being computed correctly
+!       call add_to_xml_reporting (
+!      &         fZoneHeatLossVentilation,
+!      &         H3K_rep_NAME(1:16)
+!      &            //'/envelope/ventilation/heat_loss',
+!      &         'units', '(W)',
+!      &         'Contribution of ventilation to heating load' )
+
+C.....Envelope heat gains
+      call add_to_xml_reporting (
+     &         fZoneHeatGainWindows,
+     &         H3K_rep_NAME(1:16)//'/envelope/windows/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of windows to cooling load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatGainWalls,
+     &         H3K_rep_NAME(1:16)//'/envelope/walls/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of walls to cooling load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatGainFloor,
+     &         H3K_rep_NAME(1:16)//'/envelope/floors/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of overhanging floors to cooling load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatGainCeiling,
+     &         H3K_rep_NAME(1:16)//'/envelope/ceilings/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of ceilings to cooling load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatGainBelowGrade,
+     &         H3K_rep_NAME(1:16)//'/envelope/foundation/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of foundation to cooling load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatGainInfiltration,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/heat_gain',
+     &         'units', '(W)',
+     &         'Contribution of infiltration to cooling load' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatGainWalls
+     &           + fZoneHeatGainInfiltration
+     &           + fZoneHeatGainCeiling
+     &           + fZoneHeatGainFloor
+     &           + fZoneHeatGainWindows
+     &           + fZoneHeatGainBelowGrade,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/all_components/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gained through all components of envelope' )
+
+C.....Envelope: net flux
+      call add_to_xml_reporting (
+     &         fZoneHeatLossWindows-fZoneHeatGainWindows,
+     &         H3K_rep_NAME(1:16)//'/envelope/windows/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of windows to net heat flux' )
 
 
-C.......H3Kreports.(CASUAL_GAINS).end........................
+      call add_to_xml_reporting (
+     &         fZoneHeatLossWalls-fZoneHeatGainWalls,
+     &         H3K_rep_NAME(1:16)//'/envelope/walls/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of walls to net heat flux' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatLossFloor-fZoneHeatGainFloor,
+     &         H3K_rep_NAME(1:16)//'/envelope/floors/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of overhanging floors to net heat flux' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatLossCeiling-fZoneHeatGainCeiling,
+     &         H3K_rep_NAME(1:16)//'/envelope/ceilings/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of ceilings to net heat flux' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatLossBelowGrade-fZoneHeatGainBelowGrade,
+     &         H3K_rep_NAME(1:16)//'/envelope/foundation/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of foundation to net heat flux' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatLossInfiltration-fZoneHeatGainInfiltration,
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/infiltration/net_flux',
+     &         'units', '(W)',
+     &         'Contribution of infiltration to net heat flux' )
+
+      call add_to_xml_reporting (
+     &         fZoneHeatLossWalls
+     &           + fZoneHeatLossInfiltration
+     &           + fZoneHeatLossCeiling
+     &           + fZoneHeatLossFloor
+     &           + fZoneHeatLossWindows
+     &           + fZoneHeatLossBelowGrade
+     &           - ( fZoneHeatGainWalls
+     &              + fZoneHeatGainInfiltration
+     &              + fZoneHeatGainCeiling
+     &              + fZoneHeatGainFloor
+     &              + fZoneHeatGainWindows
+     &              + fZoneHeatGainBelowGrade
+     &             ),
+     &         H3K_rep_NAME(1:16)
+     &            // '/envelope/all_components/net_flux',
+     &         'units', '(W)',
+     &         'Net flux through all components of envelope' )
+
+
+C.....Zone solar gains
+      call add_to_xml_reporting (
+     & fZoneSolarGains,
+     & H3K_rep_NAME(1:16)//'/insolation/total',
+     & 'units', '(W)',
+     & 'Solar gains admitted through glazing '
+     & )
+
+C.....Zone solar gains coinciding with heating loads
+      call add_to_xml_reporting (
+     & fZoneUsefulSolarGains,
+     & H3K_rep_NAME(1:16)//'/insolation/useful',
+     & 'units', '(W)',
+     & 'Solar gains admitted through glazing that supplant heating '
+     & // 'loads')
+
+C.....Zone solar gains coinciding with heating loads
+      call add_to_xml_reporting (
+     & fZoneAdverseSolarGains,
+     & H3K_rep_NAME(1:16)//'/insolation/adverse',
+     & 'units', '(W)',
+     & 'Solar gains admitted through glazing that increase cooling '
+     & // 'loads')
+
+C.....TOTAL CASUAL GAINS
+      call add_to_xml_reporting (
+     &         fZoneInternalGains,
+     &         H3K_rep_NAME(1:16)//'/internal_gains/total',
+     &         'units', '(W)',
+     &         'Internal heat gains'
+     &             // '(convective + radiant)' )
+
+C.....Useful internal gains
+      call add_to_xml_reporting (
+     &         fZoneUsefulInternalGains,
+     &         H3K_rep_NAME(1:16)//'/internal_gains/useful',
+     &         'units', '(W)',
+     &         'Internal heat gains'
+     &         // '(convective + radiant) that supplant heating loads' )
+
+C.....Adverse internal gains
+      call add_to_xml_reporting (
+     &         fZoneAdverseInternalGains,
+     &         H3K_rep_NAME(1:16)//'/internal_gains/adverse',
+     &         'units', '(W)',
+     &         'Internal heat gains'
+     &         // '(convective + radiant) that increase cooling loads' )
+
+C-----------------------------------------------------------------------
+C     Check zone number: if this is the last zone, dump out aggregated
+C     building parameters.
+C-----------------------------------------------------------------------
+
+      report_whole_building: if ( iZone == ncomp ) then
+
+C.......Total heating
+        call add_to_xml_reporting (
+     &   fSUMHeatInjection,
+     &   'building/all_zones/supplied_energy/heating',
+     &   'units', '(W)',
+     &   'Total amount of heat supplied to the building (all zones).'
+     &   )
+
+C.......Total cooling
+        call add_to_xml_reporting (
+     &   fSUMHeatExtraction,
+     &   'building/all_zones/supplied_energy/cooling',
+     &   'units', '(W)',
+     &   'Total amount of cooling supplied to the building (all zones).'
+     &   )
+
+C.......Net flux for building
+        call add_to_xml_reporting (
+     &   fSUMNetFlux,
+     &   'building/all_zones/supplied_energy/net_flux',
+     &   'units', '(W)',
+     &   'Net heat/cooling supplied to '
+     &   // 'the building (all zones).'
+     &   )
+
+C.......Total solar gains
+        call add_to_xml_reporting (
+     &   fSUMSolarGains,
+     &   'building/all_zones/insolation/total',
+     &   'units', '(W)',
+     &   'Total solar gains admitted through glazing '
+     &   // '(all zones).'
+     &   )
+
+C.......Useful solar gains
+        call add_to_xml_reporting (
+     &   fSUMUsefulSolarGains,
+     &   'building/all_zones/insolation/useful',
+     &   'units', '(W)',
+     &   'Solar gains admitted through glazing that supplant heating'
+     &   // ' loads (all zones).'
+     &   )
+
+C.......Adverse solar gains
+        call add_to_xml_reporting (
+     &   fSUMAdverseSolarGains,
+     &   'building/all_zones/insolation/adverse',
+     &   'units', '(W)',
+     &   'Solar gains admitted through glazing that increase cooling'
+     &   // ' loads (all zones).'
+     &   )
+
+
+C.....Heat loss disaggregated by envelope components
+      call add_to_xml_reporting (
+     &         fSUMHeatLossWindows,
+     &         'building/all_zones/envelope/windows/heat_loss',
+     &         'units', '(W)',
+     &         'Heat loss to surroundings through windows '
+     &          // ' (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossWalls,
+     &         'building/all_zones/envelope/walls/heat_loss',
+     &         'units', '(W)',
+     &         'Heat loss to surroundings through walls (all zones)' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossFloor,
+     &         'building/all_zones/envelope/floors/heat_loss',
+     &         'units', '(W)',
+     &         'Heat loss to surroundings through overhanging floors'
+     &         //' (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossCeiling,
+     &         'building/all_zones/envelope/ceilings/heat_loss',
+     &         'units', '(W)',
+     &         'Heat loss to surroundings through ceilings'
+     &         //' (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossBelowGrade,
+     &         'building/all_zones/envelope/foundation/heat_loss',
+     &         'units', '(W)',
+     &         'Heat loss to ground through below-grade elements'
+     &          // ' (all zones)  ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossInfiltration,
+     &         'building/all_zones/envelope/infiltration/heat_loss',
+     &         'units', '(W)',
+     &         'Heat loss to surroundings via infiltration'
+     &          // ' (all zones)  ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossWalls
+     &           + fSUMHeatLossInfiltration
+     &           + fSUMHeatLossCeiling
+     &           + fSUMHeatLossFloor
+     &           + fSUMHeatLossWindows
+     &           + fSUMHeatLossBelowGrade,
+     &         'building/all_zones/envelope/all_components/heat_loss',
+     &         'units', '(W)',
+     &         'Heat lost through all components of envelope'
+     &         // ' (all zones)' )
+
+!       call add_to_xml_reporting (
+!      &         fSUMHeatLossVentilation,
+!      &         'building/all_zones/envelope/ventilation/heat_loss',
+!      &         'units', '(W)',
+!      &         'Heat loss to surroundings via ventilation'
+!      &          // ' (all zones)  ' )
+
+C.....Heat gain disaggregated by envelope components
+      call add_to_xml_reporting (
+     &         fSUMHeatGainWindows,
+     &         'building/all_zones/envelope/windows/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gain from surroundings through windows'
+     &         //' (all zones, excluding insolation) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatGainWalls,
+     &         'building/all_zones/envelope/walls/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gain from surroundings through walls'
+     &         //' (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatGainFloor,
+     &         'building/all_zones/envelope/floors/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gain from surroundings through overhanging floors'
+     &         //' (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatGainCeiling,
+     &         'building/all_zones/envelope/ceilings/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gain from surroundings through ceilings'
+     &         //' (all zones) ' )
+
+
+      call add_to_xml_reporting (
+     &         fSUMHeatGainBelowGrade,
+     &         'building/all_zones/envelope/foundation/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gain from ground through below-grade elements'
+     &          // ' (all zones)  ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatGainInfiltration,
+     &         'building/all_zones/envelope/infiltration/heat_gain',
+     &         'units', '(W)',
+     &         'Heat gain from surroundings via infiltration'
+     &          // ' (all zones)  ' )
+
+!       call add_to_xml_reporting (
+!      &         fSUMHeatGainVentilation,
+!      &         'building/all_zones/envelope/ventilation/heat_gain',
+!      &         'units', '(W)',
+!      &         'Heat gain from surroundings via ventilation'
+!      &          // ' (all zones)  ' )
+
+C.....Net flux disaggregated by envelope components
+      call add_to_xml_reporting (
+     &         fSUMHeatLossWindows-fSUMHeatGainWindows,
+     &         'building/all_zones/envelope/windows/net_flux',
+     &         'units', '(W)',
+     &         'Net heat loss to surroundings through windows '
+     &          // ' (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossWalls-fSUMHeatGainWalls,
+     &         'building/all_zones/envelope/walls/net_flux',
+     &         'units', '(W)',
+     &         'Net heat loss to surroundings through walls'
+     &         //' (all zones)' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossFloor-fSUMHeatGainFloor,
+     &         'building/all_zones/envelope/floors/net_flux',
+     &         'units', '(W)',
+     &         'Net heat loss to surroundings through overhanging'
+     &         //' floors (all zones) ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossCeiling-fSUMHeatGainCeiling,
+     &         'building/all_zones/envelope/ceilings/net_flux',
+     &         'units', '(W)',
+     &         'Net heat loss to surroundings through ceilings'
+     &         //' (all zones) ' )
+
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossBelowGrade-fSUMHeatGainBelowGrade,
+     &         'building/all_zones/envelope/foundation/net_flux',
+     &         'units', '(W)',
+     &         'Net heat loss to ground through below-grade elements'
+     &          // ' (all zones)  ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossInfiltration-fSUMHeatGainInfiltration,
+     &         'building/all_zones/envelope/infiltration/net_flux',
+     &         'units', '(W)',
+     &         'Net heat loss to surroundings via infiltration'
+     &          // ' (all zones)  ' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatLossWalls
+     &           + fSUMHeatLossInfiltration
+     &           + fSUMHeatLossCeiling
+     &           + fSUMHeatLossFloor
+     &           + fSUMHeatLossWindows
+     &           + fSUMHeatLossBelowGrade
+     &           - ( fSUMHeatLossWalls
+     &               + fSUMHeatLossInfiltration
+     &               + fSUMHeatLossCeiling
+     &               + fSUMHeatLossFloor
+     &               + fSUMHeatLossWindows
+     &               + fSUMHeatLossBelowGrade
+     &             ),
+     &         'building/all_zones/envelope/all_components/net_flux',
+     &         'units', '(W)',
+     &         'Net heat lost through all components of envelope'
+     &         // ' (all zones)' )
+
+
+C.....Total heating and cooling loads
+      call add_to_xml_reporting (
+     &         fSUMHeatLoss,
+     &         'building/all_zones/thermal_loads/heating/total',
+     &         'units', '(W)',
+     &         'Total heating load ( heat loss through envelope + '
+     &         // ' ventilation and infiltration loads; all zones)' )
+
+      call add_to_xml_reporting (
+     &         fSUMHeatGain,
+     &         'building/all_zones/thermal_loads/cooling/total',
+     &         'units', '(W)',
+     &         'Total cooling load ( heat gain through envelope + '
+     &         // ' ventilation and infiltration loads; all zones )' )
+
+      call add_to_xml_reporting (
+     &         fSUMNetLoad,
+     &         'building/all_zones/thermal_loads/net',
+     &         'units', '(W)',
+     &         'Total net load ( heat gain through envelope + '
+     &         // ' ventilation and infiltration loads; all zones )' )
+
+C.....Internal gains
+        call add_to_xml_reporting(
+     &   fSUMInternalGains,
+     &   'building/all_zones/internal_gains/total',
+     &   'units', '(W)',
+     &   'Sensible heat transfer from occupants, lights and equipment'
+     &   // ' (all zones).'
+     &   )
+
+        call add_to_xml_reporting(
+     &   fSUMUsefulInternalGains,
+     &   'building/all_zones/internal_gains/useful',
+     &   'units', '(W)',
+     &   'Sensible heat transfer from occupants, lights and equipment'
+     &   // ' that supplant heating loads (all zones).'
+     &   )
+
+        call add_to_xml_reporting(
+     &   fSUMAdverseInternalGains,
+     &   'building/all_zones/internal_gains/adverse',
+     &   'units', '(W)',
+     &   'Sensible heat transfer from occupants, lights and equipment'
+     &   // ' that increase cooling loads (all zones).'
+     &   )
+
+C.....Net energy balance
+        call add_to_xml_reporting(
+     &   fSUMSolarGains
+     &      + fSUMInternalGains
+     &      + fSUMNetFlux
+     &      - fSUMNetLoad,
+     &   'building/all_zones/energy_balance/net',
+     &   'units', '(W)',
+     &   'Energy balance in building (Gains + Plant interaction -'
+     &   // ' Loads; all zones).'
+     &   )
+
+      endif report_whole_building
 
 C---------------------------------------------------------------------
 C     Loop through zone surfaces and MLC layers, reporting data 
 C---------------------------------------------------------------------
+
+
       do iSurface = 1, nzsur(iZone)
 
+C.......Note: there is some redundant code here: Achim's and Alex's
+C.......contributions overlap in functionality, and they should
+C.......be almagamated. Alex has adopted a slightly more efficient
+C.......method of writing out the variable names, which the code
+C.......below should also make use of.
          if ( iSurface .gt. 9 ) then
-            cSurf_Chars = 'I2'
+            write(cSurf_Chars, '(I2)') iSurface
          else
-            cSurf_Chars = 'I1'
+            write(cSurf_Chars, '(A,I1)') '0', iSurface
          endif
-         write (H3K_format, '(A,A,A,A,A)')
-     &        '(A,',cZone_Chars(1:2),',A,',cSurf_Chars(1:2),',A)'
-C=== 26.06.08
-         write (H3K_format_HC, '(A,A,A,A,A,A,A)')
-     &       '(A,',cZone_Chars(1:2),',A,',cSurf_Chars(1:2),',A,I2,A)'
-C===
+
+         H3K_format='(A,A,A,A,A)'
 
 C........Surface temperature 
 C........-> set name
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',iZone,
-     &      '/surface_',iSurface,
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
      &      '/temperature'
+
 C........->Report data
          call add_to_xml_reporting (
      &      tfs(iZone,iSurface),
@@ -534,9 +1682,9 @@ C........->Report data
 C........External facing surfaces -> Surface temperature
          if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',iZone,
-     &         '/surface_',iSurface,
-     &         '/ext. surf. temperature'
+     &         'building/zone_',cZone_Chars,
+     &         '/surface_',cSurf_Chars,
+     &         '/ext_surf_temperature'
 C........->Report data
             call add_to_xml_reporting (
      &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
@@ -547,8 +1695,8 @@ C........->Report data
 
 C........Radiant heat injection associated with plant containment.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',iZone,
-     &      '/surface_',iSurface,
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
      &      '/plant_containment_flux'
 
 C........->Report data
@@ -560,10 +1708,10 @@ C........->Report data
 
 C.......CONVECTIVE COEFFICIENTS
 C........Internal surface convective coefficient.
-         WRITE(H3K_rep_NAME,H3K_format_HC)  ! 26.06.08
-     &      'building/zone_',iZone,
-     &      '/surface_',iSurface,
-     &      '/HCi (icor=',ICORI(iZone,iSurface),')'  ! 26.06.08
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
+     &      '/HCi'
 
 C........->Report data
          call add_to_xml_reporting (
@@ -573,10 +1721,10 @@ C........->Report data
      &      'Internal side convective coefficient' )
 
 C........External surface convective coefficient.
-         WRITE(H3K_rep_NAME,H3K_format_HC)  ! 26.06.08
-     &      'building/zone_',iZone,
-     &      '/surface_',iSurface,
-     &      '/HCe (icor=',ICORE(iZone,iSurface),')' ! 26.06.08
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
+     &      '/HCe'
 
 C........->Report data
          call add_to_xml_reporting (
@@ -604,8 +1752,8 @@ C            wtrsum = wtrsum**0.25 - 273.15
 C........Plane radiant temperature 
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',iZone,
-     &         '/surface_',iSurface,
+     &         'building/zone_',cZone_Chars,
+     &         '/surface_',cSurf_Chars,
      &         '/PRT'
 C........->Report data
             call add_to_xml_reporting (
@@ -617,8 +1765,8 @@ C........->Report data
 C........Emissivity weighted plane radiant temperature 
 C........-> set name
 C            WRITE(H3K_rep_NAME,H3K_FORMAT)
-C     &         'building/zone_',iZone,
-C     &         '/surface_',iSurface,
+C     &         'building/zone_',cZone_Chars,
+C     &         '/surface_',cSurf_Chars,
 C     &         '/wPRT'
 C........->Report data
 C            call add_to_xml_reporting (
@@ -630,8 +1778,8 @@ C     &         'Emissivity weighted plane radiant temp. (inside face)' )
 C.......RADIATION HEAT TRANSFER COEFFICIENT
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',iZone,
-     &         '/surface_',iSurface,
+     &         'building/zone_',cZone_Chars,
+     &         '/surface_',cSurf_Chars,
      &         '/HRi'
 C........->Report data
             call add_to_xml_reporting (
@@ -654,8 +1802,8 @@ C calc mean surrounding temp of external surfaces
             trsum = trsum**0.25 - 273.15
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',iZone,
-     &         '/surface_',iSurface,
+     &         'building/zone_',cZone_Chars,
+     &         '/surface_',cSurf_Chars,
      &         '/AmbRT'
 C........->Report data
             call add_to_xml_reporting (
@@ -670,21 +1818,18 @@ C......=====================================================
 C......NODE DATA
          do iNode = 1, (nndc (iZone, iSurface )-1)
             if ( iNode .gt. 9 ) then
-               cNode_Chars = 'I2'
+              write(cNode_Chars, '(I2)')  iNode
             else
-               cNode_Chars = 'I1'
+              write(cNode_Chars, '(A,I1)') '0', iNode
             endif
-            write (H3K_format, '(A,A,A,A,A,A,A)')
-     &        '(A,',cZone_Chars(1:2),
-     &        ',A,',cSurf_Chars(1:2),
-     &        ',A,',cNode_Chars(1:2),',A)'
+            H3K_format = '(A,A,A,A,A,A,A)'
 
 C...........MLC layer temperature 
 C...........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',iZone,
-     &         '/surface_',iSurface,
-     &         '/node_',iNode,
+     &         'building/zone_',cZone_Chars,
+     &         '/surface_',cSurf_Chars,
+     &         '/node_',cNode_Chars,
      &         '/temperature'
 C...........->Report data     
             call add_to_xml_reporting (
@@ -697,10 +1842,9 @@ C...........->Report data
 
       enddo ! <- end iSurface 1,N of iZone
 
+
       RETURN
       END
-
-
 
 C
 C ******************************* H3K Transport Climate Data *********************************
@@ -896,7 +2040,7 @@ C*******************************************************************************
 
 #include "building.h"
 #include "MultiYear_simulations.h"
-      
+
 C.....Declare passed variables
       real     btimep, btimef   ! building present & future time (0.0->23.999..)
       integer  ihrp, ihrf       ! building present & future hour (1->24)
@@ -917,7 +2061,7 @@ C.....References
       integer h3k_month         ! function returning index of current month when
                                 ! passed the current day (1.0->365.999...)
 
-                                
+
 C.....Building simulation time (present)
 C.....-> set name
       WRITE(H3K_rep_NAME,'(A)')'building/time/present'
@@ -998,9 +2142,8 @@ C........-> set name
      &         'Year corresponding to future simulation day' )
 
 
-      endif 
-     
-     
+      endif
+
 C.....Building simulation day (present) ->real number
 
       if ( ihrp .eq. 24 .and. idyp .eq. 365
@@ -1020,8 +2163,8 @@ C.....Year numbers for multi-year simulations
          iCurrent_year = 0
          iStart_year   = 0
 
-      endif 
-C.....Calculate present 'real' day -> day number       
+      endif
+C.....Calculate present 'real' day -> day number
       real_day = real(idyp_adjust)
      &      +(real(ihrp)+real(its-1)/real(ntstep))/24.0
      &      + real( iCurrent_year - iStart_year) * 365.0
@@ -1029,7 +2172,7 @@ C.....Calculate present 'real' day -> day number
       temp_day = real(idyp_adjust)
      &         +(real(ihrp)+real(its-1)/real(ntstep))/24.0
 
-   
+
 C.....-> set name
       WRITE(H3K_rep_NAME,'(A)')'building/day/present'
 C.....-> update meta-data
@@ -1056,7 +2199,7 @@ C.....Building simulation day (future) ->real number
      &   + real( iCurrent_year - iStart_year )  * 365.0
 
       WRITE(H3K_rep_NAME,'(A)')'building/day/future'
-      
+
       call add_to_xml_reporting (
      &         real_day,
      &         H3K_rep_NAME,
@@ -1152,16 +2295,6 @@ C.....Named constants
      &            iProp_2nd_flow = 3,
      &            iProp_h2_flow  = 4)
 
-C.....Commons indicating if meta items have been initialized
-      COMMON / H3KmetaInitVal /
-     &     bBuildMeta,
-     &     bClimMeta,
-     &     bTimeMeta,
-     &     bPlantMeta,
-     &     bElectMeta
-
-      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
-
 C.....Loop through all components in plant network
       do ii = 1, npcomp
 
@@ -1181,7 +2314,7 @@ C...........Build node name
               write(Node_name, '(A,A,I1)')
      &             Base_Name(1:iLength+6),
      &             '/node_',jj
-            else           ! This presumes that no plant component will have more than 99 nodes! 
+            else           ! This presumes that no plant component will have more than 99 nodes!
               write(Node_name, '(A,A,I2)')
      &             Base_Name(1:iLength+6),
      &             '/node_',jj
@@ -1211,19 +2344,6 @@ C...........istate = 0/1/9
             else
                char_temp = 'unknown'
             endif
-
-C..........-> Update meta-data - tag node with type.
-C          -> Nice idea. Doesn't work b/c 'REP_SET_META'
-C             configures a h3kreports node to accept data,
-C             but no data will be subsequently be sent to
-C             h3kreports for this node.
-C
-C            call REP_SET_META(
-C     &           node_name(1:LNBLNK(node_name)),
-C     &           'type',
-C     &           char_temp(1:LNBLNK(char_temp))
-C     &           )
-C.....................................................
 
 C...........Transport State variables
             if(jj<10)then
@@ -1846,11 +2966,18 @@ C     Hydrogen MH Storage
 
             CALL MH_hydride_PostPro(iComponent_Index, iReport)
 
-C     Hydrogen PEMFC 
+C     Hydrogen PEMFC
          elseif ( iComponent_type .eq. 107 ) then
 
             CALL H2_PEMFC_H3Kreports_module (
      &                 iComponent_Index, iReport, iComponent_type )
+
+C     NCHE
+C         elseif ( iComponent_type .eq. 123 ) then
+
+C            CALL NCHE_H3Kreports_module (
+C     &                 iComponent_Index, iReport )
+
 
 C.....CETC models that do not yet have post-processors
 
@@ -1872,7 +2999,7 @@ C            CALL PEM_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C     1 node tank with immersed HX coil
           elseif ( iComponent_type .eq. 119 ) then
-             CALL tank_intank_hx_H3Kreports_module(iComponent_Index)  
+             CALL tank_intank_hx_H3Kreports_module(iComponent_Index)
 
          else
 
@@ -2001,16 +3128,6 @@ C-------------------------------------------------------------------------------
       CHARACTER*12 ENODNAM,HYCOMTYPSTR,HYCOMNAM,
      &POWCOMNAM,CONECOMNAM
       CHARACTER*72 POWCDATS
-
-C.....Common for meta initialization flags
-      COMMON / H3KmetaInitVal /
-     &     bBuildMeta,
-     &     bClimMeta,
-     &     bTimeMeta,
-     &     bPlantMeta,
-     &     bElectMeta
-
-      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
 
 C---------------------------------------------------------------------------------
 C Common holding nodal voltages (actual voltages, not "per unit" voltages.
@@ -2441,7 +3558,7 @@ C--------------------------------------------------------------
      &           ( iAction, cString, iLocation, iLength )
       implicit none
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Passed arguements
@@ -2487,6 +3604,7 @@ C Recover the string indicated by iLocation
 
       return
       end
+
 
 C ******************************* H3K Transport Massflow Network Data ************************
 C
@@ -2537,7 +3655,20 @@ C
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       integer     ITND !  - node temperature index; if ITND(I)=N then TNOD(I)=TNOD(N)
       real      TNOD  ! - node fluid temperature (C)
-C Components: fixed input data      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)      character*12     CMNAM ! - identifier/name      Character*60     LTPCMP ! - short description of that type      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),     &              SUPCMP(MCMP,MCMS)      integer     ITPCMP ! - type number      integer     ISDCMP  ! - number of supplementary data items (max. MCMS)      integer     ISDCNN  ! - number of connection level supplementary items (max. MCNS)      real         SUPCMP ! - component supplementary data items (1st item = fluid type)C Connections: fixed input data
+
+C Components: fixed input data
+      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
+      character*12     CMNAM ! - identifier/name
+      Character*60     LTPCMP ! - short description of that type
+
+      COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
+     &              SUPCMP(MCMP,MCMS)
+      integer     ITPCMP ! - type number
+      integer     ISDCMP  ! - number of supplementary data items (max. MCMS)
+      integer     ISDCNN  ! - number of connection level supplementary items (max. MCNS)
+      real         SUPCMP ! - component supplementary data items (1st item = fluid type)
+
+C Connections: fixed input data
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       integer     NODPS ! - node number on positive side of connection
@@ -2545,7 +3676,9 @@ C
       integer     NODNE ! - node number on negative side of connection
       Real          HGTNE ! - height of -ve linkage point relative to NODNE (m)
       integer     ITPCON ! - number of linking fluid flow component
-      integer     NDSCNN ! - connection level component supplementary node numbersC Output data
+      integer     NDSCNN ! - connection level component supplementary node numbers
+
+C Output data
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
 
@@ -2559,28 +3692,52 @@ C     SAFLW  - node coupled sum of absolute mass flow rates (kg/s)
 
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       DOUBLE PRECISION FLWIN(MNOD),FLWUT(MNOD)
-      DOUBLE PRECISION FLWINV(MNOD),FLWUTV(MNOD)
+      DOUBLE PRECISION FLWINV(MNOD),FLWUTV(MNOD)
+
 C.....Local variables
       integer ii,jj                           ! counters
       CHARACTER*12 fluid                ! fluid type ('air' or 'water')
       character*128 Node_Name     ! node name
       character*128 Connect_Name ! connection name
       character*128 H3K_rep_NAME ! XML leaf name
-      integer i_neg, i_CompType,i_CompIndex      real area,rhon,PI ! component area and fluid density at node, PI            Logical b_noveloc ! logical for velocity calc.C.....Commons indicating if meta items have been initialized      COMMON / H3KmetaInitVal /     &     bBuildMeta,     &     bClimMeta,     &     bTimeMeta,     &     bPlantMeta,     &     bElectMeta      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
+
+      integer i_neg, i_CompType,i_CompIndex
+
+      real area,rhon,PI ! component area and fluid density at node, PI
+      
+      Logical b_noveloc ! logical for velocity calc.
+
+C.....Commons indicating if meta items have been initialized
+      COMMON / H3KmetaInitVal /
+     &     bBuildMeta,
+     &     bClimMeta,
+     &     bTimeMeta,
+     &     bPlantMeta,
+     &     bElectMeta
+
+      logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
+
 C.....References
       integer LNBLNK    ! function returning # of non-blank characters in
                                 ! a string
-      real DENSIT         ! function returning the density of a fluid
+      real DENSIT         ! function returning the density of a fluid
+
 C.....Crude check if there is any flow network
-      IF (NNOD.le.0) THEN        write(*,*)"no flow network to output"        RETURN
-      ENDIF
+      IF (NNOD.le.0) THEN
+        write(*,*)"no flow network to output"
+        RETURN
+      ENDIF
+
 C..... Call MFSTFL which sums up all flows in and out of a node ...
 C..... IDIM = 1 => flows in kg/s
       CALL MFSTFL(1,FLWIN,FLWUT)
-C..... IDIM = 2 => flows in m3/h      CALL MFSTFL(2,FLWINV,FLWUTV)
+C..... IDIM = 2 => flows in m3/h
+      CALL MFSTFL(2,FLWINV,FLWUTV)
+
 C.....Loop through all nodes in a flow network
       do ii = 1,NNOD
-C...........Set string name to water/air/unknown (the latter shouldn't really happen!)
+
+C...........Set string name to water/air/unknown (the latter shouldn't really happen!)
          if (NDFLD(ii) .eq. 1 ) then
             fluid = 'air'
          elseif (NDFLD(ii) .eq. 2 ) then
@@ -2591,8 +3748,11 @@ C.....Loop through all nodes in a flow network
 
 C........Build node name
          write(Node_Name, '(A,A,A,A)')
-     &        'mfn/',fluid(1:LNBLNK(fluid)),'/',     &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
-C.........output node data	! total mass flow entering a node *******************************
+     &        'mfn/',fluid(1:LNBLNK(fluid)),'/',
+     &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
+
+C.........output node data
+	! total mass flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/flowrate'
@@ -2602,12 +3762,203 @@ C........Build node name
      &              H3K_rep_NAME,
      &              'units', '(kg/s)',
      &              'mfn total node flow rate' )
-	! total volume flow entering a node *******************************         write(H3K_rep_NAME,'(A,A)')     &              Node_Name(1:LNBLNK(Node_Name)),     &              '/volflowrate'         call add_to_xml_reporting (     &              real(FLWINV(ii)),     &              H3K_rep_NAME,     &              'units', '(m3/h)',     &              'mfn total node volume flow rate' )	! node temperature from flow network *******************************         write(H3K_rep_NAME,'(A,A)')     &              Node_Name(1:LNBLNK(Node_Name)),     &              '/temp'         call add_to_xml_reporting (     &              TNOD(ii),     &              H3K_rep_NAME,     &              'units', '(oC)',     &              'mfn node temperature' )C........Build connection nameC........Only use positive side of connectionsC.........Loop through all interconnections in a flow network         do jj = 1,NCNN            if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node               i_neg = NODNE(jj) ! the node on the other side of the conn.               write(Connect_Name, '(A,A,A,A,A,A,A,A,A)')     &             'mfn/',fluid(1:LNBLNK(fluid)),'/',     &             NDNAM(ii)(1:LNBLNK(NDNAM(ii))),'->',     &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),     &             ' (via ',     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
-	! pressure drop between nodes of connection ***********************	       write(H3K_rep_NAME,'(A,A)')     &             Connect_Name(1:LNBLNK(Connect_Name)),     &             '/Dp'               call add_to_xml_reporting (     &             real(PRES(ii)-PRES(i_neg)),     &             H3K_rep_NAME,     &             'units', '(Pa)',     &             'mfn connection pressure drop' )
-	! flow through connection ****************************************               write(H3K_rep_NAME,'(A,A)')     &             Connect_Name(1:LNBLNK(Connect_Name)),     &             '/flow'               call add_to_xml_reporting (     &             real(FLW1(jj)),     &             H3K_rep_NAME,     &             'units', '(kg/s)',     &             'mfn connection flow rate' )        ! velocity at connection *********************************        ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460	! to "no velocity" and added type 211 to "no velocity")        ! Find the related component type and reject those	! connections which are not appropriate.               i_CompIndex=ITPCON(jj)               i_CompType=ITPCMP(i_CompIndex)               b_noveloc=.false.               if (i_CompType .eq. 10 .or. i_CompType .eq. 15 .or.   ! flow resistances     &             i_CompType .eq. 17 .or. i_CompType .eq. 20 .or.   ! of various definitions     &             i_CompType .eq. 25 .or. i_CompType .eq. 30 .or.   ! see mfmach.F, lines     &             i_CompType .eq. 35 .or. i_CompType .eq. 310 .or.  ! 580 ff.     &             i_CompType .eq. 410 .or. i_CompType .eq. 211 .or.     &             i_CompType .eq. 460) then                      ! ** skip this component **		      b_noveloc=.true.               elseif(i_CompType .eq. 40) then      ! common orifice flow component                  area=SUPCMP(i_CompIndex,2)               elseif(i_CompType.eq.50)then   ! laminar pipe volume flow rate                  PI = 4.0 * ATAN(1.0)                  area= PI * (SUPCMP(i_CompIndex,3)*     &                     SUPCMP(i_CompIndex,3))               elseif(i_CompType.eq.110)then  ! specific air flow opening                  area=SUPCMP(i_CompIndex,2)               elseif(i_CompType.eq.120)then  ! specific air flow crack component                  area=SUPCMP(i_CompIndex,2)*SUPCMP(i_CompIndex,3)               elseif(i_CompType.eq.130)then  ! specific air flow door                  area=SUPCMP(i_CompIndex,2)*SUPCMP(i_CompIndex,3)               elseif(i_CompType .eq. 210 .or.  ! general flow conduit (ie. duct or pipe).     &                   i_CompType .eq. 220 .or.  ! flow conduit ending in converging 3-leg junction     &                   i_CompType .eq. 230 .or.  ! flow conduit starting in diverging 3-leg junction     &                   i_CompType .eq. 240 .or.  ! flow conduit ending in converging 4-leg junction     &                   i_CompType .eq. 250)then  ! flow conduit starting in diverging 4-leg junction                  area=SUPCMP(i_CompIndex,3)               elseif(i_CompType .eq. 420)then ! flow corrector (ie. valve or damper) with polynomial flow resistance                  area=SUPCMP(i_CompIndex,2)               else                  area=1.0 ! should'nt really happen ...               endif        ! end code snippet from mfget.F	       if (b_noveloc .eqv. .false.) THEN        ! Now get density of "sending" node. If flw1(jj) is negative, use density of 	! node "i_neg". Densit() returns density in kg/m3                  if (FLW1(jj) .lt. 0) THEN	             rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))                  Else	             rhon=DENSIT(NDFLD(ii),TNOD(ii))	          Endif        ! Finally, write to H3K reporting                  write(H3K_rep_NAME,'(A,A)')     &               Connect_Name(1:LNBLNK(Connect_Name)),     &               '/veloc'                  call add_to_xml_reporting (     &               real(FLW1(jj))/rhon/area,     &               H3K_rep_NAME,     &               'units', '(m/s)',     &               'mfn connection flow velocity' )               endif ! end b_noveloc .true.            endif     !<- end if positive side connection for current node         enddo                  !<- connection loop end
+
+	! total volume flow entering a node *******************************
+         write(H3K_rep_NAME,'(A,A)')
+     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              '/volflowrate'
+
+         call add_to_xml_reporting (
+     &              real(FLWINV(ii)),
+     &              H3K_rep_NAME,
+     &              'units', '(m3/h)',
+     &              'mfn total node volume flow rate' )
+
+	! node temperature from flow network *******************************
+         write(H3K_rep_NAME,'(A,A)')
+     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              '/temp'
+
+         call add_to_xml_reporting (
+     &              TNOD(ii),
+     &              H3K_rep_NAME,
+     &              'units', '(oC)',
+     &              'mfn node temperature' )
+
+
+C........Build connection name
+C........Only use positive side of connections
+
+C.........Loop through all interconnections in a flow network
+         do jj = 1,NCNN
+
+            if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node
+               i_neg = NODNE(jj) ! the node on the other side of the conn.
+
+               write(Connect_Name, '(A,A,A,A,A,A,A,A,A)')
+     &             'mfn/',fluid(1:LNBLNK(fluid)),'/',
+     &             NDNAM(ii)(1:LNBLNK(NDNAM(ii))),'->',
+     &             NDNAM(i_neg)(1:LNBLNK(NDNAM(i_neg))),
+     &             ' (via ',
+     &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
+
+	! pressure drop between nodes of connection ***********************
+	       write(H3K_rep_NAME,'(A,A)')
+     &             Connect_Name(1:LNBLNK(Connect_Name)),
+     &             '/Dp'
+
+               call add_to_xml_reporting (
+     &             real(PRES(ii)-PRES(i_neg)),
+     &             H3K_rep_NAME,
+     &             'units', '(Pa)',
+     &             'mfn connection pressure drop' )
+
+	! flow through connection ****************************************
+               write(H3K_rep_NAME,'(A,A)')
+     &             Connect_Name(1:LNBLNK(Connect_Name)),
+     &             '/flow'
+
+               call add_to_xml_reporting (
+     &             real(FLW1(jj)),
+     &             H3K_rep_NAME,
+     &             'units', '(kg/s)',
+     &             'mfn connection flow rate' )
+
+        ! velocity at connection *********************************
+        ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460
+	! to "no velocity" and added type 211 to "no velocity")
+        ! Find the related component type and reject those
+	! connections which are not appropriate.
+               i_CompIndex=ITPCON(jj)
+               i_CompType=ITPCMP(i_CompIndex)
+               b_noveloc=.false.
+
+               if (i_CompType .eq. 10 .or. i_CompType .eq. 15 .or.   ! flow resistances
+     &             i_CompType .eq. 17 .or. i_CompType .eq. 20 .or.   ! of various definitions
+     &             i_CompType .eq. 25 .or. i_CompType .eq. 30 .or.   ! see mfmach.F, lines
+     &             i_CompType .eq. 35 .or. i_CompType .eq. 310 .or.  ! 580 ff.
+     &             i_CompType .eq. 410 .or. i_CompType .eq. 211 .or.
+     &             i_CompType .eq. 460) then
+
+                      ! ** skip this component **
+		      b_noveloc=.true.
+
+               elseif(i_CompType .eq. 40) then      ! common orifice flow component
+                  area=SUPCMP(i_CompIndex,2)
+               elseif(i_CompType.eq.50)then   ! laminar pipe volume flow rate
+                  PI = 4.0 * ATAN(1.0)
+                  area= PI * (SUPCMP(i_CompIndex,3)*
+     &                     SUPCMP(i_CompIndex,3))
+               elseif(i_CompType.eq.110)then  ! specific air flow opening
+                  area=SUPCMP(i_CompIndex,2)
+               elseif(i_CompType.eq.120)then  ! specific air flow crack component
+                  area=SUPCMP(i_CompIndex,2)*SUPCMP(i_CompIndex,3)
+               elseif(i_CompType.eq.130)then  ! specific air flow door
+                  area=SUPCMP(i_CompIndex,2)*SUPCMP(i_CompIndex,3)
+               elseif(i_CompType .eq. 210 .or.  ! general flow conduit (ie. duct or pipe).
+     &                   i_CompType .eq. 220 .or.  ! flow conduit ending in converging 3-leg junction
+     &                   i_CompType .eq. 230 .or.  ! flow conduit starting in diverging 3-leg junction
+     &                   i_CompType .eq. 240 .or.  ! flow conduit ending in converging 4-leg junction
+     &                   i_CompType .eq. 250)then  ! flow conduit starting in diverging 4-leg junction
+                  area=SUPCMP(i_CompIndex,3)
+               elseif(i_CompType .eq. 420)then ! flow corrector (ie. valve or damper) with polynomial flow resistance
+                  area=SUPCMP(i_CompIndex,2)
+               else
+                  area=1.0 ! should'nt really happen ...
+               endif
+        ! end code snippet from mfget.F
+
+	       if (b_noveloc .eqv. .false.) THEN
+        ! Now get density of "sending" node. If flw1(jj) is negative, use density of 
+	! node "i_neg". Densit() returns density in kg/m3
+                  if (FLW1(jj) .lt. 0) THEN
+	             rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
+                  Else
+	             rhon=DENSIT(NDFLD(ii),TNOD(ii))
+	          Endif
+
+        ! Finally, write to H3K reporting
+                  write(H3K_rep_NAME,'(A,A)')
+     &               Connect_Name(1:LNBLNK(Connect_Name)),
+     &               '/veloc'
+
+                  call add_to_xml_reporting (
+     &               real(FLW1(jj))/rhon/area,
+     &               H3K_rep_NAME,
+     &               'units', '(m/s)',
+     &               'mfn connection flow velocity' )
+
+               endif ! end b_noveloc .true.
+
+            endif     !<- end if positive side connection for current node
+
+         enddo                  !<- connection loop end
+
         ! whatever *****************************************************
 
       enddo                     !<- node loop end
 
       return
       end
+
+
+
+C-----------------------------------------------------------------------
+C     Initialize h3k zone control flags to .false.
+C-----------------------------------------------------------------------
+
+      blockdata initialize_h3k_zone_ctl_flags
+#include "building.h"
+
+C.....Description of zone control action; these data are used
+C.....in H3Kreports to determine heating, cooling loads and
+C.....to evaluate passive solar design performance.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C.....Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+
+C.....Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
+      data bZoneHeated / MCOM * .false. /
+      data bZoneCooled / MCOM * .false. /
+
+      end blockdata initialize_h3k_zone_ctl_flags
+
+C-----------------------------------------------------------------------
+C     Reset zone control flags to false.
+C-----------------------------------------------------------------------
+
+      subroutine h3kReports_reset_zone_flags()
+#include "building.h"
+
+C.....Description of zone control action; these data are used
+C.....in H3Kreports to determine heating, cooling loads and
+C.....to evaluate passive solar design performance.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C.....Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+
+C.....Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! number of connections 
+
+      integer iZone          ! counter
+
+
+      do iZone = 1, ncomp
+
+        bZoneHeated(iZone) = .false.
+        bZoneCooled(iZone) = .false.
+
+      enddo
+
+      end subroutine h3kReports_reset_zone_flags
+
