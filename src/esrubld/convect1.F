@@ -227,14 +227,15 @@ C CHEIGHT is the height of ventilated channel.
         call edisp(itu,outs)
 
         call edisp(itu,' Surface convection coefficients')
-        call edisp(itu,' Surface   Index Inside          `Outside`')
         call edisp(itu,
-     &    '                 Present Future   Present Future')
+     &    ' Surface   Index ICOR Inside          `Outside`')
+        call edisp(itu,
+     &    '                      Present Future   Present Future')
         NC=NCONST(ICOMP)
         DO 9992 I=1,NC
-          write(outs,9991)SNAME(ICOMP,I),IE(ICOMP,I),HCIP(ICOMP,I),
-     &      HCIF(ICOMP,I),HCOP(ICOMP,I),HCOF(ICOMP,I)
- 9991     format(1x,a12,I3,F8.2,F8.2,F8.2,F8.2)
+          write(outs,9991)SNAME(ICOMP,I),IE(ICOMP,I),ICORI(ICOMP,I),
+     &      HCIP(ICOMP,I),HCIF(ICOMP,I),HCOP(ICOMP,I),HCOF(ICOMP,I)
+ 9991     format(1x,a12,I3,I3,F8.2,F8.2,F8.2,F8.2)
           call edisp(itu,outs)
  9992   CONTINUE
  9994 CONTINUE
