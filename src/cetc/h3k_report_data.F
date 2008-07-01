@@ -278,6 +278,9 @@ C.....Surface area data
       real HCIP,HCIF,HCOP,HCOF ! convective heat transfer coefficients "present" and "future"
                                             ! for "inside" and "outside" surface, each
 
+      COMMON/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
+      integer ICORI,ICORE ! Transfer coefficient index for internal and external face of MLC
+
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       integer IVF,ISI,IHC,ITW,ICGC,IOBS ! indices for "is there"
@@ -915,17 +918,17 @@ C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
 
-!         call add_to_xml_reporting (
-!      &           tfc(iZone,iSurface,1),
-!      &          H3K_rep_NAME(1:27) // '/temperature/outside',
-!      &          'units', '(oC)',
-!      &          'Temperature on external surface' )
-! 
-!         call add_to_xml_reporting (
-!      &          tfs(iZone,iSurface),
-!      &          H3K_rep_NAME(1:27) // '/temperature/inside',
-!      &          'units', '(oC)',
-!      &          'Temperature on internal surface' )
+         call add_to_xml_reporting (
+      &           tfc(iZone,iSurface,1),
+      &          H3K_rep_NAME(1:27) // '/temperature/outside',
+      &          'units', '(oC)',
+      &          'Temperature on external surface' )
+ 
+         call add_to_xml_reporting (
+      &          tfs(iZone,iSurface),
+      &          H3K_rep_NAME(1:27) // '/temperature/inside',
+      &          'units', '(oC)',
+      &          'Temperature on internal surface' )
 
 
       enddo zone_surface_loop
@@ -1667,31 +1670,31 @@ C.......below should also make use of.
 
 C........Surface temperature 
 C........-> set name
-         WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
-     &      '/temperature'
-
+C         WRITE(H3K_rep_NAME,H3K_FORMAT)
+C     &      'building/zone_',cZone_Chars,
+C     &      '/surface_',cSurf_Chars,
+C     &      '/temperature'
+C
 C........->Report data
-         call add_to_xml_reporting (
-     &      tfs(iZone,iSurface),
-     &      H3K_rep_NAME,
-     &      'units', '(oC)',
-     &      'Temperature on zone inside face' )
+C         call add_to_xml_reporting (
+C     &      tfs(iZone,iSurface),
+C     &      H3K_rep_NAME,
+c     &      'units', '(oC)',
+C     &      'Temperature on zone inside face' )
 
 C........External facing surfaces -> Surface temperature
-         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
-            WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
-     &         '/ext_surf_temperature'
+C         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+C            WRITE(H3K_rep_NAME,H3K_FORMAT)
+C     &         'building/zone_',cZone_Chars,
+C     &         '/surface_',cSurf_Chars,
+C     &         '/ext_surf_temperature'
 C........->Report data
-            call add_to_xml_reporting (
-     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
-     &         H3K_rep_NAME,
-     &         'units', '(oC)',
-     &         'Temperature on exterior face' )
-         Endif ! if ie = 0
+C            call add_to_xml_reporting (
+c     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
+C     &         H3K_rep_NAME,
+c     &         'units', '(oC)',
+c     &         'Temperature on exterior face' )
+c         Endif ! if ie = 0
 
 C........Radiant heat injection associated with plant containment.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
@@ -1720,6 +1723,19 @@ C........->Report data
      &      'units', '(W/(m2 K))',
      &      'Internal side convective coefficient' )
 
+C........Internal surface convective coefficient model index
+         WRITE(H3K_rep_NAME,H3K_format)
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
+     &      '/ICORI'
+
+C........->Report data
+         call add_to_xml_reporting (
+     &      real(ICORI(iZone,iSurface)),
+     &      H3K_rep_NAME,
+     &      'units', '(-)',
+     &      'Internal side convective model' )
+
 C........External surface convective coefficient.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
      &      'building/zone_',cZone_Chars,
@@ -1732,6 +1748,19 @@ C........->Report data
      &      H3K_rep_NAME,
      &      'units', '(W/(m2 K))',
      &      'External side convective coefficient' )
+
+C........External surface convective coefficient model index
+         WRITE(H3K_rep_NAME,H3K_format)
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
+     &      '/ICORE'
+
+C........->Report data
+         call add_to_xml_reporting (
+     &      real(ICORE(iZone,iSurface)),
+     &      H3K_rep_NAME,
+     &      'units', '(-)',
+     &      'External side convective model' )
 
 C......MEAN RADIANT TEMPERATURE OF SURROUNDINGS
 C calc plane radiant temp. for each internal surface (w/o and w emissivity)
@@ -1815,8 +1844,8 @@ C........->Report data
          endif ! <- end if surface faces external
 
 C......=====================================================
-C......NODE DATA
-         do iNode = 1, (nndc (iZone, iSurface )-1)
+C......NODE DATA (ignore nodes 1 and N, as these are output as "outside" and "inside")
+         do iNode = 2, (nndc (iZone, iSurface )-1)
             if ( iNode .gt. 9 ) then
               write(cNode_Chars, '(I2)')  iNode
             else
@@ -1838,7 +1867,7 @@ C...........->Report data
      &         'units', '(oC)',
      &         'Temperature at node within multilayer construction' )
 
-         enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
+         enddo  ! <- end iNode = 2,N-1 of iSurface 1,N of iZone
 
       enddo ! <- end iSurface 1,N of iZone
 
