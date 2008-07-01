@@ -71,7 +71,7 @@ C Open special materials file on temporary file channel.
       ltmp=spflnam
       if(ltmp(1:2).eq.'  '.or.ltmp(1:4).eq.'UNKN')then
       call easks(ltmp,' Special Materials file ?',
-     &' ',72,' ','special materials file',IER,7)
+     & ' ',72,' ','special materials file',IER,7)
       endif
       spflnam=ltmp
       if(IER.NE.0) then
@@ -94,11 +94,11 @@ C Open special materials file on temporary file channel.
 C Read data from opened special materials file to the common blocks.
 C Get the number of entries in the file. 
       call stripc(ispmfil,outstr,1,ND,0,
-     &'special materials file error..',IER)
+     & 'special materials file error..',IER)
       if(IER.ne.0) goto 999
       k=0
       call egetwi(outstr,K,nspmnod,1,mspmnod,'W',
-     &'no spmatl node',IER)
+     & 'no spmatl node',IER)
       if(IER.ne.0) goto 999
 
 C For each entry read the associated special materials data.
@@ -106,13 +106,13 @@ C For each entry read the associated special materials data.
 
 C Firstly the material label.
         call stripc(ispmfil,outstr,1,ND,0,
-     &'special materials file error..',IER)
+     & 'special materials file error..',IER)
         if(IER.ne.0) goto 999
         spmlabel(I)=outstr(1:16)
 
 C Next read the material info.
         call stripc(ispmfil,outstr,5,ND,0,
-     &'special materials file error..',IER)
+     & 'special materials file error..',IER)
         if(IER.ne.0) goto 999
         k=0
         call egetwi(outstr,K,ivar1,1,mcom,'W','-',IER)
@@ -129,7 +129,7 @@ C Next read the material info.
 
 C Read the material miscellaneous data.
         call stripc(ispmfil,outstr,1,ND,0,
-     &'special materials file error..',IER)
+     & 'special materials file error..',IER)
         if(IER.ne.0) goto 999
         K=0
         call egetwi(outstr,K,nspmdat,1,mspmdat,'W','-',IER)
@@ -221,14 +221,14 @@ C Write header label for file
 
 C Write out nodal information
       write(ispmfil,'(i4,a)') nspmnod,
-     &'# No. of special material nodes.'
+     & '# No. of special material nodes.'
       do 10 isp=1,nspmnod
         write(ispmfil,'(a,i3)') '# Node No:',isp
         write(ispmfil,'(a,a)') spmlabel(isp),' # label'
         write(ispmfil,'(a)')'# Zone Surf Node Type Opq/Trn'
         write(ispmfil,'(2x,i2,2x,i2,2x,i2,2x,i2,2x,i2)')
      &  ispmloc(isp,1),ispmloc(isp,2),ispmloc(isp,3),
-     &ispmtyp(isp,1),ispmtyp(isp,2)
+     & ispmtyp(isp,1),ispmtyp(isp,2)
  
 C Write node specific data.
         write(ispmfil,'(a)')'# No. of data items.'
@@ -239,16 +239,16 @@ C Write node specific data.
 
  7      continue
         if(nnodat(isp).le.nspmdatl)then
-          write(ispmfil,'(10F10.4)')(spmdat(isp,idat),idat=1,
+          write(ispmfil,'(10E12.4)')(spmdat(isp,idat),idat=1,
      &    nnodat(isp))
         else
-          write(ispmfil,'(10F10.4)')(spmdat(isp,idat),idat=istrt,
+          write(ispmfil,'(10E12.4)')(spmdat(isp,idat),idat=istrt,
      &iend)
           istrt=istrt+nspmdatl
           iend=iend+nspmdatl
           if(iend.gt.nnodat(isp))then
             iend=nnodat(isp)
-            write(ispmfil,'(10F10.4)')(spmdat(isp,idat),idat=istrt,
+            write(ispmfil,'(10E12.4)')(spmdat(isp,idat),idat=istrt,
      &nnodat(isp))
           else
             goto 7
