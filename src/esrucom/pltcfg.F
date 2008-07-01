@@ -314,6 +314,8 @@ C Checks on plant component CDATA will be handled by CMP??S
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','component name',IER)
           pcname(ipcomp)=word(1:15)
+C Store length of name for reporting later.
+          iPltNameLen(ipcomp) = lnblnk(pcname(ipcomp))
           npcdat(ipcomp,1)=ipcomp
           CALL EGETWI(OUTSTR,K,NPREF(IPCOMP),1,NTPC,'F',
      &              'plant db pointer',IER)

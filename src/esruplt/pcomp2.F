@@ -944,6 +944,7 @@ C     CDATA: 1 Volume flow rate (m^3/s)
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -978,6 +979,9 @@ C     CDATA: 1 Volume flow rate (m^3/s)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
       INTEGER napdat
+
+      common/pcnam/pcname(mpcom)       ! Plant component names
+      character*15 pcname
 
 C Electrical details for specified plant components
       common/pcelflg/ipcelf(mpcom)
@@ -1077,6 +1081,19 @@ C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
          IEMODEL=1
          CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
          PWRQ=PQ
+
+C Pass power consumption to Site Utilities facility
+         fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = ABS(E)
+         call StorePltCompEnergyUse ( IPCOMP, fSUFuelEnergyUse )
+
+C Report power consumption
+         call add_to_xml_reporting(
+     &          ABS(E),
+     &          'plant/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
+     &              //'/misc_data/energy_input',
+     &          'units','(W)',
+     &          'WCH pump: Energy input')
+         
 
 C Now Q is made up of all inefficiencies
          Q=(1.-BDATA(IPCOMP,3))*E

@@ -2348,7 +2348,7 @@ C-------------------------------------------------------------------------------
      &     mdotCp_1a_present,mdotCp_1b_present,mdotCp_1c_present
       REAL T_1a_present,T_1b_present,T_1c_present
       REAL Rinv,alpha
-      REAL q_element
+
       REAL part1,part2,part3,part4,part5,part6,part7,part8,part9
 
       REAL  H3K_Connect_property   !- function used to return temperature of most recently

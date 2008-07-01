@@ -244,7 +244,7 @@ C     OUTPUT HEADERS
 C     LOOP THROUGH MONTH IN TIME PERIOD
       DO 20 IMONTH=ISM1,ISM2
 C     OUTPUT ENERGIES  
-         WRITE(OUTS,'(A20,4X,E17.4,1x,E17.4,1x,E17.4,1x,E17.4)')
+         WRITE(OUTS,'(A20,4X,f17.4,1x,f17.4,1x,f17.4,1x,f17.4)')
      &        MTHNAM(IMONTH),
 C     DIVIDING BY 1000000 TO CONVERT FROM J TO MJ 
 
@@ -268,7 +268,7 @@ C     STORE TOTALS
      &        + fGCEP_pump_energy_monthly(imonth)/1000000.0  
 
  20   CONTINUE
-         WRITE(OUTS,'(A20,4X,E17.4,1x,E17.4,1x,E17.4,1x,E17.4)')
+         WRITE(OUTS,'(A20,4X,f17.4,1x,f17.4,1x,f17.4,1x,f17.4)')
      &        "TOTAL ELEC ENERGY",
 C     DIVIDING BY 1000000 TO CONVERT FROM J TO MJ 
      &     fFAN_ENERGY_TOTAL,
@@ -329,7 +329,7 @@ C     OUTPUT HEADERS
 C     LOOP THROUGH MONTH IN TIME PERIOD
       DO 21 IMONTH=ISM1,ISM2
 C     OUTPUT ENERGIES  
-         WRITE(OUTS,'(A15,3(1x,e17.4))')
+         WRITE(OUTS,'(A15,3(1x,f17.4))')
      &        MTHNAM(IMONTH),
 C     DIVIDING BY 1000000 TO CONVERT FROM J TO MJ 
      &        fHeat_ENERGY_MONTHLY(ISYSTEM,IMONTH)/1000000.0,
@@ -345,7 +345,7 @@ C     DIVIDING BY 1000000 TO CONVERT FROM J TO MJ
      &        + fPILOT_ENERGY_MONTHLY(ISYSTEM,IMONTH)/1000000.0
  21   CONTINUE
 C     OUTPUT ENERGIES  
-         WRITE(OUTS,'(A15,3(1x,e17.4))')
+         WRITE(OUTS,'(A15,3(1x,f17.4))')
      &        "TOTAL SYS ENRGY",
 C     DIVIDING BY 1000000 TO CONVERT FROM J TO MJ 
      &        fHeat_ENERGY_TOTAL,
@@ -411,7 +411,7 @@ C     WHERE PERCUPPER IS THE UPPER BOUND AND PERCLOWERE IS THE LOWER BOUND
             PERCLOWER = 100/IPERCENT_CAPACITY*(IPERCENT-1)
             PERCUPPER = 100/IPERCENT_CAPACITY*(IPERCENT)
 C     OUTPUT DATA.  
-            WRITE(OUTS,'(F5.1,A2,F5.1,A1,2x,2(1x,e17.4))')
+            WRITE(OUTS,'(F5.1,A2,F5.1,A1,2x,2(1x,f17.4))')
 C     OUTPUT RANGE
      &           (PERCLOWER),
      &           '%-',
@@ -425,7 +425,7 @@ C     OUTPUT PERCENTAGE OF TOTAL HOURS OPERATING.
             CALL EDISP(IWU,OUTS)
  100     CONTINUE
 C     OUTPUT UNDERHEATED HOURS
-         WRITE(OUTS,'(A15,2(1x,e17.4))')'UNDERHEATED HRS. ',
+         WRITE(OUTS,'(A15,2(1x,f17.4))')'UNDERHEATED HRS. ',
 C     OUTPUT HOURS
      &        (FLOAT(IHRS_UNDER_HEAT(ISYSTEM))),
 C     OUTPUT PERCENT HOURS
@@ -433,7 +433,7 @@ C     OUTPUT PERCENT HOURS
      &        * recip (real (TOTAL_NUM_OF_HOURS(ISYSTEM))))
          CALL EDISP(IWU,OUTS)
 C     OUTPUT UNDERHCOOL HOURS
-         WRITE(OUTS,'(A15,2(1x,e17.4))')'UNDERCOOLED HRS. ',
+         WRITE(OUTS,'(A15,2(1x,f17.4))')'UNDERCOOLED HRS. ',
 C     OUTPUT HOURS
      &        (FLOAT(IHRS_UNDER_COOL(ISYSTEM))),
 C     OUTPUT PERCENT HOURS
@@ -441,7 +441,7 @@ C     OUTPUT PERCENT HOURS
      &        * recip (real (TOTAL_NUM_OF_HOURS(ISYSTEM))))
          CALL EDISP(IWU,OUTS)
 C     OUTPUT TOTAL HOURS
-         WRITE(OUTS,'(A15,1(1x,e17.4))')'TOTAL HOURS = ',
+         WRITE(OUTS,'(A15,1(1x,f17.4))')'TOTAL HOURS = ',
      &        (TOTAL_NUM_OF_HOURS(ISYSTEM))
          CALL EDISP(IWU,OUTS)
       ELSE
@@ -487,7 +487,7 @@ C     CALL EDISP(IWU,OUTS)
       WRITE(OUTS,'(A,F6.2)')'STEADY STATE EFF. = ',
      &     SS_EFFICIENCY(ISYSTEM)
       CALL EDISP(IWU,OUTS)  
-      WRITE(OUTS,'(A,E10.3)')'PILOT POWER       = ',PILOT_POWER(ISYSTEM)
+      WRITE(OUTS,'(A,F10.3)')'PILOT POWER       = ',PILOT_POWER(ISYSTEM)
       CALL EDISP(IWU,OUTS)
       END
 C     *********************************************************************
@@ -519,10 +519,10 @@ C**********************************************************************
 C     THIS HAS BEEN REMARKED OUT SINCE FUEL TYPES HAVE NOT BEEN DEFINED.
 C     WRITE(OUTS,'(A,I3)')'FUEL TYPE         = ',IFUEL_TYPE(MAX_FUELS)
 C     CALL EDISP(IWU,OUTS)
-      WRITE(OUTS,'(A,E10.3)')'STEADY STATE EFF. = ',
+      WRITE(OUTS,'(A,f10.3)')'STEADY STATE EFF. = ',
      &     SS_EFFICIENCY(ISYSTEM)
       CALL EDISP(IWU,OUTS)  
-      WRITE(OUTS,'(A,E10.3)')'PILOT POWER       = ',
+      WRITE(OUTS,'(A,f10.3)')'PILOT POWER       = ',
      &     PILOT_POWER(ISYSTEM)
       CALL EDISP(IWU,OUTS)
 
@@ -558,10 +558,10 @@ C**********************************************************************
 C     THIS HAS BEEN REMARKED OUT SINCE FUEL TYPES HAVE NOT BEEN DEFINED.
 C     WRITE(OUTS,'(A,I3)')'FUEL TYPE         = ',IFUEL_TYPE(MAX_FUELS)
 C     CALL EDISP(IWU,OUTS)
-      WRITE(OUTS,'(A,E10.3)')'STEADY STATE EFF. = ',
+      WRITE(OUTS,'(A,f10.3)')'STEADY STATE EFF. = ',
      &     SS_EFFICIENCY(ISYSTEM)
       CALL EDISP(IWU,OUTS)  
-      WRITE(OUTS,'(A,E10.3)')'PILOT POWER       = ',
+      WRITE(OUTS,'(A,f10.3)')'PILOT POWER       = ',
      &     PILOT_POWER(ISYSTEM)
       CALL EDISP(IWU,OUTS)
       END
@@ -595,16 +595,16 @@ C**********************************************************************
       WRITE(OUTS,'(A,I3)')'UNIT FUNCTION     = ',
      &     IUNIT_FUNCTION(ISYSTEM)
       CALL EDISP(IWU,OUTS)
-      WRITE(OUTS,'(A,E10.3)')'VENT FLOW RATE    = ',
+      WRITE(OUTS,'(A,f10.3)')'VENT FLOW RATE    = ',
      &     SS_COP(ISYSTEM)
       CALL EDISP(IWU,OUTS)
-      WRITE(OUTS,'(A,E10.3)')'VENT FLOW RATE    = ',
+      WRITE(OUTS,'(A,f10.3)')'VENT FLOW RATE    = ',
      &     SHRR(ISYSTEM)
       CALL EDISP(IWU,OUTS)
       WRITE(OUTS,'(A,I3)')'TEMP CONTROL      = ',
      &     ITEMP_CONTROL(ISYSTEM)
       CALL EDISP(IWU,OUTS)
-      WRITE(OUTS,'(A,E10.3)')'CUTOFF TEMP       = ',
+      WRITE(OUTS,'(A,f10.3)')'CUTOFF TEMP       = ',
      &     CUTOFF_TEMP(ISYSTEM)
       CALL EDISP(IWU,OUTS)
       WRITE(OUTS,'(A,I3)')'BACKUP HEAT       = ',
@@ -616,7 +616,7 @@ C**********************************************************************
       WRITE(OUTS,'(A,I3)')'COOLING TYPE      = ',
      &     ICOOLING_TYPE(ISYSTEM)
       CALL EDISP(IWU,OUTS)
-      WRITE(OUTS,'(A,E10.3)')'RATINGBYPASSFACTOR= ',
+      WRITE(OUTS,'(A,f10.3)')'RATINGBYPASSFACTOR= ',
      &     BFR(ISYSTEM)
       CALL EDISP(IWU,OUTS)
       WRITE(OUTS,'(A,I3)')'SYS NUMBER HEATING= ',
@@ -688,7 +688,7 @@ C     LOOP BY MONTH FROM START MONTH ISM1 TO END MONTH ISM2
       
       DO 10 IMONTH = ISM1, ISM2
          WRITE(OUTS,
-     &        '(A5,1X,E10.2,1X,I3,1X,I4,1X,E10.2,1X,I3,1X,I4,1X,E12.2)')
+     &        '(A5,1X,F10.2,1X,I3,1X,I4,1X,F10.2,1X,I3,1X,I4,1X,F12.2)')
 C     MONTH NAME 
      &        MTHNAM(IMONTH),
 C     MAX\MIN AIRCHANGE AND TIME DATA(DAY, HOUR) 
@@ -705,7 +705,7 @@ C     AVERAGE AIR CHANGE OVER THE MONTH
          CALL EDISP(IWU,OUTS)
  10   CONTINUE
       
-      WRITE(OUTS,'(A15,1(1x,e17.4),A)')'VOLUME OF BUILDING ',
+      WRITE(OUTS,'(A15,1(1x,F17.4),A)')'VOLUME OF BUILDING ',
      &     AIM2_HOUSE_VOL,
      &     ' M^3'
       CALL EDISP(IWU,OUTS)
@@ -768,7 +768,7 @@ c     Loop through Month
       DO 23 imonth=ISM1,ISM2
 c     outputs energy loss in MJ  (Note foundation losses originally 
 c     in J) for the current month 
-         WRITE(outs,'(a15,8(2x,e17.4))')
+         WRITE(outs,'(a15,8(2x,f17.4))')
      &        MTHNAM(imonth),
      &        fSummed_Zone_Temps(izone,imonth)
      &        /iNumberOfBuildingTimeSteps(imonth),
@@ -784,9 +784,12 @@ c     in J) for the current month
 
 c TESTING
          i1=iNumberOfBuildingTimeSteps(imonth)
+
 C
  23   Continue
 c     End Month Loop
+
+
       return
       END	
 
@@ -1172,7 +1175,7 @@ c     HVAC elec energy
            
 
 C     OUTPUT ENERGIES  
-         WRITE(OUTS,'(A15,13(1X,e17.4))')
+         WRITE(OUTS,'(A15,13(1X,f17.4))')
      &        MTHNAM(IMONTH),
 c     total elec demand on FC controller(kW-h)
      &        fH3KSTORE_FC_q_total(IMONTH)/1000.,
@@ -1212,7 +1215,7 @@ c HVAC elec energy
          CALL EDISP(IWU,OUTS)
  20   CONTINUE
       
-      WRITE(OUTS,'(A15,13(1X,e17.4))')
+      WRITE(OUTS,'(A15,13(1X,f17.4))')
      &     'Total',
          
 C     YearTotals
@@ -1346,7 +1349,7 @@ C the open file is then used as teh output for that month set.
       ENDIF 
          
       WRITE(outs,'(I10,1x,I3,1x,I3,1x,f5.2,
-     &             36(1x,e10.4)
+     &             36(1x,f10.4)
      &     )')
      &     nsinc - 1 ,             !Timestep Number (for previous timestep)
      &     iPreviousTimeStepMonth, !Date information
@@ -1457,12 +1460,16 @@ C     Created by: Kamel Haddad
 C     Initial Creation Date: April 27th 2006
 C     Copyright 2000: NRCan Buildings Group
 C
-C     This subroutine outputs the monthly and yearly consumptions for the 
+C     This subroutine outputs the monthly and yearly consumptions for the
 C     following variables for solar DHW systems:
 C       circulation pumps electricity consumptions (kWhr)
 C       electric storage tank electricity consumption (kWhr)
 C       fuel-fired storage tank fuel consumption (kWhr)
 C       solar gain to the collector (kWhr)
+
+C     Updated October 30th, 2007 JMP - addition of code to write out the monthly summary 
+C                                      data to the XML output structure.
+
 
       SUBROUTINE H3KOUTPUT_SDHW(IWU)
 
@@ -1561,7 +1568,7 @@ C     Convert collector net heat gain to kWhr
      &         fH3KSTORE_SDHW_coll_solar_gain(IMONTH) / 1000. 
      
 C     Output monthly values
-        WRITE(OUTS,'(A15,5(1X,e17.4))')
+        WRITE(OUTS,'(A15,5(1X,f17.4))')
 
 C     Month
      &  MTHNAM(IMONTH),
@@ -1580,10 +1587,11 @@ C     Collector pump electricity consumption (kWhr)
 
         CALL EDISP(IWU,OUTS)
 
+
  10   CONTINUE
 
 C     Output overall totals
-      WRITE(OUTS,'(A15,5(1X,e17.4))')
+      WRITE(OUTS,'(A15,5(1X,f17.4))')
      &     'Total',
 
 C     sum of electricity consumption of DHW tank (kWhr)

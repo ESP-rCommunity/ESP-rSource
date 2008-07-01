@@ -411,7 +411,8 @@ C.....electrical network.
       DO iPOWCO=1,NPOWCOM
 C........Has exclusion been requested for the component?
          IF (iPOWCO .ne. iExclude_Ele_Comp ) then
-          IF ( POWCOMID(iPOWCO) .eq. 10  ! This is a non-HVAC load type power-only component
+          IF ( ( POWCOMID(iPOWCO) .eq. 10
+     &             .or. POWCOMID(iPOWCO) .eq. 18 ) ! This is a non-HVAC load type power-only component
      &          .and. (report_occupant) ) THEN
               fElec_net_result = fElec_net_result + PPOWOC(iPOWCO)
           ENDIF

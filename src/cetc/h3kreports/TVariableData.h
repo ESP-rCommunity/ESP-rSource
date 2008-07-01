@@ -60,7 +60,8 @@ public:
     void Set(const double& val, 
              const bool& bTS_averaging, 
              const bool& bSaveToDisk,
-             const int& timestep);
+             const int& timestep,
+             std::vector<int>& m_month_ts_bin);
              
     void SetMeta(const std::string& sMetaName, const std::string& sMetaValue);
 

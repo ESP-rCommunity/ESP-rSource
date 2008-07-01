@@ -8,6 +8,7 @@ c Global DHW Variables
       COMMON /DHW_DATA/ iNTSTEP,
      &  iNumberOfTanks,fNumOfOccupants,fWaterDraw,
      &  fCold_Main_Temp,fHotSupplyTemp,iDHW_Flag,
+     &  fDHWVersionNumber,
      &  fWaterDrawCurveHourly,fWaterDrawCurveTotal,
      &  sDHW_InputFileName,fDHW_ground_temp_avg,
      &  fDHW_ground_temp_amp,iDHW_ground_temp_cal_flag
@@ -33,15 +34,18 @@ C fHotSupplyTemp    Hot water supply (set) temperature.
 
 C iDHW_Flag     Flag to indicate that dhw model is active.
        INTEGER iDHW_Flag
-c Inserting hourly demand curve. May change this to an input file in the future.
+C fDHWVersionNumber    Version Number of DHW input file.
+       REAL fDHWVersionNumber
+c Hourly demand curve.
        REAL fWaterDrawCurveHourly(24)
-c This is the total water cumsumed in one day at to the data in fWaterDrawCurveHourly. 
+c This is the total water consumed in one day - the sum of the data in fWaterDrawCurveHourly.
 c This is used to normalize the demand. ie demand for hour(1) = 9/239.0*Actual daily load
        REAL fWaterDrawCurveTotal
+
        CHARACTER*72 sDHW_InputFileName
 
-c end remove later      
-      
+
+
        COMMON/DHW_TANK_DATA/
      &  fRoomTemp,  iFuelType,iTankType,iDHWZoneLocation,
      &  fDOEEF,fHeatInjectorPower,fPilotEnergyRate,
@@ -78,7 +82,7 @@ c Tank Inputs
        REAL    fBlanketRSI             !Blanket RSI Value..zero if none.
 
 
-c Calulated Values
+c Calculated Values
        REAL    fOldAverageWaterTemp        !Average temperature fromt the previous timestep (Used for standbytanklosses)
        REAL    fOldFinalWaterTemp          !Final water temperature
        REAL    fOldStandbyTankLosses       !StandbyTankLosses from previous timestep.
@@ -131,3 +135,44 @@ c Function Declarations
         REAL  fDHW_AverageWaterTemp
         REAL  fDHW_FlueLosses
 
+C.......Array used to store data for H3Kreports, transport to
+C.......site-utilities.
+        common/DHW_H3Kdata_storage/
+     &         fDHW_H3K_energy_requirement,
+     &         fDHW_H3K_energy_transfer_to_water,
+     &         fDHW_H3K_water_draw,
+     &         fDHW_H3K_supply_temp,
+     &         fDHW_H3K_delivery_temp,
+     &         fDHW_H3K_heating_load,
+     &         fDHW_H3K_flue_loss,
+     &         fDHW_H3K_skin_loss,
+     &         fDHW_H3K_heat_xfer_to_room,
+     &         fDHW_H3K_pilot_energy
+
+C.......Energy input (fuel calorific value) needed by DHW system (W)
+        real fDHW_H3K_energy_requirement
+
+C.......Energy transferred to water (W)
+        real fDHW_H3K_energy_transfer_to_water
+
+C.......Water volumetric draw (l/s)
+        real fDHW_H3K_water_draw
+
+C.......Water supply and delivery temperatures (oC)
+        real fDHW_H3K_supply_temp
+        real fDHW_H3K_delivery_temp
+
+c.......Water heating load (W)
+        real fDHW_H3K_heating_load
+
+C.......Flue losses (W)
+        real fDHW_H3K_flue_loss
+
+C.......Skin losses (W)
+        real fDHW_H3K_skin_loss
+
+C.......Heat trasnfer to room (W)
+        real fDHW_H3K_heat_xfer_to_room
+
+C.......Pilot energy (W)
+        real fDHW_H3K_pilot_energy

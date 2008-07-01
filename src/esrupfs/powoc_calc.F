@@ -1315,12 +1315,18 @@ C-------------------------------------------------------------------------------
 C..... Operating mode of power conditioning unit:
 C..... 1 = connected to power source (input power known)
 C..... 2 = connected to power load (output power known)
+C......Variants using simple efficiency calculation:
+C..... 3 = connected to power source (input power known)
+C..... 4 = connected to power load (output power known)
 
       integer iOpMode        
 
-      integer iConnPwrSource, iConnPwrLoad
+      integer iConnPwrSource, iConnPwrLoad, iConnPwrSourceSimple,
+     &iConnPwrLoadSimple
       parameter( iConnPwrSource = 1,
-     &           iConnPwrLoad   = 2 )
+     &           iConnPwrLoad   = 2,
+     &           iConnPwrSourceSimple = 3,
+     &           iConnPwrLoadSimple   = 4  )
 
 C.....Nominal power (W)
       real    fNomPower
@@ -1355,6 +1361,9 @@ C.....Power output from the power conditioning unit (W)
 
 C.....Efficiency of power conditioning unit (-)
       real    fPCUEff        
+
+C.....Specified efficiency for simple calculation (-)
+      real    fSpecPCUEfficiency
 
 C.....Auxiliary power required to operate power conditioning unit (W)
 C.....This input is not used in the current version of the model
@@ -1418,25 +1427,38 @@ C Inputs from electric network file
 
 C There are 6 data items for the PCU power-only component; See full definitions in the subroutine header.
 
+
 C.....Operating mode of PCU 
       iOpMode = POWCDAT(IPWC,1)          
 
 C.....Nominal power of PCU (W)
-      fNomPower = POWCDAT(IPWC,2)        
+      fNomPower = POWCDAT(IPWC,2)
 
 C.....PCU Idling constant (-)
       fIdleConst = POWCDAT(IPWC,3)        
 
-C.....PCU setpoint voltage (V)
-      fUsetp = POWCDAT(IPWC,4)
+      if (iOpMode == iConnPwrSource .or.
+     &    iOpMode == iConnPwrLoad         ) then
 
-C.....PCU Internal resistance constant (V^2)
-      fIntResConst = POWCDAT(IPWC,5)
 
-C.....Auxiliary power required by PCU (W)
-C.... This input is currently not taken into account.
-      fPwrAux = POWCDAT(IPWC,6)
+C.......PCU setpoint voltage (V)
+        fUsetp = POWCDAT(IPWC,4)
 
+C.......PCU Internal resistance constant (V^2)
+        fIntResConst = POWCDAT(IPWC,5)
+
+C.......Auxiliary power required by PCU (W)
+C... .. This input is currently not taken into account.
+        fPwrAux = POWCDAT(IPWC,6)
+
+C.....Inputs for simple variant using consant efficiency
+      elseif ( iOpMode == iConnPwrLoadSimple .or.
+     &         iOPMode == iConnPwrSourceSimple      ) then
+
+C.......Nominal efficiency
+        fSpecPCUEfficiency = POWCDAT(IPWC,4)
+
+      endif 
 
 C.....Obtain voltages from connected nodes (take real part)
 
@@ -1449,7 +1471,8 @@ C receiving node
 
 C.....Power conditioning unit connected to power load (power output is known):
 
-      if ( iOpMode .eq. iConnPwrLoad ) then
+      if ( iOpMode .eq. iConnPwrLoad .or.
+     &     iOpMode .eq. iConnPwrLoadSimple ) then
 
 C get net power at receiving  node
           fPwrOutput = ABS(penodl(pcunode(IPWC,2)) +
@@ -1462,7 +1485,7 @@ C no power output
 
              fPwrInput = fIdleConst * fNomPower
 
-          else
+          elseif (  iOpMode .eq. iConnPwrLoad  ) then
 
 C Calculate power input based on relationship given by (Ulleberg,1998),
 C Section 4.10.2, page 120, equation (4.95)
@@ -1470,17 +1493,21 @@ C Note- there is a (typing) error in equation (4.95) - corrected in
 C TRNSYS type 175 (PCU) description and subroutine
 
              fPwrInput = fNomPower * (( fIdleConst +
-     &                  ( 1. + fUsetp/fUout ) *
-     &                  fPwrOutput / fNomPower ) + ( fIntResConst *
-     &                  ( 1./ (fUout**2) ) *
+     &                 ( 1. + fUsetp/fUout ) * fPwrOutput / fNomPower )
+     &                 + ( fIntResConst * ( 1./ (fUout**2) ) *
      &                  ( fPwrOutput / fNomPower )**2 ))
+
+          elseif ( iOpMode .eq. iConnPwrLoadSimple ) then
+
+            fPwrInput = fPwrOutput / fSpecPCUEfficiency
 
           endif
 
 
 C Power conditioning unit connected to power source (power input is known):
 
-      elseif ( iOpMode .eq. iConnPwrSource ) then
+      elseif ( iOpMode .eq. iConnPwrSource .or.
+     &         iOpMode .eq. iConnPwrSourceSimple ) then
 
 C get net power at sending node  
           fPwrInput =  penodl(pcunode(IPWC,1)) +
@@ -1493,7 +1520,7 @@ C get net power at sending node
 C no power input, calculate idling losses
              fPwrOutput = -1. * fIdleConst * fNomPower      ! losses are a load, -ve
 
-          else
+          elseif ( iOpMode .eq. iConnPwrSource ) then
 
 C Calculate power output based on relationship given by (Ulleberg,1998). 
 C The 2nd order equation is solved by finding the roots of the quadratic equation
@@ -1516,8 +1543,10 @@ C  x  = fPwrOutput/fNomPower
 
              fPwrOutput = fXSolve * fNomPower 
 
-          endif
+          elseif ( iOpMode .eq. iConnPwrSourceSimple ) then
+            fPwrOutput = fSpecPCUEfficiency * fPwrInput
 
+          endif
 
       else
 

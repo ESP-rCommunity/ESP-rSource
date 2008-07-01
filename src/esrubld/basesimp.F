@@ -175,7 +175,7 @@ C Read foundation width.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
         IF(IER.NE.0)goto 1000
         K=0
-        CALL EGETWR(OUTSTR,K,VAL,5.,12.,'F',' found. width',IER)
+        CALL EGETWR(OUTSTR,K,VAL,1.5,20.,'F',' found. width',IER) ! updated May 6,08 based on testing by Brian Bradley.
         if(IER.NE.0)then
           t60=' Cannot read width of foundation '
           goto 1000

@@ -758,7 +758,8 @@ C in the AIM-2 input file.
         ICOMP = AIM2_zone_infil(i)                    ! Get zone index number.
 c       AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)  ! Add volume of zone.
 c The crawl space zone is not part of the living space
-        If ( ICOMP .ne. AIM2_CrawlSpace_zone ) Then
+        If ( ICOMP .ne. AIM2_CrawlSpace_zone .and.
+     &       ICOMP .ne. AIM2_attic_zone) Then
            AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)
         Endif
       END DO
@@ -1161,7 +1162,6 @@ C      USE AIM2_CALC_DATA
 #include "hvac_parameters.h"
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
-#include "furnace_common.h"
 #include "hvac_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN

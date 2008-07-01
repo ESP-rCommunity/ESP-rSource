@@ -1764,7 +1764,8 @@ C The header data from the .fcl header are placed in MODULE FC_ELEC_LOADS.
 C `fclerror' is a flag indicating whether there were errors reading the .fcl file.
 C---------------------------------------------------------------------------------
 C-----Notify user that fuel cell electric loads being processed (this can take some time).
-      call usrmsg(' Processing fuel cell electric loads...',' ','-')
+      call usrmsg(' Processing occupant-driven electric loads...',
+     &            ' ','-')
 C-----Open the .fcl file.
       fclerror = .false.
       IFCloads_ascii = IFIL+28  ! Should be a safe unit number to use.
@@ -1914,7 +1915,8 @@ C-----Write header information at end of binary file.
 
 
 C Processing complete. Leave binary file open for use during time-step simulation.
-      call usrmsg(' Processing fuel cell electric loads...done',' ','P')
+      call usrmsg(' Processing occupant-driven electric loads...done.',
+     &            ' ','-')
 
       RETURN
       END

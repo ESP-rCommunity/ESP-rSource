@@ -1117,6 +1117,9 @@ C Trace output
 c This subroutine keeps track of plantsteps per month.
       IF(ISTATS.eq.1) CALL TrackPlantTimeSteps()
 
+C Zero plant component model energy usage storage array.
+      call ZeroPltEnergyStorageArray()
+
 C
 C For each defined plant component, call the appropriate coefficient
 C generator (CMP??C) to generate the balance equations as required.
@@ -1426,6 +1429,9 @@ C 1-node mains monthly draw profile
          ELSE IF (ITYPE .EQ. 123) THEN
 C 2-node stratified storage tank model
             CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
+C        ELSE IF (ITYPE .EQ. 124) THEN
+C 2-node NCHE (natural convection heat exchanger) model
+C            CALL NCHE_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 
