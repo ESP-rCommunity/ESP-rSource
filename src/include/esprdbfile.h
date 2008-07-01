@@ -50,10 +50,10 @@ C IOPTDB - unit number of optical database
       COMMON/GOPTDB/LOPTDB,IOPTDB
       character LOPTDB*144
 
-C LPCDB - (144 char) plant template database file name
+C LPCDB - (72 char) plant template database file name
 C IPCDB - unit number of plant template database
       common/C7/LPCDB,IPCDB
-      character lpcdb*144
+      character lpcdb*72
 
 C LPRFDB - (144 char) event profile database file name
 C IPRODB - unit number of event profile database
@@ -78,8 +78,8 @@ C DFCON - default materials, DFMUL - default constructions
 C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
-      character*72 DCLIM,DFCON,DFMUL
-      character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
+      character*72 DCLIM,DFCON,DFMUL,DPCDB
+      character DOPTDB*144,DPRFDB*144,DAPRES*144
 
 C LSBEM - (72 char) default SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM
