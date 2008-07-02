@@ -1,6 +1,6 @@
-# composite construction db defined in /home/jon/src/prj_dev_branch/src/databases/multicon.db2
-# based on materials db /home/jon/src/prj_dev_branch/src/databases/material.db3.a
-   37     # no of composites 
+# composite construction db defined in /usr/esru/esp-r/databases/multicon.db2
+# based on materials db /usr/esru/esp-r/databases/material.db3.a
+   42     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -55,7 +55,7 @@
     3    dbl_glz       TRAN  DCF7671_06nb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
   242    0.0060  plate glass : Plate glass with placeholder single layer optics
-    0    0.0120  air  0.170 0.170 0.170
+    0    0.0160  air  0.370 0.320 0.340
   242    0.0060  plate glass : Plate glass with placeholder single layer optics
 # layers  description   optics name   symmetry tag
     4    roof_1        OPAQ  OPAQUE        NONSYMMETRIC  
@@ -194,7 +194,7 @@
     5    Wall_NI_noti  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
    10    0.1020  Brick outer leaf : Brick (UK code)
-  294    0.0900  Mineral wool batt 90mm : Insul
+  294    0.0900  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0220  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
@@ -202,7 +202,7 @@
     5    Wall_EW_noti  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
    10    0.1020  Brick outer leaf : Brick (UK code)
-  294    0.0900  Mineral wool batt 90mm : Insul
+  294    0.0900  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0220  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
@@ -212,8 +212,8 @@
   130    0.0200  Render External 20 mm : Render External 20 mm (UK code)
    10    0.1020  Brick outer leaf : Brick (UK code)
     0    0.0500  air  0.180 0.180 0.180
-  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 50 mm)
-  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 50 mm)
+  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0250  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
@@ -227,21 +227,42 @@
     1    Not_DisplayG  TRAN  dispGlz_not   SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
   250    0.0060  dispGlz_not_modCond : 6 mm clear glass (copy of 6 mm clear glass)
+# layers  description   optics name   symmetry tag
     3    window_Not_G  TRAN  Glaz_notiona  NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  247    0.0040  Clear 4 mm glass : Clear 4 mm glass
+  247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
     0    0.0160  air  0.277 0.277 0.277
-  248    0.0040  Low-E 4 mm glass : Low-E 4 mm glass
+  248    0.0040  REF A CLEAR MID 6MM : optics from UK national method datase Low-e coate
 # layers  description   optics name   symmetry tag
     4    EW_notPitch_  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
   156    0.0100  Tiles Concrete 10 mm : Tiles
     0    0.2000  air  0.200 0.200 0.200
-  292    0.1850  Min wool quilt 250 mm tb : Quilt
-  111    0.0095  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm)
+  292    0.1850  Min wool quilt 250 mm tb : Quilt (Min wool quilt default 250 mm)
+  111    0.0095  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
 # layers  description   optics name   symmetry tag
-    3    Vehicle_door  OPAQ  OPAQUE        SYMMETRIC     
+    1    curtainglz    TRAN  SCF8285_12nb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-   50    0.0015  Aluminium 1.5 mm : Aluminium (copy of mat_043)
-    0    0.0250  air  0.500 0.500 0.500
-   50    0.0015  Aluminium 1.5 mm : Aluminium (copy of mat_043)
+  242    0.0120  plate glass : Plate glass with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    3    cw_elem-sep   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0040  grey cotd alum : Grey coated aluminium
+    0    0.0600  air  0.105 0.105 0.105
+   46    0.0040  grey cotd alum : Grey coated aluminium
+# layers  description   optics name   symmetry tag
+    1    absorber      OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   51    0.0030  black coated aluminium : note note
+# layers  description   optics name   symmetry tag
+    3    spandrel_p    OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   46    0.0030  grey cotd alum : Grey coated aluminium
+  216    0.0800  mineral fibre : Mineral fibre
+   46    0.0030  grey cotd alum : Grey coated aluminium
+# layers  description   optics name   symmetry tag
+    3    pcm_board     OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  301    0.0030  gypsum board : Gypsum board
+  301    0.0200  gypsum board : Gypsum board
+  340    0.0020  highconduct : High conduction material

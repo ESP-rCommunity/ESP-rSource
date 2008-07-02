@@ -128,11 +128,11 @@ SAZ3348_10nb  :Antisun bronze 33/48, 10mm, no blind
 # refr index, absorption @ 5 angles for each tmc layer
   1.520 0.671 0.701 0.710 0.664 0.518
 # 12 char id |  description       | thick | blind
-SC_fictit     :Fictitious 99/99,      4mm, no blind
+SC_fictit     :Fictitious 99/99,      2mm, no blind
 # def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
-  1   1  0.990  0.010  0.010  9.000
+  1   1  0.990  0.001  0.001  9.000
 # direct trn @ 5 angles, total heat gain @ 5 angles
-  0.998 0.987 0.986 0.985 0.984 0.980 0.970 0.960 0.950 0.940
+  0.999 0.999 0.999 0.999 0.999 0.999 0.999 0.999 0.999 0.999
 # refr index, absorption @ 5 angles for each tmc layer
   1.520 0.001 0.001 0.001 0.001 0.001
 # 12 char id |  description       | thick | blind

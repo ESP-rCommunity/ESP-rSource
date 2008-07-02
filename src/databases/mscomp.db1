@@ -366,11 +366,11 @@ PCM_Cap
 7
 20.0      Melting temperature (degC)
 21.0      Solidification temperature (degC)
-0.40      Conductivity in solid phase (J/kg)
-0.80      Conductivity in liquid phase (J/kg)
-1000.0    Specific heat (J/kg*K)
-5000.0    Latent heat member a - see info (J/kg*K^2)
-100000.0  Latent heat member b - see info (J/kg*K)
+0.40      Conductivity in solid phase (W/(m K))
+0.80      Conductivity in liquid phase (W/(m K))
+1000.0    Specific heat (J/(kg*K))
+5000.0    Latent heat member a - see info (J/(kg*K^2))
+100000.0  Latent heat member b - see info (J/(kg*K))
 *TEXT
 
 PHASE CHANGE MATERIAL
@@ -381,10 +381,10 @@ all nodes represented this surface.
 Following informations are required to define phase change mat.
 - melting temperature,          degC
 - solidification temperature,   degC
-- conductivity in solid phase,  W/m*K
-- conductivity in liquid phase, W/m*K
-- specific heat,                J/kg*K
-- latent heat,                  J/kg*K
+- conductivity in solid phase,  W/(m*K)
+- conductivity in liquid phase, W/(m*K)
+- specific heat,                J/(kg*K)
+- latent heat,                  J/(kg*K)
 
 Phase change occured between melting Tm (PCM becomes melts) and
 solidification Ts (PCM becomes solidified) temperatures. Below

@@ -1,8 +1,8 @@
 *Materials 1.1
 *date,Mon Jun 18 12:15:16 2007
-# materials database defined in constr.db3.a
-*doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3 with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
-18  # number of classifications
+# materials database defined in /usr/esru/esp-r/databases/material.db3.a
+*doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3 with required materials for UK code compl
+19  # number of classifications
 #  
 # Materials have the following attributes:
 #  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
@@ -82,7 +82,7 @@ Category ( 2) Concrete includes a mix of concrete types from heavy weight to lig
 *item,Concrete med density (1800), 40, 2,Blockwork (UK code)
 1.130,1800.000,1008.000,0.900,0.900,0.700,0.700,13.000,100.0,-
 # class index |nb items|description (32 char)
-*class, 3,10,Metal
+*class, 3,11,Metal
 Category ( 3) Metal has a range of metals, some are the same but are painted differently. Based on data traditionally distributed with ESP-r.
 *item,copper, 41, 3,Copper
 200.000,8900.000,418.000,0.720,0.720,0.650,0.650,19200.000,5.0,-
@@ -104,6 +104,8 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,Aluminium 1.5 mm, 50, 3,Aluminium (copy of mat_043)
 210.000,2700.000,880.000,0.220,0.220,0.200,0.200,19200.000,1.5,-
+*item,black coated aluminium, 51, 3,note note
+210.000,2700.000,880.000,0.950,0.950,0.980,0.980,19200.000,2.0,-
 # class index |nb items|description (32 char)
 *class, 4,18,Wood
 Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
@@ -366,12 +368,12 @@ Category (13) Glass with additional single layer optical properties (some estima
 0.700,3500.000,837.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,plate glass,242,13,Plate glass with placeholder single layer optics
 0.760,2710.000,837.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
-*item,clear float,243,13,4mm clear float glass with optics from UK national method datase for 3 mm clear glass Not coated not tinted
+*item,clear float,243,13,4mm clear float glass with optics from UK national method datase for 3 mm clear glass Not coated no
 1.050,2500.000,750.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.837,0.075,0.075,0.898,0.081,0.081,0.000
 *item,antisun 6mm,244,13,6mm Antisun glass with placeholder single layer optics
 1.050,2500.000,750.000,0.590,0.590,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,fict,245,13,fictitious material (almost not there) with matching single layer optics
-20.000,10.0000,10.0000,0.990,0.990,0.010,0.010,19200.000,6.0,t,0.000,0.999,0.001,0.001,0.999,0.001,0.001,0.000
+20.000,10.000,10.000,0.990,0.990,0.010,0.010,19200.000,6.0,t,0.000,0.999,0.001,0.001,0.999,0.001,0.001,0.000
 *item,low_e glass,246,13,6mm CF Low_e glass with placeholder single layer optics
 1.050,2500.000,750.000,0.050,0.050,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,REF A CLEAR LO 6MM,247,13,optics from UK national method datase Low-e coated not tinted
@@ -447,7 +449,8 @@ Category (17) Sheathing is similar to the wood category. It also includes a test
 *item,sheating std,321,17,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
-0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.00008,0.00001761,0.00000005,1.232,-0.0043,0.00000,0.00000,1008.000,0.00000
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.000080,0.00001761,0.00000005,1.2320,-0.00430,0.000000,0.000000,1008.000,0.000000
+# class index |nb items|description (32 char)
 *class,18, 6,GAPS
 Category (18) holds the implied air material with a legacy index of zero.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
@@ -462,4 +465,11 @@ Category (18) holds the implied air material with a legacy index of zero.
 0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
 *item,Argon 16 mm,-99,18,Argon 16 mm
 0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+# class index |nb items|description (32 char)
+*class,19, 2,SpecialMaterials
+Category (19) SpecialMaterials includes materials that do not fit in any of the other categories.
+*item,highconduct,340,19,High conduction material
+300.000,200.000,400.000,0.950,0.950,0.400,0.400,12.000,2.0,-
+*item,fictitious,341,19,fictitious is for splitting physical zones into more than one model zone
+300.000,200.000,400.000,0.999,0.999,0.001,0.001,1.000,2.0,t,1.000,1.000,0.500,0.000,0.000,0.000,0.000,0.000
 *end
