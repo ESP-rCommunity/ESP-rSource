@@ -57,8 +57,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
       DIMENSION X1(6),X2(6)
 
@@ -163,6 +162,7 @@ C time step.
       COMMON/CLMFLG/ICLMFL
 
 C TDF commons.
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
@@ -170,8 +170,7 @@ C For each zone a pointer to relevant temporal db entry 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
 
 C Treatment of solar radiation data in the climate file.
 C ESP-r operates on hourly-centred data. That is, the solar
@@ -191,6 +190,8 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
 
       DIMENSION X1B(6),X2B(6),X1P(6),X2P(6)
       DIMENSION VAL(MBITS+2)
+
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15
 
 C IOPT=2 ie screen wet bulb temerature required
 C PATMOS set here as a tempory measure.

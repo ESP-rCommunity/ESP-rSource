@@ -56,8 +56,8 @@ C necl  |
 C nol   |
 
 C ibsn  | - Defines the sensor node associated with any control function
-C ipsn  |   (B), control loop (P),  mass flow control function (F), power
-C ifsn  |   control function (E) and Optical control function (O).
+C ipsn  |   (B), control loop (P),  mass flow control function (F) and power
+C ifsn  |   control function (E) .
 C iesn  |
 C iosn  |
 C           The three locations have the following meaning:
@@ -72,12 +72,9 @@ C                                        the construction node defined by
 C                                        construction i?sn(?,2), node
 C                                        position i?sn(?,3).
 C           ibsn(?,1)= 0; control is on associated zone's air point.
-C           iosn(?,1)= 0; control is on associated zone's air point.
 C           ipsn(?,1)= 0; - not active for plant side.
 C           ifsn(?,1)= 0; - not active for flow side.
 C           ibsn(?,1)=-1; - not active for building side.
-C<<<<<<<<<<<<<<<<<<<<<remember the line below: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-C           iosn(?,1)=-1; - sensing incident solar radiation on a surface.
 C           ipsn(?,1)=-1; defines a plant component node given by
 C                         component ipsn(?,2), node ipsn(?,3).
 C           ifsn(?,1)=-1; defines a plant component node given by
@@ -298,11 +295,11 @@ C espriou.h provides currentfile.
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
 
-C For optical controls
+C Optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
       
@@ -390,7 +387,7 @@ C in the data.
         GOTO 9
       ENDIF
 
-C Read heading * BUILDING or * PLANT or *MAS *POW  *OPTor *SYSTEM. After last 
+C Read heading * BUILDING or * PLANT or *MAS *POW or *SYSTEM. After last 
 C item of a control function or plant loop is read it will loop back 
 C here and this may the end of the file so do not warn user and do 
 C not pass back ier.
@@ -408,9 +405,7 @@ C not pass back ier.
      &(hdg.ne.'* fuz'.and.hdg.ne.'* Fuz'.and.hdg.ne.'* FUZ').and.
      & (hdg.ne.'* mas'.and.hdg.ne.'* Mas'.and.hdg.ne.'* MAS').and.
      &(hdg.ne.'* pow'.and.hdg.ne.'* Pow'.and.hdg.ne.'* POW').and.
-     &(hdg.ne.'* sys'.and.hdg.ne.'* Sys'.and.hdg.ne.'* SYS').and.
-     &(hdg.ne.'* opt'.and.hdg.ne.'* Opt'.and.hdg.ne.'* OPT'))then
-
+     &(hdg.ne.'* sys'.and.hdg.ne.'* Sys'.and.hdg.ne.'* SYS'))then
         write(outs,'(3a)') 'Control file ',LCTLF(1:lnblnk(LCTLF)),
      &    ' unexpected end of file sensed.'
         outs= 'End of control file sensed'
@@ -433,12 +428,10 @@ C not pass back ier.
       if(hdg.eq.'* mas'.or.hdg.eq.'* Mas'.or.hdg.eq.'* MAS')iborp=3
       if(hdg.eq.'* sys'.or.hdg.eq.'* Sys'.or.hdg.eq.'* SYS')iborp=4
       if(hdg.eq.'* pow'.or.hdg.eq.'* Pow'.or.hdg.eq.'* POW')iborp=5
-      if(hdg.eq.'* opt'.or.hdg.eq.'* Opt'.or.hdg.eq.'* OPT')iborp=6
       if(hdg.eq.'* fuz'.or.hdg.eq.'* Fuz'.or.hdg.eq.'* FUZ')GOTO 7
       if(iborp.eq.2)goto 11
       if(iborp.eq.3)goto 12
       if(iborp.eq.5)goto 18
-      if(iborp.eq.6)goto 19
       global=.false.
       if(iborp.eq.4)global=.true.
       if(iborp.eq.4)goto 113
@@ -912,6 +905,7 @@ C ..........the controller's intialization has been done.
               GOTO 2000
             ENDIF
 
+
             CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'misc data',IER)
             IF(IER.NE.0)GOTO 99
             KG=0
@@ -928,6 +922,8 @@ C this and do not pass ier back to calling routine.
                 pmiscd(ii,jj,kk,ij)=RVA(ij-1)
   43          continue
               
+
+
 C              CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'data items',IERV)
 C              IF(IERV.NE.0)GOTO 99
 C              KG=0
@@ -1559,199 +1555,18 @@ C Reporting:
    92     continue
    89   continue
    90 continue
-      goto 15
 
-C  Establish optical control regime name (opticdoc) and number of
-C  control functions (NOF).
- 19   CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'optical control docs',IER)
-      OPTICDOC=LOUTSTR
-
-      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'no cntrl functions',IER)
-      KG=0
-      CALL EGETWI(OUTSTR,KG,NOF,-1,MOL,'F','no function',IER)
-      IF(IER.NE.0)GOTO 99
-
-C Reporting:
-      IF(ITRC.GE.1)THEN
-        CALL EDISP(ITRU,' ')
-        WRITE(OUTSTR,361)nof
- 361    FORMAT(' Within the current project',I2,' optical control',
-     &         ' functions have been specified. ')
-        CALL EDISP(ITRU,OUTSTR)
-        CALL EDISP248(ITRU,opticdoc,72)
-      endif
-
-      if(nof.le.0)goto 13
-
-c For each control function.
-      DO 100 I=1,NOF
-        II=I
-        IOF=II
-
-C Read header : * OPTICS FUNCTION.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'* Control optics',IER)
-        IF(IER.NE.0)GOTO 99
-        HDG=OUTSTR(1:5)
-        IF(HDG.NE.'* OPT'.AND.HDG.NE.'* Con'.AND.HDG.NE.'* con')THEN
-          CALL USRMSG(' ',' `* Control optics` string not found ','W')
-          GOTO 1111
-        ENDIF
-
-C Read optical functions information and perform checks.
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'sensor',IER)
-        IF(IER.NE.0)GOTO 99
-        KG=0
-        CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 1st',IER)
-        IOSN(II,1)=IVAL
-        CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 2nd ',IER)
-        IOSN(II,2)=IVAL
-        CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 3rd ',IER)
-        IOSN(II,3)=IVAL
-        IF(IER.NE.0)GOTO 99
-
-C Range checking.
-C<<<<<<<<CHECK THE -5 HERE - It may just need to be 0 >>>>>>>>>
-        if(iosn(ii,1).lt.-5.or.iosn(ii,1).gt.mcom)goto 1003
-
-C Reporting: Get a string describing the current sensor based on common.
-        IF(ITRC.GE.1)THEN
-          IIS=II
-          CALL EVCNTRL(5,IIS,1,1,'S',SSTR)
-          WRITE(OUTSTR,'(a,i2,2a)')' The sensor for function ',II,' ',
-     &      SSTR(1:LNBLNK(SSTR))
-          CALL EDISP(ITRU,OUTSTR)
-        ENDIF
-
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'actuator',IER)
-        IF(IER.NE.0)GOTO 99
-        KG=0
-        CALL EGETWI(OUTSTR,KG,IV,-5,MCOM,'F','actuator 1st',IER)
-        IOAN(II,1)=IV
-        CALL EGETWI(OUTSTR,KG,IV,0,MCOM,'F','actuator 2nd',IER)
-        IOAN(II,2)=IV
-        CALL EGETWI(OUTSTR,KG,IV,0,0,'-','actuator 3rd',IER)
-        IOAN(II,3)=IV
-        IF(IER.NE.0)GOTO 99
-
-C Range checking.
-C<<<<<<<<<FIX THE RANGE CHECK HERE >>>>>>>>>>>>>
-        if(ioan(ii,1).lt.-5.or.ioan(ii,1).gt.MS)goto 1005
-
-C Reporting: Get a string describing the actuator based on common block.
-        IF(ITRC.GE.1)THEN
-          IIS=II
-          CALL EVCNTRL(5,IIS,1,1,'A',SSTR)
-          WRITE(OUTSTR,'(a,i2,2a)')' The actuator for function ',II,
-     &      ' is ',SSTR(1:LNBLNK(SSTR))
-          CALL EDISP(ITRU,OUTSTR)
-        ENDIF
-
-C Day types.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'day types',IER)
-        KG=0
-        CALL EGETWI(OUTSTR,KG,NOCDT(II),0,MOCDT,'F',
-     &              'number of control day types',IER)
-        IF(IER.NE.0)GOTO 99
-
-C Reporting:
-        IF(ITRC.GE.1)THEN
-          IF(NOCDT(II).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,'(a,i2,a)')' There have been ',NOCDT(II),
-     &        ' day types defined.'
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
-        ENDIF
-
-        nn=nocdt(ii)
-        if(nn.eq.0)nn=3
-        do 200 j=1,nn
-          jj=j
-          CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
-          IF(IER.NE.0)GOTO 99
-          KG=0
-          CALL EGETWI(OUTSTR,KG,IOCDV(II,JJ,1),1,365,'F',
-     &              'control activation start day number',IER)
-          CALL EGETWI(OUTSTR,KG,IOCDV(II,JJ,2),1,365,'F',
-     &              'control activation end day number',IER)
-          IF(IOCDV(II,JJ,2).LT.IOCDV(II,JJ,1))THEN
-            CALL USRMSG(' ',' Start & End dates reversed.','W')
-            GOTO 2000
-          ENDIF
-
-          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'periods',IER)
-          KG=0
-          CALL EGETWI(OUTSTR,KG,NOCDP(II,JJ),1,MOCDP,'F',
-     &              'control periods during day',IER)
-          IF(IER.NE.0)GOTO 99
-
-          LL=NOCDP(II,JJ)
-          DO 300 K=1,LL
-            KK=K
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'control',IER)
-            IF(IER.NE.0)GOTO 99
-            KG=0
-
-C Controller types are not used for optical controls, yet. They are
-C written though as 0 in the controls file to keep consistency with the
-C rest of the control domains
-            CALL EGETWI(OUTSTR,KG,IOCTYP(II,JJ,KK),0,99,'W',
-     &              'controller type (1st item)',IER)
-C<<<<<<<Confirm the 0 to 1 range check >>>>>>>>>
-            CALL EGETWI(OUTSTR,KG,IOCLAW(II,JJ,KK),0,2,'W',
-     &              'control law (2nd item)',IER)
-            CALL EGETWR(OUTSTR,KG,TOCPS(II,JJ,KK),0.,24.,'F',
-     &              'activation time',IER)
-            IF(IER.NE.0)GOTO 99
-
-            IF(KK.EQ.1)THEN
-              call eclose(TOCPS(II,JJ,KK),0.0,0.001,close)
-              IF(.NOT.close)THEN
-                CALL USRMSG(' ',' 1st period must begin @ 0!','W')
-                GOTO 2000
-              ENDIF
-            ELSEIF(TOCPS(II,JJ,KK-1).GE.TOCPS(II,JJ,KK))THEN
-              CALL USRMSG(' ',' periods out of order','W')
-              GOTO 2000
-            ENDIF
-
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'data next',IER)
-            IF(IER.NE.0)GOTO 99
-            KG=0
-            CALL EGETWR(OUTSTR,KG,OMISCD(II,JJ,KK,1),0.,
-     &       FLOAT(MISC),'F','number of data items for function',IER)
-            NITEMS=INT(OMISCD(II,JJ,KK,1))
-
-            IF(NITEMS.GT.0)THEN
-              call egetwra(iunit,RVA,nitems,0.,0.,'-','misc items',
-     &          ierv)
-              do 142 ij=2,nitems+1
-                OMISCD(II,JJ,KK,ij)=RVA(ij-1)
- 142          continue
-              IF(IER.NE.0)GOTO 99
-            ENDIF
-  300     CONTINUE
-
-C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ,iier)
-  200   CONTINUE
-  100 CONTINUE
-
-C Check that NCF, NCL, NCC, NOF and NGF are zero.  If so there may 
+C Check that NCF, NCL, NCC and NGF are zero.  If so there may 
 C be more information to be read.
-   15 if(ncf.eq.0.or.ncl.eq.0.or.ncc.eq.0.or.ngf.eq.0.or.
-     &   nof.eq.0)goto 2
+   15 if(ncf.eq.0.or.ncl.eq.0.or.ncc.eq.0.or.ngf.eq.0)goto 2
 
 C At present there is no structure to use a user defined control
-C file - therefore set NCF=0, NCL=0, NCC=0, NGF=0, NOF=0.
+C file - therefore set NCF=0, NCL=0, NCC=0, NGF=0.
    13 if(ncf.eq.-1)ncf=0
       if(ncl.eq.-1)ncl=0
       if(ncc.eq.-1)ncc=0
       if(ngf.eq.-1)ngf=0
-      if(nof.eq.-1)nof=0
-      
+
 C Return.
       goto 9
 
@@ -1796,7 +1611,6 @@ C Make up specific error messages.
  1093 CALL USRMSG(' ',' Power ctl actuat. 2nd or 3rd item< 0.','W')
       goto 3000
 
-C <<<<<<<error messages for optical controls still to be implemented >>>>>>>>
 
  1082 CALL EDISP(ITRU,' A construction substitution control function ')
       CALL EDISP(ITRU,' cannot be directly allocated to a zone.')
@@ -1824,12 +1638,6 @@ C <<<<<<<error messages for optical controls still to be implemented >>>>>>>>
 
  4000 WRITE(OUTS,4001)icc,nfcdt(ii)
  4001 FORMAT(' Flow control functions',I3,' day type',I3,': the',
-     &       ' offending line was')
-      CALL USRMSG(OUTS,OUTSTR,'W')
-
-C Message for optical controls
- 5000 WRITE(OUTS,5001)iof,nocdt(ii)
- 5001 FORMAT(' Optical control functions',I3,' day type',I3,': the',
      &       ' offending line was')
       CALL USRMSG(OUTS,OUTSTR,'W')
 
@@ -1894,7 +1702,7 @@ C Low level I/O error. Close file before exiting.
       END
 
 c ******************** EZCTLI ********************
-c EZCTLI: Zeroes all control data in common BCTL, CCTL, FCTL, OCTL and GCTL.
+c EZCTLI: Zeroes all control data in common BCTL, CCTL, FCTL and GCTL.
       SUBROUTINE EZCTLI
 #include "building.h"
 #include "plant.h"
@@ -1927,11 +1735,10 @@ c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
-C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       ncf=0
       do 10 i=1,mcom
@@ -2010,19 +1817,6 @@ C For optical controls
         RHDC(MCOM)=0.0
   330 continue
 
-      nof=0
-      do 420 i=1,mol
-        nocdt(i)=0
-        do 440 j=1,mocdt
-          nocdp(i,j)=0
-          do 450 k=1,mocdp
-            do 460 l=1,misc
-              omiscd(i,j,k,l)=0.0
-  460       continue
-  450     continue
-  440   continue
-  420 continue
-
       RETURN
       END
 
@@ -2069,21 +1863,17 @@ C      COMMON/OUTIN/IUOUT,IUIN
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
-C For optical controls
+C Optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+     &       omiscd(mol,mocdt,mocdp,misco)
 
-      character DESC*48
       CHARACTER SSTR*72,SSTRB*48
       CHARACTER WHICH*1,ZNAME*12,ZN*12,zdesc*64
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character disp_constr*12
 
       dimension icsn(5)   ! for passing sensor location to decodesensor
       integer icsn
@@ -2096,7 +1886,6 @@ C For optical controls
       if(icfoc.eq.2)goto 44     ! network flow control
       if(icfoc.eq.3)goto 46     ! global control
       if(icfoc.eq.4)goto 45     ! electrical control
-      if(icfoc.eq.5)goto 47     ! optical control
   42  IF(WHICH.EQ.'S'.OR.WHICH.EQ.'s')THEN
 
 C Ideal Sensor.
@@ -2316,45 +2105,6 @@ C Return actuator type. << check to see if any other values allowed >>
       ENDIF
       RETURN
 
-  47  IF(WHICH.EQ.'S'.OR.WHICH.EQ.'s')THEN
-
-C Optical Sensor.
-C<<<<<<<<Possibly need only 3 items for sensor>>>>>>>>>>>>????
-C<<< Remember also to change it in subroutine ezctlc >>>>>>>>>>>>>
-        icsn(1)=IOSN(II,1)
-        icsn(2)=IOSN(II,2)
-        icsn(3)=IOSN(II,3)
-        icsn(4)=IOSN(II,4)
-        call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
-      ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
-
-C Actuator.
-C <<<Confirm this with bpfcontrl.F>>>>>>>>>>>>>>>>
-        SSTR='undefined actuator    '
-        IF(IOAN(II,1).eq.-5)THEN
-C<<<<Probably IOAN does not need a 3rd item. >>>>
-          if(IOAN(II,2).gt.0)then
-            icons=IOAN(II,2)
-            write(disp_constr,'(a)') DESC(icons)(1:12)
-            WRITE(SSTR,'(3a)')  'actuating the optical properties at ',
-     &        'construction ', disp_constr
-          else
-            WRITE(SSTR,'(2a)')  'Optics actuator has not been assigned',
-     &        ' to a construction.' 
-          endif
-        ENDIF
-      ELSEIF(WHICH.EQ.'T'.OR.WHICH.EQ.'t')THEN
-
-C Control type.
-        SSTR='bidirectional set  '
-      ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
-
-C Ideal Control law.
-        SSTR='undefined control        '
-        call usrmsg('should have called EVCNTRLAW',' ','W')
-      ENDIF
-      RETURN
-
       END
 
 C ******************** EVCNTRLAW 
@@ -2392,12 +2142,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-
       CHARACTER SSTR*72,SSTRB*48,SSTR1*72,SSTRB1*48
       CHARACTER NDNAM*12
 
@@ -2421,7 +2165,7 @@ C sub-strings for describing multi-sensor flow controls.
 
 C Ideal Control law.
         SSTR='undefined control        '
-        IF(IBCLAW(II,JJ,KK).EQ.1.or.IBCLAW(II,JJ,KK).EQ.3)then
+        IF(IBCLAW(II,JJ,KK).EQ.1.or.IBCLAW(II,JJ,KK).EQ.1)then
           IF(IBCLAW(II,JJ,KK).EQ.1)then
             SSTR='basic control        '
             msg1=' basic control:'
@@ -3223,71 +2967,10 @@ C Power systems control law.
         return
       ENDIF
 
-      if(icfoc.eq.5)then
-
-C Optical control law.
-        SSTR='undefined law '     
-        if(IOCLAW(II,JJ,KK).eq.1)then
-
-C Here needs to propose which optical property to use - done elsewhere
-C This code is not activated yet from bpfcontrol.F
-C Only law 2 for bidirectional data will be used at the moment (May 2008) 
-          SSTR= 'optical switching '
-          msg1=' optical switching:'
-        elseif(IOCLAW(II,JJ,KK).eq.2)then
-          SSTR= 'bidirectional set '
-          msg1='bidirectional set:'
-        endif
-        cm(1)=omiscd(II,JJ,KK,1)
-        cm(2)=omiscd(II,JJ,KK,2)
-        cm(3)=omiscd(II,JJ,KK,3)         
-        cm(4)=omiscd(II,JJ,KK,4)
-        cm(5)=omiscd(II,JJ,KK,5)
-        cm(6)=omiscd(II,JJ,KK,6) 
-        cm(7)=omiscd(II,JJ,KK,7)
-        cm(8)=omiscd(II,JJ,KK,8)
-        cm(9)=omiscd(II,JJ,KK,9) 
-        cm(10)=omiscd(II,JJ,KK,10)
-        cm(11)=omiscd(II,JJ,KK,11)
-        cm(12)=omiscd(II,JJ,KK,12) 
-        cm(13)=omiscd(II,JJ,KK,13)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(2),',',
-     &  'above this value and below or equal to:',cm(4),
-     &  'optical properties number:',cm(3),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(4),',',
-     &  'above this value and below or equal to:',cm(6),
-     &  'optical properties number:',cm(5),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(6),',',
-     &  'above this value and below or equal to:',cm(8),
-     &  'optical properties number:',cm(7),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(8),',',
-     &  'above this value and below or equal to:',cm(10),
-     &  'optical properties number:',cm(9),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f9.2,a,f7.3,a)') 
-     &  ' Sensed values are:',cm(10),',',
-     &  'above this value and below or equal to:',cm(12),
-     &  'optical properties number:',cm(11),' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        write(lmsg,'(a,f9.2,2a,f7.3,a)') 
-     &  ' Sensed values are:',cm(12),',',
-     &  'above this value optical properties number:',cm(13),
-     &  ' will be used.'
-        call SDELIM(lmsg,message,'S',IW)
-        return
-      endif
-      
       END
 
 C ******** LSTCNTLD
-C List one day type of a building/plant/flow/global/optical control. 
+C List one day type of a building/plant/flow/global control. 
       SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
 #include "building.h"
 #include "plant.h"
@@ -3312,12 +2995,10 @@ C List one day type of a building/plant/flow/global/optical control.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       character outs*124,SSTR*72,TMP*72,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
@@ -3340,10 +3021,6 @@ C List data for function II and day type JJ.
         IBD=IGCDV(II,JJ,1)
         IED=IGCDV(II,JJ,2)
         LL=NGCDP(II,JJ)
-      elseif(icfoc.eq.5)then
-        IBD=IOCDV(II,JJ,1)
-        IED=IOCDV(II,JJ,2)
-        LL=NOCDP(II,JJ)
       endif
       NTSPH=1
       CALL EPERSTR(IYEAR,IBD,1,IED,24,
@@ -3358,8 +3035,6 @@ c      call edisp(itru,' ')
         nnd=nfcdt(ii)
       elseif(icfoc.eq.3)then
         nnd=ngcdt(ii)
-      elseif(icfoc.eq.5)then
-        nnd=nocdt(ii)
       endif
       if(nnd.eq.0.and.JJ.eq.1)then
         WRITE(outs,'(3A,I2,A)')' Weekday control is valid ',
@@ -3394,9 +3069,6 @@ c      call edisp(itru,' ')
         elseif(icfoc.eq.3)then
           WRITE(outsa,83)K,TGCPS(II,JJ,K),SSTR(1:21),TMP(1:20)
           NITEMS=INT(GMISCD(II,JJ,K,1))
-        elseif(icfoc.eq.5)then
-          WRITE(outsa,83)K,TOCPS(II,JJ,K),SSTR(1:21),TMP(1:21)
-          NITEMS=INT(OMISCD(II,JJ,K,1))
         endif
   83    FORMAT(I4,F6.2,' ',a,' ',a)
 
@@ -3413,8 +3085,6 @@ C Print out first 9 miscellaneous data if applicable.
               write(outsb,84)(FMISCD(II,JJ,K,L),L=2,NITEMS+1)
             elseif(icfoc.eq.3)then
               write(outsb,84)(GMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,NITEMS+1)
             endif
           else
             if(icfoc.eq.0)then
@@ -3425,8 +3095,6 @@ C Print out first 9 miscellaneous data if applicable.
               write(outsb,84)(FMISCD(II,JJ,K,L),L=2,10)
             elseif(icfoc.eq.3)then
               write(outsb,84)(GMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,10)
             endif
           endif
   84      format(9F9.1)
@@ -3751,89 +3419,6 @@ C representing the index of the node.
      &      ,DESC(1:lnblnk(desc)),', contm: ',contmnam(icsn(3))
           ENDIF
         ENDIF
-      elseif(icfoc.eq.5)then
-
-C Optical Sensor.
-        IF(icsn(1).GT.0)THEN
-          write(zn,'(a)') zname(icsn(1))
-          if(icsn(2).gt.0)then
-            icc=IZSTOCN(icsn(1),icsn(2))
-            write(sn,'(a)') SSNAME(icc)
-          else
-            sn='-'
-          endif
-          IF(icsn(2).EQ.0)THEN
-            WRITE(SSTR,'(3a)') 'senses dry bulb temperature in ',
-     &        zn(1:lnblnk(zn)),'.'
-            WRITE(SSTRB,'(3a)') 'senses dry bulb T in ',
-     &        zn(1:lnblnk(zn)),'.'
-
-C<<<need to cancel the sensing of surface temperature and surface node temperature?
-          ELSEIF(icsn(2).GT.0.AND.icsn(3).EQ.0)THEN
-            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-            WRITE(SSTRB,'(5a)')  'senses T at ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-          ELSEIF(icsn(2).GT.0.AND.icsn(3).GT.0)THEN
-            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-            WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
-     &        ' in ',zn(1:lnblnk(zn)),'.'
-C<<<< Until here
-          ENDIF
-
-C<<< Cancel also the next two
-        ELSEIF(icsn(1).EQ.0)THEN
-          SSTR='senses the temperature of the current zone.'
-          SSTRB='senses db T of the current zone.'
-        ELSEIF(icsn(1).EQ.-2)THEN
-          write(zn,'(a)') zname(icsn(2))
-          WRITE(SSTR,'(3a)')'senses a mix of dbT and MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
-          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
-C<<<< Until here
-        ELSEIF(icsn(1).EQ.-3)THEN
-          IF(icsn(2).EQ.0)THEN
-            SSTR='senses ambient dry bulb temperature.'
-            SSTRB='senses ambient db T.'
-C<<< Cancel also the next 6?
-          ELSEIF(icsn(2).EQ.1)THEN
-            SSTR='senses the sol-air temperature.'
-            SSTRB='senses the sol-air T.'
-          ELSEIF(icsn(2).EQ.2)THEN
-            SSTR='senses wind speed.'
-            SSTRB='senses wind speed.'
-          ELSEIF(icsn(2).EQ.3)THEN
-            SSTR='senses wind direction.'
-            SSTRB='senses wind direction.'
-          ELSEIF(icsn(2).EQ.4)THEN
-            SSTR='senses dif hor rad.'
-            SSTRB='senses dif hor rad.'
-          ELSEIF(icsn(2).EQ.5)THEN
-            SSTR='senses dir nor rad.'
-            SSTRB='senses dir nor rad.'
-          ELSEIF(icsn(2).EQ.6)THEN
-            SSTR='senses ext rel hum.'
-            SSTRB='senses ext RH.'
-C<<<< Until here
-
-          ENDIF
-        ELSEIF(icsn(1).EQ.-7)THEN
-          SSTR='senses radiation at outside of surface.'
-          SSTRB='senses incident rad.'
-        ELSEIF(icsn(1).EQ.-8)THEN
-
-C<<<<<<<<<Change the next line to "senses lux levels"?????>>>>>>>>
-          SSTR='senses lux via daylight coef. method.'
-          SSTRB='senses lux levels'
-        ELSE
-C<<<< Not sure if next line is needed
-          SSTR='senses UNKNOWN condition.'
-          SSTRB='senses UNKNOWN condition.'
-        ENDIF
-        
-              
       endif
 
       return
@@ -3866,12 +3451,6 @@ C control loops for legality.
      &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
      &       fmiscd(mcc,mfcdt,mfcdp,misc)
 
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-
       common/c1/ncomp,ncon
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
@@ -3886,8 +3465,8 @@ C This code loops throug the building (m=1), plant (m=2) and flow (m=3)
 C control loops and tests them for validity. It's a mess of goto statements,
 C and is a good candidate for rewriting. 
       
-C Loop through building/plant/flow/optical control loops       
-      do 10 m=1,4
+C Loop through building/plant/flow control loops       
+      do 10 m=1,3
 
       if ( m .eq. 1 ) then 
 C Test assign # of parseable controls to # of building control loops 
@@ -3900,10 +3479,6 @@ C Test assign # of parseable controls to # of plant control loops
       elseif ( m.eq. 3 ) then
 C Test assign # of parseable controls to # of flow control loops
         nbp=ncc
-
-      elseif ( m.eq. 4 ) then
-C Test assign # of parseable controls to # of optical control loops
-        nbp=nof
       endif 
 
 C Test if parsable loops exist      
@@ -3914,7 +3489,6 @@ C 'i' appears to serve no purpose in this code.
       ii=i
       if(m.eq.2)goto 3
       if(m.eq.3)goto 22
-      if(m.eq.4)goto 32
 
 C Set up data for building control function ii.
       isn1=ibsn(ii,1)
@@ -3958,14 +3532,6 @@ c set up data for mass flow control connections.
       ian1=ifan(ii,1)
       ian2=ifan(ii,2)
       ian3=ifan(ii,3)
-      goto 4
-
-c set up data for optical control function ii.
-  32  isn1=iosn(ii,1)
-      isn2=iosn(ii,2)
-      isn3=iosn(ii,3)
-      isn4=iosn(ii,4)
-      ian1=ioan(ii,1)
 
 C isn1 has been tested, therefore use its value to test isn2 & isn3.
     4 is=isn1+6
@@ -4086,7 +3652,9 @@ c actuation is on a mass flow component.
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
    10 continue
       return
+      
 
+      
 
 C Error messages.
  1001 write(outstr,'(A,I3,A)') ' Sensor node: 1st item (',

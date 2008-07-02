@@ -978,29 +978,15 @@ C Determine wind direction relative to surface.
         if(WSA.le.90.0)then
 
 C If WSA < 90. assume to be on windward side.
-          VR=VF
           VS=0.68*VR-0.5
-          if(VS.LE.0) then
-            
-C Note: 0.001 is added to VS to ensure it is non-zero.
-            VS=0.001
-            HC=16.15*(VS**0.397)
-          else
-            HC=16.15*(VS**0.397)
-          endif
+          VR=VF
+          HC=16.15*VS**0.397
         else
 
 C Assume leeward side.
-          VR=VF
           VS=0.157*VR-0.027
-          if(VS.LE.0) then
-            
-C Note: 0.001 is added to VS to ensure it is non-zero.
-            VS=0.001
-            HC=16.25*(VS**0.503)
-          else
-            HC=16.25*(VS**0.503)
-          endif            
+          VR=VF
+          HC=16.25*VS**0.503
         endif
         if(dotrace) then
           write(outs,'(A,4F9.3)')

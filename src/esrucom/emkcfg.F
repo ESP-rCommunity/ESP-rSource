@@ -45,7 +45,7 @@ C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
-      PARAMETER (MSTMC=20,MSGAL=40)
+      PARAMETER (MSTMC=1,MSGAL=1)
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -132,7 +132,7 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -234,16 +234,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
-      
-c This common block is used to define the sky temperature calculation method
-      COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
-                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
-                                   ! 2 = Cole (?);
-                                   ! 3 = Czeplak & Kasten (1987);               
-                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
-                                   ! 5 = Swinbank (clear - uses wet bulb T); 
-
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
@@ -259,7 +249,7 @@ c This common block is used to define the sky temperature calculation method
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15, indxcmt*24
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -538,26 +528,6 @@ C Solar radiation (half hour data) flag.
      &    iSlr_half_hr_flg,'  # solar timing half-hour centred'
       endif
 
-C Sky temperature flag.
-      if(iExt_longwave_flg.eq.1)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
-     &    iExt_longwave_flg,'  # Clarke calculation'
-      elseif(iExt_longwave_flg.eq.2)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
-     &    iExt_longwave_flg,'  # Cole calculation'
-      elseif(iExt_longwave_flg.eq.3)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
-     &    iExt_longwave_flg,'  # Czeplak & Kasten calculation'
-      elseif(iExt_longwave_flg.eq.4)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
-     &    iExt_longwave_flg,'  # Swinbank (clear - db T) calculation'
-      elseif(iExt_longwave_flg.eq.5)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*sky_temp_calc  ',
-     &    iExt_longwave_flg,'  # Swinbank (clear - wb T) calculation'
-      else
-        iExt_longwave_flg=0
-      endif
-
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',
@@ -777,11 +747,11 @@ C write out ltdfa instead.
      &      LTDF(1:lnblnk(LTDF))
         endif
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
-     &    '# tdf item id, item type, <related zone>, <related surface> '
+     &    '# tdf item id, item type, <related zone> '
         if(ITEMSTD.gt.0)then
           do 27 L=1,ITEMSTD
-            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
-  29        FORMAT(A12,1X,A8,1X,2A16)
+            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L)
+  29        FORMAT(A12,1X,A8,1X,A16)
   27      continue
         endif
         WRITE(IFCFG,'(A)')'* end tdf'

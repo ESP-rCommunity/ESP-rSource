@@ -45,7 +45,7 @@ C LSBEM (SBEM database)
 C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
-      PARAMETER (MSTMC=20)
+      PARAMETER (MSTMC=1)
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI

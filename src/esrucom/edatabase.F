@@ -815,20 +815,12 @@ C in the materials database.
       H(4)='Note that the trace level influences the amount of'
       H(5)='detail in this display and you may wish to reset the'
       H(6)='trace level to see additional information.'
-      H(7)=' '
-      H(8)='For Controls of bidirectional data only: '
-      H(9)='Select the construction for which the controls and the '
-      H(10)='switch between different datasets will be applied on.'
-      H(11)='WARNING: Avoid assigning more than one control loop '
-      H(12)='to the same construction, especially when these controls '
-      H(13)='are attempting to assign different datasets. The first '          
-      H(14)='loop will be used if this mistake is made by the users. '
       DO 66 IWW=1,NMLC
         WRITE(COMPS(IWW),'(A33)')DESC(IWW)(1:33)
    66 CONTINUE
       IX=1
       CALL EPICKS(IX,IVAL,PROMPT1,PROMPT2,
-     &  33,NMLC,COMPS,'composites',IER,14)
+     &  33,NMLC,COMPS,'composites',IER,6)
 
       IF(IX.EQ.0)RETURN
       ISEL=IVAL(1)

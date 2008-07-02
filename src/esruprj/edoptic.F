@@ -1442,8 +1442,8 @@ C optic properties. These are usually the result of measurements.
 #include "epara.h"
 #include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
-C to 20 for the present.
-      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+C to 1 for the present.
+      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN

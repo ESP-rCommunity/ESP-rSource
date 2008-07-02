@@ -85,11 +85,11 @@ C Electrical control.
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
 
-C For optical controls
+C Optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
@@ -118,8 +118,6 @@ C Zeroize all control data.
       plctldoc='no plant control description supplied'
       flctldoc='no flow control description supplied'
       glctldoc='no global control description supplied'
-      elctldoc='no optics control description supplied'
-      opticdoc='no optics control description supplied'
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -272,11 +270,6 @@ C Initial menu entry setup, rescan for length of the list.
         write(VERT(1),'(A)')     'a control focus >> power'
         write(VERT(3),'(A,A27)') 'c description: ',elctldoc(1:27)
         write(VERT(4),'(A,I2)')  '  loops      : ',necl
-        VERT(5)=                 '                                    '
-      elseif(icfoc.eq.5)then
-        write(VERT(1),'(A)')     'a control focus >> optics'
-        write(VERT(3),'(A,A27)') 'c description: ',opticdoc(1:27)
-        write(VERT(4),'(A,I2)')  '  loops      : ',nof
         VERT(5)=                 '                                    '
       endif
       VERT(6)= ' _________________________________________'
@@ -446,47 +439,6 @@ C of the menu.
       elseif(icfoc.eq.4.and.necl.gt.0)then
 
 C Power controls.
-      elseif(icfoc.eq.5.and.nof.gt.0)then
-
-C Optical controls.
-        do 488 II=1,nof
-          NN=NOCDT(II)
-          if(NOCDT(II).eq.0)NN=3
-          do 487 IJ=1,NN
-            listct=listct+1
-            if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
-              m=m+1
-              mptback(m)=II
-              CALL EMKEY(M-MHEAD+4,KEY,IER)
-              if(nocdt(ii).eq.0.and.IJ.eq.1)then
-                iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
-     &            IOSN(II,1),IOSN(II,2),IOSN(II,3),IOAN(II,1),
-     &            IOAN(II,2),IOAN(II,3),' wkd',iocdv(II,IJ,1),
-     &            iocdv(II,IJ,2),nocdp(II,1)
-              elseif(nocdt(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',iocdv(II,2,1),iocdv(II,2,2),nocdp(II,2)
-              elseif(nocdt(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',iocdv(II,3,1),iocdv(II,3,2),nocdp(II,3)
-              endif
-              if(nocdt(ii).ne.0.and.IJ.eq.1)then
-                iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
-     &            IOSN(II,1),IOSN(II,2),IOSN(II,3),IOAN(II,1),
-     &            IOAN(II,2),IOAN(II,3),IJ,iocdv(II,IJ,1),
-     &            iocdv(II,IJ,2),nocdp(II,IJ)
-              elseif(nocdt(ii).ne.0.and.IJ.gt.1)then
-                iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,iocdv(II,IJ,1),iocdv(II,IJ,2),nocdp(II,IJ)
-              endif
-            endif
- 487      continue
- 488    continue
       endif
 
 C Number of actual items displayed.
@@ -539,7 +491,7 @@ C Now display the menu.
 
 C Toggle focus
         icfoc=icfoc+1
-        if(icfoc.gt.5)icfoc=0
+        if(icfoc.gt.4)icfoc=0
       ELSEIF(IVERT.EQ.2)THEN
 
 C Edit project level description.
@@ -579,11 +531,6 @@ C Edit building/plant/flow/global control description.
           CALL EASKS248(t248,' ','Electrical control description?',
      &      72,'Electrical control','electrical control descr.',IER,1)
           if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')elctldoc=t248
-        elseif(icfoc.eq.5)then
-          t248=opticdoc
-          CALL EASKS248(t248,' ',' Optical control description?',
-     &      72,'Optical control','optic control descr.',IER,1)
-          if(t248(1:2).ne.'  '.and.t248(1:4).ne.'UNKN')opticdoc=t248
         endif
       ELSEIF(IVERT.EQ.5)THEN
 
@@ -649,7 +596,7 @@ c Check for out-of-allowable range.
 C Flag that links made.
           LINKED=.TRUE.
         elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
-     &    icfoc.eq.4.or.icfoc.eq.5)then
+     &         icfoc.eq.4)then
           continue
         endif
 
@@ -673,7 +620,7 @@ C Local variable ireturn is non-zero to signal user wants to exit.
             IRETURN=1
           endif
         elseif(icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3.or.
-     &         icfoc.eq.4.or.icfoc.eq.5)then
+     &         icfoc.eq.4)then
           IRETURN=1
         endif
 
@@ -777,16 +724,6 @@ C List control data.
               call LSTCNTL(itru,4,ii,IER)
  247        continue
           endif
-          if(icfoc.eq.5.and.nof.gt.0)then
-            call edisp(itru,' ')
-            WRITE(outs,'(a,I2,a)')' Optical control includes ',
-     &        nof,' loops.'
-            call edisp(itru,outs)
-            call edisp248(itru,opticdoc,72)
-            do 248 ii=1,nof
-              call LSTCNTL(itru,5,ii,IER)
- 248        continue
-          endif
         elseif(irc.eq.2)then
           call ezctlc(iier)
         endif
@@ -834,10 +771,6 @@ C Begin by selecting the loop to focus on.
      &          0,'F',necl,'F',0,'associated control',IERI,4)
             if(ieri.eq.-3) goto 92
             nn=necdt(IFOC)
-          elseif(icfoc.eq.5)then
-            CALL EASKI(IFOC,' ','Optical control function index?',
-     &          0,'F',nof,'F',0,'associated control',IERI,4)
-            nn=nocdt(IFOC)
           endif
           if(nn.eq.0)then
             call usrmsg('For the special case of Weekday/Sat/Sun',
@@ -849,9 +782,7 @@ C Begin by selecting the loop to focus on.
           goto 92
         endif
         call edisp(iuout,
-     &'You may need to update links to zones, plant or flow networks')
-        call edisp(iuout,
-     &'or any other existing control networks.')
+     &'You may need to update links to zones, plant or flow networks.')
       ELSEIF(IVERT.EQ.(MVERT-5))THEN
 
 C If there are enough items, allow paging control via EKPAGE.
@@ -906,10 +837,6 @@ C Pull up a multi-choice dialog to see what should be edited.
         elseif(icfoc.eq.4)then
           call LSTCNTLD(itru,4,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Power control function (',II,
-     &      ') editing.'
-        elseif(icfoc.eq.5)then
-          call LSTCNTLD(itru,5,ii,idi,IER)
-          write(outs,'(a,i2,a)') 'Optical control function (',II,
      &      ') editing.'
         endif
         idno=0
@@ -1003,17 +930,6 @@ C call the flow actuation interactions now.
             IESN(II,1)=ien1
             IESN(II,2)=ien2
             IESN(II,3)=ien3
-          elseif(icfoc.eq.5)then
-            isn1=IOSN(II,1)
-            isn2=IOSN(II,2)
-            isn3=IOSN(II,3)
-            isn4=IOSN(II,4)
-            call senloc('Options:','Optical sensor',icfoc,II,
-     &       isn1,isn2,isn3,isn4,isn5,isense,nsupl,'optical sensor',IER)
-            IOSN(II,1)=isn1
-            IOSN(II,2)=isn2
-            IOSN(II,3)=isn3
-            IOSN(II,4)=isn4
           endif
           CALL EPMENRC
           if (ICFOC.ne.2) then
@@ -1073,15 +989,6 @@ C substitutions will occur.
             IEAN(II,1)=ien1
             IEAN(II,2)=ien2
             IEAN(II,3)=ien3
-          elseif(icfoc.eq.5)then
-            ian1=IOAN(II,1)
-            ian2=IOAN(II,2)
-            ian3=IOAN(II,3)
-            call actloc('Options:','Optical actuator',icfoc,II,
-     &        0,ian1,ian2,ian3,'optical actuator',IER)
-            IOAN(II,1)=ian1
-            IOAN(II,2)=ian2
-            IOAN(II,3)=ian3
           endif
           CALL EPMENRC
           call usrmsg(' ',' ','-')
@@ -1124,13 +1031,6 @@ C Edit date of validity (day type index is idi).
             IECDV(II,idi,1)=IBDOY
             IECDV(II,idi,2)=IEDOY
             IF(IECDV(II,idi,2).LT.IECDV(II,idi,1))GOTO 48
-          elseif(icfoc.eq.5)then
-            IBDOY=IOCDV(II,idi,1)
-            IEDOY=IOCDV(II,idi,2)
-            CALL EASKPER('Dates of validity:',IBDOY,IEDOY,IFDAY,IER)
-            IOCDV(II,idi,1)=IBDOY
-            IOCDV(II,idi,2)=IEDOY
-            IF(IOCDV(II,idi,2).LT.IOCDV(II,idi,1))GOTO 48
           endif 
           goto 64
         elseif(ISW.eq.4)then
@@ -1152,10 +1052,7 @@ C current day type data..
             CALL EGCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.4)then
             call LSTCNTLD(itru,4,II,idi,IER)
-            CALL edisp(iuout,'Electrical editing not available')
-          elseif(icfoc.eq.5)then
-            call LSTCNTLD(itru,5,II,idi,IER)
-            CALL EOCNTRL(II,idi,IER)
+            CALL edisp(iuout,'Elecrical editing not available')
           endif
           CALL EPMENRC
           goto 64
@@ -1201,12 +1098,10 @@ C of type icfoc.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
-
-C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
+     &       omiscd(mol,mocdt,mocdp,misco)
 
       if(icfoc.eq.0)then
         ncper=0
@@ -1262,17 +1157,6 @@ C For optical controls
               ncper=ncper+1
   781       continue
   782     continue
-        endif
-      elseif(icfoc.eq.5)then
-        ncper=0
-        if(nof.gt.0)then
-          do 784 II=1,nof
-            NN=nocdt(ii)
-            if(nocdt(ii).eq.0)NN=3
-            do 783 IJ=1,NN
-              ncper=ncper+1
-  783       continue
-  784     continue
         endif
       endif
       return
@@ -1424,6 +1308,8 @@ C of if:elseif:else recover.
           WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
           call edisp(iuout,outs)
         endif
+
+
         call edisp(iuout,' ')
 
 C If thermophysical property substitution set type and law and jump
@@ -2706,412 +2592,6 @@ C Extract from working array to bmiscd() common structure
       endif
       return
 
-      END
-
-C *********** EOCNTRL
-C Edit optical control function II.
-      SUBROUTINE EOCNTRL(II,IV,IER)
-#include "building.h"
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-C      COMMON/GPICK/GS(MGOPT),nopt
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-
-      common/sctl/tcps,ictyp,iclaw,cm(misc)
-      CHARACTER*84 VERT(20)
-      CHARACTER*60 VERT2(20)
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1
-      character outsa*84,outsb*84,outsc*84,ltmp*248
-C      CHARACTER GS*52
-C      DIMENSION IGVAL(60)
-      logical close1
-      logical logic_cminitial ! needed to initialise cmlocal array in order to save values              
-      dimension cmlocal(misc)   ! for local editing of cm data.
-      real cmlocal
-      dimension sorting(6),bsorting(6),sort_tmp(6),bsort_tmp(6) ! for local sorting of cm bidirectional data.
-      dimension sortset(6),sortmerge(6)   
-      real sorting,bsorting,sort_tmp,bsort_tmp,sortset,sortmerge
-      integer isortCounter,ibsortCounter
-      integer LL
-      logical bNumsAreEqual
-
-C Number of optical functions and day type must be > 0.
-      IF(II.LE.0.OR.IV.LE.0)RETURN
-
-C Optical control day types.
-      J=IV
-      JJ=J
-C<<<<<<Next line is probably dublication.. delete? >>>>>>>>>>>>>>
-      LL=nocdp(II,JJ)
-
-      logic_cminitial=.false.
-C Logical needed to initialiase cm arrays
-C This initialiasation applies only to ioclaw=2. It will have to change in the future
-      do 952 inmisc=1,6
-        if(.not.logic_cminitial)then
-          cm(2*inmisc)=-30.0
-          cm(2*inmisc+1)=1.
-        endif
-  952 continue
-
-C Initial menu entry setup.
-   92 IER=0
-      IVERT=-3
-      WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
-      WRITE(vert(2),'(a,i3)')     ' number of periods:',nocdp(II,JJ)
-      WRITE(vert(3),'(a)') ' ________________________________________'
-      WRITE(vert(4),'(a)')
-     &' per| start|sensed  |actuated | control law     | data'
-      WRITE(vert(5),'(a)')
-     &' no.| time |property|property |                 |     '
-      LL=nocdp(II,JJ)
-
-C Generate menu entry for each period in day type.
-      m=5
-      DO 91 KP=1,LL
-        KK=KP
-        m=m+1
-        call stfctl(5,II,JJ,KK)
-        CALL EVCNTRL(5,II,JJ,KK,'T',SSTR)
-        CALL EVCNTRLAW(5,II,JJ,KK,TMP,LTMP)
-
-        NITEMS=INT(cm(1))
-        WRITE(outsa,'(i2,F7.2,1x,a,1x,a)')KK,tcps,SSTR(1:18),TMP(1:18)
-        outsb=' '
-        outsc=' '
-        if(NITEMS.gt.0)then
-          if(NITEMS.LE.9)then
-            write(outsb,'(9F9.1)')(cm(L),L=2,NITEMS+1)
-          else
-            write(outsb,'(9F9.1)')(cm(L),L=2,10)
-          endif
-          call SDELIM(outsb,outsc,'S',IW)
-        endif
-        CALL EMKEY(M-5,KEY,IER)
-        write(vert(m),'(1a,1x,a,1x,a)',IOSTAT=IOS,ERR=3) key,
-     &    outsa(1:47),outsc(1:34)
-  91  continue
-      m=m+1
-      WRITE(vert(m),'(a)') ' ________________________________________'
-      m=m+1
-      WRITE(vert(m),'(a)') '* add/ delete a period '
-      m=m+1
-      WRITE(vert(m),'(a)') '? help '
-      m=m+1
-      WRITE(vert(m),'(a)') '- exit  '
-      mvert=m
-
-C Now display the menu.
-      CALL EMENU('Optical control periods',VERT,MVERT,IVERT)
-      if(IVERT.EQ.mvert)then
-        return
-      elseif(IVERT.EQ.mvert-1)then
-
-C Explanation
-        h(1) ='A number of control periods can be defined for each'
-        h(2) ='control day type. Each period has a start time (i.e.'
-        h(3) ='they do not overlap), a sensed property, an actuated'
-        h(4) ='property, a control law and miscel. data which defines'
-        h(5) ='capacity, setpoints, etc.'
-        h(6) ='  '
-        h(7) ='Note: if no change required in an item then accept the'
-        h(8) ='current value.'
-        CALL PHELPD('control period help',8,'-',0,0,IER)
-      elseif(IVERT.EQ.mvert-2)then
-
-C Add or delete a period.
-        h(1)='Periods are added to the end of the list. '
-        CALL EASKABC('Options:',' ',
-     &    'add period','delete period','continue',iad,1)
-        if(iad.eq.1)then
-          call addctldp(5,II,JJ,'A',iier)
-        elseif(iad.eq.2)then
-          call addctldp(5,II,JJ,'D',iier)
-        endif
-        goto 92
-      ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
-
-C Take the t?cps() i?ctyp(),i?claw(), ?MISCD(II,JJ,KK,?) common and
-C stuff into working common array 'cm' for editing.  At end
-C of if:elseif:else recover.
-        KK=IVERT-5
-        call stfctl(5,II,JJ,KK)
-
-        NITEMS=INT(cm(1))
-        if(NITEMS.gt.0)then
-
-C The writing pattern here is taken from the flow controls
-          WRITE(outs,'(a,i3,a)')' For period',KK,' current data...'
-          call edisp(iuout,outs)
-          if(NITEMS.LE.13)then
-            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
-          else
-            write(outs,'(13F9.1)')(cm(L),L=2,13)
-          endif
-        else
-          WRITE(outs,'(a,i3,a)')' For period',KK,' define...'
-          call edisp(iuout,outs)
-        endif
-        call edisp(iuout,' ')
-
-C Optics controller.  Set type to same as initial for this optics
-C function (ie. all periods are the same).
-        ictyp=IOCTYP(II,1,1)
-        IOCTYP(II,JJ,KK)=ictyp
-        write(outs,'(a,i3)')' Current controller type: ',ictyp
-        call edisp(iuout,outs)
-        call edisp(iuout,
-     &      'Note: to change this re-edit the optics sensor')
-
-        h(1)='This acts as a stage controller which changes to '
-        h(2)='another stage if sensed value is greater than '
-        h(3)='a set point. Other laws may be added in the future.'
-        
-        ino=iclaw
-        idno=2
-        write(outs,'(a,i3,a)')'Select a control law (currently: ',
-     &    iclaw,')'
-        call MENUATOL(outs,' Available laws',
-     &   'a switch optics above setpoint (NA)',
-     &   'b switch bidirectional sets (setp. & set)',' ',' ',' ',' ',
-     &   ' ',' ',' ',' ',' ',' ',ino,idno,3)
-        iclaw=ino
-        IOCLAW(II,JJ,KK)=iclaw
-
-C Exclude here control law 1 as it is not available at the moment
-        if(ioclaw(II,JJ,KK).ne.1)then
-  62      H(1)='Define the start of the period for this control law.'
-          CALL EASKR(tcps,' ',' Period start time ? ',
-     &      0.,'F',24.,'F',0.,'control start',IER,1)
-          if(KK.GT.1)then
-            IF(tocps(II,JJ,KK-1).GE.tcps)then
-              call usrmsg(' Periods out of order..',' ','W')
-              GOTO 62
-            endif
-          else
-            CALL ECLOSE(tcps,0.0,0.001,close1)
-            IF(.NOT.close1)then
-              call usrmsg(' ',' First control must begin @ 0','W')
-              GOTO 62
-            endif
-          endif
-        endif
-
-C Ask for miscel. data.
-        if(ioclaw(II,JJ,KK).eq.1)then
-C          H(1)='The value given should relate to the type of sensor'
-C          cm(1)=2.
-C          cm(2)=10.0
-C          CALL EASKR(cm(2),' Set point:',' ',
-C     &      -1000.,'F',1000.,'F',10.,'setpoint',IER,1) 
-C          H(1)='Select the optical properties to be used when '
-C          H(2)='condition sensed is above the setpoint '
-
-C Similar logic as the EDWINO Subroutine
-C          noptz=nopt        
-C          IX=1
-C          CALL EPICKS(IX,IGVAL,' ',' Glazing types: ',
-C     &         52,noptz,GS,'raw opticals (to use above setpoint)',IER,2)
-C          cm(3)=IGVAL(1)
-          WRITE(outs,'(a)')' This option is not currently available. '
-          call edisp(iuout,outs)
-        elseif(ioclaw(II,JJ,KK).eq.2)then
-C          H(1)='The value given should relate to the type of sensor'
-C          cm(1)=12.
-C          cm(2)=10.0
-C          CALL EASKR(cm(2),' Set point:',' ',
-C     &      -1000.,'F',1000.,'F',10.,'setpoint',IER,1)
- 
-C          H(1)='Select the bidirectional dataset to be used when '
-C          H(2)='condition sensed is above the setpoint '
-
-C Similar logic as the EDWINO Subroutine       
-C          CM(3)=1.0
-C          I3=int(cm(3))
-C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
-C     &       1,'F',40,'F',1,'1st set is default',IERI,2)
-C          cm(3)=float(I3)
-C        endif
-
-C<<<<<<<<attempt to introduce an emenu here
-          logic_cminitial=.true.
-          cm(1)=12.
-  
-          do 11 ij=1,misc
-            cmlocal(ij)=cm(ij)
-  11      continue
-
-C Set it to 12 for the moment
-         do 852 inmisc=1,6
-            sorting(inmisc)=0.0
-            bsorting(inmisc)=0.0
-            sortmerge(inmisc)=0.0
-            sortset(inmisc)=0.0
-  852     continue
-
-C Number of actual items displayed.
-  741     IER=0
-          M=6
-          MVERT=9
-          do 963 ibictl_item=1,M
-            CALL EMKEY(ibictl_item,KEY,IER)
-            WRITE(VERT2(ibictl_item),'(A1,a,F7.1,2a,F4.0)') KEY,
-     &           ' Set-point: ',cmlocal(2*ibictl_item),' & ',
-     &           'dataset to use (above set-point): ',
-     &           cmlocal(2*ibictl_item+1)
-  963     continue     
-          VERT2(M+1)='_______________________________________________'
-          VERT2(M+2)  ='? help                                    '
-          VERT2(M+3)  ='- exit this menu & save any changes       '
-
-C Help text for this menu.
-          H(1) ='You can provide the set-point and the bidirectional'
-          H(2) ='dataset (e.g. at a specific slat angle) that will be '
-          H(3) =' used above the set-point. The order of the set-points'
-          H(4) ='here does not matter as they will be sorted when they '
-          H(5) =' will be processed. It is, however, recommended for QA' 
-          H(6) =' purposes to start from the top using the higher '
-          H(7) =' setpoint and carry on following a descending order.'
-          H(8) =' Dataset 1 will always be used unless the control '
-          H(9) =' condition is met.'          
-          
-C Now display the menu.
-          CALL EMENU('Control for bidirectional datasets',VERT2,MVERT,
-     &               IVERT)
-          if(IVERT.ge.1.and.IVERT.lt.MVERT-2)then
-            H(1)='The value given should relate to the type of sensor'
-            H(2)='(e.g. in oC for temperature sensor, in W/m2 for'
-            H(3)='radiation sensor, etc.).'
-            CALL EASKR(cmlocal(ivert*2),' Set-point:',' ',
-     &      -10000.,'F',10000.,'F',-30.,'setpoint',IER,3)            
-            I3=int(cmlocal(ivert*2+1))
-            H(1)='The value given should relate to the bidirectional'  
-            H(2)='dataset that will be used above the specified '
-            H(3)='setpoint.'
-            CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
-     &       1,'F',40,'F',1,'1st set is default',IERI,3)
-            cmlocal(ivert*2+1)=float(I3)
-            goto 741
-          elseif(IVERT.EQ.MVERT-1)then
-            CALL PHELPD('bidirectional control help',9,'-',0,0,IER)
-            goto 741
-          elseif(IVERT.EQ.MVERT)then
-
-C Sort the setpoints in descending order.
-C Use a temporary array to hold them for sorting
-            do 147 ix=1,6           
-              if(cmlocal(ix*2).ge.0.0)then
-
-C Get the positives for sorting
-                sorting(ix)=cmlocal(ix*2)
-              else
-C Now get the negatives for sorting              
-                bsorting(ix)=cmlocal(ix*2)             
-              endif            
-
-C Make them positive for using them in SORTR
-              bsorting(ix)=abs(bsorting(ix))                 
-  147       continue
-            KFLAG = -1
-            call SORTR(sorting,sort_tmp,6,KFLAG)
-            call SORTR(bsorting,bsort_tmp,6,KFLAG)
-            isortCounter=0
-            ibsortCounter=0
-
-C assign (next line only) back the negative values as they were before the sorting
-            do 159 irevert=1,6
-              bsorting(irevert)=-bsorting(irevert)            
-  159       continue
-            do 146 ixreturn=1,6
-              do 145 ixmatch=1,6
-                CALL ECLOSE(sorting(ixreturn),cmlocal(ixmatch*2),0.01,
-     &               bNumsAreEqual)
-                if(bNumsAreEqual)then
-                  CALL ECLOSE(sorting(ixreturn),sorting(ixreturn-1),
-     &               0.01,bNumsAreEqual)                  
-                  if(bNumsAreEqual)then
-                    write(outs,'(a,F7.1,a)')' set-point: ',
-     &                  cmlocal(ixmatch*2),' was found more than once.'
-                    call edisp(iuout,outs)     
-                    write(outs,'(3a)')'Datasets for this setpoint ',
-     &                 'must be the same ',
-     &                 '(will use the first one in the list otherwise).'
-                    call edisp(iuout,outs)
-
-C do not count when there is dublication
-                    if(isortCounter.gt.0)then
-                      isortCounter=isortCounter-1
-                    endif
-                  endif
-                  isortCounter=isortCounter+1
-
-C sortmerge will merge sorting and bsorting back together                  
-                  sortmerge(isortCounter)=cmlocal(ixmatch*2)     
-                  sortset(isortCounter)=cmlocal(ixmatch*2+1)
-                endif
-                CALL ECLOSE(bsorting(ixreturn),cmlocal(ixmatch*2),0.01,
-     &               bNumsAreEqual)
-                if(bNumsAreEqual)then
-                  CALL ECLOSE(bsorting(ixreturn),bsorting(ixreturn-1),
-     &                 0.01,bNumsAreEqual)                
-                  if(bNumsAreEqual)then
-                    write(outs,'(a,F7.1,a)')' set-point: ',
-     &                  cmlocal(ixmatch*2),' was found more than once.'
-                    call edisp(iuout,outs)     
-                    write(outs,'(3a)')'Datasets for this setpoint ',
-     &                 'must be the same ',
-     &                 '(will use the first one in the list otherwise).'
-                    call edisp(iuout,outs)
-
-C do not count when there is dublication
-                    if(ibsortCounter.gt.0)then
-                      ibsortCounter=ibsortCounter-1
-                    endif                  
-                  endif             
-                  ibsortCounter=ibsortCounter+1
-
-C sortmerge will merge sorting and bsorting back together                  
-C 6 is the total number of sortmerge (e.g. set-points). The aim is to place
-C the negatives at the end of the array
-                  if(ibsortCounter.gt.0)then
-                    sortmerge(7-ibsortCounter)=cmlocal(ixmatch*2) 
-                    sortset(7-ibsortCounter)=cmlocal(ixmatch*2+1)
-                  endif
-                endif
-  145         continue                             
-  146       continue
-            do 144 ipassback=1,6 
-              cmlocal(ipassback*2)=sortmerge(ipassback)
-              cmlocal(ipassback*2+1)=sortset(ipassback)
-C              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
-  144       continue             
-            do 13 ij=1,misc
-              cm(ij)=cmlocal(ij)
-  13        continue      
-C            logic_cminitial=.true.
-          endif
-        endif
-C<<<<<<<<<<<END OF EMENU HERE>>>>>>        
-
-C Extract from working array to omiscd() common structure
-        call extrctl(5,II,JJ,KK)
-        call usrmsg(' ',' ','-')
-        logic_cminitial=.true.
-      ELSE
-        IVERT=-1
-        GOTO 92
-      ENDIF
-      IVERT=-4
-      call usrmsg(' ',' ','-')
-      GOTO 92
-
- 3    CALL USRMSG(' ','Problem writing misc. data feedback.','W')
-      return
       END
 
 C *********** EPCNTRL
@@ -5066,7 +4546,6 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "plant.h"
 #include "epara.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/C1/NCOMP,NCON
@@ -5078,7 +4557,6 @@ C flow connections.It is assumed that the user will make one selection only.
      &               ndcon(mpcom,mnodec)
      
       LOGICAL SELECT,OK,dok
-      LOGICAL active_option
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION SALT(3),IVALS(3),VERT(35),ICPK(MCONTM)
@@ -5099,8 +4577,6 @@ C IVERT is the menu position, MVERT the current number of menu lines.
         MHEAD=2
       elseif(icfoc.eq.4)then
         MHEAD=2
-      elseif(icfoc.eq.5)then
-        MHEAD=6
       endif
       MCTL=3
       ILEN=NCOMP
@@ -5161,13 +4637,6 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.4)then
         WRITE(VERT(1),'(a)') 'a power control not yet implemented   '
         WRITE(VERT(2),'(a)') '  ------------------------------------'
-      elseif(icfoc.eq.5)then
-        WRITE(VERT(1),'(a)') 'a senses current zone db temp         '
-        WRITE(VERT(2),'(a)') '  senses an ambient condition...      '
-        WRITE(VERT(3),'(a)') 'b   external dry bulb temperature     '
-        WRITE(VERT(4),'(a)') 'c   incident radiation at ext. surface'
-        WRITE(VERT(5),'(a)') 'd senses lux levels                   '
-        WRITE(VERT(6),'(a)') '  ------------------------------------'
       endif
       M=M+1
       CALL EMKEY(M,KEY,IER)
@@ -5208,15 +4677,12 @@ C If no selection has been made before exit then display error message.
 
 C Produce help text.
         CALL PHELPD('zone geom file section',3,'-',0,0,IER)
-        goto 92
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
-        ELSE
-          goto 92
         ENDIF
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -5228,18 +4694,10 @@ C Ask for the specific zone.
      &    'Specific zone',ier)
         CALL EPMENRC
         SELECT=.TRUE.
-        if(icfoc.ne.5)then
-          H(1)='This value specifies sensor location in greater'
-          H(2)='detail. If >0 then refers to a specific surface.'
-          CALL EASKABC('Specific location: ',' ','zone air point',
-     &      'surface','continue',IW,2)
-        elseif(icfoc.eq.5)then
-
-C For optical controls, always assume zone air point
-          call edisp(iuout,
-     &      ' The location is at the specified zone air point')
-          IW=1
-        endif
+        H(1)='This value specifies sensor location in greater'
+        H(2)='detail. If >0 then refers to a specific surface.'
+        CALL EASKABC('Specific location: ',' ','zone air point',
+     &    'surface','continue',IW,2)
         if(IW.eq.1)then
           isn2=0
           isn3=0
@@ -5279,7 +4737,7 @@ C Work with local variables and only instanciate if ier is zero.
 C In the case of mass flow this choice implies no supplemental
 C items, but return isense as the control law.
         if(icfoc.eq.2)isense=1
-      elseif(ivert.eq.1.and.(icfoc.eq.0.or.icfoc.eq.5))then
+      elseif(ivert.eq.1.and.(icfoc.eq.0))then
 
 C Senses current zone db temp if ideal.
         isn1=0
@@ -5428,14 +4886,6 @@ C Senses outside db.
         isn2=0
         isn3=0
         if(icfoc.eq.2)isense=0
-      elseif(ivert.eq.3.and.icfoc.eq.5)then
-
-C Senses outside db.
-        nsup=0
-        isn1=-3
-        isn2=0
-        isn3=0
-        if(icfoc.eq.2)isense=0
       elseif(ivert.eq.5.and.
      &      (icfoc.eq.0.or.icfoc.eq.1))then
 
@@ -5445,63 +4895,6 @@ C Senses sol-air temperature.
         isn2=1
         isn3=0
         if(icfoc.eq.2)isense=0
-      elseif(ivert.eq.4.and.icfoc.eq.5)then
-
-C Senses incident solar radiation on a surface.
-C Ask for the specific zone.
-        CALL EPMENSV
-        idef=0
-        call askzone(isn1,idef,
-     &   'Specific zone associated with this sensor','Select zone','-',
-     &    'Specific zone',ier)
-        CALL EPMENRC
-        SELECT=.TRUE.
-        CALL EPMENSV
-        call EASKSUR(isn1,isn2,'-','Available surfaces.',' ',IER)
-        CALL EPMENRC
-
-C<<<<<need to confirm isn2 because it will need to be assigned to >>>>>>>>>>>
-C<<<<<<<<<<the outside face of the surface >>>>>>>>>>>>>>>>>>
-        isn3=0
-        nsup=0
-      elseif(ivert.eq.5.and.icfoc.eq.5)then
-
-C Sense lux via daylight coef method. 
-C Ask which of the two existing ways to use: Light Switch (manual 
-C blind control) or Lux level
-        H(1)=' See file solar.F for details of the two methods'
-        H(2)=' Two methods are available: Light Switch (manual' 
-        H(3)=' blind control) or Lux level. However, only the '
-        H(4)=' second for Lux level is active here. This should'
-        H(5)=' be used with care. A tested implementation of both' 
-        H(6)=' methods is available through the Tranparent Multilayer'               
-        H(7)=' Control (TMC) files. '    
-        active_option=.true.
-        do while(active_option)
-        
-          call EASKAB(' ','Available lux level controls:',
-     &      'Light Switch (N/A)','Lux level',IW,7)
-          if(IW.eq.1)then
-            active_option=.true.
-C Light Switch (manual blind control)
-            isn1= -8
-            call edisp(iuout,
-     &        ' This is not currently available from this menu.')
-            call edisp(iuout,
-     &        ' Use the tranparent multilayer constructions file (TMC)')
-            call edisp(iuout,
-     &        ' for this type of control.')       
-          elseif(IW.eq.2)then
-            active_option=.false.
-
-C Lux level control
-            isn1=-9
-          endif
-        end do
-
-        isn2=0
-        isn3=0
-        isn4=0
       elseif(ivert.eq.6.and.
      &      (icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2))then
 
@@ -5684,6 +5077,13 @@ C Depening on the users selection set isense and nsup.
         elseif(IW.eq.3)then
           return
         endif
+      elseif(ivert.eq.11.and.(icfoc.eq.5))then
+
+C Sense radiation at exterior of surface.
+        isn1= -7
+        isn2=0
+        isn3=0
+        isn4=0
       elseif(ivert.eq.12.and.(icfoc.eq.0.or.icfoc.eq.1))then
 
 C Uses value from function generator. 
@@ -5708,6 +5108,13 @@ C Uses value from function generator.
         if(ieri.eq.-3) goto 3
         isn1=isn1T
         isn2=isn2T
+      elseif(ivert.eq.12.and.(icfoc.eq.5))then
+
+C Sense lux via daylight coef method. << ? if other info required >>
+        isn1= -8
+        isn2=0
+        isn3=0
+        isn4=0
       elseif(ivert.eq.13.and.(icfoc.eq.0))then
 
 C Changes thermophysical properties.
@@ -5823,8 +5230,6 @@ C IVERT is the menu position, MVERT the current number of menu lines.
         MHEAD=2
       elseif(icfoc.eq.4)then
         MHEAD=2
-      elseif(icfoc.eq.5)then
-        MHEAD=1
       endif
       MCTL=3
       ILEN=NCOMP
@@ -5885,8 +5290,6 @@ C Build up text strings for the menu.
       elseif(icfoc.eq.4)then
         WRITE(VERT(1),'(a)')'a power actuator not yet implemented  '
         WRITE(VERT(2),'(a)')'  ------------------------------------'
-      elseif(icfoc.eq.5)then
-        WRITE(VERT(1),'(a)')'a optical properties (constructions)  '
       endif
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -6059,25 +5462,6 @@ C Sensed condition does not matter.
 C Power control sensor not yet implemented, return zeros.
         ian1=0
         ian2=0
-        ian3=0
-      elseif(ivert.eq.1.and.(icfoc.eq.5))then
-
-C Optics
-C Make a suggestion to control specific construction types
-C 1st item is -5, 2nd item number of constrction
-C and the third can be 0
-        call edisp(iuout,' ')
-        write(outs,'(2A)') ' Avoid assigning more than one control ',
-     &        'loop with different datasets to the same construction. '
-        call edisp(iuout,outs)
-        write(outs,'(2A)') ' If this mistake is made by users the ',
-     &        'datasets of the first control loop are used.'
-        call edisp(iuout,outs)
-        CALL EPMENSV
-        call epkmlc(iwhich,'Construction to control?',' ',ierr)
-        CALL EPMENRC
-        ian1=-5
-        ian2=iwhich
         ian3=0
       elseif(ivert.eq.2.and.(icfoc.eq.0))then
 
@@ -7350,19 +6734,19 @@ C Depending on the current number of miscel items also do humidity.
           prompt2(1)=' '
           ndec(1)=-1; vmin(1)=0.0; vmax(1)=100.0; vdef(1)=0.0
           if(nint(cm(2)).eq.1)then
-            menu(2)='Mode >> Proportional'
+            menu(2)='Mode >> Proportioanl'
             nmenulines=10    ! set to the last cm index used
           elseif(nint(cm(2)).eq.2)then
-            menu(2)='Mode >> Proportional +integral'
+            menu(2)='Mode >> Proportioanl +integral'
             nmenulines=11    ! set to the last cm index used
           elseif(nint(cm(2)).eq.3)then
-            menu(2)='Mode >> Proportional +derivitive'
+            menu(2)='Mode >> Proportioanl +derivitive'
             nmenulines=11    ! set to the last cm index used
           elseif(nint(cm(2)).eq.4)then
-            menu(2)='Mode >>Proportional P+I+D'
+            menu(2)='Mode >>Proportioanl P+I+D'
             nmenulines=12    ! set to the last cm index used
           endif
-          prompt1(2)='Proportional is one, for P+I use two,'
+          prompt1(2)='Proportioanl is one, for P+I use two,'
           prompt2(2)='for P+D use three, for P+I+D use four.'
           ndec(2)=0; vmin(2)=0.0; vmax(2)=4.0; vdef(2)=0.0
           menu(3)='Maximum heating capacity (W) '
@@ -8263,8 +7647,6 @@ C comfort temperature the control is activated
       elseif(icfoc.eq.3)then
         continue
       elseif(icfoc.eq.4)then
-        continue
-      elseif(icfoc.eq.5)then
         continue
       endif
       return

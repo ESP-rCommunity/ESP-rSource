@@ -136,7 +136,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
-      PARAMETER (MSTMC=20)
+      PARAMETER (MSTMC=1)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -221,7 +221,7 @@ C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
-       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
+       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
 
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
@@ -445,15 +445,7 @@ C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty    
-      
-c This common block is used to define the sky temperature calculation method
-      COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = Berdahl & Martin (1984);
-                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
-                                   ! 2 = Cole (?);
-                                   ! 3 = Czeplak & Kasten (1987);               
-                                   ! 4 = Swinbank (clear - uses dry bulb T);                  
-                                   ! 5 = Swinbank (clear - uses wet bulb T); 
+
 
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
@@ -468,7 +460,7 @@ c This common block is used to define the sky temperature calculation method
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
@@ -1127,12 +1119,6 @@ C Solar radiation (half hour data) flag.
         call egetwi(outstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
 
-      elseif(WORD(1:14).eq.'*sky_temp_calc')then
-
-C Solar radiation (half hour data) flag.
-        call egetwi(outstr,k,iExt_longwave_flg,0,1,'W',
-     &    'sky temper calculation flag',IER)
-
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(OUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
         CALL EGETWR(OUTSTR,K,EYEMI(2),0.,0.,'-','Y cord',IER)
@@ -1400,7 +1386,6 @@ C Read references to TDF id's, and then the related tasks and zones.
           DBTAG(M)=' '
           DBTASK(M)=' '
           DBZN(M)=' '
-          DBSN(M)=' '
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','tdf instance name',IER)
           DBTAG(M)=WORD(1:12)
@@ -1412,13 +1397,8 @@ C Read references to TDF id's, and then the related tasks and zones.
             CALL EGETW(OUTSTR,K,WORD,'W','related zone',IER)
             DBZN(M)=WORD(1:15)
           endif
-          if(ND.gt.3)then
-            CALL EGETW(OUTSTR,K,WORD,'W','related surface',IER)
-            DBSN(M)=WORD(1:15)
-          endif            
-          WRITE(OUTS,'(A,I2,8A)') ' Tdf item:',M,':',DBTAG(M),
-     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),
-     &      'and surface',DBSN(M)
+          WRITE(OUTS,'(A,I2,7A)') ' Tdf item:',M,':',DBTAG(M),
+     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),'.'
           IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
         GOTO 59
    58   CONTINUE

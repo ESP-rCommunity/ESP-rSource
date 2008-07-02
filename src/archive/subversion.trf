@@ -6,7 +6,7 @@ delim $$
 .TL
 An Overview of Subversion for ESP-r Central Users
 .br
-Version of September 28, 2006
+Version of July 6, 2007
 .sp 2
 .LP
 ESP-r's source code was placed under a version control system in April 2006 to
@@ -52,7 +52,8 @@ A command line client can be downloaded from the subversion website:
 .LP
 There are also a number of graphical user interfaces that can be used to access a
 Subversion repository.  Due to variations in their use, they are not documented here.
-Most of these tools provide a command line mode so this documentation is still applicable. 
+Most of these tools also provide a command line mode,
+and this documentation is still applicable.
 .\" ----------- Anonymous access ---------------
 .NH 
 Anonymous access for Non-Developers
@@ -65,18 +66,22 @@ The following command will download ESP-r's source code from the ESP-r Central r
 the current working directory of your local computer:
 .LD
 .fam C
-svn checkout  https://esp-r.net/espr/esp-r/trunk/src
+svn checkout  https://esp-r.net/espr/esp-r/trunk/
 .DE
-With this working directory, you will be able to compile and alter the
-source code on your local computer but you will not be able to make any
-changes to the ESP-r Central repository.
+With this working directory, you will be able to compile ESP-r on your
+own computer. Though you will also be able to alter the source code,
+you, will be unable to make changes to the ESP-r Central repository,
+If you're contemplating modifying ESP-r, are strongly encouraged to
+obtain a developer's account.
 .\" -------------------- Development -----------------
 .NH 
 ESP-r Development with Subversion. 
 .LP
 If you wish to make changes to the ESP-r Central repository, you must become familiar with the
-concepts of working on ``branches'' and merging branches back into the main ``trunk'' of the repository.
-These concepts are not trivial, and it is highly recommended that you make yourself familiar with them. 
+concepts of working on ``branches'' and merging branches back into the main ``trunk'' of
+the repository.
+These concepts are not trivial, and it is very important that you become comfortable
+with them.
 .LP
 For a complete description of branches and merging, please refer to chapter 4 of Versioning
 control with Subversion, by Collins-Sussman, Fitzpatrick and Pilato:
@@ -96,8 +101,9 @@ A complete description of the ESP-r Subversion branch structure is available in 
 Obtaining a Developer's Account and Sub-branch
 .LP
 In order to work on a sub-branch, you must first have an ESP-r developer's account and a sub-branch
-name assigned to you.  For details on obtaining an account and sub-branch, contact
-Ian Beausoleil-Morrison. Ibeausol@nrcan.gc.ca.
+name assigned to you.  To obtain an account and sub-branch, contact
+Alex Ferguson
+(aferguso@nrcan.gc.ca).
 .LP
 .I
 Checking out a Sub-branch
@@ -115,7 +121,7 @@ Provide your developer's account name and password when prompted.
 .NH
 Common Subversion Commands
 .LP
-There are many commands available in Subversion.  The following are the basic commands you will need.
+There are many commands available in Subversion;  the following are the most common commands you will use.
 For a more extensive list, please refer to Chapter 3 of the book Versioning control with
 Subversion:
 .IP
@@ -148,11 +154,11 @@ UPDATE files/directories of your workspace.
 .LP
 While you'll initially work on your own personal branch, you may also be
 involved in collaborative projects requiring several developers to share
-the same branch. In these projects, it will be necessary to periodically
+the same branch. In these projects, you will need to periodically
 update your working copy with changes other developers have committed to
 the project branch. The ``update'' command will update your local copy
 with any changes that other developers have committed to the project
-branch since your last checkout/update. Careful! It automatically merges
+branch since your last checkout/update. \fIBut be careful!\fR It automatically merges
 code into your files, so inspect all updated files and ensure your code
 still works correctly.
 .LD
@@ -174,24 +180,27 @@ svn commit <directory_or_filename>
 A text editor will be opened after you issue the above command.  Enter a detailed message
 that elaborates the reasons for your coding change/addition, the intent of your code, and
 the testing that you have conducted.  You should indicate in detail what impact this change
-has upon ESP-r functionality, in particular the impact it has upon calculation results.
+has upon ESP-r functionality, and in particular, the impact it has upon calculation results.
 This message will be permanently recorded in ESP-r Central's repository log and will act
 as a reference for other developers and for yourself in the future.  Use proper sentence
 structure and grammar to effectively communicate this critical information to your colleagues.
 .LP
+Within 24 hours of commiting your changes, you will receive an automatically-generated
+test report comparing the new version you've submitted with the previous version
+on your sub-branch. This test report will tell you if your new version compiles
+correctly in various configurations, and will also highlight any questionable
+syntax and potentially erroneous code introduced by your commit.
 .NH
 Conflicts
 .LP
 Conflicts arise when changes received from another developer, during an update or merge, overlap
 with local changes that you have in your working copy. You must resolve these conflicts before
 committing your changes to the repository. Subversion will flag files in conflict with a ``C'' after
-the update command has been executed. 
+an update or merge:
 .LD
 .fam C
 svn update
-.DE
-Example of command response from Subversion:
-.LD 
+---------------------- (OUTPUT) ----------------------------------------
 .fam C
 U  Install              <-- \fIU indicates the file Install updated\fR
 C  esrubps/bps.F        <-- \fIC indicates conflicts exist in esrubps/bps.F\fR
@@ -206,12 +215,20 @@ by Collins-Sussman, Fitzpatrick and Pilato:
 .NH
 Merging changes from the development branch
 .LP
-The repository's development branch will be updated periodically as developers
+ESP-r Central's development branch will be updated periodically as developers
 submit new features and bug fixes for inclusion in ESP-r. As the maintainer of your
 sub-branch, it's your responsibility to merge these changes into your sub-branch.
 Your contributions will not be accepted into the development branch until you've
 synchronized your branch with the development branch, proving your code is compatible
 with the current source from the development branch.
+.LP
+It is very important to use a clean working copy when merging changes
+from development branch. The archivist cannot correctly incorporate your
+contributions onto development branch if you commit them along with
+merged changes from development branch. \fI If you do not use a clean
+working copy when merging changes from development branch, the archivist
+may ask you to revert the changes on your sub-branch, and perform the
+merge again using a clean working copy!\fR
 .LP
 The following example illustrates the steps involved in updating your sub-branch
 with changes in the development branch for the first time:
@@ -220,7 +237,8 @@ with changes in the development branch for the first time:
 Determine the revision number at which your branch was created:
 .LD
 .fam C
-svn log --verbose --stop-on-copy https://esp-r.net/espr/esp-r/branches/my_branch
+svn log --verbose --stop-on-copy \\
+    https://esp-r.net/espr/esp-r/branches/<sub-branch name>
 
 ---------------------- (OUTPUT) ----------------------------------------
 r12 | author | 2006-04-25 10:31:38 -0400 (Tue, 25 Apr 2006) | 3 lines
@@ -237,16 +255,17 @@ This update makes some changes ...
 ------------------------------------------------------------------------
 r10 | ibeausol | 2006-04-25 08:53:27 -0400 (Tue, 25 Apr 2006) | 3 lines
 
-This update makes a copy of the development branch for use by author.
+This update makes a copy of the development branch for use by
+Author.
 
 ------------------------------------------------------------------------
 .DE
-Note revision r10. This is the revision number at which branch "my_branch" was created.
+Note revision r10. This is the revision number at which your sub-branch was created.
 .IP 2. 4
 Check out a clean copy of your work:
 .LD
 .fam C
-svn  checkout https://esp-r.net/espr/esp-r/branches/my_branch
+svn  checkout https://esp-r.net/espr/esp-r/branches/<sub-branch name>
 .DE
 .IP 3. 4
 Determine the most recent revision (i.e. the highest number) on the development_branch.
@@ -270,7 +289,7 @@ Merge the changes that have occurred on development_branch from r10
 (when your sub-branch was created) to r385.
 .LD
 .fam C
-cd <your_working_copy_from_step_3>
+cd <your_working_copy_from_step_2>
 svn merge -r 10:385 https://esp-r.net/espr/esp-r/branches/development_branch
 ---------------------- (OUTPUT) ----------------------------------------
 U integer.c
@@ -280,11 +299,10 @@ U Makefile
 .IP 6. 4
 Check to see if there are any conflicts and check the changes that have been merged.
 In the case that there are conflicts between the local changes and those on the development
-branch, an "svn revert" command needs to be executed. Then the files in conflict during 
-the merge should be modified sperately to resolve the reported conflicts. Once all the 
-conflicts are resolved, then the previous "svn merge" command needs to be executed once more.
-Make sure again that there are no conflicts reported. Otherwise the previous process
-needs to be repeated.   
+branch, execute "svn revert". Then modify the files flagged in conflict  during
+ to resolve the reported conflicts. Once all the
+conflicts are resolved, execute the  previous "svn merge" command once more.
+Again, make sure  no  conflicts are reported.
 .LD
 .fam C
 svn status
@@ -295,12 +313,12 @@ M Makefile
 .DE
 .IP 7. 4
 Commit the merged changes into your sub-branch and provide an appropriate log message.
-You will rely on this message the next time you merge in changes from development_branch:
+You will rely on this message the next time you merge in changes from development_branch;
 rather than merging from the creation point of your sub-branch (r10 in the example above) you
 will merge from the last point at which your synchronized (r385 in this example).
 .LD
 .fam C
-svn commit -m "Merged development_branch changes r10:385 into my_branch."
+svn commit -m "Merged development_branch changes r10:385 into <sub-branch name>."
 ---------------------- (OUTPUT) ----------------------------------------
 Sending integer.c
 Sending button.c
