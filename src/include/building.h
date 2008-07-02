@@ -29,9 +29,9 @@ C Type declarations
       integer MDTY,MGTY,MGPER,MOL,MOCDT,MOCDP,MISCO
 
 C For the building:
-      PARAMETER (MCOM=28)
-      PARAMETER (MCON=1000)
-      PARAMETER (MTV=250)
+      PARAMETER (MCOM=52)
+      PARAMETER (MCON=2000)
+      PARAMETER (MTV=200)
       PARAMETER (MV=24)
       PARAMETER (ME=8)
       PARAMETER (MGP=3)
