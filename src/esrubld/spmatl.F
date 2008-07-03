@@ -37,6 +37,8 @@ C Active material type components
 C SPMCMP 51 - thermochromic glazing material 
 C SPMCMP 52 - saturated surface with evaporation
 C SPMCMP 53 - phase change material
+C SPMCMP 54 - phase change material (S. Hoffmann)
+C SPMCMP 55 - phase change material (S. Hoffmann)
 
       subroutine SPMMOD(ICOMP)
 
@@ -44,7 +46,7 @@ C SPMCMP 53 - phase change material
 
       common/spmfxst/ispmxist,spflnam 
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     & nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       character spflnam*72
 
 C For each node with a special material identify the type which is held 
@@ -71,6 +73,10 @@ C then call the relevant subroutine.
               call spmcmp53(ICOMP,ISPMNOD)
             elseif(ispmtype.eq.5) then
               call spmcmp5(ICOMP,ISPMNOD)
+            elseif(ispmtype.eq.54) then
+              call spmcmp54(ICOMP,ISPMNOD)
+            elseif(ispmtype.eq.55) then
+              call spmcmp55(ICOMP,ISPMNOD)
             endif
           endif
   10  continue
@@ -153,8 +159,8 @@ C Special materials
      &                                                    EXSHADF(MS)      
 
       REAL VOC,ISC,VMP,IMP,QREF,TREF,SCELL,PBRCH,EMPV,VALF,
-     &E,K,DF1,DF2,DF,IO,IL,VMP1,VMP2,VMP3,VMP4,
-     &VMPMOD,VITER,A1,A2,IMOD,IITER, fMiscLossFactor
+     & E,K,DF1,DF2,DF,IO,IL,VMP1,VMP2,VMP3,VMP4,
+     & VMPMOD,VITER,A1,A2,IMOD,IITER, fMiscLossFactor
 
       character spmlabel*16, outs*124,spflnam*72,STRSPM*16
       COMPLEX VSPM
@@ -708,7 +714,7 @@ C read coefficient sets and close.
 
         IF(IER.GT.0)THEN
           CALL EDISP(IUOUT,
-     &'Error opening pres coefficients in SPMCMP03')
+     & 'Error opening pres coefficients in SPMCMP03')
           RETURN
         ENDIF
         READ(IUNIT,*,IOSTAT=ISTAT) NPRE
@@ -1192,8 +1198,9 @@ c     &IZNTRC(ICOMP).NE.1)goto 999
        call edisp(itu,outs)
        write(outs,'(a,a)') 'Subroutine SMCMP4 for ', spmlabel(ISPMNOD)
        call edisp(itu,outs)
-       write(outs,'(a,2x,i4,2x,i4,2x,i4)') 'Affected zone, surface and
-     &node',ispmloc(ISPMNOD,1),ispmloc(ISPMNOD,2),ispmloc(ISPMNOD,3)
+       write(outs,'(a,2x,i4,2x,i4,2x,i4)') 
+     & 'Affected zone, surface and node',
+     & ispmloc(ISPMNOD,1),ispmloc(ISPMNOD,2),ispmloc(ISPMNOD,3)
        call edisp(itu,outs)
        IF(ispmtyp(ISPMNOD,2).gt.0) THEN
          write(outs,'(a,1x,f10.2)') 'Original absorption ',QSOLE1
@@ -1645,7 +1652,13 @@ C Special materials
 
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
-      COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+
+C      COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
@@ -1706,13 +1719,13 @@ C that layer (n-1,n,n+1). NLOC is node location.
 
       IF (IPHNL.EQ.1) THEN
          NLOC=inode-1
-         EFTHK=THK(isurf,ielem)*0.25
+         EFTHK=THRMLI(ICOMP,isurf,ielem,4)*0.25
       ELSE IF (IPHNL.EQ.2) THEN
          NLOC=inode
-         EFTHK=THK(isurf,ielem)*0.5
+         EFTHK=THRMLI(ICOMP,isurf,ielem,4)*0.5
       ELSE IF (IPHNL.EQ.3) THEN
          NLOC=inode+1
-         EFTHK=THK(isurf,ielem)*0.25
+         EFTHK=THRMLI(ICOMP,isurf,ielem,4)*0.25
       ENDIF
 
 C TFCM is the temperature of the PCM material node
@@ -1781,21 +1794,26 @@ C Now calculate the future value of heat stored.
          call eclose(SHTLIQA,0.00,0.001,close)
          if(close) THEN
             SPCMF=(SHTLIQ-SHTSOL)*(TSOLI-TMELT)*
-     &      DEN(isurf,ielem)*SNA(icomp,isurf)*EFTHK
+     &      THRMLI(ICOMP,isurf,ielem,2)*SNA(icomp,isurf)*EFTHK
          else
             SPCMF=0.5*(SHTLIQ-SHTSOL)*(TSOLI-TMELT)*
-     &      DEN(isurf,ielem)*SNA(icomp,isurf)*EFTHK
+     &      THRMLI(ICOMP,isurf,ielem,2)*SNA(icomp,isurf)*EFTHK
          endif
       ELSE
          call eclose(SHTLIQA,0.00,0.001,close)
          if(close) THEN
             SPCMF=(APPSHT-SHTSOL)*(TFCM-TMELT)*
-     &      DEN(isurf,ielem)*SNA(icomp,isurf)*EFTHK
+     &      THRMLI(ICOMP,isurf,ielem,2)*SNA(icomp,isurf)*EFTHK
          else
             SPCMF=0.5*(APPSHT-SHTSOL)*(TFCM-TMELT)*
-     &      DEN(isurf,ielem)*SNA(icomp,isurf)*EFTHK
+     &      THRMLI(ICOMP,isurf,ielem,2)*SNA(icomp,isurf)*EFTHK
          endif
       ENDIF
+
+      write(*,*)'isurf=',isurf,'ielem=',ielem,' DEN=',
+     &  THRMLI(ICOMP,isurf,ielem,2),
+     &   ' EFTHK=',EFTHK,'(SHTLIQA*TFCM+SHTLIQB)=',
+     &    (SHTLIQA*TFCM+SHTLIQB)
 
 C Save future value of latent heat stored to common block.
       SPCM(icomp,isurf,NLOC)=SPCMF
@@ -1805,8 +1823,7 @@ C Save future value of latent heat stored to common block.
 C Surface results output
        SPCMTF=SPCM(icomp,isurf,1)+SPCM(icomp,isurf,2)
      &        +SPCM(icomp,isurf,3)
-       
-       NDATSPM=1
+
        DATASPM(ISPMNOD,1)=(SPCMTP+SPCMTF)/2.      
        STRSPM(ISPMNOD,1)='Heat stored (J)'
        SPCMTP=SPCMTF
@@ -1832,16 +1849,18 @@ C Trace output.
      &  inode-1
        call edisp(itu,outs)
 
+C Careful, NLOC is set to inode+1 at this location !
+C The output values TFCM and SPCMF will probably all be the same ...
       DO 20 IPHNL=1,3
        IF (IPHNL.EQ.1) THEN
-         write(outs,'(a,i3)') 'External node',NLOC
+         write(outs,'(a,i3)') 'External node',NLOC-2
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Original temperature ',TFCM
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Future heat stored ',SPCMF
        call edisp(itu,outs)
        ELSE IF (IPHNL.EQ.2) THEN
-         write(outs,'(a,i3)') 'Middle node',NLOC
+         write(outs,'(a,i3)') 'Middle node',NLOC-1
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Original temperature ',TFCM
          call edisp(itu,outs)
@@ -2273,8 +2292,8 @@ C Check that PV module surface is a transparent surface; if not, issue error mes
        if (iTMC_index .eq. 0 ) then
           write(outs,*)'SMCMP5(spmatl.F) ERROR - '
           call edisp(iuout,outs) 
-          write(outs,*) 'The PV module surface must be a transparent,
-     & multilayered construction.'
+          write(outs,*) 'The PV module surface must be a transparent',
+     & ' multilayered construction.'
           call edisp(iuout,outs)
           stop 'spmatl.F: Fatal error!'
        endif
@@ -2676,8 +2695,9 @@ C Trace output.
        call edisp(itu,outs)
        write(outs,'(a,a)') 'Subroutine SMCMP1 for ', spmlabel(ISPMNOD)
        call edisp(itu,outs)
-       write(outs,'(a,2x,i4,2x,i4,2x,i4)') 'Affected zone, surface and 
-     &node',ispmloc(ISPMNOD,1),ispmloc(ISPMNOD,2),ispmloc(ISPMNOD,3)
+       write(outs,'(a,2x,i4,2x,i4,2x,i4)') 
+     & 'Affected zone, surface and node',
+     & ispmloc(ISPMNOD,1),ispmloc(ISPMNOD,2),ispmloc(ISPMNOD,3)
        call edisp(itu,outs)
        write(outs,'(a,i3,i3,i3)') 'No of modules in surface',iNPnnls
        call edisp(itu,outs)
@@ -2704,3 +2724,442 @@ C Trace output.
 999   RETURN
 
       END
+
+C ********************************************** 54 **************************************************
+C Special Materials PCM, taken from PhD thesis by Sabine Hoffmann, University of Weimar, September 2006
+C Pages 139 - 140.
+C
+C ***************************************************************************************************
+C The functions are of the type exponential functions
+C Special Material Database
+C Default function parameters are defined in file databases/mscomp.db1
+C
+C ****************************************************************************************************
+      subroutine SPMCMP54(ICOMP,ISPMNOD)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+C Special materials
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &  nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
+
+      COMMON/RESSPM/NDATSPM,DATASPM(MSPMNOD,3),STRSPM(MSPMNOD,3)
+
+      COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+C      COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
+
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
+      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
+      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+C Phase change materials
+      COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
+
+      COMMON/PCM03/PCMFAC(MCOM,MS,MN)        ! double precision ??
+      COMMON/PCM04/PCMCONFAC(MCOM,MS,MN)  ! double precision ??
+
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     & NPGAP(MCOM,MS,MGP)
+
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
+C      double precision FACTP, FACTF,PCMCONF,PCMCONP ! is this necessary???
+C      double precision PCMFAC, PCMCONFAC ! is this necessary ??
+      REAL FACTP, FACTF,PCMCONF,PCMCONP
+      REAL PCMFAC, PCMCONFAC
+
+      REAL APPCON, APPSHT, PCMSHT
+      REAL GODZ, TFCM, SPCMP, SPCMF, SPCM,SPCMC
+      REAL SHTLIQ, EFTHK, CONPCM
+      REAL SHTa,SHTb,SHTL,C1
+      REAL TMELT, TSOLI, CONSOL, CONLIQ, SHTSOL, SHT2
+
+      INTEGER IELEM, NLOC, NPCML
+
+      character spmlabel*16,outs*124,spflnam*72,STRSPM*16
+
+      logical close
+
+C Obtain the relevant PCM data from the PCM database:
+C Melting (teta 1) and solidification (teta 2) temperature , (degC)
+      TMELT=spmdat(ISPMNOD,1)
+      TSOLI=spmdat(ISPMNOD,2)
+
+C Conductivity in solid and liquid phase and in mushy region, (W/m*K)
+      CONSOL=spmdat(ISPMNOD,3)
+      CONLIQ=spmdat(ISPMNOD,4)
+
+C Specific heat capacity in solid and liquid state, (J/(kg K))
+      SHTSOL=spmdat(ISPMNOD,5)
+      SHT2=spmdat(ISPMNOD,6)
+
+C Latent heat of the material (J/(kg K))
+      SHTL=spmdat(ISPMNOD,7)
+
+C Number of mlc layers the PCM is split into (-)
+      NPCML=spmdat(ISPMNOD,8)
+
+
+C ************************************************************************
+C Setup variables
+      icomp=ispmloc(ispmnod,1)
+      isurf=ispmloc(ispmnod,2)
+      inode=ispmloc(ispmnod,3)
+      ielem=nint(real(ispmloc(ispmnod,3))/2.)
+
+C ************************************************************************
+      SHTb=0.76224
+      SHTa=-SHTb*TSOLI+1.00002397*log(SHTL)-0.271249489
+      C1=exp(SHTa)
+C Calculate maximum value of latent heat (SHTLIQ), (J/kg), i.e. integration
+C of c(T)equation from TMELT to TSOLI
+      SHTLIQ=(C1/SHTb)*(exp(SHTb*TSOLI)-exp(SHTb*TMELT))/1000
+
+C ************************************************************************
+C ************************************************************************
+C Proceed the calculation for each node of the layer (n-1,n,n+1)
+C Node location is NLOC
+C Location: Surface - Middle - Surface
+      Do 10 IPHNL=1,3
+         If (IPHNL.EQ.1) THEN
+            NLOC=inode-1
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
+         ELSE IF (IPHNL.EQ.2) THEN
+            NLOC=inode
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.5
+         ELSE IF (IPHNL.EQ.3) THEN
+            NLOC=inode+1
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
+         ENDIF
+
+C TFCM is the temperature of the PCM material node
+C nodal Temp internal : TFCM = TFC in degC
+C nodal Temp on surface : TFCM = TFS in degC
+         IF (IPHNL.EQ.3 .AND. IELEM .EQ. NELTS(icomp,isurf)) THEN
+            TFCM=TFS(icomp,isurf) ! surface temperature
+         ELSE
+            TFCM=TFC(icomp,isurf,NLOC) ! node temperature
+         ENDIF
+
+C Calculate Conductivity and Specific Heat from function
+         SPCMC=SPCM(icomp,isurf,NLOC)
+         IF (TFCM.LT.TMELT) THEN
+            APPCON=CONSOL
+            APPSHT=SHTSOL
+         ELSE IF (TFCM.GT.TSOLI) THEN
+            APPCON=CONLIQ
+            APPSHT=SHT2
+         ELSE
+            APPCON=(SPCMC/SHTLIQ)*CONLIQ+
+     &               ((SHTLIQ-SPCMC)/SHTLIQ)*CONSOL
+            APPSHT=C1*exp(SHTb*TFCM)+SHTSOL
+         ENDIF
+
+C Read value of present factor con/sht from common block.
+C Factor FACTP is the factor to multiply with Fourier-Coefficients for
+C heat conduction calculation (present timestep)
+          FACTP=PCMFAC(icomp,isurf,NLOC)
+          PCMCONP=PCMCONFAC(icomp,isurf,NLOC)
+
+C Calculate new rate of con and sht and future factor con/sht.
+          PCMCONF=APPCON/CONSOL
+          PCMSHT=APPSHT/SHTSOL
+          FACTF=1/PCMSHT  ! why not PCMCONF/PCMSHT ???
+
+C Save value of future factor con/sht to common block.
+          PCMFAC(icomp,isurf,NLOC)=FACTF
+          PCMCONFAC(icomp,isurf,NLOC)=PCMCONF
+
+C Modify present and future value of 'C' and 'QC' coefficient
+         IF (IPHNL.EQ.3 .AND. IELEM .EQ. NELTS(icomp,isurf)) THEN ! internal surface node
+             VCP(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTP*PCMCONP
+             VCP(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTP
+             QCP(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTP
+             VCF(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTF*PCMCONF
+             VCF(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTF
+             QCF(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTF
+         ELSE IF(IPHNL.EQ.1 .AND.IELEM.EQ.(NELTS(icomp,isurf)-NPCML+1))  ! node between two adjacent PCM layers!
+     &  THEN
+             VCP(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTP
+             VCP(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTP*PCMCONP
+             QCP(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTP
+             VCF(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTF
+             VCF(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTF*PCMCONF
+             QCF(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTF
+         ELSE                                                                          ! intermediate mlc node (standard case!)
+             VCP(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTP*PCMCONP
+             VCP(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTP*PCMCONP
+             QCP(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTP
+             VCF(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTF*PCMCONF
+             VCF(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTF*PCMCONF
+             QCF(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTF
+         ENDIF
+
+C Calculate the value of latent heat (J), stored in part PCM layer
+C represented by each node of PCM layer.
+C The latent heat stored in the PCM layer is the integration of the
+C apparent heat equation from TMELT to TFCM.
+C First the present value of heat stored read from common block.
+         SPCMP=SPCM(icomp,isurf,NLOC)
+
+C Now calculate the future value of heat stored [J].
+            IF(TFCM.LT.TMELT) THEN
+               SPCMF=0.0
+            ELSE IF(TFCM.GT.TSOLI) THEN
+               SPCMF=SHTLIQ
+            ELSE
+               SPCMF=((C1/SHTb)*exp(SHTb*TFCM)-
+     &                      (C1/SHTb)*exp(SHTb*TMELT))/1000
+            ENDIF
+C Save future value of latent heat stored to common block.
+            SPCM(icomp,isurf,NLOC)=SPCMF
+10    CONTINUE
+
+C Output of Surface results
+      SPCMTF=SPCM(icomp,isurf,1)+SPCM(icomp,isurf,2)
+     & +SPCM(icomp,isurf,3)
+
+      DATASPM(ISPMNOD,1)=(SPCMTP+SPCMTF)/2.
+      STRSPM(ISPMNOD,1)='Heat stored (J)'
+      SPCMTP=SPCMTF
+
+C Also (as a temporary results recovery measure) pass results output(s)
+C to zone based variable ZSPM1 for storage in the results library
+C the output is limited to ONE special material per zone!
+      ZSPMF1(ISPMLOC(ISPMNOD,1))=DATASPM(ISPMNOD,1)
+
+C Thats it ...
+      return
+      end          ! <- end SPMCMP54
+
+C ********************************************** 55 **************************************************
+C Special Materials PCM, taken from PhD thesis by Sabine Hoffmann, University of Weimar, September 2006
+C Pages 140 - 141.
+C
+C ****************************************************************************************************
+C The functions used are of the type "rational functions" (gebrochen rationale)
+C
+C Special Material Database
+C Parameter are defined in file databases/mscomp.db1
+C
+C *****************************************************************************************************
+      subroutine SPMCMP55(ICOMP,ISPMNOD)
+
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+C Special materials
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &   nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
+
+      COMMON/RESSPM/NDATSPM,DATASPM(MSPMNOD,3),STRSPM(MSPMNOD,3)
+
+      COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+C      COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
+
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
+
+      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
+      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+C Phase change materials
+      COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
+      COMMON/PCM03/PCMFAC(MCOM,MS,MN)
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     & NPGAP(MCOM,MS,MGP)
+
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+
+C      double precision PCMFAC  ! is this necessary ???
+      REAL PCMFAC
+
+      REAL APPCON, APPSHT, PCMSHT, FACTP, FACTF
+      REAL GODZ, TFCM, SPCMP, SPCMF, SPCM
+      REAL SHTLIQ, EFTHK, PCMCON, CONPCM
+      REAL SHTa,SHTb,SHTc,SHTd,SHTe
+      REAL C1, C2, C3, C4, C5, C6, C7, C8, C9
+      REAL SHTLIQ1, SHTLIQ2, SHTLIQ3
+      REAL SPCMF1, SPCMF2, SPCMF3, SPCMF4,SPCMC
+      REAL TMELT, TSOLI, CONSOL, CONLIQ, SHTSOL, SHT2
+
+      INTEGER IELEM, NLOC
+
+      character spmlabel*16,outs*124,spflnam*72,STRSPM*16
+
+      logical close
+
+C Obtain the relevant PCM data from the PCM database:
+C Melting and solidification temperature , (degC)
+      TMELT=spmdat(ISPMNOD,1)
+      TSOLI=spmdat(ISPMNOD,2)
+C Conductivity in solid and liquid phase (W/m*K)
+      CONSOL=spmdat(ISPMNOD,3)
+      CONLIQ=spmdat(ISPMNOD,4)
+C Specific heat capacity in solid and liquid state
+      SHTSOL=spmdat(ISPMNOD,5)
+      SHT2=spmdat(ISPMNOD,6)
+C Coefficients for apparent heat equation:
+C c(T)=(a+cT+eT**2)/(1+bT+dT**2)
+      SHTa=spmdat(ISPMNOD,7)
+      SHTb=spmdat(ISPMNOD,8)
+      SHTc=spmdat(ISPMNOD,9)
+      SHTd=spmdat(ISPMNOD,10)
+      SHTe=spmdat(ISPMNOD,11)
+
+C ************************************************************************
+C Setup variables
+      icomp=ispmloc(ispmnod,1)
+      isurf=ispmloc(ispmnod,2)
+      inode=ispmloc(ispmnod,3)
+      ielem=nint(real(ispmloc(ispmnod,3))/2.)
+
+C ************************************************************************
+C Calculate values that are invariant in time
+C Coefficients for integration of c(T)equation
+C Calculate necessary coefficients C1, C2, C3, C4, C5, C6, C7, C8, C9
+      C1=2*SHTa*(SHTd**2)+(SHTb**2)*SHTe-SHTb*SHTc*SHTd-2*SHTd*SHTe
+      C2=2*SHTd/SQRT((-(SHTb**2)+4*SHTd))
+      C3=SHTb/(SQRT(-SHTb**2+4*SHTd))
+      C4=(SHTd**2)*(SQRT(-SHTb**2+4*SHTd))
+      C5=(SHTc*SHTd-SHTb*SHTe)
+      C6=SHTb
+      C7=SHTd
+      C8=2*(SHTd**2)
+      C9=SHTe/SHTd
+
+C Calculate maximum value of latent heat (SHTLIQ), (J/kg), i.e. integration
+C of c(T)equation from TMELT to TSOLI
+      SHTLIQ1=((C1*atan(C2*TSOLI+C3))/C4)-((C1*atan(C2*TMELT+C3))/C4)
+      SHTLIQ2=((C5*log(1+C6*TSOLI+C7*(TSOLI**2)))/C8)-
+     &  ((C5*log(1+C6*TMELT+C7*(TMELT**2)))/C8)
+      SHTLIQ3=C9*(TSOLI-TMELT)
+      SHTLIQ=(SHTLIQ1+SHTLIQ2+SHTLIQ3)/1000
+
+C ************************************************************************
+C Proceed the calculation for each node of the layer (n-1,n,n+1)
+C Node location is NLOC
+C Location: Surface - Middle - Surface
+      Do 10 IPHNL=1,3
+         If (IPHNL.EQ.1) THEN
+            NLOC=inode-1
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
+         ELSE IF (IPHNL.EQ.2) THEN
+            NLOC=inode
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.5
+         ELSE IF (IPHNL.EQ.3) THEN
+            NLOC=inode+1
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
+         ENDIF
+
+C TFCM is the temperature of the PCM material node
+C nodal Temp internal : TFCM = TFC in degC
+C nodal Temp on surface : TFCM = TFS in degC
+         IF (IPHNL.EQ.3.AND.IELEM.EQ.NELTS(icomp,isurf)) THEN
+            TFCM=TFS(icomp,isurf)
+         ELSE
+            TFCM=TFC(icomp,isurf,NLOC)
+         ENDIF
+
+C Calculate Conductivity and Specific Heat from function
+         SPCMC=SPCM(icomp,isurf,NLOC)
+         IF (TFCM.LT.TMELT) THEN
+            APPCON=CONSOL
+            APPSHT=SHTSOL
+         ELSE IF (TFCM.GT.TSOLI) THEN
+            APPCON=CONLIQ
+            APPSHT=SHT2
+         ELSE
+            APPCON=(SPCMC/SHTLIQ)*CONLIQ+
+     &      ((SHTLIQ-SPCMC)/SHTLIQ)*CONSOL
+            APPSHT=((SHTa+SHTc*TFCM+SHTe*(TFCM**2))
+     &      /(1+SHTb*TFCM+SHTd*(TFCM**2)))+SHTSOL
+         ENDIF
+
+C Read value of present factor con/sht from common block.
+C Factor FACTP is the factor to multiply with Fourier-Coefficients for
+C heat conduction calculation (present timestep)
+         FACTP=PCMFAC(icomp,isurf,NLOC)
+
+C Calculate new rate of con and sht and future factor con/sht.
+         PCMCON=APPCON/CONSOL
+         PCMSHT=APPSHT/SHTSOL
+         FACTF=PCMCON/PCMSHT
+
+C Save value of future factor con/sht to common block.
+         PCMFAC(icomp,isurf,NLOC)=FACTF
+
+C Modify present and future value of 'C' and 'QC' coefficient
+         VCP(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTP
+         VCP(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTP
+         QCP(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTP
+         VCF(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTF
+         VCF(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTF
+         QCF(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTF
+
+C Calculate the value of latent heat (J), stored in part PCM layer
+C represented by each node of PCM layer.
+C The latent heat stored in the PCM layer is the integration of the
+C apparent heat equation from TMELT to TFCM.
+C First the present value of heat stored read from common block.
+         SPCMP=SPCM(icomp,isurf,NLOC)
+
+C Now calculate the future value of heat stored [J].
+         IF(TFCM.LT.TMELT) THEN
+            SPCMF=0.0
+         ELSE IF(TFCM.GT.TSOLI) THEN
+            SPCMF=SHTLIQ
+         ELSE
+            SPCMF1=(C1*atan(C2*TFCM+C3))/C4-(C1*atan(C2*TMELT+C3))/C4
+            SPCMF2=(C5*log(1+C6*TFCM+C7*(TFCM**2)))/C8-
+     &      (C5*log(1+C6*TMELT+C7*(TMELT**2)))/C8
+            SPCMF3=C9*TFCM-C9*TMELT
+            SPCMF4=SPCMF1+SPCMF2+SPCMF3
+            SPCMF=SPCMF4/1000
+         ENDIF
+
+C Save future value of latent heat stored to common block.
+         SPCM(icomp,isurf,NLOC)=SPCMF
+         
+10    CONTINUE
+
+C Output of Surface results
+      SPCMTF=SPCM(icomp,isurf,1)+SPCM(icomp,isurf,2)
+     & +SPCM(icomp,isurf,3)
+      NDATSPM=1
+      DATASPM(ISPMNOD,1)=(SPCMTP+SPCMTF)/2.
+      STRSPM(ISPMNOD,1)='Heat stored (J)'
+      SPCMTP=SPCMTF
+C Also (as a temporary results recovery measure) pass results output(s)
+C to zone based variable ZSPM1 for storage in the results library
+C the output is limited to ONE special material per zone!
+      ZSPMF1(ISPMLOC(ISPMNOD,1))=DATASPM(ISPMNOD,1)
+
+C thats it ...
+      return
+      end          ! <- end SPMCMP55

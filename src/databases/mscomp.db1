@@ -245,6 +245,8 @@ Eurosolare     :PV-hybrid-cell_3.6mm
 *END
 *SPECMATL
 *ID DATA
+# Category | Assoc. special 
+#            material model no 
    3     2
 *DESC
 Simple_pv
@@ -258,6 +260,8 @@ efficiecy) of the solar radiation falling on a surface to power output.
 *END
 *SPECMATL
 *IDDATA
+# Category | Assoc. special 
+#            material model no 
     2     1
 *DESC
 TNO_amorphous_pv
@@ -316,6 +320,8 @@ DTNO_glass    :TNO-pv-testcell
 *END
 *SPECMATL
 *IDDATA
+# Category | Assoc. special 
+#            material model no 
     5     3
 *DESC
 ducted_wind_turbine
@@ -405,6 +411,105 @@ according to this two cases can be considered:
 
 *ENDTEXT
 *END
+###########
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#          | material model no
+     7            54
+*DESC
+PCM_t54
+*SPECDATA
+8
+20.0       Melting temperature (degC)
+21.0       Solidification temperature (degC)
+0.40       Conductivity in solid phase (W/(m K))
+0.80       Conductivity in liquid phase (W/(m K))
+1000.0    Specific heat capacity solid (J/(kg*K))
+1234.0    Specific heat capacity liquid (J/(kg K))
+5000.0    Latent heat SHTL - see info (?)
+1.0         Number of adjacent layers of PCM material (-)
+*TEXT
+
+PHASE CHANGE MATERIAL
+Special, phase change material should be defined for middle 
+node of the layer of interest.
+
+Following informations are required to define phase change mat.
+- melting temperature,          degC
+- solidification temperature,   degC
+- conductivity in solid phase,  W/(m*K)
+- conductivity in liquid phase, W/(m*K)
+- specific heat in solid phase, J/(kg*K)
+- specific heat in liquid phase, J/(kg*K)
+- latent heat SHTL, (?)
+- number of adjacent layers of mlc which are PCM, (-)
+
+Phase change occures between melting Tm (PCM becomes liquid) and
+solidification Ts (PCM becomes solid) temperatures. Below
+Tm PCM is considered as a solid and the conductivity of the layer
+is equal to conductivity in solid phase. Over Tm PCM is considered
+as a liquid and conductivity of the layer is equal to conductivity
+in liquid phase.
+
+Beyond phase change temperature range latent heat of material is
+equal to 0. In phase change temperature range latent heat is:
+
+((to be added))
+
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#          | material model no
+     7            55
+*DESC
+PCM_t55
+*SPECDATA
+11
+22.0           Melting temperature (degC)
+24.0           Solidification temperature (degC)
+0.40           Conductivity in solid phase (W/(m K))
+0.80           Conductivity in liquid phase (W/(m K))
+1000.0        Specific heat capacity solid (J/(kg*K))
+1234.0        Specific heat capacity liquid (J/(kg K))
+-9.467E+01  SHTa - see info (J/(kg*K^2))
+-7.029E-02  SHTb - see info (J/(kg*K^2))
+7.117E+00   SHTc - see info (J/(kg*K))
+1.238E-03   SHTd - see info (J/(kg*K))
+-1.032E-01  SHTe - see info (J/(kg*K))
+*TEXT
+
+PHASE CHANGE MATERIAL
+Special, phase change material should be defined for middle 
+node of the layer of interest.
+
+Following informations are required to define phase change mat.
+- melting temperature,          degC
+- solidification temperature,   degC
+- conductivity in solid phase,  W/(m*K)
+- conductivity in liquid phase, W/(m*K)
+- specific heat,                J/(kg*K)
+- latent heat,                  J/(kg*K)
+- Coefficients for apparent heat equation
+  (SHTa through SHTe)
+
+Phase change occures between melting Tm (PCM becomes liquid) and
+solidification Ts (PCM becomes solid) temperatures. Below
+Tm PCM is considered as a solid and the conductivity of the layer
+is equal to conductivity in solid phase. Above Tm PCM is considered
+as a liquid and conductivity of the layer is equal to conductivity
+in liquid phase.
+
+Beyond phase change temperature range latent heat of material is
+equal to 0. In phase change temperature range latent heat is:
+
+((to be added))
+
+*ENDTEXT
+*END
+###########
 *SPECMATL
 *IDDATA
 # Category | Assoc. special 

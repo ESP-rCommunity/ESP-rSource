@@ -75,7 +75,7 @@ C IER=0 OK, IER=1 problem.
           h(1)='If you have the data needed to create this portion of'
           h(2)='the model say ok. '
           CALL ASKOK('Would you like to create a new special',
-     &'components file?',OKK,dok,2)
+     & 'components file?',OKK,dok,2)
           IF(OKK)THEN
             CONTINUE
           ELSE
@@ -171,10 +171,10 @@ c              WRITE(*,*) NSPMTYP2,ITKEY(NSPMTYP2)
 
       IF(MODE.EQ.'EG'.OR.MODE.EQ.'LG')THEN
         WRITE(VERT(1),'(A,I2,A)')
-     &' No. of embedded renewables .(',NSPMTYP2,')'
+     & ' No. of embedded renewables .(',NSPMTYP2,')'
       ELSE
         WRITE(VERT(1),'(A,I2,A)')
-     &' No. of advanced materials ..(',NSPMTYP1,')'
+     & ' No. of advanced materials ..(',NSPMTYP1,')'
       ENDIF
       VERT(2)=' Item|description  |zone|surf|node'
 
@@ -683,7 +683,7 @@ C General image option flags.
         CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','inlet.',IER)
       ELSE
         CALL EASKSUR(IZ,ISO,'-','Select surface for special',
-     &'component. ',IER)
+     & 'component. ',IER)
       ENDIF
       CALL EPMENRC
       if(SOTF(ISO)(1:4).eq.'OPAQ')then
@@ -735,7 +735,7 @@ C Allow user to select one. Begin by reading current database.
         CALL ERPRCDB(LAPRES,0,3,IER)
         if (ier.ne.0) THEN
           CALL EDISP(IUOUT,
-     &'Error opening pressure coefficients database.')
+     & 'Error opening pressure coefficients database.')
           RETURN
         endif
 
