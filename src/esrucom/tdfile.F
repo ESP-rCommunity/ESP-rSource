@@ -71,20 +71,28 @@ C Related to TDF ITEMS file.
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
+C Need to loop for number of surfaces for bidirectional data
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)   
+        
 C For each zone a pointer to relevant temporal entry 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      LOGICAL      OPTDF,OPIMP,OPEXP,XST
+      LOGICAL OPTDF,OPIMP,OPEXP,XST
 
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
       CHARACTER LTDF*72,LTDFA*72,tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
-      character DBTAG*12,DBTASK*12,DBZN*15,zname*12,zdesc*64
+      character DBTAG*12,DBTASK*12,DBZN*15,zname*12,zdesc*64,DBSN*15
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
       logical unixok,FOUND
 
@@ -123,6 +131,16 @@ C Search instances in temporal file to find match(s).
                   if(DBTASK(ITD1)(1:6).eq.'RAIRVL')IRAIRVL(itd3)=itd4
                   if(DBTASK(ITD1)(1:6).eq.'CTLSTA')ICTLSTA(itd3)=itd4
                   if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')IACTIV(itd3)=itd4
+
+C Bidirectional data are assigned per surface
+                      if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
+                        DO 75 IS=1,NZSUR(itd3)
+                          if(DBSN(itd1)(1:12).eq.
+     &                       sname(itd3,IS)(1:12))then
+                            IBIDIRS(itd3,IS)=itd4
+                          endif
+  75                    continue
+                      endif
                     endif
   77              continue
                 endif

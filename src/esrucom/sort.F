@@ -286,6 +286,9 @@ C         = 1  means sort X in increasing order (ignoring Y)
 C         =-1  means sort X in decreasing order (ignoring Y)
 C         =-2  means sort X in decreasing order and carry Y along.
 
+C This subroutine requires apparently that the items to be shorted should
+C be all negative or all positive
+
       SUBROUTINE SORTR(X,Y,N,KFLAG)
 
       DIMENSION X(N), Y(N), IL(21), IU(21)
