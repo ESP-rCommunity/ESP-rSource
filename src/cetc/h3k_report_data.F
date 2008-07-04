@@ -1907,12 +1907,12 @@ C                     write(cPCM_Chars, '(I2)') ispmtyp(iSPM,1)
 
 C.......................PCM node 'stored latent heat' 
 C.......................-> set name
-                    WRITE(H3K_rep_NAME,H3K_format_spm)
-     &                 'SPM/',spmlabel(iSPM)(1:LNBLNK(spmlabel(iSPM))),
-     &                 '/zon_',cZone_Chars,
-     &                 '/sur_',cSurf_Chars,
-     &                 '/nd_',cNode_Chars,
-     &                 '/SPCM'
+                 WRITE(H3K_rep_NAME,H3K_format_spm)
+     &            'bui/spm/',spmlabel(iSPM)(1:LNBLNK(spmlabel(iSPM))),
+     &            '/zon_',cZone_Chars,
+     &            '/sur_',cSurf_Chars,
+     &            '/nd_',cNode_Chars,
+     &            '/SPCM'
 C...........->Report data 
                     call add_to_xml_reporting (
      &                 DATASPM(iSPM,1),  ! see spmatl.f, lines 1800 ff.
@@ -1922,12 +1922,12 @@ C...........->Report data
 
 C.......................PCM factor 'conductivity/spec. heat' 
 C.......................-> set name
-                    WRITE(H3K_rep_NAME,H3K_format_spm)
-     &                 'SPM/',spmlabel(iSPM)(1:LNBLNK(spmlabel(iSPM))),
-     &                 '/zon_',cZone_Chars,
-     &                 '/sur_',cSurf_Chars,
-     &                 '/nd_',cNode_Chars,
-     &                 '/pcmfac'
+                 WRITE(H3K_rep_NAME,H3K_format_spm)
+     &            'bui/spm/',spmlabel(iSPM)(1:LNBLNK(spmlabel(iSPM))),
+     &            '/zon_',cZone_Chars,
+     &            '/sur_',cSurf_Chars,
+     &            '/nd_',cNode_Chars,
+     &            '/pcmfac'
 C...........->Report data 
                     call add_to_xml_reporting (
      &                 PCMFAC(iZone,iSurface,ispmloc(iSPM,3)),
