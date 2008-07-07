@@ -304,7 +304,8 @@ C......Special materials
       COMMON/PCM03/PCMFAC(MCOM,MS,MN)
       real PCMFAC
 
-      COMMON/RESSPM/NDATSPM,DATASPM(MSPMNOD,3),STRSPM(MSPMNOD,3)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
+     &                             STRSPM(MSPMNOD,5)
       integer NDATSPM
       real DATASPM
       character STRSPM*16
