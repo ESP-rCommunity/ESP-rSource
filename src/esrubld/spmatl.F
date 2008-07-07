@@ -1,4 +1,4 @@
-C This file is part of the ESP-r system.
+cd C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
 
@@ -1651,11 +1651,19 @@ C tests, though not experimental data.
 C Special materials
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     & nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       common/spmatlbl/spmlabel(mspmnod)
 
       COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
      &                             STRSPM(MSPMNOD,5)
+      integer NDATSPM ! number of results items for each special material
+      real DATASPM       ! Results data, for PCM the following:
+                                 ! 1 ... THKsum/Rtot
+                                 ! 2 ... sumSHTTHK/THKsum
+                                 ! 3 ... (SPCMTP+SPCMTF)/2
+                                 ! 4 ... PCMFAC
+      character STRSPM*16
+
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1690,13 +1698,16 @@ C Phase change materials
 
       INTEGER IELEM, NLOC
 
-      character spmlabel*16,outs*124,spflnam*72,STRSPM*16
+      character spmlabel*16,outs*124,spflnam*72
       logical close
 
 C---- local variables for output.
       real sumSHTTHK
       real Rtot,THKsum
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+
+C..... Number of stored items
+      NDATSPM(ISPMNOD)=4
 
 C Obtain the relevant PCM data from the PCM file:
 C Melting and solidification temperature , (degC)
@@ -1843,61 +1854,23 @@ C value to sum for results output.
 
 10    CONTINUE
 
-C Surface results output
-C       SPCMTF=SPCM(icomp,isurf,inode-1)+SPCM(icomp,isurf,inode)
-C     &        +SPCM(icomp,isurf,inode+1)
+C Results storage
+       if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THKsum/Rtot      
+       if (THKsum.gt.0) DATASPM(ISPMNOD,2)=sumSHTTHK/THKsum      
 
-       DATASPM(ISPMNOD,1)=(SPCMTP+SPCMTF)/2.      
-       STRSPM(ISPMNOD,1)='Heat stored (J)'
+       DATASPM(ISPMNOD,3)=(SPCMTP+SPCMTF)/2.0E0      
+       STRSPM(ISPMNOD,3)='Heat stored (J)'
        SPCMTP=SPCMTF
+
+       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
+
 C Also (as a temporary results recovery measure) pass results output(s) 
 C to zone based variable ZSPM1 for storage in the results library
 C the output is limited to ONE special material per zone!
        ZSPMF1(ISPMLOC(ISPMNOD,1))=DATASPM(ISPMNOD,1)
 
 C XML output
-C.....Pad index to 'XX'
-      if ( icomp .gt. 9 ) then
-         write (cZone_Chars,'(I2)') icomp
-      else
-        write (cZone_Chars,'(A,I1)') '0', icomp
-      endif
-      if ( isurf .gt. 9 ) then
-         write (cSurf_Chars,'(I2)') isurf
-      else
-        write (cSurf_Chars,'(A,I1)') '0', isurf
-      endif
-      if ( inode .gt. 9 ) then
-         write (cNode_Chars,'(I2)') inode
-      else
-        write (cNode_Chars,'(A,I1)') '0', inode
-      endif
-
-C.... output apparent conductivity for the PCM layer. This is calculated according to
-C.... lam_app = sum(thk(i)) / sum(thk(i)/lam(i)) 
-      if (Rtot .gt. 0) THEN
-          call add_to_xml_reporting(
-     &     THKsum/Rtot,
-     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
-     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
-     &     '/nd' // cNode_Chars // '/AppCon',
-     &     'units',
-     &     '(W/(m K))',
-     &     'Apparent conductivity')
-      endif
-
-C.... output apparent (mean) heat capacity for PCM layer. This is calculated according to
-C.... cp_mean = sum(cp(i)*thk(i))/sum(thk(i))
-      if (THKsum .gt. 0) then
-         call add_to_xml_reporting(
-     &     sumSHTTHK/THKsum,
-     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
-     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
-     &     '/nd' // cNode_Chars // '/AppSHT',
-     &     'units',
-     &     '(J/(kg K))',
-     &     'Apparent heat capacity')
-      endif
+      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
 
 C Trace output.
       IF(ITC.LE.0.OR.NSINC.LT.ITC.OR.ispmxist.EQ.0)goto 999
@@ -2808,16 +2781,13 @@ C Special materials
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &  nnodat(mspmnod),spmdat(mspmnod,mspmdat)
 
-      common/spmatlbl/spmlabel(mspmnod)
-      character spmlabel*16
+C      common/spmatlbl/spmlabel(mspmnod)
+C      character spmlabel*16
 
       COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
      &                             STRSPM(MSPMNOD,5)
 
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
-C      COMMON/TC/ITC,ICNT
-C      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-C      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -2828,7 +2798,6 @@ C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
 
-C      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
       COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
@@ -2841,10 +2810,6 @@ C Phase change materials
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      & NPGAP(MCOM,MS,MGP)
 
-C      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
-C      double precision FACTP, FACTF,PCMCONF,PCMCONP ! is this necessary???
-C      double precision PCMFAC, PCMCONFAC ! is this necessary ??
       REAL FACTP, FACTF,PCMCONF,PCMCONP
       REAL PCMFAC, PCMCONFAC
 
@@ -2861,7 +2826,6 @@ C      double precision PCMFAC, PCMCONFAC ! is this necessary ??
 C---- local variables for output.
       real sumSHTTHK
       real Rtot,THKsum
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
 
 C Obtain the relevant PCM data from the PCM database:
 C Melting (teta 1) and solidification (teta 2) temperature , (degC)
@@ -3012,13 +2976,15 @@ C Save future value of latent heat stored to common block.
 	    
 10    CONTINUE
 
-C Output of Surface results
-C      SPCMTF=SPCM(icomp,isurf,1)+SPCM(icomp,isurf,2)
-C     & +SPCM(icomp,isurf,3)
+C Storage of results
+       if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THKsum/Rtot      
+       if (THKsum.gt.0) DATASPM(ISPMNOD,2)=sumSHTTHK/THKsum      
 
-      DATASPM(ISPMNOD,1)=(SPCMTP+SPCMTF)/2.
-      STRSPM(ISPMNOD,1)='Heat stored (J)'
-      SPCMTP=SPCMTF
+       DATASPM(ISPMNOD,3)=(SPCMTP+SPCMTF)/2.0E0      
+       STRSPM(ISPMNOD,3)='Heat stored (J)'
+       SPCMTP=SPCMTF
+
+       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
 
 C Also (as a temporary results recovery measure) pass results output(s)
 C to zone based variable ZSPM1 for storage in the results library
@@ -3026,48 +2992,7 @@ C the output is limited to ONE special material per zone!
       ZSPMF1(ISPMLOC(ISPMNOD,1))=DATASPM(ISPMNOD,1)
 
 C XML output
-C.....Pad index to 'XX'
-      if ( icomp .gt. 9 ) then
-         write (cZone_Chars,'(I2)') icomp
-      else
-        write (cZone_Chars,'(A,I1)') '0', icomp
-      endif
-      if ( isurf .gt. 9 ) then
-         write (cSurf_Chars,'(I2)') isurf
-      else
-        write (cSurf_Chars,'(A,I1)') '0', isurf
-      endif
-      if ( inode .gt. 9 ) then
-         write (cNode_Chars,'(I2)') inode
-      else
-        write (cNode_Chars,'(A,I1)') '0', inode
-      endif
-
-C.... output apparent conductivity for the PCM layer. This is calculated according to
-C.... lam_app = sum(thk(i)) / sum(thk(i)/lam(i)) 
-      if (Rtot .gt. 0) THEN
-          call add_to_xml_reporting(
-     &     THKsum/Rtot,
-     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
-     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
-     &     '/nd' // cNode_Chars // '/AppCon',
-     &     'units',
-     &     '(W/(m K))',
-     &     'Apparent conductivity')
-      endif
-
-C.... output apparent (mean) heat capacity for PCM layer. This is calculated according to
-C.... cp_mean = sum(cp(i)*thk(i))/sum(thk(i))
-      if (THKsum .gt. 0) then
-         call add_to_xml_reporting(
-     &     sumSHTTHK/THKsum,
-     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
-     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
-     &     '/nd' // cNode_Chars // '/AppSHT',
-     &     'units',
-     &     '(J/(kg K))',
-     &     'Apparent heat capacity')
-      endif
+      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
 
 C Thats it ...
       return
@@ -3089,31 +3014,26 @@ C ******************************************************************************
 #include "building.h"
 
 C Special materials
-C      common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &   nnodat(mspmnod),spmdat(mspmnod,mspmdat)
 
-      common/spmatlbl/spmlabel(mspmnod)
-      character spmlabel*16
+C      common/spmatlbl/spmlabel(mspmnod)
+C      character spmlabel*16
 
       COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
      &                             STRSPM(MSPMNOD,5)
 
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
-C      COMMON/TC/ITC,ICNT
-C      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-C      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
-C      COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
 C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
 
-C      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
 
       COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
@@ -3124,9 +3044,6 @@ C Phase change materials
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      & NPGAP(MCOM,MS,MGP)
 
-C      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
-C      double precision PCMFAC  ! is this necessary ???
       REAL PCMFAC
 
       REAL APPCON, APPSHT, PCMSHT, FACTP, FACTF
@@ -3145,7 +3062,6 @@ C      double precision PCMFAC  ! is this necessary ???
 C---- local variables for output.
       real sumSHTTHK
       real Rtot,THKsum
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
 
 C Obtain the relevant PCM data from the PCM database:
 C Melting and solidification temperature , (degC)
@@ -3294,23 +3210,72 @@ C Save future value of latent heat stored to common block.
 
 10    CONTINUE
 
-C Output of Surface results
-C      SPCMTF=SPCM(icomp,isurf,1)+SPCM(icomp,isurf,2)
-c     & +SPCM(icomp,isurf,3)
-      DATASPM(ISPMNOD,1)=(SPCMTP+SPCMTF)/2.
-      STRSPM(ISPMNOD,1)='Heat stored (J)'
-      SPCMTP=SPCMTF
+C.... Storage of results
+       if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THKsum/Rtot      
+       if (THKsum.gt.0) DATASPM(ISPMNOD,2)=sumSHTTHK/THKsum      
+
+       DATASPM(ISPMNOD,3)=(SPCMTP+SPCMTF)/2.0E0      
+       STRSPM(ISPMNOD,3)='Heat stored (J)'
+       SPCMTP=SPCMTF
+
+       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
+
 C Also (as a temporary results recovery measure) pass results output(s)
 C to zone based variable ZSPM1 for storage in the results library
 C the output is limited to ONE special material per zone!
       ZSPMF1(ISPMLOC(ISPMNOD,1))=DATASPM(ISPMNOD,1)
 
 C XML output
+      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
+
+C thats it ...
+      return
+      end          ! <- end SPMCMP55
+
+C ********************************************** PCM_to_h3k *****************************************
+C Special Materials PCM data to h3k output routine
+C
+C Created by: Achim Geissler
+C Created on: June 17, 2008
+C Copyright: GaCH
+C ________
+C ABSTRACT:
+C This is the routine is used to transport PCM domain state-variable data to the H3K
+C reporting facilities.
+C
+C The routine is designed to be called in the PCM routines
+C
+C**********************************************************************************************
+      subroutine PCM_to_h3k(iZone,iNode,iSurf,iElem,ISPMNOD)
+      implicit none
+
+#include "building.h"
+
+C.... Parameters
+      integer iZone,iNode,iSurf,iElem,ISPMNOD
+
+C.... Commons
+      common/spmatlbl/spmlabel(mspmnod)
+      character spmlabel*16
+
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
+     &                             STRSPM(MSPMNOD,5)
+      integer NDATSPM ! number of results items for each special material
+      real DATASPM       ! Results data, for PCM the following:
+                                 ! 1 ... THKsum/Rtot
+                                 ! 2 ... sumSHTTHK/THKsum
+                                 ! 3 ... (SPCMTP+SPCMTF)/2
+                                 ! 4 ... PCMFAC
+      character STRSPM*16
+
+C.... local variables
+      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+
 C.....Pad index to 'XX'
-      if ( icomp .gt. 9 ) then
-         write (cZone_Chars,'(I2)') icomp
+      if ( iZone .gt. 9 ) then
+         write (cZone_Chars,'(I2)') iZone
       else
-        write (cZone_Chars,'(A,I1)') '0', icomp
+        write (cZone_Chars,'(A,I1)') '0', iZone
       endif
       if ( isurf .gt. 9 ) then
          write (cSurf_Chars,'(I2)') isurf
@@ -3325,30 +3290,46 @@ C.....Pad index to 'XX'
 
 C.... output apparent conductivity for the PCM layer. This is calculated according to
 C.... lam_app = sum(thk(i)) / sum(thk(i)/lam(i)) 
-      if (Rtot .gt. 0) THEN
-          call add_to_xml_reporting(
-     &     THKsum/Rtot,
+         call add_to_xml_reporting(
+     &     DATASPM(ISPMNOD,1),
      &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
      &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
      &     '/nd' // cNode_Chars // '/AppCon',
      &     'units',
      &     '(W/(m K))',
      &     'Apparent conductivity')
-      endif
 
 C.... output apparent (mean) heat capacity for PCM layer. This is calculated according to
 C.... cp_mean = sum(cp(i)*thk(i))/sum(thk(i))
-      if (THKsum .gt. 0) then
          call add_to_xml_reporting(
-     &     sumSHTTHK/THKsum,
+     &     DATASPM(ISPMNOD,2),
      &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
      &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
      &     '/nd' // cNode_Chars // '/AppSHT',
      &     'units',
      &     '(J/(kg K))',
      &     'Apparent heat capacity')
-      endif
 
-C thats it ...
-      return
-      end          ! <- end SPMCMP55
+C.......................PCM node 'stored latent heat' 
+         call add_to_xml_reporting(
+     &     DATASPM(ISPMNOD,3),
+     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
+     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
+     &     '/nd' // cNode_Chars // '/SPCM',
+     &     'units',
+     &     '(J)',
+     &     'Stored latent heat (PCM)')
+
+C.......................PCM factor 'relative conductivity/relative spec. heat' 
+C.......................-> set name
+         call add_to_xml_reporting(
+     &     DATASPM(ISPMNOD,4),
+     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
+     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
+     &     '/nd' // cNode_Chars // '/PCMFAC',
+     &     'units',
+     &     '(-)',
+     &     'Ratio relative conductivity / relative specific heat (PCM)')
+
+      Return
+      End       ! <- end PCM_to_h3k()

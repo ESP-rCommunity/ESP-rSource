@@ -285,31 +285,6 @@ C.....Surface area data
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       integer IVF,ISI,IHC,ITW,ICGC,IOBS ! indices for "is there"
 
-C......Special materials
-      common/spmfxst/ispmxist,spflnam
-      integer ispmxist             ! does a special material exist?
-      character spflnam*72    ! file name for special materials definition
-
-      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     & nnodat(mspmnod),spmdat(mspmnod,mspmdat)
-      integer nspmnod,ispmloc,ispmtyp,nnodat
-      real spmdat
-
-      common/spmatlbl/spmlabel(mspmnod)
-      character spmlabel*16   ! the name of the special material
-
-      COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
-      real SPCM,SPCMTF,SPCMTP
-
-      COMMON/PCM03/PCMFAC(MCOM,MS,MN)
-      real PCMFAC
-
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5)
-      integer NDATSPM
-      real DATASPM
-      character STRSPM*16
-
 C......Surface properties (emissivity and ??  area or absorption??)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),
      &              AE(MCOM,MS)
@@ -1891,57 +1866,6 @@ C...........->Report data
      &         H3K_rep_NAME,
      &         'units', '(oC)',
      &         'Temperature at node within multilayer construction' )
-
-C......========================================================
-C     Special Material Data (PCM 'type 53, 54 and/or 55', for now)
-C.....=========================================================
-         if (ispmxist .gt. 0) THEN    ! check if special materials exist
-            do iSPM=1,nspmnod  ! loop through defined special materials nodes
-             if ((ispmloc(iSPM,1) .eq. iZone) .AND.    ! current spec. mat. defined for curr. zone?
-     &           (ispmloc(iSPM,2) .eq. iSurface) .AND. ! and for current surface?
-     &           (ispmloc(iSPM,3) .eq. iNode)) THEN   ! and for current node? Then 'put out'
-                if ((ispmtyp(iSPM,1).eq.53) .OR.
-     &               (ispmtyp(iSPM,1).eq.54) .OR.
-     &               (ispmtyp(iSPM,1).eq.55)) then ! if type is "PCM",
-
-C                     write(cPCM_Chars, '(I2)') ispmtyp(iSPM,1)
-
-C.......................PCM node 'stored latent heat' 
-C.......................-> set name
-                 WRITE(H3K_rep_NAME,H3K_format_spm)
-     &            'bui/spm/',spmlabel(iSPM)(1:LNBLNK(spmlabel(iSPM))),
-     &            '/zon_',cZone_Chars,
-     &            '/sur_',cSurf_Chars,
-     &            '/nd_',cNode_Chars,
-     &            '/SPCM'
-C...........->Report data 
-                    call add_to_xml_reporting (
-     &                 DATASPM(iSPM,1),  ! see spmatl.f, lines 1800 ff.
-     &                 H3K_rep_NAME,
-     &                 'units', '(J)',
-     &                 'Stored latent heat (PCM)' )
-
-C.......................PCM factor 'conductivity/spec. heat' 
-C.......................-> set name
-                 WRITE(H3K_rep_NAME,H3K_format_spm)
-     &            'bui/spm/',spmlabel(iSPM)(1:LNBLNK(spmlabel(iSPM))),
-     &            '/zon_',cZone_Chars,
-     &            '/sur_',cSurf_Chars,
-     &            '/nd_',cNode_Chars,
-     &            '/pcmfac'
-C...........->Report data 
-                    call add_to_xml_reporting (
-     &                 PCMFAC(iZone,iSurface,ispmloc(iSPM,3)),
-     &                 H3K_rep_NAME,
-     &                 'units', '(J/m3)',
-     &                 'Ratio conductivity / specific heat (PCM)' )
-
-                 endif ! <- end if type PCM
-              endif ! <- end if location is current zone, surface and node
-
-            enddo ! <- end iSPM = 1,nspmnod
-
-         endif ! <- end if ispmxist
 
          enddo  ! <- end iNode = 2,N-1 of iSurface 1,N of iZone
 
