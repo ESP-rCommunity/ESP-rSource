@@ -202,7 +202,7 @@ C Remember if each zone is fully attributed.
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
-      character DESC*48
+      character DESC*48,DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character zname*12,cfgroot*24,ZN*12,SN*12
@@ -755,8 +755,9 @@ C For each surface in current zone check for match to attributes.
               if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ')apply=.false.
               if(ins1.eq.2.and.SSOTF(icc)(1:4).ne.'TRAN')apply=.false.
 
-C Determine the match in the system topology. 
-              CALL SURADJ(IVALS(IZ),I,IE,TMP,IZC,ISC,IC,DESC)
+C Determine the match in the system topology. Note last parameter of the
+C call suradj is a character string.
+              CALL SURADJ(IVALS(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
               if(ins2.eq.1.and.IE.ne.0)then
                 apply=.false.
               elseif(ins2.eq.2.and.IE.ne.1)then
@@ -1463,7 +1464,7 @@ C floor area for each.
         vexposed(IZZ) = 0.0
         do 111 ij=1,nzsur(izz)
           icc=izstocn(izz,ij)
-          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESC) ! not dependant on georead
+          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESCRC) ! not dependant on georead
           if(IE.eq.0)then 
 
 C Check the U value for each external surface.
