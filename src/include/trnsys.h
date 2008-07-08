@@ -19,6 +19,7 @@ C Maximum number of standard error messages in TRNSYS
 
 C Global constants delcared in esp-r code to couple trnsys types
       INTEGER  MTRNCOM, MTRNPARV, MTRNXIN, MTRNDER , MTRNOUT
+      INTEGER  MTRNSTORE
 
 C Maximum number of TRNSYS components in the plant network 
       PARAMETER (MTRNCOM=3)
@@ -31,5 +32,7 @@ C Maximum number of derivatives for a TRNSYS type
       PARAMETER (MTRNDER=100)
 C Maximum number of outputs for a TRNSYS type
       PARAMETER (MTRNOUT=100)
+C Maximum number of storage size for a TRNSYS type
+      PARAMETER (MTRNSTORE=10)
 C
 

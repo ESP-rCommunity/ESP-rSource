@@ -134,10 +134,12 @@ ISV value which defines nodal fluid type & coefficient generator model capabilit
 Record 5:
 ==========
 Syntax:
- Parameters,     ?[I]
+ Parameters
+  ?[I]
 
 Comments:
-"Parameters" is a keyword. The integer defined the number of parameters which has a range between 0
+"Parameters" is a keyword. 
+The integer defined the number of parameters which has a range between 0
 and MADATA (defined in plant.h).
 
 =============
@@ -173,19 +175,14 @@ type=N implies that the parameter changes within esp-r. A changeable parameter m
        7 : environment temperature
        8 : additional output of another component
 
-       If the changeable parameter type (the 1st integer) lies in the range between 1 and 6, the second integer
-       but not the third integer is needed. The second integer can be either positive or negative.
-      >0 : the parameter indicates a thermal physical property that varies with temperature and the
-           temperature of specified receiving fluid is applied. In esp-r, the receiving fluid's temperature
-           can be easily traced with the node and coupling. The linked variable position is employed to track
-           the temperature of the receiving fluid. This is possible because receiving fluids must be reflected 
-           in trnsys inputs. Thus, the positive integer indicates the linked variable position.
-      <0 : the parameter indicates a thermal physical property that varies with temperature and the
-           temperature somewhere in the trnsys component is applied. The specified temperature of the trnsys
-           component needs to be tracked with its additional output. In other words, if a trnsys parameter changes
-           with the temperature in the trnsys component, this temperature has to be available in the component's
-           additional ouputs. Thus, the negative number indicates the position of the additional output.
-
+       If the changeable parameter type (the 1st integer) lies in the range between 1 and 6. This means that
+          the thermal-physical parameter varies with temperature. This temperature may be of the connected
+          fluid or of somewhere in the component itself. 
+          In case of the temperature refers to the connected fluid, the node (2nd integer) and the coupling
+                   (3rd integer) are requried inputs.
+          In case of the temperature refers to somewhere in the componnet, that temperature must be one of its
+                   additional ouputs. The 2nd integer must be 0 and the 3rd integer is the index of the additional
+                   output.
        If the changeable parameter type (the 1st integer) is equal to 7, neither the second nor the third integer
        is needed. 
 
@@ -221,7 +218,8 @@ type=N implies that the parameter changes within esp-r. A changeable parameter m
 Record K+1:
 ===========
 Syntax:
- Inputs,     ?[I]
+ Inputs
+   ?[I]
 
 Comments:
 "Inputs" is a keyword. The integer defines the number of trnsys inputs which has a range between 0 and MTRNXIN
@@ -277,7 +275,8 @@ type is an integer between -3 and 4, its impications are as follows.
 Record L+1:
 ===========
 Syntax:
- Derivatives,  ?[I],  ?[I]
+ Derivatives
+  ?[I],  ?[I]
 
 Comments:
 "Derivatives" is a keyword. The first integer defines the number of derivatives, which has a range between 0 and
@@ -300,7 +299,8 @@ the initial values are assumed to represent temperatures in oC only.
 Record M+1:
 ===============
 Syntax:
- Outputs,   ?[I]
+ Outputs
+   ?[I]
 
 Comments:
 "Outputs" is a keyword. The integer defines the number of outputs, which has the same value as the number
@@ -331,7 +331,8 @@ the syntax is:
 Record N+1:
 ===============
 Syntax:
- Additional-Outputs,   ?[I]
+ Additional-Outputs
+   ?[I]
 
 Comments:
 "Additional-Outputs" is a keyword. The integer defines the number of additional outputs. This integer has a

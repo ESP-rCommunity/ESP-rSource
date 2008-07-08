@@ -34,6 +34,10 @@ C checkTrnsysError      Check whether error occurs in trnsys
 C                       ! not used in the current stage.
 
 
+C Reference:
+C Weimin Wang and Ian Beausoleil-Morrison,2008. "An extensive methodology
+C    for coupling TRNSYS components to ESP-r". In Proceedings of eSim
+C    Conference. Quebec City, CANADA. 8 pages.
 
 
 
@@ -119,9 +123,8 @@ C Common for TRNSYS inputs
      &                 ITRNX_CAT(MTRNCOM,MTRNXIN),
      &                 ITRNX_LNK1(MTRNCOM,MTRNXIN),
      &                 ITRNX_LNK2(MTRNCOM,MTRNXIN)
-
-      INTEGER NTRNXIN, ITRNX_CAT,ITRNX_LNK1,ITRNX_LNK2
       DOUBLE PRECISION    TRNXIN
+      INTEGER NTRNXIN, ITRNX_CAT,ITRNX_LNK1,ITRNX_LNK2
 
 
 C Transferred parameter
@@ -306,18 +309,18 @@ C        iPos = -1 indicates the end of changable parameters
         IF(iPos .EQ. -1) EXIT
 
         iCat = ITRNP_CAT(iTRNCOM,i)
-        iLnk1 = ITRNP_LNK1(iTRNCOM,i)
 
-C     Check the linked input or additional output exist
-C     This check was not performed in TRNPMXT because parameters
-C     are read before inputs and additional outputs
-C
+C      iCat = 7 means the parameter refers to environment temperature.
+C      No links for this case.
+        IF( iCat .EQ. 7) CYCLE
+
+        iLnk1 = ITRNP_LNK1(iTRNCOM,i)
+        iLnk2 = ITRNP_LNK2(iTRNCOM,i)
+
         IF(iCat .EQ. 8) THEN
 C   The parameter is the additional output of another component.
 C   Check that additional output exists.
 C
-           iLnk2 = ITRNP_LNK2(iTRNCOM,i)
-
            IF( iLnk2 .GT. NAPDAT(iLnk1)) THEN
            WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
            WRITE(IUOUT,*) ' parameter-linked additional output ',
@@ -327,37 +330,23 @@ C
         ELSE IF(iCat .GE. 1 .AND. iCat .LE. 6) THEN
 C  The thermal physical parameter changes with a temperature.
 C  This temperature may be with the fluid of an external conncetion
-C  or with a specified place in the component itself.
-C  Therefore, the associated temperature can be obtained via two ways
-C   First, the linked external conncetion. Since an external
-C         connection must be reflected in TRNSYS inputs, the
-C         linked input is used to trace the connection.
-C   Second, the additional output of this component. This additional
-C         ouput gives the temperature at some specified place.
+C  or with a specified location in the component itself.
+C  These two cases are implemented separately.
 C
-C The above two cases are implemented separately.
-C
-C    Changeable parameter linked to input
-          IF(iLnk1 .GT. 0) THEN
-C
-C    Check that the linked input exist
-            IF(iLnk1 .GT. NTRNXIN(iTRNCOM)) THEN
-            WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
-            WRITE(IUOUT,*)  i, ' parameter linked input NOT exist'
-            STOP ' trnsys_static_temp: unresolvable error'
-            END IF
-C
+C    Changeable parameter linked to external connection
+          IF(iLnk1 .NE. 0) THEN
 C      Get the variable index for the referred connection
-            iNod = ITRNX_LNK1(iTRNCOM,iLnk1)
-            iCon = ITRNX_LNK2(iTRNCOM,iLnk1)
+            iNod = iLnk1
+            iCon = iLnk2
             net_cndx = ICONDX(IPCOMP,iNod,iCon)
             num_ISV = ICONTP(net_cndx)
 
 C    Changeable parameter linked to additional output
-          ELSE IF(iLnk1 .LT. 0) THEN
-C
+          ELSE IF(iLnk1 .EQ. 0) THEN
 C    Check that the linked additional output exist
-            IF(-iLnk1 .GT. NAPDAT(IPCOMP)) THEN
+C     This check was not performed in TRNPMXT because parameters
+C     are read before additional outputs
+            IF(iLnk2 .GT. NAPDAT(IPCOMP)) THEN
             WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
             WRITE(IUOUT,*)  i, ' parameter linked additional output',
      &                         ' NOT exist'
@@ -373,9 +362,9 @@ C        Potential source of error
 
           ELSE
             WRITE(IUOUT,*) ' trnsys_static_temp: incorrect'
-            WRITE(IUOUT,*)  i, ' parameter iLnk1 cannot be zero'
+            WRITE(IUOUT,*)  i, ' parameter iLnk1 cannot be negative'
             STOP ' trnsys_static_temp: unresolvable error'
-          END IF   ! --> IF(iLnk1 .GT. 0)
+          END IF   ! --> IF(iLnk1 .NE. 0)
 
 C If a parameter corresponds to water properties, the sending
 C node or the representative node of this component should be water.
@@ -611,8 +600,8 @@ C Common for TRNSYS inputs
      &                 ITRNX_CAT(MTRNCOM,MTRNXIN),
      &                 ITRNX_LNK1(MTRNCOM,MTRNXIN),
      &                 ITRNX_LNK2(MTRNCOM,MTRNXIN)
-      INTEGER NTRNXIN, ITRNX_CAT,ITRNX_LNK1,ITRNX_LNK2
       DOUBLE PRECISION    TRNXIN
+      INTEGER NTRNXIN, ITRNX_CAT,ITRNX_LNK1,ITRNX_LNK2
 
 C Common for TRNSYS outputs
       COMMON/TRNSYSOUT/ITRNO_T_LNK(MTRNCOM,MNODEC),
@@ -648,8 +637,13 @@ C Common for TRNSYS types
 
 C Common for TRNSYS inputs and outputs
       COMMON/TRNSYSSTORE/outStore(MTRNCOM,MTRNOUT),
-     &                   inStore(MTRNCOM,MTRNXIN)
-      DOUBLE PRECISION outStore, inStore
+     &                   inStore(MTRNCOM,MTRNXIN),
+     &                   storageVariable(MTRNCOM,MTRNSTORE)
+      DOUBLE PRECISION outStore, inStore, storageVariable
+
+C Common for cross domain loop counters
+      common / Cross_Domain_Loop / plt_elec_loop_counter
+      integer plt_elec_loop_counter
 
 
 C Transferred parameters
@@ -689,6 +683,7 @@ C Local variables
 
 C Reference
       INTEGER  lnblnk
+      DOUBLE PRECISION TRNX_FUN
 
 
       icntrl = 0  ! initialization
@@ -810,11 +805,33 @@ C info(12) will be assigned by trnsys type at initialization call
 C with info(7) =-2. 
       info(12) = INFO_SHORT(iTRNCOM,4)
 
+
 C info(13): indicates when all trnsys components have converged in
 C          the current time step.
-C Since the program control belongs to esp-r, info(13) needs not
-C to be cared. Set an arbitrary value not equal to 1.
-      info(13) = 0
+C  info(13) = 1: Converged
+C  info(13) = 0: Not converged
+C Since the program control belongs to esp-r, info(13) is set as 1
+C when the plant loop has converged for the current time step.
+C If the plant-electrical cross domain iteration exists, info(13)
+C   is set as 1 only after both plant and electrical domain converge
+C   in the current plant time step.
+C======================
+C Future work needed
+C The building-plant cross domain iteration has not been consiered in
+C  the current stage. In this case, more work is required to store
+C  the TRNSYS storage variables at the beginning of each building
+C  time step and rewind in the following building-plant iterative steps.
+C======================
+C
+      IF(bPltcon .AND. plt_elec_loop_counter .EQ. 1) THEN
+          IF(nsincp .EQ. 1 ) THEN
+             info(13) = 0
+          ELSE
+             info(13) = 1
+          END IF
+      ELSE
+        info(13) = 0
+      END IF
 
 C info(14) and info(15) are reserved for future use by TRNSYS, so
 C they do not need to be cared.
@@ -832,26 +849,28 @@ C Update those time-dependent parameters
          IF(iPos .EQ. -1) EXIT
 
          iCat = ITRNP_CAT(iTRNCOM,i)
-         iLnk1 = ITRNP_LNK1(iTRNCOM,i)
 
-         IF(iCat .GE. 1 .AND. iCat .LE. 6) THEN
+         IF(iCat .NE. 7) THEN
+
+           iLnk1 = ITRNP_LNK1(iTRNCOM,i)
+           iLnk2 = ITRNP_LNK2(iTRNCOM,i)
+
+           IF(iCat .GE. 1 .AND. iCat .LE. 6) THEN
 C   A thermal physical paramter that varies with temperature
-           IF(iLnk1 .GT. 0) THEN
+             IF(iLnk1 .NE. 0) THEN
 C        temperature of external connected fluids
-            iNod = ITRNX_LNK1(iTRNCOM,iLnk1)
-            iCon = ITRNX_LNK2(iTRNCOM,iLnk1)
-            net_cndx = ICONDX(IPCOMP,iNod,iCon)
-            parTemp = CONVAR(net_cndx,1)
-           ELSE IF(iLnk1 .LT. 0) THEN
+              iNod = iLnk1
+              iCon = iLnk2
+              net_cndx = ICONDX(IPCOMP,iNod,iCon)
+              parTemp = CONVAR(net_cndx,1)
+             ELSE IF(iLnk1 .EQ. 0) THEN
 C        temperature within this component
 C        this temperature is specified by the additional output
 C        of this trnsys component
-            parTemp = PCAOUT(IPCOMP,-iLnk1)
-           END IF
-         ELSE IF(iCat .EQ. 8) THEN
-C    the additional output of another component
-           iLnk2 = ITRNP_LNK2(iTRNCOM,i)
-         END IF
+              parTemp = PCAOUT(IPCOMP,iLnk2)
+             END IF  ! matches--> IF(iLnk1 .NE. 0)
+           END IF  ! matches --> IF(iCat .GE. 1 .AND. iCat .LE. 6)
+         END IF   ! matches --> IF(iCat .NE. 7)
 
 C   Change the parameter's value according to its type
          IF(iCat .EQ. 1) THEN
@@ -941,6 +960,10 @@ C        linked to additional ouput
             iLnk1 = ITRNX_LNK1(iTRNCOM,i)   ! component
             iLnk2 = ITRNX_LNK2(iTRNCOM,i)   ! additional output id
             xin(i) = DBLE(PCAOUT(iLnk1,iLnk2))
+         ELSE IF(iCat .EQ. 6) THEN
+C        linked to a function value
+            iLnk1 = ITRNX_LNK1(iTRNCOM,i)
+            xin(i) = TRNX_FUN(iTRNCOM, iLnk1)
 
 C New input type inserted here
 
@@ -952,7 +975,7 @@ C New input type inserted here
          END IF    ! --> IF(iCat .EQ. 0) 
 
 C        Unit conversion
-         IF(iCat .NE. 0) THEN
+         IF(iCat .NE. 0 .AND. iCat .NE. 6) THEN
             unitCode = TRNX_UNT(iTRNCOM,i)
             toTrnsys = .true.
             CALL getConversionFactors(toTrnsys, unitCode,
@@ -1018,12 +1041,12 @@ C     Third call: TIME=TIME0 call, info(7) = 0
             info(7) = -2
             DO i=1, 3
                CALL type60(simtime,xin,out,Tinit,dtdt,par,
-     &                            info,icntrl,*800)
+     &                            info,icntrl,*500)
 
                CALL edisp(iuout, ' Impossible to come here: type 60')
                STOP ' Error in sub trnsys_coeff_gen'
 
-  800         CONTINUE
+  500         CONTINUE
 C It is usually unnecessary to check trnsys error since trnsys types
 C call ErrorFound() function when a message is reported. This is
 C especially the case at initialization step.
@@ -1048,10 +1071,20 @@ C           real simulation afterwards.
             END DO   !--> DO i=1, 3
           END IF
 
-          CALL type60(simtime,xin,out,Tinit,dtdt,par,
-     &                            info,icntrl,*1000)
+          IF(info(13) .EQ. 1) THEN
+             CALL type60(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*510)
 
-        ELSE IF(nTYPE .EQ. 505) THEN   ! geothermal heat pump
+  510        CONTINUE
+             info(13) = 0
+             CALL type60(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*1000)
+          ELSE
+             CALL type60(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*1000)
+          END IF
+
+        ELSE IF(nTYPE .EQ. 940) THEN   ! tankless water heater
           IF(nsincp .EQ. 1 .AND. bPltcon) THEN
 C     Three trnsys type calls are needed at the beginning of simulation
 C     First call: version signing call, info(7) = -2
@@ -1059,13 +1092,13 @@ C     Second call: initialization call, info(7) = -1
 C     Third call: TIME=TIME0 call, info(7) = 0
             info(7) = -2
             DO i=1, 3
-               CALL type505(simtime,xin,out,Tinit,dtdt,par,
-     &                            info,icntrl,*810)
+               CALL type940(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*600)
 
-               CALL edisp(iuout, ' Impossible to come here: type 505')
+               CALL edisp(iuout, ' Impossible to come here: type 940')
                STOP ' Error in sub trnsys_coeff_gen'
 
-  810         CONTINUE
+  600         CONTINUE
 C It is usually unnecessary to check trnsys error since trnsys types
 C call ErrorFound() function when a message is reported. This is
 C especially the case at initialization step.
@@ -1090,8 +1123,18 @@ C           real simulation afterwards.
             END DO   !--> DO i=1, 3
           END IF
 
-          CALL type505(simtime,xin,out,Tinit,dtdt,par,
+          IF(info(13) .EQ. 1) THEN
+             CALL type940(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*610)
+
+  610        CONTINUE
+             info(13) = 0
+             CALL type940(simtime,xin,out,Tinit,dtdt,par,
      &                            info,icntrl,*1000)
+          ELSE
+             CALL type940(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*1000)
+          END IF
 
         ELSE IF(nTYPE .EQ. 152) THEN   ! Annex 42 FC-cogeneration wrapper
           IF(nsincp .EQ. 1 .AND. bPltcon) THEN
@@ -1102,12 +1145,12 @@ C     Third call: TIME=TIME0 call, info(7) = 0
             info(7) = -2
             DO i=1, 3
                CALL type152(simtime,xin,out,Tinit,dtdt,par,
-     &                            info,icntrl,*820)
+     &                            info,icntrl,*700)
 
                CALL edisp(iuout, ' Impossible to come here: type 152')
                STOP ' Error in sub trnsys_coeff_gen'
 
-  820         CONTINUE
+  700         CONTINUE
 C It is usually unnecessary to check trnsys error since trnsys types
 C call ErrorFound() function when a message is reported. This is
 C especially the case at initialization step.
@@ -1132,8 +1175,18 @@ C           real simulation afterwards.
             END DO   !--> DO i=1, 3
           END IF
 
-          CALL type152(simtime,xin,out,Tinit,dtdt,par,
+          IF(info(13) .EQ. 1) THEN
+             CALL type152(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*710)
+
+  710        CONTINUE
+             info(13) = 0
+             CALL type152(simtime,xin,out,Tinit,dtdt,par,
      &                            info,icntrl,*1000)
+          ELSE
+             CALL type152(simtime,xin,out,Tinit,dtdt,par,
+     &                            info,icntrl,*1000)
+          END IF
 
 C  Calling other trnsys type subroutines inserted here
 
@@ -1156,7 +1209,6 @@ C  Calling other trnsys type subroutines inserted here
 C  Save TRNSYS inputs and outputs in the common block. This operation
 C  is essential if multiple TRNSYS componets are used in a plant network.
       IF(ISTATS .EQ. iCall_State) THEN
-
          DO i=1, INFO_SHORT(iTRNCOM,1)
             outStore(iTRNCOM,i) = out(i)
          END DO

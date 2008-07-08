@@ -1292,9 +1292,9 @@ C *********************** Type60 Dummy*****************
       END ! of type60
 
 
-C *********************** Type505 Dummy*****************
+C *********************** Type940 Dummy*****************
 
-      SUBROUTINE type505(simtime,xin,out,Tinit,dtdt,par,info,icntrl,*)
+      SUBROUTINE type940(simtime,xin,out,Tinit,dtdt,par,info,icntrl,*)
       IMPLICIT NONE
 
       DOUBLE PRECISION  simtime, par(1), xin(1), 
@@ -1302,7 +1302,7 @@ C *********************** Type505 Dummy*****************
       INTEGER           icntrl, info(15)
 
       RETURN 1
-      END ! of type505
+      END ! of type940
 
 
 C *********************** Type152 Dummy*****************
