@@ -49,17 +49,51 @@ C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok
-      CHARACTER ZDESC*25,h*72,buffer*72,ltmp*72
+      CHARACTER ZDESC*25,h*72,buffer*72,lltmp*144
+
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       
 C      if(mode.eq.1) then
+
 C Initialize plant component database file.
-         h(1)='The plant component database binary file holds the'
-         h(2)='description of available components.'
-         ltmp=lpcdb
-  100    CALL EASKS(ltmp,
-     &     ' Plant component database file name? ',' ',72,DPCDB,
-     &     ' Database name ',IER,2)
-         if(ltmp(1:2).ne.' ') lpcdb=ltmp
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  100 h(1)='The plant component database binary file holds the'
+      h(2)='description of available components. If the name'
+      h(3)='given matches an existing file, it will be read in'
+      h(4)='and the components data will be available for'
+      h(5)='listing and editing. If there is no such file then'
+      h(6)='a new one will be created to hold data for new'
+      h(7)='components.'
+      llt=lnblnk(lpcdb)
+      lltmp=lpcdb
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &      96,DPCDB,' Database name ',IER,7)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &      124,DPCDB,' Database name ',IER,7)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &      144,DPCDB,' Database name ',IER,7)
+        endif
+      elseif(iglib.eq.2)then
+        CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &    144,DPCDB,' Database name ',IER,7)
+      else
+        CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &    96,DPCDB,' Database name ',IER,7)
+      endif
+      if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+        lpcdb=lltmp
+      else
+        goto 100
+      endif
+
 C      endif
       if(mode.eq.1.or.mode.eq.2) then
 

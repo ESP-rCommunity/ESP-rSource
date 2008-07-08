@@ -452,7 +452,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
+      CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
@@ -795,72 +795,76 @@ C If '* CONFIGURATION' found then read in the databases.
       endif
 
 C Read databases until '* PROJ LOG' found.
+
+C Note that some file names could be long strings
+C so LSTRIPC and LOUTSTR are used.
   44  continue
-      CALL STRIPC(IUC,OUTSTR,99,ND,1,'db names',IER)
+      CALL LSTRIPC(IUC,LOUTSTR,99,ND,1,'db names',IER)
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','db names',IFLAG)
+      CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
       if(WORD(1:4).eq.'*prm')then
-        CALL EGETRM(OUTSTR,K,LFMAT,'W','material db',IER)
+        CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
       elseif(WORD(1:4).eq.'*mlc')then
-        CALL EGETRM(OUTSTR,K,LFMUL,'W','multilayer db',IER)
+        CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
       elseif(WORD(1:4).eq.'*opt')then
-        CALL EGETRM(OUTSTR,K,LOPTDB,'W','optical db',IER)
+        CALL EGETRM(LOUTSTR,K,LOPTDB,'W','optical db',IER)
       elseif(WORD(1:4).eq.'*prs')then
-        CALL EGETRM(OUTSTR,K,LAPRES,'W','pressure db',IER)
+        CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*evn')then
-        CALL EGETRM(OUTSTR,K,LPRFDB,'W','profiles db',IER)
+        CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profiles db',IER)
       elseif(WORD(1:4).eq.'*clm')then
 
 C Read name of standard climate file and set a flag indicating
 C that a single-year climate database has been defined
-        CALL EGETRM(OUTSTR,K,LCLIM,'W','climate db',IER)
+        CALL EGETRM(LOUTSTR,K,LCLIM,'W','climate db',IER)
         bSY_climate_defined = .true.        
       elseif(WORD(1:6).eq.'*myclm') then
 
 C Read multi-year climate database and set flag indicating hat a muli-year
 C climate database has been defined.     
-        CALL EGETRM(OUTSTR,K,cTemp,
+        CALL EGETRM(LOUTSTR,K,cTemp,
      &    'W','Multi-year climate db',IER)
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
       elseif(WORD(1:4).eq.'*pdb')then
-        CALL EGETRM(OUTSTR,K,LPCDB,'W','plant comp db',IER)
+        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant comp db',IER)
+        write(6,*) lpcdb
       elseif(WORD(1:4).eq.'*ctl')then
-        CALL EGETRM(OUTSTR,K,LCTLF,'W','config control',IER)
+        CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
       elseif(WORD(1:5).eq.'*gref')then
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
-        CALL EGETWI(OUTSTR,K,ITGREF,1,3,'F','ground refl. model',IER)
+        CALL EGETWI(LOUTSTR,K,ITGREF,1,3,'F','ground refl. model',IER)
         DO 441 I=1,12
-          CALL EGETWR(OUTSTR,K,GREF12(I),0.,1.,'W',
+          CALL EGETWR(LOUTSTR,K,GREF12(I),0.,1.,'W',
      &      'monthly gr. refl.',IER)
   441   CONTINUE
-        CALL EGETWR(OUTSTR,K,SREF,0.,1.,'W','snow refl.',IER)  
+        CALL EGETWR(LOUTSTR,K,SREF,0.,1.,'W','snow refl.',IER)  
 
       elseif(WORD(1:5).eq.'*snow')then
 
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
-          CALL EGETWI(OUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
+          CALL EGETWI(LOUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
   442   CONTINUE
 
       elseif(WORD(1:5).eq.'*sndf')then
 
 C Snow depth file (if ground refl. model 3)
-        CALL EGETRM(OUTSTR,K,SNFNAM,'W','snow depth file',IER)
+        CALL EGETRM(LOUTSTR,K,SNFNAM,'W','snow depth file',IER)
 
       elseif(WORD(1:4).eq.'*bcd')then
 
 C Flexible boundry condition data definition.  
-        call EGETRM(OUTSTR,K,cTemp,'W','BC data file', IER)
+        call EGETRM(LOUTSTR,K,cTemp,'W','BC data file', IER)
         cBC_data_file_name = cTemp(1:lnblnk(cTemp))
         bBC_data_defined = .true.
       elseif(WORD(1:4).eq.'*shl')then
 
 C There is a SHOCC library associated with the model so set
 c bSHOCCed true and then check and see if the file exists.
-        CALL EGETRM(OUTSTR,K,SHOCCshlFile,'W','SHOCC',IER)
+        CALL EGETRM(LOUTSTR,K,SHOCCshlFile,'W','SHOCC',IER)
         XST=.FALSE.
         call FINDFIL(SHOCCshlFile,XST)
         if(XST) then
@@ -874,7 +878,7 @@ c bSHOCCed true and then check and see if the file exists.
       elseif(WORD(1:5).eq.'*hvac')then
 
 C hvac file, test and see if it exists.
-        CALL EGETRM(OUTSTR,K,hvacfile,'W','config control',IER)
+        CALL EGETRM(LOUTSTR,K,hvacfile,'W','config control',IER)
         XST=.FALSE.
         call FINDFIL(hvacfile,XST)
         if(XST)then
@@ -894,7 +898,7 @@ C hvac file, test and see if it exists.
       elseif(WORD(1:4).eq.'*aim')then
 
 C AIM-2, test and see if it exists.
-        CALL EGETRM(OUTSTR,K,LAIM2,'W','AIM-2 infil data',IER)
+        CALL EGETRM(LOUTSTR,K,LAIM2,'W','AIM-2 infil data',IER)
         XST=.FALSE.
         call FINDFIL(LAIM2,XST)
         if(XST)then
@@ -915,17 +919,17 @@ C AIM-2, test and see if it exists.
 
 C Changing orientation definition
         IROAM=1
-        call EGETRM(OUTSTR,K,LROAM,'-','Roaming file name', IER)
+        call EGETRM(LOUTSTR,K,LROAM,'-','Roaming file name', IER)
       elseif(WORD(1:4).eq.'*tab')then
 
 C Lookup table definition      
-        call EGETRM(OUTSTR,K,cTemp,'W','Lookup table data file', IER)
+        call EGETRM(LOUTSTR,K,cTemp,'W','Lookup table data file', IER)
         cLookup_data_file_name = cTemp(1:lnblnk(cTemp))
         bLookup_data_defined = .true.
       elseif(WORD(1:4).eq.'*ctm')then
 
 C Contaminant model 
-        CALL EGETRM(OUTSTR,K,TEXT,'F','contaminant model',IER)
+        CALL EGETRM(LOUTSTR,K,TEXT,'F','contaminant model',IER)
         CNTMFIL=TEXT(1:72)
         NOCNTM=1
         IF(IER.NE.0)GOTO 1
@@ -980,7 +984,8 @@ C Read the file header and check for second-line tag.
 C Fuel cell.
 C If a file holding the time history of the electrical loads placed on the
 C fuel cell exists, then get the name of the file and test for its existence.
-        CALL EGETRM(OUTSTR,K,LFClds,'W','Fuel cell elec loads data',IER)
+        CALL EGETRM(LOUTSTR,K,LFClds,'W','Fuel cell elec loads data',
+     &    IER)
         XST=.FALSE.
         call FINDFIL(LFClds,XST)
         if(XST)then
@@ -1004,7 +1009,7 @@ C fuel cell exists, then get the name of the file and test for its existence.
 C DHW, test and see if it exists.
 C This routine puts the file name into the DHW Modules Variable 
 C and sets the flag into the DHW Modules Variable iDHW_Flag 
-        CALL EGETRM(OUTSTR,K,sDHW_InputFileName,'W','DHW data',IER)
+        CALL EGETRM(LOUTSTR,K,sDHW_InputFileName,'W','DHW data',IER)
         XST=.FALSE.
         call FINDFIL(sDHW_InputFileName,XST)
         if(XST)then
@@ -1027,7 +1032,7 @@ C and sets the flag into the DHW Modules Variable iDHW_Flag
       elseif(WORD(1:5).eq.'*mvnt')then
 
 C Mechanical Ventilation, test and see if it exists.
-        CALL EGETRM(OUTSTR,K,LMech,'W','Mechanical Ventilation data',
+        CALL EGETRM(LOUTSTR,K,LMech,'W','Mechanical Ventilation data',
      &    IER )
         XST=.FALSE.
         call FINDFIL(LMech,XST)
@@ -1050,7 +1055,7 @@ C Mechanical Ventilation, test and see if it exists.
 
 C GSHP: Test to ensure that .gshp file exists and set igshp
 C to one if it does.
-        CALL EGETRM(OUTSTR,K,gshpfile,'W','gshp input',IER )
+        CALL EGETRM(LOUTSTR,K,gshpfile,'W','gshp input',IER )
         XST=.FALSE.
         call FINDFIL(gshpfile,XST)
         if(XST)then
@@ -1072,7 +1077,7 @@ C to one if it does.
 
 C GCEP: Test to ensure that .gcep file exists and set
 C igcep to one if it does.
-        CALL EGETRM(OUTSTR,K,gcepfile,'W','gcep input',IER )
+        CALL EGETRM(LOUTSTR,K,gcepfile,'W','gcep input',IER )
         XST=.FALSE.
         call FINDFIL(gcepfile,XST)
         if(XST)then
@@ -1094,7 +1099,7 @@ C igcep to one if it does.
 C Wind-generated electricity
 C If a file holding the time history of wind-generated electricity exists,
 C then get the name of the file and test for its existence.
-        CALL EGETRM(OUTSTR,K,LWndSupp,'W',
+        CALL EGETRM(LOUTSTR,K,LWndSupp,'W',
      &    'Wind-gen elec supply file',IER )
         XST=.FALSE.
         call FINDFIL(LWndSupp,XST)
@@ -1116,22 +1121,22 @@ C then get the name of the file and test for its existence.
       elseif(WORD(1:12).eq.'*slr_half_hr')then
 
 C Solar radiation (half hour data) flag.
-        call egetwi(outstr,k,iSlr_half_hr_flg,0,1,'W',
+        call egetwi(loutstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
 
       elseif(WORD(1:4).eq.'*vew')then
-        CALL EGETWR(OUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
-        CALL EGETWR(OUTSTR,K,EYEMI(2),0.,0.,'-','Y cord',IER)
-        CALL EGETWR(OUTSTR,K,EYEMI(3),0.,0.,'-','Z cord',IER)
-        CALL EGETWR(OUTSTR,K,VIEWMI(1),0.,0.,'-','X cord',IER)
-        CALL EGETWR(OUTSTR,K,VIEWMI(2),0.,0.,'-','Y cord',IER)
-        CALL EGETWR(OUTSTR,K,VIEWMI(3),0.,0.,'-','Z cord',IER)
-        CALL EGETWR(OUTSTR,K,ANGI,0.,0.,'-','Z cord',IER)
+        CALL EGETWR(LOUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
+        CALL EGETWR(LOUTSTR,K,EYEMI(2),0.,0.,'-','Y cord',IER)
+        CALL EGETWR(LOUTSTR,K,EYEMI(3),0.,0.,'-','Z cord',IER)
+        CALL EGETWR(LOUTSTR,K,VIEWMI(1),0.,0.,'-','X cord',IER)
+        CALL EGETWR(LOUTSTR,K,VIEWMI(2),0.,0.,'-','Y cord',IER)
+        CALL EGETWR(LOUTSTR,K,VIEWMI(3),0.,0.,'-','Z cord',IER)
+        CALL EGETWR(LOUTSTR,K,ANGI,0.,0.,'-','Z cord',IER)
         initvt=1
       elseif(WORD(1:9).eq.'*calename')then
 
 C There is a calendar of day types defined read its name.
-        CALL EGETRM(OUTSTR,K,calename,'W','calendar name',IER)
+        CALL EGETRM(LOUTSTR,K,calename,'W','calendar name',IER)
  443    CALL STRIPC(IUC,OUTSTR,0,ND,1,'calendar data',IER)
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','calendar tag',IFLAG)
@@ -1155,98 +1160,98 @@ C There is a calendar of day types defined read its name.
           continue
         endif
       elseif(WORD(1:4).eq.'*ual')then
-        CALL EGETRM(OUTSTR,K,LUALF,'W','uncertainty lib',IER)
+        CALL EGETRM(LOUTSTR,K,LUALF,'W','uncertainty lib',IER)
       elseif(WORD(1:8).eq.'*weekend')then
-        CALL EGETWI(OUTSTR,K,idwe1,1,7,'W','weekend day',IER)
-        CALL EGETWI(OUTSTR,K,idwe2,1,7,'W','weekend day',IER)
+        CALL EGETWI(LOUTSTR,K,idwe1,1,7,'W','weekend day',IER)
+        CALL EGETWI(LOUTSTR,K,idwe2,1,7,'W','weekend day',IER)
         wkd1=wkday(idwe1)
         wkd2=wkday(idwe2)
       elseif(WORD(1:5).eq.'*year')then
-        CALL EGETWI(OUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+        CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
       elseif(WORD(1:4).eq.'*img')then
 
 C An image file.
         noimg=noimg+1
-        CALL EGETW(OUTSTR,K,WORD2,'W','img format',IFLAG)
+        CALL EGETW(LOUTSTR,K,WORD2,'W','img format',IFLAG)
         write(imgfmt(noimg),'(a4)') WORD2(1:4)
-        CALL EGETW(OUTSTR,K,WORD2,'W','focus',IFLAG)
+        CALL EGETW(LOUTSTR,K,WORD2,'W','focus',IFLAG)
         write(imgfoc(noimg),'(a4)') WORD2(1:4)
-        CALL EGETRM(OUTSTR,K,limgfil(noimg),'W','image file',IER)
+        CALL EGETRM(LOUTSTR,K,limgfil(noimg),'W','image file',IER)
       elseif(WORD(1:6).eq.'*pecnv')then
 
 C System level primary energy conversion data, set flag.
         ipconv=1
-        CALL EGETWR(OUTSTR,K,pcnvht,0.,0.,'-','heat p cnv',IER)
-        CALL EGETWR(OUTSTR,K,pcnvcl,0.,0.,'-','cool p cnv',IER)
-        CALL EGETWR(OUTSTR,K,pcnvlt,0.,0.,'-','light p cnv',IER)
-        CALL EGETWR(OUTSTR,K,pcnvfn,0.,0.,'-','fan p cnv',IER)
-        CALL EGETWR(OUTSTR,K,pcnvsp,0.,0.,'-','sml p cnv',IER)
-        CALL EGETWR(OUTSTR,K,pcnvhw,0.,0.,'-','hw p cnv',IER)
+        CALL EGETWR(LOUTSTR,K,pcnvht,0.,0.,'-','heat p cnv',IER)
+        CALL EGETWR(LOUTSTR,K,pcnvcl,0.,0.,'-','cool p cnv',IER)
+        CALL EGETWR(LOUTSTR,K,pcnvlt,0.,0.,'-','light p cnv',IER)
+        CALL EGETWR(LOUTSTR,K,pcnvfn,0.,0.,'-','fan p cnv',IER)
+        CALL EGETWR(LOUTSTR,K,pcnvsp,0.,0.,'-','sml p cnv',IER)
+        CALL EGETWR(LOUTSTR,K,pcnvhw,0.,0.,'-','hw p cnv',IER)
       elseif(WORD(1:5).eq.'*ecnv')then
 
 C Effeciencies data line currently unused so skip.
         continue
       elseif(WORD(1:7).eq.'*htemis')then
-        CALL EGETWR(OUTSTR,K,phtco2,0.,0.,'-','ht co2',IER)
-        CALL EGETWR(OUTSTR,K,phtnox,0.,0.,'-','ht nox',IER)
-        CALL EGETWR(OUTSTR,K,phtsox,0.,0.,'-','ht sox',IER)
+        CALL EGETWR(LOUTSTR,K,phtco2,0.,0.,'-','ht co2',IER)
+        CALL EGETWR(LOUTSTR,K,phtnox,0.,0.,'-','ht nox',IER)
+        CALL EGETWR(LOUTSTR,K,phtsox,0.,0.,'-','ht sox',IER)
       elseif(WORD(1:7).eq.'*clemis')then
-        CALL EGETWR(OUTSTR,K,pclco2,0.,0.,'-','cl co2',IER)
-        CALL EGETWR(OUTSTR,K,pclnox,0.,0.,'-','cl nox',IER)
-        CALL EGETWR(OUTSTR,K,pclsox,0.,0.,'-','cl sox',IER)
+        CALL EGETWR(LOUTSTR,K,pclco2,0.,0.,'-','cl co2',IER)
+        CALL EGETWR(LOUTSTR,K,pclnox,0.,0.,'-','cl nox',IER)
+        CALL EGETWR(LOUTSTR,K,pclsox,0.,0.,'-','cl sox',IER)
       elseif(WORD(1:7).eq.'*ltemis')then
-        CALL EGETWR(OUTSTR,K,pltco2,0.,0.,'-','lt co2',IER)
-        CALL EGETWR(OUTSTR,K,pltnox,0.,0.,'-','lt nox',IER)
-        CALL EGETWR(OUTSTR,K,pltsox,0.,0.,'-','lt sox',IER)
+        CALL EGETWR(LOUTSTR,K,pltco2,0.,0.,'-','lt co2',IER)
+        CALL EGETWR(LOUTSTR,K,pltnox,0.,0.,'-','lt nox',IER)
+        CALL EGETWR(LOUTSTR,K,pltsox,0.,0.,'-','lt sox',IER)
       elseif(WORD(1:7).eq.'*fnemis')then
-        CALL EGETWR(OUTSTR,K,pfnco2,0.,0.,'-','fan co2',IER)
-        CALL EGETWR(OUTSTR,K,pfnnox,0.,0.,'-','fan nox',IER)
-        CALL EGETWR(OUTSTR,K,pfnsox,0.,0.,'-','fan sox',IER)
+        CALL EGETWR(LOUTSTR,K,pfnco2,0.,0.,'-','fan co2',IER)
+        CALL EGETWR(LOUTSTR,K,pfnnox,0.,0.,'-','fan nox',IER)
+        CALL EGETWR(LOUTSTR,K,pfnsox,0.,0.,'-','fan sox',IER)
       elseif(WORD(1:7).eq.'*spemis')then
-        CALL EGETWR(OUTSTR,K,pspco2,0.,0.,'-','sml co2',IER)
-        CALL EGETWR(OUTSTR,K,pspnox,0.,0.,'-','sml nox',IER)
-        CALL EGETWR(OUTSTR,K,pspsox,0.,0.,'-','sml sox',IER)
+        CALL EGETWR(LOUTSTR,K,pspco2,0.,0.,'-','sml co2',IER)
+        CALL EGETWR(LOUTSTR,K,pspnox,0.,0.,'-','sml nox',IER)
+        CALL EGETWR(LOUTSTR,K,pspsox,0.,0.,'-','sml sox',IER)
       elseif(WORD(1:7).eq.'*hwemis')then
-        CALL EGETWR(OUTSTR,K,phwco2,0.,0.,'-','hw co2',IER)
-        CALL EGETWR(OUTSTR,K,phwnox,0.,0.,'-','hw nox',IER)
-        CALL EGETWR(OUTSTR,K,phwsox,0.,0.,'-','hw sox',IER)
+        CALL EGETWR(LOUTSTR,K,phwco2,0.,0.,'-','hw co2',IER)
+        CALL EGETWR(LOUTSTR,K,phwnox,0.,0.,'-','hw nox',IER)
+        CALL EGETWR(LOUTSTR,K,phwsox,0.,0.,'-','hw sox',IER)
       elseif(WORD(1:4).eq.'*ipv')then
 
 C IPV data file.
-        CALL EGETRM(OUTSTR,K,lipvdatf,'W','ipv file',IER)
+        CALL EGETRM(LOUTSTR,K,lipvdatf,'W','ipv file',IER)
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
-        CALL EGETRM(OUTSTR,K,bdmds,'W','bdmds file',IER)
+        CALL EGETRM(LOUTSTR,K,bdmds,'W','bdmds file',IER)
       elseif(WORD(1:7).eq.'*cpcalc')then
 
 C CPCALC global information.
-        CALL EGETWR(OUTSTR,K,ble,0.,0.,'-','cpccfg ble',IER)
-        CALL EGETWR(OUTSTR,K,bwi,0.,0.,'-','cpccfg bwi',IER)
-        CALL EGETWR(OUTSTR,K,bhi,0.,0.,'-','cpccfg bhi',IER)
-        CALL EGETWR(OUTSTR,K,blox,0.,0.,'-','cpccfg blox',IER)
-        CALL EGETWR(OUTSTR,K,bloy,0.,0.,'-','cpccfg bloy',IER)
-        CALL EGETWR(OUTSTR,K,bloz,0.,0.,'-','cpccfg bloz',IER)
-        CALL EGETWR(OUTSTR,K,orient,0.,0.,'-','cpccfg orient',IER)
-        CALL EGETWI(OUTSTR,K,irt,0,0,'-','cpccfg irt',IER)
-        CALL EGETWR(OUTSTR,K,ra,0.,0.,'-','cpccfg ra',IER)
-        CALL EGETWR(OUTSTR,K,sbh,0.,0.,'-','cpccfg sbh',IER)
-        CALL EGETWR(OUTSTR,K,pad,0.,0.,'-','cpccfg pad',IER)
-        CALL EGETWR(OUTSTR,K,wvpe,0.,0.,'-','cpccfg wvpe',IER)
+        CALL EGETWR(LOUTSTR,K,ble,0.,0.,'-','cpccfg ble',IER)
+        CALL EGETWR(LOUTSTR,K,bwi,0.,0.,'-','cpccfg bwi',IER)
+        CALL EGETWR(LOUTSTR,K,bhi,0.,0.,'-','cpccfg bhi',IER)
+        CALL EGETWR(LOUTSTR,K,blox,0.,0.,'-','cpccfg blox',IER)
+        CALL EGETWR(LOUTSTR,K,bloy,0.,0.,'-','cpccfg bloy',IER)
+        CALL EGETWR(LOUTSTR,K,bloz,0.,0.,'-','cpccfg bloz',IER)
+        CALL EGETWR(LOUTSTR,K,orient,0.,0.,'-','cpccfg orient',IER)
+        CALL EGETWI(LOUTSTR,K,irt,0,0,'-','cpccfg irt',IER)
+        CALL EGETWR(LOUTSTR,K,ra,0.,0.,'-','cpccfg ra',IER)
+        CALL EGETWR(LOUTSTR,K,sbh,0.,0.,'-','cpccfg sbh',IER)
+        CALL EGETWR(LOUTSTR,K,pad,0.,0.,'-','cpccfg pad',IER)
+        CALL EGETWR(LOUTSTR,K,wvpe,0.,0.,'-','cpccfg wvpe',IER)
         icpcon=1
       elseif(WORD(1:5).eq.'*rif ')then
 
 C Radiance scene file.
-        CALL EGETRM(OUTSTR,K,lradcf,'W','radiance scene file',IER)
+        CALL EGETRM(LOUTSTR,K,lradcf,'W','radiance scene file',IER)
       elseif(WORD(1:5).eq.'*sbem')then
 
 C SBEM database file
-        CALL EGETW(OUTSTR,K,LSBEM,'W','SBEM db',IER)
+        CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
         ISBEM=1
       elseif(WORD(1:4).eq.'*ncm')then
 
 C SBEM project specific file
-        CALL EGETW(OUTSTR,K,LASBEM,'W','SBEM db',IER)
+        CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM db',IER)
         ISBEM=1
       elseif(WORD(1:4).eq.'*not')then
 
@@ -1256,20 +1261,20 @@ C Flag to check if notional model or not
 
 C Non-linear thermophysical properties configuration file.
         INTHPS=.TRUE.
-        CALL EGETRM(OUTSTR,K,LNLTHP,'W','non-linear prop',IER)
+        CALL EGETRM(LOUTSTR,K,LNLTHP,'W','non-linear prop',IER)
       elseif(WORD(1:4).eq.'*g1d')then
 
 C Building 1D node distribution.
         IGR1D=.TRUE.
-        CALL EGETRM(OUTSTR,K,LGRD1D,'W','bldng 1D gridding',IER)
+        CALL EGETRM(LOUTSTR,K,LGRD1D,'W','bldng 1D gridding',IER)
       elseif(WORD(1:6).eq.'*biopt')then
 
 C Bi-directional optical data. Read how many data to read followed
 C by the raw-datafile name and then scan for
 C a connection-based list on the next line(s).
         ncn=0
-        CALL EGETWI(OUTSTR,K,ncn,0,0,'-','nb items/connections',IER)
-        CALL EGETRM(OUTSTR,K,bidirfile,'W','bioptical file',IER)
+        CALL EGETWI(LOUTSTR,K,ncn,0,0,'-','nb items/connections',IER)
+        CALL EGETRM(LOUTSTR,K,bidirfile,'W','bioptical file',IER)
         IF(NCN.GT.0) THEN
           CALL EGETWIA(IUC,IRVC,NCN,0,1,'W','bi-optical list',IER)
           DO 114 KV=1,NCN
@@ -1279,10 +1284,10 @@ C a connection-based list on the next line(s).
       elseif(WORD(1:4).eq.'*spf')then
 
 C Special materials and electrical bus description files.
-        CALL EGETRM(OUTSTR,K,spflnam,'W','special mats',IER)
+        CALL EGETRM(LOUTSTR,K,spflnam,'W','special mats',IER)
         ispmxist=1
       elseif(WORD(1:4).eq.'*pnt')then
-        CALL EGETRM(OUTSTR,K,entflnam,'W','power netwk',IER)
+        CALL EGETRM(LOUTSTR,K,entflnam,'W','power netwk',IER)
         ientxist=2
       elseif(WORD(1:6).eq.'*resh2')then
 
@@ -1292,7 +1297,7 @@ C The hydrogen system controller code is experimental.
 C We'll parse the file name, and write the *resh2 tag 
 C back out when when the cfg file is saved, but 
 C we won't do anything else at present.
-        CALL EGETRM(OUTSTR,K,resh2flnam,'W','res h2 ctl',IER)
+        CALL EGETRM(LOUTSTR,K,resh2flnam,'W','res h2 ctl',IER)
         iresh2ctl = 1
 
       elseif(WORD(1:4).eq.'*tdf')then
@@ -1303,7 +1308,7 @@ C If itdflg non-zero read any association included in the configuration
 C file. Save detailed checking of the temporal file to the
 C context code in the project manager or the input code of
 C the simulator or the results analyis module.
-        CALL EGETRM(OUTSTR,K,LTDFA,'W','TDF file name',IER)
+        CALL EGETRM(LOUTSTR,K,LTDFA,'W','TDF file name',IER)
 
 C Read the name of the tdf file and check if it exists. 
         CALL ERPFREE(IUTDF,ISTAT)
@@ -1409,15 +1414,15 @@ C Read references to TDF id's, and then the related tasks and zones.
       elseif(WORD(1:4).eq.'*sps' .or. WORD(1:6).eq. '*mysps')then
       
 C Check for simulation setup data and save level.
-        CALL EGETWI(OUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
-        CALL EGETWI(OUTSTR,K,isstup,0,300,'W','startup',IER)
-        CALL EGETWI(OUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
-        CALL EGETWI(OUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
-        CALL EGETWI(OUTSTR,K,issave,0,5,'W','save_lv',IER)
+        CALL EGETWI(LOUTSTR,K,nsset,1,MSPS,'W','no. of sets',IER)
+        CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)
+        CALL EGETWI(LOUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
+        CALL EGETWI(LOUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
+        CALL EGETWI(LOUTSTR,K,issave,0,5,'W','save_lv',IER)
 
 C If 6 items on line also read whether to save only 1stph.
         if(ND.eq.7)then
-          CALL EGETWI(OUTSTR,K,isavgh,0,1,'W','save_hourly',IER)
+          CALL EGETWI(LOUTSTR,K,isavgh,0,1,'W','save_hourly',IER)
         else
           isavgh=0
         endif
@@ -1480,7 +1485,7 @@ C (ie ambigious) set names
      &       WORD(1:12).eq.'*end_my_sets' )then
         goto 44
       elseif(WORD(1:7).eq.'*intipv')then
-        CALL EGETRM(OUTSTR,K,sipvres,'W','ipv report',IER)
+        CALL EGETRM(LOUTSTR,K,sipvres,'W','ipv report',IER)
         goto 44
       elseif(WORD(1:7).eq.'*annipv')then
 
@@ -1490,53 +1495,53 @@ C Annual IPV report depreciated in favour of sipvres.
       elseif(WORD(1:7).eq.'*B-NAME')then
 
 C Next tokens relate to building address.
-        CALL EGETRM(OUTSTR,K,pjname,'W','project complience name',IER)
+        CALL EGETRM(LOUTSTR,K,pjname,'W','project complience name',IER)
         goto 44
       elseif(WORD(1:10).eq.'*B-ADDRESS')then
-        CALL EGETRM(OUTSTR,K,baddress,'W','building address',IER)
+        CALL EGETRM(LOUTSTR,K,baddress,'W','building address',IER)
         goto 44
       elseif(WORD(1:7).eq.'*B-CITY')then
-        CALL EGETRM(OUTSTR,K,bcity,'W','building city',IER)
+        CALL EGETRM(LOUTSTR,K,bcity,'W','building city',IER)
         goto 44
       elseif(WORD(1:11).eq.'*B-POSTCODE')then
-        CALL EGETRM(OUTSTR,K,buildingPC,'W','building post code',IER)
+        CALL EGETRM(LOUTSTR,K,buildingPC,'W','building post code',IER)
         goto 44
       elseif(WORD(1:7).eq.'*O-NAME')then
 
 C Next tokens relate to owner/client address.
-        CALL EGETRM(OUTSTR,K,ownername,'W','owner name',IER)
+        CALL EGETRM(LOUTSTR,K,ownername,'W','owner name',IER)
         goto 44
       elseif(WORD(1:10).eq.'*O-ADDRESS')then
-        CALL EGETRM(OUTSTR,K,owneraddr,'W','owner address',IER)
+        CALL EGETRM(LOUTSTR,K,owneraddr,'W','owner address',IER)
         goto 44
       elseif(WORD(1:7).eq.'*O-CITY')then
-        CALL EGETRM(OUTSTR,K,ownercity,'W','owner city',IER)
+        CALL EGETRM(LOUTSTR,K,ownercity,'W','owner city',IER)
         goto 44
       elseif(WORD(1:11).eq.'*O-POSTCODE')then
-        CALL EGETRM(OUTSTR,K,ownerPC,'W','owner post code',IER)
+        CALL EGETRM(LOUTSTR,K,ownerPC,'W','owner post code',IER)
         goto 44
       elseif(WORD(1:12).eq.'*O-TELEPHONE')then
-        CALL EGETRM(OUTSTR,K,ownertel,'W','owner phone',IER)
+        CALL EGETRM(LOUTSTR,K,ownertel,'W','owner phone',IER)
         goto 44
 
 C Next tokens relate to simulationist address.
       elseif(WORD(1:7).eq.'*C-NAME')then
-        CALL EGETRM(OUTSTR,K,certifname,'W','simu staff name',IER)
+        CALL EGETRM(LOUTSTR,K,certifname,'W','simu staff name',IER)
         goto 44
       elseif(WORD(1:12).eq.'*C-TELEPHONE')then
-        CALL EGETRM(OUTSTR,K,certTel,'W','simu staff phone',IER)
+        CALL EGETRM(LOUTSTR,K,certTel,'W','simu staff phone',IER)
         goto 44
       elseif(WORD(1:10).eq.'*C-ADDRESS')then
-        CALL EGETRM(OUTSTR,K,certaddress,'W','simu staff address',IER)
+        CALL EGETRM(LOUTSTR,K,certaddress,'W','simu staff address',IER)
         goto 44
       elseif(WORD(1:7).eq.'*C-CITY')then
-        CALL EGETRM(OUTSTR,K,certcity,'W','simu staff city',IER)
+        CALL EGETRM(LOUTSTR,K,certcity,'W','simu staff city',IER)
         goto 44
       elseif(WORD(1:11).eq.'*C-POSTCODE')then
-        CALL EGETRM(OUTSTR,K,certPC,'W','simu staff post code',IER)
+        CALL EGETRM(LOUTSTR,K,certPC,'W','simu staff post code',IER)
         goto 44
 
-      elseif(outstr(1:10).eq.'* PROJ LOG')then
+      elseif(loutstr(1:10).eq.'* PROJ LOG')then
 
 C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
@@ -1560,6 +1565,8 @@ C Project log file, read and then go on to fabric/plant description.
 
 C Loop back for next database file.
       goto 44
+      
+C --- end of LSTRIPC and LOUTSTRT scanning ---
 
 C If building or building & plant then read in the building info.
    45 IF(INDCFG.EQ.2)goto 888

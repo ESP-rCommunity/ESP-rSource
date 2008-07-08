@@ -1889,16 +1889,16 @@ C     if blank then no file name change implied.
       common/rpath/path
       common/deflt4/dinstpath
 
-      CHARACTER H*72,LTMP*72
+      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
       character longtfile*144,message*48
-      CHARACTER DOIT*248,fs*1,LCOPY*72
-      CHARACTER OUTS*124,APP*4,ext*4
+      CHARACTER DOIT*248,fs*1,LCOPY*144
+      CHARACTER OUTS*124,outs248*248,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,UNIXOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,linstd*60,tmode*8
-      character sourcefile*72  ! the file to copy
+      character sourcefile*144  ! the file to copy
       CHARACTER ZPDESC*25
 
 C Set folder separator (fs) to \ or / as required.
@@ -1911,7 +1911,7 @@ C Set folder separator (fs) to \ or / as required.
 
       moddb=.false.
 
-  60  LTMP=LPCDB
+  60  LLTMP=LPCDB
       H(1)='The plant components database is a binary, random '
       H(2)='access file holding plant component descriptions to '
       H(3)='enable the establishment of component state-space '
@@ -1944,7 +1944,7 @@ C Get length of path to where esp-r databases were installed.
       write(linstd,'(3a)') dinstpath(1:lnblnk(dinstpath)),
      &  fs,'databases'
       linst=lnblnk(linstd)
-      call FINDFIL(LTMP,XST)
+      call FINDFIL(LLTMP,XST)
       IF(.NOT.XST)THEN
         idno=2
         isw=0
@@ -1953,7 +1953,7 @@ C Get length of path to where esp-r databases were installed.
      &    'c create a new db','d copy the default db',
      &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,23)
         copydef=.true.
-      elseif(LTMP(1:linst).eq.linstd(1:linst))then
+      elseif(LLTMP(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
         idno=1
@@ -1982,10 +1982,10 @@ C Act on the user's choice. If no choice return to calling menu.
 
 C If file exists open it, test file type, get number of items and close.
         CALL ERPFREE(ipcdb,ISTAT)
-        call FINDFIL(LTMP,XST)
+        call FINDFIL(LLTMP,XST)
         if(XST)then
           IER=0
-          call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
+          call EFOPRAN(ipcdb,LLTMP,IRECLN,1,IER)
           IF(ier.eq.0)THEN
             IREC = 1
             READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
@@ -1997,7 +1997,7 @@ C If file exists open it, test file type, get number of items and close.
             IREC = 2
             READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
             write(outs,'(a,i3,2a)') 'There are ',NPC,
-     &        ' components in ',LTMP(1:lnblnk(LTMP))
+     &        ' components in ',LLTMP(1:lnblnk(LLTMP))
             call edisp(iuout,outs)
             call edisp(iuout,' ')
             CALL ERPFREE(ipcdb,ISTAT)
@@ -2034,10 +2034,10 @@ C name to include the path and create a string to drive pdb.
         H(2)='access file holding plant component descriptions to '
         H(3)='enable the establishment of component state-space '
         H(4)=' representations used by ESP-r.'
-        CALL EASKS(ltmp,' ','Plant Components db?',
-     &    72,DPCDB,'plant component database',IER,4)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LPCDB=ltmp
+        CALL EASKS(lltmp,' ','Plant Components db?',
+     &    96,DPCDB,'plant component database',IER,4)
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+          LPCDB=lltmp
         else
           goto 60
         endif
@@ -2048,7 +2048,7 @@ C name to include the path and create a string to drive pdb.
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
           IER=0
-          call EFOPRAN(ipcdb,LTMP,IRECLN,1,IER)
+          call EFOPRAN(ipcdb,LLTMP,IRECLN,1,IER)
           IF(ier.eq.0)THEN
             IREC = 1
             READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) ZPDESC
@@ -2060,7 +2060,7 @@ C use the editing facility.
             IREC = 2
             READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=60) NPC,NXTREC
             write(outs,'(a,i3,2a)') 'There are ',NPC,
-     &        ' components in ',LTMP(1:lnblnk(LTMP))
+     &        ' components in ',LLTMP(1:lnblnk(LLTMP))
             call edisp(iuout,outs)
             call edisp(iuout,' ')
             CALL ERPFREE(ipcdb,ISTAT)
@@ -2069,9 +2069,9 @@ C use the editing facility.
      &                  'of the other options.','W')
             goto 60
           endif
-          write(outs,'(2a)') 'Accessing Plant Components db ',
+          write(outs248,'(2a)') 'Accessing Plant Components db ',
      &      LPCDB(1:lnblnk(LPCDB))
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
 
 C Get logical name of child process terminal type, expand model 
@@ -2106,9 +2106,9 @@ C a new db, populate it and present editing facility.
         h(2)='project name. '
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.plantdb'
+          write(LLTMP,'(2a)') cfgroot(1:lr),'.plantdb'
         else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(LLTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &      cfgroot(1:lr),'.plantdb'
         endif
  62     h(1)='The plant component database binary file holds the'
@@ -2119,12 +2119,12 @@ C a new db, populate it and present editing facility.
         h(6)='a new one will be created to hold data for new'
         h(7)='components.'
         clkok=.false.
-        CALL EASKSCNCL(ltmp,' ','Plant Components db?',
-     &    'cancel',clkok,72,DPCDB,'plant components db',
+        CALL EASKSCNCL(lltmp,' ','Plant Components db?',
+     &    'cancel',clkok,96,DPCDB,'plant components db',
      &    IER,7)
         if(clkok) return
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LPCDB=ltmp
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+          write(LPCDB,'(a)') lltmp(1:lnblnk(lltmp))
         else
           goto 62
         endif
@@ -2173,10 +2173,13 @@ C If the default is to be copied ask for local name. Use LTMP for
 C the file name as known to esp-r and LCOPY for the system cp call.   
         call edisp(iuout,'The source file is:')
         if(copydef)then
-          call edisp(iuout,DPCDB)
+          call edisp248(iuout,DPCDB,100)
           sourcefile = DPCDB
         else
-          call edisp(iuout,LPCDB)
+	
+C << in optics ~line 2539 there is an iglib edit at this point >>
+
+          call edisp248(iuout,LPCDB,100)
           sourcefile = LPCDB
         endif
         call edisp(iuout,' ')
@@ -2209,9 +2212,9 @@ C Logic same as other copy database commands.
           endif
 
 C Debug.
-C          call usrmsg('copying default file via',doit,'-')
+          call usrmsg('copying default file via',doit,'-')
           call runit(doit,'-')
-          LPCDB=LTMP
+          write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP)) ! short local to long
 
           write(outs,'(2a)') 'Accessing Plant Components db: ',
      &      LCOPY(1:lnblnk(LCOPY))
@@ -2618,9 +2621,9 @@ C be pre-pended when using most inbuilt file opening calls.
           else
             call FINDFIL(LTMP,XST)
             if(XST)then
-              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
+              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP)) ! short local to long
             else
-              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
+              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP)) ! short local to long
               call edisp(iuout,'Problem locating the new database.')
               call edisp(iuout,'Try browsing ../dbs to find it.')
               call edisp(iuout,' ')
