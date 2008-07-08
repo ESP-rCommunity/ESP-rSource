@@ -40,36 +40,39 @@ C an absolute path (zero), local path (one), standard path (2)
       integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
      &                   ipathmat,ipathmul,ipathclim
 
+C Array of integers representing file unit numbers of databases
+      integer iapres  ! file unit of wind pressure coef database
+      integer ioptdb  ! file unit number of optical database
+      integer ipcdb   ! file unit number of plant template database
+      integer iprodb  ! file unit number of event profile database
+      integer ifmat   ! file unit number of materials database
+      integer ifmul   ! file unit number of constructions database
+      integer iclim   ! file unit number of climate file
+      common/idbunit/iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
+      
 C LAPRES - (144 char) wind pressure coefficients distribution database
-C iapres  - file unit for wind pressure coef database
-      common/APRES/LAPRES,IAPRES
+      common/APRES/LAPRES
       character LAPRES*144
 
 C LOPTDB - (144 char) optical database file name
-C IOPTDB - unit number of optical database
-      COMMON/GOPTDB/LOPTDB,IOPTDB
+      COMMON/GOPTDB/LOPTDB
       character LOPTDB*144
 
 C LPCDB - (144 char) plant template database file name
-C IPCDB - unit number of plant template database
-      common/C7/LPCDB,IPCDB
+      common/C7/LPCDB
       character lpcdb*144
 
 C LPRFDB - (144 char) event profile database file name
-C IPRODB - unit number of event profile database
-      COMMON/PRODB/LPRFDB,IPRODB
+      COMMON/PRODB/LPRFDB
       character LPRFDB*144
 
 C LFMAT - (72 char) materials db file name
 C LFMUL - (72 char) constructions db file name
-C IFMAT - unit number of materials database
-C IFMUL - unit number of constructions database
-      common/CONDB/LFMAT,IFMAT,LFMUL,IFMUL
+      common/CONDB/LFMAT,LFMUL
       character LFMAT*72,LFMUL*72
 
 C LCLIM - (72 char) climate file name associated with the model
-C ICLIM - unit number of climate file
-      COMMON/C22/ICLIM,LCLIM
+      COMMON/C22/LCLIM
       character LCLIM*72
 
 C Default file names for databases (72 char):
@@ -85,7 +88,5 @@ C LSBEM - (72 char) default SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM
       character*72 LSBEM
 
-C Define as integers.
-      integer iapres,ioptdb,ipcdb,iprodb,ifmat,ifmul,iclim
 
 C end of esp-r_dbfile.h
