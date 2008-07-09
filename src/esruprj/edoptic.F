@@ -1541,9 +1541,60 @@ C Help text for this menu.
       h(4)='that each such surface is assumed to have a normal '
       h(5)='optical attribute.'
       h(6)=' '
-      h(7)='Currently this data is read in from an external file'
-      h(8)='(check with ESRU for details of its format). '
-      h(9)=' '
+      h(7)='Currently this data is read in from an external file.'
+      h(8)='See esrucom/econstr.F or ask ESRU for details on the '
+      h(9)='file format. An example is given here. '
+      h(10)='Lines starting with # are optional and for documentation '
+      h(11)='purposes: '
+      h(12)='*BIDIRECTIONAL '
+      h(13)='*types,1 '
+      h(14)='*item, Genius internal with heat mirror DGU '
+      h(15)='##(3 datatypes: Te_g_rho, Te_abs_n_diffuse, Te_g_only) '
+      h(16)='*datatype,Te_g_rho '
+      h(17)='*layers,3 '
+      h(18)='*sets,6 '
+      h(19)='## Next four lines are not used (only for documentation)'
+      h(20)='## Properties of DGU: '
+      h(21)='## WSV Iplus neutral E (4mm/16mm/4mm) '
+      h(22)='## g0 = 0.60; '
+      h(23)='## tauvis0 = 0.80; '
+      h(24)='## udgu := 1.1; '
+      h(25)='*start_set '
+      h(26)='*set_type 1,#slat angle = 0deg '
+      h(27)='*Uvalue 1.1 '
+      h(28)='*Rexternal 0.04 '
+      h(29)='*Rinternal 0.13 '
+      h(30)='#Next 2 lines: only used for datatype 1 (Te_abs_n_diffuse)'
+      h(31)='*diffuse_abs,0.260,0.521,0.002,0.000,0.007 '
+      h(32)='*diffuse_trn,0.345 '
+      h(33)='*direct_angs,37,37 '
+      h(34)='*data '
+      h(35)='#Azimuth,Height,Te,g,rho '
+      h(36)='-90,-90,0,0,1 '
+      h(37)='-90,-85,0,0,1 '
+      h(38)='-90,-80,0,0,1 '
+      h(39)='... '
+      h(40)='90,85,0,0,1 '
+      h(41)='90,90,0,0,1 '
+      h(42)='*end_set '
+      h(43)='*start_set '
+      h(44)='*set_type 2,#slat angle = 15deg '
+      h(45)='*Uvalue 1.1 '
+      h(46)='*Rexternal 0.04 '
+      h(47)='*Rinternal 0.13 '
+      h(48)='#Next 2 lines: only used for datatype 1 (Te_abs_n_diffuse)'
+      h(49)='*diffuse_abs,0.260,0.521,0.002,0.000,0.007 '
+      h(50)='*diffuse_trn,0.345 '
+      h(51)='*direct_angs,37,37 '
+      h(52)='*data '
+      h(53)='#Azimuth,Height,Te,g,rho '
+      h(54)='-90,-90,0,0,1 '
+      h(55)='-90,-85,0,0,1 '
+      h(56)='... '
+      h(57)='90,85,0,0,1 '
+      h(58)='90,90,0,0,1 '
+      h(59)='*end_set '
+      h(60)=' '
 
 C Now display the menu.
       CALL EMENU('  Bi-directional attributes',VERT,MVERT,IVERT)
@@ -1553,7 +1604,7 @@ C Now display the menu.
 C Return.
         return
       elseif(ivert.eq.mvert-1)then
-        CALL PHELPD('bi-directional attributes',9,'-',0,0,IER)
+        CALL PHELPD('bi-directional attributes',60,'-',0,0,IER)
       elseif(ivert.eq.mvert-2)then
 
 C Save associations.
@@ -1572,7 +1623,7 @@ C If there are enough items allow paging control via EKPAGE.
       elseif(ivert.eq.1)then
 
 C File with raw bi-directional data.
- 77       H(1)='This is a high resolution bi-directional optical data'
+ 77     H(1)='This is a high resolution bi-directional optical data'
         H(2)='file << more text >>'
         DFILE='bidata.txt'
         if(bidirfile(1:2).eq.'  '.or.bidirfile(1:4).eq.'UNKN')then
@@ -1580,7 +1631,7 @@ C File with raw bi-directional data.
           bidirfile=DFILE
         endif
         CALL EASKS(lfil,' bi-directional optical data to use?',
-     &   ' ',72,DFILE,'bi-directional data file',IER,4)
+     &   ' ',72,DFILE,'bi-directional data file',IER,2)
         if(lfil(1:2).ne.'  ')then
           bidirfile=lfil
         else
@@ -1597,7 +1648,15 @@ C Open and scan the file.
         else
           call edisp(iuout,'There was a problem reading the bi-')
           call edisp(iuout,'directional data. Please specify again...')
-          goto 77
+          H(1)='Select if you want to re-define the bi-directional file'
+          call easkab(' File not found. Do you want to specify again?',
+     &      ' ','Yes','No/exit',iyesno,1)
+          if(iyesno.EQ.1)then
+            goto 77
+          else
+            bidirfile='UNKNOWN'            
+            goto 3
+          endif
         endif
       elseif(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))then
 
@@ -1607,39 +1666,42 @@ C Enquire about connection identified by KEYIND.
 C Display information about the anchors associated with connection.
         call CONXMENU(ifocc,CXITM)
         if(NSTMCFL(ifocc).eq.0)then
-          dok=.false.
-          h(1)='If this surface fits your critera then proceed.'
-          CALL ASKOK(
-     &      'Use bi-directional attributes with this surface?',
-     &      '(only apply to transparent surfaces)',OK,dok,1)
-          if(OK)then
-            if(IFLAGBI.eq.1)then
-              NSTMCFL(ifocc)=1
-            else
-              nl=1
-              h(1)='There are a limited number of types. '
-              h(2)=' '
-              h(3)='A cancel request leaves the model unchanged.'
-              CALL EASKI(nl,' ',' Which bi-directional type?',
-     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
-              if(ieri.eq.-3)then
-                continue
-              else
-                NSTMCFL(ifocc)=nl
-              endif
-            endif
-          endif
+          NSTMCFL(ifocc)=1
+C          dok=.false.
+C          h(1)='If this surface fits your critera then proceed.'
+C          CALL ASKOK(
+C     &      'Use bi-directional attributes with this surface?',
+C     &      '(only apply to transparent surfaces)',OK,dok,1)
+C          if(OK)then
+C            if(IFLAGBI.eq.1)then
+C              NSTMCFL(ifocc)=1
+C            else
+C              nl=1
+C              h(1)='There are a limited number of types. '
+C              h(2)=' '
+C              h(3)='A cancel request leaves the model unchanged.'
+C              CALL EASKI(nl,' ',' Which bi-directional type?',
+C     &          0,'F',MSTMC,'F',1,'bi opt types',IERI,3)
+C              if(ieri.eq.-3)then
+C                continue
+C              else
+C                NSTMCFL(ifocc)=nl
+C              endif
+C            endif
+C          endif
         else
-          write(outs,'(a,a,i2)') CXITM(1:lnblnk(CXITM)),
-     &      ' is associated with bi-type',NSTMCFL(ifocc)
-          call edisp(iuout,outs)
-          dok=.false.
-          h(1)='This surface uses bi-directional optics and'
-          h(2)='you can remove this attribute. '
-          CALL ASKOK(
-     &      'Dereference this bi-directional attribute?',
-     &      '(for this surface only)',OK,dok,2)
-          if(OK)NSTMCFL(ifocc)=0
+          NSTMCFL(ifocc)=0
+
+C          write(outs,'(a,a,i2)') CXITM(1:lnblnk(CXITM)),
+C     &      ' is associated with bi-type',NSTMCFL(ifocc)
+C          call edisp(iuout,outs)
+C          dok=.false.
+C          h(1)='This surface uses bi-directional optics and'
+C          h(2)='you can remove this attribute. '
+C          CALL ASKOK(
+C     &      'Dereference this bi-directional attribute?',
+C     &      '(for this surface only)',OK,dok,2)
+C          if(OK)NSTMCFL(ifocc)=0
         endif
         goto 3
       else

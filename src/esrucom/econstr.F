@@ -1239,6 +1239,11 @@ C   sky and ground diffuse radiation
      &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL),
      &  TMVISUAL(MSTMC,MSGAL)
       COMMON/BITYPE/IBIDATATYPE       
+      integer IBIDATATYPE !thisis kept in a common block
+                          !It specifies what type of data to read
+                          !1: the existing transmittance and at different layers absorptance 
+                          !2: the transmittance, g value and reflectance 
+                          !3: the transmittance and g value only
       COMMON/OPTDAT2/DF_TX_SKY(MSTMC,MSGAL),DF_G_SKY(MSTMC,MSGAL),
      &  DF_RF_SKY(MSTMC,MSGAL),DF_TX_GND(MSTMC,MSGAL), 
      &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
@@ -1248,15 +1253,9 @@ C   sky and ground diffuse radiation
       character bidirfile*72,bidirname*12
 
 C New variables are defined below
-      integer ISETTYPE !this might have to be kept in a common block
-                       !It will specify what the set of data is about
+      integer ISETTYPE !this specifies what the set of data is about
                        !For example 1 can be for 0 degrees slat angle
-                       !No rules have been defined for this, yet.
-      integer IBIDATATYPE !this will probably have to be kept in a common block
-                          !It will specify what type of data to read
-                          !1: the existing transmittance and at different layers absorptance 
-                          !2: the transmittance, g value and reflectance 
-                          !3: the transmittance and g value only
+                       !No rules have been defined for this.
 
 C explicit definition of some variables used in the egetwr 
       real Uvalue_bi,Ri,Re,visual_transm 
