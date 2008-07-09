@@ -1724,7 +1724,7 @@ C Two cases can be considered:
 C 1 - latent heat is constant in temperature range (Ts-Tm),
 C     y=ax+b (a=0, b=SHTLIQB)
 C 2 - latent heat is a linear function of temperature,
-C     y=ax+b (a=SHTLIQA, b=SHTLIQB)
+C     y=ax+b (a=SHTLIQA, b=SHTLIQB); SHTLIQB == -SHTLIQA*Tm
 C *******************************************************************
       SHTSOL=spmdat(ISPMNOD,5)
       SHTLIQA=spmdat(ISPMNOD,6)
@@ -1776,20 +1776,20 @@ C conductivity (W/m*K) and apparent heat (J/kg*K)
 C as a function of node temperature TFCM according to:
 C CON(MCOM,MS,ME) = CONSOL in solid phase  - when T<Tm
 C                 = CONSOL+CONLIQ/2        - when Tm<T<Ts
-C                 = CONLIQ in liquid phase - when T>Tm
+C                 = CONLIQ in liquid phase - when T>Ts
 C AHT(MCOM,MS,ME) = SHT + LHT
 C SHT=SHTSOL - specific heat
-C LHT=SHTLIQ - latent heat; LHT=0                      - when Ts<T<Tm
-C                           LHT=SHTLIQA*T + SHTLIQB    - when Ts>T>Tm
+C LHT=SHTLIQ - latent heat; LHT=0                       - when T<Tm & T>Ts
+C                           LHT=SHTLIQA*T + SHTLIQB    - when Tm<T<Ts
 C *******************************************************************
       IF (TFCM.LT.TMELT) THEN
           APPCON=CONSOL
           APPSHT=SHTSOL
       ELSEIF (TFCM.GT.TSOLI) THEN
-          APPCON=(CONSOL+CONLIQ)/2
+          APPCON=CONLIQ
           APPSHT=SHTSOL
       ELSE
-          APPCON=CONLIQ
+          APPCON=(CONSOL+CONLIQ)/2
           APPSHT=SHTSOL+(SHTLIQA*TFCM+SHTLIQB)
       ENDIF
 

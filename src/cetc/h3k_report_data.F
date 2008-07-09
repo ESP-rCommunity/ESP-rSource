@@ -315,7 +315,10 @@ C.....Local variables
       INTEGER i_ZnCtl           ! Zone control flag
 
 
-      INTEGER iSurface, iNode,iViewSurface,iSPM  ! Counters
+      INTEGER iSurface, iNode,iViewSurface  ! Counters
+
+      real SBC                              ! Stephan-Boltzmann constant
+      parameter ( SBC=56.7E-9 )
 
       real SBC                              ! Stephan-Boltzmann constant
       parameter ( SBC=56.7E-9 )
@@ -918,17 +921,19 @@ C-----------------------------------------------------------------------
 C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
-         call add_to_xml_reporting (
-     &          tfc(iZone,iSurface,1),
-     &          H3K_rep_NAME(1:27) // '/temperature/outside',
-     &          'units', '(oC)',
-     &          'Temperature on external surface' )
- 
-         call add_to_xml_reporting (
-     &          tfs(iZone,iSurface),
-     &          H3K_rep_NAME(1:27) // '/temperature/inside',
-     &          'units', '(oC)',
-     &          'Temperature on internal surface' )
+
+!         call add_to_xml_reporting (
+!      &           tfc(iZone,iSurface,1),
+!      &          H3K_rep_NAME(1:27) // '/temperature/outside',
+!      &          'units', '(oC)',
+!      &          'Temperature on external surface' )
+! 
+!         call add_to_xml_reporting (
+!      &          tfs(iZone,iSurface),
+!      &          H3K_rep_NAME(1:27) // '/temperature/inside',
+!      &          'units', '(oC)',
+!      &          'Temperature on internal surface' )
+
 
       enddo zone_surface_loop
 
@@ -1669,11 +1674,11 @@ C.......below should also make use of.
 
 C........Surface temperature 
 C........-> set name
-C         WRITE(H3K_rep_NAME,H3K_FORMAT)
-C     &      'building/zone_',cZone_Chars,
-C     &      '/surface_',cSurf_Chars,
-C     &      '/temperature'
-C
+         WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &      'building/zone_',cZone_Chars,
+     &      '/surface_',cSurf_Chars,
+     &      '/temperature'
+
 C........->Report data
 C         call add_to_xml_reporting (
 C     &      tfs(iZone,iSurface),
@@ -1682,11 +1687,11 @@ c     &      'units', '(oC)',
 C     &      'Temperature on zone inside face' )
 
 C........External facing surfaces -> Surface temperature
-C         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
-C            WRITE(H3K_rep_NAME,H3K_FORMAT)
-C     &         'building/zone_',cZone_Chars,
-C     &         '/surface_',cSurf_Chars,
-C     &         '/ext_surf_temperature'
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+            WRITE(H3K_rep_NAME,H3K_FORMAT)
+     &         'building/zone_',cZone_Chars,
+     &         '/surface_',cSurf_Chars,
+     &         '/ext_surf_temperature'
 C........->Report data
 C            call add_to_xml_reporting (
 c     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
@@ -1851,7 +1856,6 @@ C......NODE DATA (ignore nodes 1 and N, as these are output as "outside" and "in
               write(cNode_Chars, '(A,I1)') '0', iNode
             endif
             H3K_format = '(A,A,A,A,A,A,A)'
-            H3K_format_spm = '(A,A,A,A,A,A,A,A,A)'
 
 C...........MLC layer temperature 
 C...........-> set name

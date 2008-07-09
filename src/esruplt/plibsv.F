@@ -138,7 +138,9 @@ C Store climate file name.
       IREC=IREC+1
 
 C Store plant component data base file name.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) lpcdb
+      write(firstbit,'(a)')lpcdb(1:72)
+      write(secondbit,'(a)')lpcdb(73:144)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) firstbit
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) secondbit
       IREC=IREC+1

@@ -46,6 +46,7 @@ C types. More functions and subroutines are expected if
 C new trnsys types are coupled.
 C
 C This file contains the following functions:
+C TRNX_FUN
 C JFIX
 C TRIM
 C ADJUSTL
@@ -60,6 +61,51 @@ C TYPECK
 
 
 
+
+      DOUBLE PRECISION FUNCTION TRNX_FUN(iTRNCOM, iFunc)
+      IMPLICIT NONE
+
+      INTEGER iTRNCOM   !the serial number of the TRNSYS component
+C                       !for the 1st TRNSYS component, iTRNCOM =1
+C                       !for the 2nd TRNSYS component, iTRNCOM =2
+C                       ! etc.
+      INTEGER iFunc     !the serial number of user-implemented functions
+C                       !for the given TRNSYS component(iTRNCOM)
+C                       !The 1st user-implemented function, iFunc=1
+C                       !The 2nd user-implemented function, iFunc=2
+C                       ! etc. 
+
+C***********************************
+C Important notes: the TRNX_FUN should be assigned proper values
+C depending on the user requirements. They are assigned here just for
+C demonstration purposes.
+C***********************************
+
+      IF(iTRNCOM .EQ. 1) THEN    ! For the 1st TRNSYS component
+        IF(iFunc .EQ. 1) THEN
+           TRNX_FUN = 0.d0        ! demonstration ONLY
+C                                ! For the 1st function of the 1st TRNSYS component
+        ELSE IF(iFunc .EQ. 2) THEN
+           TRNX_FUN = 0.d0        ! demonstration ONLY
+C                               ! For the 2nd function of the 1st TRNSYS component
+C       extensible for  other user-implemented functions
+        END IF
+      ELSE IF(iTRNCOM .EQ. 2) THEN
+        IF(iFunc .EQ. 1) THEN
+           TRNX_FUN = 0.d0        ! demonstration ONLY
+C                                ! For the 1st function of the 2nd TRNSYS component
+        ELSE IF(iFunc .EQ. 2) THEN
+           TRNX_FUN = 0.d0        ! demonstration ONLY
+C                                ! For the 2nd function of the 2nd TRNSYS component
+C       extensible for  other user-implemented functions
+        END IF
+
+C   extensible for other TRNSYS components
+      END IF
+
+      RETURN
+
+      END
 
 
 
@@ -132,7 +178,7 @@ C the difference between intrinsic and external character functions.
 
 C Originally a utility function in trnsys
 C Return the hour of the year at which the simulation begins.
-      REAL FUNCTION getSimulationStartTime()
+      DOUBLE PRECISION FUNCTION getSimulationStartTime()
       IMPLICIT NONE
 
 C Common block for simulation start day and finish day
@@ -147,17 +193,32 @@ C To avoid potential numerical problems (real values compared in
 C quite different dimensions), iss is deducted.
 C
 C      getSimulationStartTime = iSS * 24. + 1.
-      getSimulationStartTime = (fConvert_TS_to_DAY(1,1) - iSS) * 24.
+      getSimulationStartTime = DBLE(
+     &                         (fConvert_TS_to_DAY(1,1) - iSS) * 24.)
 
 
       END FUNCTION getSimulationStartTime
 
 
 
+C Originally a utility function in trnsys
+C Return the hour of the year at which the simulation stops.
+      DOUBLE PRECISION FUNCTION getSimulationStopTime()
+      IMPLICIT NONE
+
+C  Not implemented yet.
+C Just to satisfy the caller temporarily.
+
+      getSimulationStopTime = 0.
+
+      END FUNCTION getSimulationStopTime
+
+
+
 
 C Originally a utility function in trnsys
 C Return the simulation time step in hours
-      REAL FUNCTION getSimulationTimeStep()
+      DOUBLE PRECISION FUNCTION getSimulationTimeStep()
       IMPLICIT NONE
 
       COMMON/PCTIME/TIMSEC
@@ -166,7 +227,7 @@ C Return the simulation time step in hours
 C TIMSEC is in second in esp-r
 C Simulation time step is in hour in trnsys
 C So, make conversion below:
-      getSimulationTimeStep = TIMSEC/3600.
+      getSimulationTimeStep = DBLE(TIMSEC/3600.)
 
       END FUNCTION getSimulationTimeStep
 
@@ -419,6 +480,101 @@ C    UNDEFINED COMPONENT TYPE - FLAG ERROR IF LINK CHECKING IS ON
       RETURN
 
       END SUBROUTINE TYPECK
+
+
+
+
+C Originally a subroutine in trnsys, where elements in YCK and OCK
+C are put in a global array. 
+C Since this operation is not required in ESP-r, only dummy form
+C is provided here.
+      SUBROUTINE RCHECK(INFO,YCK,OCK)
+      IMPLICIT NONE
+
+C trnsferred parameters
+      INTEGER INFO(15)
+      CHARACTER*3 YCK,OCK
+
+      RETURN
+
+      END SUBROUTINE RCHECK
+
+
+
+C Originally a subroutine in trnsys, where the size and the position
+C of the storage variables for a TRNSYS type is put in golbal variables.
+C Since the common block is used here. Only dummy form is needed.
+      SUBROUTINE setStorageSize(NSTORE,INFO)
+      IMPLICIT NONE
+
+      INTEGER NSTORE,INFO(15)
+
+      RETURN
+
+      END SUBROUTINE setStorageSize
+
+
+
+C Originally a subroutine in trnsys. Rewrite it here.
+C Put the values to be stored in the common blcok
+      SUBROUTINE setStorageVars(STORE_IN,NSPOTS,INFO)
+      IMPLICIT NONE
+
+#include "trnsys.h"
+
+      COMMON/TRNSYSSTORE/outStore(MTRNCOM,MTRNOUT),
+     &                   inStore(MTRNCOM,MTRNXIN),
+     &                   storageVariable(MTRNCOM,MTRNSTORE)
+      DOUBLE PRECISION outStore, inStore, storageVariable
+
+C  Trnasferred parameters
+      INTEGER INFO(15),NSPOTS
+      DOUBLE PRECISION STORE_IN(NSPOTS)
+
+C local variable
+      INTEGER unit_number
+      INTEGER i
+
+      unit_number = INFO(1)
+
+      DO i=1, NSPOTS
+         storageVariable(unit_number, i) = STORE_IN(i)
+      END DO
+
+      END SUBROUTINE setStorageVars
+
+
+
+
+C Originally a subroutine in trnsys. Rewrite it here.
+C Take the values to be stored in the common blcok
+      SUBROUTINE getStorageVars(STORE_OUT,NSPOTS,INFO)
+      IMPLICIT NONE
+
+#include "trnsys.h"
+
+      COMMON/TRNSYSSTORE/outStore(MTRNCOM,MTRNOUT),
+     &                   inStore(MTRNCOM,MTRNXIN),
+     &                   storageVariable(MTRNCOM,MTRNSTORE)
+      DOUBLE PRECISION outStore, inStore, storageVariable
+
+C  Trnasferred parameters
+      INTEGER INFO(15),NSPOTS
+      DOUBLE PRECISION STORE_OUT(NSPOTS)
+
+C local variable
+      INTEGER unit_number
+      INTEGER i
+
+      unit_number = INFO(1)
+
+      DO i=1, NSPOTS
+         STORE_OUT(i) = storageVariable(unit_number, i)
+      END DO
+
+      END SUBROUTINE getStorageVars
+
+
 
 
 

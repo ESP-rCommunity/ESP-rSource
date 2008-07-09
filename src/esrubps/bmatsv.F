@@ -295,6 +295,10 @@ C Flag to enable inter-domain iteration
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
 
+C Loop counters for cross domain iterations
+      common / Cross_Domain_Loop / plt_elec_loop_counter
+      integer plt_elec_loop_counter
+
 C Indicies of start, end, current & future indicies
       integer iMY_start_yr_index, iMY_end_yr_index,
      &        iMY_current_yr_index, iMY_future_yr_index
@@ -1421,6 +1425,9 @@ C Use flag 'iSaving' to tell XXX_TimeRow_Manipulate to store data
                 call Pfs_TimeRow_Manipulate(iSaving)
               endif
 
+C Initalize the loop conter at the beginning of each plant time step
+              plt_elec_loop_counter = 1
+
 C Note: Calls to Plt_TimeRow_Manipulate() and Pfs_TimeRow_Manipulate()
 C to invoke the 'iWinding' operation are embedded inside the solution of
 C the plant and electrical domains. Thus, if either domain is called
@@ -1471,6 +1478,7 @@ C be restored.
                 if (.not. plant_elec_converged ) then
                   call Plt_TimeRow_Manipulate(iRewinding)
                   call Pfs_TimeRow_Manipulate(iRewinding)
+                  plt_elec_loop_counter = plt_elec_loop_counter + 1
                 endif
               ENDDO
 
