@@ -96,6 +96,7 @@ C << what about including common zndata in this manipulation? >>
       integer iotherzone ! the other zone needing to be updated
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
+      dimension jvn2(MV)  ! dummy array for sorti call
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV),ispk(MS)
       dimension ITEMP(MV)  ! used for sorting list in decending order.
 
@@ -466,7 +467,7 @@ C indicies of the verticies in jvn1 will not reflect what is available
 C in the zone. Tested for deleting a door and the logic works because
 C of the normal ordering of the vertices.
           KFLAG = -1
-          call SORTI(jvn1,ITEMP,MV,KFLAG)
+          call SORTI(jvn1,jvn2,MV,KFLAG)
           do 752 ichildloop=1,myedges
             ijj=jvn1(ichildloop)
             CALL ADDVERT(icomp,ijj,'D',IER)

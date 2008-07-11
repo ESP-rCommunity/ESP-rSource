@@ -277,25 +277,28 @@ C Reset ier to zero
       lnblankdos=iprevblnk(source,lnrp)  ! find location of space before that
 
 C Debug the file name.
-      write(outs,'(a,2i3,2a)',IOSTAT=IOS,ERR=552) 'dos name = ',lnrp,
-     &  lnblankdos,' ',source(1:lnrp)
-      call edisp248(iuout,outs,90)
+C      write(outs,'(a,2i3,2a)',IOSTAT=IOS,ERR=552) 'dos name = ',lnrp,
+C     &  lnblankdos,' ',source(1:lnrp)
+C      call edisp248(iuout,outs,90)
       sourcedos=' '
       call backslashit(source,sourcedos)   ! change any forward to back slash.
-      write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'adjust slashes ',
-     &  sourcedos(1:lnrp)
-      call edisp248(iuout,outs,90)
+
+C Debug.
+C      write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'adjust slashes ',
+C     &  sourcedos(1:lnrp)
+C      call edisp248(iuout,outs,90)
       if(lnblankdos.gt.1)then
         patched=' '
         write(patched,'(3a)',IOSTAT=IOS,ERR=552) dq,sourcedos(1:lnrp),dq
         write(outs,'(2a)') 'quoted is ',patched(1:lnblnk(patched))
         call edisp248(iuout,outs,90)
       else
-        patched=' '
         patched=sourcedos
-        write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'patched is ',
-     &    patched(1:lnblnk(patched))
-        call edisp248(iuout,outs,80)
+
+C Debug.
+C        write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'patched is ',
+C     &    patched(1:lnblnk(patched))
+C        call edisp248(iuout,outs,80)
       endif
 
       return
@@ -321,15 +324,15 @@ C source (up to 144 char) source file (with path).
 C patched (up to 144 char) revised file (with \)
 C ier is zero if ok.
       subroutine imgfiledos(source,patched,ier)
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
 
 C Strings for dos version of source and destination of db file.
-      character outs*248
+C      character outs*248
       character*(*) source,patched
       character sourcedos*144
       logical unixok
-      integer lnrp  ! length of source file name
-      integer lnblankdos ! position of blank in source file
+C      integer lnrp  ! length of source file name
+C      integer lnblankdos ! position of blank in source file
 
 C Set folder separator (fs) to \ or / as required.
 C and a double quote character available in case of spaces in name.
@@ -343,36 +346,39 @@ C and a double quote character available in case of spaces in name.
 
 C Reset ier to zero
       ier=0
-      lnrp=lnblnk(source)     ! what is the last char in string
-      lnblankdos=iprevblnk(source,lnrp)  ! find location of space before that
+C      lnrp=lnblnk(source)     ! what is the last char in string
+C      lnblankdos=iprevblnk(source,lnrp)  ! find location of space before that
 
 C Debug the file name.
-      write(outs,'(a,2i3,2a)',IOSTAT=IOS,ERR=552) 'dos name = ',lnrp,
-     &  lnblankdos,' ',source(1:lnrp)
-      call edisp248(iuout,outs,90)
+C      write(outs,'(a,2i3,2a)',IOSTAT=IOS,ERR=552) 'dos name = ',lnrp,
+C     &  lnblankdos,' ',source(1:lnrp)
+C      call edisp248(iuout,outs,90)
       sourcedos=' '
       call backslashit(source,sourcedos)   ! change any forward to back slash.
-      write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'adjust slashes ',
-     &  sourcedos(1:lnrp)
-      call edisp248(iuout,outs,90)
 
-      patched=' '
+C Debug.
+C      write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'adjust slashes ',
+C     &  sourcedos(1:lnrp)
+C      call edisp248(iuout,outs,90)
+
       patched=sourcedos
-      write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'patched is ',
-     &  patched(1:lnblnk(patched))
-      call edisp248(iuout,outs,80)
+
+C Debug.
+C      write(outs,'(2a)',IOSTAT=IOS,ERR=552) 'patched is ',
+C     &  patched(1:lnblnk(patched))
+C      call edisp248(iuout,outs,80)
 
       return
 
 C Errors.
- 552  if(IOS.eq.2)then
-        call usrmsg('Permissions issue creating dos file name: ',
-     &  patched,'W')
-      else
-        call usrmsg('Error creating dos file name (might not work)',
-     &  patched,'W')
-      endif
-      ier=1
-      return
+C 552  if(IOS.eq.2)then
+C        call usrmsg('Permissions issue creating dos file name: ',
+C     &  patched,'W')
+C      else
+C        call usrmsg('Error creating dos file name (might not work)',
+C     &  patched,'W')
+C      endif
+C      ier=1
+C      return
       end
 

@@ -30,6 +30,8 @@ C tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE MZOUTP
 #include "building.h"
 #include "esprdbfile.h"
+#include "sbem.h"
+#include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SHOUT/ICOUT
@@ -47,6 +49,8 @@ C tzph,tzpc are zone heating/cooling use over time.
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       character LTMP*72,h*72,zname*12,zdesc*64,outs*124
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
@@ -55,6 +59,11 @@ C tzph,tzpc are zone heating/cooling use over time.
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       logical OK,dok
+      integer iactvalue !temporary integer for holding activity numbers (UK NCM) to
+                        !use in DHW calculations
+      DIMENSION MJ_DHW_ann_energy(MCOM),kWh_DHW_ann_energy(MCOM)
+      real MJ_DHW_ann_energy,kWh_DHW_ann_energy,Tot_MJ_DHW_ann_energy
+      real Tot_kWh_DHW_ann_energy,z_DHWperm2,TotDHWperm2
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
@@ -216,14 +225,56 @@ C Monthly heating and cooling demands.
         HM=0.
         CM=0.
         do 43 j = 1,NCOMP
-          HM=HM+(TZPHM(j,i)/1000.0)
-          CM=CM+(TZPCM(j,i)/1000.0)
+          HM=HM+(TZPHM(j,i)/(1000.0*NTSTEP))
+          CM=CM+(TZPCM(j,i)/(1000.0*NTSTEP))
   43    continue
         write(outs,'(2a,f10.1,a,f10.1,a,f10.1,a,f10.1)') MTHNAM(i),tab,
      &    HM,tab,CM,tab,HM*3.6,tab,CM*3.6
         call edisp(IWU,outs)
   42  continue
 
+C DHW calculations for UK NCM data
+      if(ISBEM.EQ.1)then
+
+C NCM method assumes that DT (temper. difference) is always 50oC for
+C Domestic hot water. See SBEM Technical manual for additional info.
+C Takes from tdf the requirements in l/d/m2.
+        call edisp(IWU,' ')
+        write(outs,'(a)') 'Annual energy   '
+        call edisp(IWU,outs)
+        write(outs,'(9a)') 'requirements - DHW: ',tab,'Zone       ',tab,
+     &    '   (MJ)  ',tab,'  (kWh) ',tab,'  (kWh/m2) '  
+        call edisp(IWU,outs)
+        Tot_MJ_DHW_ann_energy=0.
+        Tot_kWh_DHW_ann_energy=0.
+        TotDHWperm2=0.
+        do 741 I=1,NCOMP
+          iactvalue=theactivityindex(I)
+
+C In MJ:
+          MJ_DHW_ann_energy(I)=
+     &        365*dhw_litres(iactvalue)*ZBASEA(I)*(4.18/1000)*50
+          Tot_MJ_DHW_ann_energy=
+     &        MJ_DHW_ann_energy(I)+Tot_MJ_DHW_ann_energy
+
+C In kWh:
+          kWh_DHW_ann_energy(I)=MJ_DHW_ann_energy(I)/3.6
+          Tot_kWh_DHW_ann_energy=
+     &        kWh_DHW_ann_energy(I)+Tot_kWh_DHW_ann_energy
+          z_DHWperm2=kWh_DHW_ann_energy(I)/ZBASEA(I)   
+          write(outs,'(3a,f8.1,a,f8.1,2a,f5.1)') '                    ',
+     &     zname(i),tab,MJ_DHW_ann_energy(I),tab,kWh_DHW_ann_energy(I),
+     &     tab,'   ',z_DHWperm2
+          TotDHWperm2=z_DHWperm2+TotDHWperm2
+          call edisp(IWU,outs)     
+ 741    continue
+        write(outs,'(3a,f10.1,a,f10.1,2a,f5.1)') 
+     &       '             Total:   ',tab,'        ',
+     &    Tot_MJ_DHW_ann_energy,tab,Tot_kWh_DHW_ann_energy,
+     &    tab,'  ',TotDHWperm2
+        call edisp(IWU,outs)
+      endif
+      
 C Close output file after writing.
       IF(IWU.NE.ICOUT)goto 17
 

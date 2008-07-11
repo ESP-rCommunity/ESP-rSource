@@ -40,7 +40,9 @@ C Common block variables are:
 C INDCFG  - is the configuration file index where: 0= registration, 
 C           1= building only, 2= plant only, 3= building and plant.
 
-C ICFGV   - version of the model configuration file.
+C ICFGV   - version of the model configuration file. Version 4 was
+C           introduced in May 2008 to explicitly hold data e.g. IPV
+C           data previously held in separate files.
 
 C IXPOS   - Site exposure index :
 C           1= city centre, normal case; 2= urban site, normal case
@@ -223,7 +225,7 @@ C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
-       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
@@ -325,6 +327,10 @@ C Uncertainty analysis common.
 
 C IPV description.
       common/IPVF/lipvdatf
+      common/IPVFORMAT/ipvform,ipvversion
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C Dispersed demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -446,7 +452,8 @@ C The flag (iSlr_half_hr_flg) can be set in the .cfg file or within bps in the
 C 'simulation toggles' menu.
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
-      integer iSlr_half_hr_flg,idty    
+      integer iSlr_half_hr_flg,idty
+      INTEGER IRNCMD,IRNCMF
 
 
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
@@ -463,7 +470,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15,phrase*64
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
@@ -491,6 +498,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
       character HDR*12
+      character ipvact*3  ! to singnal internal or external IPV file
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
@@ -531,11 +539,16 @@ C Clear the model common blocks.
       MCMPDBFL='UNKNOWN'
       bidirfile='UNKNOWN'
       CALENAME='UNKNOWN'
+      if(iutdf.eq.0)IUTDF=IFIL+7  ! set if not already done so.
+
 
 C Set flag indicating that solar radiation data is hour-centered (default)
 C Variable will be reset if 'slr_half_hr' included in .cfg
       iSlr_half_hr_flg = 0
 
+C Initialise NCM data read flags
+      IRNCMD=0
+      IRNCMF=0
 
 C Initialize HVAC flag to indicate no HVAC models active. This
 C will be reset if `*hvac' included in .cfg.
@@ -580,7 +593,7 @@ C Clear zone related files.
    43 continue
 
 C Assume older version of configuration file.
-      icfgv=1
+      icfgv=2
 
       nuco=0
 
@@ -658,11 +671,14 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
 
 C Read '*CONFIGURATION' and flag if a new format file otherwise
 C treat as an old format.  If '*CONFIGURATION3.0' read zone info
-C via tags.
+C via tags. If '* CONFIGURATION4.' then expect to find IPV data
+C embedded in the configuration file.
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'config index',IER)
       IF(IER.NE.0)goto 1
-      if(OUTSTR(1:17).eq.'* CONFIGURATION3.')then
-        icfgv=3
+      if(OUTSTR(1:17).eq.'* CONFIGURATION3.'.or.
+     &   OUTSTR(1:17).eq.'* CONFIGURATION4.')then
+        if(OUTSTR(1:17).eq.'* CONFIGURATION3.')icfgv=3
+        if(OUTSTR(1:17).eq.'* CONFIGURATION4.')icfgv=4
   34    CALL STRIPC(IUC,OUTSTR,99,ND,1,'date stamp',IER)
         IF(IER.NE.0)goto 1
         K=0
@@ -713,7 +729,7 @@ C via tags.
           IF(IER.NE.0)goto 1
         endif
       elseif(OUTSTR(1:7).eq.'* CONFI')then
-        icfgv=2
+        icfgv=2  ! if we got here then it was not v3 or v4
         CALL STRIPC(IUC,OUTSTR,99,ND,1,'config index',IER)
         IF(ND.EQ.1)THEN
           K=0
@@ -821,18 +837,6 @@ C so LSTRIPC and LOUTSTR are used.
       elseif(WORD(1:4).eq.'*mlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
       elseif(WORD(1:4).eq.'*opt')then
-        CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
-
-C Process the file name folloing *opt and depending on its path
-C set the LOPTDB common block string via call to findwhichdbpath.
-        call findwhichdbpath('opt',lworking,ier)
-
-C debug.
-C        write(6,*) lworking
-C        write(6,*) loptdb
-C        write(6,*) ' ersys ipathoptdb is ',ipathoptdb
-      elseif(WORD(1:7).eq.'*stdopt')then
-        ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(LOUTSTR,K,LOPTDB,'W','optical db',IER)
       elseif(WORD(1:4).eq.'*prs')then
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
@@ -1254,8 +1258,34 @@ C Effeciencies data line currently unused so skip.
         CALL EGETWR(LOUTSTR,K,phwsox,0.,0.,'-','hw sox',IER)
       elseif(WORD(1:4).eq.'*ipv')then
 
-C IPV data file.
-        CALL EGETRM(LOUTSTR,K,lipvdatf,'W','ipv file',IER)
+C IPV data file if there were two items on the line so call
+C ripvdat with the external file name. If there are 4 items
+C call ripvdat for data within the cfg file.
+        if(ND.eq.2)then
+          CALL EGETRM(LOUTSTR,K,lipvdatf,'W','ipv file',IER)
+          CALL ERPFREE(IUTDF,ISTAT)
+          call FINDFIL(lipvdatf,XST)
+          if(XST)then
+	    ipvact='ipv'
+            call ripvdat(IUTDF,lipvdatf,ipvact,ier)
+            CALL ERPFREE(IUTDF,ISTAT)
+          endif
+        elseif(ND.ge.3)then
+	
+C The IPV data line needs to be scanned prior to calling ripvdat
+C for the rest of the data.
+          K=0
+          CALL EGETW(LOUTSTR,K,WORD,'W','*IPV tag',IFLAG)
+          CALL EGETWI(LOUTSTR,K,ipvversion,0,4,'W','version index',IER)
+          CALL EGETWI(LOUTSTR,K,ipvform,0,4,'W','ipv rep format',IER)
+          if(ND.gt.3)then
+            CALL EGETW(LOUTSTR,K,ipvsimu,'W','*IPV assessment',IFLAG)
+          else
+            ipvsimu='------'
+          endif
+	  ipvact='cfg'
+          call ripvdat(iuc,FILE,ipvact,ier)	
+	endif
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
@@ -1285,11 +1315,13 @@ C Radiance scene file.
 C SBEM database file
         CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
         ISBEM=1
+        IRNCMD=1
       elseif(WORD(1:4).eq.'*ncm')then
 
 C SBEM project specific file
-        CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM db',IER)
+        CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
         ISBEM=1
+        IRNCMF=1
       elseif(WORD(1:4).eq.'*not')then
 
 C Flag to check if notional model or not
@@ -1428,6 +1460,7 @@ C Read references to TDF id's, and then the related tasks and zones.
           DBTAG(M)=' '
           DBTASK(M)=' '
           DBZN(M)=' '
+          DBSN(M)=' '
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','tdf instance name',IER)
           DBTAG(M)=WORD(1:12)
@@ -1439,8 +1472,13 @@ C Read references to TDF id's, and then the related tasks and zones.
             CALL EGETW(OUTSTR,K,WORD,'W','related zone',IER)
             DBZN(M)=WORD(1:15)
           endif
-          WRITE(OUTS,'(A,I2,7A)') ' Tdf item:',M,':',DBTAG(M),
-     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),'.'
+          if(ND.gt.3)then
+            CALL EGETW(OUTSTR,K,WORD,'W','related surface',IER)
+            DBSN(M)=WORD(1:15)
+          endif            
+          WRITE(OUTS,'(A,I2,8A)') ' Tdf item:',M,':',DBTAG(M),
+     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),
+     &      'and surface',DBSN(M)
           IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
         GOTO 59
    58   CONTINUE
@@ -1455,7 +1493,7 @@ C Check for simulation setup data and save level.
         CALL EGETWI(LOUTSTR,K,isstup,0,300,'W','startup',IER)
         CALL EGETWI(LOUTSTR,K,isbnstep,1,60,'W','zone_ts',IER)
         CALL EGETWI(LOUTSTR,K,ispnstep,0,100,'W','plant_ts',IER)
-        CALL EGETWI(LOUTSTR,K,issave,0,5,'W','save_lv',IER)
+        CALL EGETWI(LOUTSTR,K,issave,0,6,'W','save_lv',IER)
 
 C If 6 items on line also read whether to save only 1stph.
         if(ND.eq.7)then
@@ -1717,7 +1755,7 @@ C Reporting.
 
 C Zone file names.
       icomp=0
-   46 if(icfgv.eq.3)then
+   46 if(icfgv.eq.3.or.icfgv.eq.4)then
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'zone data',IER)
         IF(IER.NE.0)goto 1
         K=0
@@ -2508,6 +2546,10 @@ C warn the user.
      &      ' model system configuration successfully scanned')
       endif
 
+C Read UK NCM specific data
+      IF(IRNCMF.EQ.1)CALL RSBEM
+      IF(IRNCMD.EQ.1)CALL SBEMPR(IER)
+
 C Building description now complete, begin to read in plant if it
 C exists. IFPNF is the unit for the plant network file (same as for
 C temporary opening of geometry files etc., iunit1 is
@@ -2978,4 +3020,3 @@ C Debug.
 
       return
       end
-

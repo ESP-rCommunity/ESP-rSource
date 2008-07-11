@@ -2,7 +2,6 @@
 # Main script to test the ESRU integrated simulator.
 
 VERSION="/usr/esru/esp-r/bin"
-VERSION="/home/jon/esru_jwh/esp-r/bin"
 
 #### Link appropriate shading file
 cd ../cfg

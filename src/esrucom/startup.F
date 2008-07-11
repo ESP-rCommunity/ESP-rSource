@@ -714,8 +714,8 @@ C Close defaults file before exiting.
 C Parse command lines.
 
 C ********* parpsf (equivalent to startpsf.c)
-C  Allowing terminal, size and config file arguments
-C  to be passed to the program from the invocation line.  
+C parpsf allowa terminal, size and config file arguments
+C to be passed to the program from the invocation line.  
 
       subroutine parpsf(termtype,iappw,iappx,iappy,inf)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1028,6 +1028,11 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'       [-zone <name|index>]')
         call edisp(iuout,'       [-s < width, offset left & top>]')
         call edisp(iuout,'       [-act {recalculate|update_silent}]')
+        call edisp(iuout,'       [-act { <action> }')
+        call edisp(iuout,'       [-act [recalculate|update_silent]}')
+        call edisp(iuout,'       [-act { <action> <file>]}')
+        call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
+        call edisp(iuout,'   (where file is asci input or output file)')
         call edisp(iuout,' ')
         call edisp(iuout,'  where -mode options are:')
         call edisp(iuout,'    text    = text mode ')
@@ -1087,8 +1092,9 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <results file>]')
         call edisp(iuout,'   [-act <action, {interactive|silent}>]')
-        call edisp(iuout,'  (where action {ipv_win|ipv_trn|ipv_sum|)')
-        call edisp(iuout,'                 ipv_ann|BEMS|recover})')
+        call edisp(iuout,'  (where action {ipv_win1|ipv_spr|ipv_sum|)')
+        call edisp(iuout,'                 ipv_aut|ipv_win2|ipv_trn|)')
+        call edisp(iuout,'                 ipv_annual|BEMS|recover})')
         call edisp(iuout,'  (where default is interactive mode and')
         call edisp(iuout,'   silent is automatic execution)')
         call edisp(iuout,'   [-actf file providing bems commands or')
@@ -1534,11 +1540,12 @@ C Errors.
       end
 
 
-C ********* parsfza (equivalent to startsfza.c)
-C  Allowing terminal, size, config file, zone focus and actions arguments
-C  to be passed to the program from the invocation line.  
+C ********* parsish
+C parsish allows the module ish to be passed a terminal, size, config file,
+C zone focus and actions arguments from the invocation line.  
 
-      subroutine parsfza(termtype,iappw,iappx,iappy,inf,zone,act)
+      subroutine parsish(termtype,iappw,iappx,iappy,inf,zone,act,
+     &  ascif)
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -1547,7 +1554,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,zone*16,act*16
+      character outs*248,zone*16,act*16,ascif*72
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1575,6 +1582,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       zone = 'ALL'
       act = 'NONE'
+      ascif  = 'UNKNOWN'
       argument = ' '
 
 C Get arguments from command line: if one parameter.
@@ -1636,6 +1644,12 @@ C Display detailed build information and then quit
         elseif(argument(1:4).eq.'-act')then
           i=i+1
           call getarg(i,act)
+	  
+C If act is asci2bin or bin2asci read ascii file name
+          if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+            i=i+1
+            call getarg(i,ascif)
+	  endif
         endif
         goto 41
 
@@ -1658,7 +1672,7 @@ C Errors.
       end
 
 C ********* parsprj 
-C Allowing terminal, size, config file, zone focus and actions arguments
+C parsprj allows terminal, size, config file, zone focus and actions arguments
 C (including 3 real data) to be passed to the prj from the invocation line.  
       subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
      &        data1,data2,data3)
@@ -1928,8 +1942,8 @@ C Errors.
 
 
 C ********* partf (equivalent to startup.c)
-C  Allowing terminal and config file arguments
-C  to be passed to the program from the invocation line.  
+C partf allows terminal and config file arguments
+C to be passed to the program from the invocation line.  
 
       subroutine partf(termtype,inf)
       COMMON/OUTIN/IUOUT,IUIN
@@ -2019,7 +2033,7 @@ C        call edisp248(iuout,outs,90)
       end
 
 C ********* partfa (equivalent to partf with an action parameter)
-C  Allowing terminal, file and action arguments
+C partfa allows terminal, file and action arguments
 C  to be passed to the program from the invocation line.  
 C  Logic allows for the -file token to be optional.
       subroutine partfa(termtype,inf,act)
@@ -2257,7 +2271,7 @@ C Errors.
       end
 
 C ********* parsfact
-C  Allowing terminal, size, file andactions arguments
+C parsfact allows terminal, size, file and actions arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
@@ -2378,7 +2392,7 @@ C Errors.
       return
       end
 
-C Parse command line paramters for ecnv.
+C parcnv parse command line paramters for ecnv.
       subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       COMMON/OUTIN/IUOUT,IUIN
@@ -2494,7 +2508,7 @@ C If one parameter.
       end
 
 C ******* FINDAPP
-C Given a file name (string) see if it contains one of the esp-r module names.
+C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
       SUBROUTINE findapp(string,appn)
       CHARACTER*(*) string,appn
       logical unixok

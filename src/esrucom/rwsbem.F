@@ -55,7 +55,8 @@ C IFIL base file unit number (set in MAIN of each application).
       CHARACTER*40 ACTNAME
       CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
       CHARACTER*102 ACTDOC  ! to hold documentation string for activity
-
+      integer NIT
+      
 C Initialise counters
       IDEBUG=0
       IFUEL=0
@@ -368,8 +369,9 @@ C c) quoted string name of activity (roomactname)
 C d) b_type order index (same as A) (bld_order_index)
 C e) occupant density people/m2 (occupant_dens)
 C f) metabolic rate W/person/m2 (metabolic_rate)
-C g) skip cooling setpoint
-C h) skip heating set point
+C g) Main cooling setpoint (Cmainsetpoint)
+C h) Main heating set point (Hmainsetpoint) to use for notional
+C       building overheating (in subsys.F at the moment)
 C i) skip set back
 C j) outside air per person litres/sec/person (fresh_air)
 C k) lighting lux (lighting_lux)
@@ -392,31 +394,33 @@ C s) lighting display W/m2  (display_lighting)
         bld_order_index(iactindex)=index
         CALL EGETWR(LOUTSTR,K,VAL,0.,10.,'W','occupant density',IER)
         occupant_dens(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','metabolic rate',IER)
-        metabolic_rate(iactindex)=VAL
+        CALL EGETWI(LOUTSTR,K,IVAL,0,1000,'W','metabolic rate',IER)
+        metabolic_rate(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','cooling setpoint',IER)
+        Cmainsetpoint(iactindex)=VAL       
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','heating setpoint',IER)
+        Hmainsetpoint(iactindex)=VAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','set-back',IER)
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','outside air per prs',IER)
         fresh_air(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,10000.,'W','lighting lux',IER)
-        lighting_lux(iactindex)=VAL
+        CALL EGETWI(LOUTSTR,K,IVAL,0,10000,'W','lighting lux',IER)
+        lighting_lux(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','equipment W/m2',IER)
         equip_gain(iactindex)=VAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W',
      &    'domestic hot water litres/day/m2',IER)
         dhw_litres(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','humidity minimum %',IER)
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','humidity max %',IER)
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W','humidity minimum %',IER)
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W','humidity max %',IER)
         call egetdq(LOUTSTR,K,ACTDOC,'-','activity description',IER)
         write(roomactdoc(iactindex),'(a)') ACTDOC(1:lnblnk(ACTDOC))
 
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W',
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W',
      &    'occupant latent percentage',IER)
-        latent_ocup_percent(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W',
+        latent_ocup_percent(iactindex)=IVAL
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W',
      &    'equipment latent percentage',IER)
-        latent_equip_percent(iactindex)=VAL
+        latent_equip_percent(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','lighting displ W/m2',IER)
         display_lighting(iactindex)=VAL
 
@@ -463,6 +467,7 @@ C espriou.h provides currentfile.
       common/C1/NCOMP,NCON
 
       CHARACTER OUTSTR*124
+      CHARACTER WORD*48
       LOGICAL NEAR
 
       IUF=IFIL+1
@@ -600,9 +605,14 @@ C espriou.h provides currentfile.
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'activities zone links',IER)
       DO 204 IZ=1,NCOMP
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to activity linkage',IER)
-        K=47
-        CALL EGETWI(OUTSTR,K,IACTYTYP(IZ),0,0,'-',
-     &  'zone-activity links',IER)
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','Zone',IER)
+        CALL EGETW(OUTSTR,K,WORD,'W','name of zone',IER)
+        CALL EGETWI(OUTSTR,K,IVAL,0,0,'-','high level zn-activity',IER)
+        IACTYTYP(IZ)=ival
+        CALL EGETWI(OUTSTR,K,ival,0,0,'-','long list zn-activity',IER)
+        theactivityindex(IZ)=ival
+        CALL EGETRM(OUTSTR,K,WORD,'W','label for activity',IER)
  204  CONTINUE
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'lighting type zone links',IER)
       DO 205 IZ=1,NCOMP
@@ -647,6 +657,8 @@ C data relevant to the UK National Calculation Method.
 
       CHARACTER CFGROOT*24,LCFGF*72,TMPSTR*64
       CHARACTER ZNAME*12,ZDESC*64
+      integer ireadactivityindex
+      
       TMPSTR=' '
       IUF=IFIL+1
 
@@ -845,7 +857,7 @@ C Write building zone to HVAC system linkage information
         IF(IHLZ(IZ).EQ.0)THEN
           TMPSTR=' No HVAC system for this zone!'
         ELSE
-          WRITE(TMPSTR,'(2A)')' ',HVACNAME(INCMSYS(IHLZ(IZ)))
+          WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
         ENDIF
         WRITE(IUF,'(3A,I3,A)',IOSTAT=IOS,ERR=3)
      &     'Zone ',ZNAME(IZ),' is linked to system number ',
@@ -885,13 +897,14 @@ C Write building zone to DHW system linkage information
 C Write building zone to activity type linkage information
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to activity linkage'
       DO 105 IZ=1,NCOMP
-        if(IACTYTYP(IZ).gt.0)then
-          WRITE(IUF,'(3A,1X,I4,1X,A)') 'Zone ',zname(iz),
-     &      ' is linked to activity number ',IACTYTYP(IZ),
-     &      atypname(IACTYTYP(IZ))
+        ireadactivityindex=theactivityindex(IZ)
+        if(ireadactivityindex.gt.0)then
+          WRITE(IUF,'(2A,I4,I6,1X,2A)') 'Zone ',zname(iz),IACTYTYP(IZ),
+     &      ireadactivityindex,atypname(IACTYTYP(IZ)),
+     &      ' # is linked to activity number '    
         else
-          WRITE(IUF,'(3A)') 'Zone ',zname(iz),
-     &      ' is linked to activity number     0 (undefined activity)'
+          WRITE(IUF,'(5A)') 'Zone ',zname(iz),'0','0',
+     &      '# is linked to activity number 0 (undefined activity)'
         endif
  105  CONTINUE
 

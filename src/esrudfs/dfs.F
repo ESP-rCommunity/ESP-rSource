@@ -589,7 +589,7 @@ C Check for model (set bounds on domain for visualisation).
         NITMS=6
 
 C Help text for results sub-menu.
-        h(1)='There is no help for resulst sub-menu. '
+        h(1)='There is no help for results sub-menu. '
         CALL EMENU(' results',ITEM,NITMS,INO1)
         IF(INO1.EQ.1)THEN 
 
@@ -728,8 +728,9 @@ C Graphs are defined in cfmatl.F.
           ENDIF
         ELSEIF(INO1.EQ.4)THEN
 
-C Write TECPLOT file.
-          call TECPLOTEND
+C Write ParaView file for each timestep.
+C For stand-alone: only one file is written (current timestep)!
+          call PARAVIEWEND(1)
         ELSEIF(INO1.EQ.5)THEN
 
 C Visualise flow.

@@ -412,7 +412,7 @@ C successful then scan all the zones via ZDATA.
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
-            call updwire(ncomp)
+            IF(MMOD.EQ.8) call updwire(ncomp)
             NZONES=NCOMP
             CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
 
@@ -548,7 +548,7 @@ C Find the path and local file name.
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
-          call updwire(ncomp)
+          IF(MMOD.EQ.8) call updwire(ncomp)
           NZONES=NCOMP
           CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
           call tstamp('>','VWF: scanning new model')

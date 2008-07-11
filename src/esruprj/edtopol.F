@@ -82,13 +82,13 @@ C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
 
       LOGICAL MODIFY,MODLEN,MODBND,OTHEROK
-      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
+      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
       logical M1OK,M2OK,M4OK,M5OK,M6OK,M7OK
       LOGICAL prob,OK,dok,unixok
       logical longpause
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      DIMENSION ITEMS1(22)
+      DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,H*72,outs*124,ITEMS1*34,CFGFN*72
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
       character cfgroot*24
@@ -139,7 +139,8 @@ C file holds sufficient information to re-establish the C3 common
 C block with the help of topology checking logic.
 
 C Assume that all surfaces marked as identical, constant, ground and
-C adiabatic require no confirmation (if no geometric match is found).
+C adiabatic  and back-to-back require no confirmation (if no
+C geometric match is found).
 C Assume all existing partitions are re-checked and 
 C failed searches brought to users attention.
       M0SKP=.FALSE.
@@ -150,6 +151,7 @@ C failed searches brought to users attention.
       M5SKP=.TRUE.
       M6SKP=.TRUE.
       M7SKP=.TRUE.
+      M8SKP=.FALSE.  !  back-to-back in zone assumed to be partitions
       OTHEROK=.TRUE.
       MODIFY=.FALSE.
 
@@ -187,6 +189,7 @@ C the connections list.
 
 C Refresh the global data arrays used during the checking.
       NZONES=NCOMP
+      ISFSUM=0
       CALL ZDATA (0,IER,NZONES,ISFSUM)
 
 C Set for redraw if image on first entry (if refresh set to after
@@ -237,39 +240,44 @@ C surface attribute.
       else
         ITEMS1(12)='i   if no match found: Yes    '
       endif
-      ITEMS1(13)=  '  _______________________     '
+      if(M8SKP)then
+        ITEMS1(13)='j   if back-to-back found: No '
+      else
+        ITEMS1(13)='j   if back-to-back found: Yes'
+      endif
+      ITEMS1(14)=  '  _______________________     '
 
-      ITEMS1(14)=  'p edit individual connections'
+      ITEMS1(15)=  'p edit individual connections'
 
 C If contiguity has problems then hilight the selection.
       if(prob)then
         if(IPROB.gt.10)then
-          ITEMS1(15)='q CLEAR ALL contiguity  '
+          ITEMS1(16)='q CLEAR ALL contiguity  '
         else
-          ITEMS1(15)='q CLEAR SOME/ALL contiguity  '
+          ITEMS1(16)='q CLEAR SOME/ALL contiguity  '
         endif
       else
-          ITEMS1(15)='q clear some/all contiguity  '
+          ITEMS1(16)='q clear some/all contiguity  '
       endif
-      ITEMS1(16)=    'r check via vertex contiguity'
-      ITEMS1(17)=  '  _______________________     '
+      ITEMS1(17)=    'r check via vertex contiguity'
+      ITEMS1(18)=  '  _______________________     '
 
       IF(ITRC.EQ.0)THEN
-        ITEMS1(18)='s reporting >> silent         '
+        ITEMS1(19)='s reporting >> silent         '
       ELSEIF(ITRC.EQ.1)THEN  
-        ITEMS1(18)='s reporting >> summary        ' 
+        ITEMS1(19)='s reporting >> summary        ' 
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS1(18)='s reporting >> verbose        '
+        ITEMS1(19)='s reporting >> verbose        '
       ENDIF
-      ITEMS1(19)=  '! list connections            '
+      ITEMS1(20)=  '! list connections            '
       if(longpause)then
-        ITEMS1(20)='* pause during check 1 sec    '
+        ITEMS1(21)='* pause during check 1 sec    '
       else
-        ITEMS1(20)='* pause during check 0.5 sec  '
+        ITEMS1(21)='* pause during check 0.5 sec  '
       endif
-      ITEMS1(21)=  '? help                        '
-      ITEMS1(22)=  '- exit                        '
-      MITEM=22
+      ITEMS1(22)=  '? help                        '
+      ITEMS1(23)=  '- exit                        '
+      MITEM=23
 
 C Help text for this menu.
       H(1)='The model contiguity ie. the boundary conditions'
@@ -281,14 +289,18 @@ C Help text for this menu.
       H(7) ='    as they are created,'
       H(8) ='    '
       H(9) =' b) manually edit them via the `cfg` facility, '
-      H(10) ='    '
-      H(11) =' c) search for matching vertices within the model'
+      H(10)='    '
+      H(11)=' c) search for matching vertices within the model'
       H(12)='    to fill in all partitions and then complete this'
       H(13)='    list by editing or importing surface attributes.'
-      H(14) =' '
-      H(15)='The automated facility is considerably faster than'
-      H(16)='manual methods and best used when all the zones have'
-      H(17)='been created. '
+      H(14)=' '
+      H(15)='If internal mass in zone or explicit blinds have been'
+      H(16)='defined as back-to-back surfaces then they will be'
+      H(17)='treated as partitions unless you force confirmation.'
+      H(18)=' '
+      H(19)='The automated facility is considerably faster than'
+      H(20)='manual methods and best used when all the zones have'
+      H(21)='been created. '
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
@@ -320,7 +332,7 @@ C Now display the menu (short heading if in text mode).
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C List help.
-        CALL PHELPD('connection section',17,'surf_topo   ',0,0,IER)
+        CALL PHELPD('connection section',21,'surf_topo   ',0,0,IER)
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Swop the pause length.
@@ -459,12 +471,29 @@ C Flip logic for case of UNKNOWN or no match found.
           CALL PHELPD('cfg import atrib',5,'-',0,0,IER)
           M0SKP=.true.
         endif
-      ELSEIF(INO.EQ.14)THEN
+      ELSEIF(INO.EQ.13)THEN
+      
+C Flip logic for back-to-back within zone.
+        call tstamp('>','CFG: toggle back-to-back')
+        if(M8SKP)then
+          M8SKP=.false.
+        else
+          dok=.false.
+          h(1)='Typically, back-to-back surfaces in a room represent'
+          h(2)='mass and/or blinds and if these surfaces are connected'
+          h(3)='to each other heat will flow. If you want the option'
+          h(4)='to reset these to ADIABETIC say YES. '
+          call askok('Do you want to confirm back-to-back surfaces',
+     &               'within the room (see help)',OK,dok,4)
+          if(OK)M3SKP=.true.
+        endif
+
+      ELSEIF(INO.EQ.15)THEN
 
 C Edit single connection.
         call edaconn(itrc,ier)
         MODIFY=.TRUE.
-      ELSEIF(INO.EQ.15)THEN
+      ELSEIF(INO.EQ.16)THEN
 
 C Clear contiguity.
         h(1)='In restructuring a model it is sometimes useful to '
@@ -648,9 +677,9 @@ C attributes.
         endif
 
 C Save current common block information to file, jump back and
-C update the display.  If icfgv = 3 then only need to update
+C update the display.  If icfgv = 3 or 4 then only need to update
 C the connections file.  If it changes also update the configuration file.
-        if(icfgv.eq.3)then
+        if(icfgv.eq.3.or.icfgv.eq.4)then
   286     H(1)='The surface topology of the problem is held'
           H(2)='in a connections file.'
           write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
@@ -673,13 +702,13 @@ C Older configuration file format, ask for its name.
           if(CFGFN.ne.' ')LCFGF=CFGFN
           CALL EMKCFG('-',IER)
         endif
-      ELSEIF(INO.EQ.16)THEN
+      ELSEIF(INO.EQ.17)THEN
 
-C Check vertex matches and rebuild configuration file. If icfgv = 3 then
+C Check vertex matches and rebuild configuration file. If icfgv = 3 or 4 then
 C only need to update the connections file. If it changes also update
 C the configuration file.
         ITSNM=0
-        if(icfgv.eq.3)then
+        if(icfgv.eq.3.or.icfgv.eq.4)then
   285     H(1)='The surface topology of the problem is held'
           H(2)='in a connections file.'
           write(DCNN,'(a,a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
@@ -705,7 +734,7 @@ C Older configuration file format, ask for its name.
 C Look for connections.
         call tstamp('>','CFG: do graphic match of surfaces')
         CALL CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
-     &    M4SKP,M5SKP,M6SKP,M7SKP,OTHEROK)
+     &    M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 
 C Re-build zone:surface to connection hash array.
         do 43 icc = 1, NCON
@@ -715,7 +744,7 @@ C Re-build zone:surface to connection hash array.
 C Save data to configuration and connections file.
         CALL EMKCFG('-',IER)
         MODIFY=.TRUE.
-      ELSEIF(INO.EQ.18)THEN
+      ELSEIF(INO.EQ.19)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
@@ -733,7 +762,7 @@ C ************** CONFIG
 C CONFIG processes the vertex data and presents close matches for
 C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
-     &  M4SKP,M5SKP,M6SKP,M7SKP,OTHEROK)
+     &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -765,8 +794,8 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-C << G5 can be removed now >>
-
+C G5 required for updating zone geometry file (until such time as geometry
+C write can use G6 common blocks).
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -781,7 +810,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       dimension ICVALS(MCOM),TOTHER(MS,3),ipmz(3),ipms(3)
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,DOIT,OTHEROK,UPDGEO
-      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP
+      logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
       logical closea,closee,close,longpause
       logical newgeo  ! to use for testing if new/old geometry file.
       character outs*124,CXSTR*78,zname*12,SN*12,ZN*12
@@ -793,7 +822,8 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character SSPARENT*12
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
       character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,zdesc*64,bl*2
-      integer icother
+      integer izselfcheck  ! the surface being tested
+      logical selfcheck  ! set true if currently looking within zone
 
 C CACC is the tolerance allowed between two vertices.
 C TOTHER is array of temporary new topology attributes for current zone.
@@ -852,7 +882,6 @@ C skiped.
 
 C Display the reference zone (if type 3 then display both).
 C Remember topology attributes for reference zone.
-
         IUO=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
@@ -869,10 +898,11 @@ C Remember topology attributes for reference zone.
         MODIFY=.TRUE.
         MODBND=.TRUE.
 
-C Loop over each surface.
+C Loop over each surface and increment the counter IC.
         DO 110 J=1,nzsur(IZ)
           JS=J
           IC=IC+1
+          izselfcheck=JS  ! remember the surface being tested
 
 C If zone is not to be included in the analysis, jump.
           if(.NOT.DOIT)goto 110
@@ -896,8 +926,8 @@ C Find number of corners and their coordinates for this surface.
           write(outs,'(I6,3X,A)') NAPIC1,CXSTR
           call edisp(iuout,outs)
 
-C If user said skip marked partitions, check and update the
-C surface attribute if it does not match and jump around.
+C If user said skip confirmation of marked partitions, check and update the
+C surface attribute if a dash and jump around.
           if(M3SKP.and.(ICT(IC).eq.3))then
             call edisp(iuout,'known connection skipped.')
             if(MMOD.eq.8)then
@@ -908,19 +938,8 @@ C surface attribute if it does not match and jump around.
               endif
             endif
 
-C Compare the index of ic2(ic) with integer value of tother(JS,2).
 C If tother(JS,2) is a dash then update with IC2 IE2.
-
-C << this logic needs to be tested >>
-            if(TOTHER(JS,2)(1:1).ne.'-')then
-              read(TOTHER(JS,2),'(i2.2)') icother
-              if(icother.ne.IC2(ic))then
-                write(TOTHER(JS,1),'(a)') 'ANOTHER'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
-              endif
-            else
+            if(TOTHER(JS,2)(1:1).eq.'-')then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
               write(tother(JS,3),'(i2.2)') IE2(ic)
@@ -932,13 +951,21 @@ C << this logic needs to be tested >>
 C Reset number of geometric matches. If more than one then ask.
           ipmatch=0
 
-C Loop over other zones.
+C Loop over zones including this zone so that back-to-back surfaces
+C are also detected.
           DO 200 II=1, NZONES
-            IF (II.EQ.IZ) GOTO 200
+            if (II.EQ.IZ)then
+	      selfcheck=.true.  ! currently looking within zone
+            else
+              selfcheck=.false.
+            endif
 
-C Find if there is a surface connection.
+C Find if there is a surface connection. Skip past self if in same zone.
             DO 210 JJ=1,nzsur(II)
-
+              if(selfcheck.and.JJ.eq.izselfcheck)then
+	        goto 210
+              endif
+	      
 C Find number of corners and their coordinates for the other surface.
               CALL SFCRNR(DACC,II, JJ, NAPIC2, COORD2)
 
@@ -978,7 +1005,7 @@ C Reset ICNT before commencing a new loop.
 C Depending on how many matches were found, proceed.
           if(ipmatch.eq.0)then
 
-C If user said skip marked IDENTICAL, check and update the
+C If user said skip confirmation of marked IDENTICAL, check and update the
 C surface attribute if it does not match and jump around.
             WRITE(SO,'(A)') TOTHER(JS,1)
             if(M1SKP.and.(ICT(IC).eq.1))then
@@ -999,7 +1026,7 @@ C surface attribute if it does not match and jump around.
             goto 110
             endif
 
-C If user said skip marked CONSTANT, check and update the
+C If user said skip confirmation of marked CONSTANT, check and update the
 C surface attribute if it does not match and jump around.
             if(M2SKP.and.(ICT(IC).eq.2))then
               call edisp(iuout,'known connection skipped.')
@@ -1019,7 +1046,7 @@ C surface attribute if it does not match and jump around.
               goto 110
             endif
 
-C If user said skip marked GROUND, check and update the
+C If user said skip confirmation of marked GROUND, check and update the
 C surface attribute if it does not match and jump around.
             if(M4SKP.and.(ICT(IC).eq.4))then
               call edisp(iuout,'known connection skipped.')
@@ -1039,7 +1066,7 @@ C surface attribute if it does not match and jump around.
               goto 110
             endif
 
-C If user said skip marked ADIABATIC, check and update the
+C If user said skip confirmation of marked ADIABATIC, check and update the
 C surface attribute if it does not match and jump around.
             if(M5SKP.and.(ICT(IC).eq.5))then
               call edisp(iuout,'known connection skipped.')
@@ -1059,7 +1086,7 @@ C surface attribute if it does not match and jump around.
               goto 110
             endif
 
-C If user said skip marked BASESIMP, check and update the
+C If user said skip confirmation of marked BASESIMP, check and update the
 C surface attribute if it does not match and jump around. 
             if(M6SKP.and.(ICT(IC).eq.6))then
               call edisp(iuout,'known connection skipped.')
@@ -1079,7 +1106,7 @@ C surface attribute if it does not match and jump around.
               goto 110
             endif
 
-C If user said skip marked IDENT_CEN, check and update the
+C If user said skip confirmation of marked IDENT_CEN, check and update the
 C surface attribute if it does not match and jump around. 
             if(M7SKP.and.(ICT(IC).eq.7))then
               call edisp(iuout,'known connection skipped.')
@@ -1441,27 +1468,59 @@ C Only one possible match, inform user and then proceed.
               endif
             endif
 
-C Update surface attributes.
-            ICN=IZSTOCN(II,JJ)
-            if(TOTHER(JS,2)(1:1).ne.'-')then
-              WRITE(icother,'(i2.2)') TOTHER(JS,2)
-              if(icother.ne.IC2(icn))then
-                write(TOTHER(JS,1),'(a)') 'ANOTHER'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
-              endif
-            else
+C Update surface attributes. If we are in the same room then we have
+C a back-to-back surface. If M8SKP was set to false then go ahead and
+C make it a partition without bothering to ask the user.
+            if(M8SKP)then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
               write(tother(JS,3),'(i2.2)') IE2(ic)
               UPDGEO=.TRUE.
-            endif
-            SN=SSNAME(icn)
-            ZN=zname(II)
-            WRITE(outs,'(4a)')' accepting match to surface ',
+              ICN=IZSTOCN(II,JJ)
+              SN=SSNAME(icn)
+              ZN=zname(II)
+              WRITE(outs,'(4a)')' accepting match to surface ',
      &          SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
-            call edisp(iuout,outs)
+              call edisp(iuout,outs)
+            else
+              h(1)='You asked to specify connection if a match was'
+              h(2)='found to another surface in the same room. '
+              CALL EASKABC('Matched surface within room:',' ',
+     &          'set to partition','set to ADIABETIC','set to UNKNOWN',
+     &          IRTA,2)
+              if(IRTA.eq.1)then
+                write(TOTHER(JS,1),'(a)') 'ANOTHER'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
+                ICN=IZSTOCN(II,JJ)
+                SN=SSNAME(icn)
+                ZN=zname(II)
+                WRITE(outs,'(4a)')' accepting match to surface ',
+     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+                call edisp(iuout,outs)
+              elseif(IRTA.eq.2)then
+                IC1(IC)=IZ
+                IE1(IC)=JS
+                ICT(IC)=5
+                IE2(IC)=0
+                IC2(IC)=0
+                TOTHER(JS,1)='ADIABATIC'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
+              elseif(IRTA.eq.3)then
+                IC1(IC)=IZ
+                IE1(IC)=JS
+                ICT(IC)=-1
+                IE2(IC)=0
+                IC2(IC)=0
+                TOTHER(JS,1)='UNKNOWN'
+                write(tother(JS,2),'(i2.2)') IC2(ic)
+                write(tother(JS,3),'(i2.2)') IE2(ic)
+                UPDGEO=.TRUE.
+              endif
+            endif
           elseif(ipmatch.gt.1)then
 
 C If there is more than ONE possible matching geometric connection
@@ -1584,7 +1643,7 @@ C If reached this point then no surface selected.
             elseif(irta.eq.2)then
               IC1(IC)=IZ
               IE1(IC)=JS
-              ICT(IC)=0
+              ICT(IC)=-1   ! unknown connection is a -1
               IE2(IC)=0
               IC2(IC)=0
               if(SO(1:7).ne.'UNKNOWN')then
@@ -1615,7 +1674,13 @@ C Reset line style.
           ENDIF
   110   CONTINUE
 
-C Update geometry file if required.
+C Update geometry file if required.  Do this by re-reading the
+C geometry file, then update SOTHER and SSOTHER and write out the
+C geometry file with the updated boundary tag. The ssother will be
+C held in memory until the connections file is written.
+
+C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
+
         if(UPDGEO)then
           call edisp(iuout,' Updating surface attributes...')
           call eclose(gversion(IZ),1.1,0.01,newgeo)
@@ -1633,6 +1698,9 @@ C Update geometry file if required.
             SSOTHER(ICN,2)=TOTHER(IJ,2)
             SSOTHER(ICN,3)=TOTHER(IJ,3)
   323     continue
+  
+C Debug
+C          write(6,*) (TOTHER(ij,1),ij=1,10)
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1
@@ -2474,7 +2542,8 @@ C IVERT is the menu position, MVERT the current number of menu lines.
       endif
   31  MHEAD=3
       MCTL=4
-      write(6,*) 'naloc mhead mctl ',naloc,mhead,mctl
+C Debug
+C      write(6,*) 'naloc mhead mctl ',naloc,mhead,mctl
 
 C Initial menu entry setup.
    92 IER=0
@@ -2890,7 +2959,9 @@ C against the climate list to see related db for climate name.
       if(clmdb(1:lnblnk(clmdb)).ne.LCLIM(1:lnblnk(LCLIM)))then
         if(clmdb(1:4).ne.'UNKN')then
           LCLIM=clmdb
-          write(6,*)'using new climate db ',clmdb
+
+C Debug
+C          write(6,*)'using new climate db ',clmdb
           call tstamp('>','PRJ: IDST update climate in configuration')
           call tstamp('>',LCFGF)
           CALL EMKCFG('-',IER)

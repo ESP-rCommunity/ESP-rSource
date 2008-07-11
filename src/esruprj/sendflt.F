@@ -37,13 +37,21 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       DIMENSION ICLN(30),CLSDES(40),CLSSEL(30),ICLSSEL(30)
 
       character CLSSEL*36
       character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
       character xfile*144,tg*1,delim*1
       character TYPEDES(5)*20,t32*32,d32*32
-
+      logical close
+      
 C Define material types.
       TYPEDES(1)='unknown'
       TYPEDES(2)='impermeable'
@@ -84,14 +92,55 @@ C Present list of material categories with toggles.
 C Add uncertainty percentages to foot of list.
 
 C Check that the material db is not empty.
-    4 IER=0
-      IREC=601
-      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
-      IF(NCLASS.LE.0)THEN
-        CALL USRMSG(' Materials db is empty.',' ','W')
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
+      IF(ier.ne.0)THEN
+        write(outs,'(3a)') ' Materials db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
         IER=1
-        RETURN
-      ENDIF
+        return
+      else
+
+C Check to see if the file has correct info. This block of text
+C is similar to that used in eddb.F
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
+        else
+          goto 40
+        endif
+ 1001   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was not found',
+     &                  'or file was corrupt','W')
+            IER=1
+            return
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              goto 40
+            else
+              call usrmsg(
+     &          'No readable Materials database was found!',
+     &          ' ','W')
+              IER=1
+              return
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            goto 40
+          endif
+        endif
+      endif
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.

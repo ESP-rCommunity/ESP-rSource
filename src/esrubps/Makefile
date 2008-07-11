@@ -34,10 +34,10 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  g3dfnc.o g3dmtx.o gcfunc.o gsdmtx.o inital.o initalc.o initalp.o \
 	  input.o item.o lisolv.o locmage.o matsv.o mfbndr.o mfcdat.o mfcntl.o \
 	  mfmach.o mfmode.o mfsbld.o mfsbps.o mfsplt.o mfutil.o mitzero.o \
-	  moistr.o monitor.o montrb.o mstmsc.o mzmrx5.o mzoutp.o nwkrewr.o \
+	  moistr.o monitor.o montrb.o mstmsc.o mzmrx5.o mzout6.o mzoutp.o nwkrewr.o \
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
-	  reslib.o rnor.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
+	  reslib.o rnor.o rwipv.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
 	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
 	  MechVentIN.o CentralVentSys.o \
@@ -306,6 +306,9 @@ mstmsc.F:
 mzmrx5.F:
 	rm -f mzmrx5.F
 	ln -s $(DFSdir)/mzmrx5.F .
+mzout6.F:
+	rm -f mzout6.F
+	ln -s $(BLDdir)/mzout6.F .
 mzoutp.F:
 	rm -f mzoutp.F
 	ln -s $(BLDdir)/mzoutp.F .
@@ -360,6 +363,9 @@ psychro.F:
 rnor.F:
 	rm -f rnor.F
 	ln -s $(COMdir)/rnor.F .
+rwipv.F:
+	rm -f rwipv.F
+	ln -s $(COMdir)/rwipv.F .
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -662,10 +668,10 @@ clean:
 	inital.F initalc.F initalp.F item.F lisolv.F locmage.F matsv.F MechVentIN.F mfbndr.F \
 	mfcdat.F mfcntl.F mfmach.F mfmode.F mfsbld.F mfsbps.F mfsplt.F \
 	mfutil.F mitzero.F moistr.F monitor.F montrb.F mstmsc.F MultiYear_climate.F mzmrx5.F \
-	mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
+	mzout6.F mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
 	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
 	pmatrx.F pplib.F ppsub.F precal.F \
-	psychro.F rnor.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
+	psychro.F rnor.F rwipv.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
 	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \

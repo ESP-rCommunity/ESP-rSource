@@ -436,7 +436,8 @@ C Check whether a file is in existence.
       if(ispmxist.EQ.0) ispmxist=1
 
 C Ask the user to select from the available categories of special components
-C scanned from the database if none found go direct to questions. 
+C scanned from the database if none found go direct to questions.
+      SSTR(1)=' ' 
   8   CALL MCDBSCAN(1,1,SSTR,SPVAR,SPMISC,NIT,IER)
       IF(IER.GT.0) GOTO 99
 

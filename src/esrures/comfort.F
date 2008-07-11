@@ -1274,7 +1274,7 @@ C if sub-hour casual gains definitions are implemented.
       common/recver/izver,ipver,iever
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
+C =3 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17
@@ -1453,7 +1453,8 @@ C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................

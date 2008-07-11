@@ -20,6 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C File 'inscon.F' comprises:
 C  INSCON - readies the insolation computation and calls INSOLC.
+C  findtmc- searches for which surfaces are insolation sources:
 C  IGEOMS - establishes the surface grid.
 C  INWSHD - reads the zone transitional shading file to extract
 C           insolation source shading information.
@@ -48,42 +49,23 @@ C                 in common.
       common/filep/ifil
 
       common/g0/ctype(mcom),gversion(mcom),igupgrade
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
-      common/c24/izstocn(mcom,ms)
       common/precz/zname(mcom),zdesc(mcom)
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
-      common/tmc/itmc(ms),nwins
       common/ract/paction
 
-C iaplic(1) toggle for shading;
-C iaplic(2) toggle for insolation;
-C           where 1 means consider all applicable surfaces and 0
-C           means manual selection of surfaces.
-C iaplic(3) toggle for assessment where:
-C         1 is 'all_applicable',
-C         0 is manual selection of surfaces.
-C nsurfcalc is number of shaded surfaces.
-C lstsfcalc list of applicable surfaces.
-C nsurfinso number of insolation sources.
-C isurfinso list of insolation sources.
-      common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),
-     &       lstsfcalc(mcom,ms),nsurfinso(mcom),isurfinso(mcom,ms)
-
-      dimension month(12),iavdec(12),iva(ms)
+      dimension month(12),iavdec(12)
       character zname*12,ctype*4
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character paction*16
       character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil,h
       character month*3,outs*124,tbase*72,ltrns*72,act*1,zdesc*64
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
+      integer nboftmc ! equivalent of ntmc returned from findtmc
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
@@ -116,119 +98,17 @@ C for /ishdirec/.
         call edisp(iuout,'geometry file - respecify via menu.')
         return
       endif
-      ishadf=0
+      
+C Fill the itmc and isc arrays.
+  4   call findtmc(icomp,act,nboftmc)
+      ntmc=nboftmc
 
-C Establish if any of the surfaces are TMCs.
-    4 ntmc=0
-      nwins=0
-
-C If new format geometry and iaplic(icomp,2) equals 1 then
-C all applicable surfaces were set in the zone geometry file.
-      if(newgeo)then
-         if(iaplic(icomp,2).eq.1)then
-            nwins=nsurfinso(icomp)
-            do 41 j=1,nwins
-               iva(j)=isurfinso(icomp,j)
-  41        continue
-
-C Set up itmc and isc arrays and total number of sources in zone.
-            do 42 i=1,nzsur(icomp)
-               itmc(i)=0
-               isc(i)=0 
-               do 43  j=1,nwins
-                  if(i.eq.iva(j))then
-                  itmc(i)=1
-                  isc(i)=1
-                  endif
-  43           continue
-  42         continue
-
-C If iaplic(icomp,2) is 0 and nsurfinso is non-zero then user
-C has manually selected surfaces so fill arrays. If both 0 then
-C the user effectively said no insolation should be calculated
-C so just clear itmc() and isc() arrays.
-         elseif(iaplic(icomp,2).eq.0)then
-            nwins=nsurfinso(icomp)
-            if(nwins.eq.0)then
-               do 44 i=1,nzsur(icomp)
-                  itmc(i)=0
-                  isc(i)=0 
-  44           continue
-            else
-               do 45 j=1,nwins
-                  iva(j)=isurfinso(icomp,j)
-  45           continue
-
-C Set up itmc and isc arrays and total number of sources in zone.
-               do 46 I=1,nzsur(icomp)
-                  itmc(i)=0
-                  isc(i)=0 
-                  do 47 j=1,nwins
-                     if(i.eq.iva(j))then
-                        itmc(i)=1
-                        isc(i)=1
-                     endif
-  47              continue
-  46           continue
-            endif
-         endif
-
-      else
-
-C Older geometry file, user is required to set preferences for
-C surfaces to include or, in the case of silent action, just
-C do 'all applicable' surfaces.
-         if(act.eq.'s'.or.paction(1:11).eq.'recalculate')then
-
-C Clear return array and select all applicable surfaces.
-            do 14 i=1,nzsur(icomp)
-               iva(i)=0
-  14        continue
-            do 13 i=1,nzsur(icomp)
-               icn=izstocn(icomp,i)
-               if(ssother(icn,1)(1:5).eq.'EXTER'.and.
-     &            ssotf(icn)(1:4).ne.'OPAQ')then
-                  ntmc=ntmc+1
-                  iva(ntmc)=i
-               endif
-  13        continue
-            if(ntmc.eq.0)then
-               call usrmsg('No insolation source surfaces found!',
-     &                         ' ','W')
-               return
-            endif
-            iaplic(icomp,2)=1
-         else
-            call edisp(iuout,' ')
-            call edisp(iuout,'Select external transparent surfaces')
-            call edisp(iuout,'(i.e. light sources) to include in the')
-            call edisp(iuout,'intra-zone insolation calculation.')
-            call pickssur(icomp,ntmc,'i',iva,ier)
-            if(ier.ne.0)return
-            if(ntmc.eq.0)goto 11
-         endif
-
-C Set up itmc and isc arrays and total number of sources, nwins, 
-C in zone.
-         do 110 i=1,nzsur(icomp)
-            itmc(i)=0
-            isc(i)=0 
-            do 120 j=1,ntmc
-               if(i.eq.iva(j))then
-                  itmc(i)=1
-                  isc(i)=1
-                  nwins=nwins+1
-               endif
-  120       continue
-  110    continue
-
-C Fill ishdirec array.
-         nsurfinso(icomp)=nwins
-         do 121 j=1,nwins
-            isurfinso(icomp,j)=iva(j)
-  121    continue
-      endif
-
+C If no insolation sources return from inscon.
+      if(ntmc.eq.0)then
+         call usrmsg('No insolation source surfaces found!',' ','W')
+         return
+       endif
+    
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
    11 icont=0
@@ -251,6 +131,8 @@ C from the zone geometry file.
                dok=.true.
                call askok('No surfaces specified!','Re-specify?',
      &                       ok,dok,2)
+     
+C Use a 2nd call to findtmc to allow the user to select different surfaces.
                if(ok)goto 4
                call edisp(iuout,'Insolation computation abandoned!')
                return
@@ -319,6 +201,200 @@ C update the zone shading & insolation db.
       return
       end
 
+C ********** findtmc **********
+C findtmc searches for which surfaces are insolation sources:
+C   icomp  - the zone index;
+C   act    - 's' for silent mode, '-' for user interaction mode.
+c   ntmc   - how many insolation sources were found
+      subroutine findtmc(icomp,act,ntmc)
+#include "building.h"
+
+C   ntmc & nwins: the number of insolation sources (i.e. external
+C                 and transparent surfaces); the latter is held
+C                 in common.
+C   itmc & isc:   toggles for each surface, if 1 then surface is an
+C                 insolation source. The latter is held
+C                 in common.
+      common/outin/iuout,iuin
+      common/filep/ifil
+
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
+      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
+     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      common/c20/nzsur(mcom),nztv(mcom)
+      common/c24/izstocn(mcom,ms)
+      common/shdfil/ishadf
+      common/contr/mon,isc(ms),iyd
+      common/tmc/itmc(ms),nwins
+      common/ract/paction
+
+C iaplic(1) toggle for shading;
+C iaplic(2) toggle for insolation;
+C           where 1 means consider all applicable surfaces and 0
+C           means manual selection of surfaces.
+C iaplic(3) toggle for assessment where:
+C         1 is 'all_applicable',
+C         0 is manual selection of surfaces.
+C nsurfcalc is number of shaded surfaces.
+C lstsfcalc list of applicable surfaces.
+C nsurfinso number of insolation sources.
+C isurfinso list of insolation sources.
+      common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),
+     &       lstsfcalc(mcom,ms),nsurfinso(mcom),isurfinso(mcom,ms)
+
+      dimension iva(ms)
+      character ctype*4
+      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
+     &          ssparent*12,ssuse*8
+      character paction*16
+      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
+      character act*1
+
+      logical newgeo  ! Used to test for new/old geometry file.
+
+      newgeo=.false.  ! Assume older format geometry.
+      iuf=ifil+1
+
+C Read in the geometry file for the current zone to refresh /g1/.
+C If newgeo is true then the geometry file can include values
+C for /ishdirec/.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(act.eq.'s')then
+         if(newgeo)then
+            call georead(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+         else
+            call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+         endif
+      else
+         if(newgeo)then
+            call georead(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+         else
+            call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+         endif
+      endif
+      if(ier.ne.0)then
+        call edisp(iuout,'Problem detected while trying to read zone')
+        call edisp(iuout,'geometry file - respecify via menu.')
+        return
+      endif
+      ishadf=0
+
+C Establish if any of the surfaces are TMCs.
+      ntmc=0
+      nwins=0
+
+C If new format geometry and iaplic(icomp,2) equals 1 then
+C all applicable surfaces were set in the zone geometry file.
+      if(newgeo)then
+         if(iaplic(icomp,2).eq.1)then
+            nwins=nsurfinso(icomp)
+            do 41 j=1,nwins
+               iva(j)=isurfinso(icomp,j)
+  41        continue
+
+C Set up itmc and isc arrays and total number of sources in zone.
+            do 42 i=1,nzsur(icomp)
+               itmc(i)=0
+               isc(i)=0 
+               do 43  j=1,nwins
+                  if(i.eq.iva(j))then
+                    itmc(i)=1
+                    isc(i)=1
+                  endif
+  43           continue
+  42         continue
+
+C If iaplic(icomp,2) is 0 and nsurfinso is non-zero then user
+C has manually selected surfaces so fill arrays. If both 0 then
+C the user effectively said no insolation should be calculated
+C so just clear itmc() and isc() arrays.
+         elseif(iaplic(icomp,2).eq.0)then
+            nwins=nsurfinso(icomp)
+            if(nwins.eq.0)then
+               do 44 i=1,nzsur(icomp)
+                  itmc(i)=0
+                  isc(i)=0 
+  44           continue
+            else
+               do 45 j=1,nwins
+                  iva(j)=isurfinso(icomp,j)
+  45           continue
+
+C Set up itmc and isc arrays and total number of sources in zone.
+               do 46 I=1,nzsur(icomp)
+                  itmc(i)=0
+                  isc(i)=0 
+                  do 47 j=1,nwins
+                     if(i.eq.iva(j))then
+                        itmc(i)=1
+                        isc(i)=1
+                     endif
+  47              continue
+  46           continue
+            endif
+         endif
+
+      else
+
+C Older geometry file, user is required to set preferences for
+C surfaces to include or, in the case of silent action, just
+C do 'all applicable' surfaces.
+         if(act.eq.'s'.or.paction(1:11).eq.'recalculate')then
+
+C Clear return array and select all applicable surfaces.
+            do 14 i=1,nzsur(icomp)
+               iva(i)=0
+  14        continue
+            do 13 i=1,nzsur(icomp)
+               icn=izstocn(icomp,i)
+               if(ssother(icn,1)(1:5).eq.'EXTER'.and.
+     &            ssotf(icn)(1:4).ne.'OPAQ')then
+                  ntmc=ntmc+1
+                  iva(ntmc)=i
+               endif
+  13        continue
+            if(ntmc.eq.0)then
+               call usrmsg('No insolation source surfaces found!',
+     &                         ' ','W')
+               return
+            endif
+            iaplic(icomp,2)=1
+         else
+            call edisp(iuout,' ')
+            call edisp(iuout,'Select external transparent surfaces')
+            call edisp(iuout,'(i.e. light sources) to include in the')
+            call edisp(iuout,'intra-zone insolation calculation.')
+            call pickssur(icomp,ntmc,'i',iva,ier)
+            if(ier.ne.0)return
+            if(ntmc.eq.0) return
+         endif
+
+C Set up itmc and isc arrays and total number of sources, nwins, 
+C in zone.
+         do 110 i=1,nzsur(icomp)
+            itmc(i)=0
+            isc(i)=0 
+            do 120 j=1,ntmc
+               if(i.eq.iva(j))then
+                  itmc(i)=1
+                  isc(i)=1
+                  nwins=nwins+1
+               endif
+  120       continue
+  110    continue
+
+C Fill ishdirec array.
+         nsurfinso(icomp)=nwins
+         do 121 j=1,nwins
+            isurfinso(icomp,j)=iva(j)
+  121    continue
+      endif
+
+      return
+      end
+      
 C ********** IGEOMS **********
 C Establishes the source surface grid if a zone transitional shading
 C file does not exist.
@@ -590,8 +666,8 @@ C Sun not up.
                insst(iwin,ihr,m)=-1
                pinsst(iwin,ihr,m)=0.0
   130       continue
-   30    continue	! end of hour loop
-   20 continue		! end of tmc loop
+   30    continue    ! end of hour loop
+   20 continue       ! end of tmc loop
       ical=1
       return
       end

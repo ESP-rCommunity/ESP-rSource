@@ -363,7 +363,7 @@ C in older format.
      &      'file names. Options:','Save in current format','continue',
      &      IW,3)
             if(IW.EQ.1)then
-              icfgv=3
+              icfgv=4
 
 C Get root name and ensure that configuration file ends in .cfg.
               lcfgr=lnblnk(LCFGF)
@@ -1220,6 +1220,7 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
@@ -1464,7 +1465,7 @@ C Rotation degree and choices.
 C Implement the rotations for the selected zones.
             silent= .false.
             call globalrotate(val,x1,y1,inpic,ivals,silent,itru,ier)
-	    	    
+
           endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
@@ -1527,7 +1528,11 @@ C Define a new zone and update nzg in case multiple zones read in.
             goto 3
           endif
           call NEWZONE(ITRC,IC,IER)
-          nzg=NCOMP
+          if(IER.eq.-3)then
+            goto 3   ! user cancel detected
+          else
+            nzg=NCOMP
+          endif
         ELSEIF(IC.gt.100.and.IC.lt.200)THEN
 
 C Copy a zone, get index by decrementing 100.
@@ -1711,8 +1716,8 @@ C Zone rotations and transforms.
             if(iser.eq.-3)then  ! notice GTK cancel button
               LGEOM(NCOMP)=' '
               NCOMP=NCOMP-1
-	      goto 3
-	    endif
+              goto 3
+            endif
           else
             CALL EASKS2CMD(HOLD,'Transform (X Y Z metres):',' ',
      &        'cancel copy','skip transform',iclkok,32,' 0. 0. 0.',
@@ -1720,10 +1725,10 @@ C Zone rotations and transforms.
             if(iclkok.eq.1)then    ! notice X11 cancel option
               LGEOM(NCOMP)=' '
               NCOMP=NCOMP-1
-	      goto 3
-	    endif
+              goto 3
+            endif
           endif 
-	  
+
 C Act on the skip transform request.   
           if(iclkok.eq.2) then
             okzt=.false.
@@ -3962,7 +3967,8 @@ C an offset from prj start position.
         CALL PHELPD('e2r finished menu',2,'-',0,0,IER)
 
 C Check if radiance scene file exists. If not or zero length or not correct 
-C file type then dereference it from the cfg file.
+C file type then dereference it from the cfg file. The alternative location
+C for the scene file is in ../rad if user owned the model.  
         if(.NOT.browse)then
           IRCFG=IFIL+1
           call ERPFREE(IRCFG,ISTAT)
@@ -4017,7 +4023,7 @@ C      of obstruction data.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-	  
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -4190,7 +4196,7 @@ C      of obstruction data.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-	  
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -4305,7 +4311,7 @@ C Rotate any obstructions associated with this zone.
      &          zn(1:lnblnk(zn)),' in ',
      &          ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
               call askok(outs,' ?',OK,dok,3)
-	    endif
+            endif
             if(OK)then
               CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
               PI = 4.0 * ATAN(1.0)
@@ -4345,7 +4351,7 @@ C apply the transform and write the file back out.
               write(outs,'(2a)') 'Rotate obstructions of ',
      &          zn(1:lnblnk(zn))
               call askok(outs,' ?',OK,dok,3)
-	    endif
+            endif
             if(OK)then
               PI = 4.0 * ATAN(1.0)
               A=-VAL*PI/180.

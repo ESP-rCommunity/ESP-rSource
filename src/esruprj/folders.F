@@ -122,15 +122,13 @@ C Silent continue, there is nothing to do (currently).
         return
       elseif(act(1:2).eq.'sn')then
 
-C Silent new.
-C the pre-registration process.
+C Silent new within the pre-registration process.
         write(6,*)  ' pregist ',root,' ',folder
         write(6,*)  ' pregist ',mpath
         write(LCFTMP,'(a)') root(1:lnblnk(root))
       elseif(act(1:2).eq.'sw')then
 
-C Silent within.
-C the pre-registration process.
+C Silent within the pre-registration process.
         write(6,*)  ' pregist ',root,' ',folder
         write(6,*)  ' pregist ',mpath
         write(LCFTMP,'(a)') root(1:lnblnk(root))
@@ -154,8 +152,9 @@ C Trap for blank root name.
       endif
 
 C User did not cancel so instantiate data for new model.
+C At some point switch from default version 3 to v4.
       call clrprb
-      icfgv=3
+      icfgv=3   ! alter this to 4 when working correctly
       INDCFG=0
       XLAT=55.9
       SLAT=55.9

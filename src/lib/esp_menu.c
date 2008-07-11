@@ -364,6 +364,7 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           break;
        case GTK_RESPONSE_CANCEL:
        /*   fprintf(stderr,"Goodbye - %d %d was original choice\n", abc_pick,result); debug */
+          *ipick = -3;
           break;
        case GTK_RESPONSE_HELP:
        /*   fprintf(stderr,"Goodbye - %d %d help was requested\n", abc_pick,result); debug */

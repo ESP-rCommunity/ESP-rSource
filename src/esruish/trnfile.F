@@ -480,6 +480,11 @@ C Sun not up.
       if(is1.eq.0.and.is2.eq.-2)goto 5
       if(is1.eq.-1.and.is2.eq.1)goto 6
 
+C << the value of is1 or is2 is for the current surface and the
+C << current hour. To store this will require a 2D array
+C << this information would need to be written out to the
+C << ascii file as 24 columns (hours) * nzsur rows.
+
 C No direct shading, is2 = -2; write to zone transitional shading
 C file.
     5 write(iunit,rec=irec,iostat=istat,err=1000)is2

@@ -965,7 +965,7 @@ C If a non-sorted operations file has been read warn user and
 C translate the casual gains.
 
 C Debug.
-        write(6,*) IZ,IP3VER(IZ)
+C        write(6,*) IZ,IP3VER(IZ)
         if(ip3ver(iz).eq.0)then
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'

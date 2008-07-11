@@ -1187,7 +1187,7 @@ C Plant common required for building/plant flux linkage
       logical close1,close2,close3,close4,useold
 
       integer iclawt   ! control law index passed back from editctlperiod
-      dimension icsn(4)! for passing sensor location to
+      dimension icsn(5)! for passing sensor location to
       integer icsn
       integer lastndx  ! to keep track of last data position used.
 
@@ -1759,6 +1759,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
+	      icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -1792,8 +1793,8 @@ C string to remind the user.
           H(20)='created within the model context->temporal data menu.'
           H(21)=' '
           H(22)=' '
-          CALL EASKR(cm(1),' ',' No. of misc data items ',
-     &      10.,'F',18.,'F',10.,'no. of misc data items',IER,22)
+          CALL EASKR(cm(1),' ','Number of misc data items (see help)',
+     &      10.,'F',18.,'F',12.,'no. of misc data items',IER,22)
 
   53      WRITE(HOLD,'(4f8.0)')cm(2),cm(3),cm(4),cm(5)
           H(1)='Heat delivery is normally set high so that the '
@@ -1817,19 +1818,26 @@ C string to remind the user.
 
           H(1)=' At present, this is limited to 2 auxiliary sensors'
           H(2)=' which may be located outside or in other zone(s).'
-          CALL EASKR(cm(6),' ',' No of auxiliary sensors ? ',
+          CALL EASKR(cm(6),' ','No of auxiliary sensors?',
      &      0.,'F',2.,'F',1.,'no. of auxiliary sensors',IER,2)
 
-          H(1)=' The sensor modes options are:'
-          H(2)=' 1: (ref sensor)-(greatest value of aux sensors)' 
-          H(3)=' 2: (ref sensor)-(least value of aux sensors)'
-          H(4)=' 3: (ref sensor)-(mean value of aux sensors)'
-          H(5)=' 4: (ref sensor)-(weighting of aux sensors)'
-          CALL EASKR(cm(7),' ',' Multi-sensor mode (see help)?',
-     &      1.,'F',4.,'F',0.,' multi-sensor mode',IER,5)
+          I6=INT(cm(6))
+          if(I6.eq.1)then
+            cm(7)=3.0
+          else  
+            H(1)=' The sensor modes options are:'
+            H(2)=' 1: (ref sensor)-(greatest value of aux sensors)' 
+            H(3)=' 2: (ref sensor)-(least value of aux sensors)'
+            H(4)=' 3: (ref sensor)-(mean value of aux sensors)'
+            H(5)=' 4: (ref sensor)-(weighting of aux sensors)'
+            H(6)=' '
+            H(7)='If just one aux sensor then select 3 as a safe'
+            H(8)='option.'
+            CALL EASKR(cm(7),' ','Multi-sensor mode (see help)?',
+     &        1.,'F',4.,'F',0.,'multi-sensor mode',IER,8)
+          endif
           
 C Auxiliary sensor details,
-          I6=INT(cm(6))  
           H(1)='The sensor details are essentially the same as '
           H(2)='required in a control point sensor ie. '
           H(3)=' 1st aux item >0 is a zone and or surface, =0 any zone,'
@@ -1859,15 +1867,16 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
+	    icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
             CALL EASKR(cm(ndx),' ',
      &        ' Aux sensor detail 1st item (see help)?',
      &        -5.,'F',0.,'-',1.,' Aux sen detail 1st item',IER,19)
-            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item ?',
+            CALL EASKR(cm(ndx+1),' ',' Aux sensor detail 2nd item?',
      &        0.,'F',0.,'-',0.,' Aux sen detail 2nd item',IER,19)          
-            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item ?',
+            CALL EASKR(cm(ndx+2),' ',' Aux sensor detail 3rd item?',
      &        0.,'F',0.,'-',0.,' Aux sen detail 3rd item',IER,19)          
             CALL EASKR(cm(ndx+3),' ',
      &        ' Aux sensor detail 4th item (always use zero)?',
@@ -1896,13 +1905,13 @@ C At end of data add in scaling factor and offset. Typically
 C a scaling factor is 1.0
           H(1)='The sensor scaling factor is applied to the sensed'
           H(2)='value at each timestep e.g. (20C sensed x 1.1) would'
-          H(3)='request a 10% rise over measured. '
+          H(3)='request a 10% rise over measured.'
           if(cm(ndx).lt.0.01) cm(ndx+1)=1.0
-          CALL EASKR(cm(ndx),' ',' Scaling factor ? ',
+          CALL EASKR(cm(ndx),' ',' Scaling factor?',
      &        0.,'F',10.,'F',1.,' scaling factor',IER,3)
           H(1)='The sensor offset allows you to modify the sensed'
           H(2)='value by a fixed amount. '
-          CALL EASKR(cm(ndx+1),' ',' Offset factor ? ',
+          CALL EASKR(cm(ndx+1),' ',' Offset factor?',
      &        -10.,'F',10.,'F',1.,' offset factor',IER,2)
         elseif(IBCLAW(II,JJ,KK).eq.12)then
 
@@ -1930,6 +1939,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
+	      icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -2016,6 +2026,7 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
+	    icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -2325,6 +2336,7 @@ C string to remind the user.
               icsn(2)=nint(cm(ndx+1))
               icsn(3)=nint(cm(ndx+2))
               icsn(4)=nint(cm(ndx+3))
+	      icsn(5)=0
               SSTR=' '
               call decodesensor(0,icsn,SSTR,SSTRB,ier)
               call edisp(iuout,SSTR)
@@ -2381,6 +2393,7 @@ C string to remind the user.
             icsn(2)=nint(cm(ndx+1))
             icsn(3)=nint(cm(ndx+2))
             icsn(4)=nint(cm(ndx+3))
+	    icsn(5)=0
             SSTR=' '
             call decodesensor(0,icsn,SSTR,SSTRB,ier)
             call edisp(iuout,SSTR)
@@ -5639,7 +5652,8 @@ C   for control law one.
 
       CHARACTER VERT*45,KEY*1,SSTR*72,TMP*72,ltmp*248,SALT*42
       character menu*32,prompt1*72,prompt2*72
-      character outs*124,head*48
+      character outs*124
+      character*(*) head  ! the title passed from calling code
 
       integer icfoc,icloop,iday,iper,nper,loopdaytype  ! passed parameters
       logical close,close1,close2,close3,modval,OK,dok ! to test if variable has changed.
@@ -6475,9 +6489,7 @@ C Stfmenu copies menu and prompts for period editing.  It expects the common
 C block sctl to have been filled for the current period.
       subroutine stfmenu(icfoc,ier)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
-#include "control.h"
 
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)

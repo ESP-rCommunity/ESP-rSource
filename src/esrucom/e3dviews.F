@@ -169,7 +169,6 @@ C
       SUBROUTINE  MATPOL(NAP,IAPNT,AX,AY,AZ,IANXT,TMAT,
      &                   SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
       parameter( MPL = 200)
-      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
@@ -775,7 +774,6 @@ C ***************** BNDOBJ
 C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
 #include "building.h"
-#include "espriou.h"
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C XMN,YMN,ZMN are the model minimum bounds.

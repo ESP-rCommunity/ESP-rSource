@@ -46,6 +46,7 @@ C Read in file and initialise variables
       IPDR=0
       IDEL=0
       ILOC=0
+      IER=0
       IDEBUG=0
       IUF=IFIL+1
       GOON=.TRUE.
@@ -101,7 +102,7 @@ C Read start time of each period, location and day type
       END DO
 
 C Debug...
-      IF(IDEBUG.EQ.1)THEN
+ 80   IF(IDEBUG.EQ.1)THEN
         WRITE(6,*)'version number = ',VERS
         WRITE(6,*)'Location Latitude Longitude'
         DO 1000 ILOC=1,NLOC
