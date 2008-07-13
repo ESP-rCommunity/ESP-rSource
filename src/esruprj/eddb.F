@@ -632,6 +632,9 @@ C      call usrmsg(' ',' ','-')
       END
 
 C ********** opendb
+C NOTE: if this code change - be sure to update the copy of this
+C subroutine embedded within esruish/ish.F
+
 C Open materials constructions, multi-layer constructions and
 C optical properties databases. In the case of materials, first
 C assume it is a binary file, check its contents and if a problem
