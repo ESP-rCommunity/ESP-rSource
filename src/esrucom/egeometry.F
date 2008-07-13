@@ -1597,7 +1597,8 @@ C Surface optics set name or OPAQ/TRAN, allow for spaces.
               if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE'
             elseif(WORD(1:4).ne.'OPAQ')then
 
-C We need to find the name of the optical set for the construction.
+C This token could be the name of the optical property. Find out if it
+C matches then name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
@@ -1626,10 +1627,20 @@ C the constructions database.
                 else
                   OPT='OPAQUE'
                 endif
+		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
+		  write(6,*) 'Optics in geo file ',WORD,
+     &              ' does not match optics of the MLC ',OPT
+                endif
                 write(SOTF(NS),'(a)') OPT
                 if(havec24) write(SSOTF(icn),'(a)') OPT
               else
-                write(SOTF(NS),'(a)') 'TRAN'
+
+C During initial scan of configuration file the databases will
+C not yet have been scanned and so this block of code will be
+C active. Lets assume that this token really is the name of the
+C optical set.
+                write(SOTF(NS),'(a)') WORD(1:lnblnk(WORD))
+                if(havec24)write(SSOTF(icn),'(a)') WORD(1:lnblnk(WORD))
               endif
             endif
 

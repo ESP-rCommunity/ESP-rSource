@@ -206,7 +206,10 @@ C ifcfg  - system configuration file
       iuf=ifil+1
       ifcfg=ifil+2
       ifilsi=ifil+3
+      IFMUL=IFIL+4    ! set unit numbers for contstruction db.
+      IFMAT=IFIL+5    ! set unit numbers for material db.
       iairp=ifil+6
+      IOPTDB=IFIL+7   ! set unit numbers for optical db.
       iuj=ifil+10
       cfgok=.false.
       lname='SHDTRN'
@@ -491,6 +494,18 @@ C If an input file has been specified then load it.
             endif
             mode='NONE'
             call ersys(lcfgf,ifcfg,iairp,mode,0,ier)
+
+C Open core of databases if not already done so.
+            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+              continue
+            else
+              call opendb(ier)
+              if(ier.ne.0)then
+                call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db.','W')
+              endif
+            endif
+	    
             if(paction(1:13).ne.'update_silent')then
                call usrmsg('Scanning the model...done.',' ','-')
             endif
@@ -819,6 +834,15 @@ C GTK version will be returning the name with the full path.
             call tstamp('>',lcfgf)
             mode='NONE'
             call ersys(lcfgf,ifcfg,iairp,mode,0,ier)
+            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+              continue
+            else
+              call opendb(ier)
+              if(ier.ne.0)then
+                call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db.','W')
+              endif
+            endif
             if(ier.eq.0)then
                cfgok=.true.
                nzones=ncomp
@@ -1520,6 +1544,284 @@ C Dummy routine (needed for call back from c.
      
       return
       end
+
+C ********** opendb
+C NOTE: This is a duplicate of code in esruprj/eddb.F but with the opening
+C of pressure coef db opening commented out. Perhaps it should
+C become common code?
+
+C Open materials constructions, multi-layer constructions and
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
+
+      subroutine opendb(ier)
+#include "esprdbfile.h"
+
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
+      character H*72,LASCI*72,DFILE*72
+      character SOPT*12,outs*124,GDESCR*36
+
+      IER=0
+
+C Open currently named Materials database.  Note that
+C by a minor rewrite of ICLN in rec 601 we can get by
+C with changing this to 24 words wide.
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
+      IF(ier.ne.0)THEN
+        write(outs,'(3a)') ' Materials db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+      else
+
+C Check to see if the file has correct info. 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was not found',
+     &                  'or file was corrupt','W')
+            MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable Materials database was found!',
+     &          ' ','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            MATDBOK=.TRUE.
+          endif
+        endif
+      endif
+
+        
+C Read multilayer db information into common.
+ 139  CALL ERPFREE(IFMUL,ISTAT)
+      call FINDFIL(LFMUL,XST)
+      if(XST)then
+        CALL ERMLDB(0,IUOUT,IER)
+        IF(IER.eq.1)then
+          write(outs,'(3a)') 
+     &    ' Problems with materials used by Constructions db',
+     &     LFMAT(1:lnblnk(LFMAT)),'!'
+          call edisp(iuout,outs)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
+        ELSEIF(IER.eq.2)then
+
+C There were lots of undefined materials so likely the Materials
+C database is for the wrong machine type. Guess the name of
+C the ascii version and if it exists, offer to convert it or use it.
+          h(1)='It is likely that the Materials db associated with'
+          h(2)='this model is for use under a different operating'
+          h(3)='system. ESP-r will attempt to locate an ASCII version'
+          h(4)='of this database and, if successful, convert it to'
+          h(5)='the required binary format if you agree.'
+          IAF=IFIL+1
+          LASCI=' '
+          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+
+C Label 155 is a jump back point for the case of users supplying a name.
+  155     CALL EFOPSEQ(IAF,LASCI,1,IER)
+          if(ier.eq.0)then
+
+C If the ascii version exists there is no need to convert it.
+C Ask whether to scan it into the materials arrays or convert
+C to a binary file.
+            CALL EASKABC(
+     &        'Ascii version of Materials database found.',
+     &        'Options:','use it',
+     &        'convert to a binary file','cancel',IW,5)
+            if(iw.eq.1)then
+              call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
+              if(ier.eq.-2)then
+                ier=0
+                call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
+                if(ier.ne.0)then
+                  call usrmsg('No readable Materials database was',
+     &                        'found or the file was corrupt.','W')
+                  MATDBOK=.FALSE.
+                else
+                  call eclose(matver,1.1,0.001,close)
+                  if(close)then
+
+C Materials data in place, set this as the new file name and then
+C try and re-scan the Constructions database.
+                    call usrmsg(
+     &                'An ASCII Materials db was found and used.',
+     &                'Re-scanning constructions...','P')
+                    MATDBOK=.TRUE.
+                    LFMAT=LASCI
+                    CALL ERPFREE(IFMUL,ISTAT)
+                    call FINDFIL(LFMUL,XST)
+                    if(XST)then
+                      CALL ERMLDB(0,IUOUT,IER)
+                      if(ier.eq.0)then
+                        MLDBOK=.TRUE.
+                        call usrmsg(
+     &                  'An ASCII Materials db was found and used.',
+     &                  'Re-scanning constructions...done.','-')
+                      else
+                        MLDBOK=.FALSE.
+                        call usrmsg(
+     &                  'An ASCII Materials db was found and used.',
+     &                  'Re-scanning constructions...failed.','W')
+                      endif
+                    endif
+                  else
+                    call usrmsg(
+     &                'No readable Material db was found.',
+     &                'Check other warnings for advice.','W')
+                    MATDBOK=.FALSE.
+                  endif
+                endif
+              elseif(ier.eq.0)then
+
+C Materials data in place, set this as the new file name and then
+C try and re-scan the constructions database.
+                call usrmsg(
+     &            'An ASCII Materials db was found and used.',
+     &            'Re-scanning constructions...','P')
+                MATDBOK=.TRUE.
+                LFMAT=LASCI
+                CALL ERPFREE(IFMUL,ISTAT)
+                call FINDFIL(LFMUL,XST)
+                if(XST)then
+                  CALL ERMLDB(0,IUOUT,IER)
+                  if(ier.eq.0)then
+                    MLDBOK=.TRUE.
+                    call usrmsg(
+     &                'An ASCII Materials db was found and used.',
+     &                'Re-scanning constructions...done.','-')
+                  else
+                    MLDBOK=.FALSE.
+                    call usrmsg(
+     &                'An ASCII Materials db was found and used.',
+     &                'Re-scanning constructions...failed.','W')
+                  endif
+                endif
+              endif
+            elseif(iw.eq.2)then
+              CALL ERPFREE(IAF,ISTAT)
+              call edisp(iuout,
+     &          'Attempting to convert an ASCII Materials db to a')
+              call edisp(iuout,
+     &          'binary version matching the Constructions db.')
+              CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+              if(ier.eq.0)then
+                call usrmsg(
+     &            'An ASCII Materials db was found and converted.',
+     &            'Re-scanning constructions...','P')
+                CALL ERMLDB(0,IUOUT,IER)
+                if(ier.eq.0)then
+                  MLDBOK=.TRUE.
+                  call usrmsg(
+     &              'An ASCII Materials db was found and converted.',
+     &              'Re-scanning constructions...done.','-')
+                else
+                  MLDBOK=.FALSE.
+                  call usrmsg(
+     &              'An ASCII Materials db was found and converted.',
+     &              'Re-scanning constructions...failed.','W')
+                endif
+              else
+                call usrmsg(
+     &          'A Materials db was not found or was not readable.',
+     &          'Please correct this before using constructions.',
+     &             'W')
+                MLDBOK=.FALSE.
+              endif
+            endif
+          else
+
+C Ask user for ascii Materials database to convert.
+          H(1)='The Materials db holds the thermo-physical properties'
+          H(2)='of a range of materials. An ascii version of this db'
+          H(3)='may be used to transfer the contents between operating'
+          H(4)='systems that have incompatible binary representations'
+          H(5)='(e.g. Unix and Windows).'
+            IAF=IFIL+1
+            DFILE=' '
+            CALL EASKS(LASCI,' ','Materials database (ASCII)?',
+     &        72,DFILE,'materials db (ascii)',IER,5)
+            goto 155
+          endif
+        else
+
+C Scan was ok so set mldbok to true.
+          MLDBOK=.TRUE.
+        endif
+      else
+
+C Could not find Constructions db at this time, report to user.
+        write(outs,'(3a)') 'Constructions db ',
+     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MLDBOK=.FALSE.
+      endif
+
+C Open optical Properties db and read into common.
+      SOPT='ALL'
+      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
+      if(ier.ne.0)then
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
+        OPTKOK=.FALSE.
+      else
+        OPTKOK=.TRUE.
+      endif
+
+C Open the Pressure Coefficients db.
+C      call FINDFIL(LAPRES,XST)
+C      if(XST)then
+C        CALL ERPRCDB(LAPRES,0,3,IER)
+C        call usrmsg(' ',' ','-')
+C      else
+C        call usrmsg('Pressure Coefficients db not found',
+C     &              'or there was a problem reading it!','W')
+C      endif
+
+      return
+      end
+
+
 
 C In support of floating point exceptions.
 #ifdef SUN

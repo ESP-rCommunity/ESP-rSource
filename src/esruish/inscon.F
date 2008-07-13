@@ -302,6 +302,7 @@ C Set up itmc and isc arrays and total number of sources in zone.
                   if(i.eq.iva(j))then
                     itmc(i)=1
                     isc(i)=1
+                    ntmc=ntmc+1  ! update the parameter passed back
                   endif
   43           continue
   42         continue
@@ -330,6 +331,7 @@ C Set up itmc and isc arrays and total number of sources in zone.
                      if(i.eq.iva(j))then
                         itmc(i)=1
                         isc(i)=1
+                        ntmc=ntmc+1  ! update the parameter passed back
                      endif
   47              continue
   46           continue
