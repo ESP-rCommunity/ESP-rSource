@@ -180,7 +180,7 @@ C default file names for databases
 #include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
 
       common/er1/ier1

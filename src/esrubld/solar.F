@@ -30,6 +30,7 @@ C      MZWINP2
 C      MZTMCA
 C      MZSFSH
 C      MZSHDO
+C      MZSCTL
 
 C ******************** MZSOLR ********************
 C MZSOLR initiates the computation of the solar gains impinging
@@ -174,15 +175,15 @@ C and future time rows. Units: W/m^2
 
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
-C to 1 for the present.
+C to 20 for the present.
 C MSGAL is number of optical sets per optics db item. At present
 C set to 1: later increase to 2 for an alternative set that can be switched.
 C MANH and MANV are the number of angles at which optical data is 
 C held for horizontal/vertical grid data.
 C At present this assumes 5deg bi-directional data from -90 to +90
 C in elevation and azimuth.
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
-
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+      
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/BTIME/BTIMEP,BTIMEF
@@ -204,13 +205,12 @@ C in elevation and azimuth.
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
      &              TVTR2(MCOM,MTMC,MBP)
 
-C Optical control associated with each connection.
-      common/iconopt/icnopta(MCON)
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
-
+     &       omiscd(mol,mocdt,mocdp,misc)
+     
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
@@ -311,8 +311,20 @@ C
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
-     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
-
+     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL),
+     &  TMVISUAL(MSTMC,MSGAL)
+     
+C Common block for treatment of diffuse radiation for bi-directional
+C types 2 and 3.
+      COMMON/OPTDAT2/DF_TX_SKY(MSTMC,MSGAL),DF_G_SKY(MSTMC,MSGAL),
+     &  DF_RF_SKY(MSTMC,MSGAL),DF_TX_GND(MSTMC,MSGAL), 
+     &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
+     &  a_dfSKYinner(MSTMC,MSGAL),a_dfGNDinner(MSTMC,MSGAL),
+     &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
+        
 C Required for WATSUN-PV model
       COMMON/PVANG/fInc_angle(MS)
       REAL fInc_angle          ! Angle of incidence for surface
@@ -327,7 +339,7 @@ C Required for WATSUN-PV model
       CHARACTER SPARENT*12
 
       DIMENSION QIABS(MS),IANS(MS),IND1(MS),IND2(MS),ANGI(MS),
-     &SRADDO(MS),SRADF(MS)
+     &SRADDO(MS),SRADF(MS),SKYDIF(MS),GRDDIF(MS)
       DIMENSION PSAZI2(MS),PSELV2(MS),IANGBI1(MS),IANGBI2(MS)
       dimension inssur(misur),pinsur(misur)
 
@@ -341,6 +353,25 @@ C tfftrace is the diffuse transmission at the current timestep for each surface.
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
+C Bidirectional data - explicit definitions:
+      COMMON/BITYPE/IBIDATATYPE   
+      integer IBIDATATYPE !this will probably have to be kept in a common block
+                          !It will specify what type of data to read
+                          !1: the existing transmittance and at different layers absorptance 
+                          !2: the transmittance, g value and reflectance 
+                          !3: the transmittance and g value only     
+
+      REAL EFF_TOT_ABS,XREFLECT_interp,XGVALUE_interp,qi_bidirectional
+      REAL a_inner_layer,Rs_glazing,a_outer_layer, X_tr_interp
+      REAL X_tr1_bitype2and3,X_tr2_bitype2and3,X_tr3_bitype2and3
+      REAL X_tr4_bitype2and3 !Using it for the interpolation of transmittance in...
+                             !cases of bidirectional data type 2 and 3. This is... 
+                             !a different variable than the one used for type 1 
+                             !(i.e. XX1, XX2, XX3, XX4) to avoid mixing up in complex
+                             !situations.
+      integer IBISET_timestep !the bidirectional dataset number to use. 
+                              !Use the number specified in tdf if exists. Otherwise use the 1st dataset.                 
+      
       ZAREA=ZOA(ICOMP)
 
 C      write (6,*) 'solar ',btimef
@@ -520,7 +551,8 @@ C Store angle of incidence in COMMON block variable; required by WATSUN-PV model
 C SOLAR PROCESSING: incident comprises direct, sky diffuse
 C and ground reflected components. Calculate direct (SRADDO)
 C and diffuse (SRADF) on surface ISRF.
-          CALL MZSRAD(ICOMP,ISRF,QD,QF,CAI,SRADDO(ISRF),SRADF(ISRF))
+          CALL MZSRAD(ICOMP,ISRF,QD,QF,CAI,SRADDO(ISRF),SRADF(ISRF),
+     &         SKYDIF(ISRF),GRDDIF(ISRF))
 
 C Surface is self-shaded; no direct radiation.
           IF(IANS(ISRF).EQ.1)SRADDO(ISRF)=0.
@@ -763,7 +795,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -885,8 +917,6 @@ C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
              EXDIR(I) = 0.
              EXDIF(I) = 0.
           endif
-
-
         ENDIF
    6  CONTINUE
 
@@ -905,6 +935,187 @@ C Set a local flag if bidirectional data available for this surface.
             KP=NBPONT(ICOMP,I)
             INODE=1
 
+C Bidirectional case
+            if(IBIDIR.NE.0)then
+
+C Call subroutine for controls here
+              call mzsctl(ICOMP,I,SRADDO(I),SRADF(I),IBISET_timestep)
+
+C Here it checks if during the control a dataset has been specified
+C that is not included in the file with the data 
+C (for which there are no data). This is done by looking if there are
+C data for internal surface resistance and also U value.
+C If these values are 0 then it uses the 1st dataset and ignores the
+C control.
+              call eclose(TRINTERNAL(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                    bCloseToZero)
+              if (bCloseToZero)then              
+                call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                    bCloseToZero)
+                if (bCloseToZero)then              
+                  write(outs,'(A,I2,A)')
+     &             'Attempt is made to control dataset no: ',
+     &             IBISET_timestep,
+     &             ' while there are no data for this dataset.'
+                  call edisp(iuout,outs)
+                  write(outs,'(A)')
+     &             'Dataset no: 1 will be used instead of this.'
+                  call edisp(iuout,outs)
+                  IBISET_timestep=1
+                endif
+              endif
+
+C Interpolate transmittance and g values in case of bidirectional
+C data type 2 and 3. Also interpolate reflectance in the case of
+C data type 3. Do this outside the loop of NE (per layer).
+              IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                X_tr1_bitype2and3=
+     &               TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                XGVALUE1=
+     &               TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                IF(IBIDATATYPE.EQ.2)THEN            
+
+C Need to interpolate the reflectance for bidirectional data
+                  XX1=TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                ENDIF           
+                IF(IND1(I).eq.MANH)THEN
+                  X_tr2_bitype2and3=X_tr1_bitype2and3              
+                  XGVALUE2=XGVALUE1
+                  IF(IBIDATATYPE.EQ.2)THEN 
+                    XX2=XX1
+                  ENDIF
+                ELSE
+                  X_tr2_bitype2and3=
+     &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
+                  XGVALUE2=
+     &             TMGVALUE(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
+                  IF(IBIDATATYPE.EQ.2)THEN
+                    XX2=
+     &               TMREFLECT(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
+                  ENDIF                               
+                ENDIF
+                IF(IND2(I).eq.MANV)THEN
+                  X_tr3_bitype2and3=X_tr1_bitype2and3
+                  XGVALUE3=XGVALUE1
+                  IF(IBIDATATYPE.EQ.2)THEN                
+                    XX3=XX1
+                  ENDIF
+                ELSE
+                  X_tr3_bitype2and3=
+     &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
+                  XGVALUE3=
+     &             TMGVALUE(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
+                  IF(IBIDATATYPE.EQ.2)THEN
+                    XX3=
+     &               TMREFLECT(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
+                  ENDIF                                            
+                ENDIF
+                IF(IND1(I).eq.MANH)THEN
+                  X_tr4_bitype2and3=X_tr3_bitype2and3
+                  XGVALUE4=XGVALUE3
+                  IF(IBIDATATYPE.EQ.2)THEN   
+                    XX4=XX3
+                  ENDIF                                
+                ELSEIF(IND2(I).eq.MANV)THEN
+                  X_tr4_bitype2and3=X_tr2_bitype2and3
+                  XGVALUE4=XGVALUE2
+                  IF(IBIDATATYPE.EQ.2)THEN
+                    XX4=XX2 
+                  ENDIF                               
+                ELSE
+                  X_tr4_bitype2and3=
+     &             TMTSOD(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
+                  XGVALUE4=
+     &             TMGVALUE(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
+                  IF(IBIDATATYPE.EQ.2)THEN   
+                     XX4=
+     &             TMREFLECT(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
+                  ENDIF                         
+                ENDIF
+
+C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
+C X_tr_interp should be the same as XD that is used in the TMC loop afterwards.
+                CALL MZWINP2(X_tr1_bitype2and3,X_tr2_bitype2and3,
+     &                    X_tr3_bitype2and3,X_tr4_bitype2and3,
+     &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
+     &                    X_tr_interp)
+                CALL MZWINP2(XGVALUE1,XGVALUE2,XGVALUE3,XGVALUE4,
+     &                    IANGBI1(I),IANGBI2(I),PSAZI2(I),PSELV2(I),
+     &                    XGVALUE_interp)     
+                IF(IBIDATATYPE.EQ.2)THEN
+                  CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
+     &                    PSAZI2(I),PSELV2(I),XREFLECT_interp) 
+                ENDIF                
+C End of interpolation for bidirectional data
+
+C Get effective total absorptance from the interpolation of the solar
+C transmittance according to a method defined by Fraunhofer.
+C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
+C or g,te only)
+                IF(IBIDATATYPE.EQ.2)THEN   
+                  EFF_TOT_ABS=1.-X_tr_interp-XREFLECT_interp
+                ELSEIF(IBIDATATYPE.EQ.3)THEN
+                  EFF_TOT_ABS=0.5*(1.-X_tr_interp)
+                ENDIF  
+
+C Solar flux for bidirectional data (experimental conditions)
+C will be g value - transmittance
+                qi_bidirectional=XGVALUE_interp-X_tr_interp
+
+C Calculate the thermal resistance of the glazing based on the U values
+C Re and Ri values defined in the bidirectional data file
+C Trap also the zeros in case of corrupted data (will result to
+C a non-realistic Rs_glazing)
+                call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                bCloseToZero)
+                if(bCloseToZero)then
+                  Rs_glazing=0-TREXTERNAL(IBIDIR,IBISET_timestep)-
+     &               TRINTERNAL(IBIDIR,IBISET_timestep)
+                else
+                  Rs_glazing=(1/TUVALUE(IBIDIR,IBISET_timestep))-
+     &               TREXTERNAL(IBIDIR,IBISET_timestep)-
+     &               TRINTERNAL(IBIDIR,IBISET_timestep)
+                endif
+
+C Calculate the effective absorptance of the inner layer (based on
+C the experimental bidirectional data)
+C abs_in=(qi*(Re+Rs+Ri)-abs_tot*Re)/Rs
+C Trap also the zeros in case of corrupted data
+                call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+                if(bCloseToZero)then
+                  a_inner_layer=0.
+                else
+                  a_inner_layer=
+     &            (qi_bidirectional*(TREXTERNAL(IBIDIR,IBISET_timestep)+
+     &            Rs_glazing+TRINTERNAL(IBIDIR,IBISET_timestep))-
+     &            EFF_TOT_ABS*TREXTERNAL(IBIDIR,IBISET_timestep))/
+     &            Rs_glazing
+                endif
+
+C Calculate the effective absorptance of the outer layer (based on
+C the experimental bidirectional data)
+C abs_out=abs_tot*(Re+Rs)-qi(Re+Rs+Ri)/Rs
+C Trap also the zeros in case of corrupted data
+                call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+                if(bCloseToZero)then
+                  a_outer_layer=0.
+                else
+                  a_outer_layer=
+     &            (EFF_TOT_ABS*(TREXTERNAL(IBIDIR,IBISET_timestep)+
+     &            Rs_glazing)-qi_bidirectional*
+     &            (TREXTERNAL(IBIDIR,IBISET_timestep)+Rs_glazing+
+     &            TRINTERNAL(IBIDIR,IBISET_timestep)))/Rs_glazing
+                endif
+
+C Debug
+C              write(6,*) Rs_glazing,'  ',qi_bidirectional
+C              write(6,*) a_inner_layer,'  ', a_outer_layer
+C End Debug
+
+C End of Bidirectional case
+              endif
+              
+            ENDIF             
             DO 40 J=1,NE
               NNOD=NNDL(ICOMP,I,J)
               FNNOD=FLOAT(NNOD)
@@ -929,10 +1140,14 @@ C************************
                   IF(IBIDIR.EQ.0) THEN
                    XX1=TMCA(ICOMP,ITMC,J,IND1(I))
                   ELSE
+
 C Bidirectional data available.
+                    IF(IBIDATATYPE.EQ.1)THEN
 C XX1 is the absorptance for those available array elements that
 C are less than the actual solar azimuth and elevation angles.
-                   XX1=TMABSO(IBIDIR,1,J,IND1(I),IND2(I))
+                      XX1=
+     &                 TMABSO(IBIDIR,IBISET_timestep,J,IND1(I),IND2(I))
+                    ENDIF
                   ENDIF
                 ENDIF
 
@@ -948,24 +1163,30 @@ C are less than the actual solar azimuth and elevation angles.
                   ELSEIF(IBIDIR.EQ.0)THEN
                     XX2=TMCA(ICOMP,ITMC,J,IND2(I))
                   ELSE
-C Bidirectional case.
+
+C Bidirectional case - TYPE 1 DATA  (absorptances are available)
 C Note: if angle is +90, set XX2=XX1 etc.
-                    IF(IND1(I).eq.MANH)then
-                     XX2=XX1
-                     ELSE
-                     XX2=TMABSO(ITMC,1,J,IND1(I)+1,IND2(I))
-                    ENDIF
-                    IF(IND2(I).eq.MANV)then
-                     XX3=XX1
-                    ELSE
-                     XX3=TMABSO(ITMC,1,J,IND1(I),IND2(I)+1)
-                    ENDIF
-                    IF(IND1(I).eq.MANH)then
-                     XX4=XX3
-                    ELSEIF(IND2(I).eq.MANV)then
-                     XX4=XX2
-                    ELSE
-                     XX4=TMABSO(ITMC,1,J,IND1(I)+1,IND2(I)+1)
+                    IF(IBIDATATYPE.EQ.1)THEN
+                      IF(IND1(I).eq.MANH)then
+                        XX2=XX1
+                       ELSE
+                        XX2=
+     &                  TMABSO(ITMC,IBISET_timestep,J,IND1(I)+1,IND2(I))
+                      ENDIF
+                      IF(IND2(I).eq.MANV)then
+                        XX3=XX1
+                      ELSE
+                        XX3=
+     &                  TMABSO(ITMC,IBISET_timestep,J,IND1(I),IND2(I)+1)
+                      ENDIF
+                      IF(IND1(I).eq.MANH)then
+                        XX4=XX3
+                      ELSEIF(IND2(I).eq.MANV)then
+                        XX4=XX2
+                      ELSE
+                        XX4=
+     &                TMABSO(ITMC,IBISET_timestep,J,IND1(I)+1,IND2(I)+1)
+                      ENDIF
                     ENDIF
                   ENDIF
                 ENDIF
@@ -1003,11 +1224,47 @@ C Call MZWINP to interpolate between two values.
               CALL MZWINP(XX1,1.,XX2,ZERO,IND1(I),ANGI(I),ABD,DUMMY)
               CALL MZWINP(YY1,1.,YY2,ZERO,2,51.0,ABF,DUMMY)
             ELSE
+              IF(IBIDATATYPE.EQ.1)THEN
+
+C Absorptance is included in the bidirectional data file
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
-              CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
+                CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
      &                     PSAZI2(I),PSELV2(I),ABD)
+
 C Get diffuse absorptance.
-              ABF=TMABSDIF(IBIDIR,1,J)
+                ABF=TMABSDIF(IBIDIR,IBISET_timestep,J)
+
+C Bidirectional data with transmittance and g values (plus reflectance
+C in some cases)
+              ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+
+C Always applicable for a 3-layer glazing.
+C For external layer assign the calculated absorptance on the outer layer.
+                IF(J.EQ.1)THEN
+                  ABD=a_outer_layer
+
+C Use separate absorptivities for diffuse radiation from outside to inside.
+                  ABFSKY=a_dfSKYouter(IBIDIR,IBISET_timestep)
+                  ABFGND=a_dfGNDouter(IBIDIR,IBISET_timestep)
+
+C Use average absorptivity for diffuse radiation from inside to outside.
+                  ABF=(ABFSKY+ABFGND)/2.
+
+C Assign 0 for middle gas layer                
+                ELSEIF(J.EQ.2)THEN
+                  ABD=0.0
+                  ABFSKY=0.0
+                  ABFGND=0.0
+                  ABF=0.0
+
+C For internal layer assign the calculated absorptance on the inner layer
+                ELSEIF(J.EQ.3)THEN
+                  ABD=a_inner_layer
+                  ABFSKY=a_dfSKYinner(IBIDIR,IBISET_timestep)
+                  ABFGND=a_dfGNDinner(IBIDIR,IBISET_timestep)
+                  ABF=(ABFSKY+ABFGND)/2.
+                ENDIF                   
+              ENDIF 
             ENDIF
               IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
                 POO=0.
@@ -1018,6 +1275,9 @@ C Get diffuse absorptance.
               ENDIF
               DAB=SRADDO(I)*(1.-POO)*ABD
               FAB=SRADF(I)*(1.-POFF)*ABF
+              IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                FAB=(SKYDIF(I)*ABFSKY+GRDDIF(I)*ABFGND)*(1.-POFF)
+              ENDIF
 C              write (6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
 C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
 
@@ -1026,6 +1286,7 @@ C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
               EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
               EXDIF(I)=SRADF(I)*(1.-EXSHADF(I))
               EXRAD(I)=EXDIR(I)+SRADF(I)
+
 C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
              call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
              if ( bCloseToZero ) then
@@ -1057,6 +1318,39 @@ C zone was processed. Results held in common ADJC2.
 C Set a local flag if bidirectional data available for this surface.
         IBIDIR=NSTMCFL(IZSTOCN(ICOMP,I))
 
+C Bidirectional case
+        if(IBIDIR.NE.0)then
+
+C Call subroutine for controls here
+          call mzsctl(ICOMP,I,SRADDO(I),SRADF(I),IBISET_timestep)
+
+C Here it checks if during the control a dataset has been specified
+C that is not included in the file with the data 
+C (for which there are no data). This is done by looking if there are
+C data for internal surface resistance and also U value.
+C If these values are 0 then it uses the 1st dataset and ignores the
+C control.
+          call eclose(TRINTERNAL(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                bCloseToZero)
+          if (bCloseToZero)then              
+            call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                  bCloseToZero)
+            if (bCloseToZero)then              
+              write(outs,'(A,I2,A)')
+     &         'Attempt is made to control dataset no: ',
+     &         IBISET_timestep,
+     &         ' while there are no data for this dataset.'
+              call edisp(iuout,outs)
+              write(outs,'(A)')
+     &         'Dataset no: 1 will be used instead of this.'
+              call edisp(iuout,outs)
+              IBISET_timestep=1 
+            endif
+          endif
+
+C End of bidirectional case
+        endif
+        
         ITMC=ITMCFL(ICOMP,I)
         if (IE(ICOMP,I).ge.0.and.ITMC.gt.0) then
 
@@ -1082,8 +1376,8 @@ C If IBOFOT()=2, then linear interpolation is ON - alternative values set.
                  ELSE
 C Bidirectional case for transmission - see similar treatment for absorption above.
 C XX? is the direct-direct component; YY? is the direct-diffuse component
-                   XX1=TMTSOD(IBIDIR,1,IND1(I),IND2(I))
-                   YY1=TMTSOB(IBIDIR,1,IND1(I),IND2(I))
+                   XX1=TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
+                   YY1=TMTSOB(IBIDIR,IBISET_timestep,IND1(I),IND2(I))
                  ENDIF
               ENDIF
 
@@ -1104,15 +1398,15 @@ C Bidirectional case.
                     XX2=XX1
                     YY2=YY1
                   ELSE
-                    XX2=TMTSOD(IBIDIR,1,IND1(I)+1,IND2(I))
-                    YY2=TMTSOB(IBIDIR,1,IND1(I)+1,IND2(I))
+                    XX2=TMTSOD(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
+                    YY2=TMTSOB(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I))
                   ENDIF
                   IF(IND2(I).eq.MANV)then
                     XX3=XX1
                     YY3=YY1
                   ELSE
-                    XX3=TMTSOD(IBIDIR,1,IND1(I),IND2(I)+1)
-                    YY3=TMTSOB(IBIDIR,1,IND1(I),IND2(I)+1)
+                    XX3=TMTSOD(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
+                    YY3=TMTSOB(IBIDIR,IBISET_timestep,IND1(I),IND2(I)+1)
                   ENDIF
                   IF(IND1(I).eq.MANH)then
                     XX4=XX3
@@ -1121,8 +1415,10 @@ C Bidirectional case.
                     XX4=XX2
                     YY4=YY2
                   ELSE
-                    XX4=TMTSOD(IBIDIR,1,IND1(I)+1,IND2(I)+1)
-                    YY4=TMTSOB(IBIDIR,1,IND1(I)+1,IND2(I)+1)
+                    XX4=
+     &                TMTSOD(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
+                    YY4=
+     &                TMTSOB(IBIDIR,IBISET_timestep,IND1(I)+1,IND2(I)+1)
                   ENDIF
                 ENDIF
               ENDIF
@@ -1163,15 +1459,27 @@ C Call MZWINP to interpolate between two values.
               CALL MZWINP(XX1,1.,XX2,ZERO,IND1(I),ANGI(I),XD,DUMMY)
               CALL MZWINP(YY1,1.,YY2,ZERO,2,51.0,XF,DUMMY)
             ELSE
+
 C Call MZWINP2 to interpolate in two dimensions for bidirectional data.
               CALL MZWINP2(XX1,XX2,XX3,XX4,IANGBI1(I),IANGBI2(I),
-     &                     PSAZI2(I),PSELV2(I),XD)
-              CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
-     &                     PSAZI2(I),PSELV2(I),DTOD)
-C Get diffuse transmission from common block.
-              XF=THTSOB(1,1)
-            ENDIF
+     &                       PSAZI2(I),PSELV2(I),XD)
+              IF(IBIDATATYPE.EQ.1)THEN
+                CALL MZWINP2(YY1,YY2,YY3,YY4,IANGBI1(I),IANGBI2(I),
+     &                       PSAZI2(I),PSELV2(I),DTOD)
 
+C Get diffuse transmission from common block.
+                XF=THTSOB(IBIDIR,IBISET_timestep)
+              ELSEIF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+                DTOD=0.
+
+C Use separate transmittances for diffuse radiation from outside to inside.
+                XFSKY=DF_TX_SKY(IBIDIR,IBISET_timestep)
+                XFGND=DF_TX_GND(IBIDIR,IBISET_timestep)
+
+C Use XF for diffuse radiation travelling from inside to outside.
+                XF=(XFSKY+XFGND)/2.0
+              ENDIF
+            ENDIF 
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
               POO=0.
               POFF=0.
@@ -1182,6 +1490,9 @@ C Get diffuse transmission from common block.
 
 C Calculate diffuse transmission.
             TFF=SRADF(I)*SNA(ICOMP,I)*XF*(1.-POFF)
+            IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
+            TFF=(SKYDIF(I)*XFSKY+GRDDIF(I)*XFGND)*SNA(ICOMP,I)*(1.-POFF)
+            ENDIF
             tfftrace(i)=tff
 
 C For bidirectional data, add in the direct-diffuse component to the
@@ -1801,17 +2112,23 @@ C the bidirectional case.
       SUBROUTINE MZSCAI(ICOMP,II,CAI,ANGI,IND1,IND2,PSAZI2,
      &           PSELV2,IANGBI1,IANGBI2)
 #include "building.h"
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
+
+C Next line and the related common block were existing here but not used anywhere
+C      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
-      COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
-     &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
-     &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
-     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
+C      COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
+C     &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
+C     &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
+C     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+C     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+C     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+C     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
+C     &  TMVISUAL(MSTMC,MSGAL)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       PI = 4.0 * ATAN(1.0)
@@ -1880,14 +2197,14 @@ C IANGBI1 and IANGBI2 are the angles corresponding to the IND1,IND2 array elemen
       END
 
 C ******************** MZSRAD *********************
-C  SOLAR PROCESSING: Subroutine that sets slope of 
+C SOLAR PROCESSING: Subroutine that sets slope of 
 C surface then calls appropriate subroutine to determine
-C direct and diffuse components solar radiation. This 
+C direct and diffuse components of solar radiation. This 
 C subroutine was part of MZSRAD0. It was separated to
-C accomodate call for MZSRAD0 from subroutine 
+C accommodate call for MZSRAD0 from subroutine 
 C "simple_solar_coll_coeff_gen".
 
-      SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF)
+      SUBROUTINE MZSRAD(ICOMP,II,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 #include "building.h"
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -1897,7 +2214,7 @@ C Slope of surface
 
 C Call subroutine to determine direct and diffuse solar
 C radiation
-      CALL MZSRAD0(BETA,QD,QF,CAI,SRADDO,SRADF)
+      CALL MZSRAD0(BETA,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 
       RETURN
       END
@@ -1906,7 +2223,7 @@ C ******************** MZSRAD0 ********************
 C  SOLAR PROCESSING: incident comprises direct, sky diffuse
 C  and ground reflected components.
 
-      SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF)
+      SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 #include "building.h"
 
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -2297,7 +2614,7 @@ C MZTMCA computes the absorptions and transmissions for a TMC
 C It assumes that the radiation is incident from inside the
 C room whereas TMC's are defined from the outside. The relative
 C absorptivities are thus reversed by an approximate method which
-C assumes that the refectivity is the same from each element of
+C assumes that the reflectivity is the same from each element of
 C the TMC.
 
 C RAD   is radiation incident on the TMC in W/m^2.
@@ -2363,7 +2680,7 @@ C If IBOFOT()=1 the blind/shutter or If IBOFOT()=2 linear is on.
 
 C Now calculate the absolute absorptivities (approximate method
 C assumes that total reflectivity is the same in both directions
-C for shortwave.
+C for shortwave).
       ABFABS(1)=ABF(1)
       IF (NE.GT.1)THEN
         DO 2 L=2,NE
@@ -3053,7 +3370,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0Â°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
@@ -3087,4 +3404,513 @@ C to the ground surface.
       ENDIF
       
       RETURN
-      END      
+      END    
+      
+C ******************** MZSCTL ********************
+C MZSCTL deals with solar related controls. It currently uses
+C only controls related to bidirectional data. In the future, all 
+C existing and new controls should be added here. 
+
+      SUBROUTINE MZSCTL(ICOMP,ISURFNumber,SRADDO,SRADF,ISET)
+#include "building.h"
+#include "tdf2.h"
+
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/BTIME/BTIMEP,BTIMEF
+
+C Tdf common block to allow using different bidirectional datasets
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
+      COMMON/trc/itrc ! needed to recover tdf data
+
+      COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
+     &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
+     &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
+     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL),
+     &  TMVISUAL(MSTMC,MSGAL)
+
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/SHAD2/ISHD(MCOM),IGCS(MCOM,MS),PO(MCOM,MS,MT),
+     & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
+     & pinsst(mcom,mgt,mt,misur)
+
+C For optical controls
+      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
+     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
+     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
+     &       omiscd(mol,mocdt,mocdp,misc)
+
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT     
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      
+C Variables for weekdays, and weekends.
+C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
+      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      character*10 wkd1, wkd2
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+
+C Daylight coeff specific common block data definition:
+      COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
+     & IDCFID(MCOM,MLCOM,MDF)
+
+C SHOCC: new common ...
+C iblnd - SHOCC blinds corresponding to ESP-r TMCs:
+C      0, no; else, a f77 index [1,~] to access
+C      SHOCC zone blind data structure
+      common/shocc/iblnd(mcom,ms)
+
+      logical closea,neglum
+      integer ISET !the bidirectional dataset number to use. 
+                  !Use the number specified in tdf if exists. Otherwise use the 1st dataset. 
+      integer ictl_constrdbindex_number !the number of the controlled construction will be assigned to it
+      
+      real shd_po_fctr_ctl,shd_pof_fctr_ctl,rad_on_surf
+
+C Daylight coeff specific
+      dimension alt(8)
+      DIMENSION VAL(MBITS+2)      
+
+C Definitions for daylight coefficient patch altitude:
+      data alt/6.,18.,30.,42.,54.,66.,78.,90./
+      CHARACTER DESC*48
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      character outs*124
+      character ctl_constrdb_name*72 !to match the name of the controlled construction (from db)
+                                     !with the name of the construction of the study
+      character name_constr_ofStudy*72 !to match the name of the construction of the study with 
+                                      !with the name of the construction picked to be controlled
+                                      !from the constructions database (i.e. the one "actuated")
+
+      real TVT,TVT2,TVT3,TVT4,TVT5,TVT6 !Local variables to calculate the visible transmittance 
+                                        !for the different daylight setpoints and controls
+                                        !(i.e. one for each of the 6 datasets for bidirectional sets)
+      integer i_ctlZone  !This is used when the sensor is located to another zone and indicates 
+                         !which zone. It will take the value of iosn(1,1).
+
+      integer IDAYPD
+           
+C If there is a tdf item that defines which bidirectional dataset 
+C to use then use it. Otherwise use the first set.
+      if(IBIDIRS(ICOMP,ISURFNumber).ne.0)then
+        IFOC=IBIDIRS(ICOMP,ISURFNumber)
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+        ISET=int(VAL(ISD))
+
+C Check that there is not any tdf bidirectional item associated with it
+C and that there are common optical controls
+      elseif(IBIDIRS(ICOMP,ISURFNumber).eq.0.and.nof.gt.0)then
+C Determine year day number of present day
+        IF(IHRP.NE.24) THEN
+          IDAY=IDYP
+        ELSE
+          IDAY=IDYF
+        ENDIF
+
+C Process each optical control loop to test if it is active
+        DO 100 iol=1,nof
+
+C<<<probably there is no need for this >>>>>
+          IOFP=iol
+
+C Set up day type and period pointers
+          NDAYT=NOCDT(iol)
+
+C If NDAYT=0 set data to weekday, saturday and sunday format
+          IF(NDAYT.EQ.0) THEN
+            IDTYP=1
+            IDW=IDWP
+            IF(IHRP.EQ.24) IDW=IDWF
+            IF(IDW.EQ.idwe1) IDTYP=2
+            IF(IDW.EQ.idwe2) IDTYP=3
+          ELSE
+            DO 10 IDTYP=1,NDAYT
+              IDS=IOCDV(iol,IDTYP,1)
+              IDF=IOCDV(iol,IDTYP,2)
+              IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
+   10       CONTINUE
+            WRITE(outs,'(a,I3)') ' CONTRL: optical control loop ',iol
+            call edisp(iuout,outs)
+            WRITE(outs,'(9x,a,I4)') 'no valid day type for year-day ',
+     &            IDAY
+            call edisp(iuout,outs)
+            call edisp(iuout,
+     &           ' CONTRL: cannot locate appropriate day type')
+            call epwait
+            call epagend
+            STOP
+          ENDIF
+
+C Check number of periods in each day and the start and finish times
+   20     NDAYP=NOCDP(IOFP,IDTYP)
+          IF(NDAYP.EQ.0)then
+            call edisp(iuout,' CONTRL: no day-periods defined')
+            call epwait
+            call epagend
+            STOP
+          endif
+          DO 22 IDAYP=1,NDAYP
+            IPER=IDAYP
+            IDAYPD=IDAYP
+            TOS=TOCPS(IOFP,IDTYP,IDAYP)
+            IF(IDAYP.LT.NDAYP) THEN
+              TOF=TOCPS(IOFP,IDTYP,IDAYP+1)
+            ELSE
+              TOF=24.
+            ENDIF
+            if(BTIMEF.GT.TOS.AND.BTIMEF.LE.TOF)then
+
+C Call in the future here different subroutines for different controls
+              ictl_constrdbindex_number=ioan(1,2)
+
+C<<<<<<< IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC">>>>>>
+C        write(6,*) 'desc', DESC(ictl_constrdbindex_number)
+C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))  
+              write(ctl_constrdb_name,'(a)') 
+     &             DESC(ictl_constrdbindex_number)(1:12)      
+              write(name_constr_ofStudy,'(a)') 
+     &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)          
+
+C controls start here      
+C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>
+              if(ioan(1,1).eq.-5.and.ctl_constrdb_name(1:12).eq.
+     &           name_constr_ofStudy(1:12))then
+                if(ioclaw(1,IDTYP,IPER).eq.2)then
+
+C Current zone temperature sensor
+C<<<Check if instead if iosn(1,1) we should use iosn(iol,1) as in bcfunc.F>>>
+                  if(iosn(1,1).eq.0)then
+C                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
+C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
+ 
+C Allow max 6 setpoints and datasets to be used for the moment.
+                    if(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,2))then                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,4))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,6))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))                      
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,8))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,10))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,12))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    else
+                      ISET=1
+                    endif
+                  elseif(iosn(1,1).eq.-3)then
+
+C Senses outside db.
+C Allow max 6 setpoints and datasets to be used for the moment.
+                    if(TF.GT.OMISCD(1,IDTYP,IPER,2))then                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,4))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,6))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))                     
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,8))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,10))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,12))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    else
+                      ISET=1
+                    endif
+
+C Sense incident solar radiation on a surface
+C Find out first which surface
+                  elseif(iosn(1,1).eq.icomp.and.iosn(1,2).eq.
+     &                   ISURFNumber)then 
+     
+C Calculate now radiation on the surface (as in MZSLGN)
+C First calculate the shading factor on the surface
+C Using the same calculation for POO and POFF as in MZSLGN
+                    if(ISHD(icomp).eq.0.or.ISHD(icomp).EQ.2)then
+                      shd_po_fctr_ctl=0.0
+                      shd_pof_fctr_ctl=0.0
+                    else
+                      shd_po_fctr_ctl=PO(ICOMP,ISURFNumber,IHRF)
+                      shd_pof_fctr_ctl=POF(ICOMP,ISURFNumber,IHRF)
+                    endif
+                    rad_on_surf=SRADDO*(1.-shd_po_fctr_ctl)
+     &                         +SRADF*(1.-shd_pof_fctr_ctl)                                       
+
+C Allow max 6 setpoints and datasets to be used for the moment.
+                    if(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,2))then                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,4))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,6))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))                      
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,8))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,10))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,12))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    else
+                      ISET=1
+                    endif
+
+C ****ATTENTION:
+C The implementation here for the daylight coeffiecient method
+C is not a trivial task and is left for future work                
+C Sense lux via daylight coef method.
+                  elseif(iosn(1,1).eq.-8.AND.
+     &                IBLND(ICOMP,ISURFNumber).GT.0)then
+                    continue
+                  elseif(iosn(1,1).eq.-9)then  
+
+C Code taken from MZSLGN but not fully tested with bidirectional controls.
+C Calculates visible transmittance based on lux setpoint value
+C If above the original value (which may be 0.!!) then takes the visible
+C transmittance from the set specified in the control file. It also returns the
+C set back to use for all bidirectional calculations
+
+C Find out first which surface
+                    if(iosn(1,2).eq.icomp.and.iosn(1,3).eq.
+     &                   ISURFNumber)then 
+
+C Calculate sensor illuminance - daylight coefficient method:
+C Find which daylight coefficient set to use (use stage 1 i.e.
+C maximal visible transmittance stage):
+
+C****Attention: NDCP assignment needs further testing
+C****is ISURFNumber for this assignment similar to the conventional TMC controls
+                      NDCP = ISURFNumber
+                    endif
+
+C Assume casual gains untouched and establish solar data for correct
+C time-row.  For conversion from radians to degrees.
+                    CALL MZSINT(ICOMP,QDIR,QDIF)
+
+                    PI = 4.0 * ATAN(1.0)
+                    RAD=PI/180.
+
+C Check if any diffuse irradiance and if sun is up - if not do not 
+C calculate and set to zero:
+                    call eclose(QDIF,0.00,0.01,closea)
+                    if(closea.OR.(SALT.LT.0.))then
+                      esky  = 0.
+                      esun  = 0.
+                      ELLUM = 0.
+                    else
+
+C Direct normal and diffuse horizontal illuminance:
+                      call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
+                      esky=QDIF*skyeff
+                      esun=QDIR*suneff
+
+C Calculate reference horizontal illuminance:
+                      call REFILL(QDIF,QDIR,SALT,SAZI,IDYP,refell)
+
+C Define starting angle for test of sky element comprising sun:
+                      ang0=4.0*PI
+
+C Loop through all 145 sky patchs and calculate delta illuminance:
+                      sill = 0.0
+                      do 333 npatch = 1, 145
+                        dill=0.0
+
+C Calculate sky patch reference luminance:
+                        call PATLUM(QDIF,QDIR,SALT,SAZI,IDYP,npatch,plv,
+     &                    ang)
+
+C Find sky element with minimum angle between sun position and element.
+C This identifies number of sky element for calculation of direct
+C illuminance contribution:
+                        if(ang.lt.ang0)then
+                          nelem = npatch
+                          ang0 = ang
+                        endif
+
+C Calculate luminance (cd/m^2) for given sky patch:
+                        plum=plv*esky/refell
+
+C If inconsistency (i.e. error) in irradiance data - plum < 0 set it to 0:
+                        if(plum.le.0.0)then
+                          if((npatch.ge.1).and.(npatch.le.30))then
+                            nzone = 1
+                          elseif((npatch.ge.31).and.(npatch.le.60))then
+                            nzone = 2
+                          elseif((npatch.ge.61).and.(npatch.le.84))then
+                            nzone = 3
+                          elseif((npatch.ge.85).and.(npatch.le.108))then
+                            nzone = 4
+                          elseif((npatch.ge.109).and.(npatch.le.126))
+     &                      then
+                            nzone = 5
+                          elseif((npatch.ge.127).and.(npatch.le.138))
+     &                      then
+                            nzone = 6
+                          elseif((npatch.ge.139).and.(npatch.le.144))
+     &                      then
+                            nzone = 7
+                          elseif(npatch.eq.145)then
+                            nzone = 8
+                          endif
+
+C Use aproximate solution assuming uniform sky luminance distribution
+C to estimate sky patch luminance:
+                          plum = esky/(2.0*PI*sin(alt(nzone)*rad))
+                          neglum = .true.
+                        else
+                          neglum = .false.
+                        endif
+
+C Calculate delta illuminance at sensor from given sky patch:
+                        dill=DCOEF(NDCP,1,npatch)*plum*(2.0*PI/145.0)
+                        sill = sill + dill
+333                   continue
+
+C Give warning about calculated negative luminance:
+                      if(neglum)then
+                        write (outs,'(a)')
+     &     ' Sky patch luminance < = 0. Using uniform sky aproximation'
+                        call edisp(iuout,outs)
+                        write (outs,'(a,I3,a,f6.1,a,f6.1,a,f4.1)')
+     &                  ' Day ',IDYP,' Direct ',QDIR,' Diffuse ',QDIF,
+     &                  ' Sun altitude ',SALT
+                        call edisp(iuout,outs)
+                      endif
+
+C Check if any direct sun - if yes then calculate its contribution
+C into sensor illuminance:
+                      call eclose(QDIR,0.00,0.01,closea)
+                      if(closea)then
+                        dircon=0.0
+                      else
+                        dircon=DCOEF(NDCP,1,nelem)*esun
+                      endif
+                      ELLUM = sill + dircon
+                    endif
+
+C Calculate necessary visible transmittance to maintain lux set point.
+C This works only for simple cases i.e. sensor illuminance proportional
+C to the visible transmittance of TMC - case with only one TMC type in
+C thermal zone:
+                    CALL eclose(ELLUM,0.00,0.01,closea)
+                    IF(closea)then
+                      TVT=TMVISUAL(1,1)
+                    else 
+
+C ****ATTENTION:
+C The implementation here is not fully tested and has been put for experimental
+C and "tidy-up" reasons
+                      TVT=((OMISCD(1,IDTYP,IPER,2))/ELLUM)*TMVISUAL(1,1)
+                      TVT2=
+     &                 ((OMISCD(1,IDTYP,IPER,4))/ELLUM)*TMVISUAL(1,1)
+                      TVT3=
+     &                 ((OMISCD(1,IDTYP,IPER,6))/ELLUM)*TMVISUAL(1,1)
+                      TVT4=
+     &                 ((OMISCD(1,IDTYP,IPER,8))/ELLUM)*TMVISUAL(1,1)
+                      TVT5=
+     &                 ((OMISCD(1,IDTYP,IPER,10))/ELLUM)*TMVISUAL(1,1)
+                      TVT6=
+     &                 ((OMISCD(1,IDTYP,IPER,12))/ELLUM)*TMVISUAL(1,1)
+                      if(TVT.GT.TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3))))
+     &                  then
+                        TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3)))=TVT
+                        ISET=int(OMISCD(1,IDTYP,IPER,3))
+                      elseif(TVT.LE.
+     &                  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3))))then
+                        if(TVT2.GT.
+     &                    TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,5))))then
+                          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,5)))=TVT2     
+                          ISET=int(OMISCD(1,IDTYP,IPER,5))
+                        elseif(TVT2.LE.
+     &                    TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,5))))then
+                          if(TVT3.GT.
+     &                      TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,7))))then
+                            TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,7)))=TVT3                        
+                            ISET=int(OMISCD(1,IDTYP,IPER,7))
+                          elseif(TVT3.LE.
+     &                      TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,7))))then
+                            if(TVT4.GT.
+     &                        TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,9))))
+     &                        then
+                              TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,9)))=
+     &                        TVT4                 
+                              ISET=int(OMISCD(1,IDTYP,IPER,9))
+                            elseif(TVT4.LE.
+     &                        TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,9))))
+     &                        then
+                              if(TVT5.GT.
+     &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11))))
+     &                          then
+                               TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11)))=
+     &                          TVT5                         
+                                ISET=int(OMISCD(1,IDTYP,IPER,11))
+                              elseif(TVT5.LE.
+     &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11))))
+     &                          then
+
+C Identation has been slightly changed here
+                                if(TVT6.GT.
+     &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13))))
+     &                            then
+                               TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13)))=
+     &                            TVT6                         
+                                  ISET=int(OMISCD(1,IDTYP,IPER,13))
+                                else
+                                  continue
+                                endif
+                              endif
+                            endif
+                          endif
+                        endif
+                      endif
+                    endif    
+
+C Sense temperature in another zone
+                  elseif(iosn(1,1).gt.0.and.iosn(1,2).eq.0)then
+                                   
+C iosn(1,1) will specify which zone
+                    i_ctlZone=iosn(1,1)
+
+C Allow max 6 setpoints and datasets to be used for the moment.                                        
+                    if(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,2))then                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,4))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,6))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,8))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,10))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,12))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    else
+                      ISET=1
+                    endif                  
+
+C End of all the bidirectional control options
+                  endif
+                endif
+              endif
+            endif
+  22      CONTINUE 
+ 100    CONTINUE       
+      else
+        ISET=1
+      endif
+      return
+      END

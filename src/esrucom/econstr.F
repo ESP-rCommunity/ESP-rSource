@@ -30,6 +30,7 @@ C           control details from an annotated ascii file.
 C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
 
+
 C ******************** ECONST 
 C ECONST reads zone thermophysical data from a user-constructed data
 C file as ASCII strings and with or without comments.  LCONS is the
@@ -1197,7 +1198,7 @@ C           file.
       subroutine erbiwin(itrc,itru,iua,lua,ier)
 #include "building.h"
 #include "espriou.h"
-      PARAMETER (MSTMC=1,MSGAL=1,MANH=37,MANV=37)
+      PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
@@ -1210,13 +1211,55 @@ C   and each layer and each angle.
 C THTSOB(MSTMC,MSGAL) - outdoor side direct solar trans (diff to diff)
 C THRSOB(MSTMC,MSGAL) - outdoor side solar refl (diff to diff)
 C TMABSDIF(MSTMC,MSGAL,ME) - outdoor side diffuse solar absorptance for each layer
+c TMGVALUE(MSTMC,MSGAL,MANH,MANV) - total solar energy transmittance (g value)
+C TMREFLECT(MSTMC,MSGAL,MANH,MANV) - Reflectance
+C TUVALUE(MSTMC,MSGAL) - U value based on experimental Re and Ri
+C TREXTERNAL(MSTMC,MSGAL) - experimental external thermal resistance (from
+C                          measurements)
+C TRINTERNAL(MSTMC,MSGAL) - experimental internal thermal resistance (from
+C                          measurements)
+C TMVISUAL(MSTMC,MSGAL) - Visual transmittance for each set in case it is available.
+C                         Will use (in solar.F) default value 0.85 in case it 
+C                         is not included in the dataset. This is only used for 
+C                         daylight controls.
+C DF_TX_SKY is the diffuse transmittance for sky radiation
+C DF_G_SKY is the diffuse g-value for sky radiation
+C DF_RF_SKY is the diffuse reflectance for sky radiation
+C Similarly for DF_TX_GND, DF_G_GND and DF_RF_GND for ground reflected radiation
+C a_dfSKYinner and a_dfGNDinner are the inner layer absorptances for 
+C   sky and ground diffuse radiation
+C a_dfSKYouter and a_dfGNDouter are the inner layer absorptances for 
+C   sky and ground diffuse radiation
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
      &  NGANGS(MSTMC),TMTSOD(MSTMC,MSGAL,MANH,MANV),
      &  TMTSOB(MSTMC,MSGAL,MANH,MANV),TMABSO(MSTMC,MSGAL,ME,MANH,MANV),
-     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME)
-      
+     &  THTSOB(MSTMC,MSGAL),TMABSDIF(MSTMC,MSGAL,ME),
+     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
+     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
+     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL),
+     &  TMVISUAL(MSTMC,MSGAL)
+      COMMON/BITYPE/IBIDATATYPE       
+      integer IBIDATATYPE !thisis kept in a common block
+                          !It specifies what type of data to read
+                          !1: the existing transmittance and at different layers absorptance 
+                          !2: the transmittance, g value and reflectance 
+                          !3: the transmittance and g value only
+      COMMON/OPTDAT2/DF_TX_SKY(MSTMC,MSGAL),DF_G_SKY(MSTMC,MSGAL),
+     &  DF_RF_SKY(MSTMC,MSGAL),DF_TX_GND(MSTMC,MSGAL), 
+     &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
+     &  a_dfSKYinner(MSTMC,MSGAL),a_dfGNDinner(MSTMC,MSGAL),
+     &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
       character OUTSTR*124,OUTS*124,LUA*72,WORD*20
       character bidirfile*72,bidirname*12
+      logical bCloseToZero
+
+C New variables are defined below
+      integer ISETTYPE !this specifies what the set of data is about
+                       !For example 1 can be for 0 degrees slat angle
+                       !No rules have been defined for this.
+
+C explicit definition of some variables used in the egetwr 
+      real Uvalue_bi,Ri,Re,visual_transm 
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1225,6 +1268,39 @@ C TMABSDIF(MSTMC,MSGAL,ME) - outdoor side diffuse solar absorptance for each lay
       ENDIF
       write(currentfile,'(a)') LUA(1:lnblnk(LUA))
 
+C Initiate all parameters needed for simulation to 0
+      do 111 imstmc=1,MSTMC
+        do 222 imsgal=1,MSGAL
+          THTSOB(imstmc,imsgal)=0.
+          TUVALUE(imstmc,imsgal)=0.
+          TREXTERNAL(imstmc,imsgal)=0.
+          TRINTERNAL(imstmc,imsgal)=0.
+          TMVISUAL(imstmc,imsgal)=0.
+          DF_TX_SKY(imstmc,imsgal)=0.
+          DF_G_SKY(imstmc,imsgal)=0.
+          DF_RF_SKY(imstmc,imsgal)=0.
+          DF_TX_GND(imstmc,imsgal)=0.
+          DF_G_GND(imstmc,imsgal)=0.
+          DF_RF_GND(imstmc,imsgal)=0.
+          a_dfSKYinner(imstmc,imsgal)=0.
+          a_dfGNDinner(imstmc,imsgal)=0.
+          a_dfSKYouter(imstmc,imsgal)=0.
+          a_dfGNDouter(imstmc,imsgal)=0.
+          do 333 ime=1,ME
+            TMABSDIF(imstmc,imsgal,ime)=0.
+            do 444 imanh=1,MANH
+              do 555 imanv=1,MANV
+                TMABSO(imstmc,imsgal,ime,imanh,imanv)=0.
+                TMTSOD(imstmc,imsgal,imanh,imanv)=0.
+                TMTSOB(imstmc,imsgal,imanh,imanv)=0.
+                TMGVALUE(imstmc,imsgal,imanh,imanv)=0.
+                TMREFLECT(imstmc,imsgal,imanh,imanv)=0.
+  555         continue 
+  444       continue                
+  333     continue                 
+  222   continue       
+  111 continue
+  
 C Read header.
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'bi-optic header',IER)
       if(outstr(1:14).eq.'*BIDIRECTIONAL')then
@@ -1258,22 +1334,67 @@ C Read header.
         goto 42
       elseif(WORD(1:9).eq.'*end_item')then
         goto 42
+
+C 3 options: Te_g_rho, Te_g_only and existing: Te_abs_n_diffuse
+      elseif(WORD(1:9).eq.'*datatype')then
+        CALL EGETW(OUTSTR,K,WORD,'W','bi-type format',IFLAG)
+        if(WORD(1:16).eq.'Te_abs_n_diffuse')then
+
+C Existing format - keep reading as previously for existing bidirectional files        
+          IBIDATATYPE=1
+          goto 42
+        elseif(WORD(1:8).eq.'Te_g_rho')then
+          IBIDATATYPE=2
+
+C expect less columns and different type of data
+          goto 42
+        elseif(WORD(1:9).eq.'Te_g_only')then
+          IBIDATATYPE=3
+
+C expect less columns and different type of data
+          goto 42
+        else
+          IBIDATATYPE=1
+
+C Existing format - keep reading as previously for existing bidirectional files        
+          goto 42        
+        endif
       elseif(WORD(1:7).eq.'*layers')then
         CALL EGETWI(OUTSTR,K,IV,1,8,'W','bi-layers',IER)
         NGNTL(ibitype)=iv
         goto 42
       elseif(WORD(1:5).eq.'*sets')then
-        CALL EGETWI(OUTSTR,K,IV,1,2,'W','bi-sets',IER)
+        CALL EGETWI(OUTSTR,K,IV,1,20,'W','bi-sets',IER)
         NSGALFL(ibitype)=iv
         goto 42
       elseif(WORD(1:10).eq.'*start_set')then
         ibset=ibset+1
         goto 42
+      elseif(WORD(1:9).eq.'*set_type')then
+        CALL EGETWI(OUTSTR,K,IV,1,100,'W','set types',IER)
+        ISETTYPE=IV
+        goto 42
       elseif(WORD(1:8).eq.'*end_set')then
         goto 42
       elseif(WORD(1:9).eq.'*end_file')then
-        CALL ERPFREE(IUA,ISTAT)
-        return
+        goto 999
+      elseif(WORD(1:7).eq.'*Uvalue')then
+        CALL EGETWR(OUTSTR,K,Uvalue_bi,0.,1.,'-','u value ',IER)
+        TUVALUE(ibitype,ibset)=Uvalue_bi
+        goto 42
+      elseif(WORD(1:10).eq.'*Rexternal')then
+        CALL EGETWR(OUTSTR,K,Re,0.,1.,'-','Re experimental ',IER)
+        TREXTERNAL(ibitype,ibset)=Re
+        goto 42
+      elseif(WORD(1:10).eq.'*Rinternal')then
+        CALL EGETWR(OUTSTR,K,Ri,0.,1.,'-','Ri experimental ',IER)
+        TRINTERNAL(ibitype,ibset)=Ri
+        goto 42
+      elseif(WORD(1:7).eq.'*tauvis')then
+        CALL EGETWR(OUTSTR,K,visual_transm,0.,1.,'-','visual transm ',
+     &              IER)
+        TMVISUAL(ibitype,ibset)=visual_transm
+        goto 42
       elseif(WORD(1:12).eq.'*diffuse_abs')then
 
 C Get diffuse abs for each layer.
@@ -1311,25 +1432,343 @@ C        if(iv1.eq.37)idataloop=1369
         elseif(OUTSTR(1:9).eq.'*end_item')then
           goto 42
         else
-          CALL EGETWI(OUTSTR,K,IA1,-90,90,'W','bi-hoiz ang',IER)
+          CALL EGETWI(OUTSTR,K,IA1,-90,90,'W','bi-horiz ang',IER)
           ihangindex= (IA1/5)+19
           CALL EGETWI(OUTSTR,K,IA2,-90,90,'W','bi-vert ang',IER)
           ivangindex= (IA2/5)+19
-          CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
-          TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
-          do 143 ij=1,NGNTL(ibitype)
-            CALL EGETWR(OUTSTR,K,da,0.,1.,'-','direct abs',IER)
-            TMABSO(ibitype,ibset,ij,ihangindex,ivangindex)=da
- 143      continue
-          CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
-          TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
+          if(IBIDATATYPE.eq.1)then
+            CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
+            TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+            do 143 ij=1,NGNTL(ibitype)
+              CALL EGETWR(OUTSTR,K,da,0.,1.,'-','direct abs',IER)
+              TMABSO(ibitype,ibset,ij,ihangindex,ivangindex)=da
+ 143        continue
+            CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
+            TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
 C          write(6,*) ibitype,ibset,T1,T2
-          goto 44
+            goto 44
+          elseif(IBIDATATYPE.eq.2)then
+            CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
+            TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+            CALL EGETWR(OUTSTR,K,g,0.,1.,'-','g value',IER)
+            TMGVALUE(ibitype,ibset,ihangindex,ivangindex)=g
+            CALL EGETWR(OUTSTR,K,rho,0.,1.,'-','reflectance',IER)
+            TMREFLECT(ibitype,ibset,ihangindex,ivangindex)=rho
+            goto 44
+          elseif(IBIDATATYPE.eq.3)then
+            CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)
+            TMTSOD(ibitype,ibset,ihangindex,ivangindex)=T1
+            CALL EGETWR(OUTSTR,K,g,0.,1.,'-','g value',IER)
+            TMGVALUE(ibitype,ibset,ihangindex,ivangindex)=g
+            goto 44
+          endif
         endif
       endif
+     
+C Now calculate diffuse properties for birectional data types 2 and 3.
+C The calculation is done here so the assumption is that all surfaces are vertical
+c and also that the diffuse sky is isotropic.
+C Separate diffuse properties are calculated for ground and sky components. 
+C Could be improved later with a separate calculation for each surface, depending on its tilt.
+
+C Do for each bidirectional type (MSTMC).
+C Do for each dataset (MSGAL).
+ 999  IF(IBIDATATYPE.eq.2.or.IBIDATATYPE.eq.3) then
+        R=ATAN(1.0)/45.0
+        DO 200 ibidir=1,ibitype 
+        DO 201 ibset=1,NSGALFL(ibitype)
+
+C Firstly, focus on sky diffuse properties, for which solar altitude >=0.
+C Use Trapezoidal Rule twice, for double integral in formula
+C given by Kuhn T E, Energy and Buildings 38 (2006) pp648-660.
+C Note that the integrals for sky and ground are separated in the implementation below.
+          SUM1=0.0
+          SUM2=0.0
+          SUM3=0.0
+          SUM4=0.0
+          SUM5=0.0
+          SUM6=0.0
+
+C First of all for ivangindex=19 (i.e. solar altitude = 0deg) 
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,19)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,19)*cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,19)*cos(-90.0*R)
+          ENDIF
+
+          DO 202 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,19)*COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,19)*COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,19)*COSMULT1
+            ENDIF
+ 202      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,19)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,19)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,19)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(0.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(0.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(0.0*R))**2
+          SUM1=0.0
+          SUM2=0.0
+          SUM3=0.0
+
+C Now for ivangindex = 20 to 36 (i.e. solar altitude = +5deg to +85deg)         
+          DO 203 ivangindex=20,36
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,ivangindex)*cos(-90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            ENDIF
+            DO 204 ihangindex=2,36
+              COSMULT1=cos(5.0*real(ihangindex-19)*R)
+              SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
+              SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
+              IF (IBIDATATYPE.eq.2)then
+                SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,ivangindex)
+     &                    *COSMULT1
+              ENDIF
+204        CONTINUE
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,ivangindex)*cos(90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            ENDIF
+            SUM4=SUM4+SUM1*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM5=SUM5+SUM2*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM6=SUM6+SUM3*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM1=0.0
+            SUM2=0.0
+            SUM3=0.0
+ 203      CONTINUE
+
+C Finally for ivangindex = 37 (i.e. solar altitude = +90deg)
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,37)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,37)
+     &                *cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,37)
+     &                *cos(-90.0*R)
+          ENDIF
+         DO 205 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,37)
+     &               *COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,37)
+     &               *COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,37)
+     &                 *COSMULT1
+            ENDIF
+205      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,37)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,37)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,37)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(90.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(90.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(90.0*R))**2
+    
+C Multiply by constant terms to get diffuse properties.  
+          DF_TX_SKY(ibidir,ibset)=SUM4*0.5/atan(1.0)*(5.0*R)**2
+          DF_G_SKY(ibidir,ibset)=SUM5*0.5/atan(1.0)*(5.0*R)**2
+          DF_RF_SKY(ibidir,ibset)=SUM6*0.5/atan(1.0)*(5.0*R)**2
+
+C Now repeat for ground reflected properties.
+          SUM1=0.0
+          SUM2=0.0
+          SUM3=0.0
+          SUM4=0.0
+          SUM5=0.0
+          SUM6=0.0
+
+C First of all for ivangindex=1 (i.e. solar altitude = -90deg) 
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,1)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,1)*cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,1)*cos(-90.0*R)
+          ENDIF
+          DO 206 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,1)*COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,1)*COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,1)*COSMULT1
+            ENDIF
+ 206      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,1)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,1)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,9)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(-90.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(-90.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(-90.0*R))**2
+          SUM1=0.0
+          SUM2=0.0
+          SUM3=0.0
+
+C Now for ivangindex = 2 to 18 (i.e. solar altitude = -85deg to -5deg)         
+          DO 207 ivangindex=2,18
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,ivangindex)*cos(-90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,ivangindex)
+     &                  *cos(-90.0*R)
+            ENDIF
+            DO 208 ihangindex=2,36
+              COSMULT1=cos(5.0*real(ihangindex-19)*R)
+              SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
+              SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,ivangindex)
+     &                  *COSMULT1
+              IF (IBIDATATYPE.eq.2)then
+                SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,ivangindex)
+     &                    *COSMULT1
+              ENDIF
+ 208        CONTINUE
+            SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,ivangindex)*cos(90.0*R)
+            SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,ivangindex)
+     &                  *cos(90.0*R)
+            ENDIF
+            SUM4=SUM4+SUM1*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM5=SUM5+SUM2*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM6=SUM6+SUM3*(cos(5.0*real(ivangindex-19)*R))**2
+            SUM1=0.0
+            SUM2=0.0
+            SUM3=0.0
+ 207      CONTINUE
+
+C Finally for ivangindex = 19 (i.e. solar altitude = 0deg)
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,1,19)*cos(-90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,1,19)
+     &                *cos(-90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,1,19)
+     &                *cos(-90.0*R)
+          ENDIF
+          DO 209 ihangindex=2,36
+            COSMULT1=cos(5.0*real(ihangindex-19)*R)
+            SUM1=SUM1+TMTSOD(ibidir,ibset,ihangindex,19)
+     &               *COSMULT1
+            SUM2=SUM2+TMGVALUE(ibidir,ibset,ihangindex,19)
+     &               *COSMULT1
+            IF (IBIDATATYPE.eq.2)then
+              SUM3=SUM3+TMREFLECT(ibidir,ibset,ihangindex,19)
+     &                 *COSMULT1
+            ENDIF
+ 209      CONTINUE
+          SUM1=SUM1+0.5*TMTSOD(ibidir,ibset,37,19)*cos(90.0*R)
+          SUM2=SUM2+0.5*TMGVALUE(ibidir,ibset,37,19)*cos(90.0*R)
+          IF (IBIDATATYPE.eq.2)then
+            SUM3=SUM3+0.5*TMREFLECT(ibidir,ibset,37,19)*cos(90.0*R)
+          ENDIF
+          SUM4=SUM4+SUM1*0.5*(cos(0.0*R))**2
+          SUM5=SUM5+SUM2*0.5*(cos(0.0*R))**2
+          SUM6=SUM6+SUM3*0.5*(cos(0.0*R))**2
+    
+C Multiply by constant terms to get diffuse properties.  
+          DF_TX_GND(ibidir,ibset)=SUM4*0.5/atan(1.0)*(5.0*R)**2
+          DF_G_GND(ibidir,ibset)=SUM5*0.5/atan(1.0)*(5.0*R)**2
+          DF_RF_GND(ibidir,ibset)=SUM6*0.5/atan(1.0)*(5.0*R)**2
+
+C Calculate the layer absorptances for bidirectional datatypes 2 and 3
+C for both the sky and ground reflected components of diffuse radiation.
+C Get effective total absorptance from the interpolation of the solar
+C transmittance according to a method defined by Fraunhofer.
+C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
+C or g,te only). These calculations are repeated in solar.F for the direct
+C radiation at each timestep (because the transmissivity etc changes 
+C according to solar azimuth and solar altitude).
+        IF(IBIDATATYPE.EQ.2)THEN   
+          EFF_SKY_TOT_ABS=1.0-DF_TX_SKY(ibidir,ibset)
+     &                       -DF_RF_SKY(ibidir,ibset)
+          EFF_GND_TOT_ABS=1.0-DF_TX_GND(ibidir,ibset)
+     &                       -DF_RF_GND(ibidir,ibset)
+        ELSEIF(IBIDATATYPE.EQ.3)THEN
+          EFF_SKY_TOT_ABS=0.5*(1.0-DF_TX_SKY(ibidir,ibset))
+          EFF_GND_TOT_ABS=0.5*(1.0-DF_TX_GND(ibidir,ibset))
+        ENDIF  
+
+C Solar flux for bidirectional data (experimental conditions)
+C will be g value - transmittance
+        qi_SKY_bidir=DF_G_SKY(ibidir,ibset)-DF_TX_SKY(ibidir,ibset)
+        qi_GND_bidir=DF_G_GND(ibidir,ibset)-DF_TX_GND(ibidir,ibset)
+
+C Calculate the thermal resistance of the glazing based on the U values
+C Re and Ri values defined in the bidirectional data file
+C Trap also the zeros in case of corrupted data (will result to
+C a non-realistic Rs_glazing)
+        call eclose(TUVALUE(IBIDIR,ibset),0.0,0.001,bCloseToZero)
+        if(bCloseToZero)then
+          Rs_glazing=0.0-TREXTERNAL(ibidir,ibset)-
+     &       TRINTERNAL(ibidir,ibset)
+        else
+          Rs_glazing=(1.0/TUVALUE(ibidir,ibset))-
+     &       TREXTERNAL(ibidir,ibset)-TRINTERNAL(ibidir,ibset)
+        endif
+
+C Calculate the effective absorptance of the inner layer (based on
+C the experimental bidirectional data)
+C abs_in=(qi*(Re+Rs+Ri)-abs_tot*Re)/Rs
+C Trap also the zeros in case of corrupted data
+        call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+        if(bCloseToZero)then
+          a_dfSKYinner(ibidir,ibset)=0.0
+          a_dfGNDinner(ibidir,ibset)=0.0
+        else
+          a_dfSKYinner(ibidir,ibset)=(qi_SKY_bidir*
+     &      (TREXTERNAL(ibidir,ibset)+
+     &      Rs_glazing+TRINTERNAL(ibidir,ibset))-
+     &      EFF_SKY_TOT_ABS*TREXTERNAL(ibidir,ibset))/Rs_glazing
+          a_dfGNDinner(ibidir,ibset)=(qi_GND_bidir*
+     &      (TREXTERNAL(ibidir,ibset)+
+     &      Rs_glazing+TRINTERNAL(ibidir,ibset))-
+     &      EFF_GND_TOT_ABS*TREXTERNAL(ibidir,ibset))/Rs_glazing
+         endif
+
+C Calculate the effective absorptance of the outer layer (based on
+C the experimental bidirectional data)
+C abs_out=abs_tot*(Re+Rs)-qi(Re+Rs+Ri)/Rs
+C Trap also the zeros in case of corrupted data
+        call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+        if(bCloseToZero)then
+          a_dfSKYouter(ibidir,ibset)=0.0
+          a_dfGNDouter(ibidir,ibset)=0.0
+        else
+          a_dfSKYouter(ibidir,ibset)=
+     &      (EFF_SKY_TOT_ABS*(TREXTERNAL(ibidir,ibset)+
+     &      Rs_glazing)-qi_SKY_bidir*
+     &      (TREXTERNAL(ibidir,ibset)+Rs_glazing+
+     &      TRINTERNAL(ibidir,ibset)))/Rs_glazing
+          a_dfGNDouter(ibidir,ibset)=
+     &      (EFF_GND_TOT_ABS*(TREXTERNAL(ibidir,ibset)+
+     &      Rs_glazing)-qi_GND_bidir*
+     &      (TREXTERNAL(ibidir,ibset)+Rs_glazing+
+     &      TRINTERNAL(ibidir,ibset)))/Rs_glazing
+        endif
+
+  201   CONTINUE
+  200   CONTINUE
+      ENDIF
 
 c Free file.
  1000 CALL ERPFREE(IUA,ISTAT)
       RETURN
   
       end
+
