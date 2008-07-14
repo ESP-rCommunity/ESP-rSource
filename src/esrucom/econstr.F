@@ -1713,7 +1713,7 @@ C Calculate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
 C Trap also the zeros in case of corrupted data (will result to
 C a non-realistic Rs_glazing)
-        call eclose(TUVALUE(IBIDIR,IBISET),0.0,0.001,bCloseToZero)
+        call eclose(TUVALUE(IBIDIR,ibset),0.0,0.001,bCloseToZero)
         if(bCloseToZero)then
           Rs_glazing=0.0-TREXTERNAL(ibidir,ibset)-
      &       TRINTERNAL(ibidir,ibset)
