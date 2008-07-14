@@ -1251,6 +1251,7 @@ C   sky and ground diffuse radiation
      &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
       character OUTSTR*124,OUTS*124,LUA*72,WORD*20
       character bidirfile*72,bidirname*12
+      logical bCloseToZero
 
 C New variables are defined below
       integer ISETTYPE !this specifies what the set of data is about
@@ -1712,7 +1713,8 @@ C Calculate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
 C Trap also the zeros in case of corrupted data (will result to
 C a non-realistic Rs_glazing)
-        if(TUVALUE(ibidir,ibset).eq.0.0)then
+        call eclose(TUVALUE(IBIDIR,IBISET),0.0,0.001,bCloseToZero)
+        if(bCloseToZero)then
           Rs_glazing=0.0-TREXTERNAL(ibidir,ibset)-
      &       TRINTERNAL(ibidir,ibset)
         else
@@ -1724,7 +1726,8 @@ C Calculate the effective absorptance of the inner layer (based on
 C the experimental bidirectional data)
 C abs_in=(qi*(Re+Rs+Ri)-abs_tot*Re)/Rs
 C Trap also the zeros in case of corrupted data
-        if(Rs_glazing.eq.0.0) then
+        call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+        if(bCloseToZero)then
           a_dfSKYinner(ibidir,ibset)=0.0
           a_dfGNDinner(ibidir,ibset)=0.0
         else
@@ -1742,7 +1745,8 @@ C Calculate the effective absorptance of the outer layer (based on
 C the experimental bidirectional data)
 C abs_out=abs_tot*(Re+Rs)-qi(Re+Rs+Ri)/Rs
 C Trap also the zeros in case of corrupted data
-        if(Rs_glazing.eq.0.) then
+        call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+        if(bCloseToZero)then
           a_dfSKYouter(ibidir,ibset)=0.0
           a_dfGNDouter(ibidir,ibset)=0.0
         else

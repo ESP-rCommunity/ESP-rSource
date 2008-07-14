@@ -28,6 +28,7 @@ C EBCNTRL : Edit building control function
 C EPCNTRL : Edit plant control function
 C EFCNTRL : Edit flow control function
 C EGCNTRL : Edit global control function
+C EOCNTRL: Edit optical control function
 C SENLOC : Returns sensor location depending upon control domain
 C ACTLOC : Returns actuator location depending upon control domain
 c ASKMFCTM : Asks for one or more contaminants
@@ -2747,9 +2748,6 @@ C Number of optical functions and day type must be > 0.
 C Optical control day types.
       J=IV
       JJ=J
-C<<<<<<Next line is probably dublication.. delete? >>>>>>>>>>>>>>
-      LL=nocdp(II,JJ)
-
       logic_cminitial=.false.
 C Logical needed to initialiase cm arrays
 C This initialiasation applies only to ioclaw=2. It will have to change in the future
@@ -5499,6 +5497,19 @@ C Light Switch (manual blind control)
 
 C Lux level control
             isn1=-9
+C Senses incident solar radiation on a surface.
+C Ask for the specific zone.
+            CALL EPMENSV
+            idef=0
+            call askzone(isn2,idef,
+     &    'Specific zone associated with this sensor','Select zone','-',
+     &    'Specific zone',ier)
+            CALL EPMENRC
+            SELECT=.TRUE.
+            CALL EPMENSV
+            call EASKSUR(isn2,isn3,'-','Available surfaces.',' ',IER)
+            CALL EPMENRC
+            nsup=0
           endif
         end do
 

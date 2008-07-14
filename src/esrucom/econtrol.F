@@ -1827,11 +1827,11 @@ C <<<<<<<error messages for optical controls still to be implemented >>>>>>>>
      &       ' offending line was')
       CALL USRMSG(OUTS,OUTSTR,'W')
 
-C Message for optical controls
- 5000 WRITE(OUTS,5001)iof,nocdt(ii)
- 5001 FORMAT(' Optical control functions',I3,' day type',I3,': the',
-     &       ' offending line was')
-      CALL USRMSG(OUTS,OUTSTR,'W')
+C "Future" message for optical controls
+C 5000 WRITE(OUTS,5001)iof,nocdt(ii)
+C 5001 FORMAT(' Optical control functions',I3,' day type',I3,': the',
+C     &       ' offending line was')
+C      CALL USRMSG(OUTS,OUTSTR,'W')
 
  1111 CALL USRMSG(' ',' Returning to menu. ','W')
       IER=1
@@ -3823,9 +3823,10 @@ C<<<< Until here
           SSTR='senses radiation at outside of surface.'
           SSTRB='senses incident rad.'
         ELSEIF(icsn(1).EQ.-8)THEN
-
-C<<<<<<<<<Change the next line to "senses lux levels"?????>>>>>>>>
           SSTR='senses lux via daylight coef. method.'
+          SSTRB='senses lux levels'
+        ELSEIF(icsn(1).EQ.-9)THEN
+          SSTR='senses lux levels.'
           SSTRB='senses lux levels'
         ELSE
 C<<<< Not sure if next line is needed

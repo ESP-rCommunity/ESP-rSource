@@ -210,7 +210,7 @@ C For optical controls
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
      &       omiscd(mol,mocdt,mocdp,misc)
-
+     
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
@@ -795,7 +795,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -1053,9 +1053,9 @@ C transmittance according to a method defined by Fraunhofer.
 C Do it only in cases of bidirectional datatypes 2 and 3 (g,te,rho
 C or g,te only)
                 IF(IBIDATATYPE.EQ.2)THEN   
-                  EFF_TOT_ABS=1-X_tr_interp-XREFLECT_interp
+                  EFF_TOT_ABS=1.-X_tr_interp-XREFLECT_interp
                 ELSEIF(IBIDATATYPE.EQ.3)THEN
-                  EFF_TOT_ABS=0.5*(1-X_tr_interp)
+                  EFF_TOT_ABS=0.5*(1.-X_tr_interp)
                 ENDIF  
 
 C Solar flux for bidirectional data (experimental conditions)
@@ -1066,7 +1066,9 @@ C Calculate the thermal resistance of the glazing based on the U values
 C Re and Ri values defined in the bidirectional data file
 C Trap also the zeros in case of corrupted data (will result to
 C a non-realistic Rs_glazing)
-                if(TUVALUE(IBIDIR,IBISET_timestep).eq.0.)then
+                call eclose(TUVALUE(IBIDIR,IBISET_timestep),0.0,0.001,
+     &                bCloseToZero)
+                if(bCloseToZero)then
                   Rs_glazing=0-TREXTERNAL(IBIDIR,IBISET_timestep)-
      &               TRINTERNAL(IBIDIR,IBISET_timestep)
                 else
@@ -1079,7 +1081,8 @@ C Calculate the effective absorptance of the inner layer (based on
 C the experimental bidirectional data)
 C abs_in=(qi*(Re+Rs+Ri)-abs_tot*Re)/Rs
 C Trap also the zeros in case of corrupted data
-                if(Rs_glazing.eq.0.) then
+                call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+                if(bCloseToZero)then
                   a_inner_layer=0.
                 else
                   a_inner_layer=
@@ -1093,7 +1096,8 @@ C Calculate the effective absorptance of the outer layer (based on
 C the experimental bidirectional data)
 C abs_out=abs_tot*(Re+Rs)-qi(Re+Rs+Ri)/Rs
 C Trap also the zeros in case of corrupted data
-                if(Rs_glazing.eq.0.)then
+                call eclose(Rs_glazing,0.0,0.001,bCloseToZero)
+                if(bCloseToZero)then
                   a_outer_layer=0.
                 else
                   a_outer_layer=
@@ -3366,7 +3370,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0Â°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
@@ -3455,11 +3459,8 @@ C For optical controls
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-
+      character*10 wkd1, wkd2
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
-
-      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
-     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
 C Daylight coeff specific common block data definition:
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
@@ -3485,8 +3486,6 @@ C Daylight coeff specific
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
       CHARACTER DESC*48
-c      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-c      CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124
@@ -3501,13 +3500,15 @@ c      CHARACTER SPARENT*12
                                         !(i.e. one for each of the 6 datasets for bidirectional sets)
       integer i_ctlZone  !This is used when the sensor is located to another zone and indicates 
                          !which zone. It will take the value of iosn(1,1).
-     
+
+      integer IDAYPD
+           
 C If there is a tdf item that defines which bidirectional dataset 
 C to use then use it. Otherwise use the first set.
       if(IBIDIRS(ICOMP,ISURFNumber).ne.0)then
         IFOC=IBIDIRS(ICOMP,ISURFNumber)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-        ISET=VAL(ISD)
+        ISET=int(VAL(ISD))
 
 C Check that there is not any tdf bidirectional item associated with it
 C and that there are common optical controls
@@ -3597,17 +3598,17 @@ C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
  
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,2))then                      
-                      ISET=OMISCD(1,IDTYP,IPER,3)
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,4))then
-                      ISET=OMISCD(1,IDTYP,IPER,5)
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,6))then
-                      ISET=OMISCD(1,IDTYP,IPER,7)                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))                      
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,8))then
-                      ISET=OMISCD(1,IDTYP,IPER,9)
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,10))then
-                      ISET=OMISCD(1,IDTYP,IPER,11)
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,12))then
-                      ISET=OMISCD(1,IDTYP,IPER,13)
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
                     else
                       ISET=1
                     endif
@@ -3616,17 +3617,17 @@ C Allow max 6 setpoints and datasets to be used for the moment.
 C Senses outside db.
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(TF.GT.OMISCD(1,IDTYP,IPER,2))then                      
-                      ISET=OMISCD(1,IDTYP,IPER,3)
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,4))then
-                      ISET=OMISCD(1,IDTYP,IPER,5)
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,6))then
-                      ISET=OMISCD(1,IDTYP,IPER,7)                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))                     
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,8))then
-                      ISET=OMISCD(1,IDTYP,IPER,9)
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,10))then
-                      ISET=OMISCD(1,IDTYP,IPER,11)
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,12))then
-                      ISET=OMISCD(1,IDTYP,IPER,13)
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
                     else
                       ISET=1
                     endif
@@ -3635,6 +3636,7 @@ C Sense incident solar radiation on a surface
 C Find out first which surface
                   elseif(iosn(1,1).eq.icomp.and.iosn(1,2).eq.
      &                   ISURFNumber)then 
+     
 C Calculate now radiation on the surface (as in MZSLGN)
 C First calculate the shading factor on the surface
 C Using the same calculation for POO and POFF as in MZSLGN
@@ -3646,21 +3648,21 @@ C Using the same calculation for POO and POFF as in MZSLGN
                       shd_pof_fctr_ctl=POF(ICOMP,ISURFNumber,IHRF)
                     endif
                     rad_on_surf=SRADDO*(1.-shd_po_fctr_ctl)
-     &                         +SRADF*(1-shd_pof_fctr_ctl)                                       
+     &                         +SRADF*(1.-shd_pof_fctr_ctl)                                       
 
 C Allow max 6 setpoints and datasets to be used for the moment.
                     if(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,2))then                      
-                      ISET=OMISCD(1,IDTYP,IPER,3)
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,4))then
-                      ISET=OMISCD(1,IDTYP,IPER,5)
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,6))then
-                      ISET=OMISCD(1,IDTYP,IPER,7)                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))                      
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,8))then
-                      ISET=OMISCD(1,IDTYP,IPER,9)
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,10))then
-                      ISET=OMISCD(1,IDTYP,IPER,11)
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,12))then
-                      ISET=OMISCD(1,IDTYP,IPER,13)
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
                     else
                       ISET=1
                     endif
@@ -3679,6 +3681,19 @@ C Calculates visible transmittance based on lux setpoint value
 C If above the original value (which may be 0.!!) then takes the visible
 C transmittance from the set specified in the control file. It also returns the
 C set back to use for all bidirectional calculations
+
+C Find out first which surface
+                    if(iosn(1,2).eq.icomp.and.iosn(1,3).eq.
+     &                   ISURFNumber)then 
+
+C Calculate sensor illuminance - daylight coefficient method:
+C Find which daylight coefficient set to use (use stage 1 i.e.
+C maximal visible transmittance stage):
+
+C****Attention: NDCP assignment needs further testing
+C****is ISURFNumber for this assignment similar to the conventional TMC controls
+                      NDCP = ISURFNumber
+                    endif
 
 C Assume casual gains untouched and establish solar data for correct
 C time-row.  For conversion from radians to degrees.
@@ -3808,41 +3823,50 @@ C and "tidy-up" reasons
      &                 ((OMISCD(1,IDTYP,IPER,10))/ELLUM)*TMVISUAL(1,1)
                       TVT6=
      &                 ((OMISCD(1,IDTYP,IPER,12))/ELLUM)*TMVISUAL(1,1)
-                      if(TVT.GT.TMVISUAL(1,OMISCD(1,IDTYP,IPER,3)))then
-                        TMVISUAL(1,OMISCD(1,IDTYP,IPER,3))=TVT
-                        ISET=OMISCD(1,IDTYP,IPER,3)
-                      elseif(TVT.LE.TMVISUAL(1,OMISCD(1,IDTYP,IPER,3)))
+                      if(TVT.GT.TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3))))
      &                  then
-                        if(TVT2.GT.TMVISUAL(1,OMISCD(1,IDTYP,IPER,5)))
-     &                    then
-                          TMVISUAL(1,OMISCD(1,IDTYP,IPER,5))=TVT2     
-                          ISET=OMISCD(1,IDTYP,IPER,5)
+                        TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3)))=TVT
+                        ISET=int(OMISCD(1,IDTYP,IPER,3))
+                      elseif(TVT.LE.
+     &                  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3))))then
+                        if(TVT2.GT.
+     &                    TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,5))))then
+                          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,5)))=TVT2     
+                          ISET=int(OMISCD(1,IDTYP,IPER,5))
                         elseif(TVT2.LE.
-     &                    TMVISUAL(1,OMISCD(1,IDTYP,IPER,5)))then
-                          if(TVT3.GT.TMVISUAL(1,OMISCD(1,IDTYP,IPER,7)))
-     &                      then
-                            TMVISUAL(1,OMISCD(1,IDTYP,IPER,7))=TVT3                         
-                            ISET=OMISCD(1,IDTYP,IPER,7)
+     &                    TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,5))))then
+                          if(TVT3.GT.
+     &                      TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,7))))then
+                            TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,7)))=TVT3                        
+                            ISET=int(OMISCD(1,IDTYP,IPER,7))
                           elseif(TVT3.LE.
-     &                      TMVISUAL(1,OMISCD(1,IDTYP,IPER,7)))then
+     &                      TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,7))))then
                             if(TVT4.GT.
-     &                        TMVISUAL(1,OMISCD(1,IDTYP,IPER,9)))then
-                              TMVISUAL(1,OMISCD(1,IDTYP,IPER,9))=TVT4                         
-                              ISET=OMISCD(1,IDTYP,IPER,9)
+     &                        TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,9))))
+     &                        then
+                              TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,9)))=
+     &                        TVT4                 
+                              ISET=int(OMISCD(1,IDTYP,IPER,9))
                             elseif(TVT4.LE.
-     &                        TMVISUAL(1,OMISCD(1,IDTYP,IPER,9)))then
+     &                        TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,9))))
+     &                        then
                               if(TVT5.GT.
-     &                          TMVISUAL(1,OMISCD(1,IDTYP,IPER,11)))then
-                                TMVISUAL(1,OMISCD(1,IDTYP,IPER,11))=TVT5                         
-                                ISET=OMISCD(1,IDTYP,IPER,11)
+     &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11))))
+     &                          then
+                               TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11)))=
+     &                          TVT5                         
+                                ISET=int(OMISCD(1,IDTYP,IPER,11))
                               elseif(TVT5.LE.
-     &                          TMVISUAL(1,OMISCD(1,IDTYP,IPER,11)))then
+     &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11))))
+     &                          then
+
+C Identation has been slightly changed here
                                 if(TVT6.GT.
-     &                            TMVISUAL(1,OMISCD(1,IDTYP,IPER,13)))
+     &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13))))
      &                            then
-                                  TMVISUAL(1,OMISCD(1,IDTYP,IPER,13))=
+                               TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13)))=
      &                            TVT6                         
-                                  ISET=OMISCD(1,IDTYP,IPER,13)
+                                  ISET=int(OMISCD(1,IDTYP,IPER,13))
                                 else
                                   continue
                                 endif
@@ -3858,21 +3882,22 @@ C Sense temperature in another zone
                                    
 C iosn(1,1) will specify which zone
                     i_ctlZone=iosn(1,1)
-C Allow max 6 setpoints and datasets to be used for the moment.
+
+C Allow max 6 setpoints and datasets to be used for the moment.                                        
                     if(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,2))then                      
-                      ISET=OMISCD(1,IDTYP,IPER,3)
+                      ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,4))then
-                      ISET=OMISCD(1,IDTYP,IPER,5)
+                      ISET=int(OMISCD(1,IDTYP,IPER,5))
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,6))then
-                      ISET=OMISCD(1,IDTYP,IPER,7)                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,7))
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,8))then
-                      ISET=OMISCD(1,IDTYP,IPER,9)
+                      ISET=int(OMISCD(1,IDTYP,IPER,9))
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,10))
      &                then
-                      ISET=OMISCD(1,IDTYP,IPER,11)
+                      ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,12))
      &                then
-                      ISET=OMISCD(1,IDTYP,IPER,13)
+                      ISET=int(OMISCD(1,IDTYP,IPER,13))
                     else
                       ISET=1
                     endif                  
