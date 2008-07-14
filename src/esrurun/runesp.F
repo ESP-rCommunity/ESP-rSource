@@ -49,7 +49,7 @@ C ************************************************************
 #include "uncertainty.h"
 #include "espriou.h"
 #include "esprdbfile.h"
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

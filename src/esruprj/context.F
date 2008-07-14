@@ -1221,7 +1221,9 @@ C temporal data to be associated with a model.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS) 
+     
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)  
 
@@ -1256,6 +1258,8 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       character*34 ITEMS(7)
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -1339,7 +1343,7 @@ C and present a different interface depending on file type.
       H(28)=' CASUALT - zone casual gains (combined gains)'
       H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
       H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
-      H(31)=' ACTIVITY -global database: gains,setpoints, etc.'
+      H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
       H(32)=' '
       H(33)='manage associations - you can add and delete associations'
       H(34)='  that have been previously defined. Note this does not'

@@ -110,10 +110,12 @@ C Controls.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -167,6 +169,7 @@ C Controls.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character ltpath*72,filen*72
+      integer ictl
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -187,7 +190,7 @@ C are active.
       if(iairn.ge.1)nets=nets+1
       if(ientxist.gt.0)nets=nets+1
       ictl=0
-      ictl=ncf+ncl+ncc+ngf
+      ictl=ncf+ncl+ncc+ngf+nof
       IER=0
       WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
       IF(INDCFG.EQ.0)THEN 
@@ -242,24 +245,29 @@ C are active.
       else
         WRITE(ITEMS(15),'(A,I2,A)')'l network flow (',ncc,' loops)'
       endif
-      if(ngf.eq.0)then
-        WRITE(ITEMS(16),'(A)')     'm global system '
+      if(nof.eq.0)then
+        WRITE(ITEMS(16),'(A)')     'm optics                '
       else
-        WRITE(ITEMS(16),'(A,I2,A)')'m global system (',ngf,' loops)'
+        WRITE(ITEMS(16),'(A,I2,A)')'m optics (',nof,' loops)'
       endif
-      WRITE(ITEMS(17),'(A)')       ' _____________________________   '
-      ITEMS(18)  ='n define uncertainties         '
-      ITEMS(19)  =' _____________________________ '
-      ITEMS(20)  =' ... Actions.....              '
-      ITEMS(21)  ='o visualisation                '
-      ITEMS(22)  ='p simulation                   '
-      ITEMS(23)  ='q results analysis             '
-      ITEMS(24)  ='r results & QA reporting       '
-      ITEMS(25)  =' _____________________________ '
-      ITEMS(26)  ='! save model                   '
-      ITEMS(27)  ='? help                         '
-      ITEMS(28)  ='- exit this menu               '
-      nitems=28
+      if(ngf.eq.0)then
+        WRITE(ITEMS(17),'(A)')     'n global system '
+      else
+        WRITE(ITEMS(17),'(A,I2,A)')'n global system (',ngf,' loops)'
+      endif
+      WRITE(ITEMS(18),'(A)')       ' _____________________________   '
+      ITEMS(19)  ='o define uncertainties         '
+      ITEMS(20)  =' _____________________________ '
+      ITEMS(21)  =' ... Actions.....              '
+      ITEMS(22)  ='p visualisation                '
+      ITEMS(23)  ='q simulation                   '
+      ITEMS(24)  ='r results analysis             '
+      ITEMS(25)  ='s results & QA reporting       '
+      ITEMS(26)  =' _____________________________ '
+      ITEMS(27)  ='! save model                   '
+      ITEMS(28)  ='? help                         '
+      ITEMS(29)  ='- exit this menu               '
+      nitems=29
 
 C Help text for this menu.
       H(1)='A model, as defined within the system configuration file,'
@@ -937,15 +945,19 @@ C Flow control description.
         CTLOK=.TRUE.
       ELSEIF(INO.EQ.16)THEN
 
+C Optical control description.
+        call tstamp('>','PRJ: enter optics control')
+        icfoc=5
+        CALL CONTRL(ITRC,ITRU,icfoc,IER)
+        CTLOK=.TRUE.
+      ELSEIF(INO.EQ.17)THEN
+
 C Global control description.
         call tstamp('>','PRJ: enter global control')
         icfoc=3
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.17)THEN
-
-C Optical << future position >>.
-      ELSEIF(INO.EQ.18)THEN
+      ELSEIF(INO.EQ.19)THEN
 
 C Call uncertainty definition controller.
         H(1)='This option is password protected because it is'
@@ -957,7 +969,7 @@ C Call uncertainty definition controller.
           call tstamp('>','PRJ: enter uncertainty control')
           call UNCERTA(LUALF)
         endif
-      ELSEIF(INO.EQ.21)THEN
+      ELSEIF(INO.EQ.22)THEN
 
 C Select visualisation option.
         IF(CFGOK)THEN
@@ -977,12 +989,12 @@ C Select visualisation option.
           CALL USRMSG(' ','Please define your model first!','W')
         ENDIF
         goto 3
-      ELSEIF(INO.EQ.22)THEN
+      ELSEIF(INO.EQ.23)THEN
 
 C Call simulation controller.
         call tstamp('>','PRJ: enter simulation setup')
         call simula(ier)
-      ELSEIF(INO.EQ.23)THEN
+      ELSEIF(INO.EQ.24)THEN
 
 C Call results analysis module assuming same simulation parameter
 C set as the last simulation. If isset not instanciated then set = 1.
@@ -1137,7 +1149,7 @@ C an offset from prj start position.
         call usrmsg('Starting assessment recovery via',doit,'-')
         call runit(doit,tmode)
 
-      ELSEIF(INO.EQ.24)THEN
+      ELSEIF(INO.EQ.25)THEN
 
 C Execute editor and report generation tools.
         call tstamp('>','PRJ: enter report controller')

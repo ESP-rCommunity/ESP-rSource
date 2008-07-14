@@ -45,7 +45,7 @@ C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
-      PARAMETER (MSTMC=1,MSGAL=1)
+      PARAMETER (MSTMC=20,MSGAL=40)
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

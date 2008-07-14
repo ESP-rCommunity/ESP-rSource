@@ -44,7 +44,7 @@ C default file names for databases
 C espriou.h provides currentfile.
 #include "lookup_data.h"
 
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
