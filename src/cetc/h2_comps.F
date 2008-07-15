@@ -128,7 +128,7 @@ C plant control variables as specified in the .pln file.
 C------------------------------------------------------------------------------------
 
 
-        iNumCtlVar = 2
+        iNumCtlVar = 3
 
         if ( NCI(IPCOMP) .NE. iNumCtlVar ) then
            WRITE(IUOUT,*) 'H2_electrolyser__static_temp : incorrect',
@@ -274,6 +274,8 @@ C*******************************************************************************
 
 #include "plant.h"
 #include "building.h"
+#include "chemical_properties.h"
+
 
 C External functions.     
       integer lnblnk
@@ -465,10 +467,19 @@ C------------------------------------------------------------------------------
        REAL      fInitAge         !- age of the electrolyser (seconds of operation)
                                   !- at the start of the simulation (s)
 
-       REAL      fAuxPowerCoeffW0 !- auxiliary power coefficient W0 (W)
-       REAL      fAuxPowerCoeffW1 !- auxiliary power coefficient W1 (-)
+       REAL      fAuxACPowerCoeffW0 !- auxiliary AC power coefficient W0 (W)
+       REAL      fAuxACPowerCoeffW1 !- auxiliary AC power coefficient W1 (-)
+       REAL      fAuxDCPowerCoeffW0 !- auxiliary DC power coefficient W0 (W)
+       REAL      fAuxDCPowerCoeffW1 !- auxiliary DCpower coefficient W1 (-)
+
+
        REAL      fMinPower        !- minimum protective power when electrolyser is in standby mode (W)
-       REAL      fStackPower      !- power demand of electrolyser stack (W)
+       REAL      fMaxStackPower   !- maximum power demand of electrolyser stack (W)
+                                  !- if mode of operation is constant current (1) then this is the
+                                  !- power demand of stack. if mode of operation is variable current (2)
+                                  !- then this is the maximum capacity of the stack.   
+
+       REAL      fStackPower      !- power consumed by electrolyser stack (W)
  
        REAL      fO2CoeffA0       !- O2 production rate coefficient A0 (mol/s)
        REAL      fO2CoeffA1       !- O2 production rate coefficient A1 (-)
@@ -478,7 +489,7 @@ C------------------------------------------------------------------------------
        REAL      fH2OCoeffB1      !- H2O consumption rate coefficient B1 (-)
        REAL      fH2OCoeffB2      !- H2O consumption rate coefficient B2 (s/mol)
 
-       REAL      fTempInletStack  !- inlet temperature of water supplied to the electrolyser stack (oC)
+       REAL      fStackOpTemp     !- electrolyser stack operating temperature (oC)
 
 
        REAL      fQgenCoeffF0     !- internal heat generation coefficient F0 (W)
@@ -514,6 +525,12 @@ C------------------------------------------------------------------------------
 
        REAL      fVoltage         !- operating voltage of electrolyser (V)
 
+       INTEGER   iOpMode          !- mode of operation of electrolyzer: 1 = constant current;
+                                  !- 2 = variable current
+
+       INTEGer   iFeedWaterHtg    !- flag indicating if feed water is heated with electric 
+                                  !- resistance heating (0=no, 1=yes)
+
        INTEGER   iNumADATAItems   !- number of ADATA items for this plant component
 
 
@@ -524,31 +541,33 @@ C------------------------------------------------------------------------------
        REAL      fTemp_node2      !- temperature of node 2 (oC)
        REAL      fTemp_node3      !- temperature of node 3 (oC)
 
-       REAL      fPowerAux        !- power required by auxiliary equipment (W)
+       REAL      fDCPowerAux      !- DC power required by auxiliary equipment (W)
+       REAL      fACPowerAux      !- AC power required by auxiliary equipment (W)
+       REAL      fPowerAux        !- total power required by auxiliary equipment (W)
 
        REAL      fPresentTime     !- time electrolyser operates during simulation (s)
 
        REAL      fElecEfficiency  !- electrical efficiency of the electrolyser
        REAL      fH2_HHV          !- higher heating value of hydrogen (J/mol)
-       PARAMETER( fH2_HHV = 286050 )     !- J/mol (Zittel and Werner, 1996)
+       save      fH2_HHV
 
        REAL      fH2NetFlow_mols  !- net production rate of hydrogen (mol/s)
        REAL      fH2NetFlow_kgs   !- net production rate of hydrogen (kg/s)
 
        REAL      fH2_MolWeight    !- molecular weight of hydrogen (kg/mol)
-       PARAMETER( fH2_MolWeight = 0.002106 ) !- kg/mol (Van Wylen, 1994)
+       save      fH2_MolWeight
 
        REAL      fO2NetFlow_mols  !- net production rate of oxygen (mol/s)
        REAL      fO2NetFlow_kgs   !- net production rate of oxygen (kg/s)
 
        REAL      fO2_MolWeight    !- molecular weight of oxygen (kg/mol)
-       PARAMETER( fO2_MolWeight = 0.031999 ) !- kg/mol (Van Wylen and Sonntag, 1985)
+       save      fO2_MolWeight
 
        REAL      fH2OTotalFlow_mols  !- total consumption rate of water (mol/s)
        REAL      fH2OTotalFlow_kgs   !- total consumption rate of water (kg/s)
 
        REAL      fH2O_MolWeight   !- molecular weight of water (kg/mol)
-       PARAMETER( fH2O_MolWeight = 0.0180155 ) !- kg/mol (Van Wylen and Sonntag, 1985)
+       save      fH2O_MolWeight
 
        REAL      H2OLiquidEnthalpy   !- function calculates standard enthalpy of
                                      !- liquid water (kJ/mol)
@@ -626,11 +645,20 @@ C------------------------------------------------------------------------------
        REAL      fQloss_present      !- Heat loss to ambient (W) at present time-step
 
 
+       REAL      fControlSignal      !- Power available to electrolyzer (W). Only applicable
+                                     !- if the electrolyzer operating mode = 2 (variable current)
+
+
 C......Variables used for XML output
        CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
        character*128 root_name       ! root name of component node 
        character*128 hold_name       ! temporary variable for string manipulation
 
+C.....Functions
+      real fEval_Compound_HV      ! Function returning the heating
+                                  !   value of a compound (J/kmol)
+      real fEval_Compound_MM      ! Function returning the molar mass
+                                  !   of a compound (kg/kmol)
 
 
 C-------------------------------------------------------------------------------
@@ -657,11 +685,11 @@ C .........Parametric coefficients for efficiency
 C..........Age of electrolyser at start of simulation
            fInitAge         = ADATA( IPCOMP, 7 )
 
-C......... Power coefficients, minimum protective power and stack power demand
-           fAuxPowerCoeffW0 = ADATA( IPCOMP, 8 )
-           fAuxPowerCoeffW1 = ADATA( IPCOMP, 9 )
+C......... Auxiliary AC Power coefficients, minimum protective power and stack power demand
+           fAuxACPowerCoeffW0 = ADATA( IPCOMP, 8 )
+           fAuxACPowerCoeffW1 = ADATA( IPCOMP, 9 )
            fMinPower        = ADATA( IPCOMP, 10 )
-           fStackPower      = ADATA( IPCOMP, 11 )
+           fMaxStackPower   = ADATA( IPCOMP, 11 )
 
 C..........Parametric coefficients for oxygen production rate
            fO2CoeffA0       = ADATA( IPCOMP, 12 )
@@ -674,7 +702,7 @@ C..........Parametric coefficients for water consumption rate
            fH2OCoeffB2      = ADATA( IPCOMP, 17 )
 
 C..........Temperature of water supplied to electrolyser stack
-           fTempInletStack  = ADATA( IPCOMP, 18 )
+           fStackOpTemp     = ADATA( IPCOMP, 18 )
 
 
 C..........Parametric coefficients to calculate internal heat generation
@@ -701,11 +729,53 @@ C..........Parametric coefficients to calculate heat rejected to cooling water
            fHRCoeffG8       = ADATA( IPCOMP, 35 )
 
 C..........Characteristics of water fed to electrolyser
-           iTempFlag        = ADATA( IPCOMP, 36 )
+           iTempFlag        = int(ADATA( IPCOMP, 36 ))
            fTempInlet       = ADATA( IPCOMP, 37 )
 
 C..........Operating voltage of electrolyser
            fVoltage         = ADATA( IPCOMP, 38 )
+
+C..........Operating mode of electrolyser (1=Constant current, 2= Variable current)
+           iOpMode          = int(ADATA( IPCOMP, 39 ))
+
+C..........Flag indicating if water fed to electrolyzer is heated
+           iFeedWaterHtg    = int(ADATA( IPCOMP, 40 ))
+
+C..........Auxiliary DC power coefficients 
+           fAuxDCPowerCoeffW0 = ADATA( IPCOMP, 41 )
+           fAuxDCPowerCoeffW1 = ADATA( IPCOMP, 42 )
+
+C Determine the temperature of the room containing the electrolyser.
+C PCNTMF(i) holds the future time-row temperature of the room containing
+C component 'i'. It equals -99 if no containment is defined.
+
+       CALL ECLOSE( PCNTMF(IPCOMP),-99.0, 0.001,CLOSE )
+
+       if ( CLOSE ) then
+
+           WRITE(IUOUT,*) ' H2_electrolyser_coeff_gen: '
+           WRITE(IUOUT,*) ' the electrolyser must be contained '
+           WRITE(IUOUT,*) ' within a room. '
+           STOP ' H2_electrolyser_coeff_gen: unresolvable error '
+
+       else
+
+           fTambient = PCNTMF(IPCOMP)
+
+       endif
+
+
+C Determine the inlet temperature of the water fed to node 3. The variable
+C iTempFlag indicates whether the inlet temperature should be set to a constant 
+C value (iTempFlag .NE. 1) or to the containment temperature (iTempFlag = 1).
+C if iTempFlag  is not equal to 1, then fTempInlet is a model input
+C stored in the variable fTempInlet.
+
+       if ( iTempFlag .EQ. iContainment) then
+
+               fTempInlet = fTambient         !- oC
+
+       endif
 
 
 C-------------------------------------------------------------------------------
@@ -714,7 +784,7 @@ C-------------------------------------------------------------------------------
 
        if ( .not. bInitialized(IPCOMP) ) then
 
-           iNumADATAItems = 38
+           iNumADATAItems = 42
 
 C------------------------------------------------------------------------------------
 C Write out ADATA if there is a trace output. 
@@ -742,10 +812,19 @@ C Initialize counter for seconds that electrolyser is on
            fPresentTime = 0.
 
 
+C Obtain HHV of H2 and molar mass of H2, O2 and H2O
+
+           fH2_HHV = fEval_Compound_HV ( iHydrogen, iHHV ) / 1000.    ! J/mol
+
+           fH2_MolWeight = fEval_Compound_MM ( iHydrogen ) / 1000.    ! kg/mol          
+
+           fO2_MolWeight = fEval_Compound_MM ( iOxygen ) / 1000.      ! kg/mol
+
+           fH2O_MolWeight = fEval_Compound_MM ( iWater_l ) / 1000.    ! kg/mol
+
 C end of time invariant calculations. Set initialization flag to true.
 
            bInitialized(IPCOMP) = .true.
-
 
 
        endif
@@ -778,7 +857,7 @@ C-------------------------------------------------------------------------------
 C Obtain control data and set appropriate flags
 C----------------------------------------------------------------------------------- 
 
-!- first control data item is for operating signal (on/off)
+C first control data item is for operating signal (on/off)
 
        fOperatingSignal = CDATA(IPCOMP,1)
 
@@ -794,8 +873,8 @@ C-------------------------------------------------------------------------------
 
        endif
 
-!- second control data item if for standby mode (on/off). Standby mode
-!- applies for case when electrolyser is off.
+C second control data item is for standby mode (on/off). Standby mode
+C applies for case when electrolyser is off.
 
        fStandbySignal = CDATA(IPCOMP,2)
 
@@ -811,11 +890,29 @@ C-------------------------------------------------------------------------------
 
        endif
 
+C third control data item is the control signal to the electrolyzer (W)
+C if the electrolyzer operates in variable current mode. This represents the
+C power available to the electrolyzer
+
+       fControlSignal = CDATA(IPCOMP,3)
+
+C Check if control signal is less than zero, and if so, set to zero. Otherwise,
+C the electrolyzer will turn into a PEM, inducing a negitive hydrogen flow and
+C causing chaos in downstream components!
+C
+C This implementation merits additional thought --- a control signal of zero
+C implies standby mode, which may necessitate setting the bStandby flag to 
+C true (above).
+
+       if ( fControlSignal < 0.0 ) fControlSignal = 0.0
+
+
 C Save operational state to PCDATF array. This will enable the time-step manipulation
 C by subroutine Plt_TimeRow_Manipulate and thus enable control sensors to detect
 C the operation state of the electrolyzer at present and future time rows.
       PCDATF(IPCOMP,1) = fOperatingSignal
       PCDATF(IPCOMP,2) = fStandbySignal
+      PCDATF(IPCOMP,3) = fControlSignal
 
 
 C------------------------------------------------------------------------------------
@@ -853,10 +950,52 @@ C-------------------------------------------------------------------------------
        fTemp_node2 = CSVF(iNode2,1)
 
 
-C The temperature of node 3 (feed water heating component) is the required inlet
-C temperature of the electrolyser stack.
+C The temperature of node 3 (feed water heating component) is the operating
+C temperature of the electrolyser stack if the feed water is heated, otherwise
+C it is the temperature of the feed water to electrolyzer.
 
-       fTemp_node3 = fTempInletStack
+       if ( iFeedWaterHtg .eq. 1 ) then
+
+          fTemp_node3 = fStackOpTemp
+
+       else
+
+          fTemp_node3 = fTempInlet
+
+       endif
+
+
+C------------------------------------------------------------------------------------
+C Determine power consumed by stack.
+C------------------------------------------------------------------------------------
+
+       if ( iOpMode .eq. 2 ) then     
+
+C Electrolyzer operates at variable current (power).
+
+          if ( fControlSignal .le. fMaxStackPower ) then
+
+C Available power less than maximum capacity of electrolyzer
+ 
+               fStackPower = fControlSignal
+
+          else
+C Maximum capacity of electrolyzer surpassed. Electrolyzer operates at
+C maximum capacity.
+
+               fStackPower = fMaxStackPower
+
+          endif
+
+       else
+
+C Electrolyzer operates at constant current (power).
+C It is assumed that the stack power is equal to the maximum power demand of the stack.
+
+              fStackPower = fMaxStackPower
+
+
+       endif
 
 
 C------------------------------------------------------------------------------------
@@ -865,26 +1004,33 @@ C-------------------------------------------------------------------------------
 
        if ( bOn ) then
 
-           fPowerAux = fAuxPowerCoeffW0 +
-     &                 fAuxPowerCoeffW1 * fStackPower
+           fDCPowerAux = fAuxDCPowerCoeffW0 +
+     &                   fAuxDCPowerCoeffW1 * fStackPower
+
+           fACPowerAux = fAuxACPowerCoeffW0 +
+     &                   fAuxACPowerCoeffW1 * fStackPower
 
       else                 !- electrolyser is off
 
-           fPowerAux = 0. 
+           fDCPowerAux = 0.
+
+           fACPowerAux = 0.
 
       endif
 
+      fPowerAux = fDCPowerAux + fACPowerAux
 
 C------------------------------------------------------------------------------------
 C Determine AC and DC power consumption of electrolyser depending on mode of operation.
-C It is assumed that the stack consumes DC power while the ancillaries consume AC power.
+C It is assumed that the stack consumes DC power while the ancillaries consume AC power,
+C DC power or a combination of both.
 C Minimum power requirement during standby mode is DC.
 C------------------------------------------------------------------------------------
 
        if ( bOn ) then            !- unit is on
 
-          fDCElecDemand = fStackPower
-          fACElecDemand = fPowerAux
+          fDCElecDemand = fDCPowerAux + fStackPower
+          fACElecDemand = fACPowerAux
 
 
        elseif ( .not.bOn .and. bStandby ) then         !- unit is not operating, in standby mode
@@ -937,22 +1083,22 @@ C-----------------------------------------------------------------------------
        endif
                                      
 
-!- Determine electrical efficiency of electrolyser
+C Determine electrical efficiency of electrolyser
 
-       fElecEfficiency = fEffCoeffE0 +  ( fEffCoeffE1 *
-     &                   fTotalElecDemand ) +
-     &                   fEffCoeffE2 * fTotalElecDemand**2 +
+       fElecEfficiency = fEffCoeffE0 +  
+     &                   fEffCoeffE1 * fStackPower +
+     &                   fEffCoeffE2 * fStackPower**2 +
      &                   fEffCoeffE3 * fTemp_node1 +
      &                   fEffCoeffE4 * fTemp_node1**2 +
      &                   fEffCoeffE5 * ( fPresentTime - fInitAge )
 
 
-!- Determine the net production rate of hydrogen
-!- No hydrogen is produced if electrolyser is in standby mode
+C Determine the net production rate of hydrogen
+C No hydrogen is produced if electrolyser is in standby mode
 
        if ( bOn ) then        !- unit is on and not in standby mode
 
-          fH2NetFlow_mols = fElecEfficiency * fTotalElecDemand / fH2_HHV     !-mol/s
+          fH2NetFlow_mols = fElecEfficiency * fStackPower / fH2_HHV     !-mol/s
 
        else       !- unit is in standby mode
 
@@ -962,8 +1108,8 @@ C-----------------------------------------------------------------------------
 
         fH2NetFlow_kgs = fH2NetFlow_mols * fH2_MolWeight         !- convert to kg/s
 
-!- Determine the net production rate of oxygen
-!- No oxygen is produced if electrolyser is in standby mode.
+C Determine the net production rate of oxygen
+C No oxygen is produced if electrolyser is in standby mode.
 
        if ( bOn ) then
 
@@ -979,8 +1125,8 @@ C-----------------------------------------------------------------------------
        fO2NetFlow_kgs = fO2NetFlow_mols * fO2_MolWeight         !- convert to kg/s
 
 
-!- Determine the total consumption rate of water
-!- No water is consumed if electrolyser is in standby mode.
+C Determine the total consumption rate of water
+C No water is consumed if electrolyser is in standby mode.
 
        if ( bOn ) then
 
@@ -997,28 +1143,28 @@ C-----------------------------------------------------------------------------
       fH2OTotalFlow_kgs = fH2OTotalFlow_mols * fH2O_MolWeight  !- convert to kg/s
 
 
-!- Determine the enthalpy of the water entering the stack
+C Determine the enthalpy of the water entering the stack
 
-       fH2OEnthalpy = H2OLiquidEnthalpy(fTempInletStack) * 1000.     !- J/mol
+          fH2OEnthalpy = H2OLiquidEnthalpy(fTemp_node3) * 1000.     !- J/mol
 
 
-!- Determine the mass flow rate of the cooling water entering node 2
+C Determine the mass flow rate of the cooling water entering node 2
        fMdotCW = CONVAR(iConn2a,2)
 
 
-!- Determine the temperature of the cooling water entering node 2
+C Determine the temperature of the cooling water entering node 2
        fTemp_con2a = CONVAR(iConn2a,1)
 
-!- Determine the specific heat of the cooling water entering node 2
-!- using ESP-r's SHTFLD(j,T) function. SHTFLD evaluates the specific heat
-!- of a function at a temperature T; j=1 for dry air, j=2 for water vapour
-!- and j=3 for water.
+C Determine the specific heat of the cooling water entering node 2
+C using ESP-r's SHTFLD(j,T) function. SHTFLD evaluates the specific heat
+C of a function at a temperature T; j=1 for dry air, j=2 for water vapour
+C and j=3 for water.
 
        fCpCW = SHTFLD(3,fTemp_con2a)       !- J/kgC
 
 
-!- Find the effective heat transfer coefficient between the stack and the
-!- cooling water.
+C Find the effective heat transfer coefficient between the stack and the
+C cooling water.
 
        fQcool = fHRCoeffG0 + fHRCoeffG1 * fTotalElecDemand +
      &          fHRCoeffG2 * fTotalElecDemand**2 +
@@ -1036,67 +1182,41 @@ C-----------------------------------------------------------------------------
          fUAeffective = fQcool / ( fTemp_node1 - fTemp_con2a )        !- W/oC
       endif
 
-!- Determine the temperature of the room containing the electrolyser.
-!- PCNTMF(i) holds the future time-row temperature of the room containing
-!- component 'i'. It equals -99 if no containment is defined.
 
-       CALL ECLOSE( PCNTMF(IPCOMP),-99.0, 0.001,CLOSE )
-
-       if ( CLOSE ) then
-
-           WRITE(IUOUT,*) ' H2_electrolyser_coeff_gen: '
-           WRITE(IUOUT,*) ' the electrolyser must be contained '
-           WRITE(IUOUT,*) ' within a room. '
-           STOP ' H2_electrolyser_coeff_gen: unresolvable error '
-
-       else
-
-           fTambient = PCNTMF(IPCOMP)
-
-       endif
-
-
-!- Determine specific heat of hydrogen
+C Determine specific heat of hydrogen
 
        fCpH2 = ( H2GasEnthalpy(fTemp_node1) - fH2EnthalpyRef ) /
      &         ( fTemp_node1 - fTemp_ref ) * 1000.                      !- J/molC
 
 
-!- Determine specific heat of oxygen
+C Determine specific heat of oxygen
 
        fCpO2 = ( O2GasEnthalpy(fTemp_node1) - fO2EnthalpyRef ) /
      &         ( fTemp_node1 - fTemp_ref ) * 1000.                      !- J/molC
 
 
 
-!- Determine the inlet temperature of the water fed to node 3. The variable
-!- iTempFlag indicates whether the inlet temperature should be set to a constant 
-!- value (iTempFlag .NE. 1) or to the containment temperature (iTempFlag = 1).
-!- if iTempFlag  is not equal to 1, then fTempInlet is a model input
-!- stored in the variable fTempInlet.
-
-       if ( iTempFlag .EQ. iContainment) then
-
-           fTempInlet = fTambient         !- oC
-
-       endif
-
-
-!- Determine specific heat of water fed to node 3 using ESP-r's SHTFLD(j,T)
-!- function. SHTFLD evaluates the specific heat of a function at a temperature
-!- T; j=1 for dry air, j=2 for water vapour and j=3 for water.
+C Determine specific heat of water fed to node 3 using ESP-r's SHTFLD(j,T)
+C function. SHTFLD evaluates the specific heat of a function at a temperature
+C T; j=1 for dry air, j=2 for water vapour and j=3 for water.
 
        fCpInlet = SHTFLD(3,fTempInlet)         !- J/kgC
 
 
-!- Determine the energy required to heat the inlet water to the electrolyser
-!- stack operating temperature.
+C Determine the energy required to heat the inlet water to the electrolyser
+C stack operating temperature.
 
-          fQheat = fH2OTotalFlow_kgs * fCpInlet * 
-     &             ( fTempInletStack - fTempInlet )       !- W
+       fQheat = fH2OTotalFlow_kgs * fCpInlet * 
+     &             ( fTemp_node3 - fTempInlet )       !- W
 
 
-!- Determine internal heat generated by electrolyser at present time-step
+C If fQheat is zero, feed water is not heated.     
+       call eclose ( fQheat, 0., 0.001, close)
+       if ( close ) then
+         fQheat = 0.
+       endif
+
+C Determine internal heat generated by electrolyser at present time-step
           fQgen_present = fQgenCoeffF0 +
      &               fQgenCoeffF1 * fTotalElecDemand +
      &               fQgenCoeffF2 * fTotalElecDemand**2 + 
@@ -1104,7 +1224,7 @@ C-----------------------------------------------------------------------------
      &               fQgenCoeffF4 * fTemp_node1**2 +
      &               fQgenCoeffF5 * ( fPresentTime - fInitAge )
 
-! Determine heat loss to ambient at present time-step
+C Determine heat loss to ambient at present time-step
           fQloss_present = fOverallHamb * fSurfArea *
      &                     ( fTemp_node1 - fTambient )
 
@@ -1122,14 +1242,13 @@ C         0  0  4 |  0       8
 C---------------------------------------------------------------------------------
 
 
-!- Beginning of energy balance
+C  Beginning of energy balance
 
        if ( ISTATS .EQ. 1 ) then
 
             if ( bOn ) then
 
 C...........Node 1 energy balance
-C << JWH patch ( ) around the -1. on the 4th line of equation. >>
 
                COUT(1) = fOverallHamb * fSurfArea + fUAeffective +
      &                   fH2NetFlow_mols * fCpH2 +
@@ -1161,7 +1280,7 @@ C...........Node 2 energy balance
 C...........Node 3 energy balance: temperature known
 
                COUT(4) = 1.
-               COUT(8) = fTempInletStack
+               COUT(8) = fTemp_node3
 
  
            else                  !- unit is off 
@@ -1196,7 +1315,7 @@ C...........Node 3 energy balance:
 
 
 
-!- End of energy balance/start of 1st phase mass balance
+C  End of energy balance/start of 1st phase mass balance
 
        elseif ( ISTATS .EQ. 2 ) then
 
@@ -1273,7 +1392,7 @@ C...........Node 3: no balance so make flow zero
 
        endif
 
-!- End of energy, mass and hydrogen balances
+C  End of energy, mass and hydrogen balances
 
 
 
@@ -1338,14 +1457,80 @@ C.....Format string as: 'plant/NAME/misc_data'
 
 
        WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/aux_power'
+     &     root_name(1:lnblnk(root_name)), '/control_signal'
+
+       call add_to_xml_reporting(
+     &                   fControlSignal,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(W)',
+     &                   'Power available for input to electrolyzer ' )
+
+
+
+       WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/total_aux_power'
 
        call add_to_xml_reporting(
      &                   fPowerAux,
      &                   H3K_rep_name,
      &                   'units',
      &                   '(W)',
-     &                   'Power consumed by auxiliary equipment' )
+     &                   'Total power consumed by auxiliary equipment' )
+
+      WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/DC_aux_power'
+
+       call add_to_xml_reporting(
+     &                   fDCPowerAux,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(W)',
+     &                   'DC power consumed by auxiliary equipment' )
+
+      WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/AC_aux_power'
+
+       call add_to_xml_reporting(
+     &                   fACPowerAux,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(W)',
+     &                   'AC power consumed by auxiliary equipment' )
+
+
+
+       WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/stack_power'
+
+       call add_to_xml_reporting(
+     &                   fStackPower,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(W)',
+     &                   'Power consumed by electrolyzer stack' )
+
+       WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/max_stack_power'
+
+       call add_to_xml_reporting(
+     &                   fMaxStackPower,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(W)',
+     &                   'Maximum power input to electrolyzer stack' )
+
+
+       WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/op_mode'
+
+       call add_to_xml_reporting(
+     &                   real(iOpMode),
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(-)',
+     &                   'Operating mode of electrolyzer' )
+
 
 
        WRITE(H3K_rep_NAME,'(A,A)') 
@@ -1458,7 +1643,15 @@ C.....Format string as: 'plant/NAME/misc_data'
      &                   'Energy required to heat inlet water' )
 
 
+       WRITE(H3K_rep_NAME,'(A,A)') 
+     &     root_name(1:lnblnk(root_name)), '/Tinlet_water'
 
+       call add_to_xml_reporting(
+     &                   fTempInlet,
+     &                   H3K_rep_name,
+     &                   'units',
+     &                   '(C)',
+     &                   'Temperature of inlet water' )
 
        RETURN
        END
@@ -1520,7 +1713,7 @@ C-------------------------------------------------------------------------------
      &            fTempRangeMax = 227. )
 
 
-!- error message if temperature is outside valid range
+C error message if temperature is outside valid range
 
        if ( fTemp.LT. fTempRangeMin .OR. fTemp.GT.fTempRangeMax ) then
 
@@ -1632,8 +1825,6 @@ C-------------------------------------------------------------------------------
      &            fTempRangeMax = 5727. )
 
 
-C       real temp       !- for debugging
-
 
        fTemp_K = fTemp + 273.15    !- convert to K
 
@@ -1670,10 +1861,6 @@ C       real temp       !- for debugging
 
 
        else                    !- error message if temperature is outside valid range
-
-C for debugging
-C          temp = 1.
-C end debugging
 
 
           WRITE(IUOUT,*) 'temperature outside valid range'
@@ -1741,7 +1928,7 @@ C-------------------------------------------------------------------------------
      &            fTempRangeMax = 5727. )
 
 
-!- error message if temperature is outside valid range
+C error message if temperature is outside valid range
 
        if ( fTemp.LT. fTempRangeMin .OR. fTemp.GT.fTempRangeMax ) then
 

@@ -1230,9 +1230,9 @@ C load from the plant domain.
       ele_elec_gen     = elec_net_load_calc(total_gen)  ! W
       ele_elec_balance = elec_net_load_calc(balance)    ! W
 
-      CALL ECLOSE( plt_elec_load    , ele_elec_load   ,1.0,CLOSEa) ! 1 W tolerance
-      CALL ECLOSE( plt_elec_gen     , ele_elec_gen    ,1.0,CLOSEb) ! 1 W tolerance
-      CALL ECLOSE( plt_elec_balance , ele_elec_balance,1.0,CLOSEc) ! 1 W tolerance
+      CALL ECLOSE( plt_elec_load    , ele_elec_load   ,2.0,CLOSEa) ! 2 W tolerance
+      CALL ECLOSE( plt_elec_gen     , ele_elec_gen    ,2.0,CLOSEb) ! 2 W tolerance
+      CALL ECLOSE( plt_elec_balance , ele_elec_balance,2.0,CLOSEc) ! 2 W tolerance
 
 
 C Test and debug (begin).
@@ -1252,15 +1252,15 @@ C domains.
 
 C H2-dep_controller:start
 C Interation control for Hydrogen systems (experimental)
-C      IF( .not. CLOSEa .OR.
-C     &    .not. CLOSEb .OR.
-C     &    .not. CLOSEc .OR.
-C     &    bResH2_ctl_unconverged )THEN
-C H2-dep_controller:end
-
       IF( .not. CLOSEa .OR.
      &    .not. CLOSEb .OR.
-     &    .not. CLOSEc       )THEN
+     &    .not. CLOSEc .OR.
+     &    bResH2_ctl_unconverged )THEN
+C H2-dep_controller:end
+
+C      IF( .not. CLOSEa .OR.
+C     &    .not. CLOSEb .OR.
+C     &    .not. CLOSEc       )THEN
 
          IF( iter_count_PE .lt. 10 )THEN  ! Outside tolerance, not too many iterations.
             plant_elec_converged = .FALSE.

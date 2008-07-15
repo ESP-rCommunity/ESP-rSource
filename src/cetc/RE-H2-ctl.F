@@ -1,15 +1,27 @@
 C-----------------------------------------------------------------------------------------
-C A hack to start testing controls for RE-H2 project.
-C This routine will be called at the beginning of the execution of the electric
-C domain.  It must be called before subroutine ENETASGN since this routine
-C sets variables such as PENODL to zero at the beginning of the establishment
-C of the electric domain balances.  This control routine should perhaps be called
-C from ENETSOLV prior to its call to ENETASGN.
-C Note that some of the control loops will
-C sense in the electrical domain and actuate plant components.  As well,
-C the sensing in the electrical domain will be highly dependent upon
-C where the control code is executed: before, during, or following the
-C evaluation of all powoc models?  Need to think about this.
+C This is a customized controller for purposes of modelling a PV-powered system with
+C hydrogen production, storage, and conversion.  Unlike conventional ESP-r controllers
+C this controller senses the state of numerous plant and electrical domain components
+C and actuates numerous plant and electrical domain components.  Its structure is highly
+C customized to a specific system configuration.  It is anticipated that in the future a
+C more generalized control structure will be established to provide this functionality
+C and thus supplant this controller.
+C
+C This controller is invoked from ENETSOLV at the beginning of the execution of the
+C electric domain.  Consequently, it senses the state of electric domain components
+C from the previous solution of the electric domain.  If bps is iterating within the
+C time-step between the plant and electrical domains to converge a solution, then the
+C controller is sensing the state of the electric domain components at the current
+C time-step.  Otherwise, if this is the first pass through the electric domain for the
+C current time-step then the controller is sensing the state of electric domain components
+C at the previous time-step.  Since the plant domain is solved prior to the invocation
+C of the electric domain, the controller is sensing the state of plant components at the
+C current time-step.
+C
+C The controller actuates a number of plant domain components.  If one of these control
+C actions results in a different operational mode for a plant component, a flag is set
+C that forces another iteration through the plant and electric domains at the current
+C time-step.
 C-----------------------------------------------------------------------------------------
       SUBROUTINE RESH2_Ctl
       IMPLICIT NONE
@@ -66,18 +78,26 @@ C Common block storing additional time-row data items for plant domain.
 
 C Power-only component information
       common/resh2_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
-     &                   IPWC_battery,IPWC_PEM_DCDC
+     &                   IPWC_battery,IPWC_PEM_DCDC,IPWC_Elec_DCDC
       integer   IPWC_PVPCU      !-index number of PCU that is connected between the PV and the DC bus
       integer   IPWC_gridconn   !-index number of the grid-connection power-only component    
       integer   IPWC_ACDC       !-index number of the DC-AC converter (a PCU power-only component)
       integer   IPWC_battery    !-index number of the battery power-only component
       integer   IPWC_PEM_DCDC   !-index number of the DC/DC converter between the PEMFC 
                                 !-and the DC bus
+      integer   IPWC_Elec_DCDC  !-index number of the DC/DC converter between the electrolyzer
+                                !-and the DC bus
 
 C Plant component information
-      common/resh2_plt/IPCOMP_electrolyzer,IPCOMP_PEMFC
-      INTEGER IPCOMP_electrolyzer  ! Plant domain component number of electrolyzer.
-      INTEGER IPCOMP_PEMFC         ! Plant domain component number of PEMFC.
+      common/resh2_plt/IPCOMP_electrolyzer,IPCOMP_PEMFC,
+     &                 IPCOMP_elec_pump, IPCOMP_PEM_pump,
+     &                 fElec_pump_flow, fPEM_pump_flow
+      INTEGER   IPCOMP_electrolyzer  ! Plant domain component number of electrolyzer.
+      INTEGER   IPCOMP_PEMFC         ! Plant domain component number of PEMFC.
+      integer   IPCOMP_elec_pump     !-index number of the electrolyzer cooling pump component
+      integer   IPCOMP_PEM_pump      !-index number of the PEMFC cooling pump component
+      real      fElec_pump_flow      !-flow rate of the electrolyzer cooling pump (m3/s)
+      real      fPEM_pump_flow       !-flow rate of the PEMFC cooling pump (m3/s)
 
 C Electric node information
       common/resh2_enode/IENOD_ACbus
@@ -91,23 +111,44 @@ C Electrolyzer and PEMFC setpoints based upon battery SOC.
       real      SOC_pemfc_ON          !-battery SOC at which PEM fuel cell switches on
       real      SOC_pemfc_OFF         !-battery SOC at which PEM fuel cell switches off
 
-C Vbls used to regulate iteration between demains
+C Controller flag information
+      common/resh2_comp_status/bPV_active,bElectrolyzer_active,
+     &                    bPEM_active, bBattery_charge,
+     &                    bBattery_discharge
 
+C Flags indicating status of controller
+      logical bPV_active,bElectrolyzer_active,bPEM_active,
+     &                    bBattery_charge, bBattery_discharge
+
+C Vbls used to regulate iteration between demains
       common / resh2_ctl_status / bResH2_ctl_unconverged
       logical bResH2_ctl_unconverged    !-logical flag indicating additional iterations req'd
-      data bResH2_ctl_unconverged/.false./
-      
-      real fPEM_mode_old         !-Previous PEMFC control scheme
-      real fPEM_signal_old       !-Previous PEMFC control signal
+C      data bResH2_ctl_unconverged/.false./ -> replaced by blockdata at end of this file
 
-      logical bPEM_same_mode, bPEM_same_signal !-flags indicating that signals have
-                                               !-not changed
 
-      real fElectrolyzer_on_old        !- Previous electrolyzer on signal
-      real fElectrolyzer_standby_old   !- Previous electrolyzer standby signal
+C Common block holding information on the battery's current operation.
+      COMMON/battery_op_data/maxPBatCharge_common,
+     &   maxPBatDischarge_common, RE_H2_control_scenario
+      REAL maxPBatCharge_common      ! Maximum charge rate of battery (W) as determined
+                               ! for mode of operation at previous calulcation (charge or discharge).
+      REAL maxPBatDischarge_common      ! Maximum discharge rate of battery (W) as determined
+                               ! for mode of operation at previous calulcation (charge or discharge).
+      INTEGER RE_H2_control_scenario     ! Param indicating which control scenario is chosen
 
-      logical bElectrolyzer_same_on, bElectrolyzer_same_standby  !- flags indicating that
-                                                                 !- signals have not changed
+C Other controller inputs
+      common/resh2/fH2_deadband 
+      real      fH2_deadband          !-controller deadband for H2 production (W). This
+                                      !-value is applied so that the electrolyzer only switches on
+                                      !-when the excess PV power is greater than power to meet 
+                                      !-the loads + power allowance for compressor and pumps,
+                                      !-The power allowance for compressor and pumps is referred
+                                      !-to as the H2 deadband. 
+C Variable from H2 storage model
+      common/resh2_stg/bCyl_H2_max_reached, fCyl_reported_pressure
+      logical bCyl_H2_max_reached    ! Flag indicating that maximum pressure
+                                     ! in storage reached.
+      real fCyl_reported_pressure    ! Variable used to report current
+                                     ! pressure to compressor 
 
 
 C for debugging
@@ -123,12 +164,13 @@ C for debugging
       INTEGER ITS             !-current building time-step within
                               !-current hour
 
-      real  check
-       
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER IUOUT           !-write unit number
+      INTEGER IUIN            !-read unit number
+
+      real  check      
 C end debugging
 
-
-C-----------------------------------------------------------------------------------------
 
 C-----------------------------------------------------------------------------------------
 C Type declarations for local variables.
@@ -145,9 +187,47 @@ C-------------------------------------------------------------------------------
       REAL SOC_battery             ! battery state of charge.
 
       REAL PEM_DCDC_loss          ! power losses from the DC-DC converter between the PEMFC and the DC bus (W)
+      REAL Elec_DCDC_loss         ! power losses from the DC-DC converter between the
+                                  ! electrolyzer and the DC bus (W)
 
       LOGICAL bPEMFC_ON_p          !- boolean indicating if PEM is on at present time row.
 
+      real fPEM_mode_old         !-Previous PEMFC control scheme
+      real fPEM_signal_old       !-Previous PEMFC control signal
+
+      logical bPEM_same_mode, bPEM_same_signal !-flags indicating that signals have
+                                               !-not changed
+
+      real fElectrolyzer_on_old        !- Previous electrolyzer on signal
+      real fElectrolyzer_standby_old   !- Previous electrolyzer standby signal
+      real fElectrolyzer_signal_old    !- Previous electrolyzer control signal
+
+      logical bElectrolyzer_same_on, bElectrolyzer_same_standby  !- flags indicating that
+                                                                 !- signals have not changed
+
+      logical bElec_same_signal, bBat_same_signal
+
+      real    fBattery_signal_old      !- Previous battery demand
+
+      real    fH2_prod_allowance       !- Allowance for power draw of compressor and
+                                       !- electrolyzer cooling pump (W). This value is set
+                                       !- to zero if electrolyzer previously on, otherwise
+                                       !- set to deadband input by user.
+
+      real    fSOC_battery_max         !- Maximum SOC of battery (%). This variable is only 
+                                       !- used for PV-battery only case (no H2 loop). User
+                                       !- input specified using SOC_electrolyzer_OFF input
+                                       !- in control file.
+
+      real    fSOC_battery_min         !- Minimum SOC of battery (%). This variable is only
+                                       !- used for PV-battery only case (no H2 loop). User input
+                                       !- input specified using SOC_pemfc_OFF input in control file.
+
+      logical bPV_bat                  !- Boolean indicating that a PV-battery only system (no 
+                                       !- H2 loop) is being considered. This is indicated by
+                                       !- an input > 100 for the SOC_electrolyzer_ON variable
+                                       !- and an input < 0 for the SOC_pemfc_ON variable in the 
+                                       !- control file.
 
 C-----------------------------------------------------------------------------------------
 C     Check if controller is in use
@@ -158,12 +238,40 @@ C........Controller is not in use. Set flag preventing iteration
       else
 C........Controller is in use.       
       
-C for debugging
-         if ( nsinc. eq. 401 ) then
-            check = 1.
-         endif
-C end debugging
 
+C-----------------------------------------------------------------------------------------
+C     Check if PV-battery only system (no H2 loop) is being considered. This is the case
+C     if the SOC_electrolyzer_ON setpoint is > 100 and if the SOC_pemfc_ON setpoint is 
+C     < 0. Set flag bPV_bat to true if this is the case and read battery max and min
+C     SOC setpoints (specified using SOC_electrolyzer_OFF and SOC_pemfc_OFF setpoints, 
+C     respectively.
+C-----------------------------------------------------------------------------------------
+
+C Initialize boolean and battery max/min setpoints
+
+        bPV_bat = .false.
+        fSOC_battery_max = 100.
+        fSOC_battery_min = 0.
+
+        if ( SOC_electrolyzer_ON .gt. 100.0 .and.
+     &       SOC_pemfc_ON .lt. 0.0 ) then
+
+            bPV_bat = .true.
+            fSOC_battery_max = SOC_electrolyzer_OFF
+            fSOC_battery_min = SOC_pemfc_OFF
+
+        endif
+
+
+C-----------------------------------------------------------------------------------------
+C     Initialize component status flags to false. They will be set to true when
+C     the components are activated.
+C-----------------------------------------------------------------------------------------
+        bPV_active           = .false.
+        bElectrolyzer_active = .false.
+        bPEM_active          = .false.
+        bBattery_charge      = .false.
+        bBattery_discharge   = .false.
 C-----------------------------------------------------------------------------------------
 C     Get historical PEMFC control data.
 C-----------------------------------------------------------------------------------------
@@ -175,6 +283,13 @@ C     Get historical electrolyzer control data
 C-----------------------------------------------------------------------------------------
          fElectrolyzer_on_old = CDATA(IPCOMP_electrolyzer,1)
          fElectrolyzer_standby_old = CDATA(IPCOMP_electrolyzer,2)
+         fElectrolyzer_signal_old = CDATA(IPCOMP_electrolyzer,3)
+
+C----------------------------------------------------------------------------------------
+C     Get historical battery data
+C----------------------------------------------------------------------------------------
+
+        fBattery_signal_old = batDemandP
 
 C-----------------------------------------------------------------------------------------
 C Sense power generation from PCU that is connected between PV and DC bus.  This
@@ -225,6 +340,14 @@ C-------------------------------------------------------------------------------
 
           PEM_DCDC_loss = fPow_Time_Row_Future(IPWC_PEM_DCDC,3)     ! Power losses of PCU
 
+C-----------------------------------------------------------------------------------------
+C Determine the power losses of the DC-DC converter between the electrolyzer and the
+C DC bus. These losses will be taken into account in the control signal to the
+C electrolyzer so that the input to the DC-DC converter matches the excess power
+C that is available.
+C-----------------------------------------------------------------------------------------
+
+        Elec_DCDC_loss = fPow_Time_Row_future(IPWC_Elec_DCDC,3)
 
 C-----------------------------------------------------------------------------------------
 C Determine the battery's SOC at the previous iteration and establish the
@@ -238,8 +361,8 @@ C-------------------------------------------------------------------------------
          SOC_battery = fPow_Time_Row_Future(IPWC_battery,1)
 
 
-C-----Establish the operational state of the electrolyzer at the present
-C-----time row (i.e. whether it was on the previous time step).
+C-----Establish the operational state of the electrolyzer during the previous pass
+C-----through the plant domain (i.e. at the current time-step).
 C-----IPCOMP_electrolyzer is the index number of the electrolyzer plant component and
 C-----IPCOMP_PEMFC is the index number of the PEMFC plant component.  
 
@@ -247,8 +370,8 @@ C-----IPCOMP_PEMFC is the index number of the PEMFC plant component.
          Electrolyzer_standby_p = PCDATP( IPCOMP_electrolyzer,2)   ! =1. for STANDBY
 
 
-C-----Establish the operational state of the PEMFC at the present time
-C-----row (i.e. whether it was on the previous time step).
+C-----Establish the operational state of the PEMFC during the previous pass through
+C-----the plant domain (i.e. at the current time-step).
 C-----PEMFC is on if value is 2 or 3.
          fPEMFC_ON_p = PCDATP(IPCOMP_PEMFC,2)
          bPEMFC_ON_p = .false.        ! initialize
@@ -256,81 +379,291 @@ C-----PEMFC is on if value is 2 or 3.
             bPEMFC_ON_p = .true.
          endif
 
+C-----Determine allowance for power draw of compressor and electrolyzer cooling pump.
+C-----The surplus PV power should be sufficient to meet the power demand of these
+C-----ancillaries. If the electrolyzer was previously on, then power
+C-----draw of the compressor and cooling pump are already part of the AC load; in this case
+C-----allowance is set to zero. If the electrolyzer was not previously on, then allowance
+C-----should be set to the 'H2 deadband' input by the user. 
+      if ( Electrolyzer_ON_p .eq. 1 ) then
+           fH2_prod_allowance = 0.
+      else
+           fH2_prod_allowance = fH2_deadband
+      endif
+
+
+
 C-----Determine if there is a surplus or deficit of power from the PV and actuate
 C-----the electrolyzer and PEMFC accordingly.
          IF ( PV_power_to_DCbus > power_DC_to_AC_required ) THEN
 
-C-------There is an excess of PV power. Send to battery or electrolyzer?
-         IF ( SOC_battery > SOC_electrolyzer_ON ) THEN
-C---------The battery is too full: send to electrolyzer. CDATA(ipcomp,1) is ON/OFF signal.
+C-------There is an excess of PV power. Send to battery and/or electrolyzer?
+          IF ( SOC_battery > SOC_electrolyzer_ON .and.
+     &         ( PV_power_to_DCbus >
+     &           (power_DC_to_AC_required + fH2_prod_allowance) ) ) THEN
+C---------The battery is too full: send to electrolyzer if pressure
+C---------in H2 storage is below maximum pressure. CDATA(ipcomp,1) is ON/OFF signal.
+C---------If maximum pressure in H2 storage reached, electrolyzer does not turn on
+C---------and excess power goes to grid.
+            RE_H2_control_scenario = 1
             batDemandP = 0.
-            CDATA( IPCOMP_electrolyzer,1 ) = 1.
-            CDATA( IPCOMP_electrolyzer,2 ) = 0.
             CDATA( IPCOMP_PEMFC,1) = 0.
             CDATA( IPCOMP_PEMFC,2) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = 0.
 
-         ELSEIF ( SOC_battery > SOC_electrolyzer_OFF
-     &           .and. Electrolyzer_ON_p==1. ) THEN
+            if ( .not. bCyl_H2_max_reached ) then
+               CDATA( IPCOMP_electrolyzer,1 ) = 1.
+               CDATA( IPCOMP_electrolyzer,2 ) = 0.
+               CDATA( IPCOMP_electrolyzer,3 ) = PV_power_to_DCbus -
+     &                                       power_DC_to_AC_required - 
+     &                                       Elec_DCDC_loss
+               CDATA( IPCOMP_elec_pump,1 ) = fElec_pump_flow
+               bElectrolyzer_active = .true.
+            else
+               CDATA( IPCOMP_electrolyzer,1 ) = 0.
+               CDATA( IPCOMP_electrolyzer,2 ) = 0.
+               CDATA( IPCOMP_electrolyzer,3 ) = 0.
+               CDATA( IPCOMP_elec_pump,1 ) = 0.
+            endif
+
+          ELSEIF ( SOC_battery > SOC_electrolyzer_OFF
+     &            .and. Electrolyzer_ON_p==1.
+     &            .and. ( PV_power_to_DCbus >
+     &           (power_DC_to_AC_required + fH2_prod_allowance) ) ) THEN
+
 C---------Electrolyzer was on previous time-step and battery has not discharged sufficiently
-C---------to turn electrolyzer off: send power to electrolyzer.
+C---------to turn electrolyzer off: send power to electrolyzer if pressure in H2 storage
+C---------is below maximum pressure.
+C---------If maximum pressure in H2 storage reached, electrolyzer does not turn on
+C---------and excess power goes to grid.
+            RE_H2_control_scenario = 2
             batDemandP = 0.
-            CDATA( IPCOMP_electrolyzer,1 ) = 1.
-            CDATA( IPCOMP_electrolyzer,2 ) = 0.
             CDATA( IPCOMP_PEMFC,1) = 0.
             CDATA( IPCOMP_PEMFC,2) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = 0.
 
-         ELSE
-C---------Send to battery and set electrolyzer to standby. CDATA(ipcomp,2) is standby signal.
+            if ( .not. bCyl_H2_max_reached ) then
+               CDATA( IPCOMP_electrolyzer,1 ) = 1.
+               CDATA( IPCOMP_electrolyzer,2 ) = 0.
+               CDATA( IPCOMP_electrolyzer,3 ) = PV_power_to_DCbus -
+     &                                       power_DC_to_AC_required - 
+     &                                       Elec_DCDC_loss
+               CDATA( IPCOMP_elec_pump,1 ) = fElec_pump_flow
+               bElectrolyzer_active = .true.
+            else
+               CDATA( IPCOMP_electrolyzer,1 ) = 0.
+               CDATA( IPCOMP_electrolyzer,2 ) = 0.
+               CDATA( IPCOMP_electrolyzer,3 ) = 0.
+               CDATA( IPCOMP_elec_pump,1 ) = 0.
+            endif
+
+C The following code should be uncommented if it is decided that the PEMFC should turn off
+C anytime there is excess power, even if the battery SOC is less then the pemfc_OFF setpoint
+
+C          ELSEIF ( SOC_battery < SOC_pemfc_OFF
+C     &             .and. bPEMFC_ON_p ) THEN
+C---------PEMFC was previously on but battery SOC is not high enough to switch PEMFC off:
+C---------send excess power to battery, keep PEMFC on to meet load
+C            batDemandP = -1. * PV_power_to_DCbus            ! -ve = charge
+C            CDATA( IPCOMP_electrolyzer,1 ) = 0.
+C            CDATA( IPCOMP_electrolyzer,2 ) = 0.
+C            CDATA( IPCOMP_electrolyzer,3 ) = 0.
+C            CDATA( IPCOMP_PEMFC,1) = 2.
+C            CDATA( IPCOMP_PEMFC,2) = power_DC_to_AC_required +
+C     &                               PEM_DCDC_loss 
+
+
+          ELSEIF (   (PV_power_to_DCbus - power_DC_to_AC_required
+     &                                  - fH2_prod_allowance )
+     &             > ( maxPBatCharge_common + Elec_DCDC_loss )  ) THEN
+C---------Battery cannot accept all available power. Rather than sending the excess
+C---------power to the grid, turn electrolyzer on and send it the power that the
+C---------battery cannot accept. Electrolyzer only turned on if pressure in H2 storage
+C---------is below maximum pressure.
+C---------If maximum pressure in H2 storage reached, electrolyzer does not turn on
+C---------and excess power goes to grid.
+
+            RE_H2_control_scenario = 3
+            batDemandP = -1. * maxPBatCharge_common     ! -ve = charge
+
+            CDATA( IPCOMP_PEMFC,1) = 0.
+            CDATA( IPCOMP_PEMFC,2) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = 0.
+            bBattery_charge = .true.
+
+            if ( .not. bCyl_H2_max_reached ) then
+               CDATA( IPCOMP_electrolyzer,1 ) = 1.
+               CDATA( IPCOMP_electrolyzer,2 ) = 0.
+               CDATA( IPCOMP_electrolyzer,3 ) = PV_power_to_DCbus -
+     &                                       power_DC_to_AC_required - 
+     &                                       Elec_DCDC_loss -
+     &                                       maxPBatCharge_common
+               CDATA( IPCOMP_elec_pump,1 ) = fElec_pump_flow
+               bElectrolyzer_active = .true. 
+            else
+               CDATA( IPCOMP_electrolyzer,1 ) = 0.
+               CDATA( IPCOMP_electrolyzer,2 ) = 0.
+               CDATA( IPCOMP_electrolyzer,3 ) = 0.
+               CDATA( IPCOMP_elec_pump,1 ) = 0.
+            endif
+
+C--------For a grid connected PV-battery system without H2 loop, the excess electricity 
+C--------will be exported to the grid. This is done through the battery model, so all 
+C--------power available will be offered to the battery. The battery model will sort out
+C--------the amount it can use and what is exported to the grid.
+C--------The current situation is not ideal as the battery is located before the DC/AC convertor.
+C--------Future code changes to improve this situation are welcomed.
+C            if ( bPV_bat ) then
+C               batDemandP = -1. * (PV_power_to_DCbus - 
+C     &                            power_DC_to_AC_required)     ! -ve = charge
+C            endif
+
+          ELSE
+C---------Send all the power to battery and set electrolyzer to standby. CDATA(ipcomp,2) is standby signal.
+            RE_H2_control_scenario = 4
             batDemandP = -1. * (PV_power_to_DCbus -
-     &                         power_DC_to_AC_required)     ! -ve = charge
+     &                         power_DC_to_AC_required)  ! -ve = charge
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 1.
+            CDATA( IPCOMP_electrolyzer,3 ) = 0.
             CDATA( IPCOMP_PEMFC,1) = 0.
             CDATA( IPCOMP_PEMFC,2) = 0.
-
-         ENDIF
+            CDATA( IPCOMP_elec_pump,1 ) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = 0.
+            bBattery_charge = .true.
+          ENDIF ! Corresponds to 'IF ( SOC_battery > SOC_electrolyzer_ON ) THEN'.
 
        ELSE
 
-C-------There is not sufficient PV power. Decide whether PEMFC or battery meets the load
-         IF ( SOC_battery < SOC_pemfc_ON ) THEN
-C---------The battery is too low: PEMFC supplies power. The load the PEMFC has to 
-C---------meet is provided by the control signal CDATA(ipcomp,2). The PEMFC's control method
-C---------is provided by the control signal CDATA(ipcomp,1).
+C-------There is insufficient PV power. Decide whether PEMFC or battery meets the load.
+          IF ( SOC_battery < SOC_pemfc_ON ) THEN
+C---------The battery has insufficient energy: PEMFC supplies power. The load the PEMFC has to
+C---------meet is provided by the control signal CDATA(ipcomp,2). The PEMFC is actuated
+C---------by the control signal CDATA(ipcomp,1).
+            RE_H2_control_scenario = 5
             CDATA(IPCOMP_PEMFC,1) = 2.             ! iPower_out_controlled
             CDATA(IPCOMP_PEMFC,2) = power_DC_to_AC_required - 
-     &                            PV_power_to_DCbus +
-     &                            PEM_DCDC_loss
+     &                              PV_power_to_DCbus +
+     &                              PEM_DCDC_loss
             batDemandP = 0.
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 0.
+            CDATA( IPCOMP_electrolyzer,3 ) = 0.
+            CDATA( IPCOMP_elec_pump,1 ) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = fPEM_pump_flow
+            bPEM_active = .true.
 
-
-        ELSEIF ( SOC_battery < SOC_pemfc_OFF
+          ELSEIF ( SOC_battery < SOC_pemfc_OFF
      &           .and. bPEMFC_ON_p  ) THEN
 C---------The battery has not been charged sufficiently: PEMFC continues to supply power. The  
 C---------load the PEMFC has to meet is provided by the control signal CDATA(ipcomp,2).
-C-------- The PEMFC's control method is provided by the control signal CDATA(ipcomp,1).
+C---------The PEMFC is actuated by the control signal CDATA(ipcomp,1).
+            RE_H2_control_scenario = 6
             batDemandP = 0.
             CDATA(IPCOMP_PEMFC,1) = 2.             ! iPower_out_controlled
             CDATA(IPCOMP_PEMFC,2) = power_DC_to_AC_required -
-     &                            PV_power_to_DCbus +
-     &                            PEM_DCDC_loss
+     &                              PV_power_to_DCbus +
+     &                              PEM_DCDC_loss
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 0.
+            CDATA( IPCOMP_electrolyzer,3 ) = 0.
+            CDATA( IPCOMP_elec_pump,1 ) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = fPEM_pump_flow
+            bPEM_active = .true. 
 
-        ELSE
+          ELSEIF ( ( power_DC_to_AC_required - PV_power_to_DCbus ) >
+     &               maxPBatDischarge_common ) then
+
+C---------The battery cannot supply all of the load. Battery supplies maximum it can and PEMFC
+C---------is turned on to meet the rest of the load.
+            RE_H2_control_scenario = 7
+            batDemandP = maxPBatDischarge_common
+            CDATA(IPCOMP_PEMFC,1) = 2.             ! iPower_out_controlled
+            CDATA(IPCOMP_PEMFC,2) = power_DC_to_AC_required -
+     &                              PV_power_to_DCbus -
+     &                              maxPBatDischarge_common +
+     &                              PEM_DCDC_loss
+            CDATA( IPCOMP_electrolyzer,1 ) = 0.
+            CDATA( IPCOMP_electrolyzer,2 ) = 0.
+            CDATA( IPCOMP_electrolyzer,3 ) = 0.
+            CDATA( IPCOMP_elec_pump,1 ) = 0.
+            IF ( .NOT. bPV_bat ) THEN
+              CDATA( IPCOMP_PEM_pump,1 ) = fPEM_pump_flow
+            ELSE
+              CDATA( IPCOMP_PEM_pump,1 ) = 0.
+            ENDIF
+            bPEM_active = .true.
+            bBattery_discharge = .true.
+
+C--------For a grid connected PV-battery system without H2 loop, the shortage of electricity 
+C--------will be imported from the grid. This is done through the battery model, so all 
+C--------power required will be asked from the battery. The battery model will sort out
+C--------the amount it can provide itself and what is imported from the grid.
+C--------The current situation is not ideal as the battery is located before the DC/AC convertor.
+C--------Future code changes to improve this situation are welcomed.
+C            if ( bPV_bat ) then
+C               batDemandP = power_DC_to_AC_required - PV_power_to_DCbus
+C            endif
+
+          ELSE
+
+
 C---------The battery is charged sufficiently and supplies power, the PEMFC is off.
+            RE_H2_control_scenario = 8
             batDemandP = power_DC_to_AC_required - PV_power_to_DCbus   ! +ve = discharge
             CDATA(IPCOMP_PEMFC,1) = 0.             ! iEngine_deactivated
             CDATA(IPCOMP_PEMFC,2) = 0.0
             CDATA( IPCOMP_electrolyzer,1 ) = 0.
             CDATA( IPCOMP_electrolyzer,2 ) = 0.
+            CDATA( IPCOMP_electrolyzer,3 ) = 0.
+            CDATA( IPCOMP_elec_pump,1 ) = 0.
+            CDATA( IPCOMP_PEM_pump,1 ) = 0.
+            bBattery_discharge = .true. 
+
+
+
+
+          ENDIF ! Corresponds to 'IF ( SOC_battery < SOC_pemfc_ON ) THEN'.
+
+
+        ENDIF ! Corresponds to 'IF ( PV_power_to_DCbus > power_DC_to_AC_required ) THEN'.
+
+
+C The next lines of code ensure that the electrolyzer and PEMFC never turn on when
+C considering a PV-battery only case with no H2 loop. The electrolyzer or PEMFC
+C may be 'turned on' in the above code if the battery load is above the maximum
+C charge/discharge and the electrolyzer and PEMFC takes the remaining load.
+C Also, the battery SOC is checked to ensure that it is within the minimum
+C and maximum setpoint range. If it is not, the battery load is set to zero. 
+
+        IF ( bPV_bat ) THEN
+
+            CDATA(IPCOMP_PEMFC,1) = 0.            
+            CDATA(IPCOMP_PEMFC,2) = 0.0
+            bPEM_active = .false.
+
+            CDATA( IPCOMP_electrolyzer,1 ) = 0.
+            CDATA( IPCOMP_electrolyzer,2 ) = 0.
+            CDATA( IPCOMP_electrolyzer,3 ) = 0.
+            bElectrolyzer_active = .false.
+
+            if ( bBattery_discharge .and. 
+     &           SOC_battery .lt. fSOC_battery_min ) then
+
+                 batDemandP = 0.
+
+            elseif ( bBattery_charge .and.
+     &               SOC_battery .gt. fSOC_battery_max ) then
+                 if (mandChargeCycle .NE. 1) then  ! Check on SOC above SOC_battery_max should only
+                                                  ! be done if battery is not performing mandatory charge cycle 
+                    batDemandP = 0.
+                 endif
+            endif 
+
 
         ENDIF
 
 
-      ENDIF
 
 
 C--------------------------------------------------------------------------------------
@@ -340,18 +673,30 @@ C-------------------------------------------------------------------------------
          call eclose ( fPEM_mode_old,
      &              CDATA(IPCOMP_PEMFC,1), 0.5, bPEM_same_mode )
          call eclose ( fPEM_signal_old,
-     &              CDATA(IPCOMP_PEMFC,2), 1.0E-03, bPEM_same_signal )
+     &              CDATA(IPCOMP_PEMFC,2), 2.0, bPEM_same_signal )    ! 2W tolerance
          call eclose ( fElectrolyzer_on_old,
      &              CDATA(IPCOMP_electrolyzer,1),0.5,
      &              bElectrolyzer_same_on )
          call eclose ( fElectrolyzer_standby_old,
      &              CDATA(IPCOMP_electrolyzer,2),0.5,
      &              bElectrolyzer_same_standby )
-
+        call eclose ( fElectrolyzer_signal_old,
+     &              CDATA(IPCOMP_electrolyzer,3),
+     &              2.0,                              ! 2W tolerance
+     &              bElec_same_signal )
+C It is not clear why a change in the battery signal should trigger a plt-pfs
+C iteration since the battery is a pfs powoc model. This should be explored
+C in the future.
+        call eclose ( fBattery_signal_old,
+     &                batDemandP,
+     &                2.0,                            ! 2W tolerance
+     &                bBat_same_signal )
 
          if ( bPEM_same_mode .and. bPEM_same_signal .and. 
      &     bElectrolyzer_same_on .and.
-     &     bElectrolyzer_same_standby ) then
+     &       bElectrolyzer_same_standby .and.
+     &       bElec_same_signal .and.
+     &       bBat_same_signal ) then
 C--------Plt controls have not changed, and additional interdomain iteration is unnecessary
             bResH2_ctl_unconverged = .false.
          else 
@@ -389,7 +734,7 @@ C g) How do I control the grid-interaction powoc??
 C----------------------------------------------------------------------------------------
 C This subroutine reads the information required by the residential hydrogen
 C cogen controller (subroutine ??? above) ans saves the information in
-C the appropriate COMMON blocks
+C the appropriate COMMON blocks.
 C-----------------------------------------------------------------------------------------
 
       SUBROUTINE RESH2_Ctl_Read
@@ -416,18 +761,27 @@ C Input file information
 
 C Power-only component information
       common/resh2_powoc/IPWC_PVPCU,IPWC_gridconn,IPWC_ACDC,
-     &                   IPWC_battery,IPWC_PEM_DCDC
+     &                   IPWC_battery,IPWC_PEM_DCDC,IPWC_Elec_DCDC
       integer   IPWC_PVPCU      !-index number of PCU that is connected between the PV and the DC bus
       integer   IPWC_gridconn   !-index number of the grid-connection power-only component    
       integer   IPWC_ACDC       !-index number of the DC-AC converter (a PCU power-only component)
       integer   IPWC_battery    !-index number of the battery power-only component
       integer   IPWC_PEM_DCDC   !-index number of the DC/DC converter between the PEMFC 
                                 !-and the DC bus
+      integer   IPWC_Elec_DCDC  !-index number of the DC/DC converter between the electrolyzer
+                                !-and the DC bus
 
 C Plant component information
-      common/resh2_plt/IPCOMP_electrolyzer,IPCOMP_PEMFC
+      common/resh2_plt/IPCOMP_electrolyzer,IPCOMP_PEMFC,
+     &                 IPCOMP_elec_pump, IPCOMP_PEM_pump,
+     &                 fElec_pump_flow, fPEM_pump_flow
       integer   IPCOMP_electrolyzer   !-index number of the electrolyzer plant component
       integer   IPCOMP_PEMFC          !-index number of the PEM fuel cell plant component
+      integer   IPCOMP_elec_pump      !-index number of the electrolyzer cooling pump component
+      integer   IPCOMP_PEM_pump       !-index number of the PEMFC cooling pump component
+      real      fElec_pump_flow       !-flow rate of the electrolyzer cooling pump (m3/s)
+      real      fPEM_pump_flow        !-flow rate of the PEMFC cooling pump (m3/s)
+
 
 C Electric node information
       common/resh2_enode/IENOD_ACbus
@@ -440,6 +794,15 @@ C Battery SOC setpoints for electrolyser and PEM fuel cell
       real      SOC_electrolyzer_OFF  !-battery SOC at which electrolyzer switches off
       real      SOC_pemfc_ON          !-battery SOC at which PEM fuel cell switches on
       real      SOC_pemfc_OFF         !-battery SOC at which PEM fuel cell switches off
+
+C Other controller inputs
+      common/resh2/fH2_deadband 
+      real      fH2_deadband          !-controller deadband for H2 production (W). This
+                                      !-value is applied so that the electrolyzer only switches on
+                                      !-when the excess PV power is greater than power to meet 
+                                      !-the loads + power allowance for compressor and pumps,
+                                      !-The power allowance for compressor and pumps is referred
+                                      !-to as the H2 deadband. 
 
 C----------------------------------------------------------------------------------------- 
 
@@ -462,6 +825,8 @@ C-------------------------------------------------------------------------------
 
       parameter( SOC_MAX = 100.,
      &           SOC_MIN = 0. )
+
+      integer   lnblnk                ! function desribing non-bank string length
 
 C-----------------------------------------------------------------------------------------
 C Ensure that residential hydrogen cogen controller file exists.
@@ -672,6 +1037,90 @@ C Read the index number of the PCU between the PEMFC and the DC bus
       endif      
 
 
+C Read the index number of the PCU between the electrolyzer and the DC bus
+      call stripc(iresh2fl_ascii,outstr,0,nd,1,'elec-dc-dc ipwc',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading electrolyzer DC/DC index .'
+        bFileError = .true.
+      endif      
+      k = 0
+      call egetwi(outstr,k,IPWC_Elec_DCDC,1,MPOWCOM,
+     &            'W','elec-dc-dc ipwc',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading electrolyzer DC/DC index.'
+        bFileError = .true.
+      endif      
+
+C Read the index number of the electrolyzer cooling pump plant component
+      call stripc(iresh2fl_ascii,outstr,0,nd,1,'elec-pump ipcomp',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading electrolyzer pump index .'
+        bFileError = .true.
+      endif      
+      k = 0
+      call egetwi(outstr,k,IPCOMP_elec_pump,1,MPCOM,
+     &            'W','elec-pump ipcomp',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading electrolyzer pump index.'
+        bFileError = .true.
+      endif      
+
+
+C Read the index number of the PEMFC cooling pump plant component
+      call stripc(iresh2fl_ascii,outstr,0,nd,1,'pemfc-pump ipcomp',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading pemfc pump plant comp index .'
+        bFileError = .true.
+      endif      
+      k = 0
+      call egetwi(outstr,k,IPCOMP_PEM_pump,1,MPCOM,
+     &            'W','pemfc-pump ipcomp',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading pemfc pump plant comp index.'
+        bFileError = .true.
+      endif      
+
+C Read the flow rate of the electrolyzer cooling pump.
+      call stripc(iresh2fl_ascii,outstr,0,nd,1,'elec pump flow',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading electrolzer pump flow rate. '
+        bFileError = .true.
+      endif      
+      k = 0
+      call egetwr(outstr,k,fElec_pump_flow,0.,1000.,
+     &            'W','elec pump flow',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading electrolyzer pump flow rate. '
+        bFileError = .true.
+      endif      
+
+C Read the flow rate of the PEMFC cooling pump.
+      call stripc(iresh2fl_ascii,outstr,0,nd,1,'pemfc pump flow',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading PEMFC pump flow rate. '
+        bFileError = .true.
+      endif      
+      k = 0
+      call egetwr(outstr,k,fPEM_pump_flow,0.,1000.,
+     &            'W','pemfc pump flow',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading PEMFC pump flow rate. '
+        bFileError = .true.
+      endif      
+
+C Read the controller deadband for hydrogen production (W)
+      call stripc(iresh2fl_ascii,outstr,0,nd,1,'power deadband',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading deadband for H2 production. '
+        bFileError = .true.
+      endif      
+      k = 0
+      call egetwr(outstr,k,fH2_deadband,0.,1000.,
+     &            'W','power deadband',ier)
+      if ( ier .ne. 0 ) then
+        write(iuout,*) 'Error reading deadband for H2 production. '
+        bFileError = .true.
+      endif      
 
 C Error handling
       if ( bFileError ) then
@@ -689,3 +1138,164 @@ C Notify user that residential h2 cogen control file processing is complete.
 
       RETURN
       END
+
+C-----------------------    RESH2_Ctl_PostProcess   -------------------
+C
+C SYNOPSYS: This routine collects some interesting data pretaining
+C to the H2 controller, and sends it on to h3kreports
+C
+C----------------------------------------------------------------------
+      subroutine RESH2_Ctl_PostProcess()
+      implicit none
+#include "power.h"
+#include "BATTERY.h"
+C Input file information
+      common/resh2ctl/iresh2ctl,resh2flnam
+      integer iresh2ctl         !- flag indicating that file required by residential hydrogen
+                                !- cogen controller is specified
+      character*72 resh2flnam   !- name of file containing residential hydrogen cogen
+                                !- controller inputs
+
+      
+C Electric node information
+      common/resh2_enode/IENOD_ACbus
+      INTEGER IENOD_ACbus          ! Elec domain node number of AC bus.
+
+C Controller flag information
+      common/resh2_comp_status/bPV_active,bElectrolyzer_active,
+     &                    bPEM_active, bBattery_charge,
+     &                    bBattery_discharge
+
+C Flags indicating status of controller
+      logical bPV_active,bElectrolyzer_active,bPEM_active,
+     &                    bBattery_charge, bBattery_discharge
+           
+
+      
+C Common block storing load, generation, and transmission at elec domain nodes.
+      COMMON/ENODLGT/PENODL(MENOD),QENODL(MENOD),
+     &PENODG(MENOD),QENODG(MENOD),PENODT(MENOD),QENODT(MENOD)
+      real    penodl         !- real power load on node
+      real    qenodl         !- reactive power load on node
+      real    penodg         !- real power generation at node
+      real    qenodg         !- reactive power generation at node
+      real    penodt         !- real transmitted power at node
+      real    qenodt         !- reactive transmitted power at node
+
+C 'Network interaction'
+      real fNetworkBalance
+
+C Character strings for holding 'controller mode'
+      CHARACTER*128  hold_name
+
+C Node number of DC bus
+      INTEGER IENOD_DCBUS    ! TO BE CHANGED TO READ IN FROM CTL FILE lATER
+      
+C Get power balance on AC bus (balance = generation + load, loads are -ive)
+C    
+      fNetworkBalance = penodg(IENOD_ACbus) + penodl(IENOD_ACbus)
+
+      IF (mandChargeCycle .EQ. 1) THEN
+C When the battery performs a mandatory charge mode, the direction of flow of power through the 
+C DC/AC converter could be reversed. This will not be possible with the electric current network.
+C Instead of changing the electric network, the potential load of the DC node (node 1) is added to the 
+C network balance of the AC node (node 3) using an average efficiency of the then AC/DC convertor of 98%.
+        IENOD_DCBUS = 1
+        fNetworkBalance = penodg(IENOD_ACbus) + penodl(IENOD_ACbus) +
+     &               (penodg(IENOD_DCbus) + penodl(IENOD_DCbus))/0.98
+      ENDIF
+
+
+C Determine operating mode, and report data to h3kreports
+
+      if ( iResH2Ctl .ne. 1 ) then
+C.......There's no h2 controller. do nothing.      
+
+      elseif ( bElectrolyzer_active ) then
+C.......PV is running electrolyzer       
+        call add_to_xml_reporting(
+     &      fNetworkBalance,
+     &      'control/re_h2_ctl/net_power_balance/electrolyzer_active',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when PV power is used to produce H2 ' )
+      else 
+        call add_to_xml_reporting(
+     &      0.0,
+     &      'control/re_h2_ctl/net_power_balance/electrolyzer_active',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when PV power is used to produce H2 ' )
+
+      endif
+
+      if (  bBattery_charge ) then
+
+C.......PV is charging battery
+        call add_to_xml_reporting(
+     &      fNetworkBalance,
+     &      'control/re_h2_ctl/net_power_balance/battery_charge',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when PV power is used to charge battery')
+
+      else
+        call add_to_xml_reporting(
+     &      0.0,
+     &      'control/re_h2_ctl/net_power_balance/battery_charge',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when PV power is used to charge battery')
+      endif 
+      
+      if ( bBattery_discharge ) then
+C.......Battery is responding to loads
+        call add_to_xml_reporting(
+     &      fNetworkBalance,
+     &      'control/re_h2_ctl/net_power_balance/battery_discharge',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when battery is responding to loads')
+      else
+        call add_to_xml_reporting(
+     &      0.0,
+     &      'control/re_h2_ctl/net_power_balance/battery_discharge',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when battery is responding to loads')
+      endif 
+     
+      if ( bPEM_active ) then
+C.......Battery is responding to loads
+        call add_to_xml_reporting(
+     &      fNetworkBalance,
+     &      'control/re_h2_ctl/net_power_balance/PEMFC_active',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when PEMFC is responding to loads' )
+      else
+C.......Battery is responding to loads
+        call add_to_xml_reporting(
+     &      0.0,
+     &      'control/re_h2_ctl/net_power_balance/PEMFC_active',
+     &      'units',
+     &      '(W)',
+     &      'Balance on AC bus when PEMFC is responding to loads' )
+      endif
+
+      return
+      end
+
+
+C-----------------------    RESH2_Ctl_Status_Blockdata ----------------
+C
+C SYNOPSYS: Initialization of value of bResH2_ctl_unconverged flag
+C
+C----------------------------------------------------------------------
+      blockdata resh2_ctl_status_blockdata
+      common / resh2_ctl_status / bResH2_ctl_unconverged
+      logical bResH2_ctl_unconverged         !-logical flag indicating additional iterations req'd
+      data bResH2_ctl_unconverged/.false./   !initial value
+      end blockdata resh2_ctl_status_blockdata
+
+      

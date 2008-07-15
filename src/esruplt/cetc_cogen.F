@@ -344,12 +344,13 @@ C..............Mark solution as unstable
 C--------------------------------------------------------------------
 C           Ensure that calculated fuel flow is within system bounds.
 C--------------------------------------------------------------------
-            if (fFuel_flow_new .lt.
-     &          fFuel_Flow_MIN (iComponent))
-     &          fFuel_flow = fFuel_Flow_MIN (iComponent)
-            if (fFuel_flow_new .gt.
-     &          fFuel_Flow_MAX (iComponent))
-     &          fFuel_flow = fFuel_Flow_MAX (iComponent)
+            if (fFuel_flow_new .lt. fFuel_Flow_MIN (iComponent) .OR.
+     &          fFuel_flow_new .gt. fFuel_Flow_MAX (iComponent) ) then
+
+C.................Loop is unstable!                  
+                  bStable = .false.
+
+            endif 
 C--------------------------------------------------------------------
 C           Check for convergence / stability (Compare normalized
 C           values for fuel flow)
@@ -527,7 +528,8 @@ C----------------------------------------------------------------------
 C     Outputs from model-specific procedures that are not used
 C     in the current context.
 C----------------------------------------------------------------------
-      real fVoltage, fCurrent, fSkin_Losses, fAux_Power_use, fQ_avail
+      real fVoltage, fCurrent, fSkin_Losses, fAux_AC_Power_use,
+     &     fQ_avail 
 
 C----------------------------------------------------------------------
 C     Check supplied model type, and call appropriate model procedure
@@ -546,7 +548,7 @@ C........Empirical Hydrogen PEMFC model.
      &              fVoltage,
      &              fCurrent,
      &              fSkin_Losses,
-     &              fAux_Power_use  )
+     &              fAux_AC_Power_use  )
 
 
       else

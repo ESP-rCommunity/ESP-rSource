@@ -212,7 +212,7 @@ C----------------------------------------------------------------------
      &            iPlant_Matrix,
      &            fCoefficients )
       implicit none
-
+#include "building.h"
 #include "plant.h"
 #include "chemical_properties.h"
 #include "Hydrogen_demand_controller.h"
@@ -349,6 +349,16 @@ C.....Common containing plant componet mass diversion ratios
                               !-node for each plant component inter-connection
       real    pconsd          !-supplementary data for plant component inter-
                               !-connection
+
+
+C.....Trace & reporting data
+      common/tc/itc,icnt
+      common/outin/iuout,iuin
+      common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+C.....Trace/error reporting unit numbers
+      integer iTc,iCnt
+      integer iUout,iUin
+      integer iTcf,iTrace,iZntrc,iTu
       
 C----------------------------------------------------------------------
 C     Model commons
@@ -363,7 +373,9 @@ C.....Compressed cylinder results.
      &       fReport_H2_vent             ( MPcom ),
      &       fReport_H2_pressure_present ( MPCom ),
      &       fReport_H2_pressure_future  ( MPCom ),
-     &       iStore_Connect_index(MPCom)
+     &       iStore_Connect_index        ( MPCom ),
+     &       fReport_H2_deficit_IMP      ( MPCom ),
+     &       fReport_H2_deficit_EXP      ( MPCom )
 
       real fReport_H2_mass_present
       real fReport_H2_mass_future
@@ -373,7 +385,19 @@ C.....Compressed cylinder results.
       real fReport_H2_pressure_present
       real fReport_H2_pressure_future
       integer iStore_Connect_index
+      real fReport_H2_deficit_IMP
+      real fReport_H2_deficit_EXP     
 
+C.....Variables used by controller, hydrogen compressor.
+C.....Note: these variables are presently implemented as h2-network specific
+C.....customizations. They should be reimplemented in a modular fashion when
+C.....time permits. 
+      common/resh2_stg/bCyl_H2_max_reached, fCyl_reported_pressure
+      logical bCyl_H2_max_reached    ! Flag indicating that maximum pressure
+                                     ! in storage reached.
+
+      real fCyl_reported_pressure    ! Variable used to report current
+                                     ! pressure to compressor 
 
 C----------------------------------------------------------------------
 C     Local Variables
@@ -449,6 +473,11 @@ C.....State variables & other data
       real fCyl_H2_charge_future       ! Rate at which hydrogen is stored within
                                        !     the tank (kg/s)
 
+      real fCyl_H2_deficit_EXP   ! H2 deficit in meeting the load of the 
+                                 ! explicit part (kg/s)
+ 
+      real fCyl_H2_deficit_IMP   ! H2 deficit in meeting the load of the 
+                                 ! implicit part (kg/s)
 
       real fSoln_alpha          ! implicit/explicit weighting factor (-)
 
@@ -511,6 +540,19 @@ C     Misc local variables
 C-----------------------------------------------------------------------
       integer iCount            ! Counter
       logical bNums_Are_Close   ! logical result of close-to-zero comparisons
+
+C.....Flag for enabling / disabling venting 
+      logical bVent_OK
+      integer iVent_flag
+      integer iNo_Vent, iVent_OK
+      parameter ( iNo_Vent = 0,
+     &            iVent_OK = 1 )
+
+C.....Flags indicating venting warning has been issued.
+      logical bVent_Warn ( MPCom )
+      data bVent_Warn / MPCom * .false. /
+      save bVent_Warn
+     
 C----------------------------------------------------------------------
 C     Named constants
 C----------------------------------------------------------------------
@@ -581,6 +623,14 @@ C----------------------------------------------------------------------
       fCyl_MAX_press   =  ADATA ( iComponent, 6 )     ! kPa
       fCyl_Init_press  =  ADATA ( iComponent, 7 )     ! kPa
       iGas_LAW     = int( ADATA ( iComponent, 8 ) )   ! (-)
+      iVent_flag   = int( ADATA ( iComponent, 9 ) )   ! (-) 
+
+C.....Set flag to enable / disable venting       
+      if ( iVent_flag == iVent_OK ) then
+        bVent_OK = .true.
+      else
+        bVent_OK = .false.
+      endif 
 
 C----------------------------------------------------------------------
 C     Collect properties of incomming hydrogen connection
@@ -678,6 +728,8 @@ C----------------------------------------------------------------------
      &               * ( fCyl_Temp_Present + fC_to_K )
      &            )  ! (kg)
 
+           bCyl_H2_max_reached = .false.
+
 
       else
 
@@ -754,12 +806,45 @@ C        can be stored in the tank are respected:
 C----------------------------------------------------------------------
          if ( fCyl_H2_mass_future .gt. fCyl_H2_mass_MAX ) then
 C----------------------------------------------------------------------
-C           Tank mass will exceed maximum; some hydrogen will have
+C           Tank mass will exceed maximum; some hydrogen may have
 C           to be vented:
 C-----------------------------------------------------------------------
-C...........Rate at which hydrogen is vented
-            fCyl_H2_vent = ( fCyl_H2_mass_future - fCyl_H2_mass_MAX )
+
+            bCyl_H2_max_reached = .true.
+
+C...........Warn user.
+            if ( .not. bVent_Warn ( iComponent ) ) then 
+
+              write (itu,'(A)') ' '
+              write (itu,'(A,I2,A)') ' Warning: Compressed cylinder'
+     &          // ' model (plant component #', iComponent,'):'
+              write (itu,'(A,g10.5,A)') '          Maximum pressure (',
+     &          fCyl_MAX_press, ' kPa) exceeded!'
+
+              if ( bVent_OK ) then 
+                write (itu,'(A)') '          Hydrogen will be vented.'
+              else
+                write (itu,'(A)') '          Hydrogen venting disabled'
+     &            // '---tank will continue to charge.'
+              endif
+
+              write (itu,'(A)') ' '
+
+              bVent_Warn ( iComponent ) = .true.
+            endif 
+
+C...........Check if venting is permitted, and calculate vent rate
+            if ( bVent_OK ) then
+              fCyl_H2_vent = ( fCyl_H2_mass_future - fCyl_H2_mass_MAX )
      &                 / fTS_duration           ! (kg/s)
+
+
+            else
+C.............Venting not permitted
+              fCyl_H2_vent = 0.0
+
+                       
+            endif 
 
 C...........Rate at which tank is charged
             fCyl_H2_charge_future = fConn_Mass_Flow - fCyl_H2_vent   ! (kg/s)
@@ -775,6 +860,7 @@ C----------------------------------------------------------------------
 C           Tank mass will drop below minimum; Not all of the
 C           hydrogen demanded can be delivered:
 C----------------------------------------------------------------------
+            bCyl_H2_max_reached = .false.
 C...........Rate of hydrogen delivery:
             fCyl_H2_discharge_future = fCyl_H2_demand -
      &               ( fCyl_H2_mass_MIN - fCyl_H2_mass_future )
@@ -791,6 +877,7 @@ C...........Rate at which hydrogen is vented
 C----------------------------------------------------------------------
 C           Tank will charge/discharge normally
 C----------------------------------------------------------------------
+            bCyl_H2_max_reached = .false.
             fCyl_H2_discharge_future = fCyl_H2_demand                 ! (kg/s)
             fCyl_H2_charge_future    = fConn_Mass_Flow                ! (kg/s)
             fCyl_H2_vent             = 0.0                            ! (kg/s)
@@ -834,6 +921,17 @@ C...........the implicit demand can be met.
      
          endif 
 
+C-----------------------------------------------------------------------
+C        Calculate the H2 deficits (kg/s).
+C
+C        This section should not be part of the storage model, but 
+C        shouldbe incorporated into the H2 component models 
+C        when they will be made more advanced.
+C-----------------------------------------------------------------------
+         fCyl_H2_deficit_IMP = (fCyl_H2_demand_IMP - 
+     &      fH2_plt_IMP_supply_TOTAL (iComponent))
+         fCyl_H2_deficit_EXP = (fCyl_H2_demand_EXP - 
+     &      fH2_plt_EXP_supply_TOTAL (iComponent))
      
 C----------------------------------------------------------------------
 C        Calculate the matrix coefficients characterizing
@@ -858,6 +956,8 @@ C----------------------------------------------------------------------
          fReport_H2_charge (iComponent)      = fCyl_H2_charge_future
          fReport_H2_discharge(iComponent)    = fCyl_H2_discharge_future
          fReport_H2_vent(iComponent)         = fCyl_H2_vent
+         fReport_H2_deficit_IMP(iComponent)  = fCyl_H2_deficit_IMP
+         fReport_H2_deficit_EXP(iComponent)  = fCyl_H2_deficit_EXP
 
          PCDatF(iComponent,1) = fCyl_H2_mass_Future         ! (kg)
          PCDatF(iComponent,2) = fCyl_H2_charge_Future       ! (kg/s)
@@ -1593,6 +1693,18 @@ C.....Misc. plant component data.
       integer ipofs1(mcoefg)       ! not used in current context
       integer ipofs2(mcoefg,mpvar) ! not used in current context
 
+C.....Variables used by controller, hydrogen compressor.
+C.....Note: these variables are presently implemented as h2-network specific
+C.....customizations. They should be reimplemented in a modular fashion when
+C.....time permits. 
+      common/resh2_stg/bCyl_H2_max_reached, fCyl_reported_pressure
+      logical bCyl_H2_max_reached    ! Flag indicating that maximum pressure
+                                     ! in storage reached.
+
+      real fCyl_reported_pressure    ! Variable used to report current
+                                     ! pressure to compressor 
+
+
 C----------------------------------------------------------------------
 C     Model commons
 C----------------------------------------------------------------------
@@ -1606,7 +1718,9 @@ C.....Compressed cylinder results.
      &       fReport_H2_vent             ( MPcom ),
      &       fReport_H2_pressure_present ( MPCom ),
      &       fReport_H2_pressure_future  ( MPCom ),
-     &       iStore_Connect_index        ( MPCom )
+     &       iStore_Connect_index        ( MPCom ),
+     &       fReport_H2_deficit_IMP      ( MPCom ),
+     &       fReport_H2_deficit_EXP      ( MPCom )
 
       real fReport_H2_mass_present
       real fReport_H2_mass_future
@@ -1616,6 +1730,8 @@ C.....Compressed cylinder results.
       real fReport_H2_pressure_present
       real fReport_H2_pressure_future
       integer iStore_Connect_index
+      real fReport_H2_deficit_IMP
+      real fReport_H2_deficit_EXP     
 
 C.....Named constants:
 C.....reporting module status
@@ -1705,6 +1821,12 @@ C----------------------------------------------------------------------
      &      fReport_H2_mass_future ( iComponent )
      &    * fCompound_R ( iHydrogen ) / 1000.0
      &    * fCyl_H2_Temp_future / fCyl_Volume
+
+C.....Save future pressure in commons used by compressor model:
+C.....This is a H2-dep specific customization and should be
+C.....generalized as time permits.
+      fCyl_reported_pressure = fReport_H2_pressure_future (iComponent)
+
 C----------------------------------------------------------------------
 C     Recover Component name
 C----------------------------------------------------------------------
@@ -1794,6 +1916,30 @@ C.....Output data: Pressure at future time-row
      &   'units', '(kPa)',
      &   'Compressed gas cylinder: gas pressure at future time-row '
      &    )
+
+C--------------------------------------------
+C.....Output data: H2 deficit implicit part
+      write(H3Kname,'(A,A)')
+     &  char_temp(1:iNameLength),
+     &  '/hydrogen_deficit_IMP'
+      call add_to_xml_reporting(
+     &   fReport_H2_deficit_IMP(iComponent),
+     &   H3Kname,
+     &   'units', '(kg/s)',
+     &   'Compressed gas cylinder: H2 deficit (IMP)'
+     &   )
+
+C--------------------------------------------
+C.....Output data: H2 deficit explicit part
+      write(H3Kname,'(A,A)')
+     &  char_temp(1:iNameLength),
+     &  '/hydrogen_deficit_EXP'
+      call add_to_xml_reporting(
+     &   fReport_H2_deficit_EXP(iComponent),
+     &   H3Kname,
+     &   'units', '(kg/s)',
+     &   'Compressed gas cylinder: H2 deficit (EXP)'
+     &   )
 
 C----------------------------------------------------------------------
 C     Save connection temperature for next time-row

@@ -1430,9 +1430,9 @@ C If BASESIMP foundation defined, read it in.
 C H2-dep_controller: start
 C Experimental Hydrogen controller. Use with caution
 C Residential hydrogen cogen : control file
-C      if ( iresh2ctl .eq. 1 ) then
-C         call RESH2_Ctl_Read
-C      endif
+      if ( iresh2ctl .eq. 1 ) then
+         call RESH2_Ctl_Read
+      endif
 C H2-dep_controller: end
 
 C If zone TMC file read it in.

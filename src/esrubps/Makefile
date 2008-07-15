@@ -55,7 +55,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
-	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o
+	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o
 
 $(PROG): $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -573,6 +573,9 @@ BC_data.F:
 plt_bc_components.F:
 	rm -f plt_bc_components.F
 	ln -s $(PLTdir)/plt_bc_components.F
+RE-H2-ctl.F:
+	rm -f RE-H2-ctl.F
+	ln -s $(CETCdir)/RE-H2-ctl.F
 Hydrogen_appliances.F:
 	rm -f Hydrogen_appliances.F
 	ln -s $(PLTdir)/Hydrogen_appliances.F
@@ -674,7 +677,7 @@ clean:
 	FC_components.F FC_functions.F water_tanks.F h3k_utils.F SetDllParms.F \
 	AIMS.F TAC.F WaterProperties.F DG_controller.F elec_net_utilities.F \
 	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F \
-	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
+	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F RE-H2-ctl.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F SiteUtilities.F
