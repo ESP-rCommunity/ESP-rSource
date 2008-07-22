@@ -2,7 +2,11 @@
 *menu,Creates three zone model in /tmp/poly3
 *doc,Model of a box and roof and triangual room within distributed folders to be created in /tmp/poly3 and then set site to use data from irl_dublin_iwec climate file.
 *action,new,poly,distributed,/tmp/poly3
-*weather_station,dublin
+*weather_station,uk_oban
+*site,45.320,0.000,0.0,6 # latitude, long diff, time zone, exposure index (and sky/ground/building exposure)
+*ground_refl_annual,0.20
+*sim_parameters,3,4,1,4
+*assessments,winter,fortnight
 *start_zone,metal_box5
 *shape,box
 *origin,0.0,0.0,0.0  # origin of zone

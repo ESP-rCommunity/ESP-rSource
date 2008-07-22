@@ -410,10 +410,8 @@ C that take 5.2 W/m2 per 100 lux.
           QTOTLIGHT=3.75*(ITMAR(1,6)/100)*VAL(ISD+1)*ZBASEA(ICOMP)
         ELSE
 
-C Read information from ncm file. Need type of light and then a value
+C Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
-          CALL SBEMPR(IER)
-          CALL RSBEM     
           IF(ILIGHTUSER(ICOMP).EQ.0)THEN
             ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
 

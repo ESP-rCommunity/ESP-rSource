@@ -13,6 +13,8 @@ C NCM Array sizing integers
       PARAMETER (MSBT=3)    ! max. Scottish building types
       PARAMETER (MDW=5)     ! max. DHW generators
       PARAMETER (MWS=6)     ! max. fuel types for DHW generators
+      
+C WARNING: MNS should be at least as big as MCOM in building.h.
       PARAMETER (MNS=28)    ! max. HVAC and DHW systems allowed in model
                             ! max. activities allowed in the model
                             ! This is kept equal to max zones normally allowed
@@ -37,12 +39,13 @@ C Real numbers
 
 C NCM common blocks for read/write of *.ncm project specific file and
 C for BRUKL input file (*.inp)
-C Integers
+C Integers. 
+      integer theactivityindex   ! the long list (up to 525) activity index for each zone.
       COMMON/SBEM04/IBRUKH(MNS),IBRUKC(MNS),IBRUKW(MNS),IBRUKF(MNS),
      &IHGEF(MNS),ICGEF(MNS),IFTYP(MNS),IHLZ(MNS),IDHWS(MNS),IDHFL(MNS),
      &INCMSYS(MNS),IDHWLZ(MNS),IACTYTYP(MNS),ILITYP(MNS),
      &ILIGHTUSER(MNS),ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,INOTI,
-     &NDHWSYS
+     &NDHWSYS,theactivityindex(MNS)
 
 C Strings
       COMMON/SBEM05/DHWNAME(MNS),HVACNAME(MNS),LASBEM,SBREF,APCHK,
@@ -50,27 +53,33 @@ C Strings
      &OWNERCITY,OWNERPC,CERTIFNAME,CERTTEL,CERTADDRESS,CERTCITY,CERTPC
 
 C Real numbers
-      COMMON/SBEM06/ROOFFR,WALLFR,BINF50,HGEF(MNS),CGEF(MNS),SFPHS(MNS),
-     &HWEF(MNS),ACH(MNS),LIGHTWATTAGE(MNS)
+      COMMON/SBEM06/ROOFFR,WALLFR,BINF50,ROOFFRFR,WALLFRFR,HGEF(MNS),
+     &CGEF(MNS),SFPHS(MNS),HWEF(MNS),ACH(MNS),LIGHTWATTAGE(MNS)
+
+      COMMON/SBEM07/BEREMSN,AEREMSN,BERHEAT(MNS),BERCOOL(MNS),
+     &BERLIGHT(MNS),BERDHW(MNS),BERAUX(MNS),BERMACH(MNS),AERHEAT(MNS),
+     &AERCOOL(MNS),AERLIGHT(MNS),AERDHW(MNS),AERAUX(MNS),AERMACH(MNS)
 
 C Activities global list
       INTEGER bld_order_index ! building order indices from the *bldg_type_start section of the file
       REAL occupant_dens  ! occupant density people/m2
-      REAL metabolic_rate ! metabolic rate W/person/m2
+      INTEGER metabolic_rate ! metabolic rate W/person/m2
       REAL fresh_air      ! outside air per person litres/sec/person
-      REAL lighting_lux   ! lighting lux
+      INTEGER lighting_lux   ! lighting lux
       REAL equip_gain     ! equipment W/m2 
       REAL dhw_litres     ! domestic hot water litres/day/m2
-      REAL latent_ocup_percent ! occupant latent percentage (of the whole gain)
-      REAL latent_equip_percent ! equipment latent percentage (of the whole gain)
+      INTEGER latent_ocup_percent ! occupant latent percentage (of the whole gain)
+      INTEGER latent_equip_percent ! equipment latent percentage (of the whole gain)
       REAL display_lighting ! lighting display W/m2
+      REAL Hmainsetpoint,Cmainsetpoint  
       common/actglob/bld_order_index(MACL),occupant_dens(MACL),
      &  metabolic_rate(MACL),fresh_air(MACL),lighting_lux(MACL),
      &  equip_gain(MACL),dhw_litres(MACL),latent_ocup_percent(MACL),
-     &  latent_equip_percent(MACL),display_lighting(MACL)
+     &  latent_equip_percent(MACL),display_lighting(MACL),
+     &  Hmainsetpoint(MACL),Cmainsetpoint(MACL)
 
       character*72 roomactname ! the quoted string naming the activity
-      character*96 roomactdoc  ! a quote description of activity
+      character*102 roomactdoc  ! a quote description of activity
       common/actglobtext/roomactname(MACL),roomactdoc(MACL)
 
 C Project specific *.ncm file variables
@@ -119,6 +128,8 @@ C Project specific *.ncm file variables
 
       REAL ROOFFR   ! roof glazing fraction required
       REAL WALLFR   ! wall glazing fraction required
+      REAL ROOFFRFR ! roof window frame fraction required
+      REAL WALLFRFR ! wall window frame fraction required
       REAL BINF50   ! building's permeability at 50Pa in m3/m2.hour
       REAL HGEF     ! heat generator efficiency/COP
       REAL CGEF     ! cool generatr efficiency/COP
@@ -126,7 +137,24 @@ C Project specific *.ncm file variables
       REAL HWEF     ! DHW generator efficiency
       REAL ACH      ! Air changes per zone
       REAL LIGHTWATTAGE ! Heat gains (Watts) per zone in the cases of user specifies them
+      REAL BEREMSN  ! total CO2 emission of real building
+      REAL AEREMSN  ! total CO2 emission of notional building
+      REAL BERHEAT  ! heating CO2 emission of real building
+      REAL BERCOOL  ! cooling CO2 emission of real building
+      REAL BERLIGHT ! lighting CO2 emission of real building 
+      REAL BERDHW   ! DHW CO2 emission of real building
+      REAL BERAUX   ! auxiliary CO2 emission of real building
+      REAL BERMACH  ! equipment CO2 emission of real building
+      REAL AERHEAT  ! heating CO2 emission of notional building
+      REAL AERCOOL  ! cooling CO2 emission of notional building
+      REAL AERLIGHT ! lighting CO2 emission of notional building 
+      REAL AERDHW   ! DHW CO2 emission of notional building
+      REAL AERAUX   ! auxiliary CO2 emission of notional building
+      REAL AERMACH  ! equipment CO2 emission of notional building
 
+c      COMMON/SBEM07/BER,AER,BERHEAT(MNS),BERCOOL(MNS),BERLIGHT(MNS),
+c     &BERDHW(MNS),BERAUX(MNS),BERMACH(MNS),AERHEAT(MNS),AERCOOL(MNS),
+c     &AERLIGHT(MNS),AERDHW(MNS),AERAUX(MNS),AERMACH(MNS)
 C SBEM database variables
       INTEGER IBTYP     ! this matches the index value in NCM guide table 4
       INTEGER ISYSAPP   ! hash table with elements equal to 1 if that heating or

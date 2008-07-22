@@ -57,9 +57,13 @@ C ******************** scesprc
 C scesprc scans the ESP-r dot file which should be located in the
 C users home folder or in the esp-r distribution.  If not found
 C then some defaults are set.
+C Note: take this opportunity to instanciate common block stddbpath
+C while we have information on where esp-r was installed.
+
       SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)  
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
+c#include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
@@ -206,6 +210,7 @@ C Set defaults and exemplars depending on whether Unix or NT.
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
+C        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
       else
         write(gxwdcmd,'(a)')'xwud -out c:/temp/gxwd.xwd'
         tprlbl='Text dump'
@@ -219,7 +224,12 @@ C Set defaults and exemplars depending on whether Unix or NT.
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
+c        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
       endif
+
+C Debug.
+c      write(6,*) 'standard databases are at ',
+c     &  standarddbpath(1:lnblnk(standarddbpath))
 
 C If running in dll mode skip reading .esprc file.
       if(dll)then
@@ -704,8 +714,8 @@ C Close defaults file before exiting.
 C Parse command lines.
 
 C ********* parpsf (equivalent to startpsf.c)
-C  Allowing terminal, size and config file arguments
-C  to be passed to the program from the invocation line.  
+C parpsf allowa terminal, size and config file arguments
+C to be passed to the program from the invocation line.  
 
       subroutine parpsf(termtype,iappw,iappx,iappy,inf)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1018,6 +1028,11 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'       [-zone <name|index>]')
         call edisp(iuout,'       [-s < width, offset left & top>]')
         call edisp(iuout,'       [-act {recalculate|update_silent}]')
+        call edisp(iuout,'       [-act { <action> }')
+        call edisp(iuout,'       [-act [recalculate|update_silent]}')
+        call edisp(iuout,'       [-act { <action> <file>]}')
+        call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
+        call edisp(iuout,'   (where file is asci input or output file)')
         call edisp(iuout,' ')
         call edisp(iuout,'  where -mode options are:')
         call edisp(iuout,'    text    = text mode ')
@@ -1065,13 +1080,21 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'  is high-level model creation directives')
         call edisp(iuout,'  file. Otherwise the -file <name> is')
         call edisp(iuout,'  assumed to be a model configuration file)')
+        call edisp(iuout,'       [-act transform < x y z values>] ')
+        call edisp(iuout,' (where -act transform is followed by three')
+        call edisp(iuout,'  values for the transform in X Y Z axis)')
+        call edisp(iuout,'       [-act rotate < angle x y values>] ')
+        call edisp(iuout,' (where -act rotate is followed by the angle')
+        call edisp(iuout,'  degrees +=anticlockwise and the X and Y')
+        call edisp(iuout,'  coordinates to rotate around.)')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <results file>]')
         call edisp(iuout,'   [-act <action, {interactive|silent}>]')
-        call edisp(iuout,'  (where action {ipv_win|ipv_trn|ipv_sum|)')
-        call edisp(iuout,'                 ipv_ann|BEMS|recover})')
+        call edisp(iuout,'  (where action {ipv_win1|ipv_spr|ipv_sum|)')
+        call edisp(iuout,'                 ipv_aut|ipv_win2|ipv_trn|)')
+        call edisp(iuout,'                 ipv_annual|BEMS|recover})')
         call edisp(iuout,'  (where default is interactive mode and')
         call edisp(iuout,'   silent is automatic execution)')
         call edisp(iuout,'   [-actf file providing bems commands or')
@@ -1170,9 +1193,9 @@ C Get arguments from command line: if one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(a,a)') 'and parameters ',sps(1:lnblnk(sps))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1242,11 +1265,11 @@ C Display detailed build information and then quit
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         outs=' '
         write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
      &   ' in ',aut,' mode and ',browse,' browsing.'
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         return
       endif
 
@@ -1308,7 +1331,7 @@ C Get arguments from command line: if one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1372,7 +1395,7 @@ C Display detailed build information and then quit
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &   ' in ',aut,' mode.'
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1435,7 +1458,7 @@ C Get arguments from command line: if one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1497,13 +1520,13 @@ C Display detailed build information and then quit
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         outs=' '
         write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
      &   ' in ',aut,' mode.'
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(2a)') 'using/making file ',ascif(1:lnblnk(ascif))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         return
       endif
 
@@ -1517,11 +1540,12 @@ C Errors.
       end
 
 
-C ********* parsfza (equivalent to startsfza.c)
-C  Allowing terminal, size, config file, zone focus and actions arguments
-C  to be passed to the program from the invocation line.  
+C ********* parsish
+C parsish allows the module ish to be passed a terminal, size, config file,
+C zone focus and actions arguments from the invocation line.  
 
-      subroutine parsfza(termtype,iappw,iappx,iappy,inf,zone,act)
+      subroutine parsish(termtype,iappw,iappx,iappy,inf,zone,act,
+     &  ascif)
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -1530,7 +1554,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
-      character outs*248,zone*16,act*16
+      character outs*248,zone*16,act*16,ascif*72
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -1558,6 +1582,7 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       zone = 'ALL'
       act = 'NONE'
+      ascif  = 'UNKNOWN'
       argument = ' '
 
 C Get arguments from command line: if one parameter.
@@ -1566,7 +1591,7 @@ C Get arguments from command line: if one parameter.
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
      &    ' with action ',act(1:lnblnk(act))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1619,6 +1644,12 @@ C Display detailed build information and then quit
         elseif(argument(1:4).eq.'-act')then
           i=i+1
           call getarg(i,act)
+	  
+C If act is asci2bin or bin2asci read ascii file name
+          if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+            i=i+1
+            call getarg(i,ascif)
+	  endif
         endif
         goto 41
 
@@ -1627,7 +1658,159 @@ C Display detailed build information and then quit
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
      &    ' with action ',act(1:lnblnk(act))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
+        return
+      endif
+
+C Errors.
+   2  if(IOS.eq.2)then
+        write(6,'(a)') 'parsfza: permission error getting parameters.'
+      else
+        write(6,'(a)') 'parsfza: error extracting parameters.'
+      endif
+      return
+      end
+
+C ********* parsprj 
+C parsprj allows terminal, size, config file, zone focus and actions arguments
+C (including 3 real data) to be passed to the prj from the invocation line.  
+      subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
+     &        data1,data2,data3)
+      COMMON/OUTIN/IUOUT,IUIN
+
+C Application name
+      common/APPNAME/cAppName
+      character*12 cAppName
+
+      integer termtype,iappw,iappx,iappy
+      character*48 prog
+      integer iargc,m
+      character argument*72,mode*8,inf*144,appn*24
+      character outs*248,zone*16,act*16
+      real data1,data2,data3
+
+
+C Determine if an X graphics library (GTK or X11) was linked
+C into binary, and set default terminal type as necessary
+
+      if ( iXavail() == 1 ) then 
+        termtype = 8
+        mode = 'graphic'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      else
+        termtype = -1
+        mode = 'text'
+        m = iargc()
+        i = 0
+        call getarg(i,prog)
+        call findapp(prog,appn)
+      endif
+      
+      iappw = 0
+      iappx = 0
+      iappy = 0
+      inf  = 'UNKNOWN'
+      zone = 'ALL'
+      act = 'NONE'
+      argument = ' '
+      data1=0.0
+      data2=0.0
+      data3=0.0
+
+C Get arguments from command line: if one parameter.
+      if(m.eq.0)then
+        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+     &    data2,data3
+        call edisp248(iuout,outs,90)
+        return
+      elseif(m.ge.1)then
+  41    i= i+1
+        if(i.gt.m)goto 42
+        call getarg(i,argument)
+
+        if(argument(1:5).eq.'-help')then
+          call parpsfh(appn)
+          stop
+        elseif(argument(1:8) .eq. '-version' ) then
+C Display version information and then quit
+          CALL ESPrVersion("summary",cAppName,IUOUT)
+          stop
+        elseif( argument(1:10) .eq. '-buildinfo' ) then
+C Display detailed build information and then quit
+          CALL ESPrVersion("details",cAppName,IUOUT)
+          stop
+        elseif(argument(1:5).eq.'-mode')then
+          i=i+1
+          call getarg(i,argument)
+          if(argument(1:4).eq.'text')then
+            termtype = -1
+            mode = 'text'
+          elseif(argument(1:4).eq.'page')then
+            termtype = -2
+            mode = 'page'
+          elseif(argument(1:5).eq.'graph')then
+            termtype = 8
+            mode = 'graphic'
+          elseif(argument(1:6).eq.'script')then
+            termtype = -6
+            mode = 'script'
+          endif
+        elseif(argument(1:2).eq.'-s')then
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)iappw
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)iappx
+          i=i+1
+          call getarg(i,argument)
+          read(argument,*,IOSTAT=IOS,ERR=2)iappy
+        elseif(argument(1:5).eq.'-file')then
+          i=i+1
+          call getarg(i,inf)
+        elseif(argument(1:5).eq.'-zone')then
+          i=i+1
+          call getarg(i,zone)
+        elseif(argument(1:4).eq.'-act')then
+          i=i+1
+          call getarg(i,act)
+	  if(act(1:6).eq.'rotate')then
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data1
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data2
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data3
+          elseif(act(1:9).eq.'transform')then
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data1
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data2
+            i=i+1
+            call getarg(i,argument)
+            read(argument,*,IOSTAT=IOS,ERR=2)data3
+	  endif
+        endif
+        goto 41
+
+  42    continue
+        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+     &    data2,data3
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1687,7 +1870,7 @@ C Get arguments from command line: if one parameter.
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1744,7 +1927,7 @@ C Display detailed build information and then quit
         write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1759,8 +1942,8 @@ C Errors.
 
 
 C ********* partf (equivalent to startup.c)
-C  Allowing terminal and config file arguments
-C  to be passed to the program from the invocation line.  
+C partf allows terminal and config file arguments
+C to be passed to the program from the invocation line.  
 
       subroutine partf(termtype,inf)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1800,7 +1983,7 @@ C Get arguments from command line: if one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1844,13 +2027,13 @@ C Display detailed build information and then quit
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       endif
       end
 
 C ********* partfa (equivalent to partf with an action parameter)
-C  Allowing terminal, file and action arguments
+C partfa allows terminal, file and action arguments
 C  to be passed to the program from the invocation line.  
 C  Logic allows for the -file token to be optional.
       subroutine partfa(termtype,inf,act)
@@ -2000,13 +2183,13 @@ C Get arguments from command line: if one parameter.
         write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(a,a)') 'with scene purpose',aim(1:lnblnk(aim))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-C        call edisp(iuout,outs)
+        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -2074,7 +2257,7 @@ C Display detailed build information and then quit
      &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
      &    ' with scene purpose ',aim(1:lnblnk(aim)),
      &    ' with action ',act(1:lnblnk(act))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -2088,7 +2271,7 @@ C Errors.
       end
 
 C ********* parsfact
-C  Allowing terminal, size, file andactions arguments
+C parsfact allows terminal, size, file and actions arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
@@ -2136,7 +2319,7 @@ C Get arguments from command line: if one parameter.
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
      &    ' applied to ',actf(1:lnblnk(actf))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -2196,7 +2379,7 @@ C Display detailed build information and then quit
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
      &    ' applied to ',actf(1:lnblnk(actf))
-C        call edisp248(iuout,outs,90)
+        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -2209,7 +2392,7 @@ C Errors.
       return
       end
 
-C Parse command line paramters for ecnv.
+C parcnv parse command line paramters for ecnv.
       subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       COMMON/OUTIN/IUOUT,IUIN
@@ -2325,7 +2508,7 @@ C If one parameter.
       end
 
 C ******* FINDAPP
-C Given a file name (string) see if it contains one of the esp-r module names.
+C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
       SUBROUTINE findapp(string,appn)
       CHARACTER*(*) string,appn
       logical unixok

@@ -779,7 +779,6 @@ C Information is available via common block MLC.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKMLC(ISEL,PROMPT1,PROMPT2,IER)
 #include "building.h"
-#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -1066,7 +1065,7 @@ C GS (52 char) list of optical database items to select from.
       COMMON/GPICK/GS(MGOPT),nopt
 
       LOGICAL FOUND
-      CHARACTER GS*52,WORD*20,topt*72,outs*124
+      CHARACTER GS*52,WORD*20,outs*124!,topt*72
       CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
 
 C Open the optical database, if scanning all items reset the
@@ -1082,7 +1081,9 @@ C Reporting.
      &      ' Optical properties for transparent constructions.')
         endif
       elseif(SOPT(1:3).EQ.'TMP')then
-        topt='tmpopt'
+
+C Topt is not used anywhere 
+C        topt='tmpopt'
       endif
       FOUND=.FALSE.
       GTYPE=' '

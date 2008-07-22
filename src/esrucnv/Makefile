@@ -13,8 +13,8 @@ OBJECTS = ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
 	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o item.o low_lev.o mfcdat.o mid_lev.o \
-	  nwkrewr.o plelev.o pltcfg.o readTrnsys.o rwipv.o sort.o startup.o \
-	  tdfile.o wwxfig.o zipcnv.o
+	  nwkrewr.o plelev.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
+	  startup.o tdfile.o wwxfig.o zipcnv.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -79,6 +79,9 @@ readTrnsys.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -99,5 +102,5 @@ clean:
 	rm -f core $(PROG) $(OBJECTS) \
 	ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
-	item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F readTrnsys.F rwipv.F sort.F \
-	startup.F tdfile.F
+	item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
+	sort.F startup.F tdfile.F

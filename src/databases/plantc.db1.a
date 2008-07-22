@@ -5926,3 +5926,158 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     92
+ 
+ Component Description
+    Generic type     : WCH boiler
+    Description      : condensing boiler with modulation; 2 node model
+    Insertion date   : 11 Mar 92 21:53
+    Type: Single component                    Component code :    420
+ 
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      3
+    Matrix positions :   1,   3,   4,
+    Node connections :   1,  -1,
+    Variable type    :  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :  21    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    50.000        Range (Min Max):     50.000        50.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    1000.0        Range (Min Max):     1000.0        1000.0
+ BDATA variables:
+    1 Full load gas firing rate if boiler on (m^3/s)
+      Value =   0.30000E-03    Range (Min Max):    0.30000E-03   0.30000E-03
+    2 dump load fraction
+      Value =    0.0000        Range (Min Max):    0.00000        1.0000
+    3 Gas heating value at STP (J/m^3)
+      Value =   0.35000E+08    Range (Min Max):    0.35000E+08   0.35000E+08
+    4 boiler lock out time (min)
+      Value =    3.0000        Range (Min Max):     0.0000        0.0000
+    5 Boiler heat loss to surroundings UA (W/K)
+      Value =    20.000        Range (Min Max):     0.0000        0.0000
+    6 DHW draw schedule control loop no. if combi boiler (0 otherwise) (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    7 DHW calorifier component number if combi boiler (0 otherwise) (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    8 Constant cold water feed temperature for DHW for combi boiler (degC)
+      Value =    10.000        Range (Min Max):     0.0000        0.0000
+    9 Constant supply water temperature for DHW for combi boiler (degC)
+      Value =    50.000        Range (Min Max):     0.0000        0.0000
+   10 Upper boiler temperature limit (C)
+      Value =    95.000        Range (Min Max):     95.000        95.000
+   11 Lower limit of modulating range  (%)
+      Value =    30.000        Range (Min Max):     30.000        30.000
+   12 Lower limit of total differential  (%)
+      Value =    1.0000        Range (Min Max):     1.0000        1.0000
+   13 a_1 coefficient for efficiency equation (T_return)
+      Value =    8.6628        Range (Min Max):     8.6628        8.6628
+   14 a_2 coefficient for efficiency equation (T_return^2)
+      Value =  -0.28661        Range (Min Max):   -0.28661      -0.28661
+   15 a_3 coefficient for efficiency equation (T_return^3)
+      Value =   0.38650E-02    Range (Min Max):    0.38650E-02   0.38650E-02
+   16 a_4 coefficient for efficiency equation (T_return^4)
+      Value =   -1.8676        Range (Min Max):   -0.18676E-04  -0.18676E-04
+   17 a_5 coefficient for efficiency equation (Load)
+      Value =   -11.102        Range (Min Max):    -11.102       -11.102
+   18 a_6 coefficient for efficiency equation (Load*T_return)
+      Value =   0.28221        Range (Min Max):    0.28221       0.28221
+   19 a_7 coefficient for efficiency equation (Load*T_return^2)
+      Value =  -0.17660E-02    Range (Min Max):   -0.17660E-02  -0.17660E-02
+   20 a_8 coefficient for efficiency equation (Constant)
+      Value =    7.6259        Range (Min Max):     7.6259        7.6259
+   21 a_9 coefficient for efficiency equation (Load^2)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+ CDATA variables:
+    1  ON/OFF control signal (-)
+ 
+ Number of additional output parameters:     5
+ Additional output variables:
+    1 ON/OFF signal                  Type :    6
+    2 Gas consumption (l/s)          Type :    7
+    3 Upper boiler temp limit        Type :    6
+    4 Water heat input               Type :    2
+    5 Efficiency                     Type :    3
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     93
+ 
+ Component Description
+    Generic type     : WCH exponent radiator
+    Description      : Basic hot water radiator exponent 2 node model
+    Insertion date   : 11 Mar 92 20:56
+    Type: Single component                    Component code :    440
+ 
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      3
+    Matrix positions :   1,   3,   4,
+    Node connections :   1,  -1,
+    Variable type    :  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :  11    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    25.000        Range (Min Max):     25.000        25.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    600.00        Range (Min Max):     600.00        600.00
+ BDATA variables:
+    1 Nominal heat supply rate (W)
+      Value =    2500.0        Range (Min Max):     2500.0        2500.0
+    2 Nominal supply water temperature (C)
+      Value =    80.000        Range (Min Max):     80.000        80.000
+    3 Nominal environment temperature (C)
+      Value =    20.000        Range (Min Max):     20.000        20.000
+    4 Nominal exit water temperature (C)
+      Value =    70.000        Range (Min Max):     70.000        70.000
+    5 Radiator Exponent (-)
+      Value =    1.3000        Range (Min Max):     1.3000        1.3000
+    6 Index of 1st wall for defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    7 Weighting factor 1st wall when defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    8 Index of 2nd wall for defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    9 Weighting factor 2nd wall when defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+   10 Index of coupled building zone (0-n)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+   11 Number of walls used for defining Te (0-n)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+ 
+ Number of additional output parameters:     3
+ Additional output variables:
+    1 Heat emission from radiator    Type :    4
+    2 Mean radiator temperature      Type :    2
+    3 Environment temperature        Type :    2
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000

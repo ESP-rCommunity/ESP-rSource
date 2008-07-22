@@ -392,10 +392,10 @@ C Error Messages
  1009 CALL USRMSG(' error reading contaminant file',' ','W')
       ier=1
       RETURN
- 1011 CALL USRMSG('The flow network file on which the contaminant',
-     &  'model is based has been changed/derefernced','W')
-      ier=1
-      RETURN
+c 1011 CALL USRMSG('The flow network file on which the contaminant',
+c     &  'model is based has been changed/derefernced','W')
+c      ier=1
+c      RETURN
  1012 CALL USRMSG(' problem reading no. of contaminants',' ','W')
       ier=1
       RETURN

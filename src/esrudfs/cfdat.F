@@ -465,7 +465,7 @@ C MIT zero-equation model.
         ELSE
           write(outs,'(3a)') ' Variable ',WORD(1:lnblnk(WORD)),
      &      ' not identified.'
-          call edisp(itru,outs)
+          call edisp(itu,outs)
         ENDIF
  300  CONTINUE
 
@@ -476,13 +476,13 @@ C Determine whether the k-epsilon turbulence model is active.
         KEMDL(ICFD)=.TRUE.
         ITURB(ICFD)=1
       ELSEIF(CALLK.AND.(.NOT.CALLE))THEN
-        CALL EDISP(itru,' One turbulence model equation not supported.')
-        CALL EDISP(itru,' The default k-epsilon model is assumed.')
+        CALL EDISP(itu,' One turbulence model equation not supported.')
+        CALL EDISP(itu,' The default k-epsilon model is assumed.')
         KEMDL(ICFD)=.TRUE.
         ITURB(ICFD)=1
       ELSEIF(.NOT.CALLK.AND.CALLE)THEN
-        CALL EDISP(itru,' Both k and epsilon equations must be solved.')
-        CALL EDISP(irtu,' The default k-epsilon model is assumed.')
+        CALL EDISP(itu,' Both k and epsilon equations must be solved.')
+        CALL EDISP(itu,' The default k-epsilon model is assumed.')
         KEMDL(ICFD)=.TRUE.
         ITURB(ICFD)=1
       ENDIF
@@ -1391,6 +1391,7 @@ C IGETCN - Identify mass flow connection. (used for coupling purpose)
       FUNCTION IGETCN(OUTSTR,WORD,WORD1,WORD2,IER)
 #include "net_flow.h"
 
+      common/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1411,7 +1412,7 @@ C IGETCN - Identify mass flow connection. (used for coupling purpose)
         ENDIF
    10 CONTINUE
       
-      call edisp(itru,' could not find +ve node name...')
+      call edisp(IUOUT,' could not find +ve node name...')
       
 C Error trap on read error.
       IER=1
@@ -1428,6 +1429,7 @@ C          (used for coupling purpose)
       FUNCTION IGETND(OUTSTR,WORD,IER)
 #include "net_flow.h"
 
+      common/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
 

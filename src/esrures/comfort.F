@@ -1274,7 +1274,7 @@ C if sub-hour casual gains definitions are implemented.
       common/recver/izver,ipver,iever
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
+C =3 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17

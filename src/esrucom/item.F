@@ -37,6 +37,7 @@ C IER=0 OK, IER=1 problem.
 C Read the generic descriptions to see what is available.
       IER=0
       FOCUS='ALL'
+      FOUND=.false.
       CALL GENDAT(FOCUS,0,FOUND,IER)
       M=1
       DO 3 IT=1,NITEMS

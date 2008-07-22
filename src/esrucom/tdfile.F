@@ -99,6 +99,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
 C First check if tfile is an ascii temporal file.
       IER=0
       FOCUS='ALL'
+      FOUND=.false.
       CALL GENDAT(FOCUS,0,FOUND,IER)
 
 C Use TDFAIMPT with check option so most of the header is scanned.
@@ -1033,6 +1034,9 @@ C act='c'.
       SUBROUTINE TDFAIMPT(ITRC,AFIL,IAFIL,act,IER)
 #include "tdf2.h"
 
+C espriou.h provides current file.
+#include "espriou.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1068,6 +1072,7 @@ C If not already opened free unit and check if file exists.
         IER=1
         RETURN
       ENDIF
+      write(currentfile,'(a)') AFIL(1:lnblnk(AFIL))
 
 C Feedback to the user (in case file is large).
       write(msgl2,'(2a)') ' Scanning...',AFIL(1:lnblnk(AFIL))

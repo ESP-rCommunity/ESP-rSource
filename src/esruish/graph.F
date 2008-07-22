@@ -260,6 +260,10 @@ C and the surrounding obstruction blocks.
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
       common/filep/ifil
+
+      character ctype*4
+      real gversion
+      integer igupgrade
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
@@ -273,7 +277,7 @@ C and the surrounding obstruction blocks.
 
       character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
       character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
-      character tz*13,zdesc*64,ctype*4
+      character tz*13,zdesc*64
       logical newgeo  ! used to test for new/old geometry file.
 
 C The right offset for the graphic box is the character width

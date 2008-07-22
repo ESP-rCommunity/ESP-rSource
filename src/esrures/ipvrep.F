@@ -48,6 +48,7 @@ C Write IPV report based on description held in common.
       COMMON/BL2/dmdfla(7)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      common/CFGV/icfgv
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
@@ -69,7 +70,15 @@ C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
 
 C IPV description.
       common/IPVF/lipvdatf
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+
+C ipvtitl (char 40) is the title that shows up in reports
+C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
+C ipvsynop (char 248) documents the integrated performance view
+C ipvsimu (char 6) is a short tag describing the assessments to be run
+C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
+C   season assessment with all days included.
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C List of metric sets: nms is number of sets, imetget is the
 C esrures iget index for the metric selected, imetmsc holds two
@@ -127,7 +136,7 @@ C Pre calculated data (filtered).
       dimension ITEM(13),edput(7,MTS),ddmax(7),ddmin(7),dtot(7),dave(7)
       dimension XMAX(7),XMIN(7),XAVE(7),XTOT(7),DMAX(7),DMIN(7),XMSUM(7)
       dimension XMINSUM(7)
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,metgroup*12
+      character metgroup*12
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
       character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
@@ -137,6 +146,7 @@ C Pre calculated data (filtered).
       character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
       CHARACTER selres*72,zname*12,zdesc*64,CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
+      character ipvaction*3  ! to signal external IPV file
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -161,32 +171,53 @@ C Make up a single quote for IPV
       if(NTS.gt.1)then
         NOUT=NTS
         IAV=1
-        call edisp(iuout,' Ouput reset to give hourly averaged report.')
+        call edisp(iuout,'Ouput reset to give hourly averaged report.')
       endif
 
 
 C Read in the existing IPV description.
- 42   if(.NOT.autook)then
-        h(1)='This file holds a description of an Integrated'
-        h(2)='Performance View of this model, including periods,'
-        h(3)='climatic dd information and assiciated zones.'
-        ltmp=lipvdatf
-        CALL EASKS(ltmp,'IPV description file ?',
-     &    ' ',72,'xxx.ipv','IPV file',IER,3)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          lipvdatf=ltmp
+      if(.NOT.autook)then
+        if(icfgv.lt.4)then
+          h(1)='This file holds a description of an Integrated'
+          h(2)='Performance View of this model, including periods,'
+          h(3)='climatic dd information and assiciated zones.'
+          ltmp=lipvdatf
+          CALL EASKS(ltmp,'IPV description file ?',
+     &      ' ',72,'xxx.ipv','IPV file',IER,3)
+          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+            lipvdatf=ltmp
+          endif
         endif
       endif
-      if(lipvdatf(1:1).ne.' ')then
-        call FINDFIL(lipvdatf,XST)
-        IF(XST)then
-          call ripvdat(ifil+1,lipvdatf,ier)
-        else
-          call usrmsg('Could not find IPV description: ',lipvdatf,'W')
+
+C Integrated Performance View. If compact only print description,
+C if verbose print periods, seasons and ratios as well.
+      if(icfgv.lt.4)then
+        if(lnblnk(lipvdatf).eq.0)then
+          call usrmsg('Zero length IPV description: ',lipvdatf,'W')
           return
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          call usrmsg('UNKNOWN IPV description: ',lipvdatf,'W')
+          return
+        else
+          call FINDFIL(lipvdatf,XST)
+          IF(XST)then
+            ipvaction='ipv'
+            call ripvdat(ifil+1,lipvdatf,ipvaction,ieripv)
+            call edisp(itu,' ')
+          else
+            call usrmsg('Could not find IPV description: ',lipvdatf,
+     &        'W')
+            return
+          endif
         endif
       else
-        goto 42
+
+C Check if embedded within configuration file.
+        if(nipvassmt.eq.0)then ! there was nothing in the cfg file.
+          call usrmsg('No assessments in IPV description: ',' ','W')
+          return
+        endif
       endif
 
 C Read project demands file if it exists. Note that erbdmd does
@@ -480,10 +511,19 @@ C If the first or only season then write out a heading.
           WRITE(outs,'(2A,i1,a,i1)',IOSTAT=IOS,ERR=1) '*IPV_REPORT',
      &      tab,ipvversion,tab,ipvform
           call edisp(itru,outs)
-          call edisp(itru,lipvdatf)
+          if(icfgv.lt.4)then
+            call edisp(itru,lipvdatf)
+          else
+            call edisp(itru,'defined_within_cfg_file')
+          endif
         elseif(ipvform.eq.3)then
-          WRITE(outs,'(3A)',IOSTAT=IOS,ERR=1) '*IPV_REPORT',tab,
-     &      lipvdatf(1:lnblnk(lipvdatf))
+          if(icfgv.lt.4)then
+            WRITE(outs,'(3A)',IOSTAT=IOS,ERR=1) '*IPV_REPORT',tab,
+     &        lipvdatf(1:lnblnk(lipvdatf))
+          else
+            WRITE(outs,'(3A)',IOSTAT=IOS,ERR=1) '*IPV_REPORT',tab,
+     &        'defined_within_cfg_file'
+          endif
           call edisp(itru,outs)
         endif
         call edisp(itru,' ')
@@ -1984,14 +2024,14 @@ C Interact with user if in interactive mode.
  342  if(nipvassmt.ge.1)then
         call FINDFIL(sipvres,XST)
         IF(.NOT.XST)then
-          call usrmsg('Could not find intermediate report...',' ','W')
+          call usrmsg('Could not find intermediate IPV report.',' ','W')
           goto 342
         endif
         CALL EFOPSEQ(ifu,sipvres,1,IER)
         CALL STRIPC(ifu,OUTSTR,99,ND,1,'line 1',IER)
         IF(IER.NE.0)goto 342
         if(OUTSTR(1:11).ne.'*IPV_REPORT')then
-          call usrmsg('Not an intermediate IPV report. ',' ','W')
+          call usrmsg('Not an intermediate IPV report. ',sipvres,'W')
           goto 342
         endif
         CALL  ERPFREE(ifu,ISTAT)
