@@ -18,10 +18,10 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C Common source in building/plant/ flow/ global control.
+C Common source in building/plant/ flow/ global/ optical control.
 
 C ******** ADDCNTL
-C Add or delete a building/plant/flow control.
+C Add or delete a building/plant/flow/optical control.
       SUBROUTINE ADDCNTL(icfoc,ACT,IER)
 #include "building.h"
 #include "plant.h"
@@ -47,10 +47,12 @@ C Add or delete a building/plant/flow control.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
 
       character ACT*1,outs*124,H*72
       dimension rper(30),rperf(30)
@@ -64,6 +66,7 @@ C cancel option.
         if(icfoc.eq.1)limit=ncl
         if(icfoc.eq.2)limit=ncc
         if(icfoc.eq.3)limit=ngf
+        if(icfoc.eq.5)limit=nof
         h(1)='Controls are referenced by their index. '
         h(2)='If you select cancel then you will be returned to '
         h(3)='control menu. '
@@ -234,6 +237,43 @@ C Global.
   983       continue
   982     CONTINUE
           ngf=ngf-1
+        elseif(icfoc.eq.5.and.nof.eq.1)then
+
+C Optics (reset to no optics loops).
+          nof=nof-1
+        elseif(icfoc.eq.5.and.nof.ge.2)then
+
+C Optical.
+          DO 1 IDV=ID,nof-1
+            iosn(IDV,1)=iosn(IDV+1,1)
+            iosn(IDV,2)=iosn(IDV+1,2)
+            iosn(IDV,3)=iosn(IDV+1,3)
+            ioan(IDV,1)=ioan(IDV+1,1)
+            ioan(IDV,2)=ioan(IDV+1,2)
+            ioan(IDV,3)=ioan(IDV+1,3)
+            if(nocdt(IDV+1).eq.0)then
+              licc=3
+            else
+              licc=nocdt(IDV+1)
+            endif
+            nocdt(IDV)=nocdt(IDV+1)
+            do 2 IDT=1,licc
+              iocdv(IDV,IDT,1)=iocdv(IDV+1,IDT,1)
+              iocdv(IDV,IDT,2)=iocdv(IDV+1,IDT,2)
+              nocdp(IDV,IDT)=nocdp(IDV+1,IDT)
+              do 3 IDP=1,nocdp(IDV,IDT)
+                tocps(IDV,IDT,IDP)=tocps(IDV+1,IDT,IDP)
+                ioctyp(IDV,IDT,IDP)=ioctyp(IDV+1,IDT,IDP)
+                ioclaw(IDV,IDT,IDP)=ioclaw(IDV+1,IDT,IDP)
+                omiscd(IDV,IDT,IDP,1)=omiscd(IDV+1,IDT,IDP,1)
+                imis=INT(omiscd(IDV,IDT,IDP,1))
+                do 4 IPM=2,imis+1
+                  omiscd(IDV,IDT,IDP,IPM)=omiscd(IDV+1,IDT,IDP,IPM)
+  4             continue
+  3           continue
+  2         continue
+  1       CONTINUE
+          nof=nof-1
         endif
       elseif(ACT.eq.'A')then
         h(1)='Control day types allows different control patterns '
@@ -252,6 +292,9 @@ C Global.
           return
         elseif(icfoc.eq.3.and.ngf+1.gt.mgl)then
           call usrmsg('Cannot add more global controls.',' ','W')
+          return
+        elseif(icfoc.eq.5.and.ngf+1.gt.mgl)then
+          call usrmsg('Cannot add more optical controls.',' ','W')
           return
         endif
         if(icfoc.eq.0)then
@@ -515,6 +558,78 @@ C Initial setup of day types.
             igclaw(ngf,ik,1)=2
             gmiscd(ngf,ik,1,1)=0.
  687      continue
+        elseif(icfoc.eq.5)then
+          nof=nof+1
+          iosn(nof,1)=0
+          iosn(nof,2)=0
+          iosn(nof,3)=0
+          ioan(nof,1)=0
+          ioan(nof,2)=0
+          ioan(nof,3)=0
+
+C Initial setup of day types. Offer the user a cancel option and
+C if that is selected decrement ncf and return.
+          IV=NOCDT(nof)
+          write(outs,'(a,i2,a)')
+     &      ' Number of optical control day types (currently',IV,') :'
+          CALL EASKABC(outs,' ',
+     &      'weekday/Saturday/Sunday','one','other',IV,5)
+          if(iv.eq.1)then
+            NOCDT(nof)=0
+          elseif(iv.eq.2)then
+            NOCDT(nof)=1
+          elseif(iv.eq.3)then
+            CALL EASKI(IV,'No of user defined control day types',' ',
+     &       0,'F',MOL,'-',1,'no control day types',IERI,5)
+            if(ieri.eq.-3)then
+              nof=nof-1
+              return
+            else
+              NOCDT(nof)=IV
+            endif
+          endif
+          NN=NOCDT(nof)
+          IF(NN.EQ.0)NN=3
+          h(1)='The default is one period in the day and a free-float'
+          h(2)='control. You can specify that there will be several'
+          h(3)='periods in the day and then supply details later.'
+          h(4)='You can add or delete or modify periods later.'
+          h(5)='If you cancel when specifying periods in the day type'
+          h(6)='the control loop will be removed. '
+          do 5 ik=1,NN
+            IP=1
+            write(outs,'(a,i2)') 'How many periods in day type ',ik
+            CALL EASKI(IP,outs,'(default is 1 period free floating)',
+     &      1,'F',mocdp,'F',1,'ctl periods',IERI,6)
+            if(ieri.eq.-3)then
+              nof=nof-1
+              return
+            else
+              iocdv(nof,ik,1)=1
+              iocdv(nof,ik,2)=365
+              nocdp(nof,ik)=IP
+            endif
+
+C Initialise and edit array of start times.
+            call initperr(IP,rper,rperf,'i')
+C            write(6,*) rper
+            do 6 IDP=1,IP
+              if(IDP.eq.1)then
+                tocps(ncf,ik,IDP)=0.
+              else
+                if(rper(IDP).gt.0.0)then 
+                  tocps(nof,ik,IDP)=rper(IDP)
+                else
+                  tocps(nof,ik,IDP)=float(IDP)
+                endif
+C              if(IDP.eq.1)tbcps(ncf,ik,IDP)=0.
+C              if(IDP.gt.1)tbcps(ncf,ik,IDP)=float(IDP)
+              endif
+              ioctyp(nof,ik,IDP)=0
+              ioclaw(nof,ik,IDP)=2
+              omiscd(nof,ik,IDP,1)=0.
+  6         continue
+  5       continue
         endif
       elseif(ACT.eq.'C')then
 
@@ -531,12 +646,16 @@ C Copy an existing control loop.
         elseif(icfoc.eq.3.and.ngf+1.gt.mgl)then
           call usrmsg('Cannot add more global controls.',' ','W')
           return
+        elseif(icfoc.eq.5.and.ngf+1.gt.mgl)then
+          call usrmsg('Cannot add more optical controls.',' ','W')
+          return
         endif
         ICC=1
         if(icfoc.eq.0)limit=ncf
         if(icfoc.eq.1)limit=ncl
         if(icfoc.eq.2)limit=ncc
         if(icfoc.eq.3)limit=ngf
+        if(icfoc.eq.5)limit=nof
         h(1)='Control functions are referenced by their index. '
         h(2)='A cancel returns you to the main control menu. '
         CALL EASKI(ICC,' ',' Which control function index to copy? ',
@@ -660,13 +779,42 @@ C Copy an existing control loop.
   755         continue
   754       continue
   753     continue
+        elseif(icfoc.eq.5)then
+          nof=nof+1
+          iosn(nof,1)=iosn(ICC,1)
+          iosn(nof,2)=iosn(ICC,2)
+          iosn(nof,3)=iosn(ICC,3)
+          ioan(nof,1)=ioan(ICC,1)
+          ioan(nof,2)=ioan(ICC,2)
+          ioan(nof,3)=ioan(ICC,3)
+          if(nocdt(ICC).eq.0)then
+            licc=3
+          else
+            licc=nocdt(ICC)
+          endif
+          nocdt(nof)=nocdt(ICC)
+          do 7 IDT=1,licc
+            iocdv(nof,IDT,1)=iocdv(ICC,IDT,1)
+            iocdv(nof,IDT,2)=iocdv(ICC,IDT,2)
+            nocdp(nof,IDT)=nocdp(ICC,IDT)
+            do 8 IDP=1,nocdp(ICC,IDT)
+              tocps(nof,IDT,IDP)=tocps(ICC,IDT,IDP)
+              ioctyp(nof,IDT,IDP)=ioctyp(ICC,IDT,IDP)
+              ioclaw(nof,IDT,IDP)=ioclaw(ICC,IDT,IDP)
+              omiscd(nof,IDT,IDP,1)=omiscd(ICC,IDT,IDP,1)
+              imis=INT(omiscd(ICC,IDT,IDP,1))
+              do 9 IPM=2,imis+1
+                omiscd(nof,IDT,IDP,IPM)=omiscd(ICC,IDT,IDP,IPM)
+  9           continue
+  8         continue
+  7       continue
         endif
       endif
       return
       end
 
 C ******** ADDCTLD
-C Add or delete a building/plant/flow/global control day type.
+C Add or delete a building/plant/flow/global/optical control day type.
       SUBROUTINE ADDCTLD(icfoc,II,IER)
 #include "building.h"
 #include "plant.h"
@@ -690,10 +838,12 @@ C Add or delete a building/plant/flow/global control day type.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
 
       character h*72
 
@@ -705,6 +855,8 @@ C Add or delete a building/plant/flow/global control day type.
         nn=nfcdt(ii)
       elseif(icfoc.eq.3)then
         nn=ngcdt(ii)
+      elseif(icfoc.eq.5)then
+        nn=nocdt(ii)
       endif
 
       h(1)='One of the actions which can be taken on a control.'
@@ -791,6 +943,24 @@ C Add or delete a building/plant/flow/global control day type.
   893     continue
           NN=NN-1
           ngcdt(II)=NN
+        elseif(icfoc.eq.5.and.NN.ge.2)then
+          do 1 IDT=ID,NN-1
+            iocdv(II,IDT,1)=iocdv(II,IDT+1,1)
+            iocdv(II,IDT,2)=iocdv(II,IDT+1,2)
+            nocdp(II,IDT)=nocdp(II,IDT+1)
+            do 2 IDP=1,nocdp(II,IDT)
+              tocps(II,IDT,IDP)=tocps(II,IDT+1,IDP)
+              ioctyp(II,IDT,IDP)=ioctyp(II,IDT+1,IDP)
+              ioclaw(II,IDT,IDP)=ioclaw(II,IDT+1,IDP)
+              omiscd(II,IDT,IDP,1)=omiscd(II,IDT+1,IDP,1)
+              imis=INT(omiscd(II,IDT,IDP,1))
+              do 3 IPM=2,imis+1
+                omiscd(II,IDT,IDP,IPM)=omiscd(II,IDT+1,IDP,IPM)
+  3           continue
+  2         continue
+  1       continue
+          NN=NN-1
+          nocdt(II)=NN
         endif
       ELSEIF(IW.EQ.2)THEN
 
@@ -883,6 +1053,28 @@ C Create a new control day type.
           gmiscd(II,ng,1,1)=2.
           gmiscd(II,ng,1,2)=0.
           gmiscd(II,ng,1,3)=1.
+        elseif(icfoc.eq.5.and.NN+1.LE.mocdt)then
+          IP=1
+          CALL EASKI(IP,' How many periods in this day type? ',
+     &      '(default is 1 period free floating)',
+     &      1,'F',mocdp,'F',1,'ctl periods',IERI,7)
+          if(ieri.eq.-3)then
+            goto 77
+          else
+            NN=NN+1
+            nocdt(II)=NN
+            no=nocdt(II)
+            iocdv(II,no,1)=1
+            iocdv(II,no,2)=365
+            nocdp(II,no)=IP
+          endif
+          do 4 IDP=1,IP
+            if(IDP.eq.1)tocps(II,no,IDP)=0.
+            if(IDP.gt.1)tocps(II,no,IDP)=float(IDP)
+            ioctyp(II,no,IDP)=0
+            ioclaw(II,no,IDP)=0
+            omiscd(II,no,IDP,1)=0.
+  4       continue
         endif
       elseif(IW.EQ.3)then
 
@@ -963,7 +1155,24 @@ C Copy and existing control loop day type.
               gmiscd(II,ng,IDP,IPM)=gmiscd(II,IDC,IDP,IPM)
   391       continue
   390     continue
-        endif
+        elseif(icfoc.eq.5.and.NN+1.LE.mocdt)then
+          NN=NN+1
+          nocdt(II)=NN
+          no=nocdt(II)
+          iocdv(II,no,1)=iocdv(II,IDC,1)
+          iocdv(II,no,2)=iocdv(II,IDC,2)
+          nocdp(II,no)=nocdp(II,IDC)
+          do 5 IDP=1,nocdp(II,IDC)
+            tocps(II,no,IDP)=tocps(II,IDC,IDP)
+            ioctyp(II,no,IDP)=ioctyp(II,IDC,IDP)
+            ioclaw(II,no,IDP)=ioclaw(II,IDC,IDP)
+            omiscd(II,no,IDP,1)=omiscd(II,IDC,IDP,1)
+            imis=INT(omiscd(II,IDC,IDP,1))
+            do 6 IPM=2,imis+1
+              omiscd(II,no,IDP,IPM)=omiscd(II,IDC,IDP,IPM)
+  6         continue
+  5       continue
+         endif
       elseif(IW.EQ.4)then
         return
       endif
@@ -971,7 +1180,7 @@ C Copy and existing control loop day type.
       end
 
 C ******** ADDCTLDP
-C Add or delete a building/plant/flow/global control period.
+C Add or delete a building/plant/flow/global/optical control period.
 C II is the loop, ID is the day type, act is "D" delete, "A"
 C for add.
       SUBROUTINE ADDCTLDP(icfoc,II,ID,act,IER)
@@ -997,10 +1206,12 @@ C for add.
      &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
      &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
      &       gmiscd(mgl,mgcdt,mgcdp,misc)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
 
       character h*72,act*1
 
@@ -1008,6 +1219,7 @@ C for add.
       if(icfoc.eq.1)limit=npcdp(II,ID)
       if(icfoc.eq.2)limit=nfcdp(II,ID)
       if(icfoc.eq.3)limit=ngcdp(II,ID)
+      if(icfoc.eq.5)limit=nocdp(II,ID)
       if(act(1:1).eq.'D'.or.act(1:1).eq.'d')then
         IP=1
         h(1)='Expecting an index of the period. If you select'
@@ -1063,6 +1275,18 @@ C for add.
   895       continue
   894     continue
           ngcdp(II,ID)=ngcdp(II,ID)-1
+        elseif(icfoc.eq.5)then
+          do 1 IDP=IP,limit-1
+            tocps(II,ID,IDP)=tocps(II,ID,IDP+1)
+            ioctyp(II,ID,IDP)=ioctyp(II,ID,IDP+1)
+            ioclaw(II,ID,IDP)=ioclaw(II,ID,IDP+1)
+            omiscd(II,ID,IDP,1)=omiscd(II,ID,IDP+1,1)
+            imis=INT(omiscd(II,ID,IDP+1,1))
+            do 2 IPM=2,imis+1
+              omiscd(II,ID,IDP,IPM)=omiscd(II,ID,IDP+1,IPM)
+  2         continue
+  1       continue
+          nocdp(II,ID)=nocdp(II,ID)-1
         endif
       elseif(act(1:1).eq.'A'.or.act(1:1).eq.'a')then
 
@@ -1102,13 +1326,21 @@ C Add a control period (make period start 1 hour after the previous one.
           gmiscd(II,ID,IDP,1)=2.
           gmiscd(II,ID,IDP,2)=0.
           gmiscd(II,ID,IDP,3)=1.
+        elseif(icfoc.eq.5.and.limit+1.LE.mocdp)then
+          nocdp(II,ID)=nocdp(II,ID)+1
+          IDP=nocdp(II,ID)
+          tocps(II,ID,IDP)=0.
+          if(IDP.gt.1)tocps(II,ID,IDP)=tocps(II,ID,IDP-1)+1.0
+          ioctyp(II,ID,IDP)=0
+          ioclaw(II,ID,IDP)=2
+          omiscd(II,ID,IDP,1)=0.
         endif
       endif
       return
       end
 
 C ******** LSTCNTL
-C List a building/plant/flow/global control.  If II = 0 then
+C List a building/plant/flow/global/optical control.  If II = 0 then
 C list out the zone/loop associations. 
       SUBROUTINE LSTCNTL(itru,icfoc,II,IER)
 #include "building.h"
@@ -1141,10 +1373,12 @@ C list out the zone/loop associations.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
 
       character outs*124,SSTR*72,zname*12,zdesc*64
 
@@ -1162,6 +1396,7 @@ C List linkages with zones if II = 0.
         elseif(icfoc.eq.2)then
         elseif(icfoc.eq.3)then
         elseif(icfoc.eq.4)then
+        elseif(icfoc.eq.5)then
         endif
         return
       endif
@@ -1189,6 +1424,8 @@ C List function details.
         nn=ngcdt(ii)
       elseif(icfoc.eq.4)then
         nn=necdt(ii)
+      elseif(icfoc.eq.5)then
+        nn=nocdt(ii)
       endif
       IF(nn.EQ.0)THEN
         call edisp(itru,
@@ -1235,10 +1472,13 @@ C Copies from control commons to working array.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
+
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
       if(icfoc.eq.0)then
@@ -1286,6 +1526,15 @@ C Copies from control commons to working array.
         do 45 m=2,iv1+1
           cm(m)=EMISCD(I,J,K,m)
   45    continue
+      elseif(icfoc.eq.5)then
+        iclaw=ioclaw(I,J,K)
+        ictyp=ioctyp(I,J,K)
+        tcps=tocps(I,J,K)
+        iv1=int(OMISCD(I,J,K,1))
+        cm(1)=OMISCD(I,J,K,1)
+        do 47 m=2,iv1+1
+          cm(m)=OMISCD(I,J,K,m)
+  47    continue
       endif
       return
       end
@@ -1319,12 +1568,17 @@ C Copies from working array to control commons.
      &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
      &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
      &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
+
+C For optical controls
       common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
      &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misco)
+     &       omiscd(mol,mocdt,mocdp,misc)
+     
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
+C Make sure cm(1) is passed properly from bpfcontrl.F when a new i?claw
+C is introduced
       iv1=int(cm(1))
       if(icfoc.eq.0)then
         ibclaw(I,J,K)=iclaw
@@ -1366,6 +1620,14 @@ C Copies from working array to control commons.
         do 45 m=2,iv1+1
           EMISCD(I,J,K,m)=cm(m)
   45    continue
+      elseif(icfoc.eq.5)then
+        ioclaw(I,J,K)=iclaw
+        ioctyp(I,J,K)=ictyp
+        tocps(I,J,K)=tcps
+        OMISCD(I,J,K,1)=cm(1)
+        do 47 m=2,iv1+1
+          OMISCD(I,J,K,m)=cm(m)
+  47    continue
       endif
       return
       end

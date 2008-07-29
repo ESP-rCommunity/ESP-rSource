@@ -90,7 +90,6 @@ C conversion to the 'G1' format takes place.
  
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
-#include "esprdbfile.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -1598,7 +1597,8 @@ C Surface optics set name or OPAQ/TRAN, allow for spaces.
               if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE'
             elseif(WORD(1:4).ne.'OPAQ')then
 
-C We need to find the name of the optical set for the construction.
+C This token could be the name of the optical property. Find out if it
+C matches then name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
@@ -1627,10 +1627,20 @@ C the constructions database.
                 else
                   OPT='OPAQUE'
                 endif
+		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
+		  write(6,*) 'Optics in geo file ',WORD,
+     &              ' does not match optics of the MLC ',OPT
+                endif
                 write(SOTF(NS),'(a)') OPT
                 if(havec24) write(SSOTF(icn),'(a)') OPT
               else
-                write(SOTF(NS),'(a)') 'TRAN'
+
+C During initial scan of configuration file the databases will
+C not yet have been scanned and so this block of code will be
+C active. Lets assume that this token really is the name of the
+C optical set.
+                write(SOTF(NS),'(a)') WORD(1:lnblnk(WORD))
+                if(havec24)write(SSOTF(icn),'(a)') WORD(1:lnblnk(WORD))
               endif
             endif
 
@@ -3802,6 +3812,8 @@ C NOTE: this was done in ersys call so it might not be needed here.
 C Find co-planer surfaces and edges of similar materials.
         call suredgeadj(itrc,'-',icomp,ier)
 
+C ISFSUM is the total number of surfaces in the model. Nothing
+C seems to use this information (yet).
         ISFSUM=ISFSUM+ NZSUR(ICOMP)
         DO 40 J=1, NZTV(ICOMP)
           VCOORD(ICOMP,J,1)=X(J)
@@ -3874,22 +3886,23 @@ C mation so make a probable guess at locations.
           SOTF(I)='OPAQUE'
           SMLCN(I)='UNKNOWN'
 
-C Guess at location based on elevation of surface.
+C Guess at location based on elevation of surface. Use same
+C logic as in subroutine updatesvfc.
           SVFC(I)='UNKN'
-          if(PELV(I).GE.-0.02.AND.PELV(I).LE.0.02)then
+          if(PELV(I).GE.-1.5.AND.PELV(I).LE.1.5)then
             SVFC(I)='VERT'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Wall-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Wall-',I
-          elseif(PELV(I).GE.89.98.AND.PELV(I).LE.90.02)then
+          elseif(PELV(I).GE.88.5.AND.PELV(I).LE.91.5)then
             SVFC(I)='CEIL'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
-          elseif(PELV(I).GE.-90.02.AND.PELV(I).LE.-89.98)then
+          elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
             SVFC(I)='FLOR'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
           else
-            SVFC(I)='UNKN'
+            SVFC(I)='SLOP'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
           endif
@@ -3899,6 +3912,7 @@ C Guess at location based on elevation of surface.
           SUSE(I,1)='-'
           SUSE(I,2)='-'
           SPARENT(I)='-'
+
 C Set flags for wall/celing/floor
           if(PELV(I).GE.-0.02.AND.PELV(I).LE.30.0)then
             iSurfOrient(ICOMP,I) = iSurfWall
@@ -3914,20 +3928,20 @@ C Set flags for wall/celing/floor
         SOTF(I)='OPAQUE'
         SMLCN(I)='UNKNOWN'
         SVFC(I)='UNKN'
-        if(PELV(I).GE.-0.02.AND.PELV(I).LE.0.02)then
+        if(PELV(I).GE.-1.5.AND.PELV(I).LE.1.5)then
           SVFC(I)='VERT'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Wall-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Wall-',I
-        elseif(PELV(I).GE.89.98.AND.PELV(I).LE.90.02)then
+        elseif(PELV(I).GE.88.5.AND.PELV(I).LE.91.5)then
           SVFC(I)='CEIL'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
-        elseif(PELV(I).GE.-90.02.AND.PELV(I).LE.-89.98)then
+        elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
           SVFC(I)='FLOR'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
         else
-          SVFC(I)='UNKN'
+          SVFC(I)='SLOP'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
         endif
@@ -3946,6 +3960,14 @@ C ******************** INSINFO
 C INSINFO provides an English description of default insolation 
 C options chosen by the user in the geometry file based on 
 C NDP(ICOMP) and IDPN(ICOMP,?) from common G4 and G6.
+
+C Note: the version of the geometry file should be taken into
+C account as the QA report can lead to conflicting information
+C as an older geometry file does not have the ishdirec common
+C data held in the geometry file but inferred from the obstructions
+C file.
+
+C << update documentation as well as reporting based on files >>
       SUBROUTINE INSINFO(ICOMP,ITRU)
 #include "building.h"
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
@@ -3962,32 +3984,35 @@ C NDP(ICOMP) and IDPN(ICOMP,?) from common G4 and G6.
       character SSPARENT*12
       character sdescr*80
 
-C Print out information about the default insolation planes.
+C Print out information about the default insolation planes if
+C the user has not requested a shading analysis.
       call edisp(ITRU,' ')
       if(ISI(ICOMP).eq.1)then
         call edisp(ITRU,
      &' An hourly solar radiation distribution is used for this zone.')
-      endif
-      IF(NDP(ICOMP).EQ.1)THEN
-        ICM=IZSTOCN(ICOMP,IDPN(ICOMP,1))
-        WRITE(OUTSTR,'(3a)')' Solar insolation focused on surface ',
+      else
+        IF(NDP(ICOMP).EQ.1)THEN
+          ICM=IZSTOCN(ICOMP,IDPN(ICOMP,1))
+          WRITE(OUTSTR,'(3a)')' Solar insolation focused on surface ',
      &    SSNAME(ICM),' (if shading not calculated).'
-        call edisp(ITRU,OUTSTR)
-      ELSEIF(NDP(ICOMP).EQ.2.AND.IDPN(ICOMP,3).EQ.0)THEN
-        ICM1=IZSTOCN(ICOMP,IDPN(ICOMP,1))
-        ICM2=IZSTOCN(ICOMP,IDPN(ICOMP,2))
-        WRITE(OUTSTR,'(5a)')' Solar insolation focused on ',
-     &   SSNAME(ICM1),' & ',SSNAME(ICM2),
-     &   ' (if shading not calculated).'
-        call edisp(ITRU,OUTSTR)
-      ELSEIF(NDP(ICOMP).EQ.3)THEN
-        write(outstr,'(2a)') 
-     &  ' All surfaces will receive diffuse insolation (if shading',
-     &  ' not calculated).'
-        call edisp(ITRU,OUTSTR)
-      ENDIF
+          call edisp(ITRU,OUTSTR)
+        ELSEIF(NDP(ICOMP).EQ.2.AND.IDPN(ICOMP,3).EQ.0)THEN
+          ICM1=IZSTOCN(ICOMP,IDPN(ICOMP,1))
+          ICM2=IZSTOCN(ICOMP,IDPN(ICOMP,2))
+          WRITE(OUTSTR,'(5a)')' Solar insolation focused on ',
+     &    SSNAME(ICM1),' & ',SSNAME(ICM2),
+     &    ' (if shading not calculated).'
+          call edisp(ITRU,OUTSTR)
+        ELSEIF(NDP(ICOMP).EQ.3)THEN
+          write(outstr,'(2a)') 
+     &    ' All surfaces will receive diffuse insolation (if shading',
+     &    ' not calculated).'
+          call edisp(ITRU,OUTSTR)
+        ENDIF
+      endif
 
-C If there are existing ish directives print them out.
+C If there are existing ish directives print them out. An older
+C geometry file will not have this information. 
       if(nsurfcalc(icomp).gt.0)then
         ns=nsurfcalc(icomp)
         call surlist(icomp,ns,lstsfcalc,sdescr,length,ierr)
@@ -4000,7 +4025,11 @@ C If there are existing ish directives print them out.
         endif
         call edisp(ITRU,sdescr)
       else
-        call edisp(ITRU,' No shading analysis requested.')
+        if(ISI(ICOMP).eq.1)then
+          continue   ! obviously requested
+        else
+          call edisp(ITRU,' No shading analysis requested.')
+        endif
       endif
 
       if(nsurfinso(icomp).gt.0)then
@@ -4013,7 +4042,11 @@ C If there are existing ish directives print them out.
         endif
         call edisp(ITRU,sdescr)
       else
-        call edisp(ITRU,' No insolation analysis requested.')
+        if(ISI(ICOMP).eq.1)then
+          continue    ! obviously requested
+        else
+          call edisp(ITRU,' No insolation analysis requested.')
+        endif
       endif
 
       RETURN

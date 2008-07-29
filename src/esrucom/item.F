@@ -28,8 +28,8 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(19),GMENUS(19)
-      DIMENSION ISGGT(22),IVAL(22)
+      COMMON/TDFGH2/GTYPES(20),GMENUS(20)
+      DIMENSION ISGGT(23),IVAL(23)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
@@ -37,6 +37,7 @@ C IER=0 OK, IER=1 problem.
 C Read the generic descriptions to see what is available.
       IER=0
       FOCUS='ALL'
+      FOUND=.false.
       CALL GENDAT(FOCUS,0,FOUND,IER)
       M=1
       DO 3 IT=1,NITEMS
@@ -90,7 +91,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(19),GMENUS(19)
+      COMMON/TDFGH2/GTYPES(20),GMENUS(20)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -122,7 +123,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=19
+      NITEMS=20
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2)='CASUALT'
@@ -161,7 +162,9 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(18)='Casual OccLtEqp:'
       GTYPES(19)='ACTIVITY'
       GMENUS(19)='Activity Type:'
-       
+      GTYPES(20)='BIDIRSET'
+      GMENUS(20)='Optical set:'       
+
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
 
@@ -474,6 +477,20 @@ C       single entries: .....airflow
         MGMA(15)='Heating setpoint (C):          '
         GMF(16)='REAL,16,0.0,-101.0,101.0'
         MGMA(16)='Cooling setpoint (C):          '                        
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:8).EQ.'BIDIRSET')THEN
+
+C Control state: one data item.
+        GAIDE   ='Bidirectional data set index'
+        GHELP(1)='The index of this entity will specify the set'
+        GHELP(2)='of bidirectional data to be used (i.e. in solar.F)'
+        GMH='2,1,0,0,1,0,40'
+        GDHDRT(1)='   time  | bidirectional  '
+        GDHDRT(2)='   of day| dataset        '
+        GDHDRT(3)='Bidirectional set (1 to 40):'
+        GMF(1)='INTG,1,0,0,100'
+        MGMA(1)='Bidirectional data set:   '
         FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN

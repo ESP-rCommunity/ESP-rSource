@@ -180,7 +180,7 @@ C default file names for databases
 #include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
 
       common/er1/ier1
@@ -948,7 +948,7 @@ C If a non-sorted operations file has been read warn user and
 C translate the casual gains.
 
 C Debug.
-        write(6,*) IZ,IP3VER(IZ)
+C        write(6,*) IZ,IP3VER(IZ)
         if(ip3ver(iz).eq.0)then
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
@@ -1430,9 +1430,9 @@ C If BASESIMP foundation defined, read it in.
 C H2-dep_controller: start
 C Experimental Hydrogen controller. Use with caution
 C Residential hydrogen cogen : control file
-C      if ( iresh2ctl .eq. 1 ) then
-C         call RESH2_Ctl_Read
-C      endif
+      if ( iresh2ctl .eq. 1 ) then
+         call RESH2_Ctl_Read
+      endif
 C H2-dep_controller: end
 
 C If zone TMC file read it in.

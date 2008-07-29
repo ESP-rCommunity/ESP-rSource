@@ -974,7 +974,7 @@ C Trace output
 C Now check if convergence has been stipulated for plant component
 C additional data arrays (PCdatf), and set call for iteration
 C if outside tolerance
-   33 IF ( .not. bIteration_Required ) THEN
+      IF ( .not. bIteration_Required ) THEN
 C Loop through components
 
         DO ii = 1, NPCOMP
@@ -1179,6 +1179,9 @@ C 1 node (ISV=21) AC  duct & condensation ?
 C 1 node (ISV=21) AC  damper
          ELSE IF(ITYPE.EQ.7) THEN
             CALL CMP07C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=21) AC  flow divert damper
+         ELSE IF(ITYPE.EQ.8) THEN
+            CALL CMP08C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=21) AC  cooling coil & water mfr control
 C uses TRNSYS type32 model.
          ELSE IF(ITYPE.EQ.9) THEN
@@ -1192,9 +1195,15 @@ C 1 node (ISV=21) AC  heating coil & water mfr control
 C 2 node (ISV=21) AC  plate heat exchanger
          ELSE IF(ITYPE.EQ.12) THEN
             CALL CMP12C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=21) AC  basic heat exchanger
+         ELSE IF(ITYPE.EQ.13) THEN
+            CALL CMP13C(IPCOMP,OUT,ISTATS)
 C 2 node (ISV=21) Cooling tower model
          ELSE IF(ITYPE.EQ.14) THEN
             CALL CMP14C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=21) AC fan mass flow control
+         ELSE IF(ITYPE.EQ.15) THEN
+            CALL CMP15C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20) WCH boiler with flux control
          ELSE IF(ITYPE.EQ.20) THEN
             CALL CMP20C(IPCOMP,OUT,ISTATS)
@@ -1240,15 +1249,36 @@ C 2 node (ISV>20) WCH Generic heat exchanger
 C 3 node (ISV>20) Heated water storage
          ELSE IF(ITYPE.EQ.34) THEN
             CALL CMP34C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV>20) WCH basic radiator
+         ELSE IF(ITYPE.EQ.35) THEN
+            CALL CMP35C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV>20) WCH Basic chiller/heat pump model
+         ELSE IF(ITYPE.EQ.36) THEN
+            CALL CMP36C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV>20) WCH Air or evaporative heat rejection unit
+         ELSE IF(ITYPE.EQ.37) THEN
+            CALL CMP37C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) WCH converging multi-leg junction
+         ELSE IF(ITYPE.EQ.38) THEN
+            CALL CMP38C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) Pump (mass flow model)
+         ELSE IF(ITYPE.EQ.39) THEN
+            CALL CMP39C(IPCOMP,OUT,ISTATS)
 C 3 node (ISV>19) AC  cooling coil fed by WCH system
          ELSE IF(ITYPE.EQ.40) THEN
             CALL CMP40C(IPCOMP,OUT,ISTATS)
 C 3 node (ISV>19) AC  heating coil fed by WCH system
          ELSE IF(ITYPE.EQ.41) THEN
             CALL CMP41C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) WCH modulating boiler
+         ELSE IF(ITYPE.EQ.42) THEN
+            CALL CMP42C(IPCOMP,OUT,ISTATS)
 C 2 node (ISV>20) AC  cooling coil fed by WCH system
          ELSE IF(ITYPE.EQ.43) THEN
             CALL CMP43C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) exponent model radiator
+         ELSE IF(ITYPE.EQ.44) THEN
+            CALL CMP44C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=29) WCH thermostatic radiator valve
          ELSE IF(ITYPE.EQ.50) THEN
             CALL CMP50C(IPCOMP,OUT,ISTATS)
@@ -1349,9 +1379,10 @@ C 1 node (ISV=20) PEM cogeneration fuel cell
      &           .OR. ITYPE .EQ. 89 ) THEN
 C 1-node electrolyzer / H2->electricity converter
             CALL  H2_Elec_converter( IPCOMP, OUT, ISTATS )
-         ELSE IF (ITYPE .EQ. 88 ) THEN
+         ELSE IF (ITYPE .EQ. 88 .or. 
+     &            ITYPE .EQ. 124     ) THEN
 C 1-node hydrogen compressor / decompressor
-            CALL H2_compressor_model(IPCOMP, OUT, ISTATS)
+            CALL H2_compressor_model( IPCOMP,iType, OUT, ISTATS )
          ELSE IF ( ITYPE .EQ. 101 ) THEN
 C 1-node hydrogen storage model
             CALL  H2_storage_model( IPCOMP, OUT, ISTATS )

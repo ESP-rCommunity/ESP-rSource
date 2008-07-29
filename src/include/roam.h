@@ -19,8 +19,8 @@ C Common block variables: Integers
       INTEGER LLOCT ! location index number for each period (0 for cruising)
 
       COMMON/ROAMINT/IROAM,NPDR,NLOC,
-     +LHRS(MPDR),LDYS(MPDR),LMTS(MPDR),
-     +LORNT(MPDR),LDTP(MPDR),LLOCT(MPDR)
+     &LHRS(MPDR),LDYS(MPDR),LMTS(MPDR),
+     &LORNT(MPDR),LDTP(MPDR),LLOCT(MPDR)
 
 C Common block variables: Real numbers
       REAL VERS   ! roaming file version number

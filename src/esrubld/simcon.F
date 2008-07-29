@@ -315,6 +315,8 @@ C Set up the menu text.
         ITEM(4)= '* Save >> 3 (2+) node temps  '
       elseif(ISAVE.eq.4)then
         ITEM(4)= '* Save >> 4 (2+) energy balnc'
+      elseif(ISAVE.eq.6)then
+        ITEM(4)= '* Save >> 6 summary csv data '
       endif
       ITEM(5)=   '  ....................       '
       ITEM(6)=   'm Monitor state variables    '
@@ -343,18 +345,20 @@ C Help text for this menu.
       H(9) ='     SAVE >>2 moderate save option - the default'
       H(10)='     SAVE >>3 maximum save option'
       H(11)='     SAVE >>4 surface energy balance save option.'
-      H(12)=' '
-      H(13)=' m: monitor plots zone temperatures, plant flux and'
-      H(14)='    plant state variables as the simulation progresses.'
-      H(15)=' '
-      H(16)=' t: select zone-side time-step control option.'
-      H(17)=' s: invoke simulation. '
-      H(18)=' <: deletes the last saved simulation result set. '
-      H(19)=' g: sets simulation parameter toggles '
-      H(20)=' '
-      H(21)=' i: outputs the current simulation period and'
-      H(22)='    information on the saved result set.'
-      H(23)=' o: gives summary results if SAVE O option selected.'
+      H(12)='     SAVE >>6  no results saved (summary only in '
+      H(13)='     database freindly format)'
+      H(14)=' '
+      H(15)=' m: monitor plots zone temperatures, plant flux and'
+      H(16)='    plant state variables as the simulation progresses.'
+      H(17)=' '
+      H(18)=' t: select zone-side time-step control option.'
+      H(19)=' s: invoke simulation. '
+      H(20)=' <: deletes the last saved simulation result set. '
+      H(21)=' g: sets simulation parameter toggles '
+      H(22)=' '
+      H(23)=' i: outputs the current simulation period and'
+      H(24)='    information on the saved result set.'
+      H(25)=' o: gives summary results if SAVE O option selected.'
 
 C Do not display the menu if in autook mode as defined in the 
 C simulator parameter file.
@@ -385,7 +389,7 @@ C Set simulation period.
 C Save level.
          call tstamp('>','SIM: change save level')
          ISAVE=ISAVE+1
-         if(ISAVE.gt.4)ISAVE=0
+         if(ISAVE.gt.4.and.ISAVE.ne.6)ISAVE=0
       elseif(ino.eq.6)then
 
 C Graphic monitor setup.
@@ -420,6 +424,11 @@ C in res for the simplified convection calculation approaches.
         endif
         call tstamp('>','SIM: enter simulate')
         call SIMCON
+        if(isave.eq.6)then
+
+C Output from 6 save.
+          call MZOUT6
+        endif
         call tstamp('>','SIM: exit simulate')
       elseif(ino.eq.10)then
 
@@ -483,7 +492,7 @@ C Output from 0 save.
       elseif(ino.eq.16)then
 
 C Help.
-        CALL PHELPD(' sim control',23,'simul_cmds  ',0,0,IER)
+        CALL PHELPD(' sim control',25,'simul_cmds  ',0,0,IER)
       elseif(ino.eq.17)then
 
 C Return.
@@ -1566,6 +1575,8 @@ C Write out appropriate message.
         call edisp(icout,' Zone save option     : 3 (Node temps)')
       elseif(isave.eq.4)then
         call edisp(icout,' Zone save option     : 4 (Energy Balance)')
+      elseif(isave.eq.6)then
+        call edisp(icout,' Zone save option     : 6 (No db created)')
       endif
       write(outs,'(a,I5)') ' No. of warnings      : ',IWARN
       call edisp(icout,outs)

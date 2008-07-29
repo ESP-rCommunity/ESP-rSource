@@ -21,6 +21,8 @@ C Boston, MA 02111-1307 USA.
 C SHDCON.F contains the following routines:
 
 C SHDCON: Sets up the parameters relating to shading computation.
+C FINDISC: Determines the values in array isc based on information in
+C          the zone geometry file and or user interactions.
 C SHADC:  Implements the shading computation.
 C DECOMP: Generates a modified shadow polygon for the case where the
 C         projected surface crosses the plane of the target surface.
@@ -39,35 +41,19 @@ C Sets up the parameters relating to shading computation.
       common/filep/ifil
       common/pophelp/h(60)
       common/outin/iuout,iuin
-      common/c20/nzsur(mcom),nztv(mcom)
-      common/c24/izstocn(mcom,ms)
+
+      character ctype*4
+      real gversion
+      integer igupgrade
       common/g0/ctype(mcom),gversion(mcom),igupgrade
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
       common/mtfile/ltrns,multic,mons,monf
       common/ract/paction
 
-C iaplic(1) toggle for shading;
-C iaplic(2) toggle for insolation;
-C           where 1 means consider all applicable surfaces and 0
-C           means manual selection of surfaces.
-C iaplic(3) toggle for assessment where:
-C         1 is 'all_applicable',
-C         0 is manual selection of surfaces.
-C nsurfcalc is number of shaded surfaces.
-C lstsfcalc list of applicable surfaces.
-C nsurfinso number of insolation sources.
-C isurfinso list of insolation sources.
-      common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),lstsfcalc(mcom,ms),
-     &       nsurfinso(mcom),isurfinso(mcom,ms)
-
-      dimension irecs(ms),iavdec(12),iva(ms)
+      dimension irecs(ms),iavdec(12)
       character ltrns*72,tbase*72,outs*124
       character*3 month(12)
-      character ssmlcn*32,ssvfc*4,ssotf*32,ssother*24,ssname*12,ssuse*8
-      character ssparent*12
-      character act*1,paction*16,h*72,ctype*4
+      character act*1,paction*16,h*72
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
 
@@ -77,104 +63,12 @@ C Day of average solar declination in each month.
      &            'Sep','Oct','Nov','Dec'/
 
       newgeo=.false.  ! Assume older format geometry.
-      ier=0
       iunit=ifil
 
    35 call eclose(gversion(icomp),1.1,0.01,newgeo)
-
-C If new format geometry and iaplic(icomp,1) equals 1 then
-C all applicable surfaces were set in the zone geometry file.
-      if(newgeo)then
-         if(iaplic(icomp,1).eq.1)then
-            np=nsurfcalc(icomp)
-            do 41 j=1,np
-               iva(j)=lstsfcalc(icomp,j)
-   41       continue
-
-C Set up isc array (surfaces included in the shading analysis).
-            icont=0
-            do 42 i=1,nzsur(icomp)
-               isc(i)=0
-               do 43 j=1,np
-                 if(i.eq.iva(j))isc(i)=1
-   43          continue
-               if(isc(i).eq.1)icont=1
-   42       continue
-
-C If iaplic(icomp,1) is 0 and nsurfcalc is non-zero then user
-C has manually selected surfaces so fill arrays. If both 0 then
-C the user effectively said no shading should be calculated
-C so just clear isc() array.
-         elseif(iaplic(icomp,1).eq.0)then
-            np=nsurfcalc(icomp)
-            if(np.eq.0)then
-               do 44 i=1,nzsur(icomp)
-                 isc(i)=0
-   44          continue
-            else
-               do 45 j=1,np
-                  iva(j)=lstsfcalc(icomp,j)
-   45          continue
-
-C Set up isc array (surfaces included in the shading analysis).
-               icont=0
-               do 46 i=1,nzsur(icomp)
-                  isc(i)=0
-                  do 47 j=1,np
-                     if(i.eq.iva(j))isc(i)=1
-   47             continue
-                  if(isc(i).EQ.1)icont=1
-   46          continue
-            endif
-         endif
-      else
-
-C Older geometry file, user is required to set preferences for 
-C surfaces to include or, in the case of silent action, just
-C do 'all appliable' surfaces.
-         if(act.eq.'s'.or.paction(1:11).eq.'recalculate')then
-
-C Clear return array and select all applicable surfaces.
-            do 14 i=1,nzsur(icomp)
-               iva(i)=0
-   14       continue
-            np=0
-            do 13 i=1,nzsur(icomp)
-               icn=izstocn(icomp,i)
-               if(ssother(icn,1)(1:5).eq.'EXTER')then
-                  np=np+1
-                  iva(np)=i
-               endif
-   13       continue
-            if(np.eq.0)then
-               call usrmsg('No enternal surfaces found!',' ','W')
-               return
-            endif
-            iaplic(icomp,1)=1
-         else
-            call edisp(iuout,' ')
-            call edisp(iuout,'Select external surfaces to include in')
-            call edisp(iuout,'the direct/duffuse shading calculation.')
-            call pickssur(icomp,np,'s',iva,ier)
-            if(ier.ne.0)return
-         endif
-
-C Set up isc array (surfaces included in the shading analysis).
-         icont=0
-         do 110 i=1,nzsur(icomp)
-            isc(i)=0
-            do 120 j=1,np
-               if(i.eq.iva(j))isc(i)=1
-  120       continue
-            if(isc(i).eq.1)icont=1
-  110    continue
-
-C Fill ishdirec array.
-         nsurfcalc(icomp)=np
-         do 121 j=1,np
-            lstsfcalc(icomp,j)=iva(j)
-  121    continue
-      endif
+   
+C Recover the isc and associated arrays.
+      call findisc(icomp,ier,act,icont)
 
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
@@ -272,6 +166,153 @@ C Write the first record of the zone transitional shading file.
    21 format('SHDCON: Zone Transitional Shading file error, record',i6)
       call edisp(iuout,outs)
       return
+      end
+
+
+C ********** findisc **********
+C findisc determines the values in array isc based on information in
+C the zone geometry file and or user interactions. Initially taken from
+C code of SHDCON.
+C   icomp  - the zone index;
+C   act    - 's' for silent mode, '-' for user interaction mode.
+c   icont  - >0 if shaded surfaces were found
+      subroutine findisc(icomp,ier,act,icont)
+#include "building.h"
+
+      common/outin/iuout,iuin
+      common/c20/nzsur(mcom),nztv(mcom)
+      common/c24/izstocn(mcom,ms)
+
+      character ctype*4
+      real gversion
+      integer igupgrade
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
+      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
+     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/contr/mon,isc(ms),iyd
+      common/ract/paction
+
+C iaplic(1) toggle for shading;
+C iaplic(2) toggle for insolation;
+C           where 1 means consider all applicable surfaces and 0
+C           means manual selection of surfaces.
+C iaplic(3) toggle for assessment where:
+C         1 is 'all_applicable',
+C         0 is manual selection of surfaces.
+C nsurfcalc is number of shaded surfaces.
+C lstsfcalc list of applicable surfaces.
+C nsurfinso number of insolation sources.
+C isurfinso list of insolation sources.
+      common/ishdirec/iaplic(mcom,2),nsurfcalc(mcom),lstsfcalc(mcom,ms),
+     &       nsurfinso(mcom),isurfinso(mcom,ms)
+
+      dimension iva(ms)
+      character ssmlcn*32,ssvfc*4,ssotf*32,ssother*24,ssname*12,ssuse*8
+      character ssparent*12
+      character act*1,paction*16
+      logical newgeo  ! Used to test for new/old geometry file.
+
+      newgeo=.false.  ! Assume older format geometry.
+      ier=0
+
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C If new format geometry and iaplic(icomp,1) equals 1 then
+C all applicable surfaces were set in the zone geometry file.
+      if(newgeo)then
+         if(iaplic(icomp,1).eq.1)then
+            np=nsurfcalc(icomp)
+            do 41 j=1,np
+               iva(j)=lstsfcalc(icomp,j)
+   41       continue
+
+C Set up isc array (surfaces included in the shading analysis).
+            icont=0
+            do 42 i=1,nzsur(icomp)
+               isc(i)=0
+               do 43 j=1,np
+                 if(i.eq.iva(j))isc(i)=1
+   43          continue
+               if(isc(i).eq.1)icont=1
+   42       continue
+
+C If iaplic(icomp,1) is 0 and nsurfcalc is non-zero then user
+C has manually selected surfaces so fill arrays. If both 0 then
+C the user effectively said no shading should be calculated
+C so just clear isc() array.
+         elseif(iaplic(icomp,1).eq.0)then
+            np=nsurfcalc(icomp)
+            if(np.eq.0)then
+               do 44 i=1,nzsur(icomp)
+                 isc(i)=0
+   44          continue
+            else
+               do 45 j=1,np
+                  iva(j)=lstsfcalc(icomp,j)
+   45          continue
+
+C Set up isc array (surfaces included in the shading analysis).
+               icont=0
+               do 46 i=1,nzsur(icomp)
+                  isc(i)=0
+                  do 47 j=1,np
+                     if(i.eq.iva(j))isc(i)=1
+   47             continue
+                  if(isc(i).EQ.1)icont=1
+   46          continue
+            endif
+         endif
+      else
+
+C Older geometry file, user is required to set preferences for 
+C surfaces to include or, in the case of silent action, just
+C do 'all appliable' surfaces.
+         if(act.eq.'s'.or.paction(1:11).eq.'recalculate')then
+
+C Clear return array and select all applicable surfaces.
+            do 14 i=1,nzsur(icomp)
+               iva(i)=0
+   14       continue
+            np=0
+            do 13 i=1,nzsur(icomp)
+               icn=izstocn(icomp,i)
+               if(ssother(icn,1)(1:5).eq.'EXTER')then
+                  np=np+1
+                  iva(np)=i
+               endif
+   13       continue
+            if(np.eq.0)then
+               call usrmsg('No enternal surfaces found!',' ','W')
+               return
+            endif
+            iaplic(icomp,1)=1
+         else
+            call edisp(iuout,' ')
+            call edisp(iuout,'Select external surfaces to include in')
+            call edisp(iuout,'the direct/duffuse shading calculation.')
+            call pickssur(icomp,np,'s',iva,ier)
+            if(ier.ne.0)return
+         endif
+
+C Set up isc array (surfaces included in the shading analysis).
+         icont=0
+         do 110 i=1,nzsur(icomp)
+            isc(i)=0
+            do 120 j=1,np
+               if(i.eq.iva(j))isc(i)=1
+  120       continue
+            if(isc(i).eq.1)icont=1
+  110    continue
+
+C Fill ishdirec array.
+         nsurfcalc(icomp)=np
+         do 121 j=1,np
+            lstsfcalc(icomp,j)=iva(j)
+  121    continue
+      endif
+
+      return
+
       end
 
 C ********** SHADC **********
@@ -521,7 +562,7 @@ C shading.
                    call decomp(ibn,ibs,itsur)
                    call shdtst(itsur)
    60            continue 
-   50          continue		! obstruction block loop
+   50          continue         ! obstruction block loop
 
 C For direct shading case, transfer intermediate results (ioshd)
 C to zone transitional shading file and determine overall surface

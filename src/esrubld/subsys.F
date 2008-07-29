@@ -1119,7 +1119,8 @@ C TDF commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       COMMON/PREC2/VOL(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
@@ -1204,7 +1205,9 @@ C     This prevents the zone becoming too cold.
 
       INTEGER IDAY1,IDAY2,ID1,ID2
       DIMENSION ACC(MCOM),CCVVFM(MCOM),CCVVF(MCOM)
-
+      logical closeto0
+      real rTempnotioOverheat
+      
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
 
@@ -1335,7 +1338,7 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
 C If UK ncm calculations then use fresh air requirements from
 C file (tdf) plus user defined infiltration values. Care should be
 C taken when IZIVENT is also greater than 0. 
-      elseif(IACTIV(ICOMP).ne.0)then
+      elseif(IACTIV(ICOMP).ne.0)then 
 
 C Note: set trace to verbose for testing.
         ICF=0
@@ -1352,8 +1355,23 @@ C in l/s/pers)*Occupants density (pers/m2)*occupancy fraction*zone area
 C Convert l/s to ach
         ACI=ACI*(3600.0/1000)/VOL(ICOMP)
 
-C Using AIR PERMEABILITY values specified in the NCM file
-        CALL RSBEM
+C Set notional infiltration/air leakage to 10 m3/h/m2
+        if(INOTI.EQ.1)then
+
+C If Occupancy fraction is 0 and zone temperature is greater
+C than setpoint+1oC, add 5 ach (according to UK NCM guidance)
+          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
+          call eclose(VAL(ISD),0.0,0.001,closeto0)
+          if(closeto0.and.tfa(icomp).gt.rTempnotioOverheat)then
+            ACH(ICOMP)=5
+          else     
+            ACH(ICOMP)=0.5
+          endif
+        else      
+
+C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
+          CALL RSBEM
+        endif
         ACI=ACI+ACH(ICOMP)
 
         CVVF=0.
@@ -1606,7 +1624,7 @@ C No flow network.
       ENDIF
 
 C Determine XX3.
-   17 XX3=CVIF*TF+CVVFM*X
+      XX3=CVIF*TF+CVVFM*X
 
 C Save future-time values for use at next time-step.
   171 CVM(ICOMP)=CVVFM

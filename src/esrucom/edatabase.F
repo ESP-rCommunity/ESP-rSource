@@ -779,7 +779,6 @@ C Information is available via common block MLC.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKMLC(ISEL,PROMPT1,PROMPT2,IER)
 #include "building.h"
-#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -815,12 +814,20 @@ C in the materials database.
       H(4)='Note that the trace level influences the amount of'
       H(5)='detail in this display and you may wish to reset the'
       H(6)='trace level to see additional information.'
+      H(7)=' '
+      H(8)='For Controls of bidirectional data only: '
+      H(9)='Select the construction for which the controls and the '
+      H(10)='switch between different datasets will be applied on.'
+      H(11)='WARNING: Avoid assigning more than one control loop '
+      H(12)='to the same construction, especially when these controls '
+      H(13)='are attempting to assign different datasets. The first '          
+      H(14)='loop will be used if this mistake is made by the users. '
       DO 66 IWW=1,NMLC
         WRITE(COMPS(IWW),'(A33)')DESC(IWW)(1:33)
    66 CONTINUE
       IX=1
       CALL EPICKS(IX,IVAL,PROMPT1,PROMPT2,
-     &  33,NMLC,COMPS,'composites',IER,6)
+     &  33,NMLC,COMPS,'composites',IER,14)
 
       IF(IX.EQ.0)RETURN
       ISEL=IVAL(1)
@@ -1058,7 +1065,7 @@ C GS (52 char) list of optical database items to select from.
       COMMON/GPICK/GS(MGOPT),nopt
 
       LOGICAL FOUND
-      CHARACTER GS*52,WORD*20,topt*72,outs*124
+      CHARACTER GS*52,WORD*20,outs*124!,topt*72
       CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
 
 C Open the optical database, if scanning all items reset the
@@ -1074,7 +1081,9 @@ C Reporting.
      &      ' Optical properties for transparent constructions.')
         endif
       elseif(SOPT(1:3).EQ.'TMP')then
-        topt='tmpopt'
+
+C Topt is not used anywhere 
+C        topt='tmpopt'
       endif
       FOUND=.FALSE.
       GTYPE=' '

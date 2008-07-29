@@ -82,8 +82,9 @@ C LPRFDB,IPRODB (for event profile database)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
-      LOGICAL comold,tmcold,vwfold,ishold,silent,unixok
+      LOGICAL comold,tmcold,vwfold,ishold,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical silent  ! to signal quiet dependency resolution
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -106,6 +107,7 @@ C re-read the geometry file.
 
 C There was an existing zone obstructions file and the obstructions
 C should be transferred into the zone geometry file.
+
 C << where/when to do this transfer >>
 
         elseif(IOBS(ICOMP).EQ.0)then
@@ -243,7 +245,8 @@ C Help text for this menu.
 C Now display the menu.
       CALL EMENU('Obstructions',VERT,MVERT,IVERT)
       IF(IVERT.EQ.MVERT)THEN
-        call sumrchg(ICOMP,'r')
+        silent = .false.
+        call sumrchg(ICOMP,'r',silent)
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
         CALL PHELPD('obstr menu',8,'-',0,0,IER)
@@ -659,6 +662,7 @@ C the block information.
       character sfile*72,snpfile*72,fs*1
       LOGICAL XST,MODIFY,MODLEN,MODBND,unixok,silent,makedummy
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical clkok   ! to register user actions in dialog
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -681,12 +685,15 @@ C is 0 then set makedummy to true.
         call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
         if(IOBS(ICOMP).EQ.2)then
           if(NB.eq.0)then
+            ZOBS(ICOMP)=' '
             makedummy=.true.
             goto 42
           else
             return
           endif
         elseif(IOBS(ICOMP).EQ.1)then
+
+C New format geometry with old obstructions. Scan and write with geometry.
           call FINDFIL(ZOBS(ICOMP),XST)
           if(XST)then
             CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
@@ -694,23 +701,28 @@ C is 0 then set makedummy to true.
               ZOBS(ICOMP)=' '
               IOBS(ICOMP)=2
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+
+C Save the model configuration file before returning.
+              CALL EMKCFG('-',IER)
               return
             else
+              ZOBS(ICOMP)=' '
               IOBS(ICOMP)=2
               makedummy=.true.
               goto 42
             endif
           endif
         elseif(IOBS(ICOMP).EQ.0)then
+          ZOBS(ICOMP)=' '
           IOBS(ICOMP)=2
           makedummy=.true.
           goto 42
         endif
       endif
 
-C Ask for the obstruction file, if it exists then read it in, if not
-C found create one with default information. In either case offer
-C the choice to dereference or ignore obstructions.
+C If older geometry file ask for the obstruction file, if it exists
+C then read it in, if not found create one with default information.
+C In either case offer the choice to dereference obstructions.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(OFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.obs'
       else
@@ -772,6 +784,7 @@ C If we need to make a dummy obstruction file do this.
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           if(IER.eq.0)then
+            CALL EMKCFG('-',IER)
             return
           else
             call usrmsg('Unable to add obstructions to geometry',
@@ -783,6 +796,7 @@ C If we need to make a dummy obstruction file do this.
           CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
           if(IER.eq.0)then
             IOBS(ICOMP)=1
+            CALL EMKCFG('-',IER)
             return
           else
             call usrmsg('Unable to create placeholder obstructions',
@@ -814,24 +828,38 @@ C << decision required >>
       H(11)='geometry menu without changing the model.'
       if(ZOBS(ICOMP)(1:2).eq.'  '.or.ZOBS(ICOMP)(1:4).eq.'UNKN')then
         LTMP=OFILE
-        CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',' ',
-     &    'ignore','browse',iclkok,72,OFILE,'obstruction file',IER,11)
-        if(iclkok.eq.1)then
-          IOBS(ICOMP)=0
-          ZOBS(ICOMP)=' '
-          return
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.2)then
+          CALL EASKSCMD(LTMP,'Zone obstructions file (see help):',' ',
+     &      'browse',clkok,72,OFILE,'obstruction file',ISER,11)
+          if(clkok)iclkok=2   ! notice browse button
+          if(iser.eq.-3)then  ! notice GTK cancel button
+            IOBS(ICOMP)=0
+            ZOBS(ICOMP)=' '
+            return
+          endif
+        else
+          CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',' ',
+     &      'cancel','browse',iclkok,72,OFILE,'obstruction file',
+     &      ISER,11)
+          if(iclkok.eq.1)then    ! notice X11 cancel option
+            return
+          endif
         endif
       else
         LTMP=ZOBS(ICOMP)
         CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',' ',
      &    'dereference','browse',iclkok,72,OFILE,'obstruction file',
-     &    IER,7)
-        if(iclkok.eq.1)then
+     &    ISER,7)
+        if(iser.eq.-3) return  ! notice cancel button
+        if(iclkok.eq.1)then    ! notice dereference
           ZOBS(ICOMP)=' '
           IOBS(ICOMP)=0
           return
         endif
       endif
+
+C User asked to browse within the model for other obstruction files.
       if(iclkok.eq.2)then
         sfile=' '
         snpfile=' '
@@ -849,13 +877,23 @@ C << decision required >>
             LTMP=OFILE
             CALL EASKS(LTMP,
      &        ' Obstructions file name: (because browse was blank) ',
-     &        ' ',72,OFILE,'obstructions file',IER,5)
+     &        ' ',72,OFILE,'obstructions file',ISER,5)
+            if(iser.eq.-3)then  ! notice cancel button
+              ZOBS(ICOMP)=' '
+              IOBS(ICOMP)=0
+              return
+            endif
           endif
         else
           LTMP=OFILE
           CALL EASKS(LTMP,
      &      ' Obstructions file name: (because browse was blank)',
-     &      ' ',72,OFILE,'obstructions file',IER,5)
+     &      ' ',72,OFILE,'obstructions file',ISER,5)
+          if(iser.eq.-3) then  ! notice cancel button
+            ZOBS(ICOMP)=' '
+            IOBS(ICOMP)=0
+            return
+          endif
         endif
         ZOBS(ICOMP)=LTMP
       else

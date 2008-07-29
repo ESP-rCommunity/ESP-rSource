@@ -558,6 +558,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 
       LOGICAL OK,DOK,XST,OKC,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical altered ! to signal change in boundary conditions of added existing zone.
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -672,7 +673,8 @@ C Update the connection list and then the model configuration.
         ICCC=NCON
 
 C If surface attributes are adaibetic or similar then use these in
-C the connections list, then remind user to double check topology. 
+C the connections list, then remind user to double check topology.
+        altered = .false.
         DO 132 ICC=1,NSUR
           ICCC=ICCC+1
           IC1(ICCC)=IC
@@ -682,6 +684,10 @@ C the connections list, then remind user to double check topology.
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' is a SIMILAR connection. Use the'
+            call usrmsg(outs,
+     &       'surface attribute facility to confirm its details.','W')
             ICT(ICCC)=1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -705,15 +711,41 @@ C the connections list, then remind user to double check topology.
             ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
-          else
+          elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a possible partition. Confirm its'
+     &        ' has an undefined boundary. Confirm its'
             call usrmsg(outs,
      &        'surface attributes or use topology tool.','W')
-            ICT(ICCC)=0
+            ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
+          elseif(SOTHER(icc,1)(1:7).eq.'ANOTHER')then
+
+C Existing partitions in an imported zone are reset to UNKNOWN.
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' is a partition. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
+            IC2(ICCC)=0
+            IE2(ICCC)=0
+            altered = .true.   ! will need to write out geometry
+          else
+
+C Existing partitions in an imported zone are reset to UNKNOWN.
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' might be a partition. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
+            IC2(ICCC)=0
+            IE2(ICCC)=0
+            altered = .true.   ! will need to write out geometry
           endif
+	  
+C Update the connection based data structures.
           SSNAME(iccc)=SNAME(NCOMP,icc)
           SSOTF(iccc)=SOTF(icc)
           SSMLCN(iccc)=SMLCN(icc)
@@ -727,6 +759,16 @@ C the connections list, then remind user to double check topology.
           IZSTOCN(ncomp,icc)=iccc
   132   CONTINUE
         NCON=ICCC
+
+C If any of the boundary conditions were altered then write out
+C the geometry file.
+        if(altered)then
+          if(newgeo)then
+            call geowrite(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
+          else
+            call emkgeo(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
+          endif
+        endif
 
 C Update the G7 common blocks and then write out configuration file.
         call zgupdate(0,NCOMP,ier)
@@ -915,6 +957,7 @@ C Scan zip file and update control and connections.
         ENDIF
 
       elseif(INZOPT.EQ.4)then
+        ier = -3  ! signal user cancel
         return
       endif
       end
@@ -1640,7 +1683,7 @@ C Indications are collected from previous calls to WARNMOD. SUMRCHG
 C should be called with act = 'i' (initialise) when entering a zone and
 C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
-      SUBROUTINE SUMRCHG(ICOMP,act)
+      SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1658,6 +1701,7 @@ C IER=0 OK.
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok
+      logical silent  ! if true then use silent recalc
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1700,17 +1744,23 @@ C Check if Unix-based or DOS based.
      &        LSHAD(ICOMP)(1:lnblnk(LSHAD(ICOMP))),' out of date.'
         endif
         if(nh.gt.1)then
-          CALL PHELPD('files out of date',nh,'-',0,0,IER)
+	  if(.NOT.silent)then
+            CALL PHELPD('files out of date',nh,'-',0,0,IER)
+	  endif  
         endif
       endif
       if(ishold)then
-        DOK=.true.
-        h(1)='Shading should be recalculated if the changes you '
-        h(2)='made affect isolation distribution. When in doubt '
-        h(3)='it is best to recalculate. '
-        CALL EASKABC(' Reflect zone change in shading options:',' ',
+        if(silent)then
+	  IRT=1
+	else
+          DOK=.true.
+          h(1)='Shading should be recalculated if the changes you'
+          h(2)='made affect isolation distribution. When in doubt'
+          h(3)='it is best to recalculate.'
+          CALL EASKABC(' Reflect zone change in shading options:',' ',
      &   'recalculate (silent)','recalculate (interactive)','continue',
      &    IRT,3)
+        endif
         if(IRT.eq.1.or.IRT.eq.2)then
           if(IRT.eq.1) call edisp(iuout,
      & 'When finished control will be returned to the project manager.')
@@ -1727,12 +1777,16 @@ C If existing db out of date the perform recalculation.
         endif
       endif
       if(comold.or.tmcold)then
-        DOK=.true.
-        h(1)='Zone construction files should be rebuilt after '
-        h(2)='surface attributes change or surfaces are added or'
-        h(3)='deleted. '
-        CALL ASKOK('Update the zone construction and/ or TMC files',
+        if(silent)then
+	  ok= .true.
+	else
+          DOK=.true.
+          h(1)='Zone construction files should be rebuilt after '
+          h(2)='surface attributes change or surfaces are added or'
+          h(3)='deleted. '
+          CALL ASKOK('Update the zone construction and/ or TMC files',
      &    'to reflect the changes that you have made?',OK,DOK,3)
+        endif
         if(OK)then
           QUIET=.true.
           itru=iuout
@@ -2603,7 +2657,15 @@ C Update the G7 common blocks and then if assign ZBASEA.
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
       elseif(ishape.eq.3)then
-        continue ! ??
+
+C For poly shape loop to find the floor in order to set up the floor area
+        do 222 iSurface=1,NSUR
+          if(SVFC(iSurface).eq.'FLOR')then
+            IBASES(ICOMP,1)=iSurface
+            ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+            ZBASEA(icomp)= SSNA(ibcs)
+          endif
+ 222    continue
       endif
  
 C Save this to file before passing into the geometry editing facility.
@@ -2894,8 +2956,10 @@ C Clear commons.
         lodlabel(icomp,7)='N/A   '      
 
 C Fill common blocks for new zone based on information in the
-C pattern file. Assume file can be sorted.
-        ip3ver(icomp)=2
+C pattern file.
+
+C << note this 3 is going to conflict with jwh changes >>
+        ip3ver(icomp)=3
         afact = use(2)
         iflow='ach-ach '
         vflow='ach-ach '
@@ -2953,6 +3017,7 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
+      COMMON/FILEP/IFIL
 
 C GREF    - External ground reflectivity.
 C GREF12  - (12) Monthly values of ground reflectivity
@@ -2989,11 +3054,30 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
+
+C Simulation parameter sets.
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C IPV description.
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+
+C Season definitions (from climatelist file). 2 periods for winter
+C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
+C and one period for summer.
+      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
+     &              is2sprs,is2sprf,is1sums,is1sumf
+
+C Typical periods win1|trn1|sum|trn2|win2 with start,finish
+      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
+     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
                
       CHARACTER OUTSTR*248,WORD*32,outs*124
       character dstmp*24
 
       character act*1  ! action requested.
+      character ipvact*1 ! action for clearipvdat
+      character simact*6 ! action for creating assessments.
       character subpath*72
 
 C At the head of the file is a menu string and a description
@@ -3010,7 +3094,7 @@ C For passing to silentmodel.
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
 
-      logical dll,unixok
+      logical dll,unixok,XST,ok
       real valx,valy      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
@@ -3077,6 +3161,12 @@ C Site related local variables.
       real GVA(12)  ! temporary array to hold a dozen values.
       integer groundtempsets
       logical havegroundtempsets
+      logical havesimparameters
+      integer simstartup   ! use for isstup
+      integer simzonetimestep ! use for isbnstep
+      integer simplanttimestep ! use for ispnstep
+      integer simsavelevel  ! use for issave
+
       IER=0
 
 C Determine operating system
@@ -3136,6 +3226,11 @@ C in the file.
         havehourlysnowfile=.false.
         havegroundtempsets=.false.
         groundtempsets=0
+        havesimparameters=.false.
+        simstartup=0
+        simzonetimestep=0
+        simplanttimestep=0
+        simsavelevel=0
         do 42 iz=1,MSZ
           name(iz) = ' '
           shape(iz) = ' '
@@ -3528,8 +3623,7 @@ C to the training/pattern folder.
           CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
           write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
         else
-          call usrmsg('Silentread usage 2nd parameter not recognised',
-     &      ' ','W')
+          call usrmsg('Usage 2nd parameter not recognised',' ','W')
         endif
         goto 43
       elseif(WORD(1:9).eq.'*occupant')then
@@ -3596,6 +3690,12 @@ C Number of days with snow on the ground (if ground refl model 2)
   442   CONTINUE
         havesnowdays=.true.
         goto 43
+      elseif(WORD(1:18).eq.'*hourly_snow_depth')then
+
+C If ground refl model is 3 then this file has hourly data.
+        CALL EGETRM(OUTSTR,K,hourlysnowfile,'W','snow file',IER)
+        havehourlysnowfile=.true.
+        goto 43
       elseif(WORD(1:16).eq.'*monthly_profile')then
 
 C Ground monthly temperature profiles. 2nd item is the number of profiles.
@@ -3609,6 +3709,144 @@ C And this is followed by one line each for each profile.
    29     CONTINUE
   28    CONTINUE
         havegroundtempsets=.true.
+        goto 43
+      elseif(WORD(1:15).eq.'*sim_parameters')then
+
+C Get the assessment independant simulation parameters.
+        CALL EGETWI(OUTSTR,K,simstartup,0,300,'W','startup',IER)
+        CALL EGETWI(OUTSTR,K,simzonetimestep,1,60,'W','zone_ts',IER)
+        CALL EGETWI(OUTSTR,K,simplanttimestep,0,100,'W','plant_ts',IER)
+        CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
+        havesimparameters=.true.
+        goto 43
+      elseif(WORD(1:12).eq.'*assessments')then
+
+C Get tags related to assessments: after the tag *assessments the
+C following choices are possible:
+C   `annual` (no further tokens)
+C   `single` followed typically by `user` followed by pairs of julian dates
+C   `winter` followed by `typical_week` or `season` or 'fortnight'
+C   `spring` followed by `typical_week` or `season` or 'fortnight'
+C   `summer` followed by `typical_week` or `season` or 'fortnight'
+C   `autumn` followed by `typical_week` or `season` or 'fortnight'
+C   `three_season` followed by `typical_week` `forthnight` `user` or `season` 
+C   `five_season` followed by `typical_week` `forthnight` `user` or `season` 
+        CALL EGETW(OUTSTR,K,WORD,'W','*assessment tags',IER)
+        if(WORD(1:7).eq.'Default'.or.WORD(1:7).eq.'default')then
+          nipvassmt=1
+          simsavelevel=-1   ! signal to ipv2simpar to use defaults
+          simact='i1d   '
+        elseif(WORD(1:6).eq.'Annual'.or.WORD(1:6).eq.'annual')then
+          nipvassmt=1
+          simact='ias   '
+        elseif(WORD(1:6).eq.'Single'.or.WORD(1:6).eq.'single')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Single tags',IER)
+          if(WORD(1:4).eq.'User'.or.
+     &       WORD(1:4).eq.'user')then
+            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
+          endif
+          nipvassmt=1
+          simact='i1d   '
+        elseif(WORD(1:6).eq.'Winter'.or.WORD(1:6).eq.'winter')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Winter tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icwint'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icwinf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icwins'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:6).eq.'Spring'.or.WORD(1:6).eq.'spring')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Spring tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icsprt'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icsprf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icsprs'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:6).eq.'Summer'.or.WORD(1:6).eq.'summer')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Summer tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icsumt'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icsumf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icsums'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:6).eq.'Autumn'.or.WORD(1:6).eq.'autumn')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Autumn tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icautt'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icautf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icauts'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:12).eq.'Three_season'.or.
+     &         WORD(1:12).eq.'three_season')then
+          CALL EGETW(OUTSTR,K,WORD,'W','three_season tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='i3t   '
+          elseif(WORD(1:4).eq.'User'.or.WORD(1:4).eq.'user')then
+            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday3,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday4,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday5,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday6,1,365,'W','end julian',IER)
+            simact='i3u   '
+          elseif(WORD(1:9).eq.'season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='i3s   '
+          endif
+          nipvassmt=3
+        elseif(WORD(1:11).eq.'Five_season'.or.
+     &         WORD(1:11).eq.'five_season')then
+          CALL EGETW(OUTSTR,K,WORD,'W','five_season tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='i5t   '
+          elseif(WORD(1:4).eq.'User'.or.WORD(1:4).eq.'user')then
+            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday3,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday4,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday5,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday6,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday7,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday8,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday9,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday10,1,365,'W','end julian',IER)
+            simact='i5u   '
+          elseif(WORD(1:9).eq.'season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='i5s   '
+          endif
+          nipvassmt=5
+        else
+          nipvassmt=0
+          simact='i1d   '
+        endif
+        write(6,*) 'the value of simact is ',simact
         goto 43
       else
         goto 43
@@ -3665,6 +3903,62 @@ C Add in site information if tokens were included.
             UGRDTP(J,IGRDP)=groundtemps(J,IGRDP)
   129     CONTINUE
   128   continue
+      endif
+
+C Add in simulation parameter and assessment data if included.
+      if(havesimparameters)then
+        isstup=simstartup
+        isbnstep=simzonetimestep
+        ispnstep=simplanttimestep
+        issave=simsavelevel
+
+C Assign assessment information
+C Rescan the `climatelist` file. Check if this climate is
+C in the list. If not instanciate season and typical start and end dates.
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,ier)
+          if(ok)then
+            continue
+          else
+
+C Set default early winter, spring, summer, autumn, late winter periods.
+            CALL EDAY(9,1,ia1wins)
+            CALL EDAY(15,1,ia1winf)
+            CALL EDAY(6,3,ia1sprs)
+            CALL EDAY(12,3,ia1sprf)
+            CALL EDAY(11,7,iasums)
+            CALL EDAY(17,7,iasumf)
+            CALL EDAY(2,10,ia2sprs)
+            CALL EDAY(8,10,ia2sprf)
+            CALL EDAY(20,11,ia2wins)
+            CALL EDAY(26,11,ia2winf)
+
+C Default season definitions.
+            CALL EDAY(1,1,is1wins)
+            CALL EDAY(28,2,is1winf)
+            CALL EDAY(1,11,is2wins)
+            CALL EDAY(31,12,is2winf)
+            CALL EDAY(1,3,is1sprs)
+            CALL EDAY(30,4,is1sprf)
+            CALL EDAY(1,9,is2sprs)
+            CALL EDAY(31,10,is2sprf)
+            CALL EDAY(1,5,is1sums)
+            CALL EDAY(31,8,is1sumf)
+          endif
+        endif
+
+C Clear the IPV data structures and initialize based on the
+C assessment regime. Then use the IPV data and transfer it to
+C equivalent in simulation parameter data structure via ipv2simpar
+        ipvact='i'
+        call clearipvdat(ipvact)
+        call ipvdatinit(simact)
+        call ipv2simpar(simact)
+
+C << assessment expansion to be done >>
+
       endif
 
 C << location for further system level data >>

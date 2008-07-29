@@ -756,7 +756,8 @@ C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
@@ -1269,7 +1270,7 @@ C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
 C Temporary statement for dumping structured mesh temperatures.
 C      call TEMPSD(icomp)
-      if (ISAVE.eq.0) then
+      if ((ISAVE.eq.0).or.(ISAVE.eq.6)) then
 
 C Save appropriate data for ISAVE=0. Initialise during first pass
 C of each zone. Find current month (IS0M) for the simulation day.

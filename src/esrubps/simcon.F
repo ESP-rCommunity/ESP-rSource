@@ -421,6 +421,8 @@ C Set up the menu text.
 c save level 5 
       elseif(ISAVE.eq.5)then
         ITEM(4)= '* Save >> 5 H3K no res file'
+      elseif(ISAVE.eq.6)then
+        ITEM(4)= '* Save >> 6 summary csv data '
       endif
       ITEM(5)=   '  ....................       '
       ITEM(6)=   'm Monitor state variables    '
@@ -451,17 +453,19 @@ C Help text for this menu.
       H(11)='     SAVE >>4 surface energy balance save option.'
 c Save level 5
       H(12)='     SAVE >>5 Hot3000 output only'
-      H(13)=' m: monitor plots zone temperatures, plant flux and'
-      H(14)='    plant state variables as the simulation progresses.'
-      H(15)=' '
-      H(16)=' t: select zone-side time-step control option.'
-      H(17)=' s: invoke simulation. '
-      H(18)=' <: deletes the last saved simulation result set. '
-      H(19)=' g: sets simulation parameter toggles '
-      H(20)=' '
-      H(21)=' i: outputs the current simulation period and'
-      H(22)='    information on the saved result set.'
-      H(23)=' o: gives summary results if SAVE O option selected.'
+      H(13)='     SAVE >>6  no results saved (summary only in '
+      H(14)='     database freindly format)'      
+      H(15)=' m: monitor plots zone temperatures, plant flux and'
+      H(16)='    plant state variables as the simulation progresses.'
+      H(17)=' '
+      H(18)=' t: select zone-side time-step control option.'
+      H(19)=' s: invoke simulation. '
+      H(20)=' <: deletes the last saved simulation result set. '
+      H(21)=' g: sets simulation parameter toggles '
+      H(22)=' '
+      H(23)=' i: outputs the current simulation period and'
+      H(24)='    information on the saved result set.'
+      H(25)=' o: gives summary results if SAVE O option selected.'
 
 C Do not display the menu if in autook mode as defined in the 
 C simulator parameter file.
@@ -493,7 +497,7 @@ C Save level.
          call tstamp('>','SIM: change save level')
          ISAVE=ISAVE+1
 C Save Level 5
-         if(ISAVE.gt.5)ISAVE=0
+         if(ISAVE.gt.6)ISAVE=0
       elseif(ino.eq.6)then
 
 C Graphic monitor setup.
@@ -555,6 +559,11 @@ c calculation approaches.
    43   continue
         call tstamp('>','SIM: enter simulate')
         call SIMCON
+        if(isave.eq.6)then
+
+C Output from 6 save.
+          call MZOUT6
+        endif
         call tstamp('>','SIM: exit simulate')
       elseif(ino.eq.10)then
 
@@ -618,7 +627,7 @@ C Output from 0 save.
       elseif(ino.eq.16)then
 
 C Help.
-        CALL PHELPD(' sim control',23,'simul_cmds  ',0,0,IER)
+        CALL PHELPD(' sim control',25,'simul_cmds  ',0,0,IER)
       elseif(ino.eq.17)then
 
 C Return.
@@ -1962,6 +1971,8 @@ C Write out appropriate message.
 c Hot 3000: Added save level 5 zone save level info
       elseif(isave.eq.5)then
         call edisp(icout,' Zone save option     : 5 H3K')
+      elseif(isave.eq.6)then
+        call edisp(icout,' Zone save option     : 6 (No db created)')
       endif
       write(outs,'(a,I5)') ' No. of warnings      : ',IWARN
       call edisp(icout,outs)

@@ -392,6 +392,8 @@ C---- Local variables
       REAL    R               ! Flowrate corrective coefficient (-)
       REAL    SRADD           ! Direct solar rad. on collector surface (W/m2)
       REAL    SRADF           ! Diffuse solar rad. on collector surface (W/m2)
+      REAL    SKYDIF          ! Sky component of diffuse solar rad: not used in this routine
+      REAL    GRDDIF          ! Ground component of diffuse solar rad: not used in this routine
       REAL    UA              ! Heat loss coefficient to environment (W/C)
       REAL    XIAM            ! Incidence angle modifier (-)
       REAL    HEATLOSS_ACTUAL ! Actual heat loss from collector (W)
@@ -517,7 +519,7 @@ C     Do not attempt calculation if sun is not up
           IF (SALT.LE.0.) THEN
             G = QF
           ELSE 
-            CALL MZSRAD0(COLLSLOP,QD,QF,CAI,SRADD,SRADF)
+            CALL MZSRAD0(COLLSLOP,QD,QF,CAI,SRADD,SRADF,SKYDIF,GRDDIF)
             G = SRADD + SRADF
           ENDIF ! Matches to IF (SALT.LE.0.)
         ENDIF ! Matches to IF (QD.GT.0. .OR. QF.GT.0.)

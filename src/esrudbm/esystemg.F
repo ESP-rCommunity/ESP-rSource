@@ -125,7 +125,7 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -214,7 +214,8 @@ C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
-       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+C DBSN (15 char) name of the surface within the associated zone.
+       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
@@ -399,7 +400,7 @@ C is a logical flag, .true. restricts update/save options.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
@@ -1179,6 +1180,7 @@ C Read references to TDF id's, and then the related tasks and zones.
           DBTAG(M)=' '
           DBTASK(M)=' '
           DBZN(M)=' '
+          DBSN(M)=' '
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','tdf instance name',IER)
           DBTAG(M)=WORD(1:12)
@@ -1190,8 +1192,13 @@ C Read references to TDF id's, and then the related tasks and zones.
             CALL EGETW(OUTSTR,K,WORD,'W','related zone',IER)
             DBZN(M)=WORD(1:15)
           endif
-          WRITE(OUTS,'(A,I2,7A)') ' Tdf item:',M,':',DBTAG(M),
-     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),'.'
+          if(ND.gt.3)then
+            CALL EGETW(OUTSTR,K,WORD,'W','related surface',IER)
+            DBSN(M)=WORD(1:15)
+          endif            
+          WRITE(OUTS,'(A,I2,7A,I2)') ' Tdf item:',M,':',DBTAG(M),
+     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),
+     &      'and surface',DBSN(M)
           IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
         GOTO 59
    58   CONTINUE
@@ -1214,6 +1221,7 @@ C If 6 items on line also read whether to save only 1stph.
           isavgh=0
         endif
         do 333 iss=1,nsset
+
 C The following code ensures thea the sXXres varaibles are initialzied
 C to empty strings even if they are not defind in the input file.
           write(sblres(iss), '(A)')  '  '
@@ -1221,7 +1229,6 @@ C to empty strings even if they are not defind in the input file.
           write(smstres(iss), '(A)') '  '
           write(splres(iss), '(A)')  '  '
           write(selres(iss), '(A)')  '  '
-          
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
           K=0
           CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
