@@ -32,7 +32,8 @@ C is formulated viewed from the surrounding space:
 C         > 0 when T1 > T2, i.e. heat released
 C         < 0 when T1 < T2, i.e. heat stored
 C
-C Equation and parameters taken from PhD. thesis by S. Hoffmann, Weimar 2006
+C Equation and parameters taken from PhD. thesis by Sabine Hoffmann, 
+C Weimar 2006
 C
       real T1,T2
       integer k
@@ -48,18 +49,18 @@ C.... Common blocks
 
       real aa,bb
 
-      if (k.eq.0) THEN ! function defaults to "normal" mode
+      if (k.eq.0) THEN 
          aa=a2
          bb=b2
-      else
+      else        ! function defaults to "normal" mode
          aa=a1
          bb=b1
       endif
 
       LatentHeat = EXP(aa)/bb*(EXP(bb*T1)-EXP(bb*T2))
       
-C     More than Lges is not possible:
-      LatentHeat = min(Lges,LatentHeat)
+C     More than |Lges| is not possible:
+      LatentHeat = sign(LatentHeat)*min(Lges,abs(LatentHeat))
 
       End
 
@@ -97,10 +98,10 @@ C.... Local variables
       TMELT2=TMELT-sub
 
 C**********************************************************************************************
-C      Calculate the heat storage according to the temperature change between present (TnS) and 
-C      future (TnS1) temperatures.
-C      Also calculate apparent heat capacity and apparent thermal conductivity based on percentage
-C      of liquidification of PCM material.
+C      Calculate the heat storage according to the temperature change between present (TnS) 
+C      and future (TnS1) temperatures.
+C      Also calculate apparent heat capacity and apparent thermal conductivity based on 
+C      percentage of liquidification of PCM material.
 C
 C      Following cases are checked / differentiated
 C      Heating: cases 1, 2, 3, 4, 5, 6 and 7
@@ -108,18 +109,21 @@ C      Cooling: cases 1, 2, 3, 5, 6, 7, and 8
 C
 C                ^
 C                ¦ C [J/(kg K)]
-C                ¦                       6         5              (5)
-C                ¦                        /------<-->------/-----<-->-----
-C                ¦                       /                / 4
-C                ¦                      /                /
-C                ¦                     /                /
-C                ¦                  7 /                / 3
-C                ¦                   /                /
-C                ¦                  /                /
-C                ¦                 /                /
-C                ¦      (1)     8 /      1       2 /
-C          C_liq ¦-----<-->------/----------------/        ----------------> T [°C]
-C                             TMELT2  TSOLI2    TMELT   TSOLI
+C                |                       _____
+C                |                      /     \
+C                |                     /       \
+C                |                    /    7    \  
+C                |                   /           \
+C                |                  /             \ 6   5   TSOLI   (5)
+C                |      (1)      8 /    TMELT      \---<-->---/----<-->- C_liq
+C          C_sol ¦-----<-->-------/----------\  TSOLI2       / 4   
+C                |             TMELT2   1   2 \             /
+C                |                             \           /
+C                |                              \    3    /  
+C                |                               \       /
+C                |                                \     /
+C                |------------> T [°C]             \___/
+C
 C
 C  Possibly, checking temperatures against each other should use eclose(). 
 C  However, then an "alternative action" must be defined if eclose() fails ... 
@@ -136,26 +140,28 @@ C *** Temperature increase in PCM  ***
 
             elseif (TnS.le.TMELT.and.TnS1.gt.TMELT)
             ! PCM begins to melt (case 2)
-               storedLH = -1.0E0*enthalp(1,TMELT,TnS1) ! "storedLH" must be >0 !
+               storeThisTS = LatentHeat(1,TMELT,TnS1)
+               storedLH = 0.0E0 - storeThisTS ! "storedLH" must be >0 !
                AppCon=(1-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
-               AppSHC=SHCLIQ+storedLH/(TnS1-TMELT) ! to be verified
+               AppSHC=SHCLIQ+storedLH/(TMELT-TnS1) ! to be verified
 
             elseif (TnS.gt.TMELT.and.TnS1.le.TSOLI)
             ! PCM is partially liquid, latent heat is stored in the "normal" 
             ! range (k=1, case 3).
-               storeThisTS = enthalp(1,TnS,TnS1)
+               storeThisTS = LatentHeat(1,TnS,TnS1)
                storedLH = storedLH - storeThisTS
                AppCon=(1-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
-               AppSHC=SHCLIQ+storeThisTS/(TnS1-TnS) ! to be verified
+               AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
 
             elseif (TnS.gt.TMELT.and.TnS1.gt.TSOLI)
             ! Rest of solid PCM is completely melted in this timestep and also heated 
             ! as liquid (case 4)
-               storedLH = Lges ! crude
+               storeThisTS = LatentHeat(1,TnS,TSOLI)
+               storedLH = Lges ! crude ... but safe
                AppCon=CONLIQ
-               AppSHC=SHCLIQ ! crude, actually, here we should take "rest" of latent heat into acc.
+               AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI) ! to be verified
 C         *** set new k ***
                k=0
 C         ****************
@@ -172,18 +178,19 @@ C         ****************
             elseif (TnS1.gt.TSOLI2)
             ! PCM is subcooled partial liquid and is completely (re-)melted 
             ! in this timestep (case 6)
-               storedLH = Lges ! crude
+               storeThisTS = LatentHeat(0,TnS,TSOLI2)
+               storedLH = Lges ! crude ... but safe
                AppCon=CONLIQ
-               AppSHC=SHCLIQ ! crude, actually, again we should take "rest" of latent heat into acc.
+               AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI2) ! to be verified
 
             ELSEif (TnS1.le.TSOLI2) then
             ! PCM is subcooled partial liquid and not completely melted in 
             ! this timestep (k=0, case 7)
-               storeThisTS = enthalp(0,TnS,TnS1)
+               storeThisTS = LatentHeat(0,TnS,TnS1)
                storedLH = storedLH - storeThisTS
                AppCon=(1-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
-               AppSHC=SHCLIQ+storeThisTS/(TnS1-TnS) ! to be verified
+               AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
             endif ! <- temperature bracketing for k=0
 
          endif ! <- k = ?
@@ -205,11 +212,11 @@ C *** Temperature decrease in PCM ***
 
             elseif (TnS.le.TSOLI.and.TnS1.ge.TMELT)
             ! PCM is partially liquid, and is now cooled (non-subcooling, case 3)
-               storedThisTS = enthalp(1,TnS,TnS1)
-               storedLH = storedLH - storedThisTS
+               storeThisTS = LatentHeat(1,TnS,TnS1)
+               storedLH = storedLH - storeThisTS
                AppCon=(1-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
-               AppSHC=SHCLIQ+storedThisTS/(TnS-TnS1) ! to be verified
+               AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
             endif ! <- temperature bracketing for k=1
 
          else ! (k=0)
@@ -224,26 +231,26 @@ C *** Temperature decrease in PCM ***
              ELSEif (TnS.gt.TSOLI2.and.TnS1.lt.TSOLI2) then
             ! PCM begins to solidify in sub-cooled mode 
             ! this timestep (k=0, case 6)
-               storeThisTS = enthalp(0,TSOLI2,TnS1)
-               storedLH = storeThisTS
+               storeThisTS = LatentHeat(0,TSOLI2,TnS1)
+               storedLH = Lges - storeThisTS
                AppCon=CONSOL
-               AppSHC=SHCSOL ! crude
+               AppSHC=SHCSOL + storeThisTS/(TSOLI2-TnS1) ! to be verified
 
             ELSEif (TnS.le.TSOLI2.and.TnS1.gt.TMELT2) then
             ! PCM is subcooled partial liquid and not completely solidified in 
             ! this timestep (k=0, case 7)
-               storeThisTS = enthalp(0,TnS,TnS1)
+               storeThisTS = LatentHeat(0,TnS,TnS1)
                storedLH = storedLH - storeThisTS
                AppCon=(1-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
-               AppSHC=SHCSOL+storedThisTS/(TnS-TnS1) ! to be verified
+               AppSHC=SHCSOL+storeThisTS/(TnS-TnS1) ! to be verified
 
              ELSEif (TnS.gt.TMELT2.and.TnS1.le.TMELT2) then
             ! PCM completely solidifies in this timestep (k=0, case 8)
-               storeThisTS = enthalp(0,TnS,TMELT2)
+               storeThisTS = LatentHeat(0,TnS,TMELT2)
                storedLH = 0
                AppCon=CONSOL
-               AppSHC=SHCSOL ! crude
+               AppSHC=SHCSOL + storeThisTS/(TnS-TMELT2) ! to be verified
 C         *** set new k ***
                k=1
 C         ****************
