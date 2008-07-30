@@ -520,18 +520,18 @@ equal to 0. In phase change temperature range latent heat is:
 PCM_t56
 *SPECDATA
 12
-21                    TMELT Melting,
-24                    TSOLI solidification temperature (degC)
-5                      sub-cooling temperature difference (K)
-0.5                   CONSOL Conductivity in solid
-0.6                   CONLIQ and liquid phase (W/(m K))
-1800                 SHCSOL Specific heat capacity in solid
-2400                 SHCLIQ and liquid state (J/(kg K))
-1.7E05               Lges, Total latent heat capacity of PCM, J/kg
+21              TMELT Melting,
+24              TSOLI solidification temperature (degC)
+5               sub-cooling temperature difference (K)
+0.5             CONSOL Conductivity in solid
+0.6             CONLIQ and liquid phase (W/(m K))
+1800            SHCSOL Specific heat capacity in solid
+2400            SHCLIQ and liquid state (J/(kg K))
+1.7E+05         Lges, Total latent heat capacity of PCM, J/kg
 -1.0320671E+01  a1 coefficients for
-0.76224E+00       b1 latent heat integral between
+0.76224E+00     b1 latent heat integral between
 -5.7472307E+00  a2 T1 and T2
-0.76224E+00       b2 (see below).
+0.76224E+00     b2 (see below).
 
 *TEXT
 
