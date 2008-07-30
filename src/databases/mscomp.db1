@@ -361,6 +361,7 @@ to calculate d as a function of the wind incidence angle.
 
 *ENDTEXT
 *END
+#####################
 *SPECMATL
 *IDDATA
 # Category | Assoc. special 
@@ -509,7 +510,54 @@ equal to 0. In phase change temperature range latent heat is:
 
 *ENDTEXT
 *END
-###########
+#########################
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#          | material model no
+     7            56
+*DESC
+PCM_t56
+*SPECDATA
+12
+21                    TMELT Melting,
+24                    TSOLI solidification temperature (degC)
+5                      sub-cooling temperature difference (K)
+0.5                   CONSOL Conductivity in solid
+0.6                   CONLIQ and liquid phase (W/(m K))
+1800                 SHCSOL Specific heat capacity in solid
+2400                 SHCLIQ and liquid state (J/(kg K))
+1.7E05               Lges, Total latent heat capacity of PCM, J/kg
+-1.0320671E+01  a1 coefficients for
+0.76224E+00       b1 latent heat integral between
+-5.7472307E+00  a2 T1 and T2
+0.76224E+00       b2 (see below).
+
+*TEXT
+
+PHASE CHANGE MATERIAL
+Special material of type  'phase change material' should be defined for 
+the middle node of the layer of interest.
+
+This special material type can model sub-cooling behaviour found in many
+PCM materials.
+
+Required input, see above. The coefficients for 
+non-subcooling (a1, b1)  and sub-cooling (a2, b2)  integral
+of specific heat (from thesis S. Hoffmann) are for the eqn. 
+IntegralC(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
+
+Phase change occures between melting (PCM becomes liquid) and
+solidification temperatures when heated. After all PCM is liquid, 
+solidification starts after temperature goes below TSOLI-sub.
+
+Beyond phase change temperature range latent heat of material is
+equal to 0. In phase change temperature range latent heat is acc. to
+above given integral eqn.
+
+*ENDTEXT
+*END
+#############################
 *SPECMATL
 *IDDATA
 # Category | Assoc. special 
