@@ -3232,6 +3232,556 @@ C thats it ...
       return
       end          ! <- end SPMCMP55
 
+
+C ********************************************** 56 **************************************************
+C Special Materials PCM. Extended approach which allows sub-cooling.
+C
+C Created by: Achim Geissler
+C Created on: July 30, 2008
+C Copyright: GaCH
+C ________
+C Uses subroutines
+C LatentHeat(k,T1,T2) ... calculates integral of latent heat between T1 and T2 for 
+C                                  k=1 "standard" range and 
+C                                  k=0 sub-cooled PCM
+C PCMStore() ... calculates ...
+C
+C ________
+C ABSTRACT:
+C ... bla bla
+C
+C Special Material Database
+C Parameter are defined in file databases/mscomp.db1
+C
+C *****************************************************************************************************
+      subroutine SPMCMP56(ICOMP,ISPMNOD)
+      implicit none
+      
+#include "building.h"
+
+C Parameters
+      integer ICOMP,ISPMNOD
+
+C Common blocks
+C General esp-r common blocks
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+
+      COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
+      real TPC,QPC
+
+      COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
+      real TPS,QPS
+
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
+
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+      real THRMLI
+C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
+
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     & NPGAP(MCOM,MS,MGP)
+      integer NCONST,NELTS,NGAPS,NPGAP
+
+      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
+      real C,QC
+
+      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
+      real VCP,QCP
+
+      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+      real VCF,QCF
+
+C Special materials related common blocks
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &   nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      integer nspmnod,ispmloc,ispmtyp,nnodat
+      real spmdat
+
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
+     &                             STRSPM(MSPMNOD,5)
+      integer NDATSPM  ! number of stored data items for spec. material
+      real DATASPM      ! value of data item
+      character STRSPM*16  ! descriptive string of data item
+
+C Phase change materials specific common blocks
+      COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
+      real SPCM ! Heat stored in PCM material (node)
+      real SPCMTF,SPCMTP
+
+      COMMON/PCM03/PCMFAC(MCOM,MS,MN)
+      real PCMFAC ! present factor ...
+
+      common/PCM05/APPCONP(MCOM,MS,MN),APPSHCP(MCOM,MS,MN),
+     & PK(MCOM,MS,MN)
+      real APPCONP ! present value of apparent conductivity, W/(m K)
+      real APPSHCP ! present value of apparent heat capacity, J/(kg K)
+      integer PK  ! present value of switch "k", (-)
+
+C.... Material parameters for phase change materials, this model only
+      common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
+     & SHCSOL,SHCLIQ,a1,a2,b1,b2
+      real TSOLI  ! solidification temperature of PCM, degC
+      real TMELT ! melting temperature of PCM, degC
+      real sub     ! sub-cooling temperature difference, K
+      real Lges   ! total latent heat capacity of PCM, J/kg
+      real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
+      real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
+      real a1,a2,b1,b2 ! Equation parameters for non-subcooling (a1, b1)
+                              ! and subcooling (a2, b2) states for specific PCM
+
+C... Local variables
+      REAL APPCON, APPSHC, FACTP, FACTF
+      real PCMCON,PCMSHC
+      REAL TPCM, TFCM       ! Present and future temperatures of PCM node
+      REAL EFTHK     ! PCM node 'virtual' thickness
+      real storedLH
+
+      INTEGER isurf,inode,ielem,NLOC,presk,IPHNL
+
+C---- local variables for output.
+      real sumStoredLH
+      real Rtot,THKsum
+
+C Obtain the relevant PCM data from the PCM database:
+C Melting, solidification temperature (degC) and sub-cooling
+C temperature difference (K)
+      TMELT=spmdat(ISPMNOD,1)
+      TSOLI=spmdat(ISPMNOD,2)
+      sub=spmdat(ISPMNOD,3)
+
+C Conductivity in solid and liquid phase (W/(m K))
+      CONSOL=spmdat(ISPMNOD,4)
+      CONLIQ=spmdat(ISPMNOD,5)
+
+C Specific heat capacity in solid and liquid state (J/(kg K))
+      SHCSOL=spmdat(ISPMNOD,6)
+      SHCLIQ=spmdat(ISPMNOD,7)
+
+C Total latent heat capacity of PCM, J/kg
+      Lges=spmdat(ISPMNOD,8)
+
+C Coefficients for non-subcooling (a1, b1)  and sub-cooling (a2, b2)  integral
+C of specific heat (from thesis S. Hoffmann)
+C IntegralC(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
+      a1=spmdat(ISPMNOD,9)
+      b1=spmdat(ISPMNOD,10)
+      a2=spmdat(ISPMNOD,11)
+      b2=spmdat(ISPMNOD,12)
+
+C ************************************************************************
+C Check if zone this subroutine is called with actually contains the PCM
+      if (ICOMP .ne. ispmloc(ispmnod,1)) THEN
+C         give error message and quit subroutine
+         write(*,*) "wrong zone ",ICOMP,
+     &      " for PCM type 56, should be ",ispmloc(ispmnod,1)
+         RETURN
+      endif
+
+C Set up variables of PCM location in simulation model
+      isurf=ispmloc(ispmnod,2)
+      inode=ispmloc(ispmnod,3)
+      ielem=nint(real(ispmloc(ispmnod,3))/2.)
+
+C **** is this the first call?
+      if (nsinc .le. 1) THEN
+C          we need to set "k" for each PCM node to initial value (k=1) and
+C          we need to set SPCM for each PCM node to initial value (SPCM=0.0)
+         PK(icomp,isurf,inode-1)=1
+         PK(icomp,isurf,inode)=1
+         PK(icomp,isurf,inode+1)=1
+         
+         SPCM(icomp,isurf,inode-1)=0.0
+         SPCM(icomp,isurf,inode)=0.0
+         SPCM(icomp,isurf,inode+1)=0.0
+      endif
+
+      Rtot = 0.0
+      THKsum = 0.0
+      sumStoredLH = 0.0
+
+C ************************************************************************
+C Loop through the three nodes 'outside surface' - 'middle' - 'inside surface'
+C of the PCM layer (n-1,n,n+1).
+      Do 10 IPHNL=1,3
+C          Set current node location to NLOC
+C          Allocate a 'virtual' thickness to each node of the PCM layer 
+         If (IPHNL.EQ.1) THEN
+            NLOC=inode-1
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
+         ELSE IF (IPHNL.EQ.2) THEN
+            NLOC=inode
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.5
+         ELSE IF (IPHNL.EQ.3) THEN
+            NLOC=inode+1
+            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
+         ENDIF
+
+         THKsum = THKsum + EFTHK ! calc total thickness of mlc
+
+C TPCM is the present and TFCM is the future temperature 
+C of the PCM material node.
+C nodal Temp internal : TxCM = TxC in degC
+C nodal Temp on surface : TxCM = TxS in degC
+         IF (IPHNL.EQ.3 .AND. IELEM .EQ. NELTS(icomp,isurf)) THEN
+            TFCM=TFS(icomp,isurf)
+            TPCM=TPS(icomp,isurf)
+         ELSE
+            TFCM=TFC(icomp,isurf,NLOC)
+            TPCM=TPC(icomp,isurf,NLOC)
+         ENDIF
+
+C Retrieve stored latent heat, apparent conductivity and
+C apparent specific heat from previous time step
+         storedLH=SPCM(icomp,isurf,NLOC)
+         APPCON=APPCONP(icomp,isurf,NLOC)
+         APPSHC=APPSHCP(icomp,isurf,NLOC)
+         presk=PK(icomp,isurf,NLOC)
+
+C Calculated change in stored latent heat, current apparent conduction and
+C current apparent specific heat capacity based on present and future 
+C temperatures and state (k) of PCM
+         call PCMStore(TPCM,TFCM,presk,storedLH,APPCON,APPSHC)
+
+C--- Calc values for xml output
+         Rtot = Rtot + EFTHK/APPCON
+         sumStoredLH = sumStoredLH + storedLH
+
+C Read value of present factor con/sht from common block.
+C Factor FACTP is the factor to multiply with Fourier-Coefficients for
+C heat conduction calculation (present timestep)
+         FACTP=PCMFAC(icomp,isurf,NLOC)
+
+C Calculate new rate of con and sht and future factor con/sht.
+         PCMCON=APPCON/CONSOL
+         PCMSHC=APPSHC/SHCSOL
+         FACTF=PCMCON/PCMSHC
+
+C Modify present and future value of 'C' and 'QC' coefficient
+         VCP(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTP
+         VCP(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTP
+         QCP(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTP
+         VCF(isurf,NLOC,1)=C(icomp,isurf,NLOC,1)*FACTF
+         VCF(isurf,NLOC,2)=C(icomp,isurf,NLOC,2)*FACTF
+         QCF(isurf,NLOC)=QC(icomp,isurf,NLOC)*FACTF
+
+C Save current values as present values for next time step 
+C to common block.
+         PCMFAC(icomp,isurf,NLOC)=FACTF
+
+         SPCM(icomp,isurf,NLOC)=storedLH
+         APPCONP(icomp,isurf,NLOC)=APPCON
+         APPSHCP(icomp,isurf,NLOC)=APPSHC
+         PK(icomp,isurf,NLOC)=presk
+
+10    CONTINUE
+
+C.... Storage of results
+      if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THKsum/Rtot      
+      if (THKsum.gt.0) DATASPM(ISPMNOD,2)=sumStoredLH      
+      STRSPM(ISPMNOD,2)='Tot. heat stored (J/kg)'
+
+      DATASPM(ISPMNOD,3)=sumStoredLH*THRMLI(icomp,isurf,ielem,2)
+      STRSPM(ISPMNOD,3)='Tot. heat stored (J/m3)'
+
+      DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
+
+C XML output
+      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
+
+C thats it ...
+      return
+      end          ! <- end SPMCMP56
+
+
+C*****************************************************************
+C Special Materials PCM properties calculation
+C
+C Created by: Achim Geissler
+C Created on: July 11, 2008
+C Copyright: GaCH
+C ________
+C Function LatentHeat()
+C ________
+C ABSTRACT:
+C This code can be used to enable modelling of PCM materials which show 
+C significant sub cooling properties. I.e., such materials which - once melted - 
+C must be subcooled by a few degrees K below the "conversion temperature" at
+C which they were completely liquified.
+C
+C The routine is designed to be called in th "governing" PCM routine 
+C SPMCPM56() for use in ESP-r.
+C
+C*****************************************************************
+      real function LatentHeat(k,T1,T2)
+      implicit none
+C Calculate integral of stored / released latent heat between T1 and T2
+C k   ... "normal" (k=1) or "subcooled" (k=0) range
+C T1 ... start temperature in °C
+C T2 ... end temperature in °C
+C
+C Return value:
+C LH ... stored / released latent heat in J/kg. Thereby, the energy balance 
+C is formulated viewed from the surrounding space:
+C         > 0 when T1 > T2, i.e. heat released
+C         < 0 when T1 < T2, i.e. heat stored
+C
+C Equation and parameters taken from PhD. thesis by Sabine Hoffmann, 
+C Weimar 2006
+C
+      real T1,T2
+      integer k
+
+C.... Material parameters for phase change materials, this model only
+      common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
+     & SHCSOL,SHCLIQ,a1,a2,b1,b2
+      real TSOLI  ! solidification temperature of PCM, degC
+      real TMELT ! melting temperature of PCM, degC
+      real sub     ! sub-cooling temperature difference, K
+      real Lges   ! total latent heat capacity of PCM, J/kg
+      real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
+      real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
+      real a1,a2,b1,b2 ! Equation parameters for non-subcooling (a1, b1)
+                              ! and subcooling (a2, b2) states for specific PCM
+
+      real aa,bb
+
+      if (k.eq.0) THEN 
+         aa=a2
+         bb=b2
+      else        ! function defaults to "normal" mode
+         aa=a1
+         bb=b1
+      endif
+
+      LatentHeat = EXP(aa)/bb*(EXP(bb*T1)-EXP(bb*T2))
+      
+C     More than |Lges| is not possible:
+      LatentHeat = sign(1,LatentHeat)*min(Lges,abs(LatentHeat))
+
+      return
+      End ! <- LatentHeat()
+
+C**********************************************************************************************
+      subroutine PCMSTORE(TnS,TnS1,k,storedLH,AppCon,AppSHC)
+      implicit none
+C This routine keeps book of latent heat stored / released by a PCM material
+C The PCM material is described by the parameters in Common /PCMPARM/ and must
+C be set at calling time.
+C
+C The routine is designed to be called once each simulation time step. It must be called for
+C each PCM node, if a PCM layer is split into several nodes.
+C 
+C**********************************************************************************************
+
+C.... Parameter
+      real TnS        ! present temperature TPC(MCOM,MS,MN) ?
+      real TnS1      ! future temperature TFC(MCOM,MS,MN) ?
+      integer k       ! "sub-cooling switch", value of preceding time step must be passed.
+                           ! k must be initialised befor first call (typically k_init=1)
+      real storedLH  ! stored latent heat ("h" in thesis of S.H.), value of preceeding
+                           ! time step must be passed when called. Typically, this parameter
+                           ! is initialised with "0" befor first call.
+      real AppSHC   ! apparent specific heat capacity - used for ESP-r coupling
+      real AppCon   ! apparent thermal conductivity - used for ESP-r coupling
+
+C.... Material parameters for phase change materials, this model only
+      common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
+     & SHCSOL,SHCLIQ,a1,a2,b1,b2
+      real TSOLI  ! solidification temperature of PCM, degC
+      real TMELT ! melting temperature of PCM, degC
+      real sub     ! sub-cooling temperature difference, K
+      real Lges   ! total latent heat capacity of PCM, J/kg
+      real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
+      real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
+      real a1,a2,b1,b2 ! Equation parameters for non-subcooling (a1, b1)
+                              ! and subcooling (a2, b2) states for specific PCM
+
+C.... Local variables
+      real TSOLI2    ! sub-cooling solidification temperature, degC
+      real TMELT2 ! sub-cooling melting temperature, degC
+      real storeThisTS  ! latent heat stored in PCM this TS, J/kg
+
+C... references
+      real LatentHeat
+
+C... set up sub-cooling temperature values
+      TSOLI2=TSOLI-sub
+      TMELT2=TMELT-sub
+
+C**********************************************************************************************
+C      Calculate the heat storage according to the temperature change between present (TnS) 
+C      and future (TnS1) temperatures.
+C      Also calculate apparent heat capacity and apparent thermal conductivity based on 
+C      percentage of liquidification of PCM material.
+C
+C      Following cases are checked / differentiated
+C      Heating: cases 1, 2, 3, 4, 5, 6 and 7
+C      Cooling: cases 1, 2, 3, 5, 6, 7, and 8
+C
+C                ^
+C                ¦ C [J/(kg K)]
+C                |                       _____
+C                |                      /     \
+C                |                     /       \
+C                |                    /    7    \  
+C                |                   /           \
+C                |                  /             \ 6   5   TSOLI   (5)
+C                |      (1)      8 /    TMELT      \---<-->---/----<-->- C_liq
+C          C_sol ¦-----<-->-------/----------\  TSOLI2       / 4   
+C                |             TMELT2   1   2 \             /
+C                |                             \           /
+C                |                              \    3    /  
+C                |                               \       /
+C                |                                \     /
+C                |------------> T [°C]             \___/
+C
+C
+C  Possibly, checking temperatures against each other should use eclose(). 
+C  However, then an "alternative action" must be defined if eclose() fails ... 
+C  what would this "alternative action" be? "Do nothing"?
+C
+      if (TnS.lt.TnS1) THEN
+C *** Temperature increase in PCM  ***
+         IF (k.eq.1) Then
+         ! PCM behaves according to "non-subcooling" properties
+            if (TnS1.le.TMELT) then
+               ! PCM is solid (case 1), StoredLH = 0
+                  AppCon=CONSOL
+                  AppSHC=SHCSOL
+
+            elseif (TnS.le.TMELT.and.TnS1.gt.TMELT) then
+            ! PCM begins to melt (case 2)
+               storeThisTS = LatentHeat(1,TMELT,TnS1)
+               storedLH = 0.0E0 - storeThisTS ! "storedLH" must be >0 !
+               AppCon=(1-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
+               AppSHC=SHCLIQ+storedLH/(TMELT-TnS1) ! to be verified
+
+            elseif (TnS.gt.TMELT.and.TnS1.le.TSOLI) then
+            ! PCM is partially liquid, latent heat is stored in the "normal" 
+            ! range (k=1, case 3).
+               storeThisTS = LatentHeat(1,TnS,TnS1)
+               storedLH = storedLH - storeThisTS
+               AppCon=(1-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
+               AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
+
+            elseif (TnS.gt.TMELT.and.TnS1.gt.TSOLI) then
+            ! Rest of solid PCM is completely melted in this timestep and also heated 
+            ! as liquid (case 4)
+               storeThisTS = LatentHeat(1,TnS,TSOLI)
+               storedLH = Lges ! crude ... but safe
+               AppCon=CONLIQ
+               AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI) ! to be verified
+C         *** set new k ***
+               k=0
+C         ****************
+            endif ! <- temperature bracketing for k = 1
+
+         else ! (k=0)
+         ! PCM behaves according to subcooling properties
+            if (TnS.gt.TSOLI2) then
+            ! PCM is completely liquified and heated further (case 5)
+               storedLH=Lges
+               AppCon=CONLIQ
+               AppSHC=SHCLIQ
+
+            elseif (TnS1.gt.TSOLI2) then
+            ! PCM is subcooled partial liquid and is completely (re-)melted 
+            ! in this timestep (case 6)
+               storeThisTS = LatentHeat(0,TnS,TSOLI2)
+               storedLH = Lges ! crude ... but safe
+               AppCon=CONLIQ
+               AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI2) ! to be verified
+
+            ELSEif (TnS1.le.TSOLI2) then
+            ! PCM is subcooled partial liquid and not completely melted in 
+            ! this timestep (k=0, case 7)
+               storeThisTS = LatentHeat(0,TnS,TnS1)
+               storedLH = storedLH - storeThisTS
+               AppCon=(1-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
+               AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
+            endif ! <- temperature bracketing for k=0
+
+         endif ! <- k = ?
+
+      elseif (TnS.gt.TnS1) Then
+C *** Temperature decrease in PCM ***
+         IF (k.eq.1) Then
+         ! PCM behaves according to "non-subcooling" properties
+            if (TnS.le.TMELT) then
+               ! PCM is solid (case 1), StoredLH = 0
+               AppCon=CONSOL
+               AppSHC=SHCSOL
+            elseif (TnS.gt.TMELT.and.TnS1.le.TMELT) then
+            ! PCM non-subcooled solidification is completed (case 2)               
+               AppCon=(1-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
+               AppSHC=SHCLIQ+storedLH/(TnS-TMELT)
+               storedLH = 0 ! now all PCM is solid
+
+            elseif (TnS.le.TSOLI.and.TnS1.ge.TMELT) then
+            ! PCM is partially liquid, and is now cooled (non-subcooling, case 3)
+               storeThisTS = LatentHeat(1,TnS,TnS1)
+               storedLH = storedLH - storeThisTS
+               AppCon=(1-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
+               AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
+            endif ! <- temperature bracketing for k=1
+
+         else ! (k=0)
+         ! PCM behaves according to subcooling properties
+            IF(TnS1.ge.TSOLI2) then
+            ! PCM is completely melted and does not reach sub-cooled 
+            ! solidification temp. in this timestep (case 5)
+               storedLH = Lges
+               AppCon=CONLIQ
+               AppSHC=SHCLIQ
+
+             ELSEif (TnS.gt.TSOLI2.and.TnS1.lt.TSOLI2) then
+            ! PCM begins to solidify in sub-cooled mode 
+            ! this timestep (k=0, case 6)
+               storeThisTS = LatentHeat(0,TSOLI2,TnS1)
+               storedLH = Lges - storeThisTS
+               AppCon=CONSOL
+               AppSHC=SHCSOL + storeThisTS/(TSOLI2-TnS1) ! to be verified
+
+            ELSEif (TnS.le.TSOLI2.and.TnS1.gt.TMELT2) then
+            ! PCM is subcooled partial liquid and not completely solidified in 
+            ! this timestep (k=0, case 7)
+               storeThisTS = LatentHeat(0,TnS,TnS1)
+               storedLH = storedLH - storeThisTS
+               AppCon=(1-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
+               AppSHC=SHCSOL+storeThisTS/(TnS-TnS1) ! to be verified
+
+             ELSEif (TnS.gt.TMELT2.and.TnS1.le.TMELT2) then
+            ! PCM completely solidifies in this timestep (k=0, case 8)
+               storeThisTS = LatentHeat(0,TnS,TMELT2)
+               storedLH = 0
+               AppCon=CONSOL
+               AppSHC=SHCSOL + storeThisTS/(TnS-TMELT2) ! to be verified
+C         *** set new k ***
+               k=1
+C         ****************
+            endif ! <- temperature bracketing for k=0
+         endif ! <- k = ?
+      else
+         ! what happens here ???? (TnS = TnS1)
+      endif ! <- end calculation of heat storage at this time step
+
+      return
+      end ! <- Subroutine PCMSTORE()
+
 C ********************************************** PCM_to_h3k *****************************************
 C Special Materials PCM data to h3k output routine
 C
