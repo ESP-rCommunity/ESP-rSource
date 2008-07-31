@@ -2279,11 +2279,9 @@ C Do cursory check to see if the file is sorted.
 
 C If older format ip3ver=0 then force it to write to the
 C current format.
-
-C << this 3 is going to conflict with jwh edits >>
               if(ip3ver(iz).eq.0)then
                 MODOPR=.true.
-                ip3ver(iz)=3
+                ip3ver(iz)=2
               endif
 
 C Save the file, sorting the periods if necessary.

@@ -297,8 +297,7 @@ C default data (and set ip3ver to 2 in case user does nothing else).
       call FINDFIL(LPROJ(ICOMP),XST)
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
-C        CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
-        CALL EROPER(1,ITRU,IUO,ICOMP,IER)
+        CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
 
 C Do cursory check to see if the file is sorted.
         sorted=.true.

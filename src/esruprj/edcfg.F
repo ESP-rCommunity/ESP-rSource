@@ -1222,7 +1222,7 @@ C output, IER=0 indicates no error.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
+C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -2475,9 +2475,7 @@ C File is older format and assumed to be unsorted.
                     if(browse)then
                       continue
                     else
-
-C << Note this 3 is going to conflict with jwh changes. >>
-                      ip3ver(icomp)=3
+                      ip3ver(icomp)=2
                       CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                     endif
                   else
@@ -2497,9 +2495,7 @@ C File is current format and might be unsorted.
                       if(browse)then
                         continue
                       else
-
-C << note this version 3 is going to conflict with jwh changes >>
-                        ip3ver(icomp)=3
+                        ip3ver(icomp)=2
                         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                       endif
                     endif

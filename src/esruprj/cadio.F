@@ -551,7 +551,7 @@ C External cad package.
       logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
       character LCFGF*72,H*72,LFIL*72,LCMDFL*144
-      character outs*124,OUTSTR*124,cfgroot*24,doit*248,tfile*72
+      character outs*124,OUTSTR*124,cfgroot*24,doit*248
       character cadlbl*20,cadexe*20,cadfmt*4
       character longtfile*144,longtfiledos*144
 
@@ -872,7 +872,7 @@ C Read the header and see if '*EXEMPLARS'
 
 C In the first pass make up the display, beginning with
 C an organizational header and the `names' of each exemplar.
-C Clear group related help.
+C Clear group related help and length of menu.
       do 2 i=1,13
         gh(i)=' '
   2   continue
@@ -880,6 +880,10 @@ C Clear group related help.
       ngr=0
       ing=0
       inl=0
+      inl2ngr(1)=0
+      igrsel=0
+      icod=0
+
  12   CALL STRIPC(iexfil,OUTSTR,0,ND,0,'group id',IER)
       if(ier.ne.0)goto 901
       K=0
@@ -1069,11 +1073,12 @@ C Help @ db file level.
           CALL PHELPD('exemplar menu',3,'-',0,0,IER)
         endif
       ELSEIF(ICO.EQ.(NCO-2))THEN
+        icod=0
         if(MMOD.EQ.8)then
           CALL VWMENU('Select exemplar...',mitem,NCO,0,0,IWE,irpx,irpy,
-     &      ICOD)
+     &      icod)
         else
-          CALL EMENU('Select exemplar...',mitem,NCO,ICOD)
+          CALL EMENU('Select exemplar...',mitem,NCO,icod)
         endif
         if(ICOD.GE.1.AND.ICOD.LT.(NCO-3))then
 
@@ -1145,7 +1150,6 @@ C of the string till a file separator of either DOS or Unix type is reached.
               if(.NOT.unixok)then
                 thecfgis=' '
                 ilexem = lnblnk(exemplar)
-                ipslash = ilexem
                 ipos = ilexem
  344            continue
                 ipos=ipos-1
@@ -1495,7 +1499,21 @@ C ICLIM,LCLIM (for climate file)
       character LPRJLG*72,LPNF*72,LMOIST*72
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
-      character LCMDFL*144,LFIL*72,doit*248
+      character LCMDFL*144,LFIL*72
+      
+C The string buffer doit is only used within ifdef code.
+#ifdef SUN
+      character doit*248
+#endif
+#ifdef LIN
+      character doit*248
+#endif
+#ifdef CIGW
+      character doit*248
+#endif
+#ifdef MINGW
+      character doit*248
+#endif
       character path*72,upath*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
