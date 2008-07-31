@@ -1745,7 +1745,6 @@ C Phase change materials
 C---- local variables for output.
       real sumSHTTHK
       real Rtot,THKsum
-      CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
 
 C..... Number of stored items
       NDATSPM(ISPMNOD)=4
@@ -1934,7 +1933,7 @@ C the output is limited to ONE special material per zone!
        ZSPMF1(ISPMLOC(ISPMNOD,1))=DATASPM(ISPMNOD,1)
 
 C XML output
-      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
+      call PCM_to_h3k(icomp,inode,isurf,ISPMNOD)
 
 C Trace output.
       IF(ITC.LE.0.OR.NSINC.LT.ITC.OR.ispmxist.EQ.0)goto 999
@@ -2862,8 +2861,6 @@ C      character spmlabel*16
       character UNITSPM*16 ! unit for data item
       character TXTSPM*72  ! description of data item
 
-      COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
-
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
 
@@ -2889,7 +2886,7 @@ C Phase change materials
       REAL PCMFAC, PCMCONFAC
 
       REAL APPCON, APPSHT, PCMSHT
-      REAL TFCM, SPCMP, SPCMF, SPCM,SPCMC
+      REAL TFCM, SPCMF, SPCM,SPCMC
       REAL SHTLIQ, EFTHK
       REAL SHTa,SHTb,SHTL,C1
       REAL TMELT, TSOLI, CONSOL, CONLIQ, SHTSOL, SHT2
@@ -3083,7 +3080,7 @@ C         fill the string variables for results output
       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
 
 C XML output
-      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
+      call PCM_to_h3k(icomp,inode,isurf,ISPMNOD)
 
 C Thats it ...
       return
@@ -3141,7 +3138,7 @@ C Phase change materials
       REAL PCMFAC
 
       REAL APPCON, APPSHT, PCMSHT, FACTP, FACTF
-      REAL TFCM, SPCMP, SPCMF, SPCM
+      REAL TFCM, SPCMF, SPCM
       REAL SHTLIQ, EFTHK, PCMCON
       REAL SHTa,SHTb,SHTc,SHTd,SHTe
       REAL C1, C2, C3, C4, C5, C6, C7, C8, C9
@@ -3337,7 +3334,7 @@ C         fill the string variables for results output
       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
 
 C XML output
-      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
+      call PCM_to_h3k(icomp,inode,isurf,ISPMNOD)
 
 C thats it ...
       return
@@ -3642,7 +3639,7 @@ C         fill the string variables for results output
      &                                        PK(icomp,isurf,inode+1)
 
 C XML output
-      call PCM_to_h3k(icomp,inode,isurf,ielem,ISPMNOD)
+      call PCM_to_h3k(icomp,inode,isurf,ISPMNOD)
 
 C thats it ...
       return
@@ -3712,7 +3709,7 @@ C.... Material parameters for phase change materials, this model only
       LatentHeat = EXP(aa)/bb*(EXP(bb*T1)-EXP(bb*T2))
       
 C     More than |Lges| is not possible:
-      LatentHeat = sign(1,LatentHeat)*min(Lges,abs(LatentHeat))
+      LatentHeat = sign(1.0,LatentHeat)*min(Lges,abs(LatentHeat))
 
       return
       End ! <- LatentHeat()
@@ -3809,7 +3806,7 @@ C *** Temperature increase in PCM  ***
             ! PCM begins to melt (case 2)
                storeThisTS = LatentHeat(1,TMELT,TnS1)
                storedLH = 0.0E0 - storeThisTS ! "storedLH" must be >0 !
-               AppCon=(1-storedLH/Lges)*CONSOL+
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storedLH/(TMELT-TnS1) ! to be verified
 
@@ -3818,7 +3815,7 @@ C *** Temperature increase in PCM  ***
             ! range (k=1, case 3).
                storeThisTS = LatentHeat(1,TnS,TnS1)
                storedLH = storedLH - storeThisTS
-               AppCon=(1-storedLH/Lges)*CONSOL+
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
 
@@ -3855,7 +3852,7 @@ C         ****************
             ! this timestep (k=0, case 7)
                storeThisTS = LatentHeat(0,TnS,TnS1)
                storedLH = storedLH - storeThisTS
-               AppCon=(1-storedLH/Lges)*CONSOL+
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
             endif ! <- temperature bracketing for k=0
@@ -3872,16 +3869,16 @@ C *** Temperature decrease in PCM ***
                AppSHC=SHCSOL
             elseif (TnS.gt.TMELT.and.TnS1.le.TMELT) then
             ! PCM non-subcooled solidification is completed (case 2)               
-               AppCon=(1-storedLH/Lges)*CONSOL+
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storedLH/(TnS-TMELT)
-               storedLH = 0 ! now all PCM is solid
+               storedLH = 0.0E0 ! now all PCM is solid
 
             elseif (TnS.le.TSOLI.and.TnS1.ge.TMELT) then
             ! PCM is partially liquid, and is now cooled (non-subcooling, case 3)
                storeThisTS = LatentHeat(1,TnS,TnS1)
                storedLH = storedLH - storeThisTS
-               AppCon=(1-storedLH/Lges)*CONSOL+
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
             endif ! <- temperature bracketing for k=1
@@ -3891,7 +3888,7 @@ C *** Temperature decrease in PCM ***
             IF(TnS1.ge.TSOLI2) then
             ! PCM is completely melted and does not reach sub-cooled 
             ! solidification temp. in this timestep (case 5)
-               storedLH = Lges
+               storedLH = Lges ! crude
                AppCon=CONLIQ
                AppSHC=SHCLIQ
 
@@ -3908,14 +3905,14 @@ C *** Temperature decrease in PCM ***
             ! this timestep (k=0, case 7)
                storeThisTS = LatentHeat(0,TnS,TnS1)
                storedLH = storedLH - storeThisTS
-               AppCon=(1-storedLH/Lges)*CONSOL+
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCSOL+storeThisTS/(TnS-TnS1) ! to be verified
 
              ELSEif (TnS.gt.TMELT2.and.TnS1.le.TMELT2) then
             ! PCM completely solidifies in this timestep (k=0, case 8)
                storeThisTS = LatentHeat(0,TnS,TMELT2)
-               storedLH = 0
+               storedLH = 0.0E0
                AppCon=CONSOL
                AppSHC=SHCSOL + storeThisTS/(TnS-TMELT2) ! to be verified
 C         *** set new k ***
@@ -3946,7 +3943,7 @@ C
 C The routine is designed to be called in the PCM routines
 C
 C**********************************************************************************************
-      subroutine PCM_to_h3k(iZone,iNode,iSurf,iElem,ISPMNOD)
+      subroutine PCM_to_h3k(iZone,iNode,iSurf,ISPMNOD)
       implicit none
 
 #include "building.h"
