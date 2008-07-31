@@ -44,18 +44,32 @@ c common block for ground temperature profiles.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/BSdata/bsHEIG(MCOM),bsDEPT(MCOM),bsLENG(MCOM),bsWIDT(MCOM),
      &              bsOVER(MCOM),bsRSI(MCOM),bsSOIL(MCOM),bsWTD(MCOM)
+      COMMON/BSvn/bsVrsnNmbr(MCOM)
       COMMON/BSwth/bsTGavg(MCOM),bsTGamp(MCOM),bsTGps(MCOM)
 
 C Current file (for use by low level I/O calls). Error subroutine
 C and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
+C This common block holds input variables for basement type 999.
+C This type takes the BASECALC results as inputs for the heat loss factors,
+C instead of calculating the factors itself.
+C Using type 999 enables BASESIMP results to closely match BASECALC results
+C and also allows bigger basements up to the maximum size allowed by BASECALC
+C (20 x 20 meters).
+      COMMON/BS999HLF/Sag999(MCOM),Sbgavg999(MCOM),Sbgvar999(MCOM),
+     &                Bphase999(MCOM)
+
       character*72 LBSIMP
       character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
       logical dll
 
       REAL fBASESIMPVersionNumber	! version number of BASESIMP input file
-      logical close,close2
+C Limits for parameter values to be read in
+      REAL fMinFoundLength, fMaxFoundLength, fMinFoundWidth,
+     &     fMaxFoundWidth, fMinInsulRSI,  fMaxInsulRSI, fMinSoilCond,
+     &     fMaxSoilCond, fMinWaterTable, fMaxWaterTable
+      logical close,close1,close99
 
 C This subroutine is called once for each zone which has a BASESIMP foundation.
 C The data are read from the BASESIMP input data file (.bsm file) and placed
@@ -106,9 +120,11 @@ C Default error message.
 
 C Versioning Control
 c Determine the version number of this file.
-c If it is an old file (with no version number or 0 version number), then we will 
-c read in the values of bsTGavg(i), bsTGamp(i)and bsTGps(i)
-c For newer versions (version number > 0), these values won't be read in at all.
+c If it is an old file (with no version number or 0 version number),
+c or a file with version number 99, then we will
+c read in the values of bsTGavg(i), bsTGamp(i)and bsTGps(i).
+c For other versions (1 <= version number >= 98),
+c these values won't be read in at all.
 c They are however calculated in file /esrubld/ground_temp_mains.F 
 
 C Get first line.
@@ -130,175 +146,265 @@ c-------read in next line of the input file (to get foundation height)
 c-------if there is no version number, continue with reading in the BASESIMP data
         CONTINUE
       ENDIF
+c-----Set logical variables related to version number
+      CALL ECLOSE(fBASESIMPVersionNumber,0.0,0.0001,CLOSE)
+      CALL ECLOSE(fBASESIMPVersionNumber,99.0,0.0001,CLOSE99)
+      CALL ECLOSE(fBASESIMPVersionNumber,1.0,0.0001,CLOSE1)
+c-----Write version number to common block for later use
+      bsVrsnNmbr(icomp)=fBASESIMPVersionNumber
 
-        CALL EGETWR(OUTSTR,K,VAL,1.0,2.5,'F',' found. height',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read height of foundation '
-          goto 1000
-        endif
-        bsHEIG(icomp)=VAL
+c-----BASESIMP was developed for basements with length between 5 and 100
+c-----m and width between 5 and 12 m. However, type '999' follows
+c-----the dimensions for BASECALC (max 20 by 20 m - with a minimum of 2 m).
+c-----Maximum and minimum values for parameters to be read in are set
+c-----for BASESIMP vs BASECALC ('999') types.
+      IF(CLOSE99) THEN     ! set parameter windows on BASECALC dimensions (type 999)
+        fMinFoundLength = 2.0   ! meter
+        fMaxFoundLength = 20.0  ! meter
+        fMinFoundWidth = 2.0    ! meter
+        fMaxFoundWidth = 20.0   ! meter
+        fMinInsulRSI = 0.0      ! m2K/W
+        fMaxInsulRSI = 20.0     ! m2K/W
+        fMinSoilCond = 0.1      ! W/mK
+        fMaxSoilCond = 10.0     ! W/mK
+        fMinWaterTable = 5.0    ! meter
+        fMaxWaterTable = 20.0   ! meter
+      ELSE                 ! set parameter windows on BASESIMP dimensions
+        fMinFoundLength = 5.0   ! meter
+        fMaxFoundLength = 100.0 ! meter
+        fMinFoundWidth = 1.5    ! meter   ! updated May 6,08 based on testing by Brian Bradley.
+        fMaxFoundWidth = 20.0   ! meter   ! updated May 6,08 based on testing by Brian Bradley.
+        fMinInsulRSI = 0.0      ! m2K/W
+        fMaxInsulRSI = 9.0      ! m2K/W
+        fMinSoilCond = 0.85     ! W/mK
+        fMaxSoilCond = 1.90     ! W/mK
+        fMinWaterTable = 5.0    ! meter
+        fMaxWaterTable = 15.0   ! meter
+      ENDIF
+
+      CALL EGETWR(OUTSTR,K,VAL,1.0,2.5,'F',' found. height',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read height of foundation '
+        goto 1000
+      endif
+      bsHEIG(icomp)=VAL
 
 C Read foundation depth.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.05,2.4,'F',' found. depth',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read depth of foundation '
-          goto 1000
-        endif
-        bsDEPT(icomp)=VAL
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,0.05,2.4,'F',' found. depth',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read depth of foundation '
+        goto 1000
+      endif
+      bsDEPT(icomp)=VAL
 
 C Check whether height and depth fall within ranges of applicability of
 C BASESIMP correlations.
-        if( (bsHEIG(icomp)-bsDEPT(icomp)) .lt.0.1 ) then
-          t60=' Height must be 0.1m greater than depth '
-          goto 1000
-        endif
-        if( bsDEPT(icomp).gt.0.05 .and. bsDEPT(icomp).lt.0.65 ) then
-          t60='Slab-on-grade depth >0.05m or basement depth >0.65m '
-          goto 1000
-        endif
+      if( (bsHEIG(icomp)-bsDEPT(icomp)) .lt.0.1 ) then
+        t60=' Height must be 0.1m greater than depth '
+        goto 1000
+      endif
+      if( bsDEPT(icomp).gt.0.05 .and. bsDEPT(icomp).lt.0.65 ) then
+        t60='Slab-on-grade depth >0.05m or basement depth >0.65m '
+        goto 1000
+      endif
 
 C Read foundation length.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,5.,100.,'F',' found. length',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read length of foundation '
-          goto 1000
-        endif
-        bsLENG(icomp)=VAL
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,fMinFoundLength,fMaxFoundLength,
+     &            'F',' found. length',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read length of foundation '
+        goto 1000
+      endif
+      bsLENG(icomp)=VAL
 
 C Read foundation width.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,1.5,20.,'F',' found. width',IER) ! updated May 6,08 based on testing by Brian Bradley.
-        if(IER.NE.0)then
-          t60=' Cannot read width of foundation '
-          goto 1000
-        endif
-        bsWIDT(icomp)=VAL
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,fMinFoundWidth,fMaxFoundWidth,
+     &            'F',' found. width',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read width of foundation '
+        goto 1000
+      endif
+      bsWIDT(icomp)=VAL
 
 C Check that width is not greater than length.
-        if(bsWIDT(icomp) .gt. bsLENG(icomp)) then
-          t60=' Foundation width cannot be greater than length '
-          goto 1000
-        endif
+      if(bsWIDT(icomp) .gt. bsLENG(icomp)) then
+        t60=' Foundation width cannot be greater than length '
+        goto 1000
+      endif
 
 C Read overlap length for "combination" insulation. Data must be always be
 C present, but only used for combination cases, eg. BCCN_1 and BCCN_2.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.,2.4,'F',' overlap',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read inside/outside overlap '
-          goto 1000
-        endif
-        bsOVER(icomp)=VAL
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,0.,2.4,'F',' overlap',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read inside/outside overlap '
+        goto 1000
+      endif
+      bsOVER(icomp)=VAL
 
 C Check that "combination" overlap is not greater than depth.
-        if(bsOVER(icomp) .gt. bsDEPT(icomp)) then
-          t60=' Overlap cannot be greater than depth '
-          goto 1000
-        endif
+      if(bsOVER(icomp) .gt. bsDEPT(icomp)) then
+        t60=' Overlap cannot be greater than depth '
+        goto 1000
+      endif
 
 C Read insulation resistance.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.0,9.0,'F',' insulation RSI',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read insulation RSI '
-          goto 1000
-        endif
-        bsRSI(icomp)=VAL
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,fMinInsulRSI,fMaxInsulRSI,
+     &            'F',' insulation RSI',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read insulation RSI '
+        goto 1000
+      endif
+      bsRSI(icomp)=VAL
 
 C Read soil conductivity.
-        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-        IF(IER.NE.0)goto 1000
-        K=0
-        CALL EGETWR(OUTSTR,K,VAL,0.85,1.9,'F',' soil cond.',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read soil conductivity '
-          goto 1000
-        endif
-        bsSOIL(icomp)=VAL
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,fMinSoilCond,fMaxSoilCond,
+     &            'F',' soil cond.',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read soil conductivity '
+        goto 1000
+      endif
+      bsSOIL(icomp)=VAL
 
 C Read depth of water table.
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+      IF(IER.NE.0)goto 1000
+      K=0
+      CALL EGETWR(OUTSTR,K,VAL,fMinWaterTable,fMaxWaterTable,
+     &            'F',' water table',IER)
+      if(IER.NE.0)then
+        t60=' Cannot read water-table depth '
+        goto 1000
+      endif
+      bsWTD(icomp)=VAL
+
+
+C-----If the BASESIMP input file has version number 1, then 
+C-----the variables bsTGavg(i), bsTGamp(i)and bsTGps(i) are not read in.
+C-----These will be set to values based on weather file and Moore model
+C-----*******************************************************
+C-----This has only been implemented for version number = 1 for now, 
+C-----implementation for version number > 1 AND < 99 has not been done yet.
+C-----*******************************************************
+      IF(CLOSE1) then 
+C-------Close BASESIMP input data file
+        CALL ERPFREE(IUNIT,ISTAT)
+C-------Set ground temperature calculation method flag to 2 indicating ground
+C-------temperature parameters are determined based on Moore model and weather file
+        Basesimp_grd_temp_cal_flag(icomp) = 2
+
+C-----If there is no version number associated with the BASESIMP input file, 
+C-----then, these values are read in
+      ELSEIF(CLOSE .OR. CLOSE99) THEN
+C-----Set ground temperature calculation method flag to 1 indicating that these
+C-----ground temperature parameters are read in from basesimp file
+        Basesimp_grd_temp_cal_flag(icomp) = 1
+
+C Read annually-averaged soil temperature.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
         IF(IER.NE.0)goto 1000
         K=0
-        CALL EGETWR(OUTSTR,K,VAL,5.0,15.0,'F',' water table',IER)
-        if(IER.NE.0)then
-          t60=' Cannot read water-table depth '
-          goto 1000
-        endif
-        bsWTD(icomp)=VAL
-
-C-------If there is a version number associated with the BASESIMP input file, then 
-C-------the variables bsTGavg(i), bsTGamp(i)and bsTGps(i) are not read in. These 
-C-------will be set to values based on weather file and Moore model
-        CALL ECLOSE(fBASESIMPVersionNumber,0.0,0.0001,CLOSE)
-        CALL ECLOSE(fBASESIMPVersionNumber,1.0,0.0001,CLOSE2)
-        IF(CLOSE2) then 
-C---------Close BASESIMP input data file
-          CALL ERPFREE(IUNIT,ISTAT)
-C---------Set ground temperature calculation method flag to 2 indicating ground
-C---------temperature parameters are determined based on Moore model and weather file
-          Basesimp_grd_temp_cal_flag(icomp) = 2
-
-C-------If there is no version number associated with the BASESIMP input file, 
-C-------then, these values are read in
-        ELSEIF(CLOSE) THEN
-C-------Set ground temperature calculation method flag to 1 indicating that these
-C-------ground temperature parameters are read in from basesimp file
-          Basesimp_grd_temp_cal_flag(icomp) = 1
-
-C Read annually-averaged soil temperature.
-          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-          IF(IER.NE.0)goto 1000
-          K=0
 C modified February 10, 2004 JPurdy
 C To allow for negative ground temperatures in permafrost 
 C locations.
-          CALL EGETWR(OUTSTR,K,VAL,-10.,20.,'F',' Tgavg ',IER)
-          if(IER.NE.0)then
-            t60=' Cannot read average of ground Temp '
-            goto 1000
-          endif
-          bsTGavg(icomp)=VAL	
+        CALL EGETWR(OUTSTR,K,VAL,-10.,20.,'F',' Tgavg ',IER)
+        if(IER.NE.0)then
+          t60=' Cannot read average of ground Temp '
+          goto 1000
+        endif
+        bsTGavg(icomp)=VAL	
 
 C Read amplitude of ground-temperature's annual sine wave.
-          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
-          IF(IER.NE.0)goto 1000
-          K=0
-          CALL EGETWR(OUTSTR,K,VAL,0.,25.,'F',' Tgamp ',IER)
-          if(IER.NE.0)then
-            t60=' Cannot read amplitude of ground Temp '
-            goto 1000
-          endif
-          bsTGamp(icomp)=VAL	
+        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+        IF(IER.NE.0)goto 1000
+        K=0
+        CALL EGETWR(OUTSTR,K,VAL,0.,25.,'F',' Tgamp ',IER)
+        if(IER.NE.0)then
+          t60=' Cannot read amplitude of ground Temp '
+          goto 1000
+        endif
+        bsTGamp(icomp)=VAL	
 
 C Read phase lag of ground-temperature's annual sine wave.
+        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+        IF(IER.NE.0)goto 1000
+        K=0
+        CALL EGETWR(OUTSTR,K,VAL,0.,1.,'F',' Ps ',IER)
+        if(IER.NE.0)then
+          t60=' Cannot read phase lag of ground Temp '
+          goto 1000
+        endif
+        bsTGps(icomp)=VAL
+
+C If version number = 99, the BASECALC heat loss factors are read in
+        IF(CLOSE99) THEN
+C Read above-grade heat-loss factor (Sag).
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
           IF(IER.NE.0)goto 1000
           K=0
-          CALL EGETWR(OUTSTR,K,VAL,0.,1.,'F',' Ps ',IER)
+          CALL EGETWR(OUTSTR,K,VAL,0.,100.,'F',' Sag ',IER)
           if(IER.NE.0)then
-            t60=' Cannot read phase lag of ground Temp '
+            t60=' Cannot read above-ground heat-loss factor '
             goto 1000
           endif
-          bsTGps(icomp)=VAL
+          Sag999(icomp)=VAL !this variable is only used for basement type 999
+
+C Read below-grade average heat-loss factor (Sbg_avg).
+          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+          IF(IER.NE.0)goto 1000
+          K=0
+          CALL EGETWR(OUTSTR,K,VAL,0.,1000.,'F',' Sbg,avg ',IER)
+          if(IER.NE.0)then
+            t60=' Cannot read below-grade average heat-loss factor '
+             goto 1000
+          endif
+          Sbgavg999(icomp)=VAL !this variable is only used for basement type 999
+
+C Read below-grade variable heat-loss factor (Sbg_var).
+          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+          IF(IER.NE.0)goto 1000
+          K=0
+          CALL EGETWR(OUTSTR,K,VAL,0.,1000.,'F',' Sbg,var ',IER)
+          if(IER.NE.0)then
+            t60=' Cannot read below-grade variable heat-loss factor '
+            goto 1000
+          endif
+          Sbgvar999(icomp)=VAL !this variabel is only used for basement type 999
+
+C Read phase angle (phase).
+          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
+          IF(IER.NE.0)goto 1000
+          K=0
+          CALL EGETWR(OUTSTR,K,VAL,0.,5.,'F',' phase ',IER)
+          if(IER.NE.0)then
+            t60=' Cannot read phase angle (phase) '
+            goto 1000
+          endif
+          Bphase999(icomp)=VAL !this variable is only used for basement type 999
+        ENDIF               ! IF(CLOSE99)
 
 C Close BASESIMP input data file.
-          CALL ERPFREE(IUNIT,ISTAT)
-        ENDIF
+        CALL ERPFREE(IUNIT,ISTAT)
+      ENDIF                 ! ELSEIF(CLOSE .OR. CLOSE99)
 
-        return
+      return
         
 C Error handling.
  1000 continue
@@ -332,7 +438,12 @@ C BSFCCTL     Controls calculation of BASESIMP heat loss factors.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/BSdata/bsHEIG(MCOM),bsDEPT(MCOM),bsLENG(MCOM),bsWIDT(MCOM),
      &              bsOVER(MCOM),bsRSI(MCOM),bsSOIL(MCOM),bsWTD(MCOM)
+      COMMON/BSvn/bsVrsnNmbr(MCOM)
       COMMON/BSHLF/Sag(MCON),Sbgavg(MCON),Sbgvar(MCON),Bphase(MCON)
+      COMMON/BS999HLF/Sag999(MCOM),Sbgavg999(MCOM),Sbgvar999(MCOM),
+     &                Bphase999(MCOM)
+
+      logical close99
 
 C This subroutine controls the calcualtion of the BASESIMP heat loss
 C factors for the foundation under consideration. It makes appropriate
@@ -362,103 +473,134 @@ C Set the BASESIMP configuration and foundation insulation variables:
           icomp = IC1(icon)
           rsi = bsRSI(icomp)
 
+C Debug (start)
+c          write(6,*) 'NCON = ',NCON, '   icon = ', icon, 
+c     &                 '   iconfig = ', iconfig, '  icomp = ', icomp
+C Debug (end)
+
+C If iconfig = 999 no calculation of heat loss factors is necessary.
+C The heat loss factors have already been read in and will be passed on 
+C onto the variables in the BSHLF common block (unless iconfig = 999 
+C was spefied with the incorrect version number).
+          IF(iconfig.eq.999) THEN
+            CALL ECLOSE(bsVrsnNmbr(icomp),99.0,0.0001,CLOSE99)
+            IF(CLOSE99) THEN
+              Sag(icon) = Sag999(icomp)
+              Sbgavg(icon) = Sbgavg999(icomp)
+              Sbgvar(icon) = Sbgvar999(icomp)
+              Bphase(icon) = Bphase999(icomp)
+            ELSE
+              write(6,*) 'Version number does not match with ',
+     &                     'BASESIMP configuration number.'
+              write(6,*) 'Configuration 999 requires an input file ',
+     &                     'with version number 99 and ',
+     &                      'corresponding structure.'
+              STOP 'BASESIMP: unresolvable error'
+            ENDIF
+          ELSE
+C Check first to see if version 99 was used with incorrect iconfig number
+            CALL ECLOSE(bsVrsnNmbr(icomp),99.0,0.0001,CLOSE99)
+            IF(CLOSE99 .and. iconfig.ne.999) THEN
+              write(6,*) 'BASESIMP configuration number does not ',
+     &                     'match with version number.'
+              write(6,*) 'Version 99 requires BASESIMP ',
+     &                     'configuration 999.'
+              STOP 'BASESIMP: unresolvable error'
+            ENDIF
+
+C Calculation of heat loss factors
+
 C If the foundation is insulated and the isulation is less than RSI 1.5, apply
 C the "exponential-interpolation" method. BASESIMP configurations 9, 10, 13,
 C 28, and 29 are uninsulated.
-          IF( .not.(iconfig.eq.9 .or. iconfig.eq.10 .or. iconfig.eq.13
-     &              .or. iconfig.eq.28 .or. iconfig.eq.29)
+            IF( .not.(iconfig.eq.9 .or. iconfig.eq.10 
+     &        .or. iconfig.eq.13 .or. iconfig.eq.28 .or. iconfig.eq.29)
      &        .and. rsi.lt.1.5 )THEN
-C-----------RSI outside of range: apply "exponential-interpolation" method.
-C-----------Step 1: calculate factors for rsi=1.5 and save to __15 variables.
-            intflg = 15
-            CALL BSCOEFF(iconfig)
-            CALL BSCORNER
-            CALL BSFACS(icon,intflg)
-            Sag15 = Sag(icon)
-            Sbga15 = Sbgavg(icon)
-            Sbgv15 = Sbgvar(icon)
-            Bph15 = Bphase(icon)
-C-----------Step 2: calculate factors for uninsulated foundation and save to
-C-----------__0 variables. Map to appropriate uninsulated config.
-            if( (iconfig.ge.1 .and. iconfig.le.12) .or.
-     &          (iconfig.ge.19 .and. iconfig.le.27) .or.
-     &          (iconfig.ge.68 .and. iconfig.le.72) .or.
-     &          (iconfig.ge.73 .and. iconfig.le.77) .or.
-     &          (iconfig.ge.92 .and. iconfig.le.101) .or.
-     &          (iconfig.ge.109 .and. iconfig.le.110) .or.
-     &          (iconfig.ge.114 .and. iconfig.le.119) .or.
-     &          (iconfig.ge.121 .and. iconfig.le.131) ) then
-C-------------Concrete basement: map to BCNN_1.
-              iconzero=9
-            endif
-            if( (iconfig.ge.13 .and. iconfig.le.18) .or.
-     &          (iconfig.eq.78) .or.
-     &          (iconfig.ge.102 .and. iconfig.le.103) .or.
-     &          (iconfig.ge.132 .and. iconfig.le.139) ) then
-C-------------Wood basement: map to BWNN_1.
-              iconzero=13
-            endif
-            if( (iconfig.ge.28 .and. iconfig.le.67) .or.
-     &          (iconfig.ge.81 .and. iconfig.le.86) .or.
-     &          (iconfig.ge.104 .and. iconfig.le.107) ) then
-C-------------Slab-on-grade: map to SCN_1.
-              iconzero=28
-            endif
-            if( (iconfig.ge.79 .and. iconfig.le.80) .or.
-     &          (iconfig.ge.87 .and. iconfig.le.91) .or.
-     &          (iconfig.eq.108) .or.
-     &          (iconfig.ge.111 .and. iconfig.le.113) .or.
-     &          (iconfig.eq.120) .or.
-     &          (iconfig.ge.140 .and. iconfig.le.145) ) then
-C-------------Wood walls and concrete slab: map to BWNN_1 as this gives best
-C-------------approximation of uninsulated basement with wood wall + conc slab.
-              iconzero=13
-            endif
-            intflg = 0
-            CALL BSCOEFF(iconzero)
-            CALL BSCORNER
-            CALL BSFACS(icon,intflg)
-            Sag0 = Sag(icon)
-            Sbga0 = Sbgavg(icon)
-            Sbgv0 = Sbgvar(icon)
-            Bph0 = Bphase(icon)
-C-----------Step 3: interpolate. Interpolation factor (wint) is 2.29 for
-C-----------basements and 1.77 for slabs-on-grade.
-            if( (iconfig.ge.1 .and. iconfig.le.27) .or.
-     &          (iconfig.ge.68 .and. iconfig.le.80) .or.
-     &          (iconfig.ge.87 .and. iconfig.le.103) .or.
-     &          (iconfig.ge.108 .and. iconfig.le.120) .or.
-     &          (iconfig.ge.121 .and. iconfig.le.145) ) then
-C-------------Basement.
-              wint=2.29
-            endif
-            if( (iconfig.ge.28 .and. iconfig.le.67) .or.
-     &          (iconfig.ge.81 .and. iconfig.le.86) .or.
-     &          (iconfig.ge.104 .and. iconfig.le.107) ) then
-C-------------Slab-on-grade.
-              wint=1.77
-            endif
-            Sag(icon) = Sag15 + (Sag0-Sag15)/(exp(wint*rsi))
-            Sbgavg(icon) = Sbga15 + (Sbga0-Sbga15)/(exp(wint*rsi))
-            Sbgvar(icon) = Sbgv15 + (Sbgv0-Sbgv15)/(exp(wint*rsi))
-            Bphase(icon) = Bph15 + (Bph0-Bph15)/(exp(wint*rsi))
+C-------------RSI outside of range: apply "exponential-interpolation" method.
+C-------------Step 1: calculate factors for rsi=1.5 and save to __15 variables.
+              intflg = 15
+              CALL BSCOEFF(iconfig)
+              CALL BSCORNER
+              CALL BSFACS(icon,intflg)
+              Sag15 = Sag(icon)
+              Sbga15 = Sbgavg(icon)
+              Sbgv15 = Sbgvar(icon)
+              Bph15 = Bphase(icon)
+C-------------Step 2: calculate factors for uninsulated foundation and save to
+C-------------__0 variables. Map to appropriate uninsulated config.
+              if( (iconfig.ge.1 .and. iconfig.le.12) .or.
+     &            (iconfig.ge.19 .and. iconfig.le.27) .or.
+     &            (iconfig.ge.68 .and. iconfig.le.72) .or.
+     &            (iconfig.ge.73 .and. iconfig.le.77) .or.
+     &            (iconfig.ge.92 .and. iconfig.le.101) .or.
+     &            (iconfig.ge.109 .and. iconfig.le.110) .or.
+     &            (iconfig.ge.114 .and. iconfig.le.119) .or.
+     &            (iconfig.ge.121 .and. iconfig.le.131) ) then
+C---------------Concrete basement: map to BCNN_1.
+                iconzero=9
+              endif
+              if( (iconfig.ge.13 .and. iconfig.le.18) .or.
+     &            (iconfig.eq.78) .or.
+     &            (iconfig.ge.102 .and. iconfig.le.103) .or.
+     &            (iconfig.ge.132 .and. iconfig.le.139) ) then
+C---------------Wood basement: map to BWNN_1.
+                iconzero=13
+              endif
+              if( (iconfig.ge.28 .and. iconfig.le.67) .or.
+     &            (iconfig.ge.81 .and. iconfig.le.86) .or.
+     &            (iconfig.ge.104 .and. iconfig.le.107) ) then
+C---------------Slab-on-grade: map to SCN_1.
+                iconzero=28
+              endif
+              if( (iconfig.ge.79 .and. iconfig.le.80) .or.
+     &            (iconfig.ge.87 .and. iconfig.le.91) .or.
+     &            (iconfig.eq.108) .or.
+     &            (iconfig.ge.111 .and. iconfig.le.113) .or.
+     &            (iconfig.eq.120) .or.
+     &            (iconfig.ge.140 .and. iconfig.le.145) ) then
+C---------------Wood walls and concrete slab: map to BWNN_1 as this gives best
+C---------------approximation of uninsulated basement with wood wall + conc slab.
+                iconzero=13
+              endif
+              intflg = 0
+              CALL BSCOEFF(iconzero)
+              CALL BSCORNER
+              CALL BSFACS(icon,intflg)
+              Sag0 = Sag(icon)
+              Sbga0 = Sbgavg(icon)
+              Sbgv0 = Sbgvar(icon)
+              Bph0 = Bphase(icon)
+C-------------Step 3: interpolate. Interpolation factor (wint) is 2.29 for
+C-------------basements and 1.77 for slabs-on-grade.
+              if( (iconfig.ge.1 .and. iconfig.le.27) .or.
+     &            (iconfig.ge.68 .and. iconfig.le.80) .or.
+     &            (iconfig.ge.87 .and. iconfig.le.103) .or.
+     &            (iconfig.ge.108 .and. iconfig.le.120) .or.
+     &            (iconfig.ge.121 .and. iconfig.le.145) ) then
+C---------------Basement.
+                wint=2.29
+              endif
+              if( (iconfig.ge.28 .and. iconfig.le.67) .or.
+     &            (iconfig.ge.81 .and. iconfig.le.86) .or.
+     &            (iconfig.ge.104 .and. iconfig.le.107) ) then
+C---------------Slab-on-grade.
+                wint=1.77
+              endif
+              Sag(icon) = Sag15 + (Sag0-Sag15)/(exp(wint*rsi))
+              Sbgavg(icon) = Sbga15 + (Sbga0-Sbga15)/(exp(wint*rsi))
+              Sbgvar(icon) = Sbgv15 + (Sbgv0-Sbgv15)/(exp(wint*rsi))
+              Bphase(icon) = Bph15 + (Bph0-Bph15)/(exp(wint*rsi))
 
-          ELSE
+            ELSE
 C Within range of correlations: no interpolation required. Set BASESIMP
 C coefficients, corner-correction coefficients, then calculate heat loss factors.
-            intflg = 99
-            CALL BSCOEFF(iconfig)
-            CALL BSCORNER
-            CALL BSFACS(icon,intflg)
-          ENDIF
-C Debug begin....
-c            write(6,*) 'Sag = ',Sag(icon)
-c            write(6,*) 'Sbgavg = ',Sbgavg(icon)
-c            write(6,*) 'Sbgvar = ',Sbgvar(icon)
-c            write(6,*) 'phase = ',Bphase(icon)
-C Debug end....
-
-        ENDIF
+              intflg = 99
+              CALL BSCOEFF(iconfig)
+              CALL BSCORNER
+              CALL BSFACS(icon,intflg)
+            ENDIF
+          ENDIF    !(iconfig.eq.999)
+        ENDIF    ! (ICT(icon).EQ.6)
    10 CONTINUE
 
       RETURN
@@ -754,6 +896,8 @@ C Local variables for basesimp ground temperature parameters
       REAL basesimp_grd_temp_avg    ! Ground temperature average
       REAL basesimp_grd_temp_pshift ! Ground temperature phase shift
 
+      character*128 H3Kname         ! holding variable
+
 C Set constants used in calculations.
       PI=4.0*atan(1.0)
       omega = 2.*PI/(365.*24.)
@@ -794,11 +938,84 @@ C Sum components of heat loss to return total heat transfer to BASESIMP foundati
 C Units of `Qtotal' are W.
       Qtotal = Qag + Qbgavg + Qbgvar
 
-C Debug begin ....
-c	write(88,*) 'time = ',time,' idyp = ',idyp
-c	write(88,'(5(a,f6.1))') 'Tout = ',TF,' TBSAVG = ',TBSAVG,
-c     &	'Qag = ',Qag,' Qbgavg = ',Qbgavg,' Qbgvar = ',Qbgvar
-C Debug end ....
+C--------------------------------------------
+      write(H3Kname,'(A,A)')
+     &  'basesimp',
+     &  '/Qag'
+      call add_to_xml_reporting(
+     &   Qag,
+     &   H3Kname,
+     &   'units', '(W)',
+     &   'Basesimp: Above ground heat loss'
+     &   )
+
+C--------------------------------------------
+      write(H3Kname,'(A,A)')
+     &     'basesimp',
+     &     '/Qbgavg'
+      call add_to_xml_reporting(
+     &   Qbgavg,
+     &   H3Kname,
+     &   'units', '(W)',
+     &   'Basesimp: Average below ground heat loss'
+     &   )
+
+C--------------------------------------------
+      write(H3Kname,'(A,A)')
+     &  'basesimp',
+     &  '/Qbgvar'
+      call add_to_xml_reporting(
+     &   Qbgvar,
+     &   H3Kname,
+     &   'units', '(W)',
+     &   'Basesimp: Variable below ground heat loss'
+     &   )
+
+C-----------------------------------------
+      write(H3Kname,'(A,A)')
+     &  'basesimp',
+     &  '/Qtotal'
+      call add_to_xml_reporting(
+     &   Qtotal,
+     &   H3Kname,
+     &   'units', '(W)',
+     &   'Basesimp: Total heat loss'
+     &   )
+
+C-----------------------------------------
+      write(H3Kname,'(A,A)')
+     &  'basesimp',
+     &  '/TBSAVG'
+      call add_to_xml_reporting(
+     &   TBSAVG,
+     &   H3Kname,
+     &   'units', '(oC)',
+     &   'Basesimp: Total heat loss'
+     &   )
+
+C-----------------------------------------
+      write(H3Kname,'(A,A)')
+     &  'basesimp',
+     &  '/Tamb'
+      call add_to_xml_reporting(
+     &   TF,
+     &   H3Kname,
+     &   'units', '(oC)',
+     &   'Basesimp: Ambient temperature'
+     &   )
+
+C-----------------------------------------
+      write(H3Kname,'(A,A)')
+     &  'basesimp',
+     &  '/bsTGavg'
+      call add_to_xml_reporting(
+     &   bsTGavg(icomp),
+     &   H3Kname,
+     &   'units', '(oC)',
+     &   'Basesimp: Average ground temperature'
+     &   )
+
+C-----------------------------------------
 
       RETURN
       END
