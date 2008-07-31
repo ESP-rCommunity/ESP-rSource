@@ -320,9 +320,6 @@ C.....Local variables
       real SBC                              ! Stephan-Boltzmann constant
       parameter ( SBC=56.7E-9 )
 
-      real SBC                              ! Stephan-Boltzmann constant
-      parameter ( SBC=56.7E-9 )
-
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format,H3K_format_spm
@@ -1672,6 +1669,7 @@ C.......below should also make use of.
 
          H3K_format='(A,A,A,A,A)'
 
+
 C........Surface temperature 
 C........-> set name
          WRITE(H3K_rep_NAME,H3K_FORMAT)
@@ -1698,7 +1696,7 @@ c     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
 C     &         H3K_rep_NAME,
 c     &         'units', '(oC)',
 c     &         'Temperature on exterior face' )
-c         Endif ! if ie = 0
+         Endif ! if ie = 0
 
 C........Radiant heat injection associated with plant containment.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
