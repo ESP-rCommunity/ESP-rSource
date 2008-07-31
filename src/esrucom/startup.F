@@ -64,6 +64,8 @@ C while we have information on where esp-r was installed.
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
 c#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
@@ -426,6 +428,9 @@ C for code complience purposes or for use defined uses.
 #include "esprdbfile.h"
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
@@ -718,6 +723,9 @@ C parpsf allowa terminal, size and config file arguments
 C to be passed to the program from the invocation line.  
 
       subroutine parpsf(termtype,iappw,iappx,iappy,inf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Name of current application
@@ -831,6 +839,9 @@ C parpsff supports terminal, size and two file arguments
 C to be passed to the program from the invocation line.  
 
       subroutine parpsff(termtype,iappw,iappx,iappy,infa,infb)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/APPNAME/cAppName
       character*12 cAppName      
@@ -1142,6 +1153,9 @@ C  to be passed to the program from the invocation line.
 
       subroutine parsim(termtype,iappw,iappx,iappy,inf,browse,sps,
      &  aut,actf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Timeout information
@@ -1287,6 +1301,9 @@ C parres allows terminal, size, results file, action and silent arguments
 C  to be passed to res from the invocation line.  
 
       subroutine parres(termtype,iappw,iappx,iappy,inf,act,aut,actf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -1413,6 +1430,9 @@ C parclm allows terminal, size, input file, action and silent arguments
 C and output (converted) file to be passed to clm from the invocation line.  
 
       subroutine parclm(termtype,iappw,iappx,iappy,inf,act,aut,ascif)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -1546,6 +1566,9 @@ C zone focus and actions arguments from the invocation line.
 
       subroutine parsish(termtype,iappw,iappx,iappy,inf,zone,act,
      &  ascif)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -1676,6 +1699,9 @@ C parsprj allows terminal, size, config file, zone focus and actions arguments
 C (including 3 real data) to be passed to the prj from the invocation line.  
       subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
      &        data1,data2,data3)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Application name
@@ -1828,6 +1854,9 @@ C parsfz allows terminal, size, config file, zone focus arguments
 C to be passed to the program from the invocation line.  
 
       subroutine parsfz(termtype,iappw,iappx,iappy,inf,zone)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -1946,6 +1975,9 @@ C partf allows terminal and config file arguments
 C to be passed to the program from the invocation line.  
 
       subroutine partf(termtype,inf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -2037,6 +2069,9 @@ C partfa allows terminal, file and action arguments
 C  to be passed to the program from the invocation line.  
 C  Logic allows for the -file token to be optional.
       subroutine partfa(termtype,inf,act)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/APPNAME/cAppName
       character*12 cAppName
@@ -2136,6 +2171,9 @@ C  to be passed to e2r from the invocation line.
 
       subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
      &  browse)
+      
+      integer lnblnk  ! function definition
+
 C      COMMON/OUTIN/IUOUT,IUIN
 
 C Application name
@@ -2275,6 +2313,9 @@ C parsfact allows terminal, size, file and actions arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 C Application name
       common/APPNAME/cAppName
@@ -2395,6 +2436,9 @@ C Errors.
 C parcnv parse command line paramters for ecnv.
       subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer iargc,m
@@ -2510,6 +2554,9 @@ C If one parameter.
 C ******* FINDAPP
 C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
       SUBROUTINE findapp(string,appn)
+      
+      integer lnblnk  ! function definition
+
       CHARACTER*(*) string,appn
       logical unixok
 

@@ -66,6 +66,8 @@ C IDCFID   - Daylight coefficient sensor ID
       SUBROUTINE ercgcf(itrc,itru,LCGCIN,ICOMP,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -473,6 +475,9 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       SUBROUTINE CASCTMK(LCGCIN,ICOMP,ACT,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

@@ -29,6 +29,8 @@ C READPIF - read performance information file and gather data.
       SUBROUTINE READPIF(iier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -491,6 +493,8 @@ C current menu (moget) selections.
 
       SUBROUTINE WRITEPIF(IOTYPE)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

@@ -53,6 +53,8 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

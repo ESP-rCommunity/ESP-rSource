@@ -50,6 +50,9 @@ C message (48 char) feedback to echo when preparing doit
 C doit (248 char) the command to execute
 C ier is zero if ok.
       subroutine dbdoscopy(source,lcopy,message,doit,ier)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
 
 C Strings for dos version of source and destination of db file.
@@ -151,6 +154,9 @@ C ldoit (300 char) the command to execute
 C ier is zero if ok.
 
       subroutine dblongdoscopy(source,lcopy,message,ldoit,ier)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
 
 C Strings for dos version of source and destination of db file.
@@ -251,6 +257,9 @@ C source (up to 144 char) source file (with path).
 C patched (up to 144 char) revised file (with \ and possibly ")
 C ier is zero if ok.
       subroutine cmdfiledos(source,patched,ier)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
 
 C Strings for dos version of source and destination of db file.
@@ -324,6 +333,8 @@ C source (up to 144 char) source file (with path).
 C patched (up to 144 char) revised file (with \)
 C ier is zero if ok.
       subroutine imgfiledos(source,patched,ier)
+      
+C      integer lnblnk  ! function definition
 
 C Strings for dos version of source and destination of db file.
 C      character outs*248

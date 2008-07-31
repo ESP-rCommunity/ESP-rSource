@@ -225,6 +225,8 @@ C string OUTS. Phase types: 1-d.c. 2-1-phase 3-2-phase 4-3-phase
 C 5-balanced
 
       SUBROUTINE PHDECODE(PHOUTS,IPHV,IMODE,IER)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 

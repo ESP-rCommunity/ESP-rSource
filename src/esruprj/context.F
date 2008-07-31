@@ -34,6 +34,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "tdf2.h"
 #include "sbem.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/FILEP/IFIL
@@ -909,6 +910,8 @@ C function of time. Important variables are defined in roam.h
       SUBROUTINE ROAMING
 #include "building.h"
 #include "roam.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
@@ -1010,6 +1013,8 @@ C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1213,6 +1218,9 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2499,6 +2507,9 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       subroutine calenmanage(act,ier)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3400,6 +3411,8 @@ C EDDGTP Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN

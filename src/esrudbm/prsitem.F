@@ -62,6 +62,8 @@ C of air gap resistances, laydesc is the corresponding material description.
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h provides gendbfn
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -178,6 +180,8 @@ C roughness, misc1 and misc2 are optional real parameters.
      &  lcatype,r1lca,r2lca,NCODE,DBCON,DBDEN,DBSHT,E,A,DRV,
      &  spec,rough,misc1,misc2,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -262,6 +266,8 @@ C a colour calculation or pattern file name.
       subroutine prscolr(idbh,iit,act,IR255,IG255,IB255,greyrefl,
      &  coltype,colptrn,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -313,6 +319,9 @@ C the scope of the data (per m^2 or person etc.), FRQ are the coef
 C 17 different frequencies.
       subroutine prsacou(idbh,iit,act,atype,aunit,FRQ,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb6/ittag(MGIT),itmenu(MGIT)
       common/gendb8b/itdat(20),itrep(20)
@@ -366,6 +375,9 @@ C lasmat 1st/2nd/3rd maintenance names.
       subroutine prsenvci(idbh,iit,act,lassurn,laspern,ntrn,trbsn,
      &  dtrbs,rtrbs,assite,lasmat,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -464,6 +476,9 @@ C eimp (9 effects),ntrn is the number of transports.
 C Used with the following category types: RECYCP, INCENP DUMPP
       subroutine prsenvi(idbh,iit,act,ntrn,trbsn,dtrbs,eimp,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -559,6 +574,9 @@ C ri incineration rate, dn=dump name, rd=dump rate, eimp=9 impacts.
       subroutine prsenvf(idbh,iit,act,fablif,brkias,ntrn,trbsn,dtrbs,
      &  rtrbs,rn,rr,in,ri,dn,rd,eimp,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -660,6 +678,9 @@ C Used with the category types: ASMPRJ, CNSTRMNT, CNSTRASM
 C brkasp=breakage assembly on project,eimp=9 impacts.
       subroutine prsenvp(idbh,iit,act,tag,brkasp,eimp,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -729,6 +750,8 @@ C is photo smog potential, UNRE is utilisation of nonrenewable energy.
 C << this needs to be changed to 9 impacts >>
       subroutine prstransp(idbh,iit,act,eimp,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -774,6 +797,8 @@ C IER=0 OK, IER=1 problem.
 C FDAT is the pressure coefficient at 16 angles.
       subroutine prspres(idbh,iit,act,FDAT,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -832,6 +857,9 @@ C write data b in itrep(7-12)
 C write data c in itrep(13-18)
       subroutine prsprof(idbh,iit,act,NCG,Patr,DayT,ST,A,B,C,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)

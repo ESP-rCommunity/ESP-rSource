@@ -647,7 +647,6 @@ C-------------------------------------------------------------------------------
       REAL SHTFLD
       REAL RHOFLD
       REAL H_gas
-      INTEGER LNBLNK
       INTEGER I
 
 

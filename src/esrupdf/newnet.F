@@ -48,6 +48,8 @@ C     simtyp - holds description of simulation type.
 
 #include "plant.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
  
       COMMON/C8/LPNAM
       COMMON/C13PS/NPMCOE,NPNOD,NPMTYP

@@ -40,6 +40,8 @@ C menu (32 char) brief title of model
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -724,6 +726,8 @@ C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1149,8 +1153,9 @@ C model. All information is passed via parameters.
 C limg (char*72) is the image file name
 C iformat (char*4) image format 'GIF ' 'TIF ' 'XBMP' or 'XWD '
 C ifocus (char*4) image focus '****' 'FZON' 'FNET' 'FCTL' 'FDFS' or 'FPER'
-       subroutine edimage(limg,iformat,ifocus,ier)
+      subroutine edimage(limg,iformat,ifocus,ier)
 
+C      integer lnblnk  ! function definition
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1248,6 +1253,8 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN

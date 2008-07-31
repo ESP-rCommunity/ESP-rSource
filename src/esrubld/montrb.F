@@ -154,6 +154,8 @@ c after the start-up period.
       subroutine zngrph(iss,isf,instep,mode)
 #include "building.h"
 #include "monitor.h"
+      
+      integer lnblnk  ! function definition
 
 C Parameters for eline calls.
       integer LNMVAB, LNDRAB, LNMVRL, LNDRRL

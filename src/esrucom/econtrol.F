@@ -260,6 +260,8 @@ C          flow control function.
 #include "power.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2035,6 +2037,8 @@ C control file sensors, actuator, control types, control laws.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2366,6 +2370,8 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
@@ -3293,6 +3299,8 @@ C List one day type of a building/plant/flow/global/optical control.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -3467,6 +3475,9 @@ C SSTRB is brief string (48 char) returned
 #include "building.h"
 #include "plant.h"
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

@@ -31,6 +31,8 @@ C ********************* RINTERA ****************************************
 
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C Open the file passed via the command line for b2e - usually "b2e_inter"
       COMMON/OUTIN/IUOUT,IUIN
@@ -276,6 +278,8 @@ C BHSTR - an array holding a descriptive string for each column of data.
 #include "b2e.h"
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -515,6 +519,8 @@ C*end_data
 
 #include "b2e.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -604,10 +610,11 @@ C This subroutine decodes the header strings from labview
       SUBROUTINE BHDECODE(BHDSTR1,BHDSTR2,IERROR)
 
 #include "b2e.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
-
 
       COMMON/RBEMSTR/BHSTR(MBCOL)
 
@@ -716,6 +723,8 @@ C << thie subroutine logic must change to reflect that tdf functionality
 C << has been moved into the project manager.
 
       SUBROUTINE TDFUPDT(MODE)
+      
+      integer lnblnk  ! function definition
 
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -1062,6 +1071,9 @@ C simulation pattern selects suitable data to return to the bems system
 
 # include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
 

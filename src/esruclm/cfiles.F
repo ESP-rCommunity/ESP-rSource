@@ -228,6 +228,8 @@ C Item 3 will be replaced by global horizontal radiation (W/M**2),
 C if the radiation flag set was set to GH in the binary climate file.
       SUBROUTINE MKACLM(ACT,LASCI,IAF,IBD,IED,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CLMDT0/CLAT,CLONG
@@ -263,8 +265,8 @@ C confirm whether it should be overwritten. Open can be local or remote.
         WRITE(IAF,'(A)',IOSTAT=ISTAT,ERR=1003)'*CLIMATE'
 
 C Create a header section with site name, period etc.
-        WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(:lnblnk(LCLIM)),
-     &            LASCI(:lnblnk(LASCI))
+        WRITE(IAF,30,IOSTAT=ISTAT,ERR=1003)LCLIM(1:lnblnk(LCLIM)),
+     &            LASCI(1:lnblnk(LASCI))
   30    FORMAT('# ascii climate file from ',a,' binary db,',/,
      &    '# defined in: ',a,/,
      &    '# col 1: Diffuse solar on the horizontal (W/m**2)',/,
@@ -663,6 +665,8 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       SUBROUTINE CFILIN(silent)
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1126,6 +1130,8 @@ C read in.
       SUBROUTINE EPWTOBCLM(LASCI,IUNIT,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 

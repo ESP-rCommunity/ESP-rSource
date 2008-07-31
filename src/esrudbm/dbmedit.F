@@ -47,6 +47,9 @@ C Icwhich is its category. Idbh is the position in the hash table.
       subroutine edselcat(IFB,idbh,itwhich,icwhich,action,IER)
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -669,6 +672,9 @@ C allow choice.  Itwhich is the index of the db item selected.
       subroutine edselitem(IFB,idbh,itwhich,ic,action,IER)
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -1267,6 +1273,9 @@ C database file. Idbh is position in hash table. afile is the legacy file
 C if known.
       subroutine intdbdoc(idbh,act,afil,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
      &              nbunit(MGDB),nbsrc(MGDB),nbcat(MGDB),nbitem(MGDB),
      &              idbver(MGDB)      
@@ -1470,6 +1479,9 @@ C are current (i.e. scandbhd already called). If changes made update
 C the current database.
       subroutine edcatdoc(IFB,idbh,ic,act,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1591,6 +1603,9 @@ C item of the current database type. Iclnew is the new class and
 C iitnew is the new item associated with it.
       subroutine newgcat(IFB,idbh,iclnew,iitnew,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1781,6 +1796,9 @@ C  newgitem: Depending on the db type create a new instance of an item for
 C subsequent editing. Icl is the class the item is associated with.
       subroutine newgitem(IFB,idbh,icl,iit,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -2327,6 +2345,9 @@ C in and converted to a new binary db file. Act is << >>. Db is the
 C type of database to create, idbh is its position in the hash table.
       subroutine agdbnew(IFA,AFIL,db,idbh,act,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,

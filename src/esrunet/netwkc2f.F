@@ -386,6 +386,9 @@ C Called from the C-side
       SUBROUTINE GCONAD(IX,IY,IXR,IYR,IB)
 
 #include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/NWKTYP/INWKTYP,vergnf   

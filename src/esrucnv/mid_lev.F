@@ -28,6 +28,8 @@ c 'INSERT' command use.
 C << NOTE: for some computer types there will not be >>
 C << a /tmp folder so work out a different approach >>
       subroutine block(itrc)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
@@ -241,6 +243,8 @@ C This subroutine processes the 'INSERT' command in .dxf file and
 C translates it into 'FIL' command for .vew file of viewer.
 C Note: all the insert files are assumed to be in local folder.
       subroutine insert(itrc) 
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum,ioin,ioout,ioblk,flagins

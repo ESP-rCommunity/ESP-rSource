@@ -94,6 +94,8 @@ C IEEE callback (Solaris)
       integer SIGFPE_bps      
 #endif
 #endif
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/tracech/icout
@@ -1388,6 +1390,8 @@ C  ifstat = 8  new file filled via import of ascii file
 
       subroutine shdprb(itc,silent,icomp,ifstat)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
@@ -1558,6 +1562,8 @@ C older ascii materials file to fill the materials data arrays.
 
       subroutine opendb(ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)

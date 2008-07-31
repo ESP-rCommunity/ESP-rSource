@@ -477,6 +477,8 @@ C names beside the layer number.
 C *********************************************************************
       SUBROUTINE WRTLYR(ICOMP,ICNST,ILYR,NAMELYR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

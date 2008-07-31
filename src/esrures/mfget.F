@@ -106,6 +106,8 @@ C columns listed above.
       SUBROUTINE MFMENU
 #include "building.h"
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

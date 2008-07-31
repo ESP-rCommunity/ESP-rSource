@@ -42,6 +42,8 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -606,6 +608,9 @@ C ******************* EDITOPT
 C EDITOPT edits one set of optical properties via common block. 
       SUBROUTINE EDITOPT(IW,GTYPE,GDESCR,edited,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -984,6 +989,7 @@ C EMKOPTD writes a item to the glazing optical database. Assumption
 C that file has already been opened.
       SUBROUTINE EMKOPTD(ITOPT,GTYPE,GDESCR,IER)
 #include "building.h"
+      integer lnblnk  ! function definition
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       CHARACTER GTYPE*12,GDESCR*36
 
@@ -1110,6 +1116,9 @@ C ************* IMPOPT
 C IMPOPT reads in an optical report from Window 4.1 or 5.1 or 5.2.
       SUBROUTINE IMPOPT(iwin4,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -1322,6 +1331,9 @@ C ************* IMPWIS
 C IMPWIS clears common block GOPTED and sets it up for a new set.
       SUBROUTINE IMPWIS(iwis,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -1516,6 +1528,9 @@ C optic properties. These are usually the result of measurements.
 #include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
+      
+C      integer lnblnk  ! function definition
+
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

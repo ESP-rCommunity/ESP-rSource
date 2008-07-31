@@ -45,6 +45,8 @@ C different from ambient concentration)
       SUBROUTINE CTREAD(ier)
 #include "net_flow.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1

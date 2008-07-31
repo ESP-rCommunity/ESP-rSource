@@ -148,6 +148,8 @@ C  itrc the level of reporting (zero is quiet).
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPCDB/IPCDB (for plant template database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin

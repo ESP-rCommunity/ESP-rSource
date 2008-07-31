@@ -150,6 +150,8 @@ C to the fabric temperature or condensation information.
 
       SUBROUTINE MOIHED(ICOMP,ISUR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -247,6 +249,8 @@ C zone RH. If iverb=0 then report only summary, if iverb=1 report each
 C timestep.
       SUBROUTINE MOSURC(IZONE,izrh,iverb)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       common/exporttg/xfile,tg,delim
@@ -793,6 +797,8 @@ C period.
       SUBROUTINE FINDCND(ICOMP)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

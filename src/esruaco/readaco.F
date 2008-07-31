@@ -58,7 +58,8 @@ C IW(Integer) : 1 = read BCF silently (=2 if not)
       SUBROUTINE SCNACO(IEask,IER)
 #include "building.h"
 #include "acoustic.h"
-
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/EVGENL/BCFOK
@@ -95,13 +96,13 @@ C Specify the reading mode.
         IW = 1        
       ENDIF
 C      IF (ACOOK) then 
-C        WRITE (outs,'(a,a)')' Open ACO file: ',ACOName(:lnblnk(ACOName))
+C        WRITE (outs,'(a,a)')' Open ACO file: ',ACOName(1:lnblnk(ACOName))
 C        IF (IEask.NE.0) CALL EDISP(Iuout,outs)
 C      ENDIF
       CALL EFOPSEQ(IACO,ACOName,1,IER)
       IF (IER.LT.0) then
         WRITE (outs,'(a,a)')' Error while opening ACO file : ',
-     &                             ACOName(:lnblnk(ACOName))
+     &                             ACOName(1:lnblnk(ACOName))
         CALL EDISP(Iuout,Outs)
         IER=1
         RETURN
@@ -194,7 +195,7 @@ C public and furniture information is done in scnzoneaco.
           goto 666
         ENDIF
         GOTO 42
-C     WRITE (outs,'(3a)')' ACO file: ',ACOName(:lnblnk(ACOName)),
+C     WRITE (outs,'(3a)')' ACO file: ',ACOName(1:lnblnk(ACOName)),
 C     &                          ' successfully read.'
 C    CALL EDISP(Iuout,outs)
  777       CALL EDISP(iuout,' ')
@@ -252,6 +253,8 @@ C IW(Integer) : 1 = read ACO silently (=2 if not)
       SUBROUTINE SCNZONEACO(ZoneName,IEask,IER)
 #include "building.h"
 #include "acoustic.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/EVGENL/BCFOK
@@ -289,13 +292,13 @@ C Specify the reading mode.
       ENDIF
 
       IF (ACOOK) then 
-C        WRITE (outs,'(a,a)')' Open ACO file: ',ACOName(:lnblnk(ACOName))
+C        WRITE (outs,'(a,a)')' Open ACO file: ',ACOName(1:lnblnk(ACOName))
 C        IF (IEask.NE.0) CALL EDISP(Iuout,outs)
       ENDIF
       CALL EFOPSEQ(IACO,ACOName,1,IER)
       IF (IER.LT.0) then
         WRITE (outs,'(a,a)')' Error while opening ACO file : ',
-     &                             ACOName(:lnblnk(ACOName))
+     &                             ACOName(1:lnblnk(ACOName))
          if (IEask.ne.0) CALL EDISP(Iuout,Outs)
         IER=1
         RETURN
@@ -405,7 +408,7 @@ C                ENDIF
           ENDIF
         ELSEIF (OUTSTR(1:8).eq.'*End_ACO') THEN
           IF (IEask.NE.0) THEN 
-            WRITE (outs,'(3a)')' ACO file: ',ACOName(:lnblnk(ACOName)),
+            WRITE (outs,'(3a)')' ACO file: ',ACOName(1:lnblnk(ACOName)),
      &                          ' successfully read.'
             CALL EDISP(Iuout,outs)
             CALL EDISP(iuout,' ')

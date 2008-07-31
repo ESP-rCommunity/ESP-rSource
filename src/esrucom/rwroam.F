@@ -35,12 +35,13 @@ C defined in the operations files.
 C espriou.h provides currentfile.
 #include "espriou.h"
 #include "roam.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       CHARACTER OUTSTR*124
       INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,K
       LOGICAL GOON
-      integer lnblnk  ! function type
 
 C Read in file and initialise variables
       IPDR=0

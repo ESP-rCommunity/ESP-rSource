@@ -26,6 +26,9 @@ C EDCASCTL - edit casual gain control data.
 
       SUBROUTINE  EDCASCTL(ITRC,ICOMP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)

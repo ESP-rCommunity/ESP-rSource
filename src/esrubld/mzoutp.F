@@ -31,6 +31,9 @@ C tzph,tzpc are zone heating/cooling use over time.
 #include "building.h"
 #include "esprdbfile.h"
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SHOUT/ICOUT

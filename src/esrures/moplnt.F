@@ -31,6 +31,9 @@ C ******************** PLTTAB ********************
 C PLTTAB handles results view/setup requests for plant.
       subroutine plttab
 #include "plant.h"
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -718,6 +721,7 @@ C LPCDB/IPCDB (for plant template database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1338,6 +1342,9 @@ C the command line was a plant results file.
 #include "building.h"
 #include "plant.h"
 C act='p' iget parameters already set.
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN

@@ -25,6 +25,8 @@ C being searched for, ioblk is the scratch block information
 C file. xp,yp,zp are where to apply the block,
 C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       subroutine extrblk(itrc,bn,xp,yp,zp,xsc,ysc,zsc,rot,ier)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum,flagins,ioin,ioout,ioblk

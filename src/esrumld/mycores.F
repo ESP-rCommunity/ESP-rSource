@@ -47,6 +47,8 @@ C    4-mould information
       subroutine mycorecv(irecov,imld)
 
 #include "mould.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/moupk/ispp(mould),a(4,mould),mldnam(mould)

@@ -38,6 +38,8 @@ C user-specified variable.
 
       SUBROUTINE MO3DPL
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

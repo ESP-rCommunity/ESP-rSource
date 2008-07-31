@@ -62,6 +62,9 @@ C which create the scratch or ascii version.
 #include "building.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRC/ITRC
       COMMON/C1/NCOMP,NCON
@@ -843,6 +846,8 @@ C   negative then fewer columns will be written.
 C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
       SUBROUTINE EWTDFA(ITRC,AFIL,IAFIL,iiadcols,IER)
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
@@ -1036,6 +1041,8 @@ C act='c'.
 
 C espriou.h provides current file.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFFT/LTDF,LTDFA

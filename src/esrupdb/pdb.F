@@ -24,6 +24,7 @@ C Boston, MA 02111-1307 USA.
 #include "esprdbfile.h"
 #include "espriou.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
 C The Plant component DataBase program maintains a

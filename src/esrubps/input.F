@@ -181,6 +181,8 @@ C default file names for databases
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
       PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       common/er1/ier1
@@ -1555,6 +1557,8 @@ C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
 #include "building.h"
 #include "MultiYear_simulations.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep

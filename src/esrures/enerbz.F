@@ -31,6 +31,8 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 
       SUBROUTINE MOZCAS(IZONE,IANZSE,NIT)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT

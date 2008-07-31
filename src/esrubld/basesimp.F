@@ -38,6 +38,8 @@ C BASEREAD     Reads the data contained in the .bsm file.
 c espriou.h provides currentfile
 c common block for ground temperature profiles.
 #include "ground_temp_mains_common.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

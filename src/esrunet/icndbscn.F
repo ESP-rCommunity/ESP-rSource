@@ -61,6 +61,8 @@ C
      &  catmenu,nbicons,icontag,iconmenu,iatrdom,dtagatr,
      &  datrib,dmenuatr,igatrdom,dgtagatr,dgatrib,dgmenuatr,IER)
 #include "gnetwk.h" 
+      
+      integer lnblnk  ! function definition
 
       COMMON/ICONDBNAM/ICONDBFL
       COMMON/FILEP/IFIL
@@ -454,6 +456,8 @@ C   number of lines of text (nbtext) array of text strings (72 char)
      &   nbvert,vert,nbedge,iedge,nbdot,idot,nblabel,ilabel,labeltx,
      &   nbarc,iarc,nbatt,iatt,nbtext,text,IER)
 #include "gnetwk.h" 
+      
+      integer lnblnk  ! function definition
 
       COMMON/ICONDBNAM/ICONDBFL
       COMMON/FILEP/IFIL
@@ -798,6 +802,8 @@ C  array of menu entries (32 char) menuatr(MIATRB)
       subroutine geticonatr(idomain,category,icontag,natrib,tagatr,
      &  atrib,menuatr,IER)
 #include "gnetwk.h" 
+      
+      integer lnblnk  ! function definition
 
       COMMON/ICONDBNAM/ICONDBFL
       COMMON/FILEP/IFIL
@@ -1065,6 +1071,7 @@ C type = 'z'.  Or if the string is within the list offered by
 C gscalestr it returns an index between 0 and 28 and type = 'g'.
 C Or if black return 6 and white return 7 with type = 'i'.
       subroutine whichzonecolour(colourstr,indxzncolour,type)
+      integer lnblnk  ! function definition
       character colourstr*12,type*1
 
       indxzncolour = -1

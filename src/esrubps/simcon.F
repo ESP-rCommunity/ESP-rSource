@@ -1814,6 +1814,8 @@ C prior to each simulation commencing.
 #include "building.h"
 #include "plant.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2170,6 +2172,8 @@ C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2465,6 +2469,8 @@ C if itru=33 then works as a header to the trace.
 #include "building.h"
 #include "plant.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave

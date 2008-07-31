@@ -46,6 +46,8 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
       PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
@@ -1404,6 +1406,9 @@ C simula commissions technical assessments and analysis.
 #include "sbem.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
+      
+      integer lnblnk  ! function definition
+
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -2349,6 +2354,7 @@ C << the longer string used when commissioning a simulation.
       subroutine ipvactions(ier)
 #include "building.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
 C Get logical name of terminal type, expand model name
@@ -3145,6 +3151,8 @@ C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
      &                      oprfok,prob,tmcok,shdok)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -3712,6 +3720,8 @@ C and the image browser has not been invoked do this now. In the case
 C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3926,6 +3936,8 @@ C of the same project that can later be modified.
 
       SUBROUTINE CFGVER
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4300,6 +4312,8 @@ C << message to user that such a file does not exist
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN

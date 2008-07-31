@@ -40,6 +40,9 @@ C IST = 2 the user is interested in transforming the data
 C IST = 3 the user is interested in curve fitting.
       SUBROUTINE CLPRED(IST)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MT=24,MD=365,MAAS=9)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

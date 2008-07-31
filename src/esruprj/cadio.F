@@ -29,6 +29,8 @@ C ********** exportcad
 C exportcad: controls model export facilities.
       subroutine exportcad(itrc,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -534,6 +536,9 @@ C CADIN drives the conversion of CAD input into data model.
 C used by the Project Manager.
 C Parameter ichoice is currently not used.
       subroutine cadin(itrc,ichoice,ier)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/C1/NCOMP,NCON
@@ -817,6 +822,9 @@ C ier (integer) is returned as 1 if no exemplars file found.
       subroutine rexmpl(iexfil,exemplar,useraction,ier)
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1386,6 +1394,7 @@ C ***** wtarentry
 C wtarentry: write entry in tar names file taking into account case where file
 C name begins with ../ .
       subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf,ier)
+      integer lnblnk  ! function definition
       logical pathome,unixok
       character*(*) lf
       character tp*32,tr*32,fs*1
@@ -1445,6 +1454,8 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL

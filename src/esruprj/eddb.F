@@ -45,6 +45,8 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
@@ -630,6 +632,8 @@ C older ascii materials file to fill the materials data arrays.
 
       subroutine opendb(ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -903,6 +907,8 @@ C     if blank then no file name change implied.
 
       SUBROUTINE EDDBMAT(moddb,modcon,APP)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -1536,6 +1542,8 @@ C     if blank then no file name change implied.
       SUBROUTINE EDDBMLC(moddb,modcon,APP)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
@@ -1877,6 +1885,8 @@ C     if blank then no file name change implied.
       SUBROUTINE EDDBPCDB(moddb,APP)
 #include "esprdbfile.h"
 #include "plantdb.h"
+      
+      integer lnblnk  ! function definition
 
       PARAMETER  (MCP=35)
 
@@ -2254,6 +2264,8 @@ C
 #include "esprdbfile.h"
 
       PARAMETER  (MCP=35)
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -2867,6 +2879,9 @@ C This facility offers browsing for GTK version.
       SUBROUTINE EDDBOPT(moddb,APP)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -3376,6 +3391,9 @@ C from version manager
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN

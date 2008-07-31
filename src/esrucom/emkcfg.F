@@ -46,6 +46,8 @@ C ICLIM,LCLIM (for climate file)
 #include "sbem.h"
 #include "roam.h"
       PARAMETER (MSTMC=20,MSGAL=40)
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1188,6 +1190,9 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

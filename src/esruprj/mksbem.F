@@ -33,6 +33,9 @@ C sbmedit define high level data associated with UK NCM methodology.
 #include "building.h"
 #include "sbem.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL      
       common/pophelp/h(60)
@@ -1601,6 +1604,9 @@ C model.
 #include "building.h"
 #include "sbem.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
