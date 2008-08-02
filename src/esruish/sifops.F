@@ -38,6 +38,8 @@ C with the db at simulation time.
 
       subroutine sifops(icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -943,6 +945,8 @@ C    this would be a name derived from the zone shading file).
 C  ier (integer) is zero if no problems, -3 if empty.
       subroutine sifexp(icomp,exportfile,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -1136,6 +1140,8 @@ C  ier (integer) is zero if no problems, -3 if empty,
 C     -2 not found, -1 wrong type of file, -4 wrong zone.
       subroutine sifimport(icomp,exportfile,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -1147,7 +1153,6 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
       common/data5/irecx,nsurs,msurs
-      common/filech/ixopen,ixunit,ixpunit
       common/mtfile/ltrns,multic,mons,monf
 
       character ltrns*72
@@ -1195,7 +1200,7 @@ C initial month in the import file and then close the file.
       iuj=ifil+10
       mnth=1
       call efopseq(iuj,exportfile,1,ier)
- 17   call stripc(iuj,outstr,0,nd,1,'month',ier)
+      call stripc(iuj,outstr,0,nd,1,'month',ier)
       if(outstr(1:7).eq.'* month')then
         do 16 im=1,12
           if(outstr(11:13).eq.month(im))mnth=im

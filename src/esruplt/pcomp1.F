@@ -2973,7 +2973,7 @@ C     CDATA: none
       COMMON/WRNOFF/IWMOFF
 
       PARAMETER (SMALL=1.0E-15)
-      REAL      COUT(MPCOE)
+      REAL      COUT(MPCOE),w_vap_recov
       logical closea,closeb,closec
 
 C Trace output
@@ -2985,6 +2985,7 @@ C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
       ICON2=ICONDX(IPCOMP,2,1)
       INOD1=NPCDAT(IPCOMP,9)
       INOD2=NPCDAT(IPCOMP,9)+1
+      w_vap_recov=0.0
 
 C Generate coefficients for energy balance equation
       IF(ISTATS.EQ.1) THEN
@@ -3041,7 +3042,7 @@ C And finally calcultate heat transferred between air streams Q
          ENDIF
 
 C Set the moisture recovery
-          w_vap_recov=BDATA(IPCOMP,2)/100.0
+         w_vap_recov=BDATA(IPCOMP,2)/100.0
 	  
 C Establish heat capacity of component mass CM (J/K), and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
@@ -3537,7 +3538,6 @@ C     CDATA: 1 Mass flow rate (kg/s)
      &             ICONDX(MPCOM,MNODEC,MPCONC)
 
 C Electrical details for specified plant components
-      common/pcelflg/ipcelf(mpcom)
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 

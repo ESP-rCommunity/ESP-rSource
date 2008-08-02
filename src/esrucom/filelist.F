@@ -44,6 +44,8 @@ C parameter ier returned as 2 if problem writing file name path.
       subroutine browsefilelist(act,where,what,sfile,snpfile,nlist,ier)
 #include "espriou.h"
 C espriou.h for parameter MFFOLD
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       common/uhome/upath

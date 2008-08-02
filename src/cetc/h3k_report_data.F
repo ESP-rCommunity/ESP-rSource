@@ -3448,6 +3448,10 @@ C........-> set name
 
       enddo
 
+C.....Call RE-H2-CTL reporting function
+      call RESH2_Ctl_PostProcess()      
+
+
       return
       end
 

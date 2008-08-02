@@ -45,6 +45,9 @@ C << what about including common zndata in this manipulation? >>
 
       SUBROUTINE ADDSUR(ITRC,ICOMP,IWHICH,ACTION,MODE,ISCOPT,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -98,7 +101,6 @@ C << what about including common zndata in this manipulation? >>
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
       dimension jvn2(MV)  ! dummy array for sorti call
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV),ispk(MS)
-      dimension ITEMP(MV)  ! used for sorting list in decending order.
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1217,6 +1219,8 @@ C   for new position, IER is -3 user aborted action.
       SUBROUTINE ADDMASS(ITRC,ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
      &   ANG,DDX,DDZ,SN,constr,OPT,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       PARAMETER  (MPL = 200 )
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2014,6 +2018,9 @@ C << written at the end of the process. This has yet to be done.
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
       PARAMETER  (MPL = 200 )
+      
+      integer lnblnk  ! function definition
+
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 

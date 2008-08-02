@@ -44,6 +44,8 @@ C Maximum number of demands/day       MC=20
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -262,6 +264,9 @@ C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/BL1/dmdsdesc,bdmds
 
 C Descriptive label for a zone load or casual gain types.

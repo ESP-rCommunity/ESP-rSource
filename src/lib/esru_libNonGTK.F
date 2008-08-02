@@ -2742,10 +2742,9 @@ C EASKPER: Provides legacy interface to the more general eAskPerGen below.
       logical bMY_enabled
       parameter ( bMY_enabled = .false. )
 
-C Note: initialize iBYr and iEYr even though the are not 
-C returned. They're not referenced when multiyear simulations are disabled
-      iBYr=2000
-      iEYr=2000
+C Note: There's no need to initialize iBYr and iEYr. They're not
+C referenced when multiyear simulations are disabled
+
       call eAskPerGen(PROMP1,IBDOY,IEDOY,
      &                 iBYr,iEYr,IFDAY,bMY_enabled,IER)
 
@@ -3140,7 +3139,7 @@ C If the path is other than `./' but is not `/usr/esru' then
 C concatenate path with sfile.
 
       SUBROUTINE EFOPSEQ(IUN,SFILE,IEXIST,IER)
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       LOGICAL XST,OK,concat,DOK
@@ -3283,7 +3282,7 @@ C If the path is other than `./' but is not `/usr/esru' then
 C concatenate path with sfile.
 
       SUBROUTINE EFOPRAN(IUN,SFILE,IRW,IEXIST,IER)
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       LOGICAL XST,OK,concat,DOK
@@ -3442,8 +3441,7 @@ C This version includes cross-platform logic.
       common/rpath/path
       LOGICAL concat,unixok
       CHARACTER*(*) sfile,tfile
-      CHARACTER path*72,fs*1,fs1*1,tp*12,tp1*12,outs*124,a1*1
-C      character a2*1
+      CHARACTER path*72,fs*1,fs1*1,tp*12,tp1*12,outs*124,a1*1,a2*1
 
 C Define path and file name lengths and check operating system.
       LN=max(1,lnblnk(path))
@@ -3456,7 +3454,7 @@ C Set folder separator (fs) to \ or / and the folders to ignore as required.
       write(tp,'(2a)') '.',fs
       write(tp1,'(2a)') '.',fs1
       write(a1,'(a)') sfile(1:1)
-C      write(a2,'(a)') sfile(2:2)
+      write(a2,'(a)') sfile(2:2)
 
 C Assume that we will add the path to the file name.
       concat = .true.
@@ -3634,8 +3632,8 @@ C         WRITE(6,'(a,I4)')cstr(I:I),ichar(cstr(I:I))
  99   CONTINUE
  100  return
 
-C   1  write(6,*) 'c2fstr: error writing: ',cstr
-C      return
+   1  write(6,*) 'c2fstr: error writing: ',cstr
+      return
       end
 
 C ******* termode
@@ -3678,7 +3676,6 @@ C For page control of the menus.
 
 C If creating menu don't ask questions. Allow movement forward or backwards
 C in the control menu.
-      IGTP=1  ! if creating assume first page
       IF(IPACT.EQ.CREATE)THEN
         IX=1
       ELSEIF(IPACT.lt.0)then
@@ -4050,7 +4047,7 @@ C     SUBROUTINE EPAGES(MODEL,IIN,IOUT,TITLE)
       CHARACTER HEAD*255
 
       CHARACTER*5 MM
-      integer ifont   ! to pass to winfnt
+
 c If MMOD set to valid index, assume it, dont ask.
       MM=' '
   10  IF(MM.EQ.'-6   '.OR.MODEL.EQ.-6)THEN
@@ -4079,8 +4076,7 @@ C Pass application size via sizehwxy.
           call sizehwxy(ihight,iwidth,iappx,iappy)
         endif
         call jwinint(8,HEAD)
-        ifont=1
-        call winfnt(ifont)
+        call winfnt(1)
 
 C Open the dialogue box and begin message then open the
 C feedback box with call to feedbox, passing it the initial
@@ -8841,8 +8837,6 @@ C and returns the vector VECOUT.  If IERR is < 0 then a fatal error.
 C ********************* VECPLN
 C VECPLN returns the point of intersection X,Y,Z between a line defined
 C by X1,Y1,Z1 & X2,Y2,Z2 and a plane defined in PEQN.
-C IERR is -1 if denominator is close to zero or negative.
-C IERR is 0 if no problem found.
       SUBROUTINE  VECPLN(X1,Y1,Z1,X2,Y2,Z2,PEQN,X,Y,Z,IERR)
       DIMENSION  PEQN(4)
 

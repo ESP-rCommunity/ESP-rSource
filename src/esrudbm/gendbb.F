@@ -51,6 +51,9 @@ C Read a generic ascii db.
       subroutine eragdb(itrc,IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
@@ -755,6 +758,9 @@ C ************* LSTCAT
 C LSTCAT lists one category from common block data.
       subroutine lstcat(itru,icl,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/gendb3/irscat(MGCL),nbcatdoc(MGCL),nbcatit(MGCL)
       common/gendb4/cattag(MGCL),cattype(MGCL),catmenu(MGCL),
      &              catdate(MGCL),catdoc(5)
@@ -1096,6 +1102,9 @@ C     are filled by the user when editing and at as substitutes.
 
       subroutine mkagdb(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1485,6 +1494,9 @@ C recongdb reconfigure a generic db (change its length) via exporting to ascii
 C and re-importing. If no errors it exits with IFB still open.
       subroutine recongdb(IAF,IFB,LFB,idbh,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
 
@@ -1797,6 +1809,9 @@ C ************* SCANDB
 C SCANDB Open and check a generic binary db.
       subroutine scandb(IFB,LGENDB,db,idbh,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons: file log, list of db, current classifications,
@@ -2114,6 +2129,9 @@ C ************* REPGDB
 C REPGDB Read a generic binary db and writes out an ascii report.
       subroutine repgdb(itrc,itu,IFB,BFIL,idbh,ICATSEL,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/exporttg/xfile,tg,delim
 
@@ -2308,6 +2326,9 @@ C types (e.g. ALL shows all, MATLCA shows only material impacts).
       subroutine selcat(IFB,idbh,ctype,itwhich,icwhich,IER)
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2444,6 +2465,9 @@ C Itwhich is the index of the db item selected.
       subroutine selitem(IFB,idbh,itwhich,ic,IER)
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)

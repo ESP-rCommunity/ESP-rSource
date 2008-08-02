@@ -41,6 +41,9 @@ C   control information to the configuration control file.
 #include "esprdbfile.h"
 
       PARAMETER  (MC=35)
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -273,6 +276,8 @@ C a fresh ASCII version file.
       SUBROUTINE  EDPROF(ITM,NFLAG,asciupdate,IER)
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
@@ -608,6 +613,8 @@ C LPRFDB,IPRODB (for event profile database)
 
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
@@ -703,6 +710,8 @@ C TROPRO creates an ASCII profiles db from the binary profiles db.
       SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)

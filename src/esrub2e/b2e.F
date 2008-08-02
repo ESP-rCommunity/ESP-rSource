@@ -28,6 +28,9 @@ C *********************************** B2E ******************************
 
       PROGRAM B2E
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS

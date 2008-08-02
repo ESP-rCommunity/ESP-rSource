@@ -1142,6 +1142,8 @@ C connections and containments.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -1227,6 +1229,8 @@ C    mode = 2 : Read data pointers only.
 
 #include "plant.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
@@ -1238,21 +1242,11 @@ C    mode = 2 : Read data pointers only.
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      LOGICAL OK,dok,unixok
+      LOGICAL OK,dok
       CHARACTER*25 ZDESC
-      character h*72,buffer*72,ltmp*72,fs*1
-      integer lndbp   ! for length of standard database path
-      character lltmp*144  ! to re-create plant database file name with path
+      character h*72,buffer*72,ltmp*72,lltmp*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.
@@ -1288,26 +1282,14 @@ C name with the full path.
         CALL EASKF(lltmp,'Plant component database file name? ',' ',
      &    96,DPCDB,' Database name ',IER,7)
       endif
-      
-C Figure out local or standard database folder.
-      call findwhichdbpath('pdb',lltmp,ier)
-      lndbp=lnblnk(standarddbpath)
 
 C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
 C 'irecln' is defined in 'plantdf.h'. If plant template file unit has
-C not been set use the unit from the event profiles database. Use
-C same opening logic as in eddb.F and moplnt.F
+C not been set use the unit from the event profiles database.
          if(ipcdb.eq.0)ipcdb=iprodb
-         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-           lltmp=LPCDB
-         elseif(ipathoptdb.eq.2)then
-           write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
-     &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
-         endif
-	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
-C         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
+         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then

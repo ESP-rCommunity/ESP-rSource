@@ -5798,6 +5798,8 @@ C reverts to a CAV system using reheat for heating mode.
 C << the energy balance reported in esrures is off a bit >>
       SUBROUTINE BCL22
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

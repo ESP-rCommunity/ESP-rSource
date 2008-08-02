@@ -37,6 +37,8 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 
       subroutine inscon(icomp,icstat,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C   ntmc & nwins: the number of insolation sources (i.e. external
 C                 and transparent surfaces); the latter is held
@@ -111,7 +113,7 @@ C If no insolation sources return from inscon.
     
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
-   11 icont=0
+      icont=0
       do 70 i=1,nzsur(icomp)
          if(isc(i).eq.1)icont=1
    70 continue

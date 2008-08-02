@@ -692,6 +692,8 @@ C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
       SUBROUTINE VSB3D(ISBHL)
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -719,7 +721,7 @@ C Check in graphics mode.
 
       if(NSB(ICFD).eq.0) return
 
-C Draw round solid boundaries and label.
+C Draw round solid boundaries and last character of label.
       do 70 Isbn=1,NSB(ICFD)
         write (outs,'(i10)') abs(IWSB(Isbn,ICFD))
         write (LLOCAT,'(a)') outs(lnblnk(outs):lnblnk(outs))
@@ -945,6 +947,8 @@ C ********************* VAO3D *********************
 C VAO3D - draws the air openings - highlighting the chosen one.
       SUBROUTINE VAO3D(IOPENHL)
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -973,7 +977,7 @@ C Check in graphics mode.
 
       if(NOPEN(ICFD).eq.0)return
 
-C Draw round solid boundaries and label.
+C Draw round solid boundaries and last character of label.
       do 70 Iaop=1,NOPEN(ICFD)
         write (outs,'(i10)') IWOPEN(Iaop,ICFD)
         write (LLOCAT,'(a)') outs(lnblnk(outs):lnblnk(outs))

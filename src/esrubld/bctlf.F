@@ -37,6 +37,8 @@ C is read from the system control strategy file.
 #include "plant.h"
 #include "net_flow.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil

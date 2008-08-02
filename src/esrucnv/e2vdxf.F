@@ -25,6 +25,8 @@ C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2vdxf(itrc,incobs,ichop)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -393,9 +395,9 @@ C If a triangular surface duplicate the 4th corner.
 C More complex shape - write as a 3DPOLY with VERTEX.
             WRITE(ioout,"('POLYLINE',/,'  8')")
             if(SOTF(isf).eq.'TRAN')then
-              WRITE(ioout,'(A4,a)') 'TRN_',ZN(:lnblnk(ZN))
+              WRITE(ioout,'(A4,a)') 'TRN_',ZN(1:lnblnk(ZN))
             else
-              WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
+              WRITE(ioout,'(A)') ZN(1:lnblnk(ZN))
             endif
             WRITE(ioout,'(A)')' 66'
             WRITE(ioout,'(A)')'     1'
@@ -406,7 +408,7 @@ C More complex shape - write as a 3DPOLY with VERTEX.
             DO 311 ibsv=1,iv
               WRITE(ioout,'(A6)')'VERTEX'
               WRITE(ioout,'(A)')'  8'
-              WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
+              WRITE(ioout,'(A)') ZN(1:lnblnk(ZN))
               ii=JVN(isf,ibsv)
               WRITE(ioout,'(a)') ' 10'
               WRITE(ioout,'(f9.1)')X(ii)*1000.

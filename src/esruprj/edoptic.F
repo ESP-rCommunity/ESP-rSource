@@ -42,6 +42,8 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -57,22 +59,22 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*144,tg*1,delim*1
+c      character fs*1
       character OUTSTR*124,lfil*72,word*24,outs248*248
-      character lworking*144,fs*1
+c      character lworking*144
       dimension RVA(20),IVA(24)
 
       logical moddb,browse,OK,DOK,edt
-      integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
-      logical unixok  ! to check for database path file separators
+c      integer lndbp   ! for length of standard database path
+c      logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
+c      call isunix(unixok)
+c      if(unixok)then
+c        fs = char(47)
+c      else
+c        fs = char(92)
+c      endif
 
       IER=0
       moddb = .false.
@@ -463,19 +465,23 @@ C Check the value of whichdbpath variable to see what to do with
 C this file. If local or absolute path then use efopseq. If in
 C the standard location then create lworking which has path
 C prepended.
-      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+
+C << comment out ipathoptdb because data structure is not implemented
+C << in this revision of esruprj
+
+C      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         CALL EFOPSEQ(IOPTDB,LOPTDB,1,IER)
         loptdbl=LOPTDB
-      elseif(ipathoptdb.eq.2)then
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    loptdb(1:lnblnk(loptdb))
+C      elseif(ipathoptdb.eq.2)then
+c        lndbp=lnblnk(standarddbpath)
+c        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+c     &    loptdb(1:lnblnk(loptdb))
 
 C Debug.
-        write(6,*) 'EDOPT working optics ',lworking
-        CALL EFOPSEQ(IOPTDB,lworking,1,IER)
-        loptdbl=lworking
-      endif
+c        write(6,*) 'EDOPT working optics ',lworking
+C        CALL EFOPSEQ(IOPTDB,lworking,1,IER)
+C        loptdbl=lworking
+C      endif
 
       CALL EFDELET(IOPTDB,ISTAT)
       ioptl=ioptdb
@@ -602,6 +608,9 @@ C ******************* EDITOPT
 C EDITOPT edits one set of optical properties via common block. 
       SUBROUTINE EDITOPT(IW,GTYPE,GDESCR,edited,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -980,6 +989,7 @@ C EMKOPTD writes a item to the glazing optical database. Assumption
 C that file has already been opened.
       SUBROUTINE EMKOPTD(ITOPT,GTYPE,GDESCR,IER)
 #include "building.h"
+      integer lnblnk  ! function definition
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
       CHARACTER GTYPE*12,GDESCR*36
 
@@ -1106,6 +1116,9 @@ C ************* IMPOPT
 C IMPOPT reads in an optical report from Window 4.1 or 5.1 or 5.2.
       SUBROUTINE IMPOPT(iwin4,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -1318,6 +1331,9 @@ C ************* IMPWIS
 C IMPWIS clears common block GOPTED and sets it up for a new set.
       SUBROUTINE IMPWIS(iwis,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
@@ -1512,6 +1528,9 @@ C optic properties. These are usually the result of measurements.
 #include "esprdbfile.h"
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
+      
+C      integer lnblnk  ! function definition
+
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

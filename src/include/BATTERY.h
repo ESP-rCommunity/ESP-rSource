@@ -34,20 +34,61 @@ C-------------------------------------------------------------------------------
 C Declaration of variables as common
 C---------------------------------------------------------------------------------
       common/BATTERY_STATE/
+     & abuseFlag,
+     & activeBatLifeControl,
      & batTFin,
      & batDODFin,
+     & batLifeUsed,
+     & cumBatLifeUsed,
+     & lifeUseFactor,
+     & mandChargeCycle,
+     & mandChargePhase,
+     & mandChargePhaseIncrease,
+     & timeSinceLastFullCharge,
      & nPreviousTS,
-     & batCurrent,
      & batDemandP
 
 C---------------------------------------------------------------------------------
 C Declaration of variable type and definition
 C---------------------------------------------------------------------------------
-C Battery temperature (°C)
+C Flag indicating whether battery is being abused
+C (by not performing full charge cycles regularly)
+      INTEGER abuseFlag
+
+C Flag for active battery life control (-)
+      INTEGER activeBatLifeControl 
+C       activeBatLifeControl = 0 : no active battery life control
+C       activeBatLifeControl = 1 : active battery life control
+
+C Battery temperature (C)
       REAL batTFin
 
 C Battery Depth Of Discharge (%)
       REAL batDODFin
+
+C Batery life used during the last time step (years)
+      REAL batLifeUsed
+
+C Cumulative battery life used (years)
+      REAL cumBatLifeUsed
+
+C Factor describing dominant battery life use in a time step
+C       lifeUseFactor = 1 : battery life is determined by float life
+C       lifeUseFactor = 2 : battery life is determined by cycle life
+C       lifeUseFactor = 3 : battery life is determined by bad treatment
+      INTEGER lifeUseFactor
+
+C Flag indicating that mandatory charge cycle is to be started or continued
+      INTEGER mandChargeCycle
+
+C Phase of mandatory charge cycle
+      INTEGER mandChargePhase
+
+C Flag indicating battery to go into next phase of mandatory charge cycle
+      INTEGER mandChargePhaseIncrease
+
+C Time elapsed since the last time the battery was fully charged
+      REAL timeSinceLastFullCharge
 
 C--------------------------------------------------------------------------------
 C Number of the time step the last time the routine was called
@@ -55,12 +96,20 @@ C If the time step value is not equal to the previous value -> time step changed
       INTEGER nPreviousTS
 
 C--------------------------------------------------------------------------------
-C Battery Current(Amp) -> want the battery current to be initialised to its value at the last time step
-C chances are the current wont change very suddendly -> faster convergence most of the time
-      REAL batCurrent  
-
-C--------------------------------------------------------------------------------
 C Battery demand 
 C + Discharge -> energy demanded by system to the battery
 C - Charge -> energy provided by system to the batter
       REAL batDemandP
+
+C   Faraday constant
+      REAL Faraday_constant
+      PARAMETER (Faraday_constant = 96485.)
+
+C   Standard potential of Vanadium Redox Battery (VRB), V
+      REAL VRB_E0
+      PARAMETER (VRB_E0 = 1.259)
+
+C    Gas constant
+      REAL gas_constant
+      PARAMETER (gas_constant = 8.314)
+

@@ -5,6 +5,8 @@ C Write IPV data to an external file or within cfg file based
 C on the parameter act (3 char) ='ipv' or ='cfg'
       subroutine mkipvdat(ifu,file,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C ipvform = 1 report is human readable text, 2 is tab separated, 3 is java
       common/IPVFORMAT/ipvform,ipvversion
@@ -272,6 +274,8 @@ C Clear IPV common blocks. If act = 'b' blank all the data, if act = 'i'
 C then include initial data for energy demand sets and metrics.
       subroutine clearipvdat(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -398,6 +402,8 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       subroutine ripvdat(ifu,file,act,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
 C           3 is java
@@ -697,6 +703,8 @@ C Where act='a' list all, act='m' list metrics, act='d' list
 C demand sets. Itru is the channel for listing.
       subroutine listipvdat(itru,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 

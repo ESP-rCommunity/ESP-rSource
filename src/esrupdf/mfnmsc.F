@@ -294,7 +294,7 @@ C LAPRES,IAPRES (for window pressure databases)
       if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
         lapres=lltmp
       endif
-
+      
       h(1)='This file is assumed to exist. '
       ltmp=lafres
       CALL EASKS(ltmp,' Mass flow simulation results file ? ',

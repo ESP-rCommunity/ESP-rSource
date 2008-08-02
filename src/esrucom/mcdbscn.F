@@ -36,6 +36,8 @@ C        the routine.
 
 #include "building.h" 
 #include "power.h" 
+      
+      integer lnblnk  ! function definition
 
       COMMON/MCMPDBNAM/MCMPDBFL
       COMMON/FILEP/IFIL

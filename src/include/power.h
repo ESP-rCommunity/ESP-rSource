@@ -23,7 +23,7 @@ C The maximum number of connected hybrid nodes and data items
 C The maximum number of connected power components and data items
       INTEGER MPOWCOM,MPWDAT,MPCDS
       PARAMETER (MPOWCOM=30)
-      PARAMETER (MPWDAT=50)
+      PARAMETER (MPWDAT=75)
       PARAMETER (MPCDS=30)
 
 C The maximum number of connecting components and data items

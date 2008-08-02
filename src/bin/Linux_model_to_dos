@@ -47,8 +47,7 @@ foreach i ( `ls -d cfg zones nets ctl doc` )
         echo "*" Checking back slash in file $j >>../mprogress
         sed 's/[/]/\\/g' $j > $j-tf1        
         sed 's/\\usr/c:\\/g' $j-tf1 > $j-tf2       
-        todos $j-tf2
-        mv $j-tf2 $j
+        fromdos -u $j-tf2 $j
         rm -f $j-tf1 $j-tf2
         echo "$j  finished"
       endif
@@ -71,8 +70,7 @@ foreach i ( `ls -d dbs databases` )
         echo "*" Checking back slash in file $j >>../mprogress
         sed 's/[/]/\\/g' $j > $j-tf1        
         sed 's/\\usr/c:\\/g' $j-tf1 > $j-tf2       
-        todos $j-tf2
-        mv $j-tf2 $j
+        fromdos -u $j-tf2 $j
         rm -f $j-tf1 $j-tf2
         echo "$j  finished"
       endif

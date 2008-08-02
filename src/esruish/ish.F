@@ -94,6 +94,8 @@ C IEEE callback (Solaris)
       integer SIGFPE_bps      
 #endif
 #endif
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/tracech/icout
@@ -499,8 +501,8 @@ C Open core of databases if not already done so.
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
               continue
             else
-              call opendb(ier)
-              if(ier.ne.0)then
+              call opendb(iier) ! return different error state for db.
+              if(iier.ne.0)then
                 call usrmsg('Possible problem with the Constructions',
      &               'or Optical Properties db.','W')
               endif
@@ -837,8 +839,8 @@ C GTK version will be returning the name with the full path.
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
               continue
             else
-              call opendb(ier)
-              if(ier.ne.0)then
+              call opendb(iier) ! return different error state for db.
+              if(iier.ne.0)then
                 call usrmsg('Possible problem with the Constructions',
      &               'or Optical Properties db.','W')
               endif
@@ -1388,6 +1390,8 @@ C  ifstat = 8  new file filled via import of ascii file
 
       subroutine shdprb(itc,silent,icomp,ifstat)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
@@ -1558,6 +1562,8 @@ C older ascii materials file to fill the materials data arrays.
 
       subroutine opendb(ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -1575,6 +1581,7 @@ C Material data arrays.
       DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
+      integer nclass  ! number of material classifications
 
       IER=0
 

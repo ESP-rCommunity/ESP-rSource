@@ -1348,6 +1348,8 @@ C list out the zone/loop associations.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)

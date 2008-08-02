@@ -107,6 +107,8 @@ C definition.
 
       SUBROUTINE ELECNET
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -1424,7 +1426,8 @@ C 'CPY' - copy a node in the current list.
 #include "power.h"
 #include "plant.h"
 #include "building.h"
-
+      
+      integer lnblnk  ! function definition
 
 C Commons
       COMMON/POPHELP/H(60)
@@ -2701,6 +2704,8 @@ C 'CPY' - copy a power component.
       SUBROUTINE EDEPOW(MODE,IPOW)
 
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)  
@@ -3198,6 +3203,8 @@ C 'CPY' - copy a connection.
       SUBROUTINE EDECNC(MODE,ICNC)
 
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -3523,6 +3530,9 @@ C 'CPY' - copy a connection.
       SUBROUTINE EDECON(MODE,ICON)
 
 #include "power.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
 
@@ -3855,6 +3865,8 @@ C voltage values on either side of the node are the same.
 
 #include "power.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Commons
       COMMON/POPHELP/H(60)

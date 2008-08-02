@@ -36,6 +36,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN

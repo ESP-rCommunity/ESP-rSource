@@ -28,6 +28,8 @@ C converts into viewing coords, clips the image and draws it.
       SUBROUTINE DRAWESP(ITRC,ier)
 #include "building.h"
       PARAMETER  (MPL = 200 )
+      
+      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

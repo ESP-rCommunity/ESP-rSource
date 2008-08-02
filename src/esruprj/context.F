@@ -31,9 +31,10 @@ C EDSITE Edits site/general information for system configuration file.
 C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
 #include "building.h"
+#include "tdf2.h"
 #include "sbem.h"
-#include "roam.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/FILEP/IFIL
@@ -147,7 +148,7 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      ITEMS(8) =                'g calendar (holidays)            '                   '
+      ITEMS(8) =                'g calendar (holidays)            '
       ITEMS(9) =                'h building address               '
       ITEMS(10)=                'i client address                 '
       ITEMS(11)=                'j simulationist address          '
@@ -909,6 +910,8 @@ C function of time. Important variables are defined in roam.h
       SUBROUTINE ROAMING
 #include "building.h"
 #include "roam.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
@@ -1010,6 +1013,8 @@ C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1213,6 +1218,9 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1222,11 +1230,8 @@ C temporal data to be associated with a model.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS) 
+     &          SUSE(MS,2),SPARENT(MS)
      
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)  
-
 C TDF related.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1255,8 +1260,6 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character zname*12,zdesc*64,OUTSTR*124,HDR*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1959,8 +1962,8 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=5.0
-              cm(3)=6.0
+              cm(2)=4.0
+              cm(3)=5.0
             endif
 
             ibsn(ispl,1)=IC
@@ -2230,7 +2233,6 @@ C radiation data can be added based on the same structure).
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
           endif
-                  
           if(itro.eq.2)then
             dok=.false.
             h(1)='If you want to continue adding temporal refences '
@@ -2505,6 +2507,9 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       subroutine calenmanage(act,ier)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3406,6 +3411,8 @@ C EDDGTP Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN

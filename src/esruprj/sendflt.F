@@ -29,6 +29,8 @@ C SDDFLT001 set defaults based on material type.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -62,6 +64,7 @@ C Define material types.
 C Set default values of material type.
       do 10 I=1,30
         MATTYPE(I)=1
+        ICLN(I)=0
  10   continue
 
 C Set default uncertainties.

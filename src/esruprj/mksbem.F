@@ -33,6 +33,9 @@ C sbmedit define high level data associated with UK NCM methodology.
 #include "building.h"
 #include "sbem.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL      
       common/pophelp/h(60)
@@ -138,7 +141,7 @@ C For tdf to call arlist:
       DIMENSION COLUMNWRITE(MTABC)
       REAL COLUMNWRITE
       REAL val_converted
-      integer iloc1,iloc2,iloc3,iloc4,iloc5,iloc6  !for writing tdf location data in the file
+      integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
             
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1262,7 +1265,6 @@ C the do while loop finished.
         iloc3=0
         iloc4=0
         iloc5=0
-        iloc6=0
         znctldoc='Specific controls for UK NCM activities '
         ncf=icountnotequal
         ICTLF=IFIL+1
@@ -1309,7 +1311,6 @@ C Get first the location of the columns to use the right data during simulation
           iloc3=5*(i-1)+3
           iloc4=5*(i-1)+4
           iloc5=5*(i-1)+5
-          iloc6=5*(i-1)+6                        
           WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*items'
           WRITE(iafil,'(2a,i4)',IOSTAT=ios,ERR=101) '*tag',tab,
      &          iforuseintdfentry(i)
@@ -1603,6 +1604,9 @@ C model.
 #include "building.h"
 #include "sbem.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -3482,6 +3486,9 @@ c      BER=0.
 c        BER=BER+HEATREL(ICOMP)*FUELCO2(IFTYP(ICOMP))/HGEF(IHLZ(ICOMP))+
 c     &      COOLREL(ICOMP)*FUELCO2(IFTYP(ICOMP))/HGEF(IHLZ(ICOMP))
  100  CONTINUE
+      IF(IER.EQ.0)THEN
+        RETURN  ! SOMETHING WRONG HAS OCCURED
+      ENDIF
       RETURN
       END
 

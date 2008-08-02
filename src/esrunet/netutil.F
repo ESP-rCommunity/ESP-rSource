@@ -284,6 +284,7 @@ C the string.
 C Useful for parsing compound names.  Note to keep from 
 C overwriting the string passed, deal with a copy.
       SUBROUTINE GETUTOKENS(A,sep,IW,WORDS)
+      integer lnblnk  ! function definition
       CHARACTER*(*) A
       CHARACTER*32 WORDS(12)
       CHARACTER B*124,C*1,sep*1
@@ -343,6 +344,7 @@ C removepad takes any initial blanks from string strin.
 C ISWD is the length of the resulting string fstr. It is
 C assumed that each string is the same length.
       SUBROUTINE removepad(cstr,FSTR,ISWD,IFLAG)
+      integer lnblnk  ! function definition
 
       CHARACTER*(*) cstr,FSTR
       IFLAG=0
@@ -368,6 +370,8 @@ C Check for duplicate icon names (against the name of icon
 C index icn).
       subroutine dupicname(icn)
 #include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),

@@ -116,7 +116,7 @@ skip_ish_calcs="no"        # Skip update of exemplar shading files?
 
 # Buildable targets:
 programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
-# (bld, plt, net and vww are not currently built)
+# (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -1513,15 +1513,15 @@ echo " Installing ESP-r system. This may take some time."
   echo "C      URL commented out, as it likely exceeds g77's  "           >> ${SRCdir}/include/build_info.h 
   echo "C      72 character-per-line limit."                              >> ${SRCdir}/include/build_info.h 
   
-  echo "C      cURL      = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
-  echo "       cSource   = \"$source\""                          >> ${SRCdir}/include/build_info.h 
-  echo "       cBranch   = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
-  echo "       cRevision = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
-  echo "       cState    = \"${state}\""                          >> ${SRCdir}/include/build_info.h 
+  echo "C      cURL              = \"${URL}\""                            >> ${SRCdir}/include/build_info.h 
+  echo "       cSource           = \"$source\""                          >> ${SRCdir}/include/build_info.h 
+  echo "       cBranch           = \"$branch_name\" "                     >> ${SRCdir}/include/build_info.h 
+  echo "       cRevision         = \"$revision_number\""                  >> ${SRCdir}/include/build_info.h 
+  echo "       cState            = \"${state}\""                          >> ${SRCdir}/include/build_info.h 
   # Add compilers, x-libraries & xml/xsl status
-  echo "       cCC       = \"$CC\""                               >> ${SRCdir}/include/build_info.h 
-  echo "       cFC       = \"$FC\""                               >> ${SRCdir}/include/build_info.h 
-  echo "       cCPL      = \"$CPL\""                              >> ${SRCdir}/include/build_info.h 
+  echo "       cCC               = \"$CC\""                               >> ${SRCdir}/include/build_info.h 
+  echo "       cFC               = \"$FC\""                               >> ${SRCdir}/include/build_info.h 
+  echo "       cCPL              = \"$CPL\""                              >> ${SRCdir}/include/build_info.h 
   if [ "$xml_support" = "yes" ]; then
     echo "       cXML_support      = \"supported\""                       >> ${SRCdir}/include/build_info.h 
   else

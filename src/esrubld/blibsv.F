@@ -332,6 +332,8 @@ c save set.
       SUBROUTINE MZLS2
 #include "building.h"
 #include "uncertainty.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

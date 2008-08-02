@@ -93,6 +93,8 @@ C conversion to the 'G1' format takes place.
 
 C espriou.h provides current file.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
@@ -956,6 +958,8 @@ C with user before overwriting.
 
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1188,6 +1192,8 @@ C       +ve).
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -2086,6 +2092,8 @@ C geometry file.
       SUBROUTINE GEOWRITE(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
 C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
@@ -2712,6 +2720,8 @@ C of information currently in Common blocks G0 G6 G7 G20.
 C If context is .true. then give verbose description of the boundary.
       SUBROUTINE SURINFO(ICOMP,ITRU,context)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/SFIG/NSIGFIG
 
@@ -2820,6 +2830,9 @@ C the connections file).
 
       SUBROUTINE OTHERINFO(izone,isurf,OTHSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2899,6 +2912,8 @@ C (G7,PREC2,PREC2,PREC17,C20,C24) have been filled. It does not
 C require a recent scan of zone geometry.
       SUBROUTINE ZINFOREP(itu,icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/SFIG/NSIGFIG
@@ -3267,6 +3282,8 @@ C in the current zones common blocks.
 C act is '-' derive geometric data or 'c' also determine parent
       subroutine suredgeadj(itrc,act,izone,ier)
 #include "building.h"
+      
+C      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3744,6 +3761,8 @@ C << zone geometry file if havec24 is true?
 
       SUBROUTINE ZDATA(ITRC,IER,NZONES,ISFSUM)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -4107,6 +4126,9 @@ C ZINDEX is passed a string (which might be a zone name or an index) and
 C returns an index to the matching zone.  If no match then returns 0. 
       SUBROUTINE ZINDEX(STRING,index)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -4182,6 +4204,9 @@ C it is unique (thus OK = TRUE) if duplicate then OK = FALSE.
 C If 'is' is passed as 0 then check all, otherwise exclude surface is. 
       SUBROUTINE SNAMDUP(STRING,icomp,is,ok)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -4217,6 +4242,9 @@ C surface index in the zone matches the name.
 C If 'is' is returned as 0 if no match. 
       subroutine matchsname(STRING,icomp,is)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -4247,6 +4275,9 @@ C lstsf is the list of surface indices, sdescr is the string returned
 C and length is its maximum length. 
       subroutine surlist(icomp,nbsur,lstsf,sdescr,length,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)

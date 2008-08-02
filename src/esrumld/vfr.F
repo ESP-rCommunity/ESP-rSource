@@ -25,6 +25,9 @@ C writes the recovered data to array GOTDAT
 
 #include "building.h"
 #include "mould.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 

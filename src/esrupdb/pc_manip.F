@@ -86,6 +86,8 @@ C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
 #include "plantdb.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN

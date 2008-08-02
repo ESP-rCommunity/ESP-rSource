@@ -974,7 +974,7 @@ C Trace output
 C Now check if convergence has been stipulated for plant component
 C additional data arrays (PCdatf), and set call for iteration
 C if outside tolerance
-   33 IF ( .not. bIteration_Required ) THEN
+      IF ( .not. bIteration_Required ) THEN
 C Loop through components
 
         DO ii = 1, NPCOMP
@@ -1379,9 +1379,10 @@ C 1 node (ISV=20) PEM cogeneration fuel cell
      &           .OR. ITYPE .EQ. 89 ) THEN
 C 1-node electrolyzer / H2->electricity converter
             CALL  H2_Elec_converter( IPCOMP, OUT, ISTATS )
-         ELSE IF (ITYPE .EQ. 88 ) THEN
+         ELSE IF (ITYPE .EQ. 88 .or. 
+     &            ITYPE .EQ. 124     ) THEN
 C 1-node hydrogen compressor / decompressor
-            CALL H2_compressor_model(IPCOMP, OUT, ISTATS)
+            CALL H2_compressor_model( IPCOMP,iType, OUT, ISTATS )
          ELSE IF ( ITYPE .EQ. 101 ) THEN
 C 1-node hydrogen storage model
             CALL  H2_storage_model( IPCOMP, OUT, ISTATS )

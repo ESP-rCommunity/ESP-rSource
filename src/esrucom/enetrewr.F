@@ -101,6 +101,8 @@ C *********************************************************************
 #include "power.h"
 #include "espriou.h"
 C Common Blocks
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1009,7 +1011,9 @@ C *********************************************************************
       SUBROUTINE ENETWRITE
 
 #include "power.h"
-C
+      
+      integer lnblnk  ! function definition
+
 C Common Blocks
 
       COMMON/OUTIN/IUOUT,IUIN

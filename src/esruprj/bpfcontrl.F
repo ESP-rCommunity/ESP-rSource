@@ -44,6 +44,8 @@ C          block sctl to have been filled for the current period.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -4166,6 +4168,9 @@ C Edit flow control function II.
 #include "building.h"
 #include "net_flow.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 

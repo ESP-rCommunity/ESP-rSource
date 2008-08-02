@@ -38,6 +38,8 @@ C ixunit is the file unit number for the export file.
 C ixloc signals whether path will is local or remote and is passed back
 C   to common block for retention until the second call to ctlexp
       subroutine ctlexp(xfile,ixopen,ixloc,ixunit,tg,msg,IER)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -231,6 +233,8 @@ C msg (width variable) is prepended to dialog as export happens
 C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
 C ixunit is the file unit number for the export file.
       subroutine ctlexpmfs(xfile,ixopen,ixunit,ixpunit,tg,msg,IER)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

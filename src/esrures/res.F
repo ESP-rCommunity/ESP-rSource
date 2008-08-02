@@ -59,6 +59,8 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -700,6 +702,8 @@ C ***** imgdisp
 C If there are associated images for startup or at specific points
 C and the image browser has not been invoked do this now.
       subroutine imgdisp(iforce,focus,ier)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 C Images.

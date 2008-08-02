@@ -35,23 +35,23 @@ C defined in the operations files.
 C espriou.h provides currentfile.
 #include "espriou.h"
 #include "roam.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       CHARACTER OUTSTR*124
-      INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,IOS,K
+      INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,K
       LOGICAL GOON
-      integer lnblnk  ! function type
 
 C Read in file and initialise variables
       IPDR=0
       IDEL=0
       ILOC=0
-      IER=0
       IDEBUG=0
       IUF=IFIL+1
       GOON=.TRUE.
       CALL EFOPSEQ(IUF,LROAM,1,IER)
-      write(currentfile,'(A)',IOSTAT=IOS) LROAM(1:lnblnk(LROAM))
+      write(currentfile,'(A)') LROAM(1:lnblnk(LROAM))
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'Roaming file',IER)
 
 C Read version number (currently 0.1)
@@ -102,7 +102,7 @@ C Read start time of each period, location and day type
       END DO
 
 C Debug...
- 80   IF(IDEBUG.EQ.1)THEN
+      IF(IDEBUG.EQ.1)THEN
         WRITE(6,*)'version number = ',VERS
         WRITE(6,*)'Location Latitude Longitude'
         DO 1000 ILOC=1,NLOC
@@ -139,7 +139,6 @@ C espriou.h provides currentfile.
 
 C Set output channel
       IUF=IFIL+1
-      IER=0
       write(currentfile,'(A)',IOSTAT=IOS,ERR=1) LROAM(1:lnblnk(LROAM))
       CALL EFOPSEQ(IUF,LROAM,3,IER)
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'*version 0.1'

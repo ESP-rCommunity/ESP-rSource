@@ -75,6 +75,8 @@ C  ifstat = 5  error writing record 4 of file
 
       subroutine sifile(icomp,ifstat)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil

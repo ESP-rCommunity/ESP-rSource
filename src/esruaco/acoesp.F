@@ -34,6 +34,8 @@ C Open materials, constructions, multi-layer constructions and
 C optical properties databases.
       subroutine opendb(ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -232,6 +234,9 @@ C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80

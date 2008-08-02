@@ -256,6 +256,8 @@ C and the surrounding obstruction blocks.
 
       subroutine sitpln(icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin

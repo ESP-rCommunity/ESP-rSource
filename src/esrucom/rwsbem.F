@@ -39,12 +39,13 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
 
 C Note: when reading the SBEM database the code assumes that
 C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
-      common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
@@ -462,6 +463,9 @@ C fills relevant common blocks.
 #include "building.h"
 #include "sbem.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
 C espriou.h provides currentfile.
       common/FILEP/IFIL
       common/C1/NCOMP,NCON
@@ -650,6 +654,9 @@ C data relevant to the UK National Calculation Method.
       SUBROUTINE MKSBEM
 #include "building.h"
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       common/C21/IFCFG,cfgroot,LCFGF
       common/C1/NCOMP,NCON

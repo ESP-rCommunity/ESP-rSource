@@ -41,6 +41,9 @@ C database file and data structures. It should not be called if
 C the ascii based materials data structures are used.
       SUBROUTINE ELISTC(iwhich,chgdb,ACTION,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
@@ -502,6 +505,9 @@ C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTMAT(iwhich,chgdb,ACTION,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1243,6 +1249,9 @@ C EDONEMAT: Edits a material in the common block at array index index.
 C mod is returned as true if data has changed.
       SUBROUTINE EDONEMAT(ITRU,index,mod,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/pophelp/h(60)
 
       real matver
@@ -1749,6 +1758,8 @@ C id string.
 #include "building.h"
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
 C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
@@ -2364,6 +2375,9 @@ C << if needed.
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -3309,6 +3323,7 @@ C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
 #include "esprdbfile.h"
+      integer lnblnk  ! function definition
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
@@ -3379,6 +3394,8 @@ C in each zone, tareamlc is the total area of thie construction (weighted
 C so that partitions are counted as half area).
       subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)

@@ -31,6 +31,9 @@ C Scan list of climate databases and present selection to user.
 #include "epara.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -280,6 +283,9 @@ C ********* matchcdb
 C Scan list of climate databases for name and return database.
       subroutine matchcdb(idblfil,alias,clmdb,ier)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       dimension name(60)
@@ -392,6 +398,9 @@ C which might match the current database. Should be called if
 C the climate file was not selected via scan of climatelist.
       subroutine scancdblist(idblfil,clmdb,ok,ier)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       character*(*) clmdb
@@ -466,6 +475,9 @@ C  if 'u' then jump to 'useit' part of calling subroutine
 C  if 'e' then found 'end' so close unit number (92)
       subroutine itemclimatelist(idblfil,act,actreturn,clmdb,ier)
 C << clmdb might need to be a longer name >>
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 

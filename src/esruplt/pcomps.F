@@ -271,7 +271,6 @@ C radiant heating/cooling system
       ELSE IF(ITYPE.EQ.99) THEN
          CALL CMP99S(IPCOMP)
       ELSE IF(ITYPE.EQ. 87
-     &  .OR. ITYPE .EQ. 88
      &  .OR. ITYPE .EQ. 89
      &  .OR. ITYPE .EQ. 100
      &  .OR. ITYPE .EQ. 101
@@ -285,6 +284,10 @@ C radiant heating/cooling system
      &  .OR. ITYPE .EQ. 110 ) THEN
 C Generic syntax checker for coefficient generator
          CALL HVAC_model_static_temp(IPCOMP)
+      ELSE IF ( iType .eq. 88 .or. 
+     &          iType .eq. 124     )then
+C Hydrogen compressor static template
+         call H2_comp_static_template (iPComp)
       ELSE IF( ITYPE .EQ. 104 ) THEN
 C 3 node electrolyser_model
          CALL H2_electrolyser_static_temp(IPCOMP)

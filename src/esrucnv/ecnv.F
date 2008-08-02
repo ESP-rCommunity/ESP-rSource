@@ -36,6 +36,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -903,6 +905,9 @@ C **** wegeom
 C write esp geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1026,6 +1031,8 @@ C << to be done - include trace directive >>
       subroutine putcoods
 #include "building.h"
       parameter (MAXLAY = 80)
+      
+      integer lnblnk  ! function definition
 
       integer currlay, currcol, oldlay, oldcol
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -1166,6 +1173,8 @@ C Given a layer, return related zone (im), name (RZNAME), and
 C head of name (head).
       subroutine matchl(il,head,RZNAME,match,im)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
       COMMON/C1/NCOMP,NCON
@@ -1307,6 +1316,9 @@ C << to write only the header portion.
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

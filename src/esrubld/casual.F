@@ -727,6 +727,8 @@ C  FRAC : fraction of casual gain (returned value)
 
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/BTIME/BTIMEP,BTIMEF
 

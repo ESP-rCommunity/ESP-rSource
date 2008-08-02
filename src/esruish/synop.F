@@ -33,6 +33,8 @@ C a zone transitional shading file.
 
       subroutine shsynp(icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -204,9 +206,10 @@ C surface shading for each hour based on common block data.
 
       subroutine shadsynp(icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
-      common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
@@ -332,6 +335,8 @@ C Outputs information on internal surface insolation.
 C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
       subroutine insynp(icomp,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filech/ixopen,ixunit,ixpunit

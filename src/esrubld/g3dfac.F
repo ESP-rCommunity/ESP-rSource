@@ -385,6 +385,8 @@ C FLORDR re-orders the 3D files for a zone.
 C *********************************************************************
       SUBROUTINE FLORDR(IZ)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

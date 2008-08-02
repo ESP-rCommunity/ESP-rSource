@@ -286,7 +286,7 @@ C component type's control variable (IPCVR)
 
       character outs*124
       
-      logical pcfngn,svcfgr,close
+      logical pcfngn,svcfgr
       
       svcfgr=.false.
 
@@ -413,12 +413,7 @@ C Controller type 10, 11, 17 or 23: senses relative humidity (%).
          ELSE IF(ICLCTP.EQ.10.OR.ICLCTP.EQ.11.OR.ICLCTP.EQ.17.or.
      &           iclctp.eq.23) THEN
             PATMOS=1013.25
-            call eclose(CSVF(IN,2),0.00,0.01,close)
-            if(close)then
-	      SVCTL=0.0   ! trap for zero denominator
-            else
-              SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
-            endif
+            SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
 
 C Multisensor loop controller - do nothing here
          ELSEIF(ICLCTP.EQ.41)THEN

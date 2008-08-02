@@ -181,6 +181,8 @@ C default file names for databases
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
       PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       common/er1/ier1
@@ -262,7 +264,7 @@ C Material data arrays.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,h*72,spsname*8,L144*144,fs*1
+      CHARACTER outs*124,h*72,spsname*8,L144*144
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -274,7 +276,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll,close,unixok
+      logical dll,close
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -296,20 +298,10 @@ C Flag to enable inter-domain iteration
 
 C Status of multi-year climate database
       logical bMY_clm_err 
-      integer lndbp   ! for length of standard database path
-      character lltmp*144  ! to re-create plant database file name with path
 
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
 C Initialize the system variables.
       GAM=0.5
@@ -467,18 +459,11 @@ C Fluid flow simulation parameters if fluid flow network defined.
       if(iairn.ge.1.or.iflwn.eq.1) call mflwsu
 
 C Unless building only, plant matrix template setup & checks.
-C If plant component db file unit not set use iaprob. Work
-C with lltmp because the standard database path might be pre-pended.
+C If plant component db file unit not set use iaprob
+C <<< width of plant db 20???? >>>
       if(indcfg.ne.1) then
         if(ipcdb.eq.0)ipcdb=IAPROB
-        lndbp=lnblnk(standarddbpath)
-        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-          lltmp=LPCDB
-        elseif(ipathoptdb.eq.2)then
-          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
-     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
-        endif
-        call EFOPRAN(ipcdb,lltmp,20,1,IER)
+        call EFOPRAN(ipcdb,LPCDB,20,1,IER)
         call mzpmxt(ipcdb)
 
 C Default flag for plant<->electrical network interdomain iteration
@@ -1447,9 +1432,9 @@ C If BASESIMP foundation defined, read it in.
 C H2-dep_controller: start
 C Experimental Hydrogen controller. Use with caution
 C Residential hydrogen cogen : control file
-C      if ( iresh2ctl .eq. 1 ) then
-C         call RESH2_Ctl_Read
-C      endif
+      if ( iresh2ctl .eq. 1 ) then
+         call RESH2_Ctl_Read
+      endif
 C H2-dep_controller: end
 
 C If zone TMC file read it in.
@@ -1572,6 +1557,8 @@ C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
 #include "building.h"
 #include "MultiYear_simulations.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep

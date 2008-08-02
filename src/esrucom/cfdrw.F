@@ -27,6 +27,8 @@ C IUF unit number for CFD input file. IER=0 indicates no error.
       SUBROUTINE DFDSV(IUF,IZONE,IER)
 #include "building.h"
 #include "cfd.h"
+      
+C      integer lnblnk  ! function definition
 
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
@@ -495,6 +497,8 @@ C DFDREAD - Reads the CFD configuration file (version 2,2.1 and 2.2)
 #include "cfd.h"
 #include "net_flow.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Grid and Geometry definition:
 C   NREG(?,ICFD) - Number of regions in each direction(?: 1- x, 2- y, 3- z).
@@ -2403,6 +2407,8 @@ C (blockages are yet not considered) to be defined
 
       SUBROUTINE BCEKCK(ITRC)
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/OUTIN/IUOUT,IUIN

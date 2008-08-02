@@ -32,6 +32,8 @@ C TDFUPD: updates TDF file from an exchange file.
 #include "epara.h"
 #include "tdf2.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C The following parameters are defined as integers in epara.h:
 C CREATE,PREV,NEXT,EDIT,LIST,NONE

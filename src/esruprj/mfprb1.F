@@ -43,6 +43,8 @@ C fluid flow model description file.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1539,6 +1541,9 @@ C             connections between nodes I and J
       SUBROUTINE MFLDES(MOD,ICON)
 
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN

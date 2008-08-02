@@ -40,6 +40,9 @@ C an extrusion. IER=0 OK.
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -519,6 +522,9 @@ C ************* NEWZONE
 C NEWZONE controls the creation of a new zone. IER=0 OK. 
       SUBROUTINE NEWZONE(ITRC,IC,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -569,7 +575,7 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
- 293  H(1)='You may read in an existing ESP-r zone geometry file,'
+      H(1)='You may read in an existing ESP-r zone geometry file,'
       H(2)='convert a cflow3/IES zip file into one or more zones'
       H(3)='(i.e whole model conversion)or create a zone by inputing'
       H(4)='data related to primitive shapes.'
@@ -578,7 +584,7 @@ C Set folder separator (fs) to \ or / as required.
      &  INZOPT,48)
 
 C Input dimensions.
-      if(INZOPT.eq.1)then
+ 293  if(INZOPT.eq.1)then
 
 C Provide scratch description and the
 C default assumptions for other zone files.
@@ -986,6 +992,9 @@ C DELZONE systematicly removes a thermal zone.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1701,6 +1710,9 @@ C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -1823,6 +1835,8 @@ C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
       subroutine comissionish(iz,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
@@ -2121,6 +2135,8 @@ C Current functionality is to update the climate & site data.
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -2156,7 +2172,7 @@ C Passed in parameters.
       integer lnwg   ! length of weather ground string.
       integer igrfile ! unit number of ground file
       DIMENSION GVA(12)
-      
+
       IER=0
 
 C Determine operating system
@@ -2177,7 +2193,7 @@ C Debug
 C      write(6,*)  'action ',action,' ',root,' ',folder
 C      write(6,*)  'menu ',menu
 C      write(6,*)  'mpath ',mpath
-      write(6,*)  'weather ',weather
+C      write(6,*)  'weather ',weather
       if(action(1:3).eq.'new')then
         call pregist('sn',root,mpath,folder,menu,ier)
       elseif(action(1:6).eq.'within')then
@@ -2243,7 +2259,7 @@ C Also look in the folder where the model is being created.
           write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
           write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
      &      weathergr(1:lnwg)
-     
+
           CALL ERPFREE(ICLIM,ISTAT)
           CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
           if(ISTAT.ge.0)then
@@ -2398,6 +2414,9 @@ C IER=0 OK.
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 C#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/FILEP/IFIL
@@ -2450,8 +2469,7 @@ C =2 with more than 3 day types
       REAL ACI,ACV,TA
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
@@ -3105,11 +3123,13 @@ C and act on the information within the file.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
-      COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
+      COMMON/FILEP/IFIL
 
 C GREF    - External ground reflectivity.
 C GREF12  - (12) Monthly values of ground reflectivity

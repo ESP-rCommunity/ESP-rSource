@@ -46,6 +46,8 @@ C ICLIM,LCLIM (for climate file)
 #include "sbem.h"
 #include "roam.h"
       PARAMETER (MSTMC=20,MSGAL=40)
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -460,13 +462,13 @@ C Write databases related to this model.
 
 C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+c      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',
      &      LOPTDB(1:lnblnk(LOPTDB))
-      elseif(ipathoptdb.eq.2)then
-        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
-     &      LOPTDB(1:lnblnk(LOPTDB))
-      endif
+c      elseif(ipathoptdb.eq.2)then
+c        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
+c     &      LOPTDB(1:lnblnk(LOPTDB))
+c      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
@@ -499,13 +501,13 @@ C Multiyear climate database
 
 C Plant database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+c      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
-      elseif(ipathpcdb.eq.2)then
-        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
-     &      LPCDB(1:lnblnk(LPCDB))
-      endif
+c      elseif(ipathpcdb.eq.2)then
+c        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
+c     &      LPCDB(1:lnblnk(LPCDB))
+c      endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then
@@ -1188,6 +1190,9 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

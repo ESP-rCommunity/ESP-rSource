@@ -25,6 +25,8 @@ C an ascii file.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/c1/ncomp,ncon

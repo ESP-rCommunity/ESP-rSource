@@ -1845,15 +1845,9 @@ int  len;        /* len is length passed from fortran */
 void winfnt_(n)
  long int *n;
 {
- long int font_index;
-
  char *test = "_A_V_";
  int vfw,lt;
-
- font_index = *n;  /* cast to local variable */
- if(font_index>=10) font_index=1;  /* in case of 64 bit huge number */
- 
-  if( font_index == 0 ) {
+  if( *n == 0 ) {
     t0=(char *) getenv("EFONT_0");
     if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
       strcpy(font_0,"6x12");
@@ -1862,19 +1856,19 @@ void winfnt_(n)
     }
 /*    fst = XLoadQueryFont(theDisp,font_0); */
     fst = fst_0;
-  } else if( font_index == 1 ) {
+  } else if( *n == 1 ) {
 /*    fst = XLoadQueryFont(theDisp,font_1); */
     fst = fst_1;
-  } else if( font_index == 2 ) {
+  } else if( *n == 2 ) {
 /*    fst = XLoadQueryFont(theDisp,font_2); */
     fst = fst_2;
-  } else if( font_index == 3 ) {
+  } else if( *n == 3 ) {
 /*    fst = XLoadQueryFont(theDisp,font_3); */
     fst = fst_3;
-  } else if( font_index == 4 ) {
+  } else if( *n == 4 ) {
 /*    fst = XLoadQueryFont(theDisp,font_4); */
     fst = fst_4;
-  } else if( font_index == 5 ) {
+  } else if( *n == 5 ) {
 /*    fst = XLoadQueryFont(theDisp,font_5); */
     fst = fst_5;
   }
@@ -1884,7 +1878,7 @@ void winfnt_(n)
   f_lbearing = fst->max_bounds.lbearing;
   gcv.font = fst->fid;
   theGC = XCreateGC(theDisp,win, (GCFont | GCForeground | GCBackground), &gcv);
-  current_font = font_index;
+  current_font = *n;
 /* vfw and fst->max_bounds.width are the same for fixed width font, for proportional the vfw is less */
   lt = strlen(test);
   vfw = (XTextWidth(fst,test,lt)/lt);

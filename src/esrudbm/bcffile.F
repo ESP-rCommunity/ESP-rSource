@@ -31,6 +31,9 @@ C a bcf file. ilen is the number of constructions.
 C espriou.h provides currentfile.
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/C21/IFCFG,cfgroot,LCFGF
 

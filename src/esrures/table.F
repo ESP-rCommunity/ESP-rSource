@@ -208,6 +208,8 @@ C act='m' called from ipv metric with parameters already set.
 
       SUBROUTINE ZONTAB(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -544,6 +546,8 @@ C MGLTBL: monthly multi-column tabular listing for selected
 C gains and losses.
       SUBROUTINE MGLTBL
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT

@@ -250,6 +250,9 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1360,7 +1363,7 @@ C Set notional infiltration/air leakage to 10 m3/h/m2
 
 C If Occupancy fraction is 0 and zone temperature is greater
 C than setpoint+1oC, add 5 ach (according to UK NCM guidance)
-          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1
+          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
           call eclose(VAL(ISD),0.0,0.001,closeto0)
           if(closeto0.and.tfa(icomp).gt.rTempnotioOverheat)then
             ACH(ICOMP)=5
@@ -1624,7 +1627,7 @@ C No flow network.
       ENDIF
 
 C Determine XX3.
-   17 XX3=CVIF*TF+CVVFM*X
+      XX3=CVIF*TF+CVVFM*X
 
 C Save future-time values for use at next time-step.
   171 CVM(ICOMP)=CVVFM

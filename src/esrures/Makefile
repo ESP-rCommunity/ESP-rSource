@@ -162,5 +162,5 @@ clean:
 	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
-	psychro.F readTrnsys.F rwipv.F rwsbem.o sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	visgrd.F visual.F visvec.F TReports_dummy.F
+	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
+	visgrd.F visual.F visvec.F

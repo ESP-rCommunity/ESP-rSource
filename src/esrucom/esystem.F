@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 or later).
+C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -25,8 +25,6 @@ C  CONXINFO: returns an English description of the inter-connections
 C            in the configuration file. 
 C  HZSTOCON: Scans the current connections list and builds array
 C            IZSTOCN(MCOMP,MS) holding the connection index.
-C findwhichdbpath: takes a database file name and checks to see if
-C            the path is local or absolute or standard database folder.
 
 
 C ******************** ERSYS 
@@ -141,6 +139,8 @@ C espriou.h provides currentfile and defdbfl.
 #include "sbem.h"
 #include "roam.h"
       PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -465,7 +465,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
-      character lworking*144
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
@@ -500,9 +499,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character HDR*12
       character ipvact*3  ! to singnal internal or external IPV file
       logical newgeo  ! to use for testing if new/old geometry file.
-      integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
-      logical unixok  ! to check for database path file separators
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -540,7 +536,6 @@ C Clear the model common blocks.
       bidirfile='UNKNOWN'
       CALENAME='UNKNOWN'
       if(iutdf.eq.0)IUTDF=IFIL+7  ! set if not already done so.
-
 
 C Set flag indicating that solar radiation data is hour-centered (default)
 C Variable will be reset if 'slr_half_hr' included in .cfg
@@ -816,19 +811,11 @@ C If '* CONFIGURATION' found then read in the databases.
         endif
       endif
 
-C Read databases until '* PROJ LOG' found.  If starts with *std
-C then set the whichdbpath variable to signal that it is in
-C the standard location. If tag does not start with *std then
-C check the intial portion of the file name to see if it is
-C local or absolute and if absolute whether it matches the
-C standard path.
+C Read databases until '* PROJ LOG' found.
 
 C Note that some file names could be long strings
 C so LSTRIPC and LOUTSTR are used.
   44  continue
-      lndbp=lnblnk(standarddbpath)
-      call isunix(unixok)
-
       CALL LSTRIPC(IUC,LOUTSTR,99,ND,1,'db names',IER)
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
@@ -857,19 +844,8 @@ C climate database has been defined.
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
       elseif(WORD(1:4).eq.'*pdb')then
-        CALL EGETRM(LOUTSTR,K,lworking,'W','plant comp db',IER)
-
-C Process the file name folloing *pdb and depending on its path
-C set the LPCDB common block string via call to findwhichdbpath.
-        call findwhichdbpath('pdb',lworking,ier)
-
-C debug.
-        write(6,*) lworking
+        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant comp db',IER)
         write(6,*) lpcdb
-        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
-      elseif(WORD(1:7).eq.'*stdpdb')then
-        ipathpcdb=2  ! standard folder for plant template database
-        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
@@ -2694,6 +2670,9 @@ C SITEINFO provides an English description of the site information in
 C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
+      
+      integer lnblnk  ! function definition
+
       COMMON/C4/XLAT,XLON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -2762,6 +2741,9 @@ C if possible. If ICON=0 then generate a text heading.
 
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2925,98 +2907,4 @@ C Check if ianc is a known anchor and then if there is a list.
         ier=1
         return
       endif
-      end
-
-C ******* findwhichdbpath
-C findwhichdbpath takes a database file name and checks to
-C see if the path is local or absolute or standard database folder.
-C Depending on which database (the parameter topic) the
-C common block file string and whichdbpath variable is updated.
-C topic =  'opt' for optics, 'pdb' for plant component templates
-      subroutine findwhichdbpath(topic,file,ier)
-#include "esprdbfile.h"
-
-C Currently works with optical and plant template database.
-      character*(*) file
-      character topic*3 ! identify which type of database
-      integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
-      logical unixok  ! to check for database path file separators
-
-C Set OS and check that standarddbpath has been set.
-      lndbp=lnblnk(standarddbpath)
-      lnwkg=lnblnk(file)
-      if(lndbp.lt.1.or.lnwkg.lt.1)then
-        ier=2
-        return
-      endif
-      call isunix(unixok)
-      
-      if(unixok)then
-        if(file(1:7).eq.'../dbs/')then
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=1  ! local folder for optical database
-            write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=1  ! local folder for plant database
-            write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
-          endif
-        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
-
-C The initial part of the path matches so only save the file name w/o path.
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=2
-            write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=2
-            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
-          endif
-        else
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=0
-            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=0
-            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
-          endif
-        endif
-      else
-        if(file(1:7).eq.'..\\dbs\\')then
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=1  ! local folder for optical database
-            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=1  ! local folder for plant database
-            write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
-          endif
-        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=2
-            write(LOPTDB,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=2
-            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
-          endif
-        else
-          if(topic(1:3).eq.'opt')then
-            ipathoptdb=0
-            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'pdb')then
-            ipathpcdb=0
-            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
-          endif
-        endif
-      endif
-
-C Debug.
-      write(6,*) file
-      if(topic(1:3).eq.'opt')then
-        write(6,*) loptdb
-        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-      elseif(topic(1:3).eq.'pdb')then
-        write(6,*) LPCDB
-        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-      endif
-
-      return
       end

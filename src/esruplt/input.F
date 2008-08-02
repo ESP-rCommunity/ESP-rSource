@@ -40,6 +40,7 @@ C               network need not be matched
 #include "plant.h"
 #include "esprdbfile.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/ER1/IER1

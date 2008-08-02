@@ -37,6 +37,8 @@ C act='p' iget parameters already set.
 #include "building.h"
 #include "net_flow.h"
 C act='p' iget parameters already set.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1140,6 +1142,9 @@ C to graphical result display of network flows.
 
       SUBROUTINE MOMFGHED
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)

@@ -47,6 +47,8 @@ C HOT3000: Fuel cell.
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil

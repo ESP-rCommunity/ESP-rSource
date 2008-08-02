@@ -25,7 +25,8 @@ C Revised to take in configuration file and zone focus.
 #include "building.h"
 #include "esprdbfile.h"
 #include "espriou.h"
-
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE

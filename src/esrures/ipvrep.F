@@ -34,6 +34,8 @@ C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
@@ -1958,6 +1960,8 @@ C ********* mkannrep
 C Write IPV report based on description held in common.
       subroutine mkannrep(iier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
@@ -2615,6 +2619,9 @@ C << at some point include arrays for separate reporting of pumps and lifts. >>
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
+
 C Uncomment next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
 
@@ -2782,6 +2789,9 @@ C << at some point include additional arrays for pumps and lifts >>
 
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
       common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
@@ -2950,6 +2960,9 @@ C << at some point include additional arrays for pumps and lifts >>
 
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
       common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
@@ -3105,6 +3118,8 @@ C Note if Java IPV because different logic required.
       subroutine ipvgcmft(ifu,NH,ier)  
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
@@ -3545,6 +3560,8 @@ C Assign user-specified export file - checking if local or remote.
 C act = 'o' to open new file, act = 'a' to append to an existing
 C file. tg is a character T text or X tabular info being saved.
       subroutine ipvexp(xfile,ixopen,ixunit,act,tg,msg,IER)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3800,6 +3817,9 @@ C the type of data (diversified/diffuse/maximum/demand/etc.)
 C It returns the logical atreport to .true. if the correct
 C report line has been found.
       subroutine jumpreport(ifu,iindex,name,third,atreports)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
 
       character outstr*124,word1*20,word2*20,word3*20,third*20,name*12

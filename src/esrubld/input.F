@@ -106,6 +106,7 @@ C laprob  - fluid flow description file
 #include "esprdbfile.h"
       PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
+      integer lnblnk  ! function definition
 
       common/er1/ier1
       common/trc/itrc
@@ -1363,6 +1364,8 @@ C ********************** USESPS
 C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep

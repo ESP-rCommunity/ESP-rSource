@@ -1929,6 +1929,8 @@ C----------------------------------------------------------------------------
       integer icomp          
       integer ispmnod        !- special material node index
 
+      integer lnblnk         ! implicit function returning the length of a string
+
 C ESP-r COMMONs
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -2161,8 +2163,6 @@ C----------------------------------------------------------------------------
       logical bAngIncidence_found !- boolean used for interpolation
 
       real    X1, X2, Y1, Y2      !- variables used for interpolation calculations
-
-      integer lnblnk              ! implicit function returning the length of a string
 
       integer iNum_layers   ! number of layers in PV module surface
 

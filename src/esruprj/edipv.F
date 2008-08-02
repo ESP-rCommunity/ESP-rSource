@@ -38,6 +38,8 @@ C altered based on information held in IPV definition.
 #include "building.h"
 #include "uncertainty.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -286,6 +288,8 @@ C If act = 'i' then initialise variables.
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -397,7 +401,7 @@ C ITMM is menu for metric sets.
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF
       CHARACTER dmdsdesc*248,bdmds*72
-      character cfgroot*24,cr*24,t40*40,t72*72,t248*248
+      character cfgroot*24,t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
       character ipvadesc*40,t12*12,key*1
@@ -409,7 +413,6 @@ C If act = 'i' then initialise variables. Initial assumption
 C is for an annual assessment.
       t40=' '
       t72=' '
-      cr=cfgroot
       lr=lnblnk(cfgroot)
       simact='------'  ! to signal initial state of choice
 
@@ -1807,6 +1810,8 @@ C      ='i1d' initial default period ??
 #include "building.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -2141,6 +2146,8 @@ C << add logic to allow for two extreme seasons
 
       subroutine ipv2simpar(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -2321,6 +2328,8 @@ C << update logic to accept parameters for a silent use >>
       SUBROUTINE getmultip
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

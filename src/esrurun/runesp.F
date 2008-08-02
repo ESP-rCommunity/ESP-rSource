@@ -373,7 +373,7 @@ C << start up bps with -p directive...>>
 
 C **************** parse_oc
 C parse_oc reads the contents of the input file (LFILE) and generates
-C a silentread data structures.
+C silentread data structures.
 C parent action: 'create_silent' or 'create_model' or 'create_run_model'
       subroutine parse_oc(LFILE,parentaction,ier)
       integer MSZ   ! number of silent zones array sizes
@@ -501,7 +501,7 @@ C Determine operating system
       endif
 
 C Debug...
-      write(6,*) 'usrdir is ',odir
+C      write(6,*) 'usrdir is ',odir
 
 C Set logicals for locations of windows.
       glzin1 = .false.
@@ -663,7 +663,6 @@ C Try where-the-input-file is.
             endif
           endif
         endif
-
         goto 43
       elseif(WORD(1:7).eq.'*length')then
         CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
