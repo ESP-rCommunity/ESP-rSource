@@ -905,6 +905,7 @@ C Copy the default validation model.
       MODE='ALL '
       CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,ITRC,IER)
       NZONES=NCOMP
+      ISFSUM=0
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
       call eclose(gversion(IComp),1.1,0.01,newgeo)
       if(newgeo)then

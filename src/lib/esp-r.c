@@ -2421,10 +2421,10 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
    be appended to the pixmap. */
 void startbuffer_()
 {
-  fprintf(stderr,"new pixmap for graphic area %d %d \n",graphic->allocation.width,graphic->allocation.height); /* debug */
+/*  fprintf(stderr,"new pixmap for graphic area %d %d \n",graphic->allocation.width,graphic->allocation.height); debug */
   if (gr_image) {
     g_object_unref(gr_image);
-    fprintf(stderr,"unreferenced the pixmap\n"); /* debug */
+/*    fprintf(stderr,"unreferenced the pixmap\n"); debug */
   }
   gr_image = gdk_pixmap_new(graphic->window,
 			    graphic->allocation.width,
