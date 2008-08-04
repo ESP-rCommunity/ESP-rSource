@@ -29,6 +29,9 @@ C zph,zpc are zone heating/cooling capacities.
 C tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE MZOUT6
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+      
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
       COMMON/FILEP/IFIL   

@@ -28,6 +28,8 @@ C ******* Translate esp data to tsbi3 file geom and materials.
       SUBROUTINE e2tsbi3(itrc,incobs,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -618,6 +620,9 @@ C Open the common databases - materials, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -721,6 +726,8 @@ C creates a grey-scale VRML 2.0 world.
       SUBROUTINE e2vrml(itrc,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

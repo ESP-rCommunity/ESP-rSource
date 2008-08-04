@@ -28,6 +28,9 @@ C Assumes that current database is open on unit IFB.
 #include "epara.h"
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -447,6 +450,8 @@ C   IEXP = 99 check number of items and return in ITEMS
  
       SUBROUTINE ELSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       CHARACTER*600 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
@@ -538,6 +543,9 @@ C and the messages will appear in a dialogue box at the bottom of the
 C graphic window. The user must have previously called open_msg_box(2).
  
       SUBROUTINE ELUSRMSG(MSG1,MSG2,LEVEL)
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       CHARACTER*(*) MSG1,MSG2
@@ -648,6 +656,7 @@ C ELCHITMS checks an extremely long character string (A), returning the number o
 C items (IW) separated by ' ' tab or ','.  Note to keep from 
 C overwriting the string passed, deal with a copy.
       SUBROUTINE ELCHITMS(A,IW)
+      integer lnblnk  ! function definition
       CHARACTER*(*) A
       CHARACTER B*600,C*1
 

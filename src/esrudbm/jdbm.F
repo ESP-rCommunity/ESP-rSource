@@ -35,6 +35,8 @@ C providing paramaters MGDB,MGCL,MGIT
 
 #include "espriou.h"
 C espriou.h provides currentfile and defdbfl.
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -819,6 +821,7 @@ C **** itemtag returns a 12 character unique item name given a root name
 C and an index.
       character*12 function itemtag(root,index)
       character*(*) root
+      integer lnblnk  ! function definition
       itemtag=' '
       lr=lnblnk(root)
       if(index.le.9)then
@@ -850,6 +853,9 @@ C and return selected dbtype (string), status (logical) and hash
 C position.
       subroutine pkavailgbd(seldb,status,idbhash)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
@@ -950,6 +956,9 @@ C ier returned as non-zero if a problem in scanning files.
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -1485,6 +1494,8 @@ C ***** imgdisp
 C If there are associated images for startup or at specific points
 C and the image browser has not been invoked do this now.
       subroutine imgdisp(iforce,focus,ier)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 C Images.
@@ -1552,6 +1563,9 @@ C if database names have changed.
 
       subroutine modifygdb(act,db,jdbhash,browse,moddb,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL

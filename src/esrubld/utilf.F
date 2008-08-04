@@ -325,6 +325,8 @@ C MZHCFV2 reads the convection-regime file (version 2)
       SUBROUTINE MZHCFV2(ICOMP)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/ER/IER
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

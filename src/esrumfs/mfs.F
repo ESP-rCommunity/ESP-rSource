@@ -55,6 +55,9 @@ C     MMOD   - determines the device type attached to the current job.
 #include "net_flow.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
@@ -589,6 +592,9 @@ C Indicate start of simulation and show iteration parameters
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFTRA/IMFTU
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)

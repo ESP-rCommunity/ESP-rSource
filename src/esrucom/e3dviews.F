@@ -779,6 +779,9 @@ C ***************** BNDOBJ
 C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C XMN,YMN,ZMN are the model minimum bounds.

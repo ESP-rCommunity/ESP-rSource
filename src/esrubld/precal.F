@@ -398,6 +398,8 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY

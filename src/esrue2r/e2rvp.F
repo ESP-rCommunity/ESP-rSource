@@ -86,6 +86,9 @@ C If south elevation, omitt the view-cone.
 C ******* Default views formation.
       SUBROUTINE VEWFORM(IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/C1/NCOMP,NCON

@@ -36,6 +36,8 @@ C CFDDTA - Reads the CFD configuration file.
 #include "cfd.h"
 #include "net_flow.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C If IBLD=1 there is thermal conflation and mapping between
 C           dfs and bps surfaces must be provided.
@@ -1461,6 +1463,8 @@ C   surf (12 char) is passed parameter. The current zone is taken
 C   from common block variable icp.
       FUNCTION IDSURF(SURF)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

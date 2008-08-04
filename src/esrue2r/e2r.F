@@ -31,6 +31,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1134,6 +1136,8 @@ C *************** MODLSU ***************
 C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1301,6 +1305,8 @@ C VIFILE Browse or manually edit a text file.
 C opt is b/B for browsing, e/E for editing.
 C lfile contains path as well as file name.
       subroutine vifile(ifu,lfile,opt,ier)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/texted/tedlbl,teditor
@@ -1338,6 +1344,8 @@ C Open the common databases - materials, multilayer constructions,
 C and optical db.
       subroutine opendb(ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

@@ -380,6 +380,9 @@ C << the text block from within clm!
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile, cdblfil.
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1410,6 +1413,8 @@ C iuf, return ier=0 if ok. This item can either
 C be as a fragment to be included in the climatelist file by
 C the user or as part of an item management facility.
       subroutine mkitemclimatelist(iuf,ier)
+      
+      integer lnblnk  ! function definition
 
 C Typical periods and season definitions.
       common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
@@ -1486,6 +1491,8 @@ C asked to confirm whether the best-fit week is to be used in the
 C climatelist.
       SUBROUTINE DDRADSUM(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

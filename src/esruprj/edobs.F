@@ -37,6 +37,8 @@ C Use file unit IPRODB temporarily.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
 
@@ -634,6 +636,9 @@ C the geometry file is version 1.1 or greater then it can hold
 C the block information.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       character CTYPE*4
@@ -1211,6 +1216,9 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
       SUBROUTINE EREVEAL(ICOMP,IRS,azim,elev,RTK,OWID,blkroot,mat,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       character CTYPE*4

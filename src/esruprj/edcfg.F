@@ -44,6 +44,8 @@ C output; IER=0 indicates no error.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
@@ -1175,6 +1177,9 @@ C output, IER=0 indicates no error.
       SUBROUTINE EDZCOMP(ITRC,ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -1222,7 +1227,7 @@ C output, IER=0 indicates no error.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
+C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -2475,9 +2480,7 @@ C File is older format and assumed to be unsorted.
                     if(browse)then
                       continue
                     else
-
-C << Note this 3 is going to conflict with jwh changes. >>
-                      ip3ver(icomp)=3
+                      ip3ver(icomp)=2
                       CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                     endif
                   else
@@ -2497,9 +2500,7 @@ C File is current format and might be unsorted.
                       if(browse)then
                         continue
                       else
-
-C << note this version 3 is going to conflict with jwh changes >>
-                        ip3ver(icomp)=3
+                        ip3ver(icomp)=2
                         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                       endif
                     endif
@@ -3180,6 +3181,8 @@ C selected an exemplar model.
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for parameter MFFOLD
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -3837,6 +3840,9 @@ C visualz drives visualisation process - hidden line or raytracing.
 C << this duplicates opts within the model export facility >>
 C << it would be clearer if all model I/O happened there >>
       subroutine visualz(act,ier)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -4035,6 +4041,9 @@ C      of obstruction data.
       subroutine globaltransform(valx,valy,valz,izlistnb,izlist,
      &  silent,itru,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4208,6 +4217,9 @@ C   silent (logical) if true then do not ask user about rotations
 C      of obstruction data.
       subroutine globalrotate(val,x1,y1,izlistnb,izlist,silent,itru,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

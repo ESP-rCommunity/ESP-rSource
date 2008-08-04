@@ -769,6 +769,8 @@ C and UDESC. ITRU unit number for user output, IER=0 OK.
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -1013,6 +1015,8 @@ C 12 characters) may be included as an option and is returned via BLKNAME.
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -1151,6 +1155,9 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
@@ -1218,6 +1225,8 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
@@ -1488,6 +1497,8 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C act character*1 if 'a' then area weighted, if 'r' ray traced.
       SUBROUTINE EMKMRT(LMRT,LGEOM,NZS,IUF,ICOMP,act,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -2865,6 +2876,8 @@ C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -3186,6 +3199,8 @@ C show attributes in list.
       SUBROUTINE EASKSUR(IZONE,IS,MOD,PROMPT1,PROMPT2,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3577,6 +3592,8 @@ C FLNAME provides a name for a defined file type.
 C *********************************************************************
       SUBROUTINE FLNAME(ICOMP,FILENM,FLTYP,EXT,NHLP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON
@@ -3626,6 +3643,9 @@ C << check if calling code knows that current geometry file read is >>
 C << not required for this. >>
       SUBROUTINE ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -3693,6 +3713,9 @@ C Similar to code ZLIST in esrures/utils.F.
 
       SUBROUTINE ZNARLIST(inlist,list,insize,zdescr,length,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       dimension list(insize)
       CHARACTER zname*12,zdesc*64,zdescr*248,outs*248,outsd*248

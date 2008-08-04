@@ -38,6 +38,8 @@ C with the db at simulation time.
 
       subroutine sifops(icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -943,6 +945,8 @@ C    this would be a name derived from the zone shading file).
 C  ier (integer) is zero if no problems, -3 if empty.
       subroutine sifexp(icomp,exportfile,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -1136,6 +1140,8 @@ C  ier (integer) is zero if no problems, -3 if empty,
 C     -2 not found, -1 wrong type of file, -4 wrong zone.
       subroutine sifimport(icomp,exportfile,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil

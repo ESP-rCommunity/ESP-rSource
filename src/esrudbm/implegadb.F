@@ -44,6 +44,8 @@ C IFB as the binary channel. Idbh is position in hash table.
 #include "building.h"
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -383,6 +385,8 @@ C materials db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine imprimmat(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -719,6 +723,9 @@ C wind pressure db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine impressc(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -922,6 +929,9 @@ C profile db file (BFIL). Unit IFA is the asci file channel and
 C IFB as the binary channel. 
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -1148,6 +1158,9 @@ C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1213,6 +1226,9 @@ C TROPRO creates an ASCII profiles db from the binary profiles db.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
       CHARACTER DESC*40,OUTSTR*124,LASCI*72
@@ -1355,6 +1371,9 @@ C parsemlcdesc: Parse the DESC string from common block returning text for
 C MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
       subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+      
+      integer lnblnk  ! function definition
+
       character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Clear parameters to be returned and then copy from DES.

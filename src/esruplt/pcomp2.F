@@ -70,6 +70,8 @@ C
       SUBROUTINE CMP20C(IPCOMP,COUT,ISTATS)
 #include "plant.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT

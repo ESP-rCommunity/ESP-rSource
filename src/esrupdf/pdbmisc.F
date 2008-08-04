@@ -38,6 +38,8 @@ C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C default file names for databases
+      
+      integer lnblnk  ! function definition
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)

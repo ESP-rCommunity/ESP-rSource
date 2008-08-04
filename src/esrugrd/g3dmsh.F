@@ -536,6 +536,8 @@ C *********************************************************************
       SUBROUTINE CZCNVS(IZ,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

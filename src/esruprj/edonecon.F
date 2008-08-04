@@ -36,6 +36,9 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDACONN(ITRC,IER)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -665,6 +668,9 @@ C CONXMENU returns an English description in CXITM of the inter-connection
 C information. This is shorter than the string returned by CONXINFO. 
       SUBROUTINE CONXMENU(ICON,CXITM)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

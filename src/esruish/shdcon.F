@@ -37,6 +37,8 @@ C Sets up the parameters relating to shading computation.
 
       subroutine shdcon(icomp,ier,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/filep/ifil
       common/pophelp/h(60)

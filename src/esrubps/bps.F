@@ -139,6 +139,8 @@ C a subroutine rather than as an application.
 #include "cfd.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C For dll mode dllsubr is the subroutine name where an error occurs
 C and dllmesg tells the details of the error.

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<!--Misc parameters-->
+  
+  <apply_style_sheet>true</apply_style_sheet>
+  <style_sheet>generic_summary.xsl</style_sheet>
+  <transform_destination_file>summary_out.csv</transform_destination_file>
+  <dump_all_data>false</dump_all_data>
+  <enable_xml_wildcards>false</enable_xml_wildcards>
+  <hierarchy>flat</hierarchy>
+  <link_style_sheet>false</link_style_sheet>
+  <output_dictionary>false</output_dictionary>
+  <report_startup_period_data>false</report_startup_period_data>
+
+ <!-- xml & post-processing options -->
+
+	<!--Summary data: to appear in out.xml -->
+
+ <log_variable>building/month</log_variable>
+ <log_variable>basesimp/Qag</log_variable>
+ <log_variable>basesimp/Qbgavg</log_variable>
+ <log_variable>basesimp/Qbgvar</log_variable>
+ <log_variable>basesimp/Qtotal</log_variable>
+ <log_variable>basesimp/Tamb</log_variable>
+ <log_variable>basesimp/bsTGavg</log_variable>
+ <log_variable>basesimp/TBSAVG</log_variable>
+ 
+ <summary_variable>building/month</summary_variable>
+ <summary_variable>basesimp/Qag</summary_variable>
+ <summary_variable>basesimp/Qbgavg</summary_variable>
+ <summary_variable>basesimp/Qbgvar</summary_variable>
+ <summary_variable>basesimp/Qtotal</summary_variable>
+ <summary_variable>basesimp/Tamb</summary_variable>
+ <summary_variable>basesimp/bsTGavg</summary_variable>
+ <summary_variable>basesimp/TBSAVG</summary_variable>
+
+	<!--variables to be dumped in out.csv-->
+
+ <step_variable>building/day/future</step_variable>
+ <step_variable>building/hour/future</step_variable>
+ <step_variable>building/time/future</step_variable>
+ <step_variable>building/time_step</step_variable>
+ <step_variable>building/zone_1/air_point/temperature</step_variable>
+ <step_variable>basesimp/Qag</step_variable>
+ <step_variable>basesimp/Qbgavg</step_variable>
+ <step_variable>basesimp/Qbgvar</step_variable>
+ <step_variable>basesimp/Qtotal</step_variable>
+ <step_variable>basesimp/Tamb</step_variable>
+ <step_variable>basesimp/bsTGavg</step_variable>
+ <step_variable>basesimp/TBSAVG</step_variable>
+ 
+
+</configuration>

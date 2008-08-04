@@ -54,6 +54,8 @@ C IER=0 indicates no error.
       SUBROUTINE CFDCOMP(izone,iuf,IER)
 #include "building.h"
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

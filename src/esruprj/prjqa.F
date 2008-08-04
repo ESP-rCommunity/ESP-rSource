@@ -43,6 +43,8 @@ C ICLIM,LCLIM (for climate file)
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -2014,6 +2016,9 @@ C not browsing.
       subroutine mupdate(ier)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -2279,11 +2284,9 @@ C Do cursory check to see if the file is sorted.
 
 C If older format ip3ver=0 then force it to write to the
 C current format.
-
-C << this 3 is going to conflict with jwh edits >>
               if(ip3ver(iz).eq.0)then
                 MODOPR=.true.
-                ip3ver(iz)=3
+                ip3ver(iz)=2
               endif
 
 C Save the file, sorting the periods if necessary.

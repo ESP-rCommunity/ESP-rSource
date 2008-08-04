@@ -30,6 +30,8 @@ C Assumes that current database is open on unit IFB.
 #include "building.h"
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

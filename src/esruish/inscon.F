@@ -37,6 +37,8 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 
       subroutine inscon(icomp,icstat,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C   ntmc & nwins: the number of insolation sources (i.e. external
 C                 and transparent surfaces); the latter is held

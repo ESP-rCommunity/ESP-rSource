@@ -26,6 +26,8 @@ C component status, act = 'u' for user supplied points.
       SUBROUTINE PSYCHART(act)
 
 #include "plant.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

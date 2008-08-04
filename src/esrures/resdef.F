@@ -36,6 +36,8 @@ C routines.
       SUBROUTINE MORFIL(iftype)
 #include "building.h"
 #include "plant.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -849,6 +851,7 @@ C ier is zero if no problems and -3 if user issued a cancel.
 #include "building.h"
 #include "esprdbfile.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN

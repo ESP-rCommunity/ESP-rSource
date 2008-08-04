@@ -223,6 +223,8 @@ C error if this data is found to be inconsistent.
       SUBROUTINE ENETRCHK(IER)
 
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -362,6 +364,7 @@ C Check for inconsistent numbers of power-only components
       RETURN
 
       END
+      
 C **********************************************************************
 C Subroutine ERMENU displays a menu giving the information that can be retrieved 
 C from the results library by the user. The menu can be used in graphing, 

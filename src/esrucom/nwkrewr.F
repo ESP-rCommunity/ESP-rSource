@@ -36,6 +36,8 @@ C when reading the file.
 #include "gnetwk.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -742,6 +744,8 @@ C Convert from graphic network file to network flow common blocks.
 #include "building.h"
 #include "gnetwk.h"
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -1235,6 +1239,8 @@ C 1 - save current file in the current location with the current filename (if an
 C 2 - save the current file with a specified location and name.
       SUBROUTINE NETWRITE(IMODE)
 #include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN

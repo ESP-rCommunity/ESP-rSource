@@ -27,6 +27,8 @@ C Assumes that current database is open on unit IFB.
 C espriou.h provides currentfile.
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -359,6 +361,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edenvi(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -587,6 +592,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edenvf(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -925,6 +933,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edenvp(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1134,6 +1145,9 @@ C Assumes that current database is open on unit IFB.
 C << this might need to rescan header of IFB >>
       subroutine epopenv(IFB,idbh,ic,iit,ACT,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:

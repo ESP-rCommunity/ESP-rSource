@@ -26,6 +26,7 @@ C MOCFD
       SUBROUTINE MOCFD
 #include "cfd.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/FILEP/IFIL
@@ -278,6 +279,8 @@ C MCFDM - define the parameters for the visualization of results.
 
       subroutine MCFDM(ICOMP)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

@@ -253,6 +253,8 @@ C ******************************************************************************
 
 #include "power.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Trace
       COMMON/TC/ITC,ICNT

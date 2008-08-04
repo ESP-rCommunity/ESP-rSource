@@ -78,13 +78,15 @@ C   IEXP = 99 check number of items and return in ITEMS
       SUBROUTINE STRIPCB(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
       CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
+      
+      integer lnblnk  ! function definition
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
     8 READ(INPCH,10,ERR=101,END=102)STRING
    10 FORMAT(A124)
-      tmp=STRING(:LNBLNK(STRING))
+      tmp=STRING(1:LNBLNK(STRING))
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
@@ -139,6 +141,8 @@ C overwriting the string passed, deal with a copy.
       SUBROUTINE CHITMSB(A,IW)
       CHARACTER*(*) A
       CHARACTER B*124,C*1
+      
+      integer lnblnk  ! function definition
 
       lastcc = MIN0(LNBLNK(A),123)
       WRITE(B,'(A)',ERR=1) A(1:lastcc+1)
@@ -364,6 +368,8 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 #include "building.h"
 #include "LCA.h"
 #include "acoustic.h"
+      
+      integer lnblnk  ! function definition
 
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -470,7 +476,7 @@ C Specify the reading mode.
       CALL EFOPSEQ(IUC,BCFfile,1,IER)
       IF (IER.LT.0) then
         WRITE (outs,'(a,a)')' Error while opening BCF file : ',
-     &                             BCFfile(:lnblnk(BCFfile))
+     &                             BCFfile(1:lnblnk(BCFfile))
         CALL EDISP(Iuout,Outs)
         IER=1
         RETURN

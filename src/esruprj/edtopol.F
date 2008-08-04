@@ -40,6 +40,9 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -764,6 +767,8 @@ C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
      &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1742,6 +1747,9 @@ C common block C3 while taking into account confirmation preferences.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2166,6 +2174,9 @@ C associated with a concept).
       subroutine anchor(ifoc,ier)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C1/NCOMP,NCON
@@ -2714,6 +2725,9 @@ C Select one or more connections from a list.
      &  ltype,ier,nhelp)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2900,6 +2914,9 @@ C << should be reviewed for current simulation demands
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3282,6 +3299,9 @@ C ******** serchrpl
 C Serchrpl handles search and replace of composition attributes.
       subroutine serchrpl(act,itrc,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

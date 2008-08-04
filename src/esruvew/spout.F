@@ -18,15 +18,17 @@ C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
 
 C--------------------------------------------------------------------
           SUBROUTINE SPD(A,N,X)
-
 #include "viewer.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       character*(*) A
       character outs*80
 
       IF(IPLN.EQ.1)CALL PLAN
-      write(outs,'(A,2x,F8.2)')A(:lnblnk(A)),X
+      write(outs,'(A,2x,F8.2)')A(1:lnblnk(A)),X
       call edisp(iuout,outs)
 
       RETURN

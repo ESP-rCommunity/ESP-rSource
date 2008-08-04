@@ -37,6 +37,8 @@ C
       SUBROUTINE ENETGRPH(MODE)
 
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
 C View parameters
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
@@ -502,11 +504,13 @@ C Combine the data decriptor and units to form the complete label.
       ENDIF
       RETURN
       END
-C ************************************************************************************
 
+C ************************************************************************************
       SUBROUTINE ENETTBL(MODE)
 
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
 C Array of recovered data
       COMMON/ERECOV/NVAL1,NVAL2,EVAL1(MERAWD),EVAL2(MERAWD)
@@ -814,12 +818,15 @@ C Write the output string to the output file.
       ENDIF
       RETURN
       END
+
 C ******************** MOGEHED ********************
 C MOGEHED outputs the appropriate header information for the electrical
 C network corresponding to graphical result display.
 
       SUBROUTINE MOGEHED
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -921,6 +928,8 @@ C  ***********************************************************************
 
 #include "power.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/ENFILT/EFILT(MERAWD)
       COMMON/ERECOVL/EVLABS(MERAWD),EVLABU(MERAWD)

@@ -40,6 +40,9 @@ C an extrusion. IER=0 OK.
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -519,6 +522,9 @@ C ************* NEWZONE
 C NEWZONE controls the creation of a new zone. IER=0 OK. 
       SUBROUTINE NEWZONE(ITRC,IC,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -607,10 +613,16 @@ C Find out if there are geometry files in the ../zones folder.
 C Debug.
 C            write(6,*) ltmp
           else
-            write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
+
+C User did not select a file. Take them back to the question.
+            call usrmsg('You did not select any existing file.',
+     &         'Please select or cancel.','W')
+            goto 293 ! ask for choice again
           endif
         else
-          write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
+          call usrmsg('You did not select any existing file.',
+     &       'Please select or cancel.','W')
+          goto 293 ! ask for choice again
         endif
 
 C Existing ESP-r geom file.
@@ -627,7 +639,12 @@ C Existing ESP-r geom file.
           dok=.true.
           CALL ASKOK(' ','Geometry file not found, try again?',OK,
      &      dok,3)
-          IF(OK)GOTO 293
+          if(OK)then
+            GOTO 293 ! as for choice again
+          else
+            ier = -3 ! signal user cancel
+            return   ! stop this before the model gets messed up.
+          endif
         ENDIF
         LGEOM(IC)=LTMP
 
@@ -646,7 +663,12 @@ C Try reading in the geometry to fill in the data below.
           h(3)='type and that it has not been corrupted. '
           CALL ASKOK(OUTSTR,
      &      'Problem scanning geometry file...try again?',OK,dok,3)
-          IF(OK)GOTO 293
+          if(OK)then
+            GOTO 293
+          else
+            ier = -3 ! signal user cancel
+            return   ! stop this before the model gets messed up.
+          endif
         ENDIF
 
 C Read in control file if defined.
@@ -970,6 +992,9 @@ C DELZONE systematicly removes a thermal zone.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1685,6 +1710,9 @@ C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -1807,6 +1835,8 @@ C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
       subroutine comissionish(iz,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
@@ -2101,9 +2131,12 @@ C weather (32 char) the weather file name (no path included)
 C Current functionality is to update the climate & site data.
 
       subroutine silentmodel(action,root,mpath,folder,menu,weather,ier)
+#include "building.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -2116,6 +2149,7 @@ C Climate data.
       COMMON/CLMDT0/CLAT,CLONG
 
       COMMON/C4/XLAT,XLON
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -2127,11 +2161,17 @@ C Passed in parameters.
       character action*8,root*24,mpath*72,folder*12,menu*32
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
+      character weathergr*36   ! file name for weather related ground temps (no path)
+      character groundfile*72  ! file name for weather related gorund temps (with path)
       character subpath*72
 
-      character outs*124
+      character outs*124,OUTSTR*124
       logical unixok
+      logical haveground ! set true if ground temp file has been found
       integer lnw   ! length of weather string.
+      integer lnwg   ! length of weather ground string.
+      integer igrfile ! unit number of ground file
+      DIMENSION GVA(12)
 
       IER=0
 
@@ -2143,6 +2183,7 @@ C Determine operating system
         fs = char(92)
       endif
       subpath=' '
+      haveground=.false.
 
 C If the action is `new` then setup model folder(s) and the registration
 C level configuration file via call to pregist in `sn` mode.
@@ -2178,20 +2219,37 @@ C one set the name of that file, scan it and find its site.
         continue
       else
 
-C First check if the climate file exists in the subpath.
+C First check if the climate file exists in the subpath. Also
+C make up a variant of the weather file name in case there
+C might be a small 12 item file for ground temperatures which
+C has a matching name.gnd.
         if(ICLIM.eq.0)then
           ICLIM=IFIL
         endif
+        igrfile=IFIL+2  ! hopefully not used
         lnw=lnblnk(weather)
+	write(weathergr,'(2a)') weather(1:lnw),'.gnd'
+        lnwg=lnblnk(weathergr)
+
         write(subpath,'(4a)')
      &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
         write(LCLIM,'(2a)') subpath(1:lnblnk(subpath)),
      &    weather(1:lnw)
+        write(groundfile,'(2a)') subpath(1:lnblnk(subpath)),
+     &    weathergr(1:lnwg)
         write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
         if(ISTAT.ge.0)then
           CALL ERPFREE(ICLIM,ISTAT)
+	  
+C Also check to see if a ground temperature file exists
+          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+          if(ISTAT.ge.0)then
+            haveground=.true.
+            CALL ERPFREE(igrfile,ISTAT)
+          endif
           goto 75
         else
 
@@ -2199,10 +2257,21 @@ C Also look in the folder where the model is being created.
           write(LCLIM,'(3a)') mpath(1:lnblnk(mpath)),fs,
      &      weather(1:lnw)
           write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+          write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &      weathergr(1:lnwg)
+
           CALL ERPFREE(ICLIM,ISTAT)
           CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
           if(ISTAT.ge.0)then
             CALL ERPFREE(ICLIM,ISTAT)
+	  
+C Also check to see if a ground temperature file exists
+            write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+            call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+            if(ISTAT.ge.0)then
+              haveground=.true.
+              CALL ERPFREE(igrfile,ISTAT)
+            endif
             goto 75
           else
 
@@ -2210,10 +2279,21 @@ C Also look in the model dbs folder.
             write(LCLIM,'(5a)') mpath(1:lnblnk(mpath)),fs,
      &        dbspth(1:lnblnk(dbspth)),fs,weather(1:lnw)
             write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+            write(groundfile,'(5a)') mpath(1:lnblnk(mpath)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,weathergr(1:lnwg)
+     
             CALL ERPFREE(ICLIM,ISTAT)
             CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
             if(ISTAT.ge.0)then
               CALL ERPFREE(ICLIM,ISTAT)
+	  
+C Also check to see if a ground temperature file exists
+              write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+              call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+              if(ISTAT.ge.0)then
+                haveground=.true.
+                CALL ERPFREE(igrfile,ISTAT)
+              endif
               goto 75
             else
               write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
@@ -2249,6 +2329,31 @@ C Fell through, no change in climate and location.
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
      &    '. Previously used ',xlat,xlon,'.'
         call edisp(iuout,outs)
+	
+C If there is ground temperature information scan that file and
+C put the data in UGRDTP.
+        if(haveground)then
+          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+          NGRDP=1
+          CALL STRIPC(igrfile,OUTSTR,0,ND,1,'ground data',IER)
+	  
+C          CALL EGETWRA(igrfile,GVA,12,-9.,99.,'W','Gr tmp',IER)
+          DO 29 J=1,12
+            CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','ground temp',IER)
+C            UGRDTP(J,NGRDP)=GVA(J)
+            UGRDTP(J,NGRDP)=valy
+   29     CONTINUE
+
+C Debug.
+          CALL EDISP(iuout,' From file Ground temp profile Jan-Dec:')
+          WRITE(OUTS,'(12F6.1)')(UGRDTP(J,1),J=1,12)
+          CALL EDISP(iuout,OUTS)
+
+          CALL ERPFREE(igrfile,ISTAT)
+        else
+          NGRDP=0    ! no user defined ground temperature profiles.
+        endif
         CALL EMKCFG('-',IER)
 
 C Fall through point if no climates located.
@@ -2309,6 +2414,9 @@ C IER=0 OK.
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 C#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/FILEP/IFIL
@@ -2335,6 +2443,7 @@ C#include "esprdbfile.h"
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
@@ -2958,8 +3067,8 @@ C Clear commons.
 C Fill common blocks for new zone based on information in the
 C pattern file.
 
-C << note this 3 is going to conflict with jwh changes >>
-        ip3ver(icomp)=3
+C Set to current format
+        ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '
         vflow='ach-ach '
@@ -3011,8 +3120,11 @@ C and act on the information within the file.
        integer MSZ   ! number of silent zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON

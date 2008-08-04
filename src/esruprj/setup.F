@@ -25,7 +25,8 @@ C viewpoint is changed.
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
 #include "espriou.h"
-
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       common/OUTIN/IUOUT,IUIN

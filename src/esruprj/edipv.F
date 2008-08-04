@@ -38,6 +38,8 @@ C altered based on information held in IPV definition.
 #include "building.h"
 #include "uncertainty.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -286,6 +288,8 @@ C If act = 'i' then initialise variables.
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1806,6 +1810,8 @@ C      ='i1d' initial default period ??
 #include "building.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -2140,6 +2146,8 @@ C << add logic to allow for two extreme seasons
 
       subroutine ipv2simpar(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -2320,6 +2328,8 @@ C << update logic to accept parameters for a silent use >>
       SUBROUTINE getmultip
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

@@ -381,6 +381,8 @@ C above.
       SUBROUTINE GOMENU
 #include "building.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

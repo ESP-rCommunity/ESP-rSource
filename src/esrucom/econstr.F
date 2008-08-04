@@ -58,6 +58,8 @@ C ABSE    - solar absorptivity of external surfaces.
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -318,6 +320,8 @@ C is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -474,6 +478,9 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -746,6 +753,8 @@ c         (not used in the current implementation),
       SUBROUTINE ERTWIN(ITRC,ITRU,IUA,LUA,ICOMP,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1215,6 +1224,9 @@ C           file.
 #include "building.h"
 #include "espriou.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+      
+      integer lnblnk  ! function definition
+
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 

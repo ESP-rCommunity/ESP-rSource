@@ -25,6 +25,8 @@ C ******* Default views formation.
 
 C espriou.h provides current file.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
@@ -110,6 +112,8 @@ C RRSKY Read radiance sky file.
 
 C espriou.h provides current file.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C4/XLAT,XLON
@@ -291,6 +295,8 @@ C IERR=1 if a scene file is missing.
 
       SUBROUTINE RRIF(ITA2,ITA3,file,RVB,IERR)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/rad2/mono,intext,ifocz
@@ -472,6 +478,8 @@ C ********************* MKRIF *********************
 C MKRIF - Write radiance RIF file.
 C IFC=4 ask before overwriting, IFC=3 overwrite.
       SUBROUTINE MKRIF(ITA2,file,IFC,IGL,IER)
+      
+      integer lnblnk  ! function definition
 
       common/rad2/mono,intext,ifocz
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -684,6 +692,8 @@ C ******* FIGSCEN
 C Attempt to judge the type of file in a scene description from the
 C terminating character (or later the contents).
       subroutine figscen(ITA3,cmdname,ier)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil

@@ -191,6 +191,8 @@ C legacy ASCII material database LASCI opened on unit IFA.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       real matver
       integer matcats,matcatitems,matdbitems
@@ -417,6 +419,8 @@ C current information in common matdatarray and matnamearray.
 C ASCII file LASCI opened on unit IFA. 
       subroutine mkascimat(ITRU,IFA,LASCI,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
 C Notes on variables at top of file.
       real matver
@@ -570,6 +574,8 @@ C current ASCII material database LASCI opened on unit IFA.
       subroutine rascimat(ITRU,IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       real matver
       integer matcats,matcatitems,matdbitems

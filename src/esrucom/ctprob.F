@@ -39,6 +39,8 @@ C Definitions of most variables is given in ctread.F
       SUBROUTINE CTWRIT(IFCTM)
 #include "net_flow.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -71,7 +73,7 @@ C Definitions of most variables is given in ctread.F
 C Write airflow network file, number of contaminants
       WRITE(IFCTM,1000,IOSTAT=ISTAT,ERR=99)
  1000 FORMAT('#ESP-r contaminant file')
-      WRITE(IFCTM,1001,IOSTAT=ISTAT,ERR=99)LAPROB(:LNBLNK(LAPROB))
+      WRITE(IFCTM,1001,IOSTAT=ISTAT,ERR=99)LAPROB(1:LNBLNK(LAPROB))
  1001 FORMAT(A,1X,'#fluid flow file for which this file is defined')
       WRITE(IFCTM,1002,IOSTAT=ISTAT,ERR=99)
  1002 FORMAT('SECTION_1')

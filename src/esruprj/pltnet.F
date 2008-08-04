@@ -1142,6 +1142,8 @@ C connections and containments.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -1227,6 +1229,8 @@ C    mode = 2 : Read data pointers only.
 
 #include "plant.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)

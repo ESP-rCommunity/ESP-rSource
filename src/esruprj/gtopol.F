@@ -28,6 +28,8 @@ C  INPOLY - Polygon point containment test.
 C ****** GTOPOL
       SUBROUTINE GTOPOL(itrc,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -385,6 +387,9 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EDGVERT(ITRC,MODGEO,IER)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -1862,6 +1867,8 @@ C show attributes in list.
       SUBROUTINE EASKGSUR(IS,MOD,PROMPT1,PROMPT2,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2007,6 +2014,9 @@ C It is easy to add a surface at the end of the list.
 C Method checks for minimally linked vertices.
       SUBROUTINE ADDGSUR(ITRC,IWHICH,ACTION,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

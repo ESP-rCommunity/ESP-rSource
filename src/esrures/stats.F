@@ -36,6 +36,8 @@ C results. Available at present:
 
       SUBROUTINE MOSTAT
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -804,6 +806,8 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOSMSD(act,VMX,VMN,VAVE,VTOT,DIVMX,DIVMN,DISTMX,DISTMN)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1307,6 +1311,8 @@ C standard.
 
       SUBROUTINE MOSMSDCEN(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1506,6 +1512,8 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOSQHR(act,iabove,tval)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1864,6 +1872,8 @@ C Also called by recovert if act = 'p' << needs checking >>
       SUBROUTINE MOEDMDS(act,the,tzhtime,tce,tzctime,tlhe,tzlhtime,
      &  tlce,tzlctime)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -2072,6 +2082,9 @@ C << file does not need to be scanned to get the surface emissivity.
       SUBROUTINE CASDIST(act)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
@@ -2102,7 +2115,7 @@ C << file does not need to be scanned to get the surface emissivity.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
+C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit

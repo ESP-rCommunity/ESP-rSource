@@ -33,6 +33,8 @@ C Control interface for defining vertices or a floor plan extrusion
 C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
