@@ -90,10 +90,11 @@ C conversion to the 'G1' format takes place.
  
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
-#include "esprdbfile.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
@@ -957,6 +958,8 @@ C with user before overwriting.
 
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1189,6 +1192,8 @@ C       +ve).
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -1598,7 +1603,8 @@ C Surface optics set name or OPAQ/TRAN, allow for spaces.
               if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE'
             elseif(WORD(1:4).ne.'OPAQ')then
 
-C We need to find the name of the optical set for the construction.
+C This token could be the name of the optical property. Find out if it
+C matches then name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
@@ -1627,10 +1633,20 @@ C the constructions database.
                 else
                   OPT='OPAQUE'
                 endif
+		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
+		  write(6,*) 'Optics in geo file ',WORD,
+     &              ' does not match optics of the MLC ',OPT
+                endif
                 write(SOTF(NS),'(a)') OPT
                 if(havec24) write(SSOTF(icn),'(a)') OPT
               else
-                write(SOTF(NS),'(a)') 'TRAN'
+
+C During initial scan of configuration file the databases will
+C not yet have been scanned and so this block of code will be
+C active. Lets assume that this token really is the name of the
+C optical set.
+                write(SOTF(NS),'(a)') WORD(1:lnblnk(WORD))
+                if(havec24)write(SSOTF(icn),'(a)') WORD(1:lnblnk(WORD))
               endif
             endif
 
@@ -2076,6 +2092,8 @@ C geometry file.
       SUBROUTINE GEOWRITE(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
 C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
@@ -2702,6 +2720,8 @@ C of information currently in Common blocks G0 G6 G7 G20.
 C If context is .true. then give verbose description of the boundary.
       SUBROUTINE SURINFO(ICOMP,ITRU,context)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/SFIG/NSIGFIG
 
@@ -2810,6 +2830,9 @@ C the connections file).
 
       SUBROUTINE OTHERINFO(izone,isurf,OTHSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2889,6 +2912,8 @@ C (G7,PREC2,PREC2,PREC17,C20,C24) have been filled. It does not
 C require a recent scan of zone geometry.
       SUBROUTINE ZINFOREP(itu,icomp)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/SFIG/NSIGFIG
@@ -3257,6 +3282,8 @@ C in the current zones common blocks.
 C act is '-' derive geometric data or 'c' also determine parent
       subroutine suredgeadj(itrc,act,izone,ier)
 #include "building.h"
+      
+C      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3734,6 +3761,8 @@ C << zone geometry file if havec24 is true?
 
       SUBROUTINE ZDATA(ITRC,IER,NZONES,ISFSUM)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -3802,6 +3831,8 @@ C NOTE: this was done in ersys call so it might not be needed here.
 C Find co-planer surfaces and edges of similar materials.
         call suredgeadj(itrc,'-',icomp,ier)
 
+C ISFSUM is the total number of surfaces in the model. Nothing
+C seems to use this information (yet).
         ISFSUM=ISFSUM+ NZSUR(ICOMP)
         DO 40 J=1, NZTV(ICOMP)
           VCOORD(ICOMP,J,1)=X(J)
@@ -3874,22 +3905,23 @@ C mation so make a probable guess at locations.
           SOTF(I)='OPAQUE'
           SMLCN(I)='UNKNOWN'
 
-C Guess at location based on elevation of surface.
+C Guess at location based on elevation of surface. Use same
+C logic as in subroutine updatesvfc.
           SVFC(I)='UNKN'
-          if(PELV(I).GE.-0.02.AND.PELV(I).LE.0.02)then
+          if(PELV(I).GE.-1.5.AND.PELV(I).LE.1.5)then
             SVFC(I)='VERT'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Wall-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Wall-',I
-          elseif(PELV(I).GE.89.98.AND.PELV(I).LE.90.02)then
+          elseif(PELV(I).GE.88.5.AND.PELV(I).LE.91.5)then
             SVFC(I)='CEIL'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
-          elseif(PELV(I).GE.-90.02.AND.PELV(I).LE.-89.98)then
+          elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
             SVFC(I)='FLOR'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
           else
-            SVFC(I)='UNKN'
+            SVFC(I)='SLOP'
             IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
             IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
           endif
@@ -3899,6 +3931,7 @@ C Guess at location based on elevation of surface.
           SUSE(I,1)='-'
           SUSE(I,2)='-'
           SPARENT(I)='-'
+
 C Set flags for wall/celing/floor
           if(PELV(I).GE.-0.02.AND.PELV(I).LE.30.0)then
             iSurfOrient(ICOMP,I) = iSurfWall
@@ -3914,20 +3947,20 @@ C Set flags for wall/celing/floor
         SOTF(I)='OPAQUE'
         SMLCN(I)='UNKNOWN'
         SVFC(I)='UNKN'
-        if(PELV(I).GE.-0.02.AND.PELV(I).LE.0.02)then
+        if(PELV(I).GE.-1.5.AND.PELV(I).LE.1.5)then
           SVFC(I)='VERT'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Wall-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Wall-',I
-        elseif(PELV(I).GE.89.98.AND.PELV(I).LE.90.02)then
+        elseif(PELV(I).GE.88.5.AND.PELV(I).LE.91.5)then
           SVFC(I)='CEIL'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A4,I1)') 'Top-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A4,I2)') 'Top-',I
-        elseif(PELV(I).GE.-90.02.AND.PELV(I).LE.-89.98)then
+        elseif(PELV(I).GE.-91.5.AND.PELV(I).LE.-88.5)then
           SVFC(I)='FLOR'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Base-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Base-',I
         else
-          SVFC(I)='UNKN'
+          SVFC(I)='SLOP'
           IF(I.LE.9)WRITE(SNAME(ICOMP,I),'(A5,I1)') 'Surf-',I
           IF(I.GT.9)WRITE(SNAME(ICOMP,I),'(A5,I2)') 'Surf-',I
         endif
@@ -3946,6 +3979,14 @@ C ******************** INSINFO
 C INSINFO provides an English description of default insolation 
 C options chosen by the user in the geometry file based on 
 C NDP(ICOMP) and IDPN(ICOMP,?) from common G4 and G6.
+
+C Note: the version of the geometry file should be taken into
+C account as the QA report can lead to conflicting information
+C as an older geometry file does not have the ishdirec common
+C data held in the geometry file but inferred from the obstructions
+C file.
+
+C << update documentation as well as reporting based on files >>
       SUBROUTINE INSINFO(ICOMP,ITRU)
 #include "building.h"
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
@@ -3962,32 +4003,35 @@ C NDP(ICOMP) and IDPN(ICOMP,?) from common G4 and G6.
       character SSPARENT*12
       character sdescr*80
 
-C Print out information about the default insolation planes.
+C Print out information about the default insolation planes if
+C the user has not requested a shading analysis.
       call edisp(ITRU,' ')
       if(ISI(ICOMP).eq.1)then
         call edisp(ITRU,
      &' An hourly solar radiation distribution is used for this zone.')
-      endif
-      IF(NDP(ICOMP).EQ.1)THEN
-        ICM=IZSTOCN(ICOMP,IDPN(ICOMP,1))
-        WRITE(OUTSTR,'(3a)')' Solar insolation focused on surface ',
+      else
+        IF(NDP(ICOMP).EQ.1)THEN
+          ICM=IZSTOCN(ICOMP,IDPN(ICOMP,1))
+          WRITE(OUTSTR,'(3a)')' Solar insolation focused on surface ',
      &    SSNAME(ICM),' (if shading not calculated).'
-        call edisp(ITRU,OUTSTR)
-      ELSEIF(NDP(ICOMP).EQ.2.AND.IDPN(ICOMP,3).EQ.0)THEN
-        ICM1=IZSTOCN(ICOMP,IDPN(ICOMP,1))
-        ICM2=IZSTOCN(ICOMP,IDPN(ICOMP,2))
-        WRITE(OUTSTR,'(5a)')' Solar insolation focused on ',
-     &   SSNAME(ICM1),' & ',SSNAME(ICM2),
-     &   ' (if shading not calculated).'
-        call edisp(ITRU,OUTSTR)
-      ELSEIF(NDP(ICOMP).EQ.3)THEN
-        write(outstr,'(2a)') 
-     &  ' All surfaces will receive diffuse insolation (if shading',
-     &  ' not calculated).'
-        call edisp(ITRU,OUTSTR)
-      ENDIF
+          call edisp(ITRU,OUTSTR)
+        ELSEIF(NDP(ICOMP).EQ.2.AND.IDPN(ICOMP,3).EQ.0)THEN
+          ICM1=IZSTOCN(ICOMP,IDPN(ICOMP,1))
+          ICM2=IZSTOCN(ICOMP,IDPN(ICOMP,2))
+          WRITE(OUTSTR,'(5a)')' Solar insolation focused on ',
+     &    SSNAME(ICM1),' & ',SSNAME(ICM2),
+     &    ' (if shading not calculated).'
+          call edisp(ITRU,OUTSTR)
+        ELSEIF(NDP(ICOMP).EQ.3)THEN
+          write(outstr,'(2a)') 
+     &    ' All surfaces will receive diffuse insolation (if shading',
+     &    ' not calculated).'
+          call edisp(ITRU,OUTSTR)
+        ENDIF
+      endif
 
-C If there are existing ish directives print them out.
+C If there are existing ish directives print them out. An older
+C geometry file will not have this information. 
       if(nsurfcalc(icomp).gt.0)then
         ns=nsurfcalc(icomp)
         call surlist(icomp,ns,lstsfcalc,sdescr,length,ierr)
@@ -4000,7 +4044,11 @@ C If there are existing ish directives print them out.
         endif
         call edisp(ITRU,sdescr)
       else
-        call edisp(ITRU,' No shading analysis requested.')
+        if(ISI(ICOMP).eq.1)then
+          continue   ! obviously requested
+        else
+          call edisp(ITRU,' No shading analysis requested.')
+        endif
       endif
 
       if(nsurfinso(icomp).gt.0)then
@@ -4013,7 +4061,11 @@ C If there are existing ish directives print them out.
         endif
         call edisp(ITRU,sdescr)
       else
-        call edisp(ITRU,' No insolation analysis requested.')
+        if(ISI(ICOMP).eq.1)then
+          continue    ! obviously requested
+        else
+          call edisp(ITRU,' No insolation analysis requested.')
+        endif
       endif
 
       RETURN
@@ -4074,6 +4126,9 @@ C ZINDEX is passed a string (which might be a zone name or an index) and
 C returns an index to the matching zone.  If no match then returns 0. 
       SUBROUTINE ZINDEX(STRING,index)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -4149,6 +4204,9 @@ C it is unique (thus OK = TRUE) if duplicate then OK = FALSE.
 C If 'is' is passed as 0 then check all, otherwise exclude surface is. 
       SUBROUTINE SNAMDUP(STRING,icomp,is,ok)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -4184,6 +4242,9 @@ C surface index in the zone matches the name.
 C If 'is' is returned as 0 if no match. 
       subroutine matchsname(STRING,icomp,is)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -4214,6 +4275,9 @@ C lstsf is the list of surface indices, sdescr is the string returned
 C and length is its maximum length. 
       subroutine surlist(icomp,nbsur,lstsf,sdescr,length,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)

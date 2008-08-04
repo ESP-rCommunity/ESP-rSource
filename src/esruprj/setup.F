@@ -25,7 +25,8 @@ C viewpoint is changed.
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
 #include "espriou.h"
-
+      
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       common/OUTIN/IUOUT,IUIN
@@ -105,18 +106,18 @@ C Display of time of day.
       ITEMS1(8)  ='i edit ESP-r climatelist entries              '
       ITEMS1(9)  ='j edit ESP-r exemplars entries                '
       IF(ITRC.EQ.0)THEN
-        ITEMS1(10)='h feedback >> silent                          '
+        ITEMS1(10)='k feedback >> silent                          '
       ELSEIF(ITRC.EQ.1)THEN
-        ITEMS1(10)='h feedback >> summary                         '
+        ITEMS1(10)='k feedback >> summary                         '
       ELSEIF(ITRC.EQ.2)THEN
-        ITEMS1(10)='h feedback >> detailed                        '
+        ITEMS1(10)='k feedback >> detailed                        '
       ENDIF
       if(igupgrade.eq.0)then
-        ITEMS1(11)='i upgrade files >> no change                  '
+        ITEMS1(11)='l upgrade files >> no change                  '
       elseif(igupgrade.eq.1)then
-        ITEMS1(11)='i upgrade files >> save legacy format         '
+        ITEMS1(11)='l upgrade files >> save legacy format         '
       elseif(igupgrade.eq.2)then
-        ITEMS1(11)='i upgrade files >> save current format        '
+        ITEMS1(11)='l upgrade files >> save current format        '
       endif
       ITEMS1(12)  ='* test button (silent zone creation)          '
       ITEMS1(13) ='? help                                        '

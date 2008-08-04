@@ -149,6 +149,8 @@ C SUPORT displays the multi-D gridding support facilities menu.
 C *********************************************************************
       SUBROUTINE SUPORT(IZ)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

@@ -211,8 +211,10 @@ C DO PLOTTING
 C--------------------------------------------------------
 C PLTFIL generates a pic file for use in forms package.
       SUBROUTINE PLTFIL
-
 #include "viewer.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON /FIL/ IFUSE, IFO
       COMMON/NNAAMM/ NAMDS,NAMPIC
       COMMON/OUTIN/IUOUT,IUIN
@@ -231,13 +233,13 @@ C ONLY GET FILE ONCE I.E. DONT GET A FILE FOR EACH NEW PICTURE
 
       INQUIRE (FILE=FNAME,EXIST=XST)
       IF (XST) THEN
-        OPEN (IFO,FILE=FNAME(:lnblnk(FNAME)),FORM='UNFORMATTED',
+        OPEN (IFO,FILE=FNAME(1:lnblnk(FNAME)),FORM='UNFORMATTED',
      &          ACCESS='SEQUENTIAL',STATUS='OLD',IOSTAT=ISTAT)
         call efdelet(ifo,istat)
-        OPEN (IFO,FILE=FNAME(:lnblnk(FNAME)),FORM='UNFORMATTED',
+        OPEN (IFO,FILE=FNAME(1:lnblnk(FNAME)),FORM='UNFORMATTED',
      &          ACCESS='SEQUENTIAL',STATUS='NEW',IOSTAT=ISTAT)
       ELSE
-        OPEN (IFO,FILE=FNAME(:lnblnk(FNAME)),FORM='UNFORMATTED',
+        OPEN (IFO,FILE=FNAME(1:lnblnk(FNAME)),FORM='UNFORMATTED',
      &          ACCESS='SEQUENTIAL',STATUS='NEW',IOSTAT=ISTAT)
       ENDIF
 

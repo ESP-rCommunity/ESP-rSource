@@ -37,6 +37,8 @@ C VISOUT - define the parameters for the visualization of results.
 
       subroutine VISOUT(ICOMP)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -452,6 +454,8 @@ C  IFRAME=-1 if cfd stand alone.
 
       subroutine VISMAK(ICOMP,IFRAME)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -538,6 +542,8 @@ C imgtyp  Output image type.
       subroutine FTV(ICOMP,IM,ISUR,ilayer,name)
 #include "building.h"
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/ICFNOD/ICFD,ICP
       common/pophelp/h(60)

@@ -27,6 +27,9 @@ C user input data before the routine.
 C 'PCPUT' is called to add it to the datatbase.
         SUBROUTINE PCENTR
 #include "plantdb.h" 
+      
+      integer lnblnk  ! function definition
+
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL

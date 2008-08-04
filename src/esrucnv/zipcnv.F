@@ -32,6 +32,8 @@ C system in the plane of the face in which the window is
 C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C1/NCOMP,NCON

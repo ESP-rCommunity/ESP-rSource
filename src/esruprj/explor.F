@@ -63,6 +63,9 @@ C IALT is the number of text alternatives available for a text field.
       SUBROUTINE EDTITEM(ITRC,IFOC,IER)
 #include "tdf2.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL      
       COMMON/OUTIN/IUOUT,IUIN
@@ -806,6 +809,9 @@ C HTIME as an hour+fracton between 0.0 and 24.0 and ITPER as the nearest
 C timestep based on NTS per hour and the current settings of IFTIME. 
 C IFTIME 0 gives '10h30', 1 gives '10.50', 2 gives '0.4375'
       SUBROUTINE STRTIM(WORD,IFTIME,NTS,DTIME,HTIME,ITPER,IER)
+      
+      integer lnblnk  ! function definition
+
       CHARACTER USRT*10,WORD*10
       LOGICAL CLOSE
 

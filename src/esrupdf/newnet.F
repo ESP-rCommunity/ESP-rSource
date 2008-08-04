@@ -48,6 +48,8 @@ C     simtyp - holds description of simulation type.
 
 #include "plant.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
  
       COMMON/C8/LPNAM
       COMMON/C13PS/NPMCOE,NPNOD,NPMTYP
@@ -2660,8 +2662,8 @@ C Increment the control and B/P linkages.
           IPCLINKZ(IBPLINK)=IZ
         ELSE
           ICF=IBPLINKID(IS)
-          IPCLINKZ(IBPLINK)=IZ
           IBPLINK=IS
+          IPCLINKZ(IBPLINK)=IZ
         ENDIF
 
 C Update the control/building linkage.

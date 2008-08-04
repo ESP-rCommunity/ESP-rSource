@@ -132,6 +132,8 @@ C This is the main network management routine.
 #include "gnetwk.h"
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
@@ -1137,6 +1139,8 @@ C to handle deletion of icons.
 
 # include "gnetwk.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/POPHELP/H(60)  
 
@@ -2795,6 +2799,8 @@ C in the main menu which calls this subroutine.
 
 # include "epara.h"
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3113,6 +3119,9 @@ C are returned. If ier=-1 then summary file was not available.
 #include "net_flow.h"
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG

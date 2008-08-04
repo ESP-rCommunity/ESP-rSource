@@ -102,6 +102,9 @@ C-------------------------------------------------------------------------------
       integer iInterp_Method ! Flag specifying boundary condition
                              ! interpolation method
 
+      real    fApp_Scale_Factor    ! Scale factor to be applied to appliance electric
+                                   ! load read in data file 
+
       real fApp_Efficiency   ! Appliance effective efficiency (-)
 
       real fDay              ! Current day, and fraction thereof (days)
@@ -196,7 +199,7 @@ C     Get inputs
 C-------------------------------------------------------------------------------
       iInterp_Method        = int ( ADATA(iPComp, 1) )
       fApp_Efficiency       = ADATA(iPComp, 2)
-      
+      fApp_Scale_Factor     = ADATA(iPComp, 3)      
 
 
 C-------------------------------------------------------------------------------
@@ -212,6 +215,10 @@ C-------------------------------------------------------------------------------
      &                                     fDay,
      &                                     iInterp_method,
      &                                     cMessage       )
+
+C.....Apply scale factor
+
+      fH2_app_load = fH2_app_load * fApp_Scale_Factor
 
 
 C-------------------------------------------------------------------------------
@@ -408,6 +415,8 @@ C-------------------------------------------------------------------------------
 
       integer ascii_file_num            ! ascii file number
 
+
+      INTEGER iNumber_of_columns        ! Number of columns in binary file
 C-------------------------------------------------------------------------------
 C     Named constants
 C-------------------------------------------------------------------------------
@@ -583,13 +592,18 @@ C-----If the binary load file exits, then delete file
 
 C-----Open binary file with the right number of columns read earlier from the ascii
 C-----load profile data file
-      CALL FPRAND(load_file_num,ISTAT,app_num_dataperhour,3,
+      if ( app_num_dataperhour .lt. 2 ) then
+        iNumber_of_columns = 2
+      else
+        iNumber_of_columns = app_num_dataperhour
+      endif
+      CALL FPRAND(load_file_num,ISTAT,iNumber_of_columns,3,
      &            'Hrly_Load.tmp')  ! File may exist
 
 C-----Write the load profile specification method flag and the number of
 C-----data points per hour to the binary file
       WRITE(load_file_num,REC=1,IOSTAT=ISTAT)
-     &      app_load_method,app_num_dataperhour
+     &      app_load_method, app_num_dataperhour
 C---------------------------------------------------------------------------------
 C Iterate through each record of appliance loads data. For each record of data in
 C ASCII file, read the load at each time increment specified and write data to the

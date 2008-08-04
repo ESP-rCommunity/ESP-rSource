@@ -55,7 +55,7 @@ C The residential hydrogen system controller is experimental.
 C This code should be used with caution, and has been disabled
 C in the standard version of ESP-r.
 C Call the residential hydrogen cogen controller routine.
-C      CALL RESH2_Ctl
+      CALL RESH2_Ctl
 C H2-dep_controller: end
 
 
@@ -253,6 +253,8 @@ C ******************************************************************************
 
 #include "power.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Trace
       COMMON/TC/ITC,ICNT

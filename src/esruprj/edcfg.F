@@ -24,6 +24,10 @@ C  EDCFG   Control system level facilities and configuration file entities.
 C  NEWPRB  Support specification of a new model.
 C  visualz drives visualisation process - hidden line or raytracing.
 C  EDZCOMP Control zone composition facilities.
+C globaltransform is passed instructions on a transform to be globally
+C           applied to zones in an esp-r model.
+C globalrotate is passed instructions on a rotation to be globally
+C           applied to zones in an esp-r model.
 
 C ************* EDCFG 
 C Control editing of system configuration file and allow updated 
@@ -40,6 +44,8 @@ C output; IER=0 indicates no error.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/FILEP/IFIL
@@ -367,7 +373,7 @@ C in older format.
      &      'file names. Options:','Save in current format','continue',
      &      IW,3)
             if(IW.EQ.1)then
-              icfgv=3
+              icfgv=4
 
 C Get root name and ensure that configuration file ends in .cfg.
               lcfgr=lnblnk(LCFGF)
@@ -1171,6 +1177,9 @@ C output, IER=0 indicates no error.
       SUBROUTINE EDZCOMP(ITRC,ITRU,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -1218,19 +1227,17 @@ C output, IER=0 indicates no error.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =3 with more than 3 day types
+C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
-     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
@@ -1266,9 +1273,10 @@ C Flag noting whether casual gain periods are currently sorted.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character HOLD*32,zdesc*64,zd*64
-      CHARACTER ETEXT*82,CUBN*6
+      CHARACTER ETEXT*82
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -1383,24 +1391,42 @@ C Exit back to calling menu and clear dialogue box.
         CALL PHELPD('zones definition',32,'-',0,0,IER)
       elseif(INO.EQ.nitems-2)THEN
 
-C Global actions such as transforms, rotations, attributions.
+C Global actions such as transforms, rotations, attributions. Use
+C different list of options for X11 and GTK.
         h(1)='Transforms and rotations may be applied to one or more'
         h(2)='zones in the model. Global attribution allows all'
         h(3)='surfaces matching some criteria (e.g. vertical and'
         h(4)='opaque) to be assigned a particular attribute.'
-        call EASKATOG(' Global action?',' ',
-     &    'transform','rotate','attribute','search & replace',
-     &    'cancel',' ',' ',IRT,4)
-        if(IRT.eq.1)then
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.2)then
+          call EASKATOG(' Global action?',' ',
+     &      'transform','rotate','attribute','search & replace',
+     &      ' ',' ',' ',IRT,4)
+        else
+          call EASKATOG(' Global action?',' ',
+     &      'transform','rotate','attribute','search & replace',
+     &      'cancel',' ',' ',IRT,4)
+        endif
+        if(IRT.eq.-3)then
+          goto 3
+        elseif(IRT.eq.5)then
+          goto 3
+        elseif(IRT.eq.1)then
 
 C Ask for transform distance then which zones and then apply.
           H(1)='A transform shifts each zone & its solar obstructions'
           H(2)='by a given amount along each axis.'
           hold = ' 0.0  0.0  0.0'
-          clkok=.false.
-  43      CALL EASKSCMD(HOLD,'X, Y and Z transform (m)?',' ','cancel',
-     &                  clkok,32,' 0. 0. 0.','transforms XYZ',IER,2)
-          if(clkok) goto 3
+  43      if(iglib.eq.2)then
+            CALL EASKS(HOLD,'X, Y and Z transform (m)?',' ',
+     &        32,' 0.0  0.0   0.0 ','transforms XYZ',ISER,2)
+            if(iser.eq.-3) goto 3
+          else
+            clkok=.false.
+            CALL EASKSCMD(HOLD,'X, Y and Z transform (m)?',' ',
+     &        'cancel',clkok,32,' 0.0 0.0 0.0 ','transforms XYZ',IER,2)
+            if(clkok) goto 3
+          endif
           K=0
           CALL EGETWR(HOLD,K,VALX,-99.,99.,'W','X tr',IER)
           CALL EGETWR(HOLD,K,VALY,-99.,99.,'W','Y tr',IER)
@@ -1411,113 +1437,14 @@ C Ask for transform distance then which zones and then apply.
           CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
      &                12,NCOMP,zname,'zone list',IER,1)
           IF(INPIC.EQ.0)GOTO 3
-          DO 83 IZ=1,INPIC
-            IF(IVALS(IZ).GT.0)THEN
-              IICOMP=IVALS(IZ)
-              write(zn,'(A)') zname(IICOMP)
-              write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
-     &          '...'
-              CALL USRMSG(' ',outs,'-')
-              LTMP=LGEOM(IICOMP)
-              call eclose(gversion(IICOMP),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
-              else
-                call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
-              endif
-              DO 62 I=1,NTV
-                X(I)=X(I)+VALX
-                Y(I)=Y(I)+VALY
-                Z(I)=Z(I)+VALZ
-   62         continue
-              ZBFLG(IICOMP)=0.
-
-C Decide whether to upgrade the geometry file format.
-              if(igupgrade.eq.2.and.(.NOT.newgeo))then
-                gversion(iicomp) =1.1
-                newgeo = .true.
-              endif
-              if(newgeo)then
-                call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
-              else
-                call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
-              endif
-
-C After transform update the g6 & g7 commons and find dependencies.
-              call zgupdate(0,IICOMP,ier)
-              call warnmod(IICOMP,'str')
-
-C Transform any MRT sensors associated with this zone.
-              if (IVF(IICOMP).eq.1) then
-                NCUB = 0
-                CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
-                if (NCUB.gt.0) then
-                  write(outs,'(2a)') zn(1:lnblnk(zn)),' as well?'
-                  dok=.true.
-                  h(1)='You have rotated the zone and probably also'
-                  h(2)='want to rotate the sensors to match.'
-                  call askok('Transform MRT sensors of',outs,OK,dok,2)
-                  if (OK) then
-                    do 73 ij=1,NCUB
-                      XOC(ij)=XOC(ij)+VALX
-                      YOC(ij)=YOC(ij)+VALY
-                      ZOC(ij)=ZOC(ij)+VALZ
-  73                continue
-                    CALL EMKMRT(LVIEW(IICOMP),LGEOM(IICOMP),
-     &                          NZSUR(IICOMP),IUF,IICOMP,'v',IER)
-                  endif
-                endif
-              endif
-
-C If there is an obstructions file, loop through each and
-C transform origin.
-              if(IOBS(IICOMP).EQ.1)then
-                dok=.true.
-                write(outs,'(4a)') 'Transforms obstructions of ',
-     &            zn(1:lnblnk(zn)),' in ',
-     &            ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
-                h(1)='You rotated the zone(s) and so will probably'
-                h(2)='also want to rotate associated obstructions.'
-                call askok(outs,' ?',OK,dok,2)
-                if(OK)then
-                  CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
-                  do 63 ij=1,NB
-                    XO(ij)=XO(ij)+VALX
-                    YO(ij)=YO(ij)+VALY
-                    ZO(ij)=ZO(ij)+VALZ
-  63              continue
-                  CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
-                endif
-              elseif(IOBS(IICOMP).EQ.2)then
-
-C If obstructions are held in the geometry file
-C apply the transform and write the file back out.
-                if(newgeo)then
-                  dok=.true.
-                  write(outs,'(2a)') 'Transforms obstructions of ',
-     &              zn(1:lnblnk(zn))
-                  h(1)='You rotated the zone(s) and so will probably'
-                  h(2)='also want to rotate associated obstructions.'
-                  call askok(outs,' ?',OK,dok,2)
-                  if(OK)then
-C                    call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
-                    do 64 ij=1,NB
-                      XO(ij)=XO(ij)+VALX
-                      YO(ij)=YO(ij)+VALY
-                      ZO(ij)=ZO(ij)+VALZ
-  64                continue
-                    call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
-                  endif
-                endif
-              endif
-              write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
-     &          '...done'
-              CALL USRMSG(' ',outs,'-')
-              call sumrchg(IICOMP,'r')
-            endif
-   83     continue
+  
+C Perform the global transform interactively.
+          silent= .false.
+          call globaltransform(valx,valy,valz,inpic,ivals,
+     &      silent,itru,ier) 
           MODIFY=.TRUE.
           MODBND=.TRUE.
+  
         elseif(IRT.eq.2)then
 
 C Rotation degree and choices.
@@ -1551,142 +1478,15 @@ C Rotation degree and choices.
      &        12,NCOMP,zname,' zone list',IER,1)
             IF(INPIC.EQ.0)GOTO 3
             call tstamp('>','PRJ: zone rotation')
-            DO 84 IZ=1,INPIC
-              IF(IVALS(IZ).GT.0)THEN
-                IICOMP=IVALS(IZ)
-                write(zn,'(A)') zname(IICOMP)
-                write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
-     &           '...'
-                CALL USRMSG(' ',outs,'-')
-                LTMP=LGEOM(IICOMP)
-                call eclose(gversion(IICOMP),1.1,0.01,newgeo)
-                if(newgeo)then
-                  call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
-                else
-                  call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
-                endif
-                CALL ESCROT(VAL,x1,y1)
-                ZBFLG(IICOMP)=0.
-                if(igupgrade.eq.2.and.(.NOT.newgeo))then
-                  gversion(iicomp) =1.1
-                  newgeo = .true.
-                endif
-                if(newgeo)then
-                  call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
-                else
-                  call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
-                endif
 
-C After transform update the g6 & g7 commons and find dependencies.
-                call zgupdate(0,IICOMP,ier)
-                call warnmod(IICOMP,'str')
+C Implement the rotations for the selected zones.
+            silent= .false.
+            call globalrotate(val,x1,y1,inpic,ivals,silent,itru,ier)
 
-C Rotate any MRT sensors associated with this zone.
-                if (IVF(IICOMP).eq.1) then
-                  NCUB = 0
-                  CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
-                  if (NCUB.gt.0) then
-                    dok=.true.
-                    h(1)='You already rotated the zone, you will most'
-                    h(2)='likely want to rotate MRT sensors for the '
-                    h(3)='zone as well. '
-                    write(outs,'(a,a)') zn(1:lnblnk(zn)), ' ?'
-                    call askok('Rotate MRT sensors of',outs,OK,DOK,3)
-                    if (OK) then
-                      PI = 4.0 * ATAN(1.0)
-                      A=-VAL*PI/180.
-                      CA=COS(A)
-                      SA=SIN(A)
-                      do 76 ij=1,NCUB
-                        XXX=XOC(ij)-X1
-                        YYY=YOC(ij)-Y1
-                        XR=XXX*CA+YYY*SA
-                        YR=YYY*CA-XXX*SA
-                        XOC(ij)=XR+X1
-                        YOC(ij)=YR+Y1
-                        CANG(ij)=CANG(ij)+VAL
-  76                  continue
-                      CALL EMKMRT(LVIEW(IICOMP),LGEOM(IICOMP),
-     &                            NZSUR(IICOMP),IUF,IICOMP,'v',IER)
-
-                    endif
-                  endif
-                endif
-
-C Rotate any obstructions associated with this zone.
-                if(IOBS(IICOMP).EQ.1)then
-                  dok=.true.
-                  h(1)='You rotated the zone and so will probably'
-                  h(2)='want to rotate the solar obstructions which'
-                  h(3)='are associated with it as well. '
-                  write(outs,'(4a)') 'Rotate obstructions of ',
-     &              zn(1:lnblnk(zn)),' in ',
-     &              ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
-                  call askok(outs,' ?',OK,dok,3)
-                  if(OK)then
-                    CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
-                    PI = 4.0 * ATAN(1.0)
-                    A=-VAL*PI/180.
-                    CA=COS(A)
-                    SA=SIN(A)
-                    do 86 ij=1,NB
-                      XXX=XO(ij)-X1
-                      YYY=YO(ij)-Y1
-                      XR=XXX*CA+YYY*SA
-                      YR=YYY*CA-XXX*SA
-                      XO(ij)=XR+X1
-                      YO(ij)=YR+Y1
-                      BANG(ij)=BANG(ij)+VAL
-  86                continue
-                    CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
-                  endif
-                endif
-                write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
-     &          '... done.'
-                CALL USRMSG(' ',outs,'-')
-                call sumrchg(IICOMP,'r')
-              elseif(IOBS(IICOMP).EQ.2)then
-
-C If obstructions are held in the geometry file,
-C apply the transform and write the file back out.
-                if(newgeo)then
-                  dok=.true.
-                  write(outs,'(2a)') 'Transforms obstructions of ',
-     &              zn(1:lnblnk(zn))
-                  h(1)='You rotated the zone and so will probably'
-                  h(2)='want to rotate the solar obstructions which'
-                  h(3)='are associated with it as well. '
-                  write(outs,'(2a)') 'Rotate obstructions of ',
-     &              zn(1:lnblnk(zn))
-                  call askok(outs,' ?',OK,dok,3)
-                  if(OK)then
-C                    call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
-                    PI = 4.0 * ATAN(1.0)
-                    A=-VAL*PI/180.
-                    CA=COS(A)
-                    SA=SIN(A)
-                    do 87 ij=1,NB
-                      XXX=XO(ij)-X1
-                      YYY=YO(ij)-Y1
-                      XR=XXX*CA+YYY*SA
-                      YR=YYY*CA-XXX*SA
-                      XO(ij)=XR+X1
-                      YO(ij)=YR+Y1
-                      BANG(ij)=BANG(ij)+VAL
-  87                continue
-                    call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
-                  endif
-                endif
-                write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
-     &          '... done.'
-                CALL USRMSG(' ',outs,'-')
-                call sumrchg(IICOMP,'r')
-              endif
-  84        continue
           endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
-
+  
         elseif(IRT.eq.3)then
 
           call serchrpl('a',itrc,iier)
@@ -1745,7 +1545,11 @@ C Define a new zone and update nzg in case multiple zones read in.
             goto 3
           endif
           call NEWZONE(ITRC,IC,IER)
-          nzg=NCOMP
+          if(IER.eq.-3)then
+            goto 3   ! user cancel detected
+          else
+            nzg=NCOMP
+          endif
         ELSEIF(IC.gt.100.and.IC.lt.200)THEN
 
 C Copy a zone, get index by decrementing 100.
@@ -1920,9 +1724,30 @@ C Zone rotations and transforms.
           H(5)='each axis.'
           hold = ' 0.0  0.0  0.0'
           clkok=.false.
- 243      CALL EASKSCMD(HOLD,'Transform (X Y Z metres):',' ',
-     &      'skip',clkok,32,' 0. 0. 0.','transforms XYZ',IER,2)
-          if(clkok) then
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+ 243      if(iglib.eq.2)then
+            CALL EASKSCMD(HOLD,'Transform (X Y Z metres):',' ',
+     &        'skip transform',clkok,32,' 0. 0. 0.','transforms XYZ',
+     &        iser,5)
+            if(clkok)iclkok=2   ! notice skip transform button
+            if(iser.eq.-3)then  ! notice GTK cancel button
+              LGEOM(NCOMP)=' '
+              NCOMP=NCOMP-1
+              goto 3
+            endif
+          else
+            CALL EASKS2CMD(HOLD,'Transform (X Y Z metres):',' ',
+     &        'cancel copy','skip transform',iclkok,32,' 0. 0. 0.',
+     &        'transforms XYZ',iser,5)
+            if(iclkok.eq.1)then    ! notice X11 cancel option
+              LGEOM(NCOMP)=' '
+              NCOMP=NCOMP-1
+              goto 3
+            endif
+          endif 
+   
+C Act on the skip transform request.   
+          if(iclkok.eq.2) then
             okzt=.false.
           else
             K=0
@@ -1958,7 +1783,7 @@ C Rotation choices.
              H(4)='site origin or a specified point.'
               CALL EASKABCD(' ','Rotation choices:',
      &         'vertex 1 of zone','site origin',
-     &         'specified X & Y','cancel',IRT,4)
+     &         'specified X & Y','skip rotation',IRT,4)
               call usrmsg(' ',' ','-')
               if(IRT.eq.1)then
                 x1=X(1)
@@ -3356,6 +3181,8 @@ C selected an exemplar model.
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for parameter MFFOLD
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -4013,6 +3840,9 @@ C visualz drives visualisation process - hidden line or raytracing.
 C << this duplicates opts within the model export facility >>
 C << it would be clearer if all model I/O happened there >>
       subroutine visualz(act,ier)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -4198,4 +4028,380 @@ C << Place to associate images (when logic ready.) >>
       return
       end
 
+C **************** globaltransform
+C globaltransform is passed instructions on a transform to be globally
+C applied to zones in an esp-r model. It knows about dependencies and
+C will act on or warn users as appropriate (if in interactive mode).
+C Parameters:
+C   valx,valy,valz (real) are the transforms (m) for each axis.
+C   izlistnb (integer) is the number of selected zones
+C   izlist is the array holding selected zone indicies to transform
+C   silent (logical) if true then do not ask user about transforms
+C      of obstruction data.
+      subroutine globaltransform(valx,valy,valz,izlistnb,izlist,
+     &  silent,itru,ier)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
 
+      common/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
+     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+
+      CHARACTER CUBN*6
+      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+      
+      logical newgeo  ! to use for testing if new/old geometry file.
+      logical silent  ! if true then skip dialogs
+      real valx,valy,valz  ! the transforms
+      integer izlistnb,izlist
+      dimension izlist(MCOM)  ! array of which zones are selected for transform.
+      
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character*72 LTMP
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      character zname*12,zdesc*64,ZN*12,h*72
+      character outs*124
+      logical DOK,OK
+       
+      IUF=IFIL+2
+      DO 83 IZ=1,izlistnb
+        IF(izlist(IZ).GT.0)THEN
+          IICOMP=izlist(IZ)
+          write(zn,'(A)') zname(IICOMP)
+          write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),'...'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          LTMP=LGEOM(IICOMP)
+          call eclose(gversion(IICOMP),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+          else
+            call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
+          endif
+          DO 62 I=1,NTV
+            X(I)=X(I)+VALX
+            Y(I)=Y(I)+VALY
+            Z(I)=Z(I)+VALZ
+   62     continue
+          ZBFLG(IICOMP)=0.
+
+C Decide whether to upgrade the geometry file format.
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(iicomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+          else
+            call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
+          endif
+
+C After transform update the g6 & g7 commons and find dependencies.
+          call zgupdate(0,IICOMP,ier)
+          call warnmod(IICOMP,'str')
+
+C Transform any MRT sensors associated with this zone.
+          if (IVF(IICOMP).eq.1) then
+            NCUB = 0
+            CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
+            if (NCUB.gt.0) then
+              if(silent)then
+                ok= .true.
+              else
+                write(outs,'(2a)') zn(1:lnblnk(zn)),' as well?'
+                dok=.true.
+                h(1)='You have rotated the zone and probably also'
+                h(2)='want to rotate the sensors to match.'
+                call askok('Transform MRT sensors of',outs,OK,dok,2)
+              endif
+              if (OK) then
+                do 73 ij=1,NCUB
+                  XOC(ij)=XOC(ij)+VALX
+                  YOC(ij)=YOC(ij)+VALY
+                  ZOC(ij)=ZOC(ij)+VALZ
+  73            continue
+                CALL EMKMRT(LVIEW(IICOMP),LGEOM(IICOMP),
+     &                      NZSUR(IICOMP),IUF,IICOMP,'v',IER)
+              endif
+            endif
+          endif
+
+C If there is an obstructions file, loop through each and
+C transform origin.
+          if(IOBS(IICOMP).EQ.1)then
+            if(silent)then
+              ok= .true.
+            else
+              dok=.true.
+              write(outs,'(4a)') 'Transforms obstructions of ',
+     &          zn(1:lnblnk(zn)),' in ',
+     &          ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
+              h(1)='You rotated the zone(s) and so will probably'
+              h(2)='also want to rotate associated obstructions.'
+              call askok(outs,' ?',OK,dok,2)
+            endif
+            if(OK)then
+              CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
+              do 63 ij=1,NB
+                XO(ij)=XO(ij)+VALX
+                YO(ij)=YO(ij)+VALY
+                ZO(ij)=ZO(ij)+VALZ
+  63          continue
+              CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
+            endif
+          elseif(IOBS(IICOMP).EQ.2)then
+
+C If obstructions are held in the geometry file
+C apply the transform and write the file back out.
+            if(newgeo)then
+              if(silent)then
+                ok= .true.
+              else
+                dok=.true.
+                write(outs,'(2a)') 'Transforms obstructions of ',
+     &            zn(1:lnblnk(zn))
+                h(1)='You rotated the zone(s) and so will probably'
+                h(2)='also want to rotate associated obstructions.'
+                call askok(outs,' ?',OK,dok,2)
+              endif
+              if(OK)then
+                do 64 ij=1,NB
+                  XO(ij)=XO(ij)+VALX
+                  YO(ij)=YO(ij)+VALY
+                  ZO(ij)=ZO(ij)+VALZ
+  64            continue
+                call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+              endif
+            endif
+          endif
+          write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
+     &      '...done'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          call sumrchg(IICOMP,'r',silent)
+        endif
+   83 continue
+
+      return
+      end
+
+C **************** globalrotate
+C globalrotate is passed instructions on a rotation to be globally
+C applied to zones in an esp-r model. It knows about dependencies and
+C will act on or warn users as appropriate (if in interactive mode).
+C Parameters:
+C   val (real) is the rotation angle (degrees, +ve anticlockwise)
+C   x1,y1 (real) are the X Y point to rotate around
+C   izlistnb (integer) is the number of selected zones
+C   izlist is the array holding selected zone indicies to rotate
+C   silent (logical) if true then do not ask user about rotations
+C      of obstruction data.
+      subroutine globalrotate(val,x1,y1,izlistnb,izlist,silent,itru,ier)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
+     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+
+      CHARACTER CUBN*6
+      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
+      
+      logical newgeo  ! to use for testing if new/old geometry file.
+      logical silent  ! if true then skip dialogs
+      real x1,y1      ! the point to rotate around
+      integer izlistnb,izlist
+      dimension izlist(MCOM)  ! array of which zones are selected for transform.
+      
+      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character*72 LTMP
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      character zname*12,zdesc*64,ZN*12,h*72
+      character outs*124
+      logical DOK,OK
+       
+      IUF=IFIL+2
+      DO 84 IZ=1,izlistnb
+        IF(izlist(IZ).GT.0)THEN
+          IICOMP=izlist(IZ)
+          write(zn,'(A)') zname(IICOMP)
+          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),'...'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          LTMP=LGEOM(IICOMP)
+          call eclose(gversion(IICOMP),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+          else
+            call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
+          endif
+          CALL ESCROT(VAL,x1,y1)
+          ZBFLG(IICOMP)=0.
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(iicomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+          else
+            call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
+          endif
+
+C After transform update the g6 & g7 commons and find dependencies.
+          call zgupdate(0,IICOMP,ier)
+          call warnmod(IICOMP,'str')
+
+C Rotate any MRT sensors associated with this zone.
+          if (IVF(IICOMP).eq.1) then
+            NCUB = 0
+            CALL ERMRT(ITRC,ITRU,IUF,LVIEW(IICOMP),IICOMP,IER)
+            if (NCUB.gt.0) then
+              if(silent)then
+                ok= .true.
+              else
+                dok=.true.
+                h(1)='You already rotated the zone, you will most'
+                h(2)='likely want to rotate MRT sensors for the '
+                h(3)='zone as well. '
+                write(outs,'(a,a)') zn(1:lnblnk(zn)), ' ?'
+                call askok('Rotate MRT sensors of',outs,OK,DOK,3)
+              endif
+              if (OK) then
+                PI = 4.0 * ATAN(1.0)
+                A=-VAL*PI/180.
+                CA=COS(A)
+                SA=SIN(A)
+                do 76 ij=1,NCUB
+                  XXX=XOC(ij)-X1
+                  YYY=YOC(ij)-Y1
+                  XR=XXX*CA+YYY*SA
+                  YR=YYY*CA-XXX*SA
+                  XOC(ij)=XR+X1
+                  YOC(ij)=YR+Y1
+                  CANG(ij)=CANG(ij)+VAL
+  76            continue
+                CALL EMKMRT(LVIEW(IICOMP),LGEOM(IICOMP),
+     &                      NZSUR(IICOMP),IUF,IICOMP,'v',IER)
+
+              endif
+            endif
+          endif
+
+C Rotate any obstructions associated with this zone.
+          if(IOBS(IICOMP).EQ.1)then
+            if(silent)then
+              ok= .true.
+            else
+              dok=.true.
+              h(1)='You rotated the zone and so will probably'
+              h(2)='want to rotate the solar obstructions which'
+              h(3)='are associated with it as well. '
+              write(outs,'(4a)') 'Rotate obstructions of ',
+     &          zn(1:lnblnk(zn)),' in ',
+     &          ZOBS(IICOMP)(1:lnblnk(ZOBS(IICOMP)))
+              call askok(outs,' ?',OK,dok,3)
+            endif
+            if(OK)then
+              CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
+              PI = 4.0 * ATAN(1.0)
+              A=-VAL*PI/180.
+              CA=COS(A)
+              SA=SIN(A)
+              do 86 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
+                XR=XXX*CA+YYY*SA
+                YR=YYY*CA-XXX*SA
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
+  86          continue
+              CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
+            endif
+          endif
+          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+     &          '... done.'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          call sumrchg(IICOMP,'r',silent)
+        elseif(IOBS(IICOMP).EQ.2)then
+
+C If obstructions are held in the geometry file,
+C apply the transform and write the file back out.
+          if(newgeo)then
+            if(silent)then
+              ok= .true.
+            else
+              dok=.true.
+              write(outs,'(2a)') 'Transforms obstructions of ',
+     &        zn(1:lnblnk(zn))
+              h(1)='You rotated the zone and so will probably'
+              h(2)='want to rotate the solar obstructions which'
+              h(3)='are associated with it as well. '
+              write(outs,'(2a)') 'Rotate obstructions of ',
+     &          zn(1:lnblnk(zn))
+              call askok(outs,' ?',OK,dok,3)
+            endif
+            if(OK)then
+              PI = 4.0 * ATAN(1.0)
+              A=-VAL*PI/180.
+              CA=COS(A)
+              SA=SIN(A)
+              do 87 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
+                XR=XXX*CA+YYY*SA
+                YR=YYY*CA-XXX*SA
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
+  87          continue
+              call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+            endif
+          endif
+          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+     &      '... done.'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          call sumrchg(IICOMP,'r',silent)
+        endif
+  84  continue
+
+      return
+      end

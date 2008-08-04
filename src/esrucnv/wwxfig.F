@@ -20,6 +20,9 @@ C Boston, MA 02111-1307 USA.
 
 C**** convert from ww commands to xfig description.
       subroutine wwxfig(filname1,IER)
+      
+      integer lnblnk  ! function definition
+
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/OUTIN/IUOUT,IUIN
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

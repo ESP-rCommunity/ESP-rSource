@@ -332,6 +332,8 @@ c save set.
       SUBROUTINE MZLS2
 #include "building.h"
 #include "uncertainty.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1270,7 +1272,7 @@ C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
 C Temporary statement for dumping structured mesh temperatures.
 C      call TEMPSD(icomp)
-      if (ISAVE.eq.0) then
+      if ((ISAVE.eq.0).or.(ISAVE.eq.6)) then
 
 C Save appropriate data for ISAVE=0. Initialise during first pass
 C of each zone. Find current month (IS0M) for the simulation day.

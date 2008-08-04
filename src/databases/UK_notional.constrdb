@@ -1,6 +1,6 @@
 # composite construction db defined in UK_notional.constrdb
 # based on materials db material.db3.a
-   15     # no of composites 
+   16     # no of composites 
 # layers  description   optics name   symmetry tag
     4    pa_fl_notion  OPAQ  OPAQUE        inv_pa_fl_no  
 # mat ref thickness (m) mat descr & air gap R
@@ -104,3 +104,7 @@
    38    0.1500  concrete 150mm : Concrete high density 150mm (UK code)
     0    0.4000  air  0.180 0.180 0.180
   155    0.0150  Ceiling tile : Ceiling tiles
+# layers  description   optics name   symmetry tag
+    1    win_frame     OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   71    0.1000  softwood : Softwood (generic)

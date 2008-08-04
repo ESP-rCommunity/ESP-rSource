@@ -41,6 +41,8 @@ C     VOL() -  volume used for calculating change rate in case IDIM=3
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

@@ -46,6 +46,8 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
       PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
 
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
@@ -115,6 +117,8 @@ C Temporal definitions.
 
 C IPV description.
       common/IPVF/lipvdatf
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       common/pophelp/h(60)
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -187,6 +191,10 @@ C Returned parameters from silentread.
       character theprimedirective*8
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      real d1,d2,d3   ! data used with transfor or rotate command line
+      integer ivals   ! holds list of zones to be rotated or transformed.
+      dimension ivals(MCOM)
+      logical silent  ! for dependency checking on transform or rotate
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -202,7 +210,7 @@ C Initialize variables and recover command line arguments.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-      call parsfza(MODL,iappw,iappx,iappy,inf,inz,act)
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -244,6 +252,7 @@ C Set folder separator (fs) to \ or / as required.
       GTGEOM='UNKNOWN'
       LUALF='UNKNOWN'
       lipvdatf='UNKNOWN'
+      nipvassmt=0  ! to signal initially no IPV defined
       dmdsdesc='no dispersed demands notes (yet)'
       bdmds='UNKNOWN'
       bidirfile='UNKNOWN'
@@ -454,7 +463,7 @@ C and determine if focus is a single zone.
         inzone='ALL'
       endif
 
-C If command line also included a file name after -act
+C If command line also included a key word, file name or data after -act
 C then set inact.
       if(act(1:2).ne.'  ')then
         inact=act
@@ -532,6 +541,74 @@ C and if so do what it says.
             endif
           endif
         endif
+      elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate')then
+        XST=.false.
+        if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
+          INQUIRE (FILE=LCMDFL,EXIST=XST)
+          if(XST)then
+
+C Call newprb without the need to confirm model but to check its path.
+            itisanexemplar=.false.
+            confirm=.false.
+            ckpath=.true.
+            call NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+            if(ier.eq.-3)then
+              call usrmsg('Configuration file could not be loaded.',
+     &          'Exiting from project manager','W')
+              CALL EPAGEND
+              STOP
+            endif
+
+C Open core of databases if not already done so.
+            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+              continue
+            else
+              call opendb(ier)
+              if(ier.ne.0)then
+                call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db. Exiting.','W')
+                CALL EPAGEND
+                STOP
+              endif
+            endif
+
+C Scan control file if one exists.
+            ICTLF=IFIL+1
+            CALL ERPFREE(ICTLF,ISTAT)
+            call FINDFIL(LCTLF,XST)
+            if(XST)then
+              CALL EZCTLR(ICTLF,0,IUOUT,IER)
+            endif
+	    
+C Now implement the transform based on data passed in command line
+C for all the zones in the model. NOTE: in the next line set the
+C value of silent = .false if you want to interact with the transform
+C or rotation.
+C            silent= .false.
+            silent= .true.
+	    inpic=NCOMP
+	    do 29 iz=1,inpic
+	      ivals(iz)=iz
+  29        continue
+  
+C Perform either the transform or rotation.
+            if(inact(1:9).eq.'transform')then
+              call globaltransform(d1,d2,d3,inpic,ivals,
+     &          silent,itru,ier)
+            elseif(inact(1:6).eq.'rotate')then
+              call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
+	    endif
+            if(silent)then 
+              call usrmsg(
+     &          'Processing of transform or rotate complete.',
+     &          'Exiting from project manager','W')
+              CALL EPAGEND
+              STOP
+            else
+              goto 3
+            endif
+          endif
+        endif      
       endif
 
 C If an input file has been specified then load it.
@@ -1212,7 +1289,7 @@ C Also give user option to alter the root name.
 C If configuration file format is version 3 then check to see if there
 C are any utility files. If found then ask is the user wants to save
 C in older format.
-        if(icfgv.eq.3)then
+        if(icfgv.ge.3)then
           foundutl=.false.
           DO 45 I=1,ncomp
             if(INDUTL(I).ne.0)foundutl=.true.
@@ -1223,7 +1300,7 @@ C in older format.
      &      ' names. Options:','Update to current format','continue',
      &      IW,3)
             if(IW.EQ.1)then
-              icfgv=3
+              icfgv=4
 
 C Get root name and ensure that configuration file ends in .cfg.
               lcfgr=lnblnk(LCFGF)
@@ -1329,6 +1406,9 @@ C simula commissions technical assessments and analysis.
 #include "sbem.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
+      
+      integer lnblnk  ! function definition
+
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -1344,8 +1424,11 @@ C Temporal header (to get its time frequency)
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
+      common/CFGV/icfgv
       common/IPVF/lipvdatf
 
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
@@ -1371,7 +1454,7 @@ C level).
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
-      character cfgroot*24,cr*24,spfdescr*8
+      character cfgroot*24,cr*24,spfdescr*8,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
@@ -1771,7 +1854,7 @@ C and change any / to \.
         endif
 
 C Debug.
-C        call usrmsg('Beginning visual assessment via',doit,'-')
+        call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
       elseif(INO.EQ.MITEM-4)then
 
@@ -1792,48 +1875,87 @@ C NCM details have not been completed do nothing
         ENDIF
       elseif(MITEM.eq.10.and.INO.EQ.1)then
 
-C Case of no initial sets, offer default or user defined sets.
-        if(lnblnk(lipvdatf).eq.0.or.lipvdatf(1:7).eq.'UNKNOWN')then
-          h(1)='Simulation options (timesteps, start and finish dates,'
-          h(2)='startup periods, names of results files, etc.) can be '
-          h(3)='defined in advance. You can define a one or more sets'
-          h(4)='of parameters, e.g. to support standard assessments'
-          h(5)='for a project or seasonal assessments (see also IPV'
-          h(6)='definitions in project context). '
-          DOK=.false.
-          CALL ASKOK('  ',' Proceed with parameter definitions?',
+C Case of no initial sets, offer default or user defined sets. If the
+C data is internal to the file then it will already have been scanned.
+        if(icfgv.lt.4)then
+          if(lnblnk(lipvdatf).eq.0.or.lipvdatf(1:7).eq.'UNKNOWN')then
+            h(1)='Simulation options (timesteps, start & finish dates,'
+            h(2)='startup periods, result file names, etc.) can be '
+            h(3)='defined in advance. You can define a several sets'
+            h(4)='of parameters, e.g. to support standard assessments'
+            h(5)='for a project or seasonal assessments (see also IPV'
+            h(6)='definitions in project context). '
+            DOK=.false.
+            CALL ASKOK('  ',' Proceed with parameter definitions?',
      &      OK,DOK,6)
-          if(.NOT.OK)then
-            INO=-4
-            GOTO 3
-          endif
-          ID=1
-        else
+            if(.NOT.OK)then
+              INO=-4
+              GOTO 3
+            endif
+            ID=1
+          else
 
 C Scan the IPV description before asking user choice.
-          call FINDFIL(lipvdatf,XST)
-          IF(XST)then
-            call ripvdat(ifil+1,lipvdatf,ier)
+            call FINDFIL(lipvdatf,XST)
+            IF(XST)then
+	      ipvaction='ipv'
+              call ripvdat(ifil+1,lipvdatf,ipvaction,ier)
+            else
+              call usrmsg('IPV definition not found.',lipvdatf,'W')
+              INO=-4
+              GOTO 3
+            endif
+            h(1)='Simulation options (timesteps, start & finish dates,'
+            h(2)='startup periods, results file names, etc.) can be '
+            h(3)='defined in advance. You can define several sets'
+            h(4)='of parameters, e.g. to support standard assessments'
+            h(5)='for a project or seasonal assessments. '
+            h(6)='An IPV description has is associated with this model'
+            h(7)='and matching parameter sets will be created. '
+            DOK=.true.
+            CALL ASKOK('An IPV description has been found. Proceed to',
+     &        'create matching parameter sets?',OK,DOK,7)
+            if(.NOT.OK)then
+              INO=-4
+              GOTO 3
+            endif
+            ID=3
+          endif
+        else
+	
+C There may be ipv data held in the configuration file.
+          if(nipvassmt.eq.0)then
+            h(1)='Simulation options (timesteps, start & finish dates,'
+            h(2)='startup periods, result file names, etc.) can be '
+            h(3)='defined in advance. You can define a several sets'
+            h(4)='of parameters, e.g. to support standard assessments'
+            h(5)='for a project or seasonal assessments (see also IPV'
+            h(6)='definitions in project context). '
+            DOK=.false.
+            CALL ASKOK('  ',' Proceed with parameter definitions?',
+     &      OK,DOK,6)
+            if(.NOT.OK)then
+              INO=-4
+              GOTO 3
+            endif
+            ID=1
           else
-            call usrmsg('IPV definition not found.',lipvdatf,'W')
-            INO=-4
-            GOTO 3
+            h(1)='Simulation options (timesteps, start & finish dates,'
+            h(2)='startup periods, results file names, etc.) can be '
+            h(3)='defined in advance. You can define several sets'
+            h(4)='of parameters, e.g. to support standard assessments'
+            h(5)='for a project or seasonal assessments. '
+            h(6)='An IPV description has is associated with this model'
+            h(7)='and matching parameter sets will be created. '
+            DOK=.true.
+            CALL ASKOK('An IPV description has been found. Proceed to',
+     &        'create matching parameter sets?',OK,DOK,7)
+            if(.NOT.OK)then
+              INO=-4
+              GOTO 3
+            endif
+            ID=3	   
           endif
-          h(1)='Simulation options (timesteps, start and finish dates,'
-          h(2)='startup periods, names of results files, etc.) can be '
-          h(3)='defined in advance. You can define a one or more sets'
-          h(4)='of parameters, e.g. to support standard assessments'
-          h(5)='for a project or seasonal assessments. '
-          h(6)='An IPV description has is associated with this model'
-          h(7)='and matching parameter sets will be created. '
-          DOK=.true.
-          CALL ASKOK('An IPV description has been found. Proceed to',
-     &      'create matching parameter sets?',OK,DOK,7)
-          if(.NOT.OK)then
-            INO=-4
-            GOTO 3
-          endif
-          ID=3
         endif
 
 C Setup one parameter set or several sets to match IPV description.
@@ -1902,7 +2024,7 @@ C Setup one parameter set or several sets to match IPV description.
           elseif(ID.eq.3)then
 
 C Set parameter sets for current number of IPV assessments.
-            call ipv2simpar('-')
+            call ipv2simpar(ipvsimu)
           endif
           modparms=.true.
         endif
@@ -2109,9 +2231,10 @@ C There is temporal data so must save at each timestep.
         H(3)='Level 2 - as 1 + zone surface temperatures'
         H(4)='Level 3 - as 2 + zone construction node temperatures'
         H(5)='Level 4 - as 3 + zone and surface energy balances'
+        H(6)='Level 6 - summary database friendly and csv file'
         issavet=issave
-        CALL EASKI(issavet,' ','Results save level (0-4)?',
-     &      0,'F',4,'F',4,'save level',IERI,5)
+        CALL EASKI(issavet,' ','Results save level (0-4 & 6)?',
+     &      0,'F',6,'F',6,'save level',IERI,6)
         if(ieri.eq.-3)then
           continue
         else
@@ -2231,6 +2354,7 @@ C << the longer string used when commissioning a simulation.
       subroutine ipvactions(ier)
 #include "building.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
 C Get logical name of terminal type, expand model name
@@ -2243,6 +2367,7 @@ C to include the path and create a string to drive the modules.
       common/IPVF/lipvdatf
       common/uhome/upath
       common/exporttg/xfile,tg,delim
+      common/CFGV/icfgv
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -2269,9 +2394,10 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
       character ltpath*72,filen*72,ltmp*72,upath*72
-      character basefile*144,variantfile*144,outs*124,outsd*124
+      character basefile*144,variantfile*144,outs*124
       character word1*20,word2*40,word3*20,outstr*124
       character xfile*144,tg*1,delim*1,tab*1,fs*1
+      character ipvaction*3
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
@@ -2295,6 +2421,7 @@ C the first array index is base and 2nd is variant, 3rd diff
       dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
       dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
 
+
       ibasefile=11
       ivarfile=12
       NSIGFIG=3
@@ -2303,6 +2430,7 @@ C the first array index is base and 2nd is variant, 3rd diff
       if(nsset.gt.0)isset=1
       write(basefile,'(a)') sipvres(1:lnblnk(sipvres))
       write(variantfile,'(a)') sipvres(1:lnblnk(sipvres))
+      aut=' default'
 
 C Set file separator
       call isunix(unixok)
@@ -2327,27 +2455,39 @@ C Clear values.
       anu_cl_cap_bld(1)=0.; anu_cl_cap_bld(2)=0.; anu_cl_cap_bld(3)=0. 
  
 C IPV for the actual number of simulations required.
-      H(1)='An Integrated Performance View (IPV) is a collection'
-      H(2)='of standard performance indicators that have been'
-      H(3)='pre-defined. Some of the underlying assumptions may'
-      H(4)='be changed via the Model Context menu option.'
-      if(lnblnk(lipvdatf).eq.0)then
-        CALL PHELPD('IPV message',4,'-',0,0,IER)
-        return
-      elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-        CALL PHELPD('IPV message',4,'-',0,0,IER)
-        return
-      else
-        call FINDFIL(lipvdatf,XST)
-        IF(XST)then
-          call ripvdat(ifil+1,lipvdatf,ier)
-          if(ier.ne.0)then
+      if(icfgv.lt.4)then
+        H(1)='An Integrated Performance View (IPV) is a collection'
+        H(2)='of standard performance indicators that have been'
+        H(3)='pre-defined. Some of the underlying assumptions may'
+        H(4)='be changed via the Model Context menu option.'
+        if(lnblnk(lipvdatf).eq.0)then
+          CALL PHELPD('IPV message',4,'-',0,0,IER)
+          return
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          CALL PHELPD('IPV message',4,'-',0,0,IER)
+          return
+        else
+          call FINDFIL(lipvdatf,XST)
+          IF(XST)then
+	    ipvaction='ipv'
+            call ripvdat(ifil+1,lipvdatf,ipvaction,ier)
+            if(ier.ne.0)then
+              CALL PHELPD('IPV message',4,'-',0,0,IER)
+              return
+            endif
+          else
             CALL PHELPD('IPV message',4,'-',0,0,IER)
             return
           endif
-        else
+        endif
+      else
+      
+C IPV data could be internal to cfg file.
+        if(nipvassmt.eq.0)then
           CALL PHELPD('IPV message',4,'-',0,0,IER)
-          return
+          return	
+        else
+          continue
         endif
       endif
 
@@ -3011,6 +3151,8 @@ C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
      &                      oprfok,prob,tmcok,shdok)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -3578,6 +3720,8 @@ C and the image browser has not been invoked do this now. In the case
 C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3608,6 +3752,9 @@ C  noimg is the number of images associated with the model.
 C  iton is a toggle iton=0 initial state where images have not been scanned
 C    and iton=1 images have been displayed.
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+
+c      dimension dh(60)
+c      CHARACTER dh*72
 
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
@@ -3707,7 +3854,17 @@ C Setup help text for the popup.
           h(9)='a model. '
           h(10)='Images of type GIF and XBM and ?? are supported.'
           CALL PHELPW(10,IHW,IER)
-          call dupphelp(10)
+C          dh(1)='Images can be associated with a model for various'
+C          dh(2)='purposes: '
+C          dh(3)=' * document conditions at the physical site'
+C          dh(4)=' * document assumptions in the model'
+C          dh(5)=' * indicate what performance is expected'
+C          dh(6)='   '
+C          dh(7)='Images are added to a model via the context->images'
+C          dh(8)='menu item. There can be up to 10 images associate'
+C          dh(9)='with a model. '
+C          dh(10)='Images of type GIF and XBM and ?? are supported.'
+C          call dupphelp(dh)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.
@@ -3779,6 +3936,8 @@ C of the same project that can later be modified.
 
       SUBROUTINE CFGVER
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4153,6 +4312,8 @@ C << message to user that such a file does not exist
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
@@ -4162,8 +4323,19 @@ C Path to model and command line file (if any).
       common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
+      common/CFGV/icfgv
       common/pophelp/h(60)
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+
+C ipvtitl (char 40) is the title that shows up in reports
+C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
+C ipvsynop (char 248) documents the integrated performance view
+C ipvsimu (char 6) is a short tag describing the assessments to be run
+C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
+C   season assessment with all days included.
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -4205,12 +4377,14 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot,oldcfgroot
-      CHARACTER ipvtitl*40,ipvvers*40,ipvsynop*248,OUTSTR*124
+      CHARACTER OUTSTR*124
       CHARACTER APE*4,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
+      character ipvaction*3  ! to signal external ipv file
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical updatetitle ! if true the edit IPV titles.
 
       M=ILM
       call isunix(unixok)
@@ -4797,30 +4971,46 @@ C includes shading files.
         ENDIF
 
 C If there is an IPV file also update it.
-        call FINDFIL(lipvdatf,XST)
-        call isunix(unixok)
-        IF(XST)THEN
-          call edisp(IUOUT,
-     &     '* IPV file has been updated to match climate.')
-          call edisp(IUOUT,'Please update the IPV titles.')
-          CALL RIPVDAT(IFIL+1,LIPVDATF,IER)
-          EXT='.ipv'
-          CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
-          if(unixok)then
-            WRITE(doit,'(4A)')'cp ',LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
-     &        NNAME(1:LNBLNK(NNAME))
-          else
-            WRITE(doit,'(4A)')'copy /y ',
-     &        LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
-     &        NNAME(1:LNBLNK(NNAME))
-          endif
+        if(icfgv.lt.4)then
+          call FINDFIL(lipvdatf,XST)
+          call isunix(unixok)
+          IF(XST)THEN
+            call edisp(IUOUT,
+     &        '* IPV file has been updated to match climate.')
+            call edisp(IUOUT,'Please update the IPV titles.')
+	    ipvaction='ipv'
+            CALL RIPVDAT(IFIL+1,LIPVDATF,ipvaction,IER)
+            EXT='.ipv'
+            CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
+            if(unixok)then
+              WRITE(doit,'(4A)')'cp ',LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            else
+              WRITE(doit,'(4A)')'copy /y ',
+     &          LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            endif
 C          CALL USRMSG('Copying IPV file via:',doit,'-')
-          CALL RUNIT(doit,'-')
-          LIPVDATF=NNAME
-          CALL EASKS(ipvtitl,' Enter project title for this variant?',
-     &     ' ',40,'project','description modifier',IER,0)
-          CALL EASKS(ipvvers,' Enter project version for this variant?'
-     &     ,' ',40,'project','description modifier',IER,0)
+            CALL RUNIT(doit,'-')
+            LIPVDATF=NNAME
+            updatetitle=.true.
+          else
+	    updatetitle=.false.   ! nothing to do
+	  endif
+        else
+          if(nipvassmt.eq.0)then
+	    updatetitle=.false.   ! nothing to do
+          else
+            updatetitle=.true.
+          endif
+	endif
+
+C Update the titles.
+        if(updatetitle)then
+          CALL EASKS(ipvtitl,'Enter project title for this variant?',
+     &    ' ',40,'project','description modifier',IER,0)
+          CALL EASKS(ipvvers,'Enter project version for this variant?',
+     &    ' ',40,'project','description modifier',IER,0)
           CALL EASKS248(ipvsynop,'Synopsis',' ',72,
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-')
@@ -5087,23 +5277,39 @@ C building integrated renewables
       ELSEIF(M.EQ.17)THEN
 
 C variant integrated performance view
-        EXT='.ipv'
-        call FINDFIL(lipvdatf,XST)
-        call isunix(unixok)
-        IF(XST)THEN
-          CALL RIPVDAT(IFIL+1,LIPVDATF,IER)
-          CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
-          if(unixok)then
-            WRITE(doit,'(4A)')'cp ',LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
-     &        NNAME(1:LNBLNK(NNAME))
-          else
-            WRITE(doit,'(4A)')'copy /y ',
-     &        LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
-     &        NNAME(1:LNBLNK(NNAME))
-          endif
+        if(icfgv.lt.4)then
+          EXT='.ipv'
+          call FINDFIL(lipvdatf,XST)
+          call isunix(unixok)
+          IF(XST)THEN
+	    ipvaction='ipv'
+            CALL RIPVDAT(IFIL+1,LIPVDATF,ipvaction,IER)
+            CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
+            if(unixok)then
+              WRITE(doit,'(4A)')'cp ',LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            else
+              WRITE(doit,'(4A)')'copy /y ',
+     &          LIPVDATF(1:LNBLNK(LIPVDATF)),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            endif
 C          CALL USRMSG('Copying file via:',doit,'-')
-          CALL RUNIT(doit,'-')
-          LIPVDATF=NNAME
+            CALL RUNIT(doit,'-')
+            LIPVDATF=NNAME
+            updatetitle=.true.
+          else
+	    updatetitle=.false.   ! nothing to do
+	  endif
+        else
+          if(nipvassmt.eq.0)then
+	    updatetitle=.false.   ! nothing to do
+          else
+            updatetitle=.true.
+          endif
+	endif
+
+C Update the titles.
+        if(updatetitle)then
           CALL EASKS(ipvtitl,' Enter project title for this variant?',
      &     ' ',40,'project','description modifier',IER,0)
           CALL EASKS(ipvvers,' Enter project version for this variant?'
@@ -5112,10 +5318,13 @@ C          CALL USRMSG('Copying file via:',doit,'-')
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-')
         ELSE
-          CALL EDISP(IUOUT,'* IPV file does not exist, creating one!')        
-          WRITE(LIPVDATF,'(2A)')cfgroot(1:lnblnk(cfgroot)),'.ipv'
-          CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
-          LIPVDATF=NNAME
+          if(icfgv.lt.4)then
+            CALL EDISP(IUOUT,
+     &        '* IPV file does not exist, creating one!')        
+            WRITE(LIPVDATF,'(2A)')cfgroot(1:lnblnk(cfgroot)),'.ipv'
+            CALL FNCNGR(LIPVDATF,APE,EXT,NNAME)
+            LIPVDATF=NNAME
+          endif
           CALL IPVDAT('I')
           CALL EASKS(ipvtitl,' Enter project title for this variant?',
      &     ' ',40,'project','description modifier',IER,0)
@@ -5125,10 +5334,13 @@ C          CALL USRMSG('Copying file via:',doit,'-')
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-') 
         ENDIF
-        CALL MKIPVDAT(IFIL+1,LIPVDATF)
-        msg1='updating model for IPV changes...'
-        call edisp(iuout,
-     &    '* IPV file being copied and edited text included.')
+        if(icfgv.lt.4)then
+          ipvaction='ipv'
+          CALL MKIPVDAT(IFIL+1,LIPVDATF,ipvaction)
+          msg1='updating model for IPV changes...'
+          call edisp(iuout,
+     &      '* IPV file being copied and edited text included.')
+        endif
       ELSEIF(M.EQ.18)THEN
          
 C variant fluid flow network

@@ -818,6 +818,9 @@ C and calculate the pressure coeffcients
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C default file names for databases
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -1395,6 +1398,7 @@ C current contents of pc-data in common block.
 #include "net_flow.h"
 #include "building.h"
 #include "esprdbfile.h"
+      integer lnblnk  ! function definition
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)

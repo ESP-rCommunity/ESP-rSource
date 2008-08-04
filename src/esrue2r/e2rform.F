@@ -26,6 +26,8 @@ C  mkriofil Write inside/outside materials and composition files.
 C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -245,6 +247,8 @@ C ********************** wrtsky **********************
 C wrtsky calls radiance and writes sky info to file.
 
       SUBROUTINE wrtsky(skycmd)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -285,6 +289,8 @@ C Translate esp data to radiance geom and materials.
 C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -549,6 +555,8 @@ C If ACT='i' then interactive, ACT='s' for silent.
       SUBROUTINE mkriofil(ftr,fict,ACT,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

@@ -32,6 +32,8 @@ C overwriting the string passed, deal with a copy.
 C CHITMSL is similar to CHITMS but allows checking of longer strings and
 C is particularly useful for Radiance.
       SUBROUTINE CHITMSL(A,IW)
+      
+      integer lnblnk  ! function definition
       CHARACTER*(*) A
       CHARACTER B*254,C*1
 
@@ -70,6 +72,8 @@ C ********************* RADPAR *********************
 C RADPAR - check and update render options.
 C If VAL is < 0 then return current setting otherwise set par=VAL.
       SUBROUTINE RADPAR(PAR,VAL)
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype

@@ -26,6 +26,8 @@ C climatic data sets compatible with ESP-r.
       program clm
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

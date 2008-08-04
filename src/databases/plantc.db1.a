@@ -3626,7 +3626,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
   PLANT COMPONENT                                           No :     65
 
  Component Description
-    Generic type     : H2 Compressor
+    Generic type     : Empirical model of a H2 Compressor
     Description      : hydrogen compressor
     Insertion date   : 12 Aug 02 15:55
     Type: Single component                    Component code :    880
@@ -3638,26 +3638,28 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     Variable type    :  22,
 
  Miscellaneous Data
-    Adata items   :   9    Bdata items   :   0    Cdata items   :   0
+    Adata items   :  10    Bdata items   :   0    Cdata items   :   0
  ADATA variables:
-    1 Analysis type (1 = ideal gas law, 2 = empirical)
+    1 Dummy Input --- has no impact on model 
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
     2 Inlet pressure (kPa)
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
     3 Outlet pressure (kPa)
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
-    4 Electrical/Kinematic performance coefficient 0
+    4 Electrical/Kinematic performance coeff. 0
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
-    5 Electrical/Kinematic performance coefficient 1
+    5 Electrical/Kinematic performance coeff. 1
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-    6 Electrical/Kinematic performance coefficient 2
+    6 Electrical/Kinematic performance coeff. 2
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-    7 Thermal performance coefficient 0 (emperical model only!)
+    7 Heat recovery coeff. 0
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
-    8 Thermal performance coefficient 1 (emperical model only!)
+    8 Heat recovery coeff. 1
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-    9 Thermal performance coefficient 2 (emperical model only!)
+    9 Heat recovery coeff. 2 
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
+   10 Dummy Input --- has no impact on model 
+      Value =    1.0000        Range (Min Max):     1.0000        3.0000
 
  Number of additional output parameters:     1
  Additional output variables:
@@ -4245,7 +4247,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
     Variable type    :  22,  20,  20,
 
  Miscellaneous Data
-    Adata items   :  38    Bdata items   :   0    Cdata items   :   2
+    Adata items   :  42   Bdata items   :   0    Cdata items   :   3
  ADATA variables:
     1 Electrolyser efficiency coefficient e0 (-)
       Value =    0.8000        Range (Min Max):     0.0000        1.0000
@@ -4261,13 +4263,13 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
     7 Age of electrolyser at start of simulation (s)
       Value =    0.0000        Range (Min Max):     0.0000       0.10000E+12
-    8 Auxiliary power coefficient wo (W)
+    8 Auxiliary AC power coefficient wo (W)
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
-    9 Auxiliary power coefficient w1 (-)
+    9 Auxiliary AC power coefficient w1 (-)
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
    10 Minimum protective power in standby mode (W)
       Value =    100.00        Range (Min Max):     0.0001        1000.0
-   11 Power demand of electrolyser stack (W)
+   11 Maximum power demand of electrolyser stack (W)
       Value =    1000.0        Range (Min Max):     0.0001        5000.0
    12 O2 production rate coefficient a0 (mol/s)
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
@@ -4281,7 +4283,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
       Value =    9.2039        Range (Min Max):     0.0000        1000.0
    17 H2O consumption rate coefficient b2 (s/mol)
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
-   18 Electrolyser stack inlet temperature(oC)
+   18 Electrolyser stack operating temperature(oC)
       Value =    80.000        Range (Min Max):     0.0000        100.00
    19 Internal heat generation coefficient f0 (W)
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
@@ -4317,15 +4319,24 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
    35 Heat recovery coefficient g8 (W/oC^2)
       Value =    0.0000        Range (Min Max):     0.0000        1000.0
-   36 Flag for feed water temperature (1=const,2=containment temp)
-      Value =    1.0000        Range (Min Max):     1.0000        2.0000
+   36 Flag for feed water temperature (0=const,1=containment temp)
+      Value =    0.0000        Range (Min Max):     0.0000        1.0000
    37 Constant feed water inlet temperature (oC)
       Value =    20.000        Range (Min Max):     0.0000        100.00
    38 Operating voltage of electrolyser (V)
       Value =    24.000        Range (Min Max):     0.0000        1000.0
+   39 Mode of operation (1=Constant current; 2=Variable current)
+      Value =    1.0000        Range (Min Max):     1.0000        2.0000
+   40 Flag for feed water heating (0=no,1=yes)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
+   41 Auxiliary DC power coefficient wo (W)
+      Value =    0.0000        Range (Min Max):     0.0000        1000.0
+   42 Auxiliary DC power coefficient w1 (-)
+      Value =    0.0000        Range (Min Max):     0.0000        1000.0
  CDATA variables:
     1 Operating signal (on/off)
     2 Standby signal (on/off)
+    3 Control signal (W)
 
  Number of additional output parameters:     1
  Additional output variables:
@@ -4353,7 +4364,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
     Variable type    :  22,
 
  Miscellaneous Data
-    Adata items   :   8    Bdata items   :   0    Cdata items   :   2
+    Adata items   :   9    Bdata items   :   0    Cdata items   :   2
  ADATA variables:
     1 Encapsulated volume (m3)
       Value =    0.1000        Range (Min Max):     0.0000        100.00
@@ -4371,6 +4382,8 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
       Value =    101.32        Range (Min Max):     101.32        1.0E06
     8 Gas model (1: ideal, 2: Lee-Kesler)
       Value =    1.0000        Range (Min Max):     1.0000        2.0000
+    9 Vent when over maximum pressure? (0: no, 1: yes)
+      Value =    1.0000        Range (Min Max):     0.0000        1.0000
  CDATA variables:
     1 Explicit hydrogen demand (kg/s)
     2 Implicit hydrogen demand (kg/s)    
@@ -4471,7 +4484,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
     Variable type    :  22,  20,
 
  Miscellaneous Data
-    Adata items   :  58    Bdata items   :   0    Cdata items   :   2
+    Adata items   :  62    Bdata items   :   0    Cdata items   :   2
  ADATA variables:
     1 System Nominal rated output (W)
       Value =   700.0          Range (Min Max):     1.0000        3.0000
@@ -4511,83 +4524,91 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
       Value =    -50.0         Range (Min Max):     -1.0E06       1.0E06
    19 Thermal output in standby mode (W)
       Value =   0.0000         Range (Min Max):     -1.0E06       1.0E06
-   20 Correlation reference CW temperature (oC)
-      Value =     65.0         Range (Min Max):     0.0000         100.0
-   21 Correlation reference CW flow rate (kg/s)
-      Value =      0.0         Range (Min Max):     0.0000         100.0
-   22 Correlation reference Amb. temperature (oC)
-      Value =      0.0         Range (Min Max):     0.0000         100.0
-   23 Skin loss coefficient C0  (W)
+   20 Skin loss coefficient C0  (W)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   24 Skin loss coefficient C1 (W / W)
+   21 Skin loss coefficient C1 (W / W)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   25 Skin loss coefficient C2 (W / W^2)
+   22 Skin loss coefficient C2 (W / W^2)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   26 Skin loss coefficient C3 (Ws/kmol)
+   23 Skin loss coefficient C3 (Ws/kmol)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   27 Skin loss coefficient C4 (Ws^2/kmol^2)
+   24 Skin loss coefficient C4 (Ws^2/kmol^2)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   28 Thermal efficiency coefficient C0 (-)
+   25 Thermal efficiency coefficient C0 (-)
       Value =    1.0000        Range (Min Max):     1.0000        3.0000
-   29 Thermal efficiency coefficient C1 (1/W)
+   26 Thermal efficiency coefficient C1 (1/W)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   30 Thermal efficiency coefficient C2 (1/W)
+   27 Thermal efficiency coefficient C2 (1/W)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   31 Thermal efficiency coefficient C3 (1/oC)
+   28 Thermal efficiency coefficient C3 (1/oC)
       Value =    3.72E-03      Range (Min Max):     1.0000        3.0000
-   32 Thermal efficiency coefficient C4 (1/oC^2)
+   29 Thermal efficiency coefficient C4 (1/oC^2)
       Value =    4.98E-04      Range (Min Max):     1.0000        3.0000
-   33 Thermal efficiency coefficient C5 (s/kg)
+   30 Thermal efficiency coefficient C5 (s/kg)
       Value =    2.50E-04      Range (Min Max):     1.0000        3.0000
-   34 Thermal efficiency coefficient C6 (s^2/kg^2)
+   31 Thermal efficiency coefficient C6 (s^2/kg^2)
       Value =   -3.48E-08      Range (Min Max):     1.0000        3.0000
-   35 Thermal efficiency coefficient C7 (1/s)
+   32 Thermal efficiency coefficient C7 (1/s)
       Value =   -3.48E-08      Range (Min Max):     1.0000        3.0000
-   36 Electrical efficiency coefficient C0 (-)
+   33 Electrical efficiency coefficient C0 (-)
       Value =    9.09E-02      Range (Min Max):     1.0000        3.0000
-   37 Electrical efficiency coefficient C1 (1/W)
+   34 Electrical efficiency coefficient C1 (1/W)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   38 Electrical efficiency coefficient C2 (1/W2)
+   35 Electrical efficiency coefficient C2 (1/W2)
       Value =    0.0000        Range (Min Max):     1.0000        3.0000
-   39 Electrical efficiency coefficient C3 (1/oC)
+   36 Electrical efficiency coefficient C3 (1/oC)
       Value =   -1.97E-04      Range (Min Max):     1.0000        3.0000
-   40 Electrical efficiency coefficient C4 (1/oC^2)
+   37 Electrical efficiency coefficient C4 (1/oC^2)
       Value =    1.26E-05      Range (Min Max):     1.0000        3.0000
-   41 Electrical efficiency coefficient C5 (s/kg)
+   38 Electrical efficiency coefficient C5 (s/kg)
       Value =    3.29E-05      Range (Min Max):     1.0000        3.0000
-   42 Electrical efficiency coefficient C6 (s^2/kg^2)
+   39 Electrical efficiency coefficient C6 (s^2/kg^2)
       Value =   -4.16E-09      Range (Min Max):     1.0000        3.0000
-   43 Electrical efficiency coefficient C7 (1/s)
+   40 Electrical efficiency coefficient C7 (1/s)
       Value =   -4.16E-09      Range (Min Max):     1.0000        3.0000
-   44 Aux. AC power draw coefficient C0 (W)
+   41 Aux. DC power draw coefficient C0 (W)
       Value =    50.000        Range (Min Max):     1.0000        3.0000
-   45 Aux. AC power draw coefficient C1 (W / W)
+   42 Aux. DC power draw coefficient C1 (W / W)
       Value =    0.0           Range (Min Max):     1.0000        3.0000
-   46 Aux. AC power draw coefficient C2 (W / W^2)
+   43 Aux. DC power draw coefficient C2 (W / W^2)
       Value =    0.0           Range (Min Max):     1.0000        3.0000
-   47 Aux. AC power draw coefficient C3 (W/oC)
+   44 Aux. DC power draw coefficient C3 (W/oC)
       Value =    0.0           Range (Min Max):     1.0000        3.0000
-   48 Aux. AC power draw coefficient C4 (W/oC^2)
+   45 Aux. DC power draw coefficient C4 (W/oC^2)
       Value =    1.26E-05      Range (Min Max):     1.0000        3.0000
-   49 Aux. AC power draw coefficient C5 (Ws/kg)
+   46 Aux. DC power draw coefficient C5 (Ws/kg)
       Value =    3.29E-05      Range (Min Max):     1.0000        3.0000
-   50 Aux. AC power draw coefficient C6 (Ws^2/kg^2)
+   47 Aux. DC power draw coefficient C6 (Ws^2/kg^2)
       Value =   -4.16E-09      Range (Min Max):     1.0000        3.0000
-   51 Gross heat input correlation minimum bound (W)
+   48 Aux. AC power draw coefficient C0 (W)
+      Value =    50.000        Range (Min Max):     1.0000        3.0000
+   49 Aux. AC power draw coefficient C1 (W / W)
+      Value =    0.0           Range (Min Max):     1.0000        3.0000
+   50 Aux. AC power draw coefficient C2 (W / W^2)
+      Value =    0.0           Range (Min Max):     1.0000        3.0000
+   51 Aux. AC power draw coefficient C3 (W/oC)
+      Value =    0.0           Range (Min Max):     1.0000        3.0000
+   52 Aux. AC power draw coefficient C4 (W/oC^2)
+      Value =    1.26E-05      Range (Min Max):     1.0000        3.0000
+   53 Aux. AC power draw coefficient C5 (Ws/kg)
+      Value =    3.29E-05      Range (Min Max):     1.0000        3.0000
+   54 Aux. AC power draw coefficient C6 (Ws^2/kg^2)
+      Value =   -4.16E-09      Range (Min Max):     1.0000        3.0000   
+   55 Gross heat input correlation minimum bound (W)
       Value =    8000.0        Range (Min Max):     0.0000       1.0E-06
-   52 Gross heat input correlation maximum bound (W)
+   56 Gross heat input correlation maximum bound (W)
       Value =    8400.0        Range (Min Max):     0.0000       1.0E-06
-   53 Cooling water temperature correlation minimum bound (oC)
+   57 Cooling water temperature correlation minimum bound (oC)
       Value =      60.0        Range (Min Max):     0.0000        100.00
-   54 Cooling water temperature correlation minimum bound (oC)
+   58 Cooling water temperature correlation minimum bound (oC)
       Value =      70.0        Range (Min Max):     0.0000        100.00
-   55 Cooling water flow correlation minimum bound (kg/s)
+   59 Cooling water flow correlation minimum bound (kg/s)
       Value =       0.0        Range (Min Max):     0.0000        100.00
-   56 Cooling water flow correlation maximum bound (kg/s)
+   60 Cooling water flow correlation maximum bound (kg/s)
       Value =     100.0        Range (Min Max):     0.0000        100.00
-   57 Ambient  temperature correlation minimum bound (oC)
+   61 Ambient  temperature correlation minimum bound (oC)
       Value =     -10.0        Range (Min Max):     -10.00        100.00
-   58 Ambient temperature correlation maximum bound (oC)
+   62 Ambient temperature correlation maximum bound (oC)
       Value =     100.0        Range (Min Max):     0.0000        100.00
  CDATA variables:
     1 Control method (-)
@@ -4619,12 +4640,14 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns:   0
     Variable type    :  22
 
  Miscellaneous Data
-    Adata items   :   2    Bdata items   :   0    Cdata items   :   0
+    Adata items   :   3    Bdata items   :   0    Cdata items   :   0
  ADATA variables:    
     1 Interpolation method (1: step, 2: linear)
       Value =     1.0          Range (Min Max):     1.0000        2.0000
     2 Appliance efficiency
       Value =     1.0          Range (Min Max):     0.0000        1.0000
+    3 Appliance scale factor
+      Value =     1.0          Range (Min Max):     0.0000        1000.0
 
  Number of additional output parameters:     1
  Additional output variables:
@@ -5847,3 +5870,214 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     91
+
+ Component Description
+    Generic type     : Ideal gas model of multi-stage compressor
+    Description      : hydrogen compressor
+    Insertion date   : 12 Aug 02 15:55
+    Type: Single component                    Component code :   1250
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  22,
+
+ Miscellaneous Data
+    Adata items   :  14    Bdata items   :   0    Cdata items   :   0
+ ADATA variables:
+    1 Inlet pressure (kPa)
+      Value =    125.0         Range (Min Max):     1.0000        3.0000
+    2 Outlet pressure (kPa)
+      Value =    29000.0       Range (Min Max):     1.0000        3.0000
+    3 Number of stages
+      Value =    2.0000        Range (Min Max):     1.0000        4.0000
+    4 Isentropic performance coeff. 0
+      Value =    0.5503        Range (Min Max):     1.0000        3.0000
+    5 Isentropic performance coeff. 1
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+    6 Isentropic performance coeff. 2
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+    7 Multistage intercooling type (1: ideal, 2: fixed temp, 3: fractional)
+      Value =    1.0000        Range (Min Max):     1.0000        3.0000
+    8 Intercooling type 2: intermediate temperature (oC)
+      Value =    0.0000        Range (Min Max):     -30.00        300.00
+    9 Intercooling type 3: performance coefficient 0
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+   10 Intercooling type 3: performance coefficient 1
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+   11 Intercooling type 3: performance coefficient 2
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+   12 Electric motor efficiency coefficient 0 
+      Value =    0.9000        Range (Min Max):     1.0000        3.0000
+   13 Electric motor efficiency coefficient 1
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+   14 Electric motor efficiency coefficient 2
+      Value =    0.0000        Range (Min Max):     1.0000        3.0000
+
+ Number of additional output parameters:     1
+ Additional output variables:
+    1 Miscellaneous output           Type :    1
+
+ Mass flow components data
+
+Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     92
+ 
+ Component Description
+    Generic type     : WCH boiler
+    Description      : condensing boiler with modulation; 2 node model
+    Insertion date   : 11 Mar 92 21:53
+    Type: Single component                    Component code :    420
+ 
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      3
+    Matrix positions :   1,   3,   4,
+    Node connections :   1,  -1,
+    Variable type    :  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :  21    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    50.000        Range (Min Max):     50.000        50.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    1000.0        Range (Min Max):     1000.0        1000.0
+ BDATA variables:
+    1 Full load gas firing rate if boiler on (m^3/s)
+      Value =   0.30000E-03    Range (Min Max):    0.30000E-03   0.30000E-03
+    2 dump load fraction
+      Value =    0.0000        Range (Min Max):    0.00000        1.0000
+    3 Gas heating value at STP (J/m^3)
+      Value =   0.35000E+08    Range (Min Max):    0.35000E+08   0.35000E+08
+    4 boiler lock out time (min)
+      Value =    3.0000        Range (Min Max):     0.0000        0.0000
+    5 Boiler heat loss to surroundings UA (W/K)
+      Value =    20.000        Range (Min Max):     0.0000        0.0000
+    6 DHW draw schedule control loop no. if combi boiler (0 otherwise) (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    7 DHW calorifier component number if combi boiler (0 otherwise) (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    8 Constant cold water feed temperature for DHW for combi boiler (degC)
+      Value =    10.000        Range (Min Max):     0.0000        0.0000
+    9 Constant supply water temperature for DHW for combi boiler (degC)
+      Value =    50.000        Range (Min Max):     0.0000        0.0000
+   10 Upper boiler temperature limit (C)
+      Value =    95.000        Range (Min Max):     95.000        95.000
+   11 Lower limit of modulating range  (%)
+      Value =    30.000        Range (Min Max):     30.000        30.000
+   12 Lower limit of total differential  (%)
+      Value =    1.0000        Range (Min Max):     1.0000        1.0000
+   13 a_1 coefficient for efficiency equation (T_return)
+      Value =    8.6628        Range (Min Max):     8.6628        8.6628
+   14 a_2 coefficient for efficiency equation (T_return^2)
+      Value =  -0.28661        Range (Min Max):   -0.28661      -0.28661
+   15 a_3 coefficient for efficiency equation (T_return^3)
+      Value =   0.38650E-02    Range (Min Max):    0.38650E-02   0.38650E-02
+   16 a_4 coefficient for efficiency equation (T_return^4)
+      Value =   -1.8676        Range (Min Max):   -0.18676E-04  -0.18676E-04
+   17 a_5 coefficient for efficiency equation (Load)
+      Value =   -11.102        Range (Min Max):    -11.102       -11.102
+   18 a_6 coefficient for efficiency equation (Load*T_return)
+      Value =   0.28221        Range (Min Max):    0.28221       0.28221
+   19 a_7 coefficient for efficiency equation (Load*T_return^2)
+      Value =  -0.17660E-02    Range (Min Max):   -0.17660E-02  -0.17660E-02
+   20 a_8 coefficient for efficiency equation (Constant)
+      Value =    7.6259        Range (Min Max):     7.6259        7.6259
+   21 a_9 coefficient for efficiency equation (Load^2)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+ CDATA variables:
+    1  ON/OFF control signal (-)
+ 
+ Number of additional output parameters:     5
+ Additional output variables:
+    1 ON/OFF signal                  Type :    6
+    2 Gas consumption (l/s)          Type :    7
+    3 Upper boiler temp limit        Type :    6
+    4 Water heat input               Type :    2
+    5 Efficiency                     Type :    3
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     93
+ 
+ Component Description
+    Generic type     : WCH exponent radiator
+    Description      : Basic hot water radiator exponent 2 node model
+    Insertion date   : 11 Mar 92 20:56
+    Type: Single component                    Component code :    440
+ 
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      3
+    Matrix positions :   1,   3,   4,
+    Node connections :   1,  -1,
+    Variable type    :  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :  11    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    25.000        Range (Min Max):     25.000        25.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    600.00        Range (Min Max):     600.00        600.00
+ BDATA variables:
+    1 Nominal heat supply rate (W)
+      Value =    2500.0        Range (Min Max):     2500.0        2500.0
+    2 Nominal supply water temperature (C)
+      Value =    80.000        Range (Min Max):     80.000        80.000
+    3 Nominal environment temperature (C)
+      Value =    20.000        Range (Min Max):     20.000        20.000
+    4 Nominal exit water temperature (C)
+      Value =    70.000        Range (Min Max):     70.000        70.000
+    5 Radiator Exponent (-)
+      Value =    1.3000        Range (Min Max):     1.3000        1.3000
+    6 Index of 1st wall for defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    7 Weighting factor 1st wall when defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    8 Index of 2nd wall for defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    9 Weighting factor 2nd wall when defining Te (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+   10 Index of coupled building zone (0-n)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+   11 Number of walls used for defining Te (0-n)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+ 
+ Number of additional output parameters:     3
+ Additional output variables:
+    1 Heat emission from radiator    Type :    4
+    2 Mean radiator temperature      Type :    2
+    3 Environment temperature        Type :    2
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000

@@ -29,6 +29,8 @@ C array of selected zones to include.
 C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

@@ -154,6 +154,8 @@ c after the start-up period.
       subroutine zngrph(iss,isf,instep,mode)
 #include "building.h"
 #include "monitor.h"
+      
+      integer lnblnk  ! function definition
 
 C Parameters for eline calls.
       integer LNMVAB, LNDRAB, LNMVRL, LNDRRL
@@ -284,7 +286,7 @@ c initialise data items count 'icount'.
 
 c Plot graph for zone(s) state variables.
 C If save option 0 then exit.
- 2000 if(isave.eq.0) goto 999
+ 2000 if((ISAVE.eq.0).or.(ISAVE.eq.6)) goto 999
       IF(IFS.GT.0)CALL winfnt(1)
       iunit=ifil+2
       do 20 j=1, instep

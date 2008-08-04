@@ -820,6 +820,9 @@ C if act is 'g' write generic item.
       SUBROUTINE PCRDFGDB(IUFIL,act)
 #include "plantdb.h" 
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)

@@ -31,6 +31,8 @@ C if these are 0 then use default values.
 #include "building.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

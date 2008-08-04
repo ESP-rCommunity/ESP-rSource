@@ -1102,6 +1102,8 @@ C READ3D reads 3D gridding cofiguration file.
 C *********************************************************************
       SUBROUTINE READ3D(IZ)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1440,6 +1442,8 @@ C SAVE3D saves 3D gridding configuration file.
 C *********************************************************************
       SUBROUTINE SAVE3D(IZ)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)

@@ -52,6 +52,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN

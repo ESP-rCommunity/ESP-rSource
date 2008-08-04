@@ -22,7 +22,7 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfutil.o \
 	  mocfd.o moclim.o moget.o moplnt.o mosensa.o nwkrewr.o plot3d.o \
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
-	  resutil.o rlibget.o rwipv.o setres.o sort.o spmatl.o spmisc.o startup.o \
+	  resutil.o rlibget.o rwipv.o rwsbem.o setres.o sort.o spmatl.o spmisc.o startup.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
 	  vgraph.o visgrd.o visual.o visvec.o
 
@@ -122,6 +122,9 @@ readTrnsys.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -137,7 +140,6 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
-
 visgrd.F:
 	rm -f visgrd.F
 	ln -s $(DFSdir)/visgrd.F .
@@ -160,5 +162,5 @@ clean:
 	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
-	psychro.F readTrnsys.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
+	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
 	visgrd.F visual.F visvec.F

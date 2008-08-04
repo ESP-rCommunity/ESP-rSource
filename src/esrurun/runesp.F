@@ -373,7 +373,7 @@ C << start up bps with -p directive...>>
 
 C **************** parse_oc
 C parse_oc reads the contents of the input file (LFILE) and generates
-C a silentread file.
+C silentread data structures.
 C parent action: 'create_silent' or 'create_model' or 'create_run_model'
       subroutine parse_oc(LFILE,parentaction,ier)
       integer MSZ   ! number of silent zones array sizes
@@ -386,6 +386,9 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+      character dinstpath*48
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
@@ -414,6 +417,9 @@ C weather (32 char) the weather file name (no path included)
       character root*24,mpath*72,mnpath*72,folder*12
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
+      character weathergr*36   ! file name for weather related ground temps (no path)
+      character groundfile*72  ! file name for weather related gorund temps (with path)
+      character subpath*72
       character parentaction*16 ! action passed from calling code
       character action*8       ! to pass to silentmodel
       character longtfile*144,longtfiledos*144
@@ -473,12 +479,26 @@ C Run-type 0=free float control, 1=controlled
 C Logicals if true then there is glass in a parent surface
       logical glzin1,glzin2,glzin3,glzin4,glzin5
 
+C Data related to locating a ground temperature file.
+      logical haveground ! set true if ground temp file has been found
+      integer lnw   ! length of weather string.
+      integer lnwg   ! length of weather ground string.
+      integer igrfile ! unit number of ground file
+
       IER=0
 
 C Get the current folder and display options to the user.
 C first list any files with .cfg in name.
       odir=' '
       call usrdir(odir)
+
+C Determine operating system
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Debug...
 C      write(6,*) 'usrdir is ',odir
@@ -497,6 +517,8 @@ C Set logicals for locations of windows.
 
       setpoints(1)=0.0
       setpoints(2)=100.0
+      subpath=' '
+      haveground=.false.
 
 C Clear the sz array structures.
       weather=' '
@@ -573,6 +595,25 @@ C Initialise data file. and set currentfile.
       ENDIF
       write(currentfile,'(a)') LFILE(1:lnblnk(LFILE))
 
+C Guess about a root name and folder from lfile (until
+C there is more information available?) Need to do this
+C in order to have a path for optional ground temperature
+C file.
+      call fdroot(LFILE,mnpath,thefile)
+      lcfgr=lnblnk(thefile)
+      lcfgl=lcfgr-3
+      if(lcfgr.gt.4)then
+        if(thefile(lcfgl:lcfgr).eq.'.txt')then
+          write(root,'(a)') thefile(1:lcfgl-1)
+        else
+          write(root,'(a)') thefile(1:lcfgr)
+        endif
+      else
+        write(root,'(a)') thefile(1:lcfgr)
+      endif
+      write(mpath,'(2a)') mnpath(1:lnblnk(mnpath)),
+     &  root(1:lnblnk(root))
+
 C Read lines from file in tag - data format.  Use EGETP for the
 C tag in case it has spaces.
  43   CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'silent line 1',IER)
@@ -580,7 +621,48 @@ C tag in case it has spaces.
       K=0
       CALL EGETP(OUTSTR,K,WORD,'W','tag in oc file',IER)
       if(WORD(1:8).eq.'*climate')then
+      
+C The order of the logic requires that we test for the existence
+C of a ground temperature file which matches the name of the
+C weather file. The following logic is similar to that used in
+C subroutine 
         CALL EGETRM(OUTSTR,K,weather,'W','weather name',IER)
+        igrfile=IFIL+2  ! hopefully not used
+        lnw=lnblnk(weather)
+        write(weathergr,'(2a)') weather(1:lnw),'.gnd'
+        lnwg=lnblnk(weathergr)
+        write(subpath,'(4a)')
+     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        write(groundfile,'(2a)') subpath(1:lnblnk(subpath)),
+     &    weathergr(1:lnwg)
+        write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+        call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+        if(ISTAT.ge.0)then
+          haveground=.true.
+          CALL ERPFREE(igrfile,ISTAT)
+        else
+
+C Try with the root name prepended.
+          write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &      weathergr(1:lnwg)
+          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+          if(ISTAT.ge.0)then
+            haveground=.true.
+            CALL ERPFREE(igrfile,ISTAT)
+          else
+  
+C Try where-the-input-file is.
+            write(groundfile,'(2a)') mnpath(1:lnblnk(mnpath)),
+     &        weathergr(1:lnwg)
+            write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+            call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+            if(ISTAT.ge.0)then
+              haveground=.true.
+              CALL ERPFREE(igrfile,ISTAT)
+            endif
+          endif
+        endif
         goto 43
       elseif(WORD(1:7).eq.'*length')then
         CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
@@ -789,18 +871,29 @@ C Determine how many surfaces in the model.
         write(szhasconstruction(nsz,NS),'(a)') skylightconstr
       endif
 
-C For the surfaces other than ground set to outside.
+C For the surfaces other than ground set to outside. If there was
+C a ground temperature file the assume we can point to the profile
+C in that file.
       do 70 isurf=1,NS
         if(isurf.eq.6)then
-          szboundarytype(nsz,isurf,1)=4
-          szboundarytype(nsz,isurf,2)=1
-          szboundarytype(nsz,isurf,3)=0
+          if(.NOT.haveground)then
+            szboundarytype(nsz,isurf,1)=4
+            szboundarytype(nsz,isurf,2)=1
+            szboundarytype(nsz,isurf,3)=0
+          else
+            szboundarytype(nsz,isurf,1)=4
+            szboundarytype(nsz,isurf,2)=0
+            szboundarytype(nsz,isurf,3)=1
+          endif
         else
           szboundarytype(nsz,isurf,1)=0
           szboundarytype(nsz,isurf,2)=0
           szboundarytype(nsz,isurf,3)=0
         endif
   70  continue
+  
+C Prior to setting up the model define default calendar
+      call calenmanage('i',ier)
 
 C Test creation of new model. Note for a single folder option the
 C configuration will be in /tmp/box if mpath is /tmp/box. For the
@@ -996,19 +1089,19 @@ C Establish the name of the zone operations file.
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Wkd: start, stop, infil, ventil, source, data'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '   0, 24,    0.500    0.000    0    0.000'
+     &  '   0, 24,    1.000    0.000    0    0.000'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '     1   # no Saturday flow periods'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Sat: start, stop, infil, ventil, source, data'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '   0, 24,    0.500    0.000    0    0.000'
+     &  '   0, 24,    1.000    0.000    0    0.000'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '     1   # no Sunday flow periods'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '# Sun: start, stop, infil, ventil, source, data'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &  '   0, 24,    0.500    0.000    0    0.000'
+     &  '   0, 24,    1.000    0.000    0    0.000'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &  '     9   # no Weekday casual gains'
       WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
@@ -1276,7 +1369,7 @@ C Establish the name of the control file.
 
 C In the next line we set the heating and cooling capacity based
 C on 30W/m2 of floor area.
-      WRITE(IUO,'(F11.3,A,F11.3,a,2F7.3,a)',IOSTAT=IOS,ERR=1)
+      WRITE(IUO,'(F11.3,A,F11.3,a,2F8.3,a)',IOSTAT=IOS,ERR=1)
      &  heatcap,' 0.000 ',coolcap,' 0.000 ',setpoints(1),setpoints(2),
      &  ' 0.000'
 

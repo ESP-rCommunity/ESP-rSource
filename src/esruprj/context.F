@@ -34,6 +34,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "tdf2.h"
 #include "sbem.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/FILEP/IFIL
@@ -57,6 +58,9 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
 C IPV description.
       common/IPVF/lipvdatf
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/CFGV/icfgv
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -93,6 +97,7 @@ C ITEMS is menu for site/context items.
       character imgfmt*4,imgfoc*4,limgfil*72
       character act*1,GTNAME*15
       character D64*64  ! default string for editing
+      character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
 
@@ -143,7 +148,7 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      ITEMS(8) =                'g calendar (holidays)            '                             '
+      ITEMS(8) =                'g calendar (holidays)            '
       ITEMS(9) =                'h building address               '
       ITEMS(10)=                'i client address                 '
       ITEMS(11)=                'j simulationist address          '
@@ -817,34 +822,55 @@ C Dispersed fan/pump/lift/DHW demands.
 
       ELSEIF(INO.EQ.19)THEN
 
-C IPV data. 
-        h(1)='This file holds data required to later construct'
-        h(2)='an `Integrated Performance View` of simulation'
-        h(3)='results.'
-        lr=lnblnk(cfgroot)
-        if(lnblnk(lipvdatf).eq.0)then
-          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
-        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
-        else
-          ltmp=lipvdatf
-        endif
- 142    CALL EASKS(ltmp,' ','IPV description file?',
-     &               72,'xxx.ipv','IPV file',IER,3)
-        if(ltmp(1:2).ne.'  ')then
-          lipvdatf=ltmp
-          call FINDFIL(lipvdatf,XST)
-          IF(XST)then
-            call ripvdat(ifil+1,lipvdatf,ier)
-            call ipvdat('-')
+C IPV data.
+        if(icfgv.lt.4)then
+          h(1)='This file holds data required to later construct'
+          h(2)='an `Integrated Performance View` of simulation'
+          h(3)='results.'
+          lr=lnblnk(cfgroot)
+          if(lnblnk(lipvdatf).eq.0)then
+            write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
           else
-            call ipvdat('i')
-            call mkipvdat(ifil+1,lipvdatf)
-            call ipvdat('-') 
+            ltmp=lipvdatf
+          endif
+ 142      CALL EASKS(ltmp,' ','IPV description file?',
+     &               72,'xxx.ipv','IPV file',IER,3)
+          if(ltmp(1:2).ne.'  ')then
+            lipvdatf=ltmp
+            call FINDFIL(lipvdatf,XST)
+            IF(XST)then
+	      ipvact='ipv'
+              call ripvdat(ifil+1,lipvdatf,ipvact,ier)
+              call ipvdat('-')
+            else
+	      ipvact='ipv'
+              call ipvdat('i')
+              call mkipvdat(ifil+1,lipvdatf,ipvact)
+              call ipvdat('-') 
+            endif
+          else
+            call usrmsg('Please re-enter file name.',' ','W')
+            goto 142
           endif
         else
-          call usrmsg('Please re-enter file name.',' ','W')
-          goto 142
+	
+C IPV data is held within the configurtion file. Reset the file
+C name (since it is not used). If nipvassmt is still zero then
+C nothing has been created yet so initialise and save to the
+C configuration file. If there is data call ipvdat and the update the
+C configuration file when exiting.
+          lipvdatf='internal'
+          if(nipvassmt.eq.0)then
+            call ipvdat('i')     ! fill with defaults
+            CALL EMKCFG('-',IER) ! remember this
+            call ipvdat('-')     ! edit data
+            CALL EMKCFG('-',IER) ! remember this
+          else
+            call ipvdat('-')
+            CALL EMKCFG('-',IER)
+          endif
         endif
 
       ELSEIF(INO.EQ.21)THEN
@@ -884,6 +910,8 @@ C function of time. Important variables are defined in roam.h
       SUBROUTINE ROAMING
 #include "building.h"
 #include "roam.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
@@ -985,6 +1013,8 @@ C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1108,7 +1138,7 @@ C Try to use information gathered from file scan.
               if(snpfile(1:2).ne.'  ')then
                 write(limg,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
      &            snpfile(1:lnblnk(snpfile))
-                write(6,*) limg
+C                write(6,*) limg
               else
                 write(limg,'(a)')imgpth(1:lnblnk(imgpth))
               endif
@@ -1188,6 +1218,9 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1197,7 +1230,7 @@ C temporal data to be associated with a model.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS) 
+     &          SUSE(MS,2),SPARENT(MS)
      
 C TDF related.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
@@ -2474,6 +2507,9 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       subroutine calenmanage(act,ier)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3375,6 +3411,8 @@ C EDDGTP Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN

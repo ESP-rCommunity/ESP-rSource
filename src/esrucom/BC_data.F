@@ -1271,7 +1271,7 @@ C----------------------------------------------------------------------
       logical bInitialized         ! flag indicating procedures have
                                    ! been initialized.
       data bInitialized / .false. /
-
+      save bInitialized
       
       integer iTS_requested       ! requested time row
       real    fRow                ! real (fracional) BC row corresponding

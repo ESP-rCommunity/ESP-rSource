@@ -31,6 +31,8 @@ C icnpick is the icon to edit.
       SUBROUTINE NETICONDATR(icnpick,ier)
 # include "epara.h"
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -403,6 +405,9 @@ C ************** updintunknflow
 C updintunknflow update attributes of internal unkn press flow node
       subroutine updintunknflow(icn,AVAL,SVAL,VALV)
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
+
 C Icon commons       
       COMMON/POPHELP/H(60)
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -539,6 +544,9 @@ C ************** updwindflow
 C updwindflow update attributes of boundary wind pressure flow node
       subroutine updwindflow(icn,exttag,AVAL,SVAL,VALV)
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
+
 C Icon commons       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
@@ -630,6 +638,8 @@ C      SUBROUTINE NETCNNDATR(IER,IX,IY)
 
 # include "epara.h"
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -971,6 +981,8 @@ C presented by category).
       SUBROUTINE NETIDATR(ier)
 # include "epara.h"
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1648,6 +1660,8 @@ C spearates the editing of each category of atrribute.
 
 # include "epara.h"
 # include "gnetwk.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

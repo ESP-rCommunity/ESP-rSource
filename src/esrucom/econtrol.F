@@ -260,6 +260,8 @@ C          flow control function.
 #include "power.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2035,6 +2037,8 @@ C control file sensors, actuator, control types, control laws.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2366,6 +2370,8 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 #include "net_flow.h"
 #include "control.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
@@ -3168,7 +3174,7 @@ C Append the sensor msg to the end of lmsg and increment lx position.
 
 C Tell the user about the multi sensor data.
           call SDELIM(lmsg,message,'S',IW)
-C          call edisp248(6,message,80)
+          call edisp248(6,message,80)
 
 C Nicol Occupant resopnse model for control
         elseif(IFCLAW(II,JJ,KK).EQ.4)then
@@ -3293,6 +3299,8 @@ C List one day type of a building/plant/flow/global/optical control.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -3467,6 +3475,9 @@ C SSTRB is brief string (48 char) returned
 #include "building.h"
 #include "plant.h"
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -3967,8 +3978,6 @@ c set up data for optical control function ii.
       isn3=iosn(ii,3)
       isn4=iosn(ii,4)
       ian1=ioan(ii,1)
-      ian2=ioan(ii,2)
-      ian3=ioan(ii,3)
 
 C isn1 has been tested, therefore use its value to test isn2 & isn3.
     4 is=isn1+6
@@ -4033,9 +4042,7 @@ C Check actuator details for legality.
       goto(25,24,11,12,13,14)ia
 
 C Actuation is on zone node weighting.
-C To avoid classes with optical controls additional logic added. The initial code was:
-C   11 if(ian2.ne.icfz)goto 1005
-   11 if(ian2.ne.icfz.and.((nof.eq.0).or.(ian1.ne.-5)))goto 1005
+   11 if(ian2.ne.icfz)goto 1005
       if(ian3.lt.0.or.ian3.gt.100)goto 1006
       goto 20
 
@@ -4067,13 +4074,7 @@ C Actuation on zone under consideration.
 
 C Actuation is on a zone node.
    14 if(ian1.ne.icfz)goto 1004
-   
-C To avoid classes with optical controls additional logic added. The initial code was:
-C  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005   
-  131 if((ian2.lt.0.and.((nof.eq.0).or.(ian1.ne.-5))).or.
-     &  (ian2.gt.nzsur(ian1).and.((nof.eq.0).or.(ian1.ne.-5))))then
-        goto 1005
-      endif  
+  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005
       if(ian3.lt.0)goto 1006
       if(ian2.eq.0)goto 20
 
@@ -4092,6 +4093,7 @@ c actuation is on a mass flow connection.
 
 c actuation is on a mass flow component.
    25 if((ian2.lt.0).or.((ian2.gt.ncnn).and.(ian2.gt.ncmp)))goto 1005
+
    20 continue
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
    10 continue

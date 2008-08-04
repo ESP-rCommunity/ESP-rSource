@@ -35,6 +35,9 @@ C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

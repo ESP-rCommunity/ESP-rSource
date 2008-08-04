@@ -34,6 +34,8 @@ C time-dependent variables to be plotted for one or more zones.
 
       SUBROUTINE VWLIN
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -910,6 +912,9 @@ C to graphical result display.
 
       SUBROUTINE VGHED(VITEM,HITEM)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

@@ -38,6 +38,7 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -474,6 +475,8 @@ C *********************************************************************
       SUBROUTINE INTGRD(GRDOK,ITRC)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

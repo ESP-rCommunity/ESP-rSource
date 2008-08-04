@@ -89,7 +89,7 @@ C Open the file.
 
 C Write plant component data base name.
       write(IFPNF,'(a)') '# Plant component data base:'
-      write(IFPNF,'(a70)') lpcdb
+      write(IFPNF,'(a)') lpcdb
 
 C Write lpnam of problem.
       write(IFPNF,'(a)') '# Project title:'

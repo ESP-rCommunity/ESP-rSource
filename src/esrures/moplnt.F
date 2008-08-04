@@ -31,6 +31,9 @@ C ******************** PLTTAB ********************
 C PLTTAB handles results view/setup requests for plant.
       subroutine plttab
 #include "plant.h"
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -718,6 +721,7 @@ C LPCDB/IPCDB (for plant template database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1028,13 +1032,19 @@ C has to be read. imode=0 - plant only config
 C Read plant component file name (long or short) 
       if(IPLIB.eq.1)then
         IREC=IREC+1
-        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) Lpcdb
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        lnfb=lnblnk(firstbit)
+	write(Lpcdb,'(a)') firstbit(1:lnfb)
+        write(6,*) Lpcdb
       elseif(IPLIB.eq.2)then
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
-        Lpcdb=firstbit   ! until Lpcdb becomes 144 char
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(6,*) Lpcdb
       endif
       
 C If IPLIB is 2 then the model configuration file name will have alread
@@ -1332,6 +1342,9 @@ C the command line was a plant results file.
 #include "building.h"
 #include "plant.h"
 C act='p' iget parameters already set.
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN

@@ -20,6 +20,9 @@ C Boston, MA 02111-1307 USA.
 
 C file setup.F includes facilities for display of dates, time and files.
       SUBROUTINE SETUP(IER)
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/FILEP/IFIL
@@ -121,8 +124,8 @@ C If vi then spawn a new window to do the editing in.
         call addpath(LFIL,longtfile,concat)
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
-        write(doit,'(a,2x,a,a)') teditor(:lnblnk(teditor)),
-     &    longtfile(:lnblnk(longtfile)),' &'
+        write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile)),' &'
         call runit(doit,tmode)
       ELSEIF(INO1.EQ.8)THEN
 
@@ -152,7 +155,7 @@ C Loop until end of file encountered and display stripped text.
    73   CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'stripping',IER)
         IF(IER.EQ.2)goto 72
         IF(IER.EQ.1)GOTO 33
-        WRITE(ISUNIT,'(a)')OUTSTR(:LNBLNK(OUTSTR))
+        WRITE(ISUNIT,'(a)')OUTSTR(1:LNBLNK(OUTSTR))
         CALL edisp(iuout,OUTSTR)
         goto 73
    72   CALL USRMSG(' ',' reached end of source file ','-')
@@ -178,7 +181,7 @@ C Place miscellaneous testing applications here.
         H(12)='of the Project Manager.  Editing an ASCII file - such'
         H(13)='as the job notes file - requires a text editor which'
         H(14)='is currently defined to be:'
-        write(H(15),'(a,a,a)')'      ',teditor(:lnblnk(teditor)),'.'
+        write(H(15),'(a,a,a)')'      ',teditor(1:lnblnk(teditor)),'.'
         H(16)='This can be re-defined in your .esprc file.'
         CALL PHELPD('geneeral preferences',16,'-',0,0,IER)
       ELSEIF(INO1.EQ.11)THEN

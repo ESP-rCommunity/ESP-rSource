@@ -54,6 +54,8 @@ C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -297,8 +299,7 @@ C default data (and set ip3ver to 2 in case user does nothing else).
       call FINDFIL(LPROJ(ICOMP),XST)
       IF(XST)THEN
         CALL ERPFREE(IUO,ISTAT)
-C        CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
-        CALL EROPER(1,ITRU,IUO,ICOMP,IER)
+        CALL EROPER(ITRC,ITRU,IUO,ICOMP,IER)
 
 C Do cursory check to see if the file is sorted.
         sorted=.true.
@@ -1223,6 +1224,9 @@ C IER=0 is OK.
 
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -1644,6 +1648,9 @@ C IER=0 is OK.
 
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -2091,6 +2098,8 @@ C     =2 infil, =0 ventilation attributes.
 
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2524,6 +2533,8 @@ C << initial intent to guide later revisions?
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -3222,6 +3233,8 @@ C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -4565,6 +4578,8 @@ C << initial intent to guide later revisions?
       subroutine IMPORTZCASG(isource,idest,actcas,iwatt,sfile,itrc,
      &  act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -4932,6 +4947,8 @@ C  ICOMP zone number
 
       subroutine PLTCASGN(ICOMP,IDTYP)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -5361,6 +5378,9 @@ C initcasday does initial setup of all casual day types.
       subroutine initcasday(ier)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)

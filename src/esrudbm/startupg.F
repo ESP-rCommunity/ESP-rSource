@@ -30,6 +30,8 @@ C users home folder.  If not found then some defaults are set.
       SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER) 
 C Use espriou.h for climatelist file name.
 #include "espriou.h" 
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
@@ -219,9 +221,9 @@ C Read '*ESPRC' tag.
       CALL STRIPC(IFDEF,OUTSTR,0,ND,1,'ESPRC tag',IER)
       if(OUTSTR(1:6).ne.'*ESPRC')then
         if(localdot)then
-        write(outs,'(a,a)')LFDEF(:lnblnk(LFDEF)),' not an .esprc file!'
+        write(outs,'(2a)')LFDEF(1:lnblnk(LFDEF)),' not an .esprc file!'
         else
-        write(outs,'(a,a)')altdot(:lnblnk(altdot)),' not a .esprc file!'
+        write(outs,'(2a)')altdot(1:lnblnk(altdot)),' not a .esprc file!'
         endif
         call edisp(iuout,OUTSTR)
         call edisp(iuout,outs)
@@ -375,6 +377,9 @@ C in a string instpath.
 #include "esprdbfile.h"
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
@@ -572,6 +577,9 @@ C  Allowing terminal, size and config file arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parpsf(termtype,iappw,iappx,iappy,inf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -668,6 +676,7 @@ C Errors.
 C ****** parpsfh
 C Help message for parpsf.
       subroutine parpsfh(appn)
+
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
 
@@ -851,6 +860,9 @@ C  to be passed to the program from the invocation line.
 
       subroutine parsim(termtype,iappw,iappx,iappy,inf,browse,sps,
      &  aut,actf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Timeout information
@@ -981,6 +993,9 @@ C  Allowing terminal, size, results file, action and silent arguments
 C  to be passed to res from the invocation line.  
 
       subroutine parres(termtype,iappw,iappx,iappy,inf,act,aut,actf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -1093,6 +1108,9 @@ C  Allowing terminal, size, input file, action and silent arguments
 C  and output (converted) file to be passed to clm from the invocation line.  
 
       subroutine parclm(termtype,iappw,iappx,iappy,inf,act,aut,ascif)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -1210,6 +1228,9 @@ C  Allowing terminal, size, config file, zone focus and actions arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsfza(termtype,iappw,iappx,iappy,inf,zone,act)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -1322,6 +1343,9 @@ C  Allowing terminal, size, config file, zone focus arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsfz(termtype,iappw,iappx,iappy,inf,zone)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -1425,6 +1449,9 @@ C  Allowing terminal and config file arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine partf(termtype,inf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype
@@ -1506,6 +1533,9 @@ C  Allowing terminal, size, config file, scene purpose and actions arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parspza(termtype,iappw,iappx,iappy,inf,zone,aim,act)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -1625,6 +1655,9 @@ C  Allowing terminal, size, file andactions arguments
 C  to be passed to the program from the invocation line.  
 
       subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer termtype,iappw,iappx,iappy
@@ -1731,6 +1764,9 @@ C Errors.
 C Parse command line paramters for ecnv.
       subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
       integer iargc,m
@@ -1846,6 +1882,9 @@ C        call edisp(iuout,outs)
 C ******* FINDAPP
 C Given a file name (string) see if it contains one of the esp-r module names.
       SUBROUTINE findapp(string,appn)
+      
+      integer lnblnk  ! function definition
+
       CHARACTER*(*) string,appn
       logical unixok
 

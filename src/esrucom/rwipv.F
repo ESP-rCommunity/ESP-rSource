@@ -1,15 +1,24 @@
 C Subroutines to read and write IPV descriptions.
 
 C *********** mkipvdat
-C Write IPV data.
-      subroutine mkipvdat(ifu,file)
+C Write IPV data to an external file or within cfg file based
+C on the parameter act (3 char) ='ipv' or ='cfg'
+      subroutine mkipvdat(ifu,file,act)
 #include "building.h"
-
-      common/OUTIN/IUOUT,IUIN
+      
+      integer lnblnk  ! function definition
 
 C ipvform = 1 report is human readable text, 2 is tab separated, 3 is java
       common/IPVFORMAT/ipvform,ipvversion
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+
+C ipvtitl (char 40) is the title that shows up in reports
+C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
+C ipvsynop (char 248) documents the integrated performance view
+C ipvsimu (char 6) is a short tag describing the assessments to be run
+C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
+C   season assessment with all days included.
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C List of metric sets: nms is number of sets, imetget is the
 C esrures iget index for the metric selected, imetmsc holds two
@@ -68,25 +77,31 @@ C NIPVIMG number of image files associate with IPV.
 C LIPVIMG (72 char) image files associate with IPV
       common/IPVI/nipvimg,lipvimg(4)
 
-      character file*72,ipvtitl*40,ipvvers*40
-      character ipvsynop*248,lipvimg*72,tab*1
+      character file*72,lipvimg*72,tab*1
       character outs*124,outsd*124,outsn*124
       character ipvadesc*40,zedsdoc*12,metgroup*12
       character msdoc*12,metrglbl*20,dstmp*24
+      character act*3   ! indicate which file destination
 
 C      tab=CHAR(9)
       tab=','
 
 C Open any existing file by this name or create a new file.
-      CALL  ERPFREE(ifu,ISTAT)
-      CALL EFOPSEQ(ifu,file,3,IER)
-      IF(IER.LT.0)THEN
-        IER=1
-        RETURN
-      ENDIF
-      ipvversion=4
-      WRITE(ifu,'(2A,i1,a,i1)',IOSTAT=IOS,ERR=1003)'*IPV',tab,
-     &  ipvversion,tab,ipvform
+      if(act(1:3).eq.'ipv')then
+        CALL  ERPFREE(ifu,ISTAT)
+        CALL EFOPSEQ(ifu,file,3,IER)
+        IF(IER.LT.0)THEN
+          IER=1
+          RETURN
+        ENDIF
+        ipvversion=4
+        WRITE(ifu,'(2A,i1,a,i1,3a)',IOSTAT=IOS,ERR=1003)'*IPV',tab,
+     &    ipvversion,tab,ipvform,tab,ipvsimu,'  # IPV data follows'
+      elseif(act(1:3).eq.'cfg')then
+        ipvversion=4
+        WRITE(ifu,'(A,i1,a,i1,3a)',IOSTAT=IOS,ERR=1003)'*ipv  ',
+     &    ipvversion,tab,ipvform,tab,ipvsimu,'  # IPV data follows'
+      endif
       WRITE(ifu,'(3A)',IOSTAT=IOS,ERR=1003)'*title',tab,ipvtitl
       WRITE(ifu,'(3A)',IOSTAT=IOS,ERR=1003)'*version',tab,ipvvers
       call dstamp(dstmp)
@@ -231,7 +246,15 @@ C Write nonspecific demands data.
       call SDELIM(outsn,outsd,'C',IW)
       WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)outsd(1:lnblnk(outsd))
 
-      WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)'*end'
+C If writing to external file use a different syntax and free the file.
+C If writing to cfg file use *end_ipv and do not close file.
+      if(act(1:3).eq.'ipv')then
+        WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)'*end'
+        CALL  ERPFREE(ifu,ISTAT)
+      elseif(act(1:3).eq.'cfg')then
+        WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)'*end_ipv'
+      endif
+      return
 
   999 CALL  ERPFREE(ifu,ISTAT)
       return
@@ -249,15 +272,18 @@ C Write nonspecific demands data.
 C *********** clearipvdat
 C Clear IPV common blocks. If act = 'b' blank all the data, if act = 'i'
 C then include initial data for energy demand sets and metrics.
-      subroutine clearipvdat(act,ier)
+      subroutine clearipvdat(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
-C      common/OUTIN/IUOUT,IUIN
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
       common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
      &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
       common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
@@ -271,7 +297,7 @@ C      common/OUTIN/IUOUT,IUIN
      &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
       common/IPVI/nipvimg,lipvimg(4)
 
-      character act*1,ipvtitl*40,ipvvers*40,ipvsynop*248,lipvimg*72
+      character act*1,lipvimg*72
       character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
       character cfgroot*24,metgroup*12
       character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
@@ -318,6 +344,7 @@ C Items to clear in any case.
 C Clear commons with blanking.
       if(act.eq.'b')then
         ipvsynop=' '
+        ipvsimu=' '
         nms=0
         do 65 ij=1,MIPVM
           imetget(ij)=0
@@ -333,6 +360,7 @@ C Energy demand sets.
           zedsdoc(ij)='- '
   67    continue
       elseif(act.eq.'i'.or.act.eq.'I')then
+        ipvsimu=' '
         lr=lnblnk(cfgroot)
         write(ipvtitl,'(a)') LSNAM(1:40)
         write(ipvvers,'(2a)') 'Version ',cfgroot(1:lr)
@@ -369,16 +397,20 @@ C Energy demand sets.
       end
 
 C *********** ripvdat
-C Read IPV data.
-      subroutine ripvdat(ifu,file,ier)
+C Read IPV data from an external file or within cfg file based
+C on the parameter act (3 char) ='ipv' or ='cfg'.
+      subroutine ripvdat(ifu,file,act,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
-C      common/OUTIN/IUOUT,IUIN
 C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
 C           3 is java
       common/IPVFORMAT/ipvform,ipvversion
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C List of metric sets: nms is number of sets, imetget is the
 C esrures iget index for the metric selected, imetmsc holds two
@@ -428,42 +460,51 @@ C initially set to 1.0. << should call clm for these numbers >>.
       common/IPVI/nipvimg,lipvimg(4)
 
       character file*72,word*20
-      character ipvtitl*40,ipvvers*40
-      character ipvsynop*248,lipvimg*72,OUTSTR*124,LOUTSTR*248
+      character lipvimg*72,OUTSTR*124,LOUTSTR*248
       character ipvadesc*40,zedsdoc*12
       character msdoc*12,metrglbl*20,metgroup*12,dstmp*24
+      character act*3   ! indicate which file destination
 
 C Open any existing file by this name.
-      CALL EFOPSEQ(ifu,file,1,IER)
-      IF(IER.LT.0)THEN
-        IER=1
-        RETURN
-      ENDIF
-      write(currentfile,'(a)') file(1:lnblnk(file))
+      if(act(1:3).eq.'ipv')then
+        CALL EFOPSEQ(ifu,file,1,IER)
+        IF(IER.LT.0)THEN
+          IER=1
+          RETURN
+        ENDIF
+        write(currentfile,'(a)') file(1:lnblnk(file))
 
-C Check identity.
-      iper=0
-      imset=0
-      iset=0
-      CALL STRIPC(ifu,OUTSTR,99,ND,1,'line 1',IER)
-      IF(IER.NE.0)RETURN
-      if(OUTSTR(1:5).ne.'* IPV'.and.OUTSTR(1:4).ne.'*IPV')then
-        call usrmsg('Does not appear to be an IPV description.',' ','W')
-        IER=1
-        return
-      endif
-      K=0
-      CALL EGETW(OUTSTR,K,WORD,'W','*IPV tag',IFLAG)
-      if(ND.gt.2)then
-        CALL EGETWI(OUTSTR,K,ipvversion,0,4,'W','version index',IER)
-        CALL EGETWI(OUTSTR,K,ipvform,0,4,'W','ipv rep format',IER)
-      else
-        ipvversion=3
-        ipvform=0
+C Check identity and if that is successful then get the version
+C number and the format indicator.
+        CALL STRIPC(ifu,OUTSTR,99,ND,1,'line 1',IER)
+        IF(IER.NE.0)RETURN
+        if(OUTSTR(1:5).ne.'* IPV'.and.OUTSTR(1:4).ne.'*IPV')then
+          call usrmsg('Is not an IPV description file.',' ','W')
+          IER=1
+          return
+        endif
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','*IPV tag',IFLAG)
+        if(ND.gt.2)then
+          CALL EGETWI(OUTSTR,K,ipvversion,0,4,'W','version index',IER)
+          CALL EGETWI(OUTSTR,K,ipvform,0,4,'W','ipv rep format',IER)
+          if(ND.gt.3)then
+            CALL EGETW(OUTSTR,K,ipvsimu,'W','*IPV assessment',IFLAG)
+          endif
+        else
+          ipvversion=3
+          ipvform=0
+          ipvsimu='------'
+        endif
+      elseif(act(1:3).eq.'cfg')then
+        continue  ! the header information has already been scanned.
       endif
 
 C Clear (blank) IPV commons before reading.
-      call clearipvdat('b',ier)
+      call clearipvdat('b')
+      iper=0
+      imset=0
+      iset=0
 
 C Scan lines.
   43  CALL STRIPC(ifu,OUTSTR,99,ND,1,'IPV data',IER)
@@ -512,6 +553,20 @@ C Do not bother to read remainder of earlier multi-line synopsis.
       elseif(WORD(1:12).eq.'*simulations')then
         CALL EGETWI(OUTSTR,K,nipvassmt,1,5,'W','simulations',IER)
         iper=0
+        if(ipvsimu.eq.'------')then
+
+C We have an older file which did not contain ipvsimu so make a guess
+C at its value by looking at the number of assessments.
+          if(nipvassmt.eq.1)then
+            ipvsimu='ias   '
+          elseif(nipvassmt.eq.3)then
+            ipvsimu='i3t   '
+          elseif(nipvassmt.eq.5)then
+            ipvsimu='i5t   '
+          else
+            ipvsimu='i--   '
+          endif
+        endif
       elseif(WORD(1:7).eq.'*period')then
         iper=iper+1
         CALL EGETWI(OUTSTR,K,ipvastjd(iper),1,365,'W','assmt st',IER)
@@ -627,8 +682,10 @@ C Non-specific demands toggles for inclusion.
         CALL EGETWI(OUTSTR,K,idmdinc(5),0,1,'W','pumps dmd',IER)
         CALL EGETWI(OUTSTR,K,idmdinc(6),0,1,'W','lifts dmd',IER)
         CALL EGETWI(OUTSTR,K,idmdinc(7),0,1,'W','DHW dmd',IER)
-      elseif(WORD(1:4).eq.'*end')then
-        goto 999
+      elseif(WORD(1:8).eq.'*end_ipv')then
+        return  ! for ipv data within cfg file
+      elseif(WORD(1:5).eq.'*end ')then
+        goto 999  ! for separate ipv file
       else
         goto 43
       endif
@@ -646,9 +703,13 @@ C Where act='a' list all, act='m' list metrics, act='d' list
 C demand sets. Itru is the channel for listing.
       subroutine listipvdat(itru,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C See ripvdat for IPV common block information.
       common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
@@ -671,8 +732,7 @@ C See ripvdat for IPV common block information.
 
       dimension list(32)  ! zone lists currently limited to 32 max.
 
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,lipvimg*72
-      character ipvadesc*40,zedsdoc*12,outs*124
+      character lipvimg*72,ipvadesc*40,zedsdoc*12,outs*124
       character msdoc*12,metrglbl*20,act*1,metgroup*12
       character descr*7,descrst*10,descrfn*10,zdescr*248
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
@@ -873,7 +933,7 @@ C List current metrics and demand sets.
             do 829 ijj=1,nzmg(ij)
               list(ijj)=izmg(ij,ijj)
  829        continue
-            call znarlist(inlist,list,32,zdescr,length,ierr)
+            call znarlist(inlist,list,32,zdescr,length,ier)
             call edisp248(itru,zdescr,80)
  269      continue
         else
@@ -895,7 +955,7 @@ C List current demand sets..
             do 828 ijj=1,nzedg(ij)
               list(ijj)=izedg(ij,ijj)
  828        continue
-            call znarlist(inlist,list,32,zdescr,length,ierr)
+            call znarlist(inlist,list,32,zdescr,length,ier)
             call edisp248(itru,zdescr,80)
  268      continue
         else

@@ -148,6 +148,8 @@ C  itrc the level of reporting (zero is quiet).
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPCDB/IPCDB (for plant template database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
@@ -178,7 +180,7 @@ C Electrical details for specified plant components
      &BVOLTP(mpcom),IPHP(mpcom)
 
       LOGICAL close
-      CHARACTER OUTSTR*124,OUTS*124,word*20,LTMP*72,cmsg*24
+      CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24
       CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
@@ -193,47 +195,50 @@ C containing NMISC.
       CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20
 
       INTEGER   id_trnsysCMP  !trnsys component number
+      integer lnpcdb ! length of file name
 
       call usrmsg(' ','Reading plant network description...','P')
 
 C Identify plant components database; skip if this is '* Plant' record.
 C The next line is the name of the plant components db, but skip
-C this as the db is contained in the configuration file.
+C this as the db is contained in the configuration file. Use a longer
+C string buffer as the file name may be long.
+      lnpcdb=lnblnk(LPCDB)
 
-      CALL STRIPC(iuc,OUTSTR,0,ND,1,'* plant',IER)
+      CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
       IF(IER.NE.0)RETURN
-      LTMP=OUTSTR(1:72)
-      IF(LTMP.EQ.'* Plant'.OR.LTMP.EQ.'* PLANT') THEN
-        CALL STRIPC(iuc,OUTSTR,0,ND,1,'* plant',IER)
+      LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
+      IF(LLTMP.EQ.'* Plant'.OR.LLTMP.EQ.'* PLANT') THEN
+        CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
         IF(IER.NE.0)RETURN
-        LTMP=OUTSTR(1:72)
-        if(LTMP(1:lnblnk(LTMP)).ne.LPCDB(1:lnblnk(LPCDB)))then
-          call usrmsg(
+        LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
+        if(LLTMP(1:lnblnk(LLTMP)).ne.LPCDB(1:lnpcdb))then
+          call lusrmsg(
      &     'Mismatch: plant db in configuration & db in plant network'
      &,LPCDB,'W')
         endif
       else
-        LTMP=OUTSTR(1:72)
-        LPCDB=LTMP(1:72)      
+        LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
+        LPCDB=LOUTSTR(1:lnblnk(LOUTSTR))      
       endif
 
 C Open plant components database on IUNIT1. IRECLN is width of plantdb
 C -> but don't open the database if save-level 0 or 5 are specified!
       IRECLN=20
-      call EFOPRAN(IUNIT1,LTMP,IRECLN,1,IER)   
+      call EFOPRAN(IUNIT1,LLTMP,IRECLN,1,IER)   
       IF(IER.ne.0) GOTO 950
 
 C Read the total number of plant components (NTPC) in the database.
       IREC = 1
       READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) ZDESCR
-      IF (ZDESCR .NE. ' PLANT COMPONENT DATABASE')then
-        call usrmsg('May not be a plant db!',LPCDB,'W')
+      IF (ZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
+        call lusrmsg('May not be a plant db!',LPCDB,'W')
       endif
       IREC=2
       READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) NTPC,NXTREC
 
       if(NTPC.eq.0)then
-        call usrmsg('Plant db has no entries!',LPCDB,'W')
+        call lusrmsg('Plant db has no entries!',LPCDB,'W')
       endif
 
 C Read the start address (NPSTA) for each component in the database.
@@ -264,9 +269,9 @@ C  Set the electrical component counter to 0.
 C Reporting.
       IF(ITRC.GE.1)THEN
         CALL EDISP(itu,' ')
-        WRITE(OUTSTR,'(a,i3,2a)') ' The plant network contains',
-     &    NPCOMP,' components from ',LPCDB(1:LNBLNK(LPCDB))
-        CALL EDISP(itu,OUTSTR)
+        WRITE(LOUTSTR,'(a,i3,2a)') ' The plant network contains',
+     &    NPCOMP,' components from ',LPCDB(1:LNPCDB)
+        CALL EDISP248(itu,LOUTSTR,100)
       ENDIF
 
 C Read plant component information and plant database start address

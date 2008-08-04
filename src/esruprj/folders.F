@@ -40,6 +40,8 @@ C menu (32 char) brief title of model
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -122,15 +124,13 @@ C Silent continue, there is nothing to do (currently).
         return
       elseif(act(1:2).eq.'sn')then
 
-C Silent new.
-C the pre-registration process.
+C Silent new within the pre-registration process.
         write(6,*)  ' pregist ',root,' ',folder
         write(6,*)  ' pregist ',mpath
         write(LCFTMP,'(a)') root(1:lnblnk(root))
       elseif(act(1:2).eq.'sw')then
 
-C Silent within.
-C the pre-registration process.
+C Silent within the pre-registration process.
         write(6,*)  ' pregist ',root,' ',folder
         write(6,*)  ' pregist ',mpath
         write(LCFTMP,'(a)') root(1:lnblnk(root))
@@ -154,8 +154,9 @@ C Trap for blank root name.
       endif
 
 C User did not cancel so instantiate data for new model.
+C At some point switch from default version 3 to v4.
       call clrprb
-      icfgv=3
+      icfgv=3   ! alter this to 4 when working correctly
       INDCFG=0
       XLAT=55.9
       SLAT=55.9
@@ -725,6 +726,8 @@ C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1150,8 +1153,9 @@ C model. All information is passed via parameters.
 C limg (char*72) is the image file name
 C iformat (char*4) image format 'GIF ' 'TIF ' 'XBMP' or 'XWD '
 C ifocus (char*4) image focus '****' 'FZON' 'FNET' 'FCTL' 'FDFS' or 'FPER'
-       subroutine edimage(limg,iformat,ifocus,ier)
+      subroutine edimage(limg,iformat,ifocus,ier)
 
+C      integer lnblnk  ! function definition
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1249,6 +1253,8 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN

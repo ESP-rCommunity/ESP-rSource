@@ -126,6 +126,8 @@ C default file names for databases
 C espriou.h provides currentfile.
 
       PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -1221,6 +1223,7 @@ C If 6 items on line also read whether to save only 1stph.
           isavgh=0
         endif
         do 333 iss=1,nsset
+
 C The following code ensures thea the sXXres varaibles are initialzied
 C to empty strings even if they are not defind in the input file.
           write(sblres(iss), '(A)')  '  '
@@ -1228,7 +1231,6 @@ C to empty strings even if they are not defind in the input file.
           write(smstres(iss), '(A)') '  '
           write(splres(iss), '(A)')  '  '
           write(selres(iss), '(A)')  '  '
-          
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
           K=0
           CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
@@ -2356,6 +2358,9 @@ C SITEINFO provides an English description of the site information in
 C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
+      
+      integer lnblnk  ! function definition
+
       COMMON/C4/XLAT,XLON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -2413,6 +2418,9 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),

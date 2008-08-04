@@ -58,7 +58,10 @@ C ABSE    - solar absorptivity of external surfaces.
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
@@ -73,7 +76,7 @@ C Error subroutine and error details for dll mode.
 
       DIMENSION RVC(MS)
 
-      CHARACTER OUTSTR*124,LCONS*72
+      CHARACTER OUTSTR*124,LCONS*72,outs248*248
       character dllsubr*12,dllmesg*124,outs*124
       LOGICAL CLOSE,ILTHPS,ILTHPZ,dll
 
@@ -216,10 +219,25 @@ C conductivity.
               THRMLI(ICOMP,I,J,7)=0.0
             ENDIF
           ELSE
-            CALL USRMSG(
-     &        ' Mismatch in nb of thermophysical properties data in ',
-     &         OUTSTR,'W')
-            RETURN
+            write(outs248,'(4a,i2,2a)') 'In the file ',
+     &        currentfile(1:lnblnk(currentfile)),
+     &        ' when reading layer thermophysical properties expected',
+     &        ' to find 4 or 8 items but got ',ND,' items in line: ',
+     &        outstr(1:72)
+            CALL EDISP248(iuout,outs248,92)
+            outs=' incorrect number of thermophysical data'
+            if(dll)then
+              dllsubr='ECONSTR'
+              dllmesg=outs
+              ier=2
+              CALL ERPFREE(IUNIT,ios)
+              return
+            else
+              call usrmsg(' ',outs,'W')
+              IER=1
+              CALL ERPFREE(IUNIT,ios)
+              RETURN
+            endif
           ENDIF
    40   CONTINUE
    30 CONTINUE
@@ -302,6 +320,8 @@ C is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -458,6 +478,9 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -730,6 +753,8 @@ c         (not used in the current implementation),
       SUBROUTINE ERTWIN(ITRC,ITRU,IUA,LUA,ICOMP,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1199,6 +1224,9 @@ C           file.
 #include "building.h"
 #include "espriou.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+      
+      integer lnblnk  ! function definition
+
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 

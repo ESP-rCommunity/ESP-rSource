@@ -32,6 +32,8 @@ C READUAL reads the data fron an existing UA library.
 #include "uncertainty.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU

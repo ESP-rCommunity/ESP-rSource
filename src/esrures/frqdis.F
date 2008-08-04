@@ -35,6 +35,8 @@ C act='p' iget parameters already set.
 C index is the goget index.
       SUBROUTINE MODGRF(act,index)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -763,6 +765,8 @@ C corresponding to graphical result display.
 
       SUBROUTINE MODHED(act,zlist,iocupf,ialstused)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS

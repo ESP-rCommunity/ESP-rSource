@@ -41,6 +41,8 @@ C ********************* RADCFGIN *********************
 C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -186,6 +188,8 @@ C ********************* RADCFGOUT *********************
 C RADCFGOUT writes the contents of the radiance configuration file.
       SUBROUTINE RADCFGOUT(ICHK)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/expath/runpath,pathtype
@@ -519,6 +523,8 @@ C if MODE='a' (aim) will ask for aim and name files automatically or
 C if MODE='c' (create) then allow all purposes and auto name files.
       SUBROUTINE newscene(MODE)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
 
@@ -817,6 +823,8 @@ C Call rifset to set up all remaining data.
 C ********************** ADDSCENE **********************
 C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
       subroutine ADDSCENE(IRCFG)
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
 
@@ -874,6 +882,8 @@ C setdfgrid allows the creation of the daylight factor grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1111,6 +1121,8 @@ C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
+      
+      integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1237,6 +1249,8 @@ C for use with a 'Coupling' scene purpose.
 
       SUBROUTINE SENLOC
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1323,6 +1337,8 @@ C parameters if none found.
 C If filexst is 'o' then old file, 'n' then create a new file.
       SUBROUTINE checkrif(filexst)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
 

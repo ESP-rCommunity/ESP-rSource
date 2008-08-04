@@ -29,6 +29,9 @@ C will have been defined prior to calling edmrt.
       SUBROUTINE EDMRT(ITRC,ITRU,IUF,ICOMP,silent,act,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
@@ -620,6 +623,8 @@ C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
       SUBROUTINE EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

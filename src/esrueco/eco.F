@@ -48,6 +48,8 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       integer igraphiclib  ! external definition
 

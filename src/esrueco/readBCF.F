@@ -58,6 +58,9 @@ C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
  
       SUBROUTINE STRIPCB(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+      
+      integer lnblnk  ! function definition
+
       CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
 
@@ -119,6 +122,8 @@ C CHITMS checks a character string (A), returning the number of data
 C items (IW) separated by ','.  Note to keep from 
 C overwriting the string passed, deal with a copy.
       SUBROUTINE CHITMSB(A,IW)
+      
+      integer lnblnk  ! function definition
       CHARACTER*(*) A
       CHARACTER B*124,C*1
 
@@ -346,7 +351,8 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 #include "building.h"
 #include "LCA.h"
 #include "acoustic.h"
-
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C21/IFCFG,cfgroot,LCFGF

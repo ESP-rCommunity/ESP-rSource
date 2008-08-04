@@ -36,6 +36,8 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE ADJVIEW(ITRC,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

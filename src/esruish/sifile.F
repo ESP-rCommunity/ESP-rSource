@@ -64,10 +64,19 @@ C   commences with an offset of x=2*misur and the data for surface 5
 C   commences with an offset of y=2*(2*misur).
 
 C ************** SIFILE **************
-C Opens a zone shading & insolation db.
+C Opens a zone shading & insolation db. Depending on what happend
+C with the file pass back an indicator:
+C  ifstat = 0  no errors and file was opened correctly
+C  ifstat = 1  new file was opened correctly
+C  ifstat = 2  no shading file name so exited
+C  ifstat = 3  error opening the shading file
+C  ifstat = 4  error reading header of file
+C  ifstat = 5  error writing record 4 of file
 
-      subroutine sifile(icomp)
+      subroutine sifile(icomp,ifstat)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -82,6 +91,7 @@ C Opens a zone shading & insolation db.
       character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil,fname
       character outs*124,paction*16
       logical xst
+      integer lnf   ! length of the file name
 
 C Close any file already open then assign a new file.
       ifilsi=ifil+3
@@ -91,6 +101,7 @@ C Close any file already open then assign a new file.
       else
         call usrmsg('No zone shading/insolation db name found in the',
      &              'model configuration file; please define.','W')
+        ifstat=2
         return
       endif
       maxrec=24
@@ -101,6 +112,7 @@ C Close any file already open then assign a new file.
         if(ier.ne.0)then
           call edisp(iuout,
      &           'Error opening the Zone Shading & Insolation db!')
+          ifstat=3
           return
         endif
 
@@ -115,6 +127,7 @@ C try again at maxrec=24 and then at ms words wide.
           if(ier.ne.0)then
             call edisp(iuout,
      &       'Error opening Zone Shading & Insolation db at 24 words!')
+            ifstat=3
             return
           endif
           read(ifilsi,rec=irec,iostat=istat,err=1000)inext,ns
@@ -125,6 +138,7 @@ C try again at maxrec=24 and then at ms words wide.
             if(ier.ne.0)then
               call edisp(iuout,
      &       'Error opening Zone Shading & Insolation db at MS words!')
+              ifstat=3
               return
             endif
             read(ifilsi,rec=irec,iostat=istat,err=1000)inext,ns
@@ -151,21 +165,35 @@ C interpreted later as empty.
         irec=4
         write(ifilsi,rec=irec,iostat=istat,err=1001)
      &                                     (idum(i),i=1,nzsur(icomp))
+        ifstat=1  ! signal new file
       endif
 
 C Return after advising user.
       if(paction(1:13).ne.'update_silent')then
+        lnf=lnblnk(fname)
         call edisp(iuout,' ')
-        write(outs,'(3a)')'Opened ',fname,'.'
+	if(ifstat.eq.0)then
+          write(outs,'(3a)')'Opened existing ',fname(1:lnf),'.'
+	elseif(ifstat.eq.1)then
+          write(outs,'(3a)')'Opened new ',fname(1:lnf),'.'
+	elseif(ifstat.eq.2)then
+          write(outs,'(3a)')'No shading file given ',fname(1:lnf),'.'
+	elseif(ifstat.eq.3)then
+          write(outs,'(3a)')'Error opening ',fname(1:lnf),'.'
+	elseif(ifstat.eq.4.or.ifstat.eq.5)then
+          write(outs,'(3a)')'Error reading ',fname(1:lnf),'.'
+	endif
         call edisp(iuout,outs)
       endif
       return
 
  1000 call edisp(iuout,' ')
       call edisp(iuout,'SIFILE: Zone Shading & Insolation read error!')
+      ifstat=4
       return
  1001 call edisp(iuout,' ')
       call edisp(iuout,'SIFILE: Zone Shading & Insolation write error!')
+      ifstat=5
       return
  1003 call edisp(iuout,' ')
       call edisp(iuout,

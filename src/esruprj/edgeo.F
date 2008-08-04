@@ -44,6 +44,7 @@ C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -149,6 +150,7 @@ C the floor area (one) or it was calculated (zero).
       logical showother,updoth,firstin,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical forceupgrade  ! if any other zone is version 1.1
+      logical silent  ! to signal interactive dependency resolution
 
       real exposed,vexposed,areatran,areawall  ! local values for QA
       real areaslproof,areafltroof,areaskylt
@@ -183,8 +185,9 @@ C On entry to zone level determine its bounds for future comparison.
       write(outs,'(2a)')'PRJ: focus on ',zname(ICOMP)
       call tstamp('>',outs)
 
-C Initialise logic to test for model contiguity changes.`
-      call sumrchg(ICOMP,'i')
+C Initialise logic to test for model contiguity changes.
+      silent= .false.
+      call sumrchg(ICOMP,'i',silent)
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
@@ -313,38 +316,15 @@ C If version 1.1 then set lastlist to IZBASELIST()
         ZBASEA(ICOMP)=0.0
       endif
       attribok=.true.
+      
+C Check if SVFC and SSVFC needs to be updated.
+      call updatesvfc(icomp,modgeo)
 
-C Loop through each surface and detect whether orientation of
-C the surface has changed and needs to be recognised. 
+C Loop through each surface and detect base information. 
       DO 41 I=1,NSUR
         ioc=IZSTOCN(icomp,i)
         if(SOTHER(I,1)(1:4).eq.'UNKN')attribok=.false.
         if(SMLCN(I)(1:4).eq.'UNKN')attribok=.false.
-        if(SSPELV(ioc).GE.-1.5.AND.SSPELV(ioc).LE.1.5)then
-          if(SVFC(I).NE.'VERT')then
-            MODGEO=.TRUE.
-            SVFC(I)='VERT'
-            SSVFC(ioc)='VERT'
-          endif
-        elseif(SSPELV(ioc).GE.88.5.AND.SSPELV(ioc).LE.91.5)then
-          if(SVFC(I).NE.'CEIL')then
-            SVFC(I)='CEIL'
-            SSVFC(ioc)='VERT'
-            MODGEO=.TRUE.
-          endif
-        elseif(SSPELV(ioc).GE.-91.5.AND.SSPELV(ioc).LE.-88.5)then
-          if(SVFC(I).NE.'FLOR')then
-            SVFC(I)='FLOR'
-            SSVFC(ioc)='VERT'
-            MODGEO=.TRUE.
-          endif
-        else
-          if(SVFC(I).NE.'SLOP')then
-            SVFC(I)='SLOP'
-            SSVFC(ioc)='VERT'
-            MODGEO=.TRUE.
-          endif
-        endif
         if(SVFC(I).eq.'FLOR')then
 
 C If the user has edited the floor area (one) then continue or selected it
@@ -374,7 +354,7 @@ C included in the list add it.
           endif
         else
 
-C Check to see if a non `flor` surface has been included in ibases.
+C Check to see if a non `FLOR` surface has been included in ibases.
           if(IUZBASEA(icomp).eq.1)then
             continue
           elseif(IUZBASEA(icomp).eq.2)then
@@ -687,7 +667,8 @@ C << graphic network flow file to reflect changes in zone volume.
         endif
 
 C Report on model contiguity changes.
-        call sumrchg(ICOMP,'r')
+        silent= .false.
+        call sumrchg(ICOMP,'r',silent)
         RETURN
       ELSEIF(INO.EQ.1)THEN
 
@@ -1337,7 +1318,8 @@ C Finally update the system configuration file if not browsing.
             else
               call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
-            call sumrchg(ICOMP,'r')
+	    silent= .false.
+            call sumrchg(ICOMP,'r',silent)
           endif
           goto 42
         elseif(IS.gt.0)then
@@ -1372,15 +1354,24 @@ C editing facility.
             else
               call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
-            call sumrchg(ICOMP,'r')
+            silent = .false.
+            call sumrchg(ICOMP,'r',silent)
           endif
           MODGEO=.false.
         endif
         call tstamp('>','PRJ: enter zone obstructions')
         h(1)='You can define shading obstructions by either supplying'
         h(2)='an origin and dimensions or clicking on a bitmap.'
-        call easkabc(' ','Shading obstruction definition via:',
-     &    'dimensional input','bitmap','cancel',IW,2)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.2)then
+          call easkab(' ','Shading obstruction definition via:',
+     &      'dimensional input','bitmap',IW,2)
+          if(iw.eq.-3) goto 3   ! pay attention to cancel request.
+        else
+          call easkabc(' ','Shading obstruction definition via:',
+     &      'dimensional input','bitmap','cancel',IW,2)
+          if(iw.eq.-3) goto 3   ! pay attention to cancel request.
+        endif
         if(iw.eq.1)then
           CALL EDOBS(ITRC,iuout,ICOMP,IER)
         elseif(iw.eq.2)then
@@ -2314,6 +2305,9 @@ C ************* EDINSUL
 C Edit zone insolation distribution.
       SUBROUTINE EDINSUL(ICOMP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -2865,6 +2859,8 @@ C << possible to alter the inside/outside hc from this interface? >>
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -3524,13 +3520,14 @@ C Determine the match in the system topology and update it.
           H(1)='A `prescribed static` boundary condition requires the'
           H(2)='specification of a constant temperature (degC) and'
           H(3)='radiation value (W/m^2).'
-          CALL EASKR(VAL,' ','Constant temperature?',
+          VALT=0.0
+          VALW=0.0
+          CALL EASKR(VALT,' ','Constant temperature?',
      &      -99.,'F',700.,'F',20.,'adjacent temperature',IER,3)
-
-          CALL EASKR(VAL,' ','Constant radiation?',
+          CALL EASKR(VALW,' ','Constant radiation?',
      &      0.0,'W',99999.,'W',0.0,'adjacent radiation source',IER,3)
-          IC2(IC)=INT(VAL)
-          IE2(IC)=INT(VAL)
+          IC2(IC)=INT(VALT)
+          IE2(IC)=INT(VALW)
           write(SOTHER(IS,2),'(i2.2)')INT(VALT)
           write(SOTHER(IS,3),'(i2.2)')INT(VALW)
           write(SSOTHER(IC,2),'(i2.2)')INT(VALT)
@@ -3952,6 +3949,7 @@ C   guesstype (char 24) provides the context so that a likely
 C     subset of choices can be presented.
       subroutine edituse(iz,isur,icon,guesstype)
 #include "building.h"
+#include "sbem.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -3971,6 +3969,9 @@ C     subset of choices can be presented.
 C Set local working variables.
       is=isur
       ic=icon
+
+C Set use type to a subset of all usage if UK NCM model
+      IF(ISBEM.EQ.1)GUESSTYPE='notional'
 
 C Tell the user the current use of the surface.   
       write(outs,'(6a)') 'The current use/semantic of surface ',
@@ -4103,11 +4104,12 @@ C Setup array of menu strings.
         useopt(7) ='WINDOW NORMAL'
         useopt(8) ='WINDOW DISPLAY '
         useopt(9) ='WINDOW SKYLIGHT'
-        useopt(10)='somthing else'
+        useopt(10)='WINDOW FRAME'
+        useopt(11)='somthing else'
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,10,useopt,'surface USAGE options',IER,28)
+     &         32,11,useopt,'surface USAGE options',IER,28)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
         if(IOS.eq.1)then
@@ -4129,6 +4131,8 @@ C Setup array of menu strings.
         elseif(IOS.eq.9)then
           iuopt=21
         elseif(IOS.eq.10)then
+          iuopt=8
+        elseif(IOS.eq.11)then
           iuopt=23
         endif
 
@@ -4596,6 +4600,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
+      logical withinbox  ! true if point within bounding box.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
@@ -4608,6 +4613,9 @@ C Initial values for vertex at angle facility.
       V1=1.0
       AZ=0.0
       EL=0.0
+      x3=0.0
+      y3=0.0
+      z3=0.0
 
 C Initialise zone vertex menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -4697,16 +4705,25 @@ C List help text for the vertex menu.
         H(14)='                           /    '
         H(15)='                       a  /     '
         H(16)='                3 *------* 2    '
+        H(17)=' '
+        H(18)='The intersection of a line & plane asks you for two'
+        H(19)='points defining a line as well as a plane to test.'
+        H(20)=' '
+        H(21)='The intersection of LINES and plan ask for a plane'
+        H(22)='to test and then checks ALL lines that intersects'
+        H(23)='that plane and adds vertices where they cross. This'
+        H(24)='can be used to help subdivide surfaces within a zone.'
         idno=2
         call MENUATOL(' ',
      &   'Vertex Transforms','a vertices along a line',
      &   'b distance between two vertices',
      &   'c vertex @ angle & distance',
      &   'd angle between two lines','e intersect of a line & plane',
-     &   'f distance from vertex to a line',
-     &   'g align vertex with a line','h find close vertices',
-     &   'i move vertices along a line',' ',' ',' ',ino,idno,16)
-        if(ino.eq.0.or.ino.eq.10)then
+     &   'f intersect of LINES & plane',
+     &   'g distance from vertex to a line',
+     &   'h align vertex with a line','i find close vertices',
+     &   'j move vertices along a line','k do nothing',' ',ino,idno,24)
+        if(ino.eq.0.or.ino.eq.11)then
           continue
         elseif(ino.eq.1)then
 
@@ -4766,7 +4783,7 @@ C Show the new point on the current wireframe.
                 H(1)='The vertex coordinates should be in metres.'
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 443            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
+ 443            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0.','vtx co',IER,2)
                 K=0
                 CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
@@ -5056,6 +5073,209 @@ C Show the new point on the current wireframe.
           endif
         elseif(ino.eq.6)then
 
+C Intersection LINES and a plane. As for insersection surface.
+          CALL EPMENSV
+          IS=1
+          CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
+     &       ' ',IER)
+          N = NVER(IS)
+          nbstart=ntv  ! how many vertices did we have to start with
+          CALL EPMENRC
+
+C Setup definition of the plane to intersect.
+          DO 149 J = 1,N
+            XX(J) = X(JVN(IS,J))
+            YY(J) = Y(JVN(IS,J))
+            ZZ(J) = Z(JVN(IS,J))
+  149     CONTINUE
+          call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
+
+C Loop through each of the edge lists for each of the surfaces in
+C the zone (except the identified surface). 
+          do 135 ivj=1,NSUR
+            if(ivj.eq.is) goto 135  ! do not test edges of the plane surface 'is'.
+            ivjlimit=NVER(ivj)
+            do 147 ivjj=1,ivjlimit
+              if(ivjj.eq.ivjlimit)then
+                iwhich1=JVN(ivj,ivjj)
+                iwhich2=JVN(ivj,1)
+              else
+                iwhich1=JVN(ivj,ivjj)
+                iwhich2=JVN(ivj,ivjj+1)
+              endif
+              x3=0.0
+              y3=0.0
+              z3=0.0
+              CALL VECPLN(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
+     &          X(IWHICH2),Y(IWHICH2),Z(IWHICH2),EQN, x3,y3,z3, IERR)
+              write(outs,'(a,i3,3f10.4,a,2i3)')
+     &          ' Possible vert X,Y,Z:',ntv+1,
+     &          x3,y3,z3,' related to edge ',iwhich1,iwhich2
+              call edisp(itru,outs)
+              call edisp(itru,' ')
+
+C Test if the point is within the zone bounding box.
+              withinbox=.true.
+              if(x3.gt.ZXMX(icomp).or.x3.lt.ZXMN(icomp))then
+                withinbox=.false.
+              elseif(y3.gt.ZYMX(icomp).or.y3.lt.ZYMN(icomp))then
+                withinbox=.false.
+              elseif(z3.gt.ZZMX(icomp).or.z3.lt.ZZMN(icomp))then
+                withinbox=.false.
+              endif
+
+C Does this point duplicate any other existing point in the zone?
+              if(withinbox)then
+                do 138 iwhich2=1,NTV
+                  tdis= crowxyz(x3,y3,z3,X(IWHICH2),Y(IWHICH2),
+     &                  Z(IWHICH2))
+                  if(tdis.lt.0.003)then
+                    goto 147
+                  endif
+  138           continue
+
+C Show the new point on the current wireframe.
+                COG1(1)=x3
+                COG1(2)=y3
+                COG1(3)=z3
+                CALL VECTRN(COG1,TEMAT,COG2,IER)
+                CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                call u2pixel(COG3(1),COG3(2),ix,iy)
+                call ecirc(ix,iy,3,0)
+                call forceflush()
+
+C Ask if it should be added.
+                if(NTV.lt.MTV)then
+                  h(1)='This can become a new vertex. '
+                  write(outs,'(a,i2,a)') 'Make vertex ',NTV+1,' a:'
+                  CALL EASKABC(' ',outs,'new vertex',
+     &              'new vertex after editing','cancel',INVT,1)
+                  if(INVT.eq.1)then
+                    NTV=NTV+1
+                    NZTV(icomp)=NTV
+                    x(ntv)=x3
+                    y(ntv)=y3
+                    z(ntv)=z3
+                  elseif(INVT.eq.2)then
+                    NTV=NTV+1
+                    NZTV(icomp)=NTV
+                    WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
+                    H(1)='The vertex coordinates should be in metres. '
+                    H(2)='It is not advisable for Z to be negative.'
+                    write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z(m):'
+  136               CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',
+     &                IER,2)
+                    K=0
+                    CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
+                    CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
+                    CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
+                    if(ier.ne.0)goto 136
+                  elseif(INVT.eq.3)then
+                    goto 147
+                  endif
+                endif
+              endif
+  147       continue
+  135     continue
+
+C Go back through each of the newly created vertices and see if they
+C should be included in existing edges. this separate loop ensures that
+C the initial scanning through edges is not mucked up by revisions to
+C the edges.
+          if(nbstart.lt.NTV)then
+            do 445 jwhich3=nbstart,NTV
+
+C See if this vertext should be included in any existing surface edges.
+C Use loop incrementors jivj and jivjj within 446 loop. Remember to
+C skip over the surface being used to define the plane.
+              COG1(1)=x(jwhich3)
+              COG1(2)=y(jwhich3)
+              COG1(3)=z(jwhich3)
+              CALL VECTRN(COG1,TEMAT,COG2,IER)
+              CALL VECTRN(COG2,ETSMAT,COG3,IER)
+              call u2pixel(COG3(1),COG3(2),ix,iy)
+              call ecirc(ix,iy,3,1)
+              call forceflush()
+              do 446 jivj=1,NSUR
+                if(jivj.eq.is) goto 446  ! skip past surface is
+                icc=izstocn(icomp,jivj)
+                ivjlimit=NVER(jivj)
+                do 447 jivjj=1,ivjlimit
+                  if(jivjj.eq.ivjlimit)then
+                    jwhich1=JVN(jivj,jivjj)
+                    jwhich2=JVN(jivj,1)
+                  else
+                    jwhich1=JVN(jivj,jivjj)
+                    jwhich2=JVN(jivj,jivjj+1)
+                  endif
+
+C Report length of line. Use method of Ward/Radiance in fvect.c
+                  call pointtoline(jwhich3,jwhich1,jwhich2,offset,
+     &              matchver)
+                  if(.NOT.matchver) goto 447
+                  if(offset.lt.0.004)then
+                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+     &                'New vertex ',jwhich3,' @',X(jwhich3),Y(jwhich3),
+     &                Z(jwhich3),' is close (',offset,') to edge ',
+     &                jWHICH1,' &',jWHICH2,' of surface ',
+     &                SSNAME(icc)
+                    call edisp(itru,outs)
+
+C If current surface (jivj) can take another vertex expand the
+C list. Logic works by looping down (from one more than the current
+C number of vertices associated with this surface) shifting
+C JVN indices up one until at the current edge (jivjj) and then
+C inserting the new vertex index.
+                   if(NVER(jivj)+1.le.MV)then
+                      dok=.true.
+                      h(1)='The new vertex is within 3mm of an'
+                      h(2)='edge of another surface. Probably the'
+                      h(3)='vertex should also be included in that'
+                      h(4)='other surface so the rules about'
+                      h(5)='matching edges are followed. '
+                      call askok(' ','Insert this vertex?',ok,dok,5)
+                    else
+                      ok=.false.
+                    endif
+                    if(ok)then
+                      NVER(jivj)=NVER(jivj)+1
+                      IXV=NVER(jivj)+1
+  348                 continue
+                      IXV=IXV-1
+                      JVN(jivj,IXV)=JVN(jivj,IXV-1)
+                      IF(IXV.GT.jivjj+1)GOTO 348
+                      JVN(jivj,jivjj+1)=jwhich3
+
+C Debug...
+                      write(6,'(a,30i3)') 'now jvn is ',
+     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
+ 
+C Surface (ivj) vertex list has been updated. Go on to next surface.
+                      goto 446 
+                    endif
+                  endif
+  447           continue
+  446         continue
+  445       continue
+          endif
+
+C And re-draw the zone to clean up the circles.
+          ILEN=NTV
+          IPACT=CREATE
+          CALL EKPAGE(IPACT)
+          MODGEO=.TRUE.
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          ZBFLG(ICOMP)=0.
+          call usrmsg(' ',' ','-')
+          CALL INLNST(1)
+          nzg=1
+          nznog(1)=ICOMP
+          izgfoc=ICOMP
+          CALL ADJVIEW(ITRC,IER)
+
+        elseif(ino.eq.7)then
+
 C Distance between point and a line.
           inpick=2
           CALL EPMENSV
@@ -5089,7 +5309,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           nznog(1)=ICOMP
           izgfoc=ICOMP
           CALL ADJVIEW(ITRC,IER)
-        elseif(ino.eq.7)then
+        elseif(ino.eq.8)then
 
 C Bring a point off a line into alignment. Begin by checking the
 C distance between point and the line.
@@ -5205,7 +5425,7 @@ C inserting the new vertex index.
                       IXV=IXV-1
                       JVN(ivj,IXV)=JVN(ivj,IXV-1)
                       IF(IXV.GT.ivjj+1)GOTO 248
-                      JVN(ivj,ivjj+1)=iwhich3
+                      JVN(jivj,ivjj+1)=iwhich3
 
 C Debug...
 C                     write(6,'(a,30i3)') 'now jvn is ',
@@ -5219,7 +5439,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
   346         continue
             endif
           endif
-        elseif(ino.eq.8)then
+        elseif(ino.eq.9)then
         
 C Find close vertices.
           h(1)='This function lists vertices which are probably'
@@ -5268,7 +5488,7 @@ C Find close vertices.
           else
             continue
           endif
-        elseif(ino.eq.9)then
+        elseif(ino.eq.10)then
 
 C Move an existing vertex along an existing line.
           inpick=2
@@ -5357,7 +5577,7 @@ C be a new vertex and update the wireframe.
               WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
-              write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
+              write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z (m):'
   43          CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
               K=0
               CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
@@ -5592,6 +5812,8 @@ C Make use of VERINFO to display the current vertex surface connections.
       SUBROUTINE EDVLIST(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -5657,8 +5879,7 @@ C number of menu lines.
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
-   92 IER=0
-      ILEN=NSUR
+   92 ILEN=NSUR
       IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -6602,8 +6823,7 @@ C Also clear tagged items list (IVLST).
 
 C Initial menu entry setup.
       CALL USRMSG(PROMPT1,PROMPT2,'-')
-   92 IER=0
-      ILEN=NTV
+   92 ILEN=NTV
       IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -6829,6 +7049,8 @@ C << conversion to the 'G1' format takes place.
       SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
 
@@ -6961,10 +7183,10 @@ C be inserted.
       character lzip*72,dfile*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      character ZN*12,phrasea*64,phraseb*64,zdesc*64,outs*124
+      character phrasea*64,phraseb*64,zdesc*64,outs*124
       character dllsubr*12,dllmesg*124,act*2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,msg*48
+      character docpth*24,tmppth*24,dbspth*24
       logical dll,checkbase
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -6973,7 +7195,6 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
 
       IER=0
-      ZN=' '
       phrasea=' '
       phraseb=' '
       checkbase=.false.
@@ -7570,7 +7791,6 @@ C to 97 to read in further details.
          NZTV(ICOMP)=0
          NSUR=0
          NTV=0
-         ZN=' '
          phrasea=' '
          checkbase=.false.
          goto 97
@@ -7700,6 +7920,7 @@ C   losspercent and is assumed to apply to all zones in the model.
       endif
       zerolen=0.0
       zeropsi=0.0
+      lookfor=0
 
 C Setup phrases for the menu and for editing length and psi values.
       phrasemenu(1) ='a roof-wall                    :'
@@ -7829,7 +8050,7 @@ C holder, otherwise write actual values.
 
       INODA=-4
 
-  142 FORMAT(2a,f5.3,a,f7.3)
+C  142 FORMAT(2a,f5.3,a,f7.3)
 
 C Help text for the menu.
       H(1) ='The user needs to define the length of the thermal' 
@@ -8141,3 +8362,67 @@ C nbrdg and edit.
       endif
       goto 33 
       END
+
+C ********** updatesvfc **************     
+C Review surface azimuth and elevation and update SVFC, SSVFC.
+       subroutine updatesvfc(icomp,modgeo)
+       
+C It assumes that the zone geometry has just been read and that
+C common blocks ?? are current. 
+
+C It is passed the current zone index (izone) and returns
+C modgeo=.true. if a change to common blocks G5 and G6 have
+C been made.
+
+#include "net_flow.h"
+#include "building.h"
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+
+      logical MODGEO
+
+C Loop through each surface and detect whether orientation of
+C the surface has changed and needs to be recognised. 
+      DO 41 I=1,NZSUR(icomp)
+        ioc=IZSTOCN(icomp,i)
+        if(SSPELV(ioc).GE.-1.5.AND.SSPELV(ioc).LE.1.5)then
+          if(SVFC(I).NE.'VERT')then
+            MODGEO=.TRUE.
+            SVFC(I)='VERT'
+            SSVFC(ioc)='VERT'
+          endif
+        elseif(SSPELV(ioc).GE.88.5.AND.SSPELV(ioc).LE.91.5)then
+          if(SVFC(I).NE.'CEIL')then
+            SVFC(I)='CEIL'
+            SSVFC(ioc)='CEIL'
+            MODGEO=.TRUE.
+          endif
+        elseif(SSPELV(ioc).GE.-91.5.AND.SSPELV(ioc).LE.-88.5)then
+          if(SVFC(I).NE.'FLOR')then
+            SVFC(I)='FLOR'
+            SSVFC(ioc)='FLOR'
+            MODGEO=.TRUE.
+          endif
+        else
+          if(SVFC(I).NE.'SLOP')then
+            SVFC(I)='SLOP'
+            SSVFC(ioc)='SLOP'
+            MODGEO=.TRUE.
+          endif
+        endif
+   41 CONTINUE
+
+      return
+      end

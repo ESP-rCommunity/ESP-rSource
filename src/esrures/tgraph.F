@@ -163,6 +163,8 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOWLIN(act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -601,6 +603,8 @@ C to graphical result display.
 
       SUBROUTINE MOGHED
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

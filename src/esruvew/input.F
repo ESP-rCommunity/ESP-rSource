@@ -2,6 +2,8 @@ C----------------------------------------------------
       SUBROUTINE INPUT(INIT)
 #include "viewer.h"
 #include "viewer.h2"
+      
+      integer lnblnk  ! function definition
 
       integer igraphiclib  ! external definition
 
