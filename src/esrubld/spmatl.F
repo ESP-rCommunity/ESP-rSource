@@ -39,6 +39,12 @@ C SPMCMP 52 - saturated surface with evaporation
 C SPMCMP 53 - phase change material
 C SPMCMP 54 - phase change material (S. Hoffmann)
 C SPMCMP 55 - phase change material (S. Hoffmann)
+C SPMCMP 56 - phase change material w/ sub-cooling (GaCH)
+C
+C Output data is stored in the common block RESSPM
+C with: DATASPM(*,8) - up to 8 special component results data 
+C items, STRSPM(*,8), UNITSPM(*,8) and TXTSPM(*,8) - descriptive 
+C strings for the data item. 
 
       subroutine SPMMOD(ICOMP)
 
@@ -117,10 +123,6 @@ C 12- Fixed V or R value
 C 13- Shading effects (0-ignore 1-proportional power loss 2-total power loss
 C                      3-direct rad. power loss)
 C
-C   Output data is stored in the common block RESSPM
-C   with: DATASPM(*,5) - up to 5 special component results data 
-C   items, STRSPM(*,5) - descriptive string for the data item. 
-
 C This status of this component is STABLE, its output has been
 C verified against experimental data. 
 
@@ -134,9 +136,9 @@ C Special materials
       COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
      &VSPM(MSPMNOD)
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -492,9 +494,9 @@ C experimental data.
 C Special materials
       COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
      &VSPM(MSPMNOD)
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -667,9 +669,9 @@ C LAPRES,IAPRES (for window pressure databases)
 C Special materials
       COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
      &VSPM(MSPMNOD)
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -1025,9 +1027,9 @@ C of the component has only been roughly verified.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Special materials
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -1303,9 +1305,9 @@ C of the component has only been roughly verified.
      &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       common/spmatlbl/spmlabel(mspmnod)
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -1539,9 +1541,9 @@ C of the component has only been roughly verified.
      &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       common/spmatlbl/spmlabel(mspmnod)   
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -1685,61 +1687,100 @@ C of the component has only been verified against analytical
 C tests, though not experimental data. 
 
       subroutine SPMCMP53(ICOMP,ISPMNOD)
+      implicit NONE
 
 #include "building.h"
 
+C Parameters
+      integer ICOMP,ISPMNOD
+
+C Common blocks
+C General esp-r common blocks
       COMMON/OUTIN/IUOUT,IUIN
-
-C Special materials
-      common/spmfxst/ispmxist,spflnam
-      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     & nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
-      common/spmatlbl/spmlabel(mspmnod)
-
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
-      integer NDATSPM ! number of results items for each special material
-      real DATASPM       ! Results data for special material
-      character STRSPM*16
-      character UNITSPM*16 ! unit for data item
-      character TXTSPM*72  ! description of data item
+      integer IUOUT,IUIN
 
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
+      real ZSPMF1,ZSPMF2
+      
       COMMON/TC/ITC,ICNT
+      integer ITC,ICNT
+      
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      integer ITCF,ITRACE,IZNTRC,ITU
+      
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+      
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+      real THRMLI
 C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
 C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
-      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
-      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+      real SNA,ZOA
 
-C Phase change materials
+      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
+      real C,QC
+      
+      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
+      real VCP,QCP
+      
+      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+      real VCF,QCF
+
+C Special materials related common blocks
+      common/spmfxst/ispmxist,spflnam
+      integer ispmxist
+      character spflnam*72
+      
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     & nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+      integer nspmnod,ispmloc,ispmtyp,nnodat
+      real spmdat
+      
+      common/spmatlbl/spmlabel(mspmnod)
+      character spmlabel*16
+
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
+      integer NDATSPM ! number of results items for each special material
+      real DATASPM       ! Results data for special material
+      character STRSPM*16
+      character UNITSPM*16 ! unit for data item
+      character TXTSPM*72  ! description of data item
+
+C Phase change materials related common blocks
       COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
+      real SPCM,SPCMTF,SPCMTP
+      
       COMMON/PCM03/PCMFAC(MCOM,MS,MN)
+      real PCMFAC
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      integer NCONST,NELTS,NGAPS,NPGAP
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      integer ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       
+C... Local variables
       REAL TMELT, TSOLI, CONSOL, CONLIQ, SHTSOL, SHTLIQA, SHTLIQB,
-     &     APPCON, APPSHT, PCMCON, PCMSHT, FACTP, FACTF, PCMFAC,
-     &     GODZ, TFCM, SPCMP, SPCMF, SPCM, SHTLIQ, EFTHK
+     &     APPCON, APPSHT, PCMCON, PCMSHT, FACTP, FACTF,
+     &     GODZ, TFCM, SHTLIQ, EFTHK,SPCMF
 
-      INTEGER IELEM, NLOC
+      character outs*124
 
-      character spmlabel*16,outs*124,spflnam*72
+      INTEGER IELEM, NLOC,IPHNL,isurf,inode
+
       logical close
 
 C---- local variables for output.
@@ -1771,7 +1812,6 @@ C *******************************************************************
       SHTLIQB=spmdat(ISPMNOD,7)
 
 C Setup variables
-      icomp= ispmloc(ispmnod,1)
       isurf= ispmloc(ispmnod,2)
       inode= ispmloc(ispmnod,3)
       ielem= nint(real(ispmloc(ispmnod,3))/2.)
@@ -1859,7 +1899,7 @@ C Modify present and future value of 'C' and 'QC' coefficient
 C Calculate the value of latent heat (J), stored in part PCM layer
 C represented by each node of PCM layer.
 C First the present value of heat stored read from common block.
-      SPCMP=SPCM(icomp,isurf,NLOC)
+      SPCMTP=SPCM(icomp,isurf,NLOC)
 
 C SHTLIQ maximum value of latent heat, (J/kg)
       SHTLIQ=(SHTLIQA*TSOLI+SHTLIQB)
@@ -2060,9 +2100,9 @@ C Special materials
       real qspm              !- reactive power load/generation of special material
       complex vspm           !- voltage of special material node
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer   ndatspm      !- number of data items for special material
       real      dataspm      !- special component results data
       character strspm*16    !- name for the data item
@@ -2841,57 +2881,80 @@ C Default function parameters are defined in file databases/mscomp.db1
 C
 C ****************************************************************************************************
       subroutine SPMCMP54(ICOMP,ISPMNOD)
+      implicit none
+
 #include "building.h"
 
-      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+C Parameters
+      integer ICOMP,ISPMNOD
 
-C Special materials
+C Common blocks
+C General esp-r common blocks
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+      
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
+
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+      real THRMLI
+C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
+
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     & NPGAP(MCOM,MS,MGP)
+      integer NCONST,NELTS,NGAPS,NPGAP
+
+      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
+      real C,QC
+      
+      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
+      real VCP,QCP
+      
+      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+      real VCF,QCF
+
+C Special materials related common blocks
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &  nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      integer nspmnod,ispmloc,ispmtyp,nnodat
+      real spmdat
 
-C      common/spmatlbl/spmlabel(mspmnod)
-C      character spmlabel*16
-
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
       character UNITSPM*16 ! unit for data item
       character TXTSPM*72  ! description of data item
 
-      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
-
-      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
-C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
-C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
-C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
-C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
-
-      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
-      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
-      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
-C Phase change materials
+C Phase change materials specific common blocks
       COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
+      real SPCM ! Heat stored in PCM material (node)
+      real SPCMTF,SPCMTP
 
-      COMMON/PCM03/PCMFAC(MCOM,MS,MN)        ! double precision ??
-      COMMON/PCM04/PCMCONFAC(MCOM,MS,MN)  ! double precision ??
+      COMMON/PCM03/PCMFAC(MCOM,MS,MN)
+      real PCMFAC
+      
+      COMMON/PCM04/PCMCONFAC(MCOM,MS,MN)
+      real PCMCONFAC
 
-      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
-     & NPGAP(MCOM,MS,MGP)
-
+C... Local variables
       REAL FACTP, FACTF,PCMCONF,PCMCONP
-      REAL PCMFAC, PCMCONFAC
 
       REAL APPCON, APPSHT, PCMSHT
-      REAL TFCM, SPCMF, SPCM,SPCMC
+      REAL TFCM, SPCMC,SPCMF
       REAL SHTLIQ, EFTHK
       REAL SHTa,SHTb,SHTL,C1
       REAL TMELT, TSOLI, CONSOL, CONLIQ, SHTSOL, SHT2
 
-      INTEGER IELEM, NLOC, NPCML
+      INTEGER IELEM, NLOC, NPCML,isurf,inode,IPHNL
 
 C---- local variables for output.
       real sumSHTTHK
@@ -2916,10 +2979,8 @@ C Latent heat of the material (J/(kg K))
 C Number of mlc layers the PCM is split into (-)
       NPCML=nint(spmdat(ISPMNOD,8))
 
-
 C ************************************************************************
 C Setup variables
-      icomp=ispmloc(ispmnod,1)
       isurf=ispmloc(ispmnod,2)
       inode=ispmloc(ispmnod,3)
       ielem=nint(real(ispmloc(ispmnod,3))/2.)
@@ -3029,7 +3090,7 @@ C represented by each node of PCM layer.
 C The latent heat stored in the PCM layer is the integration of the
 C apparent heat equation from TMELT to TFCM.
 C First the present value of heat stored read from common block.
-         SPCMP=SPCM(icomp,isurf,NLOC)
+         SPCMTP=SPCM(icomp,isurf,NLOC)
 
 C Now calculate the future value of heat stored [J].
             IF(TFCM.LT.TMELT) THEN
@@ -3075,7 +3136,6 @@ C         fill the string variables for results output
       DATASPM(ISPMNOD,3)=(SPCMTP+SPCMTF)/2.0E0*
      &                                 THRMLI(icomp,isurf,ielem,2)*
      &                                 THKsum
-      SPCMTP=SPCMTF
 
       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
 
@@ -3098,47 +3158,69 @@ C Parameter are defined in file databases/mscomp.db1
 C
 C *****************************************************************************************************
       subroutine SPMCMP55(ICOMP,ISPMNOD)
+      implicit none
 
 #include "building.h"
 
-      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+C Parameters
+      integer ICOMP,ISPMNOD
 
-C Special materials
+C Common blocks
+C General esp-r common blocks
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
+
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+      real THRMLI
+C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
+C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
+
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     & NPGAP(MCOM,MS,MGP)
+      integer NCONST,NELTS,NGAPS,NPGAP
+
+      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
+      real C,QC
+
+      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
+      real VCP,QCP
+      
+      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
+      real VCF,QCF
+
+C Special materials related common blocks
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
      &   nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      integer nspmnod,ispmloc,ispmtyp,nnodat
+      real spmdat
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
       character UNITSPM*16 ! unit for data item
       character TXTSPM*72  ! description of data item
 
-      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
-
-      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
-C            THRMLI(ICOMP,ISURF,IELEM,1)=CON(I,J)
-C            THRMLI(ICOMP,ISURF,IELEM,2)=DEN(I,J)
-C            THRMLI(ICOMP,ISURF,IELEM,3)=SHT(I,J)
-C            THRMLI(ICOMP,ISURF,IELEM,4)=THK(I,J)
-
-      COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
-
-      COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
-      COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
 C Phase change materials
       COMMON/PCM02/SPCM(MCOM,MS,MN),SPCMTF,SPCMTP
+      real SPCM,SPCMTF,SPCMTP
+      
       COMMON/PCM03/PCMFAC(MCOM,MS,MN)
-      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
-     & NPGAP(MCOM,MS,MGP)
+      real PCMFAC
 
-      REAL PCMFAC
-
+C... Local variables
       REAL APPCON, APPSHT, PCMSHT, FACTP, FACTF
-      REAL TFCM, SPCMF, SPCM
+      REAL TFCM, SPCMF
       REAL SHTLIQ, EFTHK, PCMCON
       REAL SHTa,SHTb,SHTc,SHTd,SHTe
       REAL C1, C2, C3, C4, C5, C6, C7, C8, C9
@@ -3146,7 +3228,7 @@ C Phase change materials
       REAL SPCMF1, SPCMF2, SPCMF3, SPCMF4,SPCMC
       REAL TMELT, TSOLI, CONSOL, CONLIQ, SHTSOL, SHT2
 
-      INTEGER IELEM, NLOC
+      INTEGER IELEM, NLOC,isurf,inode,IPHNL
 
 C---- local variables for output.
       real sumSHTTHK
@@ -3194,16 +3276,17 @@ C Calculate necessary coefficients C1, C2, C3, C4, C5, C6, C7, C8, C9
 C Calculate maximum value of latent heat (SHTLIQ), (J/kg), i.e. integration
 C of c(T)equation from TMELT to TSOLI
       SHTLIQ1=((C1*atan(C2*TSOLI+C3))/C4)-((C1*atan(C2*TMELT+C3))/C4)
-      SHTLIQ2=((C5*log(1.0E0+C6*TSOLI+C7*(TSOLI**2)))/C8)-
-     &  ((C5*log(1.0E0+C6*TMELT+C7*(TMELT**2)))/C8)
+      SHTLIQ2=((C5*log(1.0E+0+C6*TSOLI+C7*(TSOLI**2.0)))/C8)-
+     &  ((C5*log(1.0E+0+C6*TMELT+C7*(TMELT**2.0)))/C8)
       SHTLIQ3=C9*(TSOLI-TMELT)
-      SHTLIQ=(SHTLIQ1+SHTLIQ2+SHTLIQ3)/1000
+      SHTLIQ=(SHTLIQ1+SHTLIQ2+SHTLIQ3)/1.0E+03
 
       Rtot = 0.0
       THKsum = 0.0
       sumSHTTHK = 0.0
 
       SPCMTF=0.0
+      SPCMTP=0.0
 
 C ************************************************************************
 C Proceed the calculation for each node of the layer (n-1,n,n+1)
@@ -3277,25 +3360,25 @@ C represented by each node of PCM layer.
 C The latent heat stored in the PCM layer is the integration of the
 C apparent heat equation from TMELT to TFCM.
 C First the present value of heat stored read from common block.
-         SPCMP=SPCM(icomp,isurf,NLOC)
+         SPCMTP=SPCMTP+SPCM(icomp,isurf,NLOC)
 
-C Now calculate the future value of heat stored [J].
+C Now calculate the future value of heat stored [J/kg].
          IF(TFCM.LT.TMELT) THEN
             SPCMF=0.0
          ELSE IF(TFCM.GT.TSOLI) THEN
             SPCMF=SHTLIQ
          ELSE
             SPCMF1=(C1*atan(C2*TFCM+C3))/C4-(C1*atan(C2*TMELT+C3))/C4
-            SPCMF2=(C5*log(1.0E0+C6*TFCM+C7*(TFCM**2)))/C8-
-     &      (C5*log(1.0E0+C6*TMELT+C7*(TMELT**2)))/C8
+            SPCMF2=(C5*log(1.0E+0+C6*TFCM+C7*(TFCM**2.0)))/C8-
+     &      (C5*log(1.0E+0+C6*TMELT+C7*(TMELT**2.0)))/C8
             SPCMF3=C9*TFCM-C9*TMELT
             SPCMF4=SPCMF1+SPCMF2+SPCMF3
-            SPCMF=SPCMF4/1000
+            SPCMF=SPCMF4/1.0E+03
          ENDIF
 
 C Save future value of latent heat stored to common block.
          SPCM(icomp,isurf,NLOC)=SPCMF
-         SPCMTF= SPCMTF+SPCM(icomp,isurf,NLOC)
+         SPCMTF=SPCMTF+SPCM(icomp,isurf,NLOC)
 
 10    CONTINUE
 
@@ -3329,7 +3412,6 @@ C         fill the string variables for results output
       DATASPM(ISPMNOD,3)=(SPCMTP+SPCMTF)/2.0E0*
      &                                 THRMLI(icomp,isurf,ielem,2)*
      &                                 THKsum
-      SPCMTP=SPCMTF
 
       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)      
 
@@ -3346,7 +3428,7 @@ C Special Materials PCM. Extended approach which allows sub-cooling.
 C
 C Created by: Achim Geissler
 C Created on: July 30, 2008
-C Copyright: GaCH
+C Copyright: GaCH / GPL
 C ________
 C Uses subroutines
 C LatentHeat(k,T1,T2) ... calculates integral of latent heat between T1 and T2 for 
@@ -3413,9 +3495,9 @@ C Special materials related common blocks
       integer nspmnod,ispmloc,ispmtyp,nnodat
       real spmdat
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM  ! number of stored data items for spec. material
       real DATASPM      ! value of data item
       character STRSPM*16  ! descriptive string of data item
@@ -3453,13 +3535,19 @@ C... Local variables
       real PCMCON,PCMSHC
       REAL TPCM, TFCM       ! Present and future temperatures of PCM node
       REAL EFTHK     ! PCM node 'virtual' thickness
-      real storedLH
+      real storedLH,aveAppSHC
+
+      real LayFrac(3)
 
       INTEGER isurf,inode,ielem,NLOC,presk,IPHNL
+      integer DB(3) ! debug variable, stores "case" of PCM heating/cooling
 
 C---- local variables for output.
-      real sumStoredLH
-      real Rtot,THKsum
+      real sumStoredLH  ! stored latent heat for total PCM layer
+      real Rtot      ! total thermal resistance for PCM layer
+
+C... Data
+      data LayFrac / 0.25, 0.5, 0.25 / ! split of PCM layer in three 'virtual' layers
 
 C Obtain the relevant PCM data from the PCM database:
 C Melting, solidification temperature (degC) and sub-cooling
@@ -3472,7 +3560,7 @@ C Conductivity in solid and liquid phase (W/(m K))
       CONSOL=spmdat(ISPMNOD,4)
       CONLIQ=spmdat(ISPMNOD,5)
 
-C Specific heat capacity in solid and liquid state (J/(kg K))
+C Specific heat capacity in solid and liquid phase (J/(kg K))
       SHCSOL=spmdat(ISPMNOD,6)
       SHCLIQ=spmdat(ISPMNOD,7)
 
@@ -3518,27 +3606,15 @@ C               AppCON and AppSHC to an initial value.
       endif
 
       Rtot = 0.0
-      THKsum = 0.0
+      aveAppSHC= 0.0
       sumStoredLH = 0.0
 
 C ************************************************************************
 C Loop through the three nodes 'outside surface' - 'middle' - 'inside surface'
 C of the PCM layer (n-1,n,n+1).
       Do 10 IPHNL=1,3
-C          Set current node location to NLOC
-C          Allocate a 'virtual' thickness to each node of the PCM layer 
-         If (IPHNL.EQ.1) THEN
-            NLOC=inode-1
-            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
-         ELSE IF (IPHNL.EQ.2) THEN
-            NLOC=inode
-            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.5
-         ELSE IF (IPHNL.EQ.3) THEN
-            NLOC=inode+1
-            EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*0.25
-         ENDIF
-
-         THKsum = THKsum + EFTHK ! calc total thickness of mlc
+         NLOC=inode-2+IPHNL
+         EFTHK=THRMLI(ICOMP,ISURF,IELEM,4)*LayFrac(IPHNL)
 
 C TPCM is the present and TFCM is the future temperature 
 C of the PCM material node.
@@ -3562,11 +3638,12 @@ C apparent specific heat from previous time step
 C Calculated change in stored latent heat, current apparent conduction and
 C current apparent specific heat capacity based on present and future 
 C temperatures and state (k) of PCM
-         call PCMStore(TPCM,TFCM,presk,storedLH,APPCON,APPSHC)
+         call PCMStore(TPCM,TFCM,presk,storedLH,APPCON,APPSHC,DB(IPHNL))
 
 C--- Calc values for xml output
          Rtot = Rtot + EFTHK/APPCON
-         sumStoredLH = sumStoredLH + storedLH
+         aveAppSHC=aveAppSHC+APPSHC*LayFrac(IPHNL)
+         sumStoredLH = sumStoredLH + storedLH*LayFrac(IPHNL)
 
 C Read value of present factor con/sht from common block.
 C Factor FACTP is the factor to multiply with Fourier-Coefficients for
@@ -3598,22 +3675,26 @@ C to common block.
 10    CONTINUE
 
 C.... Storage of results
-      NDATSPM(ISPMNOD)=5
+      NDATSPM(ISPMNOD)=7
 
 C **** is this the first call?
       if (nsinc .le. 1) THEN
 C         fill the string variables for results output
          STRSPM(ISPMNOD,1)='/AppCON'
          UNITSPM(ISPMNOD,1)='(W/(m K))'
-         TXTSPM(ISPMNOD,1)='Average conductivity of PCM layer'
+         TXTSPM(ISPMNOD,1)='Apparent conductivity of PCM layer'
 
-         STRSPM(ISPMNOD,2)='/SHCtot'
+         STRSPM(ISPMNOD,6)='/APPSHC'
+         UNITSPM(ISPMNOD,6)='(J/(kg K))'
+         TXTSPM(ISPMNOD,6)='Apparent spec. heat capacity of PCM layer'
+
+         STRSPM(ISPMNOD,2)='/StoredLH'
          UNITSPM(ISPMNOD,2)='(J/kg)'
-         TXTSPM(ISPMNOD,2)='Tot. heat stored in PCM'
+         TXTSPM(ISPMNOD,2)='Latent heat stored in PCM'
 
          STRSPM(ISPMNOD,3)='/SHCarea'
          UNITSPM(ISPMNOD,3)='(J/m2)'
-         TXTSPM(ISPMNOD,3)='Heat stored per PCM area'
+         TXTSPM(ISPMNOD,3)='Latent heat stored per PCM area'
 
          STRSPM(ISPMNOD,4)='/PCMFAC'
          UNITSPM(ISPMNOD,4)='(-)'
@@ -3621,22 +3702,30 @@ C         fill the string variables for results output
 
          STRSPM(ISPMNOD,5)='/kkk'
          UNITSPM(ISPMNOD,5)='(-)'
-         TXTSPM(ISPMNOD,5)='k for each subnode'
+         TXTSPM(ISPMNOD,5)='k for each subnode - outside to inside'
+
+         STRSPM(ISPMNOD,7)='/ccc'
+         UNITSPM(ISPMNOD,7)='(-)'
+         TXTSPM(ISPMNOD,7)='case for each subnode - outside to inside'
       endif
 
-      if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THKsum/Rtot 
-      
-      if (THKsum.gt.0) DATASPM(ISPMNOD,2)=sumStoredLH 
+      if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THRMLI(icomp,isurf,ielem,4)/Rtot
+
+      DATASPM(ISPMNOD,6)=aveAPPSHC
+
+      DATASPM(ISPMNOD,2)=sumStoredLH 
 
       DATASPM(ISPMNOD,3)=sumStoredLH*
      &                                 THRMLI(icomp,isurf,ielem,2)*
-     &                                 THKsum
+     &                                    THRMLI(icomp,isurf,ielem,4)
 
       DATASPM(ISPMNOD,4)=PCMFAC(icomp,isurf,inode)
 
       DATASPM(ISPMNOD,5)=100*PK(icomp,isurf,inode-1)+
      &                                  10*PK(icomp,isurf,inode)+
      &                                        PK(icomp,isurf,inode+1)
+
+      DATASPM(ISPMNOD,7)=100*DB(1)+10*DB(2)+DB(3)
 
 C XML output
       call PCM_to_h3k(icomp,inode,isurf,ISPMNOD)
@@ -3651,7 +3740,7 @@ C Special Materials PCM properties calculation
 C
 C Created by: Achim Geissler
 C Created on: July 11, 2008
-C Copyright: GaCH
+C Copyright: GaCH / GPL
 C ________
 C Function LatentHeat()
 C ________
@@ -3715,7 +3804,7 @@ C     More than |Lges| is not possible:
       End ! <- LatentHeat()
 
 C**********************************************************************************************
-      subroutine PCMSTORE(TnS,TnS1,k,storedLH,AppCon,AppSHC)
+      subroutine PCMSTORE(TnS,TnS1,k,storedLH,AppCon,AppSHC,Debug)
       implicit none
 C This routine keeps book of latent heat stored / released by a PCM material
 C The PCM material is described by the parameters in Common /PCMPARM/ and must
@@ -3734,8 +3823,9 @@ C.... Parameter
       real storedLH  ! stored latent heat ("h" in thesis of S.H.), value of preceeding
                            ! time step must be passed when called. Typically, this parameter
                            ! is initialised with "0" befor first call.
-      real AppSHC   ! apparent specific heat capacity - used for ESP-r coupling
       real AppCon   ! apparent thermal conductivity - used for ESP-r coupling
+      real AppSHC   ! apparent specific heat capacity - used for ESP-r coupling
+      Integer Debug  ! output of "case" as defined in sketch below
 
 C.... Material parameters for phase change materials, this model only
       common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
@@ -3779,8 +3869,8 @@ C                |                     /       \
 C                |                    /    7    \
 C                |                   /           \
 C                |                  /             \ 6   5   TSOLI   (5)
-C                |      (1)      8 /    TMELT      \---<-->---/----<-->- C_liq
-C          C_sol ¦-----<-->-------/----------\  TSOLI2       / 4   
+C                |      (1)      8 /      TMELT    \---<-->---/----<-->- C_liq
+C          C_sol ¦-----<-->-------/----------\   TSOLI2      / 4   
 C                |             TMELT2   1   2 \             /
 C                |                             \           /
 C                |                              \    3    /  
@@ -3799,8 +3889,9 @@ C *** Temperature increase in PCM  ***
          ! PCM behaves according to "non-subcooling" properties
             if (TnS1.le.TMELT) then
                ! PCM is solid (case 1), StoredLH = 0
-                  AppCon=CONSOL
-                  AppSHC=SHCSOL
+               AppCon=CONSOL
+               AppSHC=SHCSOL
+               Debug=1
 
             elseif (TnS.le.TMELT.and.TnS1.gt.TMELT) then
             ! PCM begins to melt (case 2)
@@ -3809,6 +3900,7 @@ C *** Temperature increase in PCM  ***
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storedLH/(TMELT-TnS1) ! to be verified
+               Debug=2
 
             elseif (TnS.gt.TMELT.and.TnS1.le.TSOLI) then
             ! PCM is partially liquid, latent heat is stored in the "normal" 
@@ -3818,6 +3910,7 @@ C *** Temperature increase in PCM  ***
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
+               Debug=3
 
             elseif (TnS.gt.TMELT.and.TnS1.gt.TSOLI) then
             ! Rest of solid PCM is completely melted in this timestep and also heated 
@@ -3829,6 +3922,7 @@ C *** Temperature increase in PCM  ***
 C         *** set new k ***
                k=0
 C         ****************
+               Debug=4
             endif ! <- temperature bracketing for k = 1
 
          else ! (k=0)
@@ -3838,6 +3932,7 @@ C         ****************
                storedLH=Lges
                AppCon=CONLIQ
                AppSHC=SHCLIQ
+               Debug=5
 
             elseif (TnS1.gt.TSOLI2) then
             ! PCM is subcooled partial liquid and is completely (re-)melted 
@@ -3846,6 +3941,7 @@ C         ****************
                storedLH = Lges ! crude ... but safe
                AppCon=CONLIQ
                AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI2) ! to be verified
+               Debug=6
 
             ELSEif (TnS1.le.TSOLI2) then
             ! PCM is subcooled partial liquid and not completely melted in 
@@ -3855,6 +3951,7 @@ C         ****************
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
+               Debug=7
             endif ! <- temperature bracketing for k=0
 
          endif ! <- k = ?
@@ -3867,20 +3964,24 @@ C *** Temperature decrease in PCM ***
                ! PCM is solid (case 1), StoredLH = 0
                AppCon=CONSOL
                AppSHC=SHCSOL
+               Debug=1
             elseif (TnS.gt.TMELT.and.TnS1.le.TMELT) then
             ! PCM non-subcooled solidification is completed (case 2)               
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storedLH/(TnS-TMELT)
                storedLH = 0.0E0 ! now all PCM is solid
+               Debug=2
 
             elseif (TnS.le.TSOLI.and.TnS1.ge.TMELT) then
             ! PCM is partially liquid, and is now cooled (non-subcooling, case 3)
                storeThisTS = LatentHeat(1,TnS,TnS1)
                storedLH = storedLH - storeThisTS
+               if (storedLH .lt. 0.0E+0) storedLH = 0.0E+0  ! storedLH >= 0 !
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ+storeThisTS/(TnS-TnS1) ! to be verified
+               Debug=3
             endif ! <- temperature bracketing for k=1
 
          else ! (k=0)
@@ -3891,6 +3992,7 @@ C *** Temperature decrease in PCM ***
                storedLH = Lges ! crude
                AppCon=CONLIQ
                AppSHC=SHCLIQ
+               Debug=5
 
              ELSEif (TnS.gt.TSOLI2.and.TnS1.lt.TSOLI2) then
             ! PCM begins to solidify in sub-cooled mode 
@@ -3899,15 +4001,18 @@ C *** Temperature decrease in PCM ***
                storedLH = Lges - storeThisTS
                AppCon=CONSOL
                AppSHC=SHCSOL + storeThisTS/(TSOLI2-TnS1) ! to be verified
+               Debug=6
 
             ELSEif (TnS.le.TSOLI2.and.TnS1.gt.TMELT2) then
             ! PCM is subcooled partial liquid and not completely solidified in 
             ! this timestep (k=0, case 7)
                storeThisTS = LatentHeat(0,TnS,TnS1)
-               storedLH = storedLH - storeThisTS
+               storedLH = storedLH - storeThisTS 
+               if (storedLH .lt. 0.0E+0) storedLH = 0.0E+0  ! storedLH >= 0 
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCSOL+storeThisTS/(TnS-TnS1) ! to be verified
+               Debug=7
 
              ELSEif (TnS.gt.TMELT2.and.TnS1.le.TMELT2) then
             ! PCM completely solidifies in this timestep (k=0, case 8)
@@ -3918,12 +4023,14 @@ C *** Temperature decrease in PCM ***
 C         *** set new k ***
                k=1
 C         ****************
+               Debug=8
             endif ! <- temperature bracketing for k=0
          endif ! <- k = ?
       else
          ! what happens here ???? (TnS = TnS1)
          if (AppCon .le. 0.0E+00) AppCon=CONSOL
          if (AppSHC .le. 0.0E+00) AppSHC=SHCSOL
+         Debug=9
       endif ! <- end calculation of heat storage at this time step
 
       return
@@ -3934,7 +4041,7 @@ C Special Materials PCM data to h3k output routine
 C
 C Created by: Achim Geissler
 C Created on: June 17, 2008
-C Copyright: GaCH
+C Copyright: GaCH / GPL
 C ________
 C ABSTRACT:
 C This is the routine is used to transport PCM domain state-variable data to the H3K
@@ -3949,15 +4056,15 @@ C*******************************************************************************
 #include "building.h"
 
 C.... Parameters
-      integer iZone,iNode,iSurf,iElem,ISPMNOD
+      integer iZone,iNode,iSurf,ISPMNOD
 
 C.... Commons
       common/spmatlbl/spmlabel(mspmnod)
       character spmlabel*16
 
-      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,5),
-     &                             STRSPM(MSPMNOD,5),UNITSPM(MSPMNOD,5),
-     &                              TXTSPM(MSPMNOD,5)
+      COMMON/RESSPM/NDATSPM(MSPMNOD),DATASPM(MSPMNOD,8),
+     &                             STRSPM(MSPMNOD,8),UNITSPM(MSPMNOD,8),
+     &                              TXTSPM(MSPMNOD,8)
       integer NDATSPM ! number of results items for each special material
       real DATASPM       ! Results data for special material
       character STRSPM*16
@@ -3966,7 +4073,7 @@ C.... Commons
 
 C.... local variables
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
-      integer ndat
+      integer NDAT,idat
 
 C... References
       integer LNBLNK
@@ -3988,17 +4095,19 @@ C.....Pad index to 'XX'
         write (cNode_Chars,'(A,I1)') '0', inode
       endif
 
+      NDAT=min0(8,NDATSPM(ISPMNOD)) ! a maximum of eight entries is possible
+
 C.... output PCM layer data available.
-      do ndat=1,NDATSPM(ISPMNOD)
+      do idat=1,NDAT
          call add_to_xml_reporting(
-     &     DATASPM(ISPMNOD,ndat),
+     &     DATASPM(ISPMNOD,idat),
      &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
      &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
      &     '/nd' // cNode_Chars // 
-     &     strspm(ispmnod,ndat)(1:lnblnk(strspm(ispmnod,ndat))),
+     &     strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
      &     'units',
-     &     unitspm(ispmnod,ndat)(1:lnblnk(unitspm(ispmnod,ndat))),
-     &     txtspm(ispmnod,ndat)(1:lnblnk(txtspm(ispmnod,ndat))))
+     &     unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
+     &     txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
       enddo
 
       Return
