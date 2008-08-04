@@ -63,7 +63,7 @@ C while we have information on where esp-r was installed.
       SUBROUTINE scesprc(LFDEF,IFDEF,ITRC,IER)  
 C Use espriou.h for climatelist file name and defdbfl.
 #include "espriou.h"
-c#include "esprdbfile.h"
+#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -212,7 +212,7 @@ C Set defaults and exemplars depending on whether Unix or NT.
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
-C        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
+        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
       else
         write(gxwdcmd,'(a)')'xwud -out c:/temp/gxwd.xwd'
         tprlbl='Text dump'
@@ -226,12 +226,12 @@ C        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
         cdblbl='Standard climates'
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
-c        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
+        write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
       endif
 
 C Debug.
-c      write(6,*) 'standard databases are at ',
-c     &  standarddbpath(1:lnblnk(standarddbpath))
+      write(6,*) 'standard databases are at ',
+     &  standarddbpath(1:lnblnk(standarddbpath))
 
 C If running in dll mode skip reading .esprc file.
       if(dll)then
