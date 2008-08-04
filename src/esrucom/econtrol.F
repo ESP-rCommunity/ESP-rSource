@@ -3978,6 +3978,8 @@ c set up data for optical control function ii.
       isn3=iosn(ii,3)
       isn4=iosn(ii,4)
       ian1=ioan(ii,1)
+      ian2=ioan(ii,2)
+      ian3=ioan(ii,3)
 
 C isn1 has been tested, therefore use its value to test isn2 & isn3.
     4 is=isn1+6
@@ -4042,7 +4044,9 @@ C Check actuator details for legality.
       goto(25,24,11,12,13,14)ia
 
 C Actuation is on zone node weighting.
-   11 if(ian2.ne.icfz)goto 1005
+C To avoid classes with optical controls additional logic added. The initial code was:
+C   11 if(ian2.ne.icfz)goto 1005
+   11 if(ian2.ne.icfz.and.((nof.eq.0).or.(ian1.ne.-5)))goto 1005
       if(ian3.lt.0.or.ian3.gt.100)goto 1006
       goto 20
 
@@ -4074,7 +4078,13 @@ C Actuation on zone under consideration.
 
 C Actuation is on a zone node.
    14 if(ian1.ne.icfz)goto 1004
-  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005
+   
+C To avoid classes with optical controls additional logic added. The initial code was:
+C  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005   
+  131 if((ian2.lt.0.and.((nof.eq.0).or.(ian1.ne.-5))).or.
+     &  (ian2.gt.nzsur(ian1).and.((nof.eq.0).or.(ian1.ne.-5))))then
+        goto 1005
+      endif  
       if(ian3.lt.0)goto 1006
       if(ian2.eq.0)goto 20
 
@@ -4093,7 +4103,6 @@ c actuation is on a mass flow connection.
 
 c actuation is on a mass flow component.
    25 if((ian2.lt.0).or.((ian2.gt.ncnn).and.(ian2.gt.ncmp)))goto 1005
-
    20 continue
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
    10 continue
