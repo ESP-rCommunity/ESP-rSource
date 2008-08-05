@@ -316,6 +316,7 @@ C.....Local variables
 
 
       INTEGER iSurface, iNode,iViewSurface  ! Counters
+      integer iH3K_NameLen ! length of name root
 
       real SBC                              ! Stephan-Boltzmann constant
       parameter ( SBC=56.7E-9 )
@@ -324,6 +325,8 @@ C.....DECLARATIONS for H3Kreporting object
       CHARACTER*128 H3K_rep_NAME
       CHARACTER*24  H3K_format,H3K_format_spm
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
+
+      character*5 cZoneRootName ! root name for zone data output
 
 C lnblnk is a function returning the index of last non-blank character in a string.
       INTEGER LNBLNK
@@ -527,6 +530,9 @@ C.....Pad zone index to 'XX'
         write (cZone_Chars,'(A,I1)') '0', iZone
       endif
 
+C... Set zone root name
+         cZoneRootName='bui/z'
+
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
 C.....The following code should determine the zone heat injection
@@ -668,10 +674,11 @@ C.......Pad surface index to 'XX'
           write (cSurf_Chars,'(A,I1)') '0', iSurface
         endif
 C.......Create base name
-        H3K_rep_NAME = 'building/zone_' // cZone_Chars
-     &                                  // '/surface_'
+        H3K_rep_NAME = cZoneRootName // cZone_Chars
+     &                                  // '/s'
      &                                  // cSurf_Chars
 
+         iH3K_NameLen=lnblnk(H3K_rep_NAME)
 
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
@@ -762,7 +769,7 @@ C-----------------------------------------------------------------------
 C...........Above-grade heat loss
             call add_to_xml_reporting (
      &          fSurface_balance_net,
-     &          H3K_rep_NAME(1:27) // '/heat_flux/above_grade/net' ,
+     &    H3K_rep_Name(1:iH3K_NameLen) // '/heat_flux/above_grade/net',
      &          'units', '(W)',
      &          'Heat transfer through building envelope '
      &          //'(above-grade)' )
@@ -785,7 +792,8 @@ C.............Surface is transparent
 C...........Flux to known conditions
             call add_to_xml_reporting (
      &          fSurface_balance_net,
-     &          H3K_rep_NAME(1:27) // '/heat_flux/to_specified_BCs/net',
+     &          H3K_rep_Name(1:iH3K_NameLen) 
+     &                       // '/heat_flx/to_spec_BCs/net',
      &          'units', '(W)',
      &          'Heat loss to specified boundary conditions' )
 
@@ -801,7 +809,7 @@ C...........Surface has zero heat transfer
 C...........Below-grade heat loss
             call add_to_xml_reporting (
      &          fSurface_balance_net,
-     &          H3K_rep_NAME(1:27) // '/heat_flux/below_grade/net' ,
+     &    H3K_rep_Name(1:iH3K_NameLen) // '/heat_flux/below_grade/net',
      &          'units', '(W)',
      &          'Heat transfer through building envelope '
      &          //'(below-grade)' )
@@ -813,7 +821,8 @@ C...........Below-grade heat loss
 C...........Heat transfer to CEN partition
             call add_to_xml_reporting (
      &          fSurface_balance_net,
-     &          H3K_rep_NAME(1:27) // '/heat_flux/CEN_partition/net' ,
+     &          H3K_rep_Name(1:iH3K_NameLen) 
+     &                           // '/heat_flux/CEN_partition/net',
      &          'units', '(W)',
      &          'Heat transfer through CEN 13917 partition' )
 
@@ -823,7 +832,8 @@ C...........Heat transfer to CEN partition
 C...........Internal partition
             call add_to_xml_reporting (
      &          fSurface_balance_net,
-     &          H3K_rep_NAME(1:27) // '/heat_flux/above_grade/net' ,
+     &          H3K_rep_Name(1:iH3K_NameLen) //
+     &          '/heat_flux/above_grade/net' ,
      &          'units', '(W)',
      &          'Heat transfer through building envelope '
      &          //'(above-grade)' )
@@ -918,19 +928,26 @@ C-----------------------------------------------------------------------
 C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
+C........External facing surfaces -> Surface temperature
+         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+            call add_to_xml_reporting (
+     &          tfc(iZone,iSurface,1),
+     &          H3K_rep_Name(1:iH3K_NameLen) // '/temp/outside',
+     &          'units', '(oC)',
+     &          'Temperature on external surface facing "exterior" ' )
+         Endif ! if ie = 0
 
-!         call add_to_xml_reporting (
-!      &           tfc(iZone,iSurface,1),
-!      &          H3K_rep_NAME(1:27) // '/temperature/outside',
-!      &          'units', '(oC)',
-!      &          'Temperature on external surface' )
-! 
-!         call add_to_xml_reporting (
-!      &          tfs(iZone,iSurface),
-!      &          H3K_rep_NAME(1:27) // '/temperature/inside',
-!      &          'units', '(oC)',
-!      &          'Temperature on internal surface' )
+         call add_to_xml_reporting (
+     &          tfs(iZone,iSurface),
+     &          H3K_rep_Name(1:iH3K_NameLen) // '/temp/inside',
+     &          'units', '(oC)',
+     &          'Temperature on internal surface' )
 
+         call add_to_xml_reporting (
+     &          tfc(iZone,iSurface,nndc(iZone,iSurface)),
+     &          H3K_rep_Name(1:iH3K_NameLen) // '/tfc/inside',
+     &          'units', '(oC)',
+     &          'Node temperature on internal surface' )
 
       enddo zone_surface_loop
 
@@ -1075,13 +1092,14 @@ C.....Any changes to this code should be made within
 C.....the H3Kreports demarcaration comments
 C.....Set format depending on number of zones
 
-      H3K_rep_NAME = 'building/zone_' // cZone_Chars
+      H3K_rep_NAME = cZoneRootName // cZone_Chars
+      iH3K_NameLen = lnblnk(H3K_rep_NAME)
 
 C.....AIR POINT TEMPERATURE
 
       call add_to_xml_reporting (
      &         TFA(iZone),
-     &         H3K_rep_NAME(1:16)// '/air_point/temperature',
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/temp',
      &         'units', '(oC)',
      &         'Zone air-point temperature' )
 
@@ -1089,19 +1107,19 @@ C.....ZONE HEAT INJECTION / EXTRACTION
 
       call add_to_xml_reporting (
      &         Q_ZONE,
-     &          H3K_rep_NAME(1:16)//'/supplied_energy/net',
+     &          H3K_rep_Name(1:iH3K_NameLen)//'/supplied_energy/net',
      &         'units', '(W)',
      &         'Zone net heat injection/extraction ' )
 
       call add_to_xml_reporting (
      &         Q_Heat,
-     &         H3K_rep_NAME(1:16)//'/supplied_energy/heating',
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/supplied_energy/heating',
      &         'units', '(W)',
      &         'Zone net heat injection ' )
 
       call add_to_xml_reporting (
      &         Q_cool,
-     &         H3K_rep_NAME(1:16)//'/supplied_energy/cooling',
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/supplied_energy/cooling',
      &         'units', '(W)',
      &         'Zone net heat extraction ' )
 
@@ -1109,21 +1127,23 @@ C.....ZONE HEAT INJECTION / EXTRACTION
 C.....Total heating and cooling loads
       call add_to_xml_reporting (
      &         fZoneHeatLoad,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/heating/total',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                                 //'/thermal_loads/heating/total',
      &         'units', '(W)',
      &         'Total heating load ( heat loss trough envelope + '
      &         // ' ventilation and infiltration loads )' )
 
       call add_to_xml_reporting (
      &         fZoneCoolLoad,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/cooling/total',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                         //'/thermal_loads/cooling/total',
      &         'units', '(W)',
      &         'Total cooling load ( heat gain trough envelope + '
      &         // ' ventilation and infiltration loads )' )
 
       call add_to_xml_reporting (
      &         fZoneHeatFlux,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/net_load',
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/thermal_loads/net_load',
      &         'units', '(W)',
      &         'Net load ( heat gain/loss trough envelope + '
      &         // ' ventilation and infiltration loads )' )
@@ -1131,38 +1151,43 @@ C.....Total heating and cooling loads
 C.....Envelope heat loss
       call add_to_xml_reporting (
      &         fZoneHeatLossWindows,
-     &         H3K_rep_NAME(1:16)//'/envelope/windows/heat_loss',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                       //'/envelope/windows/heat_loss',
      &         'units', '(W)',
      &         'Contribution of windows to heating load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossWalls,
-     &         H3K_rep_NAME(1:16)//'/envelope/walls/heat_loss',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                            //'/envelope/walls/heat_loss',
      &         'units', '(W)',
      &         'Contribution of walls to heating load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossFloor,
-     &         H3K_rep_NAME(1:16)//'/envelope/floors/heat_loss',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                            //'/envelope/floors/heat_loss',
      &         'units', '(W)',
      &         'Contribution of overhanging floors to heating load' )
 
 
       call add_to_xml_reporting (
      &         fZoneHeatLossCeiling,
-     &         H3K_rep_NAME(1:16)//'/envelope/ceilings/heat_loss',
+     &       H3K_rep_Name(1:iH3K_NameLen)
+     &                         //'/envelope/ceilings/heat_loss',
      &         'units', '(W)',
      &         'Contribution of Ceilings to heating load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossBelowGrade,
-     &         H3K_rep_NAME(1:16)//'/envelope/foundation/heat_loss',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                            //'/envelope/foundation/heat_loss',
      &         'units', '(W)',
      &         'Contribution of foundation to heating load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossInfiltration,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_Name(1:iH3K_NameLen)
      &            // '/envelope/infiltration/heat_loss',
      &         'units', '(W)',
      &         'Contribution of infiltration to heating load' )
@@ -1174,7 +1199,7 @@ C.....Envelope heat loss
      &           + fZoneHeatLossFloor
      &           + fZoneHeatLossWindows
      &           + fZoneHeatLossBelowGrade,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_Name(1:iH3K_NameLen)
      &            // '/envelope/all_components/heat_loss',
      &         'units', '(W)',
      &         'Heat lost through all components of envelope' )
@@ -1182,7 +1207,7 @@ C.....Envelope heat loss
 C.....Zone air change rate (AIM2)
       call add_to_xml_reporting (
      &         fZoneInfiltrationACH,
-     &         H3K_rep_NAME(1:16)//'/envelope/infiltration/'
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/envelope/infiltration/'
      &                           //'air_changes_per_hour',
      &         'units', '(ACH)',
      &         'Zone infiltration (air changes per hour)')
@@ -1190,7 +1215,7 @@ C.....Zone air change rate (AIM2)
 ! Not sure if this is being computed correctly
 !       call add_to_xml_reporting (
 !      &         fZoneHeatLossVentilation,
-!      &         H3K_rep_NAME(1:16)
+!      &         H3K_rep_Name(1:iH3K_NameLen)
 !      &            //'/envelope/ventilation/heat_loss',
 !      &         'units', '(W)',
 !      &         'Contribution of ventilation to heating load' )
@@ -1198,37 +1223,42 @@ C.....Zone air change rate (AIM2)
 C.....Envelope heat gains
       call add_to_xml_reporting (
      &         fZoneHeatGainWindows,
-     &         H3K_rep_NAME(1:16)//'/envelope/windows/heat_gain',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                //'/envelope/windows/heat_gain',
      &         'units', '(W)',
      &         'Contribution of windows to cooling load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatGainWalls,
-     &         H3K_rep_NAME(1:16)//'/envelope/walls/heat_gain',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &               //'/envelope/walls/heat_gain',
      &         'units', '(W)',
      &         'Contribution of walls to cooling load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatGainFloor,
-     &         H3K_rep_NAME(1:16)//'/envelope/floors/heat_gain',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                //'/envelope/floors/heat_gain',
      &         'units', '(W)',
      &         'Contribution of overhanging floors to cooling load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatGainCeiling,
-     &         H3K_rep_NAME(1:16)//'/envelope/ceilings/heat_gain',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                    //'/envelope/ceilings/heat_gain',
      &         'units', '(W)',
      &         'Contribution of ceilings to cooling load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatGainBelowGrade,
-     &         H3K_rep_NAME(1:16)//'/envelope/foundation/heat_gain',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                   //'/envelope/foundation/heat_gain',
      &         'units', '(W)',
      &         'Contribution of foundation to cooling load' )
 
       call add_to_xml_reporting (
      &         fZoneHeatGainInfiltration,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_Name(1:iH3K_NameLen)
      &            // '/envelope/infiltration/heat_gain',
      &         'units', '(W)',
      &         'Contribution of infiltration to cooling load' )
@@ -1240,7 +1270,7 @@ C.....Envelope heat gains
      &           + fZoneHeatGainFloor
      &           + fZoneHeatGainWindows
      &           + fZoneHeatGainBelowGrade,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_Name(1:iH3K_NameLen)
      &            // '/envelope/all_components/heat_gain',
      &         'units', '(W)',
      &         'Heat gained through all components of envelope' )
@@ -1248,38 +1278,43 @@ C.....Envelope heat gains
 C.....Envelope: net flux
       call add_to_xml_reporting (
      &         fZoneHeatLossWindows-fZoneHeatGainWindows,
-     &         H3K_rep_NAME(1:16)//'/envelope/windows/net_flux',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                           //'/envelope/windows/net_flux',
      &         'units', '(W)',
      &         'Contribution of windows to net heat flux' )
 
 
       call add_to_xml_reporting (
      &         fZoneHeatLossWalls-fZoneHeatGainWalls,
-     &         H3K_rep_NAME(1:16)//'/envelope/walls/net_flux',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                   //'/envelope/walls/net_flux',
      &         'units', '(W)',
      &         'Contribution of walls to net heat flux' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossFloor-fZoneHeatGainFloor,
-     &         H3K_rep_NAME(1:16)//'/envelope/floors/net_flux',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                      //'/envelope/floors/net_flux',
      &         'units', '(W)',
      &         'Contribution of overhanging floors to net heat flux' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossCeiling-fZoneHeatGainCeiling,
-     &         H3K_rep_NAME(1:16)//'/envelope/ceilings/net_flux',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                   //'/envelope/ceilings/net_flux',
      &         'units', '(W)',
      &         'Contribution of ceilings to net heat flux' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossBelowGrade-fZoneHeatGainBelowGrade,
-     &         H3K_rep_NAME(1:16)//'/envelope/foundation/net_flux',
+     &         H3K_rep_Name(1:iH3K_NameLen)
+     &                          //'/envelope/foundation/net_flux',
      &         'units', '(W)',
      &         'Contribution of foundation to net heat flux' )
 
       call add_to_xml_reporting (
      &         fZoneHeatLossInfiltration-fZoneHeatGainInfiltration,
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_Name(1:iH3K_NameLen)
      &            // '/envelope/infiltration/net_flux',
      &         'units', '(W)',
      &         'Contribution of infiltration to net heat flux' )
@@ -1298,7 +1333,7 @@ C.....Envelope: net flux
      &              + fZoneHeatGainWindows
      &              + fZoneHeatGainBelowGrade
      &             ),
-     &         H3K_rep_NAME(1:16)
+     &         H3K_rep_Name(1:iH3K_NameLen)
      &            // '/envelope/all_components/net_flux',
      &         'units', '(W)',
      &         'Net flux through all components of envelope' )
@@ -1307,7 +1342,7 @@ C.....Envelope: net flux
 C.....Zone solar gains
       call add_to_xml_reporting (
      & fZoneSolarGains,
-     & H3K_rep_NAME(1:16)//'/insolation/total',
+     & H3K_rep_Name(1:iH3K_NameLen)//'/insolation/total',
      & 'units', '(W)',
      & 'Solar gains admitted through glazing '
      & )
@@ -1315,7 +1350,7 @@ C.....Zone solar gains
 C.....Zone solar gains coinciding with heating loads
       call add_to_xml_reporting (
      & fZoneUsefulSolarGains,
-     & H3K_rep_NAME(1:16)//'/insolation/useful',
+     & H3K_rep_Name(1:iH3K_NameLen)//'/insolation/useful',
      & 'units', '(W)',
      & 'Solar gains admitted through glazing that supplant heating '
      & // 'loads')
@@ -1323,7 +1358,7 @@ C.....Zone solar gains coinciding with heating loads
 C.....Zone solar gains coinciding with heating loads
       call add_to_xml_reporting (
      & fZoneAdverseSolarGains,
-     & H3K_rep_NAME(1:16)//'/insolation/adverse',
+     & H3K_rep_Name(1:iH3K_NameLen)//'/insolation/adverse',
      & 'units', '(W)',
      & 'Solar gains admitted through glazing that increase cooling '
      & // 'loads')
@@ -1331,7 +1366,7 @@ C.....Zone solar gains coinciding with heating loads
 C.....TOTAL CASUAL GAINS
       call add_to_xml_reporting (
      &         fZoneInternalGains,
-     &         H3K_rep_NAME(1:16)//'/internal_gains/total',
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/internal_gains/total',
      &         'units', '(W)',
      &         'Internal heat gains'
      &             // '(convective + radiant)' )
@@ -1339,7 +1374,7 @@ C.....TOTAL CASUAL GAINS
 C.....Useful internal gains
       call add_to_xml_reporting (
      &         fZoneUsefulInternalGains,
-     &         H3K_rep_NAME(1:16)//'/internal_gains/useful',
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/internal_gains/useful',
      &         'units', '(W)',
      &         'Internal heat gains'
      &         // '(convective + radiant) that supplant heating loads' )
@@ -1347,7 +1382,7 @@ C.....Useful internal gains
 C.....Adverse internal gains
       call add_to_xml_reporting (
      &         fZoneAdverseInternalGains,
-     &         H3K_rep_NAME(1:16)//'/internal_gains/adverse',
+     &         H3K_rep_Name(1:iH3K_NameLen)//'/internal_gains/adverse',
      &         'units', '(W)',
      &         'Internal heat gains'
      &         // '(convective + radiant) that increase cooling loads' )
@@ -1669,39 +1704,10 @@ C.......below should also make use of.
 
          H3K_format='(A,A,A,A,A)'
 
-
-C........Surface temperature 
-C........-> set name
-         WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
-     &      '/temperature'
-
-C........->Report data
-C         call add_to_xml_reporting (
-C     &      tfs(iZone,iSurface),
-C     &      H3K_rep_NAME,
-c     &      'units', '(oC)',
-C     &      'Temperature on zone inside face' )
-
-C........External facing surfaces -> Surface temperature
-         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
-            WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
-     &         '/ext_surf_temperature'
-C........->Report data
-C            call add_to_xml_reporting (
-c     &         TFC(iZone,iSurface,1), ! is this field filled if ISAVE .ne. 3 ??
-C     &         H3K_rep_NAME,
-c     &         'units', '(oC)',
-c     &         'Temperature on exterior face' )
-         Endif ! if ie = 0
-
 C........Radiant heat injection associated with plant containment.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
+     &      cZoneRootName,cZone_Chars,
+     &      '/s',cSurf_Chars,
      &      '/plant_containment_flux'
 
 C........->Report data
@@ -1714,8 +1720,8 @@ C........->Report data
 C.......CONVECTIVE COEFFICIENTS
 C........Internal surface convective coefficient.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
+     &      cZoneRootName,cZone_Chars,
+     &      '/s',cSurf_Chars,
      &      '/HCi'
 
 C........->Report data
@@ -1727,8 +1733,8 @@ C........->Report data
 
 C........Internal surface convective coefficient model index
          WRITE(H3K_rep_NAME,H3K_format)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
+     &      cZoneRootName,cZone_Chars,
+     &      '/s',cSurf_Chars,
      &      '/ICORI'
 
 C........->Report data
@@ -1740,8 +1746,8 @@ C........->Report data
 
 C........External surface convective coefficient.
          WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
+     &      cZoneRootName,cZone_Chars,
+     &      '/s',cSurf_Chars,
      &      '/HCe'
 
 C........->Report data
@@ -1753,8 +1759,8 @@ C........->Report data
 
 C........External surface convective coefficient model index
          WRITE(H3K_rep_NAME,H3K_format)
-     &      'building/zone_',cZone_Chars,
-     &      '/surface_',cSurf_Chars,
+     &      cZoneRootName,cZone_Chars,
+     &      '/s',cSurf_Chars,
      &      '/ICORE'
 
 C........->Report data
@@ -1783,8 +1789,8 @@ C            wtrsum = wtrsum**0.25 - 273.15
 C........Plane radiant temperature 
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
+     &         cZoneRootName,cZone_Chars,
+     &         '/s',cSurf_Chars,
      &         '/PRT'
 C........->Report data
             call add_to_xml_reporting (
@@ -1809,8 +1815,8 @@ C     &         'Emissivity weighted plane radiant temp. (inside face)' )
 C.......RADIATION HEAT TRANSFER COEFFICIENT
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
+     &         cZoneRootName,cZone_Chars,
+     &         '/s',cSurf_Chars,
      &         '/HRi'
 C........->Report data
             call add_to_xml_reporting (
@@ -1833,8 +1839,8 @@ C calc mean surrounding temp of external surfaces
             trsum = trsum**0.25 - 273.15
 C........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
+     &         cZoneRootName,cZone_Chars,
+     &         '/s',cSurf_Chars,
      &         '/AmbRT'
 C........->Report data
             call add_to_xml_reporting (
@@ -1858,10 +1864,10 @@ C......NODE DATA (ignore nodes 1 and N, as these are output as "outside" and "in
 C...........MLC layer temperature 
 C...........-> set name
             WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
-     &         '/node_',cNode_Chars,
-     &         '/temperature'
+     &         cZoneRootName,cZone_Chars,
+     &         '/s',cSurf_Chars,
+     &         '/n',cNode_Chars,
+     &         '/temp'
 C...........->Report data     
             call add_to_xml_reporting (
      &         tfc(iZone,iSurface,iNode),
