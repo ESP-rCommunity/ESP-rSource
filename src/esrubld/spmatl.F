@@ -3675,7 +3675,7 @@ C to common block.
 10    CONTINUE
 
 C.... Storage of results
-      NDATSPM(ISPMNOD)=7
+      NDATSPM(ISPMNOD)=8
 
 C **** is this the first call?
       if (nsinc .le. 1) THEN
@@ -3706,7 +3706,13 @@ C         fill the string variables for results output
 
          STRSPM(ISPMNOD,7)='/ccc'
          UNITSPM(ISPMNOD,7)='(-)'
-         TXTSPM(ISPMNOD,7)='case for each subnode - outside to inside'
+         TXTSPM(ISPMNOD,7)=
+     &         'case for each subnode - outside to inside'
+
+         STRSPM(ISPMNOD,8)='/DT_F-P'
+         UNITSPM(ISPMNOD,8)='(K)'
+         TXTSPM(ISPMNOD,8)=
+     &          'Temperature difference (T_Future - T_Present)'
       endif
 
       if (Rtot.gt.0) DATASPM(ISPMNOD,1)=THRMLI(icomp,isurf,ielem,4)/Rtot
@@ -3726,6 +3732,8 @@ C         fill the string variables for results output
      &                                        PK(icomp,isurf,inode+1)
 
       DATASPM(ISPMNOD,7)=100*DB(1)+10*DB(2)+DB(3)
+      
+      DATASPM(ISPMNOD,8)=(TFCM-TPCM)
 
 C XML output
       call PCM_to_h3k(icomp,inode,isurf,ISPMNOD)
@@ -3899,7 +3907,7 @@ C *** Temperature increase in PCM  ***
                storedLH = 0.0E0 - storeThisTS ! "storedLH" must be >0 !
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
-               AppSHC=SHCLIQ+storedLH/(TMELT-TnS1) ! to be verified
+               AppSHC=SHCSOL+storeThisTS/(TMELT-TnS1) ! to be verified
                Debug=2
 
             elseif (TnS.gt.TMELT.and.TnS1.le.TSOLI) then
@@ -3916,8 +3924,10 @@ C *** Temperature increase in PCM  ***
             ! Rest of solid PCM is completely melted in this timestep and also heated 
             ! as liquid (case 4)
                storeThisTS = LatentHeat(1,TnS,TSOLI)
-               storedLH = Lges ! crude ... but safe
-               AppCon=CONLIQ
+               storedLH = storedLH - storeThisTS
+	       if (storedLH .gt. Lges) storedLH=Lges
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI) ! to be verified
 C         *** set new k ***
                k=0
@@ -3938,8 +3948,10 @@ C         ****************
             ! PCM is subcooled partial liquid and is completely (re-)melted 
             ! in this timestep (case 6)
                storeThisTS = LatentHeat(0,TnS,TSOLI2)
-               storedLH = Lges ! crude ... but safe
-               AppCon=CONLIQ
+               storedLH = storedLH - storeThisTS
+	       if (storedLH .gt. Lges) storedLH = Lges
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI2) ! to be verified
                Debug=6
 
@@ -3999,7 +4011,8 @@ C *** Temperature decrease in PCM ***
             ! this timestep (k=0, case 6)
                storeThisTS = LatentHeat(0,TSOLI2,TnS1)
                storedLH = Lges - storeThisTS
-               AppCon=CONSOL
+               AppCon=(1.0E0-storedLH/Lges)*CONSOL+
+     &                        storedLH/Lges*CONLIQ
                AppSHC=SHCSOL + storeThisTS/(TSOLI2-TnS1) ! to be verified
                Debug=6
 
