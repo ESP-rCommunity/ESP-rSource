@@ -929,13 +929,13 @@ C       Report internal and external surface temperatures
 C-----------------------------------------------------------------------
 
 C........External facing surfaces -> Surface temperature
-         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
+C         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
             call add_to_xml_reporting (
      &          tfc(iZone,iSurface,1),
      &          H3K_rep_Name(1:iH3K_NameLen) // '/temp/outside',
      &          'units', '(oC)',
      &          'Temperature on external surface facing "exterior" ' )
-         Endif ! if ie = 0
+C         Endif ! if ie = 0
 
          call add_to_xml_reporting (
      &          tfs(iZone,iSurface),
@@ -943,11 +943,12 @@ C........External facing surfaces -> Surface temperature
      &          'units', '(oC)',
      &          'Temperature on internal surface' )
 
-         call add_to_xml_reporting (
-     &          tfc(iZone,iSurface,nndc(iZone,iSurface)),
-     &          H3K_rep_Name(1:iH3K_NameLen) // '/tfc/inside',
-     &          'units', '(oC)',
-     &          'Node temperature on internal surface' )
+C node temperature for node "nndc" is zero for whatever reasons ... (???)
+C         call add_to_xml_reporting (
+C     &          tfc(iZone,iSurface,nndc(iZone,iSurface)),
+C     &          H3K_rep_Name(1:iH3K_NameLen) // '/tfc/inside',
+C     &          'units', '(oC)',
+C     &          'Node temperature on internal surface' )
 
       enddo zone_surface_loop
 
