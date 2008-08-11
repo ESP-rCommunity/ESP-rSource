@@ -426,7 +426,7 @@ C Multisensor loop controller - do nothing here
          END IF
 
 C Sensure measures temperature difference between two nodes
-      ELSE IF(IPS1.EQ.-1.AND.IPS3.GT.0.AND.IPS5.GT.0) THEN
+      ELSE IF(IPS1.EQ.-1 .AND. IPS3.GT.0 .AND. IPS5.GT.0) THEN
 C Matrix position of 1st node data
         NODE1ID=NPCDAT(IPS2,9)+IPS3-1
 C Matrix position of 2nd node data
@@ -2149,6 +2149,11 @@ C                 or type 11: senses relative humidity.
 
       COMMON/PSTCTR/NSINCP,NSNCPR   
 
+CCCCCCCCCCCCCC
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+CCCCCCCCCCCCCC
+
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
@@ -2190,7 +2195,7 @@ C Fatal error tests
       ICLCTP=IPCTYP(ICFP,IDTYPP,IPERP)
       IF(ICLCTP.NE.1.AND.ICLCTP.NE.3.AND.ICLCTP.NE.5.AND.
      &   ICLCTP.NE.7.AND.ICLCTP.NE.9.AND.ICLCTP.NE.11.AND.
-     &   ICLCTP.NE.40)then
+     &   ICLCTP.NE.24.AND.ICLCTP.NE.40)then
         call edisp(iuout,
      &     ' PCL02: fatal error on controller type control law ')
         call epwait
@@ -2314,7 +2319,7 @@ C reset integral action variables.
         RINTGRL(ICFP,1)=0.
         RINTGRL(ICFP,2)=0.
       ENDIF
-         
+
 C Set integral and derivative actions to zero for
 C non-recursive algorithm.
       rint=0.0
@@ -2333,9 +2338,13 @@ C Test for 'realistic' values
       endif
 
 C Determine mass flow rate at set point assuming linear
-C relationship.
-      FRSP=(FRX+FRM)/2.0
-      
+C relationship (exept when temperature difference is sensed).
+      if (ICLCTP .NE. 24) then
+         FRSP=(FRX+FRM)/2.0
+      else
+         FRSP=0.0
+      endif
+
 C Establish sensed variable magnitude and actuated node location
       CALL CLVAR(SVCTL,IPCMP,IPCVR)
 
@@ -2350,10 +2359,10 @@ C  pid(icfp,7)= control signal at previous time-step.
 
       IF(NSINCP.EQ.(NSNCPR+1))THEN
 C since next plant time-step, update common variables,     
-       IF(NSINCP.NE.2)PID(ICFP,3)=PID(ICFP,2)
-       IF(NSINCP.NE.1)PID(ICFP,2)=PID(ICFP,1)
-       PID(ICFP,5)=PID(ICFP,4)   
-       PID(ICFP,7)=PID(ICFP,6)
+         IF(NSINCP.NE.2)PID(ICFP,3)=PID(ICFP,2)
+         IF(NSINCP.NE.1)PID(ICFP,2)=PID(ICFP,1)
+         PID(ICFP,5)=PID(ICFP,4)   
+         PID(ICFP,7)=PID(ICFP,6)
       ENDIF
       PID(ICFP,1)=(SVCTL-SPC)
       PID(ICFP,4)=PID(ICFP,5)+(0.5*(PID(ICFP,2)+PID(ICFP,1)))
@@ -2368,27 +2377,28 @@ C Bugfix - Istatp not set.
 
       IF(IT.EQ.1)THEN
 C If iterating, reject previous error value.
-          if(iterp.gt.1)
+         if(iterp.gt.1)
      &       RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
 
 C Anti-wind up added. 
-             IF((SVCTL.GT.SGU).OR.(SVCTL.LT.SGL))THEN
+         IF((SVCTL.GT.SGU).OR.(SVCTL.LT.SGL))THEN
 
 C If the sensed variable is outwith the proportional band then reset integral term
 C to avoid saturation.
-               RINTGRL(ICFP,1)=0.0
-             ELSE
-               RINTGRL(ICFP,1)=RINTGRL(ICFP,1)+ER
-             ENDIF
+            RINTGRL(ICFP,1)=0.0
+         ELSE
+            RINTGRL(ICFP,1)=RINTGRL(ICFP,1)+ER
+         ENDIF
 
 C Remember error value for next iteration.
-          RINTGRL(ICFP,2)=ER
+         RINTGRL(ICFP,2)=ER
       ENDIF
 
 C Establish integral error term.
-      IF((IMO.EQ.1.OR.IMO.EQ.-1).AND.IT.EQ.1)THEN
+      IF((IMO.EQ.1 .OR. IMO.EQ.-1).AND.IT.EQ.1)THEN
           RINT=RINTGRL(ICFP,1)*TIMSEC/TI
       ENDIF
+
       IF((IMO.EQ.2.OR.IMO.EQ.-2).AND.IT.EQ.1)THEN
             RINT=(TIMSEC/TI)*(PID(ICFP,5)+
      &                        0.5*(PID(ICFP,2)+PID(ICFP,1)))
@@ -2400,158 +2410,162 @@ C sensed variable below or above setpoint.
 C max flow rate if value of sensed variable below setpoint.
             
 C Determine the gain 
-            RKP=(FRM-FRX)/(SGU-SGL)
+         RKP=(FRM-FRX)/(SGU-SGL)
             
 C Determine control signal and thus flowrate
-            call eclose((SGU-SGL),0.00,0.0001,closea)
-            IF(SVCTL.GE.SGU) THEN
+         call eclose((SGU-SGL),0.00,0.0001,closea)
+
+         IF(SVCTL.GE.SGU) THEN
 C Control signal
             PID(ICFP,6)=FRM
 C Flowrate
             FR=FRM
             
-            ELSE IF(SVCTL.GT.SGL.AND.(.NOT.closea)) THEN
+         ELSE IF(SVCTL.GT.SGL.AND.(.NOT.closea)) THEN
 
 C Control signal depends on type of algorithm selected by user:
             IF(IMO.EQ.1)THEN
 
 C See if derivative action is required.
-            IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
+               IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
 
 C Now evaluate flow rate.
-            FR=RKP*(ER+RINT+RDRV)+FRSP
-            
+               FR=RKP*(ER+RINT+RDRV)+FRSP
+
             ELSE IF(IMO.EQ.2)THEN     
 C See if derivative action is required.
-            IF(ID.EQ.1) RDRV=(TD/TIMSEC)*(PID(ICFP,1)-PID(ICFP,2))
+               IF(ID.EQ.1) RDRV=(TD/TIMSEC)*(PID(ICFP,1)-PID(ICFP,2))
 C Determine the control signal
-            PID(ICFP,6)=RKP*(PID(ICFP,1)+RINT+RDRV)
+               PID(ICFP,6)=RKP*(PID(ICFP,1)+RINT+RDRV)
 C Thus flowrate
-            FR=PID(ICFP,6)+FRSP
-             
+               FR=PID(ICFP,6)+FRSP
+
             ELSE IF(IMO.EQ.3)THEN
 C Determine the control signal
-            PID(ICFP,6)=PID(ICFP,7)+RKP*(PID(ICFP,1)-PID(ICFP,2)+
+               PID(ICFP,6)=PID(ICFP,7)+RKP*(PID(ICFP,1)-PID(ICFP,2)+
      &                      ((TIMSEC/TI)*PID(ICFP,2)))
 C Thus flowrate
-            FR=PID(ICFP,6)+FRSP
+               FR=PID(ICFP,6)+FRSP
 
             ELSE IF(IMO.EQ.4)THEN
-            A=RKP*(1.+(TIMSEC/TI)+(TD/TIMSEC))
-            B=-RKP*(1.+(2*TD/TIMSEC))
-            C=RKP*TD/TIMSEC
+               A=RKP*(1.+(TIMSEC/TI)+(TD/TIMSEC))
+               B=-RKP*(1.+(2*TD/TIMSEC))
+               C=RKP*TD/TIMSEC
 C Determine the control signal
-            PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
+               PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
      &                       B*PID(ICFP,2)+C*PID(ICFP,3)
 C Thus flowrate
             FR=PID(ICFP,6)+FRSP
              
             ELSE 
-            A=RKP*(1.+(0.5*TIMSEC/TI)+(TD/TIMSEC))
-            B=-RKP*(1.+(2*TD/TIMSEC)-(0.5*TIMSEC/TI))
-            C=RKP*TD/TIMSEC
+               A=RKP*(1.+(0.5*TIMSEC/TI)+(TD/TIMSEC))
+               B=-RKP*(1.+(2*TD/TIMSEC)-(0.5*TIMSEC/TI))
+               C=RKP*TD/TIMSEC
 C Determine the control signal
-            PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
+               PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
      &                       B*PID(ICFP,2)+C*PID(ICFP,3)
 C Thus flowrate
-            FR=PID(ICFP,6)+FRSP
+               FR=PID(ICFP,6)+FRSP
              
-            ENDIF
+            ENDIF ! <- end IMO check
 
-            IF(FR.LT.FRM) FR=FRM
-            IF(FR.GT.FRX) FR=FRX
+         IF(FR.LT.FRM) FR=FRM
+         IF(FR.GT.FRX) FR=FRX
 
-            ELSE
+         ELSE ! svctl .lt. sgu
 C Control signal
             PID(ICFP,6)=FRX
 C Flowrate
             FR=FRX
 
-         ENDIF
+         ENDIF 
          
-         ELSE IF(IMO.LT.0)THEN
+      ELSE IF(IMO.LT.0)THEN
 C max flow rate if value of sensed variable above setpoint.
 
 C Determine the gain
-           RKP=(FRX-FRM)/(SGU-SGL)
+         RKP=(FRX-FRM)/(SGU-SGL)
 C Determine control signal and thus flow
-           call eclose((SGU-SGL),0.00,0.0001,closea)
-           IF(SVCTL.GE.SGU) THEN
+         call eclose((SGU-SGL),0.00,0.0001,closea)
+           
+         IF(SVCTL.GE.SGU) THEN
 C Control signal
-           PID(ICFP,6)=FRX
+            PID(ICFP,6)=FRX
 C Flowrate
-           FR=FRX
+            FR=FRX
             
-           ELSE IF(SVCTL.GT.SGL.AND.(.NOT.closea)) THEN
+         ELSE IF(SVCTL.GT.SGL.AND.(.NOT.closea)) THEN
 
 C Control signal depends on type of algorithm selected by user:
            
-           IF(IMO.EQ.-1) THEN       
+            IF(IMO.EQ.-1) THEN       
 
 C See if derivative action is required.
-           IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
+               IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
 C Now evaluate flow rate.
-           FR=RKP*(ER+RINT+RDRV)+FRSP
-            
-           ELSE IF(IMO.EQ.-2)THEN
+               FR=RKP*(ER+RINT+RDRV)
+
+            ELSE IF(IMO.EQ.-2)THEN
 C See if derivative action is required.
-           IF(ID.EQ.1) RDRV=(TD/TIMSEC)*(PID(ICFP,1)-PID(ICFP,2))
+               IF(ID.EQ.1) RDRV=(TD/TIMSEC)*(PID(ICFP,1)-
+     &                                          PID(ICFP,2))
 C Determine the control signal
-           PID(ICFP,6)=RKP*(PID(ICFP,1)+RINT+RDRV)
+               PID(ICFP,6)=RKP*(PID(ICFP,1)+RINT+RDRV)
 C Thus flowrate
-           FR=PID(ICFP,6)+FRSP
+               FR=PID(ICFP,6)+FRSP
              
-           ELSE IF(IMO.EQ.-3)THEN
+            ELSE IF(IMO.EQ.-3)THEN
 C Determine the control signal
-           PID(ICFP,6)=PID(ICFP,7)+RKP*(PID(ICFP,1)-PID(ICFP,2)+
-     &                      ((TIMSEC/TI)*PID(ICFP,2)))
+               PID(ICFP,6)=PID(ICFP,7)+RKP*(PID(ICFP,1)-
+     &                                 PID(ICFP,2)+
+     &                                    ((TIMSEC/TI)*PID(ICFP,2)))
 C Thus flowrate
-           FR=PID(ICFP,6)+FRSP
+               FR=PID(ICFP,6)+FRSP
 
-           ELSE IF(IMO.EQ.-4)THEN
-           A=RKP*(1.+(TIMSEC/TI)+(TD/TIMSEC))
-           B=-RKP*(1.+(2*TD/TIMSEC))
-           C=RKP*TD/TIMSEC
+            ELSE IF(IMO.EQ.-4)THEN
+               A=RKP*(1.+(TIMSEC/TI)+(TD/TIMSEC))
+               B=-RKP*(1.+(2*TD/TIMSEC))
+               C=RKP*TD/TIMSEC
 C Determine the control signal
-           PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
+               PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
+     &                                B*PID(ICFP,2)+C*PID(ICFP,3)
+C Thus flowrate
+               FR=PID(ICFP,6)+FRSP
+             
+            ELSE
+                  A=RKP*(1.+(0.5*TIMSEC/TI)+(TD/TIMSEC))
+                  B=-RKP*(1.+(2*TD/TIMSEC)-(0.5*TIMSEC/TI))
+                  C=RKP*TD/TIMSEC
+C Determine the control signal
+                  PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
      &                       B*PID(ICFP,2)+C*PID(ICFP,3)
 C Thus flowrate
-           FR=PID(ICFP,6)+FRSP
+                  FR=PID(ICFP,6)+FRSP
              
-           ELSE
-           A=RKP*(1.+(0.5*TIMSEC/TI)+(TD/TIMSEC))
-           B=-RKP*(1.+(2*TD/TIMSEC)-(0.5*TIMSEC/TI))
-           C=RKP*TD/TIMSEC
-C Determine the control signal
-           PID(ICFP,6)=PID(ICFP,7)+A*PID(ICFP,1)+
-     &                       B*PID(ICFP,2)+C*PID(ICFP,3)
-C Thus flowrate
-           FR=PID(ICFP,6)+FRSP
-             
-           ENDIF
+            ENDIF ! <- end else, i.e. IMO cases are done
 
-           IF(FR.LT.FRM) FR=FRM
-           IF(FR.GT.FRX) FR=FRX
+            IF(FR.LT.FRM) FR=FRM
+            IF(FR.GT.FRX) FR=FRX
 
-          ELSE
+         ELSE ! <- svctl .lt. sgu
 
 C Control signal
-          PID(ICFP,6)=FRM
+            PID(ICFP,6)=FRM
 
 C Flowrate
-          FR=FRM
-          ENDIF
-        ENDIF
+            FR=FRM
+         ENDIF ! <- end check of SVCTL
+      ENDIF ! <- end IMO .lt. 0
 
 C Assign CDATA
-        CDATA(IPCMP,IPCVR)=FR
+      CDATA(IPCMP,IPCVR)=FR
 
 C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1)call CTLROP
 
 C Remember plant time-step
-        NSNCPR=NSINCP
+      NSNCPR=NSINCP
 
 C Within this loop some control action has been specified 
 C therefore control is active
