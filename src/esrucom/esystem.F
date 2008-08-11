@@ -454,7 +454,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
       INTEGER IRNCMD,IRNCMF
-
+      INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
 
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
@@ -1185,6 +1185,30 @@ C There is a calendar of day types defined read its name.
         wkd2=wkday(idwe2)
       elseif(WORD(1:5).eq.'*year')then
         CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+
+C Perform check that calendar day types correspond with simulation year
+C If more than three day types are declared then retain those day types
+C otherwise overwrite 
+        ICREPORT=0
+        DO 123 IDOL=1,365
+          IF(ICALENDER(IDOL).LE.3)THEN
+            CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+            CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+            IF(IDWKNUM.LT.6)THEN
+              IDTYY=1 ! WEEKDAY
+            ELSEIF(IDWKNUM.EQ.6)THEN
+              IDTYY=2 ! SATURDAY
+            ELSEIF(IDWKNUM.EQ.7)THEN
+              IDTYY=3 ! SUNDAY
+            ENDIF
+            IF(ICALENDER(IDOL).NE.IDTYY)THEN
+              ICALENDER(IDOL)=IDTYY
+              ICREPORT=1
+            ENDIF
+          ENDIF
+ 123    CONTINUE
+        IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
+     &    'Simulation year and calendar mismatch rectified')
       elseif(WORD(1:4).eq.'*img')then
 
 C An image file.
