@@ -47,7 +47,7 @@ C For the building:
 
 C 'mgt' is the maximum number of insolated glazings and
 C this should be set to the same as MS. 
-      PARAMETER (MGT=62)
+      PARAMETER (MGT=85)
       PARAMETER (MCT=3)
       PARAMETER (MTRACE=60)
       PARAMETER (MGRDP=10)
@@ -95,20 +95,20 @@ C Ground topology
 C Change next 2 settings to increase/ reduce
 C number of surfaces. MSM is MS+6 for viewfactor
 C calculations. Also set MNSBZ in cfd.h to equal MS.
-      PARAMETER (MST=62)
-      PARAMETER (MS=62)
-      PARAMETER (MSM=68)
+      PARAMETER (MST=85)
+      PARAMETER (MS=85)
+      PARAMETER (MSM=91)
 
 C MZS is the number of items to report/select in res.
       PARAMETER (MZS=90)
 
 C MZRL is associated with data taking up all fields of a zone
 C results library (i.e. is = nzrl). Should be larger of either MCOM or MS+12 or 36.
-      PARAMETER (MZRL=74)
+      PARAMETER (MZRL=97)
 
 C If MS changes, so should MEQ (MS+1) and MTR (MS+4).
-      PARAMETER (MEQ=63)
-      PARAMETER (MTR=66)
+      PARAMETER (MEQ=86)
+      PARAMETER (MTR=89)
 
 C Multilayered construction limit
       PARAMETER (MMLC=80)
