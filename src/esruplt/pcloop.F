@@ -42,6 +42,7 @@ C      PCL10:  zero-energy band controller.
 C      PCL14:  multisensor controller (senses multiple control loops)
 C      PCL15:  PI room controller
 C      PCL16:  outside temperature compensation controller
+C      PCL17:  flow PID control, experimental with add. perks
 C      PSYSPT: establishes set points for AHU systems.
 
 C ******************** CONTRL ********************
@@ -228,6 +229,11 @@ C Plant cotrol law 16: Outside temperature compensation
       ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.16) THEN
          CALL PCL16
          
+C Plant cotrol law 17:  proportional, integral and
+C derivative flow controller with various perks.
+      ELSE IF(IPCLAW(ICFP,IDTYPP,IPERP).EQ.17) THEN
+         CALL PCL17(iterp)
+
 C New controllers inserted here!
       ELSE
         call edisp(iuout,
@@ -4051,6 +4057,355 @@ C Trace output.
      &                ' STPT = ',stpt
          write(itu,*) ' Leaving subroutine PSYSPT'
       ENDIF
+
+      RETURN
+      END
+
+
+C ******************** PCL17 ********************
+C  Created on: 12.08.2008
+C  Created by: Achim Geissler
+C  Copyright: GPL
+C
+C ***********************************************
+C PCL02 is a controller offering the following control modes:
+C   1/ 'POSITIONAL'  PID.
+C       - Proportional
+C       - Proportional + Integral
+C       - Proportional + Derivative
+C       - Proportional + Integral + Derivative
+C
+C These act to control flowrate on the basis of the
+C sensed condition. It is suitable for plant controller:
+C                    type  1: senses temperature
+C                 or type  3: senses enthalpy
+C                 or type  5: senses 1th phase mass flow rate
+C                 or type  7: senses 2nd phase mass flow rate
+C                 or type  9: senses additional plant output
+C                 or type 11: senses relative humidity.
+C                 or type 24: senses temperature difference
+
+      SUBROUTINE PCL17(iterp)
+      implicit none
+#include "plant.h"
+#include "building.h"
+
+C Parameters
+      integer iterp
+
+C General ESP-r Commons
+      COMMON/OUTIN/IUOUT,IUIN
+      integer IUOUT,IUIN
+      
+      COMMON/TC/ITC,ICNT
+      integer ITC,ICNT
+      
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      integer ITCF,ITRACE,IZNTRC,ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+C Plant Commons
+      COMMON/PTIME/PTIMEP,PTIMEF
+      real PTIMEP,PTIMEF
+
+      COMMON/PSTCTR/NSINCP,NSNCPR
+      integer NSINCP,NSNCPR
+
+      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+      integer ICFP,IDTYPP,IPERP
+
+C Plant control commons
+      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
+     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
+     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
+     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
+      integer NCL,IPSN,IPAN,NPCDT,IPCDV,NPCDP,IPCTYP,IPCLAW
+      real TPCPS,PMISCD
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      integer NPCOMP,NCI
+      real CDATA
+
+      COMMON/Pctime/TIMSEC
+      real TIMSEC
+      
+      COMMON/DIGPID/PID(MCL,7)
+      real PID
+      
+      COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
+      real RINTGRL,DERIV
+
+      COMMON/PSTAT/ISTATP
+      integer ISTATP
+
+      COMMON/PCLOP8/LASTOUT(MCL)
+      integer LASTOUT
+
+C Commons for this routine
+      common/PIDPARM/KPold,KPnew,RKP,RDRV
+      real KPold,KPnew,RKP,RDRV
+
+C Local variables
+      logical closea
+      
+      integer ICLCTP,IT,ID,J,IRE,IMX,ISUPDC,IRETDC
+      integer IPCMP,IPCVR,ipa4,mdflag
+
+      real IMO,FRX,FRM,SPC,TRC,TI,TD,DELTFR
+      real DELTIM,stpt,CPRSTR,ZNTPSP,ZNRHSP
+      real SGU,SGL,SVCTL,ER,FR
+      real minDT,RINT
+
+c      minDT=1.0E-01
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0) THEN
+         CALL DAYCLK(IDYP,PTIMEF,ITU)
+         WRITE(ITU,*) ' Entering subroutine PCL17'
+      END IF 
+
+C Sources:
+C Dubbel, 17th ..., p. X n 
+C www.mstarlabs.com, "Practical PID controls"
+
+C Fatal error tests
+      ICLCTP=IPCTYP(ICFP,IDTYPP,IPERP)
+      IF(ICLCTP.NE.1.AND.ICLCTP.NE.3.AND.ICLCTP.NE.5.AND.
+     &   ICLCTP.NE.7.AND.ICLCTP.NE.9.AND.ICLCTP.NE.11.AND.
+     &   ICLCTP.NE.24)then
+        call edisp(iuout,
+     &     ' PCL17: fatal error on controller type control law ')
+        call epwait
+        call epagend
+        STOP
+      endif
+
+      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,2)).GT.1.OR.
+     &   INT(PMISCD(ICFP,IDTYPP,IPERP,2)).LT.-1.OR.
+     &   INT(PMISCD(ICFP,IDTYPP,IPERP,2)).EQ.0)then
+        call edisp(iuout,' PCL17: fatal error on PID algorithm type ')
+        call epwait
+        call epagend
+        STOP
+      endif
+
+      IF(INT(PMISCD(ICFP,IDTYPP,IPERP,2)).LE.1.AND.
+     &   INT(PMISCD(ICFP,IDTYPP,IPERP,2)).GE.-1.AND.
+     &   INT(PMISCD(ICFP,IDTYPP,IPERP,1)).LT.7)then
+        call edisp(iuout,
+     &    ' PCL17: fatal error on number of control data items ')
+        call epwait
+        call epagend
+        STOP
+      endif
+
+C Set control law parameters: 
+C Max flow rate FRX (kg/s or m3/s),
+C Min flow rate FRM (kg/s or m3/s),
+C Control set point SPC (C, kJ/kg, kg/s, or ?), 
+C Control throttling range TRC(=mid-point of the throttling range.)
+C Integral action flag, IT,
+C Integral action  time, TI (s),
+C Derivative action flag ID,
+C Derivative action time, TD (s)
+C Mode of operation, IMO;
+C  1 For FRX < SPC; Non-recursive Positional P, PI, PD, or PID.
+C -1 For FRX > SPC; Non-recursive Positional P, PI, PD, or PID.
+C Note that the set point is at the mid-point of the throttling range.
+      IMO=INT(PMISCD(ICFP,IDTYPP,IPERP,2))
+      FRX=PMISCD(ICFP,IDTYPP,IPERP,3)
+      FRM=PMISCD(ICFP,IDTYPP,IPERP,4)
+      SPC=PMISCD(ICFP,IDTYPP,IPERP,5)
+      TRC=PMISCD(ICFP,IDTYPP,IPERP,6)
+
+      IT=INT(PMISCD(ICFP,IDTYPP,IPERP,7))
+      IF(IT.EQ.1) THEN
+         TI=PMISCD(ICFP,IDTYPP,IPERP,8)
+         ID=INT(PMISCD(ICFP,IDTYPP,IPERP,9))
+         J=9
+         IF(ID.EQ.1)THEN
+            TD=PMISCD(ICFP,IDTYPP,IPERP,10)
+            J=10
+         ENDIF
+      ELSE
+         ID=INT(PMISCD(ICFP,IDTYPP,IPERP,8))
+         J=8
+         IF(ID.EQ.1)THEN
+            TD=PMISCD(ICFP,IDTYPP,IPERP,9)
+            J=9
+         ENDIF
+      ENDIF
+
+C Set point may be dynamically set by PSYSPT subroutine.
+      IF(INT(SPC).eq.-1001)then
+        IRE=INT(PMISCD(ICFP,IDTYPP,IPERP,J+1))
+        MDFLAG=INT(PMISCD(ICFP,IDTYPP,IPERP,J+2))
+        IMX=INT(PMISCD(ICFP,IDTYPP,IPERP,J+3))
+        ISUPDC=INT(PMISCD(ICFP,IDTYPP,IPERP,J+4))
+        IRETDC=INT(PMISCD(ICFP,IDTYPP,IPERP,J+5))
+        ZNTPSP=PMISCD(ICFP,IDTYPP,IPERP,J+6)
+        ZNRHSP=PMISCD(ICFP,IDTYPP,IPERP,J+7)
+        call PSYSPT(ire,mdflag,imx,isupdc,iretdc,zntpsp,znrhsp,stpt)
+        SPC=stpt
+      ENDIF
+
+C If first call for this control period, 
+C reset integral action variables.
+      DELTIM=TIMSEC/3600.
+      CPRSTR=TPCPS(ICFP,IDTYPP,IPERP)
+      IF((PTIMEF-CPRSTR).LE.DELTIM)THEN
+        RINTGRL(ICFP,1)=0.
+        RINTGRL(ICFP,2)=0.
+c        DELTFR=0.0
+c        KPold=(FRX-FRM)/TRC
+c        KPnew=KPold
+      ENDIF
+
+C Determine signal upper limit SGU, lower limit SGL.
+C Test for 'realistic' values
+      SGU=SPC+(TRC/2.0)
+      SGL=SPC-(TRC/2.0)
+      IF(SGU.LT.SGL)then
+        call edisp(iuout,
+     &    ' PCL17: fatal error on signal set point(s) ')
+        call epwait
+        call epagend
+        STOP
+      endif
+
+C Establish sensed variable magnitude and actuated node location
+      CALL CLVAR(SVCTL,IPCMP,IPCVR)
+
+C Common block variables for pid(icfp,?):
+C  pid(icfp,1)= error at present time-step,
+C  pid(icfp,2)= error at previous time-step,
+C  pid(icfp,3)= error at 2nd last time-step,
+C  pid(icfp,4)= time-integral of the error at present time-step,
+C  pid(icfp,5)= time-integral of the error at last time-step,
+C  pid(icfp,6)= control signal at present time-step,
+C  pid(icfp,7)= control signal at previous time-step.
+
+      IF(NSINCP.EQ.(NSNCPR+1))THEN
+C since next plant time-step, update common variables,     
+         IF(NSINCP.NE.2)PID(ICFP,3)=PID(ICFP,2)
+         IF(NSINCP.NE.1)PID(ICFP,2)=PID(ICFP,1)
+         PID(ICFP,5)=PID(ICFP,4)
+c         DELTFR=PID(ICFP,6)-PID(ICFP,7)
+         PID(ICFP,7)=PID(ICFP,6)
+      ENDIF
+
+C Determine error for this plant timestep
+      ER=(SVCTL-SPC)
+      PID(ICFP,1)=ER
+
+C See if integral action is required.
+      IF (IT.EQ.1) THEN
+C If iterating, reject previous error value.
+         if(iterp.gt.1)
+     &       RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
+
+C Anti-wind up 
+C If the sensed variable is outside the proportional band then 
+C avoid saturation by adapting integral calculation
+         IF (SVCTL.GT.SGU .or. SVCTL.LT.SGL) THEN
+c              apply reduction factor this ts
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+0.005*ER) ! *KPold/KPnew
+         ELSE
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+ER) ! *KPold/KPnew
+         ENDIF
+
+C Remember error value for next iteration in this plant timestep.
+         RINTGRL(ICFP,2)=ER
+
+C Establish integral error term.
+         RINT=RINTGRL(ICFP,1)*TIMSEC/TI
+      ENDIF ! <- IT .eq. 1
+
+C Set old Kp to new Kp
+c      KPold=KPnew
+
+C Determine whether max flow rate if value of 
+C sensed variable below or above setpoint.
+
+      IF(IMO.GT.0)THEN
+C max flow rate if value of sensed variable below setpoint.
+
+C Determine the gain 
+         RKP=(FRM-FRX)/(SGU-SGL)
+
+C See if derivative action is required.
+         IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
+
+C Now evaluate flow rate.
+         FR=RKP*(ER+RINT+RDRV)
+
+      ELSE IF(IMO.LT.0)THEN
+C max flow rate if value of sensed variable above setpoint.
+
+C Determine the gain (Kp)
+         RKP=(FRX-FRM)/(SGU-SGL)
+
+C According to Dubbel, p. X 3, eqn 1, Kp = dXa/dXe which would be 
+C "change of temp. diff"/"change of flow", here. Reciprocal because
+C of system (?). Note: (w-x2) - (w-x1) = x1-x2, where "1" is present and "2" previous ts
+c         if (DELTFR.eq.0) DELTFR=(FRX-FRM)
+c         if (abs(PID(ICFP,2)-PID(ICFP,1)).gt.minDT) then
+c            RKP=DELTFR/(PID(ICFP,2)-PID(ICFP,1))
+c         else
+c            RKP=DELTFR/(SGU-SGL)
+c         endif
+c         KPnew=RKP
+
+C See if derivative action is required.
+         IF(ID.EQ.1) Then
+C          "derivative" is 'present (w-x)' - 'previous (w-x)' divided by passed time "dt"
+            DERIV(ICFP)=(PID(ICFP,1)-PID(ICFP,2))/TIMSEC
+            RDRV=TD*DERIV(ICFP)
+         endif
+
+C Now evaluate flow rate.
+C y = Kp (w-x) + Ki integral( (w-x)dt) + Kd d(w-x)/dt
+C where Ki=Kp/Ti and Kd=Kp Td
+         FR=RKP*(ER+RINT+RDRV)
+
+      ENDIF ! <- end IMO .lt. 0
+
+C Check saturation (?) 
+      IF(FR.LT.FRM) FR=FRM
+      IF(FR.GT.FRX) FR=FRX
+
+C Store current flow rate
+      PID(ICFP,6)=FR
+
+C Assign new flow rate to CDATA
+      CDATA(IPCMP,IPCVR)=FR
+
+C Non-ideal actuator characteristics
+      ipa4=ipan(icfp,4)
+      if(ipa4.eq.-1) call CTLROP
+
+C Remember plant time-step
+      NSNCPR=NSINCP
+
+C Within this loop some control action has been specified 
+C therefore control is active
+      LASTOUT(ICFP)=1
+
+c      write(*,'(6(A,E9.3))')"KPold= ",KPold," KPnew= ",KPnew,
+c     & " Ko/Kn= ",KPold/KPnew,
+c     & " oldFR= ",PID(ICFP,7)," newFR= ",PID(ICFP,6),
+c     & " deltFR= ",DELTFR
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0) THEN
+         WRITE(ITU,*) ' FR = ',FR,         
+     &                ' CDATA = ',CDATA(IPCMP,IPCVR)
+         WRITE(ITU,*) ' Leaving subroutine PCL17'
+      END IF
 
       RETURN
       END
