@@ -4144,8 +4144,9 @@ C Plant control commons
       integer LASTOUT
 
 C Commons for this routine
-      common/PIDPARM/KPold,KPnew,RKP,RDRV
-      real KPold,KPnew,RKP,RDRV
+      common/PIDPARM/KPold,KPnew,RKP,RDRV,oldDERIV(MCL),
+     &  lagstate(MCL)
+      real KPold,KPnew,RKP,RDRV,oldDERIV,lagstate
 
 C Local variables
       logical closea
@@ -4156,9 +4157,10 @@ C Local variables
       real IMO,FRX,FRM,SPC,TRC,TI,TD,DELTFR
       real DELTIM,stpt,CPRSTR,ZNTPSP,ZNRHSP
       real SGU,SGL,SVCTL,ER,FR
-      real minDT,RINT
+      real minDT,RINT,antiWUP,change,lagcut
 
 c      minDT=1.0E-01
+      lagcut=0.15 ! see mstarlabs.com
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -4257,8 +4259,10 @@ C reset integral action variables.
       DELTIM=TIMSEC/3600.
       CPRSTR=TPCPS(ICFP,IDTYPP,IPERP)
       IF((PTIMEF-CPRSTR).LE.DELTIM)THEN
-        RINTGRL(ICFP,1)=0.
-        RINTGRL(ICFP,2)=0.
+         RINTGRL(ICFP,1)=0.
+         RINTGRL(ICFP,2)=0.
+         oldDERIV(ICFP)=0.
+         lagstate(ICFP)=0.
 c        DELTFR=0.0
 c        KPold=(FRX-FRM)/TRC
 c        KPnew=KPold
@@ -4293,91 +4297,109 @@ C since next plant time-step, update common variables,
          IF(NSINCP.NE.2)PID(ICFP,3)=PID(ICFP,2)
          IF(NSINCP.NE.1)PID(ICFP,2)=PID(ICFP,1)
          PID(ICFP,5)=PID(ICFP,4)
-c         DELTFR=PID(ICFP,6)-PID(ICFP,7)
+c         DELTFR=abs(PID(ICFP,6)-PID(ICFP,7))
          PID(ICFP,7)=PID(ICFP,6)
       ENDIF
 
+C Determin gain
+      RKP=(FRX-FRM)/(SGU-SGL)
+C According to Dubbel, p. X 3, eqn 1, Kp = dXa/dXe which would be 
+C "change of temp. diff"/"change of flow", here. Reciprocal because
+C of system (?). Note: (x1-w) - (x2-w) = x1-x2, where "1" is present and "2" previous ts
+c         if (DELTFR.eq.0) DELTFR=minDF
+c         if (abs(PID(ICFP,1)-PID(ICFP,2)).gt.minDT) then
+c            RKP=DELTFR/abs(PID(ICFP,1)-PID(ICFP,2))
+c         else
+c            RKP=DELTFR/(SGU-SGL)
+c         endif
+c         KPnew=RKP
+
+C Set Anti-Windup damping factor
+      if (RKP .lt. 0.05) then 
+         antiWUP=RKP  ! test this
+      else 
+         antiWUP=0.05 ! value from mstarlabs.com
+      endif
+
 C Determine error for this plant timestep
       ER=(SVCTL-SPC)
-      PID(ICFP,1)=ER
 
-C See if integral action is required.
+C Establish integral error term for this plant timestep if r'qd
+      if (IT.EQ.1) then
+         RINT=RINTGRL(ICFP,1)*TIMSEC/TI
+      endif
+
+C Establish derivative action if required.
+      IF (ID.EQ.1) Then
+C      "derivative" is 'present (x-w)' - 'previous (x-w)' divided by passed time "dt"
+C      Derivative with averaging filter (see mstarlabs.com)
+c         if (iterp.eq.1 .and. NSINCP.ne.NSNCPR) then
+c            change=(ER-oldDERIV(ICFP))/2.0
+c            RDRV=change*TD/TIMSEC
+c            oldDERIV(ICFP)=DERIV(ICFP)
+c            DERIV(ICFP)=ER
+c         endif
+C      Derivative with single pole filter (see mstarlabs.com)
+         if (iterp.eq.1 .and. NSINCP.ne.NSNCPR) then
+            change=(ER-DERIV(ICFP))
+            lagstate(ICFP)=(1.0-lagcut)*lagstate(ICFP)+lagcut*change
+            RDRV=lagstate(ICFP)*TD/TIMSEC
+            DERIV(ICFP)=ER
+         endif
+
+      endif ! <- ID .eq. 1
+
+C Determine flow rate for this ts
+C      y = Kp (x-w) + Ki integral( (x-w)dt) + Kd d(x-w)/dt
+C      where Ki=Kp/Ti and Kd=Kp Td, w is the setpoint
+      IF (IMO.GT.0) THEN
+C Max flow rate if value of sensed variable below setpoint ("heating"),
+C therefore, gain < 0:
+         FR=-1.0*RKP*(ER+RINT+RDRV)
+
+      ELSE IF (IMO.LT.0) THEN
+C max flow rate if value of sensed variable above setpoint ("cooling").
+         FR=RKP*(ER+RINT+RDRV)
+
+      ENDIF ! <- end IMO = ?
+
+C See if integral action is required (moved here as described in mstarlabs.com).
       IF (IT.EQ.1) THEN
-C If iterating, reject previous error value.
-         if(iterp.gt.1)
-     &       RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
 
 C Anti-wind up 
 C If the sensed variable is outside the proportional band then 
-C avoid saturation by adapting integral calculation
-         IF (SVCTL.GT.SGU .or. SVCTL.LT.SGL) THEN
-c              apply reduction factor this ts
-            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+0.005*ER) ! *KPold/KPnew
-         ELSE
+C avoid saturation by adapting integral calculation with "antiWUP" factorisation.
+C Integrator latching would also be possible, here, to avoid saturation for very 
+C long periods of "not in bounds", however, this seems slightly arbitrary on the one 
+C hand and the cases "IMO > 0" and "IMO < 0" would need to be distinguished (?). 
+C Latch for FR.LE.FRM for IMO < 0 and latch for FR.GT.FRX for IMO > 0?) 
+         IF (FR.LE.FRM) then
+            FR=FRM
+C            apply reduction factor to integrand this ts
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+antiWUP*ER) ! *KPold/KPnew
+         ELSE IF (FR.GE.FRX) then
+            FR=FRX
+C             apply reduction factor to integrand this ts
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+antiWUP*ER) ! *KPold/KPnew
+         else ! flow rate output in bounds
+C             If iterating or if plant time step not changed, reject previous error value.
+            if (iterp.gt.1 .or. NSINCP.eq.NSNCPR) then
+               RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
+            endif
+
             RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+ER) ! *KPold/KPnew
          ENDIF
 
 C Remember error value for next iteration in this plant timestep.
          RINTGRL(ICFP,2)=ER
 
-C Establish integral error term.
-         RINT=RINTGRL(ICFP,1)*TIMSEC/TI
       ENDIF ! <- IT .eq. 1
 
 C Set old Kp to new Kp
 c      KPold=KPnew
 
-C Determine whether max flow rate if value of 
-C sensed variable below or above setpoint.
-
-      IF(IMO.GT.0)THEN
-C max flow rate if value of sensed variable below setpoint.
-
-C Determine the gain 
-         RKP=(FRM-FRX)/(SGU-SGL)
-
-C See if derivative action is required.
-         IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
-
-C Now evaluate flow rate.
-         FR=RKP*(ER+RINT+RDRV)
-
-      ELSE IF(IMO.LT.0)THEN
-C max flow rate if value of sensed variable above setpoint.
-
-C Determine the gain (Kp)
-         RKP=(FRX-FRM)/(SGU-SGL)
-
-C According to Dubbel, p. X 3, eqn 1, Kp = dXa/dXe which would be 
-C "change of temp. diff"/"change of flow", here. Reciprocal because
-C of system (?). Note: (w-x2) - (w-x1) = x1-x2, where "1" is present and "2" previous ts
-c         if (DELTFR.eq.0) DELTFR=(FRX-FRM)
-c         if (abs(PID(ICFP,2)-PID(ICFP,1)).gt.minDT) then
-c            RKP=DELTFR/(PID(ICFP,2)-PID(ICFP,1))
-c         else
-c            RKP=DELTFR/(SGU-SGL)
-c         endif
-c         KPnew=RKP
-
-C See if derivative action is required.
-         IF(ID.EQ.1) Then
-C          "derivative" is 'present (w-x)' - 'previous (w-x)' divided by passed time "dt"
-            DERIV(ICFP)=(PID(ICFP,1)-PID(ICFP,2))/TIMSEC
-            RDRV=TD*DERIV(ICFP)
-         endif
-
-C Now evaluate flow rate.
-C y = Kp (w-x) + Ki integral( (w-x)dt) + Kd d(w-x)/dt
-C where Ki=Kp/Ti and Kd=Kp Td
-         FR=RKP*(ER+RINT+RDRV)
-
-      ENDIF ! <- end IMO .lt. 0
-
-C Check saturation (?) 
-      IF(FR.LT.FRM) FR=FRM
-      IF(FR.GT.FRX) FR=FRX
-
-C Store current flow rate
+C Store current error and flow rate
+      PID(ICFP,1)=ER
       PID(ICFP,6)=FR
 
 C Assign new flow rate to CDATA
@@ -4394,13 +4416,15 @@ C Within this loop some control action has been specified
 C therefore control is active
       LASTOUT(ICFP)=1
 
-c      write(*,'(6(A,E9.3))')"KPold= ",KPold," KPnew= ",KPnew,
-c     & " Ko/Kn= ",KPold/KPnew,
-c     & " oldFR= ",PID(ICFP,7)," newFR= ",PID(ICFP,6),
-c     & " deltFR= ",DELTFR
+C write line for debugging
+      write(*,'(2(A,I4),8(A,E9.3))')
+     & "iterp= ",iterp," NSINCP= ",NSINCP," RKP= ",RKP,
+     & " ER= ",ER," RINT= ",RINT," RDRV= ",RDRV,
+     & " FR= ",PID(ICFP,6)," Rintgrl= ",RINTGRL(ICFP,1),
+     & " change= ",change," lagstate= ",lagstate(ICFP)
 
 C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+      IF(ITC.GT.0 .AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) THEN
          WRITE(ITU,*) ' FR = ',FR,         
      &                ' CDATA = ',CDATA(IPCMP,IPCVR)
