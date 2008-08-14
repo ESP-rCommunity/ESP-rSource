@@ -4144,9 +4144,9 @@ C Plant control commons
       integer LASTOUT
 
 C Commons for this routine
-      common/PIDPARM/KPold,KPnew,RKP,RDRV,oldDERIV(MCL),
+      common/PIDPARM/RKP,oldRKP(MCL),RDRV,oldDERIV(MCL),
      &  lagstate(MCL)
-      real KPold,KPnew,RKP,RDRV,oldDERIV,lagstate
+      real RKP,oldRKP,RDRV,oldDERIV,lagstate
 
 C Local variables
       logical closea
@@ -4157,9 +4157,9 @@ C Local variables
       real IMO,FRX,FRM,SPC,TRC,TI,TD,DELTFR
       real DELTIM,stpt,CPRSTR,ZNTPSP,ZNRHSP
       real SGU,SGL,SVCTL,ER,FR
-      real minDT,RINT,antiWUP,change,lagcut
+      real mindX,RINT,antiWUP,change,lagcut,dXe,dXa
 
-c      minDT=1.0E-01
+      mindX=1.0E-01
       lagcut=0.15 ! see mstarlabs.com
 
 C Trace output
@@ -4254,18 +4254,21 @@ C Set point may be dynamically set by PSYSPT subroutine.
         SPC=stpt
       ENDIF
 
-C If first call for this control period, 
+C If first call for this control period 
+C (or first plant ts for .ctl with only one control period!), 
 C reset integral action variables.
       DELTIM=TIMSEC/3600.
       CPRSTR=TPCPS(ICFP,IDTYPP,IPERP)
-      IF((PTIMEF-CPRSTR).LE.DELTIM)THEN
+      IF((PTIMEF-CPRSTR).LE.DELTIM .or. NSINCP.eq.1)THEN
+C         this is called every day !! (?)
          RINTGRL(ICFP,1)=0.
          RINTGRL(ICFP,2)=0.
          oldDERIV(ICFP)=0.
          lagstate(ICFP)=0.
-c        DELTFR=0.0
-c        KPold=(FRX-FRM)/TRC
-c        KPnew=KPold
+         oldRKP(ICFP)=(FRX-FRM)/TRC
+         RKP=oldRKP(ICFP)
+         dXa=mindX
+         dXe=RKP*dXa
       ENDIF
 
 C Determine signal upper limit SGU, lower limit SGL.
@@ -4283,36 +4286,27 @@ C Test for 'realistic' values
 C Establish sensed variable magnitude and actuated node location
       CALL CLVAR(SVCTL,IPCMP,IPCVR)
 
-C Common block variables for pid(icfp,?):
-C  pid(icfp,1)= error at present time-step,
-C  pid(icfp,2)= error at previous time-step,
-C  pid(icfp,3)= error at 2nd last time-step,
-C  pid(icfp,4)= time-integral of the error at present time-step,
-C  pid(icfp,5)= time-integral of the error at last time-step,
-C  pid(icfp,6)= control signal at present time-step,
-C  pid(icfp,7)= control signal at previous time-step.
-
-      IF(NSINCP.EQ.(NSNCPR+1))THEN
-C since next plant time-step, update common variables,     
-         IF(NSINCP.NE.2)PID(ICFP,3)=PID(ICFP,2)
-         IF(NSINCP.NE.1)PID(ICFP,2)=PID(ICFP,1)
-         PID(ICFP,5)=PID(ICFP,4)
-c         DELTFR=abs(PID(ICFP,6)-PID(ICFP,7))
-         PID(ICFP,7)=PID(ICFP,6)
-      ENDIF
+C Determine error for this plant timestep
+      ER=(SVCTL-SPC)
 
 C Determin gain
       RKP=(FRX-FRM)/(SGU-SGL)
 C According to Dubbel, p. X 3, eqn 1, Kp = dXa/dXe which would be 
 C "change of temp. diff"/"change of flow", here. Reciprocal because
 C of system (?). Note: (x1-w) - (x2-w) = x1-x2, where "1" is present and "2" previous ts
-c         if (DELTFR.eq.0) DELTFR=minDF
-c         if (abs(PID(ICFP,1)-PID(ICFP,2)).gt.minDT) then
-c            RKP=DELTFR/abs(PID(ICFP,1)-PID(ICFP,2))
+c      if (iterp.eq.1 .and. NSINCP.ne.NSNCPR) then
+c         dXa=abs(ER-PID(ICFP,2))
+c         dXe=abs(PID(ICFP,6)-PID(ICFP,7))
+c         PID(ICFP,7)=PID(ICFP,6)
+c         if (dXe.eq.0 .or. dXa.le.mindX) THEN
+c            RKP=oldRKP(ICFP)
 c         else
-c            RKP=DELTFR/(SGU-SGL)
+c            oldRKP(ICFP)=RKP
+c            RKP=dXe/dXa
 c         endif
-c         KPnew=RKP
+c      else
+c         RKP=oldRKP(ICFP)
+c      endif
 
 C Set Anti-Windup damping factor
       if (RKP .lt. 0.05) then 
@@ -4321,10 +4315,7 @@ C Set Anti-Windup damping factor
          antiWUP=0.05 ! value from mstarlabs.com
       endif
 
-C Determine error for this plant timestep
-      ER=(SVCTL-SPC)
-
-C Establish integral error term for this plant timestep if r'qd
+C Establish integral error term for this plant timestep if rq'd
       if (IT.EQ.1) then
          RINT=RINTGRL(ICFP,1)*TIMSEC/TI
       endif
@@ -4332,14 +4323,14 @@ C Establish integral error term for this plant timestep if r'qd
 C Establish derivative action if required.
       IF (ID.EQ.1) Then
 C      "derivative" is 'present (x-w)' - 'previous (x-w)' divided by passed time "dt"
-C      Derivative with averaging filter (see mstarlabs.com)
+C          Derivative with averaging filter (see mstarlabs.com)
 c         if (iterp.eq.1 .and. NSINCP.ne.NSNCPR) then
 c            change=(ER-oldDERIV(ICFP))/2.0
 c            RDRV=change*TD/TIMSEC
 c            oldDERIV(ICFP)=DERIV(ICFP)
 c            DERIV(ICFP)=ER
 c         endif
-C      Derivative with single pole filter (see mstarlabs.com)
+C          Derivative with single pole filter (see mstarlabs.com)
          if (iterp.eq.1 .and. NSINCP.ne.NSNCPR) then
             change=(ER-DERIV(ICFP))
             lagstate(ICFP)=(1.0-lagcut)*lagstate(ICFP)+lagcut*change
@@ -4359,7 +4350,9 @@ C therefore, gain < 0:
 
       ELSE IF (IMO.LT.0) THEN
 C max flow rate if value of sensed variable above setpoint ("cooling").
-         FR=RKP*(ER+RINT+RDRV)
+c         FR=RKP*(ER+RINT+RDRV)
+C Use "adjustable command path gain" approach (see mstarlabs.com)
+         FR=RKP*(SVCTL-0.1*SPC+RINT+RDRV)
 
       ENDIF ! <- end IMO = ?
 
@@ -4375,28 +4368,25 @@ C hand and the cases "IMO > 0" and "IMO < 0" would need to be distinguished (?).
 C Latch for FR.LE.FRM for IMO < 0 and latch for FR.GT.FRX for IMO > 0?) 
          IF (FR.LE.FRM) then
             FR=FRM
-C            apply reduction factor to integrand this ts
-            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+antiWUP*ER) ! *KPold/KPnew
+C              apply reduction factor to integrand this ts
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+antiWUP*ER) ! *oldRKP(ICFP)/RKP
          ELSE IF (FR.GE.FRX) then
             FR=FRX
-C             apply reduction factor to integrand this ts
-            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+antiWUP*ER) ! *KPold/KPnew
+C              apply reduction factor to integrand this ts
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+antiWUP*ER) ! *oldRKP(ICFP)/RKP
          else ! flow rate output in bounds
-C             If iterating or if plant time step not changed, reject previous error value.
+C              If iterating or if plant time step not changed, reject previous error value.
             if (iterp.gt.1 .or. NSINCP.eq.NSNCPR) then
                RINTGRL(ICFP,1)=RINTGRL(ICFP,1)-RINTGRL(ICFP,2)
             endif
 
-            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+ER) ! *KPold/KPnew
+            RINTGRL(ICFP,1)=(RINTGRL(ICFP,1)+ER) ! *oldRKP(ICFP)/RKP
          ENDIF
 
 C Remember error value for next iteration in this plant timestep.
          RINTGRL(ICFP,2)=ER
 
       ENDIF ! <- IT .eq. 1
-
-C Set old Kp to new Kp
-c      KPold=KPnew
 
 C Store current error and flow rate
       PID(ICFP,1)=ER
@@ -4409,6 +4399,23 @@ C Non-ideal actuator characteristics
       ipa4=ipan(icfp,4)
       if(ipa4.eq.-1) call CTLROP
 
+C Update common block variables for pid(icfp,?):
+C  pid(icfp,1)= error at present time-step,
+C  pid(icfp,2)= error at previous time-step,
+C  pid(icfp,3)= error at 2nd last time-step,
+C  pid(icfp,4)= time-integral of the error at present time-step,
+C  pid(icfp,5)= time-integral of the error at last time-step,
+C  pid(icfp,6)= control signal at present time-step,
+C  pid(icfp,7)= control signal at previous time-step.
+
+      IF(NSINCP.EQ.(NSNCPR+1))THEN
+C since next plant time-step, update common variables,     
+         IF (NSINCP.NE.2) PID(ICFP,3)=PID(ICFP,2)
+         IF (NSINCP.NE.1) PID(ICFP,2)=PID(ICFP,1)
+         PID(ICFP,5)=PID(ICFP,4)
+c         PID(ICFP,7)=PID(ICFP,6)
+      ENDIF
+
 C Remember plant time-step
       NSNCPR=NSINCP
 
@@ -4417,11 +4424,12 @@ C therefore control is active
       LASTOUT(ICFP)=1
 
 C write line for debugging
-      write(*,'(2(A,I4),8(A,E9.3))')
-     & "iterp= ",iterp," NSINCP= ",NSINCP," RKP= ",RKP,
-     & " ER= ",ER," RINT= ",RINT," RDRV= ",RDRV,
-     & " FR= ",PID(ICFP,6)," Rintgrl= ",RINTGRL(ICFP,1),
-     & " change= ",change," lagstate= ",lagstate(ICFP)
+c      write(*,'(1(A,I4),10(A,E9.3))')
+c     & "NSINCP= ",NSINCP," RKP= ",RKP,
+c     & " ER= ",ER," RINT= ",RINT," RDRV= ",RDRV,
+c     & " FR= ",PID(ICFP,6),
+c     & " change= ",change," lagstate= ",lagstate(ICFP),
+c     & " dXe= ",dXe," dXa= ",dXa," dXe/dXa= ",dXe/dXa
 
 C Trace output
       IF(ITC.GT.0 .AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
