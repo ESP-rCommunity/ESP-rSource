@@ -2155,11 +2155,6 @@ C                 or type 11: senses relative humidity.
 
       COMMON/PSTCTR/NSINCP,NSNCPR   
 
-CCCCCCCCCCCCCC
-      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
-      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
-CCCCCCCCCCCCCC
-
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
      &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
@@ -2345,10 +2340,10 @@ C Test for 'realistic' values
 
 C Determine mass flow rate at set point assuming linear
 C relationship (exept when temperature difference is sensed).
-      if (ICLCTP .NE. 24) then
-         FRSP=(FRX+FRM)/2.0
-      else
+      if (ICLCTP .EQ. 24) then
          FRSP=0.0
+      else
+         FRSP=(FRX+FRM)/2.0
       endif
 
 C Establish sensed variable magnitude and actuated node location
@@ -2509,7 +2504,7 @@ C Control signal depends on type of algorithm selected by user:
 C See if derivative action is required.
                IF(ID.EQ.1) RDRV=(SVCTL-DERIV(ICFP))*TD/TIMSEC
 C Now evaluate flow rate.
-               FR=RKP*(ER+RINT+RDRV)
+               FR=RKP*(ER+RINT+RDRV)+FRSP
 
             ELSE IF(IMO.EQ.-2)THEN
 C See if derivative action is required.
@@ -4156,11 +4151,12 @@ C Local variables
 
       real IMO,FRX,FRM,SPC,TRC,TI,TD,DELTFR
       real DELTIM,stpt,CPRSTR,ZNTPSP,ZNRHSP
-      real SGU,SGL,SVCTL,ER,FR
+      real SGU,SGL,SVCTL,ER,FR,Kz
       real mindX,RINT,antiWUP,change,lagcut,dXe,dXa
 
       mindX=1.0E-01
       lagcut=0.15 ! see mstarlabs.com
+      Kz=0.1 ! see mstarlabs.com
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -4291,6 +4287,7 @@ C Determine error for this plant timestep
 
 C Determin gain
       RKP=(FRX-FRM)/(SGU-SGL)
+C "Dynamic gain": (doesn't seem to work ...)
 C According to Dubbel, p. X 3, eqn 1, Kp = dXa/dXe which would be 
 C "change of temp. diff"/"change of flow", here. Reciprocal because
 C of system (?). Note: (x1-w) - (x2-w) = x1-x2, where "1" is present and "2" previous ts
@@ -4352,7 +4349,7 @@ C therefore, gain < 0:
 C max flow rate if value of sensed variable above setpoint ("cooling").
 c         FR=RKP*(ER+RINT+RDRV)
 C Use "adjustable command path gain" approach (see mstarlabs.com)
-         FR=RKP*(SVCTL-0.1*SPC+RINT+RDRV)
+         FR=RKP*(SVCTL-Kz*SPC+RINT+RDRV)
 
       ENDIF ! <- end IMO = ?
 
