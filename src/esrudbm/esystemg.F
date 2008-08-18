@@ -2719,7 +2719,11 @@ C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
       subroutine findwhichdbpath(topic,file,ier)
+      implicit none
 #include "esprdbfile.h"
+
+      integer lnblnk  ! function definition
+      integer ier  ! typd for passed parameter
 
 C Currently works with optical and plant template database.
       character*(*) file
