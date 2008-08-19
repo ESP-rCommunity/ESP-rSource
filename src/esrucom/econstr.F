@@ -1128,6 +1128,8 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)

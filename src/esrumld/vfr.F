@@ -41,6 +41,7 @@ C writes the recovered data to array GOTDAT
       DIMENSION IZNDX(24)
       CHARACTER FILENM*72,OUTSTR*124,OUTSTR2*124,txt*30,H*72
       character outs*124
+      integer ncomp
 
       h(1)='A moisture results file holds data from an integrated'
       h(2)='zone and surface moisture asessment. The data for each '

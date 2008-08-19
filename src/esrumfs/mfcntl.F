@@ -863,6 +863,7 @@ C by setting the ALPHA parameter = 0.
 C climate file commons
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN

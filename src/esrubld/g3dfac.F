@@ -43,6 +43,8 @@ C *********************************************************************
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/rpath/path
 
@@ -676,6 +678,7 @@ C *********************************************************************
       SUBROUTINE CHKGRD(GRDOK)
 #include "building.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

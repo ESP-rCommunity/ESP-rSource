@@ -91,6 +91,8 @@ C ******* Default views formation.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
       COMMON/precz/zname(MCOM),zdesc(MCOM)

@@ -541,6 +541,8 @@ C Parameter ichoice is currently not used.
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/rcmd/LCMDFL
@@ -828,6 +830,8 @@ C espriou.h provides currentfile, defdbfl exemfl.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/uhome/upath
@@ -1461,6 +1465,8 @@ C ICLIM,LCLIM (for climate file)
       common/FILEP/IFIL
       common/rpath/path
       common/uhome/upath
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

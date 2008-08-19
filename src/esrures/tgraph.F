@@ -169,6 +169,7 @@ C act='p' iget parameters already set.
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

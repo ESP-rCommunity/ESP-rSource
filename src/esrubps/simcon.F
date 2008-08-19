@@ -312,6 +312,8 @@ C Tolerance for iteration of hydrogen flow matrix
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
@@ -673,6 +675,8 @@ C Tolerance for iteration of hydrogen flow matrix
       COMMON/PMSLV/IPMSLV
 
       common/spmfxst/ispmxist,spflnam 
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
 C Common for electrical file 
@@ -1734,6 +1738,8 @@ C askaboutcfd confirms simulation periods for CFD assessments.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       
 C Active domain common.
@@ -1822,6 +1828,8 @@ C prior to each simulation commencing.
       COMMON/SHOUT/ICOUT
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2179,6 +2187,8 @@ C ICNT    - counts trace output for page numbering purposes
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2475,6 +2485,7 @@ C if itru=33 then works as a header to the trace.
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)

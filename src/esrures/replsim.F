@@ -42,6 +42,8 @@ C MZINPT code in espbps/input.f.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -184,6 +186,7 @@ C SYNOPF displays the names of the files used in a simulation
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CCTLNM/CTLDOC,LCTLF
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),

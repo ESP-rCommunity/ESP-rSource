@@ -1069,6 +1069,7 @@ C INLNST: Initializes surface linestyle array line style.
       SUBROUTINE INLNST(ITYP)
 #include "building.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/RAY6/LINSTY(MCON)
 

@@ -742,6 +742,8 @@ C default file names for databases
       common/pcresres/ napout(mpcom),apcout(20)
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
       common/rpath/path
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

@@ -107,6 +107,7 @@ C *********************************************************************
       SUBROUTINE MZITHP
 #include "building.h"
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

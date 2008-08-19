@@ -39,6 +39,8 @@ C sbmedit define high level data associated with UK NCM methodology.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL      
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1614,6 +1616,7 @@ C model.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY6/LINSTY(MCON)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2585,6 +2588,8 @@ C It finally generate BRUKL input document and other SBEM reports.
 #include "sbem.h"
 #include "building.h"
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -3469,6 +3474,8 @@ C Part L for England and Wales and Part F for Northern Ireland.
       SUBROUTINE BERTER(IER)
 #include "sbem.h"
 #include "building.h"
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
 
       INTEGER ICOMP

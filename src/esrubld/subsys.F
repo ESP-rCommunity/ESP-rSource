@@ -275,6 +275,8 @@ C  difference between the external ambient and surface temperatures.
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
      &            ARP(MCOM,MS),ARF(MCOM,MS)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -1107,6 +1109,7 @@ C                 external temperature (for use in MZLS3).
       COMMON/TC/ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),

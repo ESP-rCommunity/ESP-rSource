@@ -564,6 +564,8 @@ C the user-specified value.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -807,6 +809,7 @@ C COEFF1 modifies the coefficients of arrays C and QC by the ratio of N1/M1
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -854,6 +857,7 @@ C expected to be modified at future time-row.
 #include "building.h"
 #include "plant.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -1009,6 +1013,7 @@ C RTRVPV retrieves all variables saved by subroutine SAVEPV.
 #include "building.h"
 #include "plant.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 

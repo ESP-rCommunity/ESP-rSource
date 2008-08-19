@@ -56,6 +56,8 @@ C CWEC Degree Day and ground temperature parameters
       common/tc/itc,icnt
       common/trc/itrc
       COMMON/SAVE/ISAVE
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

@@ -919,6 +919,8 @@ C MFLIST Fluid flow file: list common block contents.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)

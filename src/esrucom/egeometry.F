@@ -2834,6 +2834,8 @@ C the connections file).
       integer lnblnk  ! function definition
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -3308,6 +3310,8 @@ C   apply.used to enhance wire frame drawings of discritized zones (e.g.
 C   where a surface such as a floor has been subdivided)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -3586,6 +3590,7 @@ C G9 holds information on children of a surface.
       character childname*12 ! name of the child surface
       common/G9/nbchild(MS),isgrandchild(MS,4),childname(MS,4)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -4129,6 +4134,7 @@ C returns an index to the matching zone.  If no match then returns 0.
       
       integer lnblnk  ! function definition
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

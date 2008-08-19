@@ -84,6 +84,8 @@ C Scale the project
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/AirPro/RTair,RHR

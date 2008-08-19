@@ -60,6 +60,7 @@ C
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
 C Zone moisture balance information.

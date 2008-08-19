@@ -1351,6 +1351,7 @@ C list out the zone/loop associations.
       
       integer lnblnk  ! function definition
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)

@@ -324,6 +324,7 @@ C cfdlibhead - write header information to cfd results library.
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
       COMMON/ICFNOD/ICFD,ICP
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       common/EQTION/CALLU(MNZ),CALLV(MNZ),CALLW(MNZ),CALLT(MNZ),

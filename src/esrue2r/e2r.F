@@ -62,6 +62,8 @@ C Path to model.
       common/user/browse
 
       common/rcmd/LCMDFL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -1154,6 +1156,7 @@ C Path to model.
       common/grdisk/grdd,grcx,grcy
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -1465,6 +1468,8 @@ C inqu_tmc: Check if tmc control active.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

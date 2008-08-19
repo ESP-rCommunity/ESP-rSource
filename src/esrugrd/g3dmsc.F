@@ -98,6 +98,8 @@ C *********************************************************************
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
