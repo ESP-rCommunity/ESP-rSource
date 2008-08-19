@@ -693,6 +693,8 @@ c later within the simulation time-stepping.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -700,8 +702,7 @@ c later within the simulation time-stepping.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/rsolmax/maxrec(mcom)
 
-      CHARACTER LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72
-      CHARACTER LTHRM*72,LUTIL*72,LS*72
+      CHARACTER LS*72
       character outs*124,h*72,zname*12,zdesc*64
 
       DIMENSION ISUM1(12),ISUM2(12),PS(24),

@@ -1451,6 +1451,8 @@ C prior to each simulation commencing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC7/ITCNST
@@ -1501,8 +1503,7 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER ctldoc*248
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM
-      CHARACTER*72 LSHAD,LTHRM,LCTLF,LUTIL
+      CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,cfgroot*24,h*72
 
@@ -2034,6 +2035,8 @@ C if itru=33 then works as a header to the trace.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -2046,8 +2049,7 @@ C if itru=33 then works as a header to the trace.
      &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
      &bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      character*72 lsnam,lproj,lgeom
-      character*72 lshad,lthrm,lutil,lctlf,lcfgf
+      character*72 lctlf,lcfgf
       character ctldoc*248,outs*124,cfgroot*24
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 

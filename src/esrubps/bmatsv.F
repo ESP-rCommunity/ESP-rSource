@@ -59,6 +59,8 @@ C CWEC Degree Day and ground temperature parameters
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/c6/indcfg
@@ -266,7 +268,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       character outs*124,STYPE*8
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LCFD,ENTFLNAM
+      character*72 LCFD,ENTFLNAM
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 

@@ -2256,6 +2256,8 @@ C *********************************************************************
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -2280,7 +2282,6 @@ C Common for 3D building model.
       COMMON/GRND101/NNODTG,ITCNSTG,TEMP3G(MCOM),AREAGD(MCOM)
 
       character outs*124
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
 
 C Set simulation start and finish days: actual start
 C day is prior to the requested start day (as determined

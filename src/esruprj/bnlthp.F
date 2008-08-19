@@ -82,6 +82,8 @@ C **************************************************************
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -102,7 +104,6 @@ C **************************************************************
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
 
       DIMENSION IVAL2(4),IVAL3(MCOM),IVAL4(MS),IVAL5(ME)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       LOGICAL INTHPS,INTHPZ
       LOGICAL OK,DOK,SAVEOK,XST
       logical newgeo  ! to use for testing if new/old geometry file.

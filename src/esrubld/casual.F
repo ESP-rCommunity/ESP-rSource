@@ -749,6 +749,9 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -803,7 +806,6 @@ C Illuminance database.
       DIMENSION XPL(MV),YPL(MV),ZPL(MV)
       CHARACTER*25 CSTR
       character outs*124,doit*124,outstr*124,cfgroot*24
-      character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
 
       character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
       character zname*12,zdesc*64

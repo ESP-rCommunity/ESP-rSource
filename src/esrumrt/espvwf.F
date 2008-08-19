@@ -78,6 +78,8 @@ C Indicator of possible focus zone.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -122,7 +124,6 @@ C Name of current application
       character outs*124,outs248*248,MODE*4
       CHARACTER H*72,OUTSTR*124,zname*12,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
@@ -857,6 +858,9 @@ C Calculate viewfactors for a zone.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -879,7 +883,6 @@ C outfile is the geometry file name for the zone with cube added.
       integer wrongrow
       character outs*124,h*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       logical OK,DOK,GEOLOAD,MRTLOAD
       dimension iivis(MSM)
 

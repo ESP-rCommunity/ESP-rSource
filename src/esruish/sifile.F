@@ -80,6 +80,9 @@ C  ifstat = 5  error writing record 4 of file
 
       common/outin/iuout,iuin
       common/filep/ifil
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -88,8 +91,7 @@ C  ifstat = 5  error writing record 4 of file
       common/ract/paction
 
       dimension isadd(12),ishd(12),idum(ms)
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil,fname
-      character outs*124,paction*16
+      character outs*124,paction*16,fname*72
       logical xst
       integer lnf   ! length of the file name
 
