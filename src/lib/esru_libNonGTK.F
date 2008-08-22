@@ -9115,6 +9115,7 @@ C EYEMAT provides transform eyepoint - viewpoint....
       common/OUTIN/IUOUT,IUIN
 
       DIMENSION  EP(3),VP(3),TMAT(4,4),RMAT(4,4)
+      character outs*124
 
       DELTA = 10E-6
 
@@ -9135,6 +9136,8 @@ C EYEMAT provides transform eyepoint - viewpoint....
       IF (ABS(EPRIME).GT.DELTA) GOTO 110
       SINPHI = 1.0
       COSPHI = 0.0
+      write(outs,*) ' EP is ',EP,' VP is ',VP
+      call edisp(iuout,outs)
       call edisp(iuout,'Eye point & viewed point too close together')
       call edisp(iuout,'so a view || to the Z axis is assumed.')
       GOTO 130

@@ -2910,7 +2910,7 @@ C Optical and geometric properties.
       logical dupedges,XST,OK,DOK,updoth
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      DIMENSION SALT(11),IVAL(MCOM),bl(144)
+      DIMENSION SALT(11),IVAL(MCOM)  ! ,bl(144)
       CHARACTER*33 ISD(22)
       CHARACTER DESC*48
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -2931,6 +2931,7 @@ C Strings for surface attributes to pass to insrec.
 C Display a selection of surfaces available in the zone. If surface
 C faces another zone, get the other surface connection index. 
       IS=ISS
+      icoth=0
       ioc=IZSTOCN(icomp,is)
       if(ICT(ioc).eq.3)then
         showother=.true.
@@ -5864,10 +5865,17 @@ C Make use of VERINFO to display the current vertex surface connections.
       CHARACTER DESCRC*25
       LOGICAL MODIFY,MODLEN,MODBND,OK,bound,DOK,nameok
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer ifoc    ! local variable for current surface index
+      integer iwhich  ! for the worst off point (warped surface check)
+      logical close   ! for checking if warp distance is zero
+      logical foundit ! if isolation of warped vertex was successful
+      real ZZZ,ofby   ! the distance worst point is warped
+      real XXS,YYS,ZZS ! suggested point on the line.
 
-      DIMENSION VERT(36)
-      DIMENSION  XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
-      CHARACTER VERT*34,KEY*1,H*72,DESC*48,SN*12,T14*14,D14*14
+      DIMENSION VERT(36),options(9)
+      DIMENSION TMAT(4,4),RMAT(4,4),EQN(4),CG(3),EP(3)  ! for warp checks
+      DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
+      CHARACTER VERT*34,options*34,KEY*1,H*72,DESC*48,SN*12,T14*14,D14*14
       character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       CHARACTER SNAME1*12,SNAMED*12,msgv*48
@@ -6064,10 +6072,24 @@ C Miscel. geometric transforms. Ask which surface and setup temp array.
         H(6)='  apply several operations to the surface;'
         H(7)='  cancel (no action).'
         call ZSID(icomp,IS,ZSDES,ZSDESC,ZSDESS)
-        write(outs,'(a,a)') 'Actions for ',ZSDES
-        CALL EASKATOG(' ',outs,'shift along normal','XYZ translate',
-     &    'rotate','invert','combination','cancel',' ',IRT,7)
-        if(IRT.eq.1.or.IRT.eq.5)then
+        write(head,'(a,a)') 'Actions ',ZSDES
+        options(1)  ='a shift along the surface normal  '
+        options(2)  ='b XYZ translate                   '
+        options(3)  ='c rotate                          '
+        options(4)  ='d invert (edge list)              '
+        options(5)  ='e combination (shift/rotate/inv)  '
+        options(6)  ='f identify cause of surface warp  '
+        options(7)  ='? help                            '
+        options(8)  ='- exit this menu                  '
+        CALL EMENU(head,options,8,IRT)
+        if(IRT.EQ.(8))then
+          MODIFY=.FALSE.
+          goto 92
+        elseif(IRT.EQ.7)then
+
+C List help text for the options menu.
+          CALL PHELPD('transform section',7,'-',0,0,IER)
+        elseif(IRT.eq.1.or.IRT.eq.5)then
 
 C Shift along normal and copy transformed points back to XX,YY,ZZ array.
           call tstamp('>','PRJ: do surface shift along normal')
@@ -6161,11 +6183,132 @@ C Reverse the ordering, redraw image and return.
           goto 92
         endif
         if(IRT.eq.6)then
-          MODIFY=.FALSE.
+
+C Code for testing which vertex might be the problem. The brute force
+C method for surfaces of more than 3 edges is to check if the surface
+C if warped via call to CHECKWARP and then to call it again until
+C it reports back no warps. 
+          if(nver(is).lt.4) goto 92
+          DO 606 KK=1,NVER(is)
+            XX(KK) = X(JVN(is,KK))
+            YY(KK) = Y(JVN(is,KK))
+            ZZ(KK) = Z(JVN(is,KK))
+  606     CONTINUE
+          N = NVER(is)
+          call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
+
+C See if any points are out of the plane.
+          iwhich=0
+          ofby=0.0 
+	  call CHECKWARP(2,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+	  if(ivoff.gt.0)then
+
+C We need to loop through each edges. If at loop=kk then setthe
+C coordiantes to next vertex (e.g. ignore one). Then compute equation
+C and use checkwarp until there is one of the variants
+C which results in no deviation.
+            foundit=.false.
+            ishort=NVER(is)-1
+            do 59 loop=1,NVER(is)
+              DO 60 KK=1,NVER(is)
+                if(loop.eq.kk)then
+                  XX(KK) = X(JVN(is,KK+1))  ! take next coords
+                  YY(KK) = Y(JVN(is,KK+1))
+                  ZZ(KK) = Z(JVN(is,KK+1))
+                  write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
+                elseif(loop.eq.NVER(is))then
+                  if(kk.lt.NVER(is))then
+                    XX(KK) = X(JVN(is,KK))  ! no need to skip
+                    YY(KK) = Y(JVN(is,KK))
+                    ZZ(KK) = Z(JVN(is,KK))
+                  else
+                    XX(KK) = X(JVN(is,1))   ! take first coords
+                    YY(KK) = Y(JVN(is,1))
+                    ZZ(KK) = Z(JVN(is,1))
+                    write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
+                  endif
+                else
+                  XX(KK) = X(JVN(is,KK))    ! no need to skip
+                  YY(KK) = Y(JVN(is,KK))
+                  ZZ(KK) = Z(JVN(is,KK))
+                endif
+   60         CONTINUE
+              N = NVER(is)
+              call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
+
+C See if any points are out of the plane.
+              iwhich=0
+              ofby=0.0 
+	      call CHECKWARP(1,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+
+C Debug.
+              write(6,*) is,iwhich,ofby,ivoff
+	      if(ivoff.gt.0)then
+                goto 59
+              else
+	        lln=lnblnk(sname(icomp,is))
+	        write(outs,'(3a,i3)') ' Surface ',
+     &            sname(icomp,is)(1:lln),' warp is probably @ vertex ',
+     &            JVN(is,loop)
+                call edisp(iuout,outs)
+
+C Find distance from this warped vertext to the polygon that does not
+C include this vertex.
+                DO 250 J = 1,3
+                  EP(J) = CG(J) + EQN(J)
+  250           CONTINUE
+      
+C Call eyemat with 1m offset and then transform to 2D and for this
+C warped vertex calculate how much it is off the plane.
+                CALL  EYEMAT(EP,CG,1.0,TMAT,RMAT)
+                CALL ORTTRN(X(JVN(is,loop)),Y(JVN(is,loop)),
+     &            Z(JVN(is,loop)),TMAT,X1,Y1,ZZZ,IERR)
+                call eclose(ZZZ,1.0,0.001,close)
+                ofby=zzz
+	        diff=1.0-ZZZ
+                WRITE(outs,'(a,F7.4,a,3F9.5)') ' Vertex is off by ',
+     &            diff,'m @ ',X(JVN(is,loop)),
+     &            Y(JVN(is,loop)),Z(JVN(is,loop))
+                CALL EDISP(iuout,outs)
+                foundit=.true.
+
+C Suggest a set of coordinates which will be in the plane by
+C Calling reverse transform with zzz as 1.0
+                ZZZ=1.0
+                CALL ORTTRN(X1,Y1,ZZZ,RMAT,XXS,YYS,ZZS,IERR)
+                WRITE(outs,'(a,3F9.5)') ' Suggested coords are',
+     &            XXS,YYS,ZZS
+                CALL EDISP(iuout,outs)
+
+C Ask user if they want to update the vertex with the new values.
+                DOK=.true.
+                h(1)='If you say no then no changes to the geometry.'
+                CALL ASKOK(outs,'Update the vertex?',OK,DOK,1)
+                if(OK)then
+                  X(JVN(is,loop))=XXS
+                  Y(JVN(is,loop))=YYS
+                  Z(JVN(is,loop))=ZZS
+                  call zgupdate(1,icomp,ier)
+                  MODIFY=.TRUE.
+                  CALL INLNST(1)
+                  nzg=1
+                  nznog(1)=ICOMP
+                  izgfoc=ICOMP
+                  CALL ADJVIEW(ITRC,IER)
+                  goto 92
+                endif
+              endif
+   59       CONTINUE
+
+C Report if no variant creates a flat surface.
+            if(.NOT.foundit)then
+              call edisp(iuout,'Probably more than one vertex warped.')
+            endif
+          endif
           goto 92
         endif
 
-C Check bounds.
+C Check bounds for the case of surface transform etc.
         do 143 ix = 1,N
           XMN=AMIN1(XMN,XX(ix))
           YMN=AMIN1(YMN,YY(ix))
@@ -6636,6 +6779,12 @@ C where geometry and configuration is saved and re-display managed.
             goto 77
           endif
         endif   ! of the new surface options (IRT)
+	
+C If user created surface via existing vertices then check if
+C it is warped.
+        if(IRT.eq.1.or.IRT.eq.2)then
+          continue ! << code to be added here. >>
+        endif
 
         if(IRT.eq.6.or.IRT.eq.7.or.IRT.eq.9.or.IRT.eq.10)then
 
@@ -6786,6 +6935,29 @@ C Read an index, check if within range and if so add to JVN().
         NVER(IFOC)=NV
         MODIFY=.TRUE.
         call warnmod(ICOMP,'str')
+
+C Check to see if this surface is warped.
+C Derive the equation of the polygon.
+        DO 607 KK=1,NVER(ifoc)
+          XX(KK) = X(JVN(ifoc,KK))
+          YY(KK) = Y(JVN(ifoc,KK))
+          ZZ(KK) = Z(JVN(ifoc,KK))
+  607   CONTINUE
+        N = NVER(ifoc)
+        call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
+
+C See if any points are out of the plane.
+        iwhich=0
+        ofby=0.0 
+	call CHECKWARP(1,iuout,ifoc,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+	if(ivoff.gt.0)then
+          lln=lnblnk(sname(icomp,ifoc))
+	  write(outs,'(a,i3,2a,i3,a)') ' Surf ',ifoc,
+     &      sname(icomp,ifoc)(1:lln),
+     &      ' is warped. Please check via surface transform options.'
+          call edisp(iuout,outs)
+        endif
+
       ELSE
 
 C Not one of the legal menu choices.
