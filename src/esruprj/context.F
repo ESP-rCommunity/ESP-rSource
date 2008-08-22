@@ -105,7 +105,9 @@ C ITEMS is menu for site/context items.
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
-
+      integer icreport  ! to signal that calendar has been updated.
+      integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
@@ -546,18 +548,52 @@ C Weekends def.
       ELSEIF(INO.EQ.7)THEN
 
 C Change the year and if calendar has not been set up initialise
-C and then list the months of the year.
+C and then list the months of the year.  If there is an existing
+C calendar with the default day types and the year has changed
+C then re-initialize the calendar.
         H(1)='Control and scheduling actions the year to be defined.'
         H(2)='You may accept the one specified with the climate'
         H(3)='file or provide an alternative.'
+        H(4)=' '
+        H(5)='The choice is year impacts the day of the week for'
+        H(6)='1 January. It also will alter the day type associated'
+        H(7)='of days in the calendar which are the standard default'
+        H(8)='weekday/saturday/sunday (but not user defined day types.'
         iyeart=iyear
         CALL EASKI(iyeart,' ','Simulation year?',
-     &       1900,'W',2010,'W',2001,'year',IERI,3)
+     &       1900,'W',2010,'W',2001,'year',IERI,8)
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.
         if(nbdaytype.eq.0)then
           call calenmanage('i',ier)
+        elseif(nbdaytype.eq.3)then
+          call calenmanage('i',ier)
+        elseif(nbdaytype.gt.3)then
+
+C Perform check that calendar day types correspond with simulation year
+C If more than three day types are declared then retain those day types
+C otherwise overwrite. (Same logic as in esystem.F 
+          ICREPORT=0
+          DO 123 IDOL=1,365
+            IF(ICALENDER(IDOL).LE.3)THEN
+              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+              IF(IDWKNUM.LT.6)THEN
+                IDTYY=1 ! WEEKDAY
+              ELSEIF(IDWKNUM.EQ.6)THEN
+                IDTYY=2 ! SATURDAY
+              ELSEIF(IDWKNUM.EQ.7)THEN
+                IDTYY=3 ! SUNDAY
+              ENDIF
+              IF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY
+                ICREPORT=1
+              ENDIF
+            ENDIF
+ 123      CONTINUE
+          IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
+     &      'Simulation year and calendar mismatch rectified')
         endif
         dok=.false.
         H(1)='You can use the calandar to check that a day or days'

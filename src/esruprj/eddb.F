@@ -3767,6 +3767,9 @@ C espriou.h provides currentfile.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
+C Calendar.
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+
       CHARACTER*72 H,DFILE,LASCI,LTMP
       character longtfile*144,longtafile*144,message*48
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
@@ -3779,6 +3782,8 @@ C espriou.h provides currentfile.
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
+      integer icreport  ! to signal that calendar has been updated.
+      integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4356,16 +4361,51 @@ C Update year
       h(3)=' '
       h(4)='IF YOU CHANGE the model year remember to save '
       h(5)='your model before you exit the project manager. '
+      h(6)=' '
+      H(7)='The choice is year impacts the day of the week for'
+      H(8)='1 January. It also will alter the day type associated'
+      H(9)='of days in the calendar which are the standard default'
+      H(10)='weekday/saturday/sunday (but not user defined day types.'
       dok=.false.
       WRITE(OUTS,'(A,I4,a,I4,a)')'The climate year is ',ICYEAR,
      &  '. and the model year is ',IYEAR,'.'      
       CALL ASKOK(OUTS,
-     &  'Use climate year in your model? (see help)',OK,DOK,5)
+     &  'Use climate year in your model? (see help)',OK,DOK,10)
       IF(OK)THEN
         IYEAR=ICYEAR
         WRITE(OUTS,'(I4,A)')IYEAR,' will be used as simulation year.'
         CALL EDISP(IUOUT,OUTS)
         CALL EDISP(IUOUT,' ')
+        if(nbdaytype.eq.0)then
+          call calenmanage('i',ier)
+        elseif(nbdaytype.eq.3)then
+          call calenmanage('i',ier)
+        elseif(nbdaytype.gt.3)then
+
+C Perform check that calendar day types correspond with simulation year
+C If more than three day types are declared then retain those day types
+C otherwise overwrite. (Same logic as in esystem.F 
+          ICREPORT=0
+          DO 123 IDOL=1,365
+            IF(ICALENDER(IDOL).LE.3)THEN
+              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+              IF(IDWKNUM.LT.6)THEN
+                IDTYY=1 ! WEEKDAY
+              ELSEIF(IDWKNUM.EQ.6)THEN
+                IDTYY=2 ! SATURDAY
+              ELSEIF(IDWKNUM.EQ.7)THEN
+                IDTYY=3 ! SUNDAY
+              ENDIF
+              IF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY
+                ICREPORT=1
+              ENDIF
+            ENDIF
+ 123      CONTINUE
+          IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
+     &      'Simulation year and calendar mismatch rectified')
+        endif
       ENDIF        
 
 C Change name of shading files in common block if present only if called

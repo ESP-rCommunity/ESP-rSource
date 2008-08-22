@@ -698,7 +698,11 @@ C          call edisp(iuout,' ')
         H(3)='values and these may be changed via the `model context`'
         H(4)='menu option accessed via the `browse/edit/simulate`'
         H(5)='option of the present menu.'
-        CALL PHELPD('new site',5,'-',0,0,IER)
+        H(6)=' '
+        H(7)='If you have additional day types (e.g. summer holiday) '
+        H(8)='that you want to define, do this before working with '
+        H(9)='any schedules. '
+        CALL PHELPD('new site',9,'-',0,0,IER)
       endif
 
 C Create a system configuration file based on the registration

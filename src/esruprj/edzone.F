@@ -2344,6 +2344,9 @@ C Fell through, no change in climate and location.
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
      &    '. Previously used ',xlat,xlon,'.'
         call edisp(iuout,outs)
+
+C << place to define a calendar if this has not already been
+C << done.
 	
 C If there is ground temperature information scan that file and
 C put the data in UGRDTP.
