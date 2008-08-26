@@ -143,7 +143,7 @@ C For max no. of fuzzy control periods:
       PARAMETER (MFP=4)
 
 C special materials parameters.
-      PARAMETER (MSPMNOD=40,MSPMDAT=16)
+      PARAMETER (MSPMNOD=40,MSPMDAT=26)
 
 C Multi-gridding:
 

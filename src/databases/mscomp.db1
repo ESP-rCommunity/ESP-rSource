@@ -519,7 +519,7 @@ equal to 0. In phase change temperature range latent heat is:
 *DESC
 PCM_t56
 *SPECDATA
-12
+21
 21              TMELT Melting,
 24              TSOLI solidification temperature (degC)
 5               sub-cooling temperature difference (K)
@@ -528,11 +528,19 @@ PCM_t56
 1800            SHCSOL Specific heat capacity in solid
 2400            SHCLIQ and liquid state (J/(kg K))
 1.7E+05         Lges, Total latent heat capacity of PCM, J/kg
+0               Switch for integration model (see below)
 -1.0320671E+01  a1 coefficients for
 0.76224E+00     b1 latent heat integral between
+0.00E+00        c1 (used with switch = 1, only)
+0.00E+00        d1 (used with switch = 1, only)
+0.00E+00        e1 (used with switch = 1, only)
+0.00E+00        f1 (used with switch = 1, only)
 -5.7472307E+00  a2 T1 and T2
 0.76224E+00     b2 (see below).
-
+0.00E+00        c2 (used with switch = 1, only)
+0.00E+00        d2 (used with switch = 1, only)
+0.00E+00        e2 (used with switch = 1, only)
+0.00E+00        f2 (used with switch = 1, only)
 *TEXT
 
 PHASE CHANGE MATERIAL
@@ -540,12 +548,19 @@ Special material of type  'phase change material' should be defined for
 the middle node of the layer of interest.
 
 This special material type can model sub-cooling behaviour found in many
-PCM materials.
+PCM materials. One of two data models for the calculation of the integral
+of latent heat can be set.
 
-Required input, see above. The coefficients for 
-non-subcooling (a1, b1)  and sub-cooling (a2, b2)  integral
-of specific heat (from thesis S. Hoffmann) are for the eqn. 
-IntegralC(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
+Required input, see above. For "Type Zero" behavior (paramter #9 = 0), 
+the coefficients for non-subcooling (a1, b1) and sub-cooling 
+(a2, b2)  integral of latent heat (from thesis S. Hoffmann) 
+are for the eqn. 
+	IntegralLH(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
+
+For "Type One" behaviour (parameter #9 = 1), the coefficients a1 
+through f1 for non-subcooling and a2 through f2 for subcooling 
+integral of latent heat are for the eqn.
+	IntegralLH(T1,T2)=INT[T**f*(a+cT+eT**2)/(1+bT+dT**2);T1,T2]
 
 Phase change occures between melting (PCM becomes liquid) and
 solidification temperatures when heated. After all PCM is liquid, 

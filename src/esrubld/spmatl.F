@@ -3104,7 +3104,7 @@ C Now calculate the future value of heat stored [J].
 C Save future value of latent heat stored to common block.
             SPCM(icomp,isurf,NLOC)=SPCMF
             SPCMTF=SPCMTF+SPCM(icomp,isurf,NLOC)
-	    
+       
 10    CONTINUE
 
 C Storage of results
@@ -3520,15 +3520,16 @@ C Phase change materials specific common blocks
 
 C.... Material parameters for phase change materials, this model only
       common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
-     & SHCSOL,SHCLIQ,a1,a2,b1,b2
+     & SHCSOL,SHCLIQ,a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
       real TSOLI  ! solidification temperature of PCM, degC
       real TMELT ! melting temperature of PCM, degC
       real sub     ! sub-cooling temperature difference, K
       real Lges   ! total latent heat capacity of PCM, J/kg
       real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
       real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
-      real a1,a2,b1,b2 ! Equation parameters for non-subcooling (a1, b1)
-                              ! and subcooling (a2, b2) states for specific PCM
+      real a1,b1,c1,d1,e1,f1 ! Equation parameters for non-subcooling (a1, b1)
+      real a2,b2,c2,d2,e2,f2   ! and subcooling (a2, b2) states for specific PCM
+      logical LHSimple ! .true. is "old" simple model, .false. is extended model
 
 C... Local variables
       REAL APPCON, APPSHC, FACTP, FACTF
@@ -3569,11 +3570,35 @@ C Total latent heat capacity of PCM, J/kg
 
 C Coefficients for non-subcooling (a1, b1)  and sub-cooling (a2, b2)  integral
 C of specific heat (from thesis S. Hoffmann)
-C IntegralC(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
-      a1=spmdat(ISPMNOD,9)
-      b1=spmdat(ISPMNOD,10)
-      a2=spmdat(ISPMNOD,11)
-      b2=spmdat(ISPMNOD,12)
+C simple IntegralC(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
+c      a1=spmdat(ISPMNOD,9)
+c      b1=spmdat(ISPMNOD,10)
+c      a2=spmdat(ISPMNOD,11)
+c      b2=spmdat(ISPMNOD,12)
+
+      if (spmdat(ISPMNOD,9) .eq. 0) then
+         LHSimple=.true.
+      else 
+         LHSimple=.false.
+      endif
+
+C... START................................................M.H.
+C Coefficients for non-subcooling (a1-f1)  and sub-cooling (a2-f2)  integral
+C of specific heat (from thesis S. Hoffmann)
+C extended Integral von S.H. c(T)=(T**f)*(a+cT+eT**2)/(1+bT+dT**2)
+      a1=spmdat(ISPMNOD,10)
+      b1=spmdat(ISPMNOD,11)
+      c1=spmdat(ISPMNOD,12)
+      d1=spmdat(ISPMNOD,13)
+      e1=spmdat(ISPMNOD,14)
+      f1=spmdat(ISPMNOD,15)
+      a2=spmdat(ISPMNOD,16)
+      b2=spmdat(ISPMNOD,17)
+      c2=spmdat(ISPMNOD,18)
+      d2=spmdat(ISPMNOD,19)
+      e2=spmdat(ISPMNOD,20)
+      f2=spmdat(ISPMNOD,21)
+C... END  ................................................M.H.
 
 C ************************************************************************
 C Check if zone this subroutine is called with actually contains the PCM
@@ -3766,6 +3791,7 @@ C*****************************************************************
       implicit none
 C Calculate integral of stored / released latent heat between T1 and T2
 C k   ... "normal" (k=1) or "subcooled" (k=0) range
+C i   ... "simple function" (i=0), "extended function" (i=1) 
 C T1 ... start temperature in °C
 C T2 ... end temperature in °C
 C
@@ -3783,33 +3809,123 @@ C
 
 C.... Material parameters for phase change materials, this model only
       common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
-     & SHCSOL,SHCLIQ,a1,a2,b1,b2
+     & SHCSOL,SHCLIQ,a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
       real TSOLI  ! solidification temperature of PCM, degC
       real TMELT ! melting temperature of PCM, degC
       real sub     ! sub-cooling temperature difference, K
       real Lges   ! total latent heat capacity of PCM, J/kg
       real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
       real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
-      real a1,a2,b1,b2 ! Equation parameters for non-subcooling (a1, b1)
-                              ! and subcooling (a2, b2) states for specific PCM
+      real a1,b1,c1,d1,e1,f1 ! Equation parameters for non-subcooling (a1, b1)
+      real a2,b2,c2,d2,e2,f2   ! and subcooling (a2, b2) states for specific PCM
+      logical LHSimple ! .true. is "old" simple model, .false. is extended model
+ 
+C Local variables
+      real aa,bb 
+      REAL ff,LH_T1,LH_T2
 
-      real aa,bb
+C... references
+      real v_func
+
+C...START.......................................................................M.H.    
 
       if (k.eq.0) THEN 
-         aa=a2
-         bb=b2
+      ! which function?
+         if (LHSimple) then   ! simple function
+            aa=a2
+            bb=b2
+    
+         else
+         ! aa to ee are set in function v_func()
+            ff=f2	! Coefficints for extended function
+         endif    
       else        ! function defaults to "normal" mode
-         aa=a1
-         bb=b1
+         if (LHSimple) then   ! simple function
+            aa=a1
+            bb=b1
+         else
+         ! aa to ee are set in function v_func()
+            ff=f1	! Coefficints for extended function
+         ENDIF
       endif
 
-      LatentHeat = EXP(aa)/bb*(EXP(bb*T1)-EXP(bb*T2))
-      
+      if (LHSimple) then   ! simple function
+C... simple function of S.H. 
+         LatentHeat = EXP(aa)/bb*(EXP(bb*T1)-EXP(bb*T2))
+      ELSE    
+C... Calculate necessary functions to build LatentHeat
+         LH_T1=T1**ff*v_func(k,T1)-ff*T1**(ff-1)*v_func(k,T1)   ! approximation of the integral
+         LH_T2=T2**ff*v_func(k,T2)-ff*T2**(ff-1)*v_func(k,T2)
+         LatentHeat=LH_T2-LH_T1
+            
+      Endif
+
 C     More than |Lges| is not possible:
       LatentHeat = sign(1.0,LatentHeat)*min(Lges,abs(LatentHeat))
 
       return
       End ! <- LatentHeat()
+
+C**************************************************************************************************
+C Functions for extended Latent Heat integral
+C
+      real function v_func(k,T)
+      implicit none
+      
+      integer k
+      real T
+      
+C.... Material parameters for phase change materials, this model only
+      common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
+     & SHCSOL,SHCLIQ,a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
+      real TSOLI  ! solidification temperature of PCM, degC
+      real TMELT ! melting temperature of PCM, degC
+      real sub     ! sub-cooling temperature difference, K
+      real Lges   ! total latent heat capacity of PCM, J/kg
+      real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
+      real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
+      real a1,b1,c1,d1,e1,f1 ! Equation parameters for non-subcooling (a1, b1)
+      real a2,b2,c2,d2,e2,f2   ! and subcooling (a2, b2) states for specific PCM
+      logical LHSimple ! .true. is "old" simple model, .false. is extended model
+
+C Local variables
+      REAL aa,bb,cc,dd,ee
+      Real CC1,CC2,C3,C4,C5,C6,C7,C8,C9
+
+C... now we start
+      if (k .eq. 0) then  ! subcooling
+         aa=a2	! Coefficients for extended function
+         bb=b2
+         cc=c2
+         dd=d2
+         ee=e2
+      else         ! non-subcooling
+         aa=a1	! Coefficients for extended function
+         bb=b1
+         cc=c1
+         dd=d1
+         cc=e1
+
+      endif
+
+C... extended function von S.H.
+C... Calculate necessary coefficients C1, C2, C3, C4, C5, C6, C7, C8, C9
+      CC1=2*aa*(dd**2)+(bb**2)*ee-bb*cc*dd-2*dd*ee
+      CC2=2*dd/SQRT((-(bb**2)+4*dd))
+      C3=bb/(SQRT(-bb**2+4*dd))
+      C4=(dd**2)*(SQRT(-bb**2+4*dd))
+      C5=(cc*dd-bb*ee)
+      C6=bb
+      C7=dd
+      C8=2*(dd**2)
+      C9=ee/dd
+C      C10=SHTf
+
+      v_func=((CC1*atan(CC2*T+C3))/C4)+
+     &            (C5*log(1.0E0+C6*T+C7*T**2)/C8)+C9*T
+
+      return
+      end
 
 C**********************************************************************************************
       subroutine PCMSTORE(TnS,TnS1,k,storedLH,AppCon,AppSHC,Debug)
@@ -3837,15 +3953,16 @@ C.... Parameter
 
 C.... Material parameters for phase change materials, this model only
       common /PCMPARM/TSOLI,TMELT,sub,Lges,CONSOL,CONLIQ,
-     & SHCSOL,SHCLIQ,a1,a2,b1,b2
+     & SHCSOL,SHCLIQ,a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
       real TSOLI  ! solidification temperature of PCM, degC
       real TMELT ! melting temperature of PCM, degC
       real sub     ! sub-cooling temperature difference, K
       real Lges   ! total latent heat capacity of PCM, J/kg
       real CONSOL,CONLIQ ! Conductivity of solid and liquid phase PCM, W/(m K)
       real SHCSOL,SHCLIQ ! Specific heat of solid and liquid phase PCM, J/(kg K)
-      real a1,a2,b1,b2 ! Equation parameters for non-subcooling (a1, b1)
-                              ! and subcooling (a2, b2) states for specific PCM
+      real a1,b1,c1,d1,e1,f1 ! Equation parameters for non-subcooling (a1, b1)
+      real a2,b2,c2,d2,e2,f2   ! and subcooling (a2, b2) states for specific PCM
+      logical LHSimple ! .true. is "old" simple model, .false. is extended model
 
 C.... Local variables
       real TSOLI2    ! sub-cooling solidification temperature, degC
@@ -3925,7 +4042,7 @@ C *** Temperature increase in PCM  ***
             ! as liquid (case 4)
                storeThisTS = LatentHeat(1,TnS,TSOLI)
                storedLH = storedLH - storeThisTS
-	       if (storedLH .gt. Lges) storedLH=Lges
+          if (storedLH .gt. Lges) storedLH=Lges
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI) ! to be verified
@@ -3949,7 +4066,7 @@ C         ****************
             ! in this timestep (case 6)
                storeThisTS = LatentHeat(0,TnS,TSOLI2)
                storedLH = storedLH - storeThisTS
-	       if (storedLH .gt. Lges) storedLH = Lges
+          if (storedLH .gt. Lges) storedLH = Lges
                AppCon=(1.0E0-storedLH/Lges)*CONSOL+
      &                        storedLH/Lges*CONLIQ
                AppSHC=SHCLIQ + storeThisTS/(TnS-TSOLI2) ! to be verified
