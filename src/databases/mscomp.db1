@@ -531,16 +531,16 @@ PCM_t56
 0               Switch for integration model (see below)
 -1.0320671E+01  a1 coefficients for
 0.76224E+00     b1 latent heat integral between
-0.00E+00        c1 (used with switch = 1, only)
-0.00E+00        d1 (used with switch = 1, only)
-0.00E+00        e1 (used with switch = 1, only)
-0.00E+00        f1 (used with switch = 1, only)
+0.0000E+00      c1 (used with switch = 1, only)
+0.0000E+00      d1 (used with switch = 1, only)
+0.0000E+00      e1 (used with switch = 1, only)
+0.0000E+00      f1 (used with switch = 1, only)
 -5.7472307E+00  a2 T1 and T2
 0.76224E+00     b2 (see below).
-0.00E+00        c2 (used with switch = 1, only)
-0.00E+00        d2 (used with switch = 1, only)
-0.00E+00        e2 (used with switch = 1, only)
-0.00E+00        f2 (used with switch = 1, only)
+0.0000E+00      c2 (used with switch = 1, only)
+0.0000E+00      d2 (used with switch = 1, only)
+0.0000E+00      e2 (used with switch = 1, only)
+0.0000E+00      f2 (used with switch = 1, only)
 *TEXT
 
 PHASE CHANGE MATERIAL
@@ -561,6 +561,9 @@ For "Type One" behaviour (parameter #9 = 1), the coefficients a1
 through f1 for non-subcooling and a2 through f2 for subcooling 
 integral of latent heat are for the eqn.
 	IntegralLH(T1,T2)=INT[T**f*(a+cT+eT**2)/(1+bT+dT**2);T1,T2]
+
+Note: Parameters a1-f1 and a2-f2 should be entered with 5 value giving
+digits, i.e. x.xxxxE+00 (especially b and d are critical).
 
 Phase change occures between melting (PCM becomes liquid) and
 solidification temperatures when heated. After all PCM is liquid, 

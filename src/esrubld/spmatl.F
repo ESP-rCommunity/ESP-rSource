@@ -3570,7 +3570,6 @@ C Total latent heat capacity of PCM, J/kg
 
 C Coefficients for non-subcooling (a1, b1)  and sub-cooling (a2, b2)  integral
 C of specific heat (from thesis S. Hoffmann)
-C simple IntegralC(T1,T2)=exp(aa)/bb * (exp(bb*T1) - exp(bb*T2))
 c      a1=spmdat(ISPMNOD,9)
 c      b1=spmdat(ISPMNOD,10)
 c      a2=spmdat(ISPMNOD,11)
@@ -3582,10 +3581,10 @@ c      b2=spmdat(ISPMNOD,12)
          LHSimple=.false.
       endif
 
-C... START................................................M.H.
-C Coefficients for non-subcooling (a1-f1)  and sub-cooling (a2-f2)  integral
-C of specific heat (from thesis S. Hoffmann)
-C extended Integral von S.H. c(T)=(T**f)*(a+cT+eT**2)/(1+bT+dT**2)
+C Coefficients for non-subcooling (a1-f1)  and sub-cooling (a2-f2) 
+C simple Integral of latent heat LH(T1,T2)=exp(a)/b * (exp(b*T1) - exp(b*T2))
+C (from thesis S. Hoffmann) and latent heat function from
+C S.H. c(T)=(a+cT+eT**2)/(1+bT+dT**2) extended to (T**f)*c(T)
       a1=spmdat(ISPMNOD,10)
       b1=spmdat(ISPMNOD,11)
       c1=spmdat(ISPMNOD,12)
@@ -3598,7 +3597,6 @@ C extended Integral von S.H. c(T)=(T**f)*(a+cT+eT**2)/(1+bT+dT**2)
       d2=spmdat(ISPMNOD,19)
       e2=spmdat(ISPMNOD,20)
       f2=spmdat(ISPMNOD,21)
-C... END  ................................................M.H.
 
 C ************************************************************************
 C Check if zone this subroutine is called with actually contains the PCM
@@ -3801,8 +3799,8 @@ C is formulated viewed from the surrounding space:
 C         > 0 when T1 > T2, i.e. heat released
 C         < 0 when T1 < T2, i.e. heat stored
 C
-C Equation and parameters taken from PhD. thesis by Sabine Hoffmann, 
-C Weimar 2006
+C Base equations taken from PhD. thesis by Sabine Hoffmann, 
+C Weimar 2006. "Advanced" function extended by factor T^f
 C
       real T1,T2
       integer k
@@ -3827,8 +3825,7 @@ C Local variables
 C... references
       real v_func
 
-C...START.......................................................................M.H.    
-
+C... lets get started ...
       if (k.eq.0) THEN 
       ! which function?
          if (LHSimple) then   ! simple function
@@ -3836,28 +3833,30 @@ C...START.......................................................................
             bb=b2
     
          else
-         ! aa to ee are set in function v_func()
-            ff=f2	! Coefficints for extended function
+          !  aa to ee are set in function v_func()
+            ff=f2	! Coefficient for extended function
          endif    
       else        ! function defaults to "normal" mode
          if (LHSimple) then   ! simple function
             aa=a1
             bb=b1
          else
-         ! aa to ee are set in function v_func()
-            ff=f1	! Coefficints for extended function
+          !  aa to ee are set in function v_func()
+            ff=f1	! Coefficient for extended function
          ENDIF
       endif
 
       if (LHSimple) then   ! simple function
 C... simple function of S.H. 
          LatentHeat = EXP(aa)/bb*(EXP(bb*T1)-EXP(bb*T2))
+
       ELSE    
 C... Calculate necessary functions to build LatentHeat
          LH_T1=T1**ff*v_func(k,T1)-ff*T1**(ff-1)*v_func(k,T1)   ! approximation of the integral
          LH_T2=T2**ff*v_func(k,T2)-ff*T2**(ff-1)*v_func(k,T2)
-         LatentHeat=LH_T2-LH_T1
-            
+         LatentHeat=(LH_T1-LH_T2)*1000.0   ! change upper and lower boundary of array to comply 
+                                                            ! with sign definition for LatentHeat
+                                                            ! and adapt unit from J/g to J/kg
       Endif
 
 C     More than |Lges| is not possible:
@@ -3904,22 +3903,21 @@ C... now we start
          bb=b1
          cc=c1
          dd=d1
-         cc=e1
+         ee=e1
 
       endif
-
+      
 C... extended function von S.H.
 C... Calculate necessary coefficients C1, C2, C3, C4, C5, C6, C7, C8, C9
-      CC1=2*aa*(dd**2)+(bb**2)*ee-bb*cc*dd-2*dd*ee
-      CC2=2*dd/SQRT((-(bb**2)+4*dd))
-      C3=bb/(SQRT(-bb**2+4*dd))
-      C4=(dd**2)*(SQRT(-bb**2+4*dd))
+      CC1=2.0*aa*(dd**2.0)+(bb**2.0)*ee-bb*cc*dd-2.0*dd*ee
+      CC2=2.0*dd/SQRT((-(bb**2.0)+4.0*dd))
+      C3=bb/(SQRT(-bb**2.0+4.0*dd))
+      C4=(dd**2.0)*(SQRT(-bb**2.0+4.0*dd))
       C5=(cc*dd-bb*ee)
       C6=bb
       C7=dd
-      C8=2*(dd**2)
+      C8=2.0*(dd**2.0)
       C9=ee/dd
-C      C10=SHTf
 
       v_func=((CC1*atan(CC2*T+C3))/C4)+
      &            (C5*log(1.0E0+C6*T+C7*T**2)/C8)+C9*T
