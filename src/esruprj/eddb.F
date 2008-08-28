@@ -230,7 +230,7 @@ C See if there are existing zone construction files.
       elseif(INO.EQ.3)then
 
 C Climate database.
-        call eddbclm(moddb,'    ',-1)
+        call eddbclm(moddb,'      ',-1)
 
       ELSEIF(INO.eq.4)THEN
 
@@ -3773,7 +3773,7 @@ C Calendar.
       CHARACTER*72 H,DFILE,LASCI,LTMP
       character longtfile*144,longtafile*144,message*48
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
-      CHARACTER OUTS*124,APP*4,ext*4,llclmdb*144
+      CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
       LOGICAL CLKOK,OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
