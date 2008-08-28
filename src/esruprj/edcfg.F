@@ -4128,6 +4128,7 @@ C      of obstruction data.
       DO 83 IZ=1,izlistnb
         IF(izlist(IZ).GT.0)THEN
           IICOMP=izlist(IZ)
+          call sumrchg(IICOMP,'i',silent)  ! clear the whats changed data
           write(zn,'(A)') zname(IICOMP)
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),'...'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4158,6 +4159,8 @@ C Decide whether to upgrade the geometry file format.
 
 C After transform update the g6 & g7 commons and find dependencies.
           call zgupdate(0,IICOMP,ier)
+
+C Depending on the nature of the change update the common block pmchange.
           call warnmod(IICOMP,'str')
 
 C Transform any MRT sensors associated with this zone.
@@ -4237,6 +4240,8 @@ C apply the transform and write the file back out.
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
      &      '...done'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+
+C Report to the user the implications of the recent change in the model.
           call sumrchg(IICOMP,'r',silent)
         endif
    83 continue
@@ -4318,6 +4323,7 @@ C      of obstruction data.
       DO 84 IZ=1,izlistnb
         IF(izlist(IZ).GT.0)THEN
           IICOMP=izlist(IZ)
+          call sumrchg(IICOMP,'i',silent)  ! clear the whats changed data
           write(zn,'(A)') zname(IICOMP)
           write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),'...'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4342,6 +4348,8 @@ C      of obstruction data.
 
 C After transform update the g6 & g7 commons and find dependencies.
           call zgupdate(0,IICOMP,ier)
+
+C Depending on the nature of the change update the common block pmchange.
           call warnmod(IICOMP,'str')
 
 C Rotate any MRT sensors associated with this zone.
@@ -4375,7 +4383,6 @@ C Rotate any MRT sensors associated with this zone.
   76            continue
                 CALL EMKMRT(LVIEW(IICOMP),LGEOM(IICOMP),
      &                      NZSUR(IICOMP),IUF,IICOMP,'v',IER)
-
               endif
             endif
           endif
