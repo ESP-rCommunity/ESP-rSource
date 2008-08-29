@@ -1964,8 +1964,8 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=4.0
-              cm(3)=5.0
+              cm(2)=5.0
+              cm(3)=6.0
             endif
 
             ibsn(ispl,1)=IC
