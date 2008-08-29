@@ -18,12 +18,6 @@ C Maximum number of wind pressure distribution sets
       PARAMETER (MPRD=50)
 C Maximum number of CPCALC derived pressure distribution sets
       PARAMETER (MPCP=20)
-C Maximum number of mass flow control connections
-      PARAMETER (MCC=99)
-C Maximum number of control day type
-      PARAMETER (MFCDT=8)
-C Maximum number of distinct control period
-      PARAMETER (MFCDP=30)
 C Record width of binary results file (should be larger of MNOD or MCMS + 6)
       PARAMETER (NMRL=70)
 C Results analysis:

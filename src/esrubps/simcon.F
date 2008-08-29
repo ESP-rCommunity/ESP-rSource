@@ -1818,8 +1818,8 @@ C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
-#include "plant.h"
 #include "esprdbfile.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -1853,16 +1853,6 @@ C prior to each simulation commencing.
      &             NPGAP(MCOM,MS,MGP)
 
       COMMON/CCTLNM/CTLDOC,LCTLF
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),TPCPS(MCL,MPCDT,MPCDP),
-     &IPCTYP(MCL,MPCDT,MPCDP),IPCLAW(MCL,MPCDT,MPCDP),
-     &PMISCD(MCL,MPCDT,MPCDP,MISC)
-
       COMMON/AVRAGE/IDAVER
       COMMON/BEFORM/IBEQNF
       COMMON/PCEQU/IMPEXP,RATIMP
@@ -2478,8 +2468,8 @@ C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
 #include "building.h"
-#include "plant.h"
 #include "esprdbfile.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -2497,15 +2487,6 @@ C if itru=33 then works as a header to the trace.
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &pmiscd(mcl,mpcdt,mpcdp,misc)
 
       character*72 lafres,lctlf,lcfgf,rfile
       character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24

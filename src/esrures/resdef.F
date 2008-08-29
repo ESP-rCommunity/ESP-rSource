@@ -334,6 +334,7 @@ C TNAME (temporary value)
 
       SUBROUTINE MORESS
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -347,10 +348,6 @@ C TNAME (temporary value)
 
       COMMON/CCTLNM/ctldoc,LCTLF
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &      IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &      BMISCD(MCF,MBCDT,MBCDP,MISC)
 
 C NS - number of selected result sets
 C NSNO() - set numbers of selected sets

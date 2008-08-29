@@ -22,22 +22,13 @@ C This file contains the following routines:
 C     MZGCTL: global control executive.
 
       SUBROUTINE MZGCTL
-
 #include "building.h"
 #include "control.h"
 
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GCLSOL/igf,IDTYPG,IPERG
-
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-
       common/btime/btimep,btimef
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
       character outs*124
 
@@ -130,8 +121,8 @@ C GCFVAR determines the sensed condition associated
 C with the sensor defined for the global control function.
 
       SUBROUTINE GCFVAR(GVAR)
-#include "control.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -142,10 +133,6 @@ C with the sensor defined for the global control function.
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
 
       COMMON/GCLSOL/igf,IDTYPG,IPERG
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       
@@ -298,7 +285,7 @@ C ******************** GFMVAR
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-      COMMON/GCMVAR/NGSEN(MGL),IGSMOD(MGL),IGMSN(MGL,MSEN,4),
+      COMMON/GCMVAR/NGSEN(MCF),IGSMOD(MCF),IGMSN(MCF,MSEN,4),
      &GTAXSN(MCF,MSEN)
 
       COMMON/GCLSOL/igf,IDTYPG,IPERG
@@ -377,25 +364,12 @@ C Which is not supported..
 C *******  GCL01 Global On-Off controller.
 
       SUBROUTINE GCL01
-#include "control.h"
 #include "building.h"
+#include "control.h"
 
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
-
       COMMON/GCLSOL/igf,IDTYPG,IPERG
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
-
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
 
@@ -448,24 +422,12 @@ C *******  GCL01 Global On-Off controller.
 C *******  GCL02 Global Capacity Management controller.
 
       SUBROUTINE GCL02
-#include "control.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/GCLSOL/igf,IDTYPG,IPERG
-
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
-
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
 
@@ -513,23 +475,12 @@ C *******  GCL02 Global Capacity Management controller.
 C *******  GCL03 Global "Sequence On" Controller.
 
       SUBROUTINE GCL03
-#include "control.h"
 #include "building.h"
+#include "control.h"
 
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
       COMMON/GCLSOL/igf,IDTYPG,IPERG
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
-
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
 
@@ -571,19 +522,12 @@ C nsloop = number of scheduled loops
 C *******  GCL04 Global "Free-float" Controller.
 
       SUBROUTINE GCL04
-#include "control.h"
 #include "building.h"
+#include "control.h"
 
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
       COMMON/GCLSOL/igf,IDTYPG,IPERG
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
-
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
 

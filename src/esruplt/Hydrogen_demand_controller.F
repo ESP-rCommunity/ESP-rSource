@@ -48,6 +48,7 @@ C----------------------------------------------------------------------
 #include "building.h"
 #include "plant.h"
 #include "Hydrogen_demand_controller.h"
+#include "control.h"
 
 C----------------------------------------------------------------------
 C     Passed arguements
@@ -58,23 +59,6 @@ C----------------------------------------------------------------------
 C     ESP-r commons 
 C----------------------------------------------------------------------
 
-C.....Control parameters      
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      
-      integer ncl                ! # of control loops in model,
-      integer ipsn               ! sensor data
-      integer ipan               ! actuator data 
-      integer npcdt
-      integer ipcdv
-      integer npcdp
-      real tpcps
-      integer ipctyp
-      integer ipclaw
-      real pmiscd
-      
 C.....More control parameters ?
       common/pclsol/icfp,idtypp,iperp
       integer icfp, idtypp, iperp

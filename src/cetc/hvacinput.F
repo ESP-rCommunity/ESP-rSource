@@ -467,8 +467,8 @@ c *********************************************************************
 c Variable passed in call
       INTEGER i
 #include "building.h"
+#include "control.h"
 #include "hvac_parameters.h"
-
 #include "hvac_common.h"
 
 #include "ashp_common.h"
@@ -961,6 +961,7 @@ c functions STRIPC,EGETWI,and EGETWR
       character OUTSTR*124,word*124
 #include "building.h"
 #include "hvac_parameters.h"
+#include "control.h"      
 
 #include "hvac_common.h"
 

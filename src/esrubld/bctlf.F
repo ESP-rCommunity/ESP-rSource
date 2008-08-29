@@ -34,9 +34,9 @@ C is read from the system control strategy file.
 
       subroutine mzcstr(ier)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "espriou.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -46,14 +46,9 @@ C is read from the system control strategy file.
 
       common/cctlnm/ctldoc,lctlf
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
-      common/ffngr/cfgsf(MCC,6),ifsnv(mcc,3),ffngn
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
+      common/ffngr/cfgsf(MCF,6),ifsnv(MCF,3),ffngn
      
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS 
 
@@ -206,14 +201,10 @@ C `Function Generator` sensor .
 
       SUBROUTINE BFGRSD
 #include "building.h"
+#include "control.h"
       
       common/outin/iuout,iuin
       common/pophelp/h(60)
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
 
@@ -350,16 +341,12 @@ C the plant-side type -6 `Function Generator` sensor.
       SUBROUTINE PFGRSD
 #include "plant.h"
 #include "building.h"
+#include "control.h"
       
       common/outin/iuout,iuin
       common/pophelp/h(60)
       
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
 
       character outs*124
       character hold*40,nterm*1,H*72
@@ -493,16 +480,12 @@ C  mass flow sensor type -6 `Function Generator` sensor.
       SUBROUTINE FFGRSD
 #include "building.h"
 #include "net_flow.h"
+#include "control.h"
       
       common/outin/iuout,iuin
       common/pophelp/h(60)
       
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-      common/ffngr/cfgsf(MCC,6),ifsnv(mcc,3),ffngn
+      common/ffngr/cfgsf(MCF,6),ifsnv(MCF,3),ffngn
 
       character outs*124,H*72,hold*40,nterm*1
       logical ffngn

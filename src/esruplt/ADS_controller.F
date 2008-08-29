@@ -44,6 +44,7 @@ C-----------------------------------------------------------------------------
 
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
 C-----------------------------------------------------------------------------
 C ESP-r COMMONs
@@ -120,23 +121,6 @@ C-----------------------------------------------------------------------------
        COMMON/BTIME/BTIMEP,BTIMEF
        REAL    BTIMEP          !-present time row time building side
        REAL    BTIMEF          !-future time row time building side
-
-       COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &             IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &             TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &             IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-       INTEGER NCL             ! number of plant control loops
-       INTEGER IPSN            ! defines sensor node associated with plant control loop
-       INTEGER IPAN            ! defines actuator node associated with plant control loop
-       INTEGER NPCDT           ! number of control day types for plant side control
-       INTEGER IPCDV           ! dates of validity for each day type for plant side control
-       INTEGER NPCDP           ! number of distinct control periods for each day type
-       REAL    TPCPS           ! start time for each control period (plant control)
-       INTEGER IPCTYP          ! controller type for each control loop, day type and period
-       INTEGER IPCLAW          ! control law for each control loop, day type and period
-       REAL    PMISCD          ! holds data required by control laws
-
-
 
        COMMON/pltcon/bpltcon,lastTStp   
        LOGICAL bpltcon         !-logical variable indicating if plant domain

@@ -1440,6 +1440,7 @@ C prior to each simulation commencing.
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
 #include "esprdbfile.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -1467,11 +1468,6 @@ C prior to each simulation commencing.
      &             NPGAP(MCOM,MS,MGP)
 
       COMMON/CCTLNM/CTLDOC,LCTLF
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
-
       COMMON/AVRAGE/IDAVER
       COMMON/BEFORM/IBEQNF
       COMMON/SOLOFF/ISOLAR
@@ -2027,6 +2023,7 @@ C if itru=33 then works as a header to the trace.
       subroutine mzinfo(itru)
 #include "building.h"
 #include "esprdbfile.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -2044,10 +2041,6 @@ C if itru=33 then works as a header to the trace.
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       character*72 lctlf,lcfgf
       character ctldoc*248,outs*124,cfgroot*24

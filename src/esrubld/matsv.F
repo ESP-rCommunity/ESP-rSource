@@ -95,13 +95,10 @@ C sensor location of the associated control function.
 C *********************************************************************
       SUBROUTINE MTXCTL(ICOMP)
 #include "building.h"
+#include "control.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
       common/cctl/icascf(mcom)
       COMMON/GRND110/GRNDSP
 
@@ -368,6 +365,7 @@ C from the corresponding surface equation.
 
       subroutine mzcnf1(icomp,iconst)
 #include "building.h"
+#include "control.h"
 
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -380,10 +378,6 @@ C from the corresponding surface equation.
       common/conadj/wa(ms,mn,6)
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
 
@@ -496,6 +490,7 @@ C  equation and the control node coefficient introduced if appropriate.
 
       subroutine mzcnf2(icomp,iconst)
 #include "building.h"
+#include "control.h"
 
       common/tc/itc,icnt
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -509,10 +504,6 @@ C  equation and the control node coefficient introduced if appropriate.
       common/conadj/wa(ms,mn,6)
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
 
@@ -757,6 +748,7 @@ C                            is zero.
 
       subroutine mzsad1(icomp,iconst)
 #include "building.h"
+#include "control.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
@@ -767,10 +759,6 @@ C                            is zero.
      &             npgap(mcom,ms,mgp)
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
@@ -879,6 +867,7 @@ C                           and coefficient 4 is introduced.
       subroutine mzsad2(icomp,iconst)
 
 #include "building.h"
+#include "control.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
@@ -888,11 +877,6 @@ C                           and coefficient 4 is introduced.
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
@@ -1256,6 +1240,7 @@ C substitution completed.
 
       subroutine mzcms2(icomp)
 #include "building.h"
+#include "control.h"
 
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
 
@@ -1273,10 +1258,6 @@ C substitution completed.
      &             npgap(mcom,ms,mgp)
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       character outs*144
       dimension t(meq)
@@ -1469,6 +1450,7 @@ C N5 relates to the control term
 
       subroutine mzcms3(icomp)
 #include "building.h"
+#include "control.h"
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
 
@@ -1488,10 +1470,6 @@ C N5 relates to the control term
      &             npgap(mcom,ms,mgp)
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       character outs*144
 
@@ -1756,6 +1734,7 @@ C temperatures.
       subroutine mzcnb2(icomp,iconst)
       
 #include "building.h"
+#include "control.h"
       
       common/prec1/sna(mcom,ms),zoa(mcom)
       common/conadj/wa(ms,mn,6)
@@ -1764,10 +1743,6 @@ C temperatures.
       common/fvals/tfs(mcom,ms),qfs(mcom)
       
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
 
@@ -1837,10 +1812,6 @@ C defined.
       common/fvals/tfs(mcom,ms),qfs(mcom)
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
@@ -2105,6 +2076,7 @@ C input.
 
       subroutine mzback(q)
 #include "building.h"
+#include "control.h"
 
       common/outin/iuout,iuin
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
@@ -2124,11 +2096,6 @@ C input.
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D04/GAM,RGAM

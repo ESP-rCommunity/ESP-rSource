@@ -35,19 +35,6 @@ C The maximum number of connections
       INTEGER MECON
       PARAMETER (MECON=100)
 
-C Control data
-C Electrical control loops
-      INTEGER MEL
-      PARAMETER(MEL=12)
-
-C Electrical day types
-      INTEGER MECDT
-      PARAMETER(MECDT=8)
-
-C Electrical control periods
-      INTEGER MECDP
-      PARAMETER (MECDP=8)
-
 C Maximim number of actual and PU Z array elements
       INTEGER MZARRY
       PARAMETER (MZARRY=18)

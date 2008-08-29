@@ -38,6 +38,7 @@ C altered based on information held in IPV definition.
 #include "building.h"
 #include "uncertainty.h"
 #include "espriou.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -68,12 +69,6 @@ C IDST tool commands
      &             CMDLNAM(10)
       common/idstb/nidst
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-
-C Control commons (for command file updating)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
       character*(*) inf
       character LCFGF*72

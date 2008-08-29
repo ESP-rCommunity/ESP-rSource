@@ -560,6 +560,7 @@ C until the glitches have been sorted.
 
       SUBROUTINE MOSRGT(IZONE,ISFN,IDAY,IE)
 #include "building.h"
+#include "control.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -567,10 +568,6 @@ C until the glitches have been sorted.
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 C      common/recver/izver,ipver,iever
 
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &      IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &      BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)

@@ -48,7 +48,7 @@ C     simtyp - holds description of simulation type.
 
 #include "plant.h"
 #include "building.h"
-      
+#include "control.h"      
       integer lnblnk  ! function definition
  
       COMMON/C8/LPNAM
@@ -2247,6 +2247,7 @@ C IPCLINKT  - the linkage type
       SUBROUTINE SCANBPLINK
 
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN  
       COMMON/FILEP/IFIL
@@ -2255,12 +2256,6 @@ C Common for the building plant lin
       COMMON/BPLINKG/NBPLINK,IBPLINKID(MCF),IPCLINK1(MCF),
      &IPCLINK2(MCF),IPCNLINK1(MCF),IPCNLINK2(MCF),
      &IPCLINKT(MCF),IPCLINKZ(MCF)
-
-C Commons for control variables
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
       LOGICAL GOTLINK
 
@@ -2321,6 +2316,7 @@ C interaction is begun.
 #include "epara.h"
 #include "building.h"
 #include "plant.h"
+#include "control.h"      
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
@@ -2540,12 +2536,7 @@ C D - delete
 
 #include "building.h"
 #include "plant.h"
-
-C Commons for control variables
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
-     &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
-     &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
+#include "control.h"
 
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)

@@ -423,6 +423,7 @@ C 3D zones.
 C *********************************************************************
       SUBROUTINE MZ3SU2(ICOMP,SUMA1,SUMA2,SUMA3)
 #include "building.h"
+#include "control.h"
 
       COMMON/PREC2/VOL(MCOM)
 
@@ -435,10 +436,6 @@ C *********************************************************************
       COMMON/COE39/CVIP,CVVP,CVIF,CVVF,QVNP,XX3,CVVPM,CVVFM
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/SETUQ/QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
       COMMON/GR1D04/GAM,RGAM
@@ -714,13 +711,10 @@ C FORW3D performs the forward reduction process for the zone matrix.
 C *********************************************************************
       SUBROUTINE FORW3D(ICOMP,ISNSR,B1,B2,B3)
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/GR3D122/W3T(MNOD3T)
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
@@ -869,6 +863,7 @@ C control function.
 C *********************************************************************
       SUBROUTINE CONT3D(ICOMP,ISNSR,B1,B2,B3)
 #include "building.h"
+#include "control.h"
 
       common/outin/iuout,iuin
       common/pophelp/h(60)
@@ -877,10 +872,6 @@ C *********************************************************************
       common/btime/btimep,btimef
 
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
@@ -1048,13 +1039,10 @@ C SVQTMP saves the solution given by CONT3D in the temperature file.
 C *********************************************************************
       SUBROUTINE SVQTMP(ICOMP,ISNSR,TNP,QNP)
 #include "building.h"
+#include "control.h"
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/GR3D131/IAIR,IPLT,IPRT,IAVL,NZMCF
       COMMON/GR3D132/T3F(MNOD3)
 

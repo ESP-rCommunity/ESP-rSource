@@ -4813,7 +4813,7 @@ C            2 Inter-node fluid heat capacity rate (W/K)
       SUBROUTINE CMP42C(IPCOMP,COUT,ISTATS)
 #include "plant.h"
 #include "building.h"
-
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -4843,7 +4843,7 @@ C            2 Inter-node fluid heat capacity rate (W/K)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/LOCAL1/ISET,PHIMAX
       COMMON/LOKOUT/INSO,ITSBO
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
       PARAMETER (SMALL=1.0E-20)
       REAL      COUT(MPCOE)

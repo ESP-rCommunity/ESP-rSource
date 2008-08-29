@@ -830,17 +830,9 @@ C ****************************************************
 
               SUBROUTINE MOCDAT(IZON,IDAY,TME)
          
-#include "plant.h"
 #include "building.h"
+#include "control.h"
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/CGHOPT/ERPLOT,TRPLOT,SPPLOT,NCTLGH,ICTLGH,ISP,ITHR
       COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP

@@ -597,6 +597,7 @@ C ndbph is number of data blocks/hr for monitor function.
 #include "building.h"
 C#include "cfd.h"
 #include "monitor.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
 
@@ -633,10 +634,6 @@ C Commons for summary of solar (for results library)
      &  q2wall(2),q2rem(2)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -2330,6 +2327,7 @@ C Possibly all calculations should use the IVTHPZ in the future?
 
 #include "building.h"
 C#include "cfd.h"
+#include "control.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -2345,11 +2343,6 @@ C#include "cfd.h"
       COMMON/COE34/QCASRT(MCOM),QCASCT
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
