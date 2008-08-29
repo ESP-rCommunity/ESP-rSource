@@ -1667,7 +1667,11 @@ C IER=0 OK.
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'sat')then
         call FINDFIL(LTHRM(ICOMP),XST)
-        if(XST)comold = .true.
+        if(XST)then
+          comold = .true.
+        else
+          comold = .false.
+        endif
       endif
 
 C Check for implications of surface addition or removal or attribution change.
@@ -1676,27 +1680,43 @@ C << refine testing for setting tmcold >>
      &act(1:3).eq.'sat')then
         if(ITW(ICOMP).eq.1)then
           call FINDFIL(LTWIN(ICOMP),XST)
-          if(XST)tmcold = .true.
+          if(XST)then
+            tmcold = .true.
+          else
+            tmcold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'str')then
         if(IVF(ICOMP).eq.1)then
           call FINDFIL(LVIEW(ICOMP),XST)
-          if(XST)vwfold = .true.
+          if(XST)then
+            vwfold = .true.
+          else
+            vwfold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'str')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
-          if(XST)ishold = .true.
+          if(XST)then
+            ishold = .true.
+          else
+            ishold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'ob-'.or.act(1:3).eq.'ob+')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
-          if(XST)ishold = .true.
+          if(XST)then
+            ishold = .true.
+          else
+            ishold = .false.
+          endif
         endif
       endif
 
