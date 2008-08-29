@@ -24,6 +24,8 @@ C ***** face3d
 C face3d are triangles or quads which are general surfaces in autocad.
       subroutine face3d
 #include "building.h"
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -131,6 +133,8 @@ C autocad and translates it if it is extruded.
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -322,6 +326,8 @@ C ****** genarc
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)

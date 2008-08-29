@@ -42,6 +42,8 @@ C Write IPV report based on description held in common.
       common/outpvrb/ioutvrb
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC

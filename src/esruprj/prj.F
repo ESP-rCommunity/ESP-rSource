@@ -58,6 +58,8 @@ C espriou.h provides currentfile, defdbfl exemfl.
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -3159,6 +3161,8 @@ C to include the path and create a string to drive the modules.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -4318,6 +4322,8 @@ C << message to user that such a file does not exist
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF

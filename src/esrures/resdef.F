@@ -362,6 +362,7 @@ C IFAFLG - factorial analysis peturbations
  
       COMMON/SETNAM/RSNAME(MNRS)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/AVRAGE/IDAVER
 
@@ -759,6 +760,7 @@ C NZNO - zone number of each.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -860,6 +862,8 @@ C ier is zero if no problems and -3 if user issued a cancel.
 
       common/recver/izver,ipver,iever
       common/rpath/path
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1308,6 +1312,8 @@ C also checked for consistency.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/ZONPIK/NZ,NZNO(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       dimension ITEMP(MCOM)

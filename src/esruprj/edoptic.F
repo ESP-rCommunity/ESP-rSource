@@ -1540,6 +1540,8 @@ C      integer lnblnk  ! function definition
       COMMON/RAY6/LINSTY(MCON)
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 

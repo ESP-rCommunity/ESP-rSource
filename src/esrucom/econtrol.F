@@ -265,6 +265,7 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -3884,6 +3885,7 @@ C For optical controls
      &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
      &       omiscd(mol,mocdt,mocdp,misc)
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)

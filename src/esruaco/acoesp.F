@@ -151,6 +151,8 @@ C Display Zones list and wait for INIPIC item selected
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/surfsel/isursel(MCON),NbSurSel(MCOM)

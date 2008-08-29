@@ -2382,6 +2382,8 @@ C << if needed.
       COMMON/OUTIN/IUOUT,IUIN
 
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

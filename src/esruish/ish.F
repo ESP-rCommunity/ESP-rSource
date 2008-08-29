@@ -119,6 +119,8 @@ C IEEE callback (Solaris)
       common/data1/ical,idifc,init
       common/mtfile/ltrns,multic,mons,monf
       common/g0/ctype(mcom),gversion(mcom),igupgrade
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)

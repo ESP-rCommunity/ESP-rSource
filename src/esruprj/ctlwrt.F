@@ -29,6 +29,8 @@ C an ascii file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)

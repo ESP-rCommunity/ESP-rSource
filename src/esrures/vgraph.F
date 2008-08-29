@@ -462,6 +462,7 @@ C      =29  - dew point temperature
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

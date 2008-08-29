@@ -51,6 +51,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/SFIG/NSIGFIG
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2676,6 +2678,8 @@ C IVA array of selections is returned.
       SUBROUTINE PICKSSUR(IZONE,NP,act,IVA,iaplic,ilimit,IER)
 #include "building.h"
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -6990,6 +6994,8 @@ C in the current zones common blocks.
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       logical dupedges
@@ -7157,6 +7163,8 @@ C specific surfaces (two), has edited the floor area (one) or it was
 C calculated based on FLOR orientations (zero).
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

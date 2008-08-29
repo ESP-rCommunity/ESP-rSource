@@ -41,6 +41,8 @@ C ******************** MZCONV ********************
 #include "cfd.h"
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -1091,6 +1093,8 @@ C `interior' building surfaces.
       SUBROUTINE OUTISIN 
 
 #include "building.h"
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

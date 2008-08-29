@@ -57,6 +57,8 @@ C     This is the main subroutine of the H3k Output. Iterates through systems
 
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
 c     iBSIMP is used to determine if a zone is a Basement iBSIMP=1
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 c     NCOMP is used for the number of zone present in the simulation.
       
@@ -818,6 +820,7 @@ C     tzph,tzpc are zone heating/cooling use over time.
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &     lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)

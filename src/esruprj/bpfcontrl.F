@@ -55,6 +55,7 @@ C          block sctl to have been filled for the current period.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
@@ -5088,6 +5089,8 @@ C flow connections.It is assumed that the user will make one selection only.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
      &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
@@ -5819,6 +5822,8 @@ C flow connections.It is assumed that the user will make one selection only.
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
      &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),

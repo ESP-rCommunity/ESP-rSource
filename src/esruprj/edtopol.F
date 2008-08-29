@@ -47,6 +47,8 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1754,6 +1756,8 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2179,6 +2183,8 @@ C associated with a concept).
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -2731,6 +2737,8 @@ C Select one or more connections from a list.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -2921,6 +2929,8 @@ C espriou.h for climatelist file name.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -3306,6 +3316,8 @@ C Serchrpl handles search and replace of composition attributes.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/RAY3/MODIFY,MODLEN,MODBND
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

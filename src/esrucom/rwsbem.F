@@ -468,6 +468,8 @@ C fills relevant common blocks.
 
 C espriou.h provides currentfile.
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
 
       CHARACTER OUTSTR*124
@@ -659,6 +661,8 @@ C data relevant to the UK National Calculation Method.
 
       common/FILEP/IFIL
       common/C21/IFCFG,cfgroot,LCFGF
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 

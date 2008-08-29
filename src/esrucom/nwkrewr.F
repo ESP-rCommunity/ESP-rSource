@@ -717,11 +717,6 @@ C Now read *Waypoint to get XYZ coords.
         continue
       elseif(WORD(1:12).eq.'*End_network')then
 
-C Debug...
-C        write(6,*) 'nivc=',NIVC
-C        write(6,*) 'nive=',NIVE
-C        write(6,*) 'ncomp=',NCONP
-C        write(6,*) 'waypoints=',NCONWP
 C Reached file end, close it.
         CLOSE(INUNIT)
         RETURN 

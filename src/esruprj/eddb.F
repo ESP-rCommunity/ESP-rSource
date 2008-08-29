@@ -53,6 +53,7 @@ C default file names for databases
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -3401,6 +3402,8 @@ C espriou.h provides currentfile.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

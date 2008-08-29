@@ -233,6 +233,8 @@ C and information on the saved result set.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -530,6 +532,8 @@ C Set simulation toggles.
 
       COMMON/CLMFLG/ICLMFL
       common/spmfxst/ispmxist,spflnam 
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
 C Common for electrical file 
@@ -1444,6 +1448,8 @@ C prior to each simulation commencing.
       COMMON/SHOUT/ICOUT
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1738,6 +1744,8 @@ C ICNT    - counts trace output for page numbering purposes
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
@@ -2024,6 +2032,7 @@ C if itru=33 then works as a header to the trace.
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)

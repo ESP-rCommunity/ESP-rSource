@@ -40,6 +40,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -3421,6 +3423,8 @@ C EDDGTP Sets up shading and insolation files
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 

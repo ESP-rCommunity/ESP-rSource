@@ -58,6 +58,7 @@ C information is not established until the simulation commences.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),arp(mcom,ms),
      &            arf(mcom,ms)
@@ -1848,6 +1849,7 @@ C defined.
       common/setuq/qpltp(mcom),qpltf(mcom),conv(mcom)
       COMMON/MBINFO/ZMBI(MCOM,4)
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
 
       common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
@@ -2252,6 +2254,7 @@ C *********************************************************************
       common/filep/ifil
       common/trc/itrc
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2431,6 +2434,7 @@ C *********************************************************************
       SUBROUTINE FILL1G
 #include "building.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
       COMMON/GRND101/NNODTG,ITCNSTG,TEMP3G(MCOM),AREAGD(MCOM)

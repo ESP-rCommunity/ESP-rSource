@@ -41,6 +41,7 @@ C via clicking on a bitmap.
       common/pophelp/h(60)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

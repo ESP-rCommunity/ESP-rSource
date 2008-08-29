@@ -67,6 +67,8 @@ C Related to TDF ITEMS file.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRC/ITRC
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA

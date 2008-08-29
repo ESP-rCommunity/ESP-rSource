@@ -1269,6 +1269,8 @@ C if sub-hour casual gains definitions are implemented.
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1449,6 +1451,8 @@ C << todo - use of explicit read of casual gains >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 C      COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 

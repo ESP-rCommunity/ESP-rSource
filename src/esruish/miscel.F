@@ -120,6 +120,8 @@ C no selection.  'iva' is the array of selections.
 #include "building.h"
 
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)

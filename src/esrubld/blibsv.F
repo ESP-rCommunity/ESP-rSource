@@ -42,6 +42,8 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -339,6 +341,7 @@ c save set.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 

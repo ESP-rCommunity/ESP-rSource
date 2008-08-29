@@ -295,6 +295,8 @@ C espriou.h for climatelist file name.
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)

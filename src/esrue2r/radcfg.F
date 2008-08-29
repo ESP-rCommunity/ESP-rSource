@@ -528,6 +528,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
 
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -897,6 +898,8 @@ C if MODE is not - then sensor points file name confirmation required.
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
