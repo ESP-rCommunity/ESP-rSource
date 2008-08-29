@@ -1553,8 +1553,9 @@ C Dummy routine (needed for call back from c.
 
 C ********** opendb
 C NOTE: This is a duplicate of code in esruprj/eddb.F but with the opening
-C of pressure coef db opening commented out. Perhaps it should
-C become common code?
+C of pressure coef db opening commented out. And if the materials db has
+C not been found (e.g. during an initial install) then it does not try
+C alternative locations).
 
 C Open materials constructions, multi-layer constructions and
 C optical properties databases. In the case of materials, first
@@ -1571,6 +1572,8 @@ C older ascii materials file to fill the materials data arrays.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/ract/paction
+      character paction*16
 
 C Material data arrays.
       real matver
@@ -1640,11 +1643,23 @@ C Check to see if the file has correct info.
       endif
 
         
-C Read multilayer db information into common.
+C Read multilayer db information into common. If in update_silent mode
+C ish might be called during install installation and as there are no
+C materials database but a local constructions database there will be
+C warnings which require an interaction and so treat update_silent as
+C a special case with no interaction.
  139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
+        if(paction(1:13).eq.'update_silent')then
+          if(IER.eq.1)then
+            MLDBOK=.FALSE.
+          elseif(IER.eq.2)then
+            MLDBOK=.FALSE.
+          endif
+	  goto 138    ! if silent and no materials jump to optics
+	endif
         IF(IER.eq.1)then
           write(outs,'(3a)') 
      &    ' Problems with materials used by Constructions db',
@@ -1807,7 +1822,7 @@ C Could not find Constructions db at this time, report to user.
       endif
 
 C Open optical Properties db and read into common.
-      SOPT='ALL'
+ 138  SOPT='ALL'
       CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
       if(ier.ne.0)then
         call usrmsg('Optical Properties db not found or',
