@@ -1111,23 +1111,24 @@ C Check if IPV file and dispersed demands files are known.
 
 C Integrated Performance View. If compact only print description,
 C if verbose print periods, seasons and ratios as well.
+        ieripv=1  ! there is no IPV
         if(icfgv.lt.4)then
           if(lnblnk(lipvdatf).eq.0)then
-            continue
+            ieripv=1  ! there is no IPV
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-            continue
+            ieripv=1  ! there is no IPV
           else
 	    ipvaction='ipv'
-            call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)
+            call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)  ! this returns a value for ieripv
             call edisp(itu,' ')
           endif
         else
 
 C Check if embedded within configuration file.
           if(nipvassmt.eq.0)then ! there was nothing in the cfg file.
-            continue
+            ieripv=1  ! there is no IPV
           else
-            ieripv=0
+            ieripv=0  ! there is an IPV assessment
           endif
         endif
         if(ieripv.eq.0)then
