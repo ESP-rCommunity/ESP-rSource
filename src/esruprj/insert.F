@@ -71,6 +71,8 @@ C << what about including common zndata in this manipulation? >>
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -112,7 +114,6 @@ C << what about including common zndata in this manipulation? >>
       character SSPARENT*12
       character zname*12,zdesc*64
       CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
@@ -2032,6 +2033,8 @@ C << written at the end of the process. This has yet to be done.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2068,7 +2071,6 @@ C << written at the end of the process. This has yet to be done.
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12,DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,act*2,T14*14
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character guesstype*24  ! for context of surface addition
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12

@@ -122,6 +122,8 @@ C IEEE callback (Solaris)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -164,7 +166,7 @@ C Material data arrays.
       real matver
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
-      character*72 lcfgf,lsnam,lproj,lgeom,lshad,lthrm,lutil
+      character*72 lcfgf
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character items*26,ctype*4,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
@@ -1401,6 +1403,9 @@ C  ifstat = 8  new file filled via import of ascii file
       common/filep/ifil
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -1412,7 +1417,6 @@ C  ifstat = 8  new file filled via import of ascii file
       common/ray3/modify,modlen,modbnd
       common/ract/paction
 
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character h*72,ctype*4,exportfile*72,paction*16,outs*124
 

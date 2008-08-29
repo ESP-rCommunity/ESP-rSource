@@ -51,6 +51,9 @@ C                 in common.
       common/filep/ifil
 
       common/g0/ctype(mcom),gversion(mcom),igupgrade
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -63,7 +66,7 @@ C                 in common.
       dimension month(12),iavdec(12)
       character zname*12,ctype*4
       character paction*16
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil,h
+      character*72 h
       character month*3,outs*124,tbase*72,ltrns*72,act*1,zdesc*64
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
@@ -223,6 +226,9 @@ C                 in common.
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -251,7 +257,6 @@ C isurfinso list of insolation sources.
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
       character paction*16
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character act*1
 
       logical newgeo  ! Used to test for new/old geometry file.

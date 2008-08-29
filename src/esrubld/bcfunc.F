@@ -5472,6 +5472,9 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
@@ -5485,7 +5488,6 @@ C Evaporation common block for use in MZVAPC.
       common/evapsur/vapsur(mcom)
 
       CHARACTER OUTS*124
-      character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fatal error test.
@@ -6384,6 +6386,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
@@ -6425,7 +6429,6 @@ C Arrays of material properties.
       logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

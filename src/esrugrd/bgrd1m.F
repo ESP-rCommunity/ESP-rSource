@@ -52,6 +52,8 @@ C *********************************************************************
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -70,7 +72,6 @@ C *********************************************************************
       character SSPARENT*12
       character outs*124,outsd*124,outs72*72,OTHSTR*30
       CHARACTER zdesc*64
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
       DIMENSION IVALZ(MCOM),IVALS(MS)

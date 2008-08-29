@@ -278,6 +278,8 @@ C then include initial data for energy demand sets and metrics.
       integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -300,7 +302,7 @@ C Comments about common blocks are in ripvdat.
       character act*1,lipvimg*72
       character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
       character cfgroot*24,metgroup*12
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
+      character LCFGF*72
 
 C Days to display (default is three (early winter, spring, summer).
       nipvdispjd=3

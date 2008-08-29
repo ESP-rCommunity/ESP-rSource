@@ -2844,6 +2844,8 @@ c         receiving internal surfaces.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -2864,7 +2866,7 @@ C Shading file record width found in mzshin.
      & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
      & pinsst(mcom,mgt,mt,misur)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LS,LUTIL
+      CHARACTER*72 LS
       DIMENSION ISS(12),ISADD(12)
       character outs*124,h*72
       logical OK,dok

@@ -52,6 +52,8 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -207,7 +209,7 @@ C Remember if each zone is fully attributed.
       dimension exposed(MCOM),vexposed(MCOM)
       dimension items(25)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
+      character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
@@ -2034,6 +2036,8 @@ C not browsing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -2055,7 +2059,6 @@ C IPV data.
       character lipvdatf*72
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

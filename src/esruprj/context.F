@@ -47,6 +47,9 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC8/SLAT,SLON
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -93,7 +96,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
 
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
+      character*72 GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character imgfmt*4,imgfoc*4,limgfil*72
@@ -3419,6 +3422,9 @@ C EDDGTP Sets up shading and insolation files
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -3428,7 +3434,6 @@ C EDDGTP Sets up shading and insolation files
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,ZNAME*12,ZN*12,LCFGF*72
       character zdesc*64,outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok

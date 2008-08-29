@@ -901,6 +901,8 @@ C if MODE is not - then sensor points file name confirmation required.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -920,7 +922,6 @@ C if MODE is not - then sensor points file name confirmation required.
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character h*72,zname*12,zdesc*64,LDFGRID*72,DESCRC*25
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124,runpath*72,pathtype*24,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 

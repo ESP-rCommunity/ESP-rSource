@@ -55,6 +55,8 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -243,7 +245,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER LPNF*72,LTDF*72,LTDFA*72

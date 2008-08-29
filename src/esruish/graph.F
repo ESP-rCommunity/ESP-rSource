@@ -270,6 +270,9 @@ C and the surrounding obstruction blocks.
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/precz/zname(mcom),zdesc(mcom)
@@ -278,7 +281,6 @@ C and the surrounding obstruction blocks.
       common/gfont/ifs,itfs,imfs
 
       character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character tz*13,zdesc*64
       logical newgeo  ! used to test for new/old geometry file.
 

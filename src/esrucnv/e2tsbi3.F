@@ -36,6 +36,8 @@ C ******* Translate esp data to tsbi3 file geom and materials.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -76,7 +78,6 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -736,6 +737,8 @@ C creates a grey-scale VRML 2.0 world.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -788,7 +791,6 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
       CHARACTER cfgroot*24,LCFGF*72

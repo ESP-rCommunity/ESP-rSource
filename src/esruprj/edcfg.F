@@ -58,6 +58,7 @@ C LPRFDB,IPRODB (for event profile database)
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/C1/NCOMP,NCON
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
@@ -151,7 +152,7 @@ C For optical controls
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(29)
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      character*72 LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
@@ -1191,6 +1192,7 @@ C output, IER=0 indicates no error.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/C1/NCOMP,NCON
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -1256,7 +1258,6 @@ C Flag noting whether casual gain periods are currently sorted.
       dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms,3)
       dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
@@ -3195,6 +3196,7 @@ C espriou.h for parameter MFFOLD
       common/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/C1/NCOMP,NCON
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -3221,7 +3223,6 @@ C Defaults.
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
 
@@ -4049,6 +4050,7 @@ C      of obstruction data.
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -4077,7 +4079,6 @@ C      of obstruction data.
       integer izlistnb,izlist
       dimension izlist(MCOM)  ! array of which zones are selected for transform.
       
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zname*12,zdesc*64,ZN*12,h*72
@@ -4225,6 +4226,7 @@ C      of obstruction data.
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -4252,7 +4254,6 @@ C      of obstruction data.
       integer izlistnb,izlist
       dimension izlist(MCOM)  ! array of which zones are selected for transform.
       
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zname*12,zdesc*64,ZN*12,h*72

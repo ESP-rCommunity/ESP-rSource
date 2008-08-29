@@ -35,6 +35,9 @@ C exportcad: controls model export facilities.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -55,7 +58,6 @@ C exportcad: controls model export facilities.
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
       character xfile*144,tg*1,delim*1,ffile*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
@@ -1468,6 +1470,8 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C6/INDCFG
@@ -1514,7 +1518,7 @@ C ICLIM,LCLIM (for climate file)
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
       character LPRJLG*72,LPNF*72,LMOIST*72
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      character*72 LCNN
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
       character LCMDFL*144,LFIL*72
       

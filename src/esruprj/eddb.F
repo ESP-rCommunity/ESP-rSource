@@ -55,6 +55,9 @@ C default file names for databases
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -81,7 +84,6 @@ C Default esp-r distribution path.
       character*72 ITEMS(15)
       character doit*248
       character DEPRE*40,OUTSTR*124,LCOPY*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character dinstpath*48
 
 C Strings for dos version of source and destination of db file.
@@ -3405,6 +3407,9 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
@@ -3427,7 +3432,7 @@ C espriou.h provides currentfile.
       LOGICAL CLKOK,OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
       character dinstpath*48,path*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,NNAME
+      CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
 
