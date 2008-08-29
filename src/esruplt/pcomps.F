@@ -1204,7 +1204,7 @@ C
 C ******************** CMP13S ********************
 C
 C CMP13S establishes for a plant component with plant db code 120 ie.
-C 2 node (ISV=21) AC  basic heat exchanger model wirh moisture recovery
+C 2 node (ISV=21) AC  basic heat exchanger model with moisture recovery
 C the model is based on a simple effectiveness calculation
 C data derivable from the static manufacturers data already read from
 C the database and saves it in the static data common block, and also
@@ -2526,7 +2526,7 @@ C Error handling
 C
 C ******************** CMP35S ********************
 C
-C CMP21S establishes for a plant component with plant db code 350 ie.
+C CMP35S establishes for a plant component with plant db code 350 ie.
 C 2 node (ISV=20) WCH basic radiator
 C whether the specified number of controlled variables is OK, and also
 C whether the number of connections to this component is correct
