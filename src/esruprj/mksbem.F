@@ -153,7 +153,7 @@ C Set folder separator (fs) to \ or / as required.
       tab=','
 
 C place (temporary?) call to read sbem db
-c      call sbempr(ier)
+      call sbempr(ier)
 
 C Check if sbem project specific file exists if yes then read in details
 C from it.
