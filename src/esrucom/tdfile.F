@@ -62,6 +62,7 @@ C which create the scratch or ascii version.
 #include "building.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
+#include "control.h"      
       
       integer lnblnk  ! function definition
 

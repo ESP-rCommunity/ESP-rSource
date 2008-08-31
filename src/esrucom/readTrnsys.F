@@ -729,7 +729,7 @@ C data input file
 #include "plant.h"
 #include "trnsys.h"
 #include "espriou.h"
-
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -970,9 +970,9 @@ C         not predefined.
 
       END DO        ! ---> DO i=1, NTRNXIN(NTRNCMP)
 
-C  Check that the number of control variables is not beyond the limit MCL
-C  MCL: maximum number of control loops as defined in plant.h
-      IF(iCtrl .GT. MCL) THEN
+C  Check that the number of control variables is not beyond the limit MCF
+C  MCF: maximum number of control loops as defined in plant.h
+      IF(iCtrl .GT. MCF) THEN
          MSG = 'Number of control variables beyond the limit'
          CALL edisp(IUOUT, MSG)
          GOTO 1000

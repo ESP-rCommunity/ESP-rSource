@@ -83,6 +83,7 @@ c ***********************************************************************
       LOGICAL FUNCTION AreWindowsOpen()
       IMPLICIT NONE
 #include "building.h"
+#include "control.h"
 
 
 C Future values common block.
@@ -108,20 +109,6 @@ C Common block required for getting AC Setpoint
       REAL	BB1,BB2,BB3
       INTEGER	IICOMP
       REAL	TNP,QFUT,TFUT
-
-C Common block required for getting AC Setpoint
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &     IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &     IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &     BMISCD(MCF,MBCDT,MBCDP,MISC)
-      INTEGER	NCF,IBSN,IBAN,NBCDT,IBCDV,NBCDP
-      REAL	TBCPS
-      INTEGER	IBCTYP,IBCLAW
-C     Array that contains the ac-setpoint 
-      REAL	BMISCD
-
-
-
 
 C Common block for the window model.           
       COMMON/WindowControl/

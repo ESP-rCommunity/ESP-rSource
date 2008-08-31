@@ -1259,6 +1259,7 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -1283,10 +1284,6 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
       common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
 

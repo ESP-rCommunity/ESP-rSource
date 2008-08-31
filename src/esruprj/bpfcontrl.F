@@ -39,11 +39,9 @@ C          block sctl to have been filled for the current period.
 
       SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
 #include "building.h"
-#include "plant.h"
 #include "epara.h"
 #include "net_flow.h"
 #include "control.h"
-#include "power.h"
       
       integer lnblnk  ! function definition
 
@@ -62,38 +60,7 @@ C          block sctl to have been filled for the current period.
       common/cctlnm/ctldoc,lctlf
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
      &             opticdoc
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl4/iasocc(mcc,mcmp),nfsup(mcc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C Electrical control.
-      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
-     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
-     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
-     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
+      common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
@@ -1181,36 +1148,8 @@ C Finds the current number of periods in all control loops
 C of type icfoc.
       subroutine totctlper(icfoc,ncper)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
-#include "power.h"
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
-     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
-     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
-     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       if(icfoc.eq.0)then
         ncper=0
@@ -1287,12 +1226,9 @@ C Edit building control function II.
       SUBROUTINE EBCNTRL(ITRC,II,IV,IER)
 #include "building.h"
 #include "plant.h"
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       
 C Plant common required for building/plant flux linkage      
@@ -2729,15 +2665,11 @@ C *********** EOCNTRL
 C Edit optical control function II.
       SUBROUTINE EOCNTRL(II,IV,IER)
 #include "building.h"
+#include "control.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 C      COMMON/GPICK/GS(MGOPT),nopt
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       CHARACTER*84 VERT(20)
@@ -3135,15 +3067,11 @@ C *********** EPCNTRL
 C Edit plant control function II.
       SUBROUTINE EPCNTRL(ITRC,II,IV,IER)
 #include "building.h"
-#include "plant.h"
 #include "DG_controller_include.h"
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       DIMENSION SALT(42),IVALS(42),PSALT(17),IPVALS(17)
       CHARACTER*84 VERT(20)
@@ -3994,7 +3922,7 @@ C Mutilsensor of control loops
           cm(1)=real(NCLP*2+3)
           DO 1454 ICLP=1,NCLP
             CALL EASKI(ICLN,' ',' Select control loops number',
-     &      1,'-',mcl,'-',1,'ctl loop number',IER,11)
+     &      1,'-',mcF,'-',1,'ctl loop number',IER,11)
             CM(ICLP*2)=ICLN
             IF(ICLP.NE.NCLP)THEN
               CALL EASKAB('Logical relationship with next loop',' ',
@@ -4169,16 +4097,12 @@ C Edit flow control function II.
 #include "building.h"
 #include "net_flow.h"
 #include "epara.h"
-      
+#include "control.h"      
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -4814,10 +4738,6 @@ C Edit global control function II.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,LTMP*248
@@ -5085,17 +5005,13 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "net_flow.h"
 #include "plant.h"
 #include "epara.h"
-
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
      
@@ -5817,7 +5733,7 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "net_flow.h"
 #include "plant.h"
 #include "epara.h"
-
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -5825,11 +5741,7 @@ C flow connections.It is assumed that the user will make one selection only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/fctl4/iasocc(mcc,MCMP),nfsup(mcc)
+      common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -6261,10 +6173,6 @@ C    deal with the dialogs using standard sequential method.
 #include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
 C menu (32 char) menu text for each item

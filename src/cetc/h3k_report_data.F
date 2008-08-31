@@ -62,6 +62,7 @@ C*******************************************************************************
       IMPLICIT NONE
 #include "building.h"
 #include "aim2_common.h"
+#include "control.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -264,14 +265,6 @@ C.....Surface area data
 
       common/cctl/icascf(mcom)  ! Zone control type
       integer icascf
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &     ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &     ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &     bmiscd(mcf,mbcdt,mbcdp,misc)
-      integer ncf, ibsn, iban, idcdtl, ibcdv, nbcdp, ibctyp, ibclaw
-      integer nbcdt
-      real tbcps, bmiscd
 
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)

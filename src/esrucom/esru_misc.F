@@ -640,7 +640,6 @@ C Loop through all zones to see if there is a domain flow description.
 C ***** Notice that an active description button has been pressed.
       subroutine cfgpk(act)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
       common/pophelp/h(60)
@@ -662,25 +661,6 @@ C Control
 
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
      &             opticdoc
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
 
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton

@@ -120,11 +120,7 @@ C UAT01a alters control data during simulation.
       SUBROUTINE UAT01a(IDAY,IHOUR)
 #include "building.h"
 #include "uncertainty.h"
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
+#include "control.h"
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA32/IMISCD(MNCNG,2)

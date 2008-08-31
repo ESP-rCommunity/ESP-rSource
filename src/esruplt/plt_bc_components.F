@@ -52,6 +52,7 @@ C----------------------------------------------------------------------
 
 #include "building.h"
 #include "plant.h"
+#include "control.h"
 
 C----------------------------------------------------------------------
 C     ESP-r commons 
@@ -60,23 +61,6 @@ C.....I/O
       common/outin/iuout,iuin
       integer iuout, iuin      ! channels for writing messages to screen
 
-C.....Control parameters      
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      
-      integer ncl                ! # of control loops in model,
-      integer ipsn               ! sensor data
-      integer ipan               ! actuator data 
-      integer npcdt              ! (not used)
-      integer ipcdv              ! (not used)
-      integer npcdp              ! (not used)
-      real tpcps                 ! (not used)
-      integer ipctyp             ! (not used)
-      integer ipclaw             ! (not used)
-      real pmiscd                ! miscellaneous data describing comp. 
-      
 C.....More control parameters 
       common/pclsol/icfp,idtypp,iperp
       integer icfp          ! index of current cotnrol loop

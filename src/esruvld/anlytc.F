@@ -929,14 +929,11 @@ C VMP111  modifies the variables of the validation model.
 C *********************************************************************
       SUBROUTINE VMP111
 #include "building.h"
+#include "control.h"
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)

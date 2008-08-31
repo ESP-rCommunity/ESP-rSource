@@ -150,6 +150,7 @@ c     *********************************************************************
 
 #include "OffsiteUtilitiesPublic.h"
 
+#include "control.h"
 
 c hvac system file and flag:  	ihvacflag=1 there is hvac file
 c ihvacflag=0 no hvac file
@@ -167,19 +168,6 @@ c Use common for HVAC system energy consumption
 c Real variables in HVAC system energy consumption common
       REAL fan_energy, draft_energy, sys_energy, backup_energy,
      &pilot_energy, GSHP_pump_energy, GCEP_pump_energy
-
-
-C Common block containing miscellaneous zone data.
-      common/bctl/              ! MISC zond data:
-     &     ncf,ibsn(mcf,4),     ! not used 
-     &     iban(mcf,3),         ! zone control data
-     &     nbcdt(mcf),ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt), ! not used 
-     &     tbcps(mcf,mbcdt,mbcdp),                         ! not used 
-     &     ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),! not used 
-     &     bmiscd(mcf,mbcdt,mbcdp,misc)                    ! not used 
-      integer ncf, ibsn, iban, idcdtl, ibcdv, nbcdp, ibctyp, ibclaw
-      integer nbcdt
-      real tbcps, bmiscd
 
 C Construction heat injection and temperature commons.
       COMMON/FVALC/             ! FUTURE: 

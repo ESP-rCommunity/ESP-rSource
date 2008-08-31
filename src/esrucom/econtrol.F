@@ -254,69 +254,31 @@ C          flow control function.
       SUBROUTINE EZCTLR(IUNIT,ITRC,ITRU,IER)
 
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
-#include "power.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
      &             opticdoc
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/fctl4/iasocc(mcc,MCMP),nfsup(mcc)
-
+      common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
       common/glbctl/global,glbrwd
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
-     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
-     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
-     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
-      
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
-
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
-
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
 
@@ -555,7 +517,7 @@ C Reporting: Get a string describing the actuator based on common block.
 C Day types.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'day types',IER)
         KG=0
-        CALL EGETWI(OUTSTR,KG,NBCDT(II),0,MBCDT,'F',
+        CALL EGETWI(OUTSTR,KG,NBCDT(II),0,MCDT,'F',
      &              'number of control day type(s)',IER)
         IF(IER.NE.0)GOTO 99
 
@@ -589,7 +551,7 @@ C Reporting:
 
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'periods',IER)
           KG=0
-          CALL EGETWI(OUTSTR,KG,NBCDP(II,JJ),1,MBCDP,'F',
+          CALL EGETWI(OUTSTR,KG,NBCDP(II,JJ),1,MCDP,'F',
      &              'control periods during day',IER)
           IF(IER.NE.0)GOTO 99
 
@@ -680,7 +642,7 @@ C control loops.
 
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'no control loops',IER)
       KG=0
-      CALL EGETWI(OUTSTR,KG,ncl,-1,mcl,'F','no loops',IER)
+      CALL EGETWI(OUTSTR,KG,ncl,-1,mcf,'F','no loops',IER)
       IF(IER.NE.0)GOTO 99
 
 C Reporting:
@@ -828,7 +790,7 @@ C Reporting: Get a string describing the actuator based on common block.
 C Day types.
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'day types',IER)
         KG=0
-        CALL EGETWI(OUTSTR,KG,npcdt(ii),0,mpcdt,'F',
+        CALL EGETWI(OUTSTR,KG,npcdt(ii),0,mcdt,'F',
      &              'number of plant control day type(s)',IER)
         IF(IER.NE.0)GOTO 99
 
@@ -862,7 +824,7 @@ C Reporting:
 
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'periods',IER)
           KG=0
-          CALL EGETWI(OUTSTR,KG,npcdp(ii,jj),1,mpcdp,'F',
+          CALL EGETWI(OUTSTR,KG,npcdp(ii,jj),1,mcdp,'F',
      &              'plant control periods during day',IER)
           IF(IER.NE.0)GOTO 99
           ll=npcdp(ii,jj)
@@ -973,7 +935,7 @@ C mass flow control functions.
 
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'no control function.',IER)
       KG=0
-      CALL EGETWI(OUTSTR,KG,ncc,-1,mcc,'F','no function',IER)
+      CALL EGETWI(OUTSTR,KG,ncc,-1,mcF,'F','no function',IER)
       IF(IER.NE.0)GOTO 99
 
 C Reporting:
@@ -1064,7 +1026,7 @@ C Reporting: Get a string describing the actuator based on common block.
 C Day types.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'day types',IER)
         KG=0
-        CALL EGETWI(OUTSTR,KG,nfcdt(ii),0,mfcdt,'F',
+        CALL EGETWI(OUTSTR,KG,nfcdt(ii),0,MCDT,'F',
      &              'number of flow control day type(s)',IER)
         IF(IER.NE.0)GOTO 99
 
@@ -1098,7 +1060,7 @@ C Reporting:
 
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'periods',IER)
           KG=0
-          CALL EGETWI(OUTSTR,KG,nfcdp(ii,jj),1,mfcdp,'F',
+          CALL EGETWI(OUTSTR,KG,nfcdp(ii,jj),1,mcdp,'F',
      &              'mass flow control periods during day',IER)
           IF(IER.NE.0)GOTO 99
 
@@ -1229,7 +1191,7 @@ C control loops.
 
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'no power control loops',IER)
       KG=0
-      CALL EGETWI(OUTSTR,KG,necl,-1,mel,'F','no power loops',IER)
+      CALL EGETWI(OUTSTR,KG,necl,-1,MCF,'F','no power loops',IER)
       IF(IER.NE.0)GOTO 99
 
 C Reporting:
@@ -1311,7 +1273,7 @@ C Reporting: Get a string describing the actuator based on common block.
 C Day types.
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'day types',IER)
         KG=0
-        CALL EGETWI(OUTSTR,KG,necdt(ii),0,MECDT,'F',
+        CALL EGETWI(OUTSTR,KG,necdt(ii),0,MCDT,'F',
      &              'number of power control day type(s)',IER)
         IF(IER.NE.0)GOTO 99
 
@@ -1345,7 +1307,7 @@ C Reporting:
 
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'periods',IER)
           KG=0
-          CALL EGETWI(OUTSTR,KG,necdp(ii,jj),1,MECDP,'F',
+          CALL EGETWI(OUTSTR,KG,necdp(ii,jj),1,MCDP,'F',
      &              'power control periods during day',IER)
           IF(IER.NE.0)GOTO 99
           ll=necdp(ii,jj)
@@ -1416,7 +1378,7 @@ C global control functions.
 
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'no control function.',IER)
       KG=0
-      CALL EGETWI(OUTSTR,KG,ngf,-1,mgl,'F','no function',IER)
+      CALL EGETWI(OUTSTR,KG,ngf,-1,MCF,'F','no function',IER)
       IF(IER.NE.0)GOTO 99
 
 
@@ -1482,7 +1444,7 @@ c jmq: do later: if((igan(ii,1).gt.-3).or.(igan(ii,1).lt.-4)) goto 1005
 C Day types.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'day types',IER)
         KG=0
-        CALL EGETWI(OUTSTR,KG,ngcdt(ii),0,mgcdt,'F',
+        CALL EGETWI(OUTSTR,KG,ngcdt(ii),0,mcdt,'F',
      &              'no. of global control day type(s)',IER)
         IF(IER.NE.0)GOTO 99
 
@@ -1516,7 +1478,7 @@ C Reporting:
 
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'periods',IER)
           KG=0
-          CALL EGETWI(OUTSTR,KG,ngcdp(ii,jj),1,mgcdp,'F',
+          CALL EGETWI(OUTSTR,KG,ngcdp(ii,jj),1,mcdp,'F',
      &              'global control periods during day',IER)
           IF(IER.NE.0)GOTO 99
           ll=ngcdp(ii,jj)
@@ -1571,7 +1533,7 @@ C  control functions (NOF).
 
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'no cntrl functions',IER)
       KG=0
-      CALL EGETWI(OUTSTR,KG,NOF,-1,MOL,'F','no function',IER)
+      CALL EGETWI(OUTSTR,KG,NOF,-1,MCF,'F','no function',IER)
       IF(IER.NE.0)GOTO 99
 
 C Reporting:
@@ -1652,7 +1614,7 @@ C Reporting: Get a string describing the actuator based on common block.
 C Day types.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'day types',IER)
         KG=0
-        CALL EGETWI(OUTSTR,KG,NOCDT(II),0,MOCDT,'F',
+        CALL EGETWI(OUTSTR,KG,NOCDT(II),0,MCDT,'F',
      &              'number of control day types',IER)
         IF(IER.NE.0)GOTO 99
 
@@ -1686,7 +1648,7 @@ C Reporting:
 
           CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'periods',IER)
           KG=0
-          CALL EGETWI(OUTSTR,KG,NOCDP(II,JJ),1,MOCDP,'F',
+          CALL EGETWI(OUTSTR,KG,NOCDP(II,JJ),1,MCDP,'F',
      &              'control periods during day',IER)
           IF(IER.NE.0)GOTO 99
 
@@ -1900,7 +1862,6 @@ c ******************** EZCTLI ********************
 c EZCTLI: Zeroes all control data in common BCTL, CCTL, FCTL, OCTL and GCTL.
       SUBROUTINE EZCTLI
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
 
@@ -1909,32 +1870,6 @@ c EZCTLI: Zeroes all control data in common BCTL, CCTL, FCTL, OCTL and GCTL.
 c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
       COMMON/IDRHCTL1/RHSPTU(MCOM),RHSPTL(MCOM),RHHC(MCOM),
      &RHDC(MCOM),IRHCT(MCOM)
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       ncf=0
       do 10 i=1,mcom
@@ -1947,9 +1882,9 @@ C For optical controls
           iban(i,j)=0
    30   continue
         nbcdt(i)=0
-        do 40 j=1,mbcdt
+        do 40 j=1,MCDT
           nbcdp(i,j)=0
-          do 50 k=1,mbcdp
+          do 50 k=1,MCDP
             do 60 l=1,misc
               bmiscd(i,j,k,l)=0.0
    60       continue
@@ -1958,15 +1893,15 @@ C For optical controls
    20 continue
 
       ncl=0
-      do 120 i=1,mcl
+      do 120 i=1,mcf
         do 130 j=1,3
           ipsn(i,j)=0
           ipan(i,j)=0
   130   continue
         npcdt(i)=0
-        do 140 j=1,mpcdt
+        do 140 j=1,mcdt
           npcdp(i,j)=0
-          do 150 k=1,mpcdp
+          do 150 k=1,mcdp
             do 160 l=1,misc
               pmiscd(i,j,k,l)=0.0
   160       continue
@@ -1975,16 +1910,16 @@ C For optical controls
   120 continue
 
       ncc=0
-      do 220 i=1,mcc
+      do 220 i=1,mcf
         do 230 j=1,4
           ifsn(i,j)=0
           if(j.eq.4)goto 230
           ifan(i,j)=0
   230   continue
         nfcdt(i)=0
-        do 240 j=1,mfcdt
+        do 240 j=1,MCDT
           nfcdp(i,j)=0
-          do 250 k=1,mfcdp
+          do 250 k=1,mcdp
             do 260 l=1,misc
               fmiscd(i,j,k,l)=0.0
   260       continue
@@ -1993,11 +1928,11 @@ C For optical controls
   220 continue
 
       ngf=0
-      do 320 i=1,mgl
+      do 320 i=1,MCF
         ngcdt(i)=0
-        do 340 j=1,mgcdt
+        do 340 j=1,mcdt
           ngcdp(i,j)=0
-          do 350 k=1,mgcdp
+          do 350 k=1,mcdp
             do 360 l=1,misc
               gmiscd(i,j,k,l)=0.0
   360       continue
@@ -2014,11 +1949,11 @@ C For optical controls
   330 continue
 
       nof=0
-      do 420 i=1,mol
+      do 420 i=1,mCF
         nocdt(i)=0
-        do 440 j=1,mocdt
+        do 440 j=1,mcdt
           nocdp(i,j)=0
-          do 450 k=1,mocdp
+          do 450 k=1,mcdp
             do 460 l=1,misc
               omiscd(i,j,k,l)=0.0
   460       continue
@@ -2037,7 +1972,6 @@ C control file sensors, actuator, control types, control laws.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
-#include "power.h"
       
       integer lnblnk  ! function definition
 
@@ -2047,38 +1981,10 @@ C      COMMON/OUTIN/IUOUT,IUIN
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
-     &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
-     &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
-
-      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
-     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
-     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
-     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2367,43 +2273,13 @@ C EVCNTRLAW: Decodes and returns two strings (72 char & 248 char) describing
 C an esp-r control file control laws for zone/plant/flow/electrical.
       SUBROUTINE EVCNTRLAW(icfoc,II,JJ,KK,SSTR,message)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
-#include "power.h"
       
       integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
-     &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
-     &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-
-      COMMON/ECTL/NECL,IESN(MEL,3),IEAN(MEL,3),NECDT(MEL),
-     &            IECDV(MEL,MECDT,2),NECDP(MEL,MECDT),
-     &            TECPS(MEL,MECDT,MECDP),IECTYP(MEL,MECDT,MECDP),
-     &            IECLAW(MEL,MECDT,MECDP),EMISCD(MEL,MECDT,MECDP,MISC)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       CHARACTER SSTR*72,SSTRB*48,SSTR1*72,SSTRB1*48
       CHARACTER NDNAM*12
@@ -3297,36 +3173,12 @@ C ******** LSTCNTLD
 C List one day type of a building/plant/flow/global/optical control. 
       SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       character outs*124,SSTR*72,TMP*72,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
@@ -3860,30 +3712,10 @@ C control loops for legality.
 #include "building.h"
 #include "plant.h"
 #include "net_flow.h"
+#include "control.h"
 
       common/OUTIN/IUOUT,IUIN
       common/cctl/icascf(mcom)
-
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -4163,12 +3995,9 @@ C tscon.F).
 
       subroutine tscdta
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
       
@@ -4250,13 +4079,9 @@ C section in the control file or had a problem reading the data.
       SUBROUTINE FZDATA(IUNIT,IER)
 
 #include "building.h"
+#include "control.h"
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/FZCTL1/FZM(MFP,3,5,10),ERRSAV(MFP),QSAV(MFP),
      &ACUT(3,5),FZCTIP(5,5),FZCTOP(5),COA(5)
       COMMON/FZCTL2/NFZF(MFP,3),FZT(MFP,3),NONZRO

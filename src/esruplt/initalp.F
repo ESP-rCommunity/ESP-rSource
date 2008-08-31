@@ -27,12 +27,12 @@ C MZNASP assigns starting values to the plant nodal
 C state variables.
       SUBROUTINE MZNASP
 #include "plant.h"
-
+#include "control.h"
       COMMON/C13PS/NPMCOE,NPNOD,NPMTYP
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
 
 C Integral and derivative control variables.
-      common/ctlactn/rintgrl(mcl,2),deriv(mcl)
+      common/ctlactn/rintgrl(MCF,2),deriv(MCF)
 
 C Assign state space variable starting values.
       DO 10 IPNOD=1,NPNOD
@@ -48,7 +48,7 @@ C Assign state space variable starting values.
 
 C Initialise integral and derivative control 
 C variables.
-      do 20 icl=1,mcl
+      do 20 icl=1,mcf
          rintgrl(icl,1)=0.0
          rintgrl(icl,2)=0.0
          deriv(icl)  =0.0

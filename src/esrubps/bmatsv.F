@@ -44,6 +44,7 @@ C HOT3000: Fuel cell.
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "lookup_data.h"
+#include "control.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
@@ -158,10 +159,6 @@ C Common for 3D building model.
       COMMON/MOIST13/RLXln,RRLXln,RLXlnF,RRLXlnF,RLXlnT,RRLXlnT
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
       common/glbsav/ksave

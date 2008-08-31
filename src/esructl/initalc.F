@@ -31,13 +31,12 @@ C Mzipct assigns starting values to
 C common DIGPID in plant control loops 1 & 2.
 
       subroutine mzipct
-#include "plant.h"
-
-      common/digpid/pid(mcl,7)
+#include "control.h"
+      common/digpid/pid(MCF,7)
 
 C Assign starting values.
       do 1 i=1,7
-        do 2 icl=1,mcl
+        do 2 icl=1,mcf
            pid(icl,i)=0.0
  2      continue
  1    continue
@@ -51,7 +50,7 @@ C common BLGPID in building control function 5,
 
       subroutine mzibct
 #include "building.h"
-
+#include "control.h"
       common/blgpid/bpid(mcf,6),nsincr
 
 C Assign starting values to BLGPID,
@@ -126,11 +125,7 @@ C all the fuzzy membership functions read in by 'FZDATA'.
 
       SUBROUTINE FZYFNC
 #include "building.h"
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
+#include "control.h"
 
       COMMON/FZCTL1/FZM(MFP,3,5,10),ERRSAV(MFP),QSAV(MFP),
      &ACUT(3,5),FZCTIP(5,5),FZCTOP(5),COA(5)

@@ -33,6 +33,7 @@ C sbmedit define high level data associated with UK NCM methodology.
 #include "building.h"
 #include "sbem.h"
 #include "tdf2.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -75,10 +76,6 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
      &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)          
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,

@@ -404,6 +404,7 @@ c solved simultaneously at the current simulation time-step.
       SUBROUTINE MZSETU(ICOMP)
 #include "building.h"
 #include "cfd.h"
+#include "control.h"
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
@@ -431,11 +432,6 @@ c solved simultaneously at the current simulation time-step.
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/CONEQN/W(MS,MNM,5)
       COMMON/ZONEQN/E(MEQ,MTR)
       COMMON/ZONEQS/ES(MEQ,MTR),ACAPS
@@ -930,8 +926,8 @@ C Set-up present coefficient.
      &QVNP+PADDC)+(XX1+XX3+QCASC(2))*ACAP*GAM
      &+qtbridge
 
-      IGAN=0
-      if(IGAN.eq.1)then
+      IGANg=0
+      if(IGANg.eq.1)then
 C Drylink mod start.
          if(icomp.lt.5)then
            call drylink(icomp,qganp1,qganf1,qganp2,qganf2,wganp,wganf)

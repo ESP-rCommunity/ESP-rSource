@@ -31,6 +31,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 
       SUBROUTINE MOZCAS(IZONE,IANZSE,NIT)
 #include "building.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -56,10 +57,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &      IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &      BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)

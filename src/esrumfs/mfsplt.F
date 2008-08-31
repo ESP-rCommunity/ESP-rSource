@@ -111,8 +111,8 @@ C Finds the sensed value SVCTL from ICFP-th defined plant control loop
 C based on most recent results
 
       SUBROUTINE MFCNTL(SVCTL)
-#include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -122,10 +122,6 @@ C based on most recent results
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7

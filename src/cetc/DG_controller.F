@@ -163,10 +163,6 @@ C-------------------------------------------------------------------------------
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/pclsol/icfp,idtypp,iperp
-C      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-C     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
-C     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
-C     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep 
       common/pctstp/ntstpp
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar) 
@@ -1173,6 +1169,7 @@ C bHW_tank          ! Flag indicating if cold water tank exists.
 #include "building.h"
 #include "DG_controller_include.h"
 #include "trnsys.h"
+#include "control.h"
 C-------------------------------------------------------------------------------------
 C     Required common blocks
 C-------------------------------------------------------------------------------------
@@ -1181,11 +1178,6 @@ C-------------------------------------------------------------------------------
       common/ptime/ptimep,ptimef
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/pclsol/icfp,idtypp,iperp
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
-     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
-     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
-
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar) 
       common/pdbdt/adata(mpcom,madata),bdata(mpcom,mbdata)
       common/entfile/entflnam, ientxist
@@ -1203,11 +1195,6 @@ C.....Simulation time
       integer npcomp, nci
       real cdata
       integer icfp, idtypp, iperp
-      integer ncl, ipsn, ipan, npcdt, ipcdv, npcdp
-      real tpcps
-C.....Control data
-      integer ipctyp, ipclaw
-      real pmiscd
 C.....Plant component indexes
       integer npcdat, ipofs1, ipofs2
 C.....Plant component parameters
