@@ -56,7 +56,10 @@ C LPRFDB,IPRODB (for event profile database)
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1166,7 +1169,10 @@ C output, IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+     
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -1222,12 +1228,15 @@ C Descriptive label for a zone load or casual gain types.
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
-      logical unixok,silent
+      logical unixok
+      logical silent
 
 C Flag noting whether casual gain periods are currently sorted.
       logical sorted,problem
       logical newgeo  ! to use for testing if new/old geometry file.
-
+      
+      character ITEMS*32
+      integer ivals
       dimension ITEMS(25),IVALS(MCOM)
       dimension jict(MS),jic2(MS),jie2(MS)
       dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms,3)
@@ -1236,7 +1245,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character LCFGF*72,H*72,ITEMS*32,SFIL*72
+      character LCFGF*72,H*72,SFIL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -1253,6 +1262,10 @@ C Flag noting whether casual gain periods are currently sorted.
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer itru,ier  ! type for passed parameters
+      real val,x1,y1    ! type for passed parameters
+      integer inpic     ! type for passed parameters
+      integer iuf       ! file unit type
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -1842,9 +1855,11 @@ C Now it is ok to write out the copied zone.
             newgeo = .true.
           endif
           if(newgeo)then
-            call geowrite(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+	    iuf=ifil+2
+            call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+	    iuf=ifil+2
+            call emkgeo(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           endif
           IF(IER.EQ.1)THEN
             dok=.true.
@@ -3171,7 +3186,10 @@ C espriou.h for parameter MFFOLD
       common/RAY3/MODIFY,MODLEN,MODBND
       common/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+     
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -4018,19 +4036,30 @@ C   silent (logical) if true then do not ask user about transforms
 C      of obstruction data.
       subroutine globaltransform(valx,valy,valz,izlistnb,izlist,
      &  silent,itru,ier)
+      implicit none
 #include "building.h"
       
       integer lnblnk  ! function definition
+      real valx,valy,valz  ! the transforms
+      integer izlistnb,izlist
+      dimension izlist(MCOM)  ! array of which zones are selected for transform.
+      logical silent  ! if true then skip dialogs
+      integer itru,ier  ! type for passed parameters
 
+      integer ifil
       common/FILEP/IFIL
+      integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer nzsur,nztv
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      integer ivf,isi,ihc,itw,icgc,iobs
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -4040,27 +4069,35 @@ C      of obstruction data.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
+      integer NSUR,JVN,NVER,NTV
+      real X,Y,Z
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      
+      integer nb
+      real XO,YO,ZO,DX,DY,DZ,BANG
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
 
+      real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-      CHARACTER CUBN*6
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical silent  ! if true then skip dialogs
-      real valx,valy,valz  ! the transforms
-      integer izlistnb,izlist
-      dimension izlist(MCOM)  ! array of which zones are selected for transform.
       
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zname*12,zdesc*64,ZN*12,h*72
       character outs*124
       logical DOK,OK
+      integer iuf   ! file type 
+      integer iicomp  ! index of current zone
+      integer itrc,ij,i,iz  ! types for local variables
        
       IUF=IFIL+2
       DO 83 IZ=1,izlistnb
@@ -4199,19 +4236,31 @@ C   izlist is the array holding selected zone indicies to rotate
 C   silent (logical) if true then do not ask user about rotations
 C      of obstruction data.
       subroutine globalrotate(val,x1,y1,izlistnb,izlist,silent,itru,ier)
+
+      implicit none
 #include "building.h"
       
       integer lnblnk  ! function definition
+      integer izlistnb,izlist,itru,ier  ! type for passed parameters
+      dimension izlist(MCOM)  ! array of which zones are selected for transform.
+      real val        ! rotation angl
+      real x1,y1      ! the point to rotate around
+      logical silent  ! if true then skip dialogs
 
+      integer ifil
       common/FILEP/IFIL
+      integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer nzsur,nztv
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      integer ivf,isi,ihc,itw,icgc,iobs
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -4221,26 +4270,29 @@ C      of obstruction data.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      integer nb
+      real XO,YO,ZO,DX,DY,DZ,BANG
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
 
+      real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-      CHARACTER CUBN*6
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical silent  ! if true then skip dialogs
-      real x1,y1      ! the point to rotate around
-      integer izlistnb,izlist
-      dimension izlist(MCOM)  ! array of which zones are selected for transform.
       
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zname*12,zdesc*64,ZN*12,h*72
       character outs*124
       logical DOK,OK
+      integer itrc,iuf,iicomp,ij,iz,i
+      real A,pi,XR,YR,XXX,YYY,CA,SA
        
       IUF=IFIL+2
       DO 84 IZ=1,izlistnb
