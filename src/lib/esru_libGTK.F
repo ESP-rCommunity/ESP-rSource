@@ -3133,9 +3133,11 @@ C EASKPER: Provides legacy interface to the more general eAskPerGen below.
       logical bMY_enabled
       parameter ( bMY_enabled = .false. )
 
-C Note: There's no need to initialize iBYr and iEYr. They're not
-C referenced when multiyear simulations are disabled
 
+C Note: initialize iBYr and iEYr even though the are not 
+C returned. They're not referenced when multiyear simulations are disabled
+      iBYr=2000
+      iEYr=2000
       call eAskPerGen(PROMP1,IBDOY,IEDOY,
      &                 iBYr,iEYr,IFDAY,bMY_enabled,IER)
 
@@ -4067,6 +4069,7 @@ C For page control of the menus.
 
 C If creating menu don't ask questions. Allow movement forward or backwards
 C in the control menu.
+      IGTP=1
       IF(IPACT.EQ.CREATE)THEN
         IX=1
       ELSEIF(IPACT.lt.0)then

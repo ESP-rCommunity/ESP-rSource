@@ -1402,7 +1402,7 @@ C Existing format - keep reading as previously for existing bidirectional files
         goto 42
       elseif(WORD(1:9).eq.'*set_type')then
         CALL EGETWI(OUTSTR,K,IV,1,100,'W','set types',IER)
-        ISETTYPE=IV
+        ISETTYPE=IV   ! not used yet
         goto 42
       elseif(WORD(1:8).eq.'*end_set')then
         goto 42

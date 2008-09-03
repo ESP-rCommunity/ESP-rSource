@@ -582,7 +582,7 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      H(1)='You may read in an existing ESP-r zone geometry file,'
+ 293  H(1)='You may read in an existing ESP-r zone geometry file,'
       H(2)='convert a cflow3/IES zip file into one or more zones'
       H(3)='(i.e whole model conversion)or create a zone by inputing'
       H(4)='data related to primitive shapes.'
@@ -591,7 +591,7 @@ C Set folder separator (fs) to \ or / as required.
      &  INZOPT,48)
 
 C Input dimensions.
- 293  if(INZOPT.eq.1)then
+      if(INZOPT.eq.1)then
 
 C Provide scratch description and the
 C default assumptions for other zone files.

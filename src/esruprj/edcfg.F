@@ -1413,14 +1413,14 @@ C Ask for transform distance then which zones and then apply.
           CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
      &                12,NCOMP,zname,'zone list',IER,1)
           IF(INPIC.EQ.0)GOTO 3
-  
+
 C Perform the global transform interactively.
           silent= .false.
           call globaltransform(valx,valy,valz,inpic,ivals,
      &      silent,itru,ier) 
           MODIFY=.TRUE.
           MODBND=.TRUE.
-  
+
         elseif(IRT.eq.2)then
 
 C Rotation degree and choices.
@@ -1462,7 +1462,7 @@ C Implement the rotations for the selected zones.
           endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
-  
+
         elseif(IRT.eq.3)then
 
           call serchrpl('a',itrc,iier)
@@ -1653,6 +1653,7 @@ C Save zone geometry, read in obstructions, write out to another
 C file and then recover the zone commons.
           if(IOBS(ic).eq.1)then
             dok=.true.
+            OKOB=.true.
             h(1)='The original zone had associated solar obstructions'
             h(2)='and you have two options '
             h(3)=' a) copy the obstructions so that modifications'
@@ -1721,7 +1722,7 @@ C Zone rotations and transforms.
               goto 3
             endif
           endif 
-   
+
 C Act on the skip transform request.   
           if(iclkok.eq.2) then
             okzt=.false.
@@ -3819,7 +3820,7 @@ C << it would be clearer if all model I/O happened there >>
       
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -3831,7 +3832,7 @@ C << it would be clearer if all model I/O happened there >>
       logical concat,OK,DOK,browse,XST,deref,unixok
       character lradcf*72,dradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
-      character doit*124,tmode*8,tfile*72,H*72,act*1
+      character doit*124,tmode*8,H*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
@@ -3965,7 +3966,8 @@ C an offset from prj start position.
         CALL PHELPD('e2r finished menu',2,'-',0,0,IER)
 
 C Check if radiance scene file exists. If not or zero length or not correct 
-C file type then dereference it from the cfg file.
+C file type then dereference it from the cfg file. The alternative location
+C for the scene file is in ../rad if user owned the model.  
         if(.NOT.browse)then
           IRCFG=IFIL+1
           call ERPFREE(IRCFG,ISTAT)

@@ -1141,16 +1141,33 @@ C naout (number of additional output data) is returned.
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
-      LOGICAL OK,dok
+      LOGICAL OK,dok,unixok
       CHARACTER ZDESC*25,cdate*16,buffer*80,adopdsc*30
-      character h*72
+      character h*72,fs*1
+      integer lndbp   ! for length of standard database path
+      character lltmp*144  ! to re-create plant database file name with path
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C If unit for plant component db not yet set, do it.
       if(ipcdb.eq.0)ipcdb=ifil+11
 
 C 'irecln' is defined in 'plantdb.h'.
       irecln=20
-  100 call EFOPRAN(ipcdb,lpcdb,IRECLN,1,IER)
+      lndbp=lnblnk(standarddbpath)
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        lltmp=LPCDB
+      elseif(ipathoptdb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+      endif
+  100 call EFOPRAN(ipcdb,lltmp,IRECLN,1,IER)
 
 C Check for error on openening.
       if(ier.gt.0) then

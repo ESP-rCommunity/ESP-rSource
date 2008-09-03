@@ -3761,9 +3761,6 @@ C  iton is a toggle iton=0 initial state where images have not been scanned
 C    and iton=1 images have been displayed.
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
-c      dimension dh(60)
-c      CHARACTER dh*72
-
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
@@ -3862,17 +3859,6 @@ C Setup help text for the popup.
           h(9)='a model. '
           h(10)='Images of type GIF and XBM and ?? are supported.'
           CALL PHELPW(10,IHW,IER)
-C          dh(1)='Images can be associated with a model for various'
-C          dh(2)='purposes: '
-C          dh(3)=' * document conditions at the physical site'
-C          dh(4)=' * document assumptions in the model'
-C          dh(5)=' * indicate what performance is expected'
-C          dh(6)='   '
-C          dh(7)='Images are added to a model via the context->images'
-C          dh(8)='menu item. There can be up to 10 images associate'
-C          dh(9)='with a model. '
-C          dh(10)='Images of type GIF and XBM and ?? are supported.'
-C          call dupphelp(dh)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.

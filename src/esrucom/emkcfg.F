@@ -466,13 +466,13 @@ C Write databases related to this model.
 
 C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-c      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',
      &      LOPTDB(1:lnblnk(LOPTDB))
-c      elseif(ipathoptdb.eq.2)then
-c        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
-c     &      LOPTDB(1:lnblnk(LOPTDB))
-c      endif
+      elseif(ipathoptdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
@@ -505,13 +505,13 @@ C Multiyear climate database
 
 C Plant database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-c      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
-c      elseif(ipathpcdb.eq.2)then
-c        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
-c     &      LPCDB(1:lnblnk(LPCDB))
-c      endif
+      elseif(ipathpcdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
+     &      LPCDB(1:lnblnk(LPCDB))
+      endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then
