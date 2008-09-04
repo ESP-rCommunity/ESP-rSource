@@ -66,6 +66,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	*.o arrow.F common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
 	esru_misc.F plelev.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F

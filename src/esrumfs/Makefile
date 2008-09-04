@@ -50,6 +50,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F initalc.F \
 	psychro.F rnor.F startup.F 
