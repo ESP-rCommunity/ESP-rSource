@@ -2126,13 +2126,14 @@ this enables the size of the scroll bar to be set*/
  as its overall pixel width & height.
  dbx1 is the outer box (including axes) and viewbx is the image area.
 */
-void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
- long int	*menu_char,*gw,*gh;
+void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gwht)
+ long int	*menu_char,*gw,*gwht;
  long int	*cl,*cr,*ct,*cb;
  long int	*vl,*vr,*vt,*vb;
 {
  long int saved_font;	/* nominal font used within rest of application.  */
  int label_ht,mf_width;     /* box label height and width of menu characters */
+ int thegw,thegh;  /* local variable to take box dimensions from */
 
  saved_font = current_font;
  dbx1_avail = 1;        /* tell world that graphic box exists */
@@ -2162,13 +2163,15 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  viewbx.b_bottom = dbx1.b_bottom - 9 - (f_height * (*cb));
  viewbx.b_left = dbx1.b_left + 9 + (f_width * (*cl));
  viewbx.b_right = dbx1.b_right - (f_width * (*cr));
- *vl=viewbx.b_left;                   /* pixel @ left   */
- *vr=viewbx.b_right;                  /* pixel @ right  */
- *vt=viewbx.b_top;                    /* pixel @ top    */
- *vb=viewbx.b_bottom;                 /* pixel @ bottom */
+ *vl=(long int) viewbx.b_left;                   /* pixel @ left   */
+ *vr=(long int) viewbx.b_right;                  /* pixel @ right  */
+ *vt=(long int) viewbx.b_top;                    /* pixel @ top    */
+ *vb=(long int) viewbx.b_bottom;                 /* pixel @ bottom */
  xbox(viewbx,fg,white,BMCLEAR);	     /* clear viewing box */
- *gh=viewbx.b_bottom - viewbx.b_top;  /* viweing box pixel height  */
- *gw=viewbx.b_right - viewbx.b_left;  /* viweing box pixel width */
+ thegh= viewbx.b_bottom - viewbx.b_top;  /* viweing box pixel height  */
+ thegw= viewbx.b_right -  viewbx.b_left;  /* viweing box pixel width */
+ *gwht=(long int) thegh;   /* cast viweing box pixel height for return */
+ *gw  =(long int) thegw;   /*  cast viweing box pixel width for return */
 
 /* draw on the vertical and horizontal scroll bars */
   if(network_gpc)scrollvh();
@@ -2177,7 +2180,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  if ( wwc_ok == 1) {
    fprintf(wwc,"*win3d\n");
    fprintf(wwc,"%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\n",
-		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gh);
+		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gwht);
  }
  return;
 } /* win3d_ */
