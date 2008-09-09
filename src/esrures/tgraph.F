@@ -202,6 +202,7 @@ C act='p' iget parameters already set.
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
+      integer igwid,igheight  ! for use with axiscale
 
       logical kwatts,colok
 
@@ -440,8 +441,10 @@ C Round YMIN to a sensible value.
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
           call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
-          call axiscale(igw,igwh,TSTART-1.0,TFINSH,YMIN(I),YMAX(I),
-     &                             TSC,YSC(I),sca,Xadd,Yadd(I))
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
+     &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
             call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))

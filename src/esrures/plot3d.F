@@ -633,6 +633,7 @@ C series data ie. timesteps-vs-day-vs-data.
       logical close,zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer igwid,igheight  ! for use with axiscale
 
       DATA LNAME/'MASK.DAT'/
 
@@ -650,6 +651,10 @@ C pixel references for calls to viewtext.
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,9,16,7,2,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
         call startbuffer()
         call usrmsg(' ',' ','-')
       ENDIF
@@ -671,7 +676,10 @@ C pixel references for calls to viewtext.
       CALL viewtext(ETEXT,4,0,1)
 
 C Scaling happens here...
-      call axiscale(igw,igwh,0.0,700.0,0.0,750.,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,0.0,700.0,0.0,750.,xsc,ysc,sca,
+     &  Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 
       READ(LU1,REC=1) TITLE

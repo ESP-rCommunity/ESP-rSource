@@ -49,7 +49,7 @@ C to superimpose any direct shading.
       character blkname*8,blkmat*12,outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
-      integer igwid,igheight
+      integer igwid,igheight  ! for use with axiscale
 
       iunit=ifil
 

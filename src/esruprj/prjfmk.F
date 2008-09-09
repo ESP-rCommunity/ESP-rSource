@@ -3092,6 +3092,10 @@ C Scan each days gains and find maximum flow.
 C Clear and setup plot area.
       CALL startbuffer()
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
@@ -3104,12 +3108,12 @@ C Calculate plotting box locations.
       YMAXF=YMAX*VOL(ICOMP)/3600.
 
 C Scale and draw right hand (m^3/s) axis first.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAXF,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
       call vrtaxis(YMIN,YMAXF,igr,igb,igt,yadd,ysc,0,1,'Flow (m^3/s)')
 
 C Re-set scale for gain (W) axis.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAX,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw for first day type requested
@@ -4979,6 +4983,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
       character zname*12,zdesc*64
+      integer igwid,igheight  ! for use with axiscale
 
       logical COLOK
       IDTY=IDTYP
@@ -5060,6 +5065,10 @@ C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
 C Clear and setup plot area.
       CALL startbuffer()
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
@@ -5076,12 +5085,12 @@ C Calculate plotting box locations.
       endif
 
 C Scale and draw right hand (W/m^2) axis first.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAXF,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
       call vrtaxis(YMIN,YMAXF,igr,igb,igt,yadd,ysc,0,1,'Gain (W/m^2)')
 
 C Re-set scale for gain (W) axis.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAX,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw first day type requested

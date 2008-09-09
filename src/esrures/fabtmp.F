@@ -471,6 +471,7 @@ C temperature graphical output.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+      integer igwid,igheight  ! for use with axiscale
 
       CALL MOFHED(ICOMP,ISUR,'i')
       XMAX=THKMAX
@@ -478,7 +479,9 @@ C temperature graphical output.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')

@@ -72,6 +72,7 @@ C The period details
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
       INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
+      integer igwid,igheight  ! for use with axiscale
 
 C Set up scaling and graph parameters
       VPOS=1E+15
@@ -349,7 +350,9 @@ C draw vertical axis.
             GMIN=YMIN(I)
             GMAX=YMAX(I)
             CALL DINTERVAL(XSTRT,XFIN,DT,NDEC,1)
-            CALL AXISCALE(IGW,IGWH,XSTRT,XFIN,GMIN,GMAX,
+            igwid=igw
+            igheight=igwh
+            call axiscale(igwid,igheight,XSTRT,XFIN,GMIN,GMAX,
      &                           TSC,YSC(I),SCA,XADD,YADD(I))
             IF (ILR(I).EQ.0) then
               CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),

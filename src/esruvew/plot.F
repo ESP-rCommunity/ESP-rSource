@@ -184,6 +184,7 @@ C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
 #include "viewer.h"
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer igwid,igheight  ! for use with axiscale
 
 C SET OUTPUT DEVICE
       IOUTD=1
@@ -194,8 +195,10 @@ C SET VIEWPORT (HALF)SIZE
 
 C SET SCREEN WINDOW
       call startbuffer
-      call axiscale(igw,igwh,-380.,380.,-380.,380.,xsc,ysc,sca,Xadd,
-     &              Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,-380.,380.,-380.,380.,xsc,ysc,sca,
+     &              Xadd,Yadd)
       call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C DO PROJECTION

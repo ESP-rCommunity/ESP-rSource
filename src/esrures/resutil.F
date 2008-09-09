@@ -244,6 +244,7 @@ C AXISDRW - draw and label axes.
       character ALABEL(5)*12,act*1
 
       integer YAXSET, ADDLIN
+      integer igwid,igheight  ! for use with axiscale
 
 
       write (6,*) 'AXISDRW',(YAXSET(I),I=1,5)
@@ -287,7 +288,9 @@ C Use log(10) to get scaling factor.
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
           call dinterval(TSTART,TFINISH,DT,NDEC,1)
-          call axiscale(igw,igwh,TSTART,TFINISH,YMIN(I),YMAX(I),
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,TSTART,TFINISH,YMIN(I),YMAX(I),
      &                             TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
             call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),

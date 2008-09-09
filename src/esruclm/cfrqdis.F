@@ -381,6 +381,7 @@ C 'HISDRW' draws a histogram of the frequency distribution
       COMMON/FREQS1/ICBIN(MF),ITOTAL
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer igwid,igheight  ! for use with axiscale
 
       CHARACTER*10 LABELX,LABLSX(5)
       DATA LABLSX /'Temp. degC',
@@ -398,14 +399,16 @@ C 'HISDRW' draws a histogram of the frequency distribution
 C Percentage (right) axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,sca,
-     &              Xadd,YaddP)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,
+     &              sca,Xadd,YaddP)
       call vrtaxis(PMIN,PMAX,igr,igb,igt,YaddP,YSCP,0,1,'Percent')
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
-      call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,XSC,YSC,sca,
-     &              Xadd,Yadd)
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,
+     &              sca,Xadd,Yadd)
       call linescale(igl,Xadd,XSC,igb,Yadd,YSC)
 
 C Pick up the data increment for the horizontal axis and then draw

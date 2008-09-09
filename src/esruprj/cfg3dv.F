@@ -40,6 +40,7 @@ C then it represents the zone which is currently being edited.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       LOGICAL MODIFY,MODLEN,MODBND
+      integer numberofzones ! to pass to updwire rather than ncomp
 
       SMALL=0.01
 
@@ -47,7 +48,8 @@ C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C Tell wireframe control the current number of selected zones.
-      call updwire(nzg)
+      numberofzones=nzg
+      call updwire(numberofzones)  ! pass local integer
 
 C If altered then do a bound check on the current zone and update display.
       IF(MODIFY)THEN
@@ -133,6 +135,7 @@ C NZJVN : topology of vertices associated with each connection.
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64
+      integer igwid,igheight
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -154,18 +157,22 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
       CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
-        CALL axiscale(igw,igwh,-1000.,1000.,-1000.,1000.,xsc,ysc,sca,
-     &                Xadd,Yadd)
+        CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
+     &                sca,Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ENDIF

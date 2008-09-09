@@ -39,6 +39,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL mxmn
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+      integer igwid,igheight  ! for use with axiscale
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -234,8 +235,10 @@ C Second set of axis.
         CALL EGETWR(HOLD,K,YMIN(6),0.,0.,'-','rh mn',IER)
         if(ier.ne.0)goto 43
         DO 70 I=1,6
-          call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,bysc,sca,
-     &              Xadd,addY)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,TMIN,TMAX,YMIN(I),YMAX(I),
+     &      XSC,bysc,sca,Xadd,addY)
           YSC(I)=bysc
           Yadd(I)=addY
   70    CONTINUE
@@ -952,6 +955,7 @@ C   is negative draw only the past value.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
+      integer igwid,igheight  ! for use with axiscale
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
       DATA CLMVAR/'S rad W/m2','Temp Deg.C','Rel hum pc',
@@ -979,7 +983,9 @@ C  Draw the axis for the climatic variable and then draw the graph.
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
-      call axiscale(igw,igwh,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
      &              Xaddd,Yaddd)
       call linescale(igl,Xaddd,XSC,igb,Yaddd,YSC)
 

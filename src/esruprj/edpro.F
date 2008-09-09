@@ -806,6 +806,7 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER PDBDESC*40,ETEXT*72
+      integer igwid,igheight  ! for use with axiscale
 
       DIMENSION VAL1(25),VAL2(25)
 
@@ -820,7 +821,12 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
 C Set up data ready for graph drawing.
       call startbuffer
       call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
-      call axiscale(igw,igwh,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (hours)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')

@@ -330,6 +330,7 @@ C xax       - text for horiz axis.
       dimension NCEL(MNREG,MNZ),plaw(MNREG,MNZ)
       dimension NRG(4,MNZ),REG(MNREG,MNZ)
       dimension xgrd(MCEL1D)
+      integer igwid,igheight  ! for use with axiscale
 
 C x-z plane grid.
       call startbuffer()
@@ -338,7 +339,10 @@ C x-z plane grid.
       Xmax=Xmax+xoff
       Ymin=yoff
       Ymax=yoff+1.0
-      CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -403,6 +407,7 @@ C xax,yax   - text for horiz and vert axis.
       character title*30,xax*10,yax*1
 
       dimension xgrd(MCEL1D),ygrd(MCEL1D)
+      integer igwid,igheight  ! for use with axiscale
 
 C x-z plane grid.
       call startbuffer()
@@ -410,7 +415,10 @@ C x-z plane grid.
       Xmax=xgrd(nx)+xoff
       Ymin=yoff
       Ymax=ygrd(ny)+yoff
-      CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -497,6 +505,10 @@ C Set up grid information.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer
       CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Get bounds for image.
       HANG=ANG/2.0
@@ -507,7 +519,8 @@ C Get bounds for image.
 C Determine scaling ratios for the drawing and axis.
 C Determine the 2D coords of the site extremes.
       CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-      CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,Xadd,Yadd)
+      CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C Loop through all X-Y plane grid lines.

@@ -872,6 +872,7 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character VITEM*24,HITEM*24,VIT*24,HIT*24
+      integer igwid,igheight  ! for use with axiscale
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -889,7 +890,9 @@ C Interval on horizontal axis.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 

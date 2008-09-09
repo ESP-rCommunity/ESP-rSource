@@ -94,6 +94,7 @@ C Logical flags for file openings.
       character act*16,actf*72,action*16,msgl2*124
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C For debugging set itrc =2
       ITRC=1
@@ -143,6 +144,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call opencpw
           call opensetup
         elseif(iglib.eq.2)then
@@ -547,10 +550,13 @@ C << for some reason efdelet does not actually remove the file?? >>
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           if(iglib.eq.1)then
             call opencpw
             call opensetup
-            call updwire(0)
+            numberofzones=0
+            call updwire(numberofzones)  ! pass local integer
             call updcapt(1)
             call updazi(1)
           elseif(iglib.eq.2)then

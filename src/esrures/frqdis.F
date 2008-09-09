@@ -903,6 +903,7 @@ C MODDRW draws a histogram of the frequency distribution.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character alabel*60
+      integer igwid,igheight  ! for use with axiscale
 
       YMAX = IFREQ
       IF(IG.EQ.2)YMAX=ITOTAL
@@ -913,7 +914,9 @@ C MODDRW draws a histogram of the frequency distribution.
 C Reset graphing area.
 
 C Compute scales and offsets.
-      call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access.
@@ -935,7 +938,9 @@ C If moderate data range use mode 1, otherwise try 0.
 C Right axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
      &              Xadd,Padd)
       call vrtaxis(PMIN,PMAX,igr,igb,igt,Padd,psc,0,1,'Percent')
 

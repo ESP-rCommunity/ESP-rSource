@@ -63,9 +63,11 @@ C If not in graphic mode return.
 C Tell wireframe control the current number of selected zones.
 C If only drawing a ground topology set updwire manually.
       if(itdsp.eq.6)then
-        call updwire(1)
+        numberofzones=1
+        call updwire(numberofzones)  ! pass local integer
       else
-        call updwire(nzg)
+        numberofzones=nzg
+        call updwire(numberofzones)  ! pass local integer
       endif
 
 C If altered then do a bound check on the current zone and update display.

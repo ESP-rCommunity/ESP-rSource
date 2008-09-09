@@ -1236,6 +1236,7 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
+      integer igwid,igheight  ! for use with axiscale
 
 C Initialisation
       YMAX=1.0
@@ -1262,7 +1263,9 @@ C Calculate plotting box locations.
         plxmax=4000.
         YMAX=RESMX+0.5
         YMIN=0.
-        CALL axiscale(igw,igwh,plxmin,plxmax,Ymin,Ymax,                 
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
         CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
 

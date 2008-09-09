@@ -198,6 +198,7 @@ C Returned parameters from silentread.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
+      integer numberofzones ! to pass to updwire rather than ncomp
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
 
@@ -381,11 +382,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -698,7 +702,8 @@ C current number of zones if a model has been loaded.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         if(ier.eq.0)then
           IF(MMOD.EQ.8)then
-            call updwire(ncomp)
+            numberofzones=ncomp
+            call updwire(numberofzones)  ! pass local integer
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,

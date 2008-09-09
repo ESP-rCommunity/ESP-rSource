@@ -1770,6 +1770,7 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+      integer igwid,igheight  ! for use with axiscale
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -1781,9 +1782,13 @@ C Define the view parameters.
       YMax=FLOAT(NLay)
       call startbuffer()
       CALL WIN3D(menuchw,14,14,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Estimate the X, Y, XY scales.
-      CALL AXISCALE(IGW,IGWH,XMin,XMax,YMin,YMax,XSC,YSC,SCA,
+      CALL AXISCALE(igwid,igheight,XMin,XMax,YMin,YMax,XSC,YSC,SCA,
      &               Xadd,Yadd)
 
 C Define the active scale.
@@ -1928,6 +1933,7 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+      integer igwid,igheight  ! for use with axiscale
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -1939,10 +1945,14 @@ C Define the view parameters.
       YMax=FLOAT(NRow)
       call startbuffer()
       CALL WIN3D(menuchw,14,14,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Estimate the X, Y, XY scales.
-      CALL AXISCALE(IGW,IGWH,XMin,XMax,YMin,YMax,XSC,YSC,SCA,
-     &               Xadd,Yadd)
+      CALL AXISCALE(igwid,igheight,XMin,XMax,YMin,YMax,XSC,YSC,SCA,
+     &              Xadd,Yadd)
 
 C Define the active scale.
       CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
@@ -2088,6 +2098,7 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+      integer igwid,igheight  ! for use with axiscale
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -2099,9 +2110,13 @@ C Define the view parameters.
       YMax=FLOAT(NRow)
       call startbuffer()
       CALL WIN3D(menuchw,14,14,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Estimate the X, Y, XY scales.
-      CALL AXISCALE(IGW,IGWH,XMin,XMax,YMin,YMax,XSC,YSC,SCA,
+      CALL AXISCALE(igwid,igheight,XMin,XMax,YMin,YMax,XSC,YSC,SCA,
      &               Xadd,Yadd)
 
 C Define the active scale.

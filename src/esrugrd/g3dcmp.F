@@ -294,6 +294,7 @@ C *********************************************************************
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
+      integer igwid,igheight  ! for use with axiscale
 
 C Define the  MAX & MIN surface coordinates.
       XMAX=XMAXS(IS)
@@ -306,12 +307,18 @@ C which define it.  The win3d parameters match those in FACDRW
 C and SITPLN.
       call startbuffer()
       CALL win3d(29,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Reopen the dialogue box.
       CALL usrmsg(' ',' ','-')
 
 C Determine scaling ratios for the drawing and axis.
-      CALL axiscale(igw,igwh,XMIN,XMAX,ZMIN,ZMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,ZMIN,ZMAX,xsc,ysc,sca,
      &              Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
@@ -1163,6 +1170,7 @@ C *********************************************************************
 
       DIMENSION XEDG(8),YEDG(8),ZEDG(8)
       DIMENSION XS(8),YS(8),ZS(8)
+      integer igwid,igheight  ! for use with axiscale
 
       IVRT1=IVXEDG(IEG,1)
       IVRT2=IVXEDG(IEG,2)
@@ -1217,8 +1225,12 @@ C Find 2D extremes coordinates.
 
 C Clear the graphical feedback window.
       CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
-     &              XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,
+     &              SCA,XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the two extreme vertices.
@@ -1568,6 +1580,7 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      integer igwid,igheight  ! for use with axiscale
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1579,7 +1592,11 @@ C Define the two surfaces.
       YMX2=FLOAT(NDYE(IEG))
       XYMX=AMAX1(XMX2,YMX2)
       CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,IX,IY)
@@ -2131,6 +2148,7 @@ C *********************************************************************
 
       DIMENSION XCRN(8),YCRN(8),ZCRN(8)
       DIMENSION XS(8),YS(8),ZS(8)
+      integer igwid,igheight  ! for use with axiscale
 
       IVRX=IVXCRN(ICR)
 
@@ -2182,7 +2200,11 @@ C Find 2D extremes coordinates.
 
 C Clear the graphical feedback window.
       CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &              XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
@@ -2531,6 +2553,7 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      integer igwid,igheight  ! for use with axiscale
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -2546,7 +2569,11 @@ C Define the two surfaces.
       XYMX=AMAX1(XMX2,YMX2)
       call startbuffer()
       CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,IX,IY)

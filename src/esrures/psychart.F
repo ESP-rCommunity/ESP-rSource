@@ -836,6 +836,7 @@ C enthmaxy enthalpy y axis maximum
       CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer igwid,igheight  ! for use with axiscale
 
       PATMOS=1013.25
 
@@ -859,9 +860,15 @@ C Store original text screen size
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
       ENDIF
 
-10    CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,xadd,yadd)
+10    continue
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  xadd,yadd)
       CALL startbuffer
 
 C Draw the axes of the chart.

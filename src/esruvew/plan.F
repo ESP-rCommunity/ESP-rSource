@@ -13,7 +13,10 @@ C------------------------
       LOGICAL J1J2
       IF(MMOD.LT.0)RETURN
       call startbuffer()
-      call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       scap=sca*0.2
       addx=(FLOAT(igw)*0.4)/scap
       addy=(FLOAT(igwh)*0.4)/scap

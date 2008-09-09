@@ -263,6 +263,7 @@ C ****************** mycograph *****************************
       CHARACTER*29 ITEM(6)
       CHARACTER H*72,mldnam*48
       logical greyok
+      integer igwid,igheight  ! for use with axiscale
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -281,7 +282,10 @@ C Scale the axes of the chart (initial values)
       Ymax=100.0
       npoint=0
 
-10    CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,xadd,yadd)
+10    igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &   xadd,yadd)
       CALL startbuffer()
 
 C Draw the axes of the chart.

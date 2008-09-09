@@ -1423,6 +1423,7 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*16
+      integer igwid,igheight  ! for use with axiscale
 
       XMN2=0.
       YMN2=0.
@@ -1431,7 +1432,12 @@ C *********************************************************************
       XYMX=AMAX1(XMX2,YMX2)
       CALL startbuffer
       CALL WIN3D(28,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+     &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMX2,YMX2,IX,IY)
       CALL ELINE(IX,IY,1)
@@ -1500,6 +1506,7 @@ C *********************************************************************
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*4,VERTX*2
+      integer igwid,igheight  ! for use with axiscale
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
         NUMX=NDXG
@@ -1518,7 +1525,12 @@ C *********************************************************************
       XYMX=AMAX1(XMX2,YMX2)
       CALL startbuffer()
       CALL WIN3D(33,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+     &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,IX,IY)
       CALL ELINE(IX,IY,1)
@@ -1638,6 +1650,7 @@ C *********************************************************************
 
       DIMENSION XGND(8),YGND(8),ZGND(8)
       DIMENSION XS(8),YS(8),ZS(8)
+      integer igwid,igheight  ! for use with axiscale
 
       THKX=0.
       DO 10 IX=1,NDXG
@@ -1689,7 +1702,12 @@ C Find 2D extremes coordinates.
 C Clear the graphical feedback window.
       CALL startbuffer()
       CALL WIN3D(28,20,4,3,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+     &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the vertices.

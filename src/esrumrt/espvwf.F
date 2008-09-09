@@ -135,6 +135,7 @@ C Name of current application
       character docpth*24,tmppth*24,dbspth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
@@ -298,10 +299,13 @@ C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        igw=igr-igl
+        igwh=igb-igt
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -417,9 +421,12 @@ C successful then scan all the zones via ZDATA.
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
-            IF(MMOD.EQ.8) call updwire(ncomp)
+            IF(MMOD.EQ.8)then
+              numberofzones=ncomp
+              call updwire(numberofzones)
+            endif
             NZONES=NCOMP
-            CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+            CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
 C vwf file. If this file exists
@@ -553,9 +560,12 @@ C Find the path and local file name.
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
-          IF(MMOD.EQ.8) call updwire(ncomp)
+          IF(MMOD.EQ.8)then
+            numberofzones=ncomp
+            call updwire(numberofzones)
+          endif
           NZONES=NCOMP
-          CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+          CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
           call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 

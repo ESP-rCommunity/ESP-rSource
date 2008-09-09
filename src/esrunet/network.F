@@ -983,6 +983,7 @@ C Grid commons
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12,OUTS1*26
       LOGICAL GON,SON,greyok
+      integer igwid,igheight  ! for use with axiscale
 
 C Clear the screen
       CALL startbuffer
@@ -1038,8 +1039,10 @@ C Draw the grid with the current scaling parameters.
         YMAX=VIEWLIM(6)
       ENDIF
 
-      CALL AXISCALE(IGW,IGWH,XMIN,XMAX,YMIN,YMAX,XSC,YSC,SCA,XADD,
-     &       YADD)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,SCA,
+     &       XADD,YADD)
 
 C Draw the Lower and Left extents of the grid and labels.
       IF(IVIEW.EQ.1.OR.IVIEW.EQ.2)THEN

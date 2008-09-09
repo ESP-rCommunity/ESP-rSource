@@ -174,6 +174,7 @@ C since not all compilers use the same default.
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character*12 statev(3)
       logical colok
+      integer igwid,igheight  ! for use with axiscale
 
       tab=' '
 
@@ -231,7 +232,9 @@ c Case for 1st or 2nd phase.
       endif
 
 c Determine scaling ratios for the drawing and axis.
-      call axiscale(igw,igwh,xmin,xmax,ymin,ymax,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,xmin,xmax,ymin,ymax,xsc,ysc,sca,
      &      xadd,yadd)
 
 c Draw a scale horizontal axis, move to beginning point.

@@ -711,6 +711,7 @@ C condensation graphical output.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character outs*124
+      integer igwid,igheight  ! for use with axiscale
 
       XMAX=THKMAX
       XMIN=THKMIN
@@ -721,7 +722,9 @@ C condensation graphical output.
       call edisp(icout,outs)
 
 C Compute scaling factors and draw the axis.
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')

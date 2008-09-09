@@ -38,6 +38,7 @@ C IP = 6  - EXTERNAL RELATIVE HUMIDITY HELD IN IX(5,MT).
 
       COMMON/CLMDAT/IDY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A           CDIR(MT),CHUM(MT)
+      integer igwid,igheight  ! for use with axiscale
 
 C IF PERIOD NOT CHANGED NO NEED TO RECALCULATE
       IF(INEW.EQ.0)GO TO 2
@@ -103,8 +104,10 @@ C   IN FACT 1 & 3 SHARE SAME AXIS
         YMAX(I)=YMAX(I)+1.0
         YMIN(I)=YMIN(I)-1.0
         A=2.0
-  75    call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,bysc,sca,
-     &              Xadd,addY)
+  75    igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,TMIN,TMAX,YMIN(I),YMAX(I),XSC,
+     &              bysc,sca,Xadd,addY)
         YSC(I)=bysc
         Yadd(I)=addY
   70  CONTINUE

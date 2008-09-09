@@ -151,6 +151,7 @@ C Materials data array.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnrp  ! length of run path
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Initialize global common data.
       call ezero
@@ -365,11 +366,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updazi(1)
         endif
         call setzscale()
@@ -1184,6 +1188,7 @@ C Path to model.
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
       integer lnrp  ! length of run path
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1220,7 +1225,10 @@ C If there is a ground topology read it.
         call tstamp('>','E2R: scanning model')
         call tstamp('>',LCFGF)
         nzg=NCOMP
-        IF(MMOD.EQ.8)call updwire(ncomp)
+        IF(MMOD.EQ.8)then
+          numberofzones=ncomp
+          call updwire(numberofzones)
+        endif
         DO 444 I=1,nzg
           nznog(I)=I
  444    CONTINUE

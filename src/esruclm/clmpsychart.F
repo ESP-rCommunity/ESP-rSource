@@ -274,6 +274,7 @@ C enthmaxy enthalpy y axis maximum
       CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer igwid,igheight  ! for use with axiscale
 
       PATMOS=1013.25
       IF(MMOD.ne.8) return
@@ -292,12 +293,23 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
         call feedbox(menuchw,2,igfw,igfh)      
         call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
       elseif(iglib.eq.2)then
         CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
       endif
 
       call startbuffer()
-10    CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,xadd,yadd)
+10    igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  xadd,yadd)
 
 C Draw the axes of the chart.
       CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')
