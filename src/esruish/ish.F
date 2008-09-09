@@ -189,6 +189,7 @@ C Material data arrays.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -340,11 +341,14 @@ C feedback).
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
         call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -519,9 +523,12 @@ C Open core of databases if not already done so.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
-               if(mmod.EQ.8)call updwire(ncomp)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
+               if(mmod.EQ.8)then
+                 numberofzones=ncomp   ! use local integer for updwire.
+                 call updwire(numberofzones)
+               endif
 
 C If inzone = 'All' display an image of the model. If inzone is
 C either a string which matches a zone name or is an index, then
@@ -857,8 +864,8 @@ C GTK version will be returning the name with the full path.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
             endif
          endif
 

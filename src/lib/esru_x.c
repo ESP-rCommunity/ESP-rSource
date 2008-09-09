@@ -574,7 +574,7 @@ theVisual = XDefaultVisual(theDisp, theScreen);
 theCmap   = DefaultColormap(theDisp, theScreen);
 rootW     = RootWindow(theDisp,theScreen);
 dispDEEP  = DisplayPlanes(theDisp,theScreen);
-mdepth = dispDEEP;
+mdepth = (long int) dispDEEP;
 
 /* set colours for the border, background and forground */
 bd = WhitePixel(theDisp,theScreen);
@@ -961,7 +961,7 @@ char *act;  /* single character passed */
 long int *n;
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -1014,7 +1014,7 @@ long int *n;	/* index as in winscl_ */
 long int *xcolid;	/* index of colour used by X */
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
