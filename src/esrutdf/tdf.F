@@ -39,6 +39,7 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/OUTPCH/ICOUT

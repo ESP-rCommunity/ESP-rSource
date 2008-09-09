@@ -467,6 +467,7 @@ C temperature graphical output.
       SUBROUTINE MOFAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
@@ -496,6 +497,7 @@ C If act = i then initial display, if act = s then single step display.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
@@ -602,6 +604,7 @@ C MOFDRW displays the construction temperature profiles.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)

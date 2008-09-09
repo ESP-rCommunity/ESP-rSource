@@ -57,12 +57,14 @@ C IUF is file unit for geometry, utility file units.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
+      integer igwid,igheight  ! for use with axiscale
       logical newgeo  ! to use for testing if new/old geometry file.
       newgeo=.false.  ! assume older format geometry.
 
@@ -73,13 +75,19 @@ C IUF is file unit for geometry, utility file units.
       ENDIF
 
 C Define a viewing box, draw its border after clearing it and
-C return the offsets which define it.
+C return the offsets which define it. Recalculate igw and igwh
+C on fortran to address fault in 64 bit win3d code.
       call startbuffer()
       if(menuchw.ne.0)then
         CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       else
         CALL win3d(32,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       endif
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      
 C Reopen the dialogue box.
       CALL USRMSG(' ',' ','-')
 

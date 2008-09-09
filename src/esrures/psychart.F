@@ -829,6 +829,7 @@ C enthmaxy enthalpy y axis maximum
      &  enthminx,enthminy,enthmaxy)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       logical close,colok,cscaleok

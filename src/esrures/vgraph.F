@@ -869,6 +869,7 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       SUBROUTINE VAXIS(VITEM,HITEM)
 
       COMMON/VGRAF1/YMAXV,YMINV,YMAXH,YMINH
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character VITEM*24,HITEM*24,VIT*24,HIT*24
 
@@ -918,6 +919,7 @@ C to graphical result display.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

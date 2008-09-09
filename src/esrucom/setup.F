@@ -28,6 +28,7 @@ C file setup.F includes facilities for display of dates, time and files.
       common/FILEP/IFIL
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/texted/tedlbl,teditor
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat

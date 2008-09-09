@@ -6,6 +6,7 @@ C VIEWER MAIN PROGRAM
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/GFONT/IFS,ITFS,IMFS

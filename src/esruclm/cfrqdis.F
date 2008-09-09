@@ -30,6 +30,7 @@ C of the user-specified time-dependant variable.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/exporttgi/ixopen,ixloc,ixunit
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/IFDFLG/IFLAGF
@@ -378,6 +379,7 @@ C 'HISDRW' draws a histogram of the frequency distribution
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       CHARACTER*10 LABELX,LABLSX(5)

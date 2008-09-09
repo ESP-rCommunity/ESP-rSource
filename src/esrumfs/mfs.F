@@ -63,6 +63,7 @@ C     MMOD   - determines the device type attached to the current job.
       COMMON/SHOUT/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec

@@ -339,6 +339,7 @@ C 'PROGRF' outputs a graphical display of the current event profile.
 C providing paramaters MGDB,MGCL,MGIT
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/gendb6/ittag(MGIT),itmenu(MGIT)

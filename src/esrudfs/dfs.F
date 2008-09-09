@@ -40,6 +40,7 @@ C if these are 0 then use default values.
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy

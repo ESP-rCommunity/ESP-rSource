@@ -40,6 +40,7 @@ C Boston, MA 02111-1307 USA.
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/GFONT/IFS,ITFS,IMFS
       common/funit/iucfg, iupdb

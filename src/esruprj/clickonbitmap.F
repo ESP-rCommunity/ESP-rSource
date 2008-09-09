@@ -39,6 +39,7 @@ C via clicking on a bitmap.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       integer ncomp,ncon
@@ -3066,6 +3067,7 @@ C inpm is the input mode.
      &  ipyw,nipwhis,ipxwhis,ipywhis)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       logical xbmnorth,xbmorigin

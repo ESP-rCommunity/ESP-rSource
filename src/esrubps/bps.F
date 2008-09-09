@@ -171,6 +171,7 @@ C IEEE callback (Solaris)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy

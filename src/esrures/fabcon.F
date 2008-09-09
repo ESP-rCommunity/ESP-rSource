@@ -41,6 +41,7 @@ C of inter-fabric temperature and condensation conditions.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
@@ -155,6 +156,7 @@ C to the fabric temperature or condensation information.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -700,6 +702,7 @@ C condensation graphical output.
       SUBROUTINE MOIAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/OUTPCH/ICOUT
@@ -735,6 +738,7 @@ C and vapour pressure gradients.
       SUBROUTINE MOIDRW(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 

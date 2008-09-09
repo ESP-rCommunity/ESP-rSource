@@ -125,6 +125,7 @@ C IPV description.
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME

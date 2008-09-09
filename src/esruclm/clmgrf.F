@@ -30,6 +30,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RADTYP/IDNGH
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER*26 ITEM(16)
@@ -365,6 +366,7 @@ C season (1 char) '-' do not bother 's' indicate season.
       PARAMETER (MT=24)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C THE FOLLOWING COMMON BLOCK CONTAINS THE SCALE AND pixel offsets
@@ -587,6 +589,7 @@ C onleft and onright passed in to indicate which axes to draw.
       SUBROUTINE CLMDRWD(IDAY,onleft,onright)
       PARAMETER (MT=24)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
@@ -709,6 +712,7 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
 
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -944,6 +948,7 @@ C   is negative draw only the past value.
       SUBROUTINE PCGRF(ICV,ICL,IDS,IDF)
       PARAMETER (MD=365,MT=24)
       COMMON/CLIM1/CLMV(7,MD,MT),ICMAX,ICMAX2,ICMIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 

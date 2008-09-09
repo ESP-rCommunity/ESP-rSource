@@ -65,6 +65,7 @@ C File unit
       COMMON/FILEP/IFIL
 
 C Interface frame dimensions
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy

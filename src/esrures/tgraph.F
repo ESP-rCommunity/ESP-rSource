@@ -172,6 +172,7 @@ C act='p' iget parameters already set.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
 
@@ -609,6 +610,7 @@ C to graphical result display.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

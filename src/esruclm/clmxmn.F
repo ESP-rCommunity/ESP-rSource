@@ -33,6 +33,7 @@ C IP = 6  - EXTERNAL RELATIVE HUMIDITY HELD IN IX(5,MT).
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/CLMDAT/IDY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),

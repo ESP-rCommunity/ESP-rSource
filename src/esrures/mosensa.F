@@ -413,6 +413,7 @@ C SAINTER calculates summary statistics within result sets.
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -1229,6 +1230,7 @@ C WHSET displays currently chosen sets and lets user toggle selections.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 

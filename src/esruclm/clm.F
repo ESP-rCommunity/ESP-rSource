@@ -33,6 +33,7 @@ C climatic data sets compatible with ESP-r.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -1015,6 +1016,7 @@ C hour in any specified day.
       common/appw/iappw,iappx,iappy
       COMMON/RADTYP/IDNGH
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS

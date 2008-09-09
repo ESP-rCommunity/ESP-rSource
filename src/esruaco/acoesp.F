@@ -1224,6 +1224,7 @@ C RESMN      - Minimum reverberation time
 #include "building.h"
 #include "acoustic.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/Zones/TxtZone
 

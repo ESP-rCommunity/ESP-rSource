@@ -47,6 +47,7 @@ C act='p' iget parameters already set.
       common/pophelp/h(60)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -1146,6 +1147,7 @@ C to graphical result display of network flows.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

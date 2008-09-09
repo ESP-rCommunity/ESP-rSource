@@ -28,6 +28,7 @@ C MAKS2D - draw 2d slices on screen.
       SUBROUTINE MAKS2D(ISUR,ilayer,name)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),

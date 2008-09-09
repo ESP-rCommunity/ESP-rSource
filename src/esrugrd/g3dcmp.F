@@ -286,6 +286,7 @@ C *********************************************************************
       SUBROUTINE DRWSRF(IS)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -1150,6 +1151,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
@@ -1555,6 +1557,7 @@ C *********************************************************************
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -2115,6 +2118,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
@@ -2516,6 +2520,7 @@ C *********************************************************************
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)

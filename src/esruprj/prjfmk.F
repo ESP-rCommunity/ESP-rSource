@@ -3058,6 +3058,7 @@ C  ICOMP zone number
       subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -4955,6 +4956,7 @@ C  ICOMP zone number
       
       integer lnblnk  ! function definition
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)

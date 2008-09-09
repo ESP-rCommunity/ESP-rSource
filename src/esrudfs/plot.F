@@ -38,6 +38,7 @@ C LMON   - labels for monitoring values.
       SUBROUTINE PLOT(iplt,NPLT,ITM,NITER,RMX,NCRV,CRES,CMON,LRES,LMON)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Stores all MFRP residuals, maximum and minimum residuals and max X value.

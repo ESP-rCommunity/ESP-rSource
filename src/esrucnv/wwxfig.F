@@ -25,6 +25,7 @@ C**** convert from ww commands to xfig description.
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character filname1*72,OUTSTR*124,slash*1
       logical etstart 
@@ -293,6 +294,7 @@ C if -101 > iud > -200 then chain, if -201 > iud > -300 dotted,
 C if -301 > iud > -400 then thick.
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       dimension  ietx(1440),iety(1440),ietud(1440),ietsym(1440)
 

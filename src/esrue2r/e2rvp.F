@@ -27,6 +27,7 @@ C ******* View cone for plan/elevation.
 #include "building.h"
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character direc*1
 
@@ -103,6 +104,7 @@ C ******* Default views formation.
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad2/mono,intext,ifocz
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW

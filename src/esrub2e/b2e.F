@@ -34,6 +34,7 @@ C *********************************** B2E ******************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       COMMON/FILEP/IFIL

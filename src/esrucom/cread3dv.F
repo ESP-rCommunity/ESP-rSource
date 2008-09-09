@@ -38,6 +38,7 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -98,6 +99,8 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
       CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.

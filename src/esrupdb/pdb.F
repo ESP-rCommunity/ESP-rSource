@@ -37,6 +37,7 @@ C The routine PCHELP contains a description of a
 C database entry.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.

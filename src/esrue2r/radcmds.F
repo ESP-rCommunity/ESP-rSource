@@ -1001,6 +1001,7 @@ C Assumes that the path to the image is given.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil

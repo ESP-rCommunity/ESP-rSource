@@ -801,6 +801,7 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 

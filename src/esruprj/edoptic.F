@@ -610,6 +610,7 @@ C EDITOPT edits one set of optical properties via common block.
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GPICK/GS(MGOPT),nopt

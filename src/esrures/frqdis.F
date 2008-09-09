@@ -772,6 +772,7 @@ C corresponding to graphical result display.
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -899,6 +900,7 @@ C MODDRW draws a histogram of the frequency distribution.
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character alabel*60
 

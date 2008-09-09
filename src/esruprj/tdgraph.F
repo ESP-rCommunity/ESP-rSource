@@ -26,6 +26,7 @@ C Parameters for eline calls.
       parameter (LNMVAB=1, LNDRAB=0)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/TDFFT/LTDF,LTDFA

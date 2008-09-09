@@ -38,6 +38,7 @@ C IC = zone number (if in dfs set to 1)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -321,6 +322,7 @@ C xax       - text for horiz axis.
      &                   plaw,TITLE,xax)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       character title*30,xax*10
@@ -395,6 +397,7 @@ C xax,yax   - text for horiz and vert axis.
       SUBROUTINE VGRID2D(xoff,yoff,xgrd,ygrd,nx,ny,title,xax,yax)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       character title*30,xax*10,yax*1
@@ -454,6 +457,7 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),

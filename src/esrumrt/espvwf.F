@@ -49,6 +49,7 @@ C Revised to take in configuration file and zone focus.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/pophelp/h(60)
       COMMON/MRT2/GEOLOAD,MRTLOAD
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)

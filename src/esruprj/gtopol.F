@@ -3279,6 +3279,7 @@ C output: triangle list
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX

@@ -6038,6 +6038,7 @@ C blocks GFONT, VIEWPX and SPAD. Set REFRESH=true.  Set MODIFY=true
 C to force any wire-frame images to be redrawn.
       subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FRESH/refrsh

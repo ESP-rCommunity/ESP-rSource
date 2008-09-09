@@ -142,6 +142,7 @@ C Graphics and ESP-r default commons
       COMMON/MOD/MODEL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -965,6 +966,7 @@ C Connection commons
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Grid commons
@@ -2041,6 +2043,7 @@ C Grid commons
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
 
 C Icon commons
@@ -2329,6 +2332,7 @@ C Icon commons
      & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
      & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
 
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)

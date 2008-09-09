@@ -36,6 +36,7 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       character CTYPE*4

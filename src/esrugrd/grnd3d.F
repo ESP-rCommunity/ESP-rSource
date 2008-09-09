@@ -1416,6 +1416,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -1491,6 +1492,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
 
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -1628,6 +1630,7 @@ C *********************************************************************
       SUBROUTINE DRWGND
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)

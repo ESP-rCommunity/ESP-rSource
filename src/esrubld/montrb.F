@@ -184,6 +184,7 @@ C Parameters for eline calls.
 
 c Graph commons.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/spad/mmod,limit,limtty
       COMMON/FILEP/IFIL

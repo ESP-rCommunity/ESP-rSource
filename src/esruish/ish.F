@@ -105,6 +105,7 @@ C IEEE callback (Solaris)
       common/spad/mmod,limit,limtty
       common/image/imt,eyem(3),viewm(3),hith,yon,ang,hang,wide
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec

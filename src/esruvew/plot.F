@@ -182,6 +182,7 @@ C--------------------------------------------------------
 C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
 
 #include "viewer.h"
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C SET OUTPUT DEVICE

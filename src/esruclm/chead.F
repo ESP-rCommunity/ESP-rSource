@@ -30,6 +30,7 @@ C of lines to include in the text portion of the display.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
@@ -107,6 +108,7 @@ C Display heading for climate graph.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 

@@ -67,6 +67,7 @@ C default file names for databases
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appw/iappw,iappx,iappy
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME

@@ -388,6 +388,7 @@ C espriou.h provides currentfile, cdblfil.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 C      common/appw/iappw,iappx,iappy
 

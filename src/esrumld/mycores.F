@@ -253,6 +253,7 @@ C ****************** mycograph *****************************
       common/moupk/ispp(mould),a(4,mould),mldnam(mould)
       common/ppoint/npoint,ixt(24),iyr(24),tpt(24),rpt(24)
       common/grphlim/xmin,xmax,ymin,ymax
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       common/mstats/imstat,ifloat(mould),ifloatp(mould),imdur1(mould)

@@ -210,6 +210,7 @@ C  terms of a dimensionless number - the CSI.
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/exporttgi/ixopen,ixloc,ixunit

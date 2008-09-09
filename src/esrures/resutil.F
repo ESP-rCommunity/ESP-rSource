@@ -167,6 +167,7 @@ C AXISPOS - set positions of axes for all graph drawing routines.
 
       SUBROUTINE AXISPOS
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -235,6 +236,7 @@ C AXISDRW - draw and label axes.
       SUBROUTINE AXISDRW(TSTART,TFINISH,ALABEL,act)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT

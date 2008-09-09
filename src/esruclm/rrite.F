@@ -30,6 +30,7 @@ C climate file.
       COMMON/RADTYP/IDNGH
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),

@@ -363,6 +363,7 @@ C IER=0 indicates no error.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -1683,6 +1684,7 @@ C IER=0 indicates no error.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -3947,6 +3949,7 @@ C and cell distribution for each region.
       common/pophelp/h(60)
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/ICFNOD/ICFD,ICP

@@ -41,6 +41,7 @@ C
       integer lnblnk  ! function definition
 
 C View parameters
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/NETPLOT/XSTRT,XFIN,ILINST(MERAWD),AXSC(5)
@@ -831,6 +832,7 @@ C network corresponding to graphical result display.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/ELRFIL/ELRFLNAM
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Array of recovered data

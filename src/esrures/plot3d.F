@@ -612,6 +612,7 @@ C series data ie. timesteps-vs-day-vs-data.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -1141,6 +1142,7 @@ C ******************** PLOT3E ********************
      1              IPASS,XMAX,XMIN,YMAX,YMIN,SCALE,II,JVXYZ,INCI,
      2              NLINE,IFIRST,NPNTS,COEFF,MASK,VERTEX,
      3              XLT,YLT,IALT,XLAST,YLAST)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       INTEGER DRAW,HIGH

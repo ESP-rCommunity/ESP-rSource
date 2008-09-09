@@ -43,11 +43,13 @@ C to superimpose any direct shading.
       common/g1t/xft(mv),zft(mv)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/headl/irecs(ms)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
       character blkname*8,blkmat*12,outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
+      integer igwid,igheight
 
       iunit=ifil
 
@@ -84,6 +86,8 @@ C and sitpln.
       call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Update the plane equation.
       call trnsf1(is)
@@ -104,7 +108,8 @@ C Reopen the dialogue box.
       if(mmod.eq.8)call usrmsg(' ',' ','-')
 
 C Determine scaling ratios.
-      call axiscale(igw,igwh,xmin,xmax,zmin,zmax,xsc,ysc,sca,Xadd,Zadd)
+      call axiscale(igwid,igheight,xmin,xmax,zmin,zmax,xsc,ysc,sca,
+     &  Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,sca,igb,Zadd,sca)
@@ -185,6 +190,7 @@ C Draws the elevation of the target surface.
       common/c24/izstocn(mcom,ms)
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
       dimension month(12)
@@ -195,7 +201,7 @@ C Draws the elevation of the target surface.
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
-C Display header information.
+C Display header information. Calculate graphic boundaries.
       call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
@@ -281,12 +287,14 @@ C and the surrounding obstruction blocks.
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/precz/zname(mcom),zdesc(mcom)
       common/prec8/slat,slon
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/gfont/ifs,itfs,imfs
 
       character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
       character tz*13,zdesc*64
       logical newgeo  ! used to test for new/old geometry file.
+      integer igwid,igheight
 
 C The right offset for the graphic box is the character width
 C of the menu. Also allow 2 text lines at the bottom for future
@@ -299,10 +307,13 @@ C dialogue. Axiscale is in wwlib.c.
       newgeo=.false.  ! assume old geometry format.
 
 C Define a viewing box, draw its border after clearing it and
-C return the offsets that define it.
+C return the offsets that define it and set local variables.
       call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+
       call startbuffer()
 
 C Reopen the dialogue box.
@@ -340,7 +351,8 @@ C establish maximum and minimum site coordinates.
    20 continue
 
 C Determine scaling ratios for the drawing and axis.
-      call axiscale(igw,igwh,xmn,xmx,ymn,ymx,xsc,ysc,sca,Xadd,Yadd)
+      call axiscale(igwid,igheight,xmn,xmx,ymn,ymx,xsc,ysc,sca,
+     &  Xadd,Yadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -422,6 +434,7 @@ C Draws a Mercator sun path diagram.
       common/spad/mmod,limit,limtty
       common/prec8/slat,slon
       common/gfont/ifs,itfs,imfs
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
       character etext*72,blab*3,month*3
@@ -434,12 +447,13 @@ C Draws a Mercator sun path diagram.
 
 C Clear the viewing box, draw its border and return the offsets
 C that define it. On 64 bit machines igw and igwh can be incorrectly
-C returned so re-calculate.
+C returned so re-calculate. Call to axiscale works better if
+C local integer variables are used.
       call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
-      igwid=igr-igl
-      igheight=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Reopen the dialogue box.
       if(mmod.eq.8)call usrmsg(' ',' ','-')

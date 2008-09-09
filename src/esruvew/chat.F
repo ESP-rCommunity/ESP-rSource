@@ -19,6 +19,7 @@ C and says 'viewer bye-bye', and does a stop.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY 
       COMMON/NNAAMM/NAMDS,NAMPIC
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
 
