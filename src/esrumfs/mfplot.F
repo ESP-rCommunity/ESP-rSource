@@ -256,6 +256,8 @@ C Refresh the drawing area.
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         CALL win3d(menuchw,12,8,7,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
       ICOUNT=0

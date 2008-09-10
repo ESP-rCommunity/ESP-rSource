@@ -539,11 +539,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           CALL win3d(menuchw,16,16,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call opencpw
           call opensetup
           call updcapt(1)
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,16,16,5,4,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         call setzscale()
         mdispl=0

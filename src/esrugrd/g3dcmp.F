@@ -287,7 +287,7 @@ C *********************************************************************
 #include "building.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -316,8 +316,6 @@ C Reopen the dialogue box.
       CALL usrmsg(' ',' ','-')
 
 C Determine scaling ratios for the drawing and axis.
-      igwid=igw
-      igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,ZMIN,ZMAX,xsc,ysc,sca,
      &              Xadd,Zadd)
 
@@ -1159,7 +1157,7 @@ C *********************************************************************
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -1570,7 +1568,7 @@ C *********************************************************************
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D25/NDXE(MEZ),DXE(MEZ,MZE)
@@ -2136,7 +2134,7 @@ C *********************************************************************
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
@@ -2543,7 +2541,7 @@ C *********************************************************************
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
       COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)

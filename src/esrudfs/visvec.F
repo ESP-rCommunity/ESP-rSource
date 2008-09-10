@@ -51,6 +51,8 @@ C Set default values.
 C Clear viewing area, set and store scaling factors.
       CALL startbuffer()
       CALL win3d(menuchw,6,6,3,4,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
 C Set up the do loops according to which surface is being viewed.
 C East or west view.

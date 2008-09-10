@@ -243,6 +243,8 @@ C Reset original screen size values on exit.
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
         endif
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
         RETURN        
       ELSE
@@ -306,9 +308,7 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
       endif
 
       call startbuffer()
-10    igwid=igw
-      igheight=igwh
-      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+10    call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
      &  xadd,yadd)
 
 C Draw the axes of the chart.

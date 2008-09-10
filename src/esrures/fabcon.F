@@ -189,6 +189,8 @@ C pixel references for calls to viewtext.
       IF(MMOD.EQ.8)THEN
         call startbuffer
         call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
       lsn1=MIN0(lnblnk(RFILE),22)

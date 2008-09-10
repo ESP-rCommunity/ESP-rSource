@@ -1248,6 +1248,8 @@ C Setup the graph dimension according to the max and min RT
       IF ((MAll.EQ.4).AND.(MethodCalc.GT.1)) THEN
       ELSE
         Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         do 20 I=1,MNbAbs
           if (TReverb(I).gt.RESMX) then
             RESMX=TReverb(I)

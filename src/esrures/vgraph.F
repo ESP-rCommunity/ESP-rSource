@@ -946,6 +946,8 @@ C and the simulation and output timesteps.
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 

@@ -58,6 +58,8 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 
           CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(iglib.eq.2)then
           continue
         endif
@@ -145,6 +147,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -153,6 +157,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -161,6 +167,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -169,6 +177,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           endif
         elseif(iglib.eq.2)then
           continue

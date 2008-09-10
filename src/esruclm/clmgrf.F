@@ -157,6 +157,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -165,6 +167,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -173,6 +177,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -181,6 +187,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           endif
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
@@ -290,6 +298,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.2)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -298,6 +308,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.1)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -306,6 +318,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.0)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -314,6 +328,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         endif
         if(IFS.ne.IMFS)call winfnt(IFS)
         call startbuffer()

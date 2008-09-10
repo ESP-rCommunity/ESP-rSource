@@ -718,6 +718,8 @@ C Set standard fornt width so that space around graph is correct.
             call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         endif
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 

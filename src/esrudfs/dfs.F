@@ -293,6 +293,8 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,10,12,4,4,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -510,6 +512,8 @@ C Invoke simulation.
 C Re-set graphic feedback.
         if (MMOD.EQ.8) then
           CALL win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
         CALL EASKAB('  ','What kind of simulation is?',

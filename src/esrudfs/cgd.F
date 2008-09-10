@@ -74,6 +74,8 @@ C Reset the display bounds for grid display.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
         CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         GRMODE=.true.
       ENDIF
       CALL INICNT
@@ -294,6 +296,8 @@ C Finish grid visualization, returning display to initial state.
         IF(MMOD.EQ.8)THEN
           call startbuffer()
           CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         ENDIF
         return
       ELSE 

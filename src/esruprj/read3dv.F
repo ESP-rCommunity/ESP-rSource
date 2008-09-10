@@ -112,8 +112,6 @@ C Clear current viewing box and re-establish image bounds.
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
-        igwid=igw
-        igheight=igwh
         call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -121,8 +119,6 @@ C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
 
 C Determine the 2D coords of the site extremes.
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        igwid=igw
-        igheight=igwh
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)

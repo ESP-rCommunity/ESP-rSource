@@ -122,6 +122,8 @@ C bounds and redraw the image before presenting the command menu.
 C GTK note: the call to win3d is a new requirement (until such time
 C as the C automatically refreshes the coordinates).
           CALL win3d(menuchw,9,8,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
 

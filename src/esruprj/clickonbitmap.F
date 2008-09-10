@@ -282,6 +282,8 @@ C Otherwise clear ZN and ZD.
 C Give a bit more space in graphic feedback area for the bitmap.
       CALL startbuffer()
       CALL win3d(menuchw,1,3,1,1,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
   142 continue
     3 INO=-4

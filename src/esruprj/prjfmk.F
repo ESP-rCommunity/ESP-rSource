@@ -3094,7 +3094,6 @@ C Clear and setup plot area.
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
-      igwid=igw
       igheight=igwh
 
 C Calculate plotting box locations.
@@ -4983,7 +4982,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
       character zname*12,zdesc*64
-      integer igwid,igheight  ! for use with axiscale
+      integer igheight  ! for use with axiscale
 
       logical COLOK
       IDTY=IDTYP
@@ -5067,7 +5066,6 @@ C Clear and setup plot area.
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
-      igwid=igw
       igheight=igwh
 
 C Calculate plotting box locations.

@@ -530,9 +530,13 @@ C and the simulation and output timesteps.
         if(act.eq.'i')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(act.eq.'s')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
       ENDIF
 

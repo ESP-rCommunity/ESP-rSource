@@ -806,6 +806,8 @@ C text dialogue box that would normally be displayed.
 C Reduce the white space on the right so the label percent is not
 C so separated from the axis.
           call win3d(menuchw,12,12,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
       ENDIF

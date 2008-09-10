@@ -1764,7 +1764,7 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD110/IndSN(MGRID)
@@ -1927,7 +1927,7 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD110/IndSN(MGRID)
@@ -2092,7 +2092,7 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
       COMMON/GRSD110/IndSN(MGRID)

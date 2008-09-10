@@ -444,6 +444,8 @@ C Help text for this menu.
 C If in graphic mode restore the standard win3d values for prj.
         if(MMOD.ge.8)then
           CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         RETURN
       ELSEIF(INO.EQ.(MVERT-1))THEN

@@ -235,11 +235,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call opencpw
           call opensetup
           call updcapt(1)
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         call setzscale()
         call setgscale()
@@ -545,6 +549,8 @@ C Graphic analysis. Enlarge graphics area if small.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
             elseif(iglib.eq.2)then
               continue
             endif
@@ -577,6 +583,8 @@ C Psychrometric analysis. Enlarge graphics area if small.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
             elseif(iglib.eq.2)then
               continue
             endif
@@ -1049,7 +1057,9 @@ C displaying the following data.
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           CALL win3d(menuchw,10,22,5,3,igl,igr,igt,igb,igw,igwh)
-        elseif(iglib.eq.2)then
+          igw=igr-igl
+          igwh=igb-igt
+       elseif(iglib.eq.2)then
           continue
         endif
       ENDIF

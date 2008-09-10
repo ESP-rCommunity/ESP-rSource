@@ -2002,6 +2002,8 @@ C Write graph head and set up axis positions and draw.
             call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
           call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         ENDIF
 
@@ -2619,6 +2621,8 @@ C Write graph head and set up axis positions and draw.
                 call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               endif
               call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
               call startbuffer()
             ENDIF
 

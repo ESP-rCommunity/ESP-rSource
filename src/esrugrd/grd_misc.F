@@ -253,6 +253,8 @@ C FACDRW draws the elevation of the surface.
 C Display header information.
       call startbuffer()
       CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
       icon=IZSTOCN(icomp,isur)
       WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(icon)

@@ -285,6 +285,8 @@ C displaying the following data.
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
         call usrmsg(' ',' ','-')
       ENDIF
