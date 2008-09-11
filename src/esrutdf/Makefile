@@ -42,5 +42,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	c2fdum.F explor.F item.F maintne.F startup.F tdfile.F tdgraph.F

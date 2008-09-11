@@ -82,6 +82,8 @@ C that define it. The win3d parameters match those in facdrw
 C and sitpln.
       call startbuffer()
       call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
 C Update the plane equation.
       call trnsf1(is)
@@ -195,6 +197,8 @@ C Draws the elevation of the target surface.
 
 C Display header information.
       call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       icn=izstocn(icomp,isur)
 
       write(etext,1)month(mon),ihour,isur,ssname(icn)
@@ -297,6 +301,8 @@ C dialogue. Axiscale is in wwlib.c.
 C Define a viewing box, draw its border after clearing it and
 C return the offsets that define it.
       call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
       call startbuffer()
 
 C Reopen the dialogue box.
@@ -421,19 +427,25 @@ C Draws a Mercator sun path diagram.
       character etext*72,blab*3,month*3
       dimension month(12)
       logical above
+      integer igwid,igheight
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
 
 C Clear the viewing box, draw its border and return the offsets
-C that define it.
+C that define it. On 64 bit machines igw and igwh can be incorrectly
+C returned so re-calculate.
       call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igr-igl
+      igheight=igb-igt
 
 C Reopen the dialogue box.
       if(mmod.eq.8)call usrmsg(' ',' ','-')
 
 C Determine scaling ratios.
-      call axiscale(igw,igwh,0.,360.,0.,90.,xsc,ysc,sca,Xadd,Yadd)
+      call axiscale(igwid,igheight,0.,360.,0.,90.,xsc,ysc,sca,Xadd,Yadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)

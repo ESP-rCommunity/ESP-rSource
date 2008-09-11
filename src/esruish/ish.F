@@ -187,6 +187,7 @@ C Material data arrays.
       logical changed_existing  ! to signal existing shd file updated
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer lnshd   ! length of current shading file string.
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -550,6 +551,10 @@ C of paction (so that we do not do a recursive asci->bin->ascii.
                endif
             endif
          endif
+      else
+
+C There was no input file, at least clear the model common blocks.
+        call clrprb
       endif
 
 C If in conversion mode then call the relevant subroutine.
@@ -721,8 +726,8 @@ C done, ask user to delete the transitional files.
          endif
 
 C Computations finished, write out the ascii version of the database.
-         write(exportfile,'(2a)') 
-     &     lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+         lnshd=lnblnk(lshad(icomp))
+         write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
          if(paction(1:13).eq.'update_silent')then
            continue
          else
@@ -1238,9 +1243,9 @@ C Export or import ASCII (silent).
            h(3)='computer types.'
            call easkabc('Zone Shading & Insolation db has data!',
      &       'Options:','export ascii','import ascii','cancel',iw,3)
+           lnshd=lnblnk(lshad(icomp))
            if(iw.eq.1)then
-             write(exportfile,'(2a)') 
-     &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              call easks(exportfile,' ','Export file name?',72,
      &         'siexp.txt','shdins export',ier,3)
              write(outs,'(2a)') ' Creating ASCII file ',
@@ -1249,8 +1254,7 @@ C Export or import ASCII (silent).
              call sifexp(icomp,exportfile,ier)
              call pauses(1)
            elseif(iw.eq.2)then
-             write(exportfile,'(2a)') 
-     &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              call easks(exportfile,' ','Import file name?',72,
      &         'siexp.txt','shdins import',ier,3)
              write(outs,'(3a)') ' Reading ASCII file ',
@@ -1327,7 +1331,10 @@ C then offer to save or delete.
          endif
 
 C When exiting write out the ascii version of the database.
-         if(lshad(icomp)(1:4).eq.'UNKN')then
+         lnshd=lnblnk(lshad(icomp))
+         if(lshad(icomp)(1:4).eq.'UNKN'.or.
+     &      lshad(icomp)(1:2).eq.'  '.or.
+     &      lnshd.le.1.or.lnshd.ge.72)then
             continue
          else
          
@@ -1336,8 +1343,7 @@ C If the user has just opened an existing database but not
 C changed it then we do not need to write it out.
            if(loaded_existing)then
              if(changed_existing)then
-               write(exportfile,'(2a)') 
-     &          lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+               write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
                write(outs,'(2a)') ' Creating ASCII file ',
      &          exportfile(1:lnblnk(exportfile))
                call edisp(iuout,outs)
@@ -1347,8 +1353,7 @@ C changed it then we do not need to write it out.
                continue
              endif
            else
-             write(exportfile,'(2a)') 
-     &          lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              write(outs,'(2a)') ' Creating ASCII file ',
      &          exportfile(1:lnblnk(exportfile))
              call edisp(iuout,outs)

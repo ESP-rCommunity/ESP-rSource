@@ -652,7 +652,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(BPS_OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
