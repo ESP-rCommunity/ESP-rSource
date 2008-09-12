@@ -11,7 +11,6 @@ TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
 LIBdir = $(SRCdir)/lib
-COBJECTS =
 PROG = bps$(EXE)
 
 .SUFFIXES: .o .F
@@ -35,10 +34,10 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  g3dfnc.o g3dmtx.o gcfunc.o gsdmtx.o inital.o initalc.o initalp.o \
 	  input.o item.o lisolv.o locmage.o matsv.o mfbndr.o mfcdat.o mfcntl.o \
 	  mfmach.o mfmode.o mfsbld.o mfsbps.o mfsplt.o mfutil.o mitzero.o \
-	  moistr.o monitor.o montrb.o mstmsc.o mzmrx5.o mzoutp.o nwkrewr.o \
+	  moistr.o monitor.o montrb.o mstmsc.o mzmrx5.o mzout6.o mzoutp.o nwkrewr.o \
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
-	  reslib.o rnor.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
+	  reslib.o rnor.o rwipv.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
 	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
 	  MechVentIN.o CentralVentSys.o \
@@ -56,49 +55,10 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
-	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o hvacinput_versioned.o Int_Mech_Sys.o
+	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o
 
-# Additional C and Fortran objectives needed for H3Kreports
-XML_COBJECTS =TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
-XML_FOBJECTS = ConfigureH3kReports.o
-
-# C and Fortran stubs used to build bps without H3Kreports
-NO_XML_C_STUBS =
-NO_XML_F_STUBS = TReports_dummy.o
-
-# Target to build bps with h3kreports
-include_XML: $(BPS_OBJECTS) $(XML_COBJECTS) $(XML_FOBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(XML_COBJECTS) $(XML_FOBJECTS) $(ULIBS) $(F_to_C_flags)
-
-# Target to build bps without h3kreports
-exclude_XML: $(BPS_OBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS) $(ULIBS) $(F_to_C_flags)
-
-TReportsManager.cpp:
-	rm -f TReportsManager.cpp
-	ln -s $(CETCdir)/h3kreports/TReportsManager.cpp .
-
-TBinnedData.cpp:
-	rm -f TBinnedData.cpp
-	ln -s $(CETCdir)/h3kreports/TBinnedData.cpp .
-
-TVariableData.cpp:
-	rm -f TVariableData.cpp
-	ln -s $(CETCdir)/h3kreports/TVariableData.cpp .
-
-TXMLAdapter.cpp:
-	rm -f TXMLAdapter.cpp
-	ln -s $(CETCdir)/h3kreports/TXMLAdapter.cpp .
-TWildCards.cpp:
-	rm -f TWildCards.cpp
-	ln -s $(CETCdir)/h3kreports/TWildCards.cpp .
-
-TReports_dummy.F:
-	rm -f TReports_dummy.F
-	ln -s $(CETCdir)/h3kreports/TReports_dummy.F .
-ConfigureH3kReports.F:
-	rm -f ConfigureH3kReports.F
-	ln -s $(CETCdir)/h3kreports/ConfigureH3kReports.F .
+$(PROG): $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -291,7 +251,7 @@ initalp.F:
 	ln -s $(PLTdir)/initalp.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 lisolv.F:
 	rm -f lisolv.F
 	ln -s $(DFSdir)/lisolv.F .
@@ -346,6 +306,9 @@ mstmsc.F:
 mzmrx5.F:
 	rm -f mzmrx5.F
 	ln -s $(DFSdir)/mzmrx5.F .
+mzout6.F:
+	rm -f mzout6.F
+	ln -s $(BLDdir)/mzout6.F .
 mzoutp.F:
 	rm -f mzoutp.F
 	ln -s $(BLDdir)/mzoutp.F .
@@ -400,6 +363,9 @@ psychro.F:
 rnor.F:
 	rm -f rnor.F
 	ln -s $(COMdir)/rnor.F .
+rwipv.F:
+	rm -f rwipv.F
+	ln -s $(COMdir)/rwipv.F .
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -432,10 +398,7 @@ subsys.F:
 	ln -s $(BLDdir)/subsys.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
-tdrecbps.F:
-	rm -f tdrecbps.F
-	ln -s $(TDFdir)/tdrecbps.F .
+	ln -s $(COMdir)/tdfile.F .
 trstyp.F:
 	rm -f trstyp.F
 	ln -s $(PLTdir)/trstyp.F .
@@ -460,9 +423,6 @@ CentralVentSys.F:
 hvacinput.F:
 	rm -f hvacinput.F
 	ln -s $(CETCdir)/hvacinput.F .
-hvacinput_versioned.F:
-	rm -f hvacinput_versioned.F
-	ln -s $(CETCdir)/hvacinput_versioned.F .
 hvacsim.F:
 	rm -f hvacsim.F
 	ln -s $(CETCdir)/hvacsim.F .
@@ -619,6 +579,9 @@ BC_data.F:
 plt_bc_components.F:
 	rm -f plt_bc_components.F
 	ln -s $(PLTdir)/plt_bc_components.F
+RE-H2-ctl.F:
+	rm -f RE-H2-ctl.F
+	ln -s $(CETCdir)/RE-H2-ctl.F
 Hydrogen_appliances.F:
 	rm -f Hydrogen_appliances.F
 	ln -s $(PLTdir)/Hydrogen_appliances.F
@@ -675,9 +638,11 @@ mains_temp_draw_profiles.F:
 stratified_tank.F:
 	rm -f stratified_tank.F
 	ln -s $(PLTdir)/stratified_tank.F .
-Int_Mech_Sys.F:
-	rm -f Int_Mech_Sys.F
-	ln -s $(PLTdir)/Int_Mech_Sys.F .
+
+SiteUtilities.F:
+	rm -f SiteUtilities.F
+	ln -s $(COMdir)/SiteUtilities.F .
+
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -687,8 +652,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(BPS_OBJECTS) $(XML_COBJECTS)    \
-	$(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)  \
+	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
@@ -707,25 +671,21 @@ clean:
 	inital.F initalc.F initalp.F item.F lisolv.F locmage.F matsv.F MechVentIN.F mfbndr.F \
 	mfcdat.F mfcntl.F mfmach.F mfmode.F mfsbld.F mfsbps.F mfsplt.F \
 	mfutil.F mitzero.F moistr.F monitor.F montrb.F mstmsc.F MultiYear_climate.F mzmrx5.F \
-	mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
+	mzout6.F mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
 	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
 	pmatrx.F pplib.F ppsub.F precal.F \
-	psychro.F rnor.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
+	psychro.F rnor.F rwipv.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
-	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F tdrecbps.F trstyp.F tscon.F \
+	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \
 	FC_components.F FC_functions.F water_tanks.F h3k_utils.F SetDllParms.F \
 	AIMS.F TAC.F WaterProperties.F DG_controller.F elec_net_utilities.F \
-	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F TBinnedData.cpp \
-	TBinnedData.o TReportsManager.cpp TReportsManager.o TVariableData.cpp TVariableData.o \
-	TXMLAdapter.cpp TXMLAdapter.o TReports_dummy.F TReports_dummy.o TWildCards.o \
-	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F \
+	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F \
+	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F RE-H2-ctl.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
-  tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F hvacinput_versioned.F \
-  Int_Mech_Sys.F
-
+	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F SiteUtilities.F
 
 

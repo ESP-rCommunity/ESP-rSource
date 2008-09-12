@@ -41,6 +41,9 @@ C database file and data structures. It should not be called if
 C the ascii based materials data structures are used.
       SUBROUTINE ELISTC(iwhich,chgdb,ACTION,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
@@ -502,6 +505,9 @@ C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
       SUBROUTINE ELISTMAT(iwhich,chgdb,ACTION,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1243,6 +1249,9 @@ C EDONEMAT: Edits a material in the common block at array index index.
 C mod is returned as true if data has changed.
       SUBROUTINE EDONEMAT(ITRU,index,mod,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       common/pophelp/h(60)
 
       real matver
@@ -1749,6 +1758,8 @@ C id string.
 #include "building.h"
 #include "epara.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
 C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
@@ -1991,7 +2002,17 @@ C Add a construction. Update this to account for OPAQ/TRAN.
           moddb = .true.
           chgdb=.true.
           NMLC=NMLC+1
-          DESC(NMLC)='UNKNOWN'
+
+C Ask for name of the new construction
+          h(1)='Although you only have 12 characters to work with'
+          h(2)='try and create a useful name for the construction'
+          h(3)='that is not a duplicate of an existing name. '
+          T14='  '
+          CALL EASKS(T14,' ',' Name of construction? ',
+     &      14,' ','Construction name',IER,3)
+          write(T12,'(a)') T14(1:12)
+          call st2name(T12,DESC(NMLC))
+
           LAYERS(NMLC)=1
           IPR(NMLC,1)=1
           DTHK(NMLC,1)=0.10
@@ -2354,11 +2375,18 @@ C << if needed.
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -2409,7 +2437,7 @@ C Arrays of material properties.
 
 C      dimension SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
+      character*72 LTMP
       CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12
       character T12OTH*12,T12*12,T14*14
@@ -2440,8 +2468,11 @@ C Check that mlc name has no illegal characters.
       endif
 
 C If T12 is `UNKNOWN` and MLCSYM is blank then we have a new
-C construction.
-      if(T12(1:4).eq.'UNKN'.and.MLCSYM(1:2).eq.' ')then
+C construction. If we got this far with a blank MLCSYM then
+C set it to SYMMETRIC.
+      if(T12(1:4).eq.'UNKN'.and.MLCSYM(1:2).eq.'  ')then
+        MLCSYM='SYMMETRIC'
+      elseif(MLCSYM(1:2).eq.'  ')then
         MLCSYM='SYMMETRIC'
       endif
 
@@ -3296,6 +3327,7 @@ C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
       SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
 #include "esprdbfile.h"
+      integer lnblnk  ! function definition
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
@@ -3366,6 +3398,8 @@ C in each zone, tareamlc is the total area of thie construction (weighted
 C so that partitions are counted as half area).
       subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)

@@ -8,9 +8,9 @@ C
 C ================================================================
 
 C Type declarations:
-      integer MADATA, MAXPC, MCL, MBDATA, MCOEFG, MCONVR, MPCRES
-      integer MMISCD, MNODEC, MPCDAT, MPP, MPPC, MDLY, MPCDP
-      integer MPCDT,  MPCOE, MPCOM, MPCON, MPCONC, MPNODE, MPVAR
+      integer MADATA, MAXPC,  MBDATA, MCOEFG, MCONVR, MPCRES
+      integer MMISCD, MNODEC, MPCDAT, MPP, MPPC, MDLY
+      integer   MPCOE, MPCOM, MPCON, MPCONC, MPNODE, MPVAR
       integer NPRECL, MPSEN, MPDLAY 
 
 C Maximum number of component ADATA (=ESPpdb:MAXMSC)
@@ -19,8 +19,6 @@ C Maximum number of plant database entries (=ESPpdb:MAXPC)
       PARAMETER (MAXPC=460)
 C Maximum number of component BDATA
       PARAMETER (MBDATA=30)
-C Maximum number of plant control loops
-      PARAMETER (MCL=20)
 C Maximum number of plant network matrix coefficients (<= MPCOM * MPCOE)
       PARAMETER (MCOEFG=2000)
 C Maximum number of data per component inter-connection (held by CONVAR)
@@ -41,10 +39,6 @@ C  Maximum number of coefficients in each primitive part
 C Maximum number of sections in transport delay simulation
       PARAMETER (MDLY=100)
 CHOWEND
-C Maximum number of distinct plant control periods during each day type
-      PARAMETER (MPCDP=8)
-C Maximum number of control day types for plant side control
-      PARAMETER (MPCDT=10)
 C Maximum number of plant matrix coefficients for a component model
       PARAMETER (MPCOE=50)
 C Maximum number of plant components in overall system
@@ -76,5 +70,13 @@ C.....Types of gains
       integer iConductive, iConvective, iRadiant 
       parameter ( iConvective=1, iRadiant=2, iConductive=3)
 
+C ============ Commons ==========================================
+C Standard common variables
+C ===============================================================
 
-
+C----------------------------------------------------------------------
+C This array holds the length of the character names for all plant
+C comonents.
+C----------------------------------------------------------------------
+      integer iPltNameLen(MPCOM)
+      common/GlobalPlantData/iPltNameLen

@@ -34,16 +34,22 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "tdf2.h"
 #include "sbem.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC8/SLAT,SLON
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -57,6 +63,9 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
 C IPV description.
       common/IPVF/lipvdatf
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/CFGV/icfgv
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -72,7 +81,7 @@ C Images.
       COMMON/GT/GTNAME
 
 C Calendar.
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -87,12 +96,13 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
 
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
+      character*72 GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character imgfmt*4,imgfoc*4,limgfil*72
       character act*1,GTNAME*15
       character D64*64  ! default string for editing
+      character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
 
@@ -143,7 +153,7 @@ C Begin with high level menu.
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
-      ITEMS(8) =                'g calendar (holidays)            '                             '
+      ITEMS(8) =                'g calendar (holidays)            '
       ITEMS(9) =                'h building address               '
       ITEMS(10)=                'i client address                 '
       ITEMS(11)=                'j simulationist address          '
@@ -164,8 +174,8 @@ C Begin with high level menu.
       ITEMS(22)=                'r impose  measured data          '
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
-      ITEMS(25)=                ' _____________________________ '
-      ITEMS(26)=                't UK NCM specifications         '
+      ITEMS(25)=                't UK NCM specifications          '
+      ITEMS(26)=                'u transient orientation          '
       ITEMS(27)=                ' _____________________________ '
       ITEMS(28)=                '? help                           '
       ITEMS(29)=                '- exit this menu                 '
@@ -565,7 +575,7 @@ C and then list the months of the year.
 C Calendar functions. If number of daytypes is zero then
 C initialise. Then enter interactive facility to allow user
 C to define holidays.
-        if(nbdaytype.eq.0)then
+        if(nbdaytype.le.3)then
           act = 'i'
           call calenmanage(act,ier)
         endif
@@ -817,34 +827,55 @@ C Dispersed fan/pump/lift/DHW demands.
 
       ELSEIF(INO.EQ.19)THEN
 
-C IPV data. 
-        h(1)='This file holds data required to later construct'
-        h(2)='an `Integrated Performance View` of simulation'
-        h(3)='results.'
-        lr=lnblnk(cfgroot)
-        if(lnblnk(lipvdatf).eq.0)then
-          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
-        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
-        else
-          ltmp=lipvdatf
-        endif
- 142    CALL EASKS(ltmp,' ','IPV description file?',
-     &               72,'xxx.ipv','IPV file',IER,3)
-        if(ltmp(1:2).ne.'  ')then
-          lipvdatf=ltmp
-          call FINDFIL(lipvdatf,XST)
-          IF(XST)then
-            call ripvdat(ifil+1,lipvdatf,ier)
-            call ipvdat('-')
+C IPV data.
+        if(icfgv.lt.4)then
+          h(1)='This file holds data required to later construct'
+          h(2)='an `Integrated Performance View` of simulation'
+          h(3)='results.'
+          lr=lnblnk(cfgroot)
+          if(lnblnk(lipvdatf).eq.0)then
+            write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
           else
-            call ipvdat('i')
-            call mkipvdat(ifil+1,lipvdatf)
-            call ipvdat('-') 
+            ltmp=lipvdatf
+          endif
+ 142      CALL EASKS(ltmp,' ','IPV description file?',
+     &               72,'xxx.ipv','IPV file',IER,3)
+          if(ltmp(1:2).ne.'  ')then
+            lipvdatf=ltmp
+            call FINDFIL(lipvdatf,XST)
+            IF(XST)then
+	      ipvact='ipv'
+              call ripvdat(ifil+1,lipvdatf,ipvact,ier)
+              call ipvdat('-')
+            else
+	      ipvact='ipv'
+              call ipvdat('i')
+              call mkipvdat(ifil+1,lipvdatf,ipvact)
+              call ipvdat('-') 
+            endif
+          else
+            call usrmsg('Please re-enter file name.',' ','W')
+            goto 142
           endif
         else
-          call usrmsg('Please re-enter file name.',' ','W')
-          goto 142
+	
+C IPV data is held within the configurtion file. Reset the file
+C name (since it is not used). If nipvassmt is still zero then
+C nothing has been created yet so initialise and save to the
+C configuration file. If there is data call ipvdat and the update the
+C configuration file when exiting.
+          lipvdatf='internal'
+          if(nipvassmt.eq.0)then
+            call ipvdat('i')     ! fill with defaults
+            CALL EMKCFG('-',IER) ! remember this
+            call ipvdat('-')     ! edit data
+            CALL EMKCFG('-',IER) ! remember this
+          else
+            call ipvdat('-')
+            CALL EMKCFG('-',IER)
+          endif
         endif
 
       ELSEIF(INO.EQ.21)THEN
@@ -863,10 +894,14 @@ C          MODSIT=.true.
 C Manage images or browse by listing out current contents of image folder.
         call manageimages(modsit)
 
-      ELSEIF(INO.eq.26)then
+      ELSEIF(INO.eq.25)then
 
 C Enter the definitions for UK NCM related data.
         call sbmedit
+      ELSEIF(INO.eq.26)then
+
+C Changing orientation as a function of time.
+        CALL ROAMING
       ELSE
         GOTO 3
       ENDIF
@@ -874,11 +909,117 @@ C Enter the definitions for UK NCM related data.
 
       END
 
+c ****** ROAMING *****
+C This subroutine manages data associated with rotating a model as a
+C function of time. Important variables are defined in roam.h
+      SUBROUTINE ROAMING
+#include "building.h"
+#include "roam.h"
+      
+      integer lnblnk  ! function definition
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/POPHELP/H(60)
+
+      CHARACTER*72 h,DFLTNAME,LCFGF,OUTS
+      CHARACTER CFGROOT*24,TEMPSTR*30
+      INTEGER IOK
+      LOGICAL OK,DOK
+
+C Initialise variables
+      IOK=0
+      OK=.FALSE.
+      DOK=.TRUE.
+
+C Help message
+      H(1) ='This facility is used to change orientation of the model'
+      H(2) ='as a function of time. For this purpose a roaming file is'
+      H(3) ='required. This file includes information about locations'
+      H(4) ='that a model will exist at and the times of validity.'
+      H(5) =' '
+      H(6) ='When defining the file for the first time in a model the '
+      H(7) ='user should generate a template (option to do this follows'
+      H(8) ='this message) and use a text editor to add information to '
+      H(9) ='the template. If you have previously defined a roaming '
+      H(10)='file then you can just view its contents within Project'
+      H(11)='Manager. All editing should be done by a third party text'
+      H(12)='editor.'
+      H(13)=' '
+      H(14)=' '
+      H(15)=' '
+      H(16)=' '
+      H(17)=' '
+      H(18)=' '
+      H(19)=' '
+      WRITE(DFLTNAME,'(2A)')CFGROOT(1:LNBLNK(CFGROOT)),'.roam'
+      IF(IROAM.NE.1)THEN
+        LROAM=DFLTNAME
+        IROAM=1
+        CALL PHELPD('Roaming Introduction',19,'-',0,0,IER)
+        CALL EASKAB(' ','Roaming file actions:',
+     &    'create template','cancel and exit',IOK,19)
+        IF(IOK.EQ.1)THEN
+          CALL WROAM
+          CALL RROAM
+        ENDIF
+      ELSE
+        CALL EASKS2CMD(LROAM,' Roaming file? (see help)',
+     &  ' ','dereference','browse',IACT,72,' ','Roaming file',IER,19)
+        IF(IACT.EQ.1)THEN
+          IROAM=0
+          CALL EDISP(IUOUT,'Updating configuration file ...')
+          CALL EMKCFG('-',IER)
+        ELSE
+          CALL RROAM
+        ENDIF
+      ENDIF
+
+C Display file contents
+      CALL ASKOK('View location information?',' ',OK,dok,19)
+      IF(OK)THEN
+        CALL EDISP(IUOUT,' ')
+        WRITE(OUTS,'(A,F3.1)')'ESP-r Roaming file version number ',VERS
+        CALL EDISP(IUOUT,OUTS)
+        CALL EDISP(IUOUT,
+     &  'Location                      Latitude Longitude')
+        DO 1000 ILOC=1,NLOC
+          WRITE(OUTS,'(A30,1X,F5.1,5X,F5.1)')
+     &    LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+          CALL EDISP(IUOUT,OUTS)
+ 1000   CONTINUE
+        CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
+        IF(OK)THEN
+          CALL EDISP(IUOUT,
+     &    'start hr, dy, mth, orientation, day type, location')
+          DO 1100 IPDR=1,NPDR
+            IF(LLOCT(IPDR).EQ.0)THEN
+              TEMPSTR='cruising'
+            ELSE
+              TEMPSTR=LOCRM(LLOCT(IPDR))
+            ENDIF
+            WRITE(OUTS,'(5X,I3,1X,I3,2X,I3,7X,I4,5X,I2,7X,A30)')
+     &      LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
+     &      LDTP(IPDR),TEMPSTR
+          CALL EDISP(IUOUT,OUTS)
+ 1100     CONTINUE
+        ENDIF
+        CALL EDISP(IUOUT,' ')
+      ENDIF
+
+C Update configuration file
+      CALL EDISP(IUOUT,'Updating configuration file ...')
+      CALL EMKCFG('-',IER)
+      RETURN
+      END
+
 C ****** manageimages
 C manageimages allows the user to manage images associated with a
 C model including view and add images (delete not yet working).
       subroutine manageimages(modsit)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -1002,7 +1143,7 @@ C Try to use information gathered from file scan.
               if(snpfile(1:2).ne.'  ')then
                 write(limg,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
      &            snpfile(1:lnblnk(snpfile))
-                write(6,*) limg
+C                write(6,*) limg
               else
                 write(limg,'(a)')imgpth(1:lnblnk(imgpth))
               endif
@@ -1082,19 +1223,21 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+#include "control.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
-      common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/appw/iappw,iappx,iappy
-
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+     
 C TDF related.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -1102,28 +1245,32 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
       common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
 
-      logical MODSIT,browse,OK,dok,concat,unixok
+      logical MODSIT,browse,OK,dok,unixok
       logical FOUND,XST
 
       character H*72,outs*124,ltmp*72,hold*40
-      character doit*124,tmode*8,cfgroot*24,LCFGF*72
+      character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
       character*72 LTDF,LTDFA,DLTDF
-      character DBTAG*12,DBTASK*12,DBZN*15
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      character path*72,zname*12,zdesc*64,OUTSTR*124,HDR*12
-      character longtfile*144,longtfiledos*144
+      character zname*12,zdesc*64,OUTSTR*124,HDR*12
+      character*34 ITEMS(7)
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+
+C Action to pass to tdfedit. Prior 'update' option moved into
+C esrub2e rather than invoking tdf.
+C << thought required to transition between functionality of >>
+C << the module tdf to the in-built functionality            >>
+       character action*16
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1166,17 +1313,7 @@ C file, what is currently used and other management tasks.
         call edisp(iuout,'udate via the edit/list option.')
         call edisp(iuout,' ')
       elseif(iabs(itdflg).eq.3)then
-
-C If ascii then just scan header and list what is available.
-C        call edisp(iuout,' ')
-C        call edisp(iuout,'Temporal data is available for this model.')
-C        call edisp(iuout,' ')
         continue
-      endif
-      if(ITEMSTD.gt.0)then
-C        call edisp(iuout,
-C     &    'The model references one or more temporal entities.')
-C        call edisp(iuout,' ')
       endif
 
 C Take into account if the user is browsing or can modify the files
@@ -1190,7 +1327,59 @@ C and present a different interface depending on file type.
       H(7)='number of days and for a specified time step. These'
       H(8)='entities, depending on their type, may be associated'
       H(9)='with zones or controls within the model and will'
-      H(10)='replace existing definitions. '
+      H(10)='replace existing definitions.'
+      H(11)=' '
+      H(12)='associations - entities in the temporal file can be'
+      H(13)='  associated with entities in your model depending on'
+      H(14)='  the type of information. For example climate data'
+      H(15)='  is associated with the whole model and infiltration'
+      H(16)='  is associated with a zone.'
+      H(17)=' '
+      H(18)='Currently the following item types are offered: '
+      H(19)=' ALLCLMT - all climate data (includes next 6 items)'
+      H(20)=' BDTEXTT - ambient temperature'
+      H(21)=' WINDVLT - wind velocity'
+      H(22)=' WINDDRT - wind direction'
+      H(23)=' RELHUMT - ambient relative humidity'
+      H(24)=' DIFHSLT - diffuse horizonal radiation'
+      H(25)=' GLOHSLT - global horizonal radiation'
+      H(26)=' DIRSOLT - direct normal solar radiation'
+      H(27)=' SETPTTT - control setpoint temperature'
+      H(28)=' CASUALT - zone casual gains (combined gains)'
+      H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
+      H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
+      H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
+      H(32)=' '
+      H(33)='manage associations - you can add and delete associations'
+      H(34)='  that have been previously defined. Note this does not'
+      H(35)='  alter the contents of the temporal file.'
+      H(36)=' '
+      H(37)='dereference temporal file - this removes current links'
+      H(38)='  between the model and entities in the temporal file.'
+      H(39)='  It does not remove the temporal file.'
+      H(40)=' '
+      H(41)='create file - you supply a file name, if it exists it'
+      H(42)='  is scanned otherwise a minimal file is created.'
+      H(43)=' '
+      H(44)='edit/list - contents of the current file are presented'
+      H(45)='  and if you have permission you can alter its contents.'
+      H(46)=' '
+      H(47)='General instructions for setting up a temporal file:'
+      H(48)='a) Decide the period of the data (start and end dates)'
+      H(49)='   as well as frequency (1stph to 60 tsph).'
+      H(50)='b) If data is to be imported from a file with columns'
+      H(51)='   of data take a note of which columns are required.'
+      H(52)='c) Plan the names of the temporal entities you will be'
+      H(53)='   be creating as well as which zones or controls in '
+      H(54)='   the model are going to be associates with the'
+      H(55)='   entities in the temporal file.'
+      H(56)=' '
+
+C Begin with high level menu.
+    3 INO=-4
+      IER=0
+      IRT=-1
+
       if(itdflg.eq.0)then
         if(browse)then
           call usrmsg(
@@ -1198,11 +1387,26 @@ C and present a different interface depending on file type.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(11)='At the current time there are no temporal definitions;'
-        H(12)='you must create them before you can use them.'
-        CALL EASKATOG(' ','Temporal file options:',
-     &    'create','use another','n/a','cancel',' ',' ',' ',IRT,12)
-        if(irt.eq.4.or.irt.eq.0)return
+        H(57)='At the current time there are no temporal definitions;'
+        H(58)='you must create them before you can use them.'
+        nbhelp=58
+        WRITE(ITEMS(1),'(A)')'a create temporal entities file'
+        WRITE(ITEMS(2),'(A)')'b select temporal file '
+        WRITE(ITEMS(3),'(A)')'c not applicable '
+        WRITE(ITEMS(4),'(A)')'? help '
+        WRITE(ITEMS(5),'(A)')'- exit '
+        nitms=5
+        CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+        if(irt.EQ.nitms)then
+          return
+        elseif(irt.EQ.nitms-1)then
+          CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+          goto 3
+        elseif(irt.EQ.3)then
+          goto 3
+        elseif(irt.EQ.0)then
+          goto 3
+        endif
       elseif(iabs(itdflg).eq.1)then
         if(browse)then
           call usrmsg(
@@ -1210,52 +1414,119 @@ C and present a different interface depending on file type.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(11)='An outdated file format is associated with the'
-        H(12)='model. Update this by selecting the edit option'
-        H(13)='(or dereferences the temporal definitions from'
-        H(14)='your model).'
-        CALL EASKATOG(' ','Temporal file options:',
-     &    'view/edit','use another','dereference',
-     &    'list associations','manage associations','cancel/exit',
-     &    ' ',IRT,14)
-          if(irt.eq.6.or.irt.eq.0)return
+        H(57)='An outdated file format is associated with the'
+        H(58)='model. Update this by selecting the edit option'
+        H(59)='(or dereferences the temporal definitions from'
+        H(60)='your model).'
+        nbhelp=60
+        WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
+        WRITE(ITEMS(2),'(A)')'b select temporal file '
+        WRITE(ITEMS(3),'(A)')'c dereference temporal file'
+        WRITE(ITEMS(4),'(A)')'d list associations'
+        WRITE(ITEMS(5),'(A)')'e manage associations'
+        WRITE(ITEMS(6),'(A)')'? help '
+        WRITE(ITEMS(7),'(A)')'- exit '
+        nitms=7
+        CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+        if(irt.EQ.nitms)then
+          return
+        elseif(irt.EQ.nitms-1)then
+          CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+          goto 3
+        elseif(irt.EQ.0)then
+          goto 3
+        endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(11)='You may view the temporal data associated with the'
-          H(12)='model by selecting the view entities option.'
-          CALL EASKABCD(' ','Temporal file options:',
-     &    'view entities','n/a','list associations',
-     &    'cancel/exit',IRT,12)
-          if(irt.eq.4.or.irt.eq.2.or.irt.eq.0)return
+          H(57)='You may view the temporal data associated with the'
+          H(58)='model by selecting the view entities option.'
+          nbhelp=58
+          WRITE(ITEMS(1),'(A)')'a view temporal entities'
+          WRITE(ITEMS(2),'(A)')'b not applicable'
+          WRITE(ITEMS(3),'(A)')'c list associations'
+          WRITE(ITEMS(4),'(A)')'? help '
+          WRITE(ITEMS(5),'(A)')'- exit '
+          nitms=5
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.2)then
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         else
-          H(11)='An outdated file format is associated with the'
-          H(12)='model. Update this by selecting the edit entities'
-          H(13)='option (or derefence the temporal derfinition from'
-          H(14)='your model).'
-          CALL EASKATOG(' Temporal definitions file options:',' ',
-     &     'view/edit entities','use another','dereference',
-     &     'list associations','manage associations',
-     &     'cancel/exit',' ',IRT,14)
-          if(irt.eq.6.or.irt.eq.0)return
+          H(57)='An outdated file format is associated with the'
+          H(58)='model. Update this by selecting the edit entities'
+          H(59)='option (or derefence the temporal derfinition from'
+          H(60)='your model).'
+          nbhelp=60
+          WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
+          WRITE(ITEMS(2),'(A)')'b select temporal file '
+          WRITE(ITEMS(3),'(A)')'c dereference temporal file'
+          WRITE(ITEMS(4),'(A)')'d list associations'
+          WRITE(ITEMS(5),'(A)')'e manage associations'
+          WRITE(ITEMS(6),'(A)')'? help '
+          WRITE(ITEMS(7),'(A)')'- exit '
+          nitms=7
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(21)='You can view the temporal data associated with the'
-          H(22)='model via selecting the view entities option.'
-          CALL EASKABCD(' Temporal definitions file options:',' ',
-     &    'view entities','n/a','list associations','cancel/exit',
-     &    IRT,22)
-          if(irt.eq.4.or.irt.eq.2.or.irt.eq.0)return
+          H(57)='You can view the temporal data associated with the'
+          H(58)='model via selecting the view entities option.'
+          nbhelp=58
+          WRITE(ITEMS(1),'(A)')'a view temporal entities'
+          WRITE(ITEMS(2),'(A)')'b not applicable'
+          WRITE(ITEMS(3),'(A)')'c list associations'
+          WRITE(ITEMS(4),'(A)')'? help '
+          WRITE(ITEMS(5),'(A)')'- exit '
+          nitms=5
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.2)then
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         else
-          H(11)='Temporal definitions are available for editing/use.'
-          CALL EASKATOG(' ','Temporal definitions options:',
-     &      'view/edit','use another','dereference',
-     &      'list associations','manage associations','cancel/exit',' ',
-     &      IRT,11)
-          if(irt.eq.6.or.irt.eq.0)return
+          H(57)='Temporal definitions are available for editing/use.'
+          nbhelp=57
+          WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
+          WRITE(ITEMS(2),'(A)')'b select temporal file '
+          WRITE(ITEMS(3),'(A)')'c dereference temporal file'
+          WRITE(ITEMS(4),'(A)')'d list associations'
+          WRITE(ITEMS(5),'(A)')'e manage associations'
+          WRITE(ITEMS(6),'(A)')'? help '
+          WRITE(ITEMS(7),'(A)')'- exit '
+          nitms=7
+          CALL EMENU('Temporal file options:',ITEMS,nitms,irt)
+          if(irt.EQ.nitms)then
+            return
+          elseif(irt.EQ.nitms-1)then
+            CALL PHELPD('temporal help',nbhelp,'-',0,0,IER)
+            goto 3
+          elseif(irt.EQ.0)then
+            goto 3
+          endif
         endif
       endif
-
+      IF(IRT.LT.1.OR.IRT.GT.7)GOTO 3
   27  continue
       if(IRT.eq.1)then
 
@@ -1284,32 +1555,16 @@ C << the user
 C << might also be a place to generate the initial lines of
 C << asci header with the year of the model etc.
 
-C Get logical name of child process terminal type, expand model 
-C name to include the path and create a string to drive tdf.
-        call tstamp('>','PRJ: start tdf')
-        doit = ' '
-        call tchild(ICPMOD)
-        call termode(ICPMOD,tmode)
-        if(unixok)then
-          call addpath(LTDFA,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LTDFA,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        write(doit,'(5a)') 'tdf -mode ',tmode,' -file ',
-     &    longtfile(:lnblnk(longtfile)),' &'
-        call usrmsg('starting temporal module via',doit,'-')
-        call runit(doit,tmode)
+C Go into the tdf editing menu.
+        action='-'
+        call tdfedit(action,ier)
         goto 42
       elseif(IRT.eq.2)then
 
 C User supplies name of file. Find out its contents (using similar code
 C to ersys) and jump back to the start of this subroutine.
+
+C << later add add a file browse function >>
         if(LTDFA(1:4).eq.'UNKN') LTDFA=DLTDF
         ltmp=LTDFA
         CALL EASKS(ltmp,' ','Temporal definitions file?',
@@ -1405,7 +1660,9 @@ C Dereference or ignore, depending on the file type.
         else
           LTDF='UNKNOWN'
           LTDFA='UNKNOWN'
+          call clrtabc
           itdflg=0
+          NITDF=0
           call usrmsg('Removing temporal references...',' ','-')
           CALL EMKCFG('-',IER)
           call usrmsg('Removing temporal references...done.',' ','-')
@@ -1423,10 +1680,11 @@ C List associations.
             call edisp(iuout,' Temporal entities currently used...')
             call edisp(iuout,'  ________________________________')
             call edisp(iuout,'  |temporal    |generic |associated')
-            call edisp(iuout,'  |entity name |type    |with      ')
+            call edisp(iuout,
+     &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
-              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L)
-   29         FORMAT(i2,1X,A12,1X,A8,1X,A16)
+              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+   29         FORMAT(i2,1X,A12,1X,A8,5X,A16,A16)
               call edisp(iuout,outs)
   28        continue
             call edisp(iuout,' ')
@@ -1489,9 +1747,10 @@ C Befor management option list current db items and then associations.
           call edisp(iuout,' ')
           call edisp(iuout,'  _____Temporal entities used_____')
           call edisp(iuout,'  |temporal    |generic |associated')
-          call edisp(iuout,'  |entity name |type    |with      ')
+          call edisp(iuout,
+     &           '  |entity name |type    |with   zone &     surface ')
           do 228, l=1,ITEMSTD
-            WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L)
+            WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
             call edisp(iuout,outs)
   228     continue
           call edisp(iuout,' ')
@@ -1499,7 +1758,7 @@ C Befor management option list current db items and then associations.
           call edisp(iuout,'Currently no temporal items are used.')
         endif
 
-C Manage the list of DBTAG/DBTASK/DBZN.
+C Manage the list of DBTAG/DBTASK/DBZN/DBSN.
         h(1)='Existing associations can be removed or new '
         h(2)='associations between temporal entities and '
         h(3)='model zones and/or controls can be added. '
@@ -1535,6 +1794,7 @@ C Delete an association and move others up.
               DBTAG(idv)=DBTAG(idv+1)
               DBTASK(idv)=DBTASK(idv+1)
               DBZN(idv)=DBZN(idv+1)
+              DBSN(idv)=DBSN(idv+1)
   791       continue
           endif
           ITEMSTD=ITEMSTD-1
@@ -1558,7 +1818,8 @@ C Add association or edit current association.
 
 C Reset itemstd to the item to be edited.
               call edisp(iuout,'The association details are:')
-              WRITE(outs,29)ite,DBTAG(ite),DBTASK(ite),DBZN(ite)
+              WRITE(outs,29)ite,DBTAG(ite),DBTASK(ite),DBZN(ite),
+     &             DBSN(ite)
               call edisp(iuout,outs)
               h(1)='Select the index of the temporal item you wish'
               h(2)='to associate. '
@@ -1588,6 +1849,7 @@ C Depending on the type of the data, ask for associated zone.
      &      'Related zone','-','Casual gains requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 250
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
           elseif(TTYPE(it)(1:6).eq.'ZIVENT')then
 
 C Use DBZN to indicate that tdf ventilation associated with a zone.
@@ -1602,6 +1864,7 @@ C << need to support the no ventilation case? >>
             else
               write(DBZN(ITE),'(a)') zname(IC)(1:12)
             endif
+            DBSN(ITE)='ALL'            
           elseif(TTYPE(it)(1:6).eq.'RAIRVL')then
 
 C << Think about this, it might need to know about which surfaces
@@ -1612,6 +1875,7 @@ C << the velocity should be associated with an outside surface?
      &        'Related zone','-','Air velocity requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 252
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:6).eq.'CTLSTA')then
 
 C << Think about what this could be used for...if could be a number
@@ -1622,6 +1886,7 @@ C << between 0.0 and 1.0 giving ON fraction.
      &        'Related zone','-','Set point requires a zone.',ier)
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
 
 C Depending on the type of the data, ask for associated zone.
@@ -1699,8 +1964,8 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=4.0
-              cm(3)=5.0
+              cm(2)=5.0
+              cm(3)=6.0
             endif
 
             ibsn(ispl,1)=IC
@@ -1748,7 +2013,7 @@ C Update the control file and link the control loop to the correct zone.
             call usrmsg(
      &        'Updating model control for temporal link...done.',
      &        ' ','-')
-
+            DBSN(ITE)='ALL'
           elseif(TTYPE(it)(1:6).eq.'SETPTT')then
 
 C If there is no control file warn the user to create one first.
@@ -1949,8 +2214,26 @@ C Update the control file and link the control loop to the correct zone.
             call usrmsg(
      &        'Updating model control for temporal link...done.',
      &        ' ','-')
+            DBSN(ITE)='ALL'
+          elseif(TTYPE(it)(1:8).eq.'BIDIRSET')then
+
+C Depending on the type of data, ask for associated surface 
+C(at the moment only bidirectional - in future vertical solar 
+C radiation data can be added based on the same structure).
+            IC=-1
+ 352        izdef=0
+            call askzone(ic,izdef,
+     &        ' Related zone for bidirectional data set?',
+     &        'Related zone','-','Optical sets require a zone.',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 352
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &           'Select surface for bidirectional dataset',' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 352
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           else
             DBZN(ITE)='ALL'
+            DBSN(ITE)='ALL'            
           endif
           if(itro.eq.2)then
             dok=.false.
@@ -2225,13 +2508,17 @@ C icalendar (int*365) for each day, the associated day type
 C act (char*1) action to take 'i' initialise, '-' interactive
       subroutine calenmanage(act,ier)
 #include "epara.h"
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2252,10 +2539,11 @@ C 31
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
       logical modify,browse
+      INTEGER IHL
 
 C If user requested initial calendar.
       if(act.eq.'i'.and.(.NOT.browse))then
-        if(nbdaytype.eq.0)then
+        if(nbdaytype.le.3)then
           calename='standard weekday Sat & Sun'
           nbdaytype=3
           nbcaldays(1)=0
@@ -2394,8 +2682,9 @@ C Manage day types.
         write(citem(mm+4),'(a)') '- exit                               '
         mcvert=mj+nbdaytype+4
         h(1)='This facility allows you to manage day types. You can'
-        h(2)='add or delete (be careful) a day type. To change the '
-        h(3)='details of a day type click on the relevant menu item.'
+        h(2)='add a day type. To change the details of a day type'
+        h(3)='click on the relevant menu item.'
+        icvert=-1
         CALL EMENU('  Day types',citem,mcvert,icvert)
         if(icvert.eq.mcvert)then
           CALL EPMENRC
@@ -2408,11 +2697,15 @@ C Help.
         elseif(icvert.eq.mcvert-2)then
 
 C Add or delete a day type.
-          if(nbdaytype.ge.3.and.nbdaytype.le.10)then
-            h(1)='There can be up to 10 day types. Plese do not '
-            h(2)='delete the basic 3 day types. '
+          if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
+            write(h(1),'(a,i4,a)')'There can be up to ',MDTY,
+     &      ' day types.'
+            h(2)='Day types cannot be deleted (yet) but may not'
+            h(3)='not be assigned to any day at all. The equivalent'
+            h(4)='of deletion is to unassign a day type from all '
+            h(5)='actual days '
             CALL EASKABC(' Options:',' ',
-     &        'add','delete (be careful)','continue',IRT,2)
+     &        'add','delete (not available)','continue',IRT,5)
             if(irt.eq.1)then
               nbdaytype=nbdaytype+1
               nbcaldays(nbdaytype)=0
@@ -2429,7 +2722,6 @@ C Edit calendar day tag and name.
                 if(tcalentag(1:lnblnk(tcalentag)).ne.
      &calentag(nbdaytype)(1:lnblnk(calentag(nbdaytype))))then
                   calentag(nbdaytype)=tcalentag
-                  modify=.true.
                 endif
               endif
               tcalendayn=calendayname(nbdaytype)
@@ -2439,12 +2731,17 @@ C Edit calendar day tag and name.
                 if(tcalendayn(1:lnblnk(tcalendayn)).ne.
      &calendayname(nbdaytype)(1:lnblnk(calendayname(nbdaytype))))then
                   calendayname(nbdaytype)=tcalendayn
-                  modify=.true.
                 endif
               endif
+
+C Update operations data for all zones to include this new day type
+              CALL UPDOPR
+              modify=.true.
               goto 73
             elseif(irt.eq.2)then
-              call edisp(iuout,'Delete not yet implemented!')
+              DO 144 IHL=1,5
+                call edisp(iuout,h(ihl))
+ 144          CONTINUE
               goto 73
             elseif(irt.eq.3)then
               goto 73
@@ -2484,9 +2781,8 @@ C Edit calendar day tag and name.
       ELSEIF(IVERT.EQ.MVERT)THEN
         if(modify.and.(.NOT.browse))then
 
-C << update the model if not browsing >>
-          call edisp(iuout,' ')
-          call edisp(iuout,'Be sure to save model!')
+C update the model if not browsing 
+          CALL EMKCFG('-',IER)
         endif
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
@@ -2544,7 +2840,7 @@ C user can select one or more.
   67    continue
         IX=1
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
-     &    52,nbdaytype,citem,'avail day types',IER,2)
+     &    52,nbdaytype,citem,'available day types',IER,2)
         if(ix.ne.0)then
           idt=idvals(1)
           do 78 ld=1,365
@@ -2635,9 +2931,11 @@ C option is to display in graphic feedback with day types
 C as defined by calenmanage.
 C act (char*1) action to take 't' text feedback, 'g' graphic feedback.
       subroutine calenprint(itru,act,iyear,loopst,loop,ier)
+#include "building.h"
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -3115,18 +3413,24 @@ C EDDGTP Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,ZNAME*12,ZN*12,LCFGF*72
       character zdesc*64,outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok

@@ -1,0 +1,15 @@
+*Operations 1.0
+*date Fri Jun 17 14:05:19 2005  # latest file modification 
+# operations of zone-1 defined in: 
+# ../zones/zone-1.opr
+no operations notes (yet)
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     0   # no Weekday casual gains 
+     0   # no Saturday casual gains 
+     0   # no Sunday casual gains 
+# Labels for gain types 
+ Occupt Lights Equipt

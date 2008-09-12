@@ -98,6 +98,8 @@ C *********************************************************************
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -149,6 +151,8 @@ C SUPORT displays the multi-D gridding support facilities menu.
 C *********************************************************************
       SUBROUTINE SUPORT(IZ)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

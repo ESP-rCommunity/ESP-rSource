@@ -139,6 +139,8 @@ C a subroutine rather than as an application.
 #include "cfd.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C For dll mode dllsubr is the subroutine name where an error occurs
 C and dllmesg tells the details of the error.
@@ -228,6 +230,7 @@ C CFD small openings.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -300,6 +303,10 @@ C Variables used to configure h3kreports
       logical rep_xmlstatus
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C (possibly) Enable floating point exception error handling on
+C gnu 3.X compilers
+      call trapfpe()
 
 C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
@@ -549,7 +556,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       CALL EDISP(IUOUT,' ')
 
 C Write version.
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

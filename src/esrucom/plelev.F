@@ -29,6 +29,8 @@ C array of selected zones to include.
 C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -42,6 +44,9 @@ C IUF is file unit for geometry, utility file units.
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -56,7 +61,6 @@ C IUF is file unit for geometry, utility file units.
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -113,9 +117,11 @@ C file and plot it. Move to first vertex and give the zone name.
           call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
         endif
 
-C Check for a utility file and obstructions.
-        IF(IOBS(newfoc).EQ.1)THEN
+C Check for a zone obstructions file.
+        if(IOBS(newfoc).EQ.1)then
           CALL EGOMST(IUF,ZOBS(newfoc),0,0,iuout,IER)
+        elseif(IOBS(newfoc).EQ.2)then
+          continue
         endif
 
         if(direc.eq.'P')then
@@ -206,11 +212,11 @@ C If there is a ground, ITDSP is flagged and plan view draw it.
 C Print labels and return to default font.
       call winfnt(IFS)
       if(direc.eq.'P')then
-        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(1:lnblnk(LSNAM))
       elseif(direc.eq.'S')then
-        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(1:lnblnk(LSNAM))
       elseif(direc.eq.'E')then
-        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(1:lnblnk(LSNAM))
       endif
       iy= igt-10
       ix = igl
@@ -219,6 +225,7 @@ C Print labels and return to default font.
 
 C If izgfoc is not zero and nzg is one and there is an obstructions
 C file then reload current zone geometry file before returning.
+C << this may not be necessary if newgeo is true >>
       if(nzg.eq.1.and.izgfoc.gt.0)then
         newfoc=izgfoc
         IF(IOBS(newfoc).EQ.1)THEN

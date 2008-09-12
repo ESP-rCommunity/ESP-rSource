@@ -1,0 +1,15 @@
+*Operations 1.0
+*date Tue Feb 21 13:26:01 2006  # latest file modification 
+# operations of slab defined in: 
+# ../zones/slab.opr
+gc10.ctl
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     0   # no Weekday casual gains 
+     0   # no Saturday casual gains 
+     0   # no Sunday casual gains 
+# Labels for gain types 
+ Occupt Lights Equipt

@@ -281,130 +281,67 @@ C Show first 24 surfaces.
 c ******************** MZVENC ********************
 
 c MZVENC computes the hourly ventilation conductance
-c during weekdays, saturdays and sundays
 
 c Common block variables are:
-
-c CVI1 &    - hourly weekday ventilation conductance for
-c CVV1        infiltration and ventilation air respectively
+c CVIN &    - hourly ventilation conductance for
+c CVVN        infiltration and ventilation air respectively
 c             and for weekdays
-
-c ICC1      - hourly weekday convection coupling index:
-c              ICC1=0 ; ventilation air at constant temp.
+c ICCN      - hourly convection coupling index:
+c              ICCN=0 ; ventilation air at constant temp.
 c                       (TIA1)
-c              ICC1=N ; ventilation air at zone N temperature
-
-c TIA1      - hourly temperature of incoming air during
-c             weekdays and corresponding to ICC1=0
-
-c CVI2,CVV2,- as above but for saturdays
-c ICC2 &
-c TIA2
-
-c CVI3,CVV3,- as above but for sundays
-c ICC3 &
-c TIA3
+c              ICCN=N ; ventilation air at zone N temperature
+c TIAN      - hourly temperature of incoming air during
+c             and corresponding to ICCN=0
+C Each day type defined (legacy and default are weekday/saturday/sunday)
+C may have a different value defined for the above variables
 
       SUBROUTINE MZVENC(ICOMP)
 #include "building.h"
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
-
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       COMMON/PREC2/VOL(MCOM)
-
-      COMMON/PREC5/CVI1(MCOM,MT),CVV1(MCOM,MT),ICC1(MCOM,MT),
-     &TIA1(MCOM,MT),CVI2(MCOM,MT),CVV2(MCOM,MT),ICC2(MCOM,MT),
-     &TIA2(MCOM,MT),CVI3(MCOM,MT),CVV3(MCOM,MT),ICC3(MCOM,MT),
-     &TIA3(MCOM,MT)
+      COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
+     &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
+      INTEGER ICCN
+      REAL CVIN,CVVN,TIAN
 
       character outs*124
 
       A=0.33*VOL(ICOMP)
 
 C << what about temporal zone infil and vent? should this require a return? >>
+      NDTY=NBDAYTYPE
+      DO 500 IDTY=1,NDTY
+        DO 501 I=1,24
+          ACIX=0.
+          ACVX=0.
+          ICCX=0
+          ATX=0.
+          IF(NAC(IDTY).EQ.0)GOTO 601
+          DO 502 J=1,NAC(IDTY)
+            IT1=IACS(IDTY,J)
+            IT2=IACF(IDTY,J)
+            IF(I.GT.IT1.AND.I.LE.IT2)GOTO 602
+            GOTO 502
+ 602        ACIX=ACI(IDTY,J)
+            ACVX=ACV(IDTY,J)
+            ICCX=IPT(IDTY,J)
+            ATX=TA(IDTY,J)
+            GOTO 601
+ 502      CONTINUE
+ 601        CVIN(IDTY,ICOMP,I)=A*ACIX
+            CVVN(IDTY,ICOMP,I)=A*ACVX
+            ICCN(IDTY,ICOMP,I)=ICCX
+            TIAN(IDTY,ICOMP,I)=ATX
+ 501    CONTINUE
+ 500  CONTINUE
 
-C Weekday hourly ventilation conductance and associated air
-C temperature.
-      DO 10 I=1,24
-      ACI=0.
-      ACV=0.
-      ICC=0
-      AT=0.
-      IF(NAC1.EQ.0)goto 1
-      DO 20 J=1,NAC1
-      IT1=IACS1(J)
-      IT2=IACF1(J)
-      IF(I.GT.IT1.AND.I.LE.IT2)goto 2
-      goto 20
-    2 ACI=ACI1(J)
-      ACV=ACV1(J)
-      ICC=IPT1(J)
-      AT=TA1(J)
-      goto 1
-   20 CONTINUE
-    1 CVI1(ICOMP,I)=A*ACI
-      CVV1(ICOMP,I)=A*ACV
-      ICC1(ICOMP,I)=ICC
-      TIA1(ICOMP,I)=AT
-   10 CONTINUE
-
-C Saturday hourly ventilation conductance and associated
-C air temperature.
-      DO 30 I=1,24
-      ACI=0.
-      ACV=0.
-      ICC=0
-      AT=0.
-      IF(NAC2.EQ.0)goto 3
-      DO 40 J=1,NAC2
-      IT1=IACS2(J)
-      IT2=IACF2(J)
-      IF(I.GT.IT1.AND.I.LE.IT2)goto 4
-      goto 40
-    4 ACI=ACI2(J)
-      ACV=ACV2(J)
-      ICC=IPT2(J)
-      AT=TA2(J)
-      goto 3
-   40 CONTINUE
-    3 CVI2(ICOMP,I)=A*ACI
-      CVV2(ICOMP,I)=A*ACV
-      ICC2(ICOMP,I)=ICC
-      TIA2(ICOMP,I)=AT
-   30 CONTINUE
-
-C Sunday hourly ventilation conductance and associated
-C air temperature.
-      DO 50 I=1,24
-      ACI=0.
-      ACV=0.
-      ICC=0
-      AT=0.
-      IF(NAC3.EQ.0)goto 5
-      DO 60 J=1,NAC3
-      IT1=IACS3(J)
-      IT2=IACF3(J)
-      IF(I.GT.IT1.AND.I.LE.IT2)goto 6
-      goto 60
-    6 ACI=ACI3(J)
-      ACV=ACV3(J)
-      ICC=IPT3(J)
-      AT=TA3(J)
-      goto 5
-   60 CONTINUE
-    5 CVI3(ICOMP,I)=A*ACI
-      CVV3(ICOMP,I)=A*ACV
-      ICC3(ICOMP,I)=ICC
-      TIA3(ICOMP,I)=AT
-   50 CONTINUE
-
-C Trace output ?
+C Trace output ? (Currently only the first three day types are displayed
       IF(ITRACE(11).EQ.1.AND.IZNTRC(ICOMP).EQ.1)goto  5555
       GOTO 9999
  5555 CONTINUE
@@ -416,8 +353,8 @@ C Trace output ?
       call edisp(itu,'          CVI    CVV    C.Index  Temp.')
       ICNT=ICNT+1
       DO 9994 I=1,24
-      write(outs,'(I4,F10.2,F7.2,I8,F8.2)')I,CVI1(ICOMP,I),
-     &           CVV1(ICOMP,I),ICC1(ICOMP,I),TIA1(ICOMP,I)
+      write(outs,'(I4,F10.2,F7.2,I8,F8.2)')I,CVIN(1,ICOMP,I),
+     &           CVVN(1,ICOMP,I),ICCN(1,ICOMP,I),TIAN(1,ICOMP,I)
       call edisp(itu,outs)
  9994 CONTINUE
       J=ICNT-1
@@ -427,8 +364,8 @@ C Trace output ?
       call edisp(itu,' Time Saturday........................')
       call edisp(itu,'          CVI    CVV    C.Index  Temp.')
       DO 9991 I=1,24
-      write(outs,'(I4,F10.2,F7.2,I8,F8.2)')I,CVI2(ICOMP,I),
-     &           CVV2(ICOMP,I),ICC2(ICOMP,I),TIA2(ICOMP,I)
+      write(outs,'(I4,F10.2,F7.2,I8,F8.2)')I,CVIN(2,ICOMP,I),
+     &           CVVN(2,ICOMP,I),ICCN(2,ICOMP,I),TIAN(2,ICOMP,I)
       call edisp(itu,outs)
  9991 CONTINUE
       write(outs,'(A,I4,A)')' Trace output',J,' Continued'
@@ -436,8 +373,8 @@ C Trace output ?
       call edisp(itu,' Time   Sunday........................')
       call edisp(itu,'          CVI    CVV    C.Index  Temp.')
       DO 9988 I=1,24
-      write(outs,'(I4,F10.2,F7.2,I8,F8.2)')I,CVI3(ICOMP,I),
-     &           CVV3(ICOMP,I),ICC3(ICOMP,I),TIA3(ICOMP,I)
+      write(outs,'(I4,F10.2,F7.2,I8,F8.2)')I,CVIN(3,ICOMP,I),
+     &           CVVN(3,ICOMP,I),ICCN(3,ICOMP,I),TIAN(3,ICOMP,I)
       call edisp(itu,outs)
  9988 CONTINUE
  9999 RETURN
@@ -461,12 +398,15 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/trc/itrc
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
-
 
 C CTYPE (4 char) - zone shape type (REC, REG or GEN)
 C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
@@ -476,18 +416,18 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
-
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
 C Commons for electrical data
-      COMMON/ELP3/NEL1,PF1(MC),IPF1(MC),PWR1(MC),BVOLT1(MC),IPHAS1(MC),
-     &            NEL2,PF2(MC),IPF2(MC),PWR2(MC),BVOLT2(MC),IPHAS2(MC),
-     &            NEL3,PF3(MC),IPF3(MC),PWR3(MC),BVOLT3(MC),IPHAS3(MC)
       COMMON/ELECFLG/IELF(MCOM)
+      COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
+     &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
+      INTEGER NEL,IPF,IPHAS
+      REAL PF,PWR,BVOLT
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/CASGFA/FLOORA(MCOM)
@@ -514,9 +454,9 @@ C           l = 5 -> radiative feaction (0->1)
 C           l = 6 -> convective fraction (0->1)
 C
 C - Alex Feb. 20 2004
-      COMMON/CasCou/iNumb_Gain_coupling(MCOM,3),
-     &     Coupling_gain_info(MCOM,3,MC,6)
-      INTEGER iNumb_Gain_coupling
+      COMMON/CasCou/iNumb_Gain_coupling(MCOM,MDTY),
+     &     Coupling_gain_info(MCOM,MDTY,MC,6)
+      INTEGER iNumb_Gain_coupling,index
       REAL Coupling_Gain_info
 
       character outs*124,zname*12,zdesc*64
@@ -531,24 +471,15 @@ C planes which comprise the floor.
 
 C Establish if floor area needs be specified.
         INDEX=0
-        IF(NCAS1.GT.0)THEN
-          DO 160 I=1,NCAS1
-          IF(ICGT1(I).LT.0)INDEX=1
-  160     CONTINUE
-        ENDIF
-        IF(INDEX.EQ.1)goto 161
-        IF(NCAS2.GT.0)THEN
-          DO 170 I=1,NCAS2
-          IF(ICGT2(I).LT.0)INDEX=1
-  170     CONTINUE
-        ENDIF
-        IF(INDEX.EQ.1)goto 161
-        IF(NCAS3.GT.0)THEN
-          DO 180 I=1,NCAS3
-          IF(ICGT3(I).LT.0)INDEX=1
-  180     CONTINUE
-        ENDIF
-  161   if (INDEX.ne.0) then
+        DO 400 IDTY=1,NBDAYTYPE
+          IF(INDEX.EQ.1)GOTO 400
+          IF(NCAS(IDTY).GT.0)THEN
+            DO 160 I=1,NCAS(IDTY)
+            IF(ICGT(IDTY,I).LT.0)INDEX=1
+ 160        CONTINUE
+          ENDIF
+ 400    CONTINUE
+       if (INDEX.ne.0) then
 
 C Floor area is required, if trace level is verbose echo the base area.
           FLOORA(ICOMP)=ZBASEA(ICOMP)
@@ -589,69 +520,28 @@ C   the casual gain.
 C - if ICGTYP = 4, casual gain corresponds to ESRU-designated
 C   but yet-unimplemented controlable casual gain. Stop simulation 
 C Alex, Feb 20, 2004.
-      if (NCAS1.gt.0) then
+      do 300 iday=1,nbdaytype
+      if (NCAS(iday).gt.0) then
 C.....Start counter for electric->casual gain couplings
-      iNumb_gain_coupling(icomp,1) = 0
-      do 210 I=1,NCAS1
-        IDAY=1
-        ITYP=abs(ICGT1(I))
-        ICGTYP=ICGT1(I)
-        IT1=ICGS1(I)
-        IT2=ICGF1(I)
+      ingc = 0
+      do 210 I=1,NCAS(iday)
+        ITYP=abs(ICGT(IDAY,I))
+        ICGTYP=ICGT(IDAY,I)
+        IT1=ICGS(IDAY,I)
+        IT2=ICGF(IDAY,I)
         IF ( ICGTYP .EQ. 5 ) THEN
-C..........Increment counter 
-           iNumb_Gain_coupling(icomp,1) = 
-     &          iNumb_Gain_coupling(icomp,1) + 1
-C..........start hour
-           Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          1               ! data index 
-     &          ) = real(IT1)   ! start hour 
-C..........End hour
-           Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          2               ! data index 
-     &          ) = real(IT2)   ! end hour
-C..........Sensible load coefficient
-           Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          3               ! data index 
-     &          ) =  CMGS1(I)   ! sens load coeff
-C..........Latent load coefficient
-           Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          4               ! data index 
-     &          ) =  CMGL1(I)   ! latent load coeff
-C..........Radiant fraction
-           Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          5               ! data index 
-     &          ) =   RADC1(I)  ! radiant fraction
-C..........Convective fraction
-           Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          6               ! data index 
-     &          ) =   CONC1(I)  ! convective fraction
+           ingc = ingc + 1 !Increment counter 
+           Coupling_gain_info(ICOMP,IDAY,ingc,1) = real(IT1)    !start hour
+           Coupling_gain_info(ICOMP,IDAY,ingc,2) = real(IT2)    !End hour
+           Coupling_gain_info(ICOMP,IDAY,ingc,3) = CMGS(IDAY,I) !Sensible load coefficient
+           Coupling_gain_info(ICOMP,IDAY,ingc,4) = CMGL(IDAY,I) !Latent load coefficient
+           Coupling_gain_info(ICOMP,IDAY,ingc,5) = RADC(IDAY,I) !Radiant fraction
+           Coupling_gain_info(ICOMP,IDAY,ingc,6) = CONC(IDAY,I) !Convective fraction
 
-C..........Latent load couplings are presently not 
-C..........supported. Check for coupling in specifications, 
-C..........and if found (i) warn user & (ii) set to zero.
-           if( Coupling_gain_info(ICOMP, ! zone #
-     &          1,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,1), ! coupling #
-     &          4               ! data index 
-     &          ) .gt.0. ) then ! latent load coeff          
-              Coupling_gain_info(ICOMP, ! zone #
-     &             1,           ! day type (weekday)
-     &             iNumb_Gain_coupling(icomp,1), ! coupling #
-     &             4            ! data index 
-     &             ) =  0.      ! latent load coeff
+C Latent load couplings are presently not supported. Check for coupling
+C in specifications, and if found (i) warn user & (ii) set to zero.
+           if( Coupling_gain_info(ICOMP,IDAY,ingc,4) .gt.0. ) then 
+              Coupling_gain_info(ICOMP,IDAY,ingc,4) =  0.      
              call edisp(itu,' ')
              write(outs,'(A)') 'WARNING: MZCASG in precal.F'
              call edisp(itu,outs)
@@ -673,22 +563,22 @@ C..........and if found (i) warn user & (ii) set to zero.
              call edisp(itu,' ')
            ENDIF
         ENDIF
-        if (ICGT1(I).gt.0) then
+        if (ICGT(iday,I).gt.0) then
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS1(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF1(I)
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS1(I)*CONC1(I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS1(I)*RADC1(I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL1(I)
+          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
+          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
+          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS(IDAY,I)*CONC(IDAY,I)
+          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS(IDAY,I)*RADC(IDAY,I)
+          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL(IDAY,I)
 
 C Electrical loads. Determine the reactive power consumption first.
           if (IELF(ICOMP).GT.0) then
-            PR=PWR1(I)
-            call PRECOMP(PR,PF1(I),IPF1(I),PA,PQ)
-            if (IPHAS1(I).LT.4) then
-              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS1(I))=PR
-              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS1(I))=PQ
+            PR=PWR(IDAY,I)
+            call PRECOMP(PR,PF(IDAY,I),IPF(IDAY,I),PA,PQ)
+            if (IPHAS(IDAY,I).LT.4) then
+              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS(IDAY,I))=PR
+              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS(IDAY,I))=PQ
             else
             
 C Assign the power consumption evenly over the three phases for a 3-phase load.
@@ -698,36 +588,39 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
  213          continue
             endif
           endif
-        elseif (ICGT1(I).eq.-1) then
+        elseif (ICGT(IDAY,I).eq.-1) then
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS1(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF1(I)
-          call eclose(CMGS1(I),0.00,0.001,close)
+          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
+          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
+          call eclose(CMGS(IDAY,I),0.00,0.001,close)
           if (close) then
             NPERSN=1
           else
-            NPERSN=INT(FLOORA(ICOMP)/CMGS1(I))
+            NPERSN=INT(FLOORA(ICOMP)/CMGS(IDAY,I))
           endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*CONC1(I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*RADC1(I)
+          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*CONC(IDAY,I)
+          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*RADC(IDAY,I)
           CGLAT(ICOMP,IDAY,ITYP,IPER)=NPERSN*45.0
         else
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS1(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF1(I)
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS1(I)*CONC1(I)*FLOORA(ICOMP)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS1(I)*RADC1(I)*FLOORA(ICOMP)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL1(I)*FLOORA(ICOMP)
+          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
+          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
+          CGSENC(ICOMP,IDAY,ITYP,IPER)=
+     &    CMGS(IDAY,I)*CONC(IDAY,I)*FLOORA(ICOMP)
+          CGSENR(ICOMP,IDAY,ITYP,IPER)=
+     &    CMGS(IDAY,I)*RADC(IDAY,I)*FLOORA(ICOMP)
+          CGLAT(ICOMP,IDAY,ITYP,IPER)=
+     &    CMGL(IDAY,I)*FLOORA(ICOMP)
 
 C Electrical loads. Determine the reactive power consumption first.
           if (IELF(ICOMP).GT.0) then
-            PR=PWR1(I)*FLOORA(ICOMP)
-            call PRECOMP(PR,PF1(I),IPF1(I),PA,PQ)
-            if (IPHAS1(I).LT.4) then
-              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS1(I))=PR
-              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS1(I))=PQ
+            PR=PWR(IDAY,I)*FLOORA(ICOMP)
+            call PRECOMP(PR,PF(IDAY,I),IPF(IDAY,I),PA,PQ)
+            if (IPHAS(IDAY,I).LT.4) then
+              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS(IDAY,I))=PR
+              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS(IDAY,I))=PQ
             else
             
 C Assign the power consumption evenly over the three phases for a 3-phase load.
@@ -738,8 +631,9 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
             endif
           endif
         endif
+      iNumb_gain_coupling(icomp,iday)=INGC
  210  continue
- 
+
 C If no gains defined then set one null period.
       do 211 IG=1,MGTY
         if (NCGPER(ICOMP,IDAY,IG).eq.0) then
@@ -747,341 +641,7 @@ C If no gains defined then set one null period.
         endif
  211  continue
       endif
-      
-C Saturdays.
-      if (NCAS2.gt.0) then
-C.....Start counter for electric->casual gain couplings
-      iNumb_Gain_coupling(icomp,2) = 0
-C NOTE: support for additional casual gains types added:
-C - if ICGTYP = 5, casual gain is coupled to electric load
-C   and electric_net_utilities is called to characterize
-C   the casual gain.
-C - if ICGTYP = 4, casual gain corresponds to ESRU-designated
-C   but yet-unimplemented controlable casual gain. Stop simulation 
-C Alex, Feb 20, 2004.
-C Compute radiant and convective components as above.
-      do 220 I=1,NCAS2
-        IDAY=2
-        ITYP=abs(ICGT2(I))
-        ICGTYP=ICGT2(I)
-        IT1=ICGS2(I)
-        IT2=ICGF2(I)
-        IF ( ICGTYP .EQ. 5 ) THEN
-C..........Increment counter 
-           iNumb_Gain_coupling(icomp,2) = 
-     &          iNumb_Gain_coupling(icomp,2) + 1
-C..........start hour
-           Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (Saturday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          1               ! data index 
-     &          ) = real(IT1)   ! start hour 
-C..........End hour
-           Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (Saturday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          2               ! data index 
-     &          ) = real(IT2)   ! end hour
-C..........Sensible load coefficient
-           Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (Saturday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          3               ! data index 
-     &          ) =  CMGS2(I)   ! sens load coeff
-C..........Latent load coefficient
-           Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (Saturday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          4               ! data index 
-     &          ) =  CMGL2(I)   ! latent load coeff
-C..........Radiant fraction
-           Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (Saturday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          5               ! data index 
-     &          ) =   RADC2(I)  ! radiant fraction
-C..........Convective fraction
-           Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (Saturday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          6               ! data index 
-     &          ) =   CONC2(I)  ! convective fraction
-C..........Latent load couplings are presently not 
-C..........supported. Check for coupling in specifications, 
-C..........and if found (i) warn user & (ii) set to zero.
-           if( Coupling_gain_info(ICOMP, ! zone #
-     &          2,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,2), ! coupling #
-     &          4               ! data index 
-     &          ) .gt.0. ) then ! latent load coeff          
-              Coupling_gain_info(ICOMP, ! zone #
-     &             2,           ! day type (weekday)
-     &             iNumb_Gain_coupling(icomp,2), ! coupling #
-     &             4            ! data index 
-     &             ) =  0.      ! latent load coeff
-             call edisp(itu,' ')
-             write(outs,'(A)') 'WARNING: MZCASG in precal.F'
-             call edisp(itu,outs)
-             write(outs,'(A)') 'A HOT3000 electrical-load->latent-gain'
-             call edisp(itu,outs)
-             write(outs,'(A)') 'coupling has been specified in zone #'
-             call edisp(itu,outs)
-             write(outs,'(a,I2,a,I2,a)') 
-     &            ' ',icomp,' Saturday gain # ',I,', but this type of'
-             call edisp(itu,outs)
-             write(outs,'(a)') 
-     &            'coupling is presently unsupported. The '
-             call edisp(itu,outs)
-             write(outs,'(a)') 
-     &            'latent portion of this coupling will be'
-             call edisp(itu,outs)
-             write(outs,'(a)') 'set to zero.'
-             call edisp(itu,outs)
-             call edisp(itu,' ')
-           ENDIF
-        ENDIF
-        if (ICGT2(I).gt.0) then
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS2(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF2(I)
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS2(I)*CONC2(I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS2(I)*RADC2(I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL2(I)
-
-C Electrical loads. Determine the reactive power consumption first.
-          if (IELF(ICOMP).GT.0) then
-            PR=PWR2(I)
-            call PRECOMP(PR,PF2(I),IPF2(I),PA,PQ)
-            if (IPHAS2(I).LT.4) then
-              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS2(I))=PR
-              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS2(I))=PQ
-            else
-            
-C Assign the power consumption evenly over the three phases for a 3-phase load.
-              do 223 IP=1,3
-                ELQ(ICOMP,IDAY,ITYP,IPER,IP)=PR/3.
-                ELR(ICOMP,IDAY,ITYP,IPER,IP)=PQ/3.
-  223         continue
-            endif
-          endif
-        elseif (ICGT2(I).eq.-1) then
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS2(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF2(I)
-          call eclose(CMGS2(I),0.00,0.001,close)
-          if (close) then
-            NPERSN=1
-          else
-            NPERSN=INT(FLOORA(ICOMP)/CMGS2(I))
-          endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*CONC2(I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*RADC2(I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=NPERSN*45.0
-        else
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS2(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF2(I)
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS2(I)*CONC2(I)*FLOORA(ICOMP)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS2(I)*RADC2(I)*FLOORA(ICOMP)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL2(I)*FLOORA(ICOMP)
-
-C Electrical loads. Determine the reactive power consumption first.
-          if (IELF(ICOMP).GT.0) then
-            PR=PWR2(I)*FLOORA(ICOMP)
-            call PRECOMP(PR,PF2(I),IPF2(I),PA,PQ)
-            if (IPHAS2(I).LT.4) then
-              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS2(I))=PR
-              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS2(I))=PQ
-            else
-            
-C Assign the power consumption evenly over the three phases for a 3-phase load.
-              do 225 IP=1,3
-                ELQ(ICOMP,IDAY,ITYP,IPER,IP)=PR/3.
-                ELR(ICOMP,IDAY,ITYP,IPER,IP)=PQ/3.
- 225          continue
-            endif
-          endif
-        endif
- 220  continue
- 
-C If no gains defined then set one null period.
-      do 221 IG=1,MGTY
-        if (NCGPER(ICOMP,IDAY,IG).eq.0) then
-          NCGPER(ICOMP,IDAY,IG)=1
-        endif
- 221  continue
-      endif
- 
-C Sundays
-      if (NCAS3.gt.0) then
-C.....Start counter for electric->casual gain couplings
-      iNumb_Gain_coupling(icomp,3) = 0
-C NOTE: support for additional casual gains types added:
-C - if ICGTYP = 5, casual gain is coupled to electric load
-C   and electric_net_utilities is called to characterize
-C   the casual gain.
-C - if ICGTYP = 4, casual gain corresponds to ESRU-designated
-C   but yet-unimplemented controlable casual gain. Stop simulation 
-C Alex, Feb 20, 2004.
-C Compute radiant and convective components as above.
-      do 230 I=1,NCAS3
-        IDAY=3
-        ITYP=abs(ICGT3(I))
-        ICGTYP=ICGT3(I)
-        IT1=ICGS3(I)
-        IT2=ICGF3(I)
-        IF ( ICGTYP .EQ. 5 ) THEN
-C..........Increment counter 
-           iNumb_Gain_coupling(icomp,3) = 
-     &          iNumb_Gain_coupling(icomp,3) + 1
-C..........start hour
-           Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (Sunday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          1               ! data index 
-     &          ) = real(IT1)   ! start hour 
-C..........End hour
-           Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (Sunday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          2               ! data index 
-     &          ) = real(IT2)   ! end hour
-C..........Sensible load coefficient
-           Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (Sunday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          3               ! data index 
-     &          ) =  CMGS3(I)   ! sens load coeff
-C..........Latent load coefficient
-           Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (Sunday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          4               ! data index 
-     &          ) =  CMGL3(I)   ! latent load coeff
-C..........Radiant fraction
-           Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (Sunday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          5               ! data index 
-     &          ) =   RADC3(I)  ! radiant fraction
-C..........Convective fraction
-           Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (Sunday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          6               ! data index 
-     &          ) =   CONC3(I)  ! convective fraction
-
-C..........Latent load couplings are presently not 
-C..........supported. Check for coupling in specifications, 
-C..........and if found (i) warn user & (ii) set to zero.
-           if( Coupling_gain_info(ICOMP, ! zone #
-     &          3,              ! day type (weekday)
-     &          iNumb_Gain_coupling(icomp,3), ! coupling #
-     &          4               ! data index 
-     &          ) .gt.0. ) then ! latent load coeff          
-              Coupling_gain_info(ICOMP, ! zone #
-     &             3,           ! day type (weekday)
-     &             iNumb_Gain_coupling(icomp,3), ! coupling #
-     &             4            ! data index 
-     &             ) =  0.      ! latent load coeff
-             call edisp(itu,' ')
-             write(outs,'(A)') 'WARNING: MZCASG in precal.F'
-             call edisp(itu,outs)
-             write(outs,'(A)') 'A HOT3000 electrical-load->latent-gain'
-             call edisp(itu,outs)
-             write(outs,'(A)') 'coupling has been specified in zone #'
-             call edisp(itu,outs)
-             write(outs,'(a,I2,a,I2,a)') ' ',icomp,
-     &            ', Sunday gain # ', I,', but this type of'
-             call edisp(itu,outs)
-             write(outs,'(a)') 
-     &            'coupling is presently unsupported. The '
-             call edisp(itu,outs)
-             write(outs,'(a)') 
-     &            'latent portion of this coupling will be'
-             call edisp(itu,outs)
-             write(outs,'(a)') 'set to zero.'
-             call edisp(itu,outs)
-             call edisp(itu,' ')
-           ENDIF
-        ENDIF
-        if (ICGT3(I).gt.0) then
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS3(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF3(I)
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS3(I)*CONC3(I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS3(I)*RADC3(I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL3(I)
-
-C Electrical loads. Determine the reactive power consumption first.
-          if (IELF(ICOMP).GT.0) then
-            PR=PWR3(I)
-            call PRECOMP(PR,PF3(I),IPF3(I),PA,PQ)
-            if (IPHAS3(I).LT.4) then
-              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS3(I))=PR
-              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS3(I))=PQ
-            else
-            
-C Assign the power consumption evenly over the three phases for a 3-phase load.
-              do 233 IP=1,3
-                ELQ(ICOMP,IDAY,ITYP,IPER,IP)=PR/3.
-                ELR(ICOMP,IDAY,ITYP,IPER,IP)=PQ/3.
- 233          continue
-            endif
-          endif
-        elseif (ICGT3(I).eq.-1) then
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS3(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF3(I)
-          call eclose(CMGS3(I),0.00,0.001,close)
-          if (close) then
-            NPERSN=1
-          else
-            NPERSN=INT(FLOORA(ICOMP)/CMGS3(I))
-          endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*CONC3(I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*RADC3(I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=NPERSN*45.0
-        else
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS3(I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF3(I)
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=CMGS3(I)*CONC3(I)*FLOORA(ICOMP)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=CMGS3(I)*RADC3(I)*FLOORA(ICOMP)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=CMGL3(I)*FLOORA(ICOMP)
-
-C Electrical loads. Determine the reactive power consumption first.
-          if (IELF(ICOMP).GT.0) then
-            PR=PWR3(I)*FLOORA(ICOMP)
-            call PRECOMP(PR,PF3(I),IPF3(I),PA,PQ)
-            if (IPHAS3(I).LT.4) then
-              ELQ(ICOMP,IDAY,ITYP,IPER,IPHAS3(I))=PR
-              ELR(ICOMP,IDAY,ITYP,IPER,IPHAS3(I))=PQ
-            else
-            
-C Assign the power consumption evenly over the three phases for a 3-phase load.
-              do 235 IP=1,3
-                ELQ(ICOMP,IDAY,ITYP,IPER,IP)=PR/3.
-                ELR(ICOMP,IDAY,ITYP,IPER,IP)=PQ/3.
- 235          continue
-            endif
-          endif
-        endif
- 230  continue
- 
-C If no gains defined then set one null period.
-      do 231 IG=1,MGTY
-        if (NCGPER(ICOMP,IDAY,IG).eq.0) then
-          NCGPER(ICOMP,IDAY,IG)=1
-        endif
- 231  continue
-      endif
+ 300  continue
 
 C Trace output ?
       if (ITRACE(12).EQ.1.AND.IZNTRC(ICOMP).EQ.1) then
@@ -1207,7 +767,7 @@ c time constant.
 c     IF(ITCN.LT.2)ITCN=2
 c     IF(ITCN.GT.7)ITCN=7
       IF(ITCN.GT.ITCNST)ITCNST=ITCN
-
+      RETURN
       END
 
 c ******************** MZMISC ********************

@@ -20,9 +20,13 @@ C Boston, MA 02111-1307 USA.
 
 C insert.F contains:
 C  ADDSUR : add, delete, copy a surface within a zone.
+C  ADDMASS: add a horizontal or vertical rectangular mass in zone.
 C  ADDVERT: add or delete a vertex within a zone.
 C  CKVERT : checks vertex lists & returns if zone is fully bounded.
 C  INSREC : add rect surface within or at base of surface.
+C  SURLEHI: Determines the bounding box around a surface.
+C  Adjcbg6g7: adjusts common blocks G6 and G7 to account for new surface.
+C addedsurf: copies G1 & G5 common block values to G6
 
 C ************* ADDSUR 
 C ADDSUR: Add / delete / copy a surface within a zone.
@@ -41,6 +45,9 @@ C << what about including common zndata in this manipulation? >>
 
       SUBROUTINE ADDSUR(ITRC,ICOMP,IWHICH,ACTION,MODE,ISCOPT,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -61,7 +68,11 @@ C << what about including common zndata in this manipulation? >>
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -92,8 +103,8 @@ C << what about including common zndata in this manipulation? >>
       integer iotherzone ! the other zone needing to be updated
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
+      dimension jvn2(MV)  ! dummy array for sorti call
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV),ispk(MS)
-      dimension ITEMP(MV)  ! used for sorting list in decending order.
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -103,7 +114,6 @@ C << what about including common zndata in this manipulation? >>
       character SSPARENT*12
       character zname*12,zdesc*64
       CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
@@ -462,7 +472,7 @@ C indicies of the verticies in jvn1 will not reflect what is available
 C in the zone. Tested for deleting a door and the logic works because
 C of the normal ordering of the vertices.
           KFLAG = -1
-          call SORTI(jvn1,ITEMP,MV,KFLAG)
+          call SORTI(jvn1,jvn2,MV,KFLAG)
           do 752 ichildloop=1,myedges
             ijj=jvn1(ichildloop)
             CALL ADDVERT(icomp,ijj,'D',IER)
@@ -972,34 +982,8 @@ C Reverse the ordering.
         endif
 
 C Update the connection list. Move all others up and then insert with
-C default values.
-        IF(NCON.LT.MCON)THEN
-          NCON=NCON+1
-          IX=NCON+1
-
-C Update common blocks G6 & G7
-          call adjcbg6g7('+',ix,icon)
-
-          IC1(ICON)=ICOMP
-          IE1(ICON)=NSUR
-          ICT(ICON)=0
-          IC2(ICON)=0
-          IE2(ICON)=0
-          IZSTOCN(icomp,nsur)=icon
-          SSNAME(ICON)=SNAME(ICOMP,NSUR)
-          SSOTF(ICON)=SOTF(NSUR)
-          SSMLCN(ICON)=SMLCN(NSUR)
-          SSVFC(ICON)=SVFC(NSUR)
-          SSOTHER(ICON,1)=SOTHER(NSUR,1)
-          SSOTHER(ICON,2)=SOTHER(NSUR,2)
-          SSOTHER(ICON,3)=SOTHER(NSUR,3)
-          SSUSE(ICON,1)=SUSE(NSUR,1)
-          SSUSE(ICON,2)=SUSE(NSUR,2)
-          SSPARENT(ICON)=SPARENT(NSUR)
-
-C Now update the G7 common block to reflect additional surface.
-          call zgupdate(1,icomp,ier)
-        ENDIF
+C default values (allow moderate trace (3rd parameter in addedsurf).
+        call addedsurf(icomp,icon,1,ier)
 
 C If more than one surface to copy save the updated zone before
 C copying the next surface.
@@ -1212,39 +1196,343 @@ C << subroutine to use guesstype needs to be added as in INSREC >>
         guesstype='any_type'
 
 C Update the connection list. Move all others up and then insert with
-C default values.
-        IF(NCON.LT.MCON)THEN
-          NCON=NCON+1
-          IX=NCON+1
-
-C Update common blocks G6 & G7
-          call adjcbg6g7('+',ix,icon)
-
-          IC1(ICON)=ICOMP
-          IE1(ICON)=NSUR
-          ICT(ICON)=0
-          IC2(ICON)=0
-          IE2(ICON)=0
-          IZSTOCN(icomp,nsur)=icon
-          SSNAME(ICON)=SNAME(ICOMP,NSUR)
-          SSOTF(ICON)=SOTF(NSUR)
-          SSMLCN(ICON)=SMLCN(NSUR)
-          SSVFC(ICON)=SVFC(NSUR)
-          SSOTHER(ICON,1)=SOTHER(NSUR,1)
-          SSOTHER(ICON,2)=SOTHER(NSUR,2)
-          SSOTHER(ICON,3)=SOTHER(NSUR,3)
-          SSUSE(ICON,1)=SUSE(NSUR,1)
-          SSUSE(ICON,2)=SUSE(NSUR,2)
-          SSPARENT(ICON)=SPARENT(NSUR)
-
-C Now update the G7 common block to reflect new surface.
-          call zgupdate(2,icomp,ier)
-        ENDIF
+C default values. (allow verbose trace (3rd parameter in addedsurf).
+        call addedsurf(icomp,icon,2,ier)
         MODIFY=.TRUE.
       endif
 
       RETURN
       END
+
+C ************* ADDMASS 
+C ADDMASS: Add a horizontal or vertical rectangular mass in zone.
+C Parameter passed:
+C ACT (2 char) to signal vertical mass 'VM', vertical single 'VS'
+C   horizontal mass 'HM' or horizontal single 'HS'.
+C MODE (1 char) passed `s` is silent (no graphic feedback) or 'g' graphic
+C   feedback.
+C VALOX,VALOY,VALOZ is the XYZ of the origin of the surface.
+C ANG is the azimuth in degrees.
+C DDX, DDZ length and width of rectangle.
+C sn (12 char) surface name
+C constr (12 char) the name of the construction for then new surface(s).
+C opt (12 char) the name of the optical set for the new surface(s).
+C IER is zero then no issue during creation, IER is -1 then user asked
+C   for new position, IER is -3 user aborted action.
+      SUBROUTINE ADDMASS(ITRC,ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
+     &   ANG,DDX,DDZ,SN,constr,OPT,IER)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      PARAMETER  (MPL = 200 )
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G2/NGL(MS)
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+
+      character constr*12,act*2,mode*1,OPT*12,h*72
+      character outs*124,SN*12
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+
+      DIMENSION  XXW(4),YYW(4),ZZW(4)  ! for the initial surface
+      DIMENSION  XXM(4),YYM(4),ZZM(4)  ! for matching surface
+      DIMENSION  JVNM(4)               ! for matching surface
+      DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
+      DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
+      DIMENSION  SBBOX(3,2)
+      LOGICAL MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
+
+C Set first coord at origin (lower left).
+      XXW(1) = VALOX
+      YYW(1) = VALOY
+      ZZW(1) = VALOZ
+
+C Set PI and RAD.
+      PI = 4.0 * ATAN(1.0)
+      RAD = PI/180.
+
+      if(act(1:1).eq.'V'.or.act(1:1).eq.'v')then
+
+C Set second coord along DDX metres at ANG-90.
+        RYAZI = (ANG-90.0)*RAD
+        RSALT = 0.00
+        z3 = DDX*SIN(RSALT)
+        XYDIS = DDX*COS(RSALT)
+        IF (ABS(XYDIS) .LT. 1E-6)THEN
+          x3 = 0.
+          y3 = 0.
+        ELSE
+          x3 = XYDIS*SIN(RYAZI)
+          y3 = XYDIS*COS(RYAZI)
+        ENDIF
+        XXW(2)=x3+XXW(1)
+        YYW(2)=y3+YYW(1)
+        ZZW(2)=z3+ZZW(1)
+
+C Third point is as second with Z adjusted. Fourth point is as first with
+C Z adjusted.
+        XXW(3)=XXW(2)
+        YYW(3)=YYW(2)
+        ZZW(3)=ZZW(2)+DDZ
+        XXW(4)=XXW(1)
+        YYW(4)=YYW(1)
+        ZZW(4)=ZZW(1)+DDZ
+
+      elseif(act(1:1).eq.'H'.or.act(1:1).eq.'h')then
+        XXW(2) = VALOX+DDX
+        YYW(2) = VALOY
+        ZZW(2) = VALOZ
+        XXW(3) = VALOX+DDX
+        YYW(3) = VALOY+DDZ
+        ZZW(3) = VALOZ
+        XXW(4) = VALOX
+        YYW(4) = VALOY+DDZ
+        ZZW(4) = VALOZ
+
+C Now rotate around the first coordinate.
+        if(ANG.LT.-.01.OR.ANG.GT..01)then
+          A=-ANG*PI/180.
+          CA=COS(A)
+          SA=SIN(A)
+          XX1=XXW(1)
+          YY1=YYW(1)
+          DO 200 I=1,4
+            XXX=XXW(I)-XX1
+            YYY=YYW(I)-YY1
+            XR=XXX*CA+YYY*SA
+            YR=YYY*CA-XXX*SA
+            XXW(I)=XR+XX1
+            YYW(I)=YR+YY1
+  200     continue
+        endif
+
+      endif
+
+C Copy vertices in inverse order for matching surface.
+      XXM(1) = XXW(2); YYM(1) = YYW(2); ZZM(1) = ZZW(2)
+      XXM(2) = XXW(1); YYM(2) = YYW(1); ZZM(2) = ZZW(1)
+      XXM(3) = XXW(4); YYM(3) = YYW(4); ZZM(3) = ZZW(4)
+      XXM(4) = XXW(3); YYM(4) = YYW(3); ZZM(4) = ZZW(3)
+
+C I mode is 'g' then draw the new surface.
+      if(mode(1:1).eq.'G'.or.mode(1:1).eq.'g')then
+
+C Display the new vertical (irt=6) or horizontal (irt=7) rectangle.
+        if(MMOD.eq.8)then
+          IAPNT = 1
+          DO 350 J = 1,4
+            AX(J) = XXW(J)
+            AY(J) = YYW(J)
+            AZ(J) = ZZW(J)
+            IANXT(J) = J + 1
+  350     CONTINUE
+          IANXT(4) = IAPNT
+          CALL MATPOL(4,IAPNT,AX,AY,AZ,IANXT,TEMAT,
+     &              SBBOX,NBP,IBPNT,BX,BY,BZ,IBNXT,IERR)
+          CALL CLIPFL(NBP,BX,BY,BZ,ISTAT)
+          IF(ISTAT .EQ. 1)goto 32
+          if(ISTAT .EQ.-1)then
+            CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          endif
+
+C Draw the (perhaps clipped) rectangle.
+          DO 302 JB = 1,NB
+            IP = IABS(IBPNT)
+            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+            call etplot(AAX,AAY,0,0)
+
+C Draw succeeding points until last vertex.
+            IP1 = IBNXT(IP)
+ 451        CONTINUE
+            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
+            call etplot(AAX,AAY,1,0)
+
+            IP1 = IBNXT(IP1)
+            IF(IP1 .NE. IP) GOTO 451
+
+C Complete rec.
+            CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+            call etplot(AAX,AAY,1,0)
+  302     CONTINUE
+        endif   ! graphic mode test
+
+   32   CONTINUE
+        CALL EDISP(iuout,
+     &    ' New coords: (lower left, lower right, up right, up left')
+        WRITE(OUTS,'(a,4F8.3)') ' X coords:',(XXW(I),I=1,4)
+        CALL EDISP(iuout,OUTS)
+        WRITE(OUTS,'(a,4F8.3)') ' Y coords:',(YYW(I),I=1,4)
+        CALL EDISP(iuout,OUTS)
+        WRITE(OUTS,'(a,4F8.3)') ' Z coords:',(ZZW(I),I=1,4)
+        CALL EDISP(iuout,OUTS)
+
+C Confirm opening.
+        h(1)='If you accept the rectangle it will be converted into '
+        h(2)='a surface within the zone. If you elect to revise it'
+        h(3)='you will be presented with several options. '
+        CALL EASKABC('Options for this rectangle:',' ',
+     &     'accept position','revise position','abort',INVT,3)
+        if(INVT.eq.2)then
+          ITVNO=0
+          ITSNM=0
+          MODIFY=.TRUE.
+          CALL INLNST(1)
+          nzg=1
+          nznog(1)=ICOMP
+          izgfoc=ICOMP
+          CALL ADJVIEW(ITRC,IER)
+          ier=-1
+          return
+        elseif(INVT.eq.3)then
+          ier=-3
+          return
+        endif
+
+      else
+        continue
+      endif
+
+C Now update the appropriate common data for the new surface. The
+C following code is similar to that in addsur in edzone.f.
+C ICONT is the connection for the surface. Because the surface 
+C to be added is not yet in the connections list find ICONT
+C its future position via `one connection past the current last 
+      ICONT=IZSTOCN(icomp,nsur)+1
+      NZSUR(ICOMP)=NZSUR(ICOMP)+1
+      NSUR=NSUR+1
+      IZSTOCN(icomp,nsur)=icont  ! so connection will be known
+      NVER(NSUR)=4
+      DO 251 J = 1,4
+        X(NTV+J)=XXW(J)
+        Y(NTV+J)=YYW(J)
+        Z(NTV+J)=ZZW(J)
+        JVN(NSUR,J)=NTV+J
+  251 CONTINUE
+
+C Remember the reverse order of vertices for matching surface.
+      JVNM(1)= JVN(NSUR,2)
+      JVNM(2)= JVN(NSUR,1)
+      JVNM(3)= JVN(NSUR,4)
+      JVNM(4)= JVN(NSUR,3)
+
+      NTV=NTV+4
+      NZTV(icomp)=NTV
+
+      call st2name(SN,SNAME(ICOMP,NSUR))  ! copy SN into SNAME
+
+      if(act(1:1).eq.'V'.or.act(1:1).eq.'v')then
+        SVFC(NSUR)='VERT'
+      elseif(act(1:1).eq.'H'.or.act(1:1).eq.'h')then
+        SVFC(NSUR)='CEIL'
+      endif
+
+      SOTHER(NSUR,1)='UNKNOWN'
+      SOTHER(NSUR,2)='0'
+      SOTHER(NSUR,3)='0'
+      SPARENT(NSUR)='-'
+
+      WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
+      write(SOTF(NSUR),'(a)') OPT(1:12)
+      NGL(NSUR)=0
+
+C If version 1.1 of geometry specify the use of the surface.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        SUSE(nsur,1)='PARTN'
+        SUSE(nsur,2)='- '
+      else
+        SUSE(NSUR,1)='-'
+        SUSE(NSUR,2)='-'
+      endif
+
+C Just before calling addedsurf if this initial surface is going to be
+C matched then set sother to point to the next surface that will be created.
+      if(act(2:2).eq.'M'.or.act(2:2).eq.'m')then
+        SOTHER(NSUR,1)='ANOTHER'
+        write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
+        write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR+1)
+      endif
+
+C Add surface to the connection list (icont) assuming an unknown boundary. 
+      call addedsurf(icomp,icont,1,ier)
+
+C If user requested mass be added then generate coordinates and
+C attributes for the matching surface.
+      if(act(2:2).eq.'M'.or.act(2:2).eq.'m')then
+
+C Update the data for the matching surface.
+        icontm=IZSTOCN(icomp,nsur)+1
+        NZSUR(ICOMP)=NZSUR(ICOMP)+1
+        NSUR=NSUR+1
+        IZSTOCN(icomp,nsur)=icontm  ! so connection will be known
+        NVER(NSUR)=4
+        DO 252 J = 1,4
+          X(NTV+J)=XXM(J)
+          Y(NTV+J)=YYM(J)
+          Z(NTV+J)=ZZM(J)
+          JVN(NSUR,J)=JVNM(J)  ! user the reversed order list.
+  252   CONTINUE
+
+C If SN is less than 12 characters add an _
+        lnsn=lnblnk(SN)
+        if(lnsn.lt.12)then
+          write(SN,'(2a)') SN(1:lnsn),'_'
+        else
+          write(SN(12:12),'(a)') '_'
+        endif
+        call st2name(SN,SNAME(ICOMP,NSUR))  ! copy SN into SNAME
+
+        if(act(1:1).eq.'V'.or.act(1:1).eq.'v')then
+          SVFC(NSUR)='VERT'
+        elseif(act(1:1).eq.'H'.or.act(1:1).eq.'h')then
+          SVFC(NSUR)='CEIL'
+        endif
+
+        SOTHER(NSUR,1)='ANOTHER'
+        write(SOTHER(NSUR,2),'(i2.2)')INT(icomp)
+        write(SOTHER(NSUR,3),'(i2.2)')INT(NSUR-1)
+        SPARENT(NSUR)='-'
+
+        WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
+        write(SOTF(NSUR),'(a)') OPT(1:12)
+        NGL(NSUR)=0
+
+C If version 1.1 of geometry specify the use of the surface.
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          SUSE(nsur,1)='PARTN'
+          SUSE(nsur,2)='- '
+        else
+          SUSE(NSUR,1)='-'
+          SUSE(NSUR,2)='-'
+        endif
+
+C Add surface to the connection list (icont) assuming an unknown boundary. 
+        call addedsurf(icomp,icontm,1,ier)
+
+      endif
+
+      return
+      end
 
 C ************* ADDVERT 
 C ADDVERT: Add,  delete, copy a vertex within a zone.
@@ -1733,6 +2021,9 @@ C << written at the end of the process. This has yet to be done.
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
       PARAMETER  (MPL = 200 )
+      
+      integer lnblnk  ! function definition
+
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
@@ -1740,7 +2031,10 @@ C << written at the end of the process. This has yet to be done.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -1777,7 +2071,6 @@ C << written at the end of the process. This has yet to be done.
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12,DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,act*2,T14*14
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character guesstype*24  ! for context of surface addition
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
@@ -2654,6 +2947,8 @@ C   where a surface such as a floor has been subdivided)
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -2705,4 +3000,91 @@ C Typically the mark 234 has been used with this code.
       else
         return
       endif
+      end
+
+C ****************** addedsurf
+C addedsurf takes the current G1 & G5 common block values and copies them
+C to the G6 common block. This block of code had been replicated in
+C many locations and this consolidates this function.
+C icomp is the index of the zone
+C icon is the index of the new connection (from parent code).
+      subroutine addedsurf(icomp,icon,itrc,ier)
+#include "building.h"
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      integer IX,ival1,ival2
+
+C Update the connection list. Move all others up and then insert with
+C default values.
+      IF(NCON.LT.MCON)THEN
+        NCON=NCON+1
+        IX=NCON+1
+
+C Update common blocks G6 & G7
+        call adjcbg6g7('+',ix,icon)
+
+        IC1(ICON)=ICOMP
+        IE1(ICON)=NSUR
+        ICT(ICON)=0  ! initial assumption of exterior
+        IC2(ICON)=0
+        IE2(ICON)=0
+        IZSTOCN(icomp,nsur)=icon
+        SSNAME(ICON)=SNAME(ICOMP,NSUR)
+        SSOTF(ICON)=SOTF(NSUR)
+        SSMLCN(ICON)=SMLCN(NSUR)
+        SSVFC(ICON)=SVFC(NSUR)
+        SSOTHER(ICON,1)=SOTHER(NSUR,1)
+        SSOTHER(ICON,2)=SOTHER(NSUR,2)
+        SSOTHER(ICON,3)=SOTHER(NSUR,3)
+        SSUSE(ICON,1)=SUSE(NSUR,1)
+        SSUSE(ICON,2)=SUSE(NSUR,2)
+        SSPARENT(ICON)=SPARENT(NSUR)
+
+C If sother(NSUR,1) is 'ANOTHER' or one of the other known phrases
+C then the values of ICT and IC2 and IE2 should be updated so that
+C the connections file is correct.
+        if(SOTHER(NSUR,1)(1:7).eq.'ANOTHER')then
+          read(SOTHER(NSUR,2),'(i2)') ival1
+          read(SOTHER(NSUR,3),'(i2)') ival2
+          ICT(ICON)=3
+          IC2(ICON)=ival1
+          IE2(ICON)=ival2
+        elseif(SOTHER(NSUR,1)(1:9).eq.'ADIABATIC')then
+          ICT(ICON)=5
+        elseif(SOTHER(NSUR,1)(1:8).eq.'CONSTANT')then
+          read(SOTHER(NSUR,2),'(i2)') ival1
+          read(SOTHER(NSUR,3),'(i2)') ival2
+          ICT(ICON)=2
+          IC2(ICON)=ival1
+          IE2(ICON)=ival2
+        elseif(SOTHER(NSUR,1)(1:6).eq.'GROUND')then
+          read(SOTHER(NSUR,2),'(i2)') ival1
+          read(SOTHER(NSUR,3),'(i2)') ival2
+          ICT(ICON)=4
+          IC2(ICON)=ival1
+          IE2(ICON)=ival2
+        elseif(SOTHER(NSUR,1)(1:7).eq.'SIMILAR')then
+          read(SOTHER(NSUR,2),'(i2)') ival1
+          read(SOTHER(NSUR,3),'(i2)') ival2
+          ICT(ICON)=1
+          IC2(ICON)=ival1
+          IE2(ICON)=ival2
+        endif
+
+C Now update the G7 common block to reflect additional surface.
+        call zgupdate(itrc,icomp,ier)
+      ENDIF
+      return
       end

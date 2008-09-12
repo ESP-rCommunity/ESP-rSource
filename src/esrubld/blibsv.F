@@ -42,7 +42,11 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -67,7 +71,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
       dimension izdum(MZS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LCFGF,LUTIL
+      CHARACTER*72 LCFGF
       CHARACTER ZNAME*12,zdesc*64,ZNPAD*15,doit*248,outs248*248
       CHARACTER*6 NAME
       character outs*124,tfile*72,cfgroot*24,longtfile*144
@@ -332,11 +336,14 @@ c save set.
       SUBROUTINE MZLS2
 #include "building.h"
 #include "uncertainty.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -590,6 +597,7 @@ C ndbph is number of data blocks/hr for monitor function.
 #include "building.h"
 C#include "cfd.h"
 #include "monitor.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
 
@@ -626,10 +634,6 @@ C Commons for summary of solar (for results library)
      &  q2wall(2),q2rem(2)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -756,7 +760,8 @@ C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
@@ -1269,7 +1274,7 @@ C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
 C Temporary statement for dumping structured mesh temperatures.
 C      call TEMPSD(icomp)
-      if (ISAVE.eq.0) then
+      if ((ISAVE.eq.0).or.(ISAVE.eq.6)) then
 
 C Save appropriate data for ISAVE=0. Initialise during first pass
 C of each zone. Find current month (IS0M) for the simulation day.
@@ -2322,6 +2327,7 @@ C Possibly all calculations should use the IVTHPZ in the future?
 
 #include "building.h"
 C#include "cfd.h"
+#include "control.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -2337,11 +2343,6 @@ C#include "cfd.h"
       COMMON/COE34/QCASRT(MCOM),QCASCT
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)

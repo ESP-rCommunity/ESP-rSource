@@ -24,6 +24,7 @@ C Boston, MA 02111-1307 USA.
 #include "esprdbfile.h"
 #include "espriou.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
 C The Plant component DataBase program maintains a
@@ -167,7 +168,7 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       endif
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       call edisp(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.

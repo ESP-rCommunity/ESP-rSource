@@ -26,6 +26,8 @@ C climatic data sets compatible with ESP-r.
       program clm
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -250,6 +252,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
+      call edisp(IUOUT,' ')
+      CALL ESPrVersion("summary",cAppName,IUOUT)
+      write(outs,'(2a)')
+     & ' Systems Research Unit, University of',
+     & ' Strathclyde, Glasgow, Scotland.'
+      call edisp(IUOUT,outs)
+      call edisp(IUOUT,' ')
+
+
 C Find the user's home folder then get user's custom settings.
 C Make temporary use of file unit IAF=IFIL+1.
       IAF=IFIL+1
@@ -380,7 +391,7 @@ C In interactive mode so do splash-screen and then read
 C in the climate file name via list
 C selection, editing or accepting the LCMDFL.
           call edisp(IUOUT,' ')
-          CALL ESPrVersion("summary")
+          CALL ESPrVersion("summary",cAppName,IUOUT)
           call edisp(IUOUT,' ')
           paction='INTERACTIVE'
           silent=.false.
@@ -392,7 +403,7 @@ C In interactive mode so do splash-screen and then read
 C in the climate file name via list
 C selection, editing or accepting the LCMDFL.
         call edisp(IUOUT,' ')
-        CALL ESPrVersion("summary")
+        CALL ESPrVersion("summary",cAppName,IUOUT)
         call edisp(IUOUT,' ')
         paction='INTERACTIVE'
         silent=.false.

@@ -146,6 +146,10 @@ C-----Power conditioning unit
       elseif ( itype .eq. 20 ) then
          CALL POWOC_PCU(IPWC)
 
+C-----Vanadium Redox Battery (VRB)
+      elseif ( itype .eq. 21 ) then
+         CALL POWOC_CETC_Battery(IPWC)
+
 C-----Add support for other power-only components here.
 c     ELSEIF (ITYPE==??) THEN
 
@@ -1315,12 +1319,18 @@ C-------------------------------------------------------------------------------
 C..... Operating mode of power conditioning unit:
 C..... 1 = connected to power source (input power known)
 C..... 2 = connected to power load (output power known)
+C......Variants using simple efficiency calculation:
+C..... 3 = connected to power source (input power known)
+C..... 4 = connected to power load (output power known)
 
       integer iOpMode        
 
-      integer iConnPwrSource, iConnPwrLoad
+      integer iConnPwrSource, iConnPwrLoad, iConnPwrSourceSimple,
+     &iConnPwrLoadSimple
       parameter( iConnPwrSource = 1,
-     &           iConnPwrLoad   = 2 )
+     &           iConnPwrLoad   = 2,
+     &           iConnPwrSourceSimple = 3,
+     &           iConnPwrLoadSimple   = 4  )
 
 C.....Nominal power (W)
       real    fNomPower
@@ -1356,6 +1366,9 @@ C.....Power output from the power conditioning unit (W)
 C.....Efficiency of power conditioning unit (-)
       real    fPCUEff        
 
+C.....Specified efficiency for simple calculation (-)
+      real    fSpecPCUEfficiency
+
 C.....Auxiliary power required to operate power conditioning unit (W)
 C.....This input is not used in the current version of the model
       real    fPwrAux       
@@ -1366,7 +1379,7 @@ C.....power source, iOpMode = 1)
       real    fVarA, fVarB, fVarC, fXSolve     
 
 C.....Variable used to compare two real numbers
-      logical close    
+      logical bPower_Zero    
 
 C.....Index of the next power-only component defined in network
       integer next_comp
@@ -1418,25 +1431,38 @@ C Inputs from electric network file
 
 C There are 6 data items for the PCU power-only component; See full definitions in the subroutine header.
 
+
 C.....Operating mode of PCU 
       iOpMode = POWCDAT(IPWC,1)          
 
 C.....Nominal power of PCU (W)
-      fNomPower = POWCDAT(IPWC,2)        
+      fNomPower = POWCDAT(IPWC,2)
 
 C.....PCU Idling constant (-)
       fIdleConst = POWCDAT(IPWC,3)        
 
-C.....PCU setpoint voltage (V)
-      fUsetp = POWCDAT(IPWC,4)
+      if (iOpMode == iConnPwrSource .or.
+     &    iOpMode == iConnPwrLoad         ) then
 
-C.....PCU Internal resistance constant (V^2)
-      fIntResConst = POWCDAT(IPWC,5)
 
-C.....Auxiliary power required by PCU (W)
-C.... This input is currently not taken into account.
-      fPwrAux = POWCDAT(IPWC,6)
+C.......PCU setpoint voltage (V)
+        fUsetp = POWCDAT(IPWC,4)
 
+C.......PCU Internal resistance constant (V^2)
+        fIntResConst = POWCDAT(IPWC,5)
+
+C.......Auxiliary power required by PCU (W)
+C... .. This input is currently not taken into account.
+        fPwrAux = POWCDAT(IPWC,6)
+
+C.....Inputs for simple variant using consant efficiency
+      elseif ( iOpMode == iConnPwrLoadSimple .or.
+     &         iOPMode == iConnPwrSourceSimple      ) then
+
+C.......Nominal efficiency
+        fSpecPCUEfficiency = POWCDAT(IPWC,4)
+
+      endif 
 
 C.....Obtain voltages from connected nodes (take real part)
 
@@ -1449,20 +1475,21 @@ C receiving node
 
 C.....Power conditioning unit connected to power load (power output is known):
 
-      if ( iOpMode .eq. iConnPwrLoad ) then
+      if ( iOpMode .eq. iConnPwrLoad .or.
+     &     iOpMode .eq. iConnPwrLoadSimple ) then
 
 C get net power at receiving  node
           fPwrOutput = ABS(penodl(pcunode(IPWC,2)) +
      &                 penodg(pcunode(IPWC,2)))      
 
-          call eclose( fPwrOutput, 0.,0.001,close )
+          call eclose( fPwrOutput, 0.,0.001,bPower_Zero )
                                                                  
 C no power output
-          if ( close ) then 
+          if ( bPower_Zero ) then 
 
              fPwrInput = fIdleConst * fNomPower
 
-          else
+          elseif (  iOpMode .eq. iConnPwrLoad  ) then
 
 C Calculate power input based on relationship given by (Ulleberg,1998),
 C Section 4.10.2, page 120, equation (4.95)
@@ -1470,30 +1497,41 @@ C Note- there is a (typing) error in equation (4.95) - corrected in
 C TRNSYS type 175 (PCU) description and subroutine
 
              fPwrInput = fNomPower * (( fIdleConst +
-     &                  ( 1. + fUsetp/fUout ) *
-     &                  fPwrOutput / fNomPower ) + ( fIntResConst *
-     &                  ( 1./ (fUout**2) ) *
+     &                 ( 1. + fUsetp/fUout ) * fPwrOutput / fNomPower )
+     &                 + ( fIntResConst * ( 1./ (fUout**2) ) *
      &                  ( fPwrOutput / fNomPower )**2 ))
+
+          elseif ( iOpMode .eq. iConnPwrLoadSimple ) then
+
+            fPwrInput = fPwrOutput / fSpecPCUEfficiency
 
           endif
 
 
 C Power conditioning unit connected to power source (power input is known):
 
-      elseif ( iOpMode .eq. iConnPwrSource ) then
+      elseif ( iOpMode .eq. iConnPwrSource .or.
+     &         iOpMode .eq. iConnPwrSourceSimple ) then
 
 C get net power at sending node  
           fPwrInput =  penodl(pcunode(IPWC,1)) +
      &                 penodg(pcunode(IPWC,1))                
                                                         
-          call eclose( fPwrInput, 0.,0.001,close )
 
-          if ( close ) then         
+          if ( fPwrInput .lt. 0. ) then
+             fPwrInput = 0.
+          endif
+
+
+          call eclose( fPwrInput, 0.,0.001,bPower_Zero )
+
+
+          if ( bPower_Zero ) then         
 
 C no power input, calculate idling losses
              fPwrOutput = -1. * fIdleConst * fNomPower      ! losses are a load, -ve
 
-          else
+          elseif ( iOpMode .eq. iConnPwrSource ) then
 
 C Calculate power output based on relationship given by (Ulleberg,1998). 
 C The 2nd order equation is solved by finding the roots of the quadratic equation
@@ -1516,8 +1554,16 @@ C  x  = fPwrOutput/fNomPower
 
              fPwrOutput = fXSolve * fNomPower 
 
-          endif
+             if ( fPwrOutput .gt. fPwrInput ) then    ! Ensures that PCU efficiency is not > 100%
+                                                      ! and that power losses are not negative!
+               fPwrOutput = fPwrInput
 
+             endif
+
+          elseif ( iOpMode .eq. iConnPwrSourceSimple ) then
+            fPwrOutput = fSpecPCUEfficiency * fPwrInput
+
+          endif
 
       else
 
@@ -1534,7 +1580,7 @@ C Calculate power loss
 
 C Calculate efficiency (only applicable if PCU is operating)
 
-          if ( fPwrInput .eq. 0. ) then
+          if ( bPower_Zero ) then
 
              fPCUEff = 0.            !- to avoid divide by zero error in controller subroutine.
 
@@ -1599,6 +1645,8 @@ C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
      &                       '(W)',
      &                       'Power loss from PCU' )
 
+C.....Only report efficiency if unit is on
+      if ( .not. bPower_Zero ) then
 
       write(H3K_rep_NAME,'(A,A)')
      &     root_name(1:lnblnk(root_name)),
@@ -1611,6 +1659,8 @@ C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
      &                       'units',
      &                       '(-)',
      &                       'Efficiency of PCU' )
+
+      endif
 
       write(H3K_rep_NAME,'(A,A)')
      &     root_name(1:lnblnk(root_name)),
@@ -1736,6 +1786,7 @@ C-------------------------------------------------------------------------------
       real fDay                           ! real representing day of year
                                           !   (& fraction thereof)
       real fE_Load                        ! Electric loads (W)
+      real fE_Load_profile                ! Electric load from original profile (W)
       character*248 cName_buffer          ! Buffer for passing BCD name
       character*72  cFCL_name             ! Buffer for passing .fcl name 
       character*124 cContext              ! Contextual buffer
@@ -1773,6 +1824,12 @@ C.....Named constants
       logical bWarned
       save bWarned
       data bWarned /.false./
+
+      CHARACTER*128  hold_name, root_name, H3K_rep_NAME       ! strings used for XML output reporting
+      integer ilength                      ! non-blank length of string
+
+C.....External functions.     
+      integer lnblnk
      
 C---------------------------------------------------------------------------------
 C     References
@@ -1820,6 +1877,10 @@ C........Get electric loads
 
       endif 
 
+C....... Multiply electric load by scale factor
+
+         fE_Load = fE_load * fScale_Factor
+
 
 C Initialise
          fH2_app_load_TOTAL = 0.0
@@ -1833,6 +1894,7 @@ C........Get appliance loads
             enddo
          endif 
 
+         fE_Load_profile = fE_Load                    ! Save value for XML reporting
 
          fE_Load = fE_Load - fH2_app_load_TOTAL
 
@@ -1857,9 +1919,63 @@ C................Issue warning to user.
          endif
          
                      
-      PPOWOC(iComponent) = -1.0 * fE_Load * fScale_Factor
+      PPOWOC(iComponent) = -1.0 * fE_Load
       QPOWOC(iComponent) = 0.
 
+
+C-------------------------------------------------------
+C XML output
+C-------------------------------------------------------
+           
+      
+C.... Get component name
+      hold_name = powcomnam(iComponent)
+C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
+
+      write(root_name, '(A,A,A)')
+     &     'electrical_net/',
+     &     'power_only_components/',
+C     &     hold_name(1:lnblnk(hold_name)),
+C     &     '/elec_load'
+     &     'elec_load'
+
+      ilength = lnblnk(root_name)
+
+      write(H3K_rep_NAME,'(A,A)')
+     &     root_name(1:ilength),
+     &     '/elec_load_profile'
+
+      call add_to_xml_reporting(
+     &                       fE_Load_profile,
+     &                       H3K_rep_name,
+     &                       'units',
+     &                       '(W)',
+     &                       'Original E-load' )
+
+      
+      write(H3K_rep_NAME,'(A,A)')
+     &     root_name(1:ilength),
+     &     '/elec_H2_loads'
+
+      call add_to_xml_reporting(
+     &                       fH2_app_load_TOTAL,
+     &                       H3K_rep_name,
+     &                       'units',
+     &                       '(W)',
+     &                       'Total H2 loads' )
+
+     
+      write(H3K_rep_NAME,'(A,A)')
+     &     root_name(1:ilength),
+     &     '/elec_load_adjusted'
+
+      call add_to_xml_reporting(
+     &                       fE_Load,
+     &                       H3K_rep_name,
+     &                       'units',
+     &                       '(W)',
+     &                       'Adjusted E-load' ) 
+      
       
       RETURN
       END

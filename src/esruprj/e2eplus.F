@@ -36,12 +36,18 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -84,8 +90,11 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       common/cctlnm/ctldoc,lctlf
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
-      COMMON/P1/oprdesc,ctlstr
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
@@ -138,7 +147,6 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
       CHARACTER NAM*72,TITL*72,DESC*48,outs*124,h*72
@@ -152,7 +160,6 @@ C Arrays of material properties.
       character dstmp*24
       CHARACTER LAPROB*72
       CHARACTER*6 lodlabel
-      character oprdesc*248,ctlstr*24
 
 C iprndx saves unique materials references,
 C thkiprndx holds the thickness of each unique materials reference,
@@ -324,6 +331,7 @@ C blocks, otherwise set to `MinimalShadowing`.
       havehc=.false.
       do 19 iz=1,ncomp
         if(IOBS(iz).eq.1) haveobs=.true.
+        if(IOBS(iz).eq.2) haveobs=.true.
         if(ISI(iz).eq.1) haveish=.true.
         if(IHC(iz).eq.1)havehc=.true.
   19  continue
@@ -992,9 +1000,12 @@ C     out an until: 24.00 placeholder
         IUO=IFIL+1
         call FINDFIL(LPROJ(mz),XST)
         IF(XST)THEN
+
+C << might not need to call eroper when ip3ver(mz) is working >>
+
           CALL ERPFREE(IUO,ISTAT)
           CALL EROPER(0,iuout,IUO,mz,IER)
-          if(ip3ver.lt.1)then
+          if(ip3ver(mz).lt.1)then
             WRITE(ioout,'(3a)',iostat=ios,err=7) 
      &      '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
      &      ' has old schedules (periods need to be sorted) ======= '
@@ -1069,7 +1080,7 @@ C Start with a comment about zone schedule documentation.
      &    '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
      &    ' schedules follow ======='
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
-     &    '! ',oprdesc(1:lnblnk(oprdesc))
+     &    '! ',oprdesc(mz)(1:lnblnk(oprdesc(mz)))
 
 C Scan each days gains and calculate maximum gain.
 C First clear loadcasp, looping for each gain type.
@@ -2364,13 +2375,20 @@ C << a door in a wall or as a surface with two windows in it
           endif
   60    continue
 
-C Check if there are obstructions associated with this zone.
+C Check if there are obstructions associated with this zone. If
+C iobs() is 2 and newgeo true then blocks already scanned.
         IF(IOBS(mz).EQ.0)THEN
           continue
         ELSEIF(IOBS(mz).EQ.1)THEN
           IUF=IFIL+1
           CALL EGOMST(IUF,ZOBS(mz),0,0,iuout,IER)
           IF(IER.NE.0) goto 4
+        ELSEIF(IOBS(mz).EQ.2)THEN
+          if(.NOT.newgeo)then
+            call edisp(iuout,'Confused where obstructions are.')
+          endif
+        ENDIF
+        if(NB.gt.0)then
           DO 301 IB=1,NB
             CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &        BANG(IB))

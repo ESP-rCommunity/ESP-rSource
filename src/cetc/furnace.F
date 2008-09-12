@@ -134,6 +134,9 @@ c passed on to the furnace subroutine in plrf.
       if(ipriority(isys).eq.1) then
         plrf = PLR(heating_load,ss_capacity(isys),fan_power(isys),
      &             ifan_operation(isys))
+c Call subroutine to set the controller heating capacity for each zone 
+c served by furnace
+        call SET_CONT_FUNC_HEAT_CAP(isys,ss_capacity(isys))
       endif
 
 c If plrf > 1, the furnace does not have enough capacity to meet the load for the
@@ -291,9 +294,15 @@ c ************************************************************************
 c Declare variables passed in call
       INTEGER isys,isys_type
 
+
 #include "hvac_parameters.h"
 
 #include "furnace_common.h"
+
+C.....Common from hvac_common.h needed for fuel type (but rest
+C.....of hvac_common.h conflicts with furnace_common.h!)
+      common/HVAC_fuel_type/iFuel_type(max_sys)
+      integer iFuel_type
 
 c For all furnaces, except condensing and induced draft, the plff 
 c equation is based on two correlation coefficients af and bf which depend

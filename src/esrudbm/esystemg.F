@@ -25,6 +25,8 @@ C  CONXINFO: returns an English description of the inter-connections
 C            in the configuration file. 
 C  HZSTOCON: Scans the current connections list and builds array
 C            IZSTOCN(MCOMP,MS) holding the connection index.
+C findwhichdbpath: takes a database file name and checks to see if
+C            the path is local or absolute or standard database folder.
 
 
 C ******************** ERSYSG 
@@ -53,6 +55,14 @@ C           6= rural site, isolated; 7= totally enclosed building
 C           8= user defined
 
 C GREF    - External ground reflectivity.
+C GREF12  - (12) Monthly values of ground reflectivity
+C ITGREF  - Type of ground reflectivity model
+C           1= constant albedo
+C           2= simple model (monthly albedo, number of days with snow on ground
+C           3= advanced model (monthly albedo, snow depth read from file)
+C SREF    - Snow reflectivity
+C NSNOW   - (12) Monthly values of number of days with snow on ground
+C SNFNAM  - *72 Name of the file containing hourly snow depth information
 
 C LSNAM   - is the name of the entire system.
 
@@ -70,6 +80,7 @@ C IC1 &   - zone and surface numbers defining the start
 C IE1       point of each connection.
 
 C ICT     - connection type where:
+C          -1 ; unknown at this time.
 C           0 ; connection to external conditions
 C           1 ; connection to identical environmental conditions
 C               as the source zone (OR, relative temp and absolute 
@@ -106,12 +117,6 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
-#include "net_flow.h"
-#include "tdf2.h"
-#include "cfd.h"
-#include "uncertainty.h"
-#include "gnetwk.h"
-#include "dhw_common.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -120,12 +125,25 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+C LSBEM (for SBEM database)
 C default file names for databases
 
+#include "net_flow.h"
+#include "tdf2.h"
+#include "cfd.h"
+#include "uncertainty.h"
+#include "gnetwk.h"
+#include "dhw_common.h"
+#include "MultiYear_simulations.h"
+#include "bc_data.h"
 #include "espriou.h"
-C espriou.h provides currentfile.
-
-      PARAMETER (MSTMC=1)
+C espriou.h provides currentfile and defdbfl.
+#include "lookup_data.h"
+#include "sbem.h"
+#include "roam.h"
+      PARAMETER (MSTMC=20)
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -134,12 +152,15 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
       COMMON/OUTIN/IUOUT,IUIN
-C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -214,7 +235,8 @@ C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
-       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+C DBSN (15 char) name of the surface within the associated zone.
+       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Configuration control.
 C ctldoc (248 char) - Overall control notes. If equal to 'none'
@@ -236,7 +258,20 @@ C dbspth (24 char) relative path to model specific databases folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C Images.
+C Images in the model.
+C  imgfmt (4 char) gives the format of each image associated with
+C         the model, it must match one of the known fmttag.
+C  imgfoc (4 char) associates an image with a specific topic:
+C         'FZON' is related to zone composition
+C         'FNET' is related to network composition
+C         'FCTL' is related to control composition
+C         'FDFS' is related to CFD domains
+C         'FPER' is related to predicted performance
+C         '****' is a general image displayed at startup
+C  limgfil (72 char) name of the image file << ?? longer string >>
+C  noimg is the number of images associated with the model.
+C  iton is a toggle iton=0 initial state where images have not been scanned
+C    and iton=1 images have been displayed.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
 C Initial view.
@@ -304,6 +339,10 @@ C Uncertainty analysis common.
 
 C IPV description.
       common/IPVF/lipvdatf
+      common/IPVFORMAT/ipvform,ipvversion
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C Dispersed demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -352,13 +391,15 @@ C External Longwave Radiation
       INTEGER   iExtLgRadFlag
       INTEGER   jMon
 
-C GSHP
 C Flag indicating presence of GSHP models:
-C igshpflag=1 indicates GSHP models are active; 0 indicates no GSHP models.
+C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
       common/gshpinfo/igshp
       common/gshpfile/gshpfile
 
-C GCEP (begin)
+C Wind-generated electricity
+      common/H2wind/LWndSupp,iWndSupp
+
+C GCEP
 C Flag indicating presence of GCEP models:
 C igcepflag=1 indicates GCEP models are active; 0 indicates no GCEP models.
       common/gcepinfo/igcep
@@ -369,8 +410,8 @@ C Bidirectional raw optical data file.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C DLLSUBR (12 char) name of current subroutine, used in dll silent reporting
 C dllmesg (124 char) tells the details of the DLLSUBR error.
@@ -386,20 +427,58 @@ C is a logical flag, .true. restricts update/save options.
       common/uhome/upath
       common/user/browse
 
+C Path to SHOCC input files
+C bSHOCCed     - logical flag whether project has SHOCC input
+C bZoneSHOCCed - logical array whether zones have SHOCC input
+C SHOCCshlFile - path to SHOCC .shl file for SHOCC'd project library
+C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
+      common/SHOCCcfg/bSHOCCed,SHOCCshlFile,bZoneSHOCCed(mcom),
+     &                SHOCCshzFile(mcom)
+      logical bSHOCCed,bZoneSHOCCed
+      character SHOCCshlFile*72,SHOCCshzFile*72
+
+C H2-dep_controller: start
+C Residential hydrogen cogen: control file
+      common/resh2ctl/iresh2ctl,resh2flnam
+      integer iresh2ctl         !- flag indicating that file required by residential hydrogen
+                                !- cogen controller is specified
+      character*72 resh2flnam   !- name of file containing residential hydrogen cogen
+                                !- controller inputs
+C H2-dep_controller: end
+
+C Flag for multi-year simulation definition
+      logical bMY_sim_sps
+
+C Treatment of solar radiation data in weather file
+C ESP-r operates on hourly-centered data. That is, the amount of solar
+C irradiance at the recorded hour is the instantaneous irradiance at the
+C hour. In Canadian Weather for Energy Calculations (CWEC) files, solar
+C radiation is integrated over the previous hour. To account for 
+C the half hour shift, a flag has been implemented to indicate
+C whether solar radiation data in the weather file is hour-centered
+C (default) or half-hour centered.
+C The flag (iSlr_half_hr_flg) can be set in the .cfg file or within bps in the 
+C 'simulation toggles' menu.
+C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
+      common/CWEC_SOL/iSlr_half_hr_flg
+      integer iSlr_half_hr_flg,idty    
+      INTEGER IRNCMD,IRNCMF
+
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      CHARACTER OUTSTR*124,OUTS*124,text*124,t117*117,h*72
-      CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
+      CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
+      CHARACTER*72 FILE,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
+      character lworking*144
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
@@ -429,15 +508,29 @@ C is a logical flag, .true. restricts update/save options.
       character NWKTYPSTR*12,bidirfile*72,bidirname*12
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
+      character LWndSupp*72
       character HDR*12
+      character ipvact*3  ! to singnal internal or external IPV file
+      logical newgeo  ! to use for testing if new/old geometry file.
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
+      newgeo=.false.  ! assume older format geometry.
+
 C Check if running in dll mode.
       call isadll(dll)
+
+C Initalizing starting point for parsing simulation presets (*sps)
+      iSet_start = 1
+
+C Initialize flag for boundary condition data 
+      bBC_data_defined = .false.
 
 C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
@@ -447,9 +540,9 @@ C Patch for dbm use. Scan for default generic databases and the
 C set gendbfn before reading model.
       defdbfl='./gdefaults'
       call escgdef(IUF,IER)
-      do 43 i=1,MGDB
+      do 143 i=1,MGDB
         gendbfn(i)=dgendbfn(i)
-  43  continue
+ 143  continue
       LCLIM=DCLIM
 
 
@@ -459,6 +552,16 @@ C Clear the model common blocks.
       LUALF='UNKNOWN'
       MCMPDBFL='UNKNOWN'
       bidirfile='UNKNOWN'
+      CALENAME='UNKNOWN'
+      if(iutdf.eq.0)IUTDF=IFIL+7  ! set if not already done so.
+
+C Set flag indicating that solar radiation data is hour-centered (default)
+C Variable will be reset if 'slr_half_hr' included in .cfg
+      iSlr_half_hr_flg = 0
+
+C Initialise NCM data read flags
+      IRNCMD=0
+      IRNCMF=0
 
 C Initialize HVAC flag to indicate no HVAC models active. This
 C will be reset if `*hvac' included in .cfg.
@@ -490,8 +593,20 @@ C will be reset if `*gcep' is included in the .cfg file.
       igcep = 0
 C GCEP (end)
 
+C Initialise day types
+      idty=0
+
+C Wind-generated electricity
+      iWndSupp = 0
+      LWndSupp =' '
+
+C Clear zone related files.
+      do 43 i=1,MCOM
+        continue
+   43 continue
+
 C Assume older version of configuration file.
-      icfgv=1
+      icfgv=2
 
       nuco=0
 
@@ -508,6 +623,20 @@ C Initialize the indices.
       VIEWMI(3)=10.
       ANGI=40.
       initvt=0
+
+C Set day types to default of 3 (weekday/saturday/sunday) and calendar
+C day type tags to default as well. These 3 day types cannot be deleted
+C and more day types if defined will be stored in CALENTAG(4) onwards.
+C this can be modified later. [The IF clause may not be necessary]
+      IF(NBDAYTYPE.LT.3)THEN
+        nbdaytype=3
+      ENDIF
+      CALENTAG(1)='weekday'
+      CALENTAG(2)='saturday'
+      CALENTAG(3)='sunday'
+      CALENDAYNAME(1)='generic weekday'
+      CALENDAYNAME(2)='generic saturday'
+      CALENDAYNAME(3)='generic sunday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -658,7 +787,7 @@ C Latitude & Longitude.
       IF(IER.NE.0) GOTO 1
 
 C Get site exposure and ground reflectance.
-      CALL STRIPC(IUC,OUTSTR,0,ND,1,'ground reflectance',IER)
+      CALL STRIPC(IUC,OUTSTR,99,ND,1,'ground reflectance',IER)
       IF(IER.NE.0)goto 1
       K=0
       CALL EGETWI(OUTSTR,K,IXPOS,1,8,'W','Site exposure',IER)
@@ -676,7 +805,7 @@ C Index of exposure has user defined data associated with it.
         IF(IER.NE.0) GOTO 1
 
 C Range checking.
-        IF(ABS(SKYR+GRDR+BLDR-1.).GT..001)CALL USRMSG(
+        IF(ABS(SKYR+GRDR+BLDR-1.).GT..001) CALL USRMSG(
      &    ' Total exposure out of range in',OUTSTR,'W')
       ENDIF
 
@@ -698,7 +827,15 @@ C If '* CONFIGURATION' found then read in the databases.
         endif
       endif
 
-C Read databases until '* PROJ LOG' found.
+C Read databases until '* PROJ LOG' found.  If starts with *std
+C then set the whichdbpath variable to signal that it is in
+C the standard location. If tag does not start with *std then
+C check the intial portion of the file name to see if it is
+C local or absolute and if absolute whether it matches the
+C standard path.
+
+C Note that some file names could be long strings
+C so LSTRIPC and LOUTSTR are used.
   44  continue
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'db names',IER)
       K=0
@@ -1179,6 +1316,7 @@ C Read references to TDF id's, and then the related tasks and zones.
           DBTAG(M)=' '
           DBTASK(M)=' '
           DBZN(M)=' '
+          DBSN(M)=' '
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','tdf instance name',IER)
           DBTAG(M)=WORD(1:12)
@@ -1190,8 +1328,13 @@ C Read references to TDF id's, and then the related tasks and zones.
             CALL EGETW(OUTSTR,K,WORD,'W','related zone',IER)
             DBZN(M)=WORD(1:15)
           endif
-          WRITE(OUTS,'(A,I2,7A)') ' Tdf item:',M,':',DBTAG(M),
-     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),'.'
+          if(ND.gt.3)then
+            CALL EGETW(OUTSTR,K,WORD,'W','related surface',IER)
+            DBSN(M)=WORD(1:15)
+          endif            
+          WRITE(OUTS,'(A,I2,7A,I2)') ' Tdf item:',M,':',DBTAG(M),
+     &      ' of type: ',DBTASK(M),' associated with ',DBZN(M),
+     &      'and surface',DBSN(M)
           IF(ITRC.GE.1)CALL EDISP(iuout,OUTS)
         GOTO 59
    58   CONTINUE
@@ -1214,6 +1357,15 @@ C If 6 items on line also read whether to save only 1stph.
           isavgh=0
         endif
         do 333 iss=1,nsset
+
+C The following code ensures thea the sXXres varaibles are initialzied
+C to empty strings even if they are not defind in the input file.
+          write(sblres(iss), '(A)')  '  '
+          write(sflres(iss), '(A)')  '  '
+          write(smstres(iss), '(A)') '  '
+          write(splres(iss), '(A)')  '  '
+          write(selres(iss), '(A)')  '  '
+
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'sim set',IER)
           K=0
           CALL EGETWI(OUTSTR,K,isstday(iss),1,31,'W','start',IER)
@@ -2341,6 +2493,9 @@ C SITEINFO provides an English description of the site information in
 C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
+      
+      integer lnblnk  ! function definition
+
       COMMON/C4/XLAT,XLON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -2398,6 +2553,9 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2499,6 +2657,8 @@ C array IZSTOCN(MCOM,MS) which holds the connection index.
 
       SUBROUTINE HZSTOCN
 #include "building.h"
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -2556,4 +2716,102 @@ C Check if ianc is a known anchor and then if there is a list.
         ier=1
         return
       endif
+      end
+
+C ******* findwhichdbpath
+C findwhichdbpath takes a database file name and checks to
+C see if the path is local or absolute or standard database folder.
+C Depending on which database (the parameter topic) the
+C common block file string and whichdbpath variable is updated.
+C topic =  'opt' for optics, 'pdb' for plant component templates
+      subroutine findwhichdbpath(topic,file,ier)
+      implicit none
+#include "esprdbfile.h"
+
+      integer lnblnk  ! function definition
+      integer ier  ! typd for passed parameter
+
+C Currently works with optical and plant template database.
+      character*(*) file
+      character topic*3 ! identify which type of database
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
+
+C Set OS and check that standarddbpath has been set.
+      lndbp=lnblnk(standarddbpath)
+      lnwkg=lnblnk(file)
+      if(lndbp.lt.1.or.lnwkg.lt.1)then
+        ier=2
+        return
+      endif
+      call isunix(unixok)
+      
+      if(unixok)then
+        if(file(1:7).eq.'../dbs/')then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=1  ! local folder for optical database
+            write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=1  ! local folder for plant database
+            write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
+          endif
+        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
+
+C The initial part of the path matches so only save the file name w/o path.
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=2
+            write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=2
+            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          endif
+        else
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=0
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=0
+            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          endif
+        endif
+      else
+        if(file(1:7).eq.'..\\dbs\\')then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=1  ! local folder for optical database
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=1  ! local folder for plant database
+            write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
+          endif
+        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=2
+            write(LOPTDB,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=2
+            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          endif
+        else
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=0
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=0
+            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          endif
+        endif
+      endif
+
+C Debug.
+      write(6,*) file
+      if(topic(1:3).eq.'opt')then
+        write(6,*) loptdb
+        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+      elseif(topic(1:3).eq.'pdb')then
+        write(6,*) LPCDB
+        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+      endif
+
+      return
       end

@@ -353,7 +353,11 @@ C should calculate pressure coefficients.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -376,7 +380,7 @@ C should calculate pressure coefficients.
       CHARACTER VERT*75,KEY*1,H*72,DESCRC*25
       CHARACTER hold2*40,naco*40,COMPS*72
       CHARACTER*4 type
-      character*72 LTMP,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,FICOCP
+      character*72 LTMP,FICOCP
       CHARACTER OUTSTR*124,RSTR*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,t28*28
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -818,6 +822,9 @@ C and calculate the pressure coeffcients
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C default file names for databases
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
@@ -829,13 +836,14 @@ C default file names for databases
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
 
       CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
-      CHARACTER LAPROB*72,LTMP*72
+      CHARACTER LAPROB*72,LTMP*72,LLTMP*144,outs248*248
       character doit*248
 
       dimension Xdom(10),Ydom(10),Zdom(10),azdom(4)
       dimension XX(MV),YY(MV),ZZ(MV),VP(3),EQN(4)
       dimension xl(MPCP),zl(MPCP),ior(MPCP),isut(5),inum(5)
       logical ok,dok
+      integer iglib  ! are we running X11 or GTK
 
 C Parameters to see whether for a surface a coordinate set has been 
 C defined
@@ -1315,7 +1323,8 @@ C Save data to file.
      &  'pressure coefficients? (see help)',OK,dok,8)
       if(OK)then
         CALL EASKAB('How do you want to save the data?',' ',
-     &    'new pc database','append to existing pc database',IWHICH,8)
+     &    'new pres coef database',
+     &    'append to existing pres coef database',IWHICH,8)
         IF (IWHICH.EQ.1) THEN
 
 C Read in pc from file c2e.cpdb
@@ -1323,13 +1332,45 @@ C Read in pc from file c2e.cpdb
           CALL ERPRCDB(t72,0,3,IER)
           if (ier.ne.0) return
 
+          H(1)='To which file do you want to write the pressure data?'
+          H(2)=' '
+          H(3)=' '
+ 777      write(outs248,'(2a)') 'The current source file is:',
+     &      LAPRES(1:lnblnk(LAPRES))
+          call edisp248(iuout,outs248,100)
+          lltmp=LAPRES
+          llt=lnblnk(lltmp)
+          iglib = igraphiclib()
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &          96,DAPRES,'pressure coef database',IER,3)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &          124,DAPRES,'pressure coef database',IER,3)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &          144,DAPRES,'pressure coef database',IER,3)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &        144,DAPRES,'pressure coef database',IER,3)
+          else
+            CALL EASKF(lltmp,' ','Pressure coefficients database?',
+     &        96,DAPRES,'pressure coef database',IER,3)
+          endif
+
 C Write data to new file. 
- 777      LAPRES=' '
-          LTMP=LAPRES
-          H(1)='To which file do you want to write the data?'
-          CALL EASKS(LTMP,' Pressure coefficients database?',
-     &         ' ',72,DAPRES,'pressure coefficients database',IER,1)
-          if(LTMP.ne.'  ')then
+C 777      LAPRES=' '
+C          LLTMP=LAPRES
+C          H(1)='To which file do you want to write the data?'
+C          CALL EASKS(LTMP,' Pressure coefficients database?',
+C     &         ' ',72,DAPRES,'pressure coefficients database',IER,1)
+
+C If user request cancel << logic needs to be added >>.
+C          if(ier.eq.-3) return ! cancel detected.
+
+          if(lltmp(1:2).ne.'  ')then
             call EMKAPCDB(LAPRES,IER)
           else
             goto 777
@@ -1361,6 +1402,7 @@ C current contents of pc-data in common block.
 #include "net_flow.h"
 #include "building.h"
 #include "esprdbfile.h"
+      integer lnblnk  ! function definition
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1368,13 +1410,13 @@ C current contents of pc-data in common block.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      character LAPROB*72,FINA*72
+      character LAPROB*72,FINA*144
       character DEPRE*40
 
 C Check the number of pressure coefficients and give a warning 
 C message if the number is too big.
       IF(NPRE.GT.MPRD)THEN
-        CALL USRMSG(' too many items to put in ',LAPRES,'W')
+        CALL LUSRMSG(' too many items to put in ',LAPRES,'W')
         IER=1
         RETURN
       ENDIF

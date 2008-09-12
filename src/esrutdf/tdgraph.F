@@ -283,7 +283,7 @@ C Try axis of hours.
       iind=1
       intsph=ntsph
       iigbdoy=igbdoy
-      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,iind,intsph,
+      CALL horaxishdw(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,iind,intsph,
      &  iigbdoy,LABEL2)
 C      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
       CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)

@@ -43,6 +43,8 @@ C *********************************************************************
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/rpath/path
 
@@ -385,6 +387,8 @@ C FLORDR re-orders the 3D files for a zone.
 C *********************************************************************
       SUBROUTINE FLORDR(IZ)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -674,6 +678,7 @@ C *********************************************************************
       SUBROUTINE CHKGRD(GRDOK)
 #include "building.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -27,13 +27,13 @@ C IMFGETNO(*,1): The IMFGET number - metric identifier
 C IMFGETNO(*,2): The chosen node/ connection (meaning assumed from IMFGET) in the
 C                case of climate data it gets used to set graphing colour.
 C IMFGETNO(*,3): Source node (for ac/h rate calcs, differences and energy?)
-C IMFGETNO(*,4): Pointer to list of nodes or connections.  In case of individual 
+C IMFGETNO(*,4): Pointer to list of nodes or connections.  In case of individual
 C                connection: -1=-ive flow; 0=net flow; +1=+ive flow
 C IMFGETNO(*,5): Line type
 C IMFGETNO(*,6): Symbol index
 C IMFGETNO(*,7): Associated axis (1=temperature, 2=pressure, 3=mass flow rate
 C                4=misc, 5=concentration g/kg)
- 
+
 C IMFLIST - connection list:
 C   IMFLIST(LISTID,1) = number of connections listed
 C   IMFLIST(LISTID,2->) = connection id
@@ -45,8 +45,8 @@ C IMFGET =  4 Connection volume flow rate
 C IMFGET =  5 Connection air change rate
 C IMFGET =  6 Connection velocity
 C IMFGET =  7 Connection pressure difference
-C IMFGET =  8 Connection stack pressure 
-C IMFGET =  9 Ambient temperature 
+C IMFGET =  8 Connection stack pressure
+C IMFGET =  9 Ambient temperature
 C IMFGET = 10 Ambient wind speed
 C IMFGET = 11 Ambient wind direction
 C IMFGET = 12 Ambient RH
@@ -100,15 +100,19 @@ C Reset to no choices and current result set.
       end
 
 C ************************ MFMENU ************************
-C MFMENU The choices are put into the array IMFGETNO in the 
+C MFMENU The choices are put into the array IMFGETNO in the
 C columns listed above.
 
       SUBROUTINE MFMENU
 #include "building.h"
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -152,7 +156,7 @@ C air flow reporting.
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
-      character ll1*8,ll2*8,ll3*8,lodlabel*6 
+      character ll1*8,ll2*8,ll3*8,lodlabel*6
       character zname*12,zdesc*64,zn*12
 
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
@@ -161,8 +165,8 @@ C air flow reporting.
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 
-C The logical variables are required so as user is asked for additional 
-C information about the choice of metric if necessary. 
+C The logical variables are required so as user is asked for additional
+C information about the choice of metric if necessary.
 C  CLIST - connection list
 C  NLIST - node list
 C  CNLST - connection node list to restrict choice (e.g. all flows through node x)
@@ -689,7 +693,7 @@ C        h(6)='Note: all selections cleared when this option is altered.'
 C        CALL EASKABC('Data display options:',outs,
 C     &    'variable (default)','rate of change of variable','contine',
 C     &    II,6)
-C        if(II.ne.3.and.(IROC.ne.(II-1)))then 
+C        if(II.ne.3.and.(IROC.ne.(II-1)))then
 C          IROC=II-1
 C          call usrmsg ('Clearing current selections....','  ','W')
 C          call MOFLOWSU
@@ -1047,9 +1051,9 @@ c imfgetno array.
                 IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                 IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
               endif
-              write (GMFLABEL(NMFGET),'(2a)') 
+              write (GMFLABEL(NMFGET),'(2a)')
      &          NDNAM(INPK(I))(1:lnname),SUFFIX
-              write (GLMFLABEL(NMFGET),'(2a)') 
+              write (GLMFLABEL(NMFGET),'(2a)')
      &          NDNAM(INPK(I))(1:lnname),SUFFIX
  10         continue
 
@@ -1154,14 +1158,14 @@ C Ask if only flows associated with a single node.
           h(14)='Inter-node flow: asks for two nodes and reports back'
           h(15)='  net flow between the nodes by summing up flows to '
           h(16)='  and from one node to the other and vice versa'
-          call MENUATOL('Select a flow option',' ',           
-     &   'a individual connections','b total of connections', 
-     &   'c total entering node','d total from ambient',      
+          call MENUATOL('Select a flow option',' ',
+     &   'a individual connections','b total of connections',
+     &   'c total entering node','d total from ambient',
      &   'e inter-nodal flow ','f cancel ',' ',' ',' ',' ',' ',
-     &   ' ',IDH,IDNO,16)  
+     &   ' ',IDH,IDNO,16)
           if(IDH.eq.1)then
             INODE=0
-            itotal=0      
+            itotal=0
           elseif(IDH.eq.2)then
             NNPK=1
             PROMPT1=
@@ -1170,7 +1174,7 @@ C Ask if only flows associated with a single node.
             NH=0
             call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
             INODE=INPK(1)
-            itotal=0      
+            itotal=0
           elseif(IDH.eq.3)then
 
 C Note: return INPKT and NNPKT for total entering.
@@ -1183,7 +1187,7 @@ C Note: return INPKT and NNPKT for total entering.
             h(2)='the sum of the flows entering the node.'
             call ASKMFNOD(INOPT,NNPKT,INPKT,PROMPT1,PROMPT2,NH)
             INODE=0
-            itotal=1       
+            itotal=1
           elseif(IDH.eq.4.or.idh.eq.5)then
             NNPKT=NNOD
             IF(IDH.EQ.5)NNPKT=1
@@ -1198,7 +1202,7 @@ C Note: return INPKT and NNPKT for total entering.
               call ASKMFNOD(INOPT2,NNPKT,INPKT2,PROMPT1,PROMPT2,NH)
             endif
             INODE=0
-            itotal=1       
+            itotal=1
           elseif(IDH.eq.6)then
             NMFGET=NMFGET-1
             goto 1
@@ -1208,10 +1212,10 @@ C          write(6,*) 'after easkabcd itotal & nnpk ',itotal,nnpk,inpk
 C          write(6,*) 'after easkabcd itotal & nnpkt ',itotal,nnpkt,inpkt
         else
           INODE=0
-          itotal=0      
+          itotal=0
         endif
 
-C If CRLST is true check if a node was specified above - if not then 
+C If CRLST is true check if a node was specified above - if not then
 C ask for one.
         if (CRLST.and.itotal.eq.0) then
           if (INODE.eq.0) then
@@ -1321,10 +1325,10 @@ C Tell user about the area of the component related to each connection.
      &                NDNAM(NODPS(ICPK(I)))(1:llns),'=>',
      &                NDNAM(NODNE(ICPK(I)))(1:llne),SUFFIX(1:lsf)
                   endif
-                  
-C Check for bi-directional flow components.  If this is one then ask if net or 
-C +ive and -ive flows should be reported.  In the latter case an extra entry will 
-C be made to the MFGET arrays (the existing enrty will either be the net or +ive 
+
+C Check for bi-directional flow components.  If this is one then ask if net or
+C +ive and -ive flows should be reported.  In the latter case an extra entry will
+C be made to the MFGET arrays (the existing enrty will either be the net or +ive
 C flow and the extra entry would be the -ive flow).
                   icompindex=ITPCON(ICPK(I))
                   icomptype=ITPCMP(icompindex)
@@ -1336,7 +1340,7 @@ C flow and the extra entry would be the -ive flow).
      &                   'reporting options:','net flow',
      &                   'individual flows',II,3)
 
-C If net flow do nothing (the existing definition is sufficient) 
+C If net flow do nothing (the existing definition is sufficient)
 C otherwise add the extra entry.
                     if (II.eq.1) then
                       IMFGETNO(NMFGET,4)=0
@@ -1454,10 +1458,10 @@ C In the case of flow velocity check for appropriate component and report area.
      &                NDNAM(NODPS(ICPK(I)))(1:llns),'=>',
      &                NDNAM(NODNE(ICPK(I)))(1:llne),SUFFIX(1:lsf)
                   endif
-                
-C Check for bi-directional flow components.  If this is one then ask if net or 
-C +ive and -ive flows should be reported.  In the latter case an extra entry will 
-C be made to the MFGET arrays (the existing enrty will either be the net or +ive 
+
+C Check for bi-directional flow components.  If this is one then ask if net or
+C +ive and -ive flows should be reported.  In the latter case an extra entry will
+C be made to the MFGET arrays (the existing enrty will either be the net or +ive
 C flow and the extra entry would be the -ive flow).
                   icompindex=ITPCON(ICPK(I))
                   icomptype=ITPCMP(icompindex)
@@ -1469,7 +1473,7 @@ C flow and the extra entry would be the -ive flow).
      &                   'reporting options:','net flow',
      &                   'individual flows',II,3)
 
-C If net flow do nothing (the existing definition is sufficient) 
+C If net flow do nothing (the existing definition is sufficient)
 C otherwise add the extra entry.
                     if (II.eq.1) then
                       IMFGETNO(NMFGET,4)=0
@@ -1770,7 +1774,7 @@ C Always recover node temperatures and pressures.
 
 C Contaminant concentrations on record 2+NCONTM
         IF(IMFGETNO(I,1).EQ.14)THEN
-          MFRECVR(2+IMFGETNO(I,2))=1
+          MFRECVR(2+IMFGETNO(I,3))=1
         ENDIF
         if (IMFGETNO(I,1).eq.3.or.IMFGETNO(I,1).eq.4.or.
      &      IMFGETNO(I,1).eq.5.or.IMFGETNO(I,1).eq.6) then
@@ -1803,7 +1807,7 @@ C        IF(IMFGETNO(I,1).EQ.14)MFRECVR
       END
 
 C ************************ GOMFGET ************************
-C GOMFGET: Retrieves data from the mass flow result library according 
+C GOMFGET: Retrieves data from the mass flow result library according
 C to arrays IMFGETNO and MFRECVR.
 
       SUBROUTINE GOMFGET(IDAY,IHR,ITS)
@@ -1835,7 +1839,7 @@ C Read required records based on flags in MFRECVR
 
 C Calculate start record for specified day, hour, timestep.
 C Assuming at same frequency as building results
-      IHREC=NNOD+NCMP+NCNN+NCONTM+2 + (NCONTM+NCNN+2)*(IDAY-1)*NTS*24 + 
+      IHREC=NNOD+NCMP+NCNN+NCONTM+2 + (NCONTM+NCNN+2)*(IDAY-1)*NTS*24 +
      &  (NCONTM+NCNN+2)*((IHR-1)*NTS) + (NCONTM+NCNN+2)*(ITS-1)
 
 C Recover required records for timestep.
@@ -1931,7 +1935,7 @@ C Return inter-node flow for two nodes
           endif
         elseif (IMFGETNO(I,1).eq.5) then
 
-C Connection net air change rate rate (-).  Depending on IMFGETNO(I,4) 
+C Connection net air change rate rate (-).  Depending on IMFGETNO(I,4)
 C return +ive, -ive or net flow.
           if (IMFGETNO(I,2).gt.0) then
             call MASS2VOL(IMFGETNO(I,2),VFLOW1,VFLOW2)
@@ -1970,7 +1974,7 @@ C Return inter-node flow for two nodes
           endif
         elseif (IMFGETNO(I,1).eq.6) then
 
-C Connection net fluid speed (m/s).  Depending on IMFGETNO(I,4) 
+C Connection net fluid speed (m/s).  Depending on IMFGETNO(I,4)
 C return +ive, -ive or net flow.
           call MASS2VOL(IMFGETNO(I,2),VFLOW1,VFLOW2)
           if (IMFGETNO(I,4).gt.0) then
@@ -2047,7 +2051,7 @@ C Ambient RH.
 
 C Contaminant concentration
           INOD=IMFGETNO(I,2)
-          ICONTM=IMFGETNO(1,3)
+          ICONTM=IMFGETNO(I,3)
           FLOWVALS(I)=FRDAT(2+ICONTM,INOD)
         endif
  20   continue
@@ -2097,7 +2101,7 @@ C Depending on flow direction calc density for sending node temperature.
 C ************************ MFSUMCON ************************
 C MFSUMCON: Total mass flow through set of connections.
 C  if IMFGETNO(I,4) is greater than 1 then it points to a list of connections
-C  if IMFGETNO(I,4) is less than zero then this is a node and all valid 
+C  if IMFGETNO(I,4) is less than zero then this is a node and all valid
 C    connections should be counted.
 C IUNIT: 1=kg/s; 2=m^3/s; 3=ac/h
 
@@ -2113,7 +2117,7 @@ C IUNIT: 1=kg/s; 2=m^3/s; 3=ac/h
       COMMON/MFREC/FRDAT(MCNN+2+MCONTM,NMRL)
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
       COMMON/MFPK2/NMFLST,IMFLIST(MFCNLST,MFCNEL+1)
-      
+
       logical LNPS,LNNE
       CHARACTER CONTMNAM*12
 
@@ -2169,7 +2173,7 @@ C Get data for current connection.
             call MASS2VOL(ICNN,FLOW1,FLOW2)
           endif
 
-C Sum flows depending on connection definition (If NODE id the +ive 
+C Sum flows depending on connection definition (If NODE id the +ive
 C or first node then a +ive flow is leaving the node and vice versa).
           if (IDPS.eq.NODE) then
             if (FLOW1.gt.0.0) then
@@ -2219,7 +2223,7 @@ C Get data for current connection.
             call MASS2VOL(ICNN,FLOW1,FLOW2)
           endif
 
-C Sum flows depending on connection definition (If NODE id the +ive 
+C Sum flows depending on connection definition (If NODE id the +ive
 C or first node then a +ive flow is leaving the node and vice versa).
           if (IDPS.eq.NODE) then
             if (FLOW1.gt.0.0) then
@@ -2265,7 +2269,7 @@ C Get data for current connection.
             call MASS2VOL(ICNN,FLOW1,FLOW2)
           endif
 
-C Sum flows depending on connection definition (If NODE id the +ive 
+C Sum flows depending on connection definition (If NODE id the +ive
 C or first node then a +ive flow is leaving the node and vice versa).
           if (IDPS.eq.NODE.AND.NDTYP(IDNE).GE.2) then
             if (FLOW1.gt.0.0) then
@@ -2312,7 +2316,7 @@ C Get data for current connection.
             call MASS2VOL(ICNN,FLOW1,FLOW2)
           endif
 
-C Sum flows depending on connection definition (If NODE id the +ive 
+C Sum flows depending on connection definition (If NODE id the +ive
 C or first node then a +ive flow is leaving the node and vice versa).
           if (IDPS.eq.NODE.AND.IDNE.EQ.JNOD) then
             if (FLOW1.gt.0.0) then
@@ -2435,7 +2439,7 @@ C Set all values of incget to 1
         INCGET(I)=1
  5    continue
 
-C Initialise menu size variables based on window size. 
+C Initialise menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       MHEAD=1
       MCTL=3
@@ -2447,8 +2451,8 @@ C Initial menu entry setup.
       IER=0
       IVERT=-3
 
-C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
+C Loop through the items until the page to be displayed. M is the
+C current menu line index. Build up text strings for the menu.
       VERT(1)='  Mertic                  Active'
     3 M=MHEAD
       DO 10 L=1,ILEN
@@ -2466,11 +2470,11 @@ C current menu line index. Build up text strings for the menu.
 C Number of actual items displayed.
       MVERT=M+MCTL
 
-C If a long list include page facility text.      
-      IF(IPFLG.EQ.0)THEN  
+C If a long list include page facility text.
+      IF(IPFLG.EQ.0)THEN
         VERT(M+1)='  ------------------------ '
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM 
+        WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT   ('0 page: ',I2,' of ',I2,' ---')
       ENDIF
       VERT(M+2)  ='? help                     '

@@ -44,9 +44,12 @@ C HOT3000: Fuel cell.
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "lookup_data.h"
+#include "control.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -54,7 +57,11 @@ C CWEC Degree Day and ground temperature parameters
       common/tc/itc,icnt
       common/trc/itrc
       COMMON/SAVE/ISAVE
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/c6/indcfg
@@ -105,11 +112,16 @@ C TDF commons. zrotp is the previous rotation angle for each zone.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       common/zrotat/zrotp(mcom)
 
 C Common for thermophysical property replacement.
       common/tpmod/itpmod(mcom)
+
+C Air flow network
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      CHARACTER LAPROB*72
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -147,10 +159,6 @@ C Common for 3D building model.
       COMMON/MOIST13/RLXln,RRLXln,RLXlnF,RRLXlnF,RLXlnT,RRLXlnT
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
       common/glbsav/ksave
@@ -257,7 +265,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       character outs*124,STYPE*8
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LCFD,ENTFLNAM
+      character*72 LCFD,ENTFLNAM
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 
@@ -290,6 +298,10 @@ C Flag for iteration between plant and electric power flow domains.
 C Flag to enable inter-domain iteration
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
+
+C Loop counters for cross domain iterations
+      common / Cross_Domain_Loop / plt_elec_loop_counter
+      integer plt_elec_loop_counter
 
 C Indicies of start, end, current & future indicies
       integer iMY_start_yr_index, iMY_end_yr_index,
@@ -515,8 +527,7 @@ C.....-> update meta-data
 
 
 C.....H3Kreports.(timesteps).end.................
-C.....H3Kreports.Set Meta initialization flag
-        call H3K_init_set_meta(.true.)
+
       endif ! <- matches 'if ( bH3K_rep_enabled() )...'
 
 
@@ -536,7 +547,10 @@ C process file if necessary
      &                            bLookup_data_err)
         if ( bLookup_data_err ) bLookup_data_defined = .false.
       endif
-      
+
+C Zero Site energy usage storage array
+      call ZeroFuelEnergyStorageArray()
+
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
@@ -810,35 +824,37 @@ C col 6: Relative humidity               (Percent)
 
 C If this is a multi-year simulation, we may need to
 C open the approprate climate file.
-        if ( bMY_sim_enabled .and.
-     &    .not. bMY_clm_file_open ( iMY_current_yr_index ) ) then
+        if ( bMY_sim_enabled )then
+          if (.not. bMY_clm_file_open ( iMY_current_yr_index ) ) then
 
 C Close old file, if necessary.
-          if ( iMY_current_yr_index .gt. 1 ) then
-            if ( bMY_clm_file_open ( iMY_current_yr_index - 1) ) 
-     &        call ERpFree( iClim , istat )
-          endif 
+            if ( iMY_current_yr_index .gt. 1 ) then
+              if ( bMY_clm_file_open ( iMY_current_yr_index - 1) ) 
+     &         call ERpFree( iClim , istat )
+            endif 
 
 C Open new file.   
-          call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
-     &                144,0,IER)         
+            call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
+     &                144,0,IER)
 
 C set flag      
-          bMY_clm_file_open ( iMY_current_yr_index ) = .true.
+            bMY_clm_file_open ( iMY_current_yr_index ) = .true.
 
 C In the case that we have a gshp input file, dhw input file, and/or basesimp 
 C input file, then call routines to determine degree days and ground temperature
 C parameters
-          if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
-     &        bsm_flag.or.itank_flag) then         
+            if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
+     &        bsm_flag.or.itank_flag) then
 c If a new climate file is opened, then need to recalculate the number 
 c of annual heating degree days and the average monthly temperatures based on 
 c this new climate information.
-            call CLM_DEG_DAY
+              call CLM_DEG_DAY
 
 C Initialize ground temperature profile parameters
-            call Ground_Temp_Profile
-          endif
+              call Ground_Temp_Profile
+            endif
+
+          endif 
 
         endif
 
@@ -851,22 +867,22 @@ C Note: future year may correspond to another climate file
 C If this is a multi-year simulation, we may need to  open the
 C approprate climate file.
 
-        if ( bMY_sim_enabled .and.
-     &    .not. bMY_clm_file_open ( iMY_future_yr_index ) ) then
+        if ( bMY_sim_enabled ) then
+           if ( .not. bMY_clm_file_open ( iMY_future_yr_index ) ) then
 C Close old file, if necessary.
-          if ( iMY_future_yr_index .gt. 1 ) then
-            if ( bMY_clm_file_open ( iMY_future_yr_index - 1) )
+            if ( iMY_future_yr_index .gt. 1 ) then
+              if ( bMY_clm_file_open ( iMY_future_yr_index - 1) )
      &        call ERpFree( iClim , istat )
-          endif
+            endif
 
 C Open new file.
-          call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
+           call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
      &                144,0,IER)
 
 C Set flag 
-          bMY_clm_file_open ( iMY_future_yr_index ) = .true.
-        endif
-     
+            bMY_clm_file_open ( iMY_future_yr_index ) = .true.
+          endif
+        endif 
 C Future day
         irec=idyf
 
@@ -1055,7 +1071,7 @@ C Output current simulation increment if trace on.
 C ** DEBUG ** Write nsinc to screen
 C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
-C           write(outs,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
+C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
 C     &                ' yr:', iMY_current_year
 C           call edisp(itu,outs)
 
@@ -1272,15 +1288,19 @@ C Find number of data blocks per hour to be saved.
               ndbph=ncomp*itstp1
 
               IF (ISAVE.eq.5)then
+                call surbal(icomp)
                 call H3KSTORE_SAVELEVEL5(icomp,iday,itsmus,ndbph)
               ELSE
                 call mzls3(icomp,iday,itsmus,ndbph)
               ENDIF
 
 C transport miscellaneous simulation data to reporting object
-              if ( bH3K_rep_enabled() )
-     &           call H3K_transport_build_data(icomp)
-
+              if ( bH3K_rep_enabled() ) then
+                 call H3K_transport_build_data(icomp)
+                 if (IAIRN .ne. 0) THEn
+                    call H3K_transport_mfn_data()
+                 endif
+              endif
 C If TSC type 2 is active then find sum of averages for zone air
 C temperature and zone air energy injection.
               if(itsct.eq.2.and.itsok.eq.1)then
@@ -1342,6 +1362,10 @@ C For type 6 time-step controller, possibly 'rewind' simulation,
                 if(irew)goto 123
               endif
             endif
+
+C Reset h3k zone control action flags
+
+            call h3kReports_reset_zone_flags()
 
 C Building side now complete.
             if(indcfg.eq.1)goto 77
@@ -1405,6 +1429,9 @@ C Use flag 'iSaving' to tell XXX_TimeRow_Manipulate to store data
                 call Pfs_TimeRow_Manipulate(iSaving)
               endif
 
+C Initalize the loop conter at the beginning of each plant time step
+              plt_elec_loop_counter = 1
+
 C Note: Calls to Plt_TimeRow_Manipulate() and Pfs_TimeRow_Manipulate()
 C to invoke the 'iWinding' operation are embedded inside the solution of
 C the plant and electrical domains. Thus, if either domain is called
@@ -1455,6 +1482,7 @@ C be restored.
                 if (.not. plant_elec_converged ) then
                   call Plt_TimeRow_Manipulate(iRewinding)
                   call Pfs_TimeRow_Manipulate(iRewinding)
+                  plt_elec_loop_counter = plt_elec_loop_counter + 1
                 endif
               ENDDO
 
@@ -1514,8 +1542,9 @@ C Database is not written if save-levels 0 or 5 are active.
               if ( ISAVE .ne. 0 .and. isave .ne.5 ) then
                 CALL ENETLIBSV
               endif
-              if ( bH3K_rep_enabled() )
-     &          call H3K_transport_electric_data()
+              if ( bH3K_rep_enabled() ) THEN
+                call H3K_transport_electric_data()
+              ENDIF
             ENDIF
 
 C For global control, increment pass counter.
@@ -1529,6 +1558,10 @@ C For global control, increment pass counter.
 
 C Save boundary condition data, if it exists
             if ( bH3K_rep_enabled() ) call report_BC_data()
+
+C Call SiteUtilities procedure to characterize purchased energy
+C usage
+            call SiteUtilities()
 
 C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting
@@ -1555,9 +1588,6 @@ C.....Update reports.
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
             call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
-
-C IF NSINC=1, turn off initialization of h3kreports meta data
-            if (nsinc .eq. 1 ) call  H3K_init_set_meta(.false.)
 
    30     continue
 

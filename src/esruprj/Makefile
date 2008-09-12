@@ -6,6 +6,7 @@ MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
 TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
+PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
 BLDdir = $(SRCdir)/esrubld
@@ -23,15 +24,15 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o edmrt.o \
 	  edobs.o edonecon.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
 	  egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
-	  eroper.o esru_misc.o esystem.o exlgrad.o filelist.o folders.o \
+	  eroper.o esru_misc.o esystem.o exlgrad.o explor.o filelist.o folders.o \
 	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o \
-	  mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
+	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
 	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
-	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o rwipv.o rwsbem.o sendd.o \
-	  sendflt.o senrwl.o sensa.o setup.o sort.o spmisc.o stndrds.o startup.o tdfile.o \
-	  readTrnsys.o
-	   
+	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
+	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
+	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
+	  PltDummy.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -134,7 +135,7 @@ initalc.F:
 	ln -s $(CTLdir)/initalc.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mcdbscn.F:
 	rm -f mcdbscn.F
 	ln -s $(COMdir)/mcdbscn.F .
@@ -180,6 +181,9 @@ rcdblist.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwroam.F:
+	rm -f rwroam.F
+	ln -s $(COMdir)/rwroam.F .
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -200,7 +204,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
+	ln -s $(COMdir)/tdfile.F .
 aim2_pretimestep.F:
 	rm -f aim2_pretimestep.F
 	ln -s $(CETCdir)/aim2_pretimestep.F .
@@ -210,14 +214,17 @@ DG_controller_menu.F:
 DHW_module.F:
 	rm -f DHW_module.F
 	ln -s $(CETCdir)/DHW_module.F .
-
 ground_temp_mains.F:
 	rm -f ground_temp_mains.F
 	ln -s $(BLDdir)/ground_temp_mains.F .
+PltDummy.F:
+	rm -f PltDummy.F
+	ln -s $(PLTdir)/PltDummy.F .
+
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
-
+	
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -225,15 +232,16 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	anlytc.F aim2_pretimestep.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
-	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F \
-	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F readTrnsys.F
+	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
+	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
+	readTrnsys.F PltDummy.F
 
 
 

@@ -42,12 +42,17 @@ C MZINPT code in espbps/input.f.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       common/rpath/path
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
@@ -62,7 +67,6 @@ C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LCFGF,path,LTDF,LTDFA,ltmp
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124
@@ -128,7 +132,7 @@ C if izver >=4 the zone operation file is not needed.
           continue
         else
           CALL EROPER(0,iuout,IUNIT,J,IER)  ! for older library versions
-          if(ip3ver.eq.0)then
+          if(ip3ver(J).eq.0)then
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',J,' periods being sorted!'
             call edisp(iuout,outs)
@@ -183,8 +187,12 @@ C SYNOPF displays the names of the files used in a simulation
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CCTLNM/CTLDOC,LCTLF
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -194,7 +202,7 @@ C SYNOPF displays the names of the files used in a simulation
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCTLF
+      CHARACTER*72 LCTLF
 
       CHARACTER*248 CTLDOC
       CHARACTER*21 LABELS(7)

@@ -392,6 +392,8 @@ C---- Local variables
       REAL    R               ! Flowrate corrective coefficient (-)
       REAL    SRADD           ! Direct solar rad. on collector surface (W/m2)
       REAL    SRADF           ! Diffuse solar rad. on collector surface (W/m2)
+      REAL    SKYDIF          ! Sky component of diffuse solar rad: not used in this routine
+      REAL    GRDDIF          ! Ground component of diffuse solar rad: not used in this routine
       REAL    UA              ! Heat loss coefficient to environment (W/C)
       REAL    XIAM            ! Incidence angle modifier (-)
       REAL    HEATLOSS_ACTUAL ! Actual heat loss from collector (W)
@@ -517,7 +519,7 @@ C     Do not attempt calculation if sun is not up
           IF (SALT.LE.0.) THEN
             G = QF
           ELSE 
-            CALL MZSRAD0(COLLSLOP,QD,QF,CAI,SRADD,SRADF)
+            CALL MZSRAD0(COLLSLOP,QD,QF,CAI,SRADD,SRADF,SKYDIF,GRDDIF)
             G = SRADD + SRADF
           ENDIF ! Matches to IF (SALT.LE.0.)
         ENDIF ! Matches to IF (QD.GT.0. .OR. QF.GT.0.)
@@ -838,6 +840,20 @@ C---- Net collector heat gain
 C---- Store collector net heat gain for h3kstore output
         fSDHW_TScoll_netheatgain_watts = NETHEATGAIN
 
+C.....add to XML ouput
+        call add_to_xml_reporting(
+     &       fSDHW_TScoll_netheatgain_watts,
+     &       'plant/SDHW_summary/recovered_heat',
+     &       'units','(W)',
+     &       'SHDW system: Collector net heat gain')
+
+C.......Report total insolation on collector external surface
+        call add_to_xml_reporting(
+     &          G * COLLAREA,
+     &          'plant/SDHW_summary/available_solar_energy',
+     &          'units','(W)',
+     &          'SDHW system: insolation on collector' )
+
 C---- Call h3k store routine for solar DHW systems
         call H3KSTORE_SDHW
 
@@ -1137,6 +1153,8 @@ C=======================================================================
       REAL SMALL             
       PARAMETER (SMALL=1.0E-15)
 
+      logical bNumsAreClose
+
 C---- Initially set volume fraction of glycol to mass fraction
       VOL_FRACTION_OLD = MASS_FRACTION
 
@@ -1168,10 +1186,20 @@ C---- Glycol volume fraction in mixture
         VOL_FRACTION_NEW = MASS_FRACTION * 
      &               GLY_WATER_DEN / (GLY_DEN + SMALL)
 
-C---- Update error
-        ERROR = 
-     &  abs((VOL_FRACTION_NEW - VOL_FRACTION_OLD) /
+C---- Update error: Check if volume fraction is close to zero
+        call eclose ( VOL_FRACTION_OLD, 0.0, SMALL, bNumsAreClose)
+
+        if ( .not. bNumsAreClose ) then 
+
+          ERROR = 
+     &      abs((VOL_FRACTION_NEW - VOL_FRACTION_OLD) /
      &       VOL_FRACTION_OLD + SMALL)
+
+        else
+
+          ERROR = 0.
+
+        endif
 
 C---- Update previous estimate for volume fraction
         VOL_FRACTION_OLD = VOL_FRACTION_NEW

@@ -54,6 +54,8 @@ C IER=0 indicates no error.
       SUBROUTINE CFDCOMP(izone,iuf,IER)
 #include "building.h"
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -367,6 +369,9 @@ C IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -402,7 +407,6 @@ C Arrays for sorting domains from (see code for comments).
       LOGICAL ZEROT,ZandKE,MITzero,vclose
 
       character H*72,ITEM(13)*36
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -1689,6 +1693,9 @@ C IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1710,7 +1717,6 @@ C IER=0 indicates no error.
       character H*72,ITEM(MNVLS+8)*40
       character KEY*1,t24*24,SRCE*12
       character VOLNAME*12,VCsurf*12,t12*12,NAMES(MNVLS)*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.

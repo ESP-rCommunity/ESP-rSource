@@ -38,6 +38,9 @@ C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -57,8 +60,8 @@ C Floor area (optionally) associated with each demand type.
       common/IPVDMD/idmdinc(7)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C Support for up to 10 calendar day types
 C NBCAS() number of gains on each day type.
@@ -514,8 +517,8 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
@@ -853,8 +856,8 @@ C Descriptive label for a zone load or casual gain types.
       common/IPVDMD/idmdinc(7)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
       DIMENSION  ICGS(MC),ICGF(MC),CGS(MC),CGL(MC)
       DIMENSION  NO(100),DESC(100),IPRVAL(100)
@@ -998,6 +1001,8 @@ C Maximum number of demands/day       MC=20
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1018,8 +1023,8 @@ C Descriptive label for a zone load or casual gain types.
       common/b3ver/idmdver
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -1226,6 +1231,8 @@ C written to (confirm if to be overwritten).
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE EMKBDMD(IUO,OPFIL,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1240,8 +1247,8 @@ C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
       CHARACTER dmdsdesc*248,bdmds*72,OPFIL*72
       character calename*32,calentag*12,calendayname*32
@@ -1319,6 +1326,9 @@ C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/BL1/dmdsdesc,bdmds
 
 C Descriptive label for a zone load or casual gain types.
@@ -1328,8 +1338,8 @@ C Descriptive label for a zone load or casual gain types.
      &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
       CHARACTER dmdsdesc*248,outs*124,bdmds*72
       CHARACTER*6 blodlabel
@@ -1511,7 +1521,7 @@ C not extensive, but should catch most issues.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
 
       common/b3ver/idmdver
 

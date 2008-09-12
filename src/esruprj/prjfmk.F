@@ -21,7 +21,8 @@ C Boston, MA 02111-1307 USA.
 C Subroutines in prjfmk.F
 C PRJFMK: Creates and edits a zone operations file.
 C EDAFCTL: Edits thermostatic air flow control description.
-C EDAIR: Edits air flow portion of a zone operations file.
+C EDAIR2: Edits v1.0 & v2.0 air flow portion of a zone operations file.
+C EDAIR3: Edits v3.0 air flow portion of a zone operations file.
 C EDAIRFL - edit scheduled air flow data.
 C ADDAFP add air flow period in correct location (time based).
 C CDAIRFL - copy/ delete air flow data.
@@ -53,12 +54,20 @@ C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -66,16 +75,20 @@ C LPROJ   - zone scheduling (operation file)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
-      COMMON/P1/oprdesc,ctlstr
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF
+      REAL CMGS,CMGL,RADC,CONC
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -92,10 +105,9 @@ C Flags noting whether casual gain periods are currently sorted.
 C Flag noting whether file was browsed for (so that cfg can be
 C updated when the user exits).
       logical gotviabrowse
+      dimension iper(24),iperf(24)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER oprdesc*248,ctlstr*24,zname*12,zdesc*64,tcname*248
-      character ventdesc*248
+      CHARACTER zname*12,zdesc*64,tcname*248
       CHARACTER ITEM(14)*33,choices(12)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -103,8 +115,9 @@ C updated when the user exits).
       character sfile*72,snpfile*72,fs*1,outs*124
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
 
-      LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask
-
+      LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+ 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -112,7 +125,6 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-      ventdesc=' '
 
 C Initially assume periods are not sorted.
       sorted=.false.
@@ -171,10 +183,20 @@ C Operations file not known, allow user to give name or browse.
         H(7)=' '
         H(8)='The browse option presents a list of files in the'
         H(9)='project `zones` folder in case you want to share.'
-        H(10)='the same definition as used by another zone. '
-        CALL EASKS2CMD(LTMP,' ','Zone operations file options:',
-     &    'browse','cancel',iclkok,72,GFILE,
-     &    'operations file',IER,13)
+        H(10)='the same definition as used by another zone.'
+
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.2)then
+          CALL EASKSCMD(LTMP,' ','Zone operations file options:',
+     &      'browse',clkok,72,GFILE,'operations file',ISER,10)
+          if(clkok)iclkok=1   ! notice browse button
+          if(iser.eq.-3)iclkok=2  ! notice cancel button
+        else
+          CALL EASKS2CMD(LTMP,' ','Zone operations file options:',
+     &      'browse','cancel',iclkok,72,GFILE,
+     &      'operations file',IER,10)
+        endif
+        call usrmsg(' ',' ','-')   ! clear the display
       else
         H(1)='Operations details have already been defined for this'
         H(2)='zone so if you want to use and/or modify the current'
@@ -192,9 +214,17 @@ C Operations file not known, allow user to give name or browse.
         H(14)='case you the file will be shared between zones so that'
         H(15)='any change to its contents will affect more than one'
         H(16)='zone.'
-        CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
-     &         'browse','cancel',iclkok,72,GFILE,
-     &          'operations file',IER,16)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.2)then
+          CALL EASKSCMD(LTMP,' ','Confirm zone operations file:',
+     &      'browse',clkok,72,GFILE,'operations file',ISER,10)
+          if(clkok)iclkok=1   ! notice browse button
+          if(iser.eq.-3)iclkok=2  ! notice cancel button
+        else
+          CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
+     &      'browse','cancel',iclkok,72,GFILE,
+     &      'operations file',IER,16)
+        endif
         call usrmsg(' ',' ','-')   ! clear the display
       endif
       if(iclkok.eq.1)then
@@ -238,20 +268,21 @@ C Display a bit of information about this browsed file.
       LPROJ(ICOMP)=LTMP
 
 C Debug.
-C      write(6,*) 'lproj is ',lproj(icomp)
+      write(6,*) 'lproj is ',lproj(icomp)
 
   5   MODOPR=.FALSE.
+ 
+      DO 400 IDTY=1,NBDAYTYPE
+        NAC(IDTY)=0
+        NCAS(IDTY)=0
+ 400  CONTINUE
 
-      NAC1=0
-      NAC2=0
-      NAC3=0
-      NCAS1=0
-      NCAS2=0
-      NCAS3=0
-
-C Instanciate prior to scanning the source operation file.
-      ctlstr='no control of air flow  '
-      oprdesc='no operations notes (yet)'
+C Instanciate for initial weekday/saturday/sunday day types
+C prior to scanning the source operation file.
+      ctlstr(icomp,1)='no control of air flow  '
+      ctlstr(icomp,2)='no control of air flow  '
+      ctlstr(icomp,3)='no control of air flow  '
+      oprdesc(icomp)='no operations notes (yet)'
       IER=0
 
 C Set the default type labels for this zone
@@ -264,7 +295,7 @@ C Set the default type labels for this zone
       lodlabel(icomp,7)='N/A   '      
  
 C Read file for editing or listing. If there is no file then begin with
-C default data (and set ip3ver to 1 in case user does nothing else).
+C default data (and set ip3ver to 2 in case user does nothing else).
       IUO=IFIL+1
       call FINDFIL(LPROJ(ICOMP),XST)
       IF(XST)THEN
@@ -274,26 +305,16 @@ C default data (and set ip3ver to 1 in case user does nothing else).
 C Do cursory check to see if the file is sorted.
         sorted=.true.
         problem=.false.
-        call checksort(icomp,1,problem,ier)
-        if(problem)then
-          sorted=.false.
-          MODOPR=.true.
-          call edisp(iuout,'Weekday casual gains might be unsorted.')
-        endif
-        problem=.false.
-        call checksort(icomp,2,problem,ier)
-        if(problem)then
-          sorted=.false.
-          MODOPR=.true.
-          call edisp(iuout,'Saturday casual gains might be unsorted.')
-        endif
-        problem=.false.
-        call checksort(icomp,3,problem,ier)
-        if(problem)then
-          sorted=.false.
-          MODOPR=.true.
-          call edisp(iuout,'Sunday casual gains might be unsorted.')
-        endif
+        DO 401 IDTY=1,NBDAYTYPE
+          call checksort(icomp,IDTY,problem,ier)
+          if(problem)then
+            sorted=.false.
+            MODOPR=.true.
+            WRITE(OUTS,'(2A)')CALENTAG(IDTY),
+     &      ' casual gains might be unsorted.'
+            call edisp(iuout,OUTS)
+          endif
+ 401    CONTINUE
       ELSE
 
 C The choices for the user - sometimes they want to skip
@@ -483,11 +504,11 @@ C We have all of the directives, do the import.
         if(igu.eq.1.or.igu.eq.2.or.igu.eq.5)then
 
 C Each of these leaves the user to define the casual gains manually.
-C The from scratch should intially be version 2.
-          ip3ver=2
+C The from scratch should intially be version 2.0
+          ip3ver(icomp)=2
           h(1)='New operations for this zone. Please check your notes'
           h(2)='and provide initial casual gain period start times'
-          h(3)='for each day type (Weekday, Saturday & Sunday) and'
+          h(3)='for each day type (Weekday, Saturday, Sunday etc.) and'
           h(4)='for each casual gain type (occupants, lighting and'
           h(5)='small power). Do not include periods to be imported'
           h(6)='from events profiles.'
@@ -509,10 +530,7 @@ C The from scratch should intially be version 2.
           H(22)='until you provide relevant information (e.g. insert'
           H(23)='at least one period and define a casual gain).'
           CALL PHELPD('operation setup',23,'-',0,0,IER)
-
-          call initcasday('wk',ier)
-          call initcasday('sa',ier)
-          call initcasday('su',ier)
+          call initcasday(ier)
 
 C debug
 C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
@@ -616,17 +634,17 @@ C Remind users to check their data.
       h(5)='One approach is to generate a new QA report and check this'
       h(6)='against the previous model and then run a short assessment'
       h(7)='to confirm that performance is as expected.'
-      CALL PHELPD('operation import confirm',7,'-',0,0,IER)
+          CALL PHELPD('operation import confirm',7,'-',0,0,IER)
         endif
       ENDIF
 
 C Display different options depending on the version of the file.
   20  write(ITEM(1),'(2a)')   '  zone: ',zname(ICOMP)
-      if(ip3ver.le.2)then
-        write(ITEM(2),'(3a)') 'a description: ',oprdesc(1:16),'-'
-        write(ITEM(3),'(2x,2a)')   oprdesc(17:45),'-'
-        write(ITEM(4),'(2x,2a)')   oprdesc(46:74),'-'
-        write(ITEM(5),'(2x,2a)')   oprdesc(75:103),'-'
+      if(ip3ver(icomp).le.2)then
+        write(ITEM(2),'(3a)') 'a description: ',oprdesc(ICOMP)(1:16),'-'
+        write(ITEM(3),'(2x,2a)')   oprdesc(ICOMP)(17:45),'-'
+        write(ITEM(4),'(2x,2a)')   oprdesc(ICOMP)(46:74),'-'
+        write(ITEM(5),'(2x,2a)')   oprdesc(ICOMP)(75:103),'-'
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
@@ -637,13 +655,13 @@ C Display different options depending on the version of the file.
         ITEM(13)=             '? help                          '
         ITEM(14)=             '- exit this menu                '
         NITEMS=14
-      elseif(ip3ver.eq.3)then
+      elseif(ip3ver(icomp).eq.3)then
         write(ITEM(2),'(3a)') 'a inf vent notes: ',
-     &    ventdesc(1:13),'-'
-        write(ITEM(3),'(2x,a)')    ventdesc(14:44)
+     &    ventdesc(ICOMP)(1:13),'-'
+        write(ITEM(3),'(2x,a)')    ventdesc(ICOMP)(14:44)
         write(ITEM(4),'(3a)') 'b casual notes: ',
-     &    oprdesc(1:15),'-'
-        write(ITEM(5),'(2x,a)')    oprdesc(16:44)
+     &    oprdesc(ICOMP)(1:15),'-'
+        write(ITEM(5),'(2x,a)')    oprdesc(ICOMP)(16:44)
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
@@ -663,10 +681,10 @@ C Help text for this menu.
       H(4) =' 1) Operations description - up to 248 characters'
       H(5) ='    summarising what is happening in the zone.'
       H(6) ='  '
-      H(7) =' 2) Weekday, Saturday and Sunday air flow data:'
-      H(8) ='       start and finish hours for each period'
-      H(9) ='       infiltration and ventilation rates (ACH)'
-      H(10)='       coupling index: '
+      H(7) =' 2) Weekday, Saturday, Sunday (& other day types if '
+      H(8) ='    defined) air flow data:  start and finish hours '
+      H(9) ='    for each period infiltration and ventilation rates '
+      H(10)='    (ACH) coupling index: '
       H(11)='         > 0 is coupled zone number'
       H(12)='         = 0 source at specified temperature'
       H(13)='  '
@@ -690,9 +708,9 @@ C Help text for this menu.
       H(31)='       low   default   high  extreme '
       H(32)='         <-  temperature ranges  ->  '
       H(33)=' '
-      H(34) =' 4) Weekday, Saturday and Sunday casual gains data:'
-      H(35) ='       start and finish hours for each period'
-      H(36) ='       casual gain type:'
+      H(34) =' 4) Weekday, Saturday and Sunday (& other day types if '
+      H(35) ='    defined) casual gains data: start and finish hours '
+      H(36) ='    for each period casual gain type:'
       H(37) ='         1: usually occupants'
       H(38) ='         2: usually lighting'
       H(39) ='         3: usually equipment'
@@ -764,42 +782,46 @@ C even if modopr has not been set.
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
-        if(ip3ver.le.2)then
+        if(ip3ver(icomp).le.2)then
 
 C Edit operation description.
           H(1)='Notes (<248 char) for schedules of zone air flow and' 
           H(2)='casual gains can be included in the model. Use this'
           H(3)='facility to clarify what is happening in the zone.'
-          tcname=oprdesc
+          tcname=oprdesc(icomp)
           CALL EASKS248(tcname,' ','Zone operations notes:',
      &          72,'base_case','operation notes',IER,3)
-          if(tcname(1:2).ne.'  ')oprdesc=tcname
+          if(tcname(1:2).ne.'  ')oprdesc(icomp)=tcname
           MODOPR=.true.
-        elseif(ip3ver.eq.3)then
+        elseif(ip3ver(icomp).eq.3)then
           H(1)='Notes (<248 char) for schedules of zone air flow can' 
           H(2)='be included in the model. Use this facility to'
           H(3)='clarify what is happening in the zone.'
-          tcname=ventdesc
+          tcname=ventdesc(icomp)
           CALL EASKS248(tcname,' ','Zone scheduled air notes:',
      &          72,'base_case','operation notes',IER,3)
-          if(tcname(1:2).ne.'  ')ventdesc=tcname
+          if(tcname(1:2).ne.'  ')ventdesc(icomp)=tcname
           MODOPR=.true.
         endif
       ELSEIF(INO.EQ.4)THEN
-        if(ip3ver.eq.3)then
+        if(ip3ver(icomp).eq.3)then
           H(1)='Notes (<248 char) for schedules of zone air flow and' 
           H(2)='casual gains can be included in the model. Use this'
           H(3)='facility to clarify what is happening in the zone.'
-          tcname=oprdesc
+          tcname=oprdesc(icomp)
           CALL EASKS248(tcname,' ','Zone operations notes:',
      &          72,'base_case','operation notes',IER,3)
-          if(tcname(1:2).ne.'  ')oprdesc=tcname
+          if(tcname(1:2).ne.'  ')oprdesc(icomp)=tcname
           MODOPR=.true.
         endif
       ELSEIF(INO.EQ.7)THEN
 
 C Edit air flows.
-        CALL EDAIR2(ICOMP,IER)
+        if(ip3ver(icomp).le.2)then
+          CALL EDAIR2(ICOMP,IER)
+        elseif(ip3ver(icomp).eq.3)then
+          CALL EDAIR3(ICOMP,IER)
+        endif
         MODOPR=.true.
       ELSEIF(INO.EQ.8)THEN
 
@@ -842,7 +864,7 @@ C and rewrite the system configuration file if not browsing.
             h(1)='You were presented with this message because a'
             h(2)='problem was detected while trying to update the'
             h(3)='zone operations file. Check that you have sufficient'
-            h(4)='disk space and/or permission to update the mode.'
+            h(4)='disk space and/or permission to update the model'
             CALL ASKOK('Problem encountered saving data!',
      &      'Try again?',OK,DOK,4)
             IF(OK)THEN
@@ -865,24 +887,26 @@ C Explain
         CALL PHELPD('operation help',48,'-',0,0,IER)
       ENDIF
       GOTO 20
-
       END
 
 C ********************* EDAFCTL *********************
 C EDAFCTL: Edits thermostatic air flow control description.
 C ITRC is the trace level, IER=0 is OK.
+
+C << must be revised for multiple day types and periods. >>
+
       SUBROUTINE EDAFCTL(ICOMP,IER)
 
 #include "building.h"
       common/pophelp/h(60)
       COMMON/PREC2/VOL(MCOM)
-      CHARACTER oprdesc*248,ctlstr*24
-      COMMON/P1/oprdesc,ctlstr
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
 
       DIMENSION IVAL(4), IVALS(3), ALT(4),ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
@@ -901,7 +925,9 @@ C Flow control browse & editing.
         THI(ICOMP)=100.
         TUP(ICOMP)=0.
         TLO(ICOMP)=0.
-        ctlstr='no control of air flow  '
+        ctlstr(ICOMP,1)='no control of air flow  '
+        ctlstr(ICOMP,2)='no control of air flow  '
+        ctlstr(ICOMP,3)='no control of air flow  '
         return
       endif
 
@@ -955,38 +981,39 @@ C Flow control browse & editing.
 
 
 C Generate a brief description.
-      if(ip3ver.le.2)then
+C << this does not yet take into account day type >>
+      if(ip3ver(icomp).le.2)then
         IY=ITCTL(ICOMP)
         if(IY.eq.-14)then
-          ctlstr='infil only: wind speed  '
+          ctlstr(icomp,1)='infil only: wind speed  '
         elseif(IY.eq.-13)then
-          ctlstr='infil only: ext db temp '
+          ctlstr(icomp,1)='infil only: ext db temp '
         elseif(IY.eq.-12)then
-          ctlstr='infil only: adj zone tmp'
+          ctlstr(icomp,1)='infil only: adj zone tmp'
         elseif(IY.eq.-11)then
-          ctlstr='infil only: zone temp   '
+          ctlstr(icomp,1)='infil only: zone temp   '
         elseif(IY.eq.-4)then
-          ctlstr='vent only: wind speed   '
+          ctlstr(icomp,1)='vent only: wind speed   '
         elseif(IY.eq.-3)then
-          ctlstr='vent only: ext db temp  '
+          ctlstr(icomp,1)='vent only: ext db temp  '
         elseif(IY.eq.-2)then
-          ctlstr='vent only: adj zone temp'
+          ctlstr(icomp,1)='vent only: adj zone temp'
         elseif(IY.eq.-1)then
-          ctlstr='vent only: zone temp    '
+          ctlstr(icomp,1)='vent only: zone temp    '
         elseif(IY.eq.4)then
-          ctlstr='infil & vent: wind speed'
+          ctlstr(icomp,1)='infil & vent: wind speed'
         elseif(IY.eq.3)then
-          ctlstr='infil & vent: ext db T  '
+          ctlstr(icomp,1)='infil & vent: ext db T  '
         elseif(IY.eq.2)then
-          ctlstr='infil & vent: adj zone T'
+          ctlstr(icomp,1)='infil & vent: adj zone T'
         elseif(IY.eq.1)then
-          ctlstr='infil & vent: zone T    '
+          ctlstr(icomp,1)='infil & vent: zone T    '
         elseif(IY.eq.0)then
-          ctlstr='no control of air flow  '
+          ctlstr(icomp,1)='no control of air flow  '
         else
-          ctlstr='unknown flow control   '
+          ctlstr(icomp,1)='unknown flow control   '
         endif
-      elseif(ip3ver.eq.3)then
+      elseif(ip3ver(icomp).eq.3)then
 
 C << to be done >>
 
@@ -1198,6 +1225,9 @@ C IER=0 is OK.
 
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -1205,39 +1235,39 @@ C IER=0 is OK.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
-      CHARACTER oprdesc*248,ctlstr*24
-      COMMON/P1/oprdesc,ctlstr
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
+      integer KSTR(MDTY),ix,iy
 
 C Initial menu entry setup.
       idtyp = 1
  5    MHEAD=3
       MCTL=5
-      if(idtyp.eq.1)then
-        ILEN=NAC1*3
-      elseif(idtyp.eq.2)then 
-        ILEN=NAC2*3
-      elseif(idtyp.eq.3)then
-        ILEN=NAC3*3
-      endif
+      ILEN=NAC(IDTYP)*3
       IPACT=CREATE
       CALL EKPAGE(IPACT)
       IER=0
@@ -1245,149 +1275,61 @@ C Initial menu entry setup.
 
 C Check and plot air flows. 
       call CHKAIRFL
-      if (MMOD.eq.8) call PLTAIR(ICOMP)
+      if (MMOD.eq.8) call PLTAIR(ICOMP,idtyp)
 
 C Set up top of menu.
   44  if (ITCTL(ICOMP).eq.0) then 
         write(VERT(1),'(A)') '1 air flow control (none)'
       else
-        write(VERT(1),'(2A)') '1 control: ',ctlstr(1:22)
+        write(VERT(1),'(2A)') '1 control: ',ctlstr(icomp,1)(1:22)
       endif
       vert(2) =              '  -----------------------------'
-      if(idtyp.eq.1)then
-        write(vert(3),'(a,i2,a)') '> air flow>> Weekdays (',NAC1,')'
-      elseif(idtyp.eq.2)then 
-        write(vert(3),'(a,i2,a)') '> air flow>> Saturdays (',NAC2,')'
-      elseif(idtyp.eq.3)then
-        write(vert(3),'(a,i2,a)') '> air flow>> Sundays (',NAC3,')'
-      endif
+      write(vert(3),'(3a,i2,a)') '> air flow>> ',calentag(idtyp),' (',
+     &NAC(IDTYP),')'
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
       M=MHEAD
 
-C Weekday loop
-      if(idtyp.eq.1)then
-        istartcount=1
-        iendcount=0
-        do 10 L=1,NAC1
+C Day type loop
+      istartcount=1
+      iendcount=0
+      do 10 L=1,NAC(idtyp)
 
 C Ensure that all three lines can be written. If on subsequent
 C pages then check loosely in order to catch an item that 
 C would have otherwise spanned the page divide.
-          iendcount=istartcount+2
-C          if (istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL))) then
-          if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
-            continue
-          elseif(istartcount+2.GE.IST.AND.
-     &          (iendcount.LE.(IST+MIFULL)))then
-            continue
-          else
-            istartcount=iendcount+1
-            goto 10
-          endif
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
-     &      IACS1(L),'-',IACF1(L)
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI1(L)
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          if (IPT1(L).gt.0) then
-            write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
-     &        ACV1(L),zname(IPT1(L))(1:10)
-          elseif (ACV1(L).lt.0.0001) then 
-            write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
-     &        ACV1(L),'  n/a'
-          else
-            write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
-     &        ACV1(L),'@temp:',TA1(L)
-          endif
+        iendcount=istartcount+2
+        if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
+          continue
+        elseif(istartcount+2.GE.IST.AND.
+     &        (iendcount.LE.(IST+MIFULL)))then
+          continue
+        else
           istartcount=iendcount+1
- 10     continue
-
-C Saturday loop
-      elseif(idtyp.eq.2)then 
-        istartcount=1
-        iendcount=0
-        do 20 L=1,NAC2
-
-C Ensure that all three lines can be written. If on subsequent
-C pages then check back two in order to catch an item that 
-C would have otherwise spanned the page divide.
-          iendcount=istartcount+2
-          if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
-            continue
-          elseif(istartcount+2.GE.IST.AND.
-     &          (iendcount.LE.(IST+MIFULL)))then
-            continue
-          else
-            istartcount=iendcount+1
-            goto 20
-          endif
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
-     &      IACS2(L),'-',IACF2(L)
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI2(L)
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          if (IPT1(L).gt.0) then
-            write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
-     &        ACV2(L),zname(IPT2(L))(1:10)
-          elseif (ACV1(L).lt.0.0001) then 
-            write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
-     &        ACV2(L),'  n/a'
-          else
-            write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
-     &        ACV2(L),'@temp:',TA2(L)
-          endif
-          istartcount=iendcount+1
- 20     continue
-
-C Sunday loop.
-      elseif(idtyp.eq.3)then
-        istartcount=1
-        iendcount=0
-        do 30 L=1,NAC3
-
-C Ensure that all three lines can be written.
-          iendcount=istartcount+2
-          if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
-            continue
-          elseif(istartcount+2.GE.IST.AND.
-     &          (iendcount.LE.(IST+MIFULL)))then
-            continue
-          else
-            istartcount=iendcount+1
-            goto 30
-          endif
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
-     &      IACS3(L),'-',IACF3(L)
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI3(L)
-          M=M+1
-          call EMKEY(M-MHEAD,KEY,IER)
-          if (IPT1(L).gt.0) then
-            write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
-     &        ACV3(L),zname(IPT3(L))(1:10)
-          elseif (ACV1(L).lt.0.0001) then 
-            write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
-     &        ACV3(L),'  n/a'
-          else
-            write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
-     &        ACV3(L),'@temp:',TA3(L)
-          endif
-          istartcount=iendcount+1
- 30     continue
-      endif
+          goto 10
+        endif
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
+     &    IACS(idtyp,L),'-',IACF(idtyp,L)
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI(idtyp,L)
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        if (IPT(idtyp,L).gt.0) then
+          write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
+     &      ACV(idtyp,L),zname(IPT(idtyp,L))(1:10)
+        elseif (ACV(idtyp,L).lt.0.0001) then 
+          write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
+     &      ACV(idtyp,L),'  n/a'
+        else
+          write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
+     &      ACV(idtyp,L),'@temp:',TA(idtyp,L)
+        endif
+        istartcount=iendcount+1
+ 10   continue
 
 C Number of actual items displayed.
       MVERT=M+MCTL
@@ -1498,53 +1440,487 @@ C Add delete copy period or import from another zone.
         CALL EASKATOG(' ','Options (see help):',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern','cancel',' ',IW,35)
-        if (IW.EQ.1) then 
-          call EASKATOG(' ','New air flow period is for day type:',
-     &      'Weekdays','Saturdays','Sundays','All','Cancel',
-     &      ' ',' ',IW,35)
-          if (IW.ne.5) then
-            if (IW.eq.1) then
-              if(NAC1.eq.MA)then
-                call usrmsg(' ','Sorry, too many weekday periods.','W')
-              else
-                IDT=1
-                IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER,-1)
-              endif
-            elseif (IW.eq.2) then
-              if(NAC2.eq.MA)then
-               call usrmsg(' ','Sorry, too many Saturday periods.','W')
-              else
-                IDT=2
-                IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER,-1)
-              endif
-            elseif (IW.eq.3) then
-              if(NAC3.eq.MA)then
-                call usrmsg(' ','Sorry, too many Sunday periods.','W')
-              else
-                IDT=3
-                IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER,-1)
-              endif
-            elseif (IW.eq.4) then
 
-C Add a period to all day types.
-              if(NAC1.eq.MA)then
-                call usrmsg(' ','Sorry, too many Weekday periods.','W')
-              elseif(NAC2.eq.MA)then
-                call usrmsg(' ','Sorry, too many Saturday periods.','W')
-              elseif(NAC3.eq.MA)then
-                call usrmsg(' ','Sorry, too many Sunday periods.','W')
+C Add period
+        if (IW.EQ.1) then 
+          CALL EASKAB(' ','Add period to ','one day type',
+     &     'all day types',IY,35)
+          IF(IY.EQ.1)THEN
+            IX=1
+            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+     &      ,12,nbdaytype,calentag,'Choose daytype',IER,35)
+            call edisp(iuout,'choose daytype to add period in')
+            IDT=KSTR(1)
+            idtyp=idt
+            IF(NAC(IDT).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+            ELSE
+              IPER=0
+              CALL EDAIRFL(ICOMP,IDT,IPER,-1)
+            ENDIF
+          ELSEIF(IY.EQ.2)THEN
+            IDT=-1
+            DO 400 IDTY=1,NBDAYTYPE
+            IF(NAC(IDTY).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+              CALL EDISP(IUOUT,
+     &        'Add periods by individually choosing each day type')
+              IDT=0
+            ENDIF
+ 400        CONTINUE
+            IF(IDT.NE.0)THEN
+              IDT=-1
+              IPER=0
+              call EDAIRFL(ICOMP,IDT,IPER,-1)
+            ENDIF
+          ENDIF
+        elseif (IW.EQ.4.or.IW.eq.5) then
+
+C Import flow schedules from another zone. Ask which zone, then
+C confirm how much to copy and whether infiltration and ventilation
+C flows are to preserve ac/h or volume of flow.
+          if(iw.eq.4)then
+ 38         isource=0
+            izdef=0
+            call askzone(isource,izdef,
+     &        'Air flow pattern from which zone?',
+     &        'Source Zone','-','Ventilation import requires a zone.',
+     &        ier)
+            if (IER.ne.0.or.isource.eq.ICOMP) then
+              write (OUTS,'(3a)')  'the current zone (',
+     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+              call USRMSG('The selected zone should be different from',
+     &          outs,'W')
+              goto 38
+            endif
+
+C Display a bit of information about this browsed file.
+            IUO=IFIL+1
+            write(LTMP,'(a)') LPROJ(isource)
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              call ZSCHEDHINT(IUO,LTMP,IER)
+            else
+              call USRMSG('The selected file could not be found.',
+     &          'Please try again.','W')
+              goto 38
+            endif
+            sfile=' '
+          elseif(iw.eq.5)then
+
+C File browse from patterns.
+            sfile=' '
+            snpfile=' '
+            call edisp(iuout,' ')
+            call browsefilelist('?','pat','opr',sfile,snpfile,nfile,
+     &        iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
+     &          iier)
+              if(snpfile(1:2).ne.'  ')then
+C Debug.
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+                isource=0
               else
-                IDT=4
-                IPER=0
-                call EDAIRFL(ICOMP,IDT,IPER,-1)
+
+C Nothing selected treat this as a return state.
+                call usrmsg('No file selected, try again.',' ','W')
+                goto 5
               endif
-            elseif (IW.eq.5) then
-              continue
+
+C Display a bit of information about this browsed file.
+              IUO=IFIL+1
+              call FINDFIL(sfile,XST)
+              if(XST)then
+                call ZSCHEDHINT(IUO,sfile,IER)
+              else
+                call USRMSG('The selected file could not be found.',
+     &            'Please try again.','W')
+                goto 5
+              endif
+            else
+
+C Nothing selected treat this as a return state.
+              call usrmsg('No files available, try again.',' ','W')
+              goto 5
             endif
           endif
+
+C Should only ask users these questions if the source file has been found.
+          CALL EASKABC(' ','Import:','all flow schedules & ctl',
+     &     'infiltration only','cancel',ivopt,21)
+          if(ivopt.eq.1) afact='all  '
+          if(ivopt.eq.2) afact='infil'
+          if(ivopt.eq.3) goto 5
+          CALL EASKABC(' ','Infiltration import:','preserve ac/h',
+     &     'convert to zone volume','cancel',infv,16)
+          if(infv.eq.1) iflow='ach-ach '
+          if(infv.eq.2) iflow='vol-vol '
+          if(infv.eq.3) goto 5
+          if(ivopt.eq.1)then
+            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+     &       'convert to zone vvolume','cancel',ivntv,16)
+            if(ivntv.eq.1) vflow='ach-ach '
+            if(ivntv.eq.2) vflow='vol-vol '
+            if(ivntv.eq.3) goto 5
+          else
+            vflow='ach-ach '
+          endif
+          idest=icomp
+          itrc=1
+
+C We have all of the directives, do the import.
+          call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
+     &      itrc,'-',ier)
+        endif
+      elseif (IVERT.EQ.(MVERT-4)) then
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+          ILEN=NAC(IDTYP)*3
+          goto 44
+        ENDIF
+      elseif (IVERT.EQ.1) then
+
+C Control of air flow.
+        call EDAFCTL(ICOMP,IER)
+      elseif (IVERT.EQ.3) then
+
+C Increment the daytype focus.
+        idtyp = idtyp + 1
+        if(idtyp.gt.nbdaytype) idtyp = 1
+        goto 5
+      elseif (IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1)) then
+
+C Edit block identified by KEYIND.
+        CALL KEYIND(MVERT,IVERT,I,IO)
+
+C Depending on currently defined gains work out day type of selected
+C item. Also calculate period index in day type. Adjust for 2nd page
+        if(ipm.eq.2.and.I.gt.1) I=I-1  ! adjust for 2nd page
+        if(ipm.eq.3.and.I.gt.1) I=I-2  ! adjust for 3rd page
+        if(ipm.eq.4.and.I.gt.1) I=I-3  ! adjust for 4th page
+
+C Items are in groups of 3. If i/3 has no remainder I is 3,6,9,etc.
+C so the period is just the nearest integer to I/3.0. If there is
+C a remainder then I is 1,2 or 4,5 and it is one more than the
+C nearest integer.
+        trymod=amod(real(I),3.0)
+        call eclose(trymod,0.0,0.001,closezero)
+        call eclose(trymod,1.0,0.001,closeone)
+        call eclose(trymod,2.0,0.001,closetwo)
+        if(closezero.or.closetwo)then
+          try=real(I)/3.0
+          iper=nint(try)
+        endif
+        if(closeone)then
+          try=real(I)/3.0
+          iper=nint(try)+1
+        endif
+        IDT=idtyp
+        if(closeone)then
+          call EDAIRFL(ICOMP,IDT,IPER,1)
+        endif
+        if(closetwo)then
+          call EDAIRFL(ICOMP,IDT,IPER,2)
+        endif
+        if(closezero)then
+          call EDAIRFL(ICOMP,IDT,IPER,0)
+        endif
+      endif
+
+C Redisplay menu.
+      IVERT=-4
+      GOTO 5
+      END
+
+
+C ********************* EDAIR3 *********************
+C EDAIR3: Edits air flow portion of a v3.0 zone operations file.
+C Returns: NAC*,IACS*,IACF*,ACI*,ACV*,IPT*,TA* data in common.
+C IER=0 is OK.
+      SUBROUTINE EDAIR3(ICOMP,IER)
+
+#include "building.h"
+#include "epara.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      common/pophelp/h(60)
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+
+C Common block P2UNIT defines the units for infiltration and ventilation
+C for each zone and day type. The default value of zero is the same as
+C the traditional (implied) unit in the version (ip3ver 0, 1, 2). A value
+C of one signals m3/h and a value of 2 signals m3/s.
+      integer INFUNIT,IVENTUNIT
+      COMMON/P2UNIT/INFUNIT(MCOM,MDTY),IVENTUNIT(MCOM,MDTY)
+      
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
+      character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
+      character LTMP*72
+      character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
+      logical XST,closezero,closeone,closetwo
+      integer KSTR(MDTY)
+
+C Return if the version is not three.
+      if(ip3ver(icomp).lt.3)then
+        call usrmsg('EDAIR3 called with older version of zone ',
+     &    'operation file.','-')
+        return
+      endif
+
+C Initial menu entry setup.
+      idtyp = 1
+ 5    MHEAD=4
+      MCTL=5
+      ILEN=NAC(IDTYP)*3
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+      IER=0
+      IVERT=-3
+
+C Check and plot air flows. 
+      call CHKAIRFL
+      if (MMOD.eq.8) call PLTAIR(ICOMP,idtyp)
+
+C Set up top of menu.
+  44  if (ITCTL(ICOMP).eq.0) then 
+        write(VERT(1),'(A)') '1 air flow control (none)'
+      else
+        write(VERT(1),'(2A)') '1 control: ',ctlstr(icomp,1)(1:22)
+      endif
+      vert(2) =              '  -----------------------------'
+      write(vert(3),'(3a,i2,a)') '> air flow>> ',calentag(idtyp),' (',
+     &  NAC(IDTYP),')'
+      write(vert(4),'(a,i2,a,i2)') '* infil unit',INFUNIT(icomp,1),
+     &  ' vent unit',IVENTUNIT(icomp,1)
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+      M=MHEAD
+
+C Day type loop
+      istartcount=1
+      iendcount=0
+      do 10 L=1,NAC(idtyp)
+
+C Ensure that all three lines can be written. If on subsequent
+C pages then check loosely in order to catch an item that 
+C would have otherwise spanned the page divide.
+        iendcount=istartcount+2
+        if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
+          continue
+        elseif(istartcount+2.GE.IST.AND.
+     &        (iendcount.LE.(IST+MIFULL)))then
+          continue
+        else
+          istartcount=iendcount+1
+          goto 10
+        endif
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
+     &    IACS(idtyp,L),'-',IACF(idtyp,L)
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,f6.2)') KEY,'  infil rate:',ACI(idtyp,L)
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        if (IPT(idtyp,L).gt.0) then
+          write (VERT(M),'(2a,f6.2,1x,a)') KEY,'  vent rate:',
+     &      ACV(idtyp,L),zname(IPT(idtyp,L))(1:10)
+        elseif (ACV(idtyp,L).lt.0.0001) then 
+          write (VERT(M),'(2a,f6.2,a)') KEY,'  vent rate:',
+     &      ACV(idtyp,L),'  n/a'
+        else
+          write (VERT(M),'(2a,f6.2,a,f6.2)') KEY,'  vent rate:',
+     &      ACV(idtyp,L),'@temp:',TA(idtyp,L)
+        endif
+        istartcount=iendcount+1
+ 10   continue
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)=           '  -----------------------------'
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT             ('0 Page --- Part: ',I2,' of ',I2,' ---')
+      ENDIF
+      VERT(M+2) = '+ add/delete/copy/import flows '
+      VERT(M+3) = '! list current information     '
+      VERT(M+4) = '? help                         '
+      VERT(M+5) = '- exit this menu               '
+
+C Help text for this menu.
+      H(1)='Air flows are defined via one or more sequential'
+      H(2)='periods, the magnitude at a given time being the'
+      H(3)='flow specified a period that includes that time.'
+      H(4)=' '
+      H(5)='In cases where ventilation will occur with more'
+      H(6)='than one modelled zone then a fluid flow network'
+      H(7)='or temporal definition file should be employed.'
+      H(8)=' '
+      H(9)='Note that large changes in flow rates between'
+      H(10)='periods can result in unacceptable interpolation'
+      H(11)='errors.'
+      H(12)=' '
+      H(13)='The add/delete/copy/import option are as follows.'
+      H(14)=' add - adds a period to one or all day types. BE SURE'
+      H(15)='   to read the extended help messages in this dialog'
+      H(16)='   to understand how to use the add function to insert'
+      H(17)='   a period into a profile.'  
+      H(18)=' '
+      H(19)=' delete - deletes one or more periods (within a list'
+      H(20)='   of all periods in all days).'
+      H(21)=' '
+      H(22)=' copy - copies periods for different days e.g. Weekdays ->'
+      H(23)='   Sundays or Saturdays -> Sundays'
+      H(24)=' '
+      H(25)=' import - copies infiltration, ventilation and control'
+      H(26)='   (or a subset of these data) from another zone.'
+      H(27)=' '
+      H(28)='When importing you can specify whether to:'
+      H(29)=' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
+      H(30)='    the source zone is 1.5 ac/h in the destination zone;'
+      H(31)=' b) preserve the volume of air implied by the ac/h in'
+      H(32)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
+      H(33)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+ 
+C Now display the menu.
+      if(mmod.eq.8)then
+        write (title,'(2a)') 'Air flow in ',
+     &    zname(icomp)(1:lnblnk(zname(icomp)))
+      else
+        write (title,'(2a)') 'Ventilation in ',
+     &    zname(icomp)(1:lnblnk(zname(icomp)))
+      endif
+      CALL EMENU(title,VERT,MVERT,IVERT)
+      if (IVERT.EQ.MVERT) then
+        return
+      elseif (IVERT.EQ.(MVERT-1)) then
+        CALL PHELPD('flows menu',33,'-',0,0,IER)
+      elseif (IVERT.EQ.(MVERT-2)) then
+
+C List current.
+        call VENTINF(ICOMP,IUOUT)
+      elseif (IVERT.EQ.(MVERT-3)) then
+
+C Add delete copy period or import from another zone.
+        H(1)='The options: '
+        H(2)='The add/delete/copy/import option are as follows.'
+        H(3)=' add - adds a period to one or all day types. IF'
+        H(4)='   there is already a defined period which overlaps'
+        H(5)='   this period then the volumes of air flow will be '
+        H(6)='   summed.  For example: if there is a period from'
+        H(7)='   8h00-24h00 with 1ach infiltration and you want to '
+        H(8)='   add a period 20h00-24h00 with 0.5 the time from '
+        H(9)='   20h00-24h00 will become 1.5 ach.'
+        H(10)=' '
+        H(11)='   If you want to adjust the profile so the inserted'
+        H(12)='   period has a different value then initailly'
+        H(13)='   give 0.0 for the flows. After the periods have'
+        H(14)='   been revised then edit the newly created period.'
+        H(15)='  '
+        H(16)='   The alternative approach is to edit the start and'
+        H(17)='   end time of the existing period so that a gap is'
+        H(18)='   created and then use the add facility to fill in'
+        H(19)='   the gap.'
+        H(20)=' '
+        H(21)=' delete - deletes one or more periods (within a list'
+        H(22)='   of all periods in all days).'
+        H(23)=' '
+        H(24)=' copy - copies periods for different days e.g. Weekdays'
+        H(25)='   -> Sundays or Saturdays -> Sundays'
+        H(26)=' '
+        H(27)=' import - copies infiltration, ventilation and control'
+        H(28)='   (or a subset of these data) from another zone.'
+        H(29)=' '
+        H(30)='When importing you can specify whether to:'
+        H(31)=' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
+        H(32)='    the source zone is 1.5 ac/h in the destination zone;'
+        H(33)=' b) preserve the volume of air implied by the ac/h in'
+        H(34)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
+        H(35)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+        CALL EASKATOG(' ','Options (see help):',
+     &    'add period','delete period','copy period',
+     &    'import from other zone','import pattern','cancel',' ',IW,35)
+
+C Add period
+        if (IW.EQ.1) then 
+          CALL EASKAB(' ','Add period to ','one day type',
+     &     'all day types',IY,35)
+          IF(IY.EQ.1)THEN
+            IX=1
+            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+     &      ,12,nbdaytype,calentag,'Choose daytype',IER,35)
+            call edisp(iuout,'choose daytype to add period in')
+            IDT=KSTR(1)
+            idtyp=idt
+            IF(NAC(IDT).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+            ELSE
+              IPER=0
+              CALL EDAIRFL(ICOMP,IDT,IPER,-1)
+            ENDIF
+          ELSEIF(IY.EQ.2)THEN
+            IDT=-1
+            DO 400 IDTY=1,NBDAYTYPE
+            IF(NAC(IDTY).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+              CALL EDISP(IUOUT,
+     &        'Add periods by individually choosing each day type')
+              IDT=0
+            ENDIF
+ 400        CONTINUE
+            IF(IDT.NE.0)THEN
+              IDT=-1
+              IPER=0
+              call EDAIRFL(ICOMP,IDT,IPER,-1)
+            ENDIF
+          ENDIF
         elseif (IW.EQ.2) then 
           call CDAIRFL(1)    ! delete one or more periods
         elseif (IW.EQ.3) then
@@ -1657,13 +2033,7 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
-          if(idtyp.eq.1)then
-            ILEN=NAC1*3
-          elseif(idtyp.eq.2)then 
-            ILEN=NAC2*3
-          elseif(idtyp.eq.3)then
-            ILEN=NAC3*3
-          endif
+          ILEN=NAC(IDTYP)*3
           goto 44
         ENDIF
       elseif (IVERT.EQ.1) then
@@ -1674,7 +2044,7 @@ C Control of air flow.
 
 C Increment the daytype focus.
         idtyp = idtyp + 1
-        if(idtyp.gt.3) idtyp = 1
+        if(idtyp.gt.nbdaytype) idtyp = 1
         goto 5
       elseif (IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1)) then
 
@@ -1718,6 +2088,7 @@ C nearest integer.
 C Redisplay menu.
       IVERT=-4
       GOTO 5
+
       END
 
 C ********************* EDAIRFL *********************
@@ -1726,74 +2097,64 @@ C  ICOMP zone number
 C  IDT day type
 C  IPER period (=0 then new)
 C  itype is what attributes to edit (=-1 all, =1 period,
-C     =2 infil, =0 ventilation.
+C     =2 infil, =0 ventilation attributes.
 
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/PREC2/VOL(MCOM)
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
 
       character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
 
 C Working variables
-      real ACI,ACV,TA,XTA,XACH
-      integer IACS,IACF,IPT
+      real ACIX,ACVX,TAX,XTA,XACH
+      integer IACSX,IACFX,IPTX
 
 C << This subroutine will need further code changes to implement
 C << user cancel actions.
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
-        IACS=0
-        IACF=24
-        ACI=0.
-        ACV=0.
-        IPT=0
-        TA=0.
-      elseif (IDT.eq.1) then
-        IACS=IACS1(IPER)
-        IACF=IACF1(IPER)
-        ACI=ACI1(IPER)
-        ACV=ACV1(IPER)
-        IPT=IPT1(IPER)
-        TA=TA1(IPER)
-      elseif (IDT.eq.2) then
-        IACS=IACS2(IPER)
-        IACF=IACF2(IPER)
-        ACI=ACI2(IPER)
-        ACV=ACV2(IPER)
-        IPT=IPT2(IPER)
-        TA=TA2(IPER)
-      elseif (IDT.eq.3) then
-        IACS=IACS3(IPER)
-        IACF=IACF3(IPER)
-        ACI=ACI3(IPER)
-        ACV=ACV3(IPER)
-        IPT=IPT3(IPER)
-        TA=TA3(IPER)
+        IACSX=0
+        IACFX=24
+        ACIX=0.
+        ACVX=0.
+        IPTX=0
+        TAX=0.
+      ELSEIF(IDT.GT.0)THEN
+        IACSX=IACS(IDT,IPER)
+        IACFX=IACF(IDT,IPER)
+        ACIX=ACI(IDT,IPER)
+        ACVX=ACV(IDT,IPER)
+        IPTX=IPT(IDT,IPER)
+        TAX=TA(IDT,IPER)
       endif
 
 C Ask for start and finish times.
       if(itype.eq.-1.or.itype.eq.1)then
  10     write (OUTS,'(A)') 'Start and finish hours for period?'
-        write (HOLD,'(2i5,a)') IACS,IACF,'  '
+        write (HOLD,'(2i5,a)') IACSX,IACFX,'  '
         h(1)='Period during which air flow applies.'
         CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
         K=0
         CALL EGETWI(HOLD,K,IVS,0,24,'F','period start',IER)
         CALL EGETWI(HOLD,K,IVF,IVS+1,24,'F','period end',IER)
         if (IER.ne.0) goto 10
-        IACS=IVS
-        IACF=IVF
+        IACSX=IVS
+        IACFX=IVF
       endif
 
 C Ask for infiltration and ventilation flow rates.
@@ -1808,12 +2169,12 @@ C Can be specified as:ac/h or m^3/s.
 
           if(itype.eq.-1.or.itype.eq.2)then
 C Flow as ac/h.
- 20         XACH=ACI
+ 20         XACH=ACIX
             h(1)='Supply the infiltration rate in ac/h.'
             call EASKR(XACH,' ','Infiltration rate?',
      &        0.0,'W',10.0,'W',0.5,'infil rate ach',IERI,1)
             if(IERI.eq.0)then
-              ACI=XACH
+              ACIX=XACH
             elseif(ieri.eq.-3)then
               call edisp(iuout,'Cancel not implemented.')
             else
@@ -1822,13 +2183,13 @@ C Flow as ac/h.
           endif
         
           if(itype.eq.-1.or.itype.eq.0)then
- 22         XACH=ACV
+ 22         XACH=ACVX
             h(1)='Supply the ventilation rate in ac/h relative'
             h(2)='to the volume of the receiving zone.'
             call EASKR(XACH,' ','Ventilation rate?',
      &        0.0,'W',10.0,'W',0.0,'vent rate ach',IERI,2)
             if(IERI.eq.0)then
-              ACV=XACH
+              ACVX=XACH
             elseif(ieri.eq.-3)then
               call edisp(iuout,'Cancel not implemented.')
             else
@@ -1839,12 +2200,12 @@ C Flow as ac/h.
 
 C Flow as m^3/s.
  30       if(itype.eq.-1.or.itype.eq.2)then
-            XACH=ACI*VOL(ICOMP)/3600.
+            XACH=ACIX*VOL(ICOMP)/3600.
             h(1)='Supply the infiltration rate in m^3/s.'
             call EASKR(XACH,' ','Infiltration rate?',
      &        0.0,'W',10.0,'W',0.0,'inf rate m3s',IERI,1)
             if(IERI.eq.0)then
-              ACI=XACH*3600.0/VOL(ICOMP)
+              ACIX=XACH*3600.0/VOL(ICOMP)
             elseif(ieri.eq.-3)then
               call edisp(iuout,'Cancel not implemented.')
             else
@@ -1853,13 +2214,13 @@ C Flow as m^3/s.
           endif
 
           if(itype.eq.-1.or.itype.eq.0)then
-            XACH= ACV*VOL(ICOMP)/3600.
+            XACH= ACVX*VOL(ICOMP)/3600.
             h(1)='Supply the ventilation rate in m^3/s relative.'
             h(2)='to the volume of the receiving zone.'
             call EASKR(XACH,' ','Ventilation rate?',
      &        0.0,'W',10.0,'W',0.0,'vent rate m3s',IERI,2)
             if(IERI.eq.0)then
-              ACV=XACH*3600.0/VOL(ICOMP)
+              ACVX=XACH*3600.0/VOL(ICOMP)
             elseif(ieri.eq.-3)then
               call edisp(iuout,'Cancel not implemented.')
             else
@@ -1872,7 +2233,7 @@ C Flow as m^3/s.
 C If the ventilation rate is greater than zero then further
 C checks are carried out.
       if(itype.eq.-1.or.itype.eq.0)then
-        if (ACV.gt.0.0) then
+        if (ACVX.gt.0.0) then
 
 C Ask for source zone/ temperature.
           CALL EASKABC(' ','Ventilation air temperature:',
@@ -1881,8 +2242,8 @@ C Ask for source zone/ temperature.
           if (IGU.eq.1) then
 
 C Present zone list.
- 38         IV=IPT
-            call askzone(IV,IPT,'Ventilation from which zone?',
+ 38         IV=IPTX
+            call askzone(IV,IPTX,'Ventilation from which zone?',
      &     'Source Zone','-','Ventilation definition requires a zone.',
      &       ier)
             if (IER.ne.0.or.IV.eq.ICOMP) then
@@ -1901,18 +2262,18 @@ C Present zone list.
      &        '(Current zone volume =',VOL(icomp),
      &        'Source zone volume =',VOL(iv),')'
             call EDISP(IUOUT,OUTS)
-            IPT=IV
-            TA=0.
+            IPTX=IV
+            TAX=0.
           elseif (IGU.eq.2) then
 
 C Ask for source temperature.
- 40         XTA=  TA
+ 40         XTA=  TAX
             h(1)='Supply the ventilation air temperature in degC.'
             call EASKR(XTA,' ','Supply temperature?',
      &        0.0,'F',50.0,'W',0.5,'vent src temp',IERI,1)
             if(IERI.eq.0)then
-              IPT=0
-              TA=XTA
+              IPTX=0
+              TAX=XTA
             elseif(ieri.eq.-3)then
               call edisp(iuout,'Cancel not implemented.')
             else
@@ -1923,17 +2284,17 @@ C Ask for source temperature.
 C Set vent to zero and increase infiltration.
             call USRMSG('Supply of outside air being treated as',
      &       'infiltration. Updating infiltration flow rate.','W')
-            ACI=ACI+ACV
-            ACV=0
-            IPT=0
-            TA=0.0
+            ACIX=ACIX+ACVX
+            ACVX=0
+            IPTX=0
+            TAX=0.0
           endif
         endif
       endif
 
-C If day type 4 then add data to all day types.
-      if (IDT.eq.4) then
-        ILOOP=3
+C If day type -1 then add data to all day types.
+      if (IDT.eq.-1) then
+        ILOOP=NBDAYTYPE
       else
         ILOOP=1
       endif
@@ -1944,8 +2305,8 @@ C If new period then work out where to insert data.
 C If looping through day types then set day type (IDT) to current 
 C value of loop counter (ILDT).  Otherwise IDT will have the value 
 C that was passed to the subroutine.
-        if (ILOOP.eq.3) IDT=ILDT
-        call ADDAFP(IPER,IDT,IACS,IACF,ACI,ACV,IPT,TA)
+        if (ILOOP.NE.1) IDT=ILDT
+        call ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
  400  continue
 
       return
@@ -1956,63 +2317,33 @@ C ADDAFP add air flow period in correct location (time based).
 C Other routines assume that periods have been added in the order 
 C resulting from the sorting done here.
 C IPER=0 if its a new period
-C IDT=day type wkday=1, sat=2, sun=3
+C IDT=day type wkday=1, sat=2, sun=3, other types if specified
 C IACS,IACF period start and finish time
 C ACI,ACV infiltration and ventilation rates
 C IPT,TA ventilation source zone, if IPT=0 then TA is source temperature
 
-      subroutine ADDAFP(IPER,IDT,IACS,IACF,ACI,ACV,IPT,TA)
+      subroutine ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
 #include "building.h"
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
 
       if (IPER.eq.0) then
-        if (IDT.eq.1) then
-          ILPER=1
-          do 210 I=1,NAC1
-            if (iabs(IACS1(I)).le.iabs(IACS)) then
+        ILPER=1
+        DO 401 I=1,NAC(IDT)
+          if (iabs(IACS(IDT,I)).le.iabs(IACSX)) then
+            ILPER=I
+            if (IACS(IDT,I).lt.IACSX) then
+              ILPER=I+1
+            elseif(IACS(IDT,I).eq.IACSX.and.IACF(IDT,I).gt.IACFX)then
               ILPER=I
-              if (IACS1(I).lt.IACS) then
-                ILPER=I+1
-              elseif (IACS1(I).eq.IACS.and.IACF1(I).gt.IACF) then
-                ILPER=I
-              endif
             endif
- 210      continue
-          NAC1=NAC1+1
-          INC=NAC1
-        elseif (IDT.eq.2) then
-          ILPER=1
-          do 220 I=1,NAC2
-            if (iabs(IACS2(I)).le.iabs(IACS)) then
-              ILPER=I
-              if (IACS2(I).lt.IACS) then
-                ILPER=I+1
-              elseif (IACS2(I).eq.IACS.and.IACF2(I).gt.IACF) then
-                ILPER=I
-              endif
-            endif
- 220      continue
-          NAC2=NAC2+1
-          INC=NAC2
-        elseif (IDT.eq.3) then
-          ILPER=1
-          do 230 I=1,NAC3
-            if (iabs(IACS3(I)).le.iabs(IACS)) then
-              ILPER=I
-              if (IACS3(I).lt.IACS) then
-                ILPER=I+1
-              elseif (IACS3(I).eq.IACS.and.IACF3(I).gt.IACF) then
-                ILPER=I
-              endif
-            endif
- 230      continue
-          NAC3=NAC3+1
-          INC=NAC3
-        endif
+          endif
+ 401    CONTINUE
+        NAC(IDT)=NAC(IDT)+1
+        INC=NAC(IDT)
       else
         ILPER=IPER
         INC=IPER
@@ -2021,55 +2352,19 @@ C IPT,TA ventilation source zone, if IPT=0 then TA is source temperature
 C Now update common blocks.
       do 300 IX=INC,ILPER,-1
         if (IX.eq.ILPER) then
-          if(IDT.eq.1) then
-            IACS1(IX)=IACS
-            IACF1(IX)=IACF
-            ACI1(IX)=ACI
-            ACV1(IX)=ACV
-            IPT1(IX)=IPT
-            TA1(IX)=TA
-          endif
-          if(IDT.eq.2) then
-            IACS2(IX)=IACS
-            IACF2(IX)=IACF
-            ACI2(IX)=ACI
-            ACV2(IX)=ACV
-            IPT2(IX)=IPT
-            TA2(IX)=TA
-          endif
-          if(IDT.eq.3) then
-            IACS3(IX)=IACS
-            IACF3(IX)=IACF
-            ACI3(IX)=ACI
-            ACV3(IX)=ACV
-            IPT3(IX)=IPT
-            TA3(IX)=TA
-          endif
+          IACS(IDT,IX)=IACSX
+          IACF(IDT,IX)=IACFX
+          ACI(IDT,IX)=ACIX
+          ACV(IDT,IX)=ACVX
+          IPT(IDT,IX)=IPTX
+          TA(IDT,IX)=TAX
         else
-          if(IDT.eq.1) then
-            IACS1(IX)=IACS1(IX-1)
-            IACF1(IX)=IACF1(IX-1)
-            ACI1(IX)=ACI1(IX-1)
-            ACV1(IX)=ACV1(IX-1)
-            IPT1(IX)=IPT1(IX-1)
-            TA1(IX)=TA1(IX-1)
-          endif
-          if(IDT.eq.2) then
-            IACS2(IX)=IACS2(IX-1)
-            IACF2(IX)=IACF2(IX-1)
-            ACI2(IX)=ACI2(IX-1)
-            ACV2(IX)=ACV2(IX-1)
-            IPT2(IX)=IPT2(IX-1)
-            TA2(IX)=TA2(IX-1)
-          endif
-          if(IDT.eq.3) then
-            IACS3(IX)=IACS3(IX-1)
-            IACF3(IX)=IACF3(IX-1)
-            ACI3(IX)=ACI3(IX-1)
-            ACV3(IX)=ACV3(IX-1)
-            IPT3(IX)=IPT3(IX-1)
-            TA3(IX)=TA3(IX-1)
-          endif
+          IACS(IDT,IX)=IACS(IDT,IX-1)
+          IACF(IDT,IX)=IACF(IDT,IX-1)
+          ACI(IDT,IX)=ACI(IDT,IX-1)
+          ACV(IDT,IX)=ACV(IDT,IX-1)
+          IPT(IDT,IX)=IPT(IDT,IX-1)
+          TA(IDT,IX)=TA(IDT,IX-1)
         endif
  300  continue
 
@@ -2078,7 +2373,7 @@ C Now update common blocks.
 
 C ********************* CDAIRFL *********************
 C CDAIRFL - copy/ delete air flow data.
-C  ICD - copy (=1) delete (=2) flag
+C  ICD - copy (=2) delete (=1) flag
 
       subroutine CDAIRFL(ICD)
 #include "building.h"
@@ -2086,76 +2381,52 @@ C  ICD - copy (=1) delete (=2) flag
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
 
-      character zname*12,zdesc*64,h*72,VERT(3*MA)*35
+      character zname*12,zdesc*64,h*72,VERT(3*MA)*35,OUTS*124,OUT*4
+      INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilen,ilm
 
       dimension IVERT(3*MA),ITEMP(3*MA)
 
+       ILEN=0
+
 C Set up menu of current definitions.
-      ILEN=NAC1+NAC2+NAC3
+      DO 399 IDTY=1,NBDAYTYPE
+        ILEN=ILEN+NAC(IDTY)
+ 399  CONTINUE
 
 C Loop through the items until the page to be displayed.
 C Build up text strings for the menu. 
-
-C Weekday loop.
       M=0
-      DO 10 L=1,NAC1
-        M=M+1
-        if (IPT1(L).gt.0) then
-          write (VERT(M),303) IACS1(L),IACF1(L),ACI1(L),
-     &      ACV1(L),zname(IPT1(L))(1:9)
-        else
-          if (ACV1(L).lt.0.0001) then 
-            write (VERT(M),323) IACS1(L),IACF1(L),ACI1(L),ACV1(L)
+      DO 400 IDTY=1,NBDAYTYPE
+        DO 10 L=1,NAC(IDTY)
+          M=M+1
+          write(out,'(A)')calentag(idty)(1:4)
+          if (IPT(IDTY,L).gt.0) then
+            write(VERT(M),303)OUT,IACS(IDTY,L),IACF(IDTY,L),ACI(IDTY,L),
+     &      ACV(IDTY,L),zname(IPT(IDTY,L))(1:9)
           else
-            write (VERT(M),313) IACS1(L),IACF1(L),ACI1(L),ACV1(L),TA1(L)
+            if (ACV(IDTY,L).lt.0.0001) then 
+              write(VERT(M),323)OUT,IACS(IDTY,L),IACF(IDTY,L),
+     &        ACI(IDTY,L),ACV(IDTY,L)
+            else
+              write(VERT(M),313)OUT,IACS(IDTY,L),IACF(IDTY,L),
+     &        ACI(IDTY,L),ACV(IDTY,L),TA(IDTY,L)
+            endif
           endif
-        endif
-  303   FORMAT('Wkd ',2i4,1x,2f6.2,1x,a)
-  313   FORMAT('Wkd ',2i4,1x,2f6.2,1x,f6.1)
-  323   FORMAT('Wkd ',2i4,1x,2f6.2,1x,'  n/a')
- 10   continue
-
-C Saturday loop.
-      DO 20 L=1,NAC2
-        M=M+1
-        if (IPT2(L).gt.0) then
-          write (VERT(M),403) IACS2(L),IACF2(L),ACI2(L),
-     &      ACV2(L),zname(IPT2(L))(1:9)
-        else
-          if (ACV2(L).lt.0.0001) then 
-            write (VERT(M),423) IACS2(L),IACF2(L),ACI2(L),ACV2(L)
-          else
-            write (VERT(M),413) IACS2(L),IACF2(L),ACI2(L),ACV2(L),TA2(L)
-          endif
-        endif
-  403   FORMAT('Sat ',2i4,1x,2f6.2,1x,a)
-  413   FORMAT('Sat ',2i4,1x,2f6.2,1x,f6.1)
-  423   FORMAT('Sat ',2i4,1x,2f6.2,1x,'  n/a')
- 20   continue
-
-C Sunday loop.
-      DO 30 L=1,NAC3
-        M=M+1
-        if (IPT3(L).gt.0) then
-          write (VERT(M),503) IACS3(L),IACF3(L),ACI3(L),
-     &      ACV3(L),zname(IPT3(L))(1:9)
-        else
-          if (ACV3(L).lt.0.0001) then 
-            write (VERT(M),523) IACS3(L),IACF3(L),ACI3(L),ACV3(L)
-          else
-            write (VERT(M),513) IACS3(L),IACF3(L),ACI3(L),ACV3(L),TA3(L)
-          endif
-        endif
-  503   FORMAT('Sun ',2i4,1x,2f6.2,1x,a)
-  513   FORMAT('Sun ',2i4,1x,2f6.2,1x,f6.1)
-  523   FORMAT('Sun ',2i4,1x,2f6.2,1x,'  n/a')
- 30   continue
+  303     FORMAT(A,' ',2i4,1x,2f6.2,1x,a)
+  313     FORMAT(A,' ',2i4,1x,2f6.2,1x,f6.1)
+  323     FORMAT(A,' ',2i4,1x,2f6.2,1x,'  n/a')
+ 10     continue
+ 400  CONTINUE
 
 C To delete period(s) redisplay the menu and allow user to indicate
 C which one, then collapse the period list.
@@ -2167,54 +2438,35 @@ C which one, then collapse the period list.
 C Delete items in IVERT array. Sort IVERT first.
         if (ILEN.gt.0) then
           KFLAG=-1
-          call SORTI(IVERT,ITEMP,3*MA,KFLAG)
+          call SORTI(IVERT,ITEMP,NBDAYTYPE*MA,KFLAG)
           do 100 IJ=1,ILEN
             IAFP=IVERT(IJ)
-            if (IAFP.gt.(NAC1+NAC2)) then
-
-C Sunday air flow selected.
-              IAFP=IAFP-NAC1-NAC2
-              do 110 IX=IAFP,NAC3
-                if (IX.ne.MA) then
-                  IACS3(IX)=IACS3(IX+1)
-                  IACF3(IX)=IACF3(IX+1)
-                  ACI3(IX)=ACI3(IX+1)
-                  ACV3(IX)=ACV3(IX+1)
-                  IPT3(IX)=IPT3(IX+1)
-                  TA3(IX)=TA3(IX+1)
-                endif
- 110          continue
-              NAC3=NAC3-1
-            elseif (IAFP.gt.NAC1) then
-
-C Saturday casual gain selected.
-              IAFP=IAFP-NAC1
-              do 120 IX=IAFP,NAC2
-                if (IX.ne.MA) then
-                  IACS2(IX)=IACS2(IX+1)
-                  IACF2(IX)=IACF2(IX+1)
-                  ACI2(IX)=ACI2(IX+1)
-                  ACV2(IX)=ACV2(IX+1)
-                  IPT2(IX)=IPT2(IX+1)
-                  TA2(IX)=TA2(IX+1)
-                endif
- 120          continue
-              NAC2=NAC2-1
-            else
-
-C Weekday casual gain selected.
-              do 130 IX=IAFP,NAC1
-                if (IX.ne.MA) then
-                  IACS1(IX)=IACS1(IX+1)
-                  IACF1(IX)=IACF1(IX+1)
-                  ACI1(IX)=ACI1(IX+1)
-                  ACV1(IX)=ACV1(IX+1)
-                  IPT1(IX)=IPT1(IX+1)
-                  TA1(IX)=TA1(IX+1)
-                endif
- 130          continue
-              NAC1=NAC1-1
-            endif
+            IGOON=1
+            ILET=0
+            ILM=0
+            DO 401 IDT=1,NBDAYTYPE
+              IF(IGOON.EQ.1)THEN
+                ILET=ILET+NAC(IDT)
+                IF(IAFP.GT.ILET)THEN
+                  IGOON=1
+                  ILM=ILM+NAC(IDT)
+                ELSE
+                  IGOON=0
+                ENDIF
+                IDTY=IDT
+              ENDIF
+ 401        CONTINUE
+            DO 402 IX=IAFP-ILM,NAC(IDTY)
+              if (IX.ne.MA) then
+                IACS(IDTY,IX)=IACS(IDTY,IX+1)
+                IACF(IDTY,IX)=IACF(IDTY,IX+1)
+                ACI(IDTY,IX)=ACI(IDTY,IX+1)
+                ACV(IDTY,IX)=ACV(IDTY,IX+1)
+                IPT(IDTY,IX)=IPT(IDTY,IX+1)
+                TA(IDTY,IX)=TA(IDTY,IX+1)
+              endif
+ 402        CONTINUE
+            NAC(IDTY)=NAC(IDTY)-1
             M=M-1
  100      continue
         endif
@@ -2223,57 +2475,33 @@ C Weekday casual gain selected.
 C Copy periods.
         h(1)='All the casual gains associated with a specified day type'
         h(2)='can be copied to another day type.'
-        call EASKABCD(' ','Copy casual gains:','Weekdays->Saturdays',
-     &     'Weekdays->Sundays','Saturdays->Sundays',
-     &     'cancel',IGU,2)
-        if (IGU.eq.1) then
-          do 210 IX=1,NAC1
-            if (NAC2.lt.MA) then
-              IPER=0
-              IDT=2
-              IACS=IACS1(IX)
-              IACF=IACF1(IX)
-              ACI=ACI1(IX)
-              ACV=ACV1(IX)
-              IPT=IPT1(IX)
-              TA=TA1(IX)
-              call ADDAFP(IPER,IDT,IACS,IACF,ACI,ACV,IPT,TA)
-              call CHKAIRFL
-            endif
- 210      continue
-        elseif (IGU.eq.2) then
-          do 220 IX=1,NAC1
-            if (NAC3.lt.MA) then
-              IPER=0
-              IDT=3
-              IACS=IACS1(IX)
-              IACF=IACF1(IX)
-              ACI=ACI1(IX)
-              ACV=ACV1(IX)
-              IPT=IPT1(IX)
-              TA=TA1(IX)
-              call ADDAFP(IPER,IDT,IACS,IACF,ACI,ACV,IPT,TA)
-              call CHKAIRFL
-            endif
- 220      continue
-        elseif (IGU.eq.3) then
-          do 230 IX=1,NAC2
-            if (NAC3.lt.MA) then
-              IPER=0
-              IDT=3
-              IACS=IACS2(IX)
-              IACF=IACF2(IX)
-              ACI=ACI2(IX)
-              ACV=ACV2(IX)
-              IPT=IPT2(IX)
-              TA=TA2(IX)
-              call ADDAFP(IPER,IDT,IACS,IACF,ACI,ACV,IPT,TA)
-              call CHKAIRFL
-            endif
- 230      continue
-        endif
+        IX=1
+        CALL EDISP(IUOUT,'choose daytype to copy periods from')
+        CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods from',
+     &  12,nbdaytype,calentag,'Choose daytype',IER,35)
+        IDTY=KSTR(1)
+        CALL EDISP(IUOUT,'choose daytype to copy periods to')
+        CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
+     &  12,nbdaytype,calentag,'Choose daytype',IER,35)
+        IDT=KSTR(1)
+     	do 210 IX=1,NAC(IDTY)
+     	  if (NAC(IDT).lt.MA) then
+     	    IPER=0
+     	    IACSX=IACS(IDTY,IX)
+     	    IACFX=IACF(IDTY,IX)
+     	    ACIX=ACI(IDTY,IX)
+     	    ACVX=ACV(IDTY,IX)
+     	    IPTX=IPT(IDTY,IX)
+     	    TAX=TA(IDTY,IX)
+     	    call ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
+     	    call CHKAIRFL
+          ELSE
+            WRITE(OUTS,'(2a)')'Sorry, too many periods in day type ',
+     &      calentag(idt)
+            call usrmsg(' ',outs,'W')
+     	  endif
+ 210 	continue
       endif
-
       return
       end
 
@@ -2308,12 +2536,16 @@ C << initial intent to guide later revisions?
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC2/VOL(MCOM)
@@ -2321,14 +2553,17 @@ C LPROJ   - zone scheduling (operation file)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
-      CHARACTER oprdesc*248,ctlstr*24
-      COMMON/P1/oprdesc,ctlstr
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P1C/oprdescc,ctlstrc
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
@@ -2337,23 +2572,23 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
      &             dbspth
 
 C Scratch copy of air flow pattern from an operations file.
-      COMMON/P2C/NAC1C,IACS1C(MA),IACF1C(MA),ACI1C(MA),ACV1C(MA),
-     &   IPT1C(MA),TA1C(MA),NAC2C,IACS2C(MA),IACF2C(MA),ACI2C(MA),
-     &   ACV2C(MA),IPT2C(MA),TA2C(MA),NAC3C,IACS3C(MA),IACF3C(MA),
-     &   ACI3C(MA),ACV3C(MA),IPT3C(MA),TA3C(MA)
+      COMMON/P2CN/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
+     &ACIC(MDTY,MA),ACVC(MDTY,MA),IPTC(MDTY,MA),TAC(MDTY,MA)
+      INTEGER NACC,IACSC,IACFC,IPTC
+      REAL ACIC,ACVC,TAC
 
       COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
      &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
 
       character*(*) sfile
       character zname*12,zdesc*64,h*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER oprdescc*248,ctlstrc*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
+      INTEGER IDTY
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2366,11 +2601,13 @@ C Set folder separator (fs) to \ or / as required.
 C Clear the operations data structures related to air prior
 C to reading in source.
       IER=0
-      NAC1=0
-      NAC2=0
-      NAC3=0
-      ctlstr='no control of air flow  '
-      oprdesc='Flow schedules imported. No other notes (yet).'
+      DO 400 IDTY=1,NBDAYTYPE
+        NAC(IDTY)=0
+ 400  CONTINUE
+      ctlstr(idest,1)='no control of air flow  '
+      ctlstr(idest,2)='no control of air flow  '
+      ctlstr(idest,3)='no control of air flow  '
+      oprdesc(idest)='Flow schedules imported. No other notes (yet).'
 
 C First scan the source zone operation file if there is a problem
 C reading or it does not exist then return an error state.
@@ -2412,44 +2649,24 @@ C if this is successful the instanciate the P2C and P2CTLC
       endif
 
 C Copy the air flow and controls information into the local arrays
-C for weekdays, saturdays, sundays.
-      NAC1C=NAC1
-      if(NAC1.gt.0)then
-        do 10 L=1,NAC1
-          IACS1C(L)=IACS1(L)
-          IACF1C(L)=IACF1(L)
-          ACI1C(L)=ACI1(L)
-          ACV1C(L)=ACV1(L)
-          IPT1C(L)=IPT1(L)
-          TA1C(L)=TA1(L)
-  10    continue
-      endif
-      NAC2C=NAC2
-      if(NAC2.gt.0)then
-        do 20 L=1,NAC2
-          IACS2C(L)=IACS2(L)
-          IACF2C(L)=IACF2(L)
-          ACI2C(L)=ACI2(L)
-          ACV2C(L)=ACV2(L)
-          IPT2C(L)=IPT2(L)
-          TA2C(L)=TA2(L)
-  20    continue
-      endif
-      NAC3C=NAC3
-      if(NAC3.gt.0)then
-        do 30 L=1,NAC3
-          IACS3C(L)=IACS3(L)
-          IACF3C(L)=IACF3(L)
-          ACI3C(L)=ACI3(L)
-          ACV3C(L)=ACV3(L)
-          IPT3C(L)=IPT3(L)
-          TA3C(L)=TA3(L)
-  30    continue
-      endif
+      DO 401 IDTY=1,NBDAYTYPE
+        NACC(IDTY)=NAC(IDTY)
+        if(NAC(IDTY).gt.0)then
+          do 10 L=1,NAC(IDTY)
+            IACSC(IDTY,L)=IACS(IDTY,L)
+            IACFC(IDTY,L)=IACF(IDTY,L)
+            ACIC(IDTY,L)=ACI(IDTY,L)
+            ACVC(IDTY,L)=ACV(IDTY,L)
+            IPTC(IDTY,L)=IPT(IDTY,L)
+            TAC(IDTY,L)=TA(IDTY,L)
+  10      continue
+        endif
+ 401  CONTINUE
 
 C Copy air flow control into local variables.
+C << needs to be updated for separate days and periods >>
 
-      ctlstrc=ctlstr
+      ctlstrc=ctlstr(isource,1)
       ITCTLC=ITCTL(isource)
       TLOC=TLO(isource)
       TUPC=TUP(isource)
@@ -2502,7 +2719,7 @@ C IF asked to copy all then
         endif
 
 C And any new file will be in the sorted format.
-        ip3ver=1
+        ip3ver(idest)=2
       endif
 
 C Copy the local array data into the common blocks overwriting
@@ -2533,43 +2750,24 @@ C the data implied by 'afact'. Also act on the iflow vflow directives.
         endif
       endif
       if(afact(1:5).eq.'all  '.or.afact(1:5).eq.'infil')then
-        if(NAC1C.gt.0)then
-          do 11 L=1,NAC1C
-            NAC1=NAC1C
-            IACS1(L)=IACS1C(L)
-            IACF1(L)=IACF1C(L)
-            ACI1(L)=ACI1C(L)/ratioif
-            ACV1(L)=ACV1C(L)/ratiovf
-            IPT1(L)=IPT1C(L)
-            TA1(L)=TA1C(L)
-  11      continue
-        endif
-        if(NAC2C.gt.0)then
-          do 21 L=1,NAC2C
-            NAC2=NAC2C
-            IACS2(L)=IACS2C(L)
-            IACF2(L)=IACF2C(L)
-            ACI2(L)=ACI2C(L)/ratioif
-            ACV2(L)=ACV2C(L)/ratiovf
-            IPT2(L)=IPT2C(L)
-            TA2(L)=TA2C(L)
-  21      continue
-        endif
-        if(NAC3C.gt.0)then
-          do 31 L=1,NAC3C
-            NAC3=NAC3C
-            IACS3(L)=IACS3C(L)
-            IACF3(L)=IACF3C(L)
-            ACI3(L)=ACI3C(L)/ratioif
-            ACV3(L)=ACV3C(L)/ratiovf
-            IPT3(L)=IPT3C(L)
-            TA3(L)=TA3C(L)
-  31      continue
-        endif
+        DO 403 IDTY=1,NBDAYTYPE
+          if(NACC(IDTY).gt.0)then
+            do 11 L=1,NACC(IDTY)
+              NAC(IDTY)=NACC(IDTY)
+              IACS(IDTY,L)=IACSC(IDTY,L)
+              IACF(IDTY,L)=IACFC(IDTY,L)
+              ACI(IDTY,L)=ACIC(IDTY,L)/ratioif
+              ACV(IDTY,L)=ACVC(IDTY,L)/ratiovf
+              IPT(IDTY,L)=IPTC(IDTY,L)
+              TA(IDTY,L)=TAC(IDTY,L)
+  11        continue
+          endif
+ 403    CONTINUE
         if(afact(1:5).eq.'all  ')then
 
 C Apply ach or vol conversion to controls as well.
-          ctlstr=ctlstrc
+C << update for control days and periods >>
+          ctlstr(idest,1)=ctlstrc
           ITCTL(idest)=ITCTLC
           TLO(idest)=TLOC
           TUP(idest)=TUPC
@@ -2617,10 +2815,12 @@ C CHKAIRFL - check air flow data for overlapping periods.
       subroutine CHKAIRFL
 #include "building.h"
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
 
       logical RECHECK
 
@@ -2630,17 +2830,19 @@ C CHKAIRFL - check air flow data for overlapping periods.
       Inew=0
 
 C Check all daytypes.
+      DO 400 IDTY=1,NBDAYTYPE
+
 C I is the earlier of the two periods being checked.
 C J is the later of the two periods.
 C If periods I and J overlap (start time for J within period I) then
 C copy data for all periods up one slot (if room) and insert new period.
 C Therefore the data in period J becomes J+1 and the new period J is the 
 C overlapping period of the two initial periods.
-C Weekdays.
-      do 10 I=1,NAC1
-        if (I+1.le.NAC1) then
-        do 15 J=I+1,NAC1
-          if (IACS1(J).ge.IACS1(I).and.IACS1(J).lt.IACF1(I)) then
+      do 10 I=1,NAC(IDTY)
+        if (I+1.le.NAC(IDTY)) then
+        do 15 J=I+1,NAC(IDTY)
+          if (IACS(IDTY,J).ge.IACS(IDTY,I).and.
+     &    IACS(IDTY,J).lt.IACF(IDTY,I)) then
 
 C Start time of period J is between start and finish times of period I.
 C Create a new period by splitting period J, only if start or finish time 
@@ -2651,7 +2853,8 @@ C     ||.or.|-----------| ..or.||.or.|
 C     ||    |           |      ||    |
 C  -----------------------------
 
-            if (IACS1(J).eq.IACS1(I).and.IACF1(J).gt.IACF1(I)) then
+            if (IACS(IDTY,J).eq.IACS(IDTY,I).and.
+     &      IACF(IDTY,J).gt.IACF(IDTY,I)) then
 C
 C     |----I------------|
 C     |                 |
@@ -2661,8 +2864,9 @@ C  -----------------------------
               Ifrom=J
               Ito=I
               Inew=I
-              IACS1(J)=IACF1(I)
-            elseif (IACS1(J).eq.IACS1(I).and.IACF1(J).lt.IACF1(I)) then
+              IACS(IDTY,J)=IACF(IDTY,I)
+            elseif (IACS(IDTY,J).eq.IACS(IDTY,I).and.
+     &      IACF(IDTY,J).lt.IACF(IDTY,I)) then
 C
 C     |----I------------|
 C     |                 |
@@ -2675,26 +2879,27 @@ C  -----------------------------
 
 C By starting period I at finish of J periods will be out of order,
 C so swap period data from I to J and J to I.
-              IACS1(I)=IACF1(J)
-              IACS1tmp=IACS1(I)
-              IACF1tmp=IACF1(I)
-              ACI1tmp=ACI1(I)
-              ACV1tmp=ACV1(I)
-              IPT1tmp=IPT1(I)
-              TA1tmp=TA1(I)
-              IACS1(I)=IACS1(J)
-              IACF1(I)=IACF1(J)
-              ACI1(I)=ACI1(J)
-              ACV1(I)=ACV1(J)
-              IPT1(I)=IPT1(J)
-              TA1(I)=TA1(J)
-              IACS1(J)=IACS1tmp
-              IACF1(J)=IACF1tmp
-              ACI1(J)=ACI1tmp
-              ACV1(J)=ACV1tmp
-              IPT1(J)=IPT1tmp
-              TA1(J)=TA1tmp
-            elseif (IACF1(J).eq.IACF1(I).and.IACS1(J).ne.IACS1(I)) then
+              IACS(IDTY,I)=IACF(IDTY,J)
+              IACStmp=IACS(IDTY,I)
+              IACFtmp=IACF(IDTY,I)
+              ACItmp=ACI(IDTY,I)
+              ACVtmp=ACV(IDTY,I)
+              IPTtmp=IPT(IDTY,I)
+              TAtmp=TA(IDTY,I)
+              IACS(IDTY,I)=IACS(IDTY,J)
+              IACF(IDTY,I)=IACF(IDTY,J)
+              ACI(IDTY,I)=ACI(IDTY,J)
+              ACV(IDTY,I)=ACV(IDTY,J)
+              IPT(IDTY,I)=IPT(IDTY,J)
+              TA(IDTY,I)=TA(IDTY,J)
+              IACS(IDTY,J)=IACStmp
+              IACF(IDTY,J)=IACFtmp
+              ACI(IDTY,J)=ACItmp
+              ACV(IDTY,J)=ACVtmp
+              IPT(IDTY,J)=IPTtmp
+              TA(IDTY,J)=TAtmp
+            elseif (IACF(IDTY,J).eq.IACF(IDTY,I).and.
+     &      IACS(IDTY,J).ne.IACS(IDTY,I)) then
 
 C     |---I------------|
 C     |                |
@@ -2705,8 +2910,9 @@ C Finishes are the same and starts are different.
               Ifrom=I
               Ito=J
               Inew=J
-              IACF1(I)=IACS1(J)
-            elseif (IACS1(J).gt.IACS1(I).and.IACF1(J).lt.IACF1(I)) then
+              IACF(IDTY,I)=IACS(IDTY,J)
+            elseif (IACS(IDTY,J).gt.IACS(IDTY,I).and.
+     &      IACF(IDTY,J).lt.IACF(IDTY,I)) then
 
 C     |---I------------|
 C     |                |
@@ -2715,32 +2921,33 @@ C     |.  |         |  |
 C  -----------------------------
 C Later period starts after earlier period and later period finishes before
 C the earlier period.
-              if (NAC1.lt.MA) then
+              if (NAC(IDTY).lt.MA) then
                 Ifrom=I
                 Ito=J
                 Inew=J
-                do 16 K=NAC1,J,-1
-                  IACS1(K+1)=IACS1(K)
-                  IACF1(K+1)=IACF1(K)
-                  ACI1(K+1)=ACI1(K)
-                  ACV1(K+1)=ACV1(K)
-                  IPT1(K+1)=IPT1(K)
-                  TA1(K+1)=TA1(K)
+                do 16 K=NAC(IDTY),J,-1
+                  IACS(IDTY,K+1)=IACS(IDTY,K)
+                  IACF(IDTY,K+1)=IACF(IDTY,K)
+                  ACI(IDTY,K+1)=ACI(IDTY,K)
+                  ACV(IDTY,K+1)=ACV(IDTY,K)
+                  IPT(IDTY,K+1)=IPT(IDTY,K)
+                  TA(IDTY,K+1)=TA(IDTY,K)
  16             continue
-                NAC1=NAC1+1
-                IACF1(J+1)=IACF1(I)
-                IACF1(I)=IACS1(J)
-                IACS1(J+1)=IACF1(J)
-                ACI1(J+1)=ACI1(I)
-                ACV1(J+1)=ACV1(I)
-                IPT1(J+1)=IPT1(I)
-                TA1(J+1)=TA1(I)
+                NAC(IDTY)=NAC(IDTY)+1
+                IACF(IDTY,J+1)=IACF(IDTY,I)
+                IACF(IDTY,I)=IACS(IDTY,J)
+                IACS(IDTY,J+1)=IACF(IDTY,J)
+                ACI(IDTY,J+1)=ACI(IDTY,I)
+                ACV(IDTY,J+1)=ACV(IDTY,I)
+                IPT(IDTY,J+1)=IPT(IDTY,I)
+                TA(IDTY,J+1)=TA(IDTY,I)
               else
                 Ifrom=0
                 call USRMSG('Air flow periods overlap and maximum',
      &                      'number of periods defined. ','W')
               endif
-            elseif (IACS1(J).gt.IACS1(I).and.IACF1(J).gt.IACF1(I)) then
+            elseif (IACS(IDTY,J).gt.IACS(IDTY,I).and.
+     &      IACF(IDTY,J).gt.IACF(IDTY,I)) then
 
 C     |---I------------|
 C     |                |
@@ -2749,22 +2956,22 @@ C     |.  |            |  |
 C  -----------------------------
 C If later period starts after earlier period and latter period finishes
 C after the earlier period.
-              if (NAC1.lt.MA) then
+              if (NAC(IDTY).lt.MA) then
                 Ifrom=J+1
                 Ito=I
                 Inew=J
-                do 17 K=NAC1,J,-1
-                  IACS1(K+1)=IACS1(K)
-                  IACF1(K+1)=IACF1(K)
-                  ACI1(K+1)=ACI1(K)
-                  ACV1(K+1)=ACV1(K)
-                  IPT1(K+1)=IPT1(K)
-                  TA1(K+1)=TA1(K)
+                do 17 K=NAC(IDTY),J,-1
+                  IACS(IDTY,K+1)=IACS(IDTY,K)
+                  IACF(IDTY,K+1)=IACF(IDTY,K)
+                  ACI(IDTY,K+1)=ACI(IDTY,K)
+                  ACV(IDTY,K+1)=ACV(IDTY,K)
+                  IPT(IDTY,K+1)=IPT(IDTY,K)
+                  TA(IDTY,K+1)=TA(IDTY,K)
  17             continue
-                NAC1=NAC1+1
-                IACF1(J)=IACF1(I)
-                IACF1(I)=IACS1(J)
-                IACS1(J+1)=IACF1(J)
+                NAC(IDTY)=NAC(IDTY)+1
+                IACF(IDTY,J)=IACF(IDTY,I)
+                IACF(IDTY,I)=IACS(IDTY,J)
+                IACS(IDTY,J+1)=IACF(IDTY,J)
               else
                 Ifrom=0
                 call USRMSG('Air flow periods overlap and maximum',
@@ -2775,56 +2982,58 @@ C after the earlier period.
      &      'New air flow period defined for same period as existing',
      &      'period. Combining data, please check/ edit existing.','W')
               Ifrom=0
-              ACI1(I)=ACI1(I)+ACI1(J)
-              ACV1(I)=ACV1(I)+ACV1(J)
-              do 18 K=I,NAC1
+              ACI(IDTY,I)=ACI(IDTY,I)+ACI(IDTY,J)
+              ACV(IDTY,I)=ACV(IDTY,I)+ACV(IDTY,J)
+              do 18 K=I,NAC(IDTY)
                 if ((K+1).gt.MA) then
-                  IACS1(K)=0
-                  IACF1(K)=0
-                  ACI1(K)=0.
-                  ACV1(K)=0.
-                  IPT1(K)=0
-                  TA1(K)=0.
+                  IACS(IDTY,K)=0
+                  IACF(IDTY,K)=0
+                  ACI(IDTY,K)=0.
+                  ACV(IDTY,K)=0.
+                  IPT(IDTY,K)=0
+                  TA(IDTY,K)=0.
                 else
-                  IACS1(K)=IACS1(K+1)
-                  IACF1(K)=IACF1(K+1)
-                  ACI1(K)=ACI1(K+1)
-                  ACV1(K)=ACV1(K+1)
-                  IPT1(K)=IPT1(K+1)
-                  TA1(K)=TA1(K+1)
+                  IACS(IDTY,K)=IACS(IDTY,K+1)
+                  IACF(IDTY,K)=IACF(IDTY,K+1)
+                  ACI(IDTY,K)=ACI(IDTY,K+1)
+                  ACV(IDTY,K)=ACV(IDTY,K+1)
+                  IPT(IDTY,K)=IPT(IDTY,K+1)
+                  TA(IDTY,K)=TA(IDTY,K+1)
                 endif
  18           continue
-              NAC1=NAC1-1
+              NAC(IDTY)=NAC(IDTY)-1
             endif
 
 C Try and set data in new period.
             if (Ifrom.gt.0) then
-              ACI1(Inew)=ACI1(Ifrom)+ACI1(Ito)
-              ACV1(Inew)=ACV1(Ifrom)+ACV1(Ito)
-              if (ACV1(Ifrom).gt.0.0.and.ACV1(Ito).lt.0.0001) then
+              ACI(IDTY,Inew)=ACI(IDTY,Ifrom)+ACI(IDTY,Ito)
+              ACV(IDTY,Inew)=ACV(IDTY,Ifrom)+ACV(IDTY,Ito)
+              if(ACV(IDTY,Ifrom).gt.0.0.and.ACV(IDTY,Ito).lt.0.0001)then
 
 C Ventilation defined for period Ifrom but not for period Ito, use defn from Ifrom
-                IPT1(Inew)=IPT1(Ifrom)
-                TA1(Inew)=TA1(Ifrom)
-              elseif (ACV1(Ito).gt.0.0.and.ACV1(Ifrom).lt.0.0001) then
+                IPT(IDTY,Inew)=IPT(IDTY,Ifrom)
+                TA(IDTY,Inew)=TA(IDTY,Ifrom)
+              elseif
+     &        (ACV(IDTY,Ito).gt.0.0.and.ACV(IDTY,Ifrom).lt.0.0001) then
 
 C Ventilation defined for period I but not for period Ifrom, use defn from Ito
-                IPT1(Inew)=IPT1(Ito)
-                TA1(Inew)=TA1(Ito)
-              elseif (ACV1(Ito).gt.0.0.and.ACV1(Ifrom).gt.0.0) then
+                IPT(IDTY,Inew)=IPT(IDTY,Ito)
+                TA(IDTY,Inew)=TA(IDTY,Ito)
+              elseif 
+     &        (ACV(IDTY,Ito).gt.0.0.and.ACV(IDTY,Ifrom).gt.0.0) then
 
 C Two ventilation sources defined, default to use defn from Ifrom
-                IPT1(Inew)=IPT1(Ifrom)
-                TA1(Inew)=TA1(Ifrom)
-                if (IPT1(Ito).ne.IPT1(Ifrom)) then
+                IPT(IDTY,Inew)=IPT(IDTY,Ifrom)
+                TA(IDTY,Inew)=TA(IDTY,Ifrom)
+                if (IPT(IDTY,Ito).ne.IPT(IDTY,Ifrom)) then
                 call USRMSG('Could not resolve ventilation source for',
      &                 'overlapping period, please check sources.','W')
                 endif
               else
 
 C No vent defined.
-                IPT1(Inew)=0
-                TA1(Inew)=0.
+                IPT(IDTY,Inew)=0
+                TA(IDTY,Inew)=0.
               endif
 
 C Jump out of loop and start checking again.
@@ -2835,300 +3044,10 @@ C Jump out of loop and start checking again.
  15     continue
         endif
  10   continue
-
-C Saturdays (for comments see weekdays, above).
-      do 20 I=1,NAC2
-        if (I+1.le.NAC2) then
-        do 25 J=I+1,NAC2
-          if (IACS2(J).ge.IACS2(I).and.IACS2(J).lt.IACF2(I)) then
-            if (IACS2(J).eq.IACS2(I).and.IACF2(J).gt.IACF2(I)) then
-              Ifrom=J
-              Ito=I
-              Inew=I
-              IACS2(J)=IACF2(I)
-            elseif (IACS2(J).eq.IACS2(I).and.IACF2(J).lt.IACF2(I)) then
-              Ifrom=J
-              Ito=I
-              Inew=I
-
-C By starting period I at finish of J periods will be out of order,
-C so swap period data from I to J and J to I.
-              IACS2(I)=IACF2(J)
-              IACS2tmp=IACS2(I)
-              IACF2tmp=IACF2(I)
-              ACI2tmp=ACI2(I)
-              ACV2tmp=ACV2(I)
-              IPT2tmp=IPT2(I)
-              TA2tmp=TA2(I)
-              IACS2(I)=IACS2(J)
-              IACF2(I)=IACF2(J)
-              ACI2(I)=ACI2(J)
-              ACV2(I)=ACV2(J)
-              IPT2(I)=IPT2(J)
-              TA2(I)=TA2(J)
-              IACS2(J)=IACS2tmp
-              IACF2(J)=IACF2tmp
-              ACI2(J)=ACI2tmp
-              ACV2(J)=ACV2tmp
-              IPT2(J)=IPT2tmp
-              TA2(J)=TA2tmp
-            elseif (IACF2(J).eq.IACF2(I).and.IACS2(J).ne.IACS2(I)) then
-              Ifrom=I
-              Ito=J
-              Inew=J
-              IACF2(I)=IACS2(J)
-            elseif (IACS2(J).gt.IACS2(I).and.IACF2(J).lt.IACF2(I)) then
-              if (NAC2.lt.MA) then
-                Ifrom=I
-                Ito=J
-                Inew=J
-                do 26 K=NAC2,J,-1
-                  IACS2(K+1)=IACS2(K)
-                  IACF2(K+1)=IACF2(K)
-                  ACI2(K+1)=ACI2(K)
-                  ACV2(K+1)=ACV2(K)
-                  IPT2(K+1)=IPT2(K)
-                  TA2(K+1)=TA2(K)
- 26             continue
-                NAC2=NAC2+1
-                IACF2(J+1)=IACF2(I)
-                IACF2(I)=IACS2(J)
-                IACS2(J+1)=IACF2(J)
-                ACI2(J+1)=ACI2(I)
-                ACV2(J+1)=ACV2(I)
-                IPT2(J+1)=IPT2(I)
-                TA2(J+1)=TA2(I)
-              else
-                Ifrom=0
-                call USRMSG('Air flow periods overlap and maximum',
-     &                      'number of periods defined.','W')
-              endif
-            elseif (IACS2(J).gt.IACS2(I).and.IACF2(J).gt.IACF2(I)) then
-              if (NAC2.lt.MA) then
-                Ifrom=J+1
-                Ito=I
-                Inew=J
-                do 27 K=NAC2,J,-1
-                  IACS2(K+1)=IACS2(K)
-                  IACF2(K+1)=IACF2(K)
-                  ACI2(K+1)=ACI2(K)
-                  ACV2(K+1)=ACV2(K)
-                  IPT2(K+1)=IPT2(K)
-                  TA2(K+1)=TA2(K)
- 27             continue
-                NAC2=NAC2+1
-                IACF2(J)=IACF2(I)
-                IACF2(I)=IACS2(J)
-                IACS2(J+1)=IACF2(J)
-              else
-                Ifrom=0
-                call USRMSG('Air flow periods overlap and maximum',
-     &                      'number of periods defined.','W')
-              endif
-            else
-              call USRMSG(
-     &      'New air flow period defined for same period as existing',
-     &      'period. Combining data, please check/edit existing.','W')
-              Ifrom=0
-              ACI2(J)=ACI2(I)+ACI2(J)
-              ACV2(J)=ACV2(I)+ACV2(J)
-              IPT2(J)=IPT2(I)
-              TA2(J)=TA2(I)
-              do 28 K=I,NAC2
-                if ((K+1).gt.MA) then
-                  IACS2(K)=0
-                  IACF2(K)=0
-                  ACI2(K)=0.
-                  ACV2(K)=0.
-                  IPT2(K)=0
-                  TA2(K)=0.
-                else
-                  IACS2(K)=IACS2(K+1)
-                  IACF2(K)=IACF2(K+1)
-                  ACI2(K)=ACI2(K+1)
-                  ACV2(K)=ACV2(K+1)
-                  IPT2(K)=IPT2(K+1)
-                  TA2(K)=TA2(K+1)
-                endif
- 28           continue
-              NAC2=NAC2-1
-            endif
-            if (Ifrom.gt.0) then
-              ACI2(Inew)=ACI2(Ifrom)+ACI2(Ito)
-              ACV2(Inew)=ACV2(Ifrom)+ACV2(Ito)
-              if (ACV2(Ifrom).gt.0.0.and.ACV2(Ito).lt.0.0002) then
-                IPT2(Inew)=IPT2(Ifrom)
-                TA2(Inew)=TA2(Ifrom)
-              elseif (ACV2(Ito).gt.0.0.and.ACV2(Ifrom).lt.0.0002) then
-                IPT2(Inew)=IPT2(Ito)
-                TA2(Inew)=TA2(Ito)
-              elseif (ACV2(Ito).gt.0.0.and.ACV2(Ifrom).gt.0.0) then
-                IPT2(Inew)=IPT2(Ifrom)
-                TA2(Inew)=TA2(Ifrom)
-                if (IPT2(Ito).ne.IPT2(Ifrom)) then
-                call USRMSG('Could not resolve ventilation source for',
-     &                 'overlapping period; please check sources.','W')
-                endif
-              else
-                IPT2(Inew)=0
-                TA2(Inew)=0.
-              endif
-              RECHECK=.true.
-              goto 20
-            endif
-          endif
- 25     continue
-        endif
- 20   continue
-
-C Sundays (for comments see weekdays, above).
-      do 30 I=1,NAC3
-        if (I+1.le.NAC3) then
-        do 35 J=I+1,NAC3
-          if (IACS3(J).ge.IACS3(I).and.IACS3(J).lt.IACF3(I)) then
-            if (IACS3(J).eq.IACS3(I).and.IACF3(J).gt.IACF3(I)) then
-              Ifrom=J
-              Ito=I
-              Inew=I
-              IACS3(J)=IACF3(I)
-            elseif (IACS3(J).eq.IACS3(I).and.IACF3(J).lt.IACF3(I)) then
-              Ifrom=J
-              Ito=I
-              Inew=I
-
-C By starting period I at finish of J periods will be out of order,
-C so swap period data from I to J and J to I.
-              IACS3(I)=IACF3(J)
-              IACS3tmp=IACS3(I)
-              IACF3tmp=IACF3(I)
-              ACI3tmp=ACI3(I)
-              ACV3tmp=ACV3(I)
-              IPT3tmp=IPT3(I)
-              TA3tmp=TA3(I)
-              IACS3(I)=IACS3(J)
-              IACF3(I)=IACF3(J)
-              ACI3(I)=ACI3(J)
-              ACV3(I)=ACV3(J)
-              IPT3(I)=IPT3(J)
-              TA3(I)=TA3(J)
-              IACS3(J)=IACS3tmp
-              IACF3(J)=IACF3tmp
-              ACI3(J)=ACI3tmp
-              ACV3(J)=ACV3tmp
-              IPT3(J)=IPT3tmp
-              TA3(J)=TA3tmp
-            elseif (IACF3(J).eq.IACF3(I).and.IACS3(J).ne.IACS3(I)) then
-              Ifrom=I
-              Ito=J
-              Inew=J
-              IACF3(I)=IACS3(J)
-            elseif (IACS3(J).gt.IACS3(I).and.IACF3(J).lt.IACF3(I)) then
-              if (NAC3.lt.MA) then
-                Ifrom=I
-                Ito=J
-                Inew=J
-                do 36 K=NAC3,J,-1
-                  IACS3(K+1)=IACS3(K)
-                  IACF3(K+1)=IACF3(K)
-                  ACI3(K+1)=ACI3(K)
-                  ACV3(K+1)=ACV3(K)
-                  IPT3(K+1)=IPT3(K)
-                  TA3(K+1)=TA3(K)
- 36             continue
-                NAC3=NAC3+1
-                IACF3(J+1)=IACF3(I)
-                IACF3(I)=IACS3(J)
-                IACS3(J+1)=IACF3(J)
-                ACI3(J+1)=ACI3(I)
-                ACV3(J+1)=ACV3(I)
-                IPT3(J+1)=IPT3(I)
-                TA3(J+1)=TA3(I)
-              else
-                Ifrom=0
-                call USRMSG('Air flow periods overlap and maximum',
-     &                      'number of periods defined.','W')
-              endif
-            elseif (IACS3(J).gt.IACS3(I).and.IACF3(J).gt.IACF3(I)) then
-              if (NAC3.lt.MA) then
-                Ifrom=J+1
-                Ito=I
-                Inew=J
-                do 37 K=NAC3,J,-1
-                  IACS3(K+1)=IACS3(K)
-                  IACF3(K+1)=IACF3(K)
-                  ACI3(K+1)=ACI3(K)
-                  ACV3(K+1)=ACV3(K)
-                  IPT3(K+1)=IPT3(K)
-                  TA3(K+1)=TA3(K)
- 37             continue
-                NAC3=NAC3+1
-                IACF3(J)=IACF3(I)
-                IACF3(I)=IACS3(J)
-                IACS3(J+1)=IACF3(J)
-              else
-                Ifrom=0
-                call USRMSG('Air flow periods overlap and maximum',
-     &                      'number of periods defined.','W')
-              endif
-            else
-              call USRMSG(
-     &      'New air flow period defined for same period as existing',
-     &      'period. Combining data, please check/edit existing.','W')
-              Ifrom=0
-              ACI3(J)=ACI3(I)+ACI3(J)
-              ACV3(J)=ACV3(I)+ACV3(J)
-              IPT3(J)=IPT3(I)
-              TA3(J)=TA3(I)
-              do 38 K=I,NAC3
-                if ((K+1).gt.MA) then
-                  IACS3(K)=0
-                  IACF3(K)=0
-                  ACI3(K)=0.
-                  ACV3(K)=0.
-                  IPT3(K)=0
-                  TA3(K)=0.
-                else
-                  IACS3(K)=IACS3(K+1)
-                  IACF3(K)=IACF3(K+1)
-                  ACI3(K)=ACI3(K+1)
-                  ACV3(K)=ACV3(K+1)
-                  IPT3(K)=IPT3(K+1)
-                  TA3(K)=TA3(K+1)
-                endif
- 38           continue
-              NAC3=NAC3-1
-            endif
-            if (Ifrom.gt.0) then
-              ACI3(Inew)=ACI3(Ifrom)+ACI3(Ito)
-              ACV3(Inew)=ACV3(Ifrom)+ACV3(Ito)
-              if (ACV3(Ifrom).gt.0.0.and.ACV3(Ito).lt.0.0003) then
-                IPT3(Inew)=IPT3(Ifrom)
-                TA3(Inew)=TA3(Ifrom)
-              elseif (ACV3(Ito).gt.0.0.and.ACV3(Ifrom).lt.0.0003) then
-                IPT3(Inew)=IPT3(Ito)
-                TA3(Inew)=TA3(Ito)
-              elseif (ACV3(Ito).gt.0.0.and.ACV3(Ifrom).gt.0.0) then
-                IPT3(Inew)=IPT3(Ifrom)
-                TA3(Inew)=TA3(Ifrom)
-                if (IPT3(Ito).ne.IPT3(Ifrom)) then
-                call USRMSG('Could not resolve ventilation source for',
-     &                 'overlapping period; please check sources.','W')
-                endif
-              else
-                IPT3(Inew)=0
-                TA3(Inew)=0.
-              endif
-              RECHECK=.true.
-              goto 30
-            endif
-          endif
- 35     continue
-        endif
- 30   continue
+ 400  CONTINUE
 
 C If changes have been made then recheck all definitions.
       if (RECHECK) goto 5
-
       return
       end
 
@@ -3136,27 +3055,37 @@ C ********************* PLTAIR *********************
 C PLTAIR - plot air flow data.
 C  ICOMP zone number
 
-      subroutine PLTAIR(ICOMP)
+      subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
+      REAL ACI,ACV,TA
 
       character zname*12,zdesc*64,outs*124
-
       dimension TACI(24),TACV(24)
+      IDTY=IDTYP
+      IDAY=IDTY-1
+      JDAY=IDTY
+      KDAY=IDTY+1
+      IF(IDAY.LE.0)IDAY=NBDAYTYPE
+      IF(KDAY.GT.NBDAYTYPE)KDAY=1
 
 C Scan each days gains and find maximum flow.
       YMAX=1.
-      MXPERS=max(NAC1,NAC2,NAC3)
+      MXPERS=max(NAC(IDAY),NAC(JDAY),NAC(KDAY))
       do 10 I=1,MXPERS
-       YMAX=amax1(YMAX,ACI1(I),ACV1(I),ACI2(I),ACV2(I),ACI3(I),ACV3(I))
+       YMAX=amax1(YMAX,ACI(IDAY,I),ACV(IDAY,I),ACI(JDAY,I),ACV(JDAY,I),
+     & ACI(KDAY,I),ACV(KDAY,I))
  10   continue
 
 C Clear and setup plot area.
@@ -3182,7 +3111,7 @@ C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
-C Scale and draw Weekday plot.
+C Scale and draw for first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Flow (ac/hr)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
@@ -3190,7 +3119,7 @@ C Scale and draw Weekday plot.
       CALL etplot(plxmax,YMAX,1,0)
       CALL etplot(plxmin,YMAX,1,0)
 
-C Scale and draw Saturday plot.
+C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
       CALL etplot(plxmax,YMIN,0,0)
@@ -3198,7 +3127,7 @@ C Scale and draw Saturday plot.
       CALL etplot(plxmin,YMAX,1,0)
       CALL etplot(plxmin,YMIM,1,0)
 
-C Scale and draw Sunday plot.
+C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
       CALL etplot(plxmin,YMIN,0,0)
@@ -3206,16 +3135,16 @@ C Scale and draw Sunday plot.
       CALL etplot(plxmax,YMAX,1,0)
 
 C Display air flow curves.
-C Weekdays.
+C first day type requested
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
       do 50 IHR=1,24
         TACI(IHR)=0.
         TACV(IHR)=0.
  50   continue
-      do 60 IP=1,NAC1
-        do 65 IHR=IACS1(IP),IACF1(IP)-1
-          TACI(IHR+1)=ACI1(IP)
-          TACV(IHR+1)=ACV1(IP)
+      do 60 IP=1,NAC(IDAY)
+        do 65 IHR=IACS(IDAY,IP),IACF(IDAY,IP)-1
+          TACI(IHR+1)=ACI(IDAY,IP)
+          TACV(IHR+1)=ACV(IDAY,IP)
  65     continue
  60   continue
       do 70 IHR=1,24
@@ -3229,16 +3158,16 @@ C Weekdays.
         if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
  70   continue
 
-C Saturdays.
+C second day type requested
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
       do 150 IHR=1,24
         TACI(IHR)=0.
         TACV(IHR)=0.
  150  continue
-      do 160 IP=1,NAC2
-        do 165 IHR=IACS2(IP),IACF2(IP)-1
-          TACI(IHR+1)=ACI2(IP)
-          TACV(IHR+1)=ACV2(IP)
+      do 160 IP=1,NAC(JDAY)
+        do 165 IHR=IACS(JDAY,IP),IACF(JDAY,IP)-1
+          TACI(IHR+1)=ACI(JDAY,IP)
+          TACV(IHR+1)=ACV(JDAY,IP)
  165    continue
  160  continue
       do 170 IHR=1,24
@@ -3253,16 +3182,16 @@ C Saturdays.
  170  continue
       call forceflush()
 
-C Sundays.
+C third day type requested
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
       do 250 IHR=1,24
         TACI(IHR)=0.
         TACV(IHR)=0.
  250  continue
-      do 260 IP=1,NAC3
-        do 265 IHR=IACS3(IP),IACF3(IP)-1
-          TACI(IHR+1)=ACI3(IP)
-          TACV(IHR+1)=ACV3(IP)
+      do 260 IP=1,NAC(KDAY)
+        do 265 IHR=IACS(KDAY,IP),IACF(KDAY,IP)-1
+          TACI(IHR+1)=ACI(KDAY,IP)
+          TACV(IHR+1)=ACV(KDAY,IP)
  265    continue
  260  continue
       do 270 IHR=1,24
@@ -3292,9 +3221,9 @@ C Title and labels.
       CALL etplot(gx,gy,-4,0)
 
       ioff=(ipltwd/3)
-      call wstxpt(igl+ioff,igt-10,'Weekday')
-      call wstxpt(iglsat+ioff,igt-10,'Saturday')
-      call wstxpt(iglsun+ioff,igt-10,'Sunday')
+      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
+      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
+      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
       call forceflush()
 
       return
@@ -3308,9 +3237,15 @@ C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
@@ -3318,29 +3253,30 @@ C ITRC is the trace level, IER=0 is OK.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &         RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &         CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &         CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
-      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
-     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
-     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
+      COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
+     &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
+      INTEGER NEL,IPF,IPHAS
+      REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
 
 C How many of each gain type is there each zone/gaintype/daytype.
-      common/loadcnt/loadcount(mcom,7,3),loadm2count(mcom,7,3),
-     &               loadmixed(mcom,7,3)
-      common/loadall/load24(7,3,2)
-      logical load24,browse,ok,silent,dok,XST
+      common/loadcnt/loadcount(mcom,7,MDTY),loadm2count(mcom,7,MDTY),
+     &               loadmixed(mcom,7,MDTY)
+      logical browse,ok,silent,dok,XST
       logical sorted,modopr
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
@@ -3354,11 +3290,13 @@ C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
       character act*8,iwatt*8
+      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,ILEN,IOPT,ICGTS,IDTYP
+      dimension kstr(MDTY),ILLEN(MDTY)
 
 C If not browsing, take the information from loadcnt
 C and decide if the periods need to be updated.
       if(.NOT.browse)then
-        if(ip3ver.eq.0)then
+        if(ip3ver(ICOMP).eq.0)then
           dok=.true.
           h(1)='You were presented with this message because the'
           h(2)='file is in an older format which might have overlaps'
@@ -3377,10 +3315,10 @@ C and decide if the periods need to be updated.
 
 C Display initial gain profiles and then sort and remove overlaps and
 C ensure that periods start at zero and end with 24. Sorted files can
-C be saved as version 1.0.
+C be saved as version 3.0
 C          call edisp(iuout,'Before sorting')
           call CASINF(ICOMP,iuout)
-          if(ip3ver.eq.0)then
+          if(ip3ver(ICOMP).eq.0)then
             itrc=0
             itru=6
             call PROCESSOLDCAS(ICOMP,itrc,itru,IER)
@@ -3389,7 +3327,7 @@ C          call edisp(iuout,'Before sorting')
             itru=6
             call PROCESSOLDCAS(ICOMP,itrc,itru,IER)
           endif
-          ip3ver=1
+          ip3ver(ICOMP)=2
           sorted=.true.
           modopr=.true.
         endif
@@ -3399,31 +3337,20 @@ C Initial menu entry setup.
       idtyp = 1
  5    MHEAD=5
       MCTL=8
-      if(idtyp.eq.1)then
-        ILEN=NCAS1
-      elseif(idtyp.eq.2)then 
-        ILEN=NCAS2
-      elseif(idtyp.eq.3)then
-        ILEN=NCAS3
-      endif
+      ILEN=NCAS(IDTYP)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
       IER=0
       IVERT=-3
 
 C Plot casual gains.
-      if (MMOD.eq.8) call PLTCASGN(ICOMP)
+      if (MMOD.eq.8) call PLTCASGN(ICOMP,idtyp)
 
 C Set up top of menu.
  44   VERT(1) = '1 import from profiles database '
       VERT(3) = '  ----------------------------- '
-      if(idtyp.eq.1)then
-        write(VERT(4),'(a,i2,a)')'3 loads >> Weekdays (',NCAS1,')'
-      elseif(idtyp.eq.2)then 
-        write(VERT(4),'(a,i2,a)')'3 loads >> Saturdays (',NCAS2,')'
-      elseif(idtyp.eq.3)then
-        write(VERT(4),'(a,i2,a)')'3 loads >> Sundays (',NCAS3,')'
-      endif
+      WRITE(VERT(4),'(3a,i2,a)') '3 loads >> ',calentag(idtyp),' (',
+     &NCAS(IDTYP),')'
       IF(IELF(ICOMP).EQ.1) THEN
         VERT(2) = '2 electrical data >> included'
         VERT(5) = ' Start End  Type     Power  p.f.'
@@ -3436,166 +3363,63 @@ C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu. 
       M=MHEAD
 
-C Weekday loop.
-      if(idtyp.eq.1)then
-        DO 10 L=1,NCAS1
-          IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
-          M=M+1
-          CALL EMKEY(M-MHEAD,KEY,IER)
-          if(ICGT1(L).gt.0)then
+C loop for each day type
+      DO 10 L=1,NCAS(IDTYP)
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+        M=M+1
+        CALL EMKEY(M-MHEAD,KEY,IER)
+        if(ICGT(IDTYP,L).gt.0)then
           if (IELF(ICOMP).EQ.1) then
-              if (PWR1(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS1(L),ICGF1(L),
-     &            lodlabel(icomp,ICGT1(L)),' W  ',PWR1(L),PF1(L)
-              else
-                write (VERT(M),313)KEY,ICGS1(L),ICGF1(L),
-     &            lodlabel(icomp,ICGT1(L)),' W   no power use'
-              endif
+            if (PWR(IDTYP,L).gt.0.0001) then
+              write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' W  ',
+     &        PWR(IDTYP,L),PF(IDTYP,L)
             else
-              write (VERT(M),303)KEY,ICGS1(L),ICGF1(L),
-     &          lodlabel(icomp,ICGT1(L)),' W  ',CMGS1(L),CMGL1(L)
-            endif
-  303       FORMAT(a,2i4,1x,2a,2f6.0)
-  313       FORMAT(a,2i4,1x,2a)
-          elseif(ICGT1(L).eq.-1)then
-            jicgt=iabs(ICGT1(L))
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR1(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS1(L),ICGF1(L),
-     &            lodlabel(icomp,ICGT1(L)),' m2p',PWR1(L),PF1(L)
-              else
-                write (VERT(M),313)KEY,ICGS1(L),ICGF1(L),
-     &            lodlabel(icomp,ICGT1(L)),' m2p no power use'
-              endif
-            else
-              write (VERT(M),303)KEY,ICGS1(L),ICGF1(L),
-     &          lodlabel(icomp,jicgt),' m2p',CMGS1(L),CMGL1(L)
+              write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' W   no power use'
             endif
           else
-            jicgt=iabs(ICGT1(L))
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR1(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS1(L),ICGF1(L),
-     &            lodlabel(icomp,ICGT1(L)),' Wm2',PWR1(L),PF1(L)
-              else
-                write (VERT(M),313)KEY,ICGS1(L),ICGF1(L),
-     &            lodlabel(icomp,ICGT1(L)),' Wm2 no power use'
-              endif
-            else
-              write (VERT(M),303)KEY,ICGS1(L),ICGF1(L),
-     &          lodlabel(icomp,jicgt),' Wm2',CMGS1(L),CMGL1(L)
-            endif
+            write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &      lodlabel(icomp,ICGT(IDTYP,L)),' W  ',CMGS(IDTYP,L),
+     &      CMGL(IDTYP,L)
           endif
-        ENDIF
- 10     continue
-      endif
-
-C Saturday loop.
-      if(idtyp.eq.2)then
-        DO 20 L=1,NCAS2
-        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
-          M=M+1
-          CALL EMKEY(M-MHEAD,KEY,IER)
-          if(ICGT2(L).gt.0)then
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR2(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS2(L),ICGF2(L),
-     &            lodlabel(icomp,ICGT2(L)),' W  ',PWR2(L),PF2(L)
-              else
-                write (VERT(M),313)KEY,ICGS2(L),ICGF2(L),
-     &            lodlabel(icomp,ICGT2(L)),' W   no power use'
-              endif
+  303     FORMAT(a,2i4,1x,2a,2f6.0)
+  313     FORMAT(a,2i4,1x,2a)
+        elseif(ICGT(IDTYP,L).eq.-1)then
+          jicgt=iabs(ICGT(IDTYP,L))
+          if (IELF(ICOMP).EQ.1) then
+            if (PWR(IDTYP,L).gt.0.0001) then
+              write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' m2p',PWR(IDTYP,L),
+     &        PF(IDTYP,L)
             else
-              write (VERT(M),303)KEY,ICGS2(L),ICGF2(L),
-     &          lodlabel(icomp,ICGT2(L)),' W  ',CMGS2(L),CMGL2(L)
-            endif
-          elseif(ICGT2(L).eq.-1)then
-            jicgt=iabs(ICGT2(L))
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR2(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS2(L),ICGF2(L),
-     &            lodlabel(icomp,ICGT2(L)),' m2p',PWR2(L),PF2(L)
-              else
-                write (VERT(M),313)KEY,ICGS2(L),ICGF2(L),
-     &            lodlabel(icomp,ICGT2(L)),' m2p no power use'
-              endif
-            else
-              write (VERT(M),303)KEY,ICGS2(L),ICGF2(L),
-     &          lodlabel(icomp,jicgt),' m2p',CMGS2(L),CMGL2(L)
+              write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' m2p no power use'
             endif
           else
-            jicgt=iabs(ICGT2(L))
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR2(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS2(L),ICGF2(L),
-     &            lodlabel(icomp,ICGT2(L)),' Wm2',PWR2(L),PF2(L)
-              else
-                write (VERT(M),313)KEY,ICGS2(L),ICGF2(L),
-     &            lodlabel(icomp,ICGT2(L)),' Wm2 no power use'
-              endif
-            else
-              write (VERT(M),303)KEY,ICGS2(L),ICGF2(L),
-     &          lodlabel(icomp,jicgt),' Wm2',CMGS2(L),CMGL2(L)
-            endif
+            write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' m2p',CMGS(IDTYP,L),CMGL(IDTYP,L)
           endif
-        ENDIF
- 20     continue
-      endif
-
-C Sunday loop. 
-      if(idtyp.eq.3)then
-        DO 30 L=1,NCAS3
-        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
-          M=M+1
-          CALL EMKEY(M-MHEAD,KEY,IER)
-          if(ICGT3(L).gt.0)then
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR3(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS3(L),ICGF3(L),
-     &            lodlabel(icomp,ICGT3(L)),' W ',PWR3(L),PF3(L)
-              else
-                write (VERT(M),313)KEY,ICGS3(L),ICGF3(L),
-     &            lodlabel(icomp,ICGT3(L)),' W   no power use'
-              endif
+        else
+          jicgt=iabs(ICGT(IDTYP,L))
+          if (IELF(ICOMP).EQ.1) then
+            if (PWR(IDTYP,L).gt.0.0001) then
+              write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' Wm2',PWR(IDTYP,L),
+     &        PF(IDTYP,L)
             else
-              write (VERT(M),303)KEY,ICGS3(L),ICGF3(L),
-     &          lodlabel(icomp,ICGT3(L)),' W  ',CMGS3(L),CMGL3(L)
-            endif
-          elseif(ICGT3(L).eq.-1)then
-            jicgt=iabs(ICGT3(L))
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR3(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS3(L),ICGF3(L),
-     &            lodlabel(icomp,ICGT3(L)),' m2p',PWR3(L),PF3(L)
-              else
-                write (VERT(M),313)KEY,ICGS3(L),ICGF3(L),
-     &            lodlabel(icomp,ICGT3(L)),' m2p no power use'
-              endif
-            else
-              write (VERT(M),303)KEY,ICGS3(L),ICGF3(L),
-     &          lodlabel(icomp,jicgt),' m2p',CMGS3(L),CMGL3(L)
+              write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' Wm2 no power use'
             endif
           else
-            jicgt=iabs(ICGT3(L))
-            if (IELF(ICOMP).EQ.1) then
-              if (PWR3(L).gt.0.0001) then
-                write (VERT(M),303)KEY,ICGS3(L),ICGF3(L),
-     &            lodlabel(icomp,ICGT3(L)),' Wm2',PWR3(L),PF3(L)
-              else
-                write (VERT(M),313)KEY,ICGS3(L),ICGF3(L),
-     &            lodlabel(icomp,ICGT3(L)),' Wm2 no power use'
-              endif
-            else
-              write (VERT(M),303)KEY,ICGS3(L),ICGF3(L),
-     &          lodlabel(icomp,jicgt),' Wm2',CMGS3(L),CMGL3(L)
-            endif
+            write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' Wm2',CMGS(IDTYP,L),CMGL(IDTYP,L)
           endif
+        endif
         ENDIF
- 30     continue
-      endif
+ 10   continue
 
 C Set up remainder of menu.
-
 C Number of actual items displayed (update M for additional descriptive lines).
       MVERT=M+MCTL
 
@@ -3626,7 +3450,7 @@ C Help text for this menu.
       H(9)='  '
       H(10)='If electrical definitions are included the menu will'
       H(11)='show the power consumption of the load and the power'
-      H(12)='factor.  The graphs will continue to show the casual'
+      H(12)='factor. The graphs will continue to show the casual'
       H(13)='gains to the zone.'
       H(14)='  '
       h(15)='Import casul gains - you select a zone with casual'
@@ -3646,21 +3470,14 @@ C Now display the menu.
       if (IVERT.EQ.1)THEN
 
 C Import profile.
-        call EASKABCD('Import a profile for which day type?', 
-     &   '  ','Weekdays','Saturdays','Sundays','Cancel',IW,0)
-        if (IW.EQ.1) then
-          IN=NCAS1
-          CALL SCASL(IN,IW,IER,ICOMP)
-          sorted=.false.
-        elseif (IW.EQ.2) then
-          IN=NCAS2
-          CALL SCASL(IN,IW,IER,ICOMP)
-          sorted=.false.
-        elseif (IW.EQ.3) then
-          IN=NCAS3
-          CALL SCASL(IN,IW,IER,ICOMP)
-          sorted=.false.
-        endif
+        IX=1
+ 222    CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
+     &  12,NBDAYTYPE,CALENTAG,
+     &  'Import a profile for which day type?',IER,18)
+        IW=KSTR(1)
+        IN=NCAS(IW)
+        CALL SCASL(IN,IW,IER,ICOMP)
+        sorted=.false.
       elseif (IVERT.eq.2) then
 
 C Include/ exclude electrical definitions.
@@ -3678,27 +3495,15 @@ C Include/ exclude electrical definitions.
 
 C Set flag and default values.
             ielf(ICOMP)=1
-            do 34 i=1,NCAS1
-              PF1(I)=0.0
-              IPF1(I)=0
-              PWR1(I)=0.0
-              BVOLT1(I)=0.0
-              IPHAS1(I)=1
- 34         continue
-            do 35 i=1,NCAS2
-              PF2(I)=0.0
-              IPF2(I)=0
-              PWR2(I)=0.0
-              BVOLT2(I)=0.0
-              IPHAS2(I)=1
- 35         continue
-            do 36 i=1,NCAS3
-              PF3(I)=0.0
-              IPF3(I)=0
-              PWR3(I)=0.0
-              BVOLT3(I)=0.0
-              IPHAS3(I)=1
- 36         continue
+            DO 609 IDTY=1,NBDAYTYPE
+              do 34 i=1,NCAS(IDTY)
+                PF(IDTY,I)=0.0
+                IPF(IDTY,I)=0
+                PWR(IDTY,I)=0.0
+                BVOLT(IDTY,I)=0.0
+                IPHAS(IDTY,I)=1
+ 34           continue
+ 609        CONTINUE
           elseif(IW.eq.2) then
             ielf(ICOMP)=2
           endif
@@ -3713,7 +3518,7 @@ C Set flag and default values.
 
 C Increment the daytype focus.
         idtyp = idtyp + 1
-        if(idtyp.gt.3) idtyp = 1
+        if(idtyp.gt.NBDAYTYPE) idtyp = 1
         goto 5
       ELSEIF(IVERT.EQ.MVERT)THEN
         return
@@ -3727,13 +3532,7 @@ C List current.
 
 C Check & remove overlaps in periods in the current day type. As the
 C number of periods might have changed, rebuild the menus.
-        if(idtyp.eq.1)then
-          ILLEN=NCAS1
-        elseif(idtyp.eq.2)then 
-          ILLEN=NCAS2
-        elseif(idtyp.eq.3)then
-          ILLEN=NCAS3
-        endif
+        ILLEN(IDTYP)=NCAS(IDTYP)
         call edisp(iuout,'Before sorting')
         call CASINF(ICOMP,iuout)
         call PROCESSOLDCAS(ICOMP,0,iuout,IER)
@@ -3744,24 +3543,19 @@ C number of periods might have changed, rebuild the menus.
         modopr=.true.
 
 C If different period, update the menu length.
-        if(idtyp.eq.1)then
-          if(ILLEN.ne.NCAS1)call edisp(iuout,'Periods have changed.')
-          ILEN=NCAS1
-        elseif(idtyp.eq.2)then 
-          if(ILLEN.ne.NCAS2)call edisp(iuout,'Periods have changed.')
-          ILEN=NCAS2
-        elseif(idtyp.eq.3)then
-          if(ILLEN.ne.NCAS3)call edisp(iuout,'Periods have changed.')
-          ILEN=NCAS3
-        endif
+        if(ILLEN(IDTYP).ne.NCAS(IDTYP))
+     &  call edisp(iuout,'Periods have changed.')
+        ILEN=NCAS(IDTYP)
         goto 44
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
         h(1)='You can apply a scaling factor to all entries of a '
         h(2)='particular casual gain type (useful for parametric '
         h(3)='studies on profiles which have been imported).'
+        H(4)='If you are not scaling gains choose all gains and then'
+        H(5)='choose a factor of 1.0'
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &     'All gain types','Cancel',' ',' ',ICGTS,3)
+     &     'All gain types','Cancel',' ',' ',ICGTS,5)
         if (ICGTS.ne.5) then
           if (ICGTS.ne.4) then
             write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
@@ -3769,57 +3563,36 @@ C If different period, update the menu length.
           else
             write (outs,'(a)') 'Scale all gains for day type: '
           endif
-          call EASKATOG(outs,'  ','Weekdays','Saturdays',
-     &           'Sundays','All day types','Cancel',' ',' ',IW,0)
-          if (IW.ne.5) then
-            VAL=1.0
-            if (ICGTS.ne.4) then
-              write (outs,'(2a)') 'Scaling factor for ',
-     &                            lodlabel(icomp,ICGTS)
-            else
-              write (outs,'(a)') 'Scaling factor for all '
-            endif
-            if (IW.eq.1) then
-              write (outs,'(2a)') outs(1:lnblnk(outs)),
-     &                            ' gains during weekdays?'
-            elseif (IW.eq.2) then
-              write (outs,'(2a)') outs(1:lnblnk(outs)),
-     &                            ' gains during Saturdays?'
-            elseif (IW.eq.3) then
-              write (outs,'(2a)') outs(1:lnblnk(outs)),
-     &                            ' gains during Sundays?'
-            else
-              write (outs,'(2a)') outs(1:lnblnk(outs)),
-     &                            ' gains during all day types?'
-            endif
-            CALL EASKR(VAL,outs,
-     &             '(typically between 0.1 and 5.0)',
-     &             0.1,'W',5.0,'W',1.0,'scaling factor',IER,3)
-            if (IW.eq.1.or.IW.eq.4) then
-              do 33 i=1,NCAS1
-                if(IABS(ICGT1(I)).eq.ICGTS.or.ICGTS.eq.4)then
-                  CMGS1(I)=CMGS1(I)*VAL
-                  CMGL1(I)=CMGL1(I)*VAL
+          call EASKABC('Import profile for one or all day types',
+     &          ' ','One day type','All day types','Cancel',IOPT,1)
+          IF(IOPT.EQ.1)THEN
+            IW=0
+            IX=1
+            CALL EPICKS(IX,KSTR,' ',
+     &      'Import a profile for which day type?',12,NBDAYTYPE,
+     &      CALENTAG,'Import a profile for which day type?',IER,1)
+            IW=KSTR(1)
+            write (outs,'(2a)') outs(1:lnblnk(outs)),CALENTAG(IW)
+          ELSEIF(IOPT.EQ.2)THEN
+            IW=0
+            write (outs,'(2a)') outs(1:lnblnk(outs)),'ALL'
+          ELSE
+            GOTO 5
+          ENDIF
+          CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
+     &    0.1,'W',5.0,'W',1.0,'scaling factor',IER,3)
+          DO 760 IDTY=1,NBDAYTYPE
+            do 33 i=1,NCAS(IDTY)
+              IF(IDTY.EQ.IW.OR.IW.EQ.0)THEN
+                if(IABS(ICGT(IDTY,I)).eq.ICGTS.or.ICGTS.eq.4)then
+                  CMGS(IDTY,I)=CMGS(IDTY,I)*VAL
+                  CMGL(IDTY,I)=CMGL(IDTY,I)*VAL
                 endif
- 33           continue
-            endif
-            if (IW.eq.2.or.IW.eq.4) then
-              do 43 i=1,NCAS2
-                if(IABS(ICGT2(I)).eq.ICGTS.or.ICGTS.eq.4)then
-                  CMGS2(I)=CMGS2(I)*VAL
-                  CMGL2(I)=CMGL2(I)*VAL
-                endif
- 43           continue
-            endif
-            if (IW.eq.3.or.IW.eq.4) then
-              do 53 i=1,NCAS3
-                if(IABS(ICGT3(I)).eq.ICGTS.or.ICGTS.eq.4)then
-                  CMGS3(I)=CMGS3(I)*VAL
-                  CMGL3(I)=CMGL3(I)*VAL
-                endif
- 53           continue
-            endif
-          endif
+              ENDIF
+ 33         continue
+ 760      CONTINUE
+        ELSE
+          GOTO 5
         endif
         goto 5
       elseif (IVERT.eq.(MVERT-5)) then
@@ -3831,10 +3604,10 @@ C Add delete copy period or import full set of casual gains.
         H(4) =' delete - deletes one or more periods (within a list'
         H(5) ='   of all periods in all days).'
         H(6) =' '
-        H(7) =' copy - copies weekdays -> saturdays or weekdays -> '
-        H(8) ='   sundays or saturdays -> sundays. Currently it'
-        H(9) ='   adds the copied periods to the desination in'
-        H(10)='   addition to existing periods.'
+        H(7) =' copy - copies periods from one day type to another  '
+        H(8) ='   Currently it adds the copied periods to the '
+        H(9) ='   destination in addition to existing periods already'
+        H(10)='   present in the destination day type '
         H(11)=' '
         H(12)=' import - imports casual gain patterns for all gains'
         H(13)='   and day types from another zone (overwrites).'
@@ -3845,7 +3618,7 @@ C Add delete copy period or import full set of casual gains.
         H(18)=' '
         H(19)='When importing you can specify whether to:'
         H(20)=' a) preserve the absolute W being imported e.g. 123W'
-        H(21)='    in the source zone is is also 123W in destination'
+        H(21)='    in the source zone is also 123W in destination'
         H(22)=' b) preserves W/m^2 implied by the source zone and'
         H(23)='    destination zone base areas e.g. 123W in source'
         H(24)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
@@ -3860,91 +3633,65 @@ C Add new casual gain period.
      &        lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &        'Cancel',ICGTS,3)
           if (ICGTS.ne.4) then
+            IQ=0
             if(.NOT.browse)call checkcascount(icomp,ier)
-
-            write (outs,'(3a)') 'New ',lodlabel(icomp,ICGTS),
+            call EASKABC('Add period for one or all day types',
+     &          ' ','One day type','All day types','Cancel',IOPT,1)
+            IF(IOPT.EQ.1)THEN
+              write (outs,'(3a)') 'New ',lodlabel(icomp,ICGTS),
      &                          ' gain for day type: '
-            call EASKATOG(outs,'  ','Weekdays','Saturdays',
-     &           'Sundays','All day types','Cancel',' ',' ',IW,0)
-            if (IW.ne.5) then
-              if (IW.eq.1) then
-                if(NCAS1.eq.MC)then
-                  call usrmsg(' ',
-     &                         'Sorry, too many weekday periods.','W')
-                else
-                  IDT=1
-                  IPER=0
-                  if(loadcount(icomp,ICGTS,IDT).eq.0)then
+              IQ=0
+              IX=1
+              CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
+     &        CALENTAG,outs,IER,1)
+              IQ=KSTR(1)
+            ELSEIF(IOPT.EQ.2)THEN
+              IQ=0
+            ELSE
+              GOTO 5
+            ENDIF
+            IF(IQ.EQ.0)THEN
+              ITRK=0
+              DO 619 IDU=1,NBDAYTYPE
+                IF(NCAS(IDU).EQ.MC)THEN
+                  WRITE(OUTS,'(2A)')
+     &            'Sorry, too many periods for day type ',CALENTAG(IDT)
+                  CALL USRMSG(' ',OUTS,'W')
+                  ITRK=1
+                ENDIF
+ 619          CONTINUE
+              IF(ITRK.EQ.0)THEN
+                IDT=-1
+                IPER=0
+                silent=.false.
+                izs=0
+                izf=24
+                call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
+              ENDIF
+            ELSE
+              IDT=IQ
+              IF(NCAS(IDT).EQ.MC)THEN
+                WRITE(OUTS,'(2A)')
+     &          'Sorry, too many periods for day type ',CALENTAG(IDT)
+                CALL USRMSG(' ',OUTS,'W')
+              ELSE
+                IPER=0
+                if(loadcount(icomp,ICGTS,IDT).eq.0)then
 
-C If there are no weekday loads of this type make a default one.
-                    silent=.true.
-                    izs=0
-                    izf=24
-                    call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                  endif
-                  silent=.false.
-                  izs=8
-                  izf=18
-                  call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                endif
-              elseif (IW.eq.2) then
-                if(NCAS2.eq.MC)then
-                  call usrmsg(' ',
-     &                         'Sorry, too many Saturday periods.','W')
-                else
-                  IDT=2
-                  IPER=0
-                  if(loadcount(icomp,ICGTS,IDT).eq.0)then
-
-C If there are no saturday loads of this type make a default one.
-                    silent=.true.
-                    izs=0
-                    izf=24
-                    call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                  endif
-                  silent=.false.
-                  izs=8
-                  izf=18
-                  call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                endif
-              elseif (IW.eq.3) then
-                if(NCAS3.eq.MC)then
-                  call usrmsg(' ','Sorry, too many Sunday periods.','W')
-                else
-                  IDT=3
-                  IPER=0
-                  if(loadcount(icomp,ICGTS,IDT).eq.0)then
-
-C If there are no sunday loads of this type make a default one.
-                    silent=.true.
-                    izs=0
-                    izf=24
-                    call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                  endif
-                  silent=.false.
-                  izs=8
-                  izf=18
-                  call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                endif
-              elseif (IW.eq.4) then
-                if(NCAS1.eq.MC)then
-                  call usrmsg(' ',
-     &                         'Sorry, too many weekday periods.','W')
-                elseif(NCAS2.eq.MC)then
-                  call usrmsg(' ',
-     &                         'Sorry, too many Saturday periods.','W')
-                elseif(NCAS3.eq.MC)then
-                  call usrmsg(' ','Sorry, too many Sunday periods.','W')
-                else
-                  IDT=4
-                  IPER=0
-                  silent=.false.
+C If there are no loads of this type make a default one.
+                  silent=.true.
                   izs=0
                   izf=24
                   call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
                 endif
-              endif
-            endif
+                silent=.false.
+                izs=8
+                izf=18
+                call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
+              ENDIF
+            ENDIF
+          ELSE
+            GOTO 5
           endif
           sorted=.false.
           modopr=.true.
@@ -4041,7 +3788,6 @@ C Remind users to check their data.
       h(7)='against the previous model and then run a short assessment'
       h(8)='to confirm that the predictions are as expected. '
       CALL PHELPD('operation import confirm',8,'-',0,0,IER)
-
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
@@ -4069,32 +3815,16 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
-          if(idtyp.eq.1)then
-            ILEN=NCAS1
-          elseif(idtyp.eq.2)then 
-            ILEN=NCAS2
-          elseif(idtyp.eq.3)then
-            ILEN=NCAS3
-          endif
+          ILEN=NCAS(IDTYP)
           goto 44
         ENDIF
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Edit block identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,I,IO)
-        if(idtyp.eq.1)then
-          IDT=1
-          IPER=I
-          ICGTX=ICGT1(IPER)
-        elseif(idtyp.eq.2)then 
-          IDT=2
-          IPER=I
-          ICGTX=ICGT2(IPER)
-        elseif(idtyp.eq.3)then
-          IDT=3
-          IPER=I
-          ICGTX=ICGT3(IPER)
-        endif
+        IDT=IDTYP
+        IPER=I
+        ICGTX=ICGT(IDTYP,IPER)
         silent=.false.
         izs=0
         izf=0
@@ -4121,22 +3851,23 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
-      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
-     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
-     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
+      COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
+     &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
+      INTEGER NEL,IPF,IPHAS
+      REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-      DIMENSION  ICGS(MC),ICGF(MC),CGS(MC),CGL(MC)
+      DIMENSION  ICGSX(MC),ICGFX(MC),CGS(MC),CGL(MC)
       DIMENSION  NO(100),DESC(100),IPRVAL(100)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,lodlabel*6
@@ -4151,7 +3882,7 @@ C Labels for loads.
       write(ll3,'(1x,a6,1x)') lodlabel(icomp,3)
 
       IER=0
-      ICGT=1
+      ICGTX=1
       PS=0.
       PL=0.
       RAD=0.5
@@ -4185,7 +3916,7 @@ C Present a list of profiles to select from.
 
 C There are NCG gains to be added
       DO 70 I = 1,NCG
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=183)  ICGS(I),ICGF(I),
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=183)  ICGSX(I),ICGFX(I),
      &       CGS(I),CGL(I)
         IREC = IREC + 1
 70    CONTINUE
@@ -4197,7 +3928,7 @@ C Identify nature of casual gain
       H(4)='lighting or equipment.  The types listed can have any'
       H(5)='meaning that the user chooses (type labels can be edited'
       h(6)='in the main operations menu.'
-      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGT,6)
+      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
 
  100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
 
@@ -4305,68 +4036,24 @@ C << and small power can be entered in terms of W/m2.
         ENDIF
       ENDIF
  42   call usrmsg(' ',' ','-')
-          
-      if(IDAY .EQ. 1)then
 
-C Weekday gains.
-        NCAS1 = NCAS1 + NCG
-        DO 140 I = 1,NCG
-          ICGS1(I+IN) = ICGS(I)
-          ICGF1(I+IN) = ICGF(I)
-          CMGS1(I+IN) = CGS(I)*PS/100.0
-          CMGL1(I+IN) = CGL(I)*PL/100.0
-          RADC1(I+IN) = RAD
-          CONC1(I+IN) = CON
-          ICGT1(I+IN) = ICGT
-          IF(IELF(ICOMP).GT.0) THEN
-            PF1(I+IN)=PPF
-            IPF1(I+IN)=IPPF
-            PWR1(I+IN)=CGS(I)*PE/100.
-            BVOLT1(I+IN)=PBVOLT
-            IPHAS1(I+IN)=IPPHAS
-          ENDIF
-140     CONTINUE
-      elseif(IDAY .EQ. 2)then
-
-C Saturday gains.
-        NCAS2 = NCAS2 + NCG
-        DO 141 I = 1,NCG
-          ICGS2(I+IN) = ICGS(I)
-          ICGF2(I+IN) = ICGF(I)
-          CMGS2(I+IN) = CGS(I)*PS/100.0
-          CMGL2(I+IN) = CGL(I)*PL/100.0
-          RADC2(I+IN) = RAD
-          CONC2(I+IN) = CON
-          ICGT2(I+IN) = ICGT
-          IF(IELF(ICOMP).GT.0) THEN
-            PF2(I+IN)=PPF
-            IPF2(I+IN)=IPPF
-            PWR2(I+IN)=CGS(I)*PE/100.
-            BVOLT2(I+IN)=PBVOLT
-            IPHAS2(I+IN)=IPPHAS
-          ENDIF
-141     CONTINUE
-      elseif(IDAY .EQ. 3)then
-
-C Sunday gains.
-        NCAS3 = NCAS3 + NCG
-        DO 142 I = 1,NCG
-          ICGS3(I+IN) = ICGS(I)
-          ICGF3(I+IN) = ICGF(I)
-          CMGS3(I+IN) = CGS(I)*PS/100.0
-          CMGL3(I+IN) = CGL(I)*PL/100.0
-          RADC3(I+IN) = RAD
-          CONC3(I+IN) = CON
-          ICGT3(I+IN) = ICGT
-          IF(IELF(ICOMP).GT.0) THEN
-            PF3(I+IN)=PPF
-            IPF3(I+IN)=IPPF
-            PWR3(I+IN)=CGS(I)*PE/100.
-            BVOLT3(I+IN)=PBVOLT
-            IPHAS3(I+IN)=IPPHAS
-          ENDIF
-142     CONTINUE
-      endif
+      NCAS(IDAY) = NCAS(IDAY) + NCG
+      DO 140 I = 1,NCG
+	ICGS(IDAY,I+IN) = ICGSX(I)
+	ICGF(IDAY,I+IN) = ICGFX(I)
+	CMGS(IDAY,I+IN) = CGS(I)*PS/100.0
+	CMGL(IDAY,I+IN) = CGL(I)*PL/100.0
+	RADC(IDAY,+IN) = RAD
+	CONC(IDAY,I+IN) = CON
+	ICGT(IDAY,I+IN) = ICGTX
+	IF(IELF(ICOMP).GT.0) THEN
+	  PF(IDAY,I+IN)=PPF
+	  IPF(IDAY,I+IN)=IPPF
+	  PWR(IDAY,I+IN)=CGS(I)*PE/100.
+	  BVOLT(IDAY,I+IN)=PBVOLT
+	  IPHAS(IDAY,I+IN)=IPPHAS
+	ENDIF
+140   CONTINUE
 
   999 CALL ERPFREE(IPRODB,ISTAT)
       RETURN
@@ -4387,29 +4074,27 @@ C Sunday gains.
 C ********************* EDCASGN *********************
 C EDCASGN - edit casual gain data.
 C  ICOMP zone number
-C  ICGT casual gain type index
-C  IDT day type
+C  ICGTX casual gain type index
+C  IDT day type (=-1 then all day types)
 C  IPER period (=0 then new)
 C  silent true if no user interaction requested.
 C If silent is true then use icgs & icgf parameters.
 
-      subroutine EDCASGN(ICOMP,ICGT,IDT,IPER,silent,icgs,icgf)
+      subroutine EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,icgsX,icgfX)
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY,IALL
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
-      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
-     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
-     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
 
 C Base area for zones.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
@@ -4424,24 +4109,18 @@ C Base area for zones.
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
-        CMGS=0.
-        CMGL=0.
-        RADC=0.5
-        CONC=0.5
-        PF=0.0
-        IPF=0
-        PWR=0.0
-        BVOLT=0.0
-        IPHAS=1
-      elseif(IDT.eq.1) then
-        call CPYCASIT(icomp,idt,iper,icgt,icgs,icgf,cmgs,cmgl,
-     &    radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-      elseif(IDT.eq.2) then
-        call CPYCASIT(icomp,idt,iper,icgt,icgs,icgf,cmgs,cmgl,
-     &    radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-      elseif(IDT.eq.3) then
-        call CPYCASIT(icomp,idt,iper,icgt,icgs,icgf,cmgs,cmgl,
-     &    radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
+        CMGSX=0.
+        CMGLX=0.
+        RADCX=0.5
+        CONCX=0.5
+        IPFX=0
+        IPHASX=1
+        PFX=0.0
+        PWRX=0.0
+        BVOLTX=0.0
+      ELSEIF(IDT.GT.0)THEN
+        call CPYCASIT(icomp,idt,iper,icgtX,icgsX,icgfX,cmgsX,cmglX,
+     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
       endif
 
 C If silent jump to insertion logic.
@@ -4449,15 +4128,15 @@ C If silent jump to insertion logic.
 
 C Ask for start and finish times.
  10   write (OUTS,'(A)') 'Start and finish hours for period?'
-      write (hold,'(2i5,a)') ICGS,ICGF,'  '
+      write (hold,'(2i5,a)') ICGSX,ICGFX,'  '
       h(1)='Period during which casual gains applies.'
       CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
       K=0
       CALL EGETWI(hold,K,IVS,0,24,'F','period start',IER)
       CALL EGETWI(hold,K,IVF,IVS+1,24,'F','period end',IER)
       if (IER.ne.0) goto 10
-      ICGS=IVS
-      ICGF=IVF
+      ICGSX=IVS
+      ICGFX=IVF
 
 C Warn user if the zone base area is still zero.
       call eclose(ZBASEA(ICOMP),0.0,0.01,close)
@@ -4488,10 +4167,10 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
       if (IGU.eq.1) then
 
 C Gain as W - require gain only.
- 20     if (ICGT.lt.-1) then
-          write (HOLD,'(2f8.1,a)') CMGS*zb,CMGL*zb,'  '
+ 20     if (ICGTX.lt.-1) then
+          write (HOLD,'(2f8.1,a)') CMGSX*zb,CMGLX*zb,'  '
         else
-          write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
+          write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Sensible and latent gain (W):',
@@ -4500,16 +4179,16 @@ C Gain as W - require gain only.
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,100000.0,'W','latent gain',IER)
         if (IER.ne.0) goto 20
-        if (ICGT.lt.0) ICGT=ICGT*(-1)
-        CMGS=XSEN
-        CMGL=XLAT
+        if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
+        CMGSX=XSEN
+        CMGLX=XLAT
       elseif (IGU.eq.2) then
 
 C Gain as W/m^2 - require gain per square meter.
-        if (ICGT.gt.0) then
-          write (HOLD,'(2f8.1,a)') CMGS/zb,CMGL/zb,'  '
+        if (ICGTX.gt.0) then
+          write (HOLD,'(2f8.1,a)') CMGSX/zb,CMGLX/zb,'  '
         else
-          write (HOLD,'(2f8.1,a)') CMGS,CMGL,'  '
+          write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
@@ -4518,13 +4197,13 @@ C Gain as W/m^2 - require gain per square meter.
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
-        if (ICGT.eq.1) then
-          CMGS=XSEN*zb
-          CMGL=XLAT*zb
+        if (ICGTX.eq.1) then
+          CMGSX=XSEN*zb
+          CMGLX=XLAT*zb
         else
-          if (ICGT.gt.1) ICGT=ICGT*(-1)
-          CMGS=XSEN
-          CMGL=XLAT
+          if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
+          CMGSX=XSEN
+          CMGLX=XLAT
         endif
       elseif (IGU.eq.3) then
 
@@ -4544,7 +4223,7 @@ C << an actual cancel option not yet implemented >>
           goto 40
         endif
 
-        write (HOLD,'(2f8.1,a)') CMGS/real(NOBJ),CMGL/real(NOBJ),'  '
+        write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,1)
@@ -4552,16 +4231,16 @@ C << an actual cancel option not yet implemented >>
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 40
-        if (ICGT.lt.0) ICGT=ICGT*(-1)
-        CMGS=XSEN*real(NOBJ)
-        CMGL=XLAT*real(NOBJ)
+        if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
+        CMGSX=XSEN*real(NOBJ)
+        CMGLX=XLAT*real(NOBJ)
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
 C If user cancels go back to initial question.
         NOBJ=1
- 50     if (ICGT.eq.-1) then
-          FLA=CMGS
+ 50     if (ICGTX.eq.-1) then
+          FLA=CMGSX
         else
           FLA=10.
         endif
@@ -4572,13 +4251,13 @@ C If user cancels go back to initial question.
      &    0.1,'F',100.0,'W',1.0,'area per object',IERI,2)
         if(IERI.eq.0)then
           FLA=XFLA
-          if (iabs(ICGT).eq.1) then
-            ICGT=-1
-            CMGS=FLA
-            CMGL=0.   ! Why is CMGL set to zero?
+          if (iabs(ICGTX).eq.1) then
+            ICGTX=-1
+            CMGSX=FLA
+            CMGLX=0.   ! Why is CMGLX set to zero?
           else
-            write (HOLD,'(2f8.1,a)') CMGS/(zb/FLA),
-     &                               CMGL/(zb/FLA),'  '
+            write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
+     &                               CMGLX/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,1)
@@ -4586,9 +4265,9 @@ C If user cancels go back to initial question.
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
             call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
             if (IER.ne.0) goto 50
-            if (ICGT.gt.1) ICGT=ICGT*(-1)
-            CMGS=XSEN*zb/FLA
-            CMGL=XLAT*zb/FLA
+            if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
+            CMGSX=XSEN*zb/FLA
+            CMGLX=XLAT*zb/FLA
           endif
         elseif(ieri.eq.-3)then
           goto 10
@@ -4598,7 +4277,7 @@ C If user cancels go back to initial question.
       endif
 
 C Ask for rad/ conv split.
- 70   write (HOLD,'(2f7.3,a)') RADC,CONC,'  '
+ 70   write (HOLD,'(2f7.3,a)') RADCX,CONCX,'  '
       h(1)='Supply the radiant and convective fraction for'
       h(2)='the sensible load (should be <=1.00) '
       call EASKS(HOLD,' Radiant & convective fraction:',
@@ -4620,8 +4299,8 @@ C Ask for rad/ conv split.
      &    ' This is less than 0.9. Are you sure?',OK,DOK,4)
         IF(.NOT.OK)GOTO 70
       endif
-      RADC=RAD
-      CONC=CON
+      RADCX=RAD
+      CONCX=CON
       
 C Electrical details.
       if (IELF(ICOMP).EQ.1) then
@@ -4635,7 +4314,7 @@ C Electrical details.
 
 C Get the electrical details of the load from the user
           H(1)=' Power factor will vary between 0 - 1.0'
- 80       pft=PF
+ 80       pft=PFX
           call EASKR(pft,' ','Load power factor?',
      &           0.0,'F',1.0,'F',1.0,'power factor',IER,1)
           if (IER.ne.0) goto 80
@@ -4650,10 +4329,10 @@ C Get the electrical details of the load from the user
           if (CLOSE) then
             IPFT=0
           else
-            if(ipf.eq.-1)then
+            if(ipfX.eq.-1)then
               call EASKAB('Is the load current leading or lagging?',
      &          '(see help)','Leading (*)','Lagging',IOPT,5)
-            elseif(ipf.eq.1)then
+            elseif(ipfX.eq.1)then
               call EASKAB('Is the load current leading or lagging?',
      &          '(see help)','Leading','Lagging (*)',IOPT,5)
             else
@@ -4670,13 +4349,13 @@ C Get the electrical details of the load from the user
           H(1)='What is the real power consumption in watts?'
           H(2)='This might be the same as the sensible load for'
           H(3)='some devices (please check). '
- 90       pwrt=PWR
+ 90       pwrt=PWRX
           call EASKR(pwrt,'Real power consumption ?','  ',
-     &          0.0,'-',10000.0,'-',CMGS,'power consumption',IER,3)
+     &          0.0,'-',10000.0,'-',CMGSX,'power consumption',IER,3)
           if (IER.ne.0) goto 90
 
           H(1)=' What voltage does the load operate at i.e. 220V'
- 100      bvoltt=BVOLT
+ 100      bvoltt=BVOLTX
           call EASKR(bvoltt,' ','Operational voltage?',
      &          0.0,'-',10000.0,'-',220.0,'op voltage',IER,1)
           if (IER.ne.0) goto 100
@@ -4685,7 +4364,7 @@ C Get the electrical details of the load from the user
           H(2)='connected, 1-3 or 4-all three.'
           H(3)=' '
           H(4)='A cancel leaves the electrical data unchanged.'
- 110      IPHAST=IPHAS
+ 110      IPHAST=IPHASX
           call EASKI(IPHAST,'Which phase is load connected to?',
      &      '(see help)',1,'F',4,'F',1,'phase ',IERI,4)
           if(ieri.eq.-3)then
@@ -4695,70 +4374,38 @@ C Get the electrical details of the load from the user
           else
 
 C No more cancels so instanciate the data for this period.
-            BVOLT=bvoltt
-            PWR=PWRT
-            IPF=IPFT
-            PF=pft
-            IPHAS=IPHAST
+            BVOLTX=bvoltt
+            PWRX=PWRT
+            IPFX=IPFT
+            PFX=pft
+            IPHASX=IPHAST
           endif
         endif
       endif
 
-C If day type 4 then add data to all day types.
-  112 if (IDT.eq.4) then
-        ILOOP=3
-      else
-        ILOOP=1
-      endif
+C If idt=-1 then do for all day types      
+  112 IALL=0
+      IF(IDT.EQ.-1)THEN
+        IALL=1
+        IDT=1
+      ENDIF
 
-C If new period then work out where to insert data.
-      do 400 ILDT=1,ILOOP
-
-C If looping through day types then set day type (IDT) to current 
-C value of loop counter (ILDT).  Otherwise IDT will have the value 
-C that was passed to the subroutine.
-        if (ILOOP.eq.3) IDT=ILDT
-        if (IPER.eq.0) then
-          if (IDT.eq.1) then
-            ILPER=1
-            do 210 I=1,NCAS1
-              if (iabs(ICGT1(I)).le.iabs(ICGT)) then
-                if (ICGS1(I).lt.ICGS) then
-                  ILPER=I+1
-                elseif (ICGS1(I).eq.ICGS.and.ICGF1(I).gt.ICGF) then
-                  ILPER=I
-                endif
+C Start insertion
+ 113  if (IDT.gt.0) then
+        IF(IPER.EQ.0)THEN
+          NCG=NCAS(IDT)
+          IF(NCG.LE.0)NCG=1
+          do 210 I=1,NCG
+            if(iabs(ICGT(IDT,I)).le.iabs(ICGTX))then
+              if(ICGS(IDT,I).lT.ICGSX)then
+                ILPER=I+1
+              elseif(ICGS(IDT,I).eq.ICGSX)then!.and.ICGF(IDT,I).gt.ICGFX)then
+                ILPER=I
               endif
- 210        continue
-            NCAS1=NCAS1+1
-            INC=NCAS1
-          elseif (IDT.eq.2) then
-            ILPER=1
-            do 220 I=1,NCAS2
-              if (iabs(ICGT2(I)).le.iabs(ICGT)) then
-                if (ICGS2(I).lt.ICGS) then
-                  ILPER=I+1
-                elseif (ICGS2(I).eq.ICGS.and.ICGF2(I).gt.ICGF) then
-                  ILPER=I
-                endif
-              endif
- 220        continue
-            NCAS2=NCAS2+1
-            INC=NCAS2
-          elseif (IDT.eq.3) then
-            ILPER=1
-            do 230 I=1,NCAS3
-              if (iabs(ICGT3(I)).le.iabs(ICGT)) then
-                if (ICGS3(I).lt.ICGS) then
-                  ILPER=I+1
-                elseif (ICGS3(I).eq.ICGS.and.ICGF3(I).gt.ICGF) then
-                  ILPER=I
-                endif
-              endif
- 230        continue
-            NCAS3=NCAS3+1
-            INC=NCAS3
-          endif
+            endif
+ 210      continue
+          NCAS(IDT)=NCAS(IDT)+1
+          INC=NCAS(IDT)
         else
           ILPER=IPER
           INC=IPER
@@ -4767,126 +4414,92 @@ C that was passed to the subroutine.
 C Now update common blocks. Loop backwards from 
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
-            if(IDT.eq.1) then
-              call CPYCASTI(icomp,idt,ix,icgt,icgs,icgf,cmgs,cmgl,
-     &          radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-            endif
-            if(IDT.eq.2) then
-              call CPYCASTI(icomp,idt,ix,icgt,icgs,icgf,cmgs,cmgl,
-     &          radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-            endif
-            if(IDT.eq.3) then
-              call CPYCASTI(icomp,idt,ix,icgt,icgs,icgf,cmgs,cmgl,
-     &          radc,conc,ipf,iphas,pf,pwr,bvolt,ier)
-            endif
+            call CPYCASTI(icomp,idt,ix,icgtX,icgsX,icgfX,cmgsX,cmglX,
+     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
           else
-            if(IDT.eq.1) then
-              call CPYCASIJ(icomp,1,IX,IX-1,ier)
-            endif
-            if(IDT.eq.2) then
-              call CPYCASIJ(icomp,2,IX,IX-1,ier)
-            endif
-            if(IDT.eq.3) then
-              call CPYCASIJ(icomp,3,IX,IX-1,ier)
-            endif
+            call CPYCASIJ(icomp,IDT,IX,IX-1,ier)
           endif
  300    continue
- 400  continue
+      ENDIF
 
+C Loop back if more than one day type requested
+      IF(IALL.EQ.1)THEN
+        IDT=IDT+1
+        IGB=0
+        IF(IDT.LE.NBDAYTYPE)GOTO 113
+      ENDIF
       return
       end
 
 C ********************* CDCASGN *********************
 C CDCASGN - copy/ delete casual gain data.
 C  ICOMP zone number
-C  ICD - copy (=1) delete (=2) flag
+C  ICD - copy (=2) delete (=1) flag
 
       subroutine CDCASGN(ICOMP,ICD)
 #include "building.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
+      INTEGER IX,IDT,IDTT
 
 C Electrical data flag and elctrical data.
-      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
-     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
-     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
+      COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
+     &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
+      INTEGER NEL,IPF,IPHAS
+      REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
 
       character lodlabel*6,h*72,VERT(3*MC)*35
-      dimension IVERT(3*MC),ITEMP(3*MC)
+      dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
 
-C Set up menu of current definitions.
-      ILEN=NCAS1+NCAS2+NCAS3
+C Choose day type to delete/copy period from
+      IX=1
+      IF(ICD.EQ.1)THEN
+        call edisp(iuout,'Choose daytype to delete period from')
+        CALL EPICKS(IX,KSTR,' ',
+     &  'Choose day type to delete period from',12,NBDAYTYPE,CALENTAG,
+     &  'Choose daytype to delete period from',IER,1)
+      ELSEIF(ICD.EQ.2)THEN
+        call edisp(iuout,'Choose daytype to copy period from')
+        CALL EPICKS(IX,KSTR,' ',
+     &  'Choose day type to copy period from',12,NBDAYTYPE,CALENTAG,
+     &  'Choose daytype to copy period from',IER,1)
+      ENDIF
 
-C Loop through the items until the page to be displayed.
-C Build up text strings for the menu. 
-
-C Weekday loop.
+      IDT=kstr(1)
       M=0
-      DO 10 L=1,NCAS1
+      ILEN=NCAS(IDT)
+      DO 10 L=1,NCAS(IDT)
         M=M+1
-        if(ICGT1(L).gt.0)then
-          WRITE(VERT(M),303)ICGS1(L),ICGF1(L),
-     &        lodlabel(icomp,ICGT1(L)),' W  ',CMGS1(L),CMGL1(L)
+        if(ICGT(IDT,L).gt.0)then
+          WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
+     &        lodlabel(icomp,ICGT(IDT,L)),' W  ',CMGS(IDT,L),CMGL(IDT,L)
   303     FORMAT('Wkd ',2i4,1x,2a,2f6.0)
-        elseif(ICGT1(L).eq.-1)then
-          jicgt=iabs(ICGT1(L))
-          WRITE(VERT(M),303)ICGS1(L),ICGF1(L),
-     &        lodlabel(icomp,jicgt),' m2p',CMGS1(L),CMGL1(L)
+        elseif(ICGT(IDT,L).eq.-1)then
+          jicgt=iabs(ICGT(IDT,L))
+          WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
+     &        lodlabel(icomp,jicgt),' m2p',CMGS(IDT,L),CMGL(IDT,L)
         else
-          jicgt=iabs(ICGT1(L))
-          WRITE(VERT(M),303)ICGS1(L),ICGF1(L),
-     &        lodlabel(icomp,jicgt),' Wm2',CMGS1(L),CMGL1(L)
+          jicgt=iabs(ICGT(IDT,L))
+          WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
+     &        lodlabel(icomp,jicgt),' Wm2',CMGS(IDT,L),CMGL(IDT,L)
         endif
  10   continue
 
-C Saturday loop.
-      DO 20 L=1,NCAS2
-        M=M+1
-        if(ICGT2(L).gt.0)then
-          WRITE(VERT(M),313)ICGS2(L),ICGF2(L),
-     &        lodlabel(icomp,ICGT2(L)),' W  ',CMGS2(L),CMGL2(L)
-  313     FORMAT('Sat ',2i4,1x,2a,2f6.0)
-        elseif(ICGT2(L).eq.-1)then
-          jicgt=iabs(ICGT2(L))
-          WRITE(VERT(M),313)ICGS2(L),ICGF2(L),
-     &        lodlabel(icomp,jicgt),' m2p',CMGS2(L),CMGL2(L)
-        else
-          jicgt=iabs(ICGT2(L))
-          WRITE(VERT(M),313)ICGS2(L),ICGF2(L),
-     &        lodlabel(icomp,jicgt),' Wm2',CMGS2(L),CMGL2(L)
-        endif
- 20   continue
-
-C Sunday loop.
-      DO 30 L=1,NCAS3
-        M=M+1
-        if(ICGT3(L).gt.0)then
-          WRITE(VERT(M),323)ICGS3(L),ICGF3(L),
-     &        lodlabel(icomp,ICGT3(L)),' W  ',CMGS3(L),CMGL3(L)
-  323     FORMAT('Sun ',2i4,1x,2a,2f6.0)
-        elseif(ICGT3(L).eq.-1)then
-          jicgt=iabs(ICGT3(L))
-          WRITE(VERT(M),323)ICGS3(L),ICGF3(L),
-     &        lodlabel(icomp,jicgt),' m2p',CMGS3(L),CMGL3(L)
-        else
-          jicgt=iabs(ICGT3(L))
-          WRITE(VERT(M),323)ICGS3(L),ICGF3(L),
-     &        lodlabel(icomp,jicgt),' Wm2',CMGS3(L),CMGL3(L)
-        endif
- 30   continue
-
-C To delete period(s) redisplay the menu and allow user to indicate
-C which one, then collapse the period list.
-      if (ICD.eq.1) then
+      IF(ICD.EQ.1)THEN
         H(1)='One or more of the periods may be deleted (removed).'
         call EPICKS(ILEN,IVERT,' ','Casual gain period(s) to delete:',
      &         35,M,VERT,'Casual gain period to delete',IER,1)
@@ -4894,27 +4507,10 @@ C which one, then collapse the period list.
 C Delete items in IVERT array. Sort IVERT first.
         if (ILEN.gt.0) then
           KFLAG=-1
-          call SORTI(IVERT,ITEMP,3*MC,KFLAG)
+          call SORTI(IVERT,ITEMP,MC,KFLAG)
           do 100 IJ=1,ILEN
             ICGP=IVERT(IJ)
-            if (ICGP.gt.(NCAS1+NCAS2)) then
-
-C Sunday casual gain selected.
-              ICGP=ICGP-NCAS1-NCAS2
-              idaytype=3
-              call insdelcasper(icomp,idaytype,'d',icgp,ier)
-            elseif (ICGP.gt.NCAS1) then
-
-C Saturday casual gain selected.
-              ICGP=ICGP-NCAS1
-              idaytype=2
-              call insdelcasper(icomp,idaytype,'d',icgp,ier)
-            else
-
-C Weekday casual gain selected. Delet point ICGP.
-              idaytype=1
-              call insdelcasper(icomp,idaytype,'d',icgp,ier)
-            endif
+            call insdelcasper(icomp,IDT,'d',icgp,ier)
             M=M-1
  100      continue
         endif
@@ -4923,66 +4519,38 @@ C Weekday casual gain selected. Delet point ICGP.
 C Copy periods.
         h(1)='All the casual gains associated with a specified day type'
         h(2)='can be copied to another day type.'
-        call EASKABCD('Copy casual gains:',' ','Weekdays->Saturdays',
-     &     'Weekdays->Sundays','Saturdays->Sundays',
-     &     'cancel',IGU,2)
-        if (IGU.eq.1) then
-          do 210 IX=1,NCAS1
-            if (NCAS2.lt.MC) then
-              NCAS2=NCAS2+1
-              ICGT2(NCAS2)=ICGT1(IX)
-              ICGS2(NCAS2)=ICGS1(IX)
-              ICGF2(NCAS2)=ICGF1(IX)
-              CMGS2(NCAS2)=CMGS1(IX)
-              CMGL2(NCAS2)=CMGL1(IX)
-              RADC2(NCAS2)=RADC1(IX)
-              CONC2(NCAS2)=CONC1(IX)
-              pf2(NCAS2)=PF1(IX)
-              ipf2(NCAS2)=IPF1(IX)
-              pwr2(NCAS2)=PWR1(IX)
-              bvolt2(NCAS2)=BVOLT1(IX)
-              iphas2(NCAS2)=IPHAS1(IX)
-            endif
- 210      continue
-        elseif (IGU.eq.2) then
-          do 220 IX=1,NCAS1
-            if (NCAS3.lt.MC) then
-              NCAS3=NCAS3+1
-              ICGT3(NCAS3)=ICGT1(IX)
-              ICGS3(NCAS3)=ICGS1(IX)
-              ICGF3(NCAS3)=ICGF1(IX)
-              CMGS3(NCAS3)=CMGS1(IX)
-              CMGL3(NCAS3)=CMGL1(IX)
-              RADC3(NCAS3)=RADC1(IX)
-              CONC3(NCAS3)=CONC1(IX)
-              pf3(NCAS3)=PF1(IX)
-              ipf3(NCAS3)=IPF1(IX)
-              pwr3(NCAS3)=PWR1(IX)
-              bvolt3(NCAS3)=BVOLT1(IX)
-              iphas3(NCAS3)=IPHAS1(IX)
-            endif
- 220      continue
-        elseif (IGU.eq.3) then
-          do 230 IX=1,NCAS2
-            if (NCAS3.lt.MC) then
-              NCAS3=NCAS3+1
-              ICGT3(NCAS3)=ICGT2(IX)
-              ICGS3(NCAS3)=ICGS2(IX)
-              ICGF3(NCAS3)=ICGF2(IX)
-              CMGS3(NCAS3)=CMGS2(IX)
-              CMGL3(NCAS3)=CMGL2(IX)
-              RADC3(NCAS3)=RADC2(IX)
-              CONC3(NCAS3)=CONC2(IX)
-              pf3(NCAS3)=PF2(IX)
-              ipf3(NCAS3)=IPF2(IX)
-              pwr3(NCAS3)=PWR2(IX)
-              bvolt3(NCAS3)=BVOLT2(IX)
-              iphas3(NCAS3)=IPHAS2(IX)
-            endif
- 230      continue
-        endif
-      endif
-
+        CALL EPICKS(IX,KSTR,' ',
+     &  'Choose day type to copy period to',12,NBDAYTYPE,CALENTAG,
+     &  'Choose daytype to copy period to',IER,1)
+        IDTT=kstr(1)
+        M=NCAS(IDT)
+        IXX=M
+        call EPICKS(IXX,IVERT,' ','Casual gain period(s) to copy:',
+     &         35,M,VERT,'Casual gain period to copy',IER,1)
+        do 210 IX=1,NCAS(IDT)
+         if (NCAS(IDTT).lt.MC) then
+            ICOPY=0
+            DO 220 IJ=1,IXX
+              IF(IX.EQ.IVERT(IJ))ICOPY=1
+ 220        CONTINUE
+            IF(ICOPY.EQ.1)THEN
+              NCAS(IDTT)=NCAS(IDTT)+1
+              ICGT(IDTT,(NCAS(IDTT)))=ICGT(IDT,IX)
+              ICGS(IDTT,(NCAS(IDTT)))=ICGS(IDT,IX)
+              ICGF(IDTT,(NCAS(IDTT)))=ICGF(IDT,IX)
+              CMGS(IDTT,(NCAS(IDTT)))=CMGS(IDT,IX)
+              CMGL(IDTT,(NCAS(IDTT)))=CMGL(IDT,IX)
+              RADC(IDTT,(NCAS(IDTT)))=RADC(IDT,IX)
+              CONC(IDTT,(NCAS(IDTT)))=CONC(IDT,IX)
+              pf(IDTT,NCAS(IDTT))=PF(IDT,IX)
+              ipf(IDTT,NCAS(IDTT))=IPF(IDT,IX)
+              pwr(IDTT,NCAS(IDTT))=PWR(IDT,IX)
+              bvolt(IDTT,NCAS(IDTT))=BVOLT(IDT,IX)
+              iphas(IDTT,NCAS(IDTT))=IPHAS(IDT,IX)
+            ENDIF
+          endif
+ 210    continue
+      ENDIF
       return
       end
 
@@ -5014,39 +4582,48 @@ C << initial intent to guide later revisions?
       subroutine IMPORTZCASG(isource,idest,actcas,iwatt,sfile,itrc,
      &  act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
-      CHARACTER oprdesc*248,ctlstr*24
-      COMMON/P1/oprdesc,ctlstr
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P1C/oprdescc,ctlstrc
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
       common/elecflg/ielf(mcom)
-      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
-     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
-     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
+      COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
+     &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
+      INTEGER NEL,IPF,IPHAS
+      REAL PF,PWR,BVOLT
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
@@ -5058,22 +4635,17 @@ C Base area for zones.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
 
-C Storage arrays for weekdays, saturdays, sundays
-      common/P3WK/NCAS1C,ICGS1C(MC),ICGF1C(MC),CMGS1C(MC),CMGL1C(MC),
-     &          RADC1C(MC),CONC1C(MC)
-      common/P3SA/NCAS2C,ICGS2C(MC),ICGF2C(MC),CMGS2C(MC),CMGL2C(MC),
-     &          RADC2C(MC),CONC2C(MC)
-      common/P3SU/NCAS3C,ICGS3C(MC),ICGF3C(MC),CMGS3C(MC),CMGL3C(MC),
-     &          RADC3C(MC),CONC3C(MC)
-      COMMON/P3TYPEC/ICGT1C(MC),ICGT2C(MC),ICGT3C(MC)
+      COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
+     &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
+      COMMON/P3TYPENC/ICGTC(MDTY,MC)
+      INTEGER NCASC,ICGSC,ICGFC,ICGTC
+      REAL CMGSC,CMGLC,RADCC,CONCC
 
       common/elecflgc/ielfc
-      common/elp3wk/nel1c,pf1c(mc),ipf1c(mc),pwr1c(mc),bvolt1c(mc),
-     &  iphas1c(mc)
-      common/elp3sa/nel2c,pf2c(mc),ipf2c(mc),pwr2c(mc),bvolt2c(mc),
-     &  iphas2c(mc)
-      common/elp3su/nel3c,pf3c(mc),ipf3c(mc),pwr3c(mc),bvolt3c(mc),
-     &  iphas3c(mc)
+      COMMON/ELP3NC/NELC(MDTY),PFC(MDTY,MC),IPFC(MDTY,MC),PWRC(MDTY,MC),
+     &BVOLTC(MDTY,MC),IPHASC(MDTY,MC)
+      INTEGER NELC,IPFC,IPHASC
+      REAL PFC,PWRC,BVOLTC
 
       character*(*) sfile
       CHARACTER oprdescc*248,ctlstrc*24
@@ -5084,7 +4656,6 @@ C Storage arrays for weekdays, saturdays, sundays
       character zname*12,zdesc*64,fs*1,GFILE*72,iwatt*8
       character actcas*8
       character act*1   ! '-' normal, 's' silent
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL XST,unixok,dok,ok
 
 C Flags noting whether casual gain periods are currently sorted.
@@ -5099,11 +4670,11 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C It is assumed that a prior call to COPYAIRFL has been made
-C so there is no need to clear nac1 nac2 nac3.
+C so there is no need to clear nac
       IER=0
-      NCAS1=0
-      NCAS2=0
-      NCAS3=0
+      DO 600 IDTY=1,NBDAYTYPE
+        NCAS(IDTY)=0
+ 600  CONTINUE
       lodlabel(idest,1)='Occupt'
       lodlabel(idest,2)='Lights'
       lodlabel(idest,3)='Equipt'  
@@ -5157,69 +4728,31 @@ C if this is successful the instanciate the P2C and P2CTLC
         return
       endif
 
-C Copy the casual gains into the local arrays for weekdays, saturdays, sundays.
+C Copy the casual gains into the local arrays 
       ielfc=ielf(isource)
-      NCAS1C=NCAS1
-      nel1c=nel1
-      if(NCAS1.gt.0)then
-        do 10 L=1,NCAS1
-          ICGS1C(L)=ICGS1(L)
-          ICGF1C(L)=ICGF1(L)
-          CMGS1C(L)=CMGS1(L)
-          CMGL1C(L)=CMGL1(L)
-          RADC1C(L)=RADC1(L)
-          CONC1C(L)=CONC1(L)
-          ICGT1C(L)=ICGT1(L)
-          if(ielfc.ne.0)then
-            pf1c(L)=pf1(L)
-            ipf1c(L)=ipf1(L)
-            pwr1c(L)=pwr1(L)
-            bvolt1c(L)=bvolt1(L)
-            iphas1c(L)=iphas1(L)
-          endif
-  10    continue
-      endif
-      NCAS2C=NCAS2
-      nel2c=nel2
-      if(NCAS2.gt.0)then
-        do 20 L=1,NCAS2
-          ICGS2C(L)=ICGS2(L)
-          ICGF2C(L)=ICGF2(L)
-          CMGS2C(L)=CMGS2(L)
-          CMGL2C(L)=CMGL2(L)
-          RADC2C(L)=RADC2(L)
-          CONC2C(L)=CONC2(L)
-          ICGT2C(L)=ICGT2(L)
-          if(ielfc.ne.0)then
-            pf2c(L)=pf2(L)
-            ipf2c(L)=ipf2(L)
-            pwr2c(L)=pwr2(L)
-            bvolt2c(L)=bvolt2(L)
-            iphas2c(L)=iphas2(L)
-          endif
-  20    continue
-      endif
-      NCAS3C=NCAS3
-      nel3c=nel3
-      if(NCAS3.gt.0)then
-        do 30 L=1,NCAS3
-          ICGS3C(L)=ICGS3(L)
-          ICGF3C(L)=ICGF3(L)
-          CMGS3C(L)=CMGS3(L)
-          CMGL3C(L)=CMGL3(L)
-          RADC3C(L)=RADC3(L)
-          CONC3C(L)=CONC3(L)
-          ICGT3C(L)=ICGT3(L)
-          if(ielfc.ne.0)then
-            pf3c(L)=pf3(L)
-            ipf3c(L)=ipf3(L)
-            pwr3c(L)=pwr3(L)
-            bvolt3c(L)=bvolt3(L)
-            iphas3c(L)=iphas3(L)
-          endif
-  30    continue
-      endif
-      oprdescc=oprdesc
+      DO 601 IDTY=1,NBDAYTYPE
+        nelc(idty)=nel(IDTY)
+        NCASC(idty)=NCAS(IDTY)
+        if(NCAS(IDTY).gt.0)then
+          do 10 L=1,NCAS(IDTY)
+            ICGSC(IDTY,L)=ICGS(IDTY,L)
+            ICGFC(IDTY,L)=ICGF(IDTY,L)
+            CMGSC(IDTY,L)=CMGS(IDTY,L)
+            CMGLC(IDTY,L)=CMGL(IDTY,L)
+            RADCC(IDTY,L)=RADC(IDTY,L)
+            CONCC(IDTY,L)=CONC(IDTY,L)
+            ICGTC(IDTY,L)=ICGT(IDTY,L)
+            if(ielfc.ne.0)then
+              pfc(IDTY,L)=pf(IDTY,L)
+              ipfc(IDTY,L)=ipf(IDTY,L)
+              pwrc(IDTY,L)=pwr(IDTY,L)
+              bvoltc(IDTY,L)=bvolt(IDTY,L)
+              iphasc(IDTY,L)=iphas(IDTY,L)
+            endif
+  10      continue
+        endif
+ 601  CONTINUE
+      oprdescc=oprdesc(isource)
 
 C Scan in the destination operations file, if it does not exist
 C then clear casual gain data structure and create a new file.
@@ -5266,13 +4799,15 @@ C initial setup is done for these topics.
         THI(idest)=100.
         TUP(idest)=0.
         TLO(idest)=0.
-        ctlstr='no control of air flow  '
-        NAC1=0
-        NAC2=0
-        NAC3=0
+        ctlstr(idest,1)='no control of air flow  '
+        ctlstr(idest,2)='no control of air flow  '
+        ctlstr(idest,3)='no control of air flow  '
+        DO 400 IDTY=1,NBDAYTYPE
+          NAC(IDTY)=0
+ 400    CONTINUE
 
-C And any new file will be in the sorted format.
-        ip3ver=1
+C New file will be in sorted format with multiple day types allowed
+        ip3ver(idest)=2
       endif
 
 C Copy the local array data into the common blocks overwriting
@@ -5304,81 +4839,33 @@ C then we do not know the ratio set to 1.0 and inform user.
       endif
       if(actcas(1:7).eq.'allcas ')then
         ielf(idest)=ielfc
-        NCAS1=NCAS1C
-        nel1=nel1c
-        if(NCAS1C.gt.0)then
-          do 11 L=1,NCAS1C
-            ICGS1(L)=ICGS1C(L)
-            ICGF1(L)=ICGF1C(L)
-            if(ICGT1C(L).lt.0)then
-              CMGS1(L)=CMGS1C(L)
-              CMGL1(L)=CMGL1C(L)
-            else
-              CMGS1(L)=CMGS1C(L)/ratioarea
-              CMGL1(L)=CMGL1C(L)/ratioarea
-            endif
-            RADC1(L)=RADC1C(L)
-            CONC1(L)=CONC1C(L)
-            ICGT1(L)=ICGT1C(L)
-            if(ielfc.ne.0)then
-              pf1(L)=pf1c(L)
-              ipf1(L)=ipf1c(L)
-              pwr1(L)=pwr1c(L)
-              bvolt1(L)=bvolt1c(L)
-              iphas1(L)=iphas1c(L)
-            endif
-  11      continue
-        endif
-        NCAS2=NCAS2C
-        nel2=nel2c
-        if(NCAS2C.gt.0)then
-          do 21 L=1,NCAS2C
-            ICGS2(L)=ICGS2C(L)
-            ICGF2(L)=ICGF2C(L)
-            if(ICGT2C(L).lt.0)then
-              CMGS2(L)=CMGS2C(L)
-              CMGL2(L)=CMGL2C(L)
-            else
-              CMGS2(L)=CMGS2C(L)/ratioarea
-              CMGL2(L)=CMGL2C(L)/ratioarea
-            endif
-            RADC2(L)=RADC2C(L)
-            CONC2(L)=CONC2C(L)
-            ICGT2(L)=ICGT2C(L)
-            if(ielfc.ne.0)then
-              pf2(L)=pf2c(L)
-              ipf2(L)=ipf2c(L)
-              pwr2(L)=pwr2c(L)
-              bvolt2(L)=bvolt2c(L)
-              iphas2(L)=iphas2c(L)
-            endif
-  21      continue
-        endif
-        NCAS3=NCAS3C
-        nel3=nel3c
-        if(NCAS3C.gt.0)then
-          do 31 L=1,NCAS3C
-            ICGS3(L)=ICGS3C(L)
-            ICGF3(L)=ICGF3C(L)
-            if(ICGT3C(L).lt.0)then
-              CMGS3(L)=CMGS3C(L)
-              CMGL3(L)=CMGL3C(L)
-            else
-              CMGS3(L)=CMGS3C(L)/ratioarea
-              CMGL3(L)=CMGL3C(L)/ratioarea
-            endif
-            RADC3(L)=RADC3C(L)
-            CONC3(L)=CONC3C(L)
-            ICGT3(L)=ICGT3C(L)
-            if(ielfc.ne.0)then
-              pf3(L)=pf3c(L)
-              ipf3(L)=ipf3c(L)
-              pwr3(L)=pwr3c(L)
-              bvolt3(L)=bvolt3c(L)
-              iphas3(L)=iphas3c(L)
-            endif
-  31      continue
-        endif
+        DO 602 IDTY=1,NBDAYTYPE
+          NCAS(IDTY)=NCASC(IDTY)
+          nel(IDTY)=nelc(IDTY)
+          if(NCASC(idty).gt.0)then
+            do 11 L=1,NCASC(IDTY)
+              ICGS(IDTY,L)=ICGSC(IDTY,L)
+              ICGF(IDTY,L)=ICGFC(IDTY,L)
+              if(ICGTC(IDTY,L).lt.0)then
+                CMGS(IDTY,L)=CMGSC(IDTY,L)
+                CMGL(IDTY,L)=CMGLC(IDTY,L)
+              else
+                CMGS(IDTY,L)=CMGSC(IDTY,L)/ratioarea
+                CMGL(IDTY,L)=CMGLC(IDTY,L)/ratioarea
+              endif
+              RADC(IDTY,L)=RADCC(IDTY,L)
+              CONC(IDTY,L)=CONCC(IDTY,L)
+              ICGT(IDTY,L)=ICGTC(IDTY,L)
+              if(ielfc.ne.0)then
+                pf(IDTY,L)=pfc(IDTY,L)
+                ipf(IDTY,L)=ipfc(IDTY,L)
+                pwr(IDTY,L)=pwrc(IDTY,L)
+                bvolt(IDTY,L)=bvoltc(IDTY,L)
+                iphas(IDTY,L)=iphasc(IDTY,L)
+              endif
+  11        continue
+          endif
+ 602    CONTINUE
 
 C << could also offer this copy process when importing air flow
 C << patterns (however it would probably work better to have a
@@ -5386,16 +4873,16 @@ C << separate documentation string for air flows and casual gains.
         if(act(1:1).eq.'-')then
           call edisp(iuout,' ')
           call edisp(iuout,' Current operation notes:')
-          call edisp248(iuout,oprdesc,80)
+          call edisp248(iuout,oprdesc(idest),80)
           call edisp(iuout,' ')
           call edisp(iuout,' Source operation notes:')
           call edisp248(iuout,oprdescc,80)
           call edisp(iuout,' ')
           dok=.true.
           call askok('Use the source documentation?',' ',OK,DOK,0)
-          if(ok) oprdesc=oprdescc
+          if(ok) oprdesc(idest)=oprdescc
         elseif(act(1:1).eq.'s')then
-          oprdesc=oprdescc
+          oprdesc(idest)=oprdescc
         endif
 
         if(act(1:1).eq.'-')then
@@ -5404,7 +4891,7 @@ C << separate documentation string for air flows and casual gains.
           H(3)='facility to clarify what is happening in the zone.'
           CALL EASKS248(oprdescc,'Operations notes (please edit):',
      &      ' ',72,'base_case','operation notes',IER,3)
-          if(oprdescc(1:2).ne.'  ')oprdesc=oprdescc
+          if(oprdescc(1:2).ne.'  ')oprdesc(idest)=oprdescc
         endif
         if(isource.eq.0)then
           lodlabel(idest,1)=lodlabelc(1)
@@ -5463,18 +4950,23 @@ C ********************* PLTCASGN *********************
 C PLTCASGN - plot casual gain data.
 C  ICOMP zone number
 
-      subroutine PLTCASGN(ICOMP)
+      subroutine PLTCASGN(ICOMP,IDTYP)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
+      REAL CMGS,CMGL,RADC,CONC
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
@@ -5487,6 +4979,12 @@ C Descriptive label for a zone load or casual gain.
       character zname*12,zdesc*64
 
       logical COLOK
+      IDTY=IDTYP
+      IDAY=IDTY-1
+      JDAY=IDTY
+      KDAY=IDTY+1
+      IF(IDAY.LE.0)IDAY=NBDAYTYPE
+      IF(KDAY.GT.NBDAYTYPE)KDAY=1
 
 C Check if can draw in colour.
 C Use one colour for each gain type.
@@ -5500,19 +4998,19 @@ C Scan each days gains and calculate maximum gain.
       do 10 I=1,24
         CGNS=0.
         CGNL=0.
-        do 20 J=1,NCAS1
-          if (I.gt.ICGS1(J).and.I.le.ICGF1(J)) then
-            if (ICGT1(J).eq.-1) then
+        do 20 J=1,NCAS(IDAY)
+          if (I.gt.ICGS(IDAY,J).and.I.le.ICGF(IDAY,J)) then
+            if (ICGT(IDAY,J).eq.-1) then
 
 C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS1(J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS1(J))))*45.
-            elseif (ICGT1(J).lt.-1) then
-              CGNS=CGNS+CMGS1(J)*ZBASEA(ICOMP)
-              CGNL=CGNL+CMGL1(J)*ZBASEA(ICOMP)
+              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*95.
+              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*45.
+            elseif (ICGT(IDAY,J).lt.-1) then
+              CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
+              CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)
             else
-              CGNS=CGNS+CMGS1(J)
-              CGNL=CGNL+CMGL1(J)
+              CGNS=CGNS+CMGS(IDAY,J)
+              CGNL=CGNL+CMGL(IDAY,J)
             endif
           endif
  20     continue
@@ -5521,17 +5019,17 @@ C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
       do 12 I=1,24
         CGNS=0.
         CGNL=0.
-        do 22 J=1,NCAS2
-          if (I.gt.ICGS2(J).and.I.le.ICGF2(J)) then
-            if (ICGT2(J).eq.-1) then
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS2(J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS2(J))))*45.
-            elseif (ICGT2(J).lt.-1) then
-              CGNS=CGNS+CMGS2(J)*ZBASEA(ICOMP)
-              CGNL=CGNL+CMGL2(J)*ZBASEA(ICOMP)
+        do 22 J=1,NCAS(JDAY)
+          if (I.gt.ICGS(JDAY,J).and.I.le.ICGF(JDAY,J)) then
+            if (ICGT(JDAY,J).eq.-1) then
+              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*95.
+              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+            elseif (ICGT(JDAY,J).lt.-1) then
+              CGNS=CGNS+CMGS(JDAY,J)*ZBASEA(ICOMP)
+              CGNL=CGNL+CMGL(JDAY,J)*ZBASEA(ICOMP)
             else
-              CGNS=CGNS+CMGS2(J)
-              CGNL=CGNL+CMGL2(J)
+              CGNS=CGNS+CMGS(JDAY,J)
+              CGNL=CGNL+CMGL(JDAY,J)
             endif
           endif
  22     continue
@@ -5540,17 +5038,17 @@ C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
       do 14 I=1,24
         CGNS=0.
         CGNL=0.
-        do 24 J=1,NCAS3
-          if (I.gt.ICGS3(J).and.I.le.ICGF3(J)) then
-            if (ICGT3(J).eq.-1) then
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS3(J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS3(J))))*45.
-            elseif (ICGT3(J).lt.-1) then
-              CGNS=CGNS+CMGS3(J)*ZBASEA(ICOMP)
-              CGNL=CGNL+CMGL3(J)*ZBASEA(ICOMP)
+        do 24 J=1,NCAS(KDAY)
+          if (I.gt.ICGS(KDAY,J).and.I.le.ICGF(KDAY,J)) then
+            if (ICGT(KDAY,J).eq.-1) then
+              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*95.
+              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+            elseif (ICGT(KDAY,J).lt.-1) then
+              CGNS=CGNS+CMGS(KDAY,J)*ZBASEA(ICOMP)
+              CGNL=CGNL+CMGL(KDAY,J)*ZBASEA(ICOMP)
             else
-              CGNS=CGNS+CMGS3(J)
-              CGNL=CGNL+CMGL3(J)
+              CGNS=CGNS+CMGS(KDAY,J)
+              CGNL=CGNL+CMGL(KDAY,J)
             endif
           endif
  24     continue
@@ -5584,7 +5082,7 @@ C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
-C Scale and draw Weekday plot.
+C Scale and draw first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Gain (W)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
@@ -5592,7 +5090,7 @@ C Scale and draw Weekday plot.
       CALL etplot(plxmax,YMAX,1,0)
       CALL etplot(plxmin,YMAX,1,0)
 
-C Scale and draw Saturday plot.
+C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
       CALL etplot(plxmax,YMIN,0,0)
@@ -5600,7 +5098,7 @@ C Scale and draw Saturday plot.
       CALL etplot(plxmin,YMAX,1,0)
       CALL etplot(plxmin,YMIM,1,0)
 
-C Scale and draw Sunday plot.
+C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
       CALL etplot(plxmin,YMIN,0,0)
@@ -5608,7 +5106,7 @@ C Scale and draw Sunday plot.
       CALL etplot(plxmax,YMAX,1,0)
 
 C Scan gains and generate total curves.
-C Weekdays.
+C first day type requested
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
       do 50 IP=1,7
         do 55 IHR=1,25
@@ -5618,20 +5116,20 @@ C Weekdays.
           CGAINTL(IHR)=0.
  55     continue
  50   continue
-      do 60 IP=1,NCAS1
-        ICG=iabs(ICGT1(IP))
-        do 65 IHR=ICGS1(IP),ICGF1(IP)-1
-          if (ICGT1(IP).eq.-1) then
+      do 60 IP=1,NCAS(IDAY)
+        ICG=iabs(ICGT(IDAY,IP))
+        do 65 IHR=ICGS(IDAY,IP),ICGF(IDAY,IP)-1
+          if (ICGT(IDAY,IP).eq.-1) then
 
 C For case of m2/person CMGL is zero so use CMGS to get CGNL
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS1(IP))))*95.
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS1(IP))))*45.
-          elseif (ICGT1(IP).lt.-1) then
-            CGNS=CMGS1(IP)*ZBASEA(ICOMP)
-            CGNL=CMGL1(IP)*ZBASEA(ICOMP)
+            CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*95.
+            CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
+          elseif (ICGT(IDAY,IP).lt.-1) then
+            CGNS=CMGS(IDAY,IP)*ZBASEA(ICOMP)
+            CGNL=CMGL(IDAY,IP)*ZBASEA(ICOMP)
           else
-            CGNS=CMGS1(IP)
-            CGNL=CMGL1(IP)
+            CGNS=CMGS(IDAY,IP)
+            CGNL=CMGL(IDAY,IP)
           endif
           CGAINS(IHR+1,ICG)=CGAINS(IHR+1,ICG)+CGNS
           CGAINL(IHR+1,ICG)=CGAINL(IHR+1,ICG)+CGNL
@@ -5662,7 +5160,7 @@ C Plot curves.
         CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
  70   continue
 
-C Saturdays.
+C second day type requested
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
       do 150 IP=1,7
         do 155 IHR=1,25
@@ -5672,18 +5170,18 @@ C Saturdays.
           CGAINTL(IHR)=0.
  155    continue
  150  continue
-      do 160 IP=1,NCAS2
-        ICG=iabs(ICGT2(IP))
-        do 165 IHR=ICGS2(IP),ICGF2(IP)-1
-          if (ICGT2(IP).eq.-1) then
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS2(IP))))*95.
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS2(IP))))*45.
-          elseif (ICGT2(IP).lt.-1) then
-            CGNS=CMGS2(IP)*ZBASEA(ICOMP)
-            CGNL=CMGL2(IP)*ZBASEA(ICOMP)
+      do 160 IP=1,NCAS(JDAY)
+        ICG=iabs(ICGT(JDAY,IP))
+        do 165 IHR=ICGS(JDAY,IP),ICGF(JDAY,IP)-1
+          if (ICGT(JDAY,IP).eq.-1) then
+            CGNS=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*95.
+            CGNL=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*45.
+          elseif (ICGT(JDAY,IP).lt.-1) then
+            CGNS=CMGS(JDAY,IP)*ZBASEA(ICOMP)
+            CGNL=CMGL(JDAY,IP)*ZBASEA(ICOMP)
           else
-            CGNS=CMGS2(IP)
-            CGNL=CMGL2(IP)
+            CGNS=CMGS(JDAY,IP)
+            CGNL=CMGL(JDAY,IP)
           endif
           CGAINS(IHR+1,ICG)=CGAINS(IHR+1,ICG)+CGNS
           CGAINL(IHR+1,ICG)=CGAINL(IHR+1,ICG)+CGNL
@@ -5714,7 +5212,7 @@ C Plot curves.
         CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
  170  continue
 
-C Sundays.
+C third day type requested
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
       do 250 IP=1,7
         do 255 IHR=1,25
@@ -5724,18 +5222,18 @@ C Sundays.
           CGAINTL(IHR)=0.
  255    continue
  250  continue
-      do 260 IP=1,NCAS3
-        ICG=iabs(ICGT3(IP))
-        do 265 IHR=ICGS3(IP),ICGF3(IP)-1
-          if (ICGT3(IP).eq.-1) then
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS3(IP))))*95.
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS3(IP))))*45.
-          elseif (ICGT3(IP).lt.-1) then
-            CGNS=CMGS3(IP)*ZBASEA(ICOMP)
-            CGNL=CMGL3(IP)*ZBASEA(ICOMP)
+      do 260 IP=1,NCAS(KDAY)
+        ICG=iabs(ICGT(KDAY,IP))
+        do 265 IHR=ICGS(KDAY,IP),ICGF(KDAY,IP)-1
+          if (ICGT(KDAY,IP).eq.-1) then
+            CGNS=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*95.
+            CGNL=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*45.
+          elseif (ICGT(KDAY,IP).lt.-1) then
+            CGNS=CMGS(KDAY,IP)*ZBASEA(ICOMP)
+            CGNL=CMGL(KDAY,IP)*ZBASEA(ICOMP)
           else
-            CGNS=CMGS3(IP)
-            CGNL=CMGL3(IP)
+            CGNS=CMGS(KDAY,IP)
+            CGNL=CMGL(KDAY,IP)
           endif
           CGAINS(IHR+1,ICG)=CGAINS(IHR+1,ICG)+CGNS
           CGAINL(IHR+1,ICG)=CGAINL(IHR+1,ICG)+CGNL
@@ -5801,9 +5299,9 @@ C Title and labels.
  300  continue
 
       ioff=(ipltwd/3)
-      call wstxpt(igl+ioff,igt-10,'Weekday')
-      call wstxpt(iglsat+ioff,igt-10,'Saturday')
-      call wstxpt(iglsun+ioff,igt-10,'Sunday')
+      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
+      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
+      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
       call forceflush()
 
       return
@@ -5811,7 +5309,7 @@ C Title and labels.
 
 C ************* insdelcasper
 C Inscasper inserts or deletes a casual gain period into the
-C current P3 & elp3 data structure.
+C current P3N & elp3N data structure.
 C Parameters:
 C   icomp - current zone.
 C   idaytype - day type (weekdays = 1, sat = 2, sun = 3 
@@ -5822,30 +5320,26 @@ C   ier - set to 1 if there was a problem
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
+      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
-      common/elp3/nel1,pf1(mc),ipf1(mc),pwr1(mc),bvolt1(mc),iphas1(mc),
-     &            nel2,pf2(mc),ipf2(mc),pwr2(mc),bvolt2(mc),iphas2(mc),
-     &            nel3,pf3(mc),ipf3(mc),pwr3(mc),bvolt3(mc),iphas3(mc)
+      COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
+     &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
+      INTEGER NEL,IPF,IPHAS
+      REAL PF,PWR,BVOLT
 
       character act*1
+      IDTY=IDAYTYPE
 
 C For insertion set loop limites depending on the day type.
       if(act.eq.'i')then
-        if(idaytype.eq.1)then
-          ncas=ncas1+1
-        elseif(idaytype.eq.2)then
-          ncas=ncas2+1
-        elseif(idaytype.eq.3)then
-          ncas=ncas3+1
-        endif
-        if(ncas.gt.MC)then
+        NCASX=NCAS(IDTY)+1
+        if(ncasX.gt.MC)then
           call edisp(iuout,'No additional periods can be inserted.')
           ier=1
           return
@@ -5853,27 +5347,13 @@ C For insertion set loop limites depending on the day type.
 
 C Use the same 234 logic as found in insert.F to shift P3 and elp3
 C data up.
-        ix = ncas+1
+        ix = ncasX+1
  234    continue
         ix = ix-1
-        if(idaytype.eq.1)then
-          call CPYCASIJ(icomp,idaytype,ix,ix-1,ier)
-          ncas1=ncas1+1
-          if(ielf(icomp).ne.0)then
-            nel1=nel1+1
-          endif
-        elseif(idaytype.eq.2)then
-          call CPYCASIJ(icomp,idaytype,ix,ix-1,ier)
-          ncas2=ncas2+1
-          if(ielf(icomp).ne.0)then
-            nel2=nel2+1
-          endif
-        elseif(idaytype.eq.3)then
-          call CPYCASIJ(icomp,idaytype,ix,ix-1,ier)
-          ncas3=ncas3+1
-          if(ielf(icomp).ne.0)then
-            nel3=nel3+1
-          endif
+        call CPYCASIJ(icomp,IDTY,ix,ix-1,ier)
+        ncas(IDTY)=ncas(IDTY)+1
+        if(ielf(icomp).ne.0)then
+          nel(IDTY)=nel(IDTY)+1
         endif
         IF(IX.GT.idp+1)GOTO 234
         return
@@ -5883,66 +5363,44 @@ C Delete period idp by copying data above it down one and then
 C decrementing the appropraite counter. If the period to delete
 C is the last possible period then only decrement counters.
         if(idp.eq.MC)then
-          if(idaytype.eq.1)then
-            NCAS1=NCAS1-1
-            if(ielf(icomp).ne.0)nel1=nel1-1
-          elseif(idaytype.eq.2)then
-            NCAS2=NCAS2-1
-            if(ielf(icomp).ne.0)nel2=nel2-1
-          elseif(idaytype.eq.3)then
-            NCAS3=NCAS3-1
-            if(ielf(icomp).ne.0)nel3=nel3-1
-          endif
+          NCAS(IDTY)=NCAS(IDTY)-1
+          if(ielf(icomp).ne.0)nel(IDTY)=nel(IDTY)-1
         else
-          if(idaytype.eq.1)then
-            do 110 IX=IDP,NCAS1
-              call CPYCASIJ(icomp,idaytype,ix,ix+1,ier)
-              if(ielf(icomp).ne.0)then
-                nel1=nel1-1
-              endif
-  110       continue            
-            NCAS1=NCAS1-1
-          elseif(idaytype.eq.2)then
-            do 111 IX=IDP,NCAS2
-              call CPYCASIJ(icomp,idaytype,ix,ix+1,ier)
-              if(ielf(icomp).ne.0)then
-                nel2=nel2-1
-              endif
-  111       continue            
-            NCAS2=NCAS2-1
-          elseif(idaytype.eq.3)then
-            do 112 IX=IDP,NCAS3
-              call CPYCASIJ(icomp,idaytype,ix,ix+1,ier)
-              if(ielf(icomp).ne.0)then
-                nel3=nel3-1
-              endif
-  112       continue            
-            NCAS3=NCAS3-1
-          endif
+          do 110 IX=IDP,NCAS(IDTY)
+            call CPYCASIJ(icomp,IDTY,ix,ix+1,ier)
+            if(ielf(icomp).ne.0)then
+              nel(IDTY)=nel(IDTY)-1
+            endif
+  110     continue
+          NCAS(IDTY)=NCAS(IDTY)-1
         endif
         return
       endif
-
       end
 
 C ******* initcasday
-C initcasday does initial setup of a casual day type. It
-C is passed act = 'wk' for weekday, 'sa' for saturday and
-C 'su' for sunday.
-      subroutine initcasday(act,ier)
+C initcasday does initial setup of all casual day types. 
+      subroutine initcasday(ier)
 
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT,ILEN
+      REAL CMGS,CMGL,RADC,CONC
       common/loadlabel/lodlabel(mcom,7)
       dimension iper(24),iperf(24)
       CHARACTER*6 lodlabel
-      character hold*48,H*72,act*2
+      character hold*48,H*72,OUTS*12,LOUTS*24,VOUTS*50
       LOGICAL OK,DOK,XST,MODOPR,browse,clkok,unixok
 
       h(1)='For the current day type specify how many periods'
@@ -5960,15 +5418,19 @@ C 'su' for sunday.
       h(13)='with gains and 18h00 to 24h00 with no gains.'
       h(14)='Period start times should be in ascending order.'
 
-      if(act(1:2).eq.'wk')then
+      DO 600 IDTY=1,NBDAYTYPE  
         nbocper=1
         nbltper=1
         nbspper=1
         hold='                                    '
         write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
-        CALL EASKS(HOLD,' ',
-     &    'No. of Wweekday casual gain periods?',48,'  0  0  0  ',
-     &    'no. weekday CG periods',IER,14)
+        OUTS=CALENTAG(IDTY)
+        ILEN=LNBLNK(OUTS)
+        WRITE(VOUTS,'(3A)')'No. of ',OUTS(1:ILEN),
+     &  ' casual gain periods?'
+        CALL EASKS(HOLD,VOUTS,
+     &  'occupants / lights / equipment or small power',
+     &  24,'  0  0  0  ','no. CG periods',IER,14)
         K=0
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
@@ -5977,165 +5439,51 @@ C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
-        ipcount=NCAS1
+        ipcount=NCAS(IDTY)
         if(nbocper.gt.0)then
-          call initcasper(nbocper,iper,iperf,'i','weekday occupant')
+          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' occupant'
+          call initcasper(nbocper,iper,iperf,'i',LOUTS)
           do 71 ij=1,nbocper
             ipcount=ipcount+1
-            ICGS1(ipcount) = iper(ij)
-            ICGF1(ipcount) = iperf(ij)
-            CMGS1(ipcount) = 0.0
-            CMGL1(ipcount) = 0.0
-            RADC1(ipcount) = 0.5
-            CONC1(ipcount) = 0.5
-            ICGT1(ipcount) = 1
+            ICGS(IDTY,ipcount) = iper(ij)
+            ICGF(IDTY,ipcount) = iperf(ij)
+            CMGS(IDTY,ipcount) = 0.0
+            CMGL(IDTY,ipcount) = 0.0
+            RADC(IDTY,ipcount) = 0.5
+            CONC(IDTY,ipcount) = 0.5
+            ICGT(IDTY,ipcount) = 1
   71      continue
         endif
         if(nbltper.gt.0)then
-          call initcasper(nbltper,iper,iperf,'i','weekday lighting')
+          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' lighting'
+          call initcasper(nbltper,iper,iperf,'i',LOUTS)
           do 72 ij=1,nbltper
             ipcount=ipcount+1
-            ICGS1(ipcount) = iper(ij)
-            ICGF1(ipcount) = iperf(ij)
-            CMGS1(ipcount) = 0.0
-            CMGL1(ipcount) = 0.0
-            RADC1(ipcount) = 0.5
-            CONC1(ipcount) = 0.5
-            ICGT1(ipcount) = 2
+            ICGS(IDTY,ipcount) = iper(ij)
+            ICGF(IDTY,ipcount) = iperf(ij)
+            CMGS(IDTY,ipcount) = 0.0
+            CMGL(IDTY,ipcount) = 0.0
+            RADC(IDTY,ipcount) = 0.5
+            CONC(IDTY,ipcount) = 0.5
+            ICGT(IDTY,ipcount) = 2
   72      continue
         endif
         if(nbspper.gt.0)then
-          call initcasper(nbspper,iper,iperf,'i','weekday small power')
+          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' small power'
+          call initcasper(nbspper,iper,iperf,'i',LOUTS)
           do 73 ij=1,nbspper
             ipcount=ipcount+1
-            ICGS1(ipcount) = iper(ij)
-            ICGF1(ipcount) = iperf(ij)
-            CMGS1(ipcount) = 0.0
-            CMGL1(ipcount) = 0.0
-            RADC1(ipcount) = 0.4
-            CONC1(ipcount) = 0.6
-            ICGT1(ipcount) = 3
+            ICGS(IDTY,ipcount) = iper(ij)
+            ICGF(IDTY,ipcount) = iperf(ij)
+            CMGS(IDTY,ipcount) = 0.0
+            CMGL(IDTY,ipcount) = 0.0
+            RADC(IDTY,ipcount) = 0.4
+            CONC(IDTY,ipcount) = 0.6
+            ICGT(IDTY,ipcount) = 3
   73      continue
         endif
-        NCAS1=NCAS1+nbocper+nbltper+nbspper
-      elseif(act(1:2).eq.'sa')then
-        nbocper=1
-        nbltper=1
-        nbspper=1
-        hold='                                    '
-        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
-        CALL EASKS(HOLD,' ',
-     &    'No. of Saturday casual gain periods?',48,'  0  0  0   ',
-     &    'nb saturday ocup lts sm pwr periods',IER,14)
-        K=0
-        CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
-        CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
-        CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
-C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
-
-C Get user to specify the start times for occup periods if non-zero.
-C Increment ipcount for each new period.
-        ipcount=NCAS2
-        if(nbocper.gt.0)then
-          call initcasper(nbocper,iper,iperf,'i','saturday occupant')
-          do 74 ij=1,nbocper
-            ipcount=ipcount+1
-            ICGS2(ipcount) = iper(ij)
-            ICGF2(ipcount) = iperf(ij)
-            CMGS2(ipcount) = 0.0
-            CMGL2(ipcount) = 0.0
-            RADC2(ipcount) = 0.5
-            CONC2(ipcount) = 0.5
-            ICGT2(ipcount) = 1
-  74      continue
-        endif
-        if(nbltper.gt.0)then
-          call initcasper(nbltper,iper,iperf,'i','saturday lighting')
-          do 75 ij=1,nbltper
-            ipcount=ipcount+1
-            ICGS2(ipcount) = iper(ij)
-            ICGF2(ipcount) = iperf(ij)
-            CMGS2(ipcount) = 0.0
-            CMGL2(ipcount) = 0.0
-            RADC2(ipcount) = 0.5
-            CONC2(ipcount) = 0.5
-            ICGT2(ipcount) = 2
-  75      continue
-        endif
-        if(nbspper.gt.0)then
-          call initcasper(nbspper,iper,iperf,'i','saturday small power')
-          do 76 ij=1,nbspper
-            ipcount=ipcount+1
-            ICGS2(ipcount) = iper(ij)
-            ICGF2(ipcount) = iperf(ij)
-            CMGS2(ipcount) = 0.0
-            CMGL2(ipcount) = 0.0
-            RADC2(ipcount) = 0.4
-            CONC2(ipcount) = 0.6
-            ICGT2(ipcount) = 3
-  76      continue
-        endif
-        NCAS2=NCAS2+nbocper+nbltper+nbspper
-      elseif(act(1:2).eq.'su')then
-        nbocper=1
-        nbltper=1
-        nbspper=1
-        hold='                                    '
-        write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
-        CALL EASKS(HOLD,' ',
-     &    'No. ofs Sunday casual gain periods?',48,'  0  0  0   ',
-     &    'nb sunday ocup lts sm pwr periods',IER,14)
-        K=0
-        CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
-        CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
-        CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
-C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
-
-C Get user to specify the start times for occup periods if non-zero.
-C Increment ipcount for each new period.
-        ipcount=NCAS3
-        if(nbocper.gt.0)then
-          call initcasper(nbocper,iper,iperf,'i','sunday occupant')
-          do 77 ij=1,nbocper
-            ipcount=ipcount+1
-            ICGS3(ipcount) = iper(ij)
-            ICGF3(ipcount) = iperf(ij)
-            CMGS3(ipcount) = 0.0
-            CMGL3(ipcount) = 0.0
-            RADC3(ipcount) = 0.5
-            CONC3(ipcount) = 0.5
-            ICGT3(ipcount) = 1
-  77      continue
-        endif
-        if(nbltper.gt.0)then
-          call initcasper(nbltper,iper,iperf,'i','sunday lighting')
-          do 78 ij=1,nbltper
-            ipcount=ipcount+1
-            ICGS3(ipcount) = iper(ij)
-            ICGF3(ipcount) = iperf(ij)
-            CMGS3(ipcount) = 0.0
-            CMGL3(ipcount) = 0.0
-            RADC3(ipcount) = 0.5
-            CONC3(ipcount) = 0.5
-            ICGT3(ipcount) = 2
-  78      continue
-        endif
-        if(nbspper.gt.0)then
-          call initcasper(nbspper,iper,iperf,'i','sunday small power')
-          do 79 ij=1,nbspper
-            ipcount=ipcount+1
-            ICGS3(ipcount) = iper(ij)
-            ICGF3(ipcount) = iperf(ij)
-            CMGS3(ipcount) = 0.0
-            CMGL3(ipcount) = 0.0
-            RADC3(ipcount) = 0.4
-            CONC3(ipcount) = 0.6
-            ICGT3(ipcount) = 3
-  79      continue
-        endif
-        NCAS3=NCAS3+nbocper+nbltper+nbspper
-      endif
-C      write(6,*) 'ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
+        NCAS(IDTY)=NCAS(IDTY)+nbocper+nbltper+nbspper
+ 600  CONTINUE
       return
       end
 
@@ -6149,7 +5497,8 @@ C edit.
 C << Note change to real when casual gains data structure improves >>
       subroutine initcasper(nper,iper,iperf,act,label)
       common/pophelp/h(60)
-      character act*1,cstr*72,h*72,label*24,msg*72
+      character act*1,cstr*72,h*72,msg*72
+      character*(*) label
       dimension iper(24),iperf(24)
       real incr
 

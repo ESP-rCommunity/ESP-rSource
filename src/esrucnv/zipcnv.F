@@ -32,9 +32,15 @@ C system in the plane of the face in which the window is
 C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
@@ -59,7 +65,7 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
 
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
       CHARACTER OUTSTR*124,WORD*20,zname*12,zdesc*64,phrase*64
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,upgcfg,LCFGF
+      CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,LCNN*72,cfgroot*24
       character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

@@ -3431,9 +3431,6 @@ C----------------------------------------------------------------------
 #include "Hydrogen_MH_store.h"
 #include "chemical_properties.h"
 
-C External functions.     
-      integer lnblnk
-
 C Passed arguements
       integer iComponent        ! index of component in plant network
       real fTemperature         ! temperature inside cylinder (K)

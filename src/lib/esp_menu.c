@@ -238,7 +238,7 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
    question_local = g_strndup(msg1, (gsize) msg1_l);
-/* debug */ fprintf(stderr,"ask phrase %s\n",question_local);
+/* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
    aopt_l = bopt_l = copt_l = dopt_l = eopt_l = fopt_l = gopt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
@@ -364,6 +364,7 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           break;
        case GTK_RESPONSE_CANCEL:
        /*   fprintf(stderr,"Goodbye - %d %d was original choice\n", abc_pick,result); debug */
+          *ipick = -3;
           break;
        case GTK_RESPONSE_HELP:
        /*   fprintf(stderr,"Goodbye - %d %d help was requested\n", abc_pick,result); debug */
@@ -404,7 +405,7 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
    question_local = g_strndup(msg1, (gsize) msg1_l);
-/* debug */ fprintf(stderr,"ask phrase %s\n",question_local);
+/* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
    aopt_l = bopt_l = copt_l = dopt_l = eopt_l = fopt_l = gopt_l = 0;
    hopt_l = iopt_l = jopt_l = kopt_l = lopt_l = 0;
@@ -639,9 +640,9 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
 
-/* debug */ fprintf(stderr,"prompt lengths are %d %d\n",msg1_len,msg1_l);
+/* debug  fprintf(stderr,"prompt lengths are %d %d\n",msg1_len,msg1_l); */
    question_local = g_strndup(msg1, (gsize) msg1_l);
-/* debug */ fprintf(stderr,"ask phrase %s\n",question_local);
+/* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
    aopt_l = bopt_l = copt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
@@ -650,7 +651,7 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    bopt_local = g_strndup(bopt, (gsize) bopt_l);
    f_to_c_l(copt,&copt_len,&copt_l);
    copt_local = g_strndup(copt, (gsize) copt_l);
-/* debug */ fprintf(stderr,"non-blank lengths are %d %d %d\n",aopt_l,bopt_l,copt_l);
+/* debug  fprintf(stderr,"non-blank lengths are %d %d %d\n",aopt_l,bopt_l,copt_l); */
    
    abc_pick = (gint) *idef;	/* Set default abc_pick response to current default */
 
@@ -717,23 +718,23 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    switch (result)
       {
        case GTK_RESPONSE_OK:
-          fprintf(stderr,"Goodbye - %d was selected\n", abc_pick);
+       /*   fprintf(stderr,"Goodbye - %d was selected\n", abc_pick); */
           *ipick = (long int) abc_pick;
           break;
        case GTK_RESPONSE_CANCEL:
-          fprintf(stderr,"Goodbye - %d with original choice\n", abc_pick);
+       /*   fprintf(stderr,"Goodbye - %d with original choice\n", abc_pick); */
           *ipick = (long int) abc_pick;
           break;
        case GTK_RESPONSE_HELP:
-          fprintf(stderr,"Goodbye - %d help was selected\n", abc_pick);
+       /*   fprintf(stderr,"Goodbye - %d help was selected\n", abc_pick); */
           *ipick = -8;
           break;
        case 1:
-          fprintf(stderr,"Goodbye - %d default 1 was selected\n", abc_pick);
+       /*   fprintf(stderr,"Goodbye - %d default 1 was selected\n", abc_pick); */
           *ipick = 1;
           break;
        case 2:
-          fprintf(stderr,"Goodbye - %d default 2 was selected\n", abc_pick);
+       /*   fprintf(stderr,"Goodbye - %d default 2 was selected\n", abc_pick); */
           *ipick = 2;
           break;
        default:

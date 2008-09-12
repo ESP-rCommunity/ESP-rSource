@@ -30,11 +30,12 @@ C Plant component model coefficient generators:
 
 C  CMP01C 1 node (ISV=21) AC converging 2-leg junction
 C  CMP02C 1 node (ISV=21) AC  steam/spray humidifier 
-C  CMP03C 1 node (ISV=21) AC fan
+C  CMP03C 1 node (ISV=21) AC fan 
 C  CMP04C 1 node (ISV=21) AC cooling coil & flux control
 C  CMP05C 1 node (ISV=21) AC heating coil & flux control
 C  CMP06C 1 node (ISV=21) AC duct & condensation ?
 C  CMP07C 1 node (ISV=21) AC damper & flow ratio control
+C  CMP08C 1 node (ISV=21) AC flow diversion damper
 C  CMP09C 1 node (ISV=21) AC counterflow cooling coil & water
 C                        mass flow rate control (TRNSYS)
 C  CMP10C 1 node (ISV=21) AC counterflow cooling coil & water
@@ -42,7 +43,9 @@ C                        mass flow rate control
 C  CMP11C 1 node (ISV=21) AC counterflow heating coil & water
 C                        mass flow rate control
 C  CMP12C 2 node (ISV=21) AC plate heat exchanger
+C  CMP13C 2 node (ISV=21) AC generic heat exchanger model
 C  CMP14C 2 node (ISV>20) Cooling tower
+C  CMP15C 1 node (ISV=21) AC fan mass flow rate control
 C  CMP40C 3 node (ISV>19) AC counterflow cooling coil fed
 C                        by WCH system
 C  CMP41C 3 node (ISV>19) AC counterflow heating coil fed
@@ -465,6 +468,8 @@ C For the steam humidifier a conmstant effectiveness of 99% is assumed.
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
 
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
       COMMON/ATPRES/PATMOS
       COMMON/WBULBO/IOPT
 
@@ -518,16 +523,17 @@ C Establish condensation heat of water; assume present component temp.
 
          ELSEIF(IHMOD.EQ.2) then
 
-C Calculate the enthalpy at the current temp and moisture content.
-           g1=CONVAR(ICON1,3)/CONVAR(ICON1,2)
-           g2=(CONVAR(ICON1,3)+PCDATF(IPCOMP,1))/CONVAR(ICON1,2)
-           hv=PCDATF(IPCOMP,1)*2675.8
-           H1=ENTHP2(CONVAR(ICON1,1),G1)
-           H2=H1+HV
-           H12=ENTHP2(CONVAR(ICON1,1),G2)
- 
-C Establish the energy flux added  to the air stream.
-           Q=(H2-H12)*1000.*PCDATF(IPCOMP,1)
+C Calculate the enthalpy at the current temp and moisture content. 
+c           g1=CONVAR(ICON1,3)/CONVAR(ICON1,2)
+c           g2=(CONVAR(ICON1,3)+PCDATF(IPCOMP,1))/CONVAR(ICON1,2)
+C Assume steam is added at 100C and cools sensibly to the temperature of
+C the humidifier component.
+           Q=PCDATF(IPCOMP,1)*2010.*(100.-CSVF(IPCOMP,1))
+           
+C	   hv=PCDATF(IPCOMP,1)*2454.
+C           H1=ENTHP2(CONVAR(ICON1,1),G1)
+C           H2=H1+HV
+C           H12=ENTHP2(CONVAR(ICON1,1),G2)
          ENDIF
 
 C Calculate current component time-constant TC
@@ -637,7 +643,20 @@ C Check that DXR does not exceed availabe vapour rate
 C Store added water vapour rate future value for energy balance usage
          PCDATF(IPCOMP,1)=COUT(3)
          PCQF(INOD1)=Q
+	 
+C Establish the energy needed to produce the steam assuming and inlet
+C temperature of 10C (m*Hv)
+         IF(IHMOD.EQ.1)THEN
+	   QH=0.0
+	 ELSEIF(IHMOD.EQ.2)THEN
+	   QH=CDATA(IPCOMP,1)*((2256.7*1000.)+(4200.*90.))
+	 ENDIF
       END IF
+C Save plant additional output.      
+      napdat(IPCOMP)=3
+      PCAOUT(IPCOMP,1)=PCDATF(IPCOMP,1)
+      PCAOUT(IPCOMP,2)=QH
+      PCAOUT(IPCOMP,3)=Q
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -659,7 +678,8 @@ C Trace output
             WRITE(ITU,*) ' HEFF   = ',HEFF,' (-)'
             WRITE(ITU,*) ' XMAX   = ',XMAX,' (kg,v/kg,a)'
             WRITE(ITU,*) ' DXR    = ',DXR,' (kg,v/s)'
-            WRITE(ITU,*) ' Q   = ',Q,' (W)'           
+            WRITE(ITU,*) ' Q   = ',Q,' (W)'  
+            WRITE(ITU,*) ' QH   = ',QH,' (W)'           
             WRITE(ITU,*) ' CDATA  = ',CDATA(IPCOMP,1)
          END IF
          WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
@@ -696,6 +716,7 @@ C     CDATA: 1 Volume flow rate (m^3/s)
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -798,6 +819,11 @@ C Write the power consumption to the common block
          IEMODEL=1
          CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
          PWRQ=PQ
+
+C Pass power consumption to Site Utilities facility
+         fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = ABS(E)
+         call StorePltCompEnergyUse ( IPCOMP, fSUFuelEnergyUse )
+
 C Now Q is made up of all inefficiencies
          Q=E
 
@@ -1552,6 +1578,8 @@ c     cdata: mass flow fraction entering damper.
      &             pcntmp(mpcom)
       common/pcond/convar(mpcon,mconvr),icontp(mpcon),
      &             icondx(mpcom,mnodec,mpconc)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
 
@@ -1638,6 +1666,9 @@ c 2nd phase mass (ie. vapour) balance coefficients
          cout(2)=-pcondr(icon1)*fm
          cout(3)=0.
       end if
+C Save additional output.
+      napdat(ipcomp)=1
+      pcaout(ipcomp,1)=fm
 
 c Trace output
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
@@ -1669,6 +1700,201 @@ c Trace output
 
       return
       end
+
+c ******************** CMP08C ********************
+c
+c 'cmp08c' generates for plant component IPCOMP with plant db code 80 ie.
+c 1 node (ISV=21) AC  flow diversion damper.
+c The component alters the flow through the damper and diverts the 
+c balance of the flow into a divert connection. The component can operate
+c with any plant control loop which generates a value as an output and 
+c supercedes plant component CMP07C, which is retained to support legacy
+c applications.
+c
+c matrix equation coefficients COUT (in order: self-coupling, cross-
+c coupling, and present-time coefficients) for energy balance (ISTATS=1),
+c 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+c     adata: 1 Component total mass (kg)
+c            2 Mass weighted average specific heat (J/kgK)
+c            3 UA modulus (W/K)
+c            4 divert connection # (-) 
+c
+c     bdata: none
+c     cdata: mass flow fraction entering damper.
+
+      subroutine cmp08c(ipcomp,cout,istats)
+#include "plant.h"
+#include "building.h"
+
+      common/outin/iuout,iuin
+      common/tc/itc,icnt
+      common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      common/pctime/timsec
+      common/pctc/tc(mpcom)
+
+      common/pcequ/impexp,ratimp
+
+      common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
+      common/c10/npcon,ipc1(mpcon),ipn1(mpcon),ipct(mpcon),
+     &           ipc2(mpcon),ipn2(mpcon),pcondr(mpcon),pconsd(mpcon,2)
+      common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
+      common/pdbdt/adata(mpcom,madata),bdata(mpcom,mbdata)
+      common/pcval/csvf(mpnode,mpvar),csvp(mpnode,mpvar)
+      common/pcvar/pctf(mpcon),pcrf(mpcon),puaf(mpnode),pcqf(mpnode),
+     &             pcntmf(mpcom),
+     &             pctp(mpcon),pcrp(mpcon),puap(mpnode),pcqp(mpnode),
+     &             pcntmp(mpcom)
+      common/pcond/convar(mpcon,mconvr),icontp(mpcon),
+     &             icondx(mpcom,mnodec,mpconc)
+
+      COMMON/FFN/IFLWN,ICFFS(MPCON)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
+      
+      dimension tmdr(mpcom,2)
+
+      parameter (small=1.0e-15)
+      real      cout(mpcoe)
+      logical closea
+      character outs*124
+      
+      save tmdr
+
+c Trace output
+      if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
+     &   ITRACE(37).ne.0) write(itu,*) ' Entering subroutine CMP08C'
+
+c Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      icon1=icondx(ipcomp,1,1)
+      inod1=npcdat(ipcomp,9)
+      icon_aux=int(adata(ipcomp,4))
+      
+c Initialise the total mass diversion ratios associated with the primary and
+C secondary connections. 
+      if(int(tmdr(ipcomp,2)).eq.0)then
+        tmdr(ipcomp,1)=pcondr(icon1)+pcondr(icon_aux) 
+        tmdr(ipcomp,2)=1.
+      endif
+
+c Initialise mass flow fraction entering damper.
+      fm=cdata(ipcomp,1)
+
+      
+c Alter the corresponding flow through the second connection
+      if(icon_aux.gt.0.and.icon_aux.lt.npcon)then
+        pcondr(icon_aux)=tmdr(ipcomp,1)-pcondr(icon1)*fm
+      else
+        write(outs,*)'Error damper component ',ipcomp,
+     &  'auxilliary connection number ',icon_aux,' is invalid'
+        call edisp(iuout,outs)    
+      endif
+
+
+c In case a mass flow network is defined, 
+c reset 'fm' to 1.
+      if(iflwn.ne.0) fm=1.0
+
+c Generate coefficients for energy balance equation
+      if(istats.eq.1) then
+
+c First initialize UA modulus (for calculation of containment heat loss)
+         ua=adata(ipcomp,3)
+         call eclose(pcntmf(ipcomp),-99.00,0.001,closea)
+         if(closea) ua=0.
+
+c Establish heat capacity of component mass CM (J/K) and
+c fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
+         cm=adata(ipcomp,1)*adata(ipcomp,2)
+         c1=pcondr(icon1)*convar(icon1,2)*shtfld(1,convar(icon1,1))+
+     &      pcondr(icon1)*convar(icon1,3)*shtfld(2,convar(icon1,1))
+
+c Calculate current component time-constant TC
+         tc(ipcomp)=cm/amax1(small,(c1+ua))
+
+c Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+         if(impexp.eq.1) then
+            alpha=1.
+         else if(impexp.eq.2) then
+            alpha=ratimp
+         else if(impexp.eq.3) then
+            if(timsec.gt.0.63*tc(ipcomp)) then
+               alpha=1.
+            else
+               alpha=ratimp
+            end if
+         else if(impexp.eq.4) then
+            cm=0.
+            alpha=1.
+         end if
+
+c Establish matrix equation self- and cross-coupling coefficients
+         cout(1)=alpha*(-c1-ua)-cm/timsec
+         cout(2)=alpha*c1
+
+c and then present-time coefficient (ie. right hand side)
+         cout(3)=((1.-alpha)*(pcrp(icon1)+puap(inod1))
+     &              -cm/timsec)*csvp(inod1,1)
+     &             +(1.-alpha)*(-pcrp(icon1))*pctp(icon1)
+     &             -alpha*ua*pcntmf(ipcomp)
+     &             -(1.-alpha)*puap(inod1)*pcntmp(ipcomp)
+
+c Store "environment" variables future values
+         puaf(inod1)=ua
+         pctf(icon1)=convar(icon1,1)
+         pcrf(icon1)=c1
+
+c 1st phase mass (ie. dry air) balance coefficients
+      else if(istats.eq.2) then
+         cout(1)=1.
+         cout(2)=-pcondr(icon1)*fm
+         cout(3)=0.
+
+c 2nd phase mass (ie. vapour) balance coefficients
+      else if(istats.eq.3) then
+         cout(1)=1.
+         cout(2)=-pcondr(icon1)*fm
+         cout(3)=0.
+      end if
+      
+      napdat(IPCOMP)=1
+      pcaout(IPCOMP,1)=FM
+
+c Trace output
+      if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
+     &   itrace(37).ne.0) then
+         write(itu,*) ' Component      ',ipcomp,':'
+         write(itu,*) ' 1 node (ISV=21) A/C damper'
+         write(itu,*) ' Matrix node(s) ',inod1
+         write(itu,*) ' Connection(s)  ',icon1
+	 write(itu,*) ' Auxilliary     ',icon_aux
+         if(istats.eq.1) then
+            write(itu,*) ' CM     = ',cm,' (J/K)'
+            write(itu,*) ' C1     = ',c1,' (W/K)'
+            write(itu,*) ' TC     = ',TC(IPCOMP),' (s)'
+            write(itu,*) ' ALPHA  = ',alpha,' (-)'
+            write(itu,*) ' UA     = ',ua,' (W/K)'
+            write(itu,*) ' PCNTMF = ',pcntmf(ipcomp),' (C)'
+            write(itu,*) ' CDATA  = ',cdata(ipcomp,1)
+	    write(itu,*) ' TMDR   = ',tmdr(ipcomp,1)
+	    write(itu,*) ' pcondr = ',pcondr(icon_aux)
+         end if
+         write(itu,*) ' Matrix coefficients for ISTATS = ',istats
+         nitms=3
+         write(itu,*) (cout(i),i=1,nitms)
+         if(itu.eq.iuout) then
+            ix1=(ipcomp/4)*4
+            if(ix1.eq.ipcomp.or.ipcomp.eq.npcomp) call epagew
+         end if
+      end if
+
+      if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
+     &   ITRACE(37).ne.0) write(itu,*) ' Leaving subroutine CMP08C'
+
+      return
+      end        
 
 C ******************** CMP09C ********************
 
@@ -2717,6 +2943,276 @@ C Trace output
       RETURN
       END
 
+C ******************** CMP13C ********************
+
+C CMP13C generates for plant component IPCOMP with plant db code 130 ie.
+C 2 node (ISV=21) basic AC heat exchanger model. The model can be used to
+C represent any air-air heat exchanger and also has a moisture recovery 
+C capability (i.e. used when modelling thermal wheels).
+
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: 1 Component total mass (kg)
+C            2 Mass weighted average specific heat (J/kgK)
+C            3 Heat loss modulus (W/K)
+C     BDATA: 1 Heat exchanger effectiveness (%)
+C            2 Moisture recovery (%)
+C     CDATA: none
+
+      SUBROUTINE CMP13C(IPCOMP,COUT,ISTATS)
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SHOUT/ICOUT
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/Pctime/TIMSEC
+      COMMON/PTIME/PTIMEP,PTIMEF
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+
+      COMMON/ATPRES/PATMOS
+      COMMON/WRNOFF/IWMOFF
+
+      PARAMETER (SMALL=1.0E-15)
+      REAL      COUT(MPCOE),w_vap_recov
+      logical closea,closeb,closec
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP13C'
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      ICON1=ICONDX(IPCOMP,1,1)
+      ICON2=ICONDX(IPCOMP,2,1)
+      INOD1=NPCDAT(IPCOMP,9)
+      INOD2=NPCDAT(IPCOMP,9)+1
+      w_vap_recov=0.0
+
+C Generate coefficients for energy balance equation
+      IF(ISTATS.EQ.1) THEN
+
+C First initialize UA modulus (for calculation of containment heat loss)
+         UA=ADATA(IPCOMP,3)
+         call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
+         IF(closea) UA=0.
+
+
+C First mark air 1st phase mass flow rates for iteration
+         ICSV(INOD1,2)=1
+         CSVI(INOD1,2)=CSVF(INOD1,2)
+         ICSV(INOD2,2)=1
+         CSVI(INOD2,2)=CSVF(INOD2,2)
+         call eclose(CONVAR(ICON1,2),0.00,0.0001,closeb)
+         call eclose(CONVAR(ICON2,2),0.00,0.0001,closec)
+         IF(closeb.or.closec) THEN
+            Q=0.
+         ELSE
+
+C Start with establishing air velocities VA1 and VA2, and air
+C temperatures TA1 and TA2.
+C Then determine air thermal resistances RA1 and RA2
+            TA1=CONVAR(ICON1,1)
+            TA2=CONVAR(ICON2,1)
+
+C Mark current air temperatures and second phase flow of node 2 for iteration
+            ICSV(INOD1,1)=1
+            CSVI(INOD1,1)=CSVF(INOD1,1)
+            ICSV(INOD2,1)=1
+            CSVI(INOD2,1)=CSVF(INOD2,1)
+	    ICSV(INOD2,3)=1
+            CSVI(INOD2,3)=CSVF(INOD2,3)
+            AMFR1=PCONDR(ICON1)*CONVAR(ICON1,2)
+            AMFR2=PCONDR(ICON2)*CONVAR(ICON2,2)
+
+C Calculate heat flow capacities CAIR1 and CAIR2 (W/K)
+            CAIR1=AMFR1*SHTFLD(1,TA1)+
+     &            PCONDR(ICON1)*CONVAR(ICON1,3)*SHTFLD(2,TA1)
+            CAIR2=AMFR2*SHTFLD(1,TA2)+
+     &            PCONDR(ICON2)*CONVAR(ICON2,3)*SHTFLD(2,TA2)
+
+C Establish CMIN and CMAX (W/K)
+            CMIN=AMIN1(CAIR1,CAIR2)
+            CMAX=AMAX1(CAIR1,CAIR2)
+
+C Establish  EFF-ectiveness
+            CRAT=CMIN/CMAX
+            EFF=BDATA(IPCOMP,1)/100.
+
+C And finally calcultate heat transferred between air streams Q
+            Q=CMIN*EFF*(TA2-TA1)
+         ENDIF
+
+C Set the moisture recovery
+         w_vap_recov=BDATA(IPCOMP,2)/100.0
+	  
+C Establish heat capacity of component mass CM (J/K), and
+C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
+         CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)/2
+         C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(1,CONVAR(ICON1,1))+
+     &      PCONDR(ICON1)*CONVAR(ICON1,3)*SHTFLD(2,CONVAR(ICON1,1))
+         C2=PCONDR(ICON2)*CONVAR(ICON2,2)*SHTFLD(1,CONVAR(ICON2,1))+
+     &      PCONDR(ICON2)*CONVAR(ICON2,3)*SHTFLD(2,CONVAR(ICON2,1))
+     
+C Calculate current component time-constant TC (max. of solid and water)
+         TC(IPCOMP)=AMAX1(
+     &        CM/AMAX1(SMALL,(C1+Q/(TA2-TA1))),
+     &        CM/AMAX1(SMALL,(C2+Q/(TA2-TA1))))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+         IF(IMPEXP.EQ.1) THEN
+            ALPHA=1.
+         ELSE IF(IMPEXP.EQ.2) THEN
+            ALPHA=RATIMP
+         ELSE IF(IMPEXP.EQ.3) THEN
+            IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+               ALPHA=1.
+            ELSE
+               ALPHA=RATIMP
+            END IF
+         ELSE IF(IMPEXP.EQ.4) THEN
+            CM=0.
+            ALPHA=1.
+         END IF
+
+C Establish matrix equation self-coupling coefficients,
+         COUT(1)=ALPHA*(-C1-UA/2)-CM/TIMSEC
+         COUT(2)=ALPHA*(-C2-UA/2)-CM/TIMSEC
+C then matrix equation cross-coupling coefficients,
+         COUT(3)=ALPHA*C1
+         COUT(4)=ALPHA*C2
+C and then present-time coefficients (ie. right hand sides)
+         COUT(5)=((1.-ALPHA)*(C1+UA/2)-CM/TIMSEC)*CSVP(INOD1,1)
+     &           +(1.-ALPHA)*(-PCRP(ICON1))*PCTP(ICON1)
+     &           -ALPHA*UA/2*PCNTMF(IPCOMP)
+     &           -(1.-ALPHA)*PUAP(INOD1)/2*PCNTMP(IPCOMP)
+     &           -ALPHA*Q-(1.-ALPHA)*PCQP(INOD1)
+         COUT(6)=((1.-ALPHA)*(C2+UA/2)-CM/TIMSEC)*CSVP(INOD2,1)
+     &           +(1.-ALPHA)*(-PCRP(ICON2))*PCTP(ICON2)
+     &           -ALPHA*UA/2*PCNTMF(IPCOMP)
+     &           -(1.-ALPHA)*PUAP(INOD2)/2*PCNTMP(IPCOMP)
+     &           +ALPHA*Q+(1.-ALPHA)*PCQP(INOD1)
+
+C Store "environment" variables future values
+         PUAF(INOD1)=UA
+         PUAF(INOD2)=UA
+         PCTF(ICON1)=CONVAR(ICON1,1)
+         PCTF(ICON2)=CONVAR(ICON2,1)
+         PCRF(ICON1)=C1
+         PCRF(ICON2)=C2
+         PCQF(INOD1)=Q
+         PCQF(INOD2)=Q
+
+C 1st phase mass (ie. dry air) balance coefficients
+      ELSE IF(ISTATS.EQ.2) THEN
+         COUT(1)=1.
+         COUT(2)=1.
+         COUT(3)=-PCONDR(ICON1)
+         COUT(4)=-PCONDR(ICON2)
+         COUT(5)=0.
+         COUT(6)=0.
+
+C 2nd phase mass (ie. vapour) balance coefficients
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=1.
+         COUT(3)=-PCONDR(ICON1)
+         COUT(4)=-PCONDR(ICON2)
+         COUT(5)=w_vap_recov*(PCONDR(ICON2)*CONVAR(ICON2,3)-
+     &PCONDR(ICON1)*CONVAR(ICON1,3))
+         COUT(6)=-w_vap_recov*(PCONDR(ICON2)*CONVAR(ICON2,3)-
+     &PCONDR(ICON1)*CONVAR(ICON1,3))
+
+	 
+C Check whether air temperature is below dew point TDEW, if so
+C issue warning that condensation is likely to occur
+C First establish TDW1 and TDW2; assume present moisture contents
+         IF(CONVAR(ICON1,2).LT.CONVAR(ICON1,3)) THEN
+           TDW1=CSVF(INOD1,1)-1.
+         ELSE
+           TDW1=DEWPT(CONVAR(ICON1,3)/AMAX1(SMALL,CONVAR(ICON1,2)),
+     &PATMOS)
+         ENDIF            
+         IF(CONVAR(ICON2,2).LT.CONVAR(ICON2,3)) THEN
+           TDW1=CSVF(INOD2,1)-1.
+         ELSE
+           TDW2=DEWPT(CONVAR(ICON2,3)/AMAX1(SMALL,CONVAR(ICON2,2)),
+     &PATMOS)
+         ENDIF
+
+         IF(CSVF(INOD1,1).LT.TDW1.OR.CSVF(INOD2,1).LT.TDW2.and.
+     &      iwmoff.eq.0) THEN
+            CALL DAYCLK(IDYP,PTIMEF,ICOUT)
+            WRITE(ICOUT,*) ' CMP13C: heat exchanger ',IPCOMP,' is',
+     &                     ' likely to experience internal condensation'
+            WRITE(ICOUT,*) '         Tcur1 = ',CSVF(INOD1,1),' C',
+     &                     '         Tcur2 = ',CSVF(INOD2,1),' C'
+            WRITE(ICOUT,*) '         Tdew1 = ',TDW1,' C',
+     &                     '         Tdew2 = ',TDW2,' C'
+         END IF
+      END IF
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 2 node (ISV=21) Basic heat exchanger'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1,INOD2
+         WRITE(ITU,*) ' Connection(s)  ',ICON1,ICON2
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM     = ',CM,' (J/K)'
+            WRITE(ITU,*) ' C1     = ',C1,' (W/K)'
+            WRITE(ITU,*) ' C2     = ',C2,' (W/K)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' UA     = ',UA,' (W/K)'
+            WRITE(ITU,*) ' PCNTMF = ',PCNTMF(IPCOMP),' (C)'
+            WRITE(ITU,*) ' TA1    = ',TA1,' (C)'
+            WRITE(ITU,*) ' TA2    = ',TA2,' (C)'
+            WRITE(ITU,*) ' Cmin   = ',CMIN,' (W/K) '
+            WRITE(ITU,*) ' Cmax   = ',CMAX,' (W/K) '
+            WRITE(ITU,*) ' Cratio = ',CRAT,' (-) '
+            WRITE(ITU,*) ' EFF    = ',EFF,' (-) '
+            WRITE(ITU,*) ' Q      = ',Q,' (W)'
+	    WRITE(ITU,*) ' Vapour recovered    = ',
+     &       w_vap_recov*(PCONDR(ICON2)*CONVAR(ICON2,3)-
+     &PCONDR(ICON1)*CONVAR(ICON1,3)),' (-) '
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=6
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP13C'
+
+      RETURN
+      END
+
 C ******************** CMP14C ********************
 C CMP14C generates for plant component IPCOMP with plant db code 120 ie.
 C 2 node (ISV>21) 2-node  Cooling tower model.
@@ -3015,6 +3511,231 @@ C Trace output
 
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP14C'
+
+      RETURN
+      END
+
+C ******************** CMP15C ********************
+
+C CMP03C generates for plant component IPCOMP with plant db code 30 ie.
+C 1 node (ISV=21) AC  fan with mass flow control.
+C matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+C     ADATA: 1 Component total mass (kg)
+C            2 Mass weighted average specific heat (J/kgK)
+C            3 UA modulus (W/K)
+C     BDATA: 1 Rated absorbed power (W)
+C            2 Rated mass flow rate (kg/s)
+C            3 Overall efficiency (-)
+C     CDATA: 1 Mass flow rate (kg/s)
+
+      SUBROUTINE CMP15C(IPCOMP,COUT,ISTATS)
+#include "plant.h"
+#include "building.h"
+#include "net_flow.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/Pctime/TIMSEC
+      COMMON/PTIME/PTIMEP,PTIMEF
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+
+C Electrical details for specified plant components
+      common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
+     &BVOLTP(mpcom),IPHP(mpcom)
+
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
+
+      COMMON/FFN/IFLWN,ICFFS(MPCON)
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
+     &              RESID(MNOD),SAFLW(MNOD)
+
+      DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
+
+      PARAMETER (SMALL=1.0E-15)
+      REAL      COUT(MPCOE)
+      character outs*124
+      logical closea,closeb
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP15C'
+
+C Check control data for relevant balance type
+      IF(ISTATS.EQ.2.AND.CDATA(IPCOMP,1).LT.0.) THEN
+         CALL DAYCLK(IDYP,PTIMEF,IUOUT)
+         WRITE(outs,*) ' CMP15C: invalid control data for component ',
+     &                  IPCOMP,' : ',CDATA(IPCOMP,1)
+         call edisp(iuout,outs)
+         call edisp(iuout,' CMP15C: unresolvable error.')
+         call epwait
+         call epagend
+         STOP
+      END IF
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      ICON1=ICONDX(IPCOMP,1,1)
+      INOD1=NPCDAT(IPCOMP,9)
+
+C Generate coefficients for energy balance equation
+      IF(ISTATS.EQ.1) THEN
+
+C First initialize UA modulus (for calculation of containment heat loss)
+         UA=ADATA(IPCOMP,3)
+         call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
+         IF(closea) UA=0.
+
+C Establish absorbed power E based on current air flow rate which might
+C have been calculated by mfs
+C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
+         IF(IFLWN.NE.0) THEN
+            ICNN=ICFFS(ICON1)
+            E=real((FLW1(ICNN)+FLW2(ICNN))*
+     &             (PRES(NODNE(ICNN))-PRES(NODPS(ICNN))))/
+     &                  (BDATA(IPCOMP,3)*RHOFLD(1,CSVF(INOD1,1)))
+         ELSE
+
+C Trap possible division by zero.
+            call eclose(BDATA(IPCOMP,2),0.00,0.001,closea)
+            call eclose(RHOFLD(1,CSVF(INOD1,1)),0.00,0.001,closeb)
+            if(closea.or.closeb)then
+
+C << what should E be if demoninator was going to be zero? >>
+              E=0.0
+            else
+              E=(CSVF(INOD1,2)/BDATA(IPCOMP,2))**3*BDATA(IPCOMP,1)
+            endif
+         END IF
+
+C Write the power consumption to the common block
+         PWRP(IPCOMP)=-ABS(E)
+         IEMODEL=1
+         CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
+         PWRQ=PQ
+C Now Q is made up of all inefficiencies
+         Q=E
+
+C Establish heat capacity of component mass CM (J/K) and
+C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
+         CM=ADATA(IPCOMP,1)*ADATA(IPCOMP,2)
+         C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(1,CONVAR(ICON1,1))+
+     &      PCONDR(ICON1)*CONVAR(ICON1,3)*SHTFLD(2,CONVAR(ICON1,1))
+
+C Calculate current component time-constant TC
+         TC(IPCOMP)=CM/AMAX1(SMALL,(C1+UA))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+         IF(IMPEXP.EQ.1) THEN
+            ALPHA=1.
+         ELSE IF(IMPEXP.EQ.2) THEN
+            ALPHA=RATIMP
+         ELSE IF(IMPEXP.EQ.3) THEN
+            IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+               ALPHA=1.
+            ELSE
+               ALPHA=RATIMP
+            END IF
+         ELSE IF(IMPEXP.EQ.4) THEN
+            CM=0.
+            ALPHA=1.
+         END IF
+
+C Establish matrix equation self- and cross-coupling coefficients
+         COUT(1)=ALPHA*(-C1-UA)-CM/TIMSEC
+         COUT(2)=ALPHA*C1
+C and then present-time coefficient (ie. right hand side)
+         COUT(3)=((1.-ALPHA)*(PCRP(ICON1)+PUAP(INOD1))
+     &              -CM/TIMSEC)*CSVP(INOD1,1)
+     &             +(1.-ALPHA)*(-PCRP(ICON1))*PCTP(ICON1)
+     &             -ALPHA*UA*PCNTMF(IPCOMP)
+     &             -(1.-ALPHA)*PUAP(INOD1)*PCNTMP(IPCOMP)
+     &             -ALPHA*Q-(1.-ALPHA)*PCQP(INOD1)
+
+C Store "environment" variables future values
+         PUAF(INOD1)=UA
+         PCTF(ICON1)=CONVAR(ICON1,1)
+         PCRF(ICON1)=C1
+         PCQF(INOD1)=Q
+
+C 1st phase mass (ie. dry air) balance coefficients
+C Note that if fluid mass flow solver active, source of mass zeroised
+      ELSE IF(ISTATS.EQ.2) THEN
+         COUT(1)=1.
+         IF(IFLWN.EQ.0) THEN
+            COUT(2)=0.
+            COUT(3)=CDATA(IPCOMP,1)
+         ELSE
+            COUT(2)=-PCONDR(ICON1)
+            COUT(3)=0.
+         END IF
+
+C 2nd phase mass (ie. vapour) balance coefficients
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=-PCONDR(ICON1)
+         COUT(3)=0.
+      END IF
+
+C  Store additional output for the results
+      napdat(ipcomp)=3
+      pcaout(ipcomp,1)=pwrp(ipcomp)
+      pcaout(ipcomp,2)=pwrq
+      pcaout(ipcomp,3)=Q
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 1 node (ISV=21) AC  fan mass flow control'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM     = ',CM,' (J/K)'
+            WRITE(ITU,*) ' C1     = ',C1,' (W/K)'
+            WRITE(ITU,*) ' TC     = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA  = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' UA     = ',UA,' (W/K)'
+            WRITE(ITU,*) ' PCNTMF = ',PCNTMF(IPCOMP),' (C)'
+            WRITE(ITU,*) ' Q      = ',Q,' (W)'
+            WRITE(ITU,*) ' E      = ',E,' (W)'
+            WRITE(ITU,*) ' E,cum. = ',E*TIMSEC,' (J)'
+         ELSE IF(ISTATS.EQ.2) THEN
+            WRITE(ITU,*) ' CDATA  = ',CDATA(IPCOMP,1)
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=3
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP15C'
 
       RETURN
       END

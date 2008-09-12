@@ -236,6 +236,8 @@ C IEX = 0 write i,j,k headings
 C      arr-the array, arrtit - its title up to 10 characters
        subroutine scan3di(arr,arrtit,IEX)
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
@@ -268,7 +270,8 @@ C      arr-the array, arrtit - its title up to 10 characters
  200  format(//,40x,a,/,39x,12('*'),/)
  210  format(/,2x,33('*-'),7x,' i =',i3,' ',7x,33('-*'))
  220  format(3x,'j = ',i3,11i12)
- 230  format(1x,i3,1p12e12.4)
+ 230  format(1x,i3,12e12.4)
+C 230  format(1x,i3,1p12e12.4)  ! syntax check does not like the 1p
 
       return
       end

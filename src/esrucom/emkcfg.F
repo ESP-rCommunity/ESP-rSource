@@ -44,12 +44,19 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
-      PARAMETER (MSTMC=1,MSGAL=1)
+#include "roam.h"
+      PARAMETER (MSTMC=20,MSGAL=40)
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -131,7 +138,7 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -142,6 +149,8 @@ C Primary energy and emissions conversions.
 
 C IPV description.
       common/IPVF/lipvdatf
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C Project demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -226,8 +235,8 @@ C Bidirectional raw optical data file.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
@@ -236,7 +245,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
@@ -248,7 +257,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15, indxcmt*24
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -267,6 +276,7 @@ C An array of mass flow nodes for writing.
       dimension namen(mcom)
 
       character act*1  ! a '-' is normal use, a 's' is silent
+      character ipvaction*3  ! to instruct mkipv to do it within cfg file
 
       dimension iav(60)
 
@@ -282,6 +292,7 @@ C Control for writing out multi-climate sim presets
       integer itrunc  ! to indicate there is a continuation line.
       integer ipos    ! position in flow node string buffer
       integer lnouts   ! location at end of flow node string buffer
+      integer lnipv   ! location at end of the external IPV file
       
       IUF=IFIL+1
       IER=0
@@ -299,8 +310,14 @@ C code in edcfg to trap updates following on from other modifications).
         h(1)='The version 3 format merges the contents of the zone '
         h(2)='utility files into the configuration file. Models '
         h(3)='created or updated after 1996 should use the V3. '
+        h(4)=' '
+        h(5)='The version 4 format includes within the cfg file '
+        h(6)='some data held in separate files. '
+        h(7)=' '
+        h(8)='Both V3 and V4 files can support newer format '
+        h(9)='geometry and obstruction data. '
         CALL EASKAB(' Configuration file loaded was in old format.',
-     &    ' save in:','current format','cancel',IW,3)
+     &    ' save in:','current format','cancel',IW,9)
         if(IW.EQ.2)then
           call edisp(iuout,'Configuration not being updated.')
           return
@@ -308,7 +325,7 @@ C code in edcfg to trap updates following on from other modifications).
 
 C If no model root name has been set, make from configuration file.
 C If filename > 4 char it might have a .cfg attached.
-          icfgv=3
+          icfgv=3     ! if upgrading do it to this intermediate version
           lcfgr=lnblnk(LCFGF)
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
@@ -398,8 +415,13 @@ C Comment for configuration index
       IF(INDCFG.EQ.2)  indxcmt=' # Plant only'
       IF(INDCFG.EQ.3) indxcmt=' # Building & Plant'
 
-C Begin writing the file.
-      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=3) '* CONFIGURATION3.0'
+C Begin writing the file with version number in the header.
+      if(icfgv.eq.3)then
+        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=3) '* CONFIGURATION3.0'
+      elseif(icfgv.eq.4)then
+        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=3) '* CONFIGURATION4.0'
+      endif
+
       WRITE(IFCFG,30,IOSTAT=IOS,ERR=3) LCFGF(1:lnblnk(LCFGF))
       call dstamp(dstmp)
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*date ',dstmp,
@@ -441,8 +463,16 @@ C Write databases related to this model.
      &      LFMAT(1:lnblnk(LFMAT))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',
+
+C Optical database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',
      &      LOPTDB(1:lnblnk(LOPTDB))
+      elseif(ipathoptdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
@@ -473,8 +503,15 @@ C Multiyear climate database
      &    cMY_climate_db_name(1:lnblnk(cMY_climate_db_name))
       endif
 
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
+C Plant database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
+      elseif(ipathpcdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
+     &      LPCDB(1:lnblnk(LPCDB))
+      endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then
@@ -572,18 +609,18 @@ C Write initial view info if other than default.
      &    VIEWMI(1),VIEWMI(2),VIEWMI(3),ANGI
       endif
 
-C Write out calendar if nbdaytype is non-zero.
-      if(nbdaytype.gt.0)then
+C Write out calendar if defined
+      IF(CALENAME(1:7).NE.'UNKNOWN')THEN
         write(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*calename ',
      &    calename(1:lnblnk(calename))
         do 443 icd = 1,nbdaytype
           lct=lnblnk(calentag(icd))
           lctn=lnblnk(calendayname(icd))
           write(IFCFG,'(5a,i3)',IOSTAT=IOS,ERR=2) '*calentag ',
-     &      calentag(icd)(1:lct),',',calendayname(icd)(1:lctn),',',
+     &      calentag(icd)(1:lct),', ',calendayname(icd)(1:lctn),', ',
      &      nbcaldays(icd)
  443    continue
-        write(IFCFG,'(a)',IOSTAT=IOS,ERR=2) '*list'
+        write(IFCFG,'(a,1I4)',IOSTAT=IOS,ERR=2) '*list ',nbdaytype
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
@@ -593,6 +630,11 @@ C Write out calendar if nbdaytype is non-zero.
         end do
         write(IFCFG,'(a)',IOSTAT=IOS,ERR=2) '*end_list'
       endif
+
+C Changing orientation enabled if present
+      IF(IROAM.EQ.1)THEN
+         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*roaming ',LROAM
+      ENDIF
 
 C Write uncertainty analysis library file if known.
       if(lnblnk(LUALF).eq.0)then
@@ -616,6 +658,11 @@ C If SBEM compliance checking is active write name and path of SBEM db
       IF(ISBEM.EQ.1)THEN
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',DSBEM
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',LASBEM
+      ENDIF
+      IF(INOTI.EQ.1)THEN
+        WRITE(OUTS,'(2A)')'*not # UK NCM notional model (10% thermal',
+     &  ' bridges included in all exterior surfaces)'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
       ENDIF
 
 C Write images if any.
@@ -646,14 +693,29 @@ C Write primary energy conversions if these have been set.
      &    phwco2,phwnox,phwsox,' # dhw emissions CO2,NOX,SOX'
       endif
 
-C IPV file, if known.
-      if(lnblnk(lipvdatf).eq.0)then
-        continue
-      elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-        continue
+C Depending on the version of the configuration file write out the
+C name of the IPV file or write the data internal to the cfg file.
+      lnipv=lnblnk(lipvdatf)
+      if(icfgv.lt.4)then
+        if(lnipv.eq.0)then
+          continue
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          continue
+        else
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ipv  ',
+     &      lipvdatf(1:lnipv)
+        endif
       else
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ipv  ',
-     &    lipvdatf(1:lnblnk(lipvdatf))
+      
+C Use call to write into the cfg file itself and then clear name of
+C the external IPV file (also notify the user they can remove it).
+        ipvaction='cfg'
+        call mkipvdat(ifcfg,LCFGF,ipvaction)
+	if(lnipv.gt.0)then
+	  call usrmsg('You can removed the IPV file if you want',
+     &      lipvdatf,'W')
+	  lipvdatf=' '  ! ensure old file name is no longer referenced
+        endif
       endif
 
 C Building demands file, if known.
@@ -736,11 +798,11 @@ C write out ltdfa instead.
      &      LTDF(1:lnblnk(LTDF))
         endif
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
-     &    '# tdf item id, item type, <related zone> '
+     &    '# tdf item id, item type, <related zone>, <related surface> '
         if(ITEMSTD.gt.0)then
           do 27 L=1,ITEMSTD
-            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L)
-  29        FORMAT(A12,1X,A8,1X,A16)
+            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+  29        FORMAT(A12,1X,A8,1X,2A16)
   27      continue
         endif
         WRITE(IFCFG,'(A)')'* end tdf'
@@ -812,15 +874,24 @@ C Flag for end of multi-simuation sets.
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)'*end_sps'
       endif
 
-C Annual ipv report (if included).
-      if(lnblnk(lipvdatf).eq.0)then
-        continue
-      elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-        continue
+C Annual ipv report (if description included within cfg or external file).
+      if(icfgv.lt.4)then
+        if(lnipv.eq.0)then
+          continue
+        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+          continue
+        else
+          if(sipvres(1:2).ne.'  '.and.sipvres(1:7).ne.'UNKNOWN')then
+            WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*intipv ',
+     &        sipvres(1:lnblnk(sipvres))
+          endif
+        endif
       else
-        if(sipvres(1:2).ne.'  '.and.sipvres(1:7).ne.'UNKNOWN')then
-          WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*intipv ',
-     &      sipvres(1:lnblnk(sipvres))
+        if(nipvassmt.gt.0)then
+          if(sipvres(1:2).ne.'  '.and.sipvres(1:7).ne.'UNKNOWN')then
+            WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2)'*intipv ',
+     &        sipvres(1:lnblnk(sipvres))
+          endif
         endif
       endif
 
@@ -1123,6 +1194,9 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1233,6 +1307,7 @@ C ****** Scan and report current mis-matches.
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

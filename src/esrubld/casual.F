@@ -49,13 +49,13 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
-#include "hvac_parameters.h"
-#include "hvac_common.h"
 
       common/tc/itc,icnt
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/outin/iuout,iuin
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
       common/btime/btimep,btimef
 
@@ -71,7 +71,7 @@ C Zone lighting and power commons.
       COMMON/ENETZONE/PEZON(MCOM,MGTY),QEZON(MCOM,MGTY)
 
 C Zone casual gain control data.
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -86,11 +86,8 @@ C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
-
-C Variables for weekdays, and weekends.
-C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -123,8 +120,8 @@ C           l = 5 -> radiative feaction (0->1)
 C           l = 6 -> convective fraction (0->1)
 C
 C - Alex Feb. 20 2004
-      COMMON/CasCou/iNumb_Gain_coupling(MCOM,3),
-     &     Coupling_gain_info(MCOM,3,MC,6)
+      COMMON/CasCou/iNumb_Gain_coupling(MCOM,MDTY),
+     &     Coupling_gain_info(MCOM,MDTY,MC,6)
 
 C Common to store casual/radiative gain injections 
 C on a zone-by-zone basis. Note: the latent gain 
@@ -163,6 +160,7 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
 
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+
 C Using the TOTOCCUP as a shortcut for the total occupant gains
 C that are taken from the activities temporal data
       REAL QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN,QTOTEQUIP,QEQUIPCASC
@@ -175,8 +173,8 @@ C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION QLATN(2),VAL(MBITS+2)
 
-      CHARACTER outs*124, lodlabel*6
-      character*10 wkd1, wkd2, DSTR
+      CHARACTER outs*124, lodlabel*6, DSTR*10
+      character*10 wkd1, wkd2
       logical traceok,closea
       REAL PEZON,QEZON
 
@@ -197,9 +195,11 @@ C     return the occupant-driven electrical load (excluding
 C     HVAC equipment)
       INTEGER occupant_load 
       PARAMETER (occupant_load = 3)
+
 C.....Named constnats for timerows
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2) 
+      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
 C Trace output ?
       traceok = .true.
@@ -252,6 +252,16 @@ C Recover definitions for current day type and timeF.
         btimef=btimef-24.
         ID=IDWF
       endif
+*      IF(NBDAYTYPE.LE.3)THEN
+*        IDAY=1
+*        DSTR='weekdays'
+*        IF(ID.EQ.6)THEN
+*          IDAY=2
+*          DSTR='saturdays'
+*        ELSEIF(ID.EQ.7)THEN
+*          IDAY=3
+*          DSTR='sundays'
+*        ENDIF
       DSTR='       '
       if(ID.EQ.IDWE1)then
         DSTR=wkd1
@@ -263,9 +273,19 @@ C Recover definitions for current day type and timeF.
         DSTR='weekdays'
         IDAY=1
       endif
+*      ELSE
+      IF(NBDAYTYPE.gt.3)THEN !
+        IDAY=IDYP
+        IF(IHRF.EQ.1)IDAY=IDYP+1
+        IF(IDAY.GT.365)IDAY=IDAY-365
+        IDTY=ICALENDER(IDAY)
+
+C use IDAY in place of IDTY to keep to nomenclature in this subroutine
+        IDAY=IDTY
+      ENDIF
  
 C Set controlled gain type.
-      icgctl(icomp)=ncgtc(icomp,iday)
+      icgctl(icomp)=ncgtc(icomp,IDAY)
  
 C Determine future timerow casual gain multiplier CGCTL(2,ICGCTL(ICOMP)).
       if (ICGC(ICOMP).EQ.1) then
@@ -380,19 +400,36 @@ C latent equipment gains)
 C Convective and radiative equipment gains are the same at the moment (50%)
         QEQUIPCASR=QEQUIPCASC
         QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100)        
-        
-C Read information from ncm file. Need type of light and then a value
+
+C If UK notional model then assign the value of 3.75 W/m2 per 100 lux. Number of
+C lux and fraction of opearation is still taken from then activity database (tdf).
+C Additional logic in the future should separate office/storage/industrial spaces
+C for notional building that take 3.75 W/m2 per 100 lux from "other spaces 
+C that take 5.2 W/m2 per 100 lux.
+        IF(INOTI.EQ.1)THEN
+          QTOTLIGHT=3.75*(ITMAR(1,6)/100)*VAL(ISD+1)*ZBASEA(ICOMP)
+        ELSE
+
+C Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
-        CALL SBEMPR(IER)
-        CALL RSBEM
-        ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
+          IF(ILIGHTUSER(ICOMP).EQ.0)THEN
+            ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
 
 C Multiply lux levels (static tdf) with fraction schedule and 
 C a value (in w/m2/100lux) taken from ncm file for the specific type of lights
-        QTOTLIGHT=
-     &  PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
-     &  ZBASEA(ICOMP)
+C In PDRL(ILIGHT_IN_SBEMDB,2): 2 means commercial buildings. This is the only option
+C for the moment. Additional logic required to add: 1, which is for industrial
+C buildings in the NCM methodology
+            QTOTLIGHT=
+     &      PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
+     &      ZBASEA(ICOMP)
+          ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
+C User specfied gains from lights (NCM purposes)
+            QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)
+          ENDIF
+        ENDIF
+        
 C Convective and radiative equipment gains are the same at the moment (50%)
         QLIGHTCASC=QTOTLIGHT/2
         QLIGHTCASR=QLIGHTCASC
@@ -587,15 +624,6 @@ C
       QCASR(2)= QCASR(2) + Total_elec_RAD_gain
      &                   + fPltZone_Radiant_Gain(iComp,iFuture)    !(W)
 
-C Check if additional casual gains have been imposed by idealized
-C HVAC components...
-      if ( bIdealHVACZoneGain(icomp) ) then
-C ...and append gains to appropriate arrays.
-        QCASC(2) = QCASC(2) + fIdealHVACZoneConGain ( icomp )
-        QCASR(2) = QCASR(2) + fIdealHVACZoneRadGain ( icomp )
-        QLATN(2) = QLATN(2) + fIdealHVACZoneLatGain ( icomp )
-      endif
-
 C STORE future row casual and radiant gains
       Cas_Con_dat(icomp) = QCASC(2)  ! W
       Cas_Rad_dat(icomp) = QCASR(2)  ! W
@@ -699,6 +727,8 @@ C  FRAC : fraction of casual gain (returned value)
 
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/BTIME/BTIMEP,BTIMEF
 
@@ -719,13 +749,16 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Zone casual gain control data.
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -773,7 +806,6 @@ C Illuminance database.
       DIMENSION XPL(MV),YPL(MV),ZPL(MV)
       CHARACTER*25 CSTR
       character outs*124,doit*124,outstr*124,cfgroot*24
-      character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
 
       character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
       character zname*12,zdesc*64
@@ -1890,7 +1922,7 @@ C ok, as not enough info.
         elum1=selum(N,IMINN)
 
 
-C Read in the current zone operation file so that common/P3 will
+C Read in the current zone operation file so that common/P3N will
 C be correct for access by HUNTA. HUNTA returns ACTIVE=1. if there
 C is a matching casual gain to control at the current timestep.
         IUNITA=IFIL+22
@@ -2150,53 +2182,41 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 #include "building.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     & RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     & CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     & CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
      & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
 
-
       ACTIVE=0.
 
-C Determine which day of the week (6=Sat, 7=Sun ,other weekday)
+C Determine which day of the week (6=Sat, 7=Sun ,other weekday ot other
+C day types if defined using calendar function
 C and set IGC (gain to control) to that reqested in the casual
 C gain control file.  If matching gain(s) set ACTIVE=1.0.
-      IF(IDWF.GE.1.OR.IDWF.LE.6)THEN
-        IGC=NCGTC(IZONE,1)
-        IF(NCAS1.GE.1)THEN
-          DO 30 ICNN=1,NCAS1
-            IF(ICGT1(ICNN).EQ.IGC)THEN
-              IF(IH.GT.ICGS1(ICNN).AND.IH.LE.ICGF1(ICNN))ACTIVE=1.0
-            ENDIF
-   30     CONTINUE
-        ENDIF
-      ELSEIF(IDWF.EQ.6)THEN
-        IGC=NCGTC(IZONE,2)
-        IF(NCAS2.GE.1)THEN
-          DO 32 ICNN=1,NCAS2
-            IF(ICGT2(ICNN).EQ.IGC)THEN
-              IF(IH.GT.ICGS2(ICNN).AND.IH.LE.ICGF2(ICNN))ACTIVE=1.0
-            ENDIF
-   32     CONTINUE
-        ENDIF
-      ELSEIF(IDWF.EQ.7)THEN
-        IGC=NCGTC(IZONE,3)
-        IF(NCAS3.GE.1)THEN
-          DO 33 ICNN=1,NCAS3
-            IF(ICGT3(ICNN).EQ.IGC)THEN
-              IF(IH.GT.ICGS3(ICNN).AND.IH.LE.ICGF3(ICNN))ACTIVE=1.0
-            ENDIF
-   33     CONTINUE
-        ENDIF
+      IF(NBDAYTYPE.LE.3)THEN
+        IDTY=1
+        IF(IDWP.EQ.6)IDTY=2
+        IF(IDWP.EQ.7)IDTY=3
+      ELSE
+        IDTY=ICALENDER(IDYP)
       ENDIF
-
+      IGC=NCGTC(IZONE,IDTY)
+      IF(NCAS(IDTY).GE.1)THEN
+     	DO 30 ICNN=1,NCAS(IDTY)
+     	  IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
+     	    IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
+     	  ENDIF
+   30	CONTINUE
+      ENDIF
       RETURN
       END
 

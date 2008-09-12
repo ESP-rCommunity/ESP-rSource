@@ -29,4 +29,4 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) c2fdum.F psychro.F startup.F 
+	rm -f core $(PROG)  $(PROG).exe $(OBJECTS) c2fdum.F psychro.F startup.F 

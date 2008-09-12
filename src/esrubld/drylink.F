@@ -47,6 +47,8 @@ C Boston, MA 02111-1307 USA.
       COMMON/DRYTIM1/AN, APP, AP, AM, AM1, JJ
       COMMON/DRYTIM2/MTX(4,5),X(4),Y(2,8),DELTAT,CONINI,TWPFA,MZI,KJ
 
+      integer ncomp
+
 C     ***************************************************************
 C     Determine the Absolute Humidity (Kg/m^3) of air in the zone.
 C     ***************************************************************

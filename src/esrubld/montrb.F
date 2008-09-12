@@ -51,6 +51,8 @@ c               3: zone temperature and plant flux.
 #include "monitor.h"
 
       common/outin/iuout,iuin
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
@@ -154,15 +156,21 @@ c after the start-up period.
       subroutine zngrph(iss,isf,instep,mode)
 #include "building.h"
 #include "monitor.h"
+      
+      integer lnblnk  ! function definition
 
 C Parameters for eline calls.
       integer LNMVAB, LNDRAB, LNMVRL, LNDRRL
       parameter (LNMVAB=1, LNDRAB=0, LNMVRL=3, LNDRRL=2)
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GFONT/IFS,ITFS,IMFS
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
@@ -190,7 +198,6 @@ C since not all compilers use the same default.
       dimension ncoord(mcom,2,2), ncoord1(mcom,2,2),
      &          ncoord2(1,2,2)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character etext*82, clabel*20,nterm*1,tab*1,zname*12,zdesc*64
       logical colok
@@ -284,7 +291,7 @@ c initialise data items count 'icount'.
 
 c Plot graph for zone(s) state variables.
 C If save option 0 then exit.
- 2000 if(isave.eq.0) goto 999
+ 2000 if((ISAVE.eq.0).or.(ISAVE.eq.6)) goto 999
       IF(IFS.GT.0)CALL winfnt(1)
       iunit=ifil+2
       do 20 j=1, instep

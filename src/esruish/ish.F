@@ -94,6 +94,8 @@ C IEEE callback (Solaris)
       integer SIGFPE_bps      
 #endif
 #endif
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/tracech/icout
@@ -117,7 +119,11 @@ C IEEE callback (Solaris)
       common/data1/ical,idifc,init
       common/mtfile/ltrns,multic,mons,monf
       common/g0/ctype(mcom),gversion(mcom),igupgrade
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -158,22 +164,30 @@ C Material data arrays.
      &  matdbdate,matdbdoc,matcatname(mgcl),matcatdoc(mgcl)
 
       real matver
-      dimension month(12),items(23),isadd(12),ishd(12),iavdec(12)
+      dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
-      character*72 lcfgf,lsnam,lproj,lgeom,lshad,lthrm,lutil
+      character*72 lcfgf
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character items*26,ctype*4,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
       character descrh*5,descrd*5,zname*12,zdesc*64,inf*144,lcmdfl*144
-      character path*72,upath*72,cfgroot*24
-      character inz*16,inzone*16,zn*12,pact*16,paction*16,outstr*124
+      character path*72,upath*72,cfgroot*24,outstr*124
+      character inz*16,inzone*16,zn*12,pact*16,paction*16
+      character ascif*72,pascif*72
       character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf,dsbem
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
+      character exportfile*72 ! for ascii shading file
       logical silent,unixok,there,context,existing
       logical newgeo  ! to use for testing if new/old geometry file.
       logical modify,modlen,modbnd,xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
+      logical user_recalc  ! user requested recalculation
+      logical loaded_existing  ! to signal working with existing shd file
+      logical changed_existing  ! to signal existing shd file updated
+
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer lnshd   ! length of current shading file string.
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -199,12 +213,18 @@ C ifcfg  - system configuration file
       iuf=ifil+1
       ifcfg=ifil+2
       ifilsi=ifil+3
+      IFMUL=IFIL+4    ! set unit numbers for contstruction db.
+      IFMAT=IFIL+5    ! set unit numbers for material db.
       iairp=ifil+6
+      IOPTDB=IFIL+7   ! set unit numbers for optical db.
       iuj=ifil+10
       cfgok=.false.
       lname='SHDTRN'
       zn='UNKNOWN'
-      call parsfza(modl,iappw,iappx,iappy,inf,inz,pact)
+      user_recalc=.false.
+      changed_existing=.false.
+      
+      call parsish(modl,iappw,iappx,iappy,inf,inz,pact,pascif)
 
 C Set sky type to isotropic as default (idifc = 0): diffuse shading
 C is then calculated only once per day rather than at each time step
@@ -227,7 +247,7 @@ C Set folder separator (fs) to \ or / as required.
       iedoy=1
       itc=0
       icout=iuout
-      newgeo=.false.  	! Assume old format geometry.
+      newgeo=.false.  ! Assume old format geometry.
 
 C Initial coordinates for eye point, viewing point and angle of view.
       eyem(1)=-100.
@@ -318,22 +338,23 @@ C feedback).
 
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
-         call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
-#ifdef X11
-         call opencpw
-         call opensetup
-         call updwire(0)
-         call updcapt(1)
-         call updazi(1)
-#endif
-         call setzscale()
-         mdispl=0
-         nifgrey=0
-         ncset=0
-         ngset=0
-         nzonec=0
-         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
-         call startbuffer()
+        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1)then
+          call opencpw
+          call opensetup
+          call updwire(0)
+          call updcapt(1)
+          call updazi(1)
+        endif
+        call setzscale()
+        mdispl=0
+        nifgrey=0
+        ncset=0
+        ngset=0
+        nzonec=0
+        call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
+        call startbuffer()
       endif
       if(mmod.ne.-6)icout=iuout
 
@@ -406,7 +427,10 @@ C on a single zone.
 C Take command line action parameter. If paction = 'recalculate' then
 C after the configuration is read in, do a standard annual calculation
 C and pause so user can view results. If paction = 'update_silent' then
-C do standard annual calculation and exit when completed.
+C do standard annual calculation and exit when completed. If paction
+C is 'asci2bin' then create an empty binary and then import ascii
+C data and then exit. If paction is 'bin2asci' then scan the binary
+C and then call the ascii export facility and exit.
       if(pact(1:1).ne.' ')then
          paction=pact
          write(outs,'(2a)')'Ish: the input action is: ',paction
@@ -414,8 +438,26 @@ C do standard annual calculation and exit when completed.
          if(paction(1:11).eq.'recalculate')then
             write(outs,'(2a)')' the action is: ',paction
             call edisp(iuout,outs)
-            silent=.true.
+            user_recalc=.true.
          elseif(paction(1:13).eq.'update_silent')then
+            silent=.true.
+         elseif(paction(1:8).eq.'asci2bin')then
+	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
+            if(ascif(1:4).eq.'UNKN')then
+              call edisp(iuout,'ish: the action file is unknown!')
+              call pauses(1)
+              call epagend
+              stop
+            endif
+            silent=.true.
+         elseif(paction(1:8).eq.'bin2asci')then
+	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
+            if(ascif(1:4).eq.'UNKN')then
+              call edisp(iuout,'ish: the action file is unknown!')
+              call pauses(1)
+              call epagend
+              stop
+            endif
             silent=.true.
          else
             paction='INTERACTIVE'
@@ -426,6 +468,13 @@ C do standard annual calculation and exit when completed.
          paction='INTERACTIVE'
          silent=.false.
       endif
+      
+      if(.NOT.silent)then
+      
+C Not in silent recalculation mode so present application version
+C information.
+        CALL ESPrVersion("summary",cAppName,IUOUT)
+      endif 
 
       ical=0
       multic=0
@@ -452,6 +501,18 @@ C If an input file has been specified then load it.
             endif
             mode='NONE'
             call ersys(lcfgf,ifcfg,iairp,mode,0,ier)
+
+C Open core of databases if not already done so.
+            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+              continue
+            else
+              call opendb(iier) ! return different error state for db.
+              if(iier.ne.0)then
+                call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db.','W')
+              endif
+            endif
+	    
             if(paction(1:13).ne.'update_silent')then
                call usrmsg('Scanning the model...done.',' ','-')
             endif
@@ -471,19 +532,106 @@ C a list.
                zn=zname(icomp)
 
 C Set up zone transitional shading file based on zone name.
+C Set logical status flags based on returned value of istat.
                write(lname,'(a)')zn(1:lnblnk(zn))
                ok=.true.
                ltrns=lname
                itc=0
-               call shdprb(itc,silent,icomp,ier)
+               istat=0
+
+C Read in the model files taking into account the current value
+C of paction (so that we do not do a recursive asci->bin->ascii.
+               call shdprb(itc,silent,icomp,istat)
+               if(istat.eq.0)then
+                 loaded_existing=.true.
+               elseif(istat.eq.1)then
+                 loaded_existing=.false.
+               elseif(istat.eq.8)then
+                 loaded_existing=.true.
+               endif
             endif
          endif
+      else
+
+C There was no input file, at least clear the model common blocks.
+        call clrprb
       endif
 
+C If in conversion mode then call the relevant subroutine.
+      if(silent.and.paction(1:8).eq.'asci2bin')then
+
+C Passed an ascii file and expect a binary file to be created. If
+C an existing db is found, removed it and open a new one before
+C starting conversion.
+         if(zn(1:4).eq.'UNKN')then
+           call edisp(iuout,'A zone is required to convert file.')
+           ier = 1
+           call epagend
+           stop 
+         else
+           if(isi(icomp).EQ.1)then
+             maxrec=24
+             if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
+             call findfil(lshad(icomp),xst)
+             if(xst)then
+               call erpfree(ifilsi,istst)
+               call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
+               write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
+               call edisp(iuout,outs)
+               call efdelet(ifilsi,istat)
+               call sifile(icomp,istat)
+               if(istat.eq.0)then
+                 continue
+               elseif(istat.eq.1)then
+                 continue
+               else
+                 call edisp(iuout,'problem setting up new file.')
+                 ier = 1
+                 call epagend
+                 stop 
+               endif
+               write(outs,'(3a)') ' Reading ASCII file ',
+     &           ascif(1:lnblnk(ascif)),'...'
+               call edisp(iuout,outs)
+
+C There are no files to cleanup so just convert and exit.
+               call sifimport(icomp,ascif,ier)
+               call pauses(1)
+               call epagend
+               stop     
+             endif
+           endif
+         endif
+      endif
+      
+      if(silent.and.paction(1:8).eq.'bin2asci')then
+      
+C Assumes that the binary file is scanned and the common blocks are
+C filled prior to calling sifexp.
+         if(zn(1:4).eq.'UNKN')then
+           call edisp(iuout,'A zone is required to convert file.')
+           ier = 1
+           call epagend
+           stop 
+         else
+
+C If loaded_existing has been set to true we probably can do the
+C conversion. Note, when starting ish for this command line option
+C any existing ascii file will be overwritten.
+           write(outs,'(2a)') ' Creating ASCII file ',
+     &       ascif(1:lnblnk(ascif))
+           call edisp(iuout,outs)
+           call sifexp(icomp,ascif,ier)
+           call pauses(1)
+           call epagend
+           stop 
+         endif
+      endif
+      
 C If in recalculation mode, proceed with minimal interface. If
 C an existing db is found, removed it and open a new one before
 C starting calculations.
-      if(silent)then
+      if(silent.or.user_recalc)then
          if(isi(icomp).EQ.1)then
             maxrec=24
             if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
@@ -497,7 +645,14 @@ C starting calculations.
                   call edisp(iuout,outs)
                endif
                call efdelet(ifilsi,istat)
-               call sifile(icomp)
+               call sifile(icomp,istat)
+               if(istat.eq.0)then
+                 continue
+               elseif(istat.eq.1)then
+                 continue
+               else
+                 call edisp(iuout,'problem with setting up new file.')
+               endif
             endif
           
 C Proceed with shading and then insolation calculations.
@@ -509,6 +664,18 @@ C Proceed with shading and then insolation calculations.
                call edisp(iuout,outs)
                call tstamp('>','Ish: re-calculate shading')
                call shdcon(icomp,ier,'s')
+               changed_existing=.true.  ! so we know to update ASCII on exit
+               write(outs,'(3a)')'Shading calculations for ',
+     &                           zn(1:lnblnk(zn)),'...done.'
+               call edisp(iuout,outs)
+            elseif(iobs(icomp).eq.2)then
+               zn=zname(icomp)
+               write(outs,'(3a)')'Shading calculations for ',
+     &                           zn(1:lnblnk(zn)),'...'
+               call edisp(iuout,outs)
+               call tstamp('>','Ish: re-calculate shading')
+               call shdcon(icomp,ier,'s')
+               changed_existing=.true.  ! so we know to update ASCII on exit
                write(outs,'(3a)')'Shading calculations for ',
      &                           zn(1:lnblnk(zn)),'...done.'
                call edisp(iuout,outs)
@@ -523,6 +690,7 @@ C Proceed with shading and then insolation calculations.
             call edisp(iuout,outs)
             call tstamp('>','Ish: start insolation computation')
             call inscon(icomp,icstat,'s')
+            changed_existing=.true.  ! so we know to update ASCII on exit
             write(outs,'(3a)')'Insolation calculations for ',
      &                        zn(1:lnblnk(zn)),'...done.'
             call edisp(iuout,outs)
@@ -530,16 +698,13 @@ C Proceed with shading and then insolation calculations.
             call usrmsg('Unknown Zone Shading & Insolation file.',
      &                  'Cannot recalculate!','W')
          endif
-         if(paction(1:11).eq.'recalculate')then
-            call usrmsg('Recalculation complete. You may exit.',
-     &                  ' ','-')
-         elseif(paction(1:13).eq.'update_silent')then
+         if(paction(1:13).eq.'update_silent')then
+            call usrmsg('Recalculation complete cleaning up.',' ','-')
 
-C Finished recalculation so exit program, delete the transitional
+C Finished silent recalculation so exit program, delete the transitional
 C shading files. If a single month calculation has been done then
 C offer to save or delete. If a multi-month calculation has been
 C done, ask user to delete the transitional files.
-            call usrmsg('Recalculation complete...exiting.',' ','-')
             iunit=ifil
             if(multic.eq.0)then
                call efdelet(iunit,istat)
@@ -553,16 +718,33 @@ C done, ask user to delete the transitional files.
                      if(ier.eq.0)call efdelet(iunit,istat)
  156              continue
  155           continue
+               call usrmsg(
+     &           'Recalculation complete cleaning up done...exiting.',
+     &           ' ','-')
                call pauses(1)
             endif
          endif
-         call epagend
-         stop
-      endif
 
-C Not in silent recalculation mode so present application version
-C information.
-      call ESPrVersion("summary")
+C Computations finished, write out the ascii version of the database.
+         lnshd=lnblnk(lshad(icomp))
+         write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
+         if(paction(1:13).eq.'update_silent')then
+           continue
+         else
+           write(outs,'(2a)') ' Creating ASCII file ',
+     &       exportfile(1:lnblnk(exportfile))
+           call edisp(iuout,outs)
+         endif
+         call sifexp(icomp,exportfile,ier)
+         call pauses(1)
+ 
+C Allow user to quit manually for a recalculate directive but
+C auto exit for update_silent.
+         if(paction(1:13).eq.'update_silent')then
+           call epagend
+           stop
+         endif
+      endif
       
 C Display opening menu.
   201 ier=0
@@ -588,20 +770,21 @@ C Display opening menu.
       items(15)=                'k insolation synopsis     '
       items(16) =               '  _______________________ '
       items(17)=                'l shd/ins db contents     '
-      items(18) =               '  _______________________ '
+      items(18)=                'm shd/ins export & import '
+      items(19) =               '  _______________________ '
       if(itc.eq.0)then
-         items(19)=              'm trace output >> none    '
+         items(20)=             'm trace output >> none    '
       elseif(itc.eq.1)then
-         items(19)=              'm trace output >> fort.33 '
+         items(20)=             'm trace output >> fort.33 '
       endif
       if(ixopen.eq.1)then
-         items(20)='> outputs >> file       '
+         items(21)='> outputs >> file       '
       elseif(ixopen.eq.0)then
-         items(20)='> outputs >> screen     '
+         items(21)='> outputs >> screen     '
       endif
-      items(21)=                '! browse zone surfaces    '
-      items(22)=                '? help                    '
-      items(23)=                '- exit Shading/Insolation '
+      items(22)=                '! browse zone surfaces    '
+      items(23)=                '? help                    '
+      items(24)=                '- exit Shading/Insolation '
 
 C If zone has not been selected disallow calculations and views.
       if(zn(1:4).eq.'UNKN')then
@@ -611,12 +794,13 @@ C If zone has not been selected disallow calculations and views.
          items(14)=              'j  ...                    '
          items(15)=              'k  ...                    '
          items(17)=              'l  ...                    '
+         items(18)=              'm  ...                    '
       endif
-      nitems = 23
+      nitems = 24
 
 C Use askabout to instantiate the initial help messages
 C (2nd parameter is 1).
-      call askabout('ish',1)
+      call askabout('ish ',1)
       call emenu('Shading & Insolation',items,nitems,inos)
 
 C Request definition of model.
@@ -661,6 +845,15 @@ C GTK version will be returning the name with the full path.
             call tstamp('>',lcfgf)
             mode='NONE'
             call ersys(lcfgf,ifcfg,iairp,mode,0,ier)
+            if(MLDBOK.and.MATDBOK.and.OPTKOK)then
+              continue
+            else
+              call opendb(iier) ! return different error state for db.
+              if(iier.ne.0)then
+                call usrmsg('Possible problem with the Constructions',
+     &               'or Optical Properties db.','W')
+              endif
+            endif
             if(ier.eq.0)then
                cfgok=.true.
                nzones=ncomp
@@ -687,7 +880,15 @@ C If there is an existing transitional shading file with
 C the zone's name as root, ask whether to use it.
          write(lname,'(a)')zname(icomp)(1:lnblnk(zname(icomp)))
          ltrns=lname
-         call shdprb(itc,silent,icomp,ier)
+         istat=0
+         call shdprb(itc,silent,icomp,istat)
+         if(istat.eq.0)then
+           loaded_existing=.true.
+         elseif(istat.eq.1)then
+           loaded_existing=.false.
+         elseif(istat.eq.8)then
+           loaded_existing=.true.
+         endif
 
 C Calculate window shading using the ASHRAE algorithm.
       elseif(inos.eq.5)then
@@ -815,23 +1016,32 @@ C If there is already data in the file ask user what to do.
                      call edisp(iuout,outs)
                   endif
                   call efdelet(ifilsi,istat)
-                  call sifile(icomp)
+                  call sifile(icomp,istat)
+                  if(istat.eq.0)then
+                    continue
+                  elseif(istat.eq.1)then
+                    continue    ! probably not the time to look for an ascii version
+                  else
+                    call edisp(iuout,
+     &                'problem with setting up new file.')
+                  endif
                elseif(iw.eq.3)then
                   goto 201
                endif
             endif
             call tstamp('>','Ish: start shading computation')
             call shdcon(icomp,ier,'i')
+            changed_existing=.true.  ! so we know to update ASCII on exit
          else
             call usrmsg(
      &       'No Zone Shading & Insolation db! Use Project Manager',
      &       'to specify one for this zone or choose another zone.',
      &       'W')
          endif
+      elseif(inos.eq.11)then
 
 C Synopsis of surface shading calculation results (uses information held
-C in the zone transitional shading file).
-      elseif(inos.eq.11)then
+C in the zone transitional shading file or from common blocks).
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
             goto 201
@@ -844,6 +1054,10 @@ C in the zone transitional shading file).
      &           1,'F',12,'F',1,'month number',ier,2)
             if(ier.ne.0)goto 201
             call eday(iavdec(mon),mon,iyd)
+	    
+C If there is a transitional shading file then use it when composing
+C the synopsis. If not found (i.e. if binary file is based on reading
+C an ascii shading file) then use an alternative approach.
 
 C Allow for number of surfaces within the zone transitional shading
 C file.
@@ -851,22 +1065,23 @@ C file.
             write(tbase,'(a,a3)')ltrns(:lnblnk(ltrns)),month(mon)
             call efopran(iunit,tbase,irecw,1,ier)
             if(ier.eq.0)then
-               call edisp(iuout,' ')
-               write(outs,'(3a)')'Zone transitional shading file ',
-     &                              tbase(:lnblnk(tbase)),' used.'
-               call edisp(iuout,outs)
-            else
-               call edisp(itru,' ')
-               write(outs,'(3a)')'No insolation data for ',month(mon),
-     &                                                             '!'
-               call edisp(itru,outs)
-               goto 201
-            endif
 
 C Shading synopsis is based on information in the zone transitional
 C shading file.
-            call retrv1(icomp)
-            call shsynp(icomp)
+              call edisp(iuout,' ')
+              write(outs,'(3a)')'Zone transitional shading file ',
+     &          tbase(:lnblnk(tbase)),' used.'
+              call edisp(iuout,outs)
+              call retrv1(icomp)
+              call shsynp(icomp)
+	       
+            else
+
+C Shading synopsis is based on common block information.
+              call sifrd(icomp,mon,ier)
+              call shadsynp(icomp)
+            endif
+
             if(mon.lt.12)then
                call easkab(' ','Consider another month?','yes',
      &                     'no',iw,0)
@@ -955,7 +1170,15 @@ C source surfaces.
                      call edisp(iuout,outs)
                   endif
                   call efdelet(ifilsi,istat)
-                  call sifile(icomp)
+                  call sifile(icomp,istat)
+                  if(istat.eq.0)then
+                    continue
+                  elseif(istat.eq.1)then
+                    continue
+                  else
+                    call edisp(iuout,
+     &                'problem with setting up new file.')
+                  endif
                elseif(iw.eq.3)then
                   goto 201
                endif
@@ -963,6 +1186,7 @@ C source surfaces.
             call tstamp('>','Ish: start insolation computation')
             icstat=0
             call inscon(icomp,icstat,'-')
+            changed_existing=.true.  ! so we know to update ASCII on exit
          else
             call usrmsg(
      &       'No Zone Shading & Insolation db! Use Project Manager',
@@ -988,7 +1212,7 @@ C held in the zone shading & insolation db.)
             call eday(iavdec(mon),mon,iyd)
 
             call sifrd(icomp,mon,ier)
-            call insynp(icomp)
+            call insynp(icomp,'i')   ! allow user to control surfaces seen
             if(mon.lt.12)then
                call easkab(' ','Consider another month?','yes',
      &                     'no',iw,0)
@@ -999,7 +1223,7 @@ C held in the zone shading & insolation db.)
             endif
          endif
 
-C Edit/import/export/list.
+C Edit/import (interactive) /export (interactive) /list.
       elseif(inos.eq.17)then
          if(zn(1:4).eq.'UNKN')then
             call edisp(iuout,'Select a zone first!')
@@ -1008,8 +1232,43 @@ C Edit/import/export/list.
             call sifops(icomp)
          endif
 
+C Export or import ASCII (silent).
+      elseif(inos.eq.18)then
+         if(zn(1:4).eq.'UNKN')then
+            call edisp(iuout,'Select a zone first!')
+            goto 201
+         else
+           h(1)='The Zone Shading & Insolation data is also held'
+           h(2)='in a ASCII version for transport between different'
+           h(3)='computer types.'
+           call easkabc('Zone Shading & Insolation db has data!',
+     &       'Options:','export ascii','import ascii','cancel',iw,3)
+           lnshd=lnblnk(lshad(icomp))
+           if(iw.eq.1)then
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
+             call easks(exportfile,' ','Export file name?',72,
+     &         'siexp.txt','shdins export',ier,3)
+             write(outs,'(2a)') ' Creating ASCII file ',
+     &         exportfile(1:lnblnk(exportfile))
+             call edisp(iuout,outs)
+             call sifexp(icomp,exportfile,ier)
+             call pauses(1)
+           elseif(iw.eq.2)then
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
+             call easks(exportfile,' ','Import file name?',72,
+     &         'siexp.txt','shdins import',ier,3)
+             write(outs,'(3a)') ' Reading ASCII file ',
+     &         exportfile(1:lnblnk(exportfile)),'...'
+             call edisp(iuout,outs)
+             call sifimport(icomp,exportfile,ier)
+             call pauses(1)
+           elseif(iw.eq.3)then
+             continue
+           endif
+         endif
+
 C Set trace level displayed in opening menu and main menu.
-      elseif(inos.eq.19)then
+      elseif(inos.eq.20)then
          itc=itc+1
          if(itc.gt.1)then
             itc=0
@@ -1020,7 +1279,7 @@ C Set trace level displayed in opening menu and main menu.
 
 C Redirect synoptic outputs and result of ASHRAE method to a
 C user specified file.
-      elseif(inos.eq.20)then
+      elseif(inos.eq.21)then
          if(ixopen.eq.0)then
             write(xfile,'(2a)')zname(icomp)(1:lnblnk(zname(icomp))),
      &                         '.txt'  ! initial file name
@@ -1029,19 +1288,19 @@ C user specified file.
          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Report',ier)
 
 C Surface summary: print header, followed by surface information.
-      elseif(inos.eq.21)then
+      elseif(inos.eq.22)then
          call tstamp('>','Ish: list surface attributes')
          context=.false.
          call surinfo(icomp,iuout,context)
 
 C Help via the askabout facility in esru_ask.F - 0 requests display.
-      elseif(inos.eq.22)then
+      elseif(inos.eq.23)then
          call askabout('ish ',0)
 
 C Exit program: if nothing has been done, delete the transitional
 C shading file; if a single or multi-month calculation has been done
 C then offer to save or delete.
-      elseif(inos.eq.23)then
+      elseif(inos.eq.24)then
          iunit=ifil
          if(multic.eq.0)then
             call efdelet(iunit,istat)
@@ -1070,6 +1329,39 @@ C then offer to save or delete.
    55          continue
             endif
          endif
+
+C When exiting write out the ascii version of the database.
+         lnshd=lnblnk(lshad(icomp))
+         if(lshad(icomp)(1:4).eq.'UNKN'.or.
+     &      lshad(icomp)(1:2).eq.'  '.or.
+     &      lnshd.le.1.or.lnshd.ge.72)then
+            continue
+         else
+         
+C If user is browsing we may not want to write ascii file
+C If the user has just opened an existing database but not
+C changed it then we do not need to write it out.
+           if(loaded_existing)then
+             if(changed_existing)then
+               write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
+               write(outs,'(2a)') ' Creating ASCII file ',
+     &          exportfile(1:lnblnk(exportfile))
+               call edisp(iuout,outs)
+               call sifexp(icomp,exportfile,ier)
+               call pauses(1)
+             else
+               continue
+             endif
+           else
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
+             write(outs,'(2a)') ' Creating ASCII file ',
+     &          exportfile(1:lnblnk(exportfile))
+             call edisp(iuout,outs)
+             call sifexp(icomp,exportfile,ier)
+             call pauses(1)           
+           endif
+         endif
+ 
          if(journio.eq.1)then
             call tstamp('>','Finished shading & insolation analysis.')
             close(iuj)
@@ -1093,10 +1385,22 @@ C Not a legitimate menu choice.
       
 C ********** SHDPRB **********
 C Scans the system configuration file for the files that define
-C the problem or allows user input.
+C the problem or allows user input. Depending on what happend
+C with the file pass back an indicator:
+C  ifstat = 0  no errors and existing file was opened correctly
+C  ifstat = 1  new file was opened correctly
+C  ifstat = 2  no shading file name so exited
+C  ifstat = 3  error opening the shading file
+C  ifstat = 4  error reading header of file
+C  ifstat = 5  error writing record 4 of file
+C  ifstat = 6  user cancel
+C  ifstat = 7  error opening geometry file
+C  ifstat = 8  new file filled via import of ascii file
 
-      subroutine shdprb(itc,silent,icomp,ier)
+      subroutine shdprb(itc,silent,icomp,ifstat)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
@@ -1104,6 +1408,9 @@ C the problem or allows user input.
       common/filep/ifil
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -1113,11 +1420,12 @@ C the problem or allows user input.
      &             ltwin(mcom),lcgcin(mcom),zobs(mcom)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray3/modify,modlen,modbnd
+      common/ract/paction
 
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character*72 lview,lhcco,ltwin,lcgcin,zobs
-      character h*72,ctype*4
-      logical modify,modlen,modbnd,silent
+      character h*72,ctype*4,exportfile*72,paction*16,outs*124
+
+      logical modify,modlen,modbnd,silent,xst
       logical newgeo  ! Used to test for new/old geometry file.
 
       iuf=ifil+1
@@ -1140,6 +1448,7 @@ C the problem or allows user input.
       if(ier.ne.0)then
          call edisp(iuout,'Problem detected while trying to open/read')
          call edisp(iuout,'zone geometry file. Respecify via menu.')
+         ifstat=7
          return
       endif
       nzsur(icomp)=nsur
@@ -1152,7 +1461,9 @@ C Get name of obstruction file.
          else
             call egomst(iuf,zobs(icomp),0,1,iuout,ier)
          endif
-      elseif(iobs(icomp).ne.1)then
+      elseif(iobs(icomp).eq.2)then
+         continue   ! any obstructions are in the geometry file.
+      elseif(iobs(icomp).eq.0)then
          if(silent)then
             call edisp(iuout,
      &             'No obstructions so only compute insolation.')
@@ -1164,6 +1475,7 @@ C Get name of obstruction file.
             call easkab('No Zone Obstructions file found!','Options:',
      &                  'cancel','compute insolation only',iw,4)
             if(iw.EQ.1)then
+               ifstat=6
                call epagend
                stop
             endif
@@ -1172,12 +1484,48 @@ C Get name of obstruction file.
 
 C Get name of the zone shading & insolation db.
       if(isi(icomp).eq.1)then
-         call sifile(icomp)
+         call sifile(icomp,istat)
+         if(istat.eq.0)then
+           ifstat=0
+         elseif(istat.eq.1)then
+
+C A new binary file was created and filled with zeros. Check and
+C see if an ascii version of the file exists with the same name
+C as the shading file but ending with shda. If so try and scan it
+C as long as the user request is not recalculate or update_silent
+C or if the user requested a file conversion.
+           ifstat=1
+           if(paction(1:11).eq.'recalculate')then
+             continue
+           elseif(paction(1:13).eq.'update_silent')then
+             continue
+           elseif(paction(1:8).eq.'bin2asci')then
+             continue
+           elseif(paction(1:8).eq.'asci2bin')then
+             continue
+           else
+	     write(exportfile,'(2a)') 
+     &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             call findfil(exportfile,xst)
+             if(xst)then
+               write(outs,'(3a)') ' Reading ASCII file ',
+     &           exportfile(1:lnblnk(exportfile)),'...'
+               call edisp(iuout,outs)
+               call sifimport(icomp,exportfile,ier)
+               call pauses(1)
+               ifstat=8   ! signal import was done
+             endif
+           endif
+         else
+           ifstat=istat
+           call edisp(iuout,'problem with setting up new file.')
+         endif
       elseif(isi(icomp).ne.1)then
          call usrmsg('No Zone Shading & Insolation file found!',
      &               'Establish one via the Project Manager.','W')
          call usrmsg('The Shading & Insolation module',
      &               'is now terminating.','-')
+         ifstat=2
          call pauses(1)
          call epagend
          stop
@@ -1211,6 +1559,302 @@ C Dummy routine (needed for call back from c.
      
       return
       end
+
+C ********** opendb
+C NOTE: This is a duplicate of code in esruprj/eddb.F but with the opening
+C of pressure coef db opening commented out. And if the materials db has
+C not been found (e.g. during an initial install) then it does not try
+C alternative locations).
+
+C Open materials constructions, multi-layer constructions and
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
+
+      subroutine opendb(ier)
+#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/ract/paction
+      character paction*16
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
+      character H*72,LASCI*72,DFILE*72
+      character SOPT*12,outs*124,GDESCR*36
+      integer nclass  ! number of material classifications
+
+      IER=0
+
+C Open currently named Materials database.  Note that
+C by a minor rewrite of ICLN in rec 601 we can get by
+C with changing this to 24 words wide.
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
+      IF(ier.ne.0)THEN
+        write(outs,'(3a)') ' Materials db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+      else
+
+C Check to see if the file has correct info. 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was not found',
+     &                  'or file was corrupt','W')
+            MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable Materials database was found!',
+     &          ' ','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            MATDBOK=.TRUE.
+          endif
+        endif
+      endif
+
+        
+C Read multilayer db information into common. If in update_silent mode
+C ish might be called during install installation and as there are no
+C materials database but a local constructions database there will be
+C warnings which require an interaction and so treat update_silent as
+C a special case with no interaction.
+ 139  CALL ERPFREE(IFMUL,ISTAT)
+      call FINDFIL(LFMUL,XST)
+      if(XST)then
+        CALL ERMLDB(0,IUOUT,IER)
+        if(paction(1:13).eq.'update_silent')then
+          if(IER.eq.1)then
+            MLDBOK=.FALSE.
+          elseif(IER.eq.2)then
+            MLDBOK=.FALSE.
+          endif
+	  goto 138    ! if silent and no materials jump to optics
+	endif
+        IF(IER.eq.1)then
+          write(outs,'(3a)') 
+     &    ' Problems with materials used by Constructions db',
+     &     LFMAT(1:lnblnk(LFMAT)),'!'
+          call edisp(iuout,outs)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
+        ELSEIF(IER.eq.2)then
+
+C There were lots of undefined materials so likely the Materials
+C database is for the wrong machine type. Guess the name of
+C the ascii version and if it exists, offer to convert it or use it.
+          h(1)='It is likely that the Materials db associated with'
+          h(2)='this model is for use under a different operating'
+          h(3)='system. ESP-r will attempt to locate an ASCII version'
+          h(4)='of this database and, if successful, convert it to'
+          h(5)='the required binary format if you agree.'
+          IAF=IFIL+1
+          LASCI=' '
+          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+
+C Label 155 is a jump back point for the case of users supplying a name.
+  155     CALL EFOPSEQ(IAF,LASCI,1,IER)
+          if(ier.eq.0)then
+
+C If the ascii version exists there is no need to convert it.
+C Ask whether to scan it into the materials arrays or convert
+C to a binary file.
+            CALL EASKABC(
+     &        'Ascii version of Materials database found.',
+     &        'Options:','use it',
+     &        'convert to a binary file','cancel',IW,5)
+            if(iw.eq.1)then
+              call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
+              if(ier.eq.-2)then
+                ier=0
+                call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
+                if(ier.ne.0)then
+                  call usrmsg('No readable Materials database was',
+     &                        'found or the file was corrupt.','W')
+                  MATDBOK=.FALSE.
+                else
+                  call eclose(matver,1.1,0.001,close)
+                  if(close)then
+
+C Materials data in place, set this as the new file name and then
+C try and re-scan the Constructions database.
+                    call usrmsg(
+     &                'An ASCII Materials db was found and used.',
+     &                'Re-scanning constructions...','P')
+                    MATDBOK=.TRUE.
+                    LFMAT=LASCI
+                    CALL ERPFREE(IFMUL,ISTAT)
+                    call FINDFIL(LFMUL,XST)
+                    if(XST)then
+                      CALL ERMLDB(0,IUOUT,IER)
+                      if(ier.eq.0)then
+                        MLDBOK=.TRUE.
+                        call usrmsg(
+     &                  'An ASCII Materials db was found and used.',
+     &                  'Re-scanning constructions...done.','-')
+                      else
+                        MLDBOK=.FALSE.
+                        call usrmsg(
+     &                  'An ASCII Materials db was found and used.',
+     &                  'Re-scanning constructions...failed.','W')
+                      endif
+                    endif
+                  else
+                    call usrmsg(
+     &                'No readable Material db was found.',
+     &                'Check other warnings for advice.','W')
+                    MATDBOK=.FALSE.
+                  endif
+                endif
+              elseif(ier.eq.0)then
+
+C Materials data in place, set this as the new file name and then
+C try and re-scan the constructions database.
+                call usrmsg(
+     &            'An ASCII Materials db was found and used.',
+     &            'Re-scanning constructions...','P')
+                MATDBOK=.TRUE.
+                LFMAT=LASCI
+                CALL ERPFREE(IFMUL,ISTAT)
+                call FINDFIL(LFMUL,XST)
+                if(XST)then
+                  CALL ERMLDB(0,IUOUT,IER)
+                  if(ier.eq.0)then
+                    MLDBOK=.TRUE.
+                    call usrmsg(
+     &                'An ASCII Materials db was found and used.',
+     &                'Re-scanning constructions...done.','-')
+                  else
+                    MLDBOK=.FALSE.
+                    call usrmsg(
+     &                'An ASCII Materials db was found and used.',
+     &                'Re-scanning constructions...failed.','W')
+                  endif
+                endif
+              endif
+            elseif(iw.eq.2)then
+              CALL ERPFREE(IAF,ISTAT)
+              call edisp(iuout,
+     &          'Attempting to convert an ASCII Materials db to a')
+              call edisp(iuout,
+     &          'binary version matching the Constructions db.')
+              CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+              if(ier.eq.0)then
+                call usrmsg(
+     &            'An ASCII Materials db was found and converted.',
+     &            'Re-scanning constructions...','P')
+                CALL ERMLDB(0,IUOUT,IER)
+                if(ier.eq.0)then
+                  MLDBOK=.TRUE.
+                  call usrmsg(
+     &              'An ASCII Materials db was found and converted.',
+     &              'Re-scanning constructions...done.','-')
+                else
+                  MLDBOK=.FALSE.
+                  call usrmsg(
+     &              'An ASCII Materials db was found and converted.',
+     &              'Re-scanning constructions...failed.','W')
+                endif
+              else
+                call usrmsg(
+     &          'A Materials db was not found or was not readable.',
+     &          'Please correct this before using constructions.',
+     &             'W')
+                MLDBOK=.FALSE.
+              endif
+            endif
+          else
+
+C Ask user for ascii Materials database to convert.
+          H(1)='The Materials db holds the thermo-physical properties'
+          H(2)='of a range of materials. An ascii version of this db'
+          H(3)='may be used to transfer the contents between operating'
+          H(4)='systems that have incompatible binary representations'
+          H(5)='(e.g. Unix and Windows).'
+            IAF=IFIL+1
+            DFILE=' '
+            CALL EASKS(LASCI,' ','Materials database (ASCII)?',
+     &        72,DFILE,'materials db (ascii)',IER,5)
+            goto 155
+          endif
+        else
+
+C Scan was ok so set mldbok to true.
+          MLDBOK=.TRUE.
+        endif
+      else
+
+C Could not find Constructions db at this time, report to user.
+        write(outs,'(3a)') 'Constructions db ',
+     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MLDBOK=.FALSE.
+      endif
+
+C Open optical Properties db and read into common.
+ 138  SOPT='ALL'
+      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
+      if(ier.ne.0)then
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
+        OPTKOK=.FALSE.
+      else
+        OPTKOK=.TRUE.
+      endif
+
+C Open the Pressure Coefficients db.
+C      call FINDFIL(LAPRES,XST)
+C      if(XST)then
+C        CALL ERPRCDB(LAPRES,0,3,IER)
+C        call usrmsg(' ',' ','-')
+C      else
+C        call usrmsg('Pressure Coefficients db not found',
+C     &              'or there was a problem reading it!','W')
+C      endif
+
+      return
+      end
+
+
 
 C In support of floating point exceptions.
 #ifdef SUN

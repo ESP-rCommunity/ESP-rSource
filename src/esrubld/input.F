@@ -104,8 +104,9 @@ C laprob  - fluid flow description file
 #include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
+      integer lnblnk  ! function definition
 
       common/er1/ier1
       common/trc/itrc
@@ -707,12 +708,17 @@ C IREP=1 implies no reporting or data checking.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =3 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -772,7 +778,7 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LMOIST,LMSTR
+      CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,lfil*72,H*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -831,7 +837,7 @@ C Read contents of the I'th zone data files.
 
 C If a non-sorted operations file has been read warn user and
 C translate the casual gains.
-        if(ip3ver.eq.0)then
+        if(ip3ver(IZ).eq.0)then
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
           call edisp(iuout,outs)
@@ -1246,6 +1252,8 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1267,7 +1275,6 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 
       CHARACTER*5 NAME
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
@@ -1362,6 +1369,8 @@ C ********************** USESPS
 C USESPS uses configuration presimuilation data.
       SUBROUTINE USESPS(name,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -1489,6 +1498,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1499,13 +1509,15 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       logical prob,dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CXSTR*78
 
       newgeo=.false.  ! assume older format geometry.

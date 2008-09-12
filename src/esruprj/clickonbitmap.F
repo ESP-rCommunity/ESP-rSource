@@ -33,13 +33,18 @@ C Control interface for defining vertices or a floor plan extrusion
 C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -60,6 +65,8 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -108,7 +115,6 @@ C end indices for each zone.
 
       CHARACTER*72 H
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3,DESC*48
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -2000,11 +2006,9 @@ C instanciate the common blocks.
               LPROJ(ICOMP)=OFILE
             endif
 
-C Convert into a gen body.
+C Convert into a gen body and update nzsur and nztv
             CALL EREGC(NW,Z1,Z2,XX,YY)
             NSUR=NW+2
-            IUZBASEA(icomp)=0
-            IBASES(ICOMP,1)=NSUR
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
@@ -2057,6 +2061,17 @@ C Set type type and version based on current value of igupgrade.
             IDPN(ICOMP,1)=0
             IDPN(ICOMP,2)=0
             IDPN(ICOMP,3)=0
+
+            NZSUR(ICOMP)=NSUR  ! update nzsur() it is needed by zgupdate.
+            NZTV(ICOMP)=NTV
+
+C Update the G7 common blocks and then assign ZBASEA.
+            call zgupdate(2,ICOMP,ier)
+            IUZBASEA(icomp)=0
+            IBASES(ICOMP,1)=NSUR
+            IZBASELIST(ICOMP)=1
+            ibcs=IZSTOCN(icomp,NSUR)
+            ZBASEA(icomp)= SSNA(ibcs)
  
 C Save this to file before passing into the geometry editing facility.
             write(outs,'(3a)') 'Updating ',
@@ -2076,8 +2091,6 @@ C Save this to file before passing into the geometry editing facility.
               CALL usrmsg(' ',' Problem creating geometry file...','W')
             ENDIF
 
-C Now update the G7 common block to reflect changes.
-            call zgupdate(1,icomp,ier)
             write(outs,'(3a)') 'Updating ',
      &        zdesc(ICOMP)(1:lnblnk(zdesc(ICOMP))),'...done.'
             call edisp(iuout,outs)
@@ -2095,8 +2108,6 @@ C lastly, update the configuration file.
             endif
 
             NCOMP=NCOMP+1
-            NZSUR(ICOMP)=NSUR
-            NZTV(ICOMP)=NTV
             NCCODE(ICOMP)=NCOMP
             if(OKC)then
               icascf(NCOMP)=0

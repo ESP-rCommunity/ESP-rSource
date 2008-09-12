@@ -38,6 +38,8 @@ C It assumes that the file is already open.
       SUBROUTINE EMFREAD(IFPRB,ITRC,IER)
 
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
 
 C Network flow commons are as follows:
 C Network size
@@ -904,6 +906,9 @@ C MFLIST Fluid flow file: list common block contents.
 
 #include "net_flow.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -914,6 +919,8 @@ C MFLIST Fluid flow file: list common block contents.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -1207,6 +1214,9 @@ C**** GETND returns mass flow node index matching NAME. If not found
 C return 0 index with the message ermsg if in verbose mode (ivbs=1).
       subroutine GETND(NAME,index,ivbs,MSG)
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1236,6 +1246,9 @@ C and associated component. If not found return 0 index
 C with the message msg if in verbose mode (ivbs=1).
       subroutine GETCN(NDPOS,NDNEG,CMPID,index,ivbs,MSG)
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)

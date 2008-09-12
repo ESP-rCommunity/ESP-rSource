@@ -39,6 +39,8 @@ C output, IER=0 OK.
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -52,6 +54,9 @@ C output, IER=0 OK.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -80,7 +85,7 @@ C output, IER=0 OK.
       DIMENSION VERT(35),libcmt(MTMC)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,DFILE
+      CHARACTER*72 DFILE
       CHARACTER zname*12,zdesc*64,SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -283,7 +288,7 @@ C from the surface attributes.
           H(3)='any control of blinds associated with such surfaces.'
           LTWIN(ICOMP)=DFILE
           ltmp=LTWIN(ICOMP)
-          CALL EASKS(ltmp,'TMC file name?',
+          IF(.NOT.QUIET)CALL EASKS(ltmp,'TMC file name?',
      &      ' ',72,DFILE,'TMC file name',IER,3)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LTWIN(ICOMP)=ltmp
@@ -672,6 +677,9 @@ C IER=1 problem. Make use of construction information in common MLC.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1249,6 +1257,8 @@ C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
       SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1419,6 +1429,8 @@ C UNKNOWN then the user must supply this information manually). It scans
 C through each of the existing surfaces and finds unique optical types.
       SUBROUTINE EDTWIN(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2031,7 +2043,12 @@ C Loop through referenced mlc and derives the longest timeconstant.
       subroutine scntcnst(TDM,istd,TCM,ISTC)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

@@ -43,6 +43,9 @@ C the results database.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -50,7 +53,6 @@ C the results database.
 
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER outs*124
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -139,6 +141,8 @@ C attributes are known.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -487,6 +491,8 @@ C corresponding to graphical result display.
 C If act = i then initial display, if act = s then single step display.
       SUBROUTINE MOFHED(ICOMP,ISUR,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

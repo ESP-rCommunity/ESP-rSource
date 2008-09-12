@@ -14,8 +14,8 @@ OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
 	  edatabase.o edcondb.o egeometry.o emfnetw.o enetmisc.o \
 	  esru_misc.o esystem.o sifile.o eroper.o graph.o inscon.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelev.o pltcfg.o \
-	  readTrnsys.o shdcon.o sifops.o sort.o startup.o synop.o \
-	  trnfile.o trnsfs.o trnsfi.o ashrae.o
+	  readTrnsys.o rwipv.o rwsbem.o shdcon.o sifops.o sort.o \
+	  startup.o synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -76,7 +76,7 @@ esystem.F:
 	ln -s $(COMdir)/esystem.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -92,6 +92,12 @@ pltcfg.F:
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
+rwipv.F:
+	rm -f rwipv.F
+	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -100,7 +106,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
+	ln -s $(COMdir)/tdfile.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -109,9 +115,9 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F \
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F esru_misc.F esystem.F \
-	eroper.F item.F mfcdat.F nwkrewr.F plelev.F readTrnsys.F sort.F \
-	startup.F tdfile.F pltcfg.F 
+	eroper.F item.F mfcdat.F nwkrewr.F plelev.F readTrnsys.F rwipv.F \
+	rwsbem.F sort.F startup.F tdfile.F pltcfg.F 

@@ -119,7 +119,6 @@ C on time-step basis.
 
 c Declare real in HVAC_CALC_DATA common
       REAL HVAC_furnace_plr
-      INTEGER LNBLNK
 C Declarations for variables passed in calling statement.
       INTEGER ICOMP
       REAL ZONE_infil_cond
@@ -130,10 +129,6 @@ C Declarations for local variables.
       REAL AIM2_Cflue,AIM2_Ctotal,AIM2_Y,AIM2_R,AIM2_X,AIM2_Fs,AIM2_Ps,
      &     AIM2_Qstack,AIM2_Fw,AIM2_Sw,AIM2_Pw,AIM2_Qwind,AIM2_natural,
      &     AIM2_unbal_mech,AIM2_total,AIM2_total_sum
-C.....H3Kreports.(CASUAL_DEC).start......................
-C.....DECLARATIONS for H3Kreporting object
-      CHARACTER*128 H3K_rep_NAME
-C.....H3Kreports.(CASUAL_DEC).end........................
 
 C The AIM-2 model calculates the infiltration rate for the whole house but
 C we are currently within the zone loop. Therefore, execute the AIM-2 algorithm
@@ -231,47 +226,6 @@ C interactions with the zone matrix processor and solver are required.
 C Record the infiltration rate for use in creating the results file that will be passed
 C to the HOT3000 interface.
       CALL H3KSTORE_AIM2_DATA(AIM2_total)
-
-
-C.......H3Kreports.(INFILTRATION).start......................
-C.......The following code is used to trasnport data to 
-C.......the H3K reporting object
-C.......
-C.......Any changes to this code should be made within
-C.......the H3Kreports demarcaration comments
-
-C.......Water temperature (average of present and future)
-C.......-> set name
-        WRITE(H3K_rep_NAME,'(A)')
-     &     'building/infiltration/air_infiltration'
-C.......-> update meta-data
-        call REP_SET_META(
-     &       H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &       'units',
-     &       '(m3/s)'
-     &       )
-C.......-> update data
-        call REP_REPORT(
-     &       aim2_total,
-     &       H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &       )
-        WRITE(H3K_rep_NAME,'(A)')
-     &     'building/infiltration/air_changes_per_hour'
-C.......-> update meta-data
-        call REP_SET_META(
-     &       H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
-     &       'units',
-     &       '(ACH)'
-     &       )
-C.......-> update data
-        call REP_REPORT(
-     &       (aim2_total/AIM2_house_vol)*3600.,
-     &       H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME))
-     &       )
-
-
-C.......H3Kreports.(INFILTRATION).start......................
-
 
 C Completion of the infiltration calculations for this zone, this time-step.
       RETURN

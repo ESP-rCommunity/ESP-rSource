@@ -615,6 +615,16 @@ C      character*(*) subpath, action, listf
 C      integer nwlistf(50),nlistf
 C      return
 C      end
+
+C Return string indicating xlibs
+      subroutine getXlibs( cLibrary )
+
+      character*3 cLibrary
+      write(cLibrary, '(A)') "noX"
+
+      return
+      end
+
       
 C A zero says there is neither X11 or GTK available.
       integer function iXavail()

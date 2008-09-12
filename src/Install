@@ -105,6 +105,9 @@ gnu_version="gcc3"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
+enableFPE="no"             # FPE-exception handling?
+extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
+use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 
 #-----------------------------------------------------------
@@ -112,7 +115,7 @@ skip_ish_calcs="no"        # Skip update of exemplar shading files?
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res tdf vew"
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
 # (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
@@ -155,13 +158,17 @@ if [ $# -ne 0 ]; then
         --no_training)  install_training="no";     shift;;
         --no_dbs)       install_dbs="no";          shift;;
         --no_exes)      install_exes="no";         shift;;
+        --extra-debug)  debugging="yes";
+                        extendedDebugging="yes";   shift;;
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
         --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
+        --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
+        --fpe)          enableFPE="yes";           shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
@@ -255,10 +262,13 @@ if [ $help -eq 1 ]; then
   echo "        if you include debugging then you should answer" 
   echo "        no when asked if you want to install the executables."
   echo " "
-  echo "    -h, --help:  Display this help message."
+  echo "    --extra-debug: Enable extended debugging options"
   echo " "
   echo "    --force: Overwrite a corrupted installation. "
   echo " "
+  echo "    --fpe: Enable compiler-specific floating-point-exception"
+  echo "         handling procedures, if available."
+  echo " " 
   echo "    --gcc32: Use 3.2 version of GCC provided by the"
   echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
   echo "         and compat-libf2c-32 packages."
@@ -268,6 +278,10 @@ if [ $help -eq 1 ]; then
   echo "         supported, and may introduce uncertianty into results."
   echo "         GCC4-builds of ESP-r should be used for testing purposes"
   echo "         only."
+  echo " "
+  echo "    -h, --help:  Display this help message."
+  echo " "
+  echo "    --intel: Use the intel compiler suite (icc,ifort,icpc)."
   echo " "
   echo "    --no_dbs: Skip installation of database files."
   echo " "
@@ -482,19 +496,28 @@ fi
 #  for compiler. On macs, users should use --compiler_version -3.3
 #  directive. Otherwise, use GNU set. 
 #-----------------------------------------------------------
-if [ "$platform" = "sun" ] && [ "$mode" = "interactive" ]; then
-  compiler=prompt
-else
-  compiler=GNU
+if [ "$mode" = "interactive" ]; then
+  if [ "$platform" = "sun" ] || [ "$platform" = "linux" ]; then
+    compiler="prompt"
+  fi
+fi
+
+if [ "$compiler" != "prompt" ]; then
+  if [ "$use_intel" = "yes" ]; then
+    compiler="intel"
+  else
+    compiler="GNU"
+  fi
 fi
 
 if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
   A=none;
   echo ""
-  echo " ESP-r can be built with the Sun Fortran 90  or GNU"
-  echo " Fortran 77 compilers."
+  echo " ESP-r can be built with the Sun Fortran 90, GNU or "
+  echo " intel compilers."
   while [ $A != "1" ] &&
-        [ $A != "2" ]
+        [ $A != "2" ] &&
+        [ $A != "3" ]
   do
      if [ $A != "none" ]; then
         echo ""
@@ -504,6 +527,7 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
      echo " Compiler: "
      echo "  (1) Sun fortran 90 (cc and f90)"
      echo "  (2) GNU fortran (gcc 3.X and g77)"
+     echo "  (3) Intel fortran (icc, icpc and ifort)"
      read A
      if [ "$A" = "" ]; then
        A="2"
@@ -512,10 +536,11 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
   case "$A" in
      1) compiler=sunF90;;
      2) compiler=GNU;;
+     3) compiler=intel;;
   esac
 else
   echo " "
-  echo " The GNU compiler set will be used."
+  echo " The $compiler compiler set will be used."
 fi
 
 #-----------------------------------------------------------
@@ -910,10 +935,11 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc3)     CC=gcc;   CPL=g++;    FC=g77       ;;
+           gcc3)     CC=gcc;   CPL=g++;    FC=g77;      ;;
            gcc32)    CC=gcc32; CPL=g++32;  FC=g77       ;;
            gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
+   intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
 
 if [ "$compiler_version" != "none" ]; then
@@ -921,7 +947,21 @@ if [ "$compiler_version" != "none" ]; then
   CPL="$CPL$compiler_version"
   FC="$FC$compiler_version"
 fi
-  
+
+#--------------- OPTIONS for extended debugging -----------
+ExtendedDebugFlags=""
+if [ "$extendedDebugging" == "yes" ]; then
+  case $compiler in
+    sunF90) ExtendedDebugFlags="$ExtendedDebugFlags";;
+    GNU) case $gnu_version in
+            gcc3)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wuninitialized -O" ;;
+            gcc32)    ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wuninitialized -O" ;;
+            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check"  ;;
+          esac;;
+    intel)  ExtendedDebugFlags="$ExtendedDebugFlags -debug all -C -fp-stack-check -traceback -inline-debug-info -fpe0 "  ;;
+  esac
+fi
+
 #--------------- WWLINK -----------------------
 # Assign wwlink variable --- is this used anymore?
 case $compiler in
@@ -952,14 +992,14 @@ fi
 # Assign fortran compilation flags
 case $compiler in
    # Note '-C' flag causes some grief on older sun F90 compilers (~v5.0)
-   sunF90) FFLAGS="$LOCAL_INCLUDES $fDefType -DF90 $debug_flag -C " ;;
-   GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag -fno-automatic";
+   sunF90) FFLAGS="$LOCAL_INCLUDES $fDefType -DF90 $debug_flag $ExtendedDebugFlags -C " ;;
+   GNU)    FFLAGS="$LOCAL_INCLUDES $fDefType $debug_flag $ExtendedDebugFlags -fno-automatic";
            case $gnu_version in
-             # set -finit-local-zero fro gcc3
+             # set -finit-local-zero for gcc3
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
              *)    FFLAGS="$FFLAGS -finit-local-zero" ;;
-           esac
-           ;;
+           esac ;;
+   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags" ;;
 esac
 
 if [ "$platform" = "mingw" ] && [ "$xLibs" = "GTK" ]; then
@@ -992,8 +1032,9 @@ fi
 
 # set up c compilation flags
 case $compiler in
-   sunF90)  CFLAGS="$cINCLUDES $cDefType $debug_flag ";;
-   GNU)     CFLAGS="$cINCLUDES $cDefType $debug_flag ";;
+   sunF90)  CFLAGS="$cINCLUDES $cDefType $debug_flag $ExtendedDebugFlags";;
+   GNU)     CFLAGS="$cINCLUDES $cDefType $debug_flag $ExtendedDebugFlags";;
+   intel)     CFLAGS="$cINCLUDES $cDefType -save -zero $debug_flag $ExtendedDebugFlags";;
 esac
 
 # Add '-mms-bitfields' and '-mwindows' on Mingw+GTK
@@ -1013,6 +1054,13 @@ case $platform in
    mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib";;
 esac
 
+# Append versioning information library
+ULIBS="$ULIBS -lversion"
+
+# Append exception-handling library (which may contain a dummy
+# function if FPE handling is disabled)
+ULIBS="$ULIBS -lfpe"
+
 # Append X11 library paths to ULIBS as required
 case $xLibs in
   X11) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
@@ -1020,28 +1068,34 @@ case $xLibs in
   noX) ULIBS="$ULIBS -lnoxesru";;
 esac
 
+
 # Append XML output libararies to ULIBS as required (libxml2 and libstdc++)
 case $xml_support in
-  yes) # Add c++ library
-       ULIBS="$ULIBS -lstdc++";
+  yes) 
+       # Link xml libraries, along with stdc++.
+       ULIBS="$ULIBS -lXML -lstdc++";
+
        # If libxslt is available, link it too
        case $xsl_libs_available in
          "yes") ULIBS="$ULIBS -lxslt";;
-         "no")  ULIBS="$ULIBS";;
+         "no")  ULIBS="$ULIBS ";;
          esac;
-       # Add support for libxml2. This must follow
-       # -lxslt on mingw.
+
+       # Add link to libxml2. This must follow
+       # -lxslt on cygwin/mingw.
        ULIBS="$ULIBS -lxml2";
-       # Append ws2_32 library on mingw.
+
+       # Append ws2_32 library on mingw and Crun to Sun
        case $platform in
             mingw)    ULIBS="$ULIBS -lws2_32";;
+            sun)    ULIBS="$ULIBS -lCrun";;
             *)        ULIBS="$ULIBS";;
        esac;
        # Flag xml for inclusion in bps
-       xml_status="include_XML";;
-  no)  ULIBS="$ULIBS";
+       targets="enableXML $targets";;
+  no)  ULIBS="$ULIBS -lXML ";
        # Flag xml for exclusion in bps
-       xml_status="exclude_XML";;
+       targets="disableXML $targets";;
 esac
 
 #-------------- LDFLAGS ------------------------
@@ -1063,6 +1117,29 @@ case $platform in
 #Custom housts follow
    nrn7)     EXE="" ;;
 esac
+
+#-------------- FPE ------------------------
+# Possibly enable compiler-specific exception handling
+
+# Target for primitive gcc3 exception handling
+gcc3_fpe_target="disableGccFPE"
+
+if [ "$enableFPE" == "yes" ]; then
+
+  case $compiler in
+    sunF90)   ;;
+    GNU) case $gnu_version in
+            gcc3)     gcc3_fpe_target="enableGccFPE"   ;;
+            gcc32)    gcc3_fpe_target="disableGccFPE"   ;;
+            gcc4)     gcc3_fpe_target="disableGccFPE"  ;;
+          esac;;
+  esac
+
+fi
+
+# Append GCC3 fpe target to targets list
+
+targets="$gcc3_fpe_target $targets"
 
 #===========================================
 ##### End Computer Architecture
@@ -1293,8 +1370,10 @@ echo " Installing ESP-r system. This may take some time."
  echo -n "    - gathering versioning information from svn..."
 
  # Ensure that build information is always recompiled into 
- # every binary - touch common file startup.F
- touch ${SRCdir}/esrucom/startup.F
+ # every binary - touch common file version.F, and delete
+ # library/object files.
+ touch ${SRCdir}/lib/version.F >/dev/null 2>&1
+ rm ${SRCdir}/lib/libversion.a  ${SRCdir}/lib/version.o >/dev/null 2>&1
 
  # Get time of build 
  time=`date`
@@ -1486,6 +1565,8 @@ do
      libX11) result="${SRCdir}/lib/libxesru.a"    ;;
      libGTK) result="${SRCdir}/lib/libgtkesru.a"  ;;
      libnoX) result="${SRCdir}/lib/libnoxesru.a"  ;;
+     enableXML | disableXML ) result="${SRCdir}/lib/libXML.a"  ;;
+     disableGccFPE | enableGccFPE) result="${SRCdir}/lib/libfpe.a" ;;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
      *)      result="${SRCdir}/esru${target}/$target${EXE}"   ;;
@@ -1936,8 +2017,11 @@ echo " Installing standard databases. This may take some time."
   cp ${SRCdir}/databases/constr.db3.a ${DESTdir}/esp-r/databases/constr.db3.a
   cp ${SRCdir}/databases/north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb.a 
   cp ${SRCdir}/databases/material.db3.a ${DESTdir}/esp-r/databases/material.db3.a
+
+  cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
+  cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
   echo " Done."
-  
+    
      cd ${SRCdir}/databases
   
      echo -n "   - Creating binary event profiles databases ..."

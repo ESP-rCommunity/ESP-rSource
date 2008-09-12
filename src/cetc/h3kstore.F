@@ -259,7 +259,6 @@ c     None. Sums up Monthly versions of energy Variables above..
       REAL    PLR
 
 c     Sum up the energy for the timestep.
-
 c     This IF ensures start-up is over.
       IF (bInStartUp()) then
          RETURN
@@ -268,16 +267,17 @@ c     This IF ensures start-up is over.
          CALL H3KSTORE_SUM_PLR_BIN_HOURS(isystem,PLR)
 
 c     Sum up monthly energies
-         fheat_energy_monthly(isystem,imonth) =
+        if ( isystem /= 0 ) then
+          fheat_energy_monthly(isystem,imonth) =
      &        fheat_energy_monthly(isystem,imonth) + fheat_energy
 
-         fcool_energy_monthly(isystem,imonth) =
+          fcool_energy_monthly(isystem,imonth) =
      &        fcool_energy_monthly(isystem,imonth) + fcool_energy
 
-         fpilot_energy_monthly(isystem,imonth) =
+          fpilot_energy_monthly(isystem,imonth) =
      &        fpilot_energy_monthly(isystem,imonth) +fpilot_energy
-
-         return
+        endif
+        return
       ENDIF
       END
 
@@ -533,7 +533,11 @@ c     Common for the number of time steps per hour
       REAL frac_hour,PLR,upper,lower,fhours,iPLR
       INTEGER isystem,iPercent
 c     This IF ensures start-up is over.
-      fhours = total_num_of_hours(isystem)
+      if ( isystem == 0 ) then 
+        fhours = 0
+      else
+        fhours = total_num_of_hours(isystem)
+      endif 
       CALL EDAY(ISD1,ISM1,IODS)
       CALL EDAY(ISD2,ISM2,IODF)
       if (idyp.ge.IODS.and.idyp.le.IODF) then
@@ -676,6 +680,7 @@ C     ndbph is number of data blocks/hr for monitor function.
       SUBROUTINE H3KSTORE_SAVELEVEL5(ICOMP,IDAY,ITSMUS,ndbph)
       IMPLICIT NONE
 #include "building.h"
+#include "control.h"
 
 C     #include "cfd.h"
 #include "monitor.h"
@@ -759,21 +764,6 @@ C     Commons for summary of solar (for results library)
 
       COMMON/CCTL/ICASCF
       INTEGER ICASCF(MCOM)
-
-      COMMON/BCTL/NCF,IBSN,IBAN,NBCDT,
-     &     IBCDV,NBCDP,TBCPS,IBCTYP,IBCLAW,BMISCD
-       INTEGER NCF
-       INTEGER IBSN(MCF,4)
-       INTEGER IBAN(MCF,3)
-       INTEGER NBCDT(MCF)
-       INTEGER IBCDV(MCF,MBCDT,2)
-       INTEGER NBCDP(MCF,MBCDT)
-       REAL TBCPS(MCF,MBCDT,MBCDP)
-       INTEGER IBCTYP(MCF,MBCDT,MBCDP)
-       INTEGER IBCLAW(MCF,MBCDT,MBCDP)
-       REAL BMISCD(MCF,MBCDT,MBCDP,MISC)
-
-
 
       COMMON/PREC2/VOL
       REAL VOL(MCOM)
@@ -2115,6 +2105,13 @@ C Sum the power consumption of all the pumps.
             fTS_Plant_Pump_Elec  = fTS_Plant_Pump_Elec + 
      &                               (-1 * PCAOUT(pump_IPCOMP(I),1))
          END DO
+
+C.....add to XML ouput
+      call add_to_xml_reporting(
+     &        fTS_Plant_Pump_Elec,
+     &        'plant/SDHW_summary/pump_elec',
+     &        'units', '(W)',
+     &        'SDHW system: Electric consumption of the all pumps' )
       END IF
         
 C The plant matrix converged the previous solver iteration. Therefore, save the results.

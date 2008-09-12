@@ -41,12 +41,18 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
-      PARAMETER (MSTMC=1,MSGAL=1)
+      PARAMETER (MSTMC=20,MSGAL=40)
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -129,7 +135,7 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -207,14 +213,14 @@ C Bidirectional raw optical data file.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
@@ -226,7 +232,7 @@ C Generic databases from esprdbfile.h.
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15, indxcmt*24
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -644,11 +650,11 @@ C Write temporal db information.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*tdf  ',
      &    LTDF(1:lnblnk(LTDF))
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
-     &    '# tdf item id, item type, <related zone> '
+     &    '# tdf item id, item type, <related zone>, <related surface> '
         if(ITEMSTD.gt.0)then
           do 27 L=1,ITEMSTD
-            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L)
-  29        FORMAT(A12,1X,A8,1X,A16)
+            WRITE(IFCFG,29)DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+  29        FORMAT(A12,1X,A8,1X,2A16)
   27      continue
         endif
         WRITE(IFCFG,'(A)')'* end tdf'
@@ -952,6 +958,9 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1056,6 +1065,7 @@ C ****** Scan and report current mis-matches.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1066,13 +1076,15 @@ C ****** Scan and report current mis-matches.
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       logical prob,dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CXSTR*78
 
       newgeo=.false.  ! assume older format geometry.

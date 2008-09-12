@@ -47,6 +47,9 @@ C GTNAME    - description name of the ground topology.
 
       SUBROUTINE EGRNIN(IUNIT,GTGEOM,ITRC,ITRU,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
@@ -237,6 +240,8 @@ C user output. IER=0 OK, IER=1 problem.
 
       SUBROUTINE  EGROUT(IFILG,GENFIL,ITRU,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)

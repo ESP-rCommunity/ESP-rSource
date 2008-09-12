@@ -148,11 +148,14 @@ C  itrc the level of reporting (zero is quiet).
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LPCDB/IPCDB (for plant template database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
+      COMMON/C6/INDCFG
       COMMON/C8/LPNAM
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
@@ -177,13 +180,14 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
-      LOGICAL close
-      CHARACTER OUTSTR*124,OUTS*124,word*20,LTMP*72,cmsg*24
+      LOGICAL close,unixok
+      CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24,fs*1
       CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      
       CHARACTER ZNAME*12,ZDESC*64
+      character loutstr*248,louts*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)
 
@@ -192,47 +196,83 @@ C containing NMISC.
       CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20
 
       INTEGER   id_trnsysCMP  !trnsys component number
+      integer lnpcdb ! length of file name
 
       call usrmsg(' ','Reading plant network description...','P')
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      lndbp=lnblnk(standarddbpath)
+
+C Note: although the configuration file can hold the name of
+C the plant template database with or without path according to
+C whether it is in the standard database folder, the plant network
+C file does not make this distinction.
+
 C Identify plant components database; skip if this is '* Plant' record.
 C The next line is the name of the plant components db, but skip
-C this as the db is contained in the configuration file.
+C this as the db is contained in the configuration file. Use a longer
+C string buffer as the file name may be long.
+      lnpcdb=lnblnk(LPCDB)
 
-      CALL STRIPC(iuc,OUTSTR,0,ND,1,'* plant',IER)
+      CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
       IF(IER.NE.0)RETURN
-      LTMP=OUTSTR(1:72)
-      IF(LTMP.EQ.'* Plant'.OR.LTMP.EQ.'* PLANT') THEN
-        CALL STRIPC(iuc,OUTSTR,0,ND,1,'* plant',IER)
+      LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
+      IF(LLTMP.EQ.'* Plant'.OR.LLTMP.EQ.'* PLANT') THEN
+        CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
         IF(IER.NE.0)RETURN
-        LTMP=OUTSTR(1:72)
-        if(LTMP(1:lnblnk(LTMP)).ne.LPCDB(1:lnblnk(LPCDB)))then
-          call usrmsg(
-     &     'Mismatch: plant db in configuration & db in plant network'
-     &,LPCDB,'W')
+
+C Warn the user if the file in the plant network is different
+C from that of the cfg file plant component database.
+        LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
+        if(LLTMP(1:lnblnk(LLTMP)).ne.LPCDB(1:lnpcdb))then
+          call lusrmsg(
+     &     'Mismatch: plant db in configuration & db in plant network',
+     &     LPCDB,'W')
         endif
       else
-        LTMP=OUTSTR(1:72)
-        LPCDB=LTMP(1:72)      
+        LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
+      endif
+
+C If plant only model then we need to actually use the string in the
+C plant network file as the plant template database file name,
+C otherwise the configuration file already has this name.
+      if(INDCFG.eq.2)then
+        call findwhichdbpath('pdb',LLTMP,ier)
+      else
+
+C Pay attention to the implied path of the plant template db from cfg file.
+C debug.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lltmp=LPCDB
+        elseif(ipathpcdb.eq.2)then
+          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+        endif
       endif
 
 C Open plant components database on IUNIT1. IRECLN is width of plantdb
 C -> but don't open the database if save-level 0 or 5 are specified!
       IRECLN=20
-      call EFOPRAN(IUNIT1,LTMP,IRECLN,1,IER)   
+      call EFOPRAN(IUNIT1,LLTMP,IRECLN,1,IER)   
       IF(IER.ne.0) GOTO 950
 
 C Read the total number of plant components (NTPC) in the database.
       IREC = 1
       READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) ZDESCR
-      IF (ZDESCR .NE. ' PLANT COMPONENT DATABASE')then
-        call usrmsg('May not be a plant db!',LPCDB,'W')
+      IF (ZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
+        call lusrmsg('May not be a plant db!',LPCDB,'W')
       endif
       IREC=2
       READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) NTPC,NXTREC
 
       if(NTPC.eq.0)then
-        call usrmsg('Plant db has no entries!',LPCDB,'W')
+        call lusrmsg('Plant db has no entries!',LPCDB,'W')
       endif
 
 C Read the start address (NPSTA) for each component in the database.
@@ -263,9 +303,9 @@ C  Set the electrical component counter to 0.
 C Reporting.
       IF(ITRC.GE.1)THEN
         CALL EDISP(itu,' ')
-        WRITE(OUTSTR,'(a,i3,2a)') ' The plant network contains',
-     &    NPCOMP,' components from ',LPCDB(1:LNBLNK(LPCDB))
-        CALL EDISP(itu,OUTSTR)
+        WRITE(LOUTSTR,'(a,i3,2a)') ' The plant network contains',
+     &    NPCOMP,' components from ',LPCDB(1:LNPCDB)
+        CALL EDISP248(itu,LOUTSTR,100)
       ENDIF
 
 C Read plant component information and plant database start address
@@ -276,6 +316,8 @@ C Checks on plant component CDATA will be handled by CMP??S
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','component name',IER)
           pcname(ipcomp)=word(1:15)
+C Store length of name for reporting later.
+          iPltNameLen(ipcomp) = lnblnk(pcname(ipcomp))
           npcdat(ipcomp,1)=ipcomp
           CALL EGETWI(OUTSTR,K,NPREF(IPCOMP),1,NTPC,'F',
      &              'plant db pointer',IER)
@@ -285,8 +327,9 @@ C Read component description from database.
           irec=NPSTA(NPREF(IPCOMP))+2
           READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) pcdesc(ipcomp)
 
-C Determine number of control parameters
 
+
+C Determine number of control parameters
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'no of ctl',IER)
           IF(IER.NE.0)RETURN
           K=0
@@ -398,6 +441,7 @@ C Read electrical parameters from the file ( if they exist !)
             IPCELF(IPCOMP)=1
             NPEL=NPEL+1
           ENDIF           
+
 
 C Reporting.
           IF(ITRC.GE.1.and.NPI(IPCOMP).gt.0)THEN
@@ -578,7 +622,6 @@ C  its number of nodes needs to be read from an data file.
 C  Another method is to purposely set a large number (ie., MNODEC)
 C  in the database. In this case, reading file can be avoided here.
             CALL readTrnsysNodes(id_trnsysCMP,NumNod)
-
             ELSE
             READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950)A,B,C,D,E,F,
      &           NumNod
@@ -621,8 +664,8 @@ C less this was already done above (building side air flow wanted)
         IF(IAIRN.ge.0) THEN
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'network file',IER)
           LAPROB=OUTSTR(1:72)
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'pressure file',IER)
-          LAPRES=OUTSTR(1:72)
+          CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'pressure file',IER)
+          write(LAPRES,'(a)') LOUTSTR(1:144)
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'mfs res file',IER)
           LAFRES=OUTSTR(1:72)
           IF(IER.NE.0)RETURN
@@ -632,9 +675,9 @@ C Reporting.
             WRITE(OUTS,'(A,A)') '  network file : ',
      &            LAPROB(1:LNBLNK(LAPROB))
             CALL EDISP(itu,OUTS)
-            WRITE(OUTS,'(A,A)') '  press. coeff.: ',
+            WRITE(LOUTS,'(A,A)') '  press. coeff.: ',
      &            LAPRES(1:LNBLNK(LAPRES))
-            CALL EDISP(itu,OUTS)
+            CALL EDISP248(itu,LOUTS,100)
             WRITE(OUTS,'(A,A)') '  results file : ',
      &            LAFRES(1:LNBLNK(LAFRES))
             CALL EDISP(itu,OUTS)

@@ -39,12 +39,13 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
 
 C Note: when reading the SBEM database the code assumes that
 C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
-      common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
@@ -54,10 +55,11 @@ C IFIL base file unit number (set in MAIN of each application).
       CHARACTER SYSNAM*60
       CHARACTER*40 ACTNAME
       CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
-      CHARACTER*96 ACTDOC  ! to hold documentation string for activity
-
+      CHARACTER*102 ACTDOC  ! to hold documentation string for activity
+      integer NIT
+      
 C Initialise counters
-      IDEBUG=1
+      IDEBUG=0
       IFUEL=0
       ISYS=0
       IHSYS=0
@@ -368,8 +370,9 @@ C c) quoted string name of activity (roomactname)
 C d) b_type order index (same as A) (bld_order_index)
 C e) occupant density people/m2 (occupant_dens)
 C f) metabolic rate W/person/m2 (metabolic_rate)
-C g) skip cooling setpoint
-C h) skip heating set point
+C g) Main cooling setpoint (Cmainsetpoint)
+C h) Main heating set point (Hmainsetpoint) to use for notional
+C       building overheating (in subsys.F at the moment)
 C i) skip set back
 C j) outside air per person litres/sec/person (fresh_air)
 C k) lighting lux (lighting_lux)
@@ -392,31 +395,33 @@ C s) lighting display W/m2  (display_lighting)
         bld_order_index(iactindex)=index
         CALL EGETWR(LOUTSTR,K,VAL,0.,10.,'W','occupant density',IER)
         occupant_dens(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','metabolic rate',IER)
-        metabolic_rate(iactindex)=VAL
+        CALL EGETWI(LOUTSTR,K,IVAL,0,1000,'W','metabolic rate',IER)
+        metabolic_rate(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','cooling setpoint',IER)
+        Cmainsetpoint(iactindex)=VAL       
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','heating setpoint',IER)
+        Hmainsetpoint(iactindex)=VAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','set-back',IER)
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','outside air per prs',IER)
         fresh_air(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,10000.,'W','lighting lux',IER)
-        lighting_lux(iactindex)=VAL
+        CALL EGETWI(LOUTSTR,K,IVAL,0,10000,'W','lighting lux',IER)
+        lighting_lux(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','equipment W/m2',IER)
         equip_gain(iactindex)=VAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W',
      &    'domestic hot water litres/day/m2',IER)
         dhw_litres(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','humidity minimum %',IER)
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','humidity max %',IER)
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W','humidity minimum %',IER)
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W','humidity max %',IER)
         call egetdq(LOUTSTR,K,ACTDOC,'-','activity description',IER)
         write(roomactdoc(iactindex),'(a)') ACTDOC(1:lnblnk(ACTDOC))
 
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W',
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W',
      &    'occupant latent percentage',IER)
-        latent_ocup_percent(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W',
+        latent_ocup_percent(iactindex)=IVAL
+        CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W',
      &    'equipment latent percentage',IER)
-        latent_equip_percent(iactindex)=VAL
+        latent_equip_percent(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','lighting displ W/m2',IER)
         display_lighting(iactindex)=VAL
 
@@ -458,11 +463,17 @@ C fills relevant common blocks.
 #include "building.h"
 #include "sbem.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
 C espriou.h provides currentfile.
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
 
       CHARACTER OUTSTR*124
+      CHARACTER WORD*48
       LOGICAL NEAR
 
       IUF=IFIL+1
@@ -527,44 +538,50 @@ C espriou.h provides currentfile.
         K=60
         CALL EGETRM(OUTSTR,K,APCHK,'W','perm compliance checking',IER)
       ENDIF
-      CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-      K=13
-      CALL EGETWI(OUTSTR,K,NCMSYS,0,0,'-','HVAC systems.',IER)
-      IF(NCMSYS.EQ.0)GOTO 1001
-      DO 101 ICMSYS=1,NCMSYS
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-        HVACNAME(ICMSYS)=OUTSTR(1:LNBLNK(OUTSTR))
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,NMSYS,0,0,'-','HVAC systems index.',IER)
-        INCMSYS(ICMSYS)=NMSYS
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'heat generator',IER)
-        K=0        
-        CALL EGETWR(OUTSTR,K,HGEF(ICMSYS),0.,10.,'W','heat eff.',IER)
-        CALL EGETWI(OUTSTR,K,IHGEF(ICMSYS),0,0,'-','heat index.',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL heat gen index',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,IBRUKH(ICMSYS),0,0,'-','fuel type',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'fuel type',IER)
-        K=0        
-        CALL EGETWI(OUTSTR,K,IFTYP(ICMSYS),0,0,'-','fuel type',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'cool generator',IER)
-        K=0        
-        CALL EGETWR(OUTSTR,K,CGEF(ICMSYS),0.,10.,'W','cool eff.',IER)
-        CALL ECLOSE(CGEF(ICMSYS),0.0,1.E-5,NEAR)
-        IF(.NOT.NEAR)
-     &  CALL EGETWI(OUTSTR,K,ICGEF(ICMSYS),0,0,'-','cool index.',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL cool gen index',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,IBRUKC(ICMSYS),0,0,'-','fuel type',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'SFP',IER)
-        K=0        
-        CALL EGETWR(OUTSTR,K,SFPHS(ICMSYS),0.,10.,'W','SFP',IER)
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL fan index',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,IBRUKF(ICMSYS),0,0,'-','fuel type',IER)
- 101  CONTINUE
+ 5    CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+      IF(OUTSTR(1:13).EQ.'*HVAC Systems')THEN
+        K=13
+        CALL EGETWI(OUTSTR,K,NCMSYS,0,0,'-','HVAC systems.',IER)
+        IF(NCMSYS.EQ.0)GOTO 1001
+        DO 101 ICMSYS=1,NCMSYS
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+          HVACNAME(ICMSYS)=OUTSTR(1:LNBLNK(OUTSTR))
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC systems',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,NMSYS,0,0,'-','HVAC systems index.',IER)
+          INCMSYS(ICMSYS)=NMSYS
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'heat generator',IER)
+          K=0        
+          CALL EGETWR(OUTSTR,K,HGEF(ICMSYS),0.,10.,'W','heat eff.',IER)
+          CALL EGETWI(OUTSTR,K,IHGEF(ICMSYS),0,0,'-','heat index.',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL heat gen index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IBRUKH(ICMSYS),0,0,'-','fuel type',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'fuel type',IER)
+          K=0        
+          CALL EGETWI(OUTSTR,K,IFTYP(ICMSYS),0,0,'-','fuel type',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'cool generator',IER)
+          K=0        
+          CALL EGETWR(OUTSTR,K,CGEF(ICMSYS),0.,10.,'W','cool eff.',IER)
+          CALL ECLOSE(CGEF(ICMSYS),0.0,1.E-5,NEAR)
+          IF(.NOT.NEAR)
+     &    CALL EGETWI(OUTSTR,K,ICGEF(ICMSYS),0,0,'-','cool index.',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL cool gen index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IBRUKC(ICMSYS),0,0,'-','fuel type',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'SFP',IER)
+          K=0        
+          CALL EGETWR(OUTSTR,K,SFPHS(ICMSYS),0.,10.,'W','SFP',IER)
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'BRUKL fan index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IBRUKF(ICMSYS),0,0,'-','fuel type',IER)
+ 101    CONTINUE
+      ELSEIF(OUTSTR(1:23).EQ.'*Zone to system linkage')THEN
+        CONTINUE
+      ELSE
+        GOTO 5
+      ENDIF
  1001 CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to systems linkage',IER)
       DO 201 IZ=1,NCOMP
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to systems linkage',IER)
@@ -594,16 +611,40 @@ C espriou.h provides currentfile.
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'activities zone links',IER)
       DO 204 IZ=1,NCOMP
         CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone to activity linkage',IER)
-        K=47
-        CALL EGETWI(OUTSTR,K,IACTYTYP(IZ),0,0,'-',
-     &  'zone-activity links',IER)
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','Zone',IER)
+        CALL EGETW(OUTSTR,K,WORD,'W','name of zone',IER)
+        CALL EGETWI(OUTSTR,K,IVAL,0,0,'-','high level zn-activity',IER)
+        IACTYTYP(IZ)=ival
+        CALL EGETWI(OUTSTR,K,ival,0,0,'-','long list zn-activity',IER)
+        theactivityindex(IZ)=ival
+        CALL EGETRM(OUTSTR,K,WORD,'W','label for activity',IER)
  204  CONTINUE
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'lighting type zone links',IER)
       DO 205 IZ=1,NCOMP
-        CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone-lighting type linkage',IER)
-        K=52
-        CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
-     &  'zone-light type links',IER)
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'Zone-lighting type linkage',
+     &   IER)
+        IF(OUTSTR(1:12).EQ.'User_defined')THEN
+        
+C Check if there is a user defined entry for lighting heat gains
+          ILIGHTUSER(IZ)=1
+          K=86
+          CALL EGETWR(OUTSTR,K,LIGHTWATTAGE(IZ),0.0,0.0,'-',
+     &    'zone-light heat gains',IER)  
+        ELSEIF(OUTSTR(1:12).EQ.'default_type')THEN     
+          ILIGHTUSER(IZ)=0
+          K=66
+          CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
+     &    'zone-light type links',IER)
+        ELSE
+
+C possibly an old format - do the same as the default type
+C goto is avoided here by just using the same code as the "default_type"
+          ILIGHTUSER(IZ)=0
+          K=52
+          CALL EGETWI(OUTSTR,K,ILITYP(IZ),0,0,'-',
+     &    'zone-light type links',IER)
+        ENDIF
  205  CONTINUE
       
       RETURN
@@ -615,13 +656,20 @@ C data relevant to the UK National Calculation Method.
       SUBROUTINE MKSBEM
 #include "building.h"
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
+
       common/FILEP/IFIL
       common/C21/IFCFG,cfgroot,LCFGF
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       CHARACTER CFGROOT*24,LCFGF*72,TMPSTR*64
       CHARACTER ZNAME*12,ZDESC*64
+      integer ireadactivityindex
+      
       TMPSTR=' '
       IUF=IFIL+1
 
@@ -739,6 +787,11 @@ C Write high level project specific detail
      &'Compliance check to be performed on air permeability value? ',
      &APCHK 
 
+      DO 205 IZ=1,NCOMP
+        WRITE(IUF,'(2A,F5.2)',IOSTAT=IOS,ERR=3)
+     &  'Zone ',zname(iz),ACH(IZ)
+ 205  CONTINUE
+
 C Write system level detail. This includes names and indices for HVAC
 C system, heat and cool generators, DHW, ventilation fans and fuel. 
 C Also write BRUKL indices as defined in
@@ -815,7 +868,7 @@ C Write building zone to HVAC system linkage information
         IF(IHLZ(IZ).EQ.0)THEN
           TMPSTR=' No HVAC system for this zone!'
         ELSE
-          WRITE(TMPSTR,'(2A)')' ',HVACNAME(INCMSYS(IHLZ(IZ)))
+          WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
         ENDIF
         WRITE(IUF,'(3A,I3,A)',IOSTAT=IOS,ERR=3)
      &     'Zone ',ZNAME(IZ),' is linked to system number ',
@@ -855,26 +908,39 @@ C Write building zone to DHW system linkage information
 C Write building zone to activity type linkage information
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to activity linkage'
       DO 105 IZ=1,NCOMP
-        if(IACTYTYP(IZ).gt.0)then
-          WRITE(IUF,'(3A,1X,I4,1X,A)') 'Zone ',zname(iz),
-     &      ' is linked to activity number ',IACTYTYP(IZ),
-     &      atypname(IACTYTYP(IZ))
+        ireadactivityindex=theactivityindex(IZ)
+        if(ireadactivityindex.gt.0)then
+          WRITE(IUF,'(2A,I4,I6,1X,2A)') 'Zone ',zname(iz),IACTYTYP(IZ),
+     &      ireadactivityindex,atypname(IACTYTYP(IZ)),
+     &      ' # is linked to activity number '    
         else
-          WRITE(IUF,'(3A)') 'Zone ',zname(iz),
-     &      ' is linked to activity number     0 (undefined activity)'
+          WRITE(IUF,'(5A)') 'Zone ',zname(iz),'0','0',
+     &      '# is linked to activity number 0 (undefined activity)'
         endif
  105  CONTINUE
 
 C Write building zone to lighting type linkage information
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'*Zone to lighting type linkage'
       DO 106 IZ=1,NCOMP
-        if(ILITYP(IZ).gt.0)then
-          WRITE(IUF,'(3A,1X,I4,1X,A)') 'Zone ',zname(iz),
-     &      ' is linked to lighting type number ',ILITYP(IZ),
+
+C Check if there is a user defined entry for lighting heat gains
+        if(ILIGHTUSER(IZ).eq.1)then
+          WRITE(IUF,'(6A,1X,F7.2)') 'User_defined',' ','Zone',
+     &    zname(iz),
+     &    ' is linked to user defined lighting heat gains of (W): ',
+     &        '  ',LIGHTWATTAGE(IZ)
+             
+C Otherwise take the suggested values (gains) for the specified 
+C lighting type
+        elseif(ILIGHTUSER(IZ).eq.0)then
+          if(ILITYP(IZ).gt.0)then
+            WRITE(IUF,'(5A,1X,I4,1X,A)') 'default_type',' ','Zone',
+     &      zname(iz),' is linked to lighting type number ',ILITYP(IZ),
      &      TLIGHT(ILITYP(IZ))
-        else
-          WRITE(IUF,'(3A)') 'Zone ',zname(iz),
-     &      ' is linked to lighting type number     0 (undefined type)'
+          else
+            WRITE(IUF,'(3A)') 'Zone ',zname(iz),
+     &       ' is linked to lighting type number     0 (undefined type)'
+          endif
         endif
  106  CONTINUE
       CALL ERPFREE(IUF,ISTAT)

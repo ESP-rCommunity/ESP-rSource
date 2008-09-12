@@ -62,13 +62,9 @@ C The main building control function executive.
 
       SUBROUTINE MZBCTL(ier,icomp)
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       common/dllerr/dllsubr,dllmesg
@@ -78,6 +74,8 @@ C The main building control function executive.
 
 C Check if running in dll mode.
       call isadll(dll)
+
+
 
 C If actuator is not located in zone then no control is imposed
 C regardless of control function prevailing at this time.
@@ -285,6 +283,7 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
 
       SUBROUTINE MZMIXT(ICMP,TMRT,TMIX)
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -299,10 +298,6 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,
      &QFUT,TFUT
       COMMON/CONTL/IMRTT(MCOM),ITSC(MCOM),NSAMRT(MCOM),IMRTS(MCOM,MS)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       character outs*124
       logical close
@@ -359,13 +354,10 @@ C with the sensor defined for the control function.
       SUBROUTINE CFVAR(TCTL,IER)
 #include "building.h"
 #include "tdf2.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/btime/btimep,btimef
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -378,7 +370,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -591,6 +584,7 @@ C Recover control point data.
 
 #include "building.h"
 #include "tdf2.h"
+#include "control.h"      
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -605,7 +599,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -743,6 +738,7 @@ C CFFNGR is a function generator.
 
       SUBROUTINE CFFNGR(IFNC,TCTL)
 #include "building.h"
+#include "control.h"
 
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -751,12 +747,6 @@ C CFFNGR is a function generator.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-     
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
     
       logical bfngn
@@ -1023,6 +1013,7 @@ C the present time row surface and air point temperatures.
 
       SUBROUTINE BCL00
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
@@ -1033,11 +1024,6 @@ C the present time row surface and air point temperatures.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/BTIME/BTIMEP,BTIMEF
@@ -1333,6 +1319,7 @@ C A basic controller.
 #include "building.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1342,10 +1329,6 @@ C A basic controller.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
 C Common for relative humidity control (ideal) and dew point relative humidity
 C control.
@@ -1355,23 +1338,20 @@ C control.
       COMMON/FVALG/GFA(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
-      
-C Common for variable hvac cooling capacity. The cooling
 
-C Common containing variable hvac cooling capacity. The cooling
-C capacity of certain HVAC systems such as heat pumps, changes
-C every time step due to changes in outdoor temperature and
-C indoor humidity.
-C Following common already included via hvac_parameters.h & hvac_common.h
-C      COMMON/hvac_timestep_parameters/outdoor_air_inf_cond(mcom),
-C     &coil_moist_in(mcom),coil_moist_out1(mcom),
-C     &coil_moist_out2(mcom),cont_fun_cool_cap(max_cont_fun),output_flag
-C      REAL outdoor_air_inf_cond,coil_moist_in,coil_moist_out1,
-C     &coil_moist_out2,cont_fun_cool_cap
-C      logical output_flag
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
 
       common/dllerr/dllsubr,dllmesg
-     
+
       character dllsubr*12,dllmesg*124,outs*124
       logical dll,CLOSERH
       LOGICAL AreWindowsOpen
@@ -1437,7 +1417,7 @@ C Trace output
 
       QFUT=0.
       TFUT=TNP
-      
+
 C Added for slave controller...
       Qmst(ICF)=QFUT
 
@@ -1454,16 +1434,25 @@ C QCN = min cooling capacity (W)
 C HSP = heating set point temp. (deg.C)
 C CSP = cooling set point temp. (deg.C)
 
-      QHM=BMISCD(ICF,IDTYP,IPER,2)
+C The variable keeping track of the cooling/heating capacities of the 
+C hvac system for ideal hvac modeling is set to zero at the beginning 
+C of the simulation. If this capacity is found to be greater than zero, 
+C then the cooling/heating capacity of the associated control law for 
+C the zone law needs to be updated. The variable cooling/heating capacity 
+C is set at the approprite HVAC equipment simulation routine.
+
+C Set maximum heating capacity:
+      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
+        QHM=cont_fun_heat_cap(IICOMP)
+      else
+        QHM=BMISCD(ICF,IDTYP,IPER,2)       
+      endif
+
+C Set minimum heating capacity
       QHN=BMISCD(ICF,IDTYP,IPER,3)
 
-C The function keeping track of the variable cooling capacity of the 
-C system is set to zero at the beginning of the simulation. If 
-C this capacity is found to be greater than zero, then the cooling 
-C capacity of the associated control law needs to be updated. The
-C variable cooling capacity is set at the approprite HVAC
-C equipment simulation routine.
-      if(cont_fun_cool_cap(ICF).gt.0 ) then
+C Set maximum cooling capacity:
+      if(cont_fun_cool_cap(IICOMP).gt.0 ) then
 
 C     if the windows are open
 C     ensure that the AC is not used. Note: if window model not active the result of 
@@ -1475,7 +1464,7 @@ C     stratagy.
             QCM = 0.
             QCN = 0.
          else
-            QCM = - cont_fun_cool_cap(ICF)
+            QCM = - cont_fun_cool_cap(IICOMP)
 C     Ensure windows are closed.
             bWindowsAreOpen = .false.
          endif
@@ -1483,10 +1472,30 @@ C     Ensure windows are closed.
          QCM = -BMISCD(ICF,IDTYP,IPER,4)
       endif
 
+C Set minimum cooling capacity
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
+
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
-      
+
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
+
+C Set heating flags to true...
+      bZoneHeated(iicomp) = .true.
+      bZoneCooled(iicomp) = .true.
+
+C Setpoints must be between 10oC and 30oC for passive solar computations
+      if ( fHeatSetpoint(iicomp).lt.10.0 .or.
+     &     fHeatSetpoint(iicomp).gt.30.0 ) bZoneHeated(iicomp) = .false.
+      if ( fCoolSetpoint(iicomp).lt.10.0 .or.
+     &     fCoolSetpoint(iicomp).gt.30.0 ) bZoneCooled(iicomp) = .false.
+
+C Capacity must be greater than 1 W for passive solar computations
+       if (  QHM .lt. 1.0 )  bZoneHeated(iicomp) = .false.
+       if (  ABS(QCM) .lt. 1.0 )  bZoneCooled(iicomp) = .false.
+
 C Following lines added to set master zone values for use in slave controller.
 C Each control of type 2 will have values set in case they are referenced
 C as a master control.
@@ -1706,6 +1715,7 @@ C A free-float controller.
 
       SUBROUTINE BCL02
 #include "building.h"
+#include "control.h"      
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1748,6 +1758,7 @@ C An exponential pre-heat (or cool) controller.
 
       SUBROUTINE BCL03
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -1756,12 +1767,6 @@ C An exponential pre-heat (or cool) controller.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
-
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       
@@ -1906,19 +1911,15 @@ C A fixed heat injection/extraction controller.
 
       SUBROUTINE BCL04
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       CHARACTER OUTS*124
 
 C Fatal error test.
@@ -2013,18 +2014,14 @@ C suitable for use with controller types 0,35,36,37,38,39.
 
       SUBROUTINE BCL05
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
@@ -2354,31 +2351,20 @@ C QCMAX : maximum cooling flux allowed (W)
 
 #include "building.h"
 #include "plant.h"
+#include "control.h"
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
-     &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
-     &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/PCEMB/IPALLOC(MPCOM),TALLOC(MPCOM)
-
       COMMON/MBINFO/ZMBI(MCOM,4)
-
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
-
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
@@ -2730,17 +2716,13 @@ C A multi-stage controller with hysteresis.
 
       SUBROUTINE BCL07
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -2960,6 +2942,7 @@ C with limit constraints.
 
       SUBROUTINE BCL08
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -2968,10 +2951,6 @@ C with limit constraints.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -3084,22 +3063,13 @@ C represents the heat pipe physics.
 
       SUBROUTINE BCL09
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-
       COMMON/BTIME/BTIMEP,BTIMEF
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-
       COMMON/BCL9/IHPZON,IHPCON,IHPNDO,QNOPF,QHPSV
 
       character outs*124
@@ -3251,19 +3221,15 @@ C ON condition is reached.
 
       SUBROUTINE BCL10
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
@@ -3373,18 +3339,14 @@ C It also is used to support temporal file setpoint sensing.
 
       SUBROUTINE BCL11
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
@@ -3638,18 +3600,14 @@ C It is suitable for use with a type 0 controller.
 
       SUBROUTINE BCL12
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
@@ -3835,20 +3793,16 @@ C Heating and cooling restrictions are allowed.
 
       SUBROUTINE BCL13
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC7/ITCNST      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
 C Special common for BCL13; icounh and icounc are
@@ -4027,20 +3981,15 @@ C Heating and cooling restrictions are allowed.
 
       SUBROUTINE BCL14
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN    
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-      
       COMMON/FLTCTR/QHLAST,QCLAST
       COMMON/FLTCLR/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
@@ -4238,24 +4187,17 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       SUBROUTINE BCL15
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-
       COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
@@ -4508,23 +4450,16 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       SUBROUTINE BCL16
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
-
       COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
      &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV    
 C Where:
@@ -4792,19 +4727,14 @@ C Fuzzy Logic PI/PD Controller.
 
       SUBROUTINE BCL17
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/FZCTL1/FZM(MFP,3,5,10),ERRSAV(MFP),QSAV(MFP),
      &ACUT(3,5),FZCTIP(5,5),FZCTOP(5),COA(5)
       COMMON/FZCTL2/NFZF(MFP,3),FZT(MFP,3),NONZRO
@@ -5115,18 +5045,12 @@ C is identically the same as the sensor input.
 
       SUBROUTINE BCL18
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       
       character outs*124
@@ -5191,18 +5115,14 @@ C This control law is suitable for a type 0 controller.
 
       SUBROUTINE BCL19
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
@@ -5419,20 +5339,15 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       SUBROUTINE BCL20
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/FILEP/IFIL
-
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
@@ -5442,6 +5357,9 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
@@ -5455,7 +5373,6 @@ C Evaporation common block for use in MZVAPC.
       common/evapsur/vapsur(mcom)
 
       CHARACTER OUTS*124
-      character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Fatal error test.
@@ -5603,20 +5520,23 @@ C deliver proportionally).
       SUBROUTINE BCL21
 
 #include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-      
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
-     
+
+C Commons for identifying wether a zone is heated or cooled.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      integer iMasterZone
       character outs*124  
       logical close
 
@@ -5659,6 +5579,7 @@ C Initialise Qmst
 C sensor location = 'in another zone' i.e. Master Zone. Recover
 C which control law is the master control for that zone.
         imasctlindex= int(BMISCD(ICF,IDTYP,IPER,2))
+        iMasterZone = IBSN(imasctlindex, 1)
         QM=Qmst(imasctlindex)
       elseif (IBSN(ICF,1).EQ.0) then
         call edisp(itu, 
@@ -5667,6 +5588,12 @@ C which control law is the master control for that zone.
         call epagend
         STOP      
       endif
+
+C Collect heating flags and setpoints from master zone
+      bZoneHeated(iicomp)   = bZoneHeated(iMasterZone)
+      bZoneCooled(iicomp)   = bZoneCooled(iMasterZone)
+      fHeatSetpoint(iicomp) = fHeatSetpoint(iMasterZone)
+      fHeatSetpoint(iicomp) = fHeatSetpoint(iMasterZone)
 
       if (QM.GT.0.0) then
 
@@ -5682,8 +5609,24 @@ C PBC - Percentage of Base Capacity delivered to master zone, cooling:
       
 C QHM = base (i.e max) heating capacity (W) for slave
 C QCM = base (i.e max) cooling capacity (W) for slave
-      QHM=BMISCD(ICF,IDTYP,IPER,3)
-      QCM=-BMISCD(ICF,IDTYP,IPER,4)
+
+C If the zone associated with this control function is served by an HVAC system
+C simulated ideally, then use HVAC system heating capacity to update controller
+C heating capacity for time step 
+      if(cont_fun_heat_cap(IICOMP).gt.0.) then
+        QHM=cont_fun_heat_cap(IICOMP)
+      else        
+        QHM=BMISCD(ICF,IDTYP,IPER,3)
+      endif
+      
+C If the zone associated with this control function is served by an HVAC system
+C simulated ideally, then use HVAC system capacity to update controller
+C cooling capacity for time step 
+      if(cont_fun_cool_cap(IICOMP).gt.0.) then
+        QCM=-cont_fun_cool_cap(IICOMP)
+      else        
+        QCM=-BMISCD(ICF,IDTYP,IPER,4)
+      endif
 
 C Using same % value, calculate delivered capacity to slave zone
       if (QM.GT.0.0) then
@@ -5737,19 +5680,16 @@ C reverts to a CAV system using reheat for heating mode.
 C << the energy balance reported in esrures is off a bit >>
       SUBROUTINE BCL22
 #include "building.h"
+#include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/MBINFO/ZMBI(MCOM,4)
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
@@ -5916,14 +5856,11 @@ C of control law 1 (basic heating and cooling)
       SUBROUTINE BCL23
 #include "building.h"
 #include "tdf2.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/btime/btimep,btimef
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
       common/dllerr/dllsubr,dllmesg
 
 C TDF commons.
@@ -5932,7 +5869,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
@@ -6044,6 +5982,7 @@ C running mean comfort temperature calculated from the climate database
       SUBROUTINE BCL24(IER)
 
 #include "building.h"
+#include "control.h"
 
 C climate file commons
       COMMON/FILEP/IFIL
@@ -6059,10 +5998,6 @@ C climate file commons
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)
@@ -6291,6 +6226,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "control.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -6303,10 +6239,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/fvala/tfa(mcom),qfa(mcom)
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
 
@@ -6320,6 +6252,8 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
@@ -6361,7 +6295,6 @@ C Arrays of material properties.
       logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character*72 lsnam,lproj,lgeom,lshad,lutil,lthrm
       character desc*48,titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -6603,17 +6536,13 @@ c and convective component. Some iteration takes place.
       SUBROUTINE MZRCPL(IC,AA,BB,CC,TCTL,TR,IPLT,QMX,QMN,TE,Q)
 
 #include "building.h"
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/SETUQ/QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
 
       COMMON/ZONEQN/E(MEQ,MTR)

@@ -48,6 +48,8 @@ C     simtyp - holds description of simulation type.
 
 #include "plant.h"
 #include "building.h"
+#include "control.h"      
+      integer lnblnk  ! function definition
  
       COMMON/C8/LPNAM
       COMMON/C13PS/NPMCOE,NPNOD,NPMTYP
@@ -1047,6 +1049,9 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1057,7 +1062,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -2243,6 +2247,7 @@ C IPCLINKT  - the linkage type
       SUBROUTINE SCANBPLINK
 
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN  
       COMMON/FILEP/IFIL
@@ -2251,12 +2256,6 @@ C Common for the building plant lin
       COMMON/BPLINKG/NBPLINK,IBPLINKID(MCF),IPCLINK1(MCF),
      &IPCLINK2(MCF),IPCNLINK1(MCF),IPCNLINK2(MCF),
      &IPCLINKT(MCF),IPCLINKZ(MCF)
-
-C Commons for control variables
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
       LOGICAL GOTLINK
 
@@ -2317,6 +2316,7 @@ C interaction is begun.
 #include "epara.h"
 #include "building.h"
 #include "plant.h"
+#include "control.h"      
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
@@ -2536,12 +2536,7 @@ C D - delete
 
 #include "building.h"
 #include "plant.h"
-
-C Commons for control variables
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &            IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),
-     &            TBCPS(MCF,MBCDT,MBCDP),IBCTYP(MCF,MBCDT,MBCDP),
-     &            IBCLAW(MCF,MBCDT,MBCDP),BMISCD(MCF,MBCDT,MBCDP,MISC)
+#include "control.h"
 
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
@@ -2561,6 +2556,8 @@ C Common for the building plant lin
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -2572,8 +2569,6 @@ C Common for the building plant lin
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
       LOGICAL OK,dok,CLOSE
-
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -2660,8 +2655,8 @@ C Increment the control and B/P linkages.
           IPCLINKZ(IBPLINK)=IZ
         ELSE
           ICF=IBPLINKID(IS)
-          IPCLINKZ(IBPLINK)=IZ
           IBPLINK=IS
+          IPCLINKZ(IBPLINK)=IZ
         ENDIF
 
 C Update the control/building linkage.

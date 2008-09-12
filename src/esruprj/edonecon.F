@@ -36,10 +36,17 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDACONN(ITRC,IER)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -72,7 +79,6 @@ C TOTHER is a temporary array for manipulating SSOTHER.
 C SO is a tempporary array to hold current surface SSOTHER.
       DIMENSION VERT(35),TOTHER(MS,3),SO(3)
       CHARACTER VERT*46,KEY*1,CXSTR*78,H*72,outs*124,DESCRC*25
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -665,6 +671,9 @@ C CONXMENU returns an English description in CXITM of the inter-connection
 C information. This is shorter than the string returned by CONXINFO. 
       SUBROUTINE CONXMENU(ICON,CXITM)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

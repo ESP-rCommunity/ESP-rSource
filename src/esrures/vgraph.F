@@ -34,6 +34,8 @@ C time-dependent variables to be plotted for one or more zones.
 
       SUBROUTINE VWLIN
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -460,6 +462,7 @@ C      =29  - dew point temperature
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -910,6 +913,9 @@ C to graphical result display.
 
       SUBROUTINE VGHED(VITEM,HITEM)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

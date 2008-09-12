@@ -40,11 +40,17 @@ C menu (32 char) brief title of model
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C4/XLAT,XLON
@@ -85,7 +91,7 @@ C Passed in parameters.
       logical OKI,concat,unixok,clkok
 
       character dstmp*24,LCFTMP*24
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
+      character*72 LTMP
       character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
       character LCFGF*72,H*72,cfgroot*24
       character*72 DFCFG
@@ -122,15 +128,13 @@ C Silent continue, there is nothing to do (currently).
         return
       elseif(act(1:2).eq.'sn')then
 
-C Silent new.
-C the pre-registration process.
+C Silent new within the pre-registration process.
         write(6,*)  ' pregist ',root,' ',folder
         write(6,*)  ' pregist ',mpath
         write(LCFTMP,'(a)') root(1:lnblnk(root))
       elseif(act(1:2).eq.'sw')then
 
-C Silent within.
-C the pre-registration process.
+C Silent within the pre-registration process.
         write(6,*)  ' pregist ',root,' ',folder
         write(6,*)  ' pregist ',mpath
         write(LCFTMP,'(a)') root(1:lnblnk(root))
@@ -154,8 +158,9 @@ C Trap for blank root name.
       endif
 
 C User did not cancel so instantiate data for new model.
+C At some point switch from default version 3 to v4.
       call clrprb
-      icfgv=3
+      icfgv=3   ! alter this to 4 when working correctly
       INDCFG=0
       XLAT=55.9
       SLAT=55.9
@@ -725,11 +730,17 @@ C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
@@ -758,7 +769,7 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      character*72 LCNN
       character doit*248,tfile*72,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
@@ -1150,8 +1161,9 @@ C model. All information is passed via parameters.
 C limg (char*72) is the image file name
 C iformat (char*4) image format 'GIF ' 'TIF ' 'XBMP' or 'XWD '
 C ifocus (char*4) image focus '****' 'FZON' 'FNET' 'FCTL' 'FDFS' or 'FPER'
-       subroutine edimage(limg,iformat,ifocus,ier)
+      subroutine edimage(limg,iformat,ifocus,ier)
 
+C      integer lnblnk  ! function definition
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1249,6 +1261,8 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -1262,6 +1276,8 @@ C ITRU unit number for user output. IER=0 indicates no error.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
@@ -1285,7 +1301,6 @@ C CFD
       logical browse,BLDG3D,ZONE3D,MSTROK,MSTRZN
       logical newgeo  ! to use for testing if new/old geometry file.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)
       character ITEMS*72,zname*12,zdesc*64,head*25,path*72,L*72,ZN*12
@@ -1373,6 +1388,12 @@ C IWC is for optional files, IW is the overall width.
       endif
       ITEMS(8)=               ' _____________________________    '
       ITEMS(9)=               ' extended descriptions ...        '
+
+C If older model indicate solar obstructions. For newer models such
+C data can be in the geometry file. Test for version of geometry file
+C and revise label as appropriate.
+
+C << to be done >>
       if(ZOBS(IZ)(1:7).eq.'UNKNOWN')then
         WRITE(ITEMS(10),'(A)') 'e  obstructions     : '
       else
@@ -1650,88 +1671,98 @@ C Edit zone name - read and then write the geometry file.
         if(LPROJ(IZ).ne.L)modcfg=.true.
         LPROJ(IZ)=L
       ELSEIF(INO.EQ.10)THEN
+
+C If older model then offer browsing. If v1.1 geometry then there
+C is no need for obstruction file.
         if(browse)then
           call usrmsg('Cannot update model while in browse ',
      &                'mode, you must `own` the model!','W')
           goto 3
         endif
-        H(1)='The zone obstructions file contains the geometry of'
-        H(2)='obstruction blocks for use in shading/ insolation'
-        H(3)='calculations. You may browse for existing files.'
-        if(IOBS(IZ).eq.1)then
-          CALL EASKABCD(' For zone obstruction file',' :',
-     &      'edit name','browse','dereference it','continue',IW,3)
-          if(IW.EQ.1)then
-            L=ZOBS(IZ)
-          elseif(IW.EQ.2)then
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
-     &                          iier)
-            if(nfile.gt.0)then
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call usrmsg(
+     &      'Solar obstructions are held in zone geometry file',
+     &      'so this option not applicable.','W')
+        else
+          H(1)='The zone obstructions file contains the geometry of'
+          H(2)='obstruction blocks for use in shading/ insolation'
+          H(3)='calculations. You may browse for existing files.'
+          if(IOBS(IZ).eq.1)then
+            CALL EASKABCD(' For zone obstruction file',' :',
+     &        'edit name','browse','dereference it','continue',IW,3)
+            if(IW.EQ.1)then
+              L=ZOBS(IZ)
+            elseif(IW.EQ.2)then
               sfile=' '
               snpfile=' '
-              call browsefilelist('b','zon','obs',sfile,snpfile,nfile,
+              call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
      &                          iier)
-              if(snpfile(1:2).ne.'  ')then
-                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
-     &            snpfile(1:lnblnk(snpfile))
+              if(nfile.gt.0)then
+                sfile=' '
+                snpfile=' '
+                call browsefilelist('b','zon','obs',sfile,snpfile,
+     &                          nfile,iier)
+                if(snpfile(1:2).ne.'  ')then
+                  write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &              snpfile(1:lnblnk(snpfile))
+                else
+                  L=ZOBS(IZ)
+                endif
               else
                 L=ZOBS(IZ)
               endif
-            else
-              L=ZOBS(IZ)
+            elseif(IW.EQ.3)then
+              ZOBS(IZ)=' '
+              IOBS(IZ)=0
+              modcfg=.TRUE.
+              goto 3
+            elseif(IW.EQ.4)then
+              goto 3
             endif
-          elseif(IW.EQ.3)then
-            ZOBS(IZ)=' '
-            IOBS(IZ)=0
-            modcfg=.TRUE.
-            goto 3
-          elseif(IW.EQ.4)then
-            goto 3
-          endif
-        else
+          else
 
 C There is no zone obstructions file so offer restricted choice.
-          CALL EASKABC(' For zone obstruction file',
-     &      ' :','edit name','browse','continue',IW,3)
-          if(IW.EQ.1)then
-            L=' '
-          elseif(IW.EQ.2)then
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
-     &                          iier)
-            if(nfile.gt.0)then
+            CALL EASKABC(' For zone obstruction file',
+     &        ' :','edit name','browse','continue',IW,3)
+            if(IW.EQ.1)then
+              L=' '
+            elseif(IW.EQ.2)then
               sfile=' '
               snpfile=' '
-              call browsefilelist('b','zon','obs',sfile,snpfile,nfile,
+              call browsefilelist('?','zon','obs',sfile,snpfile,nfile,
      &                          iier)
-              if(snpfile(1:2).ne.'  ')then
-                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
-     &            snpfile(1:lnblnk(snpfile))
+              if(nfile.gt.0)then
+                sfile=' '
+                snpfile=' '
+                call browsefilelist('b','zon','obs',sfile,snpfile,
+     &                          nfile,iier)
+                if(snpfile(1:2).ne.'  ')then
+                  write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &              snpfile(1:lnblnk(snpfile))
+                else
+                  L=ZOBS(IZ)
+                endif
               else
                 L=ZOBS(IZ)
               endif
-            else
-              L=ZOBS(IZ)
+            elseif(IW.EQ.3)then
+              goto 3
             endif
-          elseif(IW.EQ.3)then
-            goto 3
           endif
+          if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+            WRITE(D,'(A,A4)')ZN(1:lnblnk(ZN)),'.obs'
+          else
+            WRITE(D,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &        ZN(1:lnblnk(ZN)),'.obs'
+          endif
+          write(outs,'(3a)')'Obstruction file for ',ZN(1:lnblnk(ZN)),'?'
+   47     CALL EASKS(L,outs,' ',72,D,'Z obstr',IER,3)
+          IF(L(1:1).eq.' '.or.IER.NE.0)GOTO 47
+          ZOBS(IZ)=L
+          IOBS(IZ)=1
+          modcfg=.TRUE.
         endif
-        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(D,'(A,A4)')ZN(1:lnblnk(ZN)),'.obs'
-        else
-          WRITE(D,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      ZN(1:lnblnk(ZN)),'.obs'
-        endif
-        write(outs,'(3a)')' Obstruction file for ',ZN(1:lnblnk(ZN)),' ?'
-   47   CALL EASKS(L,outs,' ',72,D,'Z obstr',IER,3)
-        IF(L(1:1).eq.' '.or.IER.NE.0)GOTO 47
-        ZOBS(IZ)=L
-        IOBS(IZ)=1
-        modcfg=.TRUE.
       ELSEIF(INO.EQ.11)THEN
         if(browse)then
           call usrmsg('Cannot update model while in browse ',

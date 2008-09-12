@@ -32,6 +32,9 @@ C READUAL reads the data fron an existing UA library.
 #include "uncertainty.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -233,9 +236,9 @@ C Control uncertainties.
           K=0
           call EGETWI(OUTSTR,K,IDMAT(II,1),1,mcf,'W',
      &                                        'Function.',IER)
-          call EGETWI(OUTSTR,K,IDMAT(II,2),1,mbcdt,'W',
+          call EGETWI(OUTSTR,K,IDMAT(II,2),1,MCDT,'W',
      &                                        'Day type.',IER)
-          call EGETWI(OUTSTR,K,IMISCD(II,1),1,mbcdp,'W',
+          call EGETWI(OUTSTR,K,IMISCD(II,1),1,MCDP,'W',
      &                                        'Period.',IER)
           call EGETWI(OUTSTR,K,IMISCD(II,2),1,7,'W',
      &                                        'Ctl parameter.',IER)

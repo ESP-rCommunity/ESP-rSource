@@ -28,6 +28,8 @@ C       arr-the array, arrtit - its title up to 10 characters
 C ********* scan3di
        subroutine scan3di(arr,arrtit,IEX)
 #include "cfd.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2

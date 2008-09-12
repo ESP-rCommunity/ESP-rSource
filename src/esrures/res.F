@@ -59,6 +59,8 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -152,6 +154,7 @@ C      integer SIGFPE_bps
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
+      character firstbit*72,secondbit*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -329,7 +332,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ENDIF
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'
@@ -429,22 +432,24 @@ C Initialise results library.
 
 C Get the name of the configuration file name 
 C Read the plant configuration file.
-        h(1)='In order to read the plant results'
-        h(2)='you must supply the prj `plant only`'
-        h(3)='model configuration file name. Note  '
-        h(4)='that res CANNOT read the PLANT configuration '
-        h(5)='file unless it has first read the model '
-        h(6)='configuration file.'
+        if(IPLIB.eq.0.or.IPLIB.eq.1)then
+          h(1)='In order to read the plant results'
+          h(2)='you must supply the prj `plant only`'
+          h(3)='model configuration file name. Note  '
+          h(4)='that res CANNOT read the PLANT configuration '
+          h(5)='file unless it has first read the model '
+          h(6)='configuration file.'
 
-        call easks(LTMP,'Configuration file name ?',
-     &   ' ',72,' ','configuration file',IER,0)
-        call fdroot(LTMP,path,LFCFG)
+          call easks(LTMP,'Configuration file name ?',
+     &      ' ',72,' ','configuration file',IER,0)
+          call fdroot(LTMP,path,LFCFG)
 
-C Read the plant configuration file.
-        IFCFG=IFIL+1
-        IAPROB=IFIL+2  
-        MODE='ALL '
-        call ERSYS(LFCFG,IFCFG,IAPROB,MODE,ITRC,IER)
+C Read the model configuration file.
+          IFCFG=IFIL+1
+          IAPROB=IFIL+2  
+          MODE='ALL '
+          call ERSYS(LFCFG,IFCFG,IAPROB,MODE,ITRC,IER)
+	endif
 
 C If we have a plant only file go straight to the plant results menu.
         call sysoutp('-',0)
@@ -697,6 +702,8 @@ C ***** imgdisp
 C If there are associated images for startup or at specific points
 C and the image browser has not been invoked do this now.
       subroutine imgdisp(iforce,focus,ier)
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 C Images.

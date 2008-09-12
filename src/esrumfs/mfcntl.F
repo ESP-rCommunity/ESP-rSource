@@ -22,14 +22,11 @@ C Boston, MA 02111-1307 USA.
 
 #include "building.h"
 #include "net_flow.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
       COMMON/mfctl/ctlpos(MCNN)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
 
 C Variables for weekdays, and weekends.
@@ -113,6 +110,10 @@ C Nicol control algorithm
       ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.4)THEN
          CALL FCL04
  
+C PI controller
+      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
+         CALL FCL05
+ 
 C New controllers inserted here!
       ELSE
         WRITE(outs,*) 'MFCNTR: invalid m. flow control law ',
@@ -138,16 +139,13 @@ C prevailing controller type, determines sensed condition (SVCTL).
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/fctl4/iasocc(mcc,MCMP),nfsup(mcc)
+      common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -444,13 +442,9 @@ C << what comprises ON
 
 #include "net_flow.h"
 #include "building.h"
-
+#include "control.h"
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -509,13 +503,10 @@ C *******  FCL01 Proportional controller with hysteresis
 
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -553,13 +544,10 @@ C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
 
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -614,6 +602,7 @@ C ***** POSITN
       FUNCTION POSITN(SIGNAL)
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
 C     SIGL  - signal lower limit Sl (?)
 C     PSIGL - relative valve position H/H100 at Sl (%)
@@ -623,10 +612,6 @@ C     DSHY  - dS to overcome valve/damper hysteresis (?)
 
       COMMON/MFCPOS/HHH100(MCNN),HSASC(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       logical close
 
       SIGL=fmiscd(ICFP,IDTYPP,IPERP,2)
@@ -688,6 +673,7 @@ C logical AND/OR as specified in the sensor definition
  
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -695,11 +681,9 @@ C logical AND/OR as specified in the sensor definition
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       common/MFCTL/CTLPOS(MCNN)
       common/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
+      common/fcl0305/TSETPO
 
+      REAL TSETPO
       CHARACTER ERRMSG*72
       LOGICAL CHANGE,PRESENT
  
@@ -766,6 +750,15 @@ C Only one type of flow condition can be sensed (yet) i.e. temperature.
           ENDIF
           call CFFVAR(SIGNAL,0)
 
+C Determine setpoint to which flow will be controlled (to be used by
+C other control loops using multi sensor)
+          IF(ISEN.EQ.1)TSETPO=SIGNAL
+          if(INVPOS.eq.1.and.SIGNAL.gt.SETPNT)then
+            if(tsetpo.lt.signal)tsetpo=signal
+          endif
+          if(INVPOS.eq.-1.and.SIGNAL.lt.SETPNT)then
+            if(tsetpo.gt.signal)tsetpo=signal
+          endif
           if((INVPOS.eq.1.and.SIGNAL.gt.SETPNT).or.
      &      INVPOS.eq.-1.and.SIGNAL.lt.SETPNT) PRESENT=.TRUE.
           IF(ISEN.EQ.1)THEN
@@ -844,10 +837,12 @@ C by setting the ALPHA parameter = 0.
  
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
 C climate file commons
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -858,10 +853,6 @@ C climate file commons
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFCTL/CTLPOS(MCNN)
       common/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
 
 C Time and weather data.
 C Commented common blocks to be uncommented and checked for relevance 
@@ -1162,4 +1153,102 @@ C Find total power of the equipment
       H(3) = 'Program is taking one step back.'
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
  9999 RETURN
+      END
+
+C *******  FCL05 PI controller
+C Returns ratio of the nominal rate or area associated with 
+C each component/connection that is to be controlled
+C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
+      SUBROUTINE FCL05
+
+#include "net_flow.h"
+#include "building.h"
+#include "control.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/mfctl/ctlpos(MCNN)
+      COMMON/FCLSOL/ICFP,IDTYPP,IPERP
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/BTIME/BTIMEP,BTIMEF
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      common/fclp05/times,deltai,icfpp
+      common/fcl0305/TSETPO
+      LOGICAL CLOSER,close1,close2
+      REAL TRSPT,QMAX,QMIN,PROPBAND,ACTI,TRS,SIGNAL,DELTA,DELTAI,
+     &HACTI,PROPTERM,VALUE,BTIMES,times,TSETPO
+      INTEGER IOPTL,ICFPR,icfpp
+
+      TRSPT=FMISCD(ICFP,IDTYPP,IPERP,2)
+      QMAX=FMISCD(ICFP,IDTYPP,IPERP,3)
+      QMIN=FMISCD(ICFP,IDTYPP,IPERP,4)
+      PROPBAND=FMISCD(ICFP,IDTYPP,IPERP,5)
+      ACTI=FMISCD(ICFP,IDTYPP,IPERP,6)
+      IAFL=NINT(FMISCD(ICFP,IDTYPP,IPERP,7))
+      IOPTL=NINT(FMISCD(ICFP,IDTYPP,IPERP,8))
+      IF(IOPTL.GT.0)THEN
+        ICFPR=ICFP
+        ICFP=IOPTL
+        CALL FCL03
+        ICFP=ICFPR
+        TRS=TSETPO
+      ELSE
+        CALL CFFVAR(SIGNAL,0)
+        TRS=SIGNAL
+      ENDIF
+      DELTA=TRSPT-TRS
+      BTIMES=3600./REAL(NTSTEP)
+      IF(BTIMES.GE.ACTI)THEN
+        CALL EDISP(IUOUT,'PCL05: Warning ')
+        CALL EDISP(IUOUT,
+     &  ' Building timestep is of the order of integral action')
+        CALL EDISP(IUOUT,' control action may be compensated')
+      ENDIF
+
+C Implement integral action (once per time step, this subroutine may be
+C called more than once in a time step)
+      call eclose(times,Btimef,0.001,closer)
+      if(closer.and.icfpp.eq.icfp)goto 9595
+      icfpp=icfp
+      DELTAI=DELTAI+DELTA*BTIMES
+      times=btimef
+
+C Reset integral action to avoid integral windup (large integral action)
+      HACTI=0.5*ACTI
+      PROPTERM=DELTA/PROPBAND
+      IF(DELTAI.GT.HACTI*PROPBAND)DELTAI=HACTI*PROPBAND
+      IF(DELTAI.LT.-1.*HACTI*PROPBAND)DELTAI=-1.*HACTI*PROPBAND
+
+C Calculate value
+      IF(PROPTERM.GT.0.5.OR.PROPTERM.LT.-0.5)DELTAI=0.
+      call eclose(propband,0.,0.001,close1)
+      call eclose(acti,0.,0.001,close2)
+      IF(close1.OR.close2)THEN
+        VALUE=QMAX
+      ELSE  
+        VALUE=(QMAX-QMIN)*(DELTA/PROPBAND+DELTAI/(ACTI*PROPBAND))
+     &       +0.5*(QMAX+QMIN)
+      ENDIF
+      IF(IAFL.EQ.-1)value=1.-value
+      IF(VALUE.GT.QMAX)THEN
+        VALUE=QMAX
+      ELSEIF(VALUE.LT.QMIN)THEN
+        VALUE=QMIN
+      ENDIF
+
+C Debug...
+*      write(6,*)trs,trspt,value
+
+C Controlling a connection.
+      if(ifan(ICFP,1).eq.-3)then
+          CTLPOS(ifan(icfp,2))=VALUE
+
+C Controlling a component.
+      else
+        do 1 icnn=1,ncnn
+          if(ifan(icfp,2).eq.ITPCON(ICNN))CTLPOS(icnn)=VALUE
+  1     continue
+      endif
+ 9595 RETURN
       END

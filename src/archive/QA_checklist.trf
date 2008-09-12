@@ -247,7 +247,7 @@ to include revisions 22 and 23 in development branch, you must
 specify the rang 21\(en23.
 .IP 17. 4
 Email the ESP-r archivist (Ian Beausoleil-Morrison,
-ibeausol@nrcan.gc.ca) using the template provided in
+Ian_Beausoleil-Morrison@carleton.ca) using the template provided in
 src/archive/code-contribution.txt.
 .RE
 .\"---------------------------------------

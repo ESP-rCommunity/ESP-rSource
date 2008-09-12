@@ -23,7 +23,7 @@ C The maximum number of connected hybrid nodes and data items
 C The maximum number of connected power components and data items
       INTEGER MPOWCOM,MPWDAT,MPCDS
       PARAMETER (MPOWCOM=30)
-      PARAMETER (MPWDAT=50)
+      PARAMETER (MPWDAT=75)
       PARAMETER (MPCDS=30)
 
 C The maximum number of connecting components and data items
@@ -34,19 +34,6 @@ C The maximum number of connecting components and data items
 C The maximum number of connections
       INTEGER MECON
       PARAMETER (MECON=100)
-
-C Control data
-C Electrical control loops
-      INTEGER MEL
-      PARAMETER(MEL=12)
-
-C Electrical day types
-      INTEGER MECDT
-      PARAMETER(MECDT=8)
-
-C Electrical control periods
-      INTEGER MECDP
-      PARAMETER (MECDP=8)
 
 C Maximim number of actual and PU Z array elements
       INTEGER MZARRY

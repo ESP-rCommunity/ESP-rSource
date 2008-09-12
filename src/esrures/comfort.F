@@ -45,6 +45,9 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -1266,6 +1269,8 @@ C if sub-hour casual gains definitions are implemented.
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1274,7 +1279,8 @@ C if sub-hour casual gains definitions are implemented.
       common/recver/izver,ipver,iever
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17
       character hold*24,h*72,outs*124
@@ -1347,7 +1353,7 @@ C If izver >= 4 the read the data directly.
           continue
         else
           CALL EROPER(0,iuout,IFIL+1,izone,IER)  ! for older library
-          if(ip3ver.eq.0)then
+          if(ip3ver(izone).eq.0)then
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
@@ -1445,6 +1451,8 @@ C << todo - use of explicit read of casual gains >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 C      COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
@@ -1452,7 +1460,8 @@ C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................

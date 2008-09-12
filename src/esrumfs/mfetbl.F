@@ -33,6 +33,9 @@ C     NDONAM - name of node(s) corresponding to column contents
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -52,7 +55,8 @@ C ICLIM,LCLIM (for climate file)
       CHARACTER H*72,LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER*23     ITEM(10)
-      character PERST1*14,PERST2*44,PERST3*44,outs*124,OUTSTR*124
+      character PERST1*14,PERST2*44,PERST3*44
+      character outs*124,OUTSTR*124,outs248*248
       character WORD*20,NDNAM*12,NR*12,NT*12
       logical OK,DOK,intg
 
@@ -206,8 +210,8 @@ C First general table info and column headers
       call edisp(itru,'# MFETBL: current files:')
       WRITE(outs,*) '# Problem : ',LAPROB(1:LNBLNK(LAPROB))
       call edisp(itru,outs)
-      WRITE(outs,*) '# Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
-      call edisp(itru,outs)
+      WRITE(outs248,*) '# Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
+      call edisp248(itru,outs248,100)
       WRITE(outs,*) '# Climate : ',LCLIM(1:LNBLNK(LCLIM))
       call edisp(itru,outs)
       WRITE(outs,*) '# Results : ',LAFRES(1:LNBLNK(LAFRES))

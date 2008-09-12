@@ -31,6 +31,9 @@ C ******************** PLTTAB ********************
 C PLTTAB handles results view/setup requests for plant.
       subroutine plttab
 #include "plant.h"
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -103,6 +106,7 @@ C Default value for GRTOOL file hourly flag = 0 (off).
 C Initialise variables
       ipc=1
       istat=0
+      MNGET=1
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
    7  if (MENUTYPE.eq.1) then
@@ -717,6 +721,7 @@ C LPCDB/IPCDB (for plant template database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -735,14 +740,30 @@ C default file names for databases
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcresres/ napout(mpcom),apcout(20)
+      COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
+      common/rpath/path
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Defaults.
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
 
       character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
-      character lctlf*72,ctldoc*248,scname*12,h*72
+      character lctlf*72,ctldoc*248,scname*12,h*72,MODE*4
+      character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
+      character longtmp*144,LFCFG*72
       logical XST,ok,dok
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       IUNITp=ifil+10
-      DFILE='plant.res'
+      DFILE='plant.plr'
+      firstbit=' '   ! to ensure string buffers are not null
+      secondbit=' '
 
       ier=0
     6 call edisp(iuout,' ')
@@ -752,6 +773,16 @@ C default file names for databases
         else
           ltmp=' '
         endif
+
+C Assume default plants results name (*.plr) taken from zone results
+C name (*.res)
+	lrf=lnblnk(LTMP)
+	lrf3=lrf-3
+	lrf4=lrf-4
+	if(LTMP(lrf3:lrf).eq.'.res')then
+	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
+	endif
+
         llt=lnblnk(ltmp)
         h(1)='The predictions from solution of a plant/system '
         h(2)='network are held in a binary results file which'
@@ -787,7 +818,7 @@ C name with the full path.
         ltmp=LCMDFL
       endif
       IER=0
-      XST=.false.
+C      XST=.false.
       INQUIRE (FILE=LTMP,EXIST=XST)
       IF(XST)THEN
 
@@ -830,6 +861,96 @@ C Read number of result-set.
       else
          ipset=1
       endif
+      
+C In case plant results file name was not passed directly to res
+C the value of IPLIB will not have been set. Do the check of
+C record 32 and set this value.
+      irec=32
+      read(iunitp,rec=irec,iostat=istat,err=1000)iftype
+      if(iftype.eq.-1) then
+        write(6,*) 'opnplt: older plant ',iftype
+        IPLIB=1
+      elseif(iftype.eq.-2) then
+      
+C If newer plant results file we could recover the cfg file name and
+C scan it in at this point. Read the 2nd item on record 32 to get location.
+        write(6,*) 'opnplt: newer plant ',iftype
+	IPLIB=2
+        IREC=32
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)iftype,ireccfg
+        write(6,*) 'opnplt: the jump for cfg ',ireccfg
+        IREC=ireccfg
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        IREC=IREC+1
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(6,*) longtmp
+      
+C Extract path from cfg file name and check that we can find it.
+ 289    call fdroot(longtmp,path,LCFGF)
+        IFCFG=IFIL+1
+        IAPROB=IFIL+2
+        CALL ERPFREE(IFCFG,ISTAT)
+        call FINDFIL(LCFGF,XST)
+        IF(XST)THEN
+          MODE='ALL'
+          CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,ITRC,IER)
+          IF(IER.NE.0)THEN
+            WRITE(OUTS,'(A,2X,A)')' Problem reading ',LCFGF
+            call edisp(iuout,outs)
+          ELSE
+            CFGOK=.TRUE.
+          ENDIF
+
+C If izver is >=4 then the only information needed from the zone
+C operation file is the user name for each casual gain type. Scan
+C this information.
+          if(NCOMP.gt.0)then
+            DO 43 IZONE=1,NCOMP
+              CALL EROPER(0,iuout,IAPROB,izone,IER)
+  43        CONTINUE
+          endif
+        ELSE
+
+C Not found, might be in a remote folder.  Warn user first.
+          WRITE(OUTS,'(A,A)')' Could not find ',LCFGF
+          call edisp(iuout,outs)
+          WRITE(OUTS,'(A,A)')' in the folder ',path
+          call edisp(iuout,outs)
+          H(1)='The model configuration file holds the definition of'
+          H(2)='the building/plant which was simulated.'
+          H(3)='This file was not found.  Please supply the model '
+          H(4)='which MATCHES that within the results library.'
+          H(5)='IF IT DOES NOT MATCH THEN RESULTS RECOVERY '
+          H(6)='WILL BE COMPROMISED! '
+          CALL PHELPD('no system file',6,'-',0,0,IER)
+
+          H(1)='The model configuration file holds the definition '
+          H(2)='of the building/ plant to be simulated.  It should'
+          H(3)='match the contents held within the results library.'
+          write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+     &        DFCFG,'config file name',IER,3)
+          elseif(iglib.eq.2)then
+            CALL EASKF(longtmp,' Model configuration file ?',' ',144,
+     &        DFCFG,'config file name',IER,3)
+          else
+            CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+     &        DFCFG,'config file name',IER,3)
+          endif
+          if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+          if (longtmp(1:2).ne.'  ') GOTO 289
+        ENDIF
+      endif
+      
       NSIM=ipset-1
       IREC=NSIM+2
 
@@ -871,7 +992,14 @@ C respectively.
    11 continue
 
 C Read climate file name.
-      READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) LCLIM
+      if(IPLIB.eq.1)then
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) LCLIM
+      elseif(IPLIB.eq.2)then
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        IREC=IREC+1
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
+        LCLIM=firstbit  ! until lclim becomes 144 char
+      endif
 
 C Check that this CLIMATE file can still be assigned. << convert >>
    44 IUNITC=IFIL+5
@@ -899,13 +1027,42 @@ C so when reading the building configuration file. If
 C we have a plant only configuration then the year number
 C has to be read. imode=0 - plant only config
       IF(imode.EQ.0) THEN
-      IRECC=366
-      READ(IUNITC,REC=IRECC,IOSTAT=ISTAT,ERR=999)IYEAR
+        IRECC=366
+        READ(IUNITC,REC=IRECC,IOSTAT=ISTAT,ERR=999)IYEAR
       END IF
 
-C Read plant component file name.
-      IREC=IREC+1
-      READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) Lpcdb
+C Read plant component file name (long or short) 
+      if(IPLIB.eq.1)then
+        IREC=IREC+1
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        lnfb=lnblnk(firstbit)
+	write(Lpcdb,'(a)') firstbit(1:lnfb)
+        write(6,*) Lpcdb
+      elseif(IPLIB.eq.2)then
+        IREC=IREC+1
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        IREC=IREC+1
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(6,*) Lpcdb
+      endif
+      
+C If IPLIB is 2 then the model configuration file name will have alread
+C been scanned. Eventually this code can be commented out.
+      if(IPLIB.eq.2)then
+        IREC=IREC+1
+        write(6,*) ' irec at  cfg file name ',irec
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
+        IREC=IREC+1
+        READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(6,*) longtmp
+        call fdroot(longtmp,path,LCFGF)
+      endif
 
 C Read control data for simulation.
       IREC=NST
@@ -984,16 +1141,33 @@ C naout (number of additional output data) is returned.
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
-      LOGICAL OK,dok
+      LOGICAL OK,dok,unixok
       CHARACTER ZDESC*25,cdate*16,buffer*80,adopdsc*30
-      character h*72
+      character h*72,fs*1
+      integer lndbp   ! for length of standard database path
+      character lltmp*144  ! to re-create plant database file name with path
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C If unit for plant component db not yet set, do it.
       if(ipcdb.eq.0)ipcdb=ifil+11
 
 C 'irecln' is defined in 'plantdb.h'.
       irecln=20
-  100 call EFOPRAN(ipcdb,lpcdb,IRECLN,1,IER)
+      lndbp=lnblnk(standarddbpath)
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        lltmp=LPCDB
+      elseif(ipathoptdb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+      endif
+  100 call EFOPRAN(ipcdb,lltmp,IRECLN,1,IER)
 
 C Check for error on openening.
       if(ier.gt.0) then
@@ -1187,6 +1361,9 @@ C the command line was a plant results file.
 #include "building.h"
 #include "plant.h"
 C act='p' iget parameters already set.
+      
+      integer lnblnk  ! function definition
+
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1228,6 +1405,9 @@ C Simulator parameters.
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcresres/ napout(mpcom),apcout(20)
+
+C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
+      COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
 
       dimension Yold(65),TIMEold(65),val(MSYSRS)
       character outs*124,TLABEL*60,trange*20,tranged*20

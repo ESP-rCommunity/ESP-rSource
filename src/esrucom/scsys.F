@@ -44,7 +44,7 @@ C default file names for databases
 C espriou.h provides currentfile.
 #include "lookup_data.h"
 
-      PARAMETER (MSTMC=1)
+      PARAMETER (MSTMC=20)
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -52,7 +52,11 @@ C espriou.h provides currentfile.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -183,8 +187,8 @@ C Bidirectional raw optical data file.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C Calendar commons.
-      common/calena/calename,calentag(10),calendayname(10)
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -224,7 +228,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
-      CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
+      CHARACTER*72 FILE,LCFD,LCNN
       character*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -860,6 +864,15 @@ C Set flag indicating if set describes a multi-year period
  334      CALL STRIPC(IUC,OUTSTR,0,ND,1,'res names',IER)
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','res tags',IFLAG)
+
+C The following code ensures the sXXres varaibles are initialized
+C to empty strings even if they are not defind in the input file.
+          write(sblres(iss), '(A)') '  '
+          write(sflres(iss), '(A)') '  '
+          write(smstres(iss),'(A)') '  '
+          write(splres(iss), '(A)') '  '
+          write(selres(iss), '(A)') '  '
+          
           if(WORD(1:5).eq.'*sblr')then
             CALL EGETRM(OUTSTR,K,sblres(iss),'W','zone res',IER)
           elseif(WORD(1:5).eq.'*sflr')then

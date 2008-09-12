@@ -292,11 +292,12 @@ void add_to_xml_reporting__(float* value,
    std::string varName =std::string(sVarName, sVarNameLength);
    std::string metaName =std::string(sMetaName, sMetaNameLength);
    std::string metaValue =std::string(sMetaValue, sMetaValueLength);
-
+   std::string metaDesc =std::string(sDescription, sDescriptionLength);
    // Note: SetMeta does not need to be called with every report. Improvements
    // possible!
    
    TReportsManager::Instance()->SetMeta(varName, metaName, metaValue);
+   TReportsManager::Instance()->SetMeta(varName, "description", metaDesc);
    TReportsManager::Instance()->Report(varName, *value);
 
   }
@@ -377,7 +378,7 @@ void add_to_xml_reporting__(float* value,
    bool rep_report_list_(char *sType, char *sSheet,
                           int iTypeLength, int iSheetLength)
    {
-      rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);
+      return rep_report_list__(sType, sSheet,iTypeLength, iSheetLength);
    }
    
    
@@ -602,8 +603,19 @@ bool TReportsManager::Update(long step, float hour, long day, int iStartup)
 
       m_currentTime.month = (m_currentTime.month + 1)%12;
 
+      //
+
+      m_month_bin_ts.push_back(1);
+
       if(DEBUG) cout << "Rollover month: " << m_currentTime.month << endl;
     }
+  else{
+
+      m_month_bin_ts.push_back(0);
+
+    }
+
+
 
   //add a new year - not used right now
   /*    if(m_currentTime.month == m_rolloverTime.month)
@@ -679,7 +691,8 @@ void TReportsManager::Report( const std::string& sPassedName, const double& sPas
         m_variableDataList[sPassedName].Set(sPassedValue,
                                             bTS_averaging, 
                                             bSaveToDisk,
-                                            m_step_count);
+                                            m_step_count,
+                                            m_month_bin_ts);
         
      }
 }
@@ -761,18 +774,11 @@ void TReportsManager::OutputXMLSummary()
   // ii) transforms were requested.
   if (  bStyleSheetGood &&  bTransformXMLRequested ) {
 
-    // check if target has been provided.
-    if ( m_params["transform_destination_file"].empty() ){
-      Target = "results.txt";
-    }else{
-      Target = m_params["transform_destination_file"];
-    }
-
     TXMLAdapter XMLAdapter;
 
     // Synopsys :
     // WriteTransformedXML( source , target, stylesheet list )
-    XMLAdapter.WriteTransformedXML( std::string("out.xml"), Target,  m_stylesheet_list );
+    XMLAdapter.WriteTransformedXML( std::string("out.xml"),  m_StyleSheets );
   }
 
 }
@@ -890,7 +896,12 @@ bool TReportsManager::OutputDictionary( const std::string& outFilePath )
     dictionaryFile.open(outFilePath.c_str());
 
     for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
-      dictionaryFile << trim(pos->first) << "\n";
+      dictionaryFile << trim(pos->first) << ":\n\n";
+      dictionaryFile << "     "
+                     << pos->second.RetrieveMeta("description")
+                     << " "
+                     << pos->second.RetrieveMeta("units")
+                     << "\n\n";
     }
     dictionaryFile.close();
   }
@@ -1001,19 +1012,24 @@ bool TReportsManager::OutputCSVData( const std::string& outFilePath )
       // Add spaces to make header more "speadsheet friendly"
       temp_text = trim(pos->first);
       while ( temp_text.find("/") != string::npos ){
-         temp_text.replace( temp_text.find("/"), 1, " : ");
+         temp_text.replace( temp_text.find("/"), 1, ":");
       }
       while ( temp_text.find("_") != string::npos ){
          temp_text.replace( temp_text.find("_"), 1, " ");
       }
 
-
       csvFile << temp_text;  //pos->first;
+
+// write out unit
+      csvFile << " ";
+      csvFile << pos->second.RetrieveMeta("units");
+
       csvFile << ", ";
     }
   }
   csvFile << "\n";
 
+/*
   // write out units
   for(pos = m_variableDataList.begin(); pos != m_variableDataList.end(); ++pos) {
     if( SearchVars(m_step_nodes,
@@ -1025,6 +1041,7 @@ bool TReportsManager::OutputCSVData( const std::string& outFilePath )
     }
   }
   csvFile << "\n";
+*/
 
   // loop through all timesteps
   for (curr_step = step_start; curr_step <  m_step_count ; curr_step++){
@@ -1122,6 +1139,16 @@ void TReportsManager::UpdateConfigFile(){
   
    }
 
+   // Loop through XSL transform targets
+   for (sheet  = m_xsl_targets.begin();
+        sheet != m_xsl_targets.end();
+        sheet++)
+   {
+    sTemp = *(sheet);
+    inputXML.AddNode(currentNode,"transform_destination_file",sTemp.c_str());
+  
+   }
+
    // Loop through output variables and add to document
    for ( var = m_nodes.begin(); var != m_nodes.end(); var++ ){
       sTemp = *(var);
@@ -1155,7 +1182,6 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   
   
   TXMLAdapter inputXML(filePath);
-  
   m_inputFilePath = filePath;
 
   
@@ -1183,14 +1209,14 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   // Sytlesheet list for multiple transforms.
   inputXML.GetNodeValues("style_sheet", inputXML.RootNode(),m_stylesheet_list);
 
+  // Sytlesheet list for multiple transforms.
+  inputXML.GetNodeValues("transform_destination_file", inputXML.RootNode(),m_xsl_targets);
+
   // Should style sheet be linked?
   m_params["link_style_sheet"] = inputXML.GetFirstNodeValue("link_style_sheet", inputXML.RootNode() );
 
   // XSLT transform requested
   m_params["apply_style_sheet"] = inputXML.GetFirstNodeValue("apply_style_sheet", inputXML.RootNode() );
-
-  //Target for xslt transform
-  m_params["transform_destination_file"] = inputXML.GetFirstNodeValue("transform_destination_file", inputXML.RootNode());
 
   //hierarchy type
   m_params["hierarchy"] = inputXML.GetFirstNodeValue("hierarchy", inputXML.RootNode());
@@ -1232,36 +1258,63 @@ void TReportsManager::SetFlags(){
 
   ifstream Style_Sheet_test;
   std::vector<std::string>::iterator sheet;
+  std::vector<std::string> erase_sheets;
+  map<std::string, std::string>::iterator map_loc;
+  int pos;
 
-  // Loop through style sheets, and check if list is valid.  
-  if ( ! m_stylesheet_list.empty() ){
-    for( sheet = m_stylesheet_list.begin(); sheet < m_stylesheet_list.end(); sheet++)
-    {
+  // Check if style-sheet and xsl transform vectors are the same lenght;
+  // otherwise, pad with none.
 
-       std::string sTemp = *(sheet);
-       
-       Style_Sheet_test.open( sTemp.c_str(), ifstream::in );
-       
-       Style_Sheet_test.close();
-       
-       if ( Style_Sheet_test.fail() ) {
-          
-          Style_Sheet_test.clear(ios::failbit);
-          
-          m_stylesheet_list.erase(sheet);
-       
-       }else{
 
-       }
+  pos = 0;
+  for ( sheet = m_stylesheet_list.begin(); sheet != m_stylesheet_list.end(); sheet++ ){
+    pos++;
+
+    // Pad xsl targets with 'end'
+    if ( m_xsl_targets.size() < pos ){
+      m_xsl_targets.insert( m_xsl_targets.end(), "none" );
     }
-  }
+
+    // Append stylesheet/target pair to map.
+    m_StyleSheets.insert( pair<std::string,std::string>(*(sheet),m_xsl_targets.at(pos-1) ) );
   
-  if ( ! m_stylesheet_list.empty() ) {
+  }
+
+
+
+  // Loop through style sheets, and check if each is valid.
+
+  for ( map_loc = m_StyleSheets.begin(); map_loc != m_StyleSheets.end(); map_loc++){
+
+    std::string sTemp = map_loc->first;
+
+    Style_Sheet_test.open( sTemp.c_str(), ifstream::in );
+    Style_Sheet_test.close();
+
+    if ( Style_Sheet_test.fail() ) {
+
+      // sheet is not valid! Mark for deletion.
+      erase_sheets.insert(erase_sheets.end(), sTemp);
+
+      // Clear file I/O error:
+      Style_Sheet_test.clear(ios::failbit);
+
+    }
+
+  }
+
+  
+  // Now delete the sheets that weren't found.
+  for ( sheet = erase_sheets.begin(); sheet != erase_sheets.end(); sheet++ ){
+    m_StyleSheets.erase(*(sheet));
+
+  }
+
+  if ( ! m_StyleSheets.empty() ) {
     bStyleSheetGood = true;
   }else{
     bStyleSheetGood = false;
   }
-
 
   if ( m_params["hierarchy"].empty() ) {
     m_params["hierarchy"] = "flat";
@@ -1365,9 +1418,7 @@ bool TReportsManager::ReportList( std::string cType,
    }
 
    return bFound;
-}                                  
-                                  
-
+}
 
 /**
  *   Return the value of a requested parameter

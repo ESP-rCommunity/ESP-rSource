@@ -82,6 +82,10 @@ C values for use as present values at the next time-step.
 
       DIMENSION QX(MS,MS)
 
+C Function comparing two reals:
+      logical bSPEqual
+
+
 C Set Stefan-Boltzmann constant.
       SBC=56.7E-9
       NC=NCONST(ICOMP)
@@ -117,9 +121,8 @@ C Set future time values.
 C From I to K (/m2 of K).
       T1=TFS(ICOMP,I)+273.16
       T2=TFS(ICOMP,K)+273.16
-      DT=ABS(T1-T2)
-
-      IF(DT.LT..00001)goto 3
+!       DT=ABS(T1-T2)
+      IF(bSPEqual(T1,T2))goto 3
       E1=EI(ICOMP,I)
       E2=EI(ICOMP,K)
       F12=CFB(ICOMP,I,K)
@@ -247,6 +250,9 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -269,6 +275,8 @@ C  difference between the external ambient and surface temperatures.
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
      &            ARP(MCOM,MS),ARF(MCOM,MS)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -1090,14 +1098,18 @@ C                 external temperature (for use in MZLS3).
       SUBROUTINE MZVENT(ICOMP)
 #include "building.h"
 #include "tdf2.h"
+#include "sbem.h"
 
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
@@ -1113,12 +1125,11 @@ C TDF commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
       COMMON/PREC2/VOL(MCOM)
-      COMMON/PREC5/CVI1(MCOM,MT),CVV1(MCOM,MT),ICC1(MCOM,MT),
-     &TIA1(MCOM,MT),CVI2(MCOM,MT),CVV2(MCOM,MT),ICC2(MCOM,MT),
-     &TIA2(MCOM,MT),CVI3(MCOM,MT),CVV3(MCOM,MT),ICC3(MCOM,MT),
-     &TIA3(MCOM,MT)
+      COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
+     &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
 
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
@@ -1198,9 +1209,11 @@ C     The temperature at which and below that the windows remain closed.
 C     This prevents the zone becoming too cold. 
       REAL fWindowLowSetpoint
 
-
+      INTEGER IDAY1,IDAY2,ID1,ID2
       DIMENSION ACC(MCOM),CCVVFM(MCOM),CCVVF(MCOM)
-
+      logical closeto0
+      real rTempnotioOverheat
+      
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
 
@@ -1331,7 +1344,7 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
 C If UK ncm calculations then use fresh air requirements from
 C file (tdf) plus user defined infiltration values. Care should be
 C taken when IZIVENT is also greater than 0. 
-      elseif(IACTIV(ICOMP).ne.0)then
+      elseif(IACTIV(ICOMP).ne.0)then 
 
 C Note: set trace to verbose for testing.
         ICF=0
@@ -1348,6 +1361,25 @@ C in l/s/pers)*Occupants density (pers/m2)*occupancy fraction*zone area
 C Convert l/s to ach
         ACI=ACI*(3600.0/1000)/VOL(ICOMP)
 
+C Set notional infiltration/air leakage to 10 m3/h/m2
+        if(INOTI.EQ.1)then
+
+C If Occupancy fraction is 0 and zone temperature is greater
+C than setpoint+1oC, add 5 ach (according to UK NCM guidance)
+          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
+          call eclose(VAL(ISD),0.0,0.001,closeto0)
+          if(closeto0.and.tfa(icomp).gt.rTempnotioOverheat)then
+            ACH(ICOMP)=5
+          else     
+            ACH(ICOMP)=0.5
+          endif
+        else      
+
+C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
+          CALL RSBEM
+        endif
+        ACI=ACI+ACH(ICOMP)
+
         CVVF=0.
         SUM=0.
         CVIF=0.33*VOL(ICOMP)*ACI        
@@ -1363,17 +1395,30 @@ C entry in tdf
 
 C By interpolation determine the conductances at 'TIME':
 C infiltration first.
-        CV1=CVI1(ICOMP,IT1)
-        CV2=CVI1(ICOMP,IT2)
-        IF(IDWP.EQ.6)CV1=CVI2(ICOMP,IT1)
-        IF(IDWP.EQ.7)CV1=CVI3(ICOMP,IT1)
-        IF(IT2.EQ.1)then
-          IF(IDWF.EQ.6)CV2=CVI2(ICOMP,IT2)
-          IF(IDWF.EQ.7)CV2=CVI3(ICOMP,IT2)
-        else
-          IF(IDWP.EQ.6)CV2=CVI2(ICOMP,IT2)
-          IF(IDWP.EQ.7)CV2=CVI3(ICOMP,IT2)
-        endif
+        IDAY1=IDYP
+        IF(IT2.EQ.1) then
+          IDAY2=IDYP+1
+        ELSE
+          IDAY2 = IDYP
+        ENDIF
+        IF(IDAY2.GT.365)IDAY2=IDAY2-365
+        ID1=ICALENDER(IDAY1)
+        ID2=ICALENDER(IDAY2)
+        IF(NBDAYTYPE.LE.3)THEN
+          ID1=1
+          ID2=1
+          IF(IDWP.EQ.6)ID1=2
+          IF(IDWP.EQ.7)ID1=3
+          IF(IT2.EQ.1)then
+            IF(IDWF.EQ.6)ID2=2
+            IF(IDWF.EQ.7)ID2=3
+          else
+            IF(IDWP.EQ.6)ID2=2
+            IF(IDWP.EQ.7)ID2=3
+          endif
+        ENDIF
+        CV1=CVIN(ID1,ICOMP,IT1)
+        CV2=CVIN(ID2,ICOMP,IT2)
         CVIF=CV1+(TRAT*(CV2-CV1))
       
 C If the mechanical ventilation model or the AIM-2 infiltration model is active
@@ -1417,57 +1462,18 @@ c is set to zero, then when this value is greater than 0., it's effect on the in
 c space is accounted for here.
         CVIF = CVIF + outdoor_air_inf_cond(ICOMP)
 
-
-C Use procedure IMS_ZoneCharVentilation to compute the effective
-C conductance associated with IMS-induced ventilation for the current
-C zone.
-        call IMS_ZoneCharVentilation( iComp,
-     &                                fIMSZoneVentConductance,
-     &                                fIMSZoneVaporChangeRate )
-        CVIF = CVIF + fIMSZoneVentConductance
-
-
 C Now zone-coupling advection.
 C NB TIA? holds the normalised (to external air temperature)
 C ventilation conductance in case an air flow network exists.
-        CV1=CVV1(ICOMP,IT1)
-        CV2=CVV1(ICOMP,IT2)
-        IC2=ICC1(ICOMP,IT2)
-        TA1=TIA1(ICOMP,IT1)
-        TA2=TIA1(ICOMP,IT2)
-        IF(IDWP.EQ.6)then
-          CV1=CVV2(ICOMP,IT1)
-          TA1=TIA2(ICOMP,IT1)
-        ELSEIF(IDWP.EQ.7)then
-          CV1=CVV3(ICOMP,IT1)
-          TA1=TIA3(ICOMP,IT1)
-        ENDIF
-        if(IT2.EQ.1)then
-          IF(IDWF.EQ.6)then
-            CV2=CVV2(ICOMP,IT2)
-            IC2=ICC2(ICOMP,IT2)
-            TA2=TIA2(ICOMP,IT2)
-          ELSEIF(IDWF.EQ.7)then
-            CV2=CVV3(ICOMP,IT2)
-            IC2=ICC3(ICOMP,IT2)
-            TA2=TIA3(ICOMP,IT2)
-          ENDIF
-        else
-          IF(IDWP.EQ.6)then
-            CV2=CVV2(ICOMP,IT2)
-            IC2=ICC2(ICOMP,IT2)
-            TA2=TIA2(ICOMP,IT2)
-          ELSEIF(IDWP.EQ.7)then
-            CV2=CVV3(ICOMP,IT2)
-            IC2=ICC3(ICOMP,IT2)
-            TA2=TIA3(ICOMP,IT2)
-          ENDIF
-        endif
+	CV1=CVVN(ID1,ICOMP,IT1)
+	CV2=CVVN(ID2,ICOMP,IT2)
+	IC2=ICCN(ID2,ICOMP,IT2)
+	TA1=TIAN(ID1,ICOMP,IT1)
+	TA2=TIAN(ID2,ICOMP,IT2)
         CF=CV1+(TRAT*(CV2-CV1))
         ICF=IC2
         TAF=TA2
         IF(IAIRN.ge.1)TAF=TA1+(TRAT*(TA2-TA1))
-
         CVVF=CF
 
 C Check if air flow simulation has taken place: if it has
@@ -1624,7 +1630,7 @@ C No flow network.
       ENDIF
 
 C Determine XX3.
-   17 XX3=CVIF*TF+CVVFM*X
+      XX3=CVIF*TF+CVVFM*X
 
 C Save future-time values for use at next time-step.
   171 CVM(ICOMP)=CVVFM
@@ -1753,7 +1759,6 @@ C a moisture balance at the air point.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
 
       COMMON/PREC6L/TQL1(MCOM,MT),TQL2(MCOM,MT),TQL3(MCOM,MT)
@@ -1788,8 +1793,6 @@ C Common for relative humidity control (ideal)
 
 c Common for time step computed parameters of HVAC system
 c in common/hvac_timestep_parameters is included via hvac_parameters.h.
-
-      character*10 wkd1, wkd2
       character outs*124
       LOGICAL MSTROK,MSTRZN
 

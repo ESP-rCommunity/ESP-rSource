@@ -114,8 +114,8 @@ C Transformed z.
          zft(i)=(xs-xor)*c(1)+(ys-yor)*c(2)+(xs-xor)*c(3)
      &          -(ys-yor)*c(4)+(zs-zor)*c(5)
 
-C Transformed y value should be zero; error if not.
-         if(abs(yft(i)).gt.1.E-5)then
+C Transformed y value should be close to zero; warn if not.
+         if(abs(yft(i)).gt.1.E-3)then
              call edisp(icout,' ')
              write(outs,9999)is
  9999        format('TRNSF1I: Surface ',i2,

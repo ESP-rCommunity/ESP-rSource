@@ -28,6 +28,8 @@ C  INPOLY - Polygon point containment test.
 C ****** GTOPOL
       SUBROUTINE GTOPOL(itrc,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -42,7 +44,11 @@ C ****** GTOPOL
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C6/INDCFG
@@ -54,7 +60,6 @@ C ****** GTOPOL
       dimension ivals(MGRT)
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER DESC*48,H*72,outs*124,ltmp*72,t15*15,ETEXT*82
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
 
       grmod=.true.
@@ -385,6 +390,9 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EDGVERT(ITRC,MODGEO,IER)
 #include "epara.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -1862,6 +1870,8 @@ C show attributes in list.
       SUBROUTINE EASKGSUR(IS,MOD,PROMPT1,PROMPT2,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2007,6 +2017,9 @@ C It is easy to add a surface at the end of the list.
 C Method checks for minimally linked vertices.
       SUBROUTINE ADDGSUR(ITRC,IWHICH,ACTION,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

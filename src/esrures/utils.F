@@ -472,6 +472,7 @@ C HDSTEP takes the timestep information and returns
 C a character string describing the simulation period.
 
       SUBROUTINE HDSTEP(SDESCR)
+      integer lnblnk  ! function definition
 
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -604,6 +605,9 @@ C string to be used in headers.
 
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
@@ -648,6 +652,9 @@ C a different colour for each name.
 
       SUBROUTINE COLZNLIST(line,isize,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -955,6 +962,8 @@ C ASKZON: call to enquire which zone the user is interested in.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -1017,6 +1026,8 @@ C the user is interested in for stats/ graphs/ listings etc.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1145,6 +1156,7 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1217,6 +1229,8 @@ C the user is interested in.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -1508,6 +1522,7 @@ C msg (width variable) is prepended to dialog as export happens
 C ixopen is a toggle reset each time ctlexp is called to signal open or close file.
 C ixunit is the file unit number for the export file.
       subroutine ctlexp(xfile,ixopen,ixunit,ixpunit,tg,msg,IER)
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)

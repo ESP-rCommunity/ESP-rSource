@@ -52,6 +52,7 @@ C results library as well.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
@@ -578,6 +579,9 @@ C d=CFD ), File name LFILE is passed in and may be edited by user,
 C Returns IW as 0 if no decision made, IW as 1 if in current path and IW
 C as 2 if in some other location.
       subroutine dealremote(topic,remote,LFILE,IW)
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
       common/pophelp/h(60)

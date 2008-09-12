@@ -28,6 +28,8 @@ C converts into viewing coords, clips the image and draws it.
       SUBROUTINE DRAWESP(ITRC,ier)
 #include "building.h"
       PARAMETER  (MPL = 200 )
+      
+      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -49,6 +51,9 @@ C converts into viewing coords, clips the image and draws it.
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -73,7 +78,6 @@ C converts into viewing coords, clips the image and draws it.
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,ETEXT*82
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.

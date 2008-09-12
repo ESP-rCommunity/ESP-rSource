@@ -22,46 +22,34 @@ C `CTLWRT` Takes configuration control common block data and saves to
 C an ascii file.
       SUBROUTINE CTLWRT(IUNIT,IER)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/fctl4/iasocc(mcc,mcmp),nfsup(mcc)
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
+      common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/Vld20/Vldtng
 
-      CHARACTER*72 LCTLF
+      CHARACTER lctlf*72,ctldoc*248
       character outs*248,outsd*248
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,ctldoc*248
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character DS*7,DS1*10,DE*7,DE1*10,SSTR*72,SSTR1*72,SSTR2*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248
+      character glctldoc*248,opticdoc*248
       logical Vldtng
 
       IER=0
@@ -331,7 +319,7 @@ C in the case of sensing outside boundary contiditions (ie. -3 sensor)
   401 CONTINUE
 
 C Global.
-    4 IF(NGF.EQ.0)GOTO 12
+    4 IF(NGF.EQ.0)GOTO 13
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* System'
 
 C Global control information.
@@ -380,6 +368,76 @@ C Write control data and compact, if very long then use two lines.
   460     CONTINUE
   450   CONTINUE
   480 CONTINUE
+
+C Optical control information.
+  13  if(NOF.eq.0)goto 12
+      WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* Optics'
+      ln=max(1,LNBLNK(opticdoc))      
+      WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)opticdoc(1:ln)
+
+      WRITE(IUNIT,'(I4,A)',IOSTAT=ios,ERR=1)NOF,'  # No. of controls'
+
+      DO 100 I=1,NOF
+        II=I
+        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control optics'
+        CALL EVCNTRL(5,II,1,1,'S',SSTR)
+        LN=max(1,LNBLNK(SSTR))
+        WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
+        WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IOSN(II,J),J=1,3),
+     &  '  # sensor data'
+        CALL EVCNTRL(5,II,1,1,'A',SSTR)
+        LN=max(1,LNBLNK(SSTR))        
+        WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# actuates ',
+     &     SSTR(1:ln)
+        WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)(IOAN(II,J),J=1,3),
+     &  '  # actuator data'
+        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
+     &  ' # No. day types'
+        NN=NOCDT(II)
+        IF(NN.EQ.0)NN=3
+
+        DO 200 J=1,NN
+          JJ=J
+          CALL STDATE(IYEAR,IOCDV(II,JJ,1),DS,DS1)
+          CALL STDATE(IYEAR,IOCDV(II,JJ,2),DE,DE1)
+          write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
+          WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)(IOCDV(II,JJ,K),K=1,2),
+     &      outs(1:lnblnk(outs))
+          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)NOCDP(II,JJ),
+     &      '  # No. of periods in day'
+          LL=NOCDP(II,JJ)
+
+          DO 300 K=1,LL
+            KK=K
+            CALL EVCNTRLAW(5,II,JJ,KK,SSTR,SSTR2)
+            LN=max(1,LNBLNK(SSTR))            
+            WRITE(IUNIT,'(2I5,F8.3,3A)',IOSTAT=ios,ERR=1)
+     &        IOCTYP(II,JJ,KK),IOCLAW(II,JJ,KK),TOCPS(II,JJ,KK),
+     &        '  # ctl type, law (',SSTR(1:ln),'), start @'
+            WRITE(IUNIT,'(F8.0,A)',IOSTAT=ios,ERR=1)OMISCD(II,JJ,KK,1),
+     &        '  # No. of data items'
+            NITEMS=INT(OMISCD(II,JJ,KK,1))+1
+            IF(NITEMS.EQ.1)GOTO 300
+
+C Write control data and compact, if very long then use two lines.
+            if(NITEMS.lt.20)then
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (OMISCD(II,JJ,KK,L),L=2,NITEMS)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+            else
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (OMISCD(II,JJ,KK,L),L=2,19)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (OMISCD(II,JJ,KK,L),L=20,nitems)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+            endif
+  300     CONTINUE
+  200   CONTINUE
+  100 CONTINUE
 
    12 CALL ERPFREE(IUNIT,ios)
       RETURN

@@ -22,9 +22,9 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfutil.o \
 	  mocfd.o moclim.o moget.o moplnt.o mosensa.o nwkrewr.o plot3d.o \
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
-	  resutil.o rlibget.o rwipv.o setres.o sort.o spmatl.o spmisc.o startup.o \
+	  resutil.o rlibget.o rwipv.o rwsbem.o setres.o sort.o spmatl.o spmisc.o startup.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
-	  vgraph.o visgrd.o visual.o visvec.o TReports_dummy.o
+	  vgraph.o visgrd.o visual.o visvec.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -100,7 +100,7 @@ initalc.F:
 	ln -s $(CTLdir)/initalc.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -122,6 +122,9 @@ readTrnsys.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -136,13 +139,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
-tdrecres.F:
-	rm -f tdrecres.F
-	ln -s $(TDFdir)/tdrecres.F .
-TReports_dummy.F:
-	rm -f TReports_dummy.F
-	ln -s $(REPdir)/TReports_dummy.F .
+	ln -s $(COMdir)/tdfile.F .
 visgrd.F:
 	rm -f visgrd.F
 	ln -s $(DFSdir)/visgrd.F .
@@ -160,10 +157,10 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F convect2.F ctread.F \
 	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
-	psychro.F readTrnsys.F rwipv.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	tdrecres.F visgrd.F visual.F visvec.F TReports_dummy.F
+	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
+	visgrd.F visual.F visvec.F

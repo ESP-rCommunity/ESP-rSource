@@ -1469,6 +1469,13 @@ C Variables calculated strictly for user output purposes.
       REAL LHV_to_therm_eff      ! Useful thermal output / fuel LHV input efficiency (-).
       REAL LHV_to_cogen_eff      ! LHV_to_AC_eff + LHV_to_therm_eff (-).
 
+C Parameter for close-to-zero comparisons
+      REAL SMALL
+      PARAMETER ( SMALL = 1.0e-06) ! (oC)
+
+C Variable used to trap potential div/0 errors
+      REAL Denom_DT
+
 
 C---------------------------------------------------------------------------------
 C Start trace if trace output requested.
@@ -2918,6 +2925,23 @@ C establishment of the coefficients for the energy balances. These heat transfer
 C are calculated using temperatures at the previous iteration. Once the solution
 C converges these heat transfers should equal the converged solution.
 C---------------------------------------------------------------------------------
+
+C-------Test that denominator in the logitmic portion of equation is
+C-------not near zero, and substitute close-to-zero parameter if so.
+
+        CALL ECLOSE( T_HX_gas_out - T_HX_water_in, 0., SMALL, CLOSE)
+
+        IF ( CLOSE ) THEN
+
+          Denom_DT = SMALL
+
+        ELSE
+
+          Denom_DT = T_HX_gas_out - T_HX_water_in
+
+        ENDIF
+
+C-------Proceed with LMTD calculation
         SELECT CASE ( HX_method )
 
         CASE ( HX_fixed_eff )
@@ -2931,17 +2955,18 @@ C-------------------------------------------------------------------------------
      &                   ) /
      &                LOG(
      &                      ( T_HX_gas_in  - T_HX_water_out ) /
-     &                      ( T_HX_gas_out - T_HX_water_in  )
+     &                      ( Denom_DT  )
      &                   )
 
         CASE ( HX_condensing )
+
           Q_HX_sensible = UA_HX * (
      &                       ( T_HX_gas_in  - T_HX_water_out )
      &                      -( T_HX_gas_out - T_HX_water_in  )
      &                            ) /
      &                    LOG(
      &                         ( T_HX_gas_in  - T_HX_water_out ) /
-     &                         ( T_HX_gas_out - T_HX_water_in  )
+     &                         ( Denom_DT   )
      &                       )
           Q_HX_latent   = HX_Ndot_condense * HX_Hfg
           Q_HX = Q_HX_sensible + Q_HX_latent

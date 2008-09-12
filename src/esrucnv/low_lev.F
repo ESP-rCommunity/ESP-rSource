@@ -24,7 +24,11 @@ C ***** face3d
 C face3d are triangles or quads which are general surfaces in autocad.
       subroutine face3d
 #include "building.h"
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk
       integer currlay, currcol, oldlay, oldcol
@@ -76,10 +80,10 @@ C face3d are triangles or quads which are general surfaces in autocad.
 
 c Test for triangular patch.
       if (x(count).eq.x(count-1).and.y(count).eq.y(count-1)
-     &	     .and.z(count).eq.z(count-1)) count = count - 1
+     &     .and.z(count).eq.z(count-1)) count = count - 1
 
       if (x(count).eq.x(1).and.y(count).eq.y(1)
-     &	     .and.z(count).eq.z(1)) count = count - 1
+     &     .and.z(count).eq.z(1)) count = count - 1
 
       if (count .lt. 3) return
       call writelc
@@ -102,7 +106,12 @@ C Writing to temporary block file, do it in viewer format.
           write(ioblk,'(a)') 'PLA (3DFACE)'
           write(ioblk,'(i3)') count 
         else
+
+C Here we are updating the number of surfaces in the zone
+C Update the izstocn array!
           NZSUR(indxzon) = NZSUR(indxzon) + 1
+          NCON=NCON+1
+          IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
         endif
       endif
 
@@ -124,7 +133,11 @@ C autocad and translates it if it is extruded.
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
       integer currlay, currcol, oldlay, oldcol
@@ -219,7 +232,12 @@ C Add a surface to zone.
            elseif(head.eq.'BLK_')then
              call edisp(iuout,'block (2D ext line)..')
            else
+  
+C Incrementing NZSUR for this zone but also to
+C update IZSTOCN to reflect this change.
              NZSUR(indxzon) = NZSUR(indxzon) + 1
+             NCON=NCON+1
+             IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
            endif
          endif
       
@@ -308,7 +326,11 @@ C ****** genarc
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
       integer currlay, currcol, oldlay, oldcol
@@ -398,7 +420,12 @@ C Find current layer and then matching zone.
             if(head.eq.'OBS_')then
             elseif(head.eq.'BLK_')then
             else
+    
+C Updating NZSUR for this zone but also to
+C update IZSTOCN for this surface.
               NZSUR(indxzon) = NZSUR(indxzon) + 1
+              NCON=NCON+1
+              IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
             endif
           endif
             

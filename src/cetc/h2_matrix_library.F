@@ -21,7 +21,7 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 C
-C This file contains the following routines: 
+
 C
 C--------------------  HVAC_model_static_temp()   -------------------
 C     Created by: Alex Ferguson
@@ -275,6 +275,8 @@ C---------------------------------------------------------------------------
       return
       end
 
+
+
 C--------------------------------------------------------------------------
 C     ABSTRACT:
 C
@@ -311,7 +313,32 @@ C--------------------------------------------------------------------------
       END  ! of FUNCTION 
 
 
+C--------------------  H2_comp_static_template()   ------------
+C     Created by: Alex Ferguson
+C     Created on: November 8, 2006
+C     Copyright: Natural Resources Canada
+C     ________
+C     ABSTRACT: 
+C 
+C     This subroutine performs presimulation results for a hydrogen
+C     compressor (comonent types 88 and 119)
+C
+C--------------------  H2_comp_static_template()   ------------
+      subroutine H2_comp_static_template(iPComp)
+      implicit none 
 
+C-------------------------------------------------------------------------------
+C     Passed variables
+C-------------------------------------------------------------------------------
+      integer iPComp        ! pointer to component 
+
+C-------------------------------------------------------------------------------
+C     Call to generic syntax checker
+C-------------------------------------------------------------------------------
+      call HVAC_model_static_temp(iPComp) 
+
+      return
+      end
 
 
 
@@ -1829,10 +1856,11 @@ C===============================================================================
       
       subroutine h2_compressor_model(
      &     iComponent,
+     &     iType,
      &     fCoeffArray,
      &     iStats)
       implicit none 
-
+#include "building.h"
 #include "plant.h"
 
 C External functions.     
@@ -1842,6 +1870,7 @@ C-------------------------------------------------------------------------------
 C     Passed variables
 C-------------------------------------------------------------------------------
       integer iComponent        ! pointer to component 
+      integer iType             ! component type
       integer iStats            ! flag indicating which matrix is being solved
                                 ! istats = 1 -> temperature
                                 ! istats = 2 -> 1st phase flow
@@ -1897,17 +1926,36 @@ C.....Electrical power use of plant 'hybrid' components
       integer nsinc             ! time step number
       integer its               ! not used in current context
 
+C.....Trace & reporting data
+      common/tc/itc,icnt
+      common/outin/iuout,iuin
+      common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+C.....Trace/error reporting unit numbers
+      integer iTc,iCnt
+      integer iUout,iUin
+      integer iTcf,iTrace,iZntrc,iTu      
+
 C-------------------------------------------------------------------------------
 C     Common storing status of plant initialization. 
 C-------------------------------------------------------------------------------
       common / plant_initialization / bInitialized
       logical bInitialized(mpcom)
 
+C.....Variables used by controller, hydrogen compressor.
+C.....Note: these variables are presently implemented as h2-network specific
+C.....customizations. They should be reimplemented in a modular fashion when
+C.....time permits. 
+      common/resh2_stg/bCyl_H2_max_reached, fCyl_reported_pressure
+      logical bCyl_H2_max_reached    ! Flag indicating that maximum pressure
+                                     ! in storage reached.
+
+      real fCyl_reported_pressure    ! Current pressure in the compressed 
+                                     ! cylinder.
 
 C-------------------------------------------------------------------------------
 C     Local variables
 C-------------------------------------------------------------------------------
-
+      logical bClose            ! flag for close to zero comparisons.
       integer iStream           ! counter
 
 C.....Model configuration
@@ -1926,27 +1974,53 @@ C.....Model configuration
       
       integer iEmpirical        ! Named constant for Empirical gas analysis
 
-      parameter ( iIdeal_gas = 1, iEmpirical = 2 ) 
-
+      parameter ( iIdeal_gas = 119, 
+     &            iEmpirical = 88   )
 
 C.....Component parameters from plant network file  
-
-      integer iAnalysis_type    ! flag indicating if system should be 
-                                ! characterized using ideal gas law, or 
-                                ! imperical equation
 
       real fPressureInlet       ! inlet pressure (kPa)
       real fPressureOutlet      ! outlet pressure (kPa)
 
       real fElecCoeff0,         ! system electrical performance coefficients
-     &     fElecCoeff1,         ! 
+     &     fElecCoeff1,         !
      &     fElecCoeff2          !
      
       real fTherCoeff0,         ! system thermal performance coefficients 
-     &     fTherCoeff1,         ! 
-     &     fTherCoeff2          !    
+     &     fTherCoeff1,         !
+     &     fTherCoeff2          !
 
-      
+      real fIsenCoeff0,         ! isentropic performance coefficients 
+     &     fIsenCoeff1,         !
+     &     fIsenCoeff2          !
+
+      real fEff_motor0,         ! Electric motor efficiency coefficients
+     &     fEff_motor1,         !
+     &     fEff_motor2          !
+
+
+      real fEff_elec_conv       ! Electric generator / motor converter            
+
+      integer iNumber_stages    ! Number of stages for 
+                                ! ideal multistage compressor 
+
+      integer iIntercool_model  ! Flag indicating which intercooling 
+                                ! model is in use
+
+      real fInterC_frac0,       ! Coefficients used to evaluate 
+     &     fInterC_frac1,       ! performance of intercooling when
+     &     fInterC_frac2        ! empirical model is in use. 
+
+      integer iIntercool_ideal,     ! Named constants for itercooling models
+     &        iIntercool_fixed,     ! 
+     &        iIntercool_empirical  ! 
+
+      parameter ( iIntercool_ideal     = 1, 
+     &            iIntercool_fixed     = 2,
+     &            iIntercool_empirical = 3 )
+
+      real fIntermediate_temp   ! Inlet temperature of intermediate 
+                                ! stages after intercooling
 
 C.....Connection data 
       integer iConnection       ! index of component's connection in plant network
@@ -1958,6 +2032,7 @@ C.....Connection data
 
       logical bNoH2Flow         ! logical flag indicating that hydrogen is 
                                 ! flowing in system
+
 
 C.....Misc data
       real fStream_comp(7)      ! Array  contianing composition of stream 
@@ -1973,6 +2048,22 @@ C.....Misc data
 
       real fH2flowKMOL          ! Flow in kMol of H2 (kmol/s)
 
+      real fOverall_P_ratio     ! Overall pressure ratio across compressor (-)
+
+      integer iStage            ! Flag for current stage
+      real fStage_P_ratio       ! Pressure ratio across each stage
+      real fStage_Pin           ! Stage inlet pressure (kPa)
+      real fStage_Pout          ! Stage outlet pressure (kPa)
+
+      real fStage_Temp_in_K     ! Stage inlet temperature (K)
+      real fStage_Temp_out_K    ! Stage outlet temperature (K)
+      real fStageQ_rejection    ! Heat dumped via intercooling 
+                                !   between stages (W)
+      real fStage_K_WorkKW      ! Work output from each stage (kW)
+      real fEff_motor           ! Motor efficiency (-)
+
+
+
 C.....Results
       real fElectricalWork      ! Electrical power produced (+) or used (-). (W)
       real fKinematicWorkW      ! Mechanical power produced (+) or used (-). (W) 
@@ -1986,15 +2077,8 @@ C.....H3K reporting
       CHARACTER*128 H3K_rep_NAME ! H3Kreporting object
       character*128 root_name    ! root name of component node 
       character*128 hold_name    ! temporary variable for string manipulation
-
-C.....loop data for outlet temperature estimate
-      logical bSolnUnconverged  ! convergance flag
-      logical bNoChange         ! flag indicating temperature does not change  
-      real fMaxTemperature      ! temperature bounds on outlet temperature estimate 
-      real fMinTemperature      ! (K)
-      integer iIterCount        ! iteration counter
-      real fEnthalpyDiff        ! result of comparison between target & iterating
-                                ! enthalpies
+      integer iName_length
+      logical bClose_to_zero    ! Flag for close-to-zero comparisons
       
 C.....Dummy variables 
       real fDummy1, fDummy2
@@ -2023,80 +2107,18 @@ C-------------------------------------------------------------------------------
       real PEMf_HH2             ! returns specific enthalpy of hydrogen (kJ/Kmol)
 
 C-------------------------------------------------------------------------------
-C     Program controls 
-C-------------------------------------------------------------------------------
-
-      logical bCalculateOutTemp ! flag for outlet temperature calculation
-
-C-------------------------------------------------------------------------------
 C     Initialize variables
 C-------------------------------------------------------------------------------
 
 C.....Set Tolerance for close-to zero comparisons
-      fToleranceWattsOrKelvin = 10. ! Watts, K
-      fToleranceKG            = 1.0e-04 ! kg/s
-
-C.....Set hard-coded switch for outlet temperature calculation
-
-      bCalculateOutTemp = .true.
+      parameter ( fToleranceWattsOrKelvin = 10. )     ! Watts, K
+      parameter ( fToleranceKG            = 1.0e-10 ) ! kg/s
 
 C.....Initialize variables - necessary for use of g77 'fno-automatic' flag
       fElectricalWork = 0.
       fKinematicWorkW = 0.
       fThermalWork    = 0.
 
-C-------------------------------------------------------------------------------
-C     If this is the first time the coefficient generator has been called to 
-C     characterize this component, set meta flags for h3k report output 
-C-------------------------------------------------------------------------------
-      if ( .not. bInitialized(iComponent) ) then 
-         hold_name = pcname(iComponent) 
-C........Format string as: 'plant/NAME/misc_data'
-         WRITE(root_name,'(A,A,A)') 
-     &        'plant/',
-     &        hold_name(1:lnblnk(hold_name)),
-     &        '/misc_data'
-C-------------------------------------------------------------------------------
-C     .  Electricity produced/used
-C-------------------------------------------------------------------------------
-C........-> set name
-         WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)), '/electricalWork'
-C........-> update meta-data
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)), 'units', '(W)' )
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)), 'WattsToGJ', ' ')
-
-C-------------------------------------------------------------------------------
-C     .  Mechanical work produced/used
-C-------------------------------------------------------------------------------
-C.....-> set name
-         WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)), '/mechanicalWork'
-C........-> update meta-data 
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)), 'units', '(W)' )
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)), 'WattsToGJ', ' ')
-         
-C-------------------------------------------------------------------------------
-C     .  Thermal energy work produced/used
-C-------------------------------------------------------------------------------
-C.....-> set name
-         WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)), '/heatFlow'
-C.....-> update meta-data
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)), 'units', '(W)' )
-         call REP_SET_META(
-     &        H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)), 'WattsToGJ', ' ')
- 
-         bInitialized(iComponent) = .true.
-
-      endif
-
-      
 C-------------------------------------------------------------------------------
 C     Get connection index and properties
 C-------------------------------------------------------------------------------
@@ -2111,10 +2133,22 @@ C-------------------------------------------------------------------------------
 
       fH2flowKMOL = fConnH2Flow / fH2molarMass ! kmol/s
 
+C----------------------------------------------------------------------------
+C     Zero fStream_comp array (this array is used to pass the amount of
+C     hydrogen flow to subordinate routine PEM_COMPRESSOR)
+C----------------------------------------------------------------------------
+      do iStream = 1, 7
+         fStream_comp ( iStream )  = 0.0 ! (kmol/s)
+      end do 
+C----------------------------------------------------------------------------
+C     Set hydrogen flow (fStream_comp location 5)
+C----------------------------------------------------------------------------
+      fStream_comp ( 5 ) = fH2flowKMOL ! (kmol/s)
+
+
 C.....Check that h2 flow exists
       call eclose(fConnH2Flow, 0.0, fToleranceKG, bNoH2Flow) 
-
-
+      if ( fConnH2Flow < 0.0) bNoH2Flow = .true.
 C-------------------------------------------------------------------------------
 C     Check value of ISTATS, and set coeffArray accordingly:
 C     
@@ -2126,57 +2160,271 @@ C-------------------------------------------------------------------------------
 
 C-------------------------------------------------------------------------------
 C     .  Temperature matrix
-C
-C     
 C-------------------------------------------------------------------------------
 
 C........Read model inputs 
 
-C........-> Flag for ideal gas or empirical analysis
-         iAnalysis_type  = int ( ADATA ( iComponent, 1 ) ) ! (-)
-C........-> inlet and outlet conditions
-         fPressureInlet  = ADATA ( iComponent, 2 ) ! (kPa)
-         fPressureOutlet = ADATA ( iCOmponent, 3 ) ! (kPa) 
-C........-> electrical conversion coefficients
-         fElecCoeff0     = ADATA ( iComponent, 4 ) ! (W)
-         fElecCoeff1     = ADATA ( iComponent, 5 ) ! (W / kg/s )
-         fElecCoeff2     = ADATA ( iComponent, 6 ) ! (W / (kg/s)^2 )
-C........-> thermal conversion coefficients 
-         fTherCoeff0     = ADATA ( iComponent, 7 ) ! (W)
-         fTherCoeff1     = ADATA ( iComponent, 8 ) ! (W / kg/s )
-         fTherCoeff2     = ADATA ( iComponent, 9 ) ! (W / (kg/s)^2 )
+         if ( iType .eq. iEmpirical ) then
 
-C........Error trapping should go here
+C..........-> Adata (iComponent,1) is a dummy variable
 
-         if ( iAnalysis_type  .eq. iIdeal_gas ) then
+C..........-> inlet and outlet conditions
+           fPressureInlet  = ADATA ( iComponent, 2 ) ! (kPa)
+           fPressureOutlet = ADATA ( iComponent, 3 ) ! (kPa) 
+
+C..........-> Electrical work coefficients
+           fElecCoeff0     = ADATA ( iComponent, 4 ) ! (W)
+           fElecCoeff1     = ADATA ( iComponent, 5 ) ! (W / kg/s )
+           fElecCoeff2     = ADATA ( iComponent, 6 ) ! (W / (kg/s)^2 )
+
+C..........-> heat recovery coefficients 
+           fTherCoeff0     = ADATA ( iComponent, 7 ) ! (W)
+           fTherCoeff1     = ADATA ( iComponent, 8 ) ! (W / kg/s )
+           fTherCoeff2     = ADATA ( iComponent, 9 ) ! (W / (kg/s)^2 )
+
+C..........-> ADATA (iComponent,10) is a dummy variable.
+
+         elseif  ( iType .eq. iIdeal_gas ) then
+
+C..........-> inlet and outlet conditions
+           fPressureInlet  = ADATA ( iComponent, 1 ) ! (kPa)
+           fPressureOutlet = ADATA ( iComponent, 2 ) ! (kPa) 
+
+C..........-> Number of stages 
+           iNumber_stages = int ( ADATA (iComponent, 3) ) ! (-)
+
+C..........-> Isentropic efficiency coefficients 
+           fIsenCoeff0     = ADATA ( iComponent, 4 ) ! (-)
+           fIsenCoeff1     = ADATA ( iComponent, 5 ) ! (- / kg/s )
+           fIsenCoeff2     = ADATA ( iComponent, 6 ) ! (- / (kg/s)^2 )
+
+C..........-> Intercooling type 
+           iIntercool_model = int ( ADATA ( iComponent, 7 ) ) ! (-)
+
+C..........-> Note: Only 'ideal' intercooling is supported at present.
+           if ( iIntercool_model .ne. iIntercool_ideal ) then 
+
+             write (itu,"(A,I2,A)") "H2 compressor (plant component #",
+     &          iComponent,'):'
+             write (itu,'(A,I2,A)') 'Specified intercooling model (', 
+     &          iIntercool_model,') is not supported.'
+             write (itu,'(A)')
+     &           'At present, only the ideal gas model (type 1) is'
+             write (itu,'(A)') 'supported.'
+
+             STOP 'H2_compressor_model: Fatal error!'
+
+           endif 
+
+C..........-> For fixed-temp intercooling, inlet temp for intermediate 
+C..........   stages. This input is not used at present, but 
+C..........   has been included for future use.
+           fIntermediate_temp = ADATA ( iComponent, 8 ) ! (oC)
+
+C..........-> For 'fractional' cooling, performance coefficients
+C..........   These inputs aren't used at present, but have been 
+C..........   included to permit the model more flexibility 
+           fInterC_frac0   = ADATA ( iComponent,  9 ) ! (-)
+           fInterC_frac1   = ADATA ( iComponent, 10 ) ! (- / kg/s )
+           fInterC_frac2   = ADATA ( iComponent, 11 ) ! (- / (kg/s)^2 )
+
+C..........-> Electrical motor efficiency coefficients.
+           fEff_motor0 = ADATA (iComponent, 12 ) ! (-)
+           fEff_motor1 = ADATA (iComponent, 13 ) ! (-/ W)
+           fEff_motor2 = ADATA (iComponent, 14 ) ! (-/ W^2)
+
+         else 
+C...........->Can't happen - iType used as basis to call H2_compressor_model
+
+            STOP "H2_compressor_model: Fatal error --- invalid type!"
+
+         endif 
+
+C........Error trapping on model inputs should go here
+
 C-------------------------------------------------------------------------------
-C     .     Evaluate isentropic efficiency:
-C     .     
-C     .       eff = c0 + c1 * h2_flow + c2 * h2_flow **2
-C     .
-C-------------------------------------------------------------------------------            
-            fEfficencyIsentropic =  fElecCoeff0 
-     &           +  fElecCoeff1 * fConnH2Flow 
-     &           +  fElecCoeff2 * fConnH2Flow ** 2.0
+C        Inputs collected. Start analysis
+C-------------------------------------------------------------------------------
+
+C........H2-dep project customization: if outlet pressure = -1,
+C........assume unit is a compressor and use pressure in downstream
+C........cylinder. This code should be generalized as time permits.
+         
+         call eclose ( fPressureOutlet, -1.0, 0.01, bClose )
+
+         if ( bClose ) then 
+            iOperation_mode = iCompressor
+            fPressureOutlet = fCyl_reported_pressure
+         else
+
+C...........Determine if unit is compressor or turbine
+            if ( fPressureOutlet > fPressureInlet ) then
+C.............Unit is compressor
+              iOperation_mode = iCompressor
+
+            else
+C.............Unit is turbine 
+              iOperation_mode = iDeCompressor
+
+            endif 
+
+         endif ! <- matches 'if ( bClose )
 
 C-------------------------------------------------------------------------------
-C     .     Set electrical work to zero, as we are not entirely sure
-C     .     what will happen to recovered energy.
-C-------------------------------------------------------------------------------           
-            pwrp(iComponent) = 0.0 ! (W)
-
-         elseif ( iAnalysis_type .eq. iEmpirical ) then
+C        Check model type and apply ideal gas or empirical model as 
+C        necessary.
 C-------------------------------------------------------------------------------
-C     .     Calculate electrical and thermal work using empirical data:
-C     .
-C     .     WORK = coeff_0 + coeff1 * H2Flow + coeff2 * H2Flow ^ 2
-C     .     
-C     .     Note: the heat/electricity fluxes will be considered to flow into
-C     .           the compressor/expander if the results of thelece following 
-C     .           are negitive. Thus, the values of the electrical/thermal 
-C     .           coefficients determine if the system will place a load
-C     .           on the network and liberate heat (compressor) or produce
-C     .           electricity and use heat (expander)
+         if ( iType  .eq. iIdeal_gas ) then
+
+C-------------------------------------------------------------------------------
+C           Evaluate isentropic efficiency using correlation:
+C
+C             eff = c0 + c1 * ( h2_flow ) + c2 * ( h2_flow )  ^ 2
+C
+C-------------------------------------------------------------------------------
+            fEfficencyIsentropic =  fIsenCoeff0 
+     &           +  fIsenCoeff1 * fConnH2Flow 
+     &           +  fIsenCoeff2 * fConnH2Flow ** 2.0
+C-------------------------------------------------------------------------------
+C           Determine overall pressure ratio, and pressure ratio 
+C           across each stage.
+C-------------------------------------------------------------------------------
+C...........First, check that inlet pressure is not zero!            
+            call eclose ( fPressureInlet, 0.0, 0.1, bClose_to_zero )
+            
+            if ( bClose_to_zero .or. fPressureInlet < 0.0 ) then
+
+              write (itu,*) "H2_compressor_model: plant component ",
+     &          iComponent, ":"
+              write (itu,*) "Inlet pressure must be greater than zero!"
+              STOP "H2_compressor_model: fatal error"
+
+            endif 
+
+C...........overall pressure ratio 
+            fOverall_P_ratio = fPressureOutlet / fPressureInlet
+
+C...........Per-stage pressure ratio ( assume ideal load balancing 
+C...........between stages...)
+            fStage_P_ratio = fOverall_P_ratio ** ( 1.0 / 
+     &                   float ( iNumber_stages ) )
+
+C...........Initialize compressor work requirement to zero...
+            fKinematicWorkW = 0.0
+            fThermalWork = 0.0
+C-----------------------------------------------------------------------------
+C           For each stage, call subordinate subroutine PEM_Compressor
+C           to characterize the outlet temperature and the work requirement.
+C-----------------------------------------------------------------------------
+            do iStage = 1, iNumber_stages
+C.............determine inlet and outlet pressure for current stage: 
+C.............
+C............. Stage P inlet = Compressor P inlet 
+C.............                 * ( Stage press. ratio ) ^ ( stage index - 1 )
+C.............
+C............. Stage P outlet = Compressor P inlet 
+C.............                 * ( Stage press. ratio ) ^ ( stage index )
+C.............
+              fStage_Pin  = fPressureInlet
+     &                   * fStage_P_ratio ** float ( iStage - 1 )
+              fStage_Pout = fPressureInlet
+     &                   * fStage_P_ratio ** float( iStage )
+
+
+C.............In ideal intercooling, the stage inlet temperature is
+C.............assumed to be equal to the connnection inlet temprature. 
+              fStage_Temp_in_K = fConnTempK
+
+C.............If intercooling is not ideal, then some adjustment of 
+C.............the inlet temperature is required. However, non-ideal 
+C.............intercooling is not presently supported (and is error-
+C.............trapped above...)
+
+C.............Determine heat rejected from hydrogen during intercooling
+
+              if ( iStage .gt. 1 ) then 
+C...............Rejected heat:
+C...............
+C............... Q rejected = H2 flow rate * H2 specific heat 
+C...............
+C...............                * ( outlet temp of previous stage
+C...............
+C...............                      - inlet temp of current stage)
+C...............
+
+                ! Calculation to go here
+                fStageQ_rejection = 0.0
+
+                fThermalWork = fThermalWork + fStageQ_rejection
+
+              else 
+                fStageQ_rejection = 0
+              endif 
+
+C.............Call PEM_compressor to determine stage work requirements
+C.............and outlet pressures. Note: for ideal intercooling, we
+C.............could call pem_compressor once and multiply the 
+C.............calculated work output by the number of stages. However,
+C.............in the present implementation, a separate call has been 
+C.............made for each stage to ensure future compatability with 
+C.............non-ideal intercooling.
+              if ( .not. bNoH2Flow ) then 
+
+
+                call pem_compressor(
+     &            fStream_comp,
+     &            fStage_Pin,
+     &            fStage_Pout,
+     &            fStage_Temp_in_K,
+     &            fStage_Temp_out_K,
+     &            fEfficencyIsentropic,
+     &            fStage_K_WorkKW )
+
+              else 
+C...............There's no hydrogen flow. Set stage outlet temperature 
+C...............to inlet, and zero kinematic work. 
+                fStage_Temp_out_K = fStage_Temp_in_K
+                fStage_K_WorkKW = 0.0
+              endif 
+C.............Now add work reported for this stage to total for
+C.............compressor. Remember: pem_compressor returns 
+C.............the kinematic work requirement in kW, but we use W 
+C.............in this routine.
+              fKinematicWorkW = fKinematicWorkW
+     &          + ( fStage_K_WorkKW * 1000.0 )   !(W)
+
+
+
+            enddo ! < matches 'do iStage = 1, iNumber_stages...'
+
+C...........Save last stage temperature as compressor outlet 
+C...........temperature.
+
+            fOutletTempK = fStage_Temp_out_K !(K)
+
+C...........Determine overall motor efficiency, based on mechanical 
+C...........work requirement:
+C...........
+C........... efficiency = coeff 0 + coeff 1 * work + coeff 2 * work ^ 2
+C...........
+            fEff_motor = fEff_motor0 
+     &                      + fEff_motor1 * fKinematicWorkW
+     &                      + fEff_motor2 * fKinematicWorkW ** 2.0
+
+C...........Calculate compressor electrical load:
+C...........
+C...........                   motor work requirement 
+C...........  Electric load = ----------------------
+C...........                      motor efficiency
+
+            fElectricalWork = fKinematicWorkW / fEff_motor   ! (W)
+
+         elseif ( iType .eq. iEmpirical ) then
+C-------------------------------------------------------------------------------
+C         Calculate electrical and thermal work using empirical data:
+C
+C         WORK = coeff_0 + coeff1 * H2Flow + coeff2 * H2Flow ^ 2
+C
 C------------------------------------------------------------------------------- 
             fElectricalWork = fElecCoeff0 
      &           +  fElecCoeff1 * fConnH2Flow 
@@ -2187,72 +2435,15 @@ C-------------------------------------------------------------------------------
      &           +  fTherCoeff2 * fConnH2Flow ** 2.0 ! (W, -ive ->O )
 
 C-------------------------------------------------------------------------------
-C     .     Assumed isentropic efficiency for temperature-out calculation
+C           The empirical model does not provide sufficient information
+C           to determine the outlet temperature of the hydrogen. Assume
+C           an isentropic efficiency of 0.75, and call subordinate 
+C           routine pem_compressor to guesstimate outlet temperature 
 C-------------------------------------------------------------------------------
             fEfficencyIsentropic = 0.75
-
-C-------------------------------------------------------------------------------
-C     .     Save electrical work for electrical network solution (loads are 
-C     .     -ive.)
-C-------------------------------------------------------------------------------           
-            pwrp(iComponent) = -fElectricalWork ! (W)
-
-
-         endif
-
-C-------------------------------------------------------------------------------
-C     .  Zero fStream_comp array (this array is used to pass the amount of
-C     .  hydrogen flow to subordinate routine PEM_COMPRESSOR)
-C-------------------------------------------------------------------------------
-         do iStream = 1, 7
-            fStream_comp ( iStream )  = 0.0 ! (kmol/s)
-         end do 
-C-------------------------------------------------------------------------------
-C     .  Set hydrogen flow (fStream_comp location 5)
-C-------------------------------------------------------------------------------
-         fStream_comp ( 5 ) = fConnH2Flow /  fH2molarMass ! (kmol/s)
-
-C-------------------------------------------------------------------------------
-C     .  Check to see if hydrogen flow exists. If so, call 'PEM_compressor' 
-C     .  to determine outlet conditions at compressor
-C     .
-C     .  Synopsys:
-C     .
-C     .    PEM_compressor(
-C     .       stream composition array (input, kmol/s),
-C     .       inlet pressure (input, kPa),
-C     .       outlet pressure (input, kPa),
-C     .       Inlet temperature (input, K), 
-C     .       Outlet temperature (output, K),
-C     .       Isentropic efficiency (input, -),
-C     .       Kinematic work (output, kW) 
-C     .       )
-C     .
-C     .
-C     .  Note: PEM_compressor is called to characterize the outlet temperature
-C     .        using either the calculated isentropic efficiency (ideal-gas 
-C     .        model), or an assumed isentropic efficiency of 0.75 (empirical
-C     .        model). It would be desirable to calculate the outlet temperature
-C     .        using the actual work requirement caluculated using the 
-C     .        empirical model. 
-C
-C     .        However, there is a lot of uncertianty about 
-C     .        whether this energy flow is tranferred to the fluid, ambient, 
-C     .        or is comprised of some other 'standing-loss'. Assuming that
-C     .        all of the heat will be transferred to the working fluid 
-C     .        can lead to some extremely unrealistic temperatures and 
-C     .        instability of the simulation. 
-C     .
-C     .        Instead, the inlet temperature is calculated by assumng that the 
-C     .        mecahnical performance of the compressor is approximated by a 
-C     .        constant, 75% efficiency. This should not introduce too much 
-C     .        error into the results, as the energy change associated with
-C     .        compression/decompression is several orders of magnitude 
-C     .        less than that associated with the chemical reactions.
-C     .
-C-------------------------------------------------------------------------------
-         if ( .not. bNoH2Flow ) then
-            call pem_compressor(
+C...........Check if there's hydrogen flow.
+            if ( .not. bNoH2Flow ) then
+              call pem_compressor(
      &           fStream_comp, 
      &           fPressureInlet, 
      &           fPressureOutlet, 
@@ -2260,21 +2451,31 @@ C-------------------------------------------------------------------------------
      &           fOutletTempK, 
      &           fEfficencyIsentropic,
      &           fKinematicWorkKW )
-            
-C...........Convert kW to W
-            fKinematicWorkW = fKinematicWorkKW * 1000.
-         
-         else
-            
+
+           else
+C............There's no hydrogen flow. Set outlet temperature to 
+C............inlet temperature
+             fOutletTempK = fConnTempK
+
+           endif 
+
+         endif ! <- matches 'if ( iType .eq. iIdeal_gas )...'
+
 C-------------------------------------------------------------------------------
-C     .     No flow in compressor / expander. Set work to zero, and outlet
-C     .     temperature to inlet temperature
-C-------------------------------------------------------------------------------              
+C        Ensure that a compressor does not operate as a turbine, and 
+C        vice-versa.
+C-------------------------------------------------------------------------------
+         if ( iOperation_mode == iCompressor .and.
+     &        fElectricalWork < 0.0 ) then
+C..........Unit is compressor and it can't generate electricity
+           fElectricalWork = 0.0
+      
+         elseif( iOperation_mode == iDeCompressor .and.
+     &           fElectricalWork  > 0.0 ) then
+C..........Unit is turbine and it can't load the bus
+           fElectricalWork = 0.0
+         endif
 
-            fKinematicWorkW = 0.0 ! (kW)
-            fOutletTempK = fConnTempK ! (K)
-
-         endif 
 
 C---------------------------------------------------------------------------------
 C     .  Electrical network related operations - for ISTATS == 1 only!
@@ -2286,6 +2487,8 @@ C     .      component of the power produced by the network, and (ii)
 C     .      save this data in the electrical network common block
 C
 C---------------------------------------------------------------------------------
+
+         pwrp(iComponent) = -fElectricalWork ! (W), -ive ->O
 
          iEModel=1              ! Flag indicating which power calculation will be performed
          
@@ -2313,40 +2516,51 @@ C     .  SEND results to h3kreports:
 C     .  Get component name
 C-------------------------------------------------------------------------------
          hold_name = pcname(iComponent) 
+         iName_length = lnblnk( pcname (iComponent) )
 C........Format string as: 'plant/NAME/misc_data'
          WRITE(root_name,'(A,A,A)') 
      &        'plant/',
-     &        hold_name(1:lnblnk(hold_name)),
+     &        hold_name(1:iName_length),
      &        '/misc_data'
+         iName_length = iName_length + 16
 C-------------------------------------------------------------------------------
 C     .  Electricity produced/used
 C-------------------------------------------------------------------------------
 C........-> set name
          WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)), '/electricalWork'
+     &        root_name(1:iName_length), '/electricalWork'
 C........-> update data 
-         call REP_REPORT(
-     &        fElectricalWork, H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)) )
+         call add_to_xml_reporting(
+     &            fElectricalWork, 
+     &            H3K_rep_NAME,
+     &            'units','(W)',
+     &            'Compressor power consumption' )
 
 C-------------------------------------------------------------------------------
 C     .  Mechanical work produced/used
 C-------------------------------------------------------------------------------
 C.....-> set name
          WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)), '/mechanicalWork'
+     &        root_name(1:iName_length), '/mechanicalWork'
 C........-> update data 
-         call REP_REPORT(
-     &        fKinematicWorkW, H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)) )
+         call add_to_xml_reporting(
+     &        fKinematicWorkW,
+     &        H3K_rep_NAME,
+     &        'units','(W)',
+     &        'Compressor work requirement' )
          
 C-------------------------------------------------------------------------------
 C     .  Thermal energy work produced/used
 C-------------------------------------------------------------------------------
 C.....-> set name
          WRITE(H3K_rep_NAME,'(A,A)') 
-     &        root_name(1:lnblnk(root_name)), '/heatFlow'
+     &       root_name(1:iName_length), '/heatFlow'
 C.....-> update data 
-         call REP_REPORT(
-     &        fThermalWork, H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)) )
+         call add_to_xml_reporting(
+     &        fThermalWork,
+     &        H3K_rep_NAME,
+     &        'units','(W)',
+     &        'Compressor heat generation' )
 
 
       elseif ( istats .eq. iProp1stFlow ) then 

@@ -26,14 +26,26 @@ C EDCASCTL - edit casual gain control data.
 
       SUBROUTINE  EDCASCTL(ITRC,ICOMP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+      common/user/browse
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -49,7 +61,7 @@ C EDCASCTL - edit casual gain control data.
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -78,13 +90,13 @@ C TMC common block:
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
-      DIMENSION ITMC2DF(30)
+      DIMENSION ITMC2DF(30),KSTR(MDTY)
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
       LOGICAL XST,lcouple,ldcoef
       logical MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical browse
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
@@ -94,7 +106,8 @@ C TMC common block:
       CHARACTER*72 DLCGCIN,LCFGF
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER info*18,cgcdesc*64
+      CHARACTER info*18,cgcdesc*64,brw*8
+      INTEGER IX,IY,IZ,KSTR
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
@@ -141,9 +154,9 @@ C Read existing file.
           call edisp(iuout,'Opened existing casual gain control file.')
         else
           cgcdesc(icomp)='no description supplied'
-          NCGTC(ICOMP,1)=2
-          NCGTC(ICOMP,2)=2
-          NCGTC(ICOMP,3)=2
+          DO 400 IDTY=1,NBDAYTYPE
+            NCGTC(ICOMP,IDTY)=2
+ 400      CONTINUE
           ICGCS(ICOMP)=8
           ICGCF(ICOMP)=18
           ICGCFL(ICOMP,1)=1
@@ -234,8 +247,7 @@ C Reset all surface lines to standard width and redraw if revised data.
       NL=NLITZ(ICOMP)
       write(ITEM(1),'(A,A)')   '  Zone: ',zname(ICOMP)
       write(ITEM(2),'(A,A36)') '  Desc: ',cgcdesc(ICOMP)(1:36)
-      write(ITEM(3),'(A,3I3)') 'a Wkd Wkend control: ',NCGTC(ICOMP,1),
-     &                            NCGTC(ICOMP,2),NCGTC(ICOMP,3)
+      write(ITEM(3),'(A)') 'a control for daytypes '
       write(ITEM(4),'(A,2I3)') 'b Control periods  : ',ICGCS(ICOMP),
      &                            ICGCF(ICOMP)
       write(ITEM(5),'(A,I3)')  '  Lighting zones   : ',NL
@@ -353,6 +365,13 @@ C In special case...
 
       IF (INO.EQ.NITEMS)THEN
 
+C If browsing pass this information to e2r.
+        if(browse)then
+          brw = ' -b yes'
+        else
+          brw = ' -b no '
+        endif
+
 C Check for control using Radiance.
         lcouple=.false.
         DO 560 ILZ=1,NLITZ(ICOMP)
@@ -367,11 +386,13 @@ C Check for control using Radiance.
  8888     call EASKABC('Radiance model for daylight coefficients:',' ',
      &    'Create and edit model','Calculate coeffs','Continue',IW,0)
           if (IW.eq.1) then
-            write(doitl,'(3a,i3,a)')'e2r -file ',LCFGF(1:lnblnk(LCFGF)),
-     &        ' -purpose Day_coef -zone ',ICOMP,' -act Create'
+            write(doitl,'(3a,i3,2a)')'e2r -file ',
+     &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
+     &        ICOMP,' -act Create',brw
           elseif (IW.eq.2) then
-            write(doitl,'(3a,i3,a)')'e2r -file ',LCFGF(1:lnblnk(LCFGF)),
-     &        ' -purpose Day_coef -zone ',ICOMP,' -act Compute &'
+            write(doitl,'(3a,i3,3a)')'e2r -file ',
+     &        LCFGF(1:lnblnk(LCFGF)),' -purpose Day_coef -zone ',
+     &        ICOMP,' -act Compute',brw,' &'
           elseif (IW.eq.3) then
             goto 9999
           endif
@@ -437,13 +458,11 @@ C <<  Perhaps this could be joined together? >>
         call edisp(iuout,' ')
         write(outs,'(A,I2)') ' Zone ',ICOMP
         call edisp(iuout,outs)
-        write(outs,9989)NCGTC(ICOMP,1)
- 9989   format(' Casual gain type for control during Weekdays  = ',I3)
-        call edisp(iuout,outs)
-        write(outs,'(30X,A,I3)')'during Saturdays = ',NCGTC(ICOMP,2)
-        call edisp(iuout,outs)
-        write(outs,'(30X,A,I3)')'during Sundays   = ',NCGTC(ICOMP,3)
-        call edisp(iuout,outs)
+        DO 401 IDTY=1,NBDAYTYPE
+          write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
+ 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
+          call edisp(itru,outs)
+ 401    CONTINUE
         DO 117 NLZ=1,NLITZ(ICOMP)
           write(outs,'(A,I1)') ' Light zone ',NLZ
           call edisp(iuout,outs)
@@ -634,27 +653,24 @@ C General description of the model.
 
       ELSEIF (INO.EQ.3)THEN
 C Weekday sat sun control
-        H(1)='Specify which casual gain type to control on Weekdays,'
-        H(2)='Saturdays & Sundays:'
-        H(3)=' '
-        H(4)='          1 Occupants'
-        H(5)='          2 Lighting'
-        H(6)='          3 Equipment'
-        H(7)=' '
-        H(8)='Three numbers are expected:'
-        H(9)='Default type is  2   2   2  for lighting control.'
-  33    WRITE(HOLD,'(3I6)')NCGTC(ICOMP,1),NCGTC(ICOMP,2),NCGTC(ICOMP,3)
-        CALL EASKS(HOLD,' Which casual gain type (index) to control on',
-     &    'weekdays, sat & sun: ',40,' 2  2  2 ',
-     &    ' cast ctl wkd sat sun',IER,9)
-        K=0
-        CALL EGETWI(HOLD,K,ia,0,3,'W','cas type wkd',IER)
-        CALL EGETWI(HOLD,K,ib,0,3,'W','cas type sat',IER)
-        CALL EGETWI(HOLD,K,ic,0,3,'W','cas type sun',IER)
-        if(ier.ne.0)goto 33
-        NCGTC(ICOMP,1)=ia
-        NCGTC(ICOMP,2)=ib
-        NCGTC(ICOMP,3)=ic
+        CALL EASKAB(' ','Control casual gains for ','one day type',
+     &     'all day types',IY,35)
+        IF(IY.EQ.1)THEN
+          IX=1
+          CALL EPICKS(IX,KSTR,' ',
+     &    'choose daytype to control casual gains'
+     &    ,12,nbdaytype,calentag,'Choose daytype',IER,1)
+          IDTY=KSTR(1)
+        ENDIF
+        CALL EASKABC(' ','Control casual gain type ','occupants',
+     &     'lighting','equipment',IZ,1)
+        IF(IY.EQ.1)THEN
+          NCGTC(ICOMP,IDTY)=IZ
+        ELSEIF(IY.EQ.2)THEN
+          DO 404 IDTY=1,NBDAYTYPE
+            NCGTC(ICOMP,IDTY)=IZ
+ 404      CONTINUE
+        ENDIF
 
       ELSEIF (INO.EQ.4)THEN
 C Control periods.

@@ -92,6 +92,7 @@ C address for requested recovery day and recover all timesteps.
         N=24*NTS
         DO 20 I=1,N
           IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+IHASHS(ISET)+2
+          if(irec.eq.0) goto 999
           NN=NZSUR(IZONE)
           JB1=NN+5
           READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=5)(XD(K),K=1,JB1)
@@ -134,6 +135,13 @@ C this record and assign an assumed value to FRAC.
      &    ' GCFRAC: error reading FRAC at record',IREC,'.'
       endif
       call edisp(iuout,outs)
+      CALL EPWAIT
+      goto 8
+
+ 999  write(outs,'(a,4i6)') 
+     &  'GCFRAC: record out of range (day? zone?) scanning xd @ rec ',
+     &  IREC,IDAY,IZONE,ISET
+      call usrmsg(outs,' cannot continue results recovery.','W')
       CALL EPWAIT
       goto 8
 
@@ -1240,6 +1248,7 @@ C CALLS: MOREC1 MOREC2
 C Get ZTMS only if save is level 2 - 4.
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZ)+IHASHS(ISET)
+        if(irec.eq.0) goto 999
         NN=NZSUR(IZ)
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)
      &            TMA,X1,(ZTMS(K),K=1,NN),X2,X3,TMCON
@@ -1277,6 +1286,13 @@ C if save level is 3 or 4, otherwise set ZTMSO to 0.
       CALL EPWAIT
       goto 8
 
+ 999  write(outs,'(a,4i6)') 
+     &  'GZTMS: record out of range (day? zone?) scanning xd @ rec ',
+     &  IREC,IDAY,IZ,ISET
+      call edisp(iuout,outs)
+      CALL EPWAIT
+      goto 8
+
       END
 
 
@@ -1306,6 +1322,7 @@ C CALLS: MOREC1 MOREC2
 C Only if save is level 2 - 4.
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZ)
+        if(irec.eq.0) goto 999
         NN=NZSUR(IZ)
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=1000)QW1,QW2,X1,X2,QSA,
@@ -1332,6 +1349,13 @@ C Only if save is level 2 - 4.
         write(outs,'(a,i5,a)')
      &    ' GZSOLA: error reading data at record',IREC,'.'
       endif
+      call edisp(iuout,outs)
+      CALL EPWAIT
+      goto 8
+
+ 999  write(outs,'(a,4i6)') 
+     &  'GZSOLA: record out of range (day? zone?) scanning xd @ rec ',
+     &  IREC,IDAY,IZ,ITS
       call edisp(iuout,outs)
       CALL EPWAIT
       goto 8
@@ -1713,8 +1737,8 @@ C Get data only if save is level 1 - 4.
             GVAL(I)=0.
 
 C Return the record number using hash.
-
             IREC=IHASHD(IDAY)+IHASHT(I)+IHASHZ(IZONE)+IHASHS(ISET)+IRJ
+            if(irec.eq.0) goto 999
             READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(XD(K),K=1,ICJ)
             GVAL(I)=XD(ICJ)
    20     CONTINUE
@@ -1738,6 +1762,13 @@ C         write(6,*) iset,izone,irj,icj,irec,(GVAL(I),i=1,12)
       CALL EPWAIT
       goto 8
 
+ 999  write(outs,'(a,4i6)') 
+     &  'GFIXED: record out of range (day? zone?) scanning xd @ rec ',
+     &  IREC,IDAY,IZONE,ISET
+      call edisp(iuout,outs)
+      CALL EPWAIT
+      goto 8
+
       END
 
 
@@ -1753,6 +1784,7 @@ C hours.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
@@ -1833,6 +1865,8 @@ C Within requested output period.
 
 C Read first record and set values, make up potential error messages.
             IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZONE)+IHASHS(ISIM)
+            if(irec.eq.0) goto 999
+
             READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(DATA(1,K),K=1,NZI)
             IREC=IREC+1
             READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(DATA(2,K),K=1,NZI)
@@ -1844,6 +1878,8 @@ C Average over required time steps.
               do 400 IV=2,NOUT
                 J=ITS+IV-1
                 IREC=IHASHD(IDAY)+IHASHT(J)+IHASHZ(IZONE)+IHASHS(ISIM)
+                if(irec.eq.0) goto 999
+
                 READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=98)(XD(K),K=1,NZI)
                 do 500 K=1,NZI
                   DATA(1,K)=DATA(1,K)+XD(K)
@@ -1921,6 +1957,7 @@ C Calculate average values for period.
       endif
       call usrmsg(outs,' cannot continue results recovery.','F')
       return
+
   98  if(IOS.eq.2)then
         write(outs,'(a,4i6)') 
      &    'MMAPER: no permission to scan xd @ rec ',
@@ -1930,6 +1967,12 @@ C Calculate average values for period.
      &    IREC,NZI,IZONE,ISIM
       endif
       call usrmsg(outs,' cannot continue results recovery.','F')
+      return
+
+ 999  write(outs,'(a,4i6)') 
+     &  'MMAPER: record out of range (day? zone?) scanning xd @ rec ',
+     &  IREC,IDAY,IZONE,ISIM
+      call usrmsg(outs,' cannot continue results recovery.','W')
       return
       end
 
@@ -1952,6 +1995,8 @@ C CALLS: MOREC1 MOREC2
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SIMPKA/NSIM
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
@@ -1986,13 +2031,11 @@ C Compute the first record for each day of the simulation.
           CALL MOREC1(IDR,IREC)
           IHASHD(IDR)=IREC
    50   CONTINUE
-        CALL EPROMPT
 
       ELSE
         call edisp(iuout,' HASHL: Save option does not allow access.')
         goto  8
       ENDIF
-        CALL EPROMPT
 
 C Compute the start record offset for each result set including the 
 C base case (which should equal zero).

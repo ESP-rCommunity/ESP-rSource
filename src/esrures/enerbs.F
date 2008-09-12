@@ -32,6 +32,9 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       SUBROUTINE MOSCAS(IZONE,ISFN,IANZSE)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
@@ -51,6 +54,9 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -59,13 +65,13 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER TSTR*10,CSTR*25,zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -95,7 +101,7 @@ C If izver >= 4 then there is no need to read the operation file.
 C Assume that the operation file name has been read in via MOINIT.
 C Read in the zone operational file data.
         CALL EROPER(0,iuout,iunit,izone,IER) ! for older files
-        if(ip3ver.eq.0)then
+        if(ip3ver(izone).eq.0)then
           write(outs,'(a,i2,a)') 
      &    'Operation file for zone ',izone,' periods being sorted!'
           call edisp(iuout,outs)
@@ -554,6 +560,7 @@ C until the glitches have been sorted.
 
       SUBROUTINE MOSRGT(IZONE,ISFN,IDAY,IE)
 #include "building.h"
+#include "control.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -561,10 +568,6 @@ C until the glitches have been sorted.
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 C      common/recver/izver,ipver,iever
 
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &      IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &      BMISCD(MCF,MBCDT,MBCDP,MISC)
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)

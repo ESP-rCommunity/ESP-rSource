@@ -33,6 +33,8 @@ C ***************** UNCERTA *********************
       subroutine UNCERTA(LUALF)
 #include "building.h"
 #include "uncertainty.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -608,6 +610,7 @@ C   specification and 2 if there was a cancel issued during editing.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)

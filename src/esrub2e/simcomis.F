@@ -25,6 +25,8 @@ C pattern in RDBSIM
 
 # include "b2e.h"
 # include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 

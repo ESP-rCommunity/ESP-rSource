@@ -1142,6 +1142,8 @@ C connections and containments.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
@@ -1153,15 +1155,15 @@ C LPCDB/IPCDB (for plant template database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PCNAM/PCNAME(MPCOM)
 
-      character OUTS*72,OUTSTR*124
+      character OUTS*72,OUTSTR*124,outs248*248
       CHARACTER PCNAME*15,pcdesc*80
 
 C Write out general information pertaining to plant database and the 
 C number of components within the network.
       CALL EDISP(iuout,' ')
-      WRITE(OUTSTR,'(a,i3,2a)') ' The plant network contains',NPCOMP,
+      WRITE(outs248,'(a,i3,2a)') ' The plant network contains',NPCOMP,
      &  ' components from ',LPCDB(1:LNBLNK(LPCDB))
-      CALL EDISP(iuout,OUTSTR)
+      CALL EDISP248(iuout,outs248,100)
 
 C Loop to write out the component specific information.
       WRITE(OUTS,'(A)') 'Plant components in network: '
@@ -1227,6 +1229,8 @@ C    mode = 2 : Read data pointers only.
 
 #include "plant.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       PARAMETER (IRECLN = 20)
       PARAMETER (MHEADR = 25)
@@ -1238,31 +1242,76 @@ C    mode = 2 : Read data pointers only.
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      LOGICAL OK,dok
+      LOGICAL OK,dok,unixok
       CHARACTER*25 ZDESC
-      character h*72,buffer*72,ltmp*72
+      character h*72,buffer*72,ltmp*72,fs*1
+      integer lndbp   ! for length of standard database path
+      character lltmp*144  ! to re-create plant database file name with path
+
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.
-         h(1)='The plant component database binary file holds the'
-         h(2)='description of available components.'
-         ltmp=lpcdb
-  100    CALL EASKS(ltmp,
-     &     ' Plant component database file name? ',' ',72,DPCDB,
-     &     ' Database name ',IER,2)
-         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-           lpcdb=ltmp
-         else
-           goto 100
-         endif
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  100 h(1)='The plant component database binary file holds the'
+      h(2)='description of available components. If the name'
+      h(3)='given matches an existing file, it will be read in'
+      h(4)='and the components data will be available for'
+      h(5)='listing and editing. If there is no such file then'
+      h(6)='a new one will be created to hold data for new'
+      h(7)='components.'
+      llt=lnblnk(lpcdb)
+      lltmp=lpcdb
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &      96,DPCDB,' Database name ',IER,7)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &      124,DPCDB,' Database name ',IER,7)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &      144,DPCDB,' Database name ',IER,7)
+        endif
+      elseif(iglib.eq.2)then
+        CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &    144,DPCDB,' Database name ',IER,7)
+      else
+        CALL EASKF(lltmp,'Plant component database file name? ',' ',
+     &    96,DPCDB,' Database name ',IER,7)
+      endif
+      
+C Figure out local or standard database folder.
+      call findwhichdbpath('pdb',lltmp,ier)
+      lndbp=lnblnk(standarddbpath)
 
 C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
 C 'irecln' is defined in 'plantdf.h'. If plant template file unit has
-C not been set use the unit from the event profiles database.
+C not been set use the unit from the event profiles database. Use
+C same opening logic as in eddb.F and moplnt.F
          if(ipcdb.eq.0)ipcdb=iprodb
-         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
+         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+           lltmp=LPCDB
+         elseif(ipathoptdb.eq.2)then
+           write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+         endif
+	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
+C         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then

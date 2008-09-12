@@ -840,6 +840,9 @@ C Logical flag indicating numbers are close
 
 C Logical flag indicating if iteration is required
       logical bIteration_Required
+C Flags indicating the nodes and states requiring iteration.
+      logical bIterationForNodeStates(MPNODE,MPVAR)
+
 
 C HOT30000:end
 C Common for plant side pid controllers
@@ -932,6 +935,7 @@ C Exact plant solutions may require iteration. Set iteration flag to false
 C Check for each node & each state variable if iteration marker set
       DO 32 IPNOD=1,NPNOD
         DO 30 ISTATS=1,MPVAR
+          bIterationForNodeStates(IPNOD,ISTATS) = .false.
 C Check if iteration is requested for this node
           IF(ICSV(IPNOD,ISTATS).NE.0) THEN
 C If so, reset marker
@@ -949,8 +953,9 @@ C Then check absolute error temperature or mass flow rate, respectively
      &           (ISTATS.EQ.3.AND.ABS(CSV-CIN).GT.PERMFL).OR.
      &           (ISTATS.EQ.4.AND.ABS(CSV-CIN).GT.
      &                                 fH2_iteration_tolerance)) THEN
-C State variable is outside absolute bound! Set flag for iteration!
+C State variable is outside absolute bound! Set flags for iteration!
                 bIteration_Required = .true.
+                bIterationForNodeStates(IPNOD,ISTATS) = .true.
 
 C Trace output
                 IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -963,17 +968,13 @@ C Trace output
             ENDIF   ! <- matches IF (ABS((CSV-CIN)...
           ENDIF     ! <- matches IF(ICSV(IPNOD...
 
-C This statement is a substitute for the F90 'exit' command. Should save
-C some resources on large plant networks.
-          IF ( bIteration_Required ) GOTO 33
-
    30   CONTINUE
    32 CONTINUE
 
 C Now check if convergence has been stipulated for plant component
 C additional data arrays (PCdatf), and set call for iteration
 C if outside tolerance
-   33 IF ( .not. bIteration_Required ) THEN
+      IF ( .not. bIteration_Required ) THEN
 C Loop through components
 
         DO ii = 1, NPCOMP
@@ -1020,12 +1021,19 @@ C some resources on large plant networks.
 
 C     Is iteration required?
    34 IF ( bIteration_Required ) THEN
-
 C Use successive substitution method with relaxation factor = 0.5
-C to establish "new" initial value;
+C to establish "new" initial value for nodes exhibiting instability.
 C refrain from iteration if maximum number of iterations exceeded.
         IF(ITERP.LT.MAXITP) THEN
-          CSVF(IPNOD,ISTATS)=(CIN+CSV)/2.
+          relaxation_loop: DO IPNOD=1,NPNOD
+            DO ISTATS=1,MPVAR
+              if ( bIterationForNodeStates(IPNOD,ISTATS) ) then
+                CSVF(IPNOD,ISTATS)= CSVI(IPNOD,ISTATS)
+     &               + ( CSVF(IPNOD,ISTATS)-CSVI(IPNOD,ISTATS) )/2.
+              endif
+            ENDDO
+          ENDDO relaxation_loop
+
           GOTO 10
         ELSE
           CALL DAYCLK(IDYP,PTIMEF,ICOUT)
@@ -1109,6 +1117,9 @@ C Trace output
 c This subroutine keeps track of plantsteps per month.
       IF(ISTATS.eq.1) CALL TrackPlantTimeSteps()
 
+C Zero plant component model energy usage storage array.
+      call ZeroPltEnergyStorageArray()
+
 C
 C For each defined plant component, call the appropriate coefficient
 C generator (CMP??C) to generate the balance equations as required.
@@ -1168,6 +1179,9 @@ C 1 node (ISV=21) AC  duct & condensation ?
 C 1 node (ISV=21) AC  damper
          ELSE IF(ITYPE.EQ.7) THEN
             CALL CMP07C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=21) AC  flow divert damper
+         ELSE IF(ITYPE.EQ.8) THEN
+            CALL CMP08C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=21) AC  cooling coil & water mfr control
 C uses TRNSYS type32 model.
          ELSE IF(ITYPE.EQ.9) THEN
@@ -1181,9 +1195,15 @@ C 1 node (ISV=21) AC  heating coil & water mfr control
 C 2 node (ISV=21) AC  plate heat exchanger
          ELSE IF(ITYPE.EQ.12) THEN
             CALL CMP12C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=21) AC  basic heat exchanger
+         ELSE IF(ITYPE.EQ.13) THEN
+            CALL CMP13C(IPCOMP,OUT,ISTATS)
 C 2 node (ISV=21) Cooling tower model
          ELSE IF(ITYPE.EQ.14) THEN
             CALL CMP14C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=21) AC fan mass flow control
+         ELSE IF(ITYPE.EQ.15) THEN
+            CALL CMP15C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20) WCH boiler with flux control
          ELSE IF(ITYPE.EQ.20) THEN
             CALL CMP20C(IPCOMP,OUT,ISTATS)
@@ -1229,15 +1249,36 @@ C 2 node (ISV>20) WCH Generic heat exchanger
 C 3 node (ISV>20) Heated water storage
          ELSE IF(ITYPE.EQ.34) THEN
             CALL CMP34C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV>20) WCH basic radiator
+         ELSE IF(ITYPE.EQ.35) THEN
+            CALL CMP35C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV>20) WCH Basic chiller/heat pump model
+         ELSE IF(ITYPE.EQ.36) THEN
+            CALL CMP36C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV>20) WCH Air or evaporative heat rejection unit
+         ELSE IF(ITYPE.EQ.37) THEN
+            CALL CMP37C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) WCH converging multi-leg junction
+         ELSE IF(ITYPE.EQ.38) THEN
+            CALL CMP38C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) Pump (mass flow model)
+         ELSE IF(ITYPE.EQ.39) THEN
+            CALL CMP39C(IPCOMP,OUT,ISTATS)
 C 3 node (ISV>19) AC  cooling coil fed by WCH system
          ELSE IF(ITYPE.EQ.40) THEN
             CALL CMP40C(IPCOMP,OUT,ISTATS)
 C 3 node (ISV>19) AC  heating coil fed by WCH system
          ELSE IF(ITYPE.EQ.41) THEN
             CALL CMP41C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) WCH modulating boiler
+         ELSE IF(ITYPE.EQ.42) THEN
+            CALL CMP42C(IPCOMP,OUT,ISTATS)
 C 2 node (ISV>20) AC  cooling coil fed by WCH system
          ELSE IF(ITYPE.EQ.43) THEN
             CALL CMP43C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) exponent model radiator
+         ELSE IF(ITYPE.EQ.44) THEN
+            CALL CMP44C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=29) WCH thermostatic radiator valve
          ELSE IF(ITYPE.EQ.50) THEN
             CALL CMP50C(IPCOMP,OUT,ISTATS)
@@ -1338,9 +1379,10 @@ C 1 node (ISV=20) PEM cogeneration fuel cell
      &           .OR. ITYPE .EQ. 89 ) THEN
 C 1-node electrolyzer / H2->electricity converter
             CALL  H2_Elec_converter( IPCOMP, OUT, ISTATS )
-         ELSE IF (ITYPE .EQ. 88 ) THEN
+         ELSE IF (ITYPE .EQ. 88 .or. 
+     &            ITYPE .EQ. 124     ) THEN
 C 1-node hydrogen compressor / decompressor
-            CALL H2_compressor_model(IPCOMP, OUT, ISTATS)
+            CALL H2_compressor_model( IPCOMP,iType, OUT, ISTATS )
          ELSE IF ( ITYPE .EQ. 101 ) THEN
 C 1-node hydrogen storage model
             CALL  H2_storage_model( IPCOMP, OUT, ISTATS )
@@ -1418,6 +1460,9 @@ C 1-node mains monthly draw profile
          ELSE IF (ITYPE .EQ. 123) THEN
 C 2-node stratified storage tank model
             CALL stratified_tank_coeff_gen(IPCOMP,OUT,ISTATS)
+C        ELSE IF (ITYPE .EQ. 124) THEN
+C 2-node NCHE (natural convection heat exchanger) model
+C            CALL NCHE_coeff_gen(IPCOMP,OUT,ISTATS)
 
 C New component equation generators inserted here
 
@@ -2267,7 +2312,6 @@ C-----------------------------------------------------------------
      &     npnod,               ! # of nodes in network
      &     npmtyp               ! not used in current context
       integer npmcoe, npnod, npmtyp
-
 
       common/pcval/
      &     csvf(mpnode,mpvar),  ! plant state variable future values

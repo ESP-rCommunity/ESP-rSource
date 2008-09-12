@@ -1,3 +1,59 @@
+VALIDATION OF ESP-r CFD CODE DEVELOPMENTS
+*****************************************
+
+TO UPDATE YOUR ARCHIVE:
+=======================
+The results distributed within standard ESP-r distribution may not be
+appropriate for your machine type and / or operating system. Therefore
+it is good practice to generate your own, as follows:
+
+cd to folder validation/benchmark/CFD
+
+run the script TEST.csh
+The script asks for location of dfs executable, accept default (usually
+/usr/esru/esp-r/bin/dfs)
+This script runs a number of dfs standalone simulations placing results
+files (*.mon,*.out,*.TEC,*.time) in the validation/benchmark/Models 
+folder. Once the script has run (which may take a substanitial time)
+move the results file to the Archive folder. (The folder contains
+results file but these are probably different from the ones that your
+machine/OS will generate). These results will be the standard results
+against which the development version is to be checked.
+
+TO CREATE DEVELOPMENT RESULTS:
+==============================
+Once standard results are obtained you need to get development version
+results, as follows:
+
+run the script TEST.csh again but this time specify the path to
+development dfs executible instead of default. This will generate
+results files in the Models directory.
+
+TO COMPARE RESULTS:
+===================
+
+run the script TEC_checker.csh in the Models directory and give the name
+of the Archive folder as argument. It is assumed that standard results
+are present in the Archive and development results are present in the
+Models folder. 
+Once the script has run detailed results are available in CFD_res.text
+and summary results are available in file CFD_summary.text 
+It is advisable to look into summary results before delving into
+detailed results.
+
+TO CLEANUP:
+===========
+
+run the script tidy.csh in the Models folder. This removes all results
+files from the Models folder but retains these in the Archive folder. 
+You may optionally want to remove the files CFD_res.text and
+CFD_summary.text from this folder. This is presently not supported.
+
+If you want to remove archived results then issue the command 
+rm -f *.mon *.time *.out *.TEC 
+from that folder. 
+
+
 DESCRIPTION OF THE TESTS:
 =========================
 
@@ -116,6 +172,9 @@ PARAMETERS VARIED IN THE TESTS:
 PROCEDURE:
 ==========
 
+Following is an paraphrased version of the steps given at the start 
+of this document.
+
 To run the tests execute the shell scripts TEST.csh and answer the 
 questions.  The scripts will run each of the above tests, producing 
 a .mon, .time and .TEC file.  The contents of the .mon and .TEC files 
@@ -128,5 +187,3 @@ supplied folder.
 The .time files are for developers to check that they have not 
 adversly effected the running time of the module.
 
-To check results against archival version run the script TEC_checker.csh
-in the Models folder.

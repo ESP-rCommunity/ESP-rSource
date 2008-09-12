@@ -36,6 +36,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -59,16 +61,23 @@ C ESP-r commons.
       common/appw/iappw,iappx,iappy
       common/rpath/path
       common/uhome/upath
+      common/FILEP/IFIL
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/C3F/LCNN
+      COMMON/C6/INDCFG
       common/CFGV/icfgv
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -117,8 +126,9 @@ C Material data array.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character cfgroot*24,dstmp*24,MODE*4
+      character buffer*144
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
+      CHARACTER LCFGF*72
       character htmlfile*72
       character ltobs*72,outs*248
       logical OPND,match,doobs,unixok
@@ -137,11 +147,12 @@ C storage.
       iotmp2=11        
       iotobs=13        
       iosblk=14
+      IFIL=15   ! set this to a higher number so no clash
       IUOUT=6
       IUIN=5
       LIMTTY=20
       LIMIT=20
-      itrc=1
+      itrc=1    ! set trance on prior to call to parcnv
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
@@ -192,7 +203,7 @@ C Assume there are no obstructions.
       doobs=.FALSE.
 
       call edisp(IUOUT,' ')
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
@@ -268,20 +279,46 @@ C placed in the same folder.
 
 C Instanciate and clear commons, scan the supplied problem
 C to update commons for configuration.
-          call blnksys
+          call clrprb
           call edisp(iuout,' Scanning the problem before updating...')
           call escdef(iotmp2,IER)
           MODE='NONE'
           call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then
+          
+C We have successfully scanned in the configuration file. If we
+C assume that the user will be adding surface to a model with
+C no existing zones then we can set the number of connections
+C to zero. If there are exsting zones then warn the user there
+C might be problems.
             CFGOK=.TRUE.
+            if(NCOMP.gt.0)then
+              call edisp(iuout,
+     &          'Model already has zones. Check results carefully.')
+            endif
+            if(NCON.gt.0)then
+              call edisp(iuout,
+     &          'Model already has surfaces. Check results carefully.')
+            endif
+            
+C If this is a registration only model it should be upgraded first.
+C Set ifcfg to the unit number that deals with the configuration file.
+C Then close that file
+            if(INDCFG.EQ.0)then
+              ifcfg=ioout
+              INDCFG=1
+              NCOMP=0
+              NCON=0
+              CALL EMKCFG('-',ier)
+              close(ifcfg)
+            endif
           else
             call edisp(iuout,'ecnv_error corrupt_update_file')
             stop 'ecnv aborted.'
           endif
         else
           call escdef(iotmp2,IER)
-          call blnksys
+          call clrprb
         endif
       elseif(oformat(1:3).eq.'dxf')then
 
@@ -334,7 +371,7 @@ C If input format is esp and output is viewer, tsbi3, thf, dxf or
 C vrml do this.
       if(iformat(1:3).eq.'esp')then
 
-C Assume that the configuration, mlc db, primitive db, control file
+C Assume that the configuration, mlc db, material db, control file
 C have not been read in.
         CFGOK=.FALSE.
         MLDBOK=.FALSE.
@@ -424,7 +461,7 @@ C Create THF (THINGS) file.
         endif
       endif
 
-C Input is from AutoCAD.
+C If we got to this point the conversion is from AutoCAD.
       open(ioin ,file=filname1,status='OLD', err=900)
       open(ioout,file=filname2,status='UNKNOWN', err=901)
 
@@ -436,10 +473,30 @@ C Confirm conversion of scale.
       endif
 
 C If esp-r then generate initial portion of configuration file.
+C If we started by scanning an existing esp-r configuration file
+C there is not much need to call mksyshd.  Just loop until
+C you get to the line * Building.
       if(oformat(1:3).eq.'esp')then
         LSNAM='Translation from AutoCAD'
-        call mksyshd(filname2,ier)
+        if(upgcfg(1:7).eq.'upgrade')then
+        
+C Read ioout until * Building then write out the new value
+C of LSNAM and then jump to 28 to allow data from DXF file
+C to be scanned.
+          do 27 i=1,100
+            read(ioout,'(A)') buffer
+            write(6,*) buffer(1:lnblnk(buffer))
+            if(buffer(1:10).eq.'* Building') then
+              write(ioout,'(A)',IOSTAT=IOS,ERR=2)LSNAM(1:lnblnk(LSNAM))
+              goto 28
+            endif
+  27      continue
+          write(6,*) 'end of cfg file without finding * building'
+	else
+          call mksyshd(filname2,ier)
+        endif
       endif
+  28  continue   ! we found the * Building line.
 
 C The general control part of the program
       instring = 'start'
@@ -568,9 +625,6 @@ C Knowing zones, create utility files.
                  WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
      &             '*con ',LTHRM(k2)(:LNBLNK(LTHRM(k2))),
      &             '  # construction'
-                 WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
-     &             '*shz ',SHOCCshzFile(k2)(:LNBLNK(SHOCCshzFile(k2))),
-     &             '  # SHOCC'
                  if(IOBS(k2).eq.1)then
                    WRITE(ioout,'(a,a)',IOSTAT=IOS,ERR=2)'*obs ',
      &               ZOBS(k2)(1:lnblnk(ZOBS(k2)))
@@ -677,13 +731,39 @@ C Close the files, remove temporary files if not to be kept.
         endif
       elseif(oformat(1:3).eq.'esp')then
 
-C Generate the zone geometry and any obstruction files.
+C Generate the zone geometry and any obstruction files. These
+C facilities require that IC1 IE1 ICT IC2 IE2 and IZSTOCN are
+C up to date. Start over and assume everything faces an
+C unknown boundary.  Actually in the low and mid level code
+C scanning the DXF file the values of izstocn and ncon have 
+C been updated. This start-again block of code is for safety.
         NCON=0
+        icc=0
         do 57 iv=1,ncomp
-          ncon=ncon+NZSUR(iv)
+          do 58 icz=1,nzsur(iv)
+            icc=icc+1
+            ncon=ncon+1
+            IC1(icc)=iv
+            IE1(icc)=icz
+            ICT(icc)=-1
+            IC2(icc)=0
+            IE2(icc)=0
+            IZSTOCN(IC1(icc),IE1(icc))=icc
+   58     continue
+   
+C Use the local wegeom to write out a old style of esp-r
+C geometry file based on the information available. After
+C writing close iotmp2 so that it can be used for the
+C connections file.
+          if(itrc.gt.0)then
+            WRITE(outs,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
+     &        'Writing zone ',NCCODE(iv),' named ',zname(iv)
+            call edisp248(iuout,outs,100)
+	  endif
           lf=LGEOM(iv)
           ivv=iv
           call wegeom(iotmp2,ivv,lf,ier)
+          close(iotmp2)
 
 C Create a dummy obstruction file for zone. Rewind the temporary
 C block store file and scann for blocks matching the current
@@ -711,6 +791,10 @@ C zone.
             endif
             goto 142
  143        continue
+ 
+C << NOTE: if we switch over to the new geometry format there is no
+C << need for a separate obstructions file
+ 
             CALL EFOPSEQ(iotmp2,ZOBS(ivv),3,IER)
             write(iotmp2,'(a,a)')
      &        '# DUMMY site obstruction file defined in ',
@@ -731,7 +815,11 @@ C zone.
           endif
   57    continue
 
-C Write out the connections (assuming everything exterior).
+C Write out the connections (assuming everything exterior). Check to see
+C that LCNN is something other than UNKNOWN.
+        if(LCNN(1:7).eq.'UNKNOWN')then
+          write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
+        endif
         if(icfgv.eq.3)then
           WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
      &        '*cnn  ',LCNN(1:lnblnk(LCNN)),'  # connections '
@@ -745,7 +833,7 @@ C Write out the connections (assuming everything exterior).
         endif
         do 61 iv=1,ncomp
           do 66 is=1,NZSUR(iv)
-            write(iotmp2,'(2i4,a)')iv,is,'   0   0   0'
+            write(iotmp2,'(2i4,a)')iv,is,'  -1   0   0'
   66      continue
   61    continue
         write(ioout,'(a)')'      0   # no mass flow analysis'
@@ -820,6 +908,9 @@ C **** wegeom
 C write esp geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -828,6 +919,14 @@ C write esp geometry file.
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
+
+C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
+C which make up the floor, IUZBASEA signals that the user selected
+C specific surfaces (two), has edited the floor area (one) or it was
+C calculated based on FLOR orientations (zero). IZBASELIST is the
+C number of items in the list.
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)
@@ -870,7 +969,7 @@ C Write out sets of packed strings, for unused index and indentation.
       itrunc=1
       ipos=1
       do while (itrunc.ne.0)
-        call arlist(ipos,nsur,Y0S,MS,'C',louts,loutln,itrunc)
+        call arlist(ipos,NZSUR(iv),Y0S,MS,'C',louts,loutln,itrunc)
         write(iotmp2,'(1x,a)',IOSTAT=ios,ERR=14) louts(1:loutln)
         ipos=itrunc+1
       end do
@@ -889,6 +988,17 @@ C Write out sets of packed strings, for unused index and indentation.
         write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',SOTF,
      &        '  UNKN  UNKNOWN      UNKNOWN'
   60  continue
+  
+C Set assumption that the user has edited base area to 1m2.
+      IUZBASEA(iv)=1
+      IZBASELIST(iv)=0
+      ZBASEA(iv)=1.0
+
+C Surfaces associated with base.
+      WRITE(iotmp2,'(a)')'# base'
+      WRITE(iotmp2,'(a,F9.2,i2)') '  0  0  0  0  0  0 ',
+     &  ZBASEA(iv),IUZBASEA(iv)
+      
       return
 
  903  call edisp(iuout,'ERROR opening or writing esp-r zone geom file.')
@@ -918,9 +1028,14 @@ C Write out sets of packed strings, for unused index and indentation.
 
 C ****** putcoods
 C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
+
+C << to be done - include trace directive >>
+
       subroutine putcoods
 #include "building.h"
       parameter (MAXLAY = 80)
+      
+      integer lnblnk  ! function definition
 
       integer currlay, currcol, oldlay, oldcol
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -940,6 +1055,7 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       character instring*72,oformat*24,head*4
       character layname*72
       logical match
+      integer nbofsurf  ! to pass to matchv
 
 C Multiply current x,y,z by transformation matrix
       x = coorx*amat(1,1) + coory*amat(1,2) + coorz*amat(1,3)
@@ -993,9 +1109,16 @@ C If on layer "0" or "1" do not bother to match vertex.
             if(layname(currlay)(1:1).eq.'0')return
             if(layname(currlay)(1:1).eq.'1')return
           endif
+          nbofsurf=NZSUR(indxzon)
+          if(head.eq.'TRN_')ITMCFL(indxzon,nbofsurf)=1
+          call matchv(indxzon,nbofsurf,match,x1,y1,z1)
 
-          if(head.eq.'TRN_')ITMCFL(indxzon,NZSUR(indxzon))=1
-          call matchv(indxzon,NZSUR(indxzon),match,x1,y1,z1)
+C Debug.
+C          if(match)then
+C            write(6,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
+C          else
+C            write(6,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
+C          endif
         endif
       endif     
       return
@@ -1053,8 +1176,12 @@ C Given a layer, return related zone (im), name (RZNAME), and
 C head of name (head).
       subroutine matchl(il,head,RZNAME,match,im)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       parameter (MAXLAY = 80)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/layers/layname(MAXLAY), numlay, laycolour(MAXLAY),
@@ -1144,6 +1271,7 @@ C Update the surface topology.
   40    continue
       endif
       icc=IZSTOCN(iz,is)
+      if(icc.eq.0) write(6,*) 'connection index zero for ',iz,is
       if(match)then
         NZNVER(icc) = NZNVER(icc)+1
         NZJVN(icc,NZNVER(icc))=ivmatch
@@ -1181,102 +1309,25 @@ C **** Make a string uppercase.
       return
       end
 
-C ********* blnksys
-C Fill common blocks for a minimal standard systems configuration
-C file so that output file can be written from commons.
-      subroutine blnksys
-#include "building.h"
-#include "esprdbfile.h"
-      COMMON/C1/NCOMP,NCON
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C6/INDCFG
-      COMMON/C23/IFPNF,LPNF
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      common/cctlnm/ctldoc,lctlf
-      COMMON/LOG/LPRJLG
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
-      COMMON/GTFIL/GTGEOM
-      COMMON/GT/GTNAME
-      common/radcfg/LRADCF
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
-      CHARACTER LAPROB*72,LPNF*72,LPRJLG*72
-      CHARACTER imgfmt*4,imgfoc*4,limgfil*72
-      character lradcf*72,ctldoc*248,LCTLF*72
-      character GTGEOM*72,GTNAME*15
-      character*10 wkd1, wkd2
-
-      LCLIM=DCLIM
-      LAPRES=DAPRES
-      LFMAT=DFCON
-      LFMUL=DFMUL
-      LOPTDB=DOPTDB
-      LPRFDB=DPRFDB
-      LPCDB =DPCDB
-      LPRJLG='job.notes'
-      LPNF='UNKNOWN'
-      lradcf='UNKNOWN'
-      LCTLF=' '
-      CTLDOC='no overall project control specified (yet)'
-      GTGEOM='UNKNOWN'
-      GTNAME = 'flat_booring'
-      idwe1=6
-      idwe2=7
-      wkd1='Saturday'
-      wkd2='Sunday'
-
-C Set number of images read to 0.
-      noimg=0
-      NCOMP=0
-      NCON=0
-      XLAT=50.0
-      XLON=0.0
-      IXPOS=1
-      GREF=0.2
-      ITGREF=1
-      SREF=0.4
-      DO 60 I=1,12
-        GREF12(I)=GREF
-        NSNOW(I)=0
-   60 CONTINUE
-      SNFNAM=' '
-      INDCFG=1
-
-C Clear esp-r commons.
-      NCOMP=0
-      NCON=0
-      do 76 iz=1,MCOM
-        write(LPROJ(iz),'(a)') 'UNKNOWN'
-        write(LTHRM(iz),'(a)') 'UNKNOWN'
-        NCCODE(iz)=iz
-        LUTIL(iz)=' '
-        INDUTL(iz)=0
-        IVF(iz)=0
-        ISI(iz)=0
-        IHC(iz)=0
-        ITW(iz)=0
-        ICGC(iz)=0
-        IOBS(iz)=0
-  76  continue
-
-      return
-      end
-
 C ********* mksyshd
 C mksyshd - write out the initial portion of the system configuration
 C file (up to where the zone information starts).
+
+C << to be done - this code should be identical to that included 
+C << in emkcfg up to the point of writing out the zone information.
+C << one option would be to pass a parameter to emkcfg to allow it
+C << to write only the header portion.
+
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
@@ -1313,7 +1364,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      CHARACTER LCFGF*72
       CHARACTER LCNN*72,LAPROB*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
@@ -1325,8 +1376,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
 C Comment for configuration index (upgrade registration level).
       if(INDCFG.EQ.0) indxcmt=' # Building only'
-      if(INDCFG.EQ.1)  indxcmt=' # Building only'
-      IF(INDCFG.EQ.2)  indxcmt=' # Plant only'
+      if(INDCFG.EQ.1) indxcmt=' # Building only'
+      IF(INDCFG.EQ.2) indxcmt=' # Plant only'
       IF(INDCFG.EQ.3) indxcmt=' # Building & Plant'
       if(INDCFG.EQ.0)then
         INDCFG=1
@@ -1335,26 +1386,29 @@ C Comment for configuration index (upgrade registration level).
       WRITE(ioout,'(A)',IOSTAT=IOS,ERR=3) '* CONFIGURATION3.0'
       WRITE(ioout,30,IOSTAT=IOS,ERR=3) LOUT(1:lnblnk(LOUT))
       call dstamp(dstmp)
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*date ',dstmp,
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*date ',dstmp,
      &  '  # latest file modification '
-      WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=3) '*root ',
+      WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*root ',
      &  cfgroot(1:lnblnk(cfgroot))
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*zonpth ',zonepth,
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*zonpth ',zonepth,
      &  '  # path to zones'
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*netpth ',netpth,
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*netpth ',netpth,
      &  '  # path to networks'
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
      &  '  # path to controls'
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
-     &  '  # path to project images'
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
-      WRITE(ioout,'(A,A,a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
+     &  '  # path to project images'
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth ',tmppth,
+     &  '  # path to project scratch folder'
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*docpth ',docpth,
+     &  '  # path to project documents'
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
      &  '  # path to local databases'
       WRITE(ioout,'(A,i4,a)',IOSTAT=IOS,ERR=3) '*indx ',INDCFG,
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
-
 
       WRITE(ioout,'(F7.3,2X,F7.3,a)')XLAT,XLON,
      &'   # Latitude & Longitude '
@@ -1372,13 +1426,8 @@ C Comment for configuration index (upgrade registration level).
       WRITE(ioout,'(A,A)') '*pdb  ',LPCDB(1:lnblnk(LPCDB))
 
 C << add test for whether model has SHOCC file >>
-      WRITE(ioout,'(A,A)') '*shl  ',
-     &      SHOCCshlFile(1:lnblnk(SHOCCshlFile))
-      if(lnblnk(lctlf).eq.0.or.lctlf(1:7).eq.'UNKNOWN')then
-        continue
-      else
-        WRITE(ioout,'(a,a)') '*ctl  ',LCTLF(1:lnblnk(LCTLF))
-      endif
+C      WRITE(ioout,'(A,A)') '*shl  ',
+C     &      SHOCCshlFile(1:lnblnk(SHOCCshlFile))
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
@@ -1395,6 +1444,12 @@ C Snow depth file
 C (if ground reflectivity model 3)
       IF(ITGREF.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) '*sndf ',
      &      SNFNAM(1:lnblnk(SNFNAM))
+
+      if(lnblnk(lctlf).eq.0.or.lctlf(1:7).eq.'UNKNOWN')then
+        continue
+      else
+        WRITE(ioout,'(a,a)') '*ctl  ',LCTLF(1:lnblnk(LCTLF))
+      endif
 
       WRITE(ioout,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'

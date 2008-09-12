@@ -1,6 +1,13 @@
 C Include file for network flow.
 C Updated December 2005 for additional nodes, components and control laws.
 C Updated January 2007 for additional connections.
+C Updated June 2008 for "implicit none" callability
+
+C Type declarations:
+      integer MNOD, MCMP, MCNN, MNDS, MCMV, MCMS, MCNS
+      integer MPOS, MPRD, MPCP,    NMRL
+      integer MFCNLST, MFCNEL, MFRS, MCONTM, MPRODI, MCSD
+      integer MSPMNO, MSRC
 
 C Maximum number of nodes, components, connections.
       PARAMETER (MNOD=70,MCMP=80,MCNN=199)
@@ -18,12 +25,6 @@ C Maximum number of wind pressure distribution sets
       PARAMETER (MPRD=50)
 C Maximum number of CPCALC derived pressure distribution sets
       PARAMETER (MPCP=20)
-C Maximum number of mass flow control connections
-      PARAMETER (MCC=99)
-C Maximum number of control day type
-      PARAMETER (MFCDT=8)
-C Maximum number of distinct control period
-      PARAMETER (MFCDP=30)
 C Record width of binary results file (should be larger of MNOD or MCMS + 6)
       PARAMETER (NMRL=70)
 C Results analysis:

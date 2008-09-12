@@ -2,8 +2,8 @@
 # (see README file before installing).
 SRCdir=`pwd`
 
-PROGRAMS = aco bps c2e cfg clm dbm dfs e2r ecnv eco grd ish mfs \
-	   mld mrt pdb prj res tdf vew
+PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd ish mfs \
+	   mld mrt pdb prj res run vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -13,15 +13,35 @@ allnoX: libnoX $(PROGRAMS)
 
 libX11:
 	cd $(SRCdir)/lib; \
-	$(MAKE) the_libX11
+	$(MAKE) the_libX11; \
+	$(MAKE) the_libVer
 
 libGTK:
 	cd $(SRCdir)/lib; \
-	$(MAKE) the_libGTK
+	$(MAKE) the_libGTK; \
+	$(MAKE) the_libVer
 
 libnoX:
 	cd $(SRCdir)/lib; \
-	$(MAKE) the_libnoX
+	$(MAKE) the_libnoX; \
+	$(MAKE) the_libVer
+
+enableGccFPE:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libFPE
+
+disableGccFPE:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoFPE
+
+
+enableXML:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libH3KReports
+	
+disableXML:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoH3KReports
 
 # PROGRAMS:
 
@@ -29,10 +49,8 @@ aco:
 	cd $(SRCdir)/esruaco; $(MAKE)
 b2e: 
 	cd $(SRCdir)/esrub2e; $(MAKE)
-# pass the target 'include_XML/exclude_XML' to build
-# bps with/without H3Kreports.
 bps: 
-	cd $(SRCdir)/esrubps; $(MAKE) $(xml_status)
+	cd $(SRCdir)/esrubps; $(MAKE)
 dbm: 
 	cd $(SRCdir)/esrudbm; $(MAKE)
 dfs: 
@@ -65,8 +83,8 @@ prj:
 	cd $(SRCdir)/esruprj; $(MAKE)
 res: 
 	cd $(SRCdir)/esrures; $(MAKE)
-tdf: 
-	cd $(SRCdir)/esrutdf; $(MAKE)
+run: 
+	cd $(SRCdir)/esrurun; $(MAKE)
 vew: 
 	cd $(SRCdir)/esruvew; $(MAKE)
 vww: 
@@ -93,7 +111,7 @@ clean:
 	cd $(SRCdir)/esrupdb; $(MAKE) clean
 	cd $(SRCdir)/esruprj; $(MAKE) clean
 	cd $(SRCdir)/esrures; $(MAKE) clean
-	cd $(SRCdir)/esrutdf; $(MAKE) clean
+	cd $(SRCdir)/esrurun; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esruvww; $(MAKE) clean
 	@if [ -f $(SRCdir)/include/espinstalldir.h ]; then rm $(SRCdir)/include/espinstalldir.h; fi
@@ -119,7 +137,7 @@ strip:
 	cd $(SRCdir)/esrupdb; $(MAKE) strip
 	cd $(SRCdir)/esruprj; $(MAKE) strip
 	cd $(SRCdir)/esrures; $(MAKE) strip
-	cd $(SRCdir)/esrutdf; $(MAKE) strip
+	cd $(SRCdir)/esrurun; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esruvww; $(MAKE) strip
 
@@ -143,7 +161,7 @@ InstBins:
 	cd $(SRCdir)/esrupdb; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruprj; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrures; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrutdf; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvww; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 

@@ -214,11 +214,6 @@ C DNOTZERO: Function returns non zero value with the same sign (dbl precision).
 C ANOTZERO: Function returns non zero value with the same sign (sngl precision).
 C  SIGFIG:  Returns number to specified number of significant figures.
 C  SIpre:   Returns suitable SI prefix for number supplied.
-C  fCtoR:   Coaxes a string into a float
-C  fCtoR_err: Coaxes a string into a float, with some simple error reprting
-C  iCtoi:   Coaxes a string into an integer
-C  iCtoi_err: Coaxes a string into an integer, with some simple error reprting
-C
 
 C Dummy subroutines and functions matching calling parameters used
 C in esru_x.c so that #ifdef statements are not required for GTK
@@ -2217,334 +2212,6 @@ C Must have input a character string.
       RETURN
       END
 
-C ************** st2name
-C Given `string' swap blanks & wildcards to _ : return as `name'.
-      SUBROUTINE st2name(string,name)
-      CHARACTER*(*) string,name
-      character phrase*124
-
-C Clear variables and get string lengths.
-      name = ' '
-      phrase = ' '
-      ilname = LEN(name)
-      illstr = max(1,lnblnk(string))
-
-C Strip off any leading blanks from string, substitute `_'
-C between words and for any ` \ / ~ & * ( ) ^ # < > ' ` " '.
-C Stop copying if end of name reached.
-      K=0
-      DO 99 I=1,illstr
-        IF(string(I:I).NE.' '.OR.K.GE.1)THEN
-C          write(6,'(a,I4)')string(I:I),ichar(string(I:I))
-          if(ichar(string(I:I)).lt.32)goto 100
-          if(I.gt.ilname)goto 100
-          K=K+1
-          if(string(I:I).eq.' ')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'/')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(34))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(39))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(44))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(91))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(92))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(93))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.char(96))then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'*')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'~')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'&')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'(')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.')')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'>')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'<')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'^')then
-            phrase(K:K)='_'
-          elseif(string(I:I).eq.'#')then
-            phrase(K:K)='_'
-          else
-            phrase(K:K)=string(I:I)
-          endif
-        ENDIF
- 99   CONTINUE
-100   continue
-      LN=max(1,lnblnk(phrase))
-      write(name,'(a)') phrase(1:LN)
-
-      return
-      end
-
-C ************** st2file
-C st2file: Given `string' strip blanks & wildcards and return as `name'.
-C Useful to check file names.
-      SUBROUTINE st2file(string,name)
-      CHARACTER*(*) string,name
-      character phrase*124
-
-C Clear variables and get string lengths.
-      name = ' '
-      phrase = ' '
-      ilname = LEN(name)
-      illstr = max(1,lnblnk(string))
-
-C Strip off any leading blanks from string, compact spaces and tabs
-C between words and substitute _ for any ` & * ( ) ^ # < > ' ` " ' or commas.
-C Stop copying if end of name reached.
-      K=0
-      DO 99 I=1,illstr
-        if(ichar(string(I:I)).eq.0)goto 99
-        if(ichar(string(I:I)).eq.9)goto 99
-        if(ichar(string(I:I)).eq.32)goto 99
-        if(ichar(string(I:I)).lt.32)goto 100
-        if(I.gt.ilname)goto 100
-C        write(6,'(a,I4)')string(I:I),ichar(string(I:I))
-        K=K+1
-        if(string(I:I).eq.char(34))then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.char(39))then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.char(44))then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.char(91))then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.char(93))then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.char(96))then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'*')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'~')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'&')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'(')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.')')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'>')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'<')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'^')then
-          phrase(K:K)='_'
-        elseif(string(I:I).eq.'#')then
-          phrase(K:K)='_'
-        else
-          phrase(K:K)=string(I:I)
-        endif
- 99   CONTINUE
-100   continue
-      LN=max(1,lnblnk(phrase))
-      write(name,'(a)') phrase(1:LN)
-
-      return
-      end
-
-C ************** backslashit
-C backslashit: Given `string' swap / to \ : return as `name'.
-      SUBROUTINE backslashit(string,name)
-      CHARACTER*(*) string,name
-      character phrase*144,bs*1
-
-C Clear variables and get string lengths.
-      name = ' '
-      phrase = ' '
-      ilname = LEN(name)
-      illstr = max(1,lnblnk(string))
-
-C Make up a \ character.
-      bs = char(92)
-
-C Strip off any leading blanks from string, substitute \ for /
-C between words and dtop copying if end of name reached.
-      K=0
-      DO 99 I=1,illstr
-        IF(string(I:I).NE.' '.OR.K.GE.1)THEN
-C          write(6,'(a,I4)')string(I:I),ichar(string(I:I))
-          if(ichar(string(I:I)).lt.32)goto 100
-          if(I.gt.ilname)goto 100
-          K=K+1
-          if(string(I:I).eq.'/')then
-            phrase(K:K)=bs
-          else
-            phrase(K:K)=string(I:I)
-          endif
-        ENDIF
- 99   CONTINUE
-100   continue
-      LN=max(1,lnblnk(phrase))
-      write(name,'(a)') phrase(1:LN)
-
-      return
-      end
-
-C ********** iprevblnk(string,ipos)
-C prevblnk: given a string, return position of blank just before ipos.
-      function iprevblnk(string,ipos)
-      character*(*) string
-      character a*1,b*1
-      integer right
-
-C right is the defined length of string.
-      right=len(string)
-      lnb=lnblnk(string)
-
-C If requested position beyond the length of the string return the
-C declared length of the string.
-      if(ipos.gt.right)then
-        iprevblnk=right
-        return
-      endif
-
-C If requrested position is beyond lnblnk then return lnblnk.
-      if(ipos.gt.lnb)then
-        iprevblnk=lnb
-        return
-      endif
-
-C Set position for checking to ipos
-      iprevblnk=ipos
-      right=ipos
- 42   continue
-      right=right-1
-      if(right.le.0)then
-
-C If position zero reached set to one and return.
-        iprevblnk = 1
-        return
-      else
-
-C If the current character is non blank then continue leftwards.
-        a=string(right:right)
-        if(right.gt.1)then
-          b=string(right-1:right-1)
-          if(ichar(a).gt.32)then
-            goto 42
-          elseif(ichar(a).eq.32.or.ichar(a).eq.9)then
-
-C If the current character is a blank and the character to its
-C left is also a blank carry on stepping leftwards, otherwise return.
-            if(ichar(b).eq.32.or.ichar(b).eq.9)then
-              goto 42
-            else
-              iprevblnk = right
-              return
-            endif
-          endif
-        else
-
-C If the current position is 1 do not bother with position zero.
-          if(ichar(a).gt.32)then
-            goto 42
-          elseif(ichar(a).eq.32.or.ichar(a).eq.9)then
-            iprevblnk = right
-            return
-          endif
-        endif
-      endif
-      end
-
-C ********** inextblnk(string,ipos)
-C inextblnk: given a string, return position of blank just after ipos
-C (or the end of the string if that happens first).
-      function inextblnk(string,ipos)
-      character*(*) string
-      character a*1,b*1
-      integer right
-
-C right is the defined length of string.
-      right=len(string)
-      lnb=lnblnk(string)
-
-C If requested position beyond the length of the string return the
-C declared length of the string.
-      if(ipos.gt.right)then
-        inextblnk=right
-        return
-      endif
-
-C If requrested position is beyond lnblnk then return lnblnk.
-      if(ipos.gt.lnb)then
-        inextblnk=lnb
-        return
-      endif
-
-C Set position for checking to ipos
-      inextblnk=ipos
-      right=ipos
- 42   continue
-      right=right+1
-      if(right.ge.lnb)then
-
-C If position zero reached end of string set to lnb and return.
-        inextblnk = lnb
-        return
-      else
-
-C If the current character is non blank then continue rightwards.
-        a=string(right:right)
-        b=string(right+1:right+1)
-        if(ichar(a).gt.32)then
-          goto 42
-        elseif(ichar(a).eq.32.or.ichar(a).eq.9)then
-
-C If the current character is a blank and the character to its
-C left is also a blank carry on stepping leftwards, otherwise return.
-          if(ichar(b).eq.32.or.ichar(b).eq.9)then
-            goto 42
-          else
-            inextblnk = right
-            return
-          endif
-        endif
-      endif
-      end
-
-C ************* icutstr(string,ipos,icut)
-C icutstr: given a string, cuts icut characters from position ipos
-C and shifts latter portion of the string down icut chars. Returns
-C zero if no error.
-      function icutstr(string,ipos,icut)
-      character*(*) string
-      integer right
-
-C right is the defined length of string.
-      right=len(string)
-      lnb=lnblnk(string)
-
-C If requested text to cut is beyond the length of the string return
-C with no action.
-      if(ipos+icut.gt.right)then
-        icutstr=1
-        return
-      endif
-
-C If requested text to cut starts within the string, but carrys on
-C beyond the lnblnk then shorten string to ipos.
-      if(ipos.lt.lnb.and.ipos+icut.gt.lnb)then
-        write(string,'(a)') string(1:ipos)
-        icutstr=0
-        return
-      else
-        write(string,'(2a)') string(1:ipos),string(ipos+icut:lnb)
-        icutstr=0
-        return
-      endif
-      end
-
 
 C ************* EPICKS
 c EPICKS is a facility allowing a number of selections to be made
@@ -3152,62 +2819,6 @@ C of help supplied and then provide the prompt again.
       RETURN
       END
 
-C ******************** EASKAB
-C EASKAB Generic choice facility returning 1 or 2 according to which
-C of the choices has been chosen.
-C MSG1 and MSG2 are prompts (upto 124 char) to be printed.
-C AOPT & BOPT are the text strings describing the
-C options available, (these should not be too long).
-      SUBROUTINE EASKAB(MSG1,MSG2,AOPT,BOPT,IWHICH,NHELP)
-
-      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT
-      character COPT,DOPT*2,EOPT*2,FOPT*2,GOPT*2
-
-      COPT=' '
-      DOPT=' '
-      EOPT=' '
-      FOPT=' '
-      GOPT=' '
-      call EASKATOG(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
-     &  IWHICH,NHELP)
-      RETURN
-      END
-
-C ******************** EASKABC
-C EASKABC Generic choice facility returning 1, 2 or 3 according to which
-C of the choices has been chosen. See EASKATOG for parameter documentation.
-      SUBROUTINE EASKABC(MSG1,MSG2,AOPT,BOPT,COPT,IWHICH,NHELP)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-
-      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT
-      character DOPT*2,EOPT*2,FOPT*2,GOPT*2
-
-      DOPT=' '
-      EOPT=' '
-      FOPT=' '
-      GOPT=' '
-      call EASKATOG(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
-     &  IWHICH,NHELP)
-      RETURN
-      END
-
-C ******************** EASKABCD
-C EASKABCD Generic choice facility returning 1, 2, 3 or 4 according to which
-C of the choices has been chosen. See EASKATOG for parameter documentation.
-      SUBROUTINE EASKABCD(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,IWHICH,NHELP)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-
-      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT
-      character EOPT*2,FOPT*2,GOPT*2
-
-      EOPT=' '
-      FOPT=' '
-      GOPT=' '
-      call EASKATOG(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
-     &  IWHICH,NHELP)
-      RETURN
-      END
-
 C ******************** EASKATOG
 C EASKABCD Generic choice of 3 - 7 items returning 1 to 7 according to
 C which of the choices has been chosen.
@@ -3522,9 +3133,11 @@ C EASKPER: Provides legacy interface to the more general eAskPerGen below.
       logical bMY_enabled
       parameter ( bMY_enabled = .false. )
 
-C Note: There's no need to initialize iBYr and iEYr. They're not
-C referenced when multiyear simulations are disabled
 
+C Note: initialize iBYr and iEYr even though the are not 
+C returned. They're not referenced when multiyear simulations are disabled
+      iBYr=2000
+      iEYr=2000
       call eAskPerGen(PROMP1,IBDOY,IEDOY,
      &                 iBYr,iEYr,IFDAY,bMY_enabled,IER)
 
@@ -4456,6 +4069,7 @@ C For page control of the menus.
 
 C If creating menu don't ask questions. Allow movement forward or backwards
 C in the control menu.
+      IGTP=1
       IF(IPACT.EQ.CREATE)THEN
         IX=1
       ELSEIF(IPACT.lt.0)then
@@ -6876,18 +6490,14 @@ C ***************** iEGetArrW
 C iEGetArrW reads all of the words in a 248 character string, and populates a character
 C array with each word. Words are separated by blanks, commas, or tab: WORD,WORD,WORD
 C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
-      integer function iEGetArrW(cBuffer,cWORDS)
+      integer function iEGetArrW(cString,cWORDS)
       implicit none
-      character*(*) cBuffer
+
       character*248 cString, cWords(124)
       character*1 cChar
       logical bWord
       integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
       parameter (iEnd=248)
-      integer lnblnk
-
-C Copy buffer into string
-      write (cString, '(A)') cBuffer(1:min(lnblnk(cBuffer),iEnd))
 
 C Empty word array
       do iWordCount = 1, 124
@@ -6896,9 +6506,6 @@ C Empty word array
 
 C Reset word counter
       iWordCount = 0
-
-C initialize bWord to false
-      bWord = .false. 
 
 C Loop through string
       do iStrLoc = 1, iEnd
@@ -6929,6 +6536,7 @@ C Copy current character into word buffer
           iWordLoc = iWordLoc + 1
 
         endif
+
       enddo
 
       iEGetArrW = iWordCount
@@ -8699,7 +8307,8 @@ C Find out the number of separate words/string groupings.
       endif
 
       END
-C ******************** LSTRIPC_LN
+
+C ******************** LSTRIPC
 C LSTRIPC strips comments from a ASCII file (long) string and returns the data.
 C It assumes that if a string begins with a '#' then the whole line is
 C a comment an the next line is read.  If a ' #' is discovered within
@@ -8710,64 +8319,21 @@ C IEXP is the number of expected items in the line:
 C   IEXP = 0 means don't care or already know no. items - don't check
 C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
-C LineOut is the line number of the string that was returned.
-      
-C LSTRIPC is a legacy interface to LSTRIPC_LN
+
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-      CHARACTER*248 OUTSTR
-      CHARACTER*(*) MSG
-      
-      CALL LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineNum)
-      
-      RETURN
-      END 
-      
-      SUBROUTINE LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineOut)
 #include "espriou.h"
 
       CHARACTER*248 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
       CHARACTER*(*) MSG
 
-
-      logical bInitialized
-      save bInitialized
-      data bInitialized /.false./
-
-      character*248 cNewName, cOldName
-      save cOldName
-
-
-      integer LineNum
-      save LineNum
-      
-C Collect current file name
-      inquire (UNIT=INPCH, NAME=cNewName)
-      
-      if ( .not. bInitialized ) then
-        write ( cOldName, '(A)') cNewName 
-        bInitialized = .true. 
-      endif
-
-C If file has changed, reset line counter and update
-C file name buffer. 
-      if ( cOldName .ne. cNewName ) then 
-        write ( cOldName, '(A)') cNewName 
-        LineNum = 0
-      endif 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
-C Empty string       
-    8 write (STRING, '(A)') ''
-C Increment line number counter
-      LineNum = LineNum + 1
-      LineOut = LineNum
-      READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
    10 FORMAT(A)
-   11 tmp=STRING(1:LNBLNK(STRING))
+      tmp=STRING(1:LNBLNK(STRING))
 
-      
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
       if(iloc.eq.1)then
@@ -8817,11 +8383,7 @@ C Find out the number of separate words/string groupings.
       ENDIF
       goto 4
 
-C End of file reached.
   102 IER=2
-C But if last line is non-blank, parse contents anyways.
-      if (lnblnk(STRING).gt.0 ) goto 11
-      OUTSTR = ''
       IF(IR.EQ.1)THEN
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
@@ -9157,232 +8719,6 @@ C a string ISTR.
       IFIRST=ICHAR(JSTR)
       RETURN
       END
-
-c ******************** ERPFREE
-C ERPFREE is used to close any file.
-      SUBROUTINE ERPFREE(IUN,ISTAT)
-      LOGICAL OPND
-      IF(IUN.NE.0)THEN
-        INQUIRE(IUN,OPENED=OPND)
-        IF(OPND)CLOSE(IUN)
-        ISTAT=0
-      ELSE
-        CALL USRMSG(' ',' Unable to free error channel! ','W')
-        ISTAT=1
-      ENDIF
-      RETURN
-      END
-
-c ******************** EFDELET
-C EFDELET: Delete file IUN and return ISTAT for compatibility.
-      SUBROUTINE EFDELET(IUN,ISTAT)
-      LOGICAL OPND
-      IF(IUN.NE.0)THEN
-        INQUIRE(IUN,OPENED=OPND)
-        IF(OPND)CLOSE(IUN,STATUS='DELETE')
-        ISTAT=0
-      ELSE
-        CALL USRMSG(' ',' Unable to delete error channel! ','W')
-        ISTAT=1
-      ENDIF
-      RETURN
-      END
-
-C These routines are used to open a user-specified file
-C with a meaningful error message if this is not possible.
-
-C << with a bit of work the 'e' version calls can do this
-C << task as long as the path is temporarily cleared
-C << this would simplify much of the logic.
-
-C  FPOPEN  open an ascii file - use EFOPSEQ instead for model files.
-C  FPRAND  open a binary file - use EFOPRAN instead for model files.
-
-C File opening parameter conventions:
-C  IUN   is the unit number on which the file is to be opened;
-C  ISTAT   returns a status value as follows:-
-
-C   >0     file was successfully opened
-C   -1     input line was a ?
-C   -2     input line was not recognisable as a file title,
-C          and an error message has been output
-C   -3     input line (file name)was 'NONE' NOTHING OPENED,RETURN
-
-C   -300   file already exists (  IXIST  =2), and
-C          an error message has been output
-C   -301   file does not exist, but no error message has
-C          been output (  IXIST=0  )
-
-C other <0 error opening file, and an error message has been
-C          output (value returned is minus the value returned in the
-C          second argument of a call to   ERRSNS)
-
-C MODE determines the access mode of the file as follows:-
-C
-C  1-3  read and write
-C    4  append (write only on to end of file)
-
-C   FOR FORMATTED I/O LET MODE -VE BE FOR UNFORMATTED I/O
-C   -1 TO -4   AS ABOVE FOR UNFORMATTED SEQUENTIAL ACCESS
-
-C   >4 <0   Length of direct access record
-
-C IXIST determines whether the file is expected to exist:-
-C   0  file is expected to exist; return with
-C      ISTAT=-301   if it does not, but
-C      do not output an error message.  This
-C      can be used to test for existence of a default
-C      file.
-
-C   1  file is expected to exist; error if it does not
-C   2  file is expected not to exist; error if it does
-C   3  file used if it exists; zero length file created if not
-
-
-C ****************** FPOPEN
-C FPOPEN Opens the file with standard parameter conventions for
-C IUN, ISTAT, MODE, and IXIST;  FNARG is the file name.
-        SUBROUTINE FPOPEN(IUN,ISTAT,MODE,IXIST,FNARG)
-        CHARACTER*(*) FNARG
-        LOGICAL        XST
-
-        IF (FNARG(1:7).eq.'UNKNOWN'.or.FNARG(1:2).eq.'  ') THEN
-          WRITE (6,*)' !+Files named UNKNOWN cannot be opened'
-          ISTAT=-400
-          RETURN
-        ENDIF
-
-C Check if file exists and its type
-        INQUIRE (FILE=FNARG,EXIST=XST)
-
-        IF (XST.AND.(IXIST.EQ.2)) THEN
-            WRITE (6,*)' !+File already exists',fnarg
-            ISTAT=-300
-            RETURN
-        ENDIF
-
-        IF (.NOT.XST.AND.(IXIST.LE.1)) THEN
-
-C File does not exist, set error and return.
-          IF ( IXIST .EQ. 1 )THEN
-            call edisp(6,' File doesn`t exist: ')
-            call edisp(6,FNARG)
-          ENDIF
-          ISTAT=-301
-          RETURN
-        ENDIF
-        lfn=max(1,LNBLNK(fnarg))
-
-C Check mode:   mode 1-4,5-8 is sequential access
-        IF ((MODE.LT.0).OR.(MODE.GT.10)) THEN
-
-C Open file for direct access.
-            IF (MODE.GT.0) THEN
-              MODE = MODE - 10
-              IF (XST) THEN
-
-C ASCII RECORDS,4 CHAR PER WORD,RECL IN CHARS
-                OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='DIRECT',RECL=MODE*4,
-     &                  FORM='FORMATTED',STATUS='OLD',IOSTAT=ISTAT)
-              ELSE
-                OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='DIRECT',RECL=MODE*4,
-     &                  FORM='FORMATTED',STATUS='NEW',IOSTAT=ISTAT)
-              ENDIF
-            ELSE
-
-C***BINARY UNFORMATTED D.A. FILE
-C ON VAX/VMS  RECL=  -MODE WORDS PER RECORD
-C ON UNIX     RECL=  -MODE*4  BYTES PER RECORD
-
-              MODE= -MODE
-              IF (XST) THEN
-                OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='DIRECT',RECL=MODE*4,
-     &               FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
-              ELSE
-                OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='DIRECT',RECL=MODE*4,
-     &               FORM='UNFORMATTED',STATUS='NEW',IOSTAT=ISTAT)
-              ENDIF
-            ENDIF
-        ELSE
-
-c Sequential access.
-C***V3.4  ADD READONLY FOR MODE=1 OR 5 FOR VAX SYSTEMS
-C  THIS SHOULD BE REMOVED IF YOUR SYSTEM DOESNT SUPPORT 'READONLY'
-         IF(MODE.EQ.1)THEN
-C  MODE=1-4 FORMATTED (DEFAULT)
-            IF (XST) THEN
-              OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='SEQUENTIAL',
-     &              STATUS='OLD',IOSTAT=ISTAT)
-            ELSE
-              OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='SEQUENTIAL',
-     &              STATUS='NEW',IOSTAT=ISTAT)
-            ENDIF
-         ELSE If(MODE.LT.5) THEN
-C READ & WRITE MODE=1-4 FORMATTED (DEFAULT)
-            IF (XST) THEN
-              OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='SEQUENTIAL',
-     &              STATUS='OLD',IOSTAT=ISTAT)
-            ELSE
-              OPEN (IUN,FILE=fnarg(1:lfn),ACCESS='SEQUENTIAL',
-     &              STATUS='NEW',IOSTAT=ISTAT)
-            ENDIF
-
-C MODE =5  READONLY UNFORMATTED.
-         ELSE IF (MODE .EQ. 5) THEN
-           IF (XST) THEN
-             OPEN (IUN,FILE=fnarg(1:lfn),FORM='UNFORMATTED',
-     &             ACCESS='SEQUENTIAL',STATUS='OLD',IOSTAT=ISTAT)
-           ELSE
-             OPEN (IUN,FILE=fnarg(1:lfn),FORM='UNFORMATTED',
-     &             ACCESS='SEQUENTIAL',STATUS='NEW',IOSTAT=ISTAT)
-           ENDIF
-
-         ELSE IF (MODE .LT. 9) THEN
-c READ & WRITE Unformatted.
-            IF (XST) THEN
-              OPEN (IUN,FILE=fnarg(1:lfn),FORM='UNFORMATTED',
-     &              ACCESS='SEQUENTIAL',STATUS='OLD',IOSTAT=ISTAT)
-            ELSE
-              OPEN (IUN,FILE=fnarg(1:lfn),FORM='UNFORMATTED',
-     &              ACCESS='SEQUENTIAL',STATUS='NEW',IOSTAT=ISTAT)
-            ENDIF
-          endif
-        ENDIF
-
-C***3.5
-      IF(ISTAT.EQ.0 .AND. .NOT. XST) ISTAT=1
-
-      RETURN
-      END
-
-C ******************* FPRAND
-C  Opens a random access file with name FNARG.
-C  LENG determines the record length and type as follows:-
-C       <0      -( LENG ) characters per record, ASCII records.
-
-C       =0      128 words per record,   IMAGE   MODE RECORDS
-C               (BUFFER COUNT IS FORCED TO 1 TO ENSURE WRITES
-C               ARE PERFORMED IN ORDER REQUESTED)
-C
-C       >0      (LENG  ) words per record, ff BINARY   records
-C IUN,ISTAT, and IXIST are the same as standard conventions.
-        SUBROUTINE FPRAND(IUN,ISTAT,LENG,IXIST,FNARG)
-        CHARACTER*(*) FNARG
-
-        IF (FNARG(1:7).eq.'UNKNOWN') THEN
-          WRITE (6,*)' !+Files named UNKNOWN cannot be opened'
-          ISTAT=-400
-          RETURN
-        ENDIF
-
-C Convert length to mode for FPOPEN.
-        IF (LENG.EQ.0) MODE=-128
-        IF (LENG.GT.0) MODE=-LENG
-        IF (LENG.LT.0) MODE=10-LENG
-C Open file.
-        CALL FPOPEN (IUN,ISTAT,MODE,IXIST,FNARG)
-        RETURN
-        END
 
 
 c ******************** EDAY
@@ -11448,6 +10784,7 @@ C to a given tolerance TOL and returns CLOSE = .TRUE. or .FALSE.
       RETURN
       END
 
+
 c ******************** SOLAIR ********************
 c Routine to compute sol-air temperature.
       FUNCTION SOLAIR(T,QF,QD)
@@ -11641,131 +10978,6 @@ C occurance of '/' or '\'
       RETURN
       END
 
-C-------------- integer function iCtoI ---------------------------------
-C
-C     Coax a string into an integer.
-C
-C-----------------------------------------------------------------------       
-      integer function  iCtoI ( cBuffer, bError )
-      implicit none 
-      character*(*) cBuffer
-      logical bError 
-      integer iMiscError 
-
-      read (cBuffer,*, IOSTAT=iMiscError) iCtoI
-      if ( iMiscError /= 0 ) then
-        bError = .true. 
-      else
-        bError = .false. 
-      endif 
-      return 
-      end 
-C-------------- integer iunction fCtoI_err --------------------------------
-C
-C     Interface to iCtoI with a built-in warning message
-C
-C-----------------------------------------------------------------------     
-      integer function iCtoI_err ( cBuffer, cContext, bError )
-      implicit none
-C----------------------------------------------------------------------
-C     ESP-r variables
-C----------------------------------------------------------------------
-      common/outin/iuout,iuin
-      integer iuout, iuin      ! channels for writing messages to screen      
-      integer lnblnk
-C----------------------------------------------------------------------
-C     Local variables 
-C----------------------------------------------------------------------            
-      character*(*) cBuffer, cContext
-      character*124 cMsg
-      character*80 cTemp
-      logical bError 
-      integer iCtoI
-      
-C.....Convert string       
-      iCtoI_err = iCtoI ( cBuffer, bError )
-
-C.....upon error, report to user.       
-      if ( bError ) then
-      
-        write (cTemp, '(A)' ) cContext(1:min( 80, lnblnk( cContext ) ) )
-        
-        write (cMsg,'(A,A,A,A,A)')
-     &       ' Error converting ',
-     &       cTemp(1:lnblnk(cTemp)),
-     &       ' (',
-     &       cBuffer(1:lnblnk(cBuffer)),
-     &       ') to integer.'
-
-        call edisp248(iUout, cMsg,80)
-
-      endif
-      return
-      end 
-      
-C-------------- real function fCtoR ------------------------------------
-C
-C     Attempt to coax a string into a float.
-C
-C-----------------------------------------------------------------------       
-      real function  fCtoR ( cBuffer, bError )
-      implicit none 
-      character*(*) cBuffer
-      logical bError 
-      integer iMiscError 
-      
-      read (cBuffer,*, IOSTAT=iMiscError) fCtoR
-      
-      if ( iMiscError /= 0 ) then
-        bError = .true. 
-      else
-        bError = .false. 
-      endif 
-      return 
-      end
-C-------------- real function fCtoR_err --------------------------------
-C
-C     Interface to fCtoR with a built-in warning message
-C
-C-----------------------------------------------------------------------     
-      real function fCtoR_err ( cBuffer, cContext, bError )
-      implicit none
-C----------------------------------------------------------------------
-C     ESP-r variables
-C----------------------------------------------------------------------
-      common/outin/iuout,iuin
-      integer iUout, iuin      ! channels for writing messages to screen
-      integer lnblnk
-C----------------------------------------------------------------------
-C     Local variables 
-C----------------------------------------------------------------------            
-      character*(*) cBuffer, cContext
-      character*248 cMsg
-      character*80 cTemp
-      logical bError 
-      real fCtoR
-      
-C.....Convert string       
-      fCtoR_err = fCtoR ( cBuffer, bError )
-
-C.....upon error, report to user.       
-      if ( bError ) then
-      
-        write (cTemp, '(A)' ) cContext(1:min( 80, lnblnk( cContext ) ) )
-        
-        write (cMsg,'(A,A,A,A,A)')
-     &       ' Error converting ',
-     &       cTemp(1:lnblnk(cTemp)),
-     &       ' (',
-     &       cBuffer(1:lnblnk(cBuffer)),
-     &       ') to real.'
-
-        call edisp248(iUout, cMsg,80)
-
-      endif
-      return
-      end
-
 C ********* dummy subroutines and functions to match what is found
 C in esru_fc.f
 
@@ -11799,3 +11011,11 @@ C opengdisp opens a scrolling text display area.
       return
       end
 
+C Return string indicating xlibs
+      subroutine getXlibs( cLibrary )
+
+      character*3 cLibrary
+      write(cLibrary, '(A)') "GTK"
+
+      return
+      end

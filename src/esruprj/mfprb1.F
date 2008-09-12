@@ -43,12 +43,16 @@ C fluid flow model description file.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -686,7 +690,11 @@ C LAPRES,IAPRES (for window pressure databases)
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/PREC2/VOL(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -717,7 +725,6 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER NDNAM*12,NODID*12,T12*12
       CHARACTER LAPROB*72,t72*72
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -1539,6 +1546,9 @@ C             connections between nodes I and J
       SUBROUTINE MFLDES(MOD,ICON)
 
 #include "net_flow.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -1829,6 +1839,8 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1847,7 +1859,6 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER outs*124,H*72
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL OK,dok,MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -2085,6 +2096,8 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/PREC2/VOL(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -2105,12 +2118,16 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/RAY6/LINSTY(MCON)
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       DIMENSION IVALS(MCOM),IFCAB(MCON)
 
@@ -2130,14 +2147,13 @@ C associated with the largest ventilation rate.
       logical closevz,closeiz,close,foundit
       character zname*12,zdesc*64,NDNAM*12, outs*124, MODE*1
       character*72 LAPROB,H
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 
 C Variables to keep track of the component index of the standard
 C components needed for a network equivalent of zone operations.
       integer noinfforcurrent,noventforcurrent,crackforcurrent
       integer gr02forcurrent,gr04forcurrent,gr06forcurrent
-      integer nodeforcurrent
+      integer nodeforcurrent,IGN
 
       IF(MODE.EQ.'N')THEN
 
@@ -2467,8 +2483,15 @@ C the index of the zone being considered.
 C Increment nodeforcurrent counter (i.e. the node index that is
 C used with the current zone index.
             nodeforcurrent=nodeforcurrent+1
-
-            if(NAC1.eq.0.and.NAC2.eq.0.and.NAC3.eq.0)then
+            IGN=0
+            DO 1435 IDTY=1,NBDAYTYPE
+              IF(NAC(IDTY).EQ.0.AND.IGN.EQ.0)THEN
+                IGN=0
+              ELSE
+                IGN=1
+              ENDIF
+ 1435       CONTINUE
+            IF(IGN.EQ.0)THEN
 
 C There are no flow periods on any day, write crack connections only.
               WRITE(OUTS,'(A,A12,A)')
@@ -2487,36 +2510,20 @@ C Add the source -> crack -> zone connection.
               NDSCNN(NCNN,2)=0                 
             else
 
-C Loop through weekday, saturday and sunday periods and find
+C Loop through periods for each day type and find
 C the maximum infiltration rate (finfmax) and ventilation rate (fvntmax)
 C Note works if ventilation is always from only one other zone.
-              DO 39 L=1,NAC1
-                acim = (VOL(IZ)*ACI1(L))/3600.0
-                acvm = (VOL(IZ)*ACV1(L))/3600.0
-                if(acim.gt.finfmax(iz)) finfmax(iz)=acim
-                if(acvm.gt.fvntmax(iz))then
-                  fvntmax(iz)=acvm
-                  isrczforvent(iz)=IPT1(L)
-                endif
-  39          continue
-              DO 40 L=1,NAC2
-                acim = (VOL(IZ)*ACI2(L))/3600.0
-                acvm = (VOL(IZ)*ACV2(L))/3600.0
-                if(acim.gt.finfmax(iz)) finfmax(iz)=acim
-                if(acvm.gt.fvntmax(iz))then
-                  fvntmax(iz)=acvm
-                  isrczforvent(iz)=IPT2(L)
-                endif
-  40          continue
-              DO 41 L=1,NAC3
-                acim = (VOL(IZ)*ACI3(L))/3600.0
-                acvm = (VOL(IZ)*ACV3(L))/3600.0
-                if(acim.gt.finfmax(iz)) finfmax(iz)=acim
-                if(acvm.gt.fvntmax(iz))then
-                  fvntmax(iz)=acvm
-                  isrczforvent(iz)=IPT3(L)
-                endif
-  41          continue
+              DO 402 IDTY=1,NBDAYTYPE
+                DO 39 L=1,NAC(IDTY)
+                  acim = (VOL(IZ)*ACI(IDTY,L))/3600.0
+                  acvm = (VOL(IZ)*ACV(IDTY,L))/3600.0
+                  if(acim.gt.finfmax(iz)) finfmax(iz)=acim
+                  if(acvm.gt.fvntmax(iz))then
+                    fvntmax(iz)=acvm
+                    isrczforvent(iz)=IPT(IDTY,L)
+                  endif
+  39            continue
+ 402          CONTINUE
 
 C Debug.
               write(6,*) 'iz finfmax fvntmax isrczforvent',iz,

@@ -64,6 +64,7 @@ C IALT is the number of text alternatives available for a text field.
 #include "tdf2.h"
 #include "epara.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL      
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -84,7 +85,8 @@ C IALT is the number of text alternatives available for a text field.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/tdset/itdyear,itdbdoy,itdedoy
       COMMON/GDPER/igbdoy,igedoy
-
+      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP    
+                        
       DIMENSION SALT(6),IVAL(6),IPD(34)
       CHARACTER KEY*1,SALT*16,H*72
       CHARACTER PROMP*32,MSG*32,head*40
@@ -94,8 +96,11 @@ C IALT is the number of text alternatives available for a text field.
       CHARACTER IPD*64,CSTR*54,DESCR*7,DESCR1*10,TPROMP*42
       CHARACTER*5 DESCRH,DESCRD
       CHARACTER outs*124,LINE*72,OLINE*72,itypes*34,msgl2*48
-      logical changed,clkok,textalt,edited
-
+      logical changed,clkok,textalt,edited,XST
+      character*35 ITEMS(9)      
+      CHARACTER DFILE*72,tfile*72,LIMP*72,LEXP*72
+      CHARACTER OUTSTR*124
+      
       IER=0
 
 C On initial entry mark for checking bounds and redrawing graphics.
@@ -342,7 +347,27 @@ C this type by stripping info from from GMH.
         CALL PHELPD('static fields',10+NHELP,'-',0,0,IER)
       ELSEIF(INODA.EQ.IPDL-2)THEN
 
-C Reset the graphic display period. Allow three choices or exit.
+C Begin with emenu.
+    3   INO=-4
+        IER=0
+        ITEMS(1)= 'a graph day of current data     '
+        ITEMS(2)= 'b graph sequence                '
+        ITEMS(3)= 'c graph all                     '
+        ITEMS(4)= 'd import column data            '
+        ITEMS(5)= 'e import static values          '
+        if(TTYPE(IFOC)(1:8).eq.'ACTIVITY')then
+          ITEMS(6)= 'f import UK NCM data            '
+          ITEMS(7)= ' _____________________________ '
+          ITEMS(8)= '? help                          '
+          ITEMS(9)= '- exit this menu                '
+          nitms=9
+        else
+          ITEMS(6)= ' _____________________________ '
+          ITEMS(7)= '? help                          '
+          ITEMS(8)= '- exit this menu                '
+          nitms=8  
+        endif         
+C Reset the graphic display period. 
         h(1)='You can graph the current day or a sequence of days'
         h(2)='or the whole period. '
         h(3)=' '
@@ -351,11 +376,19 @@ C Reset the graphic display period. Allow three choices or exit.
         h(6)=' '
         h(7)='You can insert static values (from a text file of data'
         h(8)='listed sequentially. '
-        CALL EASKATOG('Options: ',' ',
-     &    'graph day of current data','graph sequence','graph all',
-     &    'import column data','import static values','cancel',' ',
-     &     IWI,8)
-        if(IWI.eq.1)then
+        h(9)='You can also automatically insert UK National'
+        h(10)='Calculation Methodology Activity (operations) data '
+
+        CALL EMENU('Model Context',ITEMS,nitms,INO)
+        IF(INO.EQ.nitms)THEN
+          continue
+
+        ELSEIF(INO.EQ.nitms-1)THEN
+
+C Produce help text for the menu.
+          CALL PHELPD('data options',10,'-',0,0,IER)
+
+        ELSEIF(INO.EQ.1)THEN
           CDAY=itdbdoy+AINT(FLOAT(IST)/FLOAT(NTSPH*24))
           CALL STDATE(itdyear,INT(CDAY),DESCR,DESCR1)
           write(outs,'(2a)') 'graph will focus on ',descr1
@@ -363,7 +396,7 @@ C Reset the graphic display period. Allow three choices or exit.
           igedoy=INT(CDAY)
           igbdoy=INT(CDAY)
           changed = .true.
-        elseif(IWI.eq.2)then
+        ELSEIF(INO.EQ.2)THEN
 
 C Define the beginning and ending dates for the TDF display.
    48     igbdoy=itdbdoy
@@ -382,13 +415,13 @@ C Define the beginning and ending dates for the TDF display.
           changed = .true.
           INODA=-4
           GOTO 28
-        elseif(IWI.eq.3)then
+        ELSEIF(INO.EQ.3)THEN
           igbdoy=itdbdoy
           igedoy=itdedoy
           write(outs,'(a)') 'graph will focus on full period.'
           call edisp(iuout,outs)
           changed = .true.
-        elseif(IWI.eq.4)then
+        ELSEIF(INO.EQ.4)THEN
           h(1)='These options allow you to set the timestep within '
           h(2)='the temporal file where the data you are importing is'
           h(3)='to be inserted. '
@@ -440,13 +473,105 @@ C Define the beginning and ending dates for the TDF display.
             changed = .true.
             edited = .true.
           endif
-        elseif(IWI.eq.5)then
-          CALL EDSTATICIMPT(ITRC,IFOC,IER)
+        ELSEIF(INO.EQ.5)THEN
+          CALL EDSTATICIMPT(IFOC,IER)
           changed = .true.
           edited = .true.
-        else
+
+C Check if there is an activity data type from SBEM//DOE to
+C import NCM data for UK
+        ELSEIF(TTYPE(IFOC)(1:8).EQ.'ACTIVITY'.AND.INO.EQ.6)THEN
+          IPS=1
+          H(1)='One import source file will be assumed throughout this'
+          H(2)='session. If this needs to be altered then the user'
+          H(3)='should return to this menu to give the new name.'
+          DFILE='/tmp/71.csv'
+          tfile=DFILE
+          CALL EASKS(tfile,' Import file name? ',
+     &     ' ',72,DFILE,'import file name',IER,3)
+          if(tfile(1:2).ne.'  ')LIMP=tfile
+          IF(ITIMP.EQ.1)THEN
+            CALL ERPFREE(IUIMP,ISTAT)
+            call findfil(LIMP,XST)
+            IF(.NOT.XST)THEN
+              msgl2='  '
+              CALL USRMSG('This file does not exist.',msgl2,'W')
+            ENDIF
+          ENDIF
+
+C Import data - open the import file and read them.
+          IUNIT=IFIL+4
+          CALL EFOPSEQ(IUNIT,LIMP,1,IER)
+          if(IER.ne.0) then
+            msgl2='Is the name correct (option 1)?'
+            CALL USRMSG('Could not open import data file.',msgl2,'W')
+            goto 3
+          endif
+
+          DO 80 IP=IPS,NDBSTP
+            ITREC=IP+49
+            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import raw data',IER)
+            IF(IER.NE.0)GOTO 103
+
+C Read value, associate with proper column and check if it changes
+C the minimum/maximum of that column.
+            K=0
+            VAL=0.
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                  IER)
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                  IER)
+            TABU(ITCOL(IFOC,12))=VAL
+            if(TABU(ITCOL(IFOC,12)).lt.TABUMN(ITCOL(IFOC,12)))
+     &        TABUMN(ITCOL(IFOC,12))=TABU(ITCOL(IFOC,12))
+            if(TABU(ITCOL(IFOC,12)).gt.TABUMX(ITCOL(IFOC,12)))
+     &        TABUMX(ITCOL(IFOC,12))=TABU(ITCOL(IFOC,12))
+
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                  IER)
+            TABU(ITCOL(IFOC,13))=VAL
+            if(TABU(ITCOL(IFOC,13)).lt.TABUMN(ITCOL(IFOC,13)))
+     &        TABUMN(ITCOL(IFOC,13))=TABU(ITCOL(IFOC,13))
+            if(TABU(ITCOL(IFOC,13)).gt.TABUMX(ITCOL(IFOC,13)))
+     &        TABUMX(ITCOL(IFOC,13))=TABU(ITCOL(IFOC,13))
+
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                  IER)
+            TABU(ITCOL(IFOC,14))=VAL
+            if(TABU(ITCOL(IFOC,14)).lt.TABUMN(ITCOL(IFOC,14)))
+     &        TABUMN(ITCOL(IFOC,14))=TABU(ITCOL(IFOC,14))
+            if(TABU(ITCOL(IFOC,14)).gt.TABUMX(ITCOL(IFOC,14)))
+     &        TABUMX(ITCOL(IFOC,14))=TABU(ITCOL(IFOC,14))
+                    
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                  IER)
+            TABU(ITCOL(IFOC,15))=INT(VAL)
+            if(TABU(ITCOL(IFOC,15)).lt.TABUMN(ITCOL(IFOC,15)))
+     &        TABUMN(ITCOL(IFOC,15))=TABU(ITCOL(IFOC,15))
+            if(TABU(ITCOL(IFOC,15)).gt.TABUMX(ITCOL(IFOC,15)))
+     &        TABUMX(ITCOL(IFOC,15))=TABU(ITCOL(IFOC,15))
+
+            CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',
+     &                  IER)
+            TABU(ITCOL(IFOC,16))=INT(VAL)
+            if(TABU(ITCOL(IFOC,16)).lt.TABUMN(ITCOL(IFOC,16)))
+     &        TABUMN(ITCOL(IFOC,16))=TABU(ITCOL(IFOC,16))
+            if(TABU(ITCOL(IFOC,16)).gt.TABUMX(ITCOL(IFOC,16)))
+     &        TABUMX(ITCOL(IFOC,16))=TABU(ITCOL(IFOC,16))
+
+            CALL EWTABU(ITRC,ITREC,IER)
+  80      CONTINUE
+
+C End of file encountered, close the file and return to menu.
+  103     msgl2=' End of import file reached'
+          CALL USRMSG(' ',msgl2,'-')
+          CALL ERPFREE(IUNIT,ISTAT)
+          changed = .true.
+          edited = .true.
           continue
-        endif
+        ELSE
+          goto 3
+        ENDIF
       ELSEIF(INODA.EQ.IPDL-3)THEN
 
 C If there are enough items to warrent it, allow paging control - first
@@ -583,7 +708,7 @@ C Note that the actual data passed into the file is the alt-string
 C index INT(TABU(ITCOL(IFOC,J))) rather than the text itself.
             CALL EGETWI(LINE,K,IV,ITMIN(IFOC,IA),ITMAX(IFOC,IA),
      &        'W',TDFDES(IFOC,J),IER)
-	    TABU(ico) = real(IV)
+            TABU(ico) = real(IV)
           ELSEIF(ITDFTR(IFOC,J).EQ.3)THEN
             CALL EGETWI(LINE,K,IV,ITMIN(IFOC,IA),ITMAX(IFOC,IA),
      &        'W',TDFDES(IFOC,J),IER)
@@ -1110,7 +1235,7 @@ C ************* EDSTATICIMPT ************************************************
 C  EDSTATICIMPT:  Edits data importation specification for the static values.
 C thew tdf entities. Set up to allow user to specify which item should be read
 C from a file and to which static value it matches.
-      SUBROUTINE EDSTATICIMPT(ITRC,IFOC,IER)
+      SUBROUTINE EDSTATICIMPT(IFOC,IER)
 #include "tdf2.h"
       
       COMMON/FILEP/IFIL
@@ -1316,9 +1441,9 @@ C the import file. Parse the import line until the data item is located.
 C Here although we are looking for an integer, the csv files usually
 C convert everything to real. So, the scan is for a real at the moment
 C and then this is taken an integer.
-                CALL EGETWR(OUTSTR,K,VAL,0,0,'-','imp data',
+                CALL EGETWR(OUTSTR,K,VAL,0.0,0.0,'-','imp data',
      &                      IER)
-                ITMAR(IFOC,IA)=VAL
+                ITMAR(IFOC,IA)=NINT(VAL)
               ELSE
                 CALL EGETW(OUTSTR,K,WORD,'-','skip',IFLAG)
               ENDIF

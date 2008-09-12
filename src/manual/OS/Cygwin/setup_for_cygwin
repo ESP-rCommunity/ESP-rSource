@@ -1,12 +1,12 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs the X11 or GTK ESP-r distribution version 11.4"
+echo "This script installs the X11 or GTK ESP-r distribution version 11.5"
 echo "on a Windows computer which already has the Cygwin emulation"
 echo "environment up and running."
 echo " "
 echo "The installation includes ESP-r executables, example models"
-echo "and standard databases (up to 28 zones allowed in a model)."
+echo "and standard databases."
 echo " "
 echo "Consider being Administrator when running this installer"
 echo "(or a user who has administrative privilages)."
@@ -110,8 +110,8 @@ echo " "
 echo " ESP-r is available in two versions:"
 echo " a) the standard X11 implementation"
 echo " b) an implementation using the GTK graphics"
-echo "    library which should be treated as a beta version"
-echo "    because a few functions have not been ported."
+echo "    library which lacks a few functions found in the"
+echo "    X11 version."
 echo " "
 echo " select option [a/b]:"
 read which
@@ -132,7 +132,7 @@ fi
 cd /home/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_v11.4_X11_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_v11.5_X11_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
   echo "copy helper applications..."
   cp $ISD/xv.exe /bin
@@ -142,7 +142,7 @@ if [[ $which = 'a' ]] ; then
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_v11.4_GTK_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_v11.5_GTK_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
@@ -150,18 +150,11 @@ echo "Creating a link to the ESP-r distribution... "
 ln -s /home/esru /usr/esru
 echo "Setting folder permissions... "
 chmod a+x /home/esru
-chmod a+x /home/esru/bin
 chmod a+x /home/esru/esp-r
 chmod a+x /home/esru/esp-r/bin
 chmod a+r /home/esru
-chmod a+r /home/esru/bin
 chmod a+r /home/esru/esp-r
 chmod a+r /home/esru/esp-r/bin
-
-cd /
-echo " Extracting Radiance distribution ..."
-zcat $ISD/cygwin_rad_local_1004.tar.gz | tar xf -
-echo " Extracting Radiance distribution ... done."
 
 echo "copy and backup profile..."
 cp /etc/profile /etc/profile-

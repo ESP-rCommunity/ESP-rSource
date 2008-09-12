@@ -81,7 +81,8 @@ c                         Determines supply air mass flow rate from HVAC system
 c                         to each of the zones served by the system
 c	COIL_MOIST_BAL	  Determines cooling coil contribution toward the
 c			  moisture balance of the zones served by hvac system
-c       CONT_FUNC_CAP     Set the sensible cooling capacity of the control 
+c       SET_CONT_FUNC_COOL_CAP
+c                         Set the sensible cooling capacity of the control 
 c                         function associated with the cooling system
 c       WET_BULB_DRY_COIL Determines the highest wet-bulb inlet coil temperature
 c                         leading to dry coil conditions 
@@ -135,6 +136,9 @@ c	isys		number of hvac system
 c	sensible_cooling_load	
 c			total sensible cooling load for zones served 
 c                       by hvac system isys
+c       cooling_vent_yes
+c                       variable indicating whether there is cooling load or ventilation load
+c                       hvac system
 c	PERS		time step common
 c	HVAC_INPUT_DATA	common for HVAC input data
 c	HEAT_PUMP_INPUT_DATA
@@ -152,8 +156,8 @@ c                       and outdoor condenser fan)
 c	plr_heat_pump	part load ratio of heat pump
 c       plf_heat_pump   part load factor of heat pump	
 c **********************************************************************
-      SUBROUTINE ASHP_COOLING(isys,sensible_cooling_load,sys_energy,
-     &plr_heat_pump,plf_heat_pump)
+      SUBROUTINE ASHP_COOLING(isys,sensible_cooling_load,
+     &cooling_vent_yes,sys_energy,plr_heat_pump,plf_heat_pump)
  
       IMPLICIT NONE
 
@@ -161,6 +165,8 @@ c Variables passed in call
       REAL sensible_cooling_load,sys_energy,plr_heat_pump,plf_heat_pump
 
       INTEGER isys
+
+      LOGICAL cooling_vent_yes
 
 #include "building.h"
 
@@ -218,13 +224,15 @@ c Define hour of the year (from 8760 hours) for the simulation during
 c the current time step
       ihour_year = ihrp + 24 * (idyp - 1)
 
+c If cooling load > 0 or ventilation load > 0 for hvac system
+      if(cooling_vent_yes) then
 c Call subroutine to determine outdour air properties (temperature,
 c relative humidity, humidity ratio, enthalpy, specific heat, and density)
-      call OUTDOOR_AIR_PROPERTIES(tout,rhout,wout,hout,cpout,den_out)
+        call OUTDOOR_AIR_PROPERTIES(tout,rhout,wout,hout,cpout,den_out)
 
 c Call subroutine to determine properties of return air from zones
 c served by HVAC system
-      call RETURN_AIR_PROPERTIES(isys,tdb1,w1,h1,cp1,den1)
+        call RETURN_AIR_PROPERTIES(isys,tdb1,w1,h1,cp1,den1)
 
 c If there is economizer control, then call either temperature or 
 c enthalpy based economizer subroutine to determine the actual
@@ -236,74 +244,75 @@ c and the economizer control is temperature based
 c economizer_control(isys)=1 is for integrated temperature based control 
 c and 
 c ieconomizer_control(isys)=2 is for non-integrated temperature based control  
-      if((icooling_type(isys).eq.2).and.
-     &   ((ieconomizer_control(isys).eq.1).or.
-     &    (ieconomizer_control(isys).eq.2))) then
-        call HEATPC_ECONOMIZER_TEMP(sensible_cooling_load,tdb1,
-     &       cp1,den1,tout,cpout,den_out,flow_rate(isys),
-     &       economizer_min_out_air_flow(isys),
-     &       economizer_ind_temp_setpoint(isys),
-     &       ieconomizer_control(isys),
-     &       economizer_out_temp_limitcon(isys),
-     &       outdoor_air_flow(isys,ihour_year),
-     &       economizer_cooling_max)
+        if((icooling_type(isys).eq.2).and.
+     &     ((ieconomizer_control(isys).eq.1).or.
+     &      (ieconomizer_control(isys).eq.2))) then
+          call HEATPC_ECONOMIZER_TEMP(sensible_cooling_load,tdb1,
+     &         cp1,den1,tout,cpout,den_out,flow_rate(isys),
+     &         economizer_min_out_air_flow(isys),
+     &         economizer_ind_temp_setpoint(isys),
+     &         ieconomizer_control(isys),
+     &         economizer_out_temp_limitcon(isys),
+     &         outdoor_air_flow(isys,ihour_year),
+     &         economizer_cooling_max)
 c Second for the case when we have economizer control (icooling_type(isys)=2)
 c and the economizer control is enthalpy based 
 c ieconomizer_control(isys)=3 is for integrated enthalpy based control 
 c and 
 c ieconomizer_control(isys)=4 is for non-integrated enthalpy based control 
-      elseif((icooling_type(isys).eq.2).and.
-     &       ((ieconomizer_control(isys).eq.3).or.
-     &       (ieconomizer_control(isys).eq.4))) then
-        call HEATPC_ECONOMIZER_ENTH(sensible_cooling_load,tdb1,
-     &       h1,cp1,den1,tout,cpout,den_out,hout,flow_rate(isys),
-     &       economizer_min_out_air_flow(isys),
-     &       economizer_ind_temp_setpoint(isys),
-     &       ieconomizer_control(isys),
-     &       economizer_out_enth_limitcon(isys),
-     &       outdoor_air_flow(isys,ihour_year),
-     &       economizer_cooling_max)
-      endif
+        elseif((icooling_type(isys).eq.2).and.
+     &         ((ieconomizer_control(isys).eq.3).or.
+     &         (ieconomizer_control(isys).eq.4))) then
+          call HEATPC_ECONOMIZER_ENTH(sensible_cooling_load,tdb1,
+     &         h1,cp1,den1,tout,cpout,den_out,hout,flow_rate(isys),
+     &         economizer_min_out_air_flow(isys),
+     &         economizer_ind_temp_setpoint(isys),
+     &         ieconomizer_control(isys),
+     &         economizer_out_enth_limitcon(isys),
+     &         outdoor_air_flow(isys,ihour_year),
+     &         economizer_cooling_max)
+        endif
 
 c The return air and outdoor air are mixed. Next call determines
 c temperature of mixed air tdb1_oa_mix
-      tdb1_oa_mix = RET_AIR_TEMP_OA_MIX(tdb1,cp1,den1,tout,
-     &         cpout,den_out,outdoor_air_flow(isys,ihour_year),
-     &         flow_rate(isys))
+        tdb1_oa_mix = RET_AIR_TEMP_OA_MIX(tdb1,cp1,den1,tout,
+     &           cpout,den_out,outdoor_air_flow(isys,ihour_year),
+     &           flow_rate(isys))
 
 c Determine humidity ratio of mixed air w1_oa_mix
-      w1_oa_mix = RET_AIR_HUM_RATIO_OA_MIX(den1,w1,den_out,
-     &            wout,outdoor_air_flow(isys,ihour_year),
-     &            flow_rate(isys))
+        w1_oa_mix = RET_AIR_HUM_RATIO_OA_MIX(den1,w1,den_out,
+     &              wout,outdoor_air_flow(isys,ihour_year),
+     &              flow_rate(isys))
 
 c Knowing the properties of the mixed air state, we can determine the 
 c inlet conditions to the cooling coil. These conditions can be different
 c from mixed ar conditions if there is a circulation fan in front of the coil.
-      call ASHPC_COIL_INLET(isys,tdb1_oa_mix,w1_oa_mix,tdb2,w2,den1,cp1)
+        call 
+     &  ASHPC_COIL_INLET(isys,tdb1_oa_mix,w1_oa_mix,tdb2,w2,den1,cp1)
 
 c Set atmospheric pressure which depends on the site altitude which comes
 c from the HVAC input data file
-      patm = ATM_PRESSURE(site_altitude)
+        patm = ATM_PRESSURE(site_altitude)
  
 c Atmospheric pressure in mbar
-      patm2 = patm / 100.
+        patm2 = patm / 100.
 
 c Wet-bulb temperature of return air from conditioned zones
-      twb1 = TWB_ACMODEL(tdb1,w1,patm2,1)
+        twb1 = TWB_ACMODEL(tdb1,w1,patm2,1)
 
 c Set wet-bulb temperature of air entering coil
-      twb2 = TWB_ACMODEL(tdb2,w2,patm2,1)
+        twb2 = TWB_ACMODEL(tdb2,w2,patm2,1)
 
 c Determine bypass factor for actual flow rate. This actual bypass factor
 c is based on the bypass factor at rating conditions
-      bf = BYPASS_FACTOR(flow_rate(isys),flow_rate_r(isys),
-     &bfr(isys))
+        bf = BYPASS_FACTOR(flow_rate(isys),flow_rate_r(isys),
+     &  bfr(isys))
 
 c Determine highest inlet wet-bulb temperature to the coil that 
 c leads to dry coil conditions given the inlet dry bulb
 c temperature to the coil. This temperature will be used to 
 c determine whether the coil is dry or wet.
-      wet_bulb_unity_shr = WET_BULB_DRY_COIL(ss_capacity(isys),
+        wet_bulb_unity_shr = WET_BULB_DRY_COIL(ss_capacity(isys),
      &                     tout,tdb2,flow_rate(isys),
      &                     flow_rate_r(isys),
      &                     ifan_operation(isys),bf,patm2,
@@ -311,56 +320,57 @@ c determine whether the coil is dry or wet.
 
 c Set the cooling capacity of system accounting for actual operating
 c conditions.
-      call SET_TOTALCOOLINGCAP_SHR(ihvac_type(isys),GSHP_HP_mode,
+        call SET_TOTALCOOLINGCAP_SHR(ihvac_type(isys),GSHP_HP_mode,
      &     ss_cooling_cap,ss_capacity(isys),EWT,shr,flow_rate(isys),
      &     tdb2,w2,den1,bf,patm2,w4,GCEP_EWT,ifan_operation(isys),
      &     twb2,wet_bulb_unity_shr,flow_rate_r(isys),tout,GCEP_HP_mode)
 
 c Determine sensible cooling capacity of unit
-      sensible_cooling_cap = ss_cooling_cap * shr
+        sensible_cooling_cap = ss_cooling_cap * shr
 
 c Set the maximum cooling capacity of the controller associated with
 c the operation of the air-conditioning system 
-      call CONT_FUNC_CAP(isys,sensible_cooling_cap,icooling_type(isys),
+        call SET_CONT_FUNC_COOL_CAP(isys,sensible_cooling_cap,
+     &     icooling_type(isys),
      &     ieconomizer_control(isys),economizer_cooling_max)   
 
 c Given the total sensible load on the coil, the total capacity of
 c the unit, and the sensible heat ratio, it is possible to determine
 c the part-load ratio and the part-load factor for the time step
-      call ASHPC_PLR_PLF_LATENTLOAD(isys,sensible_cooling_load,
+        call ASHPC_PLR_PLF_LATENTLOAD(isys,sensible_cooling_load,
      &     plr_heat_pump,plf_heat_pump,ifan_operation(isys),
      &     rlatent_load,shr,fan_power_auto(isys),ss_cooling_cap)
 
-
 c Set total cooling load on coil: sum of sensible and latent load
-      total_cooling_load = sensible_cooling_load + rlatent_load
+        total_cooling_load = sensible_cooling_load + rlatent_load
   
 c Correct part load factor for the effect of off-cycle power use for
 c air-source heat pump system
-      if((isys_type(isys).eq.1).or.(isys_type(isys).eq.2).or.
-     &   (isys_type(isys).eq.3)) then
-        plf_heat_pump_corr = ASHP_PLF_OFFCYC_CORR(isys_type(isys),
-     &  plr_heat_pump,plf_heat_pump)
+        if((isys_type(isys).eq.1).or.(isys_type(isys).eq.2).or.
+     &     (isys_type(isys).eq.3)) then
+          plf_heat_pump_corr = ASHP_PLF_OFFCYC_CORR(isys_type(isys),
+     &    plr_heat_pump,plf_heat_pump)
+
 c For ground-source heat pump systems, no correction is applied
-      elseif(isys_type(isys).eq.4) then
-        plf_heat_pump_corr = plf_heat_pump
-      endif
+        elseif(isys_type(isys).eq.4) then
+          plf_heat_pump_corr = plf_heat_pump
+        endif
 
 c Account for the COP variation with environmental conditions
-      call SET_COP(ihvac_type(isys),GSHP_HP_mode,ss_cop(isys),EWT,
+        call SET_COP(ihvac_type(isys),GSHP_HP_mode,ss_cop(isys),EWT,
      &     cop,total_cooling_load,GCEP_EWT,GCEP_HP_mode,
      &     GCEP_COOL_COP,twb2,wet_bulb_unity_shr,tout,flow_rate(isys),
      &     flow_rate_r(isys),ifan_operation(isys))
 
 c Time step for the simulation
-      time_step = TIME_INTERVAL(ntstep)
+        time_step = TIME_INTERVAL(ntstep)
 
 c Set energy consumption of heat pump in the cooling mode
-      sys_energy = ASHP_ENERGY(ss_cooling_cap,cop,plr_heat_pump,
+        sys_energy = ASHP_ENERGY(ss_cooling_cap,cop,plr_heat_pump,
      &                         plf_heat_pump_corr,time_step)
 
 c Set mass flow rate to each of the zones served by hvac system isys
-      call ZONE_MASS_FLOW_RATE(isys,den1,zone_mass_flow)
+        call ZONE_MASS_FLOW_RATE(isys,den1,zone_mass_flow)
 
 c Find an equivalent exit humidity ratio from coil that corresponds to
 c same latent load on coil calculated previously (rlatent_load) assuming
@@ -370,7 +380,7 @@ c to account for the effect of the condensation at the coil. The actual
 c exit humidity ratio from the coil w4 is not used in the space moisture 
 c balance because it includes outdoor air contribution. Moisture contribution
 c of outdoor air is already accounted for as part of the infiltration load. 
-      call HUMRATIO_MOISTBAL(h1,ss_cooling_cap,den1,flow_rate(isys),
+        call HUMRATIO_MOISTBAL(h1,ss_cooling_cap,den1,flow_rate(isys),
      &     tdb1,sensible_cooling_cap,cp1,humratio_for_moistbal)
 
 c Call subroutine to set variables used in space moisture balance to
@@ -378,51 +388,65 @@ c account for condensation at the coil.
 c If the indoor circulation fan is in auto mode, a supply air flow at
 c the equivalent humidity ratio humratio_for_moistbal is delivered to 
 c the space during plr_heat_pump fraction of the hour
-      if(ifan_operation(isys).eq.1) then
-        call COIL_MOIST_BAL(isys,plr_heat_pump,humratio_for_moistbal,
+        if(ifan_operation(isys).eq.1) then
+          call COIL_MOIST_BAL(isys,plr_heat_pump,humratio_for_moistbal,
      &                      zone_mass_flow,ntstep)
 c When the circulation fan is in continuous mode, the supply air flow
 c to the space has a humidity ratio which is the average of the
 c equivalent humidity ratio humratio_for_moistbal and the return air 
 c humidity ratio w1 accounting for proper fraction cooling unit is on
 c and off
-      elseif(ifan_operation(isys).eq.2) then
-        humratio_for_moistbal = plr_heat_pump * humratio_for_moistbal + 
-     &                          (1 - plr_heat_pump) * w1
-        call COIL_MOIST_BAL(isys,1.,humratio_for_moistbal,
+        elseif(ifan_operation(isys).eq.2) then
+          humratio_for_moistbal = plr_heat_pump * 
+     &    humratio_for_moistbal + (1.0 - plr_heat_pump) * w1
+          call COIL_MOIST_BAL(isys,1.,humratio_for_moistbal,
      &       zone_mass_flow,ntstep)
-      endif
+        endif
 
-c Set the appropriate conductance associated with the outdoor air flow 
+c Set the appropriate conductance associated with the outdoor air flow
 c throug the HVAC system
 c When the indoor circulation fan is in continuous mode, the outdoor
 c air flow is on for the full time step
-      if(ifan_operation(isys).eq.2) then
-        do 10 i = 1,num_sys_zones(isys)
-          outdoor_air_inf_cond(isys_zone_num(isys,i)) = 
-     &    den_out * outdoor_air_flow(isys,ihour_year) * 
-     &    cpout * sys_zone_cap_frac(isys,i)
- 10     continue
+        if(ifan_operation(isys).eq.2) then
+          do 10 i = 1,num_sys_zones(isys)
+            outdoor_air_inf_cond(isys_zone_num(isys,i)) = 
+     &      den_out * outdoor_air_flow(isys,ihour_year) * 
+     &      cpout * sys_zone_cap_frac(isys,i)
+ 10       continue
 c When the indoor circulation fan is in auto mode, the outdoor air flow
 c is assumed to be on only for the fraction plr_heat_pump of the time 
 c step
-      elseif(ifan_operation(isys).eq.1) then
-       do 20 i = 1,num_sys_zones(isys)
-          outdoor_air_inf_cond(isys_zone_num(isys,i)) = 
-     &    den_out * outdoor_air_flow(isys,ihour_year) * 
-     &    cpout * sys_zone_cap_frac(isys,i) * plr_heat_pump
- 20     continue
-      endif
+        elseif(ifan_operation(isys).eq.1) then
+          do 20 i = 1,num_sys_zones(isys)
+            outdoor_air_inf_cond(isys_zone_num(isys,i)) = 
+     &      den_out * outdoor_air_flow(isys,ihour_year) * 
+     &      cpout * sys_zone_cap_frac(isys,i) * plr_heat_pump
+ 20       continue
+        endif
 
+c If the cooling season is not on for this hvac system, then set relevant 
+c variables to appropriate values
+      elseif(.not.cooling_vent_yes) then
+        plr_heat_pump = 0.
+        plf_heat_pump = 1.
+        sys_energy = 0.
+        do 30 i = 1,num_sys_zones(isys)
+          outdoor_air_inf_cond(isys_zone_num(isys,i)) = 0.
+          coil_moist_in(isys_zone_num(isys,i)) = 0.
+          coil_moist_out1(isys_zone_num(isys,i)) = 0.
+          coil_moist_out2(isys_zone_num(isys,i)) = 0.
+ 30     continue
+      endif
+            
 c Call Subroutine to determine various outputs associated with the 
 c AC system
-      if((idyp.eq.isd1).or.(output_flag)) then
-        output_flag = .true.
-        call ACSYSTEM_OUTPUT(isys,sys_energy,plr_heat_pump,
-     &plf_heat_pump,ss_cooling_cap,shr,time_step)
-      endif
+c      if((idyp.eq.isd1).or.(output_flag)) then
+c        output_flag = .true.
+c        call ACSYSTEM_OUTPUT(isys,sys_energy,plr_heat_pump,
+c     &  plf_heat_pump,ss_cooling_cap,shr,time_step)
+c      endif
 
-c Following are activated only when the time step output for the 
+c Following are activated only when the time step output for the
 c cooling model is desired
 c      rh1 = PCRH2(tdb1,w1,patm2)
 c      wf = HUM_RATIO_OA(tf,hf,site_altitude)
@@ -1744,7 +1768,7 @@ c contributions of the coil toward the moisture balance inside the space
 
 c *********************************************************************
 c *********************************************************************
-c CONT_FUNC_CAP
+c SET_CONT_FUNC_COOL_CAP
 
 c Created by: Kamel Haddad
 c Initial Creation Date: March 25th 2001
@@ -1770,15 +1794,12 @@ c	cont_fun_cool_cap
 c			new cooling capacity for hvac system isys. This 
 c			new cooling capacity is used later to update the
 c			maximum cooling capacity of the control function
-c			associated with hvac system isys. Control function
-c			capacity is updated in subroutine BCL01 in file 
-c			bcfunc.F under esrubld directory. At this point, 
-c			the control law associated with the air-source
-c			heat pump in the cooling mode is ideal controller
+c			associated with hvac system isys.
 c	hvac_timestep_parameters	
 c                       common for updated capacity of control function
 c **********************************************************************
-      SUBROUTINE CONT_FUNC_CAP(isys,sensible_cooling_cap,icooling_type,
+      SUBROUTINE
+     &SET_CONT_FUNC_COOL_CAP(isys,sensible_cooling_cap,icooling_type,
      &           ieconomizer_control,economizer_cooling_max)
 
       IMPLICIT NONE
@@ -1791,28 +1812,31 @@ c **********************************************************************
 c Variables passed in call
       REAL sensible_cooling_cap,economizer_cooling_max
 
-      INTEGER isys,icooling_type,ieconomizer_control
+      INTEGER isys,icooling_type,ieconomizer_control,icounter
 
 c Local variables
-      REAL controller_sens_cap
+      REAL controller_sens_cap,small,zone_cool_cap
+      LOGICAL close
 
-c Set cooling capacity of control function associated with 
+      small = 1.e-6
+
+c Set cooling capacity of control function associated with
 c cooling equipment
 c For conventional HVAC system, set controller capacity to the
 c sensible system capacity for time step
       if(icooling_type.eq.1) then
         controller_sens_cap = sensible_cooling_cap
 c If there is economizer control and economizer and cooling unit
-c can be on at the same time to meet the load (integrated control), 
-c then controller capacity is set to the sum of sensible unit capacity 
+c can be on at the same time to meet the load (integrated control),
+c then controller capacity is set to the sum of sensible unit capacity
 c and maximum cooling capacity of economizer
       elseif((icooling_type.eq.2).and.
      &        ((ieconomizer_control.eq.1).or.
      &         (ieconomizer_control.eq.3))) then
-        controller_sens_cap = sensible_cooling_cap + 
+        controller_sens_cap = sensible_cooling_cap +
      &                                          economizer_cooling_max
 c If there is economizer control and economizer and cooling unit
-c can not be on at the same time to meet the load (non-integrated control), 
+c can not be on at the same time to meet the load (non-integrated control),
 c then controller capacity is set to sensible unit capacity
       elseif((icooling_type.eq.2).and.
      &        ((ieconomizer_control.eq.2).or.
@@ -1822,18 +1846,33 @@ c then controller capacity is set to sensible unit capacity
 
 c In the following the effect of the circulation fan is accounted for.
 c If circulation fan is in auto mode, reduce the capacity of the controller
-      if(ifan_operation(isys).eq.1) then
-        cont_fun_cool_cap(icontrol_function(isys)) = controller_sens_cap 
-     &                                            - fan_power_auto(isys)
+      do 10 icounter = 1,num_sys_zones(isys)
+        if(ifan_operation(isys).eq.1) then
+          cont_fun_cool_cap(isys_zone_num(isys,icounter)) =
+     &    sys_zone_cap_frac(isys,icounter) *
+     &    (controller_sens_cap - fan_power_auto(isys))
 
 c If circulation fan is in continuous mode, no effect on controller capacity
-      elseif(ifan_operation(isys).eq.2) then
-        cont_fun_cool_cap(icontrol_function(isys)) = controller_sens_cap
+        elseif(ifan_operation(isys).eq.2) then
+          cont_fun_cool_cap(isys_zone_num(isys,icounter)) =
+     &    sys_zone_cap_frac(isys,icounter) * controller_sens_cap
 
 c If no circulation fan, no effect on controller capacity
-      elseif(ifan_operation(isys).eq.0) then
-        cont_fun_cool_cap(icontrol_function(isys)) = controller_sens_cap
-      endif
+        elseif(ifan_operation(isys).eq.0) then
+          cont_fun_cool_cap(isys_zone_num(isys,icounter)) =
+     &    sys_zone_cap_frac(isys,icounter) * controller_sens_cap
+        endif
+
+c Check whether capacity of controller for zone is zero
+        zone_cool_cap = cont_fun_cool_cap(isys_zone_num(isys,icounter))
+        call eclose(zone_cool_cap,0.0,small,close)
+c If it is 0, then set capacity to small number to over-ride controller
+c capacity that might be listed in the control file.
+        if(close) then
+         cont_fun_cool_cap(isys_zone_num(isys,icounter)) = small
+        endif
+
+ 10   continue
 
       return
       end
@@ -2520,6 +2559,7 @@ c to meet the load. Set part-load ratio to 1. in this case
           if(plr_heat_pump.gt.1) then
             store_plr = plr_heat_pump
             plr_heat_pump = 1.
+
 c Keep track of number of hours space is under cooled
             ihrs_under_cool(isys) = ihrs_under_cool(isys) + 1
 
@@ -2532,14 +2572,12 @@ c Keep track of number of hours space is under cooled
 
 c Set part load factor of heat pump
           up_plf_heat_pump = ASHP_PLF(isys,plr_heat_pump)
-
           error = abs(up_plf_heat_pump - plf_heat_pump)
           plf_heat_pump = up_plf_heat_pump
           number_iterations = number_iterations + 1
         end do
 
       endif
-
       return
       end
 
@@ -2603,9 +2641,9 @@ c Variables passed in call
       INTEGER  GCEP_HP_mode,  GSHP_HP_mode    
       INTEGER ifan_operation,ihvac_type
 
-      common/outin/iuout,iuin
+C      common/outin/iuout,iuin
 
-      INTEGER iuout,iuin
+C      INTEGER iuout,iuin
 
 c Local variables
       REAL GSHP_CAP,SENS_HEAT_RATIO,ASHPC_CAP
@@ -2658,13 +2696,13 @@ c set this back to 1
           ss_cooling_cap = ASHPC_CAP(ss_capacity,wet_bulb_unity_shr,
      &                   tout,flow_rate,flow_rate_r,ifan_operation)
         endif
-        write(iuout,*) 
-     &       'SET_TOTALCOOLINGCAP_SHR: calculated sensible heat'
-        write(iuout,*) 'ratio=', shr, ' for coil is > 1.?'
-        write(iuout,*) 
-     &       'This can be caused by small unit capacity leading'
-        write(iuout,*) 'to space conditions not being maintained at set'
-        write(iuout,*) 'point'
+c        write(iuout,*) 
+c     &       'SET_TOTALCOOLINGCAP_SHR: calculated sensible heat'
+c        write(iuout,*) 'ratio=', shr, ' for coil is > 1.?'
+c        write(iuout,*) 
+c     &       'This can be caused by small unit capacity leading'
+c        write(iuout,*) 'to space conditions not being maintained at set'
+c        write(iuout,*) 'point'
         shr = 1.0
       endif
 
@@ -2876,6 +2914,9 @@ c Variables passed in call
 c Local variables
       REAL fan_energy,FAN_ENERGY_CON,outdoor_fan_energy,
      &     compressor_energy
+      logical bCloseToZero
+      real fSmall
+      parameter ( fSmall = 1.0e-02 )
 
 c Find indoor fan electricity consumption for the time step in kWatts
 c 0. is for the plr of the backup system. There is no backup system for an
@@ -2925,10 +2966,31 @@ c Update sum of total coil load
       coil_total_load(isys) = coil_sensible_load(isys) + 
      &                                         coil_latent_load(isys)
 
+C Save coil loads in Watts for use in h3kreports
+      fASHP_AC_Coil_Load_Sensible(isys) =
+     &                shr * ss_cooling_cap * plr_heat_pump
+
+      fASHP_AC_Coil_Load_Latent(isys) =
+     &                (1.0 - shr ) * ss_cooling_cap * plr_heat_pump
+
+      fASHP_AC_Coil_Load_Total(isys) = ss_cooling_cap * plr_heat_pump
+
+C Save actual cooling capacity for given conditions.
+      fH3KActualCapacity(isys) = ss_cooling_cap
+
 c Average COP which accounts for electricity consumption of compressor and
 c outdoor fan
-      average_cop(isys) = coil_total_load(isys) / 
+
+C.....Trap potential div/0 error:
+      call eclose ( total_elec_consumption(isys)-elec_indoor_fan(isys),
+     &              0.0, fSmall, bCloseToZero )
+
+      if ( bCloseToZero ) then
+        average_cop(isys) = 0.0
+      else
+        average_cop(isys) = coil_total_load(isys) / 
      &      (total_elec_consumption(isys) - elec_indoor_fan(isys))
+      endif 
 
 c Following only activate when air-conditioner model output is desired
 c      write(iuout,*) sys_elec_consumption,elec_indoor_fan(isys),

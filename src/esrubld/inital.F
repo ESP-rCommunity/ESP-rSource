@@ -32,6 +32,7 @@ C temperature variable.
       subroutine mzini1
 #include "building.h"
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/climi/qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
       common/fvala/tfa(mcom),qfa(mcom)
@@ -124,7 +125,7 @@ C injections to each node in the discretisation scheme.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Zone casual gain control data.
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),

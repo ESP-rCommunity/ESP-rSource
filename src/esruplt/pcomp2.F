@@ -70,6 +70,8 @@ C
       SUBROUTINE CMP20C(IPCOMP,COUT,ISTATS)
 #include "plant.h"
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -311,7 +313,6 @@ C            1 Inter-node fluid heat capacity rate (W/K)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
 
-
       PARAMETER (SMALL=1.0E-15)
       REAL      COUT(MPCOE)
       logical closea
@@ -328,7 +329,6 @@ C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
       ICON1=ICONDX(IPCOMP,1,1)
       INOD1=NPCDAT(IPCOMP,9)
       INOD2=NPCDAT(IPCOMP,9)+1
-
 
 C Generate coefficients for energy balance equation
       IF(ISTATS.EQ.1) THEN
@@ -946,6 +946,7 @@ C     CDATA: 1 Volume flow rate (m^3/s)
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "OffsiteUtilitiesPublic.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -980,6 +981,9 @@ C     CDATA: 1 Volume flow rate (m^3/s)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
       INTEGER napdat
+
+      common/pcnam/pcname(mpcom)       ! Plant component names
+      character*15 pcname
 
 C Electrical details for specified plant components
       common/pcelflg/ipcelf(mpcom)
@@ -1079,6 +1083,19 @@ C In case of mfs E is based on flow rate, pressure *rise*, and efficiency
          IEMODEL=1
          CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
          PWRQ=PQ
+
+C Pass power consumption to Site Utilities facility
+         fSUFuelEnergyUse( iElectricity, iUseUncatagorized) = ABS(E)
+         call StorePltCompEnergyUse ( IPCOMP, fSUFuelEnergyUse )
+
+C Report power consumption
+         call add_to_xml_reporting(
+     &          ABS(E),
+     &          'plant/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
+     &              //'/misc_data/energy_input',
+     &          'units','(W)',
+     &          'WCH pump: Energy input')
+         
 
 C Now Q is made up of all inefficiencies
          Q=(1.-BDATA(IPCOMP,3))*E
@@ -4796,7 +4813,7 @@ C            2 Inter-node fluid heat capacity rate (W/K)
       SUBROUTINE CMP42C(IPCOMP,COUT,ISTATS)
 #include "plant.h"
 #include "building.h"
-
+#include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -4826,7 +4843,7 @@ C            2 Inter-node fluid heat capacity rate (W/K)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/LOCAL1/ISET,PHIMAX
       COMMON/LOKOUT/INSO,ITSBO
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
       PARAMETER (SMALL=1.0E-20)
       REAL      COUT(MPCOE)

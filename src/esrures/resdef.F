@@ -36,6 +36,8 @@ C routines.
       SUBROUTINE MORFIL(iftype)
 #include "building.h"
 #include "plant.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -147,14 +149,22 @@ C      write(6,*) 'MORFIL: exist is ',xst
       IF(XST)THEN
 
 C See if this is a plant result file.
-C That is if record 32=-1.
+C That is if record 32=-1 or -2.
         nprl = nprecl
         call EFOPRAN(iunit,LTMP,nprl,1,IER)
         if(ier.eq.0) then
            irec=32
            read(iunit,rec=irec,iostat=ios,err=13)iftype
-           IPLIB=1
-           if(iftype.eq.-1) return
+           if(iftype.eq.-1) then
+C             write(6,*) 'MORFIL: older plant ',iftype
+             IPLIB=1
+             return
+           elseif(iftype.eq.-2) then
+C             write(6,*) 'MORFIL: newer plant ',iftype
+	     IPLIB=2
+             iftype=-1
+             return
+           endif
         endif
 
 C Else assume this is a building result file. Use same width
@@ -324,6 +334,7 @@ C TNAME (temporary value)
 
       SUBROUTINE MORESS
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -337,10 +348,6 @@ C TNAME (temporary value)
 
       COMMON/CCTLNM/ctldoc,LCTLF
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &      IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &      BMISCD(MCF,MBCDT,MBCDP,MISC)
 
 C NS - number of selected result sets
 C NSNO() - set numbers of selected sets
@@ -352,6 +359,7 @@ C IFAFLG - factorial analysis peturbations
  
       COMMON/SETNAM/RSNAME(MNRS)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/AVRAGE/IDAVER
 
@@ -749,6 +757,7 @@ C NZNO - zone number of each.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -841,6 +850,7 @@ C ier is zero if no problems and -3 if user issued a cancel.
 #include "building.h"
 #include "esprdbfile.h"
 
+      integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -849,7 +859,11 @@ C ier is zero if no problems and -3 if user issued a cancel.
 
       common/recver/izver,ipver,iever
       common/rpath/path
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -877,7 +891,6 @@ C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
@@ -1297,6 +1310,8 @@ C also checked for consistency.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/ZONPIK/NZ,NZNO(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       dimension ITEMP(MCOM)

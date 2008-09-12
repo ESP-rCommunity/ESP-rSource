@@ -72,7 +72,11 @@ C in a new model file.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 C << G7 and G8 need to be cleared >>
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -229,7 +233,7 @@ C   losspercent and is assumed to apply to all zones in the model.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent
       
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
+      CHARACTER*72 LCFD,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LPNF
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -243,9 +247,9 @@ C   losspercent and is assumed to apply to all zones in the model.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character hvacfile*72,LAIM2*72,LBSIMP*72
-      CHARACTER lradcf*72,ctldoc*248,LCTLF*72
+      character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character dmdsdesc*248,bdmds*72
+      character dmdsdesc*248,bdmds*72,lradcf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -536,6 +540,8 @@ C see if there are images associated with descriptive buttons.
       subroutine cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -544,7 +550,7 @@ C see if there are images associated with descriptive buttons.
       common/entfile/entflnam, ientxist
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
-      CHARACTER ctldoc*248,LCTLF*72,LCFD*72,entflnam*72
+      CHARACTER ctldoc*248,lctlf*72,LCFD*72,entflnam*72
       character LAPROB*72
       character imgfmt*4,imgfoc*4,limgfil*72
 
@@ -611,11 +617,14 @@ C Loop through all zones to see if there is a domain flow description.
 C ***** Notice that an active description button has been pressed.
       subroutine cfgpk(act)
 #include "building.h"
-#include "plant.h"
 #include "net_flow.h"
 #include "control.h"
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C23/IFPNF,LPNF
@@ -627,26 +636,8 @@ C ***** Notice that an active description button has been pressed.
 C Control
       common/cctlnm/ctldoc,lctlf
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
 
 C Images.
       COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
@@ -655,11 +646,11 @@ C Images.
 
       character h*72,act*1
       character imgfmt*4,imgfoc*4,limgfil*72,entflnam*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
-      CHARACTER*72 LAPROB,LPNF,CNTMFIL
-      CHARACTER CTLDOC*248,LCTLF*72,LPRJLG*72
+      CHARACTER LCFD*72
+      CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
+      CHARACTER ctldoc*248,lctlf*72
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,CNTMDESC*124,CONTMNAM*12
+      character glctldoc*248,opticdoc*248,CNTMDESC*124,CONTMNAM*12
 
       call usrmsg('Scanning for related images. Please wait...',' ','-')
       if(act.eq.'r')then
@@ -768,9 +759,13 @@ C and UDESC. ITRU unit number for user output, IER=0 OK.
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -781,7 +776,6 @@ C espriou.h provides currentfile.
       common/MOIST02/LMOIST(MCOM)
 
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LFIL*72,OUTSTR*124
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN
@@ -863,7 +857,7 @@ C not exist assume no obstructions exist.
         IOBS(IZ)=0
       ELSE
         K=0
-        CALL EGETWI(OUTSTR,K,IOBS(IZ),0,1,'W','obstr flag',IER)
+        CALL EGETWI(OUTSTR,K,IOBS(IZ),0,2,'W','obstr flag',IER)
         IF(IER.NE.0) GOTO 1001
         IF(IOBS(IZ).EQ.1)THEN
           CALL STRIPC(IFIL,OUTSTR,0,ND,0,'obstructions file',IER)
@@ -1012,6 +1006,8 @@ C 12 characters) may be included as an option and is returned via BLKNAME.
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -1110,8 +1106,8 @@ C Read surface test grid information and check ranges.
       CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
-      CALL EGETWI(OUTSTR,K,NOX,4,50,'F','opq grid X',IER)
-      CALL EGETWI(OUTSTR,K,NOZ,4,50,'F','opq grid Z',IER)
+      CALL EGETWI(OUTSTR,K,NOX,4,MOX,'F','opq grid X',IER)
+      CALL EGETWI(OUTSTR,K,NOZ,4,MOZ,'F','opq grid Z',IER)
       CALL EGETWI(OUTSTR,K,NGX,4,10,'F','win grid X',IER)
       CALL EGETWI(OUTSTR,K,NGZ,4,10,'F','win grid Z',IER)
 
@@ -1150,11 +1146,18 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,Z
+      CHARACTER Z*72
       CHARACTER BLKNAME*8,BLKMAT*12
       character outl*124,outld*124
 
@@ -1216,6 +1219,8 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
@@ -1486,6 +1491,8 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C act character*1 if 'a' then area weighted, if 'r' ray traced.
       SUBROUTINE EMKMRT(LMRT,LGEOM,NZS,IUF,ICOMP,act,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -2282,7 +2289,11 @@ C It is assumed that the user will make one selection only.
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/user/browse
@@ -2291,7 +2302,7 @@ C It is assumed that the user will make one selection only.
       DIMENSION VERT(35)
       character*(*) PROMPT
       CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,DFILE*72,MOD*1,H*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LFILG
+      CHARACTER*72 LFILG
 
 C If no configuration file then ask for zone number and name.
       delzone = .false.
@@ -2566,7 +2577,11 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -2574,7 +2589,8 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
       CHARACTER*(*) prompt,title,errmsg
@@ -2582,7 +2598,7 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
       DIMENSION VERT(35)
       CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,prompt2*36
       character h*72,mod*1,outs*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
+      CHARACTER*72 LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Initialise zone menu variables based on window size. 
@@ -2646,12 +2662,15 @@ C if it has been sorted and notify user.
                 IUO=IFIL+1
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
-                if(ip3ver.eq.0)then
+                if(ip3ver(L).eq.0)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
-                elseif(ip3ver.eq.1)then
+                elseif(ip3ver(L).eq.1)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined)'
+                elseif(ip3ver(L).eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
@@ -2859,12 +2878,16 @@ C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -2873,7 +2896,8 @@ C `-` zone names only.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
 
       LOGICAL XST,FOUND
       CHARACTER*(*) prompt,title
@@ -2935,12 +2959,15 @@ C if it has been sorted and notify user.
                 IUO=IFIL+1
                 CALL ERPFREE(IUO,ISTAT)
                 CALL EROPER(0,iuout,IUO,L,IER)
-                if(ip3ver.eq.0)then
+                if(ip3ver(L).eq.0)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),' (older)'
                   write(outs,'(3a)') 'Operations for ',zname(L),
      &              'needs update (periods unsorted).'
                   call edisp(iuout,outs)
-                elseif(ip3ver.eq.1)then
+                elseif(ip3ver(L).eq.1)then
+                  WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
+     &              ' (defined)'
+                elseif(ip3ver(L).eq.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
@@ -3176,11 +3203,15 @@ C show attributes in list.
       SUBROUTINE EASKSUR(IZONE,IS,MOD,PROMPT1,PROMPT2,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3567,8 +3598,12 @@ C FLNAME provides a name for a defined file type.
 C *********************************************************************
       SUBROUTINE FLNAME(ICOMP,FILENM,FLTYP,EXT,NHLP,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -3616,6 +3651,9 @@ C << check if calling code knows that current geometry file read is >>
 C << not required for this. >>
       SUBROUTINE ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -3683,6 +3721,9 @@ C Similar to code ZLIST in esrures/utils.F.
 
       SUBROUTINE ZNARLIST(inlist,list,insize,zdescr,length,ierr)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       dimension list(insize)
       CHARACTER zname*12,zdesc*64,zdescr*248,outs*248,outsd*248

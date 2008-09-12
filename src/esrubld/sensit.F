@@ -761,6 +761,12 @@ C UAE04 edits casual gains in memory.
 #include "building.h"
 #include "uncertainty.h"
 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -768,10 +774,10 @@ C UAE04 edits casual gains in memory.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
@@ -796,9 +802,10 @@ C Define variables for current location and change.
       ICC=IACTD(IACT,1)
 
 C Define max number of periods for common P2 (flow).
-      IMP2=NAC1
-      if (NAC2.gt.IMP2) IMP2=NAC2
-      if (NAC3.gt.IMP2) IMP2=NAC3
+      IMP2=NAC(1)
+      DO 400 IDTY=1,NBDAYTYPE
+        IF(NAC(IDTY).GT.IMP2)IMP2=NAC(IDTY)
+ 400  CONTINUE
 
 C Define max number of periods for common P3 (Cas gns).
       IMP3=NCAS1
@@ -832,43 +839,34 @@ C to specify incividual periods later.
             if (IDMAT(ICC,2).eq.1) then
               write (36,*) 'Zone:',IZONE,' infiltration'
               do 100 IX=1,IMP2
-                T1=ACI1(IX)
-                T2=ACI2(IX)
-                T3=ACI3(IX)
-                call UAEDIT(ACI1(IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
-                call UAEDIT(ACI2(IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
-                call UAEDIT(ACI3(IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
-                write(36,*)'Period (wkd)',IX,' From:',T1,' to ',ACI1(IX)
-                write(36,*)'Period (sat)',IX,' From:',T2,' to ',ACI2(IX)
-                write(36,*)'Period (sun)',IX,' From:',T3,' to ',ACI3(IX)
+                DO 4010 IDTY=1,NBDAYTYPE
+                  T=ACI(IDTY,IX)
+                  call UAEDIT(ACI(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                  write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
+     &            ' to ',ACI(IDTY,IX)
+ 4010           CONTINUE
  100          continue
             elseif (IDMAT(ICC,2).eq.2) then
               write (36,*) 'Zone:',IZONE,' ventilation'
               do 101 IX=1,IMP2
-                T1=ACV1(IX)
-                T2=ACV2(IX)
-                T3=ACV3(IX)
-                call UAEDIT(ACV1(IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
-                call UAEDIT(ACV2(IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
-                call UAEDIT(ACV3(IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
-                write(36,*)'Period (wkd)',IX,' From:',T1,' to ',ACV1(IX)
-                write(36,*)'Period (sat)',IX,' From:',T2,' to ',ACV2(IX)
-                write(36,*)'Period (sun)',IX,' From:',T3,' to ',ACV3(IX)
+                DO 4011 IDTY=1,NBDAYTYPE
+                  T=ACV(IDTY,IX)
+                  call UAEDIT(ACV(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                  write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
+     &            ' to ',ACV(IDTY,IX)
+ 4011           CONTINUE
  101          continue
             elseif (IDMAT(ICC,2).eq.3) then
               write (36,*)'Illegal option, cannot change zone index'
             elseif (IDMAT(ICC,2).eq.4) then
               write (36,*) 'Zone:',IZONE,' vent source temperature'
               do 104 IX=1,IMP2
-                T1=TA1(IX)
-                T2=TA2(IX)
-                T3=TA3(IX)
-                call UAEDIT(TA1(IX),ICF,DAT1,DAT2,DIR,0,-200.,999.)
-                call UAEDIT(TA2(IX),ICF,DAT1,DAT2,DIR,0,-200.,999.)
-                call UAEDIT(TA3(IX),ICF,DAT1,DAT2,DIR,0,-200.,999.)
-                write (36,*)'Period (wkd)',IX,' From:',T1,' to ',TA1(IX)
-                write (36,*)'Period (sat)',IX,' From:',T2,' to ',TA2(IX)
-                write (36,*)'Period (sun)',IX,' From:',T3,' to ',TA3(IX)
+                DO 4012 IDTY=1,NBDAYTYPE
+                  T=TA(IDTY,IX)
+                  call UAEDIT(TA(IDTY,IX),ICF,DAT1,DAT2,DIR,-1,0.0,0.0)
+                  write(36,*)'Period ',CALENTAG(IDTY),IX,' From:',T,
+     &            ' to ',TA(IDTY,IX)
+ 4012           CONTINUE
  104          continue
             endif
           else
@@ -1074,6 +1072,7 @@ C UAE05 edits convection coefficients algorithm choice.
 #include "building.h"
 #include "uncertainty.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 

@@ -29,6 +29,9 @@ C will have been defined prior to calling edmrt.
       SUBROUTINE EDMRT(ITRC,ITRU,IUF,ICOMP,silent,act,IER)
 #include "building.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
@@ -44,6 +47,9 @@ C will have been defined prior to calling edmrt.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -71,7 +77,7 @@ C will have been defined prior to calling edmrt.
       logical silent,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
+      CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -620,11 +626,16 @@ C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
       SUBROUTINE EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -634,7 +645,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
       CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30,zname*12,zdesc*64
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
 

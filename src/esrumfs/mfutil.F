@@ -179,6 +179,13 @@ C     TEMP   - fluid temperature (C)
 
       FUNCTION DENSIT(IFLD,TEMP)
       COMMON/OUTIN/IUOUT,IUIN
+C Max and minimum temperatures for suppression of redundent errors
+      real fMaxWaterTemp
+      real fMinWaterTemp
+      data fMaxWaterTemp,fMinWaterTemp /100.0,0.0/
+
+C Flag for inappropriate temperatures       
+      logical bWarn
 
       VTEMP=TEMP
 
@@ -204,10 +211,26 @@ C Based on: VDI Warmeatlas, 1984, pp. Db1
                VTEMP=100.
             ENDIF
 
-            WRITE(*,*) ' DENSIT: temperature [',TEMP,'] outside valid',
-     &                 ' range: 0 < T < 100'
-            WRITE(*,*) ' DENSIT: water density evaluated for T = ',VTEMP
 
+C Warn user, but suppress redundant messages
+            bWarn = .false.
+            
+            if ( TEMP .LT. fMinWaterTemp - 0.01 ) then
+              bWarn = .true.
+              fMinWaterTemp = TEMP
+            elseif ( TEMP .GT. fMaxWaterTemp + 0.01 ) then
+              bWarn = .true.
+              fMaxWaterTemp = TEMP
+            endif
+
+            if ( bWarn ) then
+            
+              WRITE(*,*) ' DENSIT: temperature [',TEMP,'] outside ',
+     &                   ' valid range: 0 < T < 100'
+              WRITE(*,*) ' DENSIT: water density evaluated for T = ',
+     &                   VTEMP
+            endif
+            
          ENDIF
 
          DENSIT=1001.1-0.082*VTEMP-0.0036*VTEMP*VTEMP

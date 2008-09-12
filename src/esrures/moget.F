@@ -381,6 +381,8 @@ C above.
       SUBROUTINE GOMENU
 #include "building.h"
 #include "tdf2.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -430,7 +432,8 @@ C TDF commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM)
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS)
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
@@ -448,6 +451,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       dimension IVALS(17),IVALC(21)
 
       integer YAXSET, ADDLIN
+      integer nbofhelp   ! how many help lines to display for different menu types.
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
 
@@ -704,6 +708,126 @@ C Instanciate the help text for this menu.
       H(16)='  useful when exporting data to 3rd party software.'
       H(17)='Data can be displayed as raw values or as rate of '
       H(18)='  change of the value. '
+      if(MENUTYPE.eq.1) then
+        H(19)=' '
+        nbofhelp=19
+      elseif (MENUTYPE.eq.2) then
+        H(19)=' '
+        H(20)='A frequency histogram is based on a scan of the current'
+        H(21)='performance metric along with some user preferences for'
+        H(22)='the number of binns and frequency.  '
+        nbofhelp=22
+      elseif (MENUTYPE.eq.3) then
+        H(19)=' '
+        H(20)='A time series plot graphs one or more performance '
+        H(21)='metrics over a user defined period. Typically each '
+        H(22)='type of data is given a different line type and/or '
+        H(23)='symbol and each zone is given a different colour. '
+        nbofhelp=23
+      elseif (MENUTYPE.eq.4) then
+        H(19)=' '
+        H(20)='The selection of `Performance metrics` produces reports'
+        H(21)='of the statistics of one type of data over the period'
+        H(22)='of the assessment or a user defined period. '
+        nbofhelp=22
+      elseif (MENUTYPE.eq.5) then
+        H(19)=' '
+        H(20)='The selection of `Summary statistics` produces reports'
+        H(21)='of the statistics of one type of data over the period'
+        H(22)='of the assessment or a user defined period. '
+        nbofhelp=22
+      elseif (MENUTYPE.eq.6) then
+        H(19)=' '
+        H(20)='A sensitivity report is based on data extracted from a'
+        H(21)='sequence of assessments. '
+        nbofhelp=21
+      elseif (MENUTYPE.eq.7) then
+        H(19)=' '
+        H(20)='A `Hrs above query point` report provides additonal'
+        H(21)='statistical information about the number of occurrances'
+        H(22)='that the performance data exceeds a particular value.'
+        nbofhelp=22
+      elseif (MENUTYPE.eq.8) then
+        H(19)=' '
+        H(20)='A `Hrs below query point` report provides additonal'
+        H(21)='statistical information about the number of occurrances'
+        H(22)='that the performance data is less than a value.'
+        nbofhelp=22
+      elseif (MENUTYPE.eq.9) then
+        H(19)=' '
+        H(20)='A zone energy balance reports the flux gains and losses'
+        H(21)='for infiltration, ventilation, occupant/lighting/small'
+        H(22)='power and controlled casual gains as well as convection'
+        H(23)='at the inside face of surfaces which have an outside'
+        H(24)='exposure and convection at the inside face of surfaces'
+        H(25)='which are connected to other zones or the ground. It'
+        H(26)='also includes the convection portion of environmental'
+        H(27)='control systems associated with the zone. '
+        H(28)=' '
+        H(29)='There is a TOTAL line which reports the sum of all '
+        H(30)='gains and the sum of all losses and these should '
+        H(31)='balance each other closely if the model is correct. '
+        H(32)=' '
+        H(33)='An energy balance (from the point of view of the air '
+        H(34)='node of the zone) of all of the flux entering & leaving'
+        H(35)='the air node should balance at each timestep of the '
+        H(36)='simulation. The report is an integration of each of the'
+        H(37)='above types of flux over the period of the assessment. '
+        H(38)=' '
+        H(39)='A flux is positive if it adds heat to the air node of '
+        H(40)='the zone and is negative if it removes heat from the '
+        H(41)='air node of the zone.  For example, if exterior surfaces'
+        H(42)='which are opaque are always colder than the air temp '
+        H(43)='then the report will include losses. '
+        nbofhelp=43
+      elseif (MENUTYPE.eq.10) then
+        H(19)=' '
+        H(20)='Energy demands help to be written. '
+        nbofhelp=20
+      elseif (MENUTYPE.eq.11) then
+        H(19)=' '
+        H(20)='Zone casual gain distribution help to be written. '
+        nbofhelp=20
+      elseif (MENUTYPE.eq.12) then
+        H(19)=' '
+        H(20)='A surface energy balance reports the flux gains & losses'
+        H(21)='at the inside and `other-side` face of the surface for:'
+        H(22)='Conduction (just below the surface), convection, long-'
+        H(23)='wave radiation to other surfaces and at the outside face'
+        H(24)='longwave radiation to other buildings/ground/sky.'
+        H(25)='It also includes the radiant portion of occupants,'
+        H(26)='lighting and small power gains as well as heat stored'
+        H(27)='in the construction and the radiant portion of any'
+        H(28)='environmental control systems associated with the zone.'
+        H(29)=' '
+        H(30)='There is a TOTAL line which reports the sum of all '
+        H(31)='gains and the sum of all losses and these should '
+        H(32)='balance each other closely if the model is correct. '
+        H(33)=' '
+        H(33)='An energy balance (from the point of view of a surface)'
+        H(34)='of all of the flux entering and leaving at each face'
+        H(35)='should balance at each timestep of the simulation.'
+        H(36)='The report is an integration of each of the'
+        H(37)='above types of flux over the period of the assessment.'
+        H(38)=' '
+        H(39)='A flux is positive if it adds heat to surface and is '
+        H(40)='negative if it removes heat from the surface.'
+        H(41)='For example, if exterior surfaces which are opaque'
+        H(42)='are always colder than the air temp the the surface'
+        H(43)='energy balance report will indicate gains at the inside'
+        H(44)='face.'
+        nbofhelp=44
+      elseif (MENUTYPE.eq.13) then
+        H(19)=' '
+        H(20)='Monthly gains and losses are a summary of SOME of the'
+        H(21)='gains and losses associated with each zone. This is '
+        H(22)='NOT a complete energy balance. '
+        nbofhelp=22
+      elseif (MENUTYPE.eq.14) then
+        H(19)=' '
+        H(20)='Surface condensation - to be written. '
+        nbofhelp=19
+      endif
 
       CALL EMENU(MTITLE,ITEM,NITMS,INO)
 
@@ -2984,28 +3108,9 @@ C Find out point where text should be drawn.
         CALL ASKOK('Include another user supplied label?',' ',OKL,dok,3)
         if(OKL) goto 291
       elseif(INO.EQ.(NITMS-1))then
-C        H(1) ='  '
-C        write(H(1),'(10x,a)') MTITLE(1:lnblnk(MTITLE))
-C        H(2) ='  '
-C        H(3) ='Select the required for output.  Some metrics require'
-C        H(4) ='extra information e.g. zone number, surface number. '
-C        H(5) ='  '
-C        write (H(6),'(a,i2,a)')'You have made ',NGET,
-C     &    ' selections, therefore you have a'
-C        NLEFT=(MNGET-NGET)
-C        write(H(7),'(a,i2,a)')'maximum of ',NLEFT,' selections left.'
-C        H(8) ='  '
-C        H(9) ='Display can be redirected to a file; be carefull not '
-C        H(10)='  to confuse graphical and text output.  '
-C        H(11)='Filtering is based on the definition of casual gains.'
-C        H(12)='  It is usual to filter on occupancy.'
-C        H(13)='Time can be displayed as hours and minutes (hh,mm) or'
-C        H(14)='  as a decimal (Day of year.Fraction of day).'
-C        H(15)='Delimiters between tabular output can be changed; '
-C        H(16)='  useful when exporting data to 3rd party software.'
-C        H(17)='Data can be displayed as raw values or as rate of '
-C        H(18)='  change of the value. '
-        CALL PHELPD(MTITLE,18,'-',0,0,IER)
+
+C Show help message for the current menu type.
+        CALL PHELPD(MTITLE,nbofhelp,'-',0,0,IER)
       elseif(INO.EQ.NITMS)then
         call usrmsg('  ','  ','-')
         MENUTYPE=-1
@@ -3388,6 +3493,7 @@ C This recovers one day.
 
       SUBROUTINE GOGETIT(KGET,IDAY,ISTART,IEND)
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -3404,17 +3510,15 @@ C This recovers one day.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &      IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &      IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &      BMISCD(MCF,MBCDT,MBCDP,MISC)
-
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -3423,12 +3527,12 @@ C This recovers one day.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
            
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
@@ -3629,7 +3733,7 @@ C operation file is old, sort the periods via processoldcas.
   204       CONTINUE
             IUNIT=IFIL+1
             CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver.eq.0)then
+            if(ip3ver(IGETNO(KGET,2)).eq.0)then
               write(outs,'(a,i2,a)') 
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
@@ -3667,7 +3771,7 @@ C operation file is old, sort the periods.
   203       CONTINUE
             IUNIT=IFIL+1
             CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver.eq.0)then
+            if(ip3ver(IGETNO(KGET,2)).eq.0)then
               write(outs,'(a,i2,a)') 
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
@@ -3834,7 +3938,7 @@ C read the zone operation file.
           continue
         else
           CALL EROPER(0,iuout,iunit,iz,IER) ! for older results files.
-          if(ip3ver.eq.0)then
+          if(ip3ver(iz).eq.0)then
             write(outs,'(a,i2,a)') 
      &        'Operation file for zone ',IGETNO(KGET,2),
      &        ' periods being sorted!'

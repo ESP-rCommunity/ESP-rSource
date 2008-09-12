@@ -31,6 +31,8 @@ C ********************* RINTERA ****************************************
 
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C Open the file passed via the command line for b2e - usually "b2e_inter"
       COMMON/OUTIN/IUOUT,IUIN
@@ -276,6 +278,8 @@ C BHSTR - an array holding a descriptive string for each column of data.
 #include "b2e.h"
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -515,6 +519,8 @@ C*end_data
 
 #include "b2e.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -604,10 +610,11 @@ C This subroutine decodes the header strings from labview
       SUBROUTINE BHDECODE(BHDSTR1,BHDSTR2,IERROR)
 
 #include "b2e.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
-
 
       COMMON/RBEMSTR/BHSTR(MBCOL)
 
@@ -712,10 +719,16 @@ C This routine calls tdf in update mode. There are two calling modes.
 C BEMS - updates tdf with in formation from a BEMS system
 C CLIM - updates tdf with information from a climate lookahead routine. 
 
+C << thie subroutine logic must change to reflect that tdf functionality
+C << has been moved into the project manager.
+
       SUBROUTINE TDFUPDT(MODE)
+      
+      integer lnblnk  ! function definition
 
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
 
       COMMON/B2EI/MODELCFG,BFILE,TDFUD,RSFIL,BREPT
 
@@ -723,20 +736,31 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
-      CHARACTER*4 MODE
+      CHARACTER MODE*4
       CHARACTER*72 LTDF,LTDFA,MODELCFG,BFILE,TDFUD,RSFIL,BREPT
-      CHARACTER*124 DOIT
+      CHARACTER DOIT*124
+      character msgl2*124
     
 C Update tdf based on the callimg mode
       IF(MODE.EQ.'BEMS') THEN
 
 C Make up the command line argument and write to string
-        WRITE(DOIT,'(4A)')'tdf -mode text -file ',
-     &LTDF(1:LNBLNK(LTDF)),' -act update -actf ',TDFUD(1:LNBLNK(TDFUD))
+C        WRITE(DOIT,'(4A)')'tdf -mode text -file ',
+C     &LTDF(1:LNBLNK(LTDF)),' -act update -actf ',TDFUD(1:LNBLNK(TDFUD))
 
-        CALL EDISP(IUOUT,' ')
-        CALL EDISP(IUOUT,DOIT)
-        CALL RUNIT(DOIT(1:LNBLNK(DOIT)),'-')
+C        CALL EDISP(IUOUT,' ')
+C        CALL EDISP(IUOUT,DOIT)
+C        CALL RUNIT(DOIT(1:LNBLNK(DOIT)),'-')
+
+C Following logic taken from tdf.F
+        IUIMP=IFIL+5 
+        msgl2='  '
+        call USRMSG('Updating file...',msgl2,'-')
+        call TDFUPD(ITRC,TDFUD,IUIMP,IER)
+        CALL EWTDF(IER)
+        CALL ERPFREE(IUTDF,ISTAT)
+        msgl2=' End of TDF'
+        CALL USRMSG('Updating file...done.',msgl2,'P')
       ELSE
         CALL EDISP(IUOUT,'b2e ERROR: not a known tdf update mode')
         call epwait
@@ -745,6 +769,186 @@ C Make up the command line argument and write to string
       ENDIF 
 
       RETURN
+      END
+
+C This source was taken from esrutdf/tdf.F
+C ************* TDFUPD
+C TDFUPD updates TDF file from an exchange file (similar in format
+C to extract exchange file). This facility is used by the esp-r
+C module b2e and the code which generates the file is in daproc.F
+C as routine TDFUDWR. Only the tdf module needs routine tdfupd.
+C ITRC is the trace level, IER=0 OK, IER=1 problem. 
+      SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
+#include "tdf2.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
+      COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
+      common/tdset/itdyear,itdbdoy,itdedoy
+      logical FOUND,CLOSE,CLOSET,foundit
+
+      CHARACTER AFIL*72,FOCUS*8,tail*8
+      character outstr*248,WORD*20,task*16,outs*124,msgl2*48
+      CHARACTER*5 DESCRH,DESCRD
+
+C If not already opened free unit and check if file exists.
+      IER=0
+      CALL ERPFREE(iafil,ISTAT)
+      CALL EFOPSEQ(iafil,AFIL,1,IER)
+      IF(ier.ne.0)THEN
+        msgl2='Error opening exchange file.'
+        CALL USRMSG(' ',msgl2,'W')
+        IER=1
+        RETURN
+      ENDIF
+
+C Proceed as if loading a standard file.
+      msgl2=' Scanning supplied file...'
+      call usrmsg(' ',msgl2,'-')
+      FOCUS='ALL'
+      CALL GENDAT(FOCUS,0,FOUND,IER)
+
+C Might need to reset the common blocks?
+
+C Check header of file.
+      CALL LSTRIPC(iafil,outstr,99,ND,1,'header',IER)
+      IF(IER.NE.0)goto 1
+      if(OUTSTR(1:12).ne.'TDF exchange')then
+        call usrmsg('Format of exchange file is incorrect.',
+     &    afil,'W')
+        ier=1
+        CALL ERPFREE(iafil,ISTAT)
+        return
+      endif
+
+C Read the header information.
+  34  CALL LSTRIPC(iafil,outstr,99,ND,1,'line 1',IER)
+      K=0
+      CALL EGETW(OUTSTR,K,WORD,'W','header tags',IFLAG)
+      if(WORD(1:5).eq.'*task')then
+        CALL EGETRM(OUTSTR,K,task,'W','task',IER)
+        write(outs,'(a,a)') 'The task is ',task
+        if(ITRC.gt.1)call edisp(iuout,outs)
+        IF(IER.NE.0)goto 1
+        goto 34
+      elseif(WORD(1:12).eq.'*stepperhour')then
+        CALL EGETWI(OUTSTR,K,INTSPH,0,0,'-','NTSPH',IER)
+        if(INTSPH.ne.NTSPH)then
+          msgl2='that of the current file.'
+          call usrmsg('exchange file NTSPH is different from',msgl2,'W')
+          ier=1
+          return
+        endif
+        goto 34
+      elseif(WORD(1:9).eq.'*starting')then
+        CALL EGETWR(OUTSTR,K,STARTNG,real(itdbdoy),real(itdedoy),
+     &    'W','start',IER)
+        goto 34
+      elseif(WORD(1:9).eq.'*noofstep')then
+        CALL EGETWI(OUTSTR,K,noofstep,0,0,'-','noofstep',IER)
+        goto 34
+      elseif(WORD(1:10).eq.'*nooffield')then
+        CALL EGETWI(OUTSTR,K,itfld,0,0,'-','nooffield',IER)
+
+C Skip past the field descriptors.
+        DO 45 IIT=1,itfld
+          CALL LSTRIPC(iafil,outstr,99,ND,1,'fields',IER)
+   45   CONTINUE
+        goto 34
+      elseif(WORD(1:5).eq.'*data')then
+
+C Loop until the time in the db is at STARTNG and then read new
+C data and write to the relevant record, repeating as necessary.
+        foundit=.false.
+        noread=0
+
+C Set a tolerance on the time stamp of +/- 30% of one time increment
+        toler=(1./(24*float(NTSPH)))*0.5
+        DO 46 IP=1,NDBSTP
+          CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
+          ITIME=IP-(INT(CDAY)*NTSPH*24)
+          RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
+          RDOTYP=RDOTY+toler
+          RDOTYM=RDOTY-toler
+          if(.NOT.foundit)then
+
+C Check if the read record falls within the tolerance band. 
+            if(startng.le.(RDOTYP).and.startng.gt.(RDOTYM))then
+              close=.true.
+            endif
+          else
+            close=.TRUE.
+          endif
+          if(CLOSE.and.(noread.lt.noofstep))then
+            foundit=.true.
+            CALL CLRTAB
+            CALL LSTRIPC(iafil,outstr,99,ND,1,'tabular data',IER)
+            inwpr=ND-1
+            K=0
+            CALL EGETWR(OUTSTR,K,TIMEJD,0.,0.,'-','TIMEJD',IER)
+            do 47 j=1,inwpr
+              CALL EGETWR(OUTSTR,K,TABU(J),0.0,0.0,'-','TABU',IER)
+              if(TABU(J).lt.TABUMN(J))TABUMN(J)=TABU(J)
+              if(TABU(J).gt.TABUMX(J))TABUMX(J)=TABU(J)
+  47        continue
+
+C Check if the read record falls within the tolerance band. 
+            if(TIMEJD.le.(RDOTYP).and.TIMEJD.gt.(RDOTYM))then
+              closet=.true.
+            endif
+            if(.NOT.closet)then
+              write(outs,'(a,i5,3F9.3)')'RDOTY != TIMEJDIP',ip,RDOTY,
+     &          TIMEJD,STARTNG
+	      call edisp(iuout,outs)
+              ier=1
+              goto 99
+            else
+              ITREC=IP+49
+              noread=noread+1
+            endif
+            CALL ESTIME(NTSPH,1,ITIME,DESCRH,DESCRD,TIMER)
+            write(outs,'(a,F4.0,2a)') 'Updating data for ',RDOTY,
+     &        ' @ ',DESCRH
+            if(ITRC.gt.1)call edisp(iuout,outs)
+            CALL EWTABU(ITRC,ITREC,IER)
+          endif
+   46   CONTINUE
+
+C Now write the maximum for each column and then the last file record.
+        IREC=48
+        WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103) (TABUMX(J),J=1,NWPR)
+        IREC=49
+        WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103) (TABUMN(J),J=1,NWPR)
+        IREC=50+NDBSTP
+        tail='ENDTDF  '
+        WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103) tail
+        goto 34
+      elseif(WORD(1:9).eq.'*end_data')then
+         CALL ERPFREE(iafil,ISTAT)
+         if(foundit)then
+           call edisp(iuout,'Updating data finished.')
+         else
+           call edisp(iuout,'Warning: no data imported!.')
+         endif 
+         return
+      else
+        goto 34
+      endif
+      goto 34
+
+  99  CALL ERPFREE(iafil,ISTAT)
+      RETURN
+
+C Export file write errors.
+ 1    CALL LUSRMSG('Error in importing data',OUTSTR,'W')
+      IER=1
+      goto 99
+ 103  CALL LUSRMSG('Error in writing imported data',OUTSTR,'W')
+      IER=1
+      goto 99
+
       END
 
 C ******************** CLOOKUP ****************************************
@@ -867,6 +1071,9 @@ C simulation pattern selects suitable data to return to the bems system
 
 # include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
+
 C Commons
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1004,6 +1211,7 @@ C the BEMS update file. Control law start times and dates of validity.
 
 # include "b2e.h"
 # include "building.h"
+# include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN  
       COMMON/FILEP/IFIL
@@ -1021,12 +1229,6 @@ C Commom for the optimim start/stop simulation.
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
-
-C Commons for control variables
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
 C Control law mapping
       common/cctl/icascf(mcom)

@@ -352,6 +352,9 @@ C
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C ICLIM,LCLIM (for climate file)
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT

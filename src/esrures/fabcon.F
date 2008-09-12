@@ -150,6 +150,8 @@ C to the fabric temperature or condensation information.
 
       SUBROUTINE MOIHED(ICOMP,ISUR)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -247,6 +249,8 @@ C zone RH. If iverb=0 then report only summary, if iverb=1 report each
 C timestep.
       SUBROUTINE MOSURC(IZONE,izrh,iverb)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       common/exporttg/xfile,tg,delim
@@ -793,6 +797,8 @@ C period.
       SUBROUTINE FINDCND(ICOMP)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -812,6 +818,9 @@ C period.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -852,7 +861,6 @@ C Arrays of material properties.
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1

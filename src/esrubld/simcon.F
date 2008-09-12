@@ -233,6 +233,8 @@ C and information on the saved result set.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -315,6 +317,8 @@ C Set up the menu text.
         ITEM(4)= '* Save >> 3 (2+) node temps  '
       elseif(ISAVE.eq.4)then
         ITEM(4)= '* Save >> 4 (2+) energy balnc'
+      elseif(ISAVE.eq.6)then
+        ITEM(4)= '* Save >> 6 summary csv data '
       endif
       ITEM(5)=   '  ....................       '
       ITEM(6)=   'm Monitor state variables    '
@@ -343,18 +347,20 @@ C Help text for this menu.
       H(9) ='     SAVE >>2 moderate save option - the default'
       H(10)='     SAVE >>3 maximum save option'
       H(11)='     SAVE >>4 surface energy balance save option.'
-      H(12)=' '
-      H(13)=' m: monitor plots zone temperatures, plant flux and'
-      H(14)='    plant state variables as the simulation progresses.'
-      H(15)=' '
-      H(16)=' t: select zone-side time-step control option.'
-      H(17)=' s: invoke simulation. '
-      H(18)=' <: deletes the last saved simulation result set. '
-      H(19)=' g: sets simulation parameter toggles '
-      H(20)=' '
-      H(21)=' i: outputs the current simulation period and'
-      H(22)='    information on the saved result set.'
-      H(23)=' o: gives summary results if SAVE O option selected.'
+      H(12)='     SAVE >>6  no results saved (summary only in '
+      H(13)='     database freindly format)'
+      H(14)=' '
+      H(15)=' m: monitor plots zone temperatures, plant flux and'
+      H(16)='    plant state variables as the simulation progresses.'
+      H(17)=' '
+      H(18)=' t: select zone-side time-step control option.'
+      H(19)=' s: invoke simulation. '
+      H(20)=' <: deletes the last saved simulation result set. '
+      H(21)=' g: sets simulation parameter toggles '
+      H(22)=' '
+      H(23)=' i: outputs the current simulation period and'
+      H(24)='    information on the saved result set.'
+      H(25)=' o: gives summary results if SAVE O option selected.'
 
 C Do not display the menu if in autook mode as defined in the 
 C simulator parameter file.
@@ -385,7 +391,7 @@ C Set simulation period.
 C Save level.
          call tstamp('>','SIM: change save level')
          ISAVE=ISAVE+1
-         if(ISAVE.gt.4)ISAVE=0
+         if(ISAVE.gt.4.and.ISAVE.ne.6)ISAVE=0
       elseif(ino.eq.6)then
 
 C Graphic monitor setup.
@@ -420,6 +426,11 @@ C in res for the simplified convection calculation approaches.
         endif
         call tstamp('>','SIM: enter simulate')
         call SIMCON
+        if(isave.eq.6)then
+
+C Output from 6 save.
+          call MZOUT6
+        endif
         call tstamp('>','SIM: exit simulate')
       elseif(ino.eq.10)then
 
@@ -483,7 +494,7 @@ C Output from 0 save.
       elseif(ino.eq.16)then
 
 C Help.
-        CALL PHELPD(' sim control',23,'simul_cmds  ',0,0,IER)
+        CALL PHELPD(' sim control',25,'simul_cmds  ',0,0,IER)
       elseif(ino.eq.17)then
 
 C Return.
@@ -521,6 +532,8 @@ C Set simulation toggles.
 
       COMMON/CLMFLG/ICLMFL
       common/spmfxst/ispmxist,spflnam 
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
 C Common for electrical file 
@@ -1427,13 +1440,20 @@ C prior to each simulation commencing.
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
 #include "esprdbfile.h"
+#include "control.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SHOUT/ICOUT
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC7/ITCNST
@@ -1448,11 +1468,6 @@ C prior to each simulation commencing.
      &             NPGAP(MCOM,MS,MGP)
 
       COMMON/CCTLNM/CTLDOC,LCTLF
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
-
       COMMON/AVRAGE/IDAVER
       COMMON/BEFORM/IBEQNF
       COMMON/SOLOFF/ISOLAR
@@ -1484,8 +1499,7 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER ctldoc*248
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM
-      CHARACTER*72 LSHAD,LTHRM,LCTLF,LUTIL
+      CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,cfgroot*24,h*72
 
@@ -1566,6 +1580,8 @@ C Write out appropriate message.
         call edisp(icout,' Zone save option     : 3 (Node temps)')
       elseif(isave.eq.4)then
         call edisp(icout,' Zone save option     : 4 (Energy Balance)')
+      elseif(isave.eq.6)then
+        call edisp(icout,' Zone save option     : 6 (No db created)')
       endif
       write(outs,'(a,I5)') ' No. of warnings      : ',IWARN
       call edisp(icout,outs)
@@ -1718,11 +1734,15 @@ C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
@@ -2003,11 +2023,17 @@ C if itru=33 then works as a header to the trace.
       subroutine mzinfo(itru)
 #include "building.h"
 #include "esprdbfile.h"
+#include "control.h"
+      
+      integer lnblnk  ! function definition
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -2015,13 +2041,8 @@ C if itru=33 then works as a header to the trace.
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      character*72 lsnam,lproj,lgeom
-      character*72 lshad,lthrm,lutil,lctlf,lcfgf
+      character*72 lctlf,lcfgf
       character ctldoc*248,outs*124,cfgroot*24
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 

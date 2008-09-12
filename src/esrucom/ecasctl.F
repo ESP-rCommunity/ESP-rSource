@@ -29,7 +29,7 @@ C Common block variables are:
 C NLITZ    - Number of lighting zones per thermal zone
 
 C NCGTC    - Type number of casual gains to be controlled during
-C            Weekdays, Saturdays and Sundays separately.
+C            different day types
 
 C IDFST    - illuminance calculation type (1: ESP-r calculated daylight
 C            factors, 2: User specified daylight factors, 3: external
@@ -66,14 +66,20 @@ C IDCFID   - Daylight coefficient sensor ID
       SUBROUTINE ercgcf(itrc,itru,LCGCIN,ICOMP,ier)
 #include "building.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -127,12 +133,10 @@ c Read type of casual gain to be controlled during each day type.
         endif
       endif
       K=0
-      CALL EGETWI(OUTSTR,K,N1,0,MCT,'F','weekday gain type',IER)
-      CALL EGETWI(OUTSTR,K,N2,0,MCT,'F','saturday gain type',IER)
-      CALL EGETWI(OUTSTR,K,N3,0,MCT,'F','sundaty gain type',IER)
-      NCGTC(ICOMP,1)=N1
-      NCGTC(ICOMP,2)=N2
-      NCGTC(ICOMP,3)=N3
+      DO 400 IDTY=1,NBDAYTYPE
+        CALL EGETWI(OUTSTR,K,N1,0,MCT,'F',' gain type',IER)
+        NCGTC(ICOMP,IDTY)=N1
+ 400  CONTINUE
 
 C Read control period start and finish hours
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'cgc file line 2',IER)
@@ -331,13 +335,12 @@ c Trace output follows.
     5 call edisp(itru,' ')
       write(outs,'(A,I2)') ' Zone ',ICOMP
       call edisp(itru,outs)
-      write(outs,9989)NCGTC(ICOMP,1)
- 9989   format(' Casual gain type for control during Weekdays  = ',I3)
+
+      DO 401 IDTY=1,NBDAYTYPE
+        write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
+ 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
         call edisp(itru,outs)
-        write(outs,'(30X,A,I3)')'during Saturdays = ',NCGTC(ICOMP,2)
-        call edisp(itru,outs)
-        write(outs,'(30X,A,I3)')'during Sundays   = ',NCGTC(ICOMP,3)
-        call edisp(itru,outs)
+ 401  CONTINUE
         DO 117 N=1,NLITZ(ICOMP)
           write(outs,'(A,I1)') ' Light zone ',N
           call edisp(itru,outs)
@@ -472,16 +475,21 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       SUBROUTINE CASCTMK(LCGCIN,ICOMP,ACT,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
-      COMMON/CGCIN2/NCGTC(MCOM,3),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
      & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
@@ -496,10 +504,12 @@ C Daylight coefficient common block data definition:
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-      character cgcdesc*64
+      character cgcdesc*64,outs*128
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER tmp*16,LCGCIN*72,ACT*1
+      DIMENSION NCGTCX(MDTY)
+      INTEGER ILEN,NCGTCX,LENGTHX,ITRUNCX
 
       IER=0
       if (ACT(1:1).eq.'s') then
@@ -520,8 +530,15 @@ C Write data to file.
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'*Casual_gain_ctl'
       WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1) '*desc ',
      &  cgcdesc(icomp)(1:lnblnk(cgcdesc(icomp)))
-      WRITE(IUNIT,'(3I3,A)',IOSTAT=ios,ERR=1) NCGTC(ICOMP,1),
-     &  NCGTC(ICOMP,2),NCGTC(ICOMP,3),' # Gain to ctl on wkds & wkends'
+      DO 400 IDTY=1,NBDAYTYPE
+        NCGTCX(IDTY)=NCGTC(ICOMP,IDTY)
+ 400  CONTINUE
+      OUTS=' '
+      ILEN=1
+      CALL AILIST(ILEN,NBDAYTYPE,NCGTCX,MDTY,' ',OUTS,lengthX,itruncX)
+      ILEN=LNBLNK(OUTS)
+      WRITE(IUNIT,'(2A)',IOSTAT=ios,ERR=1) OUTS(1:ILEN),
+     &  ' # Gain to ctl for different day types'
       WRITE(IUNIT,'(2I3,A)',IOSTAT=ios,ERR=1)ICGCS(ICOMP),ICGCF(ICOMP),
      &  '  # Control period start & end hours'
       WRITE(IUNIT,'(I3,A)',IOSTAT=ios,ERR=1)NLITZ(ICOMP),

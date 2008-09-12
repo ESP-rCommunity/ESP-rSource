@@ -15,7 +15,7 @@ C Energy Simulation Research Unit of the University of Strathclyde.
 C Type declarations
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
       integer MTS,MGT,MCT,MTRACE,MGRDP,MLCOM,MDF,MDCFP,MDCFS,MDCFV
-      integer MCF,MBCDT,MBCDP,MTMC,MGAL,MANG,MGOPT,MISC,MSEN,MO,MF
+      integer MTMC,MGAL,MANG,MGOPT,MISC,MSEN,MO,MF
       integer MGRT,MGTV,MST, MS,MSM,MZS,MZRL,MEQ,MTR,MMLC,MCVT1
       integer MCVT2,MSCH,IRWMAX,MB,MOX,MOZ,misur,MCUB,MGC,MPATCH
       integer MTHF,MTHEQ,MDATA,MHCV,MFP,MSPMNOD,MSPMDAT,MVS,MGV,MLS
@@ -24,7 +24,7 @@ C Type declarations
       integer MGXYZ,MBTYP,MNM,MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID
       integer MMTR,MBND,MSNOD,MMAT,MIPVM,MIPVA,MSPS
       integer MDTY,MGTY,MGPER
-
+      
 C For the building:
       PARAMETER (MCOM=28)
       PARAMETER (MCON=900)
@@ -49,12 +49,12 @@ C this should be set to the same as MS.
       PARAMETER (MGRDP=10)
 
 C Casual gains limits.
-      PARAMETER (MDTY=3)
+      PARAMETER (MDTY=10)
       PARAMETER (MGTY=7)
       PARAMETER (MGPER=72)
 
-C Allow for 24 (one per hour) * 3 (day types) * 3 (casual gain types)
-      PARAMETER (MC=72)
+C Allow for 24 (one per hour) * MDTY(day types) * 3 (casual gain types)
+      PARAMETER (MC=72*MDTY)
 
 C Casual gain control settings:
       PARAMETER (MLCOM=4)
@@ -63,13 +63,10 @@ C Casual gain control settings:
       PARAMETER (MDCFS=2)
       PARAMETER (MDCFV=145)
 
-C Zone control functions, day types, periods in day.
-      PARAMETER (MCF=28,MBCDT=10,MBCDP=8)
-
-C MTMC is number of different glazing systems per zone, MGAL is number
-C of optical sets per optics db item and TMC and MANG is the number of
-C angles at which optical data is held. MGOPT is the maximum size of
-C optic sets in optics database.
+C MTMC is number of different glazing systems per zone, 
+C MGAL is number of optical sets per optics db item 
+C TMC and MANG is the number of angles at which optical data is held, 
+C MGOPT is the maximum size of optic sets in optics database.
       PARAMETER (MTMC=7,MGAL=2,MANG=9,MGOPT=90)
 
 C MISC is the maximum number of miscellaneous data

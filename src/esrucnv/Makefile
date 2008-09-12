@@ -11,10 +11,10 @@ PROG = ecnv$(EXE)
 
 OBJECTS = ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
 	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
-	  emfnetw.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
+	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o item.o low_lev.o mfcdat.o mid_lev.o \
-	  nwkrewr.o plelev.o pltcfg.o readTrnsys.o sort.o startup.o \
-	  tdfile.o wwxfig.o zipcnv.o
+	  nwkrewr.o plelev.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
+	  startup.o tdfile.o wwxfig.o zipcnv.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -40,6 +40,9 @@ egtgeom.F:
 emfnetw.F:
 	rm -f emfnetw.F
 	ln -s $(COMdir)/emfnetw.F .
+emkcfg.F:
+	rm -f emkcfg.F
+	ln -s $(COMdir)/emkcfg.F .
 enetmisc.F:
 	rm -f enetmisc.F
 	ln -s $(COMdir)/enetmisc.F .
@@ -57,7 +60,7 @@ esystem.F:
 	ln -s $(COMdir)/esystem.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -73,6 +76,12 @@ pltcfg.F:
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
+rwipv.F:
+	rm -f rwipv.F
+	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -81,7 +90,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
+	ln -s $(COMdir)/tdfile.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -90,8 +99,8 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
-	emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
-	item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F readTrnsys.F sort.F \
-	startup.F tdfile.F
+	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
+	item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
+	sort.F startup.F tdfile.F

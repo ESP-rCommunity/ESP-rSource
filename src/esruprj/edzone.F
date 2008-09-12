@@ -26,6 +26,7 @@ C  NEWZONE: controls creation of a new zone via prj or cad or file.
 C  DELZONE: systematically removes a thermal zone.
 C  WARNMOD: provide warnings when model evolves.
 C  SUMRCHG: provides a summary of updates needed after model changes.
+C comissionish: invokes the shading module in a number of modes
 C  POINTTOLINE: determines distance from a 3D point to a 3D line.
 C  silentmodel creates an/or updates a model from passed parameters.
 C  silentzone: creates a zone (or limited complexity) based on parameters
@@ -39,6 +40,9 @@ C an extrusion. IER=0 OK.
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -59,7 +63,11 @@ C an extrusion. IER=0 OK.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -73,7 +81,6 @@ C an extrusion. IER=0 OK.
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER HOLD*32
@@ -518,6 +525,9 @@ C ************* NEWZONE
 C NEWZONE controls the creation of a new zone. IER=0 OK. 
       SUBROUTINE NEWZONE(ITRC,IC,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -531,7 +541,11 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -545,7 +559,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP,DFILE
+      CHARACTER*72 LTMP,DFILE
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -557,6 +571,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 
       LOGICAL OK,DOK,XST,OKC,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical altered ! to signal change in boundary conditions of added existing zone.
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -567,7 +582,7 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      H(1)='You may read in an existing ESP-r zone geometry file,'
+ 293  H(1)='You may read in an existing ESP-r zone geometry file,'
       H(2)='convert a cflow3/IES zip file into one or more zones'
       H(3)='(i.e whole model conversion)or create a zone by inputing'
       H(4)='data related to primitive shapes.'
@@ -576,7 +591,7 @@ C Set folder separator (fs) to \ or / as required.
      &  INZOPT,48)
 
 C Input dimensions.
- 293  if(INZOPT.eq.1)then
+      if(INZOPT.eq.1)then
 
 C Provide scratch description and the
 C default assumptions for other zone files.
@@ -605,10 +620,16 @@ C Find out if there are geometry files in the ../zones folder.
 C Debug.
 C            write(6,*) ltmp
           else
-            write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
+
+C User did not select a file. Take them back to the question.
+            call usrmsg('You did not select any existing file.',
+     &         'Please select or cancel.','W')
+            goto 293 ! ask for choice again
           endif
         else
-          write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
+          call usrmsg('You did not select any existing file.',
+     &       'Please select or cancel.','W')
+          goto 293 ! ask for choice again
         endif
 
 C Existing ESP-r geom file.
@@ -625,7 +646,12 @@ C Existing ESP-r geom file.
           dok=.true.
           CALL ASKOK(' ','Geometry file not found, try again?',OK,
      &      dok,3)
-          IF(OK)GOTO 293
+          if(OK)then
+            GOTO 293 ! as for choice again
+          else
+            ier = -3 ! signal user cancel
+            return   ! stop this before the model gets messed up.
+          endif
         ENDIF
         LGEOM(IC)=LTMP
 
@@ -644,7 +670,12 @@ C Try reading in the geometry to fill in the data below.
           h(3)='type and that it has not been corrupted. '
           CALL ASKOK(OUTSTR,
      &      'Problem scanning geometry file...try again?',OK,dok,3)
-          IF(OK)GOTO 293
+          if(OK)then
+            GOTO 293
+          else
+            ier = -3 ! signal user cancel
+            return   ! stop this before the model gets messed up.
+          endif
         ENDIF
 
 C Read in control file if defined.
@@ -671,7 +702,8 @@ C Update the connection list and then the model configuration.
         ICCC=NCON
 
 C If surface attributes are adaibetic or similar then use these in
-C the connections list, then remind user to double check topology. 
+C the connections list, then remind user to double check topology.
+        altered = .false.
         DO 132 ICC=1,NSUR
           ICCC=ICCC+1
           IC1(ICCC)=IC
@@ -681,6 +713,10 @@ C the connections list, then remind user to double check topology.
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' is a SIMILAR connection. Use the'
+            call usrmsg(outs,
+     &       'surface attribute facility to confirm its details.','W')
             ICT(ICCC)=1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -704,15 +740,41 @@ C the connections list, then remind user to double check topology.
             ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
-          else
+          elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a possible partition. Confirm its'
+     &        ' has an undefined boundary. Confirm its'
             call usrmsg(outs,
      &        'surface attributes or use topology tool.','W')
-            ICT(ICCC)=0
+            ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
+          elseif(SOTHER(icc,1)(1:7).eq.'ANOTHER')then
+
+C Existing partitions in an imported zone are reset to UNKNOWN.
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' is a partition. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
+            IC2(ICCC)=0
+            IE2(ICCC)=0
+            altered = .true.   ! will need to write out geometry
+          else
+
+C Existing partitions in an imported zone are reset to UNKNOWN.
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' might be a partition. Confirm its'
+            call usrmsg(outs,
+     &        'surface attributes or use topology tool.','W')
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
+            IC2(ICCC)=0
+            IE2(ICCC)=0
+            altered = .true.   ! will need to write out geometry
           endif
+	  
+C Update the connection based data structures.
           SSNAME(iccc)=SNAME(NCOMP,icc)
           SSOTF(iccc)=SOTF(icc)
           SSMLCN(iccc)=SMLCN(icc)
@@ -726,6 +788,16 @@ C the connections list, then remind user to double check topology.
           IZSTOCN(ncomp,icc)=iccc
   132   CONTINUE
         NCON=ICCC
+
+C If any of the boundary conditions were altered then write out
+C the geometry file.
+        if(altered)then
+          if(newgeo)then
+            call geowrite(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
+          else
+            call emkgeo(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
+          endif
+        endif
 
 C Update the G7 common blocks and then write out configuration file.
         call zgupdate(0,NCOMP,ier)
@@ -914,6 +986,7 @@ C Scan zip file and update control and connections.
         ENDIF
 
       elseif(INZOPT.EQ.4)then
+        ier = -3  ! signal user cancel
         return
       endif
       end
@@ -926,6 +999,10 @@ C DELZONE systematicly removes a thermal zone.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "control.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -945,7 +1022,10 @@ C espriou.h provides currentfile.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -953,24 +1033,16 @@ C espriou.h provides currentfile.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-
-C Controls.
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
 
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
@@ -998,7 +1070,6 @@ C Anchor data.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER cfgroot*24
@@ -1302,38 +1373,18 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Weekday air flows.
-        if(NAC1.gt.0)then
-          DO 10 I=1,NAC1
-            if(IPT1(I).eq.IW2)then
-              modopr=.true.
-              IPT1(I)=0
-              ACV1(I)=0.0
-            endif
-10        continue
-        endif
-
-C Saturday air flows.
-        if(NAC2.gt.0)then
-          DO 11 I=1,NAC2
-            if(IPT2(I).eq.IW2)then
-              modopr=.true.
-              IPT2(I)=0
-              ACV2(I)=0.0
-            endif
-11        continue
-        endif
-
-C Sunday air flows.
-        if(NAC3.gt.0)then
-          DO 12 I=1,NAC3
-            if(IPT3(I).eq.IW2)then
-              modopr=.true.
-              IPT3(I)=0
-              ACV3(I)=0.0
-            endif
-12        continue
-        endif
+C Air flows
+        DO 400 IDTY=1,NBDAYTYPE
+          IF(NAC(IDTY).GT.0)THEN
+            DO 10 I=1,NAC(IDTY)
+              IF(IPT(IDTY,I).EQ.IW2)THEN
+                MODOPR=.TRUE.
+                IPT(IDTY,I)=0
+                ACV(IDTY,I)=0.0
+              ENDIF
+ 10         CONTINUE
+          ENDIF
+ 400    CONTINUE
 
 C Update operations file if any changes.
         if(modopr)then
@@ -1599,6 +1650,8 @@ C IER=0 OK.
       SUBROUTINE WARNMOD(ICOMP,act)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1607,7 +1660,6 @@ C IER=0 OK.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER act*3
 
       LOGICAL XST,comold,tmcold,vwfold,ishold
@@ -1615,7 +1667,11 @@ C IER=0 OK.
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'sat')then
         call FINDFIL(LTHRM(ICOMP),XST)
-        if(XST)comold = .true.
+        if(XST)then
+          comold = .true.
+        else
+          comold = .false.
+        endif
       endif
 
 C Check for implications of surface addition or removal or attribution change.
@@ -1624,27 +1680,43 @@ C << refine testing for setting tmcold >>
      &act(1:3).eq.'sat')then
         if(ITW(ICOMP).eq.1)then
           call FINDFIL(LTWIN(ICOMP),XST)
-          if(XST)tmcold = .true.
+          if(XST)then
+            tmcold = .true.
+          else
+            tmcold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'str')then
         if(IVF(ICOMP).eq.1)then
           call FINDFIL(LVIEW(ICOMP),XST)
-          if(XST)vwfold = .true.
+          if(XST)then
+            vwfold = .true.
+          else
+            vwfold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'str')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
-          if(XST)ishold = .true.
+          if(XST)then
+            ishold = .true.
+          else
+            ishold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'ob-'.or.act(1:3).eq.'ob+')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
-          if(XST)ishold = .true.
+          if(XST)then
+            ishold = .true.
+          else
+            ishold = .false.
+          endif
         endif
       endif
 
@@ -1657,10 +1729,15 @@ C Indications are collected from previous calls to WARNMOD. SUMRCHG
 C should be called with act = 'i' (initialise) when entering a zone and
 C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
-      SUBROUTINE SUMRCHG(ICOMP,act)
+      SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -1670,11 +1747,11 @@ C IER=0 OK.
       common/C21/IFCFG,cfgroot,LCFGF
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER H*72,zname*12,zdesc*64,act*1
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok
+      logical silent  ! if true then use silent recalc
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1717,17 +1794,23 @@ C Check if Unix-based or DOS based.
      &        LSHAD(ICOMP)(1:lnblnk(LSHAD(ICOMP))),' out of date.'
         endif
         if(nh.gt.1)then
-          CALL PHELPD('files out of date',nh,'-',0,0,IER)
+	  if(.NOT.silent)then
+            CALL PHELPD('files out of date',nh,'-',0,0,IER)
+	  endif  
         endif
       endif
       if(ishold)then
-        DOK=.true.
-        h(1)='Shading should be recalculated if the changes you '
-        h(2)='made affect isolation distribution. When in doubt '
-        h(3)='it is best to recalculate. '
-        CALL EASKABC(' Reflect zone change in shading options:',' ',
+        if(silent)then
+	  IRT=1
+	else
+          DOK=.true.
+          h(1)='Shading should be recalculated if the changes you'
+          h(2)='made affect isolation distribution. When in doubt'
+          h(3)='it is best to recalculate.'
+          CALL EASKABC(' Reflect zone change in shading options:',' ',
      &   'recalculate (silent)','recalculate (interactive)','continue',
      &    IRT,3)
+        endif
         if(IRT.eq.1.or.IRT.eq.2)then
           if(IRT.eq.1) call edisp(iuout,
      & 'When finished control will be returned to the project manager.')
@@ -1744,12 +1827,16 @@ C If existing db out of date the perform recalculation.
         endif
       endif
       if(comold.or.tmcold)then
-        DOK=.true.
-        h(1)='Zone construction files should be rebuilt after '
-        h(2)='surface attributes change or surfaces are added or'
-        h(3)='deleted. '
-        CALL ASKOK('Update the zone construction and/ or TMC files',
+        if(silent)then
+	  ok= .true.
+	else
+          DOK=.true.
+          h(1)='Zone construction files should be rebuilt after '
+          h(2)='surface attributes change or surfaces are added or'
+          h(3)='deleted. '
+          CALL ASKOK('Update the zone construction and/ or TMC files',
      &    'to reflect the changes that you have made?',OK,DOK,3)
+        endif
         if(OK)then
           QUIET=.true.
           itru=iuout
@@ -1770,18 +1857,24 @@ C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
       subroutine comissionish(iz,act,ier)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
 
-      character*72 LTHRM,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
+      character LCFGF*72
       CHARACTER ZNAME*12,ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
       character act*3  ! the parameter passed
@@ -2064,9 +2157,12 @@ C weather (32 char) the weather file name (no path included)
 C Current functionality is to update the climate & site data.
 
       subroutine silentmodel(action,root,mpath,folder,menu,weather,ier)
+#include "building.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -2079,6 +2175,7 @@ C Climate data.
       COMMON/CLMDT0/CLAT,CLONG
 
       COMMON/C4/XLAT,XLON
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -2090,11 +2187,17 @@ C Passed in parameters.
       character action*8,root*24,mpath*72,folder*12,menu*32
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
+      character weathergr*36   ! file name for weather related ground temps (no path)
+      character groundfile*72  ! file name for weather related gorund temps (with path)
       character subpath*72
 
-      character outs*124
+      character outs*124,OUTSTR*124
       logical unixok
+      logical haveground ! set true if ground temp file has been found
       integer lnw   ! length of weather string.
+      integer lnwg   ! length of weather ground string.
+      integer igrfile ! unit number of ground file
+      DIMENSION GVA(12)
 
       IER=0
 
@@ -2106,6 +2209,7 @@ C Determine operating system
         fs = char(92)
       endif
       subpath=' '
+      haveground=.false.
 
 C If the action is `new` then setup model folder(s) and the registration
 C level configuration file via call to pregist in `sn` mode.
@@ -2141,20 +2245,37 @@ C one set the name of that file, scan it and find its site.
         continue
       else
 
-C First check if the climate file exists in the subpath.
+C First check if the climate file exists in the subpath. Also
+C make up a variant of the weather file name in case there
+C might be a small 12 item file for ground temperatures which
+C has a matching name.gnd.
         if(ICLIM.eq.0)then
           ICLIM=IFIL
         endif
+        igrfile=IFIL+2  ! hopefully not used
         lnw=lnblnk(weather)
+	write(weathergr,'(2a)') weather(1:lnw),'.gnd'
+        lnwg=lnblnk(weathergr)
+
         write(subpath,'(4a)')
      &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
         write(LCLIM,'(2a)') subpath(1:lnblnk(subpath)),
      &    weather(1:lnw)
+        write(groundfile,'(2a)') subpath(1:lnblnk(subpath)),
+     &    weathergr(1:lnwg)
         write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
         if(ISTAT.ge.0)then
           CALL ERPFREE(ICLIM,ISTAT)
+	  
+C Also check to see if a ground temperature file exists
+          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+          if(ISTAT.ge.0)then
+            haveground=.true.
+            CALL ERPFREE(igrfile,ISTAT)
+          endif
           goto 75
         else
 
@@ -2162,10 +2283,21 @@ C Also look in the folder where the model is being created.
           write(LCLIM,'(3a)') mpath(1:lnblnk(mpath)),fs,
      &      weather(1:lnw)
           write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+          write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &      weathergr(1:lnwg)
+
           CALL ERPFREE(ICLIM,ISTAT)
           CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
           if(ISTAT.ge.0)then
             CALL ERPFREE(ICLIM,ISTAT)
+	  
+C Also check to see if a ground temperature file exists
+            write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+            call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+            if(ISTAT.ge.0)then
+              haveground=.true.
+              CALL ERPFREE(igrfile,ISTAT)
+            endif
             goto 75
           else
 
@@ -2173,10 +2305,21 @@ C Also look in the model dbs folder.
             write(LCLIM,'(5a)') mpath(1:lnblnk(mpath)),fs,
      &        dbspth(1:lnblnk(dbspth)),fs,weather(1:lnw)
             write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
+            write(groundfile,'(5a)') mpath(1:lnblnk(mpath)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,weathergr(1:lnwg)
+     
             CALL ERPFREE(ICLIM,ISTAT)
             CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
             if(ISTAT.ge.0)then
               CALL ERPFREE(ICLIM,ISTAT)
+	  
+C Also check to see if a ground temperature file exists
+              write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+              call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+              if(ISTAT.ge.0)then
+                haveground=.true.
+                CALL ERPFREE(igrfile,ISTAT)
+              endif
               goto 75
             else
               write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
@@ -2212,6 +2355,31 @@ C Fell through, no change in climate and location.
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
      &    '. Previously used ',xlat,xlon,'.'
         call edisp(iuout,outs)
+	
+C If there is ground temperature information scan that file and
+C put the data in UGRDTP.
+        if(haveground)then
+          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
+          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
+          NGRDP=1
+          CALL STRIPC(igrfile,OUTSTR,0,ND,1,'ground data',IER)
+	  
+C          CALL EGETWRA(igrfile,GVA,12,-9.,99.,'W','Gr tmp',IER)
+          DO 29 J=1,12
+            CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','ground temp',IER)
+C            UGRDTP(J,NGRDP)=GVA(J)
+            UGRDTP(J,NGRDP)=valy
+   29     CONTINUE
+
+C Debug.
+          CALL EDISP(iuout,' From file Ground temp profile Jan-Dec:')
+          WRITE(OUTS,'(12F6.1)')(UGRDTP(J,1),J=1,12)
+          CALL EDISP(iuout,OUTS)
+
+          CALL ERPFREE(igrfile,ISTAT)
+        else
+          NGRDP=0    ! no user defined ground temperature profiles.
+        endif
         CALL EMKCFG('-',IER)
 
 C Fall through point if no climates located.
@@ -2239,6 +2407,8 @@ C shape (8 char) box/extrude
 C nbwalls (integer) how many walls (e.g. 4 for a box, 3-20 for extrude). Note
 C   the top surface is assumed to be index nbwalls+1 and the base surface is
 C   assumed to be index nbwalls+2
+C nbmass (integer) how many pairs of mass walls to append to zone. Note these
+C   surfaces are not included in the *surface list
 C origin (real * 3) XYZ of the origin in the case of shape=box. For shape=extrude
 C   the 1st value is Z point of base, 2nd is the ceiling Z value, 3rd not used.
 C size (real *3) for shape=box this is the length/width/height (m) and for
@@ -2259,15 +2429,22 @@ C   no door and a non-zero indicates the width of the door (m).
 C hasname (string array) the surface name for each surface
 C hasconstruction (string array) the name of the MLC to use for each surface
 C boundarytype (integer (MS,3) the connection data for each surface.
+C datamass (real 4*7) values to create mass
+C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,name,shape,nbwalls,nbedges,nbpolyc,
-     &  list,origin,size,
-     &  coords,rotateit,nbglz,hasglaze,nbdoor,hasdoor,hasname,
-     &  hasconstruction,boundarytype,use,usefile,IER)
+      subroutine silentzone(ICOMP,name,shape,nbwalls,nbmass,nbedges,
+     &  nbpolyc,list,origin,size,coords,rotateit,
+     &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstruction,
+     &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 C#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       character CTYPE*4
@@ -2288,10 +2465,15 @@ C#include "esprdbfile.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
@@ -2309,17 +2491,19 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character dinstpath*48
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-      common/p3ver/ip3ver
-      COMMON/P2/NAC1,IACS1(MA),IACF1(MA),ACI1(MA),ACV1(MA),
-     &          IPT1(MA),TA1(MA),NAC2,IACS2(MA),IACF2(MA),ACI2(MA),
-     &          ACV2(MA),IPT2(MA),TA2(MA),NAC3,IACS3(MA),IACF3(MA),
-     &          ACI3(MA),ACV3(MA),IPT3(MA),TA3(MA)
-      COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
-     &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
-     &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
-     &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
-      COMMON/P1/oprdesc,ctlstr
-      CHARACTER oprdesc*248,ctlstr*24
+C =2 with more than 3 day types
+      common/p3ver/ip3ver(MCOM)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF
+      REAL CMGS,CMGL,RADC,CONC
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
       common/loadlabel/lodlabel(mcom,7)
       CHARACTER*6 lodlabel
@@ -2331,6 +2515,7 @@ C Paremeters passed in:
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
       real origin(3)      ! values dependant on shape
+      real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real size(3)        ! values dependant on shape
       real coords(MS,3)
       real rotateit       ! angle of rotation
@@ -2343,9 +2528,12 @@ C Paremeters passed in:
       integer boundarytype(MS,3)
       character use*8,usefile*32  ! usage pattern directives
       dimension use(3)
-      
+
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character textmass*32 
+      dimension textmass(4,3)
+     
       DIMENSION XX(MS),YY(MS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -2360,8 +2548,10 @@ C Paremeters passed in:
       character act*2
       character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
+      character sn*12,constr*12,opt*12
       LOGICAL browse,OKC,XST,unixok
       logical willneedtmc  !  if a tmc file will be required.
+      logical closev       !  mass is close to vertical
       LOGICAL QUIET
 
 C Strings for surface attributes to pass to insrec.
@@ -2435,17 +2625,17 @@ C Choices based on the value of shape.
         return
       endif
       IF(ishape.eq.1)THEN
-        XO=origin(1)
-        YO=origin(2)
-        ZO=origin(3)
-        DX=size(1)
-        DY=size(2)
-        DZ=size(3)
+        XOC=origin(1)
+        YOC=origin(2)
+        ZOC=origin(3)
+        DXC=size(1)
+        DYC=size(2)
+        DZC=size(3)
 
         ANG=rotateit
 
 C Convert box into a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,ANG)
+        CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANG)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
@@ -2604,6 +2794,16 @@ C Update the G7 common blocks and then if assign ZBASEA.
       elseif(ishape.eq.2)then
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
+      elseif(ishape.eq.3)then
+
+C For poly shape loop to find the floor in order to set up the floor area
+        do 222 iSurface=1,NSUR
+          if(SVFC(iSurface).eq.'FLOR')then
+            IBASES(ICOMP,1)=iSurface
+            ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
+            ZBASEA(icomp)= SSNA(ibcs)
+          endif
+ 222    continue
       endif
  
 C Save this to file before passing into the geometry editing facility.
@@ -2654,8 +2854,8 @@ C parent surface.  Later add logic to better place the door..
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
-            XO=XYMAX-(hasdoor(ids)+0.3)
-            ZO=0.0
+            XOC=XYMAX-(hasdoor(ids)+0.3)
+            ZOC=0.0
             XW=hasdoor(ids)
             if(ZMAX.gt.2.3)then
               ZH=2.1
@@ -2688,8 +2888,42 @@ C section of the string DESC.
             rsuse1='DOOR'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XO,ZO,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
+
+C Connection information needs to be updated.
+            ibcs=IZSTOCN(icomp,newsurf)
+            ICT(ibcs)=boundarytype(newsurf,1)  ! used passed in boundarytype
+            IC2(ibcs)=boundarytype(newsurf,2)
+            IE2(ibcs)=boundarytype(newsurf,3)
+
+C Use boundarytype to instanciate sother & ssother << to be done >>
+            IF(boundarytype(newsurf,1).EQ.0)THEN
+              SOTHER(newsurf,1)='EXTERIOR'
+            ELSEIF(boundarytype(newsurf,1).EQ.1)THEN
+              SOTHER(newsurf,1)='SIMILAR'
+            ELSEIF(boundarytype(newsurf,1).EQ.2)THEN
+              SOTHER(newsurf,1)='CONSTANT'
+            ELSEIF(boundarytype(newsurf,1).EQ.3)THEN
+              SOTHER(newsurf,1)='ANOTHER'
+            ELSEIF(boundarytype(newsurf,1).EQ.4)THEN
+              SOTHER(newsurf,1)='GROUND'
+            ELSEIF(boundarytype(newsurf,1).EQ.5)THEN
+              SOTHER(newsurf,1)='ADIABATIC'
+            ELSEIF(boundarytype(newsurf,1).EQ.6)THEN
+              SOTHER(newsurf,1)='BASESIMP'
+            ELSEIF(boundarytype(newsurf,1).EQ.7)THEN
+              SOTHER(newsurf,1)='IDENT_CEN'
+            ELSE
+
+C Reset to represent UNKNOWN
+              SOTHER(newsurf,1)='UNKNOWN'
+            ENDIF
+            write(SOTHER(newsurf,2),'(i2.2)') boundarytype(newsurf,2)
+            write(SOTHER(newsurf,3),'(i2.2)') boundarytype(newsurf,3)
+            SSOTHER(ibcs,1)=SOTHER(newsurf,1)
+            SSOTHER(ibcs,2)=SOTHER(newsurf,2)
+            SSOTHER(ibcs,3)=SOTHER(newsurf,3)
 
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
@@ -2705,8 +2939,8 @@ C the parent surface as a percentage of area.
             newsurf=nsur+1
             isurf=ids
             act='sp'
-            XO=hasglaze(ids)
-            ZO=0.0
+            XOC=hasglaze(ids)
+            ZOC=0.0
             XW=0.0
             ZH=0.0
             write(rsname,'(a)') hasname(newsurf)
@@ -2734,12 +2968,67 @@ C section of the string DESC.
             rsuse1='C-WINDOW'
             rsuse2='CLOSED'
             write(rsparent,'(a)') sname(icomp,isurf)
-            call INSREC(0,iuout,ICOMP,isurf,act,XO,ZO,XW,ZH,
+            call INSREC(0,iuout,ICOMP,isurf,act,XOC,ZOC,XW,ZH,
      &        rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
+
+C Connection information needs to be updated.
+            ibcs=IZSTOCN(icomp,newsurf)
+            ICT(ibcs)=boundarytype(newsurf,1)  ! used passed in boundarytype
+            IC2(ibcs)=boundarytype(newsurf,2)
+            IE2(ibcs)=boundarytype(newsurf,3)
+
+C Use boundarytype to instanciate sother & ssother << to be done >>
+            IF(boundarytype(newsurf,1).EQ.0)THEN
+              SOTHER(newsurf,1)='EXTERIOR'
+            ELSEIF(boundarytype(newsurf,1).EQ.1)THEN
+              SOTHER(newsurf,1)='SIMILAR'
+            ELSEIF(boundarytype(newsurf,1).EQ.2)THEN
+              SOTHER(newsurf,1)='CONSTANT'
+            ELSEIF(boundarytype(newsurf,1).EQ.3)THEN
+              SOTHER(newsurf,1)='ANOTHER'
+            ELSEIF(boundarytype(newsurf,1).EQ.4)THEN
+              SOTHER(newsurf,1)='GROUND'
+            ELSEIF(boundarytype(newsurf,1).EQ.5)THEN
+              SOTHER(newsurf,1)='ADIABATIC'
+            ELSEIF(boundarytype(newsurf,1).EQ.6)THEN
+              SOTHER(newsurf,1)='BASESIMP'
+            ELSEIF(boundarytype(newsurf,1).EQ.7)THEN
+              SOTHER(newsurf,1)='IDENT_CEN'
+            ELSE
+
+C Reset to represent UNKNOWN
+              SOTHER(newsurf,1)='UNKNOWN'
+            ENDIF
+            write(SOTHER(newsurf,2),'(i2.2)') boundarytype(newsurf,2)
+            write(SOTHER(newsurf,3),'(i2.2)') boundarytype(newsurf,3)
+            SSOTHER(ibcs,1)=SOTHER(newsurf,1)
+            SSOTHER(ibcs,2)=SOTHER(newsurf,2)
+            SSOTHER(ibcs,3)=SOTHER(newsurf,3)
 
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
   77    continue
+      endif
+
+C Next, if there are mass pairs to add make standard calls to insert them.
+      if(nbmass.gt.0)then
+        do 79 imu=1,nbmass
+          call eclose(datamass(imu,1),90.0,0.01,closev)
+          write(SN,'(a)') textmass(imu,1)(1:lnblnk(textmass(imu,1)))
+          write(constr,'(a)') textmass(imu,2)(1:lnblnk(textmass(imu,2)))
+          write(opt,'(a)') textmass(imu,3)(1:lnblnk(textmass(imu,3)))
+          if(closev)then
+            call addmass(1,ICOMP,'VM','s',datamass(imu,2),
+     &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
+     &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
+          else
+            call addmass(1,ICOMP,'HM','s',datamass(imu,2),
+     &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
+     &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
+          endif
+
+          call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+  79    continue
       endif
       CALL EMKCFG('-',IER)
 
@@ -2788,14 +3077,14 @@ C Debug.
 C        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
 
 C Clear commons.
-        NAC1=0
-        NAC2=0
-        NAC3=0
-        NCAS1=0
-        NCAS2=0
-        NCAS3=0
-        ctlstr='no control of air flow  '
-        oprdesc='no operations notes (yet)'
+        DO 401 IDTY=1,NBDAYTYPE
+          NAC(IDTY)=0
+          NCAS(IDTY)=0
+ 401    CONTINUE
+        ctlstr(icomp,1)='no control of air flow  '
+        ctlstr(icomp,2)='no control of air flow  '
+        ctlstr(icomp,3)='no control of air flow  '
+        oprdesc(icomp)='no operations notes (yet)'
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt'  
@@ -2806,7 +3095,9 @@ C Clear commons.
 
 C Fill common blocks for new zone based on information in the
 C pattern file.
-        ip3ver=1
+
+C Set to current format
+        ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '
         vflow='ach-ach '
@@ -2858,22 +3149,78 @@ C and act on the information within the file.
        integer MSZ   ! number of silent zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/C4/XLAT,XLON
+      COMMON/FILEP/IFIL
+
+C GREF    - External ground reflectivity.
+C GREF12  - (12) Monthly values of ground reflectivity
+C ITGREF  - Type of ground reflectivity model
+C           1= constant albedo
+C           2= simple model (monthly albedo, number of days with snow on ground
+C           3= advanced model (monthly albedo, snow depth read from file)
+C SREF    - Snow reflectivity
+C NSNOW   - (12) Monthly values of number of days with snow on ground
+C SNFNAM  - *72 Name of the file containing hourly snow depth information
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
+      COMMON/C5R/SKYR,GRDR,BLDR
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      COMMON/PREC8/SLAT,SLON
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
+C NB number of obstruction blocks.
+C X0 Y0 Z0 coordinates of each block origin.
+C DX DY DZ width depth and height of each block
+C BANG block rotation angle.
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+C NOX NOZ gridding resolution of surfaces for shading
+C NGX NGZ not used.
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      character BLKNAME*8,BLKMAT*12
 
       common/rpath/path
       character*72 path,odir    ! where are folders
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
+
+C Simulation parameter sets.
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
+C IPV description.
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+
+C Season definitions (from climatelist file). 2 periods for winter
+C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
+C and one period for summer.
+      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
+     &              is2sprs,is2sprf,is1sums,is1sumf
+
+C Typical periods win1|trn1|sum|trn2|win2 with start,finish
+      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
+     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
                
       CHARACTER OUTSTR*248,WORD*32,outs*124
       character dstmp*24
 
       character act*1  ! action requested.
+      character ipvact*1 ! action for clearipvdat
+      character simact*6 ! action for creating assessments.
       character subpath*72
 
 C At the head of the file is a menu string and a description
@@ -2890,7 +3237,7 @@ C For passing to silentmodel.
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
 
-      logical dll,unixok
+      logical dll,unixok,XST,ok
       real valx,valy      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
@@ -2901,6 +3248,7 @@ C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls
+      integer nbmass(MSZ)      ! nb of paired mass rectangles
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
@@ -2910,15 +3258,57 @@ C Paremeters passed to:silentzone
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
+      real datamass(4,7),sdatamass(MSZ,4,7) ! origin and size and orientations of mass (4 per zone)
       real size(3),szsize(MSZ,3)        ! values dependant on shape
       real coords(MS,3),szcoords(MSZ,MS,3) 
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
+
+      integer nbob  ! nbob number of obstruction blocks.
+      real XOB,YOB,ZOB  ! coordinates of each block origin.
+      real DXOB,DYOB,DZOB  ! width depth and height of each block
+      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
+      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
+
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      character BLOCKNAME*8,BLOCKMAT*12
+      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
+
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character textmass*32,stextmass*32
+      dimension textmass(4,3),stextmass(MSZ,4,3)
+
       character hasconstruction*32,szhasconstruction*32
       dimension hasconstruction(MS),szhasconstruction(MSZ,MS)  ! construction to use for each surface
       character hasname*12,szhasname*12
       dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
+
+C Site related local variables.
+      real sitelat,sitelong  ! latitude and longitude difference
+      logical havesite       ! true if tokens included
+      real groundreflanual   ! ground reflectance (single value)
+      logical havegroundreflanual ! true if ground reflectance included
+      real groundreflmonth(12) ! ground reflectance (monthly vlues)
+      integer groundreflmodel  ! index to ground reflectance model
+      real snowrefl            ! snow reflectivity
+      integer dayswithsnow(12) ! days with snow in each month
+      logical havesnowdays     ! true if days with snow defined
+      integer siteexposureindex  ! same as ixpos
+      character hourlysnowfile*72  ! same as SNFNAM
+      logical havehourlysnowfile   ! true if set
+      real hoursGTM   ! hours before or after GTM 
+      real skyview,groundview,buildingview ! user defined viewfactors
+      real groundtemps(12,MGRDP)
+      real GVA(12)  ! temporary array to hold a dozen values.
+      integer groundtempsets
+      logical havegroundtempsets
+      logical havesimparameters
+      integer simstartup   ! use for isstup
+      integer simzonetimestep ! use for isbnstep
+      integer simplanttimestep ! use for ispnstep
+      integer simsavelevel  ! use for issave
 
       IER=0
 
@@ -2930,6 +3320,10 @@ C Determine operating system
         fs = char(92)
       endif
 
+C Set icomp to zero if there are no zones in the model.
+      if(ncomp.eq.0)then
+        icomp=0
+      endif
 C Get the current folder and display options to the user.
 C first list any files with .cfg in name.
       odir=' '
@@ -2964,6 +3358,22 @@ C in the file.
         silentmenu=' '
         silentdoc=' '
         weather=' '
+        hourlysnowfile=' '
+        groundreflmodel=0
+        skyview=0.0
+        groundview=0.0
+        buildingview=0.0
+        havesite=.false.
+        havegroundreflanual=.false.
+        havesnowdays=.false.
+        havehourlysnowfile=.false.
+        havegroundtempsets=.false.
+        groundtempsets=0
+        havesimparameters=.false.
+        simstartup=0
+        simzonetimestep=0
+        simplanttimestep=0
+        simsavelevel=0
         do 42 iz=1,MSZ
           name(iz) = ' '
           shape(iz) = ' '
@@ -2972,6 +3382,7 @@ C in the file.
           szuse(iz,3) = ' '
           usefile(iz) = ' '
           nbwalls(iz) = 0
+          nbmass(iz) = 0
           nbglz(iz) = 0
           nbdoor(iz) = 0
           nbcord(iz) = 0
@@ -2982,6 +3393,18 @@ C in the file.
           szsize(iz,1) = 0.0
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
+          nbob(iz) = 0
+          do 55 ibu=1,MB
+            XOB(iz,ibu) = 0.0
+            YOB(iz,ibu) = 0.0
+            ZOB(iz,ibu) = 0.0
+            DXOB(iz,ibu) = 0.0
+            DYOB(iz,ibu) = 0.0
+            DZOB(iz,ibu) = 0.0
+            BANGOB(iz,ibu) = 0.0
+            BLOCKNAME(iz,ibu) = ' '
+            BLOCKMAT(iz,ibu) = ' '
+  55      continue
           do 52 isu=1,MS
             isznbedges(iz,isu)=0
             do 54 ivu=1,MV
@@ -2998,6 +3421,18 @@ C in the file.
             szboundarytype(iz,isu,2)=0
             szboundarytype(iz,isu,3)=0
   52      continue
+          do 59 imu=1,4
+            sdatamass(iz,imu,1)= 0.0
+            sdatamass(iz,imu,2)= 0.0
+            sdatamass(iz,imu,3)= 0.0
+            sdatamass(iz,imu,4)= 0.0
+            sdatamass(iz,imu,5)= 0.0
+            sdatamass(iz,imu,6)= 0.0
+            sdatamass(iz,imu,7)= 0.0
+            stextmass(iz,imu,1)= ' '
+            stextmass(iz,imu,2)= ' '
+            stextmass(iz,imu,3)= ' '
+  59      continue
   42    continue
       endif
 
@@ -3259,6 +3694,61 @@ C Now proceed to read vertices on one or more lines.
           iszlist(nsz,NS,KV)=ival2
    12   CONTINUE
         goto 43
+      elseif(WORD(1:4).eq.'*obs')then
+
+C An obstruction block to be associated with the current zone.
+        nbob(nsz)=nbob(nsz)+1
+        nob=nbob(nsz)
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
+        XOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
+        YOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
+        ZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
+        DXOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
+        DYOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
+        DZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
+        BANGOB(nsz,nob)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        goto 43
+
+      elseif(WORD(1:5).eq.'*mass')then
+
+C The *mass keyword is followed by 9 tokens as follows:
+        nbmass(nsz)=nbmass(nsz)+1
+        nma=nbmass(nsz)
+        CALL EGETW(OUTSTR,K,WORD,'W','mass vertical or horiz',IER)
+        if(WORD(1:2).eq.'VM'.or.WORD(1:2).eq.'vm')then
+          sdatamass(nsz,nma,1)= 90.0  ! signal vertical
+        elseif(WORD(1:2).eq.'HM'.or.WORD(1:2).eq.'hm')then
+          sdatamass(nsz,nma,1)= 0.0   ! signal horizontal
+        endif
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass X org',IER)
+        sdatamass(nsz,nma,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass Y org',IER)
+        sdatamass(nsz,nma,3)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','mass Z org',IER)
+        sdatamass(nsz,nma,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass X dis',IER)
+        sdatamass(nsz,nma,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass Z dis',IER)
+        sdatamass(nsz,nma,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','mass rotate',IER)
+        sdatamass(nsz,nma,7)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','mass name',IFLAG)
+        write(stextmass(nsz,nma,1),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETW(OUTSTR,K,WORD,'W','mass constr name',IFLAG)
+        write(stextmass(nsz,nma,2),'(a)') WORD(1:lnblnk(WORD))
+        write(stextmass(nsz,nma,3),'(a)') 'OPAQUE'   ! set as opaque
+        goto 43
+
       elseif(WORD(1:6).eq.'*usage')then
 
 C After *usage the next token is 'pattern' (tag indicating that
@@ -3276,8 +3766,7 @@ C to the training/pattern folder.
           CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
           write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
         else
-          call usrmsg('Silentread usage 2nd parameter not recognised',
-     &      ' ','W')
+          call usrmsg('Usage 2nd parameter not recognised',' ','W')
         endif
         goto 43
       elseif(WORD(1:9).eq.'*occupant')then
@@ -3299,6 +3788,209 @@ C for a match in the current climate location and if there is
 C one set the name of that file, scan it and find its site.
         CALL EGETRM(OUTSTR,K,weather,'W','weather name',IER)
         goto 43
+      elseif(WORD(1:5).eq.'*site')then
+
+C The site line includes latitute, longitude difference from time
+C meridian, time zone (hours before or after GMT), site exposure
+C and if siteexposureindex is 8 then read three more numbers
+C for the general exposure to sky, ground and other buildings. 
+        CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+        CALL EGETWR(OUTSTR,K,sitelong,-15.,15.,'W','Longitude dif',IER)
+        CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
+        CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &    'Site exposure',IER)
+        if(siteexposureindex.eq.8)then
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky exposure',IER)
+          CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
+     &      'Ground exposure',IER)
+          CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
+     &      'Building exposure',IER)
+        endif
+        havesite=.true.
+        goto 43
+      elseif(WORD(1:19).eq.'*ground_refl_annual')then
+        CALL EGETWR(OUTSTR,K,groundreflanual,0.,1.,'W',
+     &    'Ground reflectance annual value',IER)
+        havegroundreflanual=.true.
+        goto 43
+      elseif(WORD(1:20).eq.'*ground_refl_monthly')then
+
+C Ground reflectivity model, no-snow monthly albedos, snow albedo
+        CALL EGETWI(OUTSTR,K,groundreflmodel,1,3,'F',
+     &    'ground refl. model',IER)
+        DO 441 I=1,12
+          CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
+     &      'monthly gr. refl.',IER)
+  441   CONTINUE
+        CALL EGETWR(OUTSTR,K,snowrefl,0.,1.,'W','snow refl.',IER)  
+        goto 43
+      elseif(WORD(1:18).eq.'*monthly_snow_days')then
+
+C Number of days with snow on the ground (if ground refl model 2)
+        DO 442 I=1,12
+          CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
+     &      'days with snow',IER)
+  442   CONTINUE
+        havesnowdays=.true.
+        goto 43
+      elseif(WORD(1:18).eq.'*hourly_snow_depth')then
+
+C If ground refl model is 3 then this file has hourly data.
+        CALL EGETRM(OUTSTR,K,hourlysnowfile,'W','snow file',IER)
+        havehourlysnowfile=.true.
+        goto 43
+      elseif(WORD(1:16).eq.'*monthly_profile')then
+
+C Ground monthly temperature profiles. 2nd item is the number of profiles.
+C And this is followed by one line each for each profile.
+        CALL EGETWI(OUTSTR,K,groundtempsets,1,MGRDP,'F','grn prfls',IER)
+        IF(groundtempsets.eq.0) goto 43
+        DO 28 IGRDP=1,groundtempsets
+          CALL EGETWRA(IUNIT,GVA,12,-9.,99.,'W','Gr tmp',IER)
+          DO 29 J=1,12
+            groundtemps(J,IGRDP)=GVA(J)
+   29     CONTINUE
+  28    CONTINUE
+        havegroundtempsets=.true.
+        goto 43
+      elseif(WORD(1:15).eq.'*sim_parameters')then
+
+C Get the assessment independant simulation parameters.
+        CALL EGETWI(OUTSTR,K,simstartup,0,300,'W','startup',IER)
+        CALL EGETWI(OUTSTR,K,simzonetimestep,1,60,'W','zone_ts',IER)
+        CALL EGETWI(OUTSTR,K,simplanttimestep,0,100,'W','plant_ts',IER)
+        CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
+        havesimparameters=.true.
+        goto 43
+      elseif(WORD(1:12).eq.'*assessments')then
+
+C Get tags related to assessments: after the tag *assessments the
+C following choices are possible:
+C   `annual` (no further tokens)
+C   `single` followed typically by `user` followed by pairs of julian dates
+C   `winter` followed by `typical_week` or `season` or 'fortnight'
+C   `spring` followed by `typical_week` or `season` or 'fortnight'
+C   `summer` followed by `typical_week` or `season` or 'fortnight'
+C   `autumn` followed by `typical_week` or `season` or 'fortnight'
+C   `three_season` followed by `typical_week` `forthnight` `user` or `season` 
+C   `five_season` followed by `typical_week` `forthnight` `user` or `season` 
+        CALL EGETW(OUTSTR,K,WORD,'W','*assessment tags',IER)
+        if(WORD(1:7).eq.'Default'.or.WORD(1:7).eq.'default')then
+          nipvassmt=1
+          simsavelevel=-1   ! signal to ipv2simpar to use defaults
+          simact='i1d   '
+        elseif(WORD(1:6).eq.'Annual'.or.WORD(1:6).eq.'annual')then
+          nipvassmt=1
+          simact='ias   '
+        elseif(WORD(1:6).eq.'Single'.or.WORD(1:6).eq.'single')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Single tags',IER)
+          if(WORD(1:4).eq.'User'.or.
+     &       WORD(1:4).eq.'user')then
+            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
+          endif
+          nipvassmt=1
+          simact='i1d   '
+        elseif(WORD(1:6).eq.'Winter'.or.WORD(1:6).eq.'winter')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Winter tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icwint'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icwinf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icwins'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:6).eq.'Spring'.or.WORD(1:6).eq.'spring')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Spring tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icsprt'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icsprf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icsprs'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:6).eq.'Summer'.or.WORD(1:6).eq.'summer')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Summer tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icsumt'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icsumf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icsums'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:6).eq.'Autumn'.or.WORD(1:6).eq.'autumn')then
+          CALL EGETW(OUTSTR,K,WORD,'W','Autumn tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='icautt'
+          elseif(WORD(1:9).eq.'Fortnight'.or.
+     &           WORD(1:9).eq.'fortnight')then
+            simact='icautf'
+          elseif(WORD(1:9).eq.'Season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='icauts'
+          endif
+          nipvassmt=1
+        elseif(WORD(1:12).eq.'Three_season'.or.
+     &         WORD(1:12).eq.'three_season')then
+          CALL EGETW(OUTSTR,K,WORD,'W','three_season tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='i3t   '
+          elseif(WORD(1:4).eq.'User'.or.WORD(1:4).eq.'user')then
+            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday3,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday4,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday5,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday6,1,365,'W','end julian',IER)
+            simact='i3u   '
+          elseif(WORD(1:9).eq.'season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='i3s   '
+          endif
+          nipvassmt=3
+        elseif(WORD(1:11).eq.'Five_season'.or.
+     &         WORD(1:11).eq.'five_season')then
+          CALL EGETW(OUTSTR,K,WORD,'W','five_season tags',IER)
+          if(WORD(1:12).eq.'Typical_week'.or.
+     &       WORD(1:12).eq.'typical_week')then
+            simact='i5t   '
+          elseif(WORD(1:4).eq.'User'.or.WORD(1:4).eq.'user')then
+            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday3,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday4,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday5,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday6,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday7,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday8,1,365,'W','end julian',IER)
+            CALL EGETWI(OUTSTR,K,iday9,1,365,'W','start julian',IER)
+            CALL EGETWI(OUTSTR,K,iday10,1,365,'W','end julian',IER)
+            simact='i5u   '
+          elseif(WORD(1:9).eq.'season'.or.
+     &           WORD(1:9).eq.'season')then
+            simact='i5s   '
+          endif
+          nipvassmt=5
+        else
+          nipvassmt=0
+          simact='i1d   '
+        endif
+        write(6,*) 'the value of simact is ',simact
+        goto 43
       else
         goto 43
       endif
@@ -3311,12 +4003,111 @@ C Process the data if the end of the file reached or if the
 C *end mark was found.
  1000 CALL ERPFREE(IUNIT,ios)
 
-C Test creation of new model. Note for a single folder option the
+C Create new model. Note for a single folder option the
 C configuration will be in /tmp/box if mpath is /tmp/box. For the
 C distributed folder option the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
       call silentmodel(actions,root,mpath,folder,silentmenu,weather,
      &  ier)
+
+C Add in site information if tokens were included.
+      if(havesite)then
+        XLAT=sitelat
+        SLAT=XLAT
+        XLON=sitelong
+        SLON=XLON
+        IXPOS=siteexposureindex
+        if(IXPOS.EQ.8)then
+          SKYR=skyview
+          GRDR=groundview
+          BLDR=buildingview
+        endif
+      endif
+      if(havegroundreflanual)GREF=groundreflanual
+      if(groundreflmodel.gt.0)then
+        ITGREF=groundreflmodel
+        do 443 i=1,12
+          GREF12(I)=groundreflmonth(I)
+  443   continue
+        SREF=snowrefl
+      endif
+      if(havesnowdays)then
+        do 444 i=1,12
+          NSNOW(I)=dayswithsnow(I)
+  444   continue
+      endif
+      if(havehourlysnowfile)then
+        SNFNAM=hourlysnowfile
+      endif
+      if(havegroundtempsets)then
+        NGRDP=groundtempsets
+        do 128 IGRDP=1,NGRDP
+          DO 129 J=1,12
+            UGRDTP(J,IGRDP)=groundtemps(J,IGRDP)
+  129     CONTINUE
+  128   continue
+      endif
+
+C Add in simulation parameter and assessment data if included.
+      if(havesimparameters)then
+        isstup=simstartup
+        isbnstep=simzonetimestep
+        ispnstep=simplanttimestep
+        issave=simsavelevel
+
+C Assign assessment information
+C Rescan the `climatelist` file. Check if this climate is
+C in the list. If not instanciate season and typical start and end dates.
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,ier)
+          if(ok)then
+            continue
+          else
+
+C Set default early winter, spring, summer, autumn, late winter periods.
+            CALL EDAY(9,1,ia1wins)
+            CALL EDAY(15,1,ia1winf)
+            CALL EDAY(6,3,ia1sprs)
+            CALL EDAY(12,3,ia1sprf)
+            CALL EDAY(11,7,iasums)
+            CALL EDAY(17,7,iasumf)
+            CALL EDAY(2,10,ia2sprs)
+            CALL EDAY(8,10,ia2sprf)
+            CALL EDAY(20,11,ia2wins)
+            CALL EDAY(26,11,ia2winf)
+
+C Default season definitions.
+            CALL EDAY(1,1,is1wins)
+            CALL EDAY(28,2,is1winf)
+            CALL EDAY(1,11,is2wins)
+            CALL EDAY(31,12,is2winf)
+            CALL EDAY(1,3,is1sprs)
+            CALL EDAY(30,4,is1sprf)
+            CALL EDAY(1,9,is2sprs)
+            CALL EDAY(31,10,is2sprf)
+            CALL EDAY(1,5,is1sums)
+            CALL EDAY(31,8,is1sumf)
+          endif
+        endif
+
+C Clear the IPV data structures and initialize based on the
+C assessment regime. Then use the IPV data and transfer it to
+C equivalent in simulation parameter data structure via ipv2simpar
+        ipvact='i'
+        call clearipvdat(ipvact)
+        call ipvdatinit(simact)
+        call ipv2simpar(simact)
+
+C << assessment expansion to be done >>
+
+      endif
+
+C << location for further system level data >>
+
+C Update configuration file to know about the construction files.
+      CALL EMKCFG('-',IER)
 
 C If there are no zones return.
       if(nsz.eq.0)then
@@ -3359,14 +4150,51 @@ C        usefile(iz) = ' '
             boundarytype(isu,2)=szboundarytype(isz,isu,2)
             boundarytype(isu,3)=szboundarytype(isz,isu,3)
   49      continue
+          do 158 imu=1,4
+            datamass(imu,1)=sdatamass(isz,imu,1)
+            datamass(imu,2)=sdatamass(isz,imu,2)
+            datamass(imu,3)=sdatamass(isz,imu,3)
+            datamass(imu,4)=sdatamass(isz,imu,4)
+            datamass(imu,5)=sdatamass(isz,imu,5)
+            datamass(imu,6)=sdatamass(isz,imu,6)
+            datamass(imu,7)=sdatamass(isz,imu,7)
+            textmass(imu,1)=stextmass(isz,imu,1)
+            textmass(imu,2)=stextmass(isz,imu,2)
+            textmass(imu,3)=stextmass(isz,imu,3)
+ 158      continue
           icomp=icomp+1
+
+C If there are obstructions fill in relevant common blocks. Set iobs()=2
+C to signal that the common blocks have been instanciated and data should
+C be included in the version 1.1 geometry file.
+          if(nbob(isz).gt.0)then
+            NB=nbob(isz)
+            NOX=20
+            NOZ=20
+            do 58 ib=1,nbob(isz)
+              XO(ib)=XOB(isz,ib)
+              YO(ib)=YOB(isz,ib)
+              ZO(ib)=ZOB(isz,ib)
+              DX(ib)=DXOB(isz,ib)
+              DY(ib)=DYOB(isz,ib)
+              DZ(ib)=DZOB(isz,ib)
+              BANG(ib)=BANGOB(isz,ib)
+              BLKNAME(ib)=BLOCKNAME(isz,ib)
+              BLKMAT(ib)=BLOCKMAT(isz,ib)
+  58        continue
+            iobs(icomp)=2
+          else
+            iobs(icomp)=0
+            NB=0
+          endif
+
           write(outs,'(2a)') 'Processing ',name(isz)
           call edisp(iuout,outs)
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
-     &      nbedges,nbcord(isz),list,origin,size,
+     &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstruction,
-     &      boundarytype,use,usefile(isz),IER)
+     &      boundarytype,datamass,textmass,use,usefile(isz),IER)
   53    continue
       endif
       RETURN

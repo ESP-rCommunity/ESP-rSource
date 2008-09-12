@@ -50,6 +50,8 @@ C when EITCOMMON returns.
 C espriou.h provides currentfile.
 #include "esprdbfile.h"
 C providing paramaters MGDB,MGCL,MGIT
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -180,6 +182,9 @@ C unit IFB.
 #include "building.h"
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
 
 C Generic db commons:
@@ -481,6 +486,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edmat(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -855,6 +863,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edacous(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1160,6 +1171,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edcolour(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1374,6 +1388,9 @@ C Assumes that current database is open on unit IFB.
       subroutine edtransp(IFB,idbh,ic,iit,ACT,IER)
 #include "espriou.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
@@ -1669,6 +1686,8 @@ C ************* CPITEM
 C CPITEM: Copy item iitorig to catg iccopy returning index of copied item as iitcopy. 
       SUBROUTINE CPITEM(IFB,idbh,icorig,iitorig,iccopy,iitcopy,act,ier)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1922,6 +1941,8 @@ C a call scandbhd for the main database.
       subroutine choseitem(db,ACT,curitem,curdb,selitem,selmenu,itmsel,
      &  icatsel,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2054,6 +2075,8 @@ C is the requested category to select from.
       subroutine choseitct(db,ACT,curitem,curdb,ctype,selitem,selmenu,
      &  itmsel,icatsel,IER)
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 

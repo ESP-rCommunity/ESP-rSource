@@ -52,6 +52,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
@@ -82,6 +84,8 @@ C Scale the project
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/AirPro/RTair,RHR
@@ -334,7 +338,7 @@ C graphic display to compensate.
         call startbuffer()
       ENDIF
 
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

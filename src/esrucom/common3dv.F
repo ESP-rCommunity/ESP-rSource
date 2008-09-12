@@ -36,10 +36,15 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE ADJVIEW(ITRC,IER)
 #include "building.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -48,7 +53,6 @@ C then it represents the zone which is currently being edited.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       LOGICAL MODIFY,MODLEN,MODBND
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
 
       SMALL=0.01
@@ -241,6 +245,13 @@ C clips the image and draws it.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
@@ -248,6 +259,11 @@ C clips the image and draws it.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -259,131 +275,146 @@ C clips the image and draws it.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER btemp*8,BLKNAME*8,BLKMAT*12
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      character SSPARENT*12
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
+C If newer geometry file it may include obstructions. If the value
+C of iobs for this zone is 2 then obstructions were included.
+      newgeo=.false.  ! assume older format geometry.
+      call eclose(gversion(ifoc),1.1,0.01,newgeo)
+
 C If no obstruction for this zone don't bother reading file.
+C If iobs() is 1 then scan zone obstructions file. If iob()
+C is 2 then re-read the version 1.1 zone geometry file.
+      IUF=IFIL+1
       IF(IOBS(ifoc).EQ.0)THEN
         RETURN
       ELSEIF(IOBS(ifoc).EQ.1)THEN
-        IUF=IFIL+1
         CALL EGOMST(IUF,ZOBS(ifoc),0,0,iuout,IER)
         IF(IER.NE.0)RETURN
+      ELSEIF(IOBS(ifoc).EQ.2)THEN
+        if(newgeo)then
+          call georead(IUF,LGEOM(ifoc),ifoc,1,ITRC,iuout,ier)
+          IF(IER.NE.0)RETURN
+        endif
+      ENDIF
 
-        DO 301 IB=1,NB
+      DO 301 IB=1,NB
         CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
 
 C If block names are to be displayed place near first vertex.
 C Transform the location into eyepoint and then screen coords.
-          IF(ITSNM.EQ.0)THEN
-            COG1(1)=XB(1)
-            COG1(2)=YB(1)
-            COG1(3)=ZB(1)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            btemp='        '
-            write(btemp,'(a)') BLKNAME(IB)
-            CALL wstxpt(ix,iy,btemp)
-          ENDIF
+        IF(ITSNM.EQ.0)THEN
+          COG1(1)=XB(1)
+          COG1(2)=YB(1)
+          COG1(3)=ZB(1)
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),ix,iy)
+          btemp='        '
+          write(btemp,'(a)') BLKNAME(IB)
+          CALL wstxpt(ix,iy,btemp)
+        ENDIF
 
 C If editing an obstruction, highlight it.
-          if(ITOBS.eq.IB)then
-            IPEN= -305
-          else
-            IPEN= 1
-          endif
+        if(ITOBS.eq.IB)then
+          IPEN= -305
+        else
+          IPEN= 1
+        endif
 
 C Continue on with surfaces in the block.
 C Copy polygon for obstruction surface I into structure AX AY AZ
 C where IANXT = Index of 'next' point. Clear IANXT & IBNXT arrays.
-          do 1101 J = 1,MV
-            IANXT(J) = 0
-            IBNXT(J) = 0
- 1101     continue
+        do 1101 J = 1,MV
+          IANXT(J) = 0
+          IBNXT(J) = 0
+ 1101   continue
 
 C There are 4 initial vertices per block side and 6 sides.
-          NAP=4
-          DO 1000 I=1,6
-            DO 1100 J = 1,NAP
-              K = JVNB(I,J)
-              AX(J) = XB(K)
-              AY(J) = YB(K)
-              AZ(J) = ZB(K)
-              IANXT(J) = J + 1
- 1100       CONTINUE
-            IANXT(4) = 1
+        NAP=4
+        DO 1000 I=1,6
+          DO 1100 J = 1,NAP
+            K = JVNB(I,J)
+            AX(J) = XB(K)
+            AY(J) = YB(K)
+            AZ(J) = ZB(K)
+            IANXT(J) = J + 1
+ 1100     CONTINUE
+          IANXT(4) = 1
 
 C Transform block polygon to EYE co-ordinates where
 C TEMAT = Model to Eye Matrix
-            CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
-     &                   NBP,BX,BY,BZ,IBNXT,IERR)
+          CALL MATPOLS(NAP,AX,AY,AZ,IANXT,TEMAT,SBBOX,
+     &                 NBP,BX,BY,BZ,IBNXT,IERR)
 
 C Generate clipping flags and clip geometry in eye coords.
 C If ISTAT =  0 : totally inside frustrum
 C If ISTAT =  1 : totally outside frustrum
 C If ISTAT = -1 : straddles frustrum
-            call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
-            IF (ISTAT .EQ. 1) THEN
-              GOTO  1000
-            ELSEIF (ISTAT .EQ. -1) THEN
-              IBPNT=1
-              CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
-            ENDIF
+          call CLIPSUR(NBP,BX,BY,BZ,ISTAT)
+          IF (ISTAT .EQ. 1) THEN
+            GOTO  1000
+          ELSEIF (ISTAT .EQ. -1) THEN
+            IBPNT=1
+            CALL CUTSUR(NB1,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
+          ENDIF
             
 C If there are no edges to draw then jump.
-            if(NB1.eq.0)goto 1000
+          if(NB1.eq.0)goto 1000
 
 C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
 C to screen coords. First move to the beginning point (as passed from CUTSUR).
-            IP = IABS(IBPNT)
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,ix,iy)
-            ixlast=ix
-            iylast=iy
+          IP = IABS(IBPNT)
+          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+          call u2pixel(AAX,AAY,ix,iy)
+          ixlast=ix
+          iylast=iy
 
 C If IP1 is ever negative then jump to a later point.
-            IP1 = IBNXT(IP)
-            if(IP1.lt.1)IP1 = IBNXT(IP+1)
-            if(IP1.lt.1)IP1 = IBNXT(IP+2)
+          IP1 = IBNXT(IP)
+          if(IP1.lt.1)IP1 = IBNXT(IP+1)
+          if(IP1.lt.1)IP1 = IBNXT(IP+2)
 
- 351        CONTINUE
-            CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,ix,iy)
-            if(IPEN.eq.1)then
-              call eswline(ixlast,iylast,ix,iy)
-            elseif(IPEN.eq.-305)then
-              call edwline(ixlast,iylast,ix,iy)
-            else
-              call eswline(ixlast,iylast,ix,iy)
-            endif
-            call forceflush()
+ 351      CONTINUE
+          CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
+          call u2pixel(AAX,AAY,ix,iy)
+          if(IPEN.eq.1)then
+            call eswline(ixlast,iylast,ix,iy)
+          elseif(IPEN.eq.-305)then
+            call edwline(ixlast,iylast,ix,iy)
+          else
+            call eswline(ixlast,iylast,ix,iy)
+          endif
+          call forceflush()
 
 C Repeat until next point is the first, remember position and skip
 C past -1 values of IBNXT, save IP1 as IPT for testing.
-            IPT = IP1
-            IP1 = IBNXT(IP1)
-            if(IP1.lt.1)IP1 = IBNXT(IPT+1)
-            if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-            ixlast=ix
-            iylast=iy
-            IF(IP1 .NE. IP) GOTO 351
+          IPT = IP1
+          IP1 = IBNXT(IP1)
+          if(IP1.lt.1)IP1 = IBNXT(IPT+1)
+          if(IP1.lt.1)IP1 = IBNXT(IPT+2)
+          ixlast=ix
+          iylast=iy
+          IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
-            CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call u2pixel(AAX,AAY,ix,iy)
-            if(IPEN.eq.1)then
-              call eswline(ixlast,iylast,ix,iy)
-            elseif(IPEN.eq.-305)then
-              call edwline(ixlast,iylast,ix,iy)
-            else
-              call eswline(ixlast,iylast,ix,iy)
-            endif
-            call forceflush()
- 1000     CONTINUE
-  301   CONTINUE
-      ENDIF
+          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+          call u2pixel(AAX,AAY,ix,iy)
+          if(IPEN.eq.1)then
+            call eswline(ixlast,iylast,ix,iy)
+          elseif(IPEN.eq.-305)then
+            call edwline(ixlast,iylast,ix,iy)
+          else
+            call eswline(ixlast,iylast,ix,iy)
+          endif
+          call forceflush()
+ 1000   CONTINUE
+  301 CONTINUE
 
       RETURN
       END
@@ -775,7 +806,11 @@ C whether information about the zones is displayed or not.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
@@ -798,7 +833,7 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
+      CHARACTER H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER zname*12,zdesc*64,GMLCN*12,GSNAME*6,outs*124
 
@@ -885,12 +920,15 @@ C Write to output file.
 
 C If there is an obstructions file for this zone check and see if this
 C should be included in image.
-        IF(IOBS(IZ).EQ.1)THEN
+        if(IOBS(IZ).EQ.1)then
           write(outs,'(a,a)') ' Using: ',ZOBS(IZ)
           CALL USRMSG(' ',outs,'-')
           CALL EGOMST(IUF,ZOBS(IZ),0,0,iuout,IER)
           IF(IER.NE.0)RETURN
-
+        elseif(IOBS(IZ).EQ.2)THEN
+          continue  ! any obstructions are in the geometry file.
+        endif
+        if(NB.gt.0)then
           DO 301 IB=1,NB
 C << conversion to using cnvblk and common GB1 to be done >>
 C            CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),

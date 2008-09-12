@@ -14,8 +14,8 @@ OBJECTS = grd.o arrow.o ascii_mat.o bgrd1d.o bgrd1m.o bgrd3d.o bgrdst.o c2fdum.o
 	 cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	 edcondb.o egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
 	 esgrid.o esru_misc.o esystem.o item.o g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o \
-  grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o readTrnsys.o \
-	 sort.o startup.o tdfile.o
+	 grd_misc.o grnd3d.o mfcdat.o nwkrewr.o plelev.o pltcfg.o readTrnsys.o \
+	 rwipv.o rwsbem.o sort.o startup.o tdfile.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -88,7 +88,7 @@ esystem.F:
 	ln -s $(COMdir)/esystem.F .
 item.F:
 	rm -f item.F
-	ln -s $(TDFdir)/item.F .
+	ln -s $(COMdir)/item.F .
 mfcdat.F:
 	rm -f mfcdat.F
 	ln -s $(MFSdir)/mfcdat.F .
@@ -104,6 +104,12 @@ pltcfg.F:
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
+rwipv.F:
+	rm -f rwipv.F
+	ln -s $(COMdir)/rwipv.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 sort.F:
 	rm -f sort.F
 	ln -s $(COMdir)/sort.F .
@@ -112,7 +118,7 @@ startup.F:
 	ln -s $(COMdir)/startup.F .
 tdfile.F:
 	rm -f tdfile.F
-	ln -s $(TDFdir)/tdfile.F .
+	ln -s $(COMdir)/tdfile.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -121,9 +127,9 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F econstr.F edatabase.F edcondb.F egeometry.F egrid.F emfnetw.F \
 	enetmisc.F enetrewr.F emkcfg.F emoist.F esgrid.F eroper.F esru_misc.F \
-	esystem.F item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F sort.F startup.F \
-	tdfile.F trnsf.F readTrnsys.F
+	esystem.F item.F mfcdat.F nwkrewr.F plelev.F pltcfg.F rwipv.F rwsbem.F sort.F \
+	startup.F tdfile.F trnsf.F readTrnsys.F

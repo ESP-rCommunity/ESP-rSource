@@ -30,7 +30,6 @@ C the current model.
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
-#include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -43,11 +42,17 @@ C ICLIM,LCLIM (for climate file)
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -103,26 +108,8 @@ C LPNF (72 char) plant network file name.
 C AIM-2.
       common/aim2def/iAIM2,LAIM2
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -136,20 +123,29 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
       common/IPVF/lipvdatf
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/CFGV/icfgv
 
-C  ipvtitl = main title of IPV
-C  ipvvers = version text i.e. 'base case'
-C  ipvsynop= up to 248 characters of text.
-      common/IPVA/ipvtitl,ipvvers,ipvsynop
+C ipvtitl (char 40) is the title that shows up in reports
+C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
+C ipvsynop (char 248) documents the integrated performance view
+C ipvsimu (char 6) is a short tag describing the assessments to be run
+C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
+C   season assessment with all days included.
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFLG/ITEMSTD
-      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT)
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
       logical bndrysxc,context,bound
-      COMMON/P1/oprdesc,ctlstr
+
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
 C Demands notes and file name.
       COMMON/BL1/dmdsdesc,bdmds
@@ -193,13 +189,13 @@ C Remember if each zone is fully attributed.
       dimension exposed(MCOM),vexposed(MCOM)
       dimension items(25)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
+      character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
-      character DESC*48
+      character DESC*48,DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character zname*12,cfgroot*24,ZN*12,SN*12
@@ -207,20 +203,20 @@ C Remember if each zone is fully attributed.
       character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248
+      character glctldoc*248,opticdoc*248
       character dstmp*24,mlcname*12
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
-      character t16a*16,t16b*16,t16c*16,ipvtitl*40,ipvvers*40
-      character ipvsynop*248,oprdesc*248,ctlstr*24
+      character t16a*16,t16b*16,t16c*16
       CHARACTER dmdsdesc*248,bdmds*72
-      character DBTAG*12,DBTASK*12,DBZN*15
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
       character LAIM2*72
+      character ipvaction*3  ! signal that external ipv file
 
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -752,8 +748,9 @@ C For each surface in current zone check for match to attributes.
               if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ')apply=.false.
               if(ins1.eq.2.and.SSOTF(icc)(1:4).ne.'TRAN')apply=.false.
 
-C Determine the match in the system topology. 
-              CALL SURADJ(IVALS(IZ),I,IE,TMP,IZC,ISC,IC,DESC)
+C Determine the match in the system topology. Note last parameter of the
+C call suradj is a character string.
+              CALL SURADJ(IVALS(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
               if(ins2.eq.1.and.IE.ne.0)then
                 apply=.false.
               elseif(ins2.eq.2.and.IE.ne.1)then
@@ -1094,51 +1091,62 @@ C Check if IPV file and dispersed demands files are known.
 
 C Integrated Performance View. If compact only print description,
 C if verbose print periods, seasons and ratios as well.
-        if(lnblnk(lipvdatf).eq.0)then
-          continue
-        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          continue
+        if(icfgv.lt.4)then
+          if(lnblnk(lipvdatf).eq.0)then
+            continue
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            continue
+          else
+	    ipvaction='ipv'
+            call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)
+            call edisp(itu,' ')
+          endif
         else
-          call ripvdat(IFCFG,lipvdatf,ieripv)
-          call edisp(itu,' ')
-          if(ieripv.eq.0)then
-            call edisp(itu,
-     &        'An Integrated Performance View has been defined:')
-            if(contextinfo.eq.1)then
-              WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
-              call edisp(itu,outs)
-              WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
-              call edisp(itu,outs)
-              call edisp(itu,'Synopsis:')
-              call edisp248(itu,ipvsynop,80)
-            elseif(contextinfo.eq.2)then
+
+C Check if embedded within configuration file.
+          if(nipvassmt.eq.0)then ! there was nothing in the cfg file.
+            continue
+          else
+            ieripv=0
+          endif
+        endif
+        if(ieripv.eq.0)then
+          call edisp(itu,
+     &      'An Integrated Performance View has been defined:')
+          if(contextinfo.eq.1)then
+            WRITE(outs,'(2A)')'Title   : ',ipvtitl(1:lnblnk(ipvtitl))
+            call edisp(itu,outs)
+            WRITE(outs,'(2A)')'Version : ',ipvvers(1:lnblnk(ipvvers))
+            call edisp(itu,outs)
+            call edisp(itu,'Synopsis:')
+            call edisp248(itu,ipvsynop,80)
+          elseif(contextinfo.eq.2)then
 
 C Rescan the climatelist file to get seasons. If this was successful
 C then include a description of the IPV. Otherwise warn user about
 C the climate file and attempt to print out IPV contents.
-              INQUIRE (FILE=cdblfil,EXIST=XST)
-              if(XST)then
-                IUF=IFIL+2
-                call scancdblist(IUF,LCLIM,ok,iercl)
-                if(iercl.eq.0)then
+            INQUIRE (FILE=cdblfil,EXIST=XST)
+            if(XST)then
+              IUF=IFIL+2
+              call scancdblist(IUF,LCLIM,ok,iercl)
+              if(iercl.eq.0)then
+                call listipvdat(itu,'a',ier)
+              else
+                call edisp(itu,
+     &            'The climatelist was incomplete or missing so the')
+                call edisp(itu,'IPV details might be incorrect.')
+                if(ieripv.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
                   call edisp(itu,
-     &              'The climatelist was incomplete or missing so the')
-                  call edisp(itu,'IPV details might be incorrect.')
-                  if(ieripv.eq.0)then
-                    call listipvdat(itu,'a',ier)
-                  else
-                    call edisp(itu,
-     &                'The IPV description was incomplete or missing.')
-                  endif
+     &              'The IPV description was incomplete or missing.')
                 endif
               endif
             endif
-          else
-            call edisp(itu,
-     &       'An Integrated Performance View is incomplete or missing.')
           endif
+        else
+          call edisp(itu,
+     &     'An Integrated Performance View is incomplete or missing.')
         endif
 
 C If temporal data associated with the model report it.
@@ -1162,10 +1170,11 @@ C If temporal data associated with the model report it.
             call edisp(itu,' Temporal entities currently used...')
             call edisp(itu,'  ________________________________')
             call edisp(itu,'  |temporal    |generic |associated')
-            call edisp(itu,'  |entity name |type    |with      ')
+            call edisp(iuout,
+     &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
-              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L)
-   29         FORMAT(i2,1X,A12,1X,A8,1X,A16)
+              WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
+   29         FORMAT(i2,1X,A12,1X,A8,5X,A16,A16)
               call edisp(itu,outs)
   28        continue
             call edisp(itu,' ')
@@ -1177,9 +1186,9 @@ C Databases associated with the model.
       if(databaseinfo.gt.0)then
         call edisp(itu,' ')
         call edisp(itu,'Databases associated with the model: ')
-        WRITE(outs,'(2A)')' pressure distributions : ',
+        WRITE(outs248,'(2A)')' pressure distributions : ',
      &    LAPRES(1:lnblnk(LAPRES))
-        call edisp(itu,outs)
+        call edisp248(itu,outs248,100)
         WRITE(outs,'(2A)')' materials              : ',
      &    LFMAT(1:lnblnk(LFMAT))
         call edisp(itu,outs)
@@ -1460,7 +1469,7 @@ C floor area for each.
         vexposed(IZZ) = 0.0
         do 111 ij=1,nzsur(izz)
           icc=izstocn(izz,ij)
-          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESC) ! not dependant on georead
+          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESCRC) ! not dependant on georead
           if(IE.eq.0)then 
 
 C Check the U value for each external surface.
@@ -1831,7 +1840,7 @@ C as an earlier one.
               else
                 if(schedinfo.eq.1)then
                   call edisp(itu,' ')
-                  call edisp248(itu,oprdesc,80)
+                  call edisp248(itu,oprdesc(IVALS(IZ)),80)
                 elseif(schedinfo.eq.2)then
                   call edisp(itu,' ')
                   CALL VENTINF(IVALS(IZ),ITU)
@@ -1991,6 +2000,9 @@ C not browsing.
       subroutine mupdate(ier)
 #include "building.h"
 #include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -2001,7 +2013,11 @@ C not browsing.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -2012,18 +2028,26 @@ C not browsing.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      common/p3ver/ip3ver
+      common/p3ver/ip3ver(MCOM)
+      
+C IPV data.
+      common/IPVF/lipvdatf
+      character lipvdatf*72
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
+      character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character zname*12,zdesc*64,ZN*12
+      character ipvaction*3  ! to instruct it to read from external IPV file
       logical ok,dok,ddok,found,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical allnew  ! if true then all zones are v1.1 or newer.
       logical forceupgrade  ! if any other zone is version 1.1
       logical MODOPR ! to flag if zone operations file needs changing.
 
@@ -2036,16 +2060,41 @@ C Check if Unix-based or DOS based.
       newgeo=.false.  ! assume older format geometry.
       sorted=.false.  ! assume casual gains not sorted.
 
+C Loop through and find out if all zone geometry files are
+C v1.1 or newer (so set igupgrade=2). If so then there is
+C no need for an upgrade. And if there are v1.1 geometry
+C files but still some zone obstruction files then there
+C is still a need for upgrading.
+      allnew=.true.
+      do 775 iz=1,ncomp
+        if(gversion(iz).lt.1.1) then
+          allnew=.false.
+        elseif(gversion(iz).ge.1.1) then
+          if(iobs(iz).eq.0)then
+            continue
+          elseif(iobs(iz).eq.1)then
+            allnew=.false.
+          elseif(iobs(iz).eq.2)then
+            continue
+          endif
+        endif
+  775 continue
+      if(allnew)then
+        igupgrade=2
+        forceupgrade=.false.
+      else
+
 C Loop through and find out if any zone geometry files are
 C version 1.0 and also if the upgrade policy is non-zero.
 C So if the model is mixed then force an upgrade. If the
 C igupgrade was set to 2 in preferences also force an upgrade.
-      forceupgrade=.false.
-      do 777 iz=1,ncomp
-        if(gversion(iz).gt.1.0) forceupgrade=.true.
-  777 continue
-      if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
-      if(igupgrade.eq.2) forceupgrade=.true.
+        forceupgrade=.false.
+        do 777 iz=1,ncomp
+          if(gversion(iz).gt.1.0) forceupgrade=.true.
+  777   continue
+        if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
+        if(igupgrade.eq.2) forceupgrade=.true.
+      endif
 
       if(forceupgrade)then
         dok=.true.
@@ -2055,8 +2104,10 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         h(4)='An update will also reduce the number of model '
         h(5)='files which have to be managed. '
         call askok('The current model uses an out-of-date format for',
-     &    'some geometry files. Update this?',ok,dok,5)
+     &    'some geometry or obstruction files. Update this?',ok,dok,5)
         if(ok)then
+	
+          
           do 776 iz=1,ncomp
             call eclose(gversion(iz),1.1,0.01,newgeo)
             if(newgeo)then
@@ -2098,9 +2149,24 @@ C see if there are shading and obstruction files.
                       lstsfcalc(iz,nsurfcalc(iz))=I
                     endif
   679             continue
+
                   call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
                 endif
-              endif 
+              endif
+
+C If there is a v1.1 geometry file and iobs() is 1 then the
+C obstructions need to be moved into the geometry file and
+C zobs() cleared for this zone..
+              if(iobs(iz).eq.0)then
+                continue
+              elseif(iobs(iz).eq.1)then
+                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
+                iobs(iz)=2
+                zobs(iz)=' '
+                call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+              elseif(iobs(iz).eq.2)then
+                continue
+              endif
             else
 
 C On first entry for version 1.0 several common blocks need to be
@@ -2149,6 +2215,19 @@ C Otherwise assume all applicable for shading and insolation.
               gversion(iz) =1.1
               newgeo = .true.
               call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+
+C If iobs() is 1 then the obstructions need to be moved into the
+C geometry file and zobs() cleared for this zone..
+              if(iobs(iz).eq.0)then
+                continue
+              elseif(iobs(iz).eq.1)then
+                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
+                iobs(iz)=2
+                zobs(iz)=' '
+                call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
+              elseif(iobs(iz).eq.2)then
+                continue
+              endif
             endif
 
 C The documentation in the zone construction and tmc files might
@@ -2192,9 +2271,9 @@ C Do cursory check to see if the file is sorted.
 
 C If older format ip3ver=0 then force it to write to the
 C current format.
-              if(ip3ver.eq.0)then
+              if(ip3ver(iz).eq.0)then
                 MODOPR=.true.
-                ip3ver=1
+                ip3ver(iz)=2
               endif
 
 C Save the file, sorting the periods if necessary.
@@ -2232,16 +2311,34 @@ C and if there is a control file scan it and write it back out again.
       endif
 
 C Check to see if version of configuration file requires updating.
-      if(icfgv.lt.3)then
+      if(icfgv.lt.4)then
         dok=.true.
         h(1)='Older models should be updated to take advantage of'
         h(2)='extended documentation and quality assurance facilities'
         h(3)='as well as enhanced databases.'
         h(4)='An update will also reduce the number of descriptive '
         h(5)='files which have to be managed. '
+        h(6)=' '
+        h(7)='Older models with seaparate IPV (integrated performance'
+        h(8)='view files will have this data moved into the cfg file.'
+        h(9)=' '
         call askok('The current model uses an out-of-date format for',
-     &    'the configuration file. Update this?',ok,dok,5)
+     &    'the configuration file. Update this?',ok,dok,9)
         if(ok)then
+
+C Check if IPV file known and fill common blocks before writing out to
+C the cfg file. If it was previously merged in the file name will now
+C be a black string.
+          if(lnblnk(lipvdatf).eq.0)then
+            continue
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            continue
+          else
+            IUO=IFIL+1
+	    ipvaction='ipv'
+            call ripvdat(IUO,lipvdatf,ipvaction,ier)
+          endif
+          icfgv=4   ! set to current version.
           CALL EMKCFG('-',IER)
 
 C Check if there were zone utility files and if so check and see if
@@ -2289,7 +2386,9 @@ C they can be deleted.
         endif
       endif
 
-C Read in and write out the control file if it exists.
+C Read in and write out the control file if it exists. Why test
+C for the version number?  Because older versions of ESP-r did
+C not have atributed control files.
       if(icfgv.lt.3)then
         if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
           continue
@@ -2307,7 +2406,7 @@ C Read in and write out the control file if it exists.
       endif
 
 C Offer option to update shading files.
-      if(icfgv.lt.3)then
+      if(icfgv.lt.4)then
         anyish=.false.
         do 42 iz=1,ncomp
           if(ISI(iz).eq.1)then
@@ -2330,9 +2429,12 @@ C If there are no shading files, don't bother trying to update.
         h(1)='Older shading files should be recalculated to reflect'
         h(2)='changes in the allowable number of surfaces in each'
         h(3)='zone. Each affected zone will be done in turn.'
+        h(4)=' '
+        h(5)='Recent versions of the ish module are able to make a'
+        h(6)='backup copy of shading databases in ASCII format. '
         CALL EASKABC(' Update of shading options:',' ',
      &    'recalculate (silent)','recalculate (interactive)','continue',
-     &     IRT,2)
+     &     IRT,6)
       else
         IRT=3
       endif

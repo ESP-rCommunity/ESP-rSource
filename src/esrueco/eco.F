@@ -48,6 +48,8 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       integer igraphiclib  ! external definition
 
@@ -81,6 +83,8 @@ C Scale the project
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/Displ/SelSurf(MCON)
 
@@ -382,7 +386,7 @@ C graphic display to compensate.
         call startbuffer()
        ENDIF
 
-       CALL ESPrVersion("summary")
+       CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

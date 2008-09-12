@@ -31,6 +31,8 @@ C if these are 0 then use default values.
 #include "building.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -318,7 +320,7 @@ C messages to stderr in case of rule script program control.
       IF(MMOD.EQ.-6) ICOUT=0
 
 C Show version.
-      CALL ESPrVersion("summary")
+      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
