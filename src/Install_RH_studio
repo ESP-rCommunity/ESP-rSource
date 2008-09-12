@@ -1075,7 +1075,12 @@ esac
 case $xml_support in
   yes) 
        # Link xml libraries, along with stdc++.
-       ULIBS="$ULIBS -lXML -lstdc++";
+       case $compiler in
+         sunF90)  ULIBS="$ULIBS -lXML -lCstd";;
+         GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
+         intel)   ULIBS="$ULIBS -lXML -lstdc++";;
+       esac;
+#        ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in
@@ -1087,9 +1092,10 @@ case $xml_support in
        # -lxslt on cygwin/mingw.
        ULIBS="$ULIBS -lxml2";
 
-       # Append ws2_32 library on mingw.
+       # Append ws2_32 library on mingw and Crun to Sun
        case $platform in
             mingw)    ULIBS="$ULIBS -lws2_32";;
+            sun)    ULIBS="$ULIBS -lCrun";;
             *)        ULIBS="$ULIBS";;
        esac;
        # Flag xml for inclusion in bps
