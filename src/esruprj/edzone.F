@@ -1294,7 +1294,8 @@ C Shift sensor/actuator zone references > IW2 down one.
       endif
       
 C Loop through all other zones and if a surface attribute
-C faces the current zone then reset it to OUTSIDE.
+C faces the current zone then reset it to UNKNOWN. Also update
+C the values of ICT, IE2 and IC2.
       call usrmsg('Unlinking surfaces referencing this zone...',' ','-')
       do 25 IX=1,NCOMP
         if(IX.ne.IW2)then
@@ -1308,20 +1309,26 @@ C faces the current zone then reset it to OUTSIDE.
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
             if(SOTHER(ISX,1)(1:12).eq.zname(IW2)(1:12))then
-              SOTHER(ISX,1)='EXTERIOR'
+              SOTHER(ISX,1)='UNKNOWN'
               SOTHER(ISX,2)='0'
               SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='EXTERIOR'
+              SSOTHER(ioc,1)='UNKNOWN'
               SSOTHER(ioc,2)='0'
               SSOTHER(ioc,3)='0'
+              ICT(ioc)=-1
+              IE2(ioc)=0
+              IC2(ioc)=0
               changed = .true.
             elseif(SOTHER(ISX,1)(1:4).eq.'WITH')then
-              SOTHER(ISX,1)='EXTERIOR'
+              SOTHER(ISX,1)='UNKNOWN'
               SOTHER(ISX,2)='0'
               SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='EXTERIOR'
+              SSOTHER(ioc,1)='UNKNOWN'
               SSOTHER(ioc,2)='0'
               SSOTHER(ioc,3)='0'
+              ICT(ioc)=-1
+              IE2(ioc)=0
+              IC2(ioc)=0
               changed = .true.
             endif
    28     continue
