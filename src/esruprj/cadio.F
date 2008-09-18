@@ -130,8 +130,11 @@ C Help text for this menu.
       H(42)='   are > 4 sides use POLYLINE entities.  Or you could use'
       H(43)='   POLYLINE entities for all zone surfaces.'
       H(44)=' '
-      H(45)='NOTE: if you are useing Native Windows version the paths'
-      H(46)='to the exported files may not work correctly. '
+      H(45)='NOTE: if you need to debug the import of CAD data turn'
+      H(46)='the reporting level from silent or standard to detailed.'
+      H(47)=' '
+      H(48)='NOTE: if you are useing Native Windows version the paths'
+      H(49)='to the exported files may not work correctly. '
  
       CALL EMENU('Export Model',ITEMS1,43,INO1)
 
@@ -518,7 +521,7 @@ C        call edisp(iuout,'Use a VRML viewer to explore it.')
       ELSEIF(INO1.EQ.10)THEN
       
 C Pop up the help text.
-       CALL PHELPD('export menu',46,'-',0,0,IER)
+       CALL PHELPD('export menu',49,'-',0,0,IER)
 
       ELSEIF(INO1.EQ.11)THEN
         RETURN

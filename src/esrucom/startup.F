@@ -2434,7 +2434,7 @@ C Errors.
       end
 
 C parcnv parse command line paramters for ecnv.
-      subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
+      subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       
       integer lnblnk  ! function definition
@@ -2443,7 +2443,7 @@ C parcnv parse command line paramters for ecnv.
 
       integer iargc,m
       integer termtype
-      integer i,itrc,itmprm,iobs,ichop
+      integer i,iverb,itmprm,iobs,ichop
       real conv
       character argument*72,prog*48,inf*144,outs*248,appn*24
       character iform*24,oform*24,ouf*144,ucfg*72,mode*8
@@ -2454,7 +2454,7 @@ C parcnv parse command line paramters for ecnv.
       ouf  = 'UNKNOWN'
       ucfg  = 'UNKNOWN'
       conv = 0.001
-      itrc = 0
+      iverb = 0
       itmprm = 1
       iobs  = 0
       ichop = 0
@@ -2510,7 +2510,7 @@ C If one parameter.
       call edisp(iuout,' ')
           stop
         elseif(argument(1:2).eq.'-v')then
-          itrc = 1
+          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:3).eq.'-mm')then
           conv = 0.001
         elseif(argument(1:6).eq.'-metre')then
