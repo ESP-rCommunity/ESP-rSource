@@ -289,6 +289,7 @@ C and the surrounding obstruction blocks.
       common/prec8/slat,slon
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
 
       character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
@@ -433,6 +434,7 @@ C Draws a Mercator sun path diagram.
 
       common/spad/mmod,limit,limtty
       common/prec8/slat,slon
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
@@ -440,7 +442,10 @@ C Draws a Mercator sun path diagram.
       character etext*72,blab*3,month*3
       dimension month(12)
       logical above
-      integer igwid,igheight
+      integer*8 igwid,igheight  ! passed to axiscale
+      integer*8 iside,isize     ! passed to viewtext
+      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+      real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
@@ -474,10 +479,15 @@ C Draw vertical axes on left and right.
 
 C Output a heading for the view.
       call edayr(ijday,ido,imo)
-      call viewtext('Mercator Sun Plot',2,1,ifs)
+      iside=2
+      isize=1
+      ifont=ifs
+      call viewtext('Mercator Sun Plot',iside,isize,ifont)
       write(etext,'(i2,1x,a3,a,f6.1,a,f5.1)')ido,month(imo),
      &                ' at Latitude',slat,', Longitude',slon
-      call viewtext(etext,3,1,ifs)
+      iside=3
+      isize=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Plot sun path, for each hour of the day get the azimuth and
 C elevation and plot that position on the graph with a symbol and
@@ -490,20 +500,28 @@ C time indication.
          call eazalts(stime,ijday,slat,slon,isunup,sazi,salt)
          if(salt.gt.0)then
             if(.not.above)then
-               call etplot(sazi,salt,0,0)
+               iupdown=0
+               isym=0
+               call etplot(sazi,salt,iupdown,isym)
                above=.true.
             endif
             iclkhr=ihr
             if(ihr.gt.12)iclkhr=ihr-12
             if(iclkhr.gt.9)then
                write(blab,'(i2)')iclkhr
-               call etlabel(blab,sazi,salt,4,itfs)
+               ipos=4
+               isize=itfs
+               call etlabel(blab,sazi,salt,ipos,isize)
             else
                write(blab,'(i1)')iclkhr
-               call etlabel(blab,sazi,salt,4,itfs)
+               ipos=4
+               isize=itfs
+               call etlabel(blab,sazi,salt,ipos,isize)
             endif
 
 C Plot a symbol at the sun position.
+            iupdown=1
+            isym=6
             call etplot(sazi,salt,1,6)
          endif
    10 continue
