@@ -32,6 +32,7 @@ C of lines to include in the text portion of the display.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER*72 ETEXT,GTEXT
@@ -112,6 +113,7 @@ C Display heading for climate graph.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER*72 ETEXT,GTEXT

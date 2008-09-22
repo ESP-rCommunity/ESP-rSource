@@ -9,6 +9,7 @@ C VIEWER MAIN PROGRAM
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON /FIL/ IFUSE, IFO
       common/appw/iappw,iappx,iappy

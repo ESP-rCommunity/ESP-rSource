@@ -1415,6 +1415,7 @@ C *********************************************************************
       SUBROUTINE FHCGND(IL)
 #include "building.h"
 
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -1497,6 +1498,7 @@ C *********************************************************************
       SUBROUTINE FHCBSF(ISRF)
 #include "building.h"
 
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

@@ -59,6 +59,7 @@ C IUF is file unit for geometry, utility file units.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1

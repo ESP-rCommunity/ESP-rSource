@@ -546,6 +546,7 @@ C ****** Routine to draw ground topology.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)

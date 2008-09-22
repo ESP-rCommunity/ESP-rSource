@@ -187,6 +187,7 @@ C act='p' iget parameters already set.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       dimension Yold(MZS), TIMEold(MZS)
@@ -626,6 +627,7 @@ C to graphical result display.
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C To extend logic to maximize plotting area.

@@ -769,6 +769,7 @@ C corresponding to graphical result display.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT

@@ -53,6 +53,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       common/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy

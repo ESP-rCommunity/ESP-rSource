@@ -4043,8 +4043,8 @@ C iappx & iappy are the upper-left position on the monitor <not yet implemented 
 C menuchw is the initial request for menu width (in characters)
       SUBROUTINE EPAGES(MODEL,IIN,IOUT,iappwi,iapphi,iappx,iappy,
      &  menuchw,TITLE)
-C     SUBROUTINE EPAGES(MODEL,IIN,IOUT,TITLE)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       CHARACTER*(*) TITLE
       CHARACTER HEAD*255
@@ -5629,6 +5629,7 @@ C UPDVIEW is called from C code in wwlib.c with values to update common
 C blocks GFONT, VIEWPX and SPAD. Set REFRESH=true.  Set MODIFY=true
 C to force any wire-frame images to be redrawn.
       subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -9234,6 +9235,7 @@ C then it represents the zone which is currently being edited.
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON

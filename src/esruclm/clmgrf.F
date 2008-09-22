@@ -32,6 +32,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER*26 ITEM(16)
       character hold*72,h*72
@@ -733,6 +734,7 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW

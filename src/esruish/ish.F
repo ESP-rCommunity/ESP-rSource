@@ -110,6 +110,7 @@ C IEEE callback (Solaris)
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray2/itdsp,itbnd,itept,itznm,itsnm,itvno,itorg,itsnr,

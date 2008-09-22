@@ -161,6 +161,7 @@ c Graph commons.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C Need to remember the following variables (i.e those are

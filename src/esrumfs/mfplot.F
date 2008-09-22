@@ -48,6 +48,7 @@ C espriou.h provides currentfile.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME

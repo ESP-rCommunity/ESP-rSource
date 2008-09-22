@@ -4,6 +4,7 @@ C ROUTINES FOR TERMINAL COMMUNICATION VIA SCRATCH PAD
 C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
 
 #include "viewer.h"
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
         character a*1
 

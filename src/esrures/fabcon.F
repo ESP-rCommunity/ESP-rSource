@@ -158,6 +158,7 @@ C to the fabric temperature or condensation information.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

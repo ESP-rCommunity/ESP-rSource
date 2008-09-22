@@ -2566,6 +2566,7 @@ C at top of code file). Other is the distance between grid points if
 C the user edited the value (iwmg=7).
       subroutine dogrid(iwmg,factor,ixo,iyo,ixbul,iybul,ixblr,iyblr,
      &  viewlim,other)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 

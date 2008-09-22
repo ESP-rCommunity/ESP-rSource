@@ -144,6 +144,7 @@ C Graphics and ESP-r default commons
       COMMON/POPHELP/H(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/FUNIT/IUCFG,IUPDB
@@ -2063,6 +2064,7 @@ C Icon commons
      & NWICNTXT(MICN,60) 
 
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C connection points property array

@@ -42,6 +42,7 @@ C Boston, MA 02111-1307 USA.
       common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       common/GFONT/IFS,ITFS,IMFS
       common/funit/iucfg, iupdb
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec

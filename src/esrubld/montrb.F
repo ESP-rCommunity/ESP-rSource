@@ -168,6 +168,7 @@ C Parameters for eline calls.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       
       integer ncomp,ncon
