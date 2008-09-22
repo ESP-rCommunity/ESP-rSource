@@ -263,7 +263,11 @@ C ****************** mycograph *****************************
       CHARACTER*29 ITEM(6)
       CHARACTER H*72,mldnam*48
       logical greyok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return

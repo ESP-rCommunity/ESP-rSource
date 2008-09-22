@@ -986,7 +986,11 @@ C Grid commons
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12,OUTS1*26
       LOGICAL GON,SON,greyok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Clear the screen
       CALL startbuffer

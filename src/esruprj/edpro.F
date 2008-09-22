@@ -809,7 +809,11 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER PDBDESC*40,ETEXT*72
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       DIMENSION VAL1(25),VAL2(25)
 

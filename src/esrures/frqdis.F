@@ -906,7 +906,11 @@ C MODDRW draws a histogram of the frequency distribution.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character alabel*60
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       YMAX = IFREQ
       IF(IG.EQ.2)YMAX=ITOTAL

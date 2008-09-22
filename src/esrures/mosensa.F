@@ -435,7 +435,11 @@ C SAINTER calculates summary statistics within result sets.
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
       logical graphit
       integer YAXSET, ADDLIN
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       character outs*124,zname*12,zdesc*64,H*72
       character SLABEL*32,GLABEL*20

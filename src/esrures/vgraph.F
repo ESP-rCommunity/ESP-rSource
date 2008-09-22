@@ -872,7 +872,11 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character VITEM*24,HITEM*24,VIT*24,HIT*24
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Interval on vertical axis.
       A=YMAXV-YMINV

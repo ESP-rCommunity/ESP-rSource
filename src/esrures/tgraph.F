@@ -203,7 +203,11 @@ C act='p' iget parameters already set.
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       logical kwatts,colok
 

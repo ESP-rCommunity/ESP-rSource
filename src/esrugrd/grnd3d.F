@@ -1424,7 +1424,11 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*16
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       XMN2=0.
       YMN2=0.
@@ -1508,7 +1512,11 @@ C *********************************************************************
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*4,VERTX*2
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
         NUMX=NDXG
@@ -1652,7 +1660,11 @@ C *********************************************************************
 
       DIMENSION XGND(8),YGND(8),ZGND(8)
       DIMENSION XS(8),YS(8),ZS(8)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       THKX=0.
       DO 10 IX=1,NDXG

@@ -40,7 +40,11 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL mxmn
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -973,7 +977,11 @@ C   is negative draw only the past value.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
       DATA CLMVAR/'S rad W/m2','Temp Deg.C','Rel hum pc',

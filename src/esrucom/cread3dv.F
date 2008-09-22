@@ -79,7 +79,11 @@ C NZJVN : topology of vertices associated with each connection.
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return

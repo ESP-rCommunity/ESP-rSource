@@ -50,7 +50,11 @@ C Parameters for eline calls.
       CHARACTER PERST1*14,PERST2*44,PERST3*44      
       DIMENSION IFSYM(MBITS)
       logical colok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Start drawing; first header
       IF(MMOD.EQ.8)THEN

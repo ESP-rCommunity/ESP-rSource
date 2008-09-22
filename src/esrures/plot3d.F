@@ -634,7 +634,11 @@ C series data ie. timesteps-vs-day-vs-data.
       logical close,zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       DATA LNAME/'MASK.DAT'/
 

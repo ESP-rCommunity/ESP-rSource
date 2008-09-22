@@ -3074,6 +3074,12 @@ C  ICOMP zone number
 
       character zname*12,zdesc*64,outs*124
       dimension TACI(24),TACV(24)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
+
       IDTY=IDTYP
       IDAY=IDTY-1
       JDAY=IDTY
@@ -4982,7 +4988,11 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
       character zname*12,zdesc*64
-      integer igheight  ! for use with axiscale
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       logical COLOK
       IDTY=IDTYP

@@ -203,7 +203,11 @@ C since not all compilers use the same default.
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character etext*82, clabel*20,nterm*1,tab*1,zname*12,zdesc*64
       logical colok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Test save option selected.
 C [for NRCan]      tab=','

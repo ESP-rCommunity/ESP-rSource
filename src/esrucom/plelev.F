@@ -65,7 +65,11 @@ C IUF is file unit for geometry, utility file units.
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
       logical newgeo  ! to use for testing if new/old geometry file.
       newgeo=.false.  ! assume older format geometry.
 

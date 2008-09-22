@@ -471,7 +471,11 @@ C temperature graphical output.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       CALL MOFHED(ICOMP,ISUR,'i')
       XMAX=THKMAX

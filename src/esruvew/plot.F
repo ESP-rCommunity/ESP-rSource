@@ -184,7 +184,11 @@ C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
 #include "viewer.h"
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C SET OUTPUT DEVICE
       IOUTD=1

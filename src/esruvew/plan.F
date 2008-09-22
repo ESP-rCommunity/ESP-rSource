@@ -10,6 +10,11 @@ C------------------------
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       character outs*80
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       LOGICAL J1J2
       IF(MMOD.LT.0)RETURN

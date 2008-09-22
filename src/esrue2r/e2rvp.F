@@ -30,7 +30,11 @@ C ******* View cone for plan/elevation.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character direc*1
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Set the length of the viewcone according to the image.
       PI = 4.0 * ATAN(1.0)
@@ -136,7 +140,11 @@ C ******* Default views formation.
       character zname*12,zdesc*64,outs*124,LBSRIF*72
       character doit*124,ltmp*72,trvewsh*10
       character vewcmds*124,rvewsh*10
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Addview = true then save editing as a new view, if false
 C then it is an update to an existing view.

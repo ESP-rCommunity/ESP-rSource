@@ -72,7 +72,11 @@ C The period details
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
       INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Set up scaling and graph parameters
       VPOS=1E+15

@@ -294,7 +294,11 @@ C *********************************************************************
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Define the  MAX & MIN surface coordinates.
       XMAX=XMAXS(IS)
@@ -1168,7 +1172,11 @@ C *********************************************************************
 
       DIMENSION XEDG(8),YEDG(8),ZEDG(8)
       DIMENSION XS(8),YS(8),ZS(8)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       IVRT1=IVXEDG(IEG,1)
       IVRT2=IVXEDG(IEG,2)
@@ -1579,7 +1587,11 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -2147,7 +2159,11 @@ C *********************************************************************
 
       DIMENSION XCRN(8),YCRN(8),ZCRN(8)
       DIMENSION XS(8),YS(8),ZS(8)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       IVRX=IVXCRN(ICR)
 
@@ -2553,7 +2569,11 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN

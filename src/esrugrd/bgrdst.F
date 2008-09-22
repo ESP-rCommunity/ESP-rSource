@@ -1771,7 +1771,11 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -1935,7 +1939,11 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -2101,7 +2109,11 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN

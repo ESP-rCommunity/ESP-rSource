@@ -276,7 +276,11 @@ C enthmaxy enthalpy y axis maximum
       CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       PATMOS=1013.25
       IF(MMOD.ne.8) return

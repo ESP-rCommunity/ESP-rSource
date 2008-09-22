@@ -714,7 +714,11 @@ C condensation graphical output.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character outs*124
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       XMAX=THKMAX
       XMIN=THKMIN

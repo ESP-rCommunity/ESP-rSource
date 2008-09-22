@@ -83,7 +83,11 @@ C converts into viewing coords, clips the image and draws it.
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return

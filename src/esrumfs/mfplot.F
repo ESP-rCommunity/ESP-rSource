@@ -82,7 +82,11 @@ C Currently only one node plotted.
       logical OK,DOK
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C In order to pass strings across to C it is necessary to first
 C do an internal write placing an end marker which C can understand.

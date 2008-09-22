@@ -334,7 +334,11 @@ C xax       - text for horiz axis.
       dimension NCEL(MNREG,MNZ),plaw(MNREG,MNZ)
       dimension NRG(4,MNZ),REG(MNREG,MNZ)
       dimension xgrd(MCEL1D)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C x-z plane grid.
       call startbuffer()
@@ -411,7 +415,11 @@ C xax,yax   - text for horiz and vert axis.
       character title*30,xax*10,yax*1
 
       dimension xgrd(MCEL1D),ygrd(MCEL1D)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C x-z plane grid.
       call startbuffer()

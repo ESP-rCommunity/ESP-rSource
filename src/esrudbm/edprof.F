@@ -351,7 +351,11 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       character DayT*8,Patr*8,ETEXT*72
       character ittag*12,itmenu*32
       logical vclose1,vclose2
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
 

@@ -38,7 +38,11 @@ C IP = 6  - EXTERNAL RELATIVE HUMIDITY HELD IN IX(5,MT).
 
       COMMON/CLMDAT/IDY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A           CDIR(MT),CHUM(MT)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C IF PERIOD NOT CHANGED NO NEED TO RECALCULATE
       IF(INEW.EQ.0)GO TO 2

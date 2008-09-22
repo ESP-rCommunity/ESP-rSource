@@ -383,7 +383,11 @@ C 'HISDRW' draws a histogram of the frequency distribution
       COMMON/FREQS1/ICBIN(MF),ITOTAL
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       CHARACTER*10 LABELX,LABLSX(5)
       DATA LABLSX /'Temp. degC',

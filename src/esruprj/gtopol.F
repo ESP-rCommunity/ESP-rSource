@@ -3294,7 +3294,11 @@ C output: triangle list
       CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C If there is a ground geometry then check its bounds.
       do 741 iv = 1,NGTV

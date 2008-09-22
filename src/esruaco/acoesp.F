@@ -1236,7 +1236,11 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Initialisation
       YMAX=1.0
