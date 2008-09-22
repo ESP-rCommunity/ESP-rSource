@@ -49,7 +49,11 @@ C to superimpose any direct shading.
       character blkname*8,blkmat*12,outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
       integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       iunit=ifil
 
@@ -197,8 +201,13 @@ C Draws the elevation of the target surface.
       character*72 etext*72,month*3
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
+#ifdef OSX
+      integer iside,isize     ! passed to viewtext
+      integer ipos,iupdown,isym,ifont    ! passed to etplot
+#else
       integer*8 iside,isize     ! passed to viewtext
       integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+#endif
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
@@ -303,9 +312,15 @@ C and the surrounding obstruction blocks.
       character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
       character tz*13,zdesc*64
       logical newgeo  ! used to test for new/old geometry file.
+#ifdef OSX
+      integer igwid,igheight
+      integer iside,isize     ! passed to viewtext
+      integer ipos,iupdown,isym,ifont    ! passed to etplot
+#else
       integer*8 igwid,igheight
       integer*8 iside,isize     ! passed to viewtext
       integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+#endif
 
 C The right offset for the graphic box is the character width
 C of the menu. Also allow 2 text lines at the bottom for future
@@ -460,9 +475,15 @@ C Draws a Mercator sun path diagram.
       character etext*72,blab*3,month*3
       dimension month(12)
       logical above
+#ifdef OSX
+      integer igwid,igheight  ! passed to axiscale
+      integer iside,isize     ! passed to viewtext
+      integer ipos,iupdown,isym,ifont    ! passed to etplot
+#else
       integer*8 igwid,igheight  ! passed to axiscale
       integer*8 iside,isize     ! passed to viewtext
       integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+#endif
       real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
