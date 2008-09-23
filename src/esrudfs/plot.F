@@ -138,7 +138,7 @@ C Re-set Maximum and Minimum residuals.
 
 C Re-scale the screen and re-draw the coordinate axes.
       ipltwd=int(igw/2)-15
-      iglmon=igl+ipltwd+30
+      iglmon=igl + int(ipltwd) + 30
       IF(RDR)THEN
 
 C Calculate plotting box locations.

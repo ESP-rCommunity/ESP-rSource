@@ -500,6 +500,11 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 
       logical greyok
       character gact*3,zact*3
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return

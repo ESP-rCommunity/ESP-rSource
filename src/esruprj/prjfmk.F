@@ -3075,9 +3075,9 @@ C  ICOMP zone number
       character zname*12,zdesc*64,outs*124
       dimension TACI(24),TACV(24)
 #ifdef OSX
-      integer igwid,igheight  ! for use with axiscale
+      integer ipltwd,igheight  ! for use with axiscale
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipltwd,igheight  ! for use with axiscale
 #endif
 
       IDTY=IDTYP
@@ -3104,8 +3104,8 @@ C Clear and setup plot area.
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
-      iglsat=igl+ipltwd+9
-      iglsun=igl+2*(ipltwd+9)
+      iglsat=igl + int(ipltwd) + 9
+      iglsun=igl+2*(int(ipltwd)+9)
       plxmin=0.
       plxmax=24.
       YMAX=YMAX*1.1
@@ -3230,7 +3230,7 @@ C Title and labels.
       call pixel2u(igr-180,igt-69,gx,gy)
       CALL etplot(gx,gy,-4,0)
 
-      ioff=(ipltwd/3)
+      ioff=(int(ipltwd)/3)
       call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
       call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
       call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
@@ -4989,9 +4989,9 @@ C Descriptive label for a zone load or casual gain.
       character lodlabel*6, outs*124
       character zname*12,zdesc*64
 #ifdef OSX
-      integer igwid,igheight  ! for use with axiscale
+      integer ipltwd,igheight  ! for use with axiscale
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipltwd,igheight  ! for use with axiscale
 #endif
 
       logical COLOK
@@ -5080,8 +5080,8 @@ C Clear and setup plot area.
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
-      iglsat=igl+ipltwd+9
-      iglsun=igl+2*(ipltwd+9)
+      iglsat=igl + int(ipltwd) + 9
+      iglsun=igl+2*(int(ipltwd)+9)
       plxmin=0.
       plxmax=24.
       YMAX=AMAX1(YMAXWKD,YMAXSAT,YMAXSUN,10.0)*1.1
@@ -5317,7 +5317,7 @@ C Title and labels.
           if (COLOK) call winscl('-',0)
  300  continue
 
-      ioff=(ipltwd/3)
+      ioff=(int(ipltwd)/3)
       call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
       call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
       call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
