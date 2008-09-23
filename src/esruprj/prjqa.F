@@ -179,7 +179,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
-      logical allattribok,changedit,ok,dok,concat,unixok
+      logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension IVALS(MCOM),areamlc(MCOM)
       dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
       dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
@@ -217,7 +217,9 @@ C Remember if each zone is fully attributed.
       character uname*24,pwd*40
       character LAIM2*72
       character ipvaction*3  ! signal that external ipv file
-
+      character MLCSYM*12
+      character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
+      
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
 C in the current model. A -1 means not applicable
@@ -1775,6 +1777,7 @@ C Note optional zone extensions.
         endif
 
 C Check for mismatch in surface attributes and boundary conditions.
+        call edisp(itu,' ')
         bndrysxc=.true.
         DO 1243 IS=1,NZSUR(IVALS(IZ))
           icc=IZSTOCN(IVALS(IZ),is)
@@ -1796,6 +1799,39 @@ C Check for mismatch in surface attributes and boundary conditions.
      &       bndrysxc=.false.
           if(ICT(icc).eq.5.and.SSOTHER(icc,1)(1:5).ne.'ADIAB')
      &       bndrysxc=.false.
+
+C While looping check that constructions of partitions are matching.
+          if(ICT(icc).eq.3)then
+            showother=.true.
+            icoth=IZSTOCN(IC2(icc),IE2(icc))
+          else
+            showother=.false.
+          endif
+          write(SN,'(a12)')SSNAME(icc)
+          if(showother.and.icoth.ne.0)then
+            do 17 ii=1,nmlc
+              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM)
+                if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+                  continue
+                elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+
+C If the current construction is nonsymmetric then it should not be
+C used for a partition (and db does not have a linked MLC - inform the user.
+                  write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
+     &              ' has a nonsymmetric construction ',
+     &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),'.'
+                  call edisp(itu,outs)
+                  write(outs,'(5a)') 'It faces ',
+     &              SSNAME(icoth),' which is composed of ',
+     &              SSMLCN(icoth)(1:12),' (which may not match).'
+                  call edisp(itu,outs)
+                else
+                  continue
+                endif
+              endif
+  17        continue
+          endif
  1243   continue
         if(.NOT.bndrysxc)then
           call edisp(itu,

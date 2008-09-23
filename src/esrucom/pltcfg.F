@@ -388,13 +388,16 @@ C of miscellaneous data items.
             IREC1=NPCDAT(IPCOMP,2)
             READ(IUNIT1,REC=IREC1,IOSTAT=ISTAT,ERR=950)
      &        AA,ICODE,CEDATE,NNODE,NMATX,NMISC
-C Save number of nodes associated with each component
+
+C Save number of nodes associated with each component.
             NPCDAT(iPComp,8) = NNODE
-C Check to see if required number of items is specified
+
+C Check to see if required number of items is specified.
             if(npi(ipcomp).ne.nmisc) then
-              write(OUTS,707)ipcomp
-  707         format
-     &       ('Invalid no of parameters specified for component',i5)
+              write(OUTS,'(a,i3,a,i2,a,i2,a)')
+     &          'Invalid no of parameters for component',
+     &          ipcomp,' found ',npi(ipcomp),' expecting ',nmisc,
+     &          ' please check plant component.'
               call edisp(iuout,OUTS)
               call epwait
               stop
