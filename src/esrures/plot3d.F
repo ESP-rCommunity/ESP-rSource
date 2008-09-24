@@ -636,10 +636,10 @@ C series data ie. timesteps-vs-day-vs-data.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iside,isize,ifont     ! passed to viewtext
+      integer iside,isize,ifont,iposi     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont,iposi     ! passed to viewtext
 #endif
 
       DATA LNAME/'MASK.DAT'/
@@ -938,7 +938,9 @@ C Label axis.
         IX=IY-1
         WRITE(ANAME,'(A10)') AXIS(I)
         ANAME1=ANAME
-        call etlabel(ANAME1,VERTEX(IX),VERTEX(IY),IPOS(I),1)
+        iposi=ipos(i)
+        isize=1
+        call etlabel(ANAME1,VERTEX(IX),VERTEX(IY),iposi,isize)
 
 C Draw arrow on axis.
         CALL FLARROW(XYZARW,2*I-1,ARRW,COEFF,SCALE,XMIN,YMIN,

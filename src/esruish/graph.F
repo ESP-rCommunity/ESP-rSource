@@ -477,12 +477,12 @@ C Draws a Mercator sun path diagram.
       logical above
 #ifdef OSX
       integer igwid,igheight  ! passed to axiscale
-      integer iside,isize     ! passed to viewtext
-      integer ipos,iupdown,isym,ifont    ! passed to etplot
+      integer iside,isize,ifont     ! passed to viewtext
+      integer ipos,iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! passed to axiscale
-      integer*8 iside,isize     ! passed to viewtext
-      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ipos,iupdown,isym    ! passed to etplot
 #endif
       real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
 

@@ -1426,10 +1426,10 @@ C *********************************************************************
       CHARACTER LABELS*16
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iside,isize,ifont     ! passed to viewtext
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
 #endif
 
       XMN2=0.
@@ -1471,6 +1471,8 @@ C *********************************************************************
         CALL EDLINE(IX1,IY1,IX2,IY2,4)
    20 CONTINUE
       XCF=-0.5
+      ipos=0
+      isize=itfs
       DO 30 I=1,NDXG
         XCF=XCF+1.
         YCF=-0.5
@@ -1478,25 +1480,27 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')ITPGND(I,J,IL)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
    30 CONTINUE
       iside=1
       isize=1
       ifont=2
       call viewtext('Construction Details',iside,isize,ifont)
+      ipos=4
+      isize=itfs
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL('1',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('1',XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL('2',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('2',XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL('3',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('3',XLAB,YLAB,ipos,isize)
       XLAB=XMN2-XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL('4',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('4',XLAB,YLAB,ipos,isize)
       call forceflush()
       RETURN
       END
@@ -1519,10 +1523,10 @@ C *********************************************************************
       CHARACTER LABELS*4,VERTX*2
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iside,isize,ifont     ! passed to viewtext
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
 #endif
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
@@ -1574,6 +1578,8 @@ C *********************************************************************
         CALL EDLINE(IX1,IY1,IX2,IY2,4)
    20 CONTINUE
       XCF=-0.5
+      ipos=0
+      isize=itfs
       IF(ISRF.EQ.1)THEN
         DO 30 I=1,NUMX
           XCF=XCF+1.
@@ -1582,7 +1588,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(1,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    30   CONTINUE
       ELSEIF(ISRF.EQ.2)THEN
         DO 40 I=1,NUMX
@@ -1592,7 +1598,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(2,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
       ELSEIF(ISRF.EQ.3)THEN
         DO 50 I=NUMX,1,-1
@@ -1602,7 +1608,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(3,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    50   CONTINUE
       ELSEIF(ISRF.EQ.4)THEN
         DO 60 I=NUMX,1,-1
@@ -1612,7 +1618,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(4,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    60   CONTINUE
       ELSEIF(ISRF.EQ.5)THEN
         DO 70 I=1,NUMX
@@ -1622,7 +1628,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(5,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    70   CONTINUE
       ELSE
         DO 80 I=1,NUMX
@@ -1632,7 +1638,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(6,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    80   CONTINUE
       ENDIF
       iside=1
@@ -1641,16 +1647,19 @@ C *********************************************************************
       call viewtext('Boundary Surface Details',iside,isize,ifont)
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,1),XLAB,YLAB,2,ITFS)
+      ipos=2
+      isize=itfs
+      CALL ETLABEL(VERTX(ISRF,1),XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,2),XLAB,YLAB,2,ITFS)
+      CALL ETLABEL(VERTX(ISRF,2),XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,3),XLAB,YLAB,4,ITFS)
+      ipos=4
+      CALL ETLABEL(VERTX(ISRF,3),XLAB,YLAB,ipos,isize)
       XLAB=XMN2-XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,4),XLAB,YLAB,4,ITFS)
+      CALL ETLABEL(VERTX(ISRF,4),XLAB,YLAB,ipos,isize)
       call forceflush()
 
       RETURN

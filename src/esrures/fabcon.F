@@ -781,6 +781,11 @@ C IPRZ is primitive db ref for each layer.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character CSTR*25,TCSTR*25,zname*12,zdesc*64,ZN*12
+#ifdef OSX
+      integer ipos,isize      ! for use with etlabel
+#else
+      integer*8 ipos,isize      ! for use with etlabel
+#endif
 
 C Determine the 'other' zone and connection information.
       CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
@@ -808,7 +813,9 @@ C Plot saturated vapour pressure.
         call etplot(THKN(I)*1000.,PSS(I),1,0)
    20 CONTINUE
       call etplot(THKMAX,PSSI,1,0)
-      call etlabel('Sat Vap Pres',THKMAX,PSSI,3,1)
+      ipos=3
+      isize=1
+      call etlabel('Sat Vap Pres',THKMAX,PSSI,ipos,isize)
 
 C Plot vapour pressure.
       call etplot(THKMIN,PSO,0,0)
@@ -816,7 +823,9 @@ C Plot vapour pressure.
         call etplot(THKN(I)*1000.,PS(I),-5,6)
    30 CONTINUE
       call etplot(THKMAX,PSI,-5,0)
-      call etlabel('Vap Pres',THKMAX,PSI,3,1)
+      ipos=3
+      isize=1
+      call etlabel('Vap Pres',THKMAX,PSI,ipos,isize)
 
       RETURN
       END

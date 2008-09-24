@@ -1594,10 +1594,10 @@ C *********************************************************************
       character SSPARENT*12
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iside,isize,ifont     ! passed to viewtext
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
 #endif
 
 C Define the two surfaces.
@@ -1646,7 +1646,9 @@ C Define the two surfaces.
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')ITPEDG(IEG,I,J,IL)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          ipos=0
+          isize=itfs
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
    30 CONTINUE
       iside=1
@@ -1656,17 +1658,23 @@ C Define the two surfaces.
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
       WRITE(LABELN,'(A,I2)')'V',IVXEDG(IEG,1)
-      CALL ETLABEL(LABELN,XLAB,YLAB,2,ITFS)
+      ipos=2
+      isize=itfs
+      CALL ETLABEL(LABELN,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is1)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMX2/2.
       YLAB=YMN2-XYMX/10.
-      CALL ETLABEL(LABELS,XLAB,YLAB,2,ITFS+2)
+      ipos=2
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is2)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMN2-XMX2/10.
       YLAB=YMX2/2.
-      CALL ETLABEL(LABELS,XLAB,YLAB,1,ITFS+2)
+      ipos=1
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       call forceflush()
 
       RETURN
@@ -2581,10 +2589,10 @@ C *********************************************************************
       character SSPARENT*12
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iside,isize,ifont     ! passed to viewtext
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
 #endif
 
 C Return if not in graghical mode.
@@ -2630,6 +2638,8 @@ C Define the two surfaces.
         CALL EDLINE(IX1,IY1,IX2,IY2,4)
    20 CONTINUE
       XCF=-0.5
+      ipos=0
+      isize=itfs
       DO 30 I=1,NDXC(ICR)
         XCF=XCF+1.
         YCF=-0.5
@@ -2637,7 +2647,7 @@ C Define the two surfaces.
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')ITPCRN(ICR,I,J,IL)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
    30 CONTINUE
       iside=1
@@ -2647,17 +2657,23 @@ C Define the two surfaces.
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
       WRITE(LABELN,'(A,I2)')'V',IVXCRN(ICR)
-      CALL ETLABEL(LABELN,XLAB,YLAB,2,ITFS)
+      ipos=2
+      isize=itfs
+      CALL ETLABEL(LABELN,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is1)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMX2/2.
       YLAB=YMN2-XYMX/10.
-      CALL ETLABEL(LABELS,XLAB,YLAB,2,ITFS+2)
+      ipos=2
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is2)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMN2-XMX2/10.
       YLAB=YMX2/2.
-      CALL ETLABEL(LABELS,XLAB,YLAB,1,ITFS+2)
+      ipos=1
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       call forceflush()
 
       RETURN

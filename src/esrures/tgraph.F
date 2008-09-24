@@ -1049,6 +1049,11 @@ C Draws the control graph(s).
       DIMENSION XVAL1(MS),XREM1(MS)
       character BLAB*13,label*8
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,NOPLOT
+#ifdef OSX
+      integer ipos,isize      ! for use with etlabel
+#else
+      integer*8 ipos,isize      ! for use with etlabel
+#endif
 
       XREM1(1)=0.0
       XREM1(2)=0.0
@@ -1185,11 +1190,13 @@ C no horizontal plot,
        ENDIF
               
        IF(II.EQ.IODF.AND.J.GT.N-NOUT)THEN
+         ipos=3
+         isize=0
          IF(NZ.GT.1)THEN        
            write(BLAB,'(A2,I2,A8)')'zn',IZONE,LABEL
-           call etlabel(BLAB,TFINSH,XVAL1(L),3,0)
+           call etlabel(BLAB,TFINSH,XVAL1(L),ipos,isize)
          ELSE
-           call etlabel(LABEL,TFINSH,XVAL1(L),3,0)
+           call etlabel(LABEL,TFINSH,XVAL1(L),ipos,isize)
          ENDIF
        ENDIF
        GOTO 322

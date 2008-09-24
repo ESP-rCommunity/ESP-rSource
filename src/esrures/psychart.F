@@ -850,8 +850,10 @@ C enthmaxy enthalpy y axis maximum
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
 #endif
 
       PATMOS=1013.25
@@ -960,7 +962,9 @@ C          IF(TD.EQ.int(xmax/2.)) THEN
             write(puts,*) INT(RH),'%'
             if(GS.LE.ymax)then
               if(colok)call winscl('z',17)
-              CALL etlabel(puts,TD,GS,0,0)
+              ipos=0
+              isize=0
+              CALL etlabel(puts,TD,GS,ipos,isize)
             endif
           ENDIF
           if(colok)call winscl('-',0)
@@ -1019,7 +1023,9 @@ C Draw on the enthalpy scales
           TD=Xmin
           GS=((ENTH-TD)/(1.82*TD+2500.))*1000.
           write(puts,*) IENTH
-          CALL etlabel(puts,Xmin-Xmax/XSC,GS,0,0)
+          ipos=0
+          isize=0
+          CALL etlabel(puts,Xmin-Xmax/XSC,GS,ipos,isize)
           call forceflush()
         ENDIF
   200 CONTINUE
@@ -1029,7 +1035,9 @@ C Draw on the enthalpy scales
         IF (ENTH.GT.ENTHMINX.AND.ENTH.LE.ENTHMAX) THEN
           TD=TDB(ENTH,(YMAX)/1000.)
           write(puts,*) IENTH
-          CALL etlabel(puts,TD,YMAX+YMAX/YSC,0,0)
+          ipos=0
+          isize=0
+          CALL etlabel(puts,TD,YMAX+YMAX/YSC,ipos,isize)
           call forceflush()
         ENDIF
   210 CONTINUE

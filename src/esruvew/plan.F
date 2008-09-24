@@ -12,8 +12,10 @@ C------------------------
       character outs*80
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
 #endif
 
       LOGICAL J1J2
@@ -65,9 +67,11 @@ C   PRINT Z LIMITS
 
 C   LABEL PLAN WITH E,F,M
       IPLN=1
-      call etlabel('Eye',DDDD(1),DDDD(2),0,ifs)
-      call etlabel('F',CCCC(1),CCCC(2),0,ifs)
-      call etlabel('M',BBBB(1),BBBB(2),0,ifs)
+      ipos=0
+      isize=ifs
+      call etlabel('Eye',DDDD(1),DDDD(2),ipos,isize)
+      call etlabel('F',CCCC(1),CCCC(2),ipos,isize)
+      call etlabel('M',BBBB(1),BBBB(2),ipos,isize)
       call forceflush()
 
       RETURN

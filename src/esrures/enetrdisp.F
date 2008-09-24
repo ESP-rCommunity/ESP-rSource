@@ -74,8 +74,10 @@ C The period details
       INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
 #endif
 
 C Set up scaling and graph parameters
@@ -504,8 +506,10 @@ C Make sure the label is within the string bounds (20 chars).
 
 C Combine the data decriptor and units to form the complete label. 
             WRITE(STR,'(A,1X,A)') 
-     &EVLABS(I)(1:LSTR),EXLAB(1:LNBLNK(EXLAB))
-            CALL ETLABEL(STR,TIMEOLD(I),YOLD(I),3,0)
+     &        EVLABS(I)(1:LSTR),EXLAB(1:LNBLNK(EXLAB))
+            ipos=3
+            isize=0
+            CALL ETLABEL(STR,TIMEOLD(I),YOLD(I),ipos,isize)
           ENDIF
  110    CONTINUE
 

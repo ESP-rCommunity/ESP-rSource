@@ -265,8 +265,10 @@ C ****************** mycograph *****************************
       logical greyok
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
 #endif
 
 C Check in graphics mode.
@@ -300,8 +302,10 @@ C Store the scaling parameters used in drawing the axes
       CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
 
 C Label graph
+      ipos=0
+      isize=2
       call etlabel('Mould Growth Conditions Plot',
-     &(xmax+xmin)/2,ymax+9.,0,2)
+     &  (xmax+xmin)/2,ymax+9.,ipos,isize)
 
 C Draw the dry-bulb temperature lines
       CALL etplot(xmin,ymin,0,0)
@@ -454,6 +458,11 @@ C subroutine curvedraw
       common/FILEP/IFIL
 
       character outs*124, mdbnam*72 ,mldnam*48
+#ifdef OSX
+      integer ipos,isize      ! for use with etlabel
+#else
+      integer*8 ipos,isize      ! for use with etlabel
+#endif
 
       iget=imld
       call mycorecv(2,iget)
@@ -478,7 +487,9 @@ C Plot the curve on the chart
             if(RH.le.ymax.and.RH.ge.ymin.and.istfl.gt.0) then
                call etplot(TDB,RH,-102,0)
              if(ITDB.gt.xmax/2.and.ilab.eq.0) then  
-               call etlabel(mldnam(iget)(1:20),xmax/2,RH,0,0)
+               ipos=0
+               isize=0
+               call etlabel(mldnam(iget)(1:20),xmax/2,RH,ipos,isize)
                ilab=1
              endif
             endif
