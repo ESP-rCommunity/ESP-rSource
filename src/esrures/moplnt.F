@@ -1425,6 +1425,11 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer YAXSET, ADDLIN
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -2009,13 +2014,26 @@ C Write graph head and set up axis positions and draw.
 
         WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &    SDESCR(11:lnblnk(SDESCR))
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
 
         iancline=0
         if(graftitle(1:2).ne.'  ')then
           t64=graftitle
-          if(iancline.gt.0)CALL viewtext(t64,3,1,2)
-          if(iancline.eq.0)CALL viewtext(t64,2,1,2)
+          if(iancline.gt.0)then
+            iside=3
+            isize=1
+            ifont=2
+            call viewtext(t64,iside,isize,ifont)
+          endif
+          if(iancline.eq.0)then
+            iside=2
+            isize=1
+            ifont=2
+            call viewtext(t64,iside,isize,ifont)
+          endif
         endif
 
         call AXISPOS
@@ -2628,7 +2646,10 @@ C Write graph head and set up axis positions and draw.
 
             WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &        SDESCR(11:lnblnk(SDESCR))
-            CALL viewtext(ETEXT,1,0,1)
+            iside=1
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
             TLABEL='  '
             if(NPGET.eq.1)then
               write (TLABEL,'(2a,f6.2)')

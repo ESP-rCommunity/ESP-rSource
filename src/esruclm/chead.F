@@ -40,6 +40,11 @@ C of lines to include in the text portion of the display.
       character PERST1*14,PERST2*44,PERST3*44
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C If in type 8 terminal make the text display area larger before
 C displaying the following data ( but only clear it if LINES != LIMTTY)
@@ -82,7 +87,10 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif
@@ -93,7 +101,10 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       write(ETEXT,'(1X,A44)')PERST2
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif
@@ -123,6 +134,11 @@ C Display heading for climate graph.
       integer onright ! number of right axis
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -203,7 +219,10 @@ C The calling code will know how many axis are required.
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif
@@ -214,7 +233,10 @@ C The calling code will know how many axis are required.
       write(ETEXT,'(1X,A44)')PERST2
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif

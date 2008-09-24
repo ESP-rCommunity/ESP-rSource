@@ -1426,8 +1426,10 @@ C *********************************************************************
       CHARACTER LABELS*16
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       XMN2=0.
@@ -1479,7 +1481,10 @@ C *********************************************************************
           CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
    40   CONTINUE
    30 CONTINUE
-      CALL VIEWTEXT('Construction Details',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Construction Details',iside,isize,ifont)
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
       CALL ETLABEL('1',XLAB,YLAB,4,ITFS)
@@ -1514,8 +1519,10 @@ C *********************************************************************
       CHARACTER LABELS*4,VERTX*2
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
@@ -1628,7 +1635,10 @@ C *********************************************************************
           CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
    80   CONTINUE
       ENDIF
-      CALL VIEWTEXT('Boundary Surface Details',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Boundary Surface Details',iside,isize,ifont)
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
       CALL ETLABEL(VERTX(ISRF,1),XLAB,YLAB,2,ITFS)

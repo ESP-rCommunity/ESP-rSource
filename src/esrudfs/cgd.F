@@ -336,8 +336,10 @@ C xax       - text for horiz axis.
       dimension xgrd(MCEL1D)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C x-z plane grid.
@@ -355,7 +357,10 @@ C x-z plane grid.
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
       call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
-      CALL viewtext(title,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(title,iside,isize,ifont)
 
 C Draw a bold box around domain.
       IPEN=-302
@@ -417,8 +422,10 @@ C xax,yax   - text for horiz and vert axis.
       dimension xgrd(MCEL1D),ygrd(MCEL1D)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C x-z plane grid.
@@ -442,7 +449,10 @@ C Store the scaling parameters used in drawing the axes.
         call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,1,0,yax)
         call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,1,1,yax)
       endif
-      CALL viewtext(title,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(title,iside,isize,ifont)
       DO 30 I=2,nx
         IPEN=-204
         if (I.eq.2.or.I.eq.nx) IPEN=1

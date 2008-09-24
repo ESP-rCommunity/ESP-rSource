@@ -353,8 +353,10 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       logical vclose1,vclose2
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
@@ -377,7 +379,10 @@ C Pick up the data increment for the horizontal axis.
 
 C Print header
       WRITE(ETEXT,'(2a)')'Profile: ',itmenu(iit)
-      call viewtext(ETEXT,1,0,IFS)
+      iside=1
+      isize=0
+      ifont=ifs
+      call viewtext(etext,iside,isize,ifont)
 
       DO 60 I=1,288
         VAL1(I)=0.

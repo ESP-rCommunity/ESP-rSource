@@ -937,6 +937,11 @@ C to graphical result display.
       CHARACTER outsd*80,outsd1*81
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed.
 C and the simulation and output timesteps.
@@ -956,15 +961,20 @@ C and the simulation and output timesteps.
       ENDIF
 
       WRITE(ETEXT,'(1X,A44,A,A22)')SDESCR,' Lib:',RFILE(1:22)
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(1X,A60)')PDESCR
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       call znlist(outsd,len,ierr) 
       if(ierr.ne.1)then
         write(outsd1,'(1x,a)')outsd
-        CALL viewtext(outsd1,3,0,1)
+        iside=3
+        call viewtext(outsd1,iside,isize,ifont)
       endif
 
       WRITE(ETEXT,'(4a)')' Variables: Vert=',

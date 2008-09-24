@@ -202,11 +202,11 @@ C Draws the elevation of the target surface.
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
 #ifdef OSX
-      integer iside,isize     ! passed to viewtext
-      integer ipos,iupdown,isym,ifont    ! passed to etplot
+      integer iside,isize,ifont     ! passed to viewtext
+      integer ipos,iupdown,isym     ! passed to etplot
 #else
-      integer*8 iside,isize     ! passed to viewtext
-      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ipos,iupdown,isym     ! passed to etplot
 #endif
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',

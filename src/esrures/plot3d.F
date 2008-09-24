@@ -636,8 +636,10 @@ C series data ie. timesteps-vs-day-vs-data.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       DATA LNAME/'MASK.DAT'/
@@ -665,10 +667,14 @@ C pixel references for calls to viewtext.
       ENDIF
 
       WRITE(ETEXT,'(1X,A44,A,A20)')SDESCR,' Lib:',RFILE(1:20)
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(1x,A60)')PDESCR
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       ETEXT=' '
       if(zlist)then
@@ -678,7 +684,8 @@ C pixel references for calls to viewtext.
         write(ETEXT,'(a,f9.2,a,f9.2)') ' The data range is ',
      &  XXMIN,' to ',XXMAX
       endif
-      CALL viewtext(ETEXT,4,0,1)
+      iside=4
+      call viewtext(etext,iside,isize,ifont)
 
 C Scaling happens here...
       igwid=igw
@@ -692,7 +699,10 @@ C Scaling happens here...
       READ(LU1,REC=3) NXPNTS,NZPNTS
 
       NAME=TITLE(1:40)
-      call viewtext(NAME,6,1,2)
+      iside=6
+      isize=1
+      ifont=2
+      call viewtext(name,iside,isize,ifont)
 
 C Make sure all rotations are positive.
       ROTNX=ABS(ROTNXX)
@@ -778,7 +788,10 @@ C Display rotation parameters & yscale and zscale.
 59    WRITE(detail,'(A,F5.1,A,F5.1,A,F7.3,A,F7.3)')
      &   ' Rotation about X=',ROTNXX,', about Y=',ROTNYY,
      &   '  Yscale=',YSCALE,' Zscale=',ZSCALE
-      call viewtext(detail,3,0,1)
+      iside=3
+      isize=0
+      ifont=1
+      call viewtext(detail,iside,isize,ifont)
 
 C Set up the plotting direction to produce the proper mask.
 C Set vertices to be plotted by the frame routine into the

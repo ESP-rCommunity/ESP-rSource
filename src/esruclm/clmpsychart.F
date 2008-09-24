@@ -45,6 +45,11 @@ C esrures/psychart.F - revised to for plotting climate data.
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*40,PERST3*40
       logical close,colok,cscaleok,ok,dok
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       PATMOS=1013.25
 
@@ -93,14 +98,20 @@ C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
  101    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT
-      CALL viewtext(GTEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(gtext,iside,isize,ifont)
 
       NTSPH=1
       CALL PERSTR(IYEAR,IDS,IT1,IDF,IT2,NTSPH,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
       write(etext,'(2A)') ' P',PERST3(2:40)
       GTEXT=ETEXT
-      call viewtext(gtext,2,0,1)
+      iside=2
+      isize=0
+      ifont=1
+      call viewtext(gtext,iside,isize,ifont)
 
 C Setup menu text.
       ITEM(1) ='1 plot data            '

@@ -2074,6 +2074,11 @@ C << written at the end of the process. This has yet to be done.
       character guesstype*24  ! for context of surface addition
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Depending on act.
       newgeo=.false.  ! assume older format geometry.
@@ -2617,7 +2622,10 @@ C Update the image if not in one of the silent modes.
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &        iicfgz,iicfgn,iicfgc,iicfgdfn)
             WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-            CALL viewtext(ETEXT,1,1,1)
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
           endif
         endif
         call edisp(iuout,' ')
@@ -2741,7 +2749,10 @@ C Update the image if in non-silent mode
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &        iicfgz,iicfgn,iicfgc,iicfgdfn)
             WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-            CALL viewtext(ETEXT,1,1,1)
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
           endif
         endif
         call edisp(iuout,' ')

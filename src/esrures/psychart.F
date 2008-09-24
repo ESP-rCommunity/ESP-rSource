@@ -55,6 +55,11 @@ C component status, act = 'u' for user supplied points.
       CHARACTER DESCRH*5,outs*124,DESCR*7,DESCR1*10
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
       logical ok,dok,ask
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       SMALL=1E-20
       PATMOS=1013.25
@@ -322,7 +327,10 @@ C Make up a string describing this time.
 C Refresh the graph, add timestep title and then plot the data.
         call psychartbackground(Xmin,Xmax,Ymin,Ymax,enthmax,
      &  enthminx,enthminy,enthmaxy)
-        CALL viewtext(outs,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(outs,iside,isize,ifont)
         if(act.eq.'u')then
           if(iup.gt.1)then
             do 197 i=1,iup
@@ -452,8 +460,12 @@ C first day of output.
 C Refresh the graph, add timestep title and then plot the data.
           call psychartbackground(Xmin,Xmax,Ymin,Ymax,enthmax,
      &      enthminx,enthminy,enthmaxy)
-          CALL viewtext(ETEXT,1,0,1)
-          CALL viewtext(outs,2,0,1)
+          iside=1
+          isize=0
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
+          iside=2
+          call viewtext(outs,iside,isize,ifont)
 
 C Draw selected components for the current timestep.
           DO 98 IMDRW=IMDRW1,IMDRW2

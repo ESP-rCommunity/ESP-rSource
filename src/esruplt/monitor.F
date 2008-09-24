@@ -177,8 +177,10 @@ C since not all compilers use the same default.
       logical colok
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,iupdown,isym     ! passed to etplot
 #endif
 
       tab=' '
@@ -213,7 +215,10 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 c Display header information.
       write(etext,'(3a)') ' Variations of ',statev(mstate),
      &  ' state variable with time'
-      call viewtext(etext,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Generate view period string.
       CALL EDAY(ISD1,ISM1,IODS)
@@ -222,7 +227,8 @@ C Generate view period string.
       CALL STDATE(IYEAR,IODF,DE,DE1)
       write(etext,'(7a,i4)') 'Period',tab,DS1,' to ',DE1,' Year',tab,
      &  IYEAR
-      call viewtext(etext,2,1,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Find minimum and maximum values for x-axis based on the simulation
 C period.

@@ -645,6 +645,11 @@ C To extend logic to maximize plotting area.
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C If GTK library then there are additional options << work in progress >>.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -737,11 +742,15 @@ C Set standard fornt width so that space around graph is correct.
         WRITE(ETEXT,'(4A)')'Lib: ',RFILE(1:lsn1),
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &  SDESCR(11:lnblnk(SDESCR))
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       if(nzonec.ge.NZ)then
         call colznlist(3,1,ierr)
@@ -749,7 +758,8 @@ C Set standard fornt width so that space around graph is correct.
         call znlist(outsd,len,ierr) 
         if(ierr.ne.1)then
           write(outsd1,'(1x,a)')outsd
-          CALL viewtext(outsd1,3,0,1)
+          iside=3
+          call viewtext(outsd1,iside,isize,ifont)
         endif
       endif
 
@@ -757,16 +767,19 @@ C Remember if a 4th line of text is being drawn.
       iancline=0
       if(IROC.eq.0.and.ialstused.ne.0)then
         WRITE(outsd1,'(1x,2a)')'Using anchor list ',ALOCLBL(ialstused)
-        CALL viewtext(outsd1,4,0,1)
+        iside=4
+        call viewtext(outsd1,iside,isize,ifont)
         iancline=iancline+1
       elseif(IROC.eq.1.and.ialstused.ne.0)then
         WRITE(outsd1,'(1x,3a)')'Using anchor list ',ALOCLBL(ialstused),
      &     '      (rate of change of variable plot)'
-        CALL viewtext(outsd1,4,0,1)
+        iside=4
+        call viewtext(outsd1,iside,isize,ifont)
         iancline=iancline+1
       elseif(IROC.eq.1.and.ialstused.eq.0)then
         WRITE(outsd1,'(a)') ' (rate of change of variable plot)'
-        CALL viewtext(outsd1,4,0,1)
+        iside=4
+        call viewtext(outsd1,iside,isize,ifont)
         iancline=iancline+1
       endif
       if(graftitle(1:2).ne.'  ')then

@@ -1773,8 +1773,10 @@ C *********************************************************************
       CHARACTER Label*2,Title*17
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C Return if not in graghical mode.
@@ -1801,7 +1803,10 @@ C Define the active scale.
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Row Number: ',IRow
-      CALL VIEWTEXT(Title,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL U2PIXEL(XMin,YMin,IX,IY)
@@ -1941,8 +1946,10 @@ C *********************************************************************
       CHARACTER Label*2,Title*17
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C Return if not in graghical mode.
@@ -1969,7 +1976,10 @@ C Define the active scale.
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Column Number: ',ICol
-      CALL VIEWTEXT(Title,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL U2PIXEL(XMax,YMax,IX,IY)
@@ -2111,8 +2121,10 @@ C *********************************************************************
       CHARACTER Label*2,Title*17
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C Return if not in graghical mode.
@@ -2139,7 +2151,10 @@ C Define the active scale.
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Layer Number: ',ILay
-      CALL VIEWTEXT(Title,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL U2PIXEL(XMin,YMax,IX,IY)

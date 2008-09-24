@@ -202,6 +202,11 @@ C Returned parameters from silentread.
       integer numberofzones ! to pass to updwire rather than ncomp
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Initialize variables and recover command line arguments.
       call ezero
@@ -709,8 +714,11 @@ C current number of zones if a model has been loaded.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-            CALL viewtext(ETEXT,1,1,1)
+            WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
           endif
           CFGOK=.TRUE.
           call siteinfo(iuout)
@@ -781,8 +789,11 @@ C Pass information to C library code if running in graphic mode.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
                 call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-                WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-                CALL viewtext(ETEXT,1,1,1)
+                WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+                iside=1
+                isize=1
+                ifont=1
+                call viewtext(etext,iside,isize,ifont)
               endif
             endif
             if(MMOD.EQ.8)then
@@ -790,8 +801,11 @@ C Pass information to C library code if running in graphic mode.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
               call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-              WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-              CALL viewtext(ETEXT,1,1,1)
+              WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+              iside=1
+              isize=1
+              ifont=1
+              call viewtext(etext,iside,isize,ifont)
             endif
           else
 C            call edisp(iuout,'* Changing focus to specified zone.')
@@ -915,8 +929,11 @@ C Re-draw the configuration buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-            CALL viewtext(ETEXT,1,1,1)
+            WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
           endif
         endif
       endif

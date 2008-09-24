@@ -811,8 +811,10 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       CHARACTER PDBDESC*40,ETEXT*72
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       DIMENSION VAL1(25),VAL2(25)
@@ -842,9 +844,12 @@ C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)
 
 C Print header
-      WRITE(ETEXT,16)IPRO,PDBDESC(IPRO)
+      WRITE(etext,16)IPRO,PDBDESC(IPRO)
    16 FORMAT('Profile ',I3,': ',A40)
-      call viewtext(ETEXT,1,0,IFS)
+      iside=1
+      isize=0
+      ifont=ifs
+      call viewtext(etext,iside,isize,ifont)
 
       DO 60 I=1,25
         VAL1(I)=0.

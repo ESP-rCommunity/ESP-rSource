@@ -242,6 +242,11 @@ C FACDRW draws the elevation of the surface.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       DIMENSION MTHNAM(12)
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       CHARACTER*72 ETEXT
       CHARACTER*3 MTHNAM
@@ -260,7 +265,10 @@ C Display header information.
       WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(icon)
     1 FORMAT(' Shading patterns: ',A3,' at hour',I3,' for surface',I3,
      &       ' ',a)
-      CALL viewtext(ETEXT,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')

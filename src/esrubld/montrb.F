@@ -205,8 +205,10 @@ C since not all compilers use the same default.
       logical colok
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C Test save option selected.
@@ -238,7 +240,10 @@ c Find minimum and maximum values for x-axis.
 
 c Display header information.
       write(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-      call viewtext(etext,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Generate view period string.
       CALL EDAY(ISD1,ISM1,IODS)
@@ -247,7 +252,10 @@ C Generate view period string.
       CALL STDATE(IYEAR,IODF,DE,DE1)
       write(etext,'(7a,i4)') 'Period',tab,DS1,' to ',DE1,' Year',tab,
      &  IYEAR
-      call viewtext(etext,2,1,1)
+      iside=2
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C If Plant flux then divide by 1000.0
       if(mbstv.eq.2) then

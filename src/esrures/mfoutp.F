@@ -1191,17 +1191,31 @@ C pixel references for calls to viewtext.
         WRITE(ETEXT,'(4A)')'Lib: ',LAFRES(1:lsn1),
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &  SDESCR(11:lnblnk(SDESCR))
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       iancline=0
       if(graftitle(1:2).ne.'  ')then
         t64=graftitle
-        if(iancline.gt.0)CALL viewtext(t64,4,1,2)
-        if(iancline.eq.0)CALL viewtext(t64,3,1,2)
+        if(iancline.gt.0)then
+          iside=4
+          isize=1
+          ifont=2
+          call viewtext(t64,iside,isize,ifont)
+        endif
+        if(iancline.eq.0)then
+          iside=3
+          isize=1
+          ifont=2
+          call viewtext(t64,iside,isize,ifont)
+        endif
       endif
 
       RETURN

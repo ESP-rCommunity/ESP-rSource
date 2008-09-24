@@ -2993,6 +2993,11 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
       DIMENSION m1slots(42,2),m2slots(42,2)
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Text for each slot.
       character*3 am1slots(42),am2slots(42)
@@ -3137,7 +3142,10 @@ C Fill second month with real data or blanks.
         if(MMOD.eq.8)call startbuffer()
         line=3
         write(etext,'(20x,i4)') iyear
-        CALL viewtext(ETEXT,line,0,2)
+        iside=line
+        isize=0
+        ifont=2
+        call viewtext(etext,iside,isize,ifont)
 
 C If number of months to display is a multiple of 2 display side by side.
 C imon1 and imon2 are possible months to dispalay (if zero then do not).
@@ -3154,10 +3162,14 @@ C heading and then find the start day of the week for each.
             imon2=im+1
             line=line+1
             write(etext,'(8x,a,17x,a)') ramonth(imon1),ramonth(imon2)
-            CALL viewtext(ETEXT,line,0,2)
+            iside=line
+            isize=0
+            ifont=2
+            call viewtext(etext,iside,isize,ifont)
             line=line+1
             write(etext,'(a)') mohead
-            CALL viewtext(ETEXT,line,0,2)
+            iside=line
+            call viewtext(etext,iside,isize,ifont)
             call edayr(mdays(imon1),idayn,imthn)
             call eweekd(idayn,imthn,iyear,im1dwk)
             call edayr(mdays(imon2),idayn,imthn)
@@ -3168,10 +3180,14 @@ C heading and then find the start day of the week for each.
               imon2=0
               line=line+1
               write(etext,'(8x,a)') ramonth(imon1)
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              isize=0
+              ifont=2
+              call viewtext(etext,iside,isize,ifont)
               line=line+1
               write(etext,'(a)') mohead(1:22)
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              call viewtext(etext,iside,isize,ifont)
               call edayr(mdays(imon1),idayn,imthn)
               call eweekd(idayn,imthn,iyear,im1dwk)
               im2dwk=0
@@ -3180,10 +3196,14 @@ C heading and then find the start day of the week for each.
               imon2=im+1
               line=line+1
               write(etext,'(8x,a,17x,a)') ramonth(imon1),ramonth(imon2)
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              isize=0
+              ifont=2
+              call viewtext(etext,iside,isize,ifont)
               line=line+1
               write(etext,'(a)') mohead
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              call viewtext(etext,iside,isize,ifont)
               call edayr(mdays(imon1),idayn,imthn)
               call eweekd(idayn,imthn,iyear,im1dwk)
               call edayr(mdays(imon2),idayn,imthn)
@@ -3305,7 +3325,10 @@ C Also include list of day types.
         line=line+2
         call winscl('-',0)
         write(etext,*) 'Calendar: ',calename
-        CALL viewtext(ETEXT,line,0,2)
+        iside=line
+        isize=0
+        ifont=2
+        call viewtext(etext,iside,isize,ifont)
         do 151 icd = 1,nbdaytype
           line=line+1
           write(etext,*) calentag(icd),' ',calendayname(icd)

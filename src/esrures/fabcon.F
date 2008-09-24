@@ -177,6 +177,11 @@ C to the fabric temperature or condensation information.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lml   ! string length for construction name.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -203,7 +208,10 @@ C pixel references for calls to viewtext.
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -212,7 +220,10 @@ C pixel references for calls to viewtext.
      &  SN(:lnblnk(SN)),' of ',ZN(:lnblnk(ZN)),' facing ',
      &  CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -230,7 +241,10 @@ C Display surface information.
       WRITE(ETEXT,'(5a,f6.2,a)')' It is ',TSTR,', composed of ',
      &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -238,7 +252,10 @@ C Display surface information.
       call STDATE(IYEAR,IDAYO,DS,DS1)
       WRITE(ETEXT,'(3A,f6.2)')' Time ',DS1,' at ',TIMO
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,4,0,1)
+        iside=4
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif

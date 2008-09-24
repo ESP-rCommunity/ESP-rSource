@@ -53,8 +53,10 @@ C Stores all MFRP monitoring values, maximum and minimum values.
       DIMENSION ILINE(4),CRES(4),CMON(4)
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       LOGICAL RDR
@@ -173,7 +175,10 @@ C Scale and draw monitoring plot.
 C Print title. IPS is used to keep track of number of title lines.
       IPS=1
       write(title,'(12x,a,36x,a)') 'RESIDUALS','MONITORING VALUES'
-      CALL viewtext(title,IPS,0,0)
+      iside=IPS
+      isize=0
+      ifont=0
+      call viewtext(title,iside,isize,ifont)
 
 C Plot residuals curves.
       do 30 I=1,NCRV
@@ -243,16 +248,25 @@ C Label curves.
         IPS=IPS+1
         write(title,'(2(2(a,1x),a,1PE11.3,1x))') 
      &          LINE(I),LRES(I),'=',CRES(I),LINE(I),LMON(I),'=',CMON(I)
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        call viewtext(title,iside,isize,ifont)
  50   continue
 
 C Display time-step index and iteration index.
       IPS=IPS+2
       write(title,'(a,i4)')'ITST=',ITM
-      CALL viewtext(title,IPS,0,0)
+      iside=IPS
+      isize=0
+      ifont=0
+      call viewtext(title,iside,isize,ifont)
       IPS=IPS+1
       write(title,'(a,i4)')'ITER=',NITER
-      CALL viewtext(title,IPS,0,0)
+      iside=IPS
+      isize=0
+      ifont=0
+      call viewtext(title,iside,isize,ifont)
       call forceflush()
 
       RETURN

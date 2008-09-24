@@ -42,6 +42,11 @@ C MAKS2D - draw 2d slices on screen.
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
 
       character souts*48,name*12,scale*10,title*30
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Set default values.
       XZ=0.
@@ -105,7 +110,10 @@ C Draw vector.
 
 C Write a title for the plot.
       write (souts,'(a,a)') ' Velocity vector plot for view ',name
-      CALL viewtext(souts,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(souts,iside,isize,ifont)
 
 C Draw a scale. First find distance between two points (iby and iysl)
 C this represents 'sll' meters per second (initially 0.1).  If the 

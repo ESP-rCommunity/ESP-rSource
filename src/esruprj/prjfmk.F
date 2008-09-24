@@ -3076,8 +3076,10 @@ C  ICOMP zone number
       dimension TACI(24),TACV(24)
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       IDTY=IDTYP
@@ -3217,7 +3219,10 @@ C third day type requested
 
 C Title and labels.
       write (outs,'(2a)') 'Scheduled air flows for ',ZNAME(ICOMP)
-      CALL viewtext(outs,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
 
       call wstxpt(igl+20,igt-65,'Infiltration')
       call wstxpt(igr-100,igt-65,'Ventilation')
@@ -4990,8 +4995,10 @@ C Descriptive label for a zone load or casual gain.
       character zname*12,zdesc*64
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 ipos,iupdown,isym     ! passed to etplot
 #endif
 
       logical COLOK
@@ -5285,7 +5292,10 @@ C Plot curves.
 
 C Title and labels.
       write (outs,'(2a)') 'Casual gains for ',ZNAME(ICOMP)
-      CALL viewtext(outs,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
 
       call wstxpt(igl+20,igt-65,' Total sensible')
       call wstxpt(igr-100,igt-65,'Total latent')

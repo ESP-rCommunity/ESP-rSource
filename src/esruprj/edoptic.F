@@ -623,8 +623,10 @@ C ilabs is string arry for layer insert/delet selection.
       logical edited
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
       IER=0
@@ -705,10 +707,13 @@ C Stuff into static variables for later access and draw axis.
         call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,
      &    'Degrees from normal')
 
-        WRITE(ETEXT,'(a,a,a,a)') 'Type: ',GTYPE(1:lnblnk(GTYPE)),
+        WRITE(ETEXT,'(4a)') 'Type: ',GTYPE(1:lnblnk(GTYPE)),
      &    ' descripion: ',GDESCR(1:34)
         GTEXT=ETEXT
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
 
 C Draw visible as a circle.
         call u2pixel(0.0,VTRNED,ix,iy)

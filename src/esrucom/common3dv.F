@@ -54,6 +54,11 @@ C then it represents the zone which is currently being edited.
       LOGICAL MODIFY,MODLEN,MODBND
 
       character ETEXT*82
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       SMALL=0.01
 
@@ -93,7 +98,10 @@ C If viewpoint or bounds different then initialise viewing paramters.
 
 C Remind user of which model even when looking at one zone.
         WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
 
 C Draw the selected bodies.
         CALL DRAWESP(ITRC,IER)

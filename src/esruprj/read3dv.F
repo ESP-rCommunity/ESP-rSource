@@ -85,8 +85,10 @@ C converts into viewing coords, clips the image and draws it.
       logical newgeo  ! to use for testing if new/old geometry file.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,iupdown,isym     ! passed to etplot
 #endif
 
 C If not in graphic mode return.
@@ -138,8 +140,11 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
-      WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-      CALL viewtext(ETEXT,1,1,1)
+      WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Beginning of loop to read in several ESP compatible geometry files.
       IZ=0

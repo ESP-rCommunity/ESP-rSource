@@ -61,6 +61,11 @@ C ****** GTOPOL
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER DESC*48,H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       grmod=.true.
 
@@ -159,7 +164,10 @@ C If ground needs drawing or updating do it here.
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         grmod=.false.
@@ -3197,13 +3205,22 @@ C ****** Routine to update-draw ground during triangulation.
 
       character*(*) msg
       character outs*72
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       CALL startbuffer()
       izgfoc=0
       CALL ADJVIEW(0,IER)
       WRITE(outs,'(A,i3,A,i3)')' Verts: ',IVV,' surfs ',NGTG
-      CALL viewtext(outs,1,0,1)
-      CALL viewtext(msg,2,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
+      iside=2
+      call viewtext(msg,iside,isize,ifont)
 
       if(IVV.eq.0)return
       do 42 iv = 1,IVV

@@ -988,8 +988,10 @@ C Grid commons
       LOGICAL GON,SON,greyok
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C Clear the screen
@@ -1124,7 +1126,10 @@ C Return to black lines after drawing grid.
 
 C Draw on the network description. 
       WRITE(OUTS1,'(A,A)')'Network Type: ',NWKTYPSTR(INWKTYP)(1:12)
-      CALL viewtext(OUTS1,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs1,iside,isize,ifont)
 
 C Redraw the icons with the current scaling, limits and layer values
       IF(NNICN.GT.0)THEN

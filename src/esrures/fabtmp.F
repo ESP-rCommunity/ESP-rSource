@@ -525,6 +525,11 @@ C If act = i then initial display, if act = s then single step display.
       character SSPARENT*12
       character act*1
       integer lml   ! string length for construction name.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. 
@@ -554,7 +559,10 @@ C and the simulation and output timesteps.
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -563,7 +571,10 @@ C and the simulation and output timesteps.
      &   SDESCR(11:lnblnk(SDESCR))
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -575,7 +586,10 @@ C and the simulation and output timesteps.
      &   SN(1:lnblnk(SN)),' of ',ZN(1:lnblnk(ZN)),' facing ',
      &   CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -594,7 +608,10 @@ C Print info on surface.
      &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,4,0,1)
+        iside=4
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -627,6 +644,11 @@ C IPRZ is material db ref for each layer.
       DIMENSION XVAL1(MZS)
       character act*1,ETEXT*94,TDESCR*5,DS*7,DS1*10,CSTR*25,TCSTR*25
       character zname*12,zdesc*64,ZN*12
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Re-establish available colours.
       call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
@@ -709,7 +731,10 @@ C each timestep. Pause 200msec at each timestep.
             call STIME(j,TDESCR)
             call STDATE(IYEAR,ID,DS,DS1)
             WRITE(ETEXT,'(4A)')' Time ',DS1,' at ',TDESCR
-            call viewtext(ETEXT,5,0,1)
+            iside=5
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
 
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then

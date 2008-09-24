@@ -43,6 +43,11 @@ C of the user-specified time-dependant variable.
       logical graph_ok,ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Identify specific variable to examine
 C and set up relevant label type for axis.
@@ -128,7 +133,10 @@ C as the C automatically refreshes the coordinates).
         endif
 
         CALL CHEAD(11)
-        CALL viewtext(' Frequency analysis',3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(' Frequency analysis',iside,isize,ifont)
 
 C Set axis label flag IL.
         IF(IGET.EQ.1)IL=2

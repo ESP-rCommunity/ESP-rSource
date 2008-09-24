@@ -62,6 +62,11 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       if(.NOT.cfgok)then
         call usrmsg(' You must load a model before',
@@ -347,8 +352,11 @@ C If user canceled the wireframe export loop back.
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-          CALL viewtext(ETEXT,1,1,1)
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          iside=1
+          isize=1
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
 
 C Toggle the wirefram export file closed.
           call usrmsg('sending wireframe...done.',' ','-')
