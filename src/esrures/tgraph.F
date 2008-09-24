@@ -784,8 +784,18 @@ C Remember if a 4th line of text is being drawn.
       endif
       if(graftitle(1:2).ne.'  ')then
         t64=graftitle
-        if(iancline.gt.0)CALL viewtext(t64,5,1,2)
-        if(iancline.eq.0)CALL viewtext(t64,4,1,2)
+        if(iancline.gt.0)then
+          iside=5
+          isize=1
+          ifont=2
+          call viewtext(t64,iside,isize,ifont)
+        endif
+        if(iancline.eq.0)then
+          iside=4
+          isize=1
+          ifont=2
+          call viewtext(t64,iside,isize,ifont)
+        endif
       endif
 
       RETURN

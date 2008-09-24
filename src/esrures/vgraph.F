@@ -979,7 +979,8 @@ C and the simulation and output timesteps.
 
       WRITE(ETEXT,'(4a)')' Variables: Vert=',
      &  VITEM(1:lnblnk(VITEM)),'  Horiz=',HITEM(1:lnblnk(HITEM))
-      CALL viewtext(ETEXT,4,0,1)
+      iside=4
+      call viewtext(etext,iside,isize,ifont)
 
       RETURN
       END

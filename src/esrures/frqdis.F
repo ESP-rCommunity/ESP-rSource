@@ -903,7 +903,10 @@ C if names of zones can be shown.
           GTEXT=' Not filtered by occupancy'
         endif
         if(act.eq.'g')then
-          CALL viewtext(GTEXT,3,0,1)
+          iside=3
+          isize=0
+          ifont=1
+          call viewtext(gtext,iside,isize,ifont)
         else
           call edisp(itru,GTEXT)
         endif

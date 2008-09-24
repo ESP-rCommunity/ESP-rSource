@@ -203,9 +203,9 @@ C Returned parameters from silentread.
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
 #ifdef OSX
-      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to etplot
 #endif
 
 C Initialize variables and recover command line arguments.

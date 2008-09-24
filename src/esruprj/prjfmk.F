@@ -4998,7 +4998,7 @@ C Descriptive label for a zone load or casual gain.
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
-      integer*8 ipos,iupdown,isym     ! passed to etplot
+      integer*8 iside,isize,ifont     ! passed to etplot
 #endif
 
       logical COLOK
