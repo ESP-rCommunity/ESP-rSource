@@ -55,7 +55,7 @@ C Parameters for eline calls.
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 ipos,iupdown,isym     ! passed to etplot
+      integer*8 iside,isize,ifont     ! passed to etplot
 #endif
 
 C Start drawing; first header

@@ -1164,6 +1164,11 @@ C to graphical result display of network flows.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
