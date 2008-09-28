@@ -1260,6 +1260,11 @@ C   for new position, IER is -3 user aborted action.
       DIMENSION  SBBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Set first coord at origin (lower left).
       XXW(1) = VALOX
@@ -1358,20 +1363,26 @@ C Draw the (perhaps clipped) rectangle.
           DO 302 JB = 1,NB
             IP = IABS(IBPNT)
             CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,0,0)
+            iupdown=0
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
 C Draw succeeding points until last vertex.
             IP1 = IBNXT(IP)
  451        CONTINUE
             CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
             IP1 = IBNXT(IP1)
             IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
             CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
   302     CONTINUE
         endif   ! graphic mode test
 
@@ -1902,6 +1913,11 @@ C << could this be done with G6 and with ??
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       logical bounded,hilight
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Take a line pair and then look and see if it is referenced in
 C reverse order just once. itv1 & itv2 are the vertices, its1 is the
@@ -1975,13 +1991,16 @@ C Transform ends of edge.
             COG1(3)=Z(itv1(ip))
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call etplot(COG3(1),COG3(2),0,0)
+            iupdown=0
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
             COG1(1)=X(itv2(ip))
             COG1(2)=Y(itv2(ip))
             COG1(3)=Z(itv2(ip))
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call etplot(COG3(1),COG3(2),ILT,0)
+            iupdown=ILT
+            call etplot(COG3(1),COG3(2),iupdown,isym)
             hilight=.false.
           endif
         endif
@@ -2076,8 +2095,10 @@ C << written at the end of the process. This has yet to be done.
       character rsparent*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Depending on act.
@@ -2339,20 +2360,26 @@ C Draw the (perhaps clipped) rectangle.
         DO 302 JB = 1,NB
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call etplot(AAX,AAY,0,0)
+          iupdown=0
+          isym=0
+          call etplot(AAX,AAY,iupdown,isym)
 
 C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP)
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call etplot(AAX,AAY,1,0)
+          iupdown=1
+          isym=0
+          call etplot(AAX,AAY,iupdown,isym)
 
           IP1 = IBNXT(IP1)
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call etplot(AAX,AAY,1,0)
+          iupdown=1
+          isym=0
+          call etplot(AAX,AAY,iupdown,isym)
   302   CONTINUE
    32   CONTINUE
 

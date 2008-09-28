@@ -2476,6 +2476,11 @@ C IER=1 problem.
       CHARACTER VERT*35,KEY*1,HOLD*72,H*72,DESC*48,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -2954,20 +2959,25 @@ C Draw the (perhaps clipped) rectangle.
           DO 302 JB = 1,NB
             IP = IABS(IBPNT)
             CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,0,0)
+            iupdown=0
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
 C Draw succeeding points until last vertex.
             IP1 = IBNXT(IP)
  451        CONTINUE
             CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
             IP1 = IBNXT(IP1)
             IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
             CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            call etplot(AAX,AAY,iupdown,isym)
   302     CONTINUE
    32     CONTINUE
           call forceflush()
@@ -3207,8 +3217,10 @@ C ****** Routine to update-draw ground during triangulation.
       character outs*72
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       CALL startbuffer()
@@ -3243,9 +3255,13 @@ C ****** Routine to update-draw ground during triangulation.
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           if(J.eq.1)then
-            call etplot(COG3(1),COG3(2),0,0)
+            iupdown=0
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
           else
-            call etplot(COG3(1),COG3(2),1,0)
+            iupdown=1
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
           endif
  1100   CONTINUE
 
@@ -3255,7 +3271,9 @@ C Finish off the surface.
         COG1(3)=ZGT(JGVN(igs,1))
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call etplot(COG3(1),COG3(2),1,0)
+        iupdown=1
+        isym=0
+        call etplot(COG3(1),COG3(2),iupdown,isym)
   43  continue
       call forceflush()
       call pauses(1)

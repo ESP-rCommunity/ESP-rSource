@@ -205,7 +205,7 @@ C Returned parameters from silentread.
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
-      integer*8 iside,isize,ifont     ! passed to etplot
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C Initialize variables and recover command line arguments.

@@ -812,9 +812,11 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       DIMENSION VAL1(25),VAL2(25)
@@ -875,9 +877,13 @@ c Plot VAL1 array
         IR=AMOD(TI,DT)+.001
         IF(IR.EQ.0)MARK=4
         IF(I.GT.0)goto 9
-        CALL ETPLOT(TI,VAL1(I+1),0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(TI,VAL1(I+1),iupdown,isym)
         goto 40
-    9   CALL ETPLOT(TI,VAL1(I+1),IPEN,MARK)
+    9   iupdown=IPEN
+        isym=MARK
+        CALL ETPLOT(TI,VAL1(I+1),iupdown,isym)
    40 CONTINUE
       call forceflush()
 
@@ -889,9 +895,13 @@ c Plot VAL2 array
         IR=AMOD(TI,DT)+.001
         IF(IR.EQ.0)MARK=9
         IF(I.GT.0)goto 11
-        CALL ETPLOT(TI,VAL2(I+1),0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(TI,VAL2(I+1),iupdown,isym)
         goto 50
-   11   CALL ETPLOT(TI,VAL2(I+1),IPEN,MARK)
+   11   iupdown=IPEN
+        isym=MARK
+        CALL ETPLOT(TI,VAL2(I+1),iupdown,isym)
    50 CONTINUE
       call forceflush()
       return

@@ -75,9 +75,11 @@ C The period details
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Set up scaling and graph parameters

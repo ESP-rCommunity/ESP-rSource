@@ -88,7 +88,7 @@ C converts into viewing coords, clips the image and draws it.
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iside,isize,ifont     ! passed to etplot
+      integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
 
 C If not in graphic mode return.

@@ -3077,9 +3077,11 @@ C  ICOMP zone number
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       IDTY=IDTYP
@@ -3127,24 +3129,33 @@ C Scale and draw for first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Flow (ac/hr)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmin,YMIM,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmin,YMIN,0,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmax,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmin,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmax,YMAX,iupdown,isym)
 
 C Display air flow curves.
 C first day type requested
@@ -3162,12 +3173,22 @@ C first day type requested
       do 70 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        CALL etplot(XST,TACI(IHR),0,0)
-        CALL etplot(XFN,TACI(IHR),1,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACI(IHR+1),1,0)
-        CALL etplot(XST,TACV(IHR),0,0)
-        CALL etplot(XFN,TACV(IHR),-4,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
  70   continue
 
 C second day type requested
@@ -3185,12 +3206,22 @@ C second day type requested
       do 170 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        CALL etplot(XST,TACI(IHR),0,0)
-        CALL etplot(XFN,TACI(IHR),1,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACI(IHR+1),1,0)
-        CALL etplot(XST,TACV(IHR),0,0)
-        CALL etplot(XFN,TACV(IHR),-4,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
  170  continue
       call forceflush()
 
@@ -3209,12 +3240,22 @@ C third day type requested
       do 270 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        CALL etplot(XST,TACI(IHR),0,0)
-        CALL etplot(XFN,TACI(IHR),1,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACI(IHR+1),1,0)
-        CALL etplot(XST,TACV(IHR),0,0)
-        CALL etplot(XFN,TACV(IHR),-4,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
  270  continue
 
 C Title and labels.
@@ -3227,13 +3268,18 @@ C Title and labels.
       call wstxpt(igl+20,igt-65,'Infiltration')
       call wstxpt(igr-100,igt-65,'Ventilation')
       call pixel2u(igl+120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igl+180,igt-69,gx,gy)
-      CALL etplot(gx,gy,1,0)
+      iupdown=1
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-180,igt-69,gx,gy)
-      CALL etplot(gx,gy,-4,0)
+      iupdown=-4
+      CALL etplot(gx,gy,iupdown,isym)
 
       ioff=(int(ipltwd)/3)
       call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
@@ -4996,9 +5042,11 @@ C Descriptive label for a zone load or casual gain.
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       logical COLOK
@@ -5112,24 +5160,33 @@ C Scale and draw first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Gain (W)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmin,YMIM,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmin,YMIN,0,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmax,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmin,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmax,YMAX,iupdown,isym)
 
 C Scan gains and generate total curves.
 C first day type requested
@@ -5170,20 +5227,34 @@ C Plot curves.
         XFN=real(IHR)
         do 75 I=1,3
           if (COLOK) call winscl('z',I)
-          CALL etplot(XST,CGAINS(IHR,I),0,0)
-          CALL etplot(XFN,CGAINS(IHR,I),1,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),1,0)
-          CALL etplot(XST,CGAINL(IHR,I),0,0)
-          CALL etplot(XFN,CGAINL(IHR,I),-4,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),-4,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
+          iupdown=1
+          CALL etplot(XFN,CGAINS(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINS(IHR+1,I),iupdown,isym)
+          endif
+          iupdown=0
+          CALL etplot(XST,CGAINL(IHR,I),iupdown,isym)
+          iupdown=-4
+          CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
+          endif
           if (COLOK) call winscl('-',0)
  75     continue
-        CALL etplot(XST,CGAINTS(IHR),0,0)
-        CALL etplot(XFN,CGAINTS(IHR),1,0)
-        CALL etplot(XFN,CGAINTS(IHR+1),1,0)
-        CALL etplot(XST,CGAINTL(IHR),0,0)
-        CALL etplot(XFN,CGAINTL(IHR),-4,0)
-        CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,CGAINTS(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,CGAINTS(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTS(IHR+1),iupdown,isym)
+        iupdown=0
+        CALL etplot(XST,CGAINTL(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,CGAINTL(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  70   continue
 
 C second day type requested
@@ -5222,20 +5293,34 @@ C Plot curves.
         XFN=real(IHR)
         do 175 I=1,3
           if (COLOK) call winscl('z',I)
-          CALL etplot(XST,CGAINS(IHR,I),0,0)
-          CALL etplot(XFN,CGAINS(IHR,I),1,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),1,0)
-          CALL etplot(XST,CGAINL(IHR,I),0,0)
-          CALL etplot(XFN,CGAINL(IHR,I),-4,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),-4,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
+          iupdown=1
+          CALL etplot(XFN,CGAINS(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINS(IHR+1,I),iupdown,isym)
+          endif
+          iupdown=0
+          CALL etplot(XST,CGAINL(IHR,I),iupdown,isym)
+          iupdown=-4
+          CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
+          endif
           if (COLOK) call winscl('-',0)
  175    continue
-        CALL etplot(XST,CGAINTS(IHR),0,0)
-        CALL etplot(XFN,CGAINTS(IHR),1,0)
-        CALL etplot(XFN,CGAINTS(IHR+1),1,0)
-        CALL etplot(XST,CGAINTL(IHR),0,0)
-        CALL etplot(XFN,CGAINTL(IHR),-4,0)
-        CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,CGAINTS(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,CGAINTS(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTS(IHR+1),iupdown,isym)
+        iupdown=0
+        CALL etplot(XST,CGAINTL(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,CGAINTL(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  170  continue
 
 C third day type requested
@@ -5274,20 +5359,30 @@ C Plot curves.
         XFN=real(IHR)
         do 275 I=1,3
           if (COLOK) call winscl('z',I)
-          CALL etplot(XST,CGAINS(IHR,I),0,0)
-          CALL etplot(XFN,CGAINS(IHR,I),1,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),1,0)
-          CALL etplot(XST,CGAINL(IHR,I),0,0)
-          CALL etplot(XFN,CGAINL(IHR,I),-4,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),-4,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
+          iupdown=1
+          CALL etplot(XFN,CGAINS(IHR,I),iupdown,isym)
+          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),iupdown,isym)
+          iupdown=0
+          CALL etplot(XST,CGAINL(IHR,I),iupdown,isym)
+          iupdown=-4
+          CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
+          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
           if (COLOK) call winscl('-',0)
  275    continue
-        CALL etplot(XST,CGAINTS(IHR),0,0)
-        CALL etplot(XFN,CGAINTS(IHR),1,0)
-        CALL etplot(XFN,CGAINTS(IHR+1),1,0)
-        CALL etplot(XST,CGAINTL(IHR),0,0)
-        CALL etplot(XFN,CGAINTL(IHR),-4,0)
-        CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,CGAINTS(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,CGAINTS(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTS(IHR+1),iupdown,isym)
+        iupdown=0
+        CALL etplot(XST,CGAINTL(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,CGAINTL(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  270  continue
 
 C Title and labels.
@@ -5300,13 +5395,18 @@ C Title and labels.
       call wstxpt(igl+20,igt-65,' Total sensible')
       call wstxpt(igr-100,igt-65,'Total latent')
       call pixel2u(igl+120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igl+180,igt-69,gx,gy)
-      CALL etplot(gx,gy,1,0)
+      iupdown=1
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-180,igt-69,gx,gy)
-      CALL etplot(gx,gy,-4,0)
+      iupdown=-4
+      CALL etplot(gx,gy,iupdown,isym)
       do 300 I=1,3
         write(outs,'(2a)')
      &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
@@ -5315,16 +5415,21 @@ C Title and labels.
         write(outs,'(2a)')
      &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
         call wstxpt(igr-100,IY,outs)
-          if (COLOK) call winscl('z',I)
-          call pixel2u(igl+120,IY-4,gx,gy)
-          CALL etplot(gx,gy,0,0)
-          call pixel2u(igl+180,IY-4,gx,gy)
-          CALL etplot(gx,gy,1,0)
-          call pixel2u(igr-120,IY-4,gx,gy)
-          CALL etplot(gx,gy,0,0)
-          call pixel2u(igr-180,IY-4,gx,gy)
-          CALL etplot(gx,gy,-4,0)
-          if (COLOK) call winscl('-',0)
+        if (COLOK) call winscl('z',I)
+        call pixel2u(igl+120,IY-4,gx,gy)
+        iupdown=0
+        isym=0
+        CALL etplot(gx,gy,iupdown,isym)
+        call pixel2u(igl+180,IY-4,gx,gy)
+        iupdown=1
+        CALL etplot(gx,gy,iupdown,isym)
+        call pixel2u(igr-120,IY-4,gx,gy)
+        iupdown=0
+        CALL etplot(gx,gy,iupdown,isym)
+        call pixel2u(igr-180,IY-4,gx,gy)
+        iupdown=-4
+        CALL etplot(gx,gy,iupdown,isym)
+        if (COLOK) call winscl('-',0)
  300  continue
 
       ioff=(int(ipltwd)/3)
