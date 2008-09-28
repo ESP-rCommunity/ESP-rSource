@@ -989,9 +989,11 @@ C Grid commons
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Clear the screen
@@ -1099,10 +1101,16 @@ C Draw on the X grid lines.
           GSPCW=GRSPC(2)
         ENDIF
         GX=(INT(XMIN/GSPCW)*GSPCW)+GSPCW
-        CALL ETPLOT(GX,YMIN,0,0)    
-10      CALL ETPLOT(GX,YMAX,-203,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(GX,YMIN,iupdown,isym)    
+10      iupdown=-203
+        isym=0
+        CALL ETPLOT(GX,YMAX,iupdown,isym)
         GX=GX+GSPCW 
-        CALL ETPLOT(GX,YMIN,0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(GX,YMIN,iupdown,isym)
         IF(GX.LT.XMAX) GOTO 10
 
 C Draw on the Y grid lines.
@@ -1114,10 +1122,16 @@ C Draw on the Y grid lines.
           GSPCH=GRSPC(3)
         ENDIF
         GY=(INT(YMIN/GSPCH)*GSPCH)+GSPCH
-        CALL ETPLOT(XMIN,GY,0,0)    
-20      CALL ETPLOT(XMAX,GY,-203,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XMIN,GY,iupdown,isym)    
+20      iupdown=-203
+        isym=0
+        CALL ETPLOT(XMAX,GY,iupdown,isym)
         GY=GY+GSPCH
-        CALL ETPLOT(XMIN,GY,0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XMIN,GY,iupdown,isym)
         IF(GY.LT.YMAX) GOTO 20
 
 C Return to black lines after drawing grid.
@@ -2094,6 +2108,11 @@ C      REAL ENV,PARA,CPARA,SUB_MATRIX_A,SUB_MATRIX_B
 C      REAL MATRIX_A,MATRIX_B
 
       LOGICAL ISEL,CSEL,INBOUND,CLOSE
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       X=XYZICON(ICN,1)
       Y=XYZICON(ICN,2)
@@ -2304,8 +2323,11 @@ C            WRITE(6,*),CPP(1,III),III
           else
 
 C Otherwise draw a square.
+            iupdown=0
+            isym=0
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)-XYSIZCP/2.,0,0)
+     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
+            iupdown=1
             CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
      &                CONCP(ICN,I,2)-XYSIZCP/2.,1,0)
             CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,

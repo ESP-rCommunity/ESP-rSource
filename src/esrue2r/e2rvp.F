@@ -32,8 +32,10 @@ C ******* View cone for plan/elevation.
       character direc*1
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Set the length of the viewcone according to the image.
@@ -51,23 +53,34 @@ C two light lines at edge of view cone.
         call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &     Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        call etplot(rvpx,rvpy,0,14)
-        call etplot(rvpx,rvpy,0,0)
+        iupdown=0
+        isym=14
+        call etplot(rvpx,rvpy,iupdown,isym)
+        isym=0
+        call etplot(rvpx,rvpy,iupdown,isym)
         wxe=VCL*vdx
         wye=VCL*vdy
-        call etplot(rvpx+wxe,rvpy+wye,-302,0)
+        iupdown=-302
+        isym=0
+        call etplot(rvpx+wxe,rvpy+wye,iupdown,isym)
         astrt=azim+(angh/2.)
         RYAZI = astrt*RAD
         xastrt = rvpx+(VCL*SIN(RYAZI))
         yastrt = rvpy+(VCL*COS(RYAZI))
-        call etplot(rvpx,rvpy,0,0)
-        call etplot(xastrt,yastrt,1,0)
+        iupdown=0
+        isym=0
+        call etplot(rvpx,rvpy,iupdown,isym)
+        iupdown=1
+        call etplot(xastrt,yastrt,iupdown,isym)
         aend=astrt-angh
         RYAZI = aend*RAD
         xaend = rvpx+(VCL*SIN(RYAZI))
         yaend = rvpy+(VCL*COS(RYAZI))
-        call etplot(rvpx,rvpy,0,0)
-        call etplot(xaend,yaend,1,0)
+        iupdown=0
+        isym=0
+        call etplot(rvpx,rvpy,iupdown,isym)
+        iupdown=1
+        call etplot(xaend,yaend,iupdown,isym)
       elseif(direc.eq.'S')then
 
 C If south elevation, omitt the view-cone.
@@ -76,22 +89,32 @@ C If south elevation, omitt the view-cone.
         call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &     Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        call etplot(rvpx,rvpz,0,14)
-        call etplot(rvpx,rvpz,0,0)
+        iupdown=0
+        isym=14
+        call etplot(rvpx,rvpz,iupdown,isym)
+        isym=0
+        call etplot(rvpx,rvpz,iupdown,isym)
         wxe=VCL*vdx
         wze=VCL*vdz
-        call etplot(rvpx+wxe,rvpz+wze,-302,0)
+        iupdown=-302
+        isym=0
+        call etplot(rvpx+wxe,rvpz+wze,iupdown,isym)
       elseif(direc.eq.'E')then
         igwid=igw
         igheight=igwh
         call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &     Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        call etplot(rvpy,rvpz,0,14)
-        call etplot(rvpy,rvpz,0,0)
+        iupdown=0
+        isym=14
+        call etplot(rvpy,rvpz,iupdown,isym)
+        isym=0
+        call etplot(rvpy,rvpz,iupdown,isym)
         wye=VCL*vdy
         wze=VCL*vdz
-        call etplot(rvpy+wye,rvpz+wze,-302,0)
+        iupdown=-302
+        isym=0
+        call etplot(rvpy+wye,rvpz+wze,iupdown,isym)
       endif
       call forceflush()
       return
@@ -142,8 +165,10 @@ C ******* Default views formation.
       character vewcmds*124,rvewsh*10
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Addview = true then save editing as a new view, if false
@@ -513,7 +538,9 @@ C << implemented in GTK? >>
 C Transform back from mouse position to actual coordinate.
             ex=((FLOAT(ix-igl)/sca)-Xadd)
             ey=((FLOAT(igb-iy)/sca)-Yadd)
-            call etplot(ex,ey,0,6)
+            iupdown=0
+            isym=6
+            call etplot(ex,ey,iupdown,isym)
             call forceflush()
             WRITE(outs,'(a,f7.3,a,f7.3)')' The point is at x=',ex,
      &                                   ' & y=',ey
@@ -575,7 +602,9 @@ C Transform back from mouse position to actual coordinate.
           if(ier.ne.0)goto 55
           vewdone=.false.
           redraw =.true.
-          call etplot(rvpx,rvpy,0,14)
+          iupdown=0
+          isym=14
+          call etplot(rvpx,rvpy,iupdown,isym)
           call forceflush()
           if(ITPPSW.eq.3)then
             dok=.false.

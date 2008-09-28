@@ -297,9 +297,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Define the  MAX & MIN surface coordinates.
@@ -347,8 +349,11 @@ C Draw a scale vertical axis.
         X2=XVRT(IS,IV2)
         Z2=ZVRT(IS,IV2)
         IPEN=1
-        CALL ETPLOT(X1,Z1,0,0)
-        CALL ETPLOT(X2,Z2,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(X1,Z1,iupdown,isym)
+        iupdown=IPEN
+        CALL ETPLOT(X2,Z2,iupdown,isym)
         CALL U2PIXEL(X1,Z1,IX,IY)
         CALL ECIRC(IX,IY,3,1)
         IVRT1=ILINB(IS,IL,1)
@@ -363,8 +368,11 @@ C Draw a scale vertical axis.
           X2=XVRT(IS,IV2)
           Z2=ZVRT(IS,IV2)
           IPEN=-204
-          CALL ETPLOT(X1,Z1,0,0)
-          CALL ETPLOT(X2,Z2,IPEN,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(X1,Z1,iupdown,isym)
+          iupdown=IPEN
+          CALL ETPLOT(X2,Z2,iupdown,isym)
    30   CONTINUE
       ENDIF
       call forceflush()
@@ -677,6 +685,11 @@ C *********************************************************************
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       SML=-1.E-4
       CALL POINT1(IS,XVALU,ZVALU,IANS)
@@ -731,8 +744,11 @@ C *********************************************************************
         CALL VRTNUM(IS,XMIN2,ZVALU,NUM)
         ILINE(IS,NLINA(IS),2)=NUM
         IF(MMOD.EQ.8)THEN
-          CALL ETPLOT(XMIN1,ZVALU,0,0)
-          CALL ETPLOT(XMIN2,ZVALU,-204,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(XMIN1,ZVALU,iupdown,isym)
+          iupdown=-204
+          CALL ETPLOT(XMIN2,ZVALU,iupdown,isym)
         ENDIF
       ELSE
         CALL USRMSG(' ','Selected point is not within the surface!','W')
@@ -753,6 +769,11 @@ C *********************************************************************
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       SML=-1.E-4
       CALL POINT1(IS,XVALU,ZVALU,IANS)
@@ -807,8 +828,11 @@ C *********************************************************************
         CALL VRTNUM(IS,XVALU,ZMIN2,NUM)
         ILINE(IS,NLINA(IS),2)=NUM
         IF(MMOD.EQ.8)THEN
-          CALL ETPLOT(XVALU,ZMIN1,0,0)
-          CALL ETPLOT(XVALU,ZMIN2,-204,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(XVALU,ZMIN1,iupdown,isym)
+          iupdown=-204
+          CALL ETPLOT(XVALU,ZMIN2,iupdown,isym)
         ENDIF
       ELSE
         CALL USRMSG(' ','Selected point is not within the surface!','W')
@@ -1179,8 +1203,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       IVRT1=IVXEDG(IEG,1)
@@ -1253,21 +1279,30 @@ C Locate and label the two extreme vertices.
       CALL VERTLBL(IX,IY,IVRT2,IER)
 
 C Draw the edge.
-      CALL ETPLOT(XS(1),YS(1),0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
+      iupdown=1
       DO 120 I=2,4
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   120 CONTINUE
-      CALL ETPLOT(XS(1),YS(1),1,0)
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
       DO 130 I=5,8
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   130 CONTINUE
-      CALL ETPLOT(XS(5),YS(5),1,0)
-      CALL ETPLOT(XS(2),YS(2),0,0)
-      CALL ETPLOT(XS(6),YS(6),1,0)
-      CALL ETPLOT(XS(3),YS(3),0,0)
-      CALL ETPLOT(XS(7),YS(7),1,0)
-      CALL ETPLOT(XS(4),YS(4),0,0)
-      CALL ETPLOT(XS(8),YS(8),1,0)
+      CALL ETPLOT(XS(5),YS(5),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(2),YS(2),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(6),YS(6),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(3),YS(3),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(7),YS(7),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(4),YS(4),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(8),YS(8),iupdown,isym)
 
 C Draw the gridding lines.
       CALL EDGNUM(IS1,IS2,IVRT1,IVRT2,IEG)
@@ -1278,7 +1313,9 @@ C Draw the gridding lines.
         ZEDG(I)=ZEDG(I-4)+DZE(IEG,IDZ)*DCOSE(IEG,3,3)
         CALL ORTTRN(XEDG(I),YEDG(I),ZEDG(I),TEMAT,AX,AY,AZ,IERR)
         CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-        CALL ETPLOT(XS(I),YS(I),0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
         XEDG(I-4)=XEDG(I)
         YEDG(I-4)=YEDG(I)
         ZEDG(I-4)=ZEDG(I)
@@ -1288,12 +1325,16 @@ C Draw the gridding lines.
           ZEDG(I)=ZEDG(I-4)+DZE(IEG,IDZ)*DCOSE(IEG,3,3)
           CALL ORTTRN(XEDG(I),YEDG(I),ZEDG(I),TEMAT,AX,AY,AZ,IERR)
           CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-          CALL ETPLOT(XS(I),YS(I),-204,0)
+          iupdown=-204
+          isym=0
+          CALL ETPLOT(XS(I),YS(I),iupdown,isym)
           XEDG(I-4)=XEDG(I)
           YEDG(I-4)=YEDG(I)
           ZEDG(I-4)=ZEDG(I)
   150   CONTINUE
-        CALL ETPLOT(XS(5),YS(5),-204,0)
+        iupdown=-204
+        isym=0
+        CALL ETPLOT(XS(5),YS(5),iupdown,isym)
   140 CONTINUE
       call forceflush()
 
@@ -2179,8 +2220,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       IVRX=IVXCRN(ICR)
@@ -2247,21 +2290,31 @@ C Locate and label the vertex.
       CALL VERTLBL(IX,IY,IVRX,IER)
 
 C Draw the corner.
-      CALL ETPLOT(XS(1),YS(1),0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
+      iupdown=1
       DO 160 I=2,4
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   160 CONTINUE
-      CALL ETPLOT(XS(1),YS(1),1,0)
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
       DO 170 I=5,8
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   170 CONTINUE
-      CALL ETPLOT(XS(5),YS(5),1,0)
-      CALL ETPLOT(XS(2),YS(2),0,0)
-      CALL ETPLOT(XS(6),YS(6),1,0)
-      CALL ETPLOT(XS(3),YS(3),0,0)
-      CALL ETPLOT(XS(7),YS(7),1,0)
-      CALL ETPLOT(XS(4),YS(4),0,0)
-      CALL ETPLOT(XS(8),YS(8),1,0)
+      iupdown=1
+      CALL ETPLOT(XS(5),YS(5),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(2),YS(2),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(6),YS(6),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(3),YS(3),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(7),YS(7),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(4),YS(4),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(8),YS(8),iupdown,isym)
 
 C Draw the gridding lines.
       DO 180 IDZ=1,NDZC(ICR)-1
@@ -2271,7 +2324,9 @@ C Draw the gridding lines.
         ZCRN(I)=ZCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,3)
         CALL ORTTRN(XCRN(I),YCRN(I),ZCRN(I),TEMAT,AX,AY,AZ,IERR)
         CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-        CALL ETPLOT(XS(I),YS(I),0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
         XCRN(I-4)=XCRN(I)
         YCRN(I-4)=YCRN(I)
         ZCRN(I-4)=ZCRN(I)
@@ -2281,12 +2336,16 @@ C Draw the gridding lines.
           ZCRN(I)=ZCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,3)
           CALL ORTTRN(XCRN(I),YCRN(I),ZCRN(I),TEMAT,AX,AY,AZ,IERR)
           CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-          CALL ETPLOT(XS(I),YS(I),-204,0)
+          iupdown=-204
+          isym=0
+          CALL ETPLOT(XS(I),YS(I),iupdown,isym)
           XCRN(I-4)=XCRN(I)
           YCRN(I-4)=YCRN(I)
           ZCRN(I-4)=ZCRN(I)
   190   CONTINUE
-        CALL ETPLOT(XS(5),YS(5),-204,0)
+        iupdown=-204
+        isym=0
+        CALL ETPLOT(XS(5),YS(5),iupdown,isym)
   180 CONTINUE
       call forceflush()
 

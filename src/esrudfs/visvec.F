@@ -44,8 +44,10 @@ C MAKS2D - draw 2d slices on screen.
       character souts*48,name*12,scale*10,title*30
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Set default values.
@@ -100,11 +102,14 @@ C            temp=Tf(L1,L2,ilayer)
           endif
 
 C Draw vector.
-          call etplot(XS(1),ZS(1),0,0)
+          iupdown=0
+          isym=0
+          call etplot(XS(1),ZS(1),iupdown,isym)
+          iupdown=1
           do 30 I=2,7
-            call etplot(XS(I),ZS(I),1,0)
+            call etplot(XS(I),ZS(I),iupdown,isym)
  30       continue
-          call etplot(XS(1),ZS(1),1,0)
+          call etplot(XS(1),ZS(1),iupdown,isym)
  20     continue
  10   continue
 

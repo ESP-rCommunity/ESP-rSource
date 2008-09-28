@@ -244,8 +244,10 @@ C FACDRW draws the elevation of the surface.
       DIMENSION MTHNAM(12)
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       CHARACTER*72 ETEXT
@@ -278,12 +280,15 @@ C Draw a scale vertical axis.
 
 
 C DRAW ZONE FACE.
-      call etplot(XFT(1),ZFT(1),0,0)
+      iupdown=0
+      isym=0
+      call etplot(XFT(1),ZFT(1),iupdown,isym)
 
+      iupdown=1
       DO 10 I=2,NV
-        call etplot(XFT(I),ZFT(I),1,0)
+        call etplot(XFT(I),ZFT(I),iupdown,isym)
    10 CONTINUE
-      call etplot(XFT(1),ZFT(1),1,0)
+      call etplot(XFT(1),ZFT(1),iupdown,isym)
       call forceflush()
 
       RETURN

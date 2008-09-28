@@ -337,9 +337,11 @@ C xax       - text for horiz axis.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C x-z plane grid.
@@ -364,11 +366,14 @@ C Store the scaling parameters used in drawing the axes.
 
 C Draw a bold box around domain.
       IPEN=-302
-      CALL etplot(xoff,yoff,0,0)
-      CALL etplot(xoff,yoff+1.0,IPEN,0)
-      CALL etplot(xoff+TOTDIS,yoff+1.0,IPEN,0)
-      CALL etplot(xoff+TOTDIS,yoff,IPEN,0)
-      CALL etplot(xoff,yoff,IPEN,0)
+      iupdown=0
+      isym=0
+      CALL etplot(xoff,yoff,iupdown,isym)
+      iupdown=IPEN
+      CALL etplot(xoff,yoff+1.0,iupdown,isym)
+      CALL etplot(xoff+TOTDIS,yoff+1.0,iupdown,isym)
+      CALL etplot(xoff+TOTDIS,yoff,iupdown,isym)
+      CALL etplot(xoff,yoff,iupdown,isym)
 
 C Draw solid lines at end of each region.
       NCTOT=0
@@ -376,12 +381,18 @@ C Draw solid lines at end of each region.
       do 10 I=1,NRG(IAX,ICFD)
         NCTOT=NCTOT+abs(NCEL(I,ICFD))
         IPEN=1
-        CALL etplot(xg+xoff,yoff,0,0)
-        CALL etplot(xg+xoff,yoff+1.0,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xg+xoff,yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xg+xoff,yoff+1.0,iupdown,isym)
         xg=xg+REG(I,ICFD)
  10   continue
-      CALL etplot(xg+xoff,yoff,0,0)
-      CALL etplot(xg+xoff,yoff+1.0,IPEN,0)
+      iupdown=0
+      isym=0
+      CALL etplot(xg+xoff,yoff,iupdown,isym)
+      iupdown=IPEN
+      CALL etplot(xg+xoff,yoff+1.0,iupdown,isym)
 
 C For each region calculate gridding.
 C Call griddist then plot.
@@ -396,8 +407,11 @@ C Call griddist then plot.
 C Now plot the grid lines.
       DO 30 I=2,NCTOT+2
         IPEN=-204
-        CALL etplot(xgrd(I)+xoff,yoff,0,0)
-        CALL etplot(xgrd(I)+xoff,yoff+1.0,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xgrd(I)+xoff,yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xgrd(I)+xoff,yoff+1.0,iupdown,isym)
    30 CONTINUE
 
       return
@@ -423,9 +437,11 @@ C xax,yax   - text for horiz and vert axis.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C x-z plane grid.
@@ -456,14 +472,20 @@ C Store the scaling parameters used in drawing the axes.
       DO 30 I=2,nx
         IPEN=-204
         if (I.eq.2.or.I.eq.nx) IPEN=1
-        CALL etplot(xgrd(I)+xoff,yoff,0,0)
-        CALL etplot(xgrd(I)+xoff,ygrd(ny)+yoff,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xgrd(I)+xoff,yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xgrd(I)+xoff,ygrd(ny)+yoff,iupdown,isym)
    30 CONTINUE
       DO 40 K=2,ny
         IPEN=-204
         if (K.eq.2.or.K.eq.ny) IPEN=1
-        CALL etplot(xoff,ygrd(K)+yoff,0,0)
-        CALL etplot(xgrd(nx)+xoff,ygrd(K)+yoff,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xoff,ygrd(K)+yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xgrd(nx)+xoff,ygrd(K)+yoff,iupdown,isym)
    40 CONTINUE
 
       return

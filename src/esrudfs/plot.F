@@ -54,9 +54,11 @@ C Stores all MFRP monitoring values, maximum and minimum values.
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       LOGICAL RDR
@@ -157,18 +159,24 @@ C Scale and draw residuals plot.
         CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
      &                                        'Number of Iterations')
         CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
-        CALL etplot(plxmin,YMIN,0,0)
-        CALL etplot(plxmin,YMAX,1,0)
-        CALL etplot(plxmax,YMAX,1,0)
-        CALL etplot(plxmax,YMIN,1,0)
+        iupdown=0
+        isym=0
+        CALL etplot(plxmin,YMIN,iupdown,isym)
+        iupdown=1
+        CALL etplot(plxmin,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMIN,iupdown,isym)
 
 C Scale and draw monitoring plot.
         CALL horaxis(plxmin,plxmax,iglmon,igr,igb,xadd,XSC,0,' ')
         CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
-        CALL etplot(plxmin,YMIN,0,0)
-        CALL etplot(plxmin,YMAX,1,0)
-        CALL etplot(plxmax,YMAX,1,0)
-        CALL etplot(plxmax,YMIN,1,0)
+        iupdown=0
+        isym=0
+        CALL etplot(plxmin,YMIN,iupdown,isym)
+        iupdown=1
+        CALL etplot(plxmin,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMIN,iupdown,isym)
         call forceflush()
       ENDIF
 
@@ -195,24 +203,32 @@ C Rescale axis for first curve.
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN
-          CALL etplot(1.0,RESID(I,1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(1.0,RESID(I,1),iupdown,isym)
           DO 100 J=2,IPLT
+            iupdown=ILINE(I)
             XPLT=real(J)
-            CALL etplot(XPLT,RESID(I,J),ILINE(I),0)
+            CALL etplot(XPLT,RESID(I,J),iupdown,isym)
   100     CONTINUE
         elseif(IPLT.gt.1) then
 
 C Else just plot current iteration value.
           XPLT=real(IPLT-1)
-          CALL etplot(XPLT,RESID(I,IPLT-1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XPLT,RESID(I,IPLT-1),iupdown,isym)
+          iupdown=ILINE(I)
           XPLT=real(IPLT)
-          CALL etplot(XPLT,RESID(I,IPLT),ILINE(I),0)
+          CALL etplot(XPLT,RESID(I,IPLT),iupdown,isym)
         ENDIF
  30   continue
 
 C Plot a star where the max residual value is on the curve.
       XMARK=XMAX*1.01
-      CALL etplot(XMARK,XRMX,0,13)
+      iupdown=0
+      isym=13
+      CALL etplot(XMARK,XRMX,iupdown,isym)
 
 C Plot monitoring curves.
       do 40 I=1,NCRV
@@ -227,18 +243,24 @@ C Rescale axis for each curve.
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN
-          CALL etplot(1.0,XMONIT(I,1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(1.0,XMONIT(I,1),iupdown,isym)
           DO 110 J=2,IPLT
             XPLT=real(J)
-            CALL etplot(XPLT,XMONIT(I,J),ILINE(I),0)
+            iupdown=ILINE(I)
+            CALL etplot(XPLT,XMONIT(I,J),iupdown,isym)
   110     CONTINUE
         elseif(IPLT.gt.1) then
 
 C Else just plot current iteration value.
           XPLT=real(IPLT-1)
-          CALL etplot(XPLT,XMONIT(I,IPLT-1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XPLT,XMONIT(I,IPLT-1),iupdown,isym)
           XPLT=real(IPLT)
-          CALL etplot(XPLT,XMONIT(I,IPLT),ILINE(I),0)
+          iupdown=ILINE(I)
+          CALL etplot(XPLT,XMONIT(I,IPLT),iupdown,isym)
         ENDIF
  40   continue
       call forceflush()

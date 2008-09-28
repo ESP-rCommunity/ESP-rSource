@@ -1681,8 +1681,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       THKX=0.
@@ -1770,21 +1772,32 @@ C Locate and label the vertices.
       CALL VERTLBL(IX,IY,8,IER)
 
 C Draw the ground.
-      CALL ETPLOT(XS(1),YS(1),0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
+      iupdown=1
       DO 120 I=2,4
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   120 CONTINUE
-      CALL ETPLOT(XS(1),YS(1),1,0)
+      iupdown=1
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
       DO 130 I=5,8
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   130 CONTINUE
-      CALL ETPLOT(XS(5),YS(5),1,0)
-      CALL ETPLOT(XS(2),YS(2),0,0)
-      CALL ETPLOT(XS(6),YS(6),1,0)
-      CALL ETPLOT(XS(3),YS(3),0,0)
-      CALL ETPLOT(XS(7),YS(7),1,0)
-      CALL ETPLOT(XS(4),YS(4),0,0)
-      CALL ETPLOT(XS(8),YS(8),1,0)
+      iupdown=1
+      CALL ETPLOT(XS(5),YS(5),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(2),YS(2),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(6),YS(6),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(3),YS(3),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(7),YS(7),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(4),YS(4),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(8),YS(8),iupdown,isym)
       call forceflush()
 
       RETURN

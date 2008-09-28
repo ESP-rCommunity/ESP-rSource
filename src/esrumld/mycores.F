@@ -266,9 +266,11 @@ C ****************** mycograph *****************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Check in graphics mode.
@@ -308,7 +310,9 @@ C Label graph
      &  (xmax+xmin)/2,ymax+9.,ipos,isize)
 
 C Draw the dry-bulb temperature lines
-      CALL etplot(xmin,ymin,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(xmin,ymin,iupdown,isym)
 
 C Set the intervals for the chart.
       IF(xmax.gt.40.) then
@@ -328,23 +332,29 @@ C If horizontal line is not the bottom or top draw as grey.
   20  if(greyok.and.(TD.gt.xmin.and.TD.lt.xmax))then
         call winscl('i',nifgrey-3)
       endif
-      CALL etplot(TD,ymax,1,0)
+      iupdown=1
+      isym=0
+      CALL etplot(TD,ymax,iupdown,isym)
       if(greyok)call winscl('-',0)
       TD=TD+TDINT
-      CALL etplot(TD,ymin,0,0)
+      iupdown=0
+      CALL etplot(TD,ymin,iupdown,isym)
       IF(TD.LE.xmax) goto 20
       if(greyok)call winscl('-',0)
 
 C Draw the relative humidity lines
-      CALL etplot(xmin,ymin,0,0)
+      iupdown=0
+      CALL etplot(xmin,ymin,iupdown,isym)
       RH=ymin
   30  if(greyok.and.(RH.gt.ymin.and.RH.lt.ymax))then
         call winscl('i',nifgrey-3)
       endif
-      CALL etplot(xmax,RH,1,0)
+      iupdown=1
+      CALL etplot(xmax,RH,iupdown,isym)
       if(greyok)call winscl('-',0)
       RH=RH+RHINT
-      CALL etplot(xmin,RH,0,0)
+      iupdown=0
+      CALL etplot(xmin,RH,iupdown,isym)
       IF(RH.LE.ymax) goto 30 
       if(greyok)call winscl('-',0)
 
@@ -460,8 +470,10 @@ C subroutine curvedraw
       character outs*124, mdbnam*72 ,mldnam*48
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       iget=imld
@@ -480,12 +492,16 @@ C Plot the curve on the chart
      &+a(1,imld)
          if(ITDB.eq.int(xmin).or.istfl.eq.0) then
            if(RH.le.100.) then
-             call etplot(TDB,RH,0,0)
+             iupdown=0
+             isym=0
+             call etplot(TDB,RH,iupdown,isym)
              istfl=1
            endif
          else
             if(RH.le.ymax.and.RH.ge.ymin.and.istfl.gt.0) then
-               call etplot(TDB,RH,-102,0)
+               iupdown=-102
+               isym=0
+               call etplot(TDB,RH,iupdown,isym)
              if(ITDB.gt.xmax/2.and.ilab.eq.0) then  
                ipos=0
                isize=0
