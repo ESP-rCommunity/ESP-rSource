@@ -1427,8 +1427,10 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       logical colok,ok,dok
@@ -2283,7 +2285,11 @@ C from zone iocpzone. Start with assumption of full occupancy.
               elseif (MENUTYPE.eq.3) then
 
 C Draw next section of line.
-                if(ioldpos.eq.1) call etplot(TIMEold(IX),Yold(IX),0,0)
+                iupdown=0
+                isym=0
+                if(ioldpos.eq.1)then
+                  call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                endif
                 ioldpos=0
                 IPEN=1
                 MARK=0
@@ -2306,7 +2312,9 @@ C than that of the number of colours re-use an earlier colour.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-                call etplot(GTIME,Yold(IX),IPEN,MARK)
+                iupdown=IPEN
+                isym=MARK
+                call etplot(GTIME,Yold(IX),iupdown,isym)
                 if(colok)call winscl('-',0)
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
@@ -2520,7 +2528,11 @@ C from zone iocpzone. Start with assumption of full occupancy.
                 elseif (MENUTYPE.eq.3) then
 
 C Draw next section of line.
-                  if (ioldpos.eq.1)call etplot(TIMEold(IX),Yold(IX),0,0)
+                  iupdown=0
+                  isym=0
+                  if (ioldpos.eq.1)then
+                    call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                  endif
                   ioldpos=0
                   IPEN=1
                   MARK=0
@@ -2543,7 +2555,9 @@ C than that of the number of colours re-use an earlier colour.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-                  call etplot(GTIME,Yold(IX),IPEN,MARK)
+                  iupdown=IPEN
+                  isym=MARK
+                  call etplot(GTIME,Yold(IX),iupdown,isym)
                   if(colok)call winscl('-',0)
                   call forceflush()
                 elseif (MENUTYPE.eq.5) then

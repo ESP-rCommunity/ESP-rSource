@@ -30,6 +30,11 @@ C    1   DRAW(PEN DOWN)  0   MOVE(PEN UP)   <0  DASHED LINE
 #include "viewer.h"
 
       COMMON /FIL/ IFUSE, IFO
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
       DATA SX,SY,LP/0.,0.,3/
 
 C SCALE PEN POSITION TO ABSOLUTE COORDS
@@ -124,8 +129,12 @@ C SAVE POSITION.
 
 C--------------------------------
 C   PEN MARKER IS 0=UP,1=DOWN,-20=DASHED
-  10  CALL etplot(SX,SY,0,0)
-      CALL etplot(A,B,IO,0)
+  10  continue
+      iupdown=0
+      isym=0
+      CALL etplot(SX,SY,iupdown,isym)
+      iupdown=IO
+      CALL etplot(A,B,iupdown,isym)
       call forceflush()
       RETURN
 

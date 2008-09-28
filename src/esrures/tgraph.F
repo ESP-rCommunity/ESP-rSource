@@ -205,8 +205,10 @@ C act='p' iget parameters already set.
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       logical kwatts,colok
@@ -532,7 +534,11 @@ C are in Watts but plant is being displayed so convert to kW.
                 VAL2(IX,J)=VAL2(IX,J)/1000.
               endif
             endif
-            if (ioldpos.eq.1) call etplot(TIMEold(IX),Yold(IX),0,0)
+            if (ioldpos.eq.1)then
+              iupdown=0
+              isym=0
+              call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+            endif
             ioldpos=0
             IPEN=IGETNO(IX,6)
             MARK=0
@@ -565,7 +571,9 @@ C zone we are dealing with.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-            call etplot(TIME,Yold(IX),IPEN,MARK)
+            iupdown=IPEN
+            isym=MARK
+            call etplot(TIME,Yold(IX),iupdown,isym)
             if(colok)call winscl('-',0)
             call forceflush()
  421      CONTINUE
@@ -1051,8 +1059,10 @@ C Draws the control graph(s).
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,NOPLOT
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       XREM1(1)=0.0
@@ -1088,28 +1098,28 @@ C Value plotted depends on the type of plot selected by user;
          LABEL='Htg Err'
          IF(PLTCTL)LABEL= 'Error'
        ELSEIF(L.EQ.3.AND.I.EQ.2.OR.L.EQ.3.AND.I.EQ.5.OR.
-     &   L.EQ.3.AND.I.EQ.6.OR.L.EQ.3.AND.I.EQ.8)THEN
+     &        L.EQ.3.AND.I.EQ.6.OR.L.EQ.3.AND.I.EQ.8)THEN
          IF(IBLW.EQ.6)GOTO 322
          XVAL1(L)=XVAL1(1)-SPC
          IPEN=-1
          LABEL='Clg Err'
          IF(PLTCTL)LABEL= 'Error'
        ELSEIF(L.EQ.2.AND.I.EQ.3.OR.L.EQ.4.AND.I.EQ.5.OR.
-     &   L.EQ.2.AND.I.EQ.7.OR.L.EQ.4.AND.I.EQ.8)THEN
+     &        L.EQ.2.AND.I.EQ.7.OR.L.EQ.4.AND.I.EQ.8)THEN
          XVAL1(L)=SPH+(TRH/2)
          IPEN=-104
          LABEL='HtgThUp'
          IF(PLTCTL)LABEL='Tht Hi'
          IF(.NOT.ITHR)NOPLOT=.TRUE.          
        ELSEIF(L.EQ.3.AND.I.EQ.3.OR.L.EQ.5.AND.I.EQ.5.OR.
-     &   L.EQ.3.AND.I.EQ.7.OR.L.EQ.5.AND.I.EQ.8)THEN
+     &        L.EQ.3.AND.I.EQ.7.OR.L.EQ.5.AND.I.EQ.8)THEN
          XVAL1(L)=SPH-(TRH/2)
          IPEN=-104
          LABEL='HtgThLo'
          IF(PLTCTL)LABEL='Tht Lo'
          IF(.NOT.ITHR)NOPLOT=.TRUE.
        ELSEIF(L.EQ.4.AND.I.EQ.3.OR.L.EQ.6.AND.I.EQ.5.OR.
-     &   L.EQ.4.AND.I.EQ.7.OR.L.EQ.6.AND.I.EQ.8)THEN
+     &        L.EQ.4.AND.I.EQ.7.OR.L.EQ.6.AND.I.EQ.8)THEN
          IF(IBLW.EQ.6)GOTO 322   
          XVAL1(L)=SPC+(TRC/2)
          IPEN=-104
@@ -1117,7 +1127,7 @@ C Value plotted depends on the type of plot selected by user;
          IF(PLTCTL)LABEL='Tht Hi'
          IF(.NOT.ITHR)NOPLOT=.TRUE.
        ELSEIF(L.EQ.5.AND.I.EQ.3.OR.L.EQ.7.AND.I.EQ.5.OR.
-     &   L.EQ.5.AND.I.EQ.7.OR.L.EQ.7.AND.I.EQ.8)THEN
+     &        L.EQ.5.AND.I.EQ.7.OR.L.EQ.7.AND.I.EQ.8)THEN
          IF(IBLW.EQ.6)GOTO 322
          XVAL1(L)=SPC-(TRC/2)
          IPEN=-104
@@ -1125,14 +1135,14 @@ C Value plotted depends on the type of plot selected by user;
          IF(PLTCTL)LABEL='Tht Lo'
          IF(.NOT.ITHR)NOPLOT=.TRUE.
        ELSEIF(L.EQ.2.AND.I.EQ.4.OR.L.EQ.4.AND.I.EQ.6.OR.
-     &   L.EQ.6.AND.I.EQ.7.OR.L.EQ.8.AND.I.EQ.8)THEN
+     &        L.EQ.6.AND.I.EQ.7.OR.L.EQ.8.AND.I.EQ.8)THEN
          XVAL1(L)=SPH
          IPEN=-9
          LABEL='HtgStPt'
          IF(PLTCTL)LABEL='Set Pt'
          IF(.NOT.ISP)NOPLOT=.TRUE.
        ELSEIF(L.EQ.3.AND.I.EQ.4.OR.L.EQ.5.AND.I.EQ.6.OR.
-     &   L.EQ.7.AND.I.EQ.7.OR.L.EQ.9.AND.I.EQ.8)THEN
+     &        L.EQ.7.AND.I.EQ.7.OR.L.EQ.9.AND.I.EQ.8)THEN
          IF(IBLW.EQ.6)GOTO 322
          XVAL1(L)=SPC
          IPEN=-9
@@ -1151,41 +1161,61 @@ C Now plot graph(s),
      &   (I.NE.3.AND.I.NE.4.AND.I.NE.7)))THEN
 
 C A 'point-to-point plot' is used for control point and error graphs.
-         call etplot(TIMEL,Y,0,0)
+         iupdown=0
+         isym=0
+         call etplot(TIMEL,Y,iupdown,isym)
          IF(L.GT.1)THEN
             IF(.NOT.ISP.AND.IBLW.NE.1.AND.IBLW.NE.3)THEN
 
 C no error plot,
-              call etplot(TIME,XVAL1(L),0,0)
+              iupdown=0
+              isym=0
+              call etplot(TIME,XVAL1(L),iupdown,isym)
             ELSE
-              call etplot(TIME,XVAL1(L),IPEN,MARK)
+              iupdown=IPEN
+              isym=MARK
+              call etplot(TIME,XVAL1(L),iupdown,isym)
             ENDIF
          ELSE
-            call etplot(TIME,XVAL1(L),IPEN,MARK)
+            iupdown=IPEN
+            isym=MARK
+            call etplot(TIME,XVAL1(L),iupdown,isym)
          ENDIF
        ELSE
 C A 'rectangular plot' is used for set-point & throttling range graphs.
 
          TIMEP=TIMEL+(0.5*NOUT)
          TIMEF=TIME+(0.5*NOUT)
-         call etplot(TIMEP,Y,0,0)
+         iupdown=0
+         isym=0
+         call etplot(TIMEP,Y,iupdown,isym)
 
 C If first pass, then no vertical plot,
          IF(J.EQ.2)THEN
-           call etplot(TIMEP,XVAL1(L),0,0)
+           iupdown=0
+           isym=0
+           call etplot(TIMEP,XVAL1(L),iupdown,isym)
          ELSE
            IF(NOPLOT)THEN
-           call etplot(TIMEP,XVAL1(L),0,0)
+             iupdown=0
+             isym=0
+             call etplot(TIMEP,XVAL1(L),iupdown,isym)
            ELSE
-           call etplot(TIMEP,XVAL1(L),IPEN,0)
+             iupdown=IPEN
+             isym=0
+             call etplot(TIMEP,XVAL1(L),iupdownm,isym)
            ENDIF
          ENDIF
          IF(NOPLOT)THEN
 
 C no horizontal plot,
-         call etplot(TIMEF,XVAL1(L),0,0)
+           iupdown=0
+           isym=0
+           call etplot(TIMEF,XVAL1(L),iupdown,isym)
          ELSE
-         call etplot(TIMEF,XVAL1(L),IPEN,MARK)
+           iupdown=IPEN
+           isym=MARK
+           call etplot(TIMEF,XVAL1(L),iupdown,isym)
          ENDIF
        ENDIF
               
@@ -1201,16 +1231,22 @@ C no horizontal plot,
        ENDIF
        GOTO 322
 
-309    call etplot(TIME,XVAL1(L),0,0)
+309    iupdown=0
+       isym=0
+       call etplot(TIME,XVAL1(L),iupdown,isym)
        IF(II.EQ.IODF.AND.J.GT.N-NOUT)THEN
        call usrmsg(' ', ' Uncontrolled zone(s) selected.','W')
        ENDIF
        GOTO 322
 
 32     XREM1(L)=XVAL1(L)
-       call etplot(TIME,XVAL1(L),0,0)
+       iupdown=0
+       isym=0
+       call etplot(TIME,XVAL1(L),iupdown,isym)
        goto 322
-321    call etplot(TIME,XVAL1(L),0,9)
+321    iupdown=0
+       isym=9
+       call etplot(TIME,XVAL1(L),iupdown,isym)
        goto 322
 322    CONTINUE
       

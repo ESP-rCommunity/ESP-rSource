@@ -102,6 +102,11 @@ C Simulator parameters.
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
@@ -660,7 +665,11 @@ C from zone iocpzone. Start with assumption of full occupancy.
               elseif (MENUTYPE.eq.3) then
 
 C Draw next section of line.
-                if (ioldpos.eq.1) call etplot(TIMEold(IX),Yold(IX),0,0)
+                iupdown=0
+                isym=0
+                if (ioldpos.eq.1)then
+                  call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                endif
                 ioldpos=0
                 IPEN=1
                 MARK=0
@@ -684,7 +693,9 @@ C than that of the number of colours re-use an earlier colour.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-                call etplot(TIME,Yold(IX),IPEN,MARK)
+                iupdown=IPEN
+                isym=MARK
+                call etplot(TIME,Yold(IX),iupdown,isym)
                 if(colok)call winscl('-',0)
                 call forceflush()
               elseif (MENUTYPE.eq.5) then

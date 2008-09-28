@@ -783,8 +783,10 @@ C IPRZ is primitive db ref for each layer.
       character CSTR*25,TCSTR*25,zname*12,zdesc*64,ZN*12
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Determine the 'other' zone and connection information.
@@ -808,21 +810,31 @@ C Draw construction section.
 
 C Plot saturated vapour pressure.
       NN=2*NE(ISUR)+1
-      call etplot(THKMIN,PSSO,0,0)
+      iupdown=0
+      isym=0
+      call etplot(THKMIN,PSSO,iupdown,isym)
+      iupdown=1
       DO 20 I=1,NN
-        call etplot(THKN(I)*1000.,PSS(I),1,0)
+        call etplot(THKN(I)*1000.,PSS(I),iupdown,isym)
    20 CONTINUE
-      call etplot(THKMAX,PSSI,1,0)
+      iupdown=1
+      call etplot(THKMAX,PSSI,iupdown,isym)
       ipos=3
       isize=1
       call etlabel('Sat Vap Pres',THKMAX,PSSI,ipos,isize)
 
 C Plot vapour pressure.
-      call etplot(THKMIN,PSO,0,0)
+      iupdown=0
+      isym=0
+      call etplot(THKMIN,PSO,iupdown,isym)
+      iupdown=-5
+      isym=6
       DO 30 I=1,NN
-        call etplot(THKN(I)*1000.,PS(I),-5,6)
+        call etplot(THKN(I)*1000.,PS(I),iupdown,isym)
    30 CONTINUE
-      call etplot(THKMAX,PSI,-5,0)
+      iupdown=-5
+      isym=0
+      call etplot(THKMAX,PSI,iupdown,isym)
       ipos=3
       isize=1
       call etlabel('Vap Pres',THKMAX,PSI,ipos,isize)

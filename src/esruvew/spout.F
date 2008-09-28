@@ -9,14 +9,18 @@ C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
       character a*1
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       IF(IPLN.EQ.0)RETURN
           IF(ABS(X*SCAL-XORG).GT.390.0.OR.
      &       ABS(Y*SCAL-YORG).GT.390.)RETURN
-      CALL etplot(X,Y,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(X,Y,iupdown,isym)
       a=char(ICH)
       ipos=0
       isize=ifs

@@ -13,9 +13,11 @@ C------------------------
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       LOGICAL J1J2
@@ -48,15 +50,20 @@ C------------------------
 
         IF(X3.EQ.X2 .AND. Y3.EQ.Y2)GOTO 40
 
-        CALL etplot(X2,Y2,0,0)
-10      CALL etplot(X3,Y3,1,0)
+        iupdown=0
+        isym=0
+        CALL etplot(X2,Y2,iupdown,isym)
+10      iupdown=1
+        CALL etplot(X3,Y3,iupdown,isym)
 20      X1=X3
         Y1=Y3
         GOTO 40
 
 30      IF(J1J2)GOTO 40
 
-        CALL etplot(X2,Y2,1,0)
+        iupdown=1
+        isym=0
+        CALL etplot(X2,Y2,iupdown,isym)
         X1=X2
         Y1=Y2
 40      CONTINUE

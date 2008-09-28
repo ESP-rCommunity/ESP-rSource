@@ -646,8 +646,10 @@ C IPRZ is material db ref for each layer.
       character zname*12,zdesc*64,ZN*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Re-establish available colours.
@@ -703,14 +705,18 @@ C Commence drawing. Remember that everything shifted over 1
 C to allow for outside temp to be in VAL2(1,?)
           icnt=icnt+1
           X=THKMIN
-          call etplot(X,VAL2(1,J),0,0)
+          iupdown=0
+          isym=0
+          call etplot(X,VAL2(1,J),iupdown,isym)
           X=0.
+          iupdown=1
           DO 90 L=1,NNT
-            call etplot(X,VAL2(L+1,J),1,0)
+            call etplot(X,VAL2(L+1,J),iupdown,isym)
             M=((L-1)/2)+1
             X=X+ETHK(M)/2.
    90     CONTINUE
-          call etplot(THKMAX,VAL2(NNT+2,J),1,0)
+          iupdown=1
+          call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
           call forceflush
           if(act.eq.'a')then
 
@@ -740,14 +746,18 @@ C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
               call winscl('i',nifgrey-1)
               X=THKMIN
-              call etplot(X,VAL2(1,J),0,0)
+              iupdown=0
+              isym=0
+              call etplot(X,VAL2(1,J),iupdown,isym)
               X=0.
+              iupdown=1
               DO 91 L=1,NNT
-                call etplot(X,VAL2(L+1,J),1,0)
+                call etplot(X,VAL2(L+1,J),iupdown,isym)
                 M=((L-1)/2)+1
                 X=X+ETHK(M)/2.
    91         CONTINUE
-              call etplot(THKMAX,VAL2(NNT+2,J),1,0)
+              iupdown=1
+              call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
               call forceflush()
               call winscl('-',0)
             endif

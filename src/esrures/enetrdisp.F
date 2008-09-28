@@ -457,11 +457,13 @@ C Calculate the current time (day fraction).
 
 C Move the pen to the last plotted point for the recovered variable, 
 C unless the first time increment is being plotted.
+                iupdown=0
+                isym=0
                 IF(ILINST(I).EQ.0) THEN
-                  CALL ETPLOT(TIMEC,EVAL2(I),0,0)
+                  CALL ETPLOT(TIMEC,EVAL2(I),iupdown,isym)
                   ILINST(I)=1
                 ELSE
-                  CALL ETPLOT(TIMEOLD(I),YOLD(I),0,0) 
+                  CALL ETPLOT(TIMEOLD(I),YOLD(I),iupdown,isym) 
                 ENDIF
 
 C Check if a symbol needs to be plotted at this point and draw the point on the graph. 
@@ -471,7 +473,9 @@ C Check if a symbol needs to be plotted at this point and draw the point on the 
                 ELSE
                   IMARK=0
                 ENDIF
-                CALL ETPLOT(TIMEC,EVAL2(I),IPEN,IMARK)
+                iupdown=IPEN
+                isym=MARK
+                CALL ETPLOT(TIMEC,EVAL2(I),iupdown,isym)
 
 C Store the plotted point and the time.
                 YOLD(I)=EVAL2(I)

@@ -784,6 +784,11 @@ C VGDRW initiates axis drawing and displays all requested profiles.
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       character VITEM*24,HITEM*24
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initiate graph axis drawing.
       CALL VAXIS(VITEM,HITEM)
@@ -852,9 +857,13 @@ C Set all possible values, computing average if requested.
     1       MARK=6
             IPEN=0
             IF(TIME.LE.TSTART)THEN
-              call etplot(YVAL2,YVAL1,0,0)
+              iupdown=0
+              isym=0
+              call etplot(YVAL2,YVAL1,iupdown,isym)
             ELSE
-              call etplot(YVAL2,YVAL1,IPEN,MARK)
+              iupdown=IPEN
+              isym=MARK
+              call etplot(YVAL2,YVAL1,iupdown,isym)
             ENDIF
    30     CONTINUE
    20   CONTINUE
