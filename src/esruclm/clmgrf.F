@@ -414,6 +414,11 @@ C Typical periods and season definitions.
       integer onleft  ! number of left axis
       integer onright ! number of right axis
       integer months
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C The 6 dimensions are as follows:
 C  1= diff solar, 2= db temperature, 3 = dir solar rad,
@@ -497,9 +502,13 @@ C SHOULD DISTRIBUTION HAVE A LINE MARKING AT THIS TIME.
 
 C NOW PLOT DISRTIBUTION.
             IF(K.EQ.KS)then
-              call etplot(TIME,Y,0,0)
+              iupdown=0
+              isym=0
+              call etplot(TIME,Y,iupdown,isym)
             else
-              call etplot(TIME,Y,JPEN,MK)
+              iupdown=JPEN
+              isym=MK
+              call etplot(TIME,Y,iupdown,isym)
             endif
             if(K.eq.KF)PT24(I)=Y
    40     CONTINUE
@@ -631,6 +640,11 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       logical colok
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       DATA IPEN/-5,1,-5,-105,-105,-205/
       DATA MARK/8,6,1,4,5,3/
@@ -713,9 +727,13 @@ C SHOULD DISTRIBUTION HAVE A LINE MARKING AT THIS TIME.
 
 C NOW PLOT DISRTIBUTION.
           IF(K.EQ.KS)then
-            call etplot(TIME,Y,0,0)
+            iupdown=0
+            isym=0
+            call etplot(TIME,Y,iupdown,isym)
           else
-            call etplot(TIME,Y,JPEN,MK)
+            iupdown=JPEN
+            isym=MK
+            call etplot(TIME,Y,iupdown,isym)
           endif
           if(K.eq.KF)PT24(I)=Y
    40   CONTINUE
@@ -979,8 +997,10 @@ C   is negative draw only the past value.
 
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
@@ -1028,13 +1048,16 @@ C If the previous data is to be drawn. Loop.
           call winscl('z',2)
         endif
         START=TMIN+1.0
-        call etplot(START,CLMV(7,IDS,1),0,0)
+        iupdown=0
+        isym=0
+        call etplot(START,CLMV(7,IDS,1),iupdown,isym)
         IHOUR=0
+        iupdown=1
         DO 100 I=IDS,IDF
           JJ=IHOUR
           DO 200 J=1,24
             IHOUR=JJ+J
-            call etplot(real(IHOUR),CLMV(7,I,J),1,0)
+            call etplot(real(IHOUR),CLMV(7,I,J),iupdown,isym)
   200     CONTINUE
   100   CONTINUE
         if(colok)then
@@ -1047,13 +1070,16 @@ C If the previous data is to be drawn. Loop.
 C  Draw graphs of either solar radiation,temperature,
 C  realtive humidity or wind velocity and direction.
       START=TMIN+1.0
-    7 call etplot(START,CLMV(ICVS,IDS,1),0,0)
+    7 iupdown=0
+      isym=0
+      call etplot(START,CLMV(ICVS,IDS,1),iupdown,isym)
       IHOUR=0
+      iupdown=1
       DO 10 I=IDS,IDF
         JJ=IHOUR
         DO 20 J=1,24
           IHOUR=JJ+J
-          call etplot(real(IHOUR),CLMV(ICVS,I,J),1,0)
+          call etplot(real(IHOUR),CLMV(ICVS,I,J),iupdown,isym)
    20   CONTINUE
    10 CONTINUE
       GOTO (3,1111,1111,1111,5,6),ICVS

@@ -1239,9 +1239,11 @@ C RESMN      - Minimum reverberation time
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Initialisation
@@ -1319,10 +1321,14 @@ C Define for each calculation method which symbol to use on the curve
 
 
 C Plot reverberation time curve
-      CALL etplot(125.,TReverb(1),0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(125.,TReverb(1),iupdown,isym)
       do 30 I=1,MNbABS
           FREQ=INT(100* EXP((I-1)/3.*LOG(2.)))
-          CALL etplot(FREQ,TReverb(I),1,Isymbol)
+          iupdown=1
+          isym=Isymbol
+          CALL etplot(FREQ,TReverb(I),iupdown,isym)
  30   continue
 
 C Label curves
