@@ -1049,7 +1049,7 @@ C Case where TD<60 and GS>30
               if(colok)call winscl('z',24)
               iupdown=-102
               isym=0
-              CALL etplot(TD,GS,iupsoqn,isym)
+              CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1
             ENDIF                                       
           ENDIF

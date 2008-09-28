@@ -757,7 +757,7 @@ C Assume fully occupied.
               endif
               iupdown=1
               isym=2
-              call etplot(HR,VHI,iupdownm,isym)
+              call etplot(HR,VHI,iupdown,isym)
               VHIold=VHI
               iupdown=0
               isym=0

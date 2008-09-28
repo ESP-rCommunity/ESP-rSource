@@ -474,7 +474,7 @@ C Check if a symbol needs to be plotted at this point and draw the point on the 
                   IMARK=0
                 ENDIF
                 iupdown=IPEN
-                isym=MARK
+                isym=IMARK
                 CALL ETPLOT(TIMEC,EVAL2(I),iupdown,isym)
 
 C Store the plotted point and the time.

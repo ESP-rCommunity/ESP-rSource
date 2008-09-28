@@ -1203,7 +1203,7 @@ C If first pass, then no vertical plot,
            ELSE
              iupdown=IPEN
              isym=0
-             call etplot(TIMEP,XVAL1(L),iupdownm,isym)
+             call etplot(TIMEP,XVAL1(L),iupdown,isym)
            ENDIF
          ENDIF
          IF(NOPLOT)THEN
