@@ -77,7 +77,7 @@ C Default esp-r distribution path.
       logical moddb,browse,modcon,QUIET
       logical unixok,copydef,haveconstr,clkok
 
-      character H*72,lltmp*144,path*72,outs*124
+      character H*72,lltmp*144,path*72,outs*124,outs248*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,message*48
@@ -363,9 +363,9 @@ C Check if name ok and if a file exists by that name.
           IF(XST)THEN
 
 C If file exists scan the file and use the editing facility.
-C            write(outs,'(2a)') 'Accessing pressure db ',
-C     &        LAPRES(1:lnblnk(LAPRES))
-C            call edisp(iuout,outs)
+            write(outs,'(2a)') 'Accessing pressure db ',
+     &        LAPRES(1:lnblnk(LAPRES))
+            call edisp(iuout,outs)
             CALL ERPRCDB(LAPRES,0,3,IER)
             IF(IER.NE.0) GOTO 30
             CALL EDPCDB(IER) 
@@ -421,12 +421,14 @@ C file name based on the project root name. Lastly do the copy.
 C If the default is to be copied ask for local name. Use LTMP for
 C the file name as known to esp-r and LCOPY for the system cp call.   
           if(copydef)then
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,DAPRES)
+            write(outs248,'(2a)') 'The source file is:',
+     &        DAPRES(1:lnblnk(DAPRES))
+            call edisp248(iuout,outs248,100)
             call edisp(iuout,' ')
           else
-            call edisp(iuout,'The source file is:')
-            call edisp(iuout,LAPRES)
+            write(outs248,'(2a)') 'The source file is:',
+     &        LAPRES(1:lnblnk(LAPRES))
+            call edisp248(iuout,outs248,100)
             call edisp(iuout,' ')
           endif
           h(1)='The suggested name of this database is based on'

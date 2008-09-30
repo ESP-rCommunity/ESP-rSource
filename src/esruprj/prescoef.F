@@ -835,7 +835,8 @@ C default file names for databases
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
 
-      CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
+      CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8
+      character t144*144
       CHARACTER LAPROB*72,LTMP*72,LLTMP*144,outs248*248
       character doit*248
 
@@ -1328,8 +1329,8 @@ C Save data to file.
         IF (IWHICH.EQ.1) THEN
 
 C Read in pc from file c2e.cpdb
-          t72='c2e.cpdb'
-          CALL ERPRCDB(t72,0,3,IER)
+          t144='c2e.cpdb'
+          CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) return
 
           H(1)='To which file do you want to write the pressure data?'
@@ -1379,8 +1380,8 @@ C          if(ier.eq.-3) return ! cancel detected.
 
 C Read in pc from file c2e.cpdb
           ndep=NPRE
-          t72='c2e.cpdb'
-          CALL ERPRCDB(t72,ndep,3,IER)
+          t144='c2e.cpdb'
+          CALL ERPRCDB(t144,ndep,3,IER)
           if (ier.ne.0) return
 
 C If LAPRES=DAPRES change LAPRES to local pressc.db1 and write data.
@@ -1401,22 +1402,19 @@ C current contents of pc-data in common block.
       SUBROUTINE EMKAPCDB(FINA,IER)
 #include "net_flow.h"
 #include "building.h"
-#include "esprdbfile.h"
       integer lnblnk  ! function definition
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFLDOC/DEPRE(MPRD)
       common/FILEP/IFIL
-      common/OUTIN/IUOUT,IUIN
 
-      character LAPROB*72,FINA*144
+      character FINA*144
       character DEPRE*40
 
 C Check the number of pressure coefficients and give a warning 
 C message if the number is too big.
       IF(NPRE.GT.MPRD)THEN
-        CALL LUSRMSG(' too many items to put in ',LAPRES,'W')
+        CALL LUSRMSG(' too many items to put in ',FINA,'W')
         IER=1
         RETURN
       ENDIF
@@ -1468,7 +1466,7 @@ C IER=0 OK, IER=1 problem.
       character LAPROB*72
       LOGICAL OK,dok,moddb
 
-      IER=0
+C      IER=0
       moddb =.false.
 
 C Create a menu showing the available database items.  Allow user to
@@ -1743,10 +1741,10 @@ C Editing an existing pressure coefficient set
         CALL KEYIND(NITMS,IVERT,IFOC,IO)
         CALL EDPCST(IER,moddb,IFOC)
       else
-        INO=-1
+        INOO=-1
         GOTO 3 
       ENDIF
-      INO=-4
+      INOO=-4
       GOTO 3 
       END
 
@@ -1838,7 +1836,7 @@ C that the data that is read in should be appended to an existing file.
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
 
-      CHARACTER OUTSTR*124,DEPRE*40,setn*40,FINA*72 
+      CHARACTER OUTSTR*124,DEPRE*40,setn*40,FINA*144 
 
 C Open the file, of problem return.
       IUM=IFIL+1
