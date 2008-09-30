@@ -662,15 +662,37 @@ C Check if there is a plant fluid flow network available: 0 = no
      &   )
         IF(IFLWN.EQ.0) goto 606
 
+C << NOTE: none of this is really necessary. Even in stand-alone
+C << mode the configuration file will have these entries. 
+
 C Read names of PROBLEM, PRESSURE DISTRIBUTION and RESULTS files, un-
 C less this was already done above (building side air flow wanted)
+C Note that some older models may be missing the names of the flow
+C network, pressure db and flow results file. If there are more than
+C one item on the lines then do not bother setting the variable and
+C warn the user.
         IF(IAIRN.ge.0) THEN
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'network file',IER)
-          LAPROB=OUTSTR(1:72)
-          CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'pressure file',IER)
-          write(LAPRES,'(a)') LOUTSTR(1:144)
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'mfs res file',IER)
-          LAFRES=OUTSTR(1:72)
+          CALL STRIPC(iuc,OUTSTR,99,ND,1,'network file',IER)
+          if(ND.gt.1)then
+            call usrmsg('plant looking for mass flow network and foud',
+     &        outstr(1:48),'W')
+          else
+            write(LAPROB,'(a)') OUTSTR(1:lnblnk(outstr))
+          endif	
+          CALL LSTRIPC(iuc,LOUTSTR,99,ND,1,'pressure file',IER)
+          if(ND.gt.1)then
+            call usrmsg('plant looking for pressure db and foud',
+     &        outstr(1:48),'W')
+          else
+            write(LAPRES,'(a)') LOUTSTR(1:144)
+          endif	
+          CALL STRIPC(iuc,OUTSTR,99,ND,1,'mfs res file',IER)
+          if(ND.gt.1)then
+            call usrmsg('looking for mass flow results and foud',
+     &        outstr(1:48),'W')
+          else
+            LAFRES=OUTSTR(1:72)
+          endif	
           IF(IER.NE.0)RETURN
 
 C Reporting.

@@ -85,6 +85,7 @@ C Default esp-r distribution path.
       character doit*248
       character DEPRE*40,OUTSTR*124,LCOPY*72
       character dinstpath*48
+      integer iglib  ! for detecting GTK or X11
 
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
@@ -243,7 +244,7 @@ C with save level 5.
       ELSEIF(INO.EQ.5)THEN
 
 C Pressure distribution db.
-  30    LLTMP=LAPRES
+  30    write(lltmp,'(a)') LAPRES(1:lnblnk(LAPRES))
         IAPRES=IFIL+1
         H(1)='To enable the calculation of wind-induced surface'
         H(2)='pressures (as required the simulator), this database'
@@ -269,22 +270,48 @@ C Pressure distribution db.
         H(22)='d) copy default database: a project copy of the default'
         H(23)='  database will be made and you will be offered a'
         H(24)='  chance to rename it.'
+
+C If GTK library then there are additional options so include in help.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.2)then
+          H(25)='e) browse ../dbs allows you to see the model ../dbs'
+          H(26)='  folder for alternative optics files. If you do not'
+          H(27)='  find anything the previous value will be restored.'
+          H(28)=' '
+          H(29)=' f) browse distribution displays files in the data-'
+          H(30)='  bases folder of the ESP-r distribution. If you do'
+          H(31)='  not select the previous value will be restored.'
+          H(32)=' '
+          H(33)=' g) copy another database to the project allows you'
+          H(34)=' to locate a database and get a project copy of it.'
+        else
+          H(25)='e) select a file (X11 only): edit the file name'
+          H(26)='   and if it is found you can browse or edit it.'
+          H(27)='   Hint: if you eventually want to copy that other'
+          H(28)='   file into the model folder first select it and'
+          H(29)='   then ask for a copy.'
+          H(30)=' '
+          H(31)=' '
+          H(32)=' '
+          H(33)=' '
+          H(34)=' '
+        endif
         CALL ERPFREE(IAPRES,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
         write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
      &    '/databases'
         linst=lnblnk(linstd)
-        call FINDFIL(LLTMP,XST)
+        call FINDFIL(lltmp,XST)
         IF(.NOT.XST)THEN
           idno=2
           isw=0
           call MENUATOL('  ','Pressure Distributions db',
      &      ' ','b select another db',
      &      'c create a new db','d copy the default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,24)
+     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
           copydef=.true.
-        elseif(LLTMP(1:linst).eq.linstd(1:linst))then
+        elseif(lltmp(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
           idno=1
@@ -292,7 +319,7 @@ C If corportate database then offer the following choices:
           call MENUATOL('  ','Pressure Distributions db',
      &      'a browse/edit db','b select another db',
      &      'c create new db','d copy default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,25)
+     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
           copydef=.false.
         else
 
@@ -302,7 +329,7 @@ C If db exists locally offer the following choices:
           call MENUATOL('  ','Pressure Distributions db',
      &      'a browse/edit db','b select another db',
      &      'c create new db','d copy default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,25)
+     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
           copydef=.true.
         endif
 
@@ -313,7 +340,7 @@ C Act on the users choice. If no choice return to main menu.
 
 C If file exists open it, test file type, get number of items and close.
           if(XST)then
-            LAPRES=LLTMP
+            LAPRES=lltmp
             moddb=.true.
             CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
             IF(IER.NE.0) GOTO 30  
@@ -349,7 +376,7 @@ C enter editing facilitiy.
           H(7)='different exposure categories. '
           H(8)=' '
           H(9)='Please supply and confirm the file name.'
-          CALL EASKS(LLTMP,' Pressure coefficients database?',
+          CALL EASKS(lltmp,' Pressure coefficients database?',
      &      ' ',96,DAPRES,'pressure coefficients database',IER,9)
 
 C Check if name ok and if a file exists by that name.
@@ -385,18 +412,18 @@ C a new db, populate it and present editing facility.
           h(2)='project name. '
           lr=lnblnk(cfgroot)
           if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LLTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
+            write(lltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
           else
-            write(LLTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+            write(lltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.pressuredb'
           endif
           clkok=.false.
- 32       CALL EASKSCNCL(LLTMP,' New pressure coefficients database?',
+ 32       CALL EASKSCNCL(lltmp,' New pressure coefficients database?',
      &      ' ','cancel',clkok,96,DAPRES,
      &      'pressure coefficients database',IER,2)
           if(clkok) goto 3
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-            LAPRES=LLTMP
+            LAPRES=lltmp
           else
             goto 32
           endif
@@ -435,12 +462,12 @@ C the file name as known to esp-r and LCOPY for the system cp call.
           h(2)='the project name.'
           lr=lnblnk(cfgroot)
           if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(LLTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
+            write(lltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
           else
-            write(LLTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+            write(lltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.pressuredb'
           endif
-  34      CALL EASKS(LLTMP,
+  34      CALL EASKS(lltmp,
      &      'Database name after it is copied into the project?',
      &      ' ',96,'pressure.db','copied pressure database',IER,2)
           call isunix(unixok)
@@ -1935,6 +1962,7 @@ C Local strings for user selections dependent on graphic library.
       CHARACTER ZPDESC*25
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2541,6 +2569,7 @@ C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28,opth*28,opti*28
       character sourcefile*144  ! the file to copy
       logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3192,6 +3221,7 @@ C Local strings for user selections dependent on graphic library.
       character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
