@@ -4254,20 +4254,35 @@ C items in call to evwmenu.
       character*(*) name, items(*)
       character itypes*40
 
+#ifdef OSX
+      integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#else
+      integer*8 impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#endif
+
 C Append a null terminator to the title string if possible.
       iw=LEN(items(1))
       write(itypes,9)
    9  format(40('-'))
       call updmenu(items,itypes,nitms,iw)
-      call evwmenu (name,impx,impy,iw,irpx,irpy,ino,ipflg,iuresp)
+      inoe=ino   ! assign to local passed parameters
+      impxe=impx   
+      impye=impy   
+      irpxe=irpx
+      irpye=irpy
+      call evwmenu (name,impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp)
+      ino=inoe  !  cast back from returned parameter
+      irpx=irpxe
+      irpy=irpye
       if (ino.lt.0) then
 
 C Overload INO with click position and button.  A nine digit number is
 C used the first digit is the mouse button and the next 4 represent the
 C x pixel and the last 4 the y pixel.
         ino=-100000000*iuresp-10000*irpx-irpy
-C Debug...        write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       endif
+C Debug...
+      write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
       end
 
@@ -4277,11 +4292,26 @@ C allows the string widths to be variable widths.
       SUBROUTINE VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
       character*(*) name, items(*)
       character itypes*40
-
+      integer iw,irpx,irpy
+#ifdef OSX
+      integer impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#else
+      integer*8 impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#endif
+      iwe=iw    ! assign to local passed parameter
       write(itypes,9)
    9  format(40('-'))
-      call updmenu(items,itypes,nitms,iw)
-      call evwmenu (name,impx,impy,iw,irpx,irpy,ino,ipflg,iuresp)
+      call updmenu(items,itypes,nitms,iwe)
+      inoe=ino   ! assign to local passed parameters
+      impxe=impx   
+      impye=impy   
+      irpxe=irpx
+      irpye=irpy
+      call evwmenu (name,impxe,impye,iw,irpx,irpy,inoe,ipflg,iuresp)
+      ino=inoe  !  cast back from returned parameter
+      irpx=irpxe
+      irpy=irpye
+      write(6,*) 'VWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
       end
 
