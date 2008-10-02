@@ -4254,6 +4254,10 @@ C items in call to evwmenu.
       character*(*) name, items(*)
       character itypes*40
 
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+C computers cast the parameters passed into ewmenu to local variables
+C of either integer or integer*8 to match the long int variables in
+C the C function evwmenu.  Do reverse cast after return from evwmenu.
 #ifdef OSX
       integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
 #else
@@ -4282,7 +4286,7 @@ C x pixel and the last 4 the y pixel.
         ino=-100000000*iuresp-10000*irpx-irpy
       endif
 C Debug...
-      write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
+C      write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
       end
 
@@ -4293,6 +4297,11 @@ C allows the string widths to be variable widths.
       character*(*) name, items(*)
       character itypes*40
       integer iw,irpx,irpy
+
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+C computers cast the parameters passed into ewmenu to local variables
+C of either integer or integer*8 to match the long int variables in
+C the C function evwmenu.  Do reverse cast after return from evwmenu.
 #ifdef OSX
       integer impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
 #else
@@ -4311,7 +4320,8 @@ C allows the string widths to be variable widths.
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
-      write(6,*) 'VWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
+C Debug
+C      write(6,*) 'VWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
       end
 

@@ -7321,7 +7321,7 @@ int		len_title;
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
   start_height = wa.height; start_width = wa.width; config_altered = 0;
-/* debug */ fprintf(stderr,"evwmenu: sh sw sx sy %d %d \n",start_height,start_width);
+/* debug  fprintf(stderr,"evwmenu: sh sw sx sy %d %d \n",start_height,start_width); */
 
 /* Begin by changing to the current menu font. */
   if(saved_font != menu_fnt) { winfnt_(&menu_fnt); use_font = menu_fnt; }
@@ -7431,7 +7431,7 @@ int		len_title;
              iy = menubx.b_top + ((i + 1) * (f_height+2)) + 5;
              hl_box.b_bottom = iy + 3;
              hl_box.b_top = hl_box.b_bottom - (f_height+4);
-/* debug */    fprintf(stderr,"m_list %s %d %d %d %d\n",m_list[i],i,iy,hl_box.b_bottom,hl_box.b_top); 
+/* debug     fprintf(stderr,"m_list %s %d %d %d %d\n",m_list[i],i,iy,hl_box.b_bottom,hl_box.b_top); */
              xbox(hl_box,fg,ginvert, BMCLEAR | BMNOT );        /* grey item */
              XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
              XDrawString(theDisp,win,theGC,menubx.b_left+10,iy,m_list[i],iw);  /* print text */
@@ -7451,7 +7451,7 @@ int		len_title;
            iaux = aux_menu((XEvent *) &event);
            i = OFFEND;
            if ( iaux == 5 ) {
-/* debug */    fprintf(stderr,"Inside graphics display x %d y %d button %d\n",x,y,butid);
+/* debug     fprintf(stderr,"Inside graphics display x %d y %d button %d\n",x,y,butid); */
              *uresp=(long int) butid;    /* Set to id of button pressed */
            }
            break;
@@ -7513,7 +7513,7 @@ int		len_title;
             XBell(theDisp, 50);
    	    break;
           } else if (buf[0] >= ' ' && buf[0] < '\177') {
-/* debug  */  fprintf(stderr,"buf[0] is key %c \n",buf[0]);
+/* debug    fprintf(stderr,"buf[0] is key %c \n",buf[0]); */
             for ( index = 0; index < m_lines; index++ ) {
               keypressed = isupper (buf[0]) ?
 		tolower(buf[0]) : buf[0];
@@ -7528,7 +7528,7 @@ int		len_title;
                 iy = menubx.b_top + ((index + 1) * (f_height+2)) + 5;
                 hl_box.b_bottom = iy + 3;
                 hl_box.b_top = hl_box.b_bottom - (f_height+4);
-/* debug */       fprintf(stderr,"m_list %s %d %d\n",m_list[index],index,iy);
+/* debug        fprintf(stderr,"m_list %s %d %d\n",m_list[index],index,iy); */
                 xbox(hl_box,fg,ginvert, BMCLEAR | BMNOT );        /* invert box */
                 XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
                 XDrawString(theDisp,win,theGC,menubx.b_left+10,iy,m_list[index],iw);  /* print text */
@@ -7542,7 +7542,7 @@ int		len_title;
    	    break;
           }
         } else {
-/* debug */ fprintf(stderr,"track_edit_str nothing in buf \n");
+/* debug  fprintf(stderr,"track_edit_str nothing in buf \n"); */
         }
         break;
     }
