@@ -1464,7 +1464,19 @@ C IER=0 OK, IER=1 problem.
       character DEPRE*40,KEY*1,outwin*72,H*72,COMPS*40
       character*72 ITEMS(14)
       character LAPROB*72
+      character lworking*144,fs*1
       LOGICAL OK,dok,moddb
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C      IER=0
       moddb =.false.
@@ -1560,6 +1572,8 @@ C Check for changes/ask user to save.
      &      'Update the pressure coef. database for recent changes?',
      &      OK,dok,2)
           if(OK)then
+
+C << ipathapres >>
             CALL EMKAPCDB(LAPRES,IER)
             moddb =.false.     
           endif      
@@ -1572,6 +1586,7 @@ C The block with the help messages.
       ELSEIF(IVERT.EQ.(NITMS-2)) THEN
 
 C Update pressure coefficient database. 
+C << ipathapres >>
         CALL EMKAPCDB(LAPRES,IER)
         moddb =.false. 
       ELSEIF(IVERT.EQ.(NITMS-3))THEN
@@ -1831,16 +1846,43 @@ C INPC is the number of pc sets that allready exist in case
 C that the data that is read in should be appended to an existing file.
       SUBROUTINE ERPRCDB(FINA,INPC,ICO,IER)
 #include "net_flow.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
 
       CHARACTER OUTSTR*124,DEPRE*40,setn*40,FINA*144 
+      character lworking*144,fs*1
+      character longtfile*144
+      logical concat,xst,unixok
 
-C Open the file, of problem return.
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
       IUM=IFIL+1
-      CALL EFOPSEQ(IUM,FINA,ICO,IER)
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        CALL EFOPSEQ(IUM,lapres,1,IER)
+      elseif(ipathapres.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lapres(1:lnblnk(lapres))
+
+C Debug.
+        write(6,*) 'working pressure coef ',lworking
+        CALL EFOPSEQ(IUM,lworking,1,IER)
+      endif
+
+C If problem return.
       IF(IER.NE.0) THEN
         CALL USRMSG('problems reading press coef db',' ','W')
         IER=1

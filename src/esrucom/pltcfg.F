@@ -671,6 +671,8 @@ C Note that some older models may be missing the names of the flow
 C network, pressure db and flow results file. If there are more than
 C one item on the lines then do not bother setting the variable and
 C warn the user.
+
+C << should this be updated for ipath* >>
         IF(IAIRN.ge.0) THEN
           CALL STRIPC(iuc,OUTSTR,99,ND,1,'network file',IER)
           if(ND.gt.1)then

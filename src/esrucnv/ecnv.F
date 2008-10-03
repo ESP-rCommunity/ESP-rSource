@@ -1520,6 +1520,8 @@ C Comment for configuration index (upgrade registration level).
       IF(IXPOS.EQ.8)WRITE(ioout,'(3F8.3,A)')
      &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
+
+C << updated to use ipath* >>
       WRITE(ioout,'(A,A)') '*prm  ',LFMAT(1:lnblnk(LFMAT))
       WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
       WRITE(ioout,'(A,A)') '*opt  ',LOPTDB(1:lnblnk(LOPTDB))

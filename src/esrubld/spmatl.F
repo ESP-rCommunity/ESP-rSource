@@ -664,10 +664,18 @@ C Special materials
       COMPLEX VSPM
       REAL MINU,MAXU,MINV,MAXV,INC
 
-
-      character spmlabel*16, outs*124,spflnam*72,STRSPM*16
+      character spmlabel*16,outs*124,spflnam*72,STRSPM*16
       character LAPROB*72
-      logical close
+      character lworking*144,fs*1
+      logical concat,xst,unixok,close
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Read in the component data.
       INZONE=ispmloc(ISPMNOD,1)
@@ -702,9 +710,21 @@ C Get the current climate data
 
 C If no mass flow file then open WIND PRESSURE COEFFICIENTS file, 
 C read coefficient sets and close.
+C << ipathapres >>
       IF(IAIRN.EQ.0.AND.IFLWN.EQ.0.AND.NSINC.LT.2)THEN
         IUNIT=IFIL+1
-        CALL EFOPSEQ(IUNIT,LAPRES,1,IER)
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          CALL EFOPSEQ(IUNIT,lapres,1,IER)
+        elseif(ipathapres.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+
+C Debug.
+          write(6,*) 'working pressure coef ',lworking
+          CALL EFOPSEQ(IUNIT,lworking,1,IER)
+        endif
+C        CALL EFOPSEQ(IUNIT,LAPRES,1,IER)
 
         IF(IER.GT.0)THEN
           CALL EDISP(IUOUT,

@@ -114,7 +114,11 @@ C Begin with menu of default dbs.
       ITEMS(2) ='  _______________________________ '
       WRITE(ITEMS(3),'(2A)')'a annual climate         : ',LCLIM(1:44)
       WRITE(ITEMS(4),'(2A)')'b multi-year climate     : ',cTemp(1:44)
-      WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:44)
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:44)
+      elseif(ipathapres.eq.2)then
+        WRITE(ITEMS(5),'(2A)')'c std pressure distrib   : ',LAPRES(1:44)
+      endif
       WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:44)
       WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
@@ -244,279 +248,282 @@ C with save level 5.
       ELSEIF(INO.EQ.5)THEN
 
 C Pressure distribution db.
-  30    write(lltmp,'(a)') LAPRES(1:lnblnk(LAPRES))
-        IAPRES=IFIL+1
-        H(1)='To enable the calculation of wind-induced surface'
-        H(2)='pressures (as required the simulator), this database'
-        H(3)='of angle dependent pressure coefficients is provided.'
-        H(4)=' '
-        H(5)='Wind pressure coefficients are pressure coefficients'
-        H(6)='for surfaces in typical positions and within several'
-        H(7)='different exposure categories.'
-        H(8)=' '
-        H(9)='The following options can be selected:'
-        H(10)=' '
-        H(11)='a) If the file exists than you can browse the database'
-        H(12)='   and if you have permission to update the file you'
-        H(13)='   can edit the entities in the database.'
-        H(14)=' '
-        H(15)='b) select another file: you will asked for a file'
-        H(16)='   name and if it is found you can browse or edit it.'
-        H(17)=' '
-        H(18)=' '
-        H(19)='c) make a new database: a new database will be created'
-        H(20)='   based on the file name you supply.'
-        H(21)=' '
-        H(22)='d) copy default database: a project copy of the default'
-        H(23)='  database will be made and you will be offered a'
-        H(24)='  chance to rename it.'
+        call eddbpres(moddb,'   ')
+
+C  30    write(lltmp,'(a)') LAPRES(1:lnblnk(LAPRES))
+C        IAPRES=IFIL+1
+C        H(1)='To enable the calculation of wind-induced surface'
+C        H(2)='pressures (as required the simulator), this database'
+C        H(3)='of angle dependent pressure coefficients is provided.'
+C        H(4)=' '
+C        H(5)='Wind pressure coefficients are pressure coefficients'
+C        H(6)='for surfaces in typical positions and within several'
+C        H(7)='different exposure categories.'
+C        H(8)=' '
+C        H(9)='The following options can be selected:'
+C        H(10)=' '
+C        H(11)='a) If the file exists than you can browse the database'
+C        H(12)='   and if you have permission to update the file you'
+C        H(13)='   can edit the entities in the database.'
+C        H(14)=' '
+C        H(15)='b) select another file: you will asked for a file'
+C        H(16)='   name and if it is found you can browse or edit it.'
+C        H(17)=' '
+C        H(18)=' '
+C        H(19)='c) make a new database: a new database will be created'
+C        H(20)='   based on the file name you supply.'
+C        H(21)=' '
+C        H(22)='d) copy default database: a project copy of the default'
+C        H(23)='  database will be made and you will be offered a'
+C        H(24)='  chance to rename it.'
 
 C If GTK library then there are additional options so include in help.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.2)then
-          H(25)='e) browse ../dbs allows you to see the model ../dbs'
-          H(26)='  folder for alternative optics files. If you do not'
-          H(27)='  find anything the previous value will be restored.'
-          H(28)=' '
-          H(29)=' f) browse distribution displays files in the data-'
-          H(30)='  bases folder of the ESP-r distribution. If you do'
-          H(31)='  not select the previous value will be restored.'
-          H(32)=' '
-          H(33)=' g) copy another database to the project allows you'
-          H(34)=' to locate a database and get a project copy of it.'
-        else
-          H(25)='e) select a file (X11 only): edit the file name'
-          H(26)='   and if it is found you can browse or edit it.'
-          H(27)='   Hint: if you eventually want to copy that other'
-          H(28)='   file into the model folder first select it and'
-          H(29)='   then ask for a copy.'
-          H(30)=' '
-          H(31)=' '
-          H(32)=' '
-          H(33)=' '
-          H(34)=' '
-        endif
-        CALL ERPFREE(IAPRES,ISTAT)
+C        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+C        if(iglib.eq.2)then
+C          H(25)='e) browse ../dbs allows you to see the model ../dbs'
+C          H(26)='  folder for alternative optics files. If you do not'
+C          H(27)='  find anything the previous value will be restored.'
+C          H(28)=' '
+C          H(29)=' f) browse distribution displays files in the data-'
+C          H(30)='  bases folder of the ESP-r distribution. If you do'
+C          H(31)='  not select the previous value will be restored.'
+C          H(32)=' '
+C          H(33)=' g) copy another database to the project allows you'
+C          H(34)=' to locate a database and get a project copy of it.'
+C        else
+C          H(25)='e) select a file (X11 only): edit the file name'
+C          H(26)='   and if it is found you can browse or edit it.'
+C          H(27)='   Hint: if you eventually want to copy that other'
+C          H(28)='   file into the model folder first select it and'
+C          H(29)='   then ask for a copy.'
+C          H(30)=' '
+C          H(31)=' '
+C          H(32)=' '
+C          H(33)=' '
+C          H(34)=' '
+C        endif
+C        CALL ERPFREE(IAPRES,ISTAT)
 
 C Get length of path to where esp-r databases were installed.
-        write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &    '/databases'
-        linst=lnblnk(linstd)
-        call FINDFIL(lltmp,XST)
-        IF(.NOT.XST)THEN
-          idno=2
-          isw=0
-          call MENUATOL('  ','Pressure Distributions db',
-     &      ' ','b select another db',
-     &      'c create a new db','d copy the default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
-          copydef=.true.
-        elseif(lltmp(1:linst).eq.linstd(1:linst))then
+C        write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
+C     &    '/databases'
+C        linst=lnblnk(linstd)
+C        call FINDFIL(lltmp,XST)
+C        IF(.NOT.XST)THEN
+C          idno=2
+C          isw=0
+C          call MENUATOL('  ','Pressure Distributions db',
+C     &      ' ','b select another db',
+C     &      'c create a new db','d copy the default db',
+C     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
+C          copydef=.true.
+C        elseif(lltmp(1:linst).eq.linstd(1:linst))then
 
 C If corportate database then offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL('  ','Pressure Distributions db',
-     &      'a browse/edit db','b select another db',
-     &      'c create new db','d copy default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
-          copydef=.false.
-        else
+C          idno=1
+C          isw=0
+C          call MENUATOL('  ','Pressure Distributions db',
+C     &      'a browse/edit db','b select another db',
+C     &      'c create new db','d copy default db',
+C     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
+C          copydef=.false.
+C        else
 
 C If db exists locally offer the following choices:
-          idno=1
-          isw=0
-          call MENUATOL('  ','Pressure Distributions db',
-     &      'a browse/edit db','b select another db',
-     &      'c create new db','d copy default db',
-     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
-          copydef=.true.
-        endif
+C          idno=1
+C          isw=0
+C          call MENUATOL('  ','Pressure Distributions db',
+C     &      'a browse/edit db','b select another db',
+C     &      'c create new db','d copy default db',
+C     &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,34)
+C          copydef=.true.
+C        endif
 
 C Act on the users choice. If no choice return to main menu.
-        if(isw.eq.0)then
-          goto 3
-        elseif(isw.eq.1)then
+C        if(isw.eq.0)then
+C          goto 3
+C        elseif(isw.eq.1)then
 
 C If file exists open it, test file type, get number of items and close.
-          if(XST)then
-            LAPRES=lltmp
-            moddb=.true.
-            CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
-            IF(IER.NE.0) GOTO 30  
-            CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
-            K=0
-            CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W',
-     &        'no pressure item',IER)
-            IF(NPRE.LT.1.OR.NPRE.GT.MPRD) THEN
-              CALL USRMSG(' The specified file may not be a',
-     &                    ' pressure coef db, please try again','W')
-              CALL ERPFREE(IAPRES,ISTAT)
-              GOTO 30
-            ENDIF
-            CALL ERPFREE(IAPRES,ISTAT)
+C          if(XST)then
+C            LAPRES=lltmp
+C            moddb=.true.
+C            CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
+C            IF(IER.NE.0) GOTO 30  
+C            CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
+C            K=0
+C            CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W',
+C     &        'no pressure item',IER)
+C            IF(NPRE.LT.1.OR.NPRE.GT.MPRD) THEN
+C              CALL USRMSG(' The specified file may not be a',
+C     &                    ' pressure coef db, please try again','W')
+C              CALL ERPFREE(IAPRES,ISTAT)
+C              GOTO 30
+C            ENDIF
+C            CALL ERPFREE(IAPRES,ISTAT)
 
 C Open pressure file, read in data, if OK, display coefficients and
 C enter editing facilitiy.
-            CALL ERPRCDB(LAPRES,0,3,IER)
-            IF(IER.NE.0) GOTO 30
-            CALL EDPCDB(IER) 
-          else
-            call usrmsg('Sorry there is no file to browse/edit.',
-     &                  'Please use one of the other options.','W')
-            goto 30
-          endif
-        elseif(isw.eq.2)then
- 31       H(1)='To enable the calculation of wind-induced surface'
-          H(2)='pressures (as required the simulator), this database'
-          H(3)='of angle dependent pressure coefficients is provided.'
-          H(4)=' '
-          H(5)='Wind pressure coefficients are pressure coefficients'
-          H(6)='for surfaces in typical positions and within several'
-          H(7)='different exposure categories. '
-          H(8)=' '
-          H(9)='Please supply and confirm the file name.'
-          CALL EASKS(lltmp,' Pressure coefficients database?',
-     &      ' ',96,DAPRES,'pressure coefficients database',IER,9)
+C            CALL ERPRCDB(LAPRES,0,3,IER)
+C            IF(IER.NE.0) GOTO 30
+C            CALL EDPCDB(IER) 
+C          else
+C            call usrmsg('Sorry there is no file to browse/edit.',
+C     &                  'Please use one of the other options.','W')
+C            goto 30
+C          endif
+C        elseif(isw.eq.2)then
+C 31       H(1)='To enable the calculation of wind-induced surface'
+C          H(2)='pressures (as required the simulator), this database'
+C          H(3)='of angle dependent pressure coefficients is provided.'
+C          H(4)=' '
+C          H(5)='Wind pressure coefficients are pressure coefficients'
+C          H(6)='for surfaces in typical positions and within several'
+C          H(7)='different exposure categories. '
+C          H(8)=' '
+C          H(9)='Please supply and confirm the file name.'
+C          CALL EASKS(lltmp,' Pressure coefficients database?',
+C     &      ' ',96,DAPRES,'pressure coefficients database',IER,9)
 
 C Check if name ok and if a file exists by that name.
-          if(LLTMP(1:2).NE.'  ')then
-            LAPRES=LLTMP
-          else
-            goto 31
-          endif
-          CALL ERPFREE(IAPRES,ISTAT)
-          call FINDFIL(LAPRES,XST)
-          IF(XST)THEN
+C          if(LLTMP(1:2).NE.'  ')then
+C            LAPRES=LLTMP
+C          else
+C            goto 31
+C          endif
+C          CALL ERPFREE(IAPRES,ISTAT)
+C          call FINDFIL(LAPRES,XST)
+C          IF(XST)THEN
 
 C If file exists scan the file and use the editing facility.
-            write(outs,'(2a)') 'Accessing pressure db ',
-     &        LAPRES(1:lnblnk(LAPRES))
-            call edisp(iuout,outs)
-            CALL ERPRCDB(LAPRES,0,3,IER)
-            IF(IER.NE.0) GOTO 30
-            CALL EDPCDB(IER) 
-            moddb=.true.
-          else
-            write(outs,'(2a)') LAPRES(1:lnblnk(LAPRES)),
-     &        ' does not exist.'
-            call edisp(iuout,outs)
-            call edisp(iuout,' ')
-            goto 30
-          endif
-        elseif(isw.eq.3)then
+C            write(outs,'(2a)') 'Accessing pressure db ',
+C     &        LAPRES(1:lnblnk(LAPRES))
+C            call edisp(iuout,outs)
+C            CALL ERPRCDB(LAPRES,0,3,IER)
+C            IF(IER.NE.0) GOTO 30
+C            CALL EDPCDB(IER) 
+C            moddb=.true.
+C          else
+C            write(outs,'(2a)') LAPRES(1:lnblnk(LAPRES)),
+C     &        ' does not exist.'
+C            call edisp(iuout,outs)
+C            call edisp(iuout,' ')
+C            goto 30
+C          endif
+C        elseif(isw.eq.3)then
 
 C No pressure distribution db found so set-up minimal common block, create
 C a new db, populate it and present editing facility.
-          h(1)='The suggested name of this database is based on the '
-          h(2)='project name. '
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(lltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
-          else
-            write(lltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.pressuredb'
-          endif
-          clkok=.false.
- 32       CALL EASKSCNCL(lltmp,' New pressure coefficients database?',
-     &      ' ','cancel',clkok,96,DAPRES,
-     &      'pressure coefficients database',IER,2)
-          if(clkok) goto 3
-          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-            LAPRES=lltmp
-          else
-            goto 32
-          endif
+C          h(1)='The suggested name of this database is based on the '
+C          h(2)='project name. '
+C          lr=lnblnk(cfgroot)
+C          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+C            write(lltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
+C          else
+C            write(lltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+C     &        cfgroot(1:lr),'.pressuredb'
+C          endif
+C          clkok=.false.
+C 32       CALL EASKSCNCL(lltmp,' New pressure coefficients database?',
+C     &      ' ','cancel',clkok,96,DAPRES,
+C     &      'pressure coefficients database',IER,2)
+C          if(clkok) goto 3
+C          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+C            LAPRES=lltmp
+C          else
+C            goto 32
+C          endif
 
-          moddb=.true.
-          NPRE=1
-          DEPRE(NPRE)='undefined pc set'
-          do 33 ij=1,16
-            FPRE(ij,1)=0.00
-  33      continue 
+C          moddb=.true.
+C          NPRE=1
+C          DEPRE(NPRE)='undefined pc set'
+C          do 33 ij=1,16
+C            FPRE(ij,1)=0.00
+C  33      continue 
 
 C Update the file and open editing facilty. 
-          CALL EMKAPCDB(LAPRES,IER)
-          IF(IER.NE.0) GOTO 30
-          CALL ERPRCDB(LAPRES,0,3,IER)
-          IF(IER.NE.0) GOTO 30
-          CALL EDPCDB(IER) 
-        elseif(isw.eq.4)then
+C          CALL EMKAPCDB(LAPRES,IER)
+C          IF(IER.NE.0) GOTO 30
+C          CALL ERPRCDB(LAPRES,0,3,IER)
+C          IF(IER.NE.0) GOTO 30
+C          CALL EDPCDB(IER) 
+C        elseif(isw.eq.4)then
 
 C Copy the standard db to project folder. Suggest a local
 C file name based on the project root name. Lastly do the copy.
 C If the default is to be copied ask for local name. Use LTMP for
 C the file name as known to esp-r and LCOPY for the system cp call.   
-          if(copydef)then
-            write(outs248,'(2a)') 'The source file is:',
-     &        DAPRES(1:lnblnk(DAPRES))
-            call edisp248(iuout,outs248,100)
-            call edisp(iuout,' ')
-          else
-            write(outs248,'(2a)') 'The source file is:',
-     &        LAPRES(1:lnblnk(LAPRES))
-            call edisp248(iuout,outs248,100)
-            call edisp(iuout,' ')
-          endif
-          h(1)='The suggested name of this database is based on'
-          h(2)='the project name.'
-          lr=lnblnk(cfgroot)
-          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-            write(lltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
-          else
-            write(lltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        cfgroot(1:lr),'.pressuredb'
-          endif
-  34      CALL EASKS(lltmp,
-     &      'Database name after it is copied into the project?',
-     &      ' ',96,'pressure.db','copied pressure database',IER,2)
-          call isunix(unixok)
-          IF(LLTMP(1:2).NE.'  ')then
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LLTMP(1:lnblnk(LLTMP))
-            if(copydef)then
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            DAPRES(1:lnblnk(DAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
+C          if(copydef)then
+C            write(outs248,'(2a)') 'The source file is:',
+C     &        DAPRES(1:lnblnk(DAPRES))
+C            call edisp248(iuout,outs248,100)
+C            call edisp(iuout,' ')
+C          else
+C            write(outs248,'(2a)') 'The source file is:',
+C     &        LAPRES(1:lnblnk(LAPRES))
+C            call edisp248(iuout,outs248,100)
+C            call edisp(iuout,' ')
+C          endif
+C          h(1)='The suggested name of this database is based on'
+C          h(2)='the project name.'
+C          lr=lnblnk(cfgroot)
+C          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+C            write(lltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
+C          else
+C            write(lltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+C     &        cfgroot(1:lr),'.pressuredb'
+C          endif
+C  34      CALL EASKS(lltmp,
+C     &      'Database name after it is copied into the project?',
+C     &      ' ',96,'pressure.db','copied pressure database',IER,2)
+C          call isunix(unixok)
+C          IF(LLTMP(1:2).NE.'  ')then
+C            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+C     &        LLTMP(1:lnblnk(LLTMP))
+C            if(copydef)then
+C              doit = ' '
+C              if(unixok)then
+C                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
+C     &            DAPRES(1:lnblnk(DAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
+C              else
 
 C Debug statements for native windows version. If lnblankrp or
 C lnblankup is one then there are no spaces in the string so double quotes
 C are not required.  But in either case it is useful to change any '/'
 C in rootp and upath to '\'. 
-                message='getting pressure coef file from '
-                call dbdoscopy(DAPRES,lcopy,message,doit,ier)
-              endif
+C                message='getting pressure coef file from '
+C                call dbdoscopy(DAPRES,lcopy,message,doit,ier)
+C              endif
 C              call usrmsg('copying default file via',doit,'-')
-              call runit(doit,'-')
-              LAPRES=LLTMP
-            else
-              doit = ' '
-              if(unixok)then
-                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
-     &            LAPRES(1:lnblnk(LAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
-              else
+C              call runit(doit,'-')
+C              LAPRES=LLTMP
+C            else
+C              doit = ' '
+C              if(unixok)then
+C                write(doit,'(4a)',IOSTAT=IOS,ERR=3) 'cp ',
+C     &            LAPRES(1:lnblnk(LAPRES)),' ',LCOPY(1:lnblnk(LCOPY))
+C              else
 
 C Similar logic but using LAPRES.
-                message='getting pressure coefficents db from '
-                call dbdoscopy(LAPRES,lcopy,message,doit,ier)
-              endif
+C                message='getting pressure coefficents db from '
+C                call dbdoscopy(LAPRES,lcopy,message,doit,ier)
+C              endif
 C              call usrmsg('copying file via',doit,'-')
-              call runit(doit,'-')
-              LAPRES=LLTMP
-            endif
-            moddb=.true.
+C              call runit(doit,'-')
+C              LAPRES=LLTMP
+C            endif
+C            moddb=.true.
 C            write(outs,'(2a)') 'Accessing pressure distribution db: ',
 C     &        LAPRES(1:lnblnk(LAPRES))
 C            call edisp(iuout,outs)
-            CALL ERPRCDB(LAPRES,0,3,IER)
-            IF(IER.NE.0) GOTO 30
-            CALL EDPCDB(IER) 
-          else
-            goto 34
-          endif
-        endif
+C            CALL ERPRCDB(LAPRES,0,3,IER)
+C            IF(IER.NE.0) GOTO 30
+C            CALL EDPCDB(IER) 
+C          else
+C            goto 34
+C          endif
+C        endif
+
       ELSEIF(INO.EQ.6)THEN
 
 C Since it may be repeatedly accessed, open materials db.
@@ -930,6 +937,7 @@ C Open Ooptical Properties db and read into common.
       endif
 
 C Open the Pressure Coefficients db.
+C << ipathapres >>
       call FINDFIL(LAPRES,XST)
       if(XST)then
         CALL ERPRCDB(LAPRES,0,3,IER)
@@ -1607,7 +1615,7 @@ C Default esp-r distribution path.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical moddb,modcon,modmlc,unixok,copydef,clkok
+      logical moddb,modcon,modmlc,unixok,copydef,clkok,concat
 
       character H*72,LTMP*72,DESC*48,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -3752,6 +3760,599 @@ C otherwise edit the database contents.
       else
         OPTKOK=.TRUE.
         call EDOPT(IIER)
+      endif
+
+      return
+      end
+
+
+C ********** EDDBPRES
+C EDDBPRES Changes the wind pressure database current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+C This facility offers browsing for GTK version.
+      SUBROUTINE EDDBPRES(moddb,APP)
+#include "building.h"
+#include "net_flow.h"
+#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
+      common/pophelp/h(60)
+      common/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+      common/deflt4/dinstpath
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+      character DEPRE*40
+      common/MFLDOC/DEPRE(MPRD)
+
+      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
+      character longtfile*144,LCOPY*144,message*48
+      CHARACTER DOIT*300,fs*1,APP*4,ext*4
+      CHARACTER outs248*248
+      CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
+      CHARACTER*24 DOCPTH,TMPPTH
+      character GTYPE*12,GDESCR*36,SOPT*12
+      LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72,dirpath*48
+      character sourcefile*144  ! the file to copy ??
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28
+      character lpath*72,fname*72 ! for use with fdroot
+      character lworking*144   ! file name in std folder
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of whichdbpath.
+      moddb=.false.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        lprev=lapres
+      elseif(ipathapres.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lapres(1:lnblnk(lapres))
+      endif
+C Debug.
+      write(6,*) 'previous pres coef ',lprev(1:lnblnk(lprev))
+
+  60  continue
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        lltmp=lapres  ! use as is
+      elseif(ipathapres.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lapres(1:lnblnk(lapres))  ! prepend db folder path
+      endif
+      IAPRES=IFIL+1
+
+      H(1)='To enable the calculation of wind-induced surface'
+      H(2)='pressures (as required the simulator), this database'
+      H(3)='of angle dependent pressure coefficients is provided.'
+      H(4)=' '
+      H(5)='Wind pressure coefficients are pressure coefficients'
+      H(6)='for surfaces in typical positions and within several'
+      H(7)='different exposure categories.'
+      H(8)=' '
+      H(9)='The following options can be selected:'
+      H(10)=' '
+      H(11)='a) If the file exists than you can browse the database '
+      H(12)='   and if you have permission to update the file you'
+      H(13)='   can edit the entities in the database.'
+      H(14)=' '
+      H(15)='b) Select from list (not available for optics databases).'
+      H(16)=' '
+      H(17)='c) Make a new database: a new database will be created '
+      H(18)='   based on the file name you supply. It will contain a'
+      H(19)='   minimal number of items and you can then modify this'
+      H(20)='   as required. '
+      H(21)='   Exercise care if you use a text editor to copy sets'
+      H(22)='   of data from another optical database.'
+      H(23)=' '
+      H(24)='d) copy default database: a project copy of the default'
+      H(25)='  database will be made and you will be offered a '
+      H(26)='  chance to rename it.'
+      H(27)=' '
+
+C If GTK library then there are additional options so include in help.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.2)then
+        H(28)='e) browse ../dbs allows you to look in the model ../dbs'
+        H(29)='  folder for alternative database. If you do not'
+        H(30)='  find anything the previous value will be restored.'
+        H(31)=' '
+        H(32)=' f) browse distribution displays files in the databases'
+        H(33)='  folder of the ESP-r distribution. If you do not find'
+        H(34)='  anything the previous value will be restored.'
+        H(35)=' '
+        H(36)=' g) copy another database to the project allows you to'
+        H(37)=' locate a database and get a project copy of it.'
+      else
+        H(28)='e) select a file (X11 only): edit the file name'
+        H(29)='   and if it is found you can browse or edit it.'
+        H(30)='   Hint: if you eventually want to copy that other file'
+        H(31)='   into the model folder first select it and then ask'
+        H(32)='   for a copy.'
+        H(33)=' '
+        H(34)=' '
+        H(35)=' '
+        H(36)=' '
+        H(37)=' '
+      endif
+      CALL ERPFREE(IAPRES,ISTAT)
+
+C If local or absolute path call addpath otherwise if a standard
+C database then set longtfile equal to LLTMP.
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        call addpath(lltmp,longtfile,concat)
+      else
+        longtfile=lltmp
+      endif
+      ltf=max(1,LNBLNK(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up additional options depending on graphics lib. The second
+C option (list select) is not available for pressure database. If using
+C text or X11 option e edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        opte='e edit file name'
+        optf='   '
+        optg='   '
+      elseif(iglib.eq.2)then
+        opte='e browse ../dbs'
+        optf='f browse distribution'
+        optg='g make copy of another file'
+      endif
+
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','Pressure Distributions db',
+     &    ' ','b select from list',
+     &    'c create a new db','d copy the default db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
+        copydef=.true.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If corportate database then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Pressure Distributions db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy default db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If corportate database then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Pressure Distributions db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy default db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default database or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','Pressure Distributions db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy the default db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
+      endif
+
+C Act on the users choice. If no choice, return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('prs',lltmp,ier)
+          goto 44
+        else
+          call usrmsg('No file to browse/edit. Please use one',
+     &                'of the other options.','W')
+          lapres=lprev
+          goto 60
+        endif
+      elseif(isw.eq.2)then
+
+C There is no select by list for pressure database.
+        call usrmsg('No list select for pressure databases.',' ','-')
+        goto 60
+      elseif(isw.eq.3)then
+
+C No pressure db found so set-up minimal common block, create
+C a new db, populate it and present editing facility. Use the
+C shorter string ltmp for this (easkf cancel option needs to
+C be explored).
+        H(1)='To enable the calculation of wind-induced surface'
+        H(2)='pressures (as required the simulator), this database'
+        H(3)='of angle dependent pressure coefficients is provided.'
+        H(4)=' '
+        H(5)='Wind pressure coefficients are pressure coefficients'
+        H(6)='for surfaces in typical positions and within several'
+        H(7)='different exposure categories. '
+        H(8)=' '
+        H(9)='Please supply and confirm the file name.'
+        h(10)='The suggested name of this database is based on the '
+        h(11)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(ltmp,'(2a)') cfgroot(1:lr),'.pressuredb'
+        else
+          write(ltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.pressuredb'
+        endif
+        clkok=.false.
+  62    CALL EASKSCNCL(ltmp,' New pressure coefficients database?',
+     &      ' ','cancel',clkok,72,DAPRES,
+     &      'pressure coefficients database',IER,11)
+        if(clkok) return    ! abandon this task
+        if(ltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+          write(lapres,'(a)') ltmp(1:lnblnk(ltmp))
+        else
+          goto 62
+        endif
+
+C Create a minimal pressure databases.
+        moddb=.true.
+        NPRE=1
+        DEPRE(NPRE)='undefined pc set'
+        do 33 ij=1,16
+          FPRE(ij,1)=0.00
+  33    continue 
+
+C Update the file and open editing facilty. 
+        CALL EMKAPCDB(LAPRES,IER)
+        IF(IER.NE.0) GOTO 60
+        CALL ERPRCDB(LAPRES,0,3,IER)
+        IF(IER.NE.0) GOTO 60
+        CALL EDPCDB(IER) 
+
+C Scan the new file and use the editing facility.
+        dok=.true.
+        h(1)='An empty pressure database has been created. It is'
+        h(2)='useless until it is populated with data. If you '
+        h(3)='have the relevant information you can start now.'
+        CALL ASKOK('  ',' Browse or edit new database?',OK,dok,3)
+        if(OK)then
+          goto 44
+        endif
+
+      elseif(isw.eq.4.or.isw.eq.7)then
+
+C Copy a database to project dbs folder. If iws is 4 then the
+C user has asked for the default database. If isw is 7 then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name then do the copy.
+C Use LTMP (short buffer) for the file name as known to esp-r
+C and LCOPY for the system cp call.
+        if(copydef)then
+          write(outs248,'(2a)') 'The source file is:',
+     &      DAPRES(1:lnblnk(DAPRES))
+          call edisp248(iuout,outs248,100)
+          call edisp(iuout,' ')
+          sourcefile = DAPRES
+        else
+          h(1)='You are asked to confirm the source file for the'
+          h(2)='copy action. If this one is ok then accept it. '
+          write(outs248,'(2a)') 'The current source file is:',
+     &      lapres(1:lnblnk(lapres))
+          call edisp248(iuout,outs248,100)
+          lltmp=lapres
+          llt=lnblnk(lltmp)
+          iglib = igraphiclib()
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &          96,dapres,'pressure coef database',IER,2)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &          124,dapres,'pressure coef database',IER,2)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &          144,dapres,'pressure coef database',IER,2)
+            endif
+            sourcefile = lltmp
+          elseif(iglib.eq.2)then
+            CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &        144,dapres,'pressure coef database',IER,2)
+            sourcefile = lltmp
+          else
+            CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &        96,dapres,'pressure coef database',IER,2)
+            sourcefile = lltmp
+          endif
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            lapres=lprev
+	    goto 60  ! cancel detected, redisplay menu.
+          endif
+          ipathapres=1  ! signal that it is a local database.
+          lapres=lltmp
+        endif
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
+        elseif(dbspth(1:3).eq.'../')then
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.pressuredb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.pressuredb'
+        endif
+  66    CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'pressure.db','copied pres coef database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+          if(unixok)then
+            lpp=lnblnk(path)
+            if(path(1:2).eq.'./')then
+              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+            elseif(path(lpp:lpp).eq.fs)then
+              write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &          LTMP(1:lnblnk(LTMP))
+            else
+              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &          LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
+          if(copydef)then
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          sourcefile(1:lnblnk(sourcefile)),' ',
+     &          LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Standard dos copy logic.
+              message='getting pressure db file from '
+              call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+C If the file exists with the normal path to model prepended then
+C it should be possible to rebuild the name based on ../dbs.
+            call FINDFIL(LCOPY,XST)
+            if(XST)then
+              call fdroot(lcopy,lpath,fname)
+              write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+            else
+              write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          lapres(1:lnblnk(lapres)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Standard dos copy logic.
+              message='getting pressure db file from '
+              call dblongdoscopy(lapres,lcopy,message,doit,ier)
+            endif
+            call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+            call FINDFIL(LCOPY,XST)
+            if(XST)then
+              call fdroot(lcopy,lpath,fname)
+              write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+            else
+              call FINDFIL(LTMP,XST)
+              if(XST)then
+                write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
+              else
+                write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
+                call edisp(iuout,'Problem locating the new database.')
+                call edisp(iuout,'Try browsing ../dbs to find it.')
+                call edisp(iuout,' ')
+              endif
+            endif
+          endif
+          moddb=.true.
+          ipathapres=1  ! signal that it is a local database.
+          goto 44
+        else
+          goto 66
+        endif
+
+      elseif(isw.eq.5)then
+
+C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
+C can see the files in that folder. Note the user may browse away
+C from this location. Easkf returns the absolut path to the
+C file selected (later see if this can be resolved to ../dbs). 
+C Test the returned file and if it is not readable reset lapres.
+        if(iglib.eq.2)then
+          H(1)='Wind pressure coefficients are pressure coefficients'
+          H(2)='for surfaces in typical positions and within several'
+          H(3)='different exposure categories.'
+          H(4)=' '
+          H(5)='A local database folder (../dbs) is usually associated'
+          H(6)='with each model. '
+          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+          CALL EASKF(LCOPY,' ','Pressure coefficients db?',
+     &      144,dapres,'pressure coef database',IER,6)
+          if(ier.eq.-3)then
+            lapres=lprev
+	    goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C If the file exists with the normal path to model prepended then
+C it should be possible to rebuild the name based on ../dbs.
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
+          endif
+          moddb=.true.
+          ipathapres=1  ! signal that it is a local database.
+          goto 44
+        else
+
+C For X11 and text allow user to type in a file name.
+          H(1)='Wind pressure coefficients are pressure coefficients'
+          H(2)='for surfaces in typical positions and within several'
+          H(3)='different exposure categories.'
+          llt=lnblnk(lltmp)
+          if(llt.lt.96)then
+            CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &        96,dapres,'pressure coef database',IER,3)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &        124,dapres,'pressure coef database',IER,3)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmp,' ','Pressure coefficients db?',
+     &        144,dapres,'pressure coef database',IER,3)
+          endif
+          if(ier.eq.-3)then
+            lapres=lprev
+	    goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C This is another place where we need to check what the user might
+C have edited to be sure of setting the correct location value. The
+C common block will be updated with call to findwhichdbpath.
+            call findwhichdbpath('prs',lltmp,ier)
+            moddb=.true.
+            goto 44
+          else
+            goto 60
+          endif
+        endif
+      elseif(isw.eq.6)then
+
+C Browse distribution database folder. Setup LCOPY to point to
+C the database folder (but no particular file). Use easkf to
+C return a file (which might be from somewhere else if the user
+C decides to do some browsing). Test this suggested file and if
+C this is not successful reset lapres.
+        if(iglib.eq.2)then
+          H(1)='Wind pressure coefficients are pressure coefficients'
+          H(2)='for surfaces in typical positions and within several'
+          H(3)='different exposure categories.'
+          H(4)=' '
+          H(5)='The ESP-r distribution includes alternatives to the'
+          H(6)='default which might be useful.'
+          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs
+          CALL EASKF(LCOPY,' ','Pressure coefficients db?',
+     &      144,dapres,'pressure coef database',IER,6)
+          if(ier.eq.-3)then
+            lapres=lprev
+	    goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C This is yet another place where we need to check what the user might
+C have edited to be sure of setting the correct location value. The
+C common block will be updated with call to findwhichdbpath.
+          call findwhichdbpath('prs',lltmp,ier)
+          moddb=.true.
+          goto 44
+        else
+          call usrmsg('Browse feature not available.',' ','W')
+          goto 60
+        endif
+      endif
+
+C Test the selected or copied database. If a problem loop back
+C otherwise edit the database contents.
+   44 continue
+      write(outs248,'(2a)') 'Accessing presure coef db: ',
+     &  lapres(1:lnblnk(lapres))
+      call edisp248(iuout,outs248,100)
+      moddb=.true.
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        CALL EFOPSEQ(IAPRES,lapres,1,IER)
+      elseif(ipathapres.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lapres(1:lnblnk(lapres))
+
+C Debug.
+        write(6,*) 'working pressure coef ',lworking
+        CALL EFOPSEQ(IAPRES,lworking,1,IER)
+      endif
+C      CALL EFOPSEQ(IAPRES,lapres,1,IER)
+      IF(IER.NE.0) GOTO 60  
+      CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','no pressure item',IER)
+      IF(NPRE.LT.1.OR.NPRE.GT.MPRD) THEN
+        CALL USRMSG(' The specified file may not be a',
+     &              ' pressure coef db, please try again','W')
+        CALL ERPFREE(IAPRES,ISTAT)
+        GOTO 60
+      ENDIF
+      CALL ERPFREE(IAPRES,ISTAT)
+
+C Open pressure file, read in data, if OK, display coefficients and
+C enter editing facilitiy.
+      CALL ERPRCDB(lapres,0,3,IER)
+      if(ier.ne.0)then
+        call usrmsg('Problem encountered with Optical Properties db!',
+     &              'Please check ddb location and content.','W')
+        GOTO 60
+      else
+        CALL EDPCDB(IER) 
       endif
 
       return
