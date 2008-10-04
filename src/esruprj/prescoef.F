@@ -1328,7 +1328,7 @@ C Save data to file.
      &    'append to existing pres coef database',IWHICH,8)
         IF (IWHICH.EQ.1) THEN
 
-C Read in pc from file c2e.cpdb
+C Read in pc from file c2e.cpdb rather than the standard pressure db.
           t144='c2e.cpdb'
           CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) return
@@ -1378,7 +1378,7 @@ C          if(ier.eq.-3) return ! cancel detected.
           endif
         ELSE
 
-C Read in pc from file c2e.cpdb
+C Read in pc from file c2e.cpdb rather than the standard pressure db.
           ndep=NPRE
           t144='c2e.cpdb'
           CALL ERPRCDB(t144,ndep,3,IER)
@@ -1842,6 +1842,8 @@ C Check whether number of returned numbers is 8, if so, extract data.
 
 C ************* ERPRCDB
 C Given file name, read an ASCII pressure coefficient database.
+C If FINA is a blank then use the current lapres string (depending on
+C its location).
 C INPC is the number of pc sets that allready exist in case
 C that the data that is read in should be appended to an existing file.
       SUBROUTINE ERPRCDB(FINA,INPC,ICO,IER)
@@ -1854,8 +1856,7 @@ C that the data that is read in should be appended to an existing file.
 
       CHARACTER OUTSTR*124,DEPRE*40,setn*40,FINA*144 
       character lworking*144,fs*1
-      character longtfile*144
-      logical concat,xst,unixok
+      logical unixok
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1865,21 +1866,27 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
+C If FINA is blank then use the current lapres variable.
+      IUM=IFIL+1
+      if(FINA(1:2).eq.'  ')then
+       
 C Check the value of whichdbpath variable to see what to do with
 C this file. If local or absolute path then use efopseq. If in
 C the standard location then create lworking which has path
 C prepended.
-      IUM=IFIL+1
-      if(ipathapres.eq.0.or.ipathapres.eq.1)then
-        CALL EFOPSEQ(IUM,lapres,1,IER)
-      elseif(ipathapres.eq.2)then
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    lapres(1:lnblnk(lapres))
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          CALL EFOPSEQ(IUM,lapres,1,IER)
+        elseif(ipathapres.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
 
 C Debug.
-        write(6,*) 'working pressure coef ',lworking
-        CALL EFOPSEQ(IUM,lworking,1,IER)
+          write(6,*) 'working pressure coef ',lworking
+          CALL EFOPSEQ(IUM,lworking,1,IER)
+        endif
+      else
+        CALL EFOPSEQ(IUM,FINA,1,IER)
       endif
 
 C If problem return.

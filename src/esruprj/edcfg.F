@@ -150,6 +150,7 @@ C Uncertainty.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character ltpath*72,filen*72
+      character t144*144    ! for passing to erprcdb
       integer ictl
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
@@ -699,10 +700,11 @@ C unix and non-unix machine types).
           LFIL=LAPROB
 
 C Graphic network. Create a summary file of zone domain information
-C for `net` to use. Begin by reading current pressure database. Write
-C to unit number 42.
+C for `net` to use. Begin by reading current pressure database by
+C passing a black string to erprcdeb. Write to unit number 42.
           call tstamp('>','PRJ: export to graphic agent')
-          CALL ERPRCDB(LAPRES,0,3,IER)
+          t144='  '
+          CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) THEN
             CALL EDISP(IUOUT,'Error opening pressure coefficients db!.')
             call edisp(iuout,' ')

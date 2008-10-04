@@ -1612,6 +1612,7 @@ C Material data arrays.
       DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
+      character t144*144   ! for use with erprcdb
       integer nclass  ! number of material classifications
 
       IER=0
@@ -1861,7 +1862,8 @@ C Open optical Properties db and read into common.
 C Open the Pressure Coefficients db.
 C      call FINDFIL(LAPRES,XST)
 C      if(XST)then
-C        CALL ERPRCDB(LAPRES,0,3,IER)
+C        t144='  '
+C        CALL ERPRCDB(t144,0,3,IER)
 C        call usrmsg(' ',' ','-')
 C      else
 C        call usrmsg('Pressure Coefficients db not found',

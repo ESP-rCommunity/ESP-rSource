@@ -723,7 +723,7 @@ C LAPRES,IAPRES (for window pressure databases)
 
       CHARACTER H*72,outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
-      CHARACTER LAPROB*72,t72*72
+      CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1028,8 +1028,10 @@ C Use SSURCOG as the average height of this surface
           VALH=ZAVE
           
 C Create a menu showing the available database items. 
-C Allow user to select one. Begin by reading current database.
-          CALL ERPRCDB(LAPRES,0,3,IER)
+C Allow user to select one. Begin by reading current database
+C (signal by passing a blank string to erprcdb).
+          t144='  '
+          CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) THEN
             CALL EDISP(IUOUT,
      &'Error opening pressure coefficients database.')
