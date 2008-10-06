@@ -569,6 +569,9 @@ C ****** Routine to draw ground topology.
 
       CHARACTER GMLCN*12, GSNAME*6,stemp*7
 
+C << this subroutine will probably need #ifdef OSX for calls to
+C << edline.
+
 C Save the current font and switch to a smaller font for displaying
 C surface names etc. Ixc,iyc keep track of surface/pixel COG.
       if(MMOD.lt.8)return
@@ -701,6 +704,12 @@ C the viewport with the current scaling factors etc.
       DIMENSION COG1(3),COG2(3),COG3(3)
       logical close,greyok
 
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iiy,iix1,iiy1
+#else
+      integer*8 iix,iiy,iix1,iiy1
+#endif       
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
@@ -762,8 +771,13 @@ C Transform other end of line.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
-C Draw the dotted line.
-        call edline(ix,iy,ix1,iy1,LD)
+C Draw the dotted line, first take calculated pixels and
+C cast to local variable to pass to edline.
+        iix=ix
+	iiy=iy
+	iix1=ix1
+	iiy1=iy1
+        call edline(iix,iiy,iix1,iiy1,LD)
 
 C Move to next grid position.
         XINC=XINC+GRIDD
@@ -795,8 +809,12 @@ C Transform other end of line.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
-C Draw the dotted line.
-        call edline(ix,iy,ix1,iy1,LD)
+C Draw the dotted line after casting to local variable.
+        iix=ix
+	iiy=iy
+	iix1=ix1
+	iiy1=iy1
+        call edline(iix,iiy,iix1,iiy1,LD)
 
 C Move to next grid position.
         YINC=YINC+GRIDD
