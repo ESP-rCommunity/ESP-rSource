@@ -569,8 +569,12 @@ C ****** Routine to draw ground topology.
 
       CHARACTER GMLCN*12, GSNAME*6,stemp*7
 
-C << this subroutine will probably need #ifdef OSX for calls to
-C << edline.
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
 C Save the current font and switch to a smaller font for displaying
 C surface names etc. Ixc,iyc keep track of surface/pixel COG.
@@ -630,6 +634,8 @@ C Move to first point.
           call u2pixel(AAX,AAY,ix,iy)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           ixc=ixc+ix
           iyc=iyc+iy
 
@@ -638,14 +644,16 @@ C Draw succeeding points until last vertex.
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+	  iiy=iy
           if(linstyg(igs).eq.3)then
-            call edline(ixlast,iylast,ix,iy,2)
+            call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
             call edwline(ixlast,iylast,ix,iy)
           elseif(linstyg(igs).eq.1)then
             call eswline(ixlast,iylast,ix,iy)
           else
-            call edline(ixlast,iylast,ix,iy,LD)
+            call edline(iixlast,iiylast,iix,iiy,LD)
           endif
           ixc=ixc+ix
           iyc=iyc+iy
@@ -653,19 +661,23 @@ C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP1)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for call to edline
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+	  iiy=iy
           if(linstyg(igs).eq.3)then
-            call edline(ixlast,iylast,ix,iy,2)
+            call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
             call edwline(ixlast,iylast,ix,iy)
           elseif(linstyg(igs).eq.1)then
             call eswline(ixlast,iylast,ix,iy)
           else
-            call edline(ixlast,iylast,ix,iy,LD)
+            call edline(iixlast,iiylast,iix,iiy,LD)
           endif
           call forceflush()
 
