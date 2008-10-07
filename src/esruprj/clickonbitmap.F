@@ -2577,6 +2577,13 @@ C the user edited the value (iwmg=7).
       real xp,yp   ! current position in X and Y
       real xpl,ypl ! most recent metre interval.
 
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iily,iiuy,iirx
+#else
+      integer*8 iix,iily,iiuy,iirx
+#endif       
+
       if(iwmg.eq.1)then
          return
       elseif(iwmg.gt.1)then
@@ -2617,8 +2624,13 @@ C If within display range draw vertical line. If spacing less than 1m
 C put label at 1m invervals and draw solid grey line.
             if(iwmg.eq.3.or.iwmg.eq.4.or.iwmg.eq.5.or.iwmg.eq.6)then
               if(greyok)call winscl('i',nifgrey-4)
-C              call eswline(ix,ily,ix,iuy)
-              call edline(ix,ily,ix,iuy,2)
+
+C Draw the dotted line, first take calculated pixels and
+C cast to local variable to pass to edline.
+              iix=ix
+              iily=ily
+              iiuy=iuy
+              call edline(iix,iily,iix,iiuy,2)
               if(i.gt.-10.and.i.lt.99)then
                 write(temp6,'(i2)') i
                 call textatxy(ix-8,iyblr+15,temp6,'i',nifgrey-4)
@@ -2632,8 +2644,10 @@ C              call eswline(ix,ily,ix,iuy)
 C Do every 2m.
               if(mod(i,2).eq.0)then
                 if(greyok)call winscl('i',nifgrey-4)
-C                call eswline(ix,ily,ix,iuy)
-                call edline(ix,ily,ix,iuy,2)
+                iix=ix
+                iily=ily
+                iiuy=iuy
+                call edline(iix,iily,iix,iiuy,2)
                 if(i.gt.-10.and.i.lt.99)then
                   write(temp6,'(i2)') i
                   call textatxy(ix-8,iyblr+15,temp6,'i',nifgrey-4)
@@ -2649,7 +2663,10 @@ C Check if we are at a metre mark and if so write label.
               call eclose(xp,xpl,0.001,closelabel)
               if(closelabel)then
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ix,ily,ix,iuy,3)
+                iix=ix
+                iily=ily
+                iiuy=iuy
+                call edline(iix,iily,iix,iiuy,3)
                 if(i.gt.-10.and.i.lt.99)then
                   write(temp6,'(i2)') i
                   call textatxy(ix-8,iyblr+15,temp6,'i',nifgrey-4)
@@ -2662,7 +2679,10 @@ C Check if we are at a metre mark and if so write label.
               ix=ixo+int(xp*factor)
               if(ix.gt.ixbul.and.ix.lt.ixblr)then
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ix,ily,ix,iuy,3)
+                iix=ix
+                iily=ily
+                iiuy=iuy
+                call edline(iix,iily,iix,iiuy,3)
                 if(ix.gt.ixaxr)ixaxr=ix
                 if(xp.lt.float(i+1)) goto 444  ! can any more be drawn within this metre?
               endif
@@ -2673,7 +2693,10 @@ C Check if we are at a metre mark and if so write label.
             ix=ixo+int(xp*factor)
             if(ix.gt.ixbul.and.ix.lt.ixblr)then
               if(greyok)call winscl('i',nifgrey-3)
-              call edline(ix,ily,ix,iuy,3)
+              iix=ix
+              iily=ily
+              iiuy=iuy
+              call edline(iix,iily,iix,iiuy,3)
               if(ix.gt.ixaxr)ixaxr=ix
             endif
           elseif(iwmg.eq.5)then
@@ -2682,9 +2705,12 @@ C Check if we are at a metre mark and if so write label.
               ix=ixo+int(xp*factor)
               if(ix.gt.ixbul.and.ix.lt.ixblr)then
                 if(greyok)call winscl('i',nifgrey-4)
-                if(ij.eq.1)call edline(ix,ily,ix,iuy,3)
-                if(ij.eq.2)call edline(ix,ily,ix,iuy,2)
-                if(ij.eq.3)call edline(ix,ily,ix,iuy,3)
+                iix=ix
+                iily=ily
+                iiuy=iuy
+                if(ij.eq.1)call edline(iix,iily,iix,iiuy,3)
+                if(ij.eq.2)call edline(iix,iily,iix,iiuy,2)
+                if(ij.eq.3)call edline(iix,iily,iix,iiuy,3)
                 if(ix.gt.ixaxr)ixaxr=ix
               endif
  345        continue
@@ -2694,10 +2720,13 @@ C Check if we are at a metre mark and if so write label.
               ix=ixo+int(xp*factor)
               if(ix.gt.ixbul.and.ix.lt.ixblr)then
                 if(greyok)call winscl('i',nifgrey-4)
+                iix=ix
+                iily=ily
+                iiuy=iuy
                 if(ij.eq.5)then
-                  call edline(ix,ily,ix,iuy,2)
+                  call edline(iix,iily,iix,iiuy,2)
                 else
-                  call edline(ix,ily,ix,iuy,3)
+                  call edline(iix,iily,iix,iiuy,3)
                 endif
                 if(ix.gt.ixaxr)ixaxr=ix
               endif
@@ -2728,8 +2757,10 @@ C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
           if(iy.gt.iybul.and.iy.lt.iyblr)then
             if(iwmg.eq.3.or.iwmg.eq.4.or.iwmg.eq.5.or.iwmg.eq.6)then
               if(greyok)call winscl('i',nifgrey-4)
-C              call eswline(ilx,iy,irx,iy)
-              call edline(ilx,iy,irx,iy,2)
+              iilx=ilx
+              iiy=iy
+              iirx=irx
+              call edline(iilx,iiy,iirx,iiy,2)
               write(temp6,'(i3)') i
               call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
             elseif(iwmg.eq.2)then
@@ -2738,8 +2769,10 @@ C Do every other metre.
 C              write(6,*) 'i mod ',i,mod(i,2)
               if(mod(i,2).eq.0)then
                 if(greyok)call winscl('i',nifgrey-4)
-C                call eswline(ilx,iy,irx,iy)
-                call edline(ilx,iy,irx,iy,2)
+                iilx=ilx
+                iiy=iy
+                iirx=irx
+                call edline(iilx,iiy,iirx,iiy,2)
                 write(temp6,'(i3)') i
                 call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
               endif
@@ -2747,7 +2780,10 @@ C                call eswline(ilx,iy,irx,iy)
               call eclose(yp,ypl,0.001,closelabel)
               if(closelabel)then
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ilx,iy,irx,iy,3)
+                iilx=ilx
+                iiy=iy
+                iirx=irx
+                call edline(iilx,iiy,iirx,iiy,3)
                 write(temp6,'(i3)') i
                 call textatxy(irx+3,iy-1,temp6,'i',nifgrey-4)
               endif
@@ -2755,7 +2791,10 @@ C                call eswline(ilx,iy,irx,iy)
               iy=iyo-int(yp*factor)
               if(iy.gt.iybul.and.iy.lt.iyblr)then
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ilx,iy,irx,iy,3)
+                iilx=ilx
+                iiy=iy
+                iirx=irx
+                call edline(iilx,iiy,iirx,iiy,3)
                 if(yp.lt.float(i+1)) goto 445  ! can any more be drawn within this metre?
               endif
             endif
@@ -2764,22 +2803,42 @@ C                call eswline(ilx,iy,irx,iy)
             yp=yp+0.5
             iy=iyo-int(yp*factor)
             if(greyok)call winscl('i',nifgrey-4)
-            if(iy.gt.iybul.and.iy.lt.iyblr)call edline(ilx,iy,irx,iy,3)
+            if(iy.gt.iybul.and.iy.lt.iyblr)then
+              iilx=ilx
+              iiy=iy
+              iirx=irx
+              call edline(iilx,iiy,iirx,iiy,3)
+            endif
           elseif(iwmg.eq.5)then
 
 C Logic for 0.25m.
             yp=yp+0.25
             iy=iyo-int(yp*factor)
             if(greyok)call winscl('i',nifgrey-4)
-            if(iy.gt.iybul.and.iy.lt.iyblr)call edline(ilx,iy,irx,iy,3)
+            if(iy.gt.iybul.and.iy.lt.iyblr)then
+              iilx=ilx
+              iiy=iy
+              iirx=irx
+              call edline(iilx,iiy,iirx,iiy,3)
+            endif
             yp=yp+0.25
             iy=iyo-int(yp*factor)
             if(greyok)call winscl('i',nifgrey-4)
-            if(iy.gt.iybul.and.iy.lt.iyblr)call edline(ilx,iy,irx,iy,2)
+            if(iy.gt.iybul.and.iy.lt.iyblr)then
+              iilx=ilx
+              iiy=iy
+              iirx=irx
+              call edline(iilx,iiy,iirx,iiy,2)
+            endif
             yp=yp+0.25
             iy=iyo-int(yp*factor)
             if(greyok)call winscl('i',nifgrey-4)
-            if(iy.gt.iybul.and.iy.lt.iyblr)call edline(ilx,iy,irx,iy,3)
+            if(iy.gt.iybul.and.iy.lt.iyblr)then
+              iilx=ilx
+              iiy=iy
+              iirx=irx
+              call edline(iilx,iiy,iirx,iiy,3)
+            endif
           elseif(iwmg.eq.6)then
 
 C Logic for 0.1m.
@@ -2788,10 +2847,13 @@ C Logic for 0.1m.
               iy=iyo-int(yp*factor)
               if(iy.gt.iybul.and.iy.lt.iyblr)then
                 if(greyok)call winscl('i',nifgrey-4)
+                iilx=ilx
+                iiy=iy
+                iirx=irx
                 if(ij.eq.5)then
-                  call edline(ilx,iy,irx,iy,2)
+                  call edline(iilx,iiy,iirx,iiy,2)
                 else
-                  call edline(ilx,iy,irx,iy,3)
+                  call edline(iilx,iiy,iirx,iiy,3)
                 endif
               endif
   346       continue

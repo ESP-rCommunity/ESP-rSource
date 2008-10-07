@@ -534,8 +534,10 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
       character gact*3,zact*3
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iixs,iiys,iix,iiy
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iixs,iiys,iix,iiy
 #endif
 
 C Check in graphics mode.
@@ -595,7 +597,13 @@ C Draw dotted line.
                 call eline(ix,iy,0)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ixs,iys,ix,iy,5)
+
+C Draw the dotted line after casting to local variable.
+                iixs=ixs
+                iiys=iys
+                iix=ix
+                iiy=iy
+                call edline(iixs,iiys,iix,iiy,5)
                 if(greyok)call winscl('-',0)
                 call forceflush()
               endif
@@ -627,7 +635,11 @@ C Draw line to end point.
                 call eline(ix,iy,0)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ixs,iys,ix,iy,4)
+                iixs=ixs
+                iiys=iys
+                iix=ix
+                iiy=iy
+                call edline(iixs,iiys,iix,iiy,4)
                 if(greyok)call winscl('-',0)
                 call forceflush()
               endif
@@ -659,7 +671,11 @@ C Draw line to end point.
                 call eline(ix,iy,0)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ixs,iys,ix,iy,4)
+                iixs=ixs
+                iiys=iys
+                iix=ix
+                iiy=iy
+                call edline(iixs,iiys,iix,iiy,4)
                 if(greyok)call winscl('-',0)
                 call forceflush()
               endif

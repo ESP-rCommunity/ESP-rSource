@@ -136,10 +136,14 @@ C NZJVN : topology of vertices associated with each connection.
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64
+
+C Local variables to pass to edline and axiscale.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iix,iiy,iixlast,iiylast
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iix,iiy,iixlast,iiylast
 #endif
 
 C If not in graphic mode return.
@@ -411,6 +415,8 @@ C move cursor to vertex and remember position.
           ENDIF
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
           IP1 = IBNXT(IP)
 
@@ -438,7 +444,9 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  iix=ix
+                  iiy=iy
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   write(6,*) 'duplicate edge.'
                   found=.true.
                 endif
@@ -470,12 +478,16 @@ C move cursor back to vertex and remember position.
             CALL VERTLBL(ix,iy,IV,ier)
             ixlast=ix
             iylast=iy
+            iixlast=ix   ! cast for edline call
+            iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
@@ -499,7 +511,9 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  iix=ix
+                  iiy=iy
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   write(6,*) 'duplicate edge.'
                   found=.true.
                 endif

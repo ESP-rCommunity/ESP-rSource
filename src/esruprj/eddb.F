@@ -4037,8 +4037,8 @@ C Debug.
         write(6,*) 'working pressure coef ',lworking
         CALL EFOPSEQ(IAPRES,lworking,1,IER)
       endif
-C      CALL EFOPSEQ(IAPRES,lapres,1,IER)
-      IF(IER.NE.0) GOTO 60  
+      IF(IER.NE.0) GOTO 60
+       
       CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
       K=0
       CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','no pressure item',IER)

@@ -316,7 +316,7 @@ C Add a new item to the optical db
             CALL EPICKS(IX,IVALSS,' ','Typical glazing types:',
      &        48,9,SALT,'Typical glazing types',IER,3)
             IOS=IVALSS(1)
-	    nl=0
+            nl=0
             if(IOS.eq.9)then
               nl=1
               CALL EASKI(nl,' ',' Number of layers in the new set ?',
@@ -624,9 +624,13 @@ C ilabs is string arry for layer insert/delet selection.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigr,iigr2,iigt2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
+      integer iix4,iiy4,iix5,iiy5
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigr,iigr2,iigt2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
+      integer*8 iix4,iiy4,iix5,iiy5
 #endif
 
       IER=0
@@ -751,7 +755,10 @@ C Draw reflection.
         call eswline(ix4,iy4,ix5,iy5)
 
 C Draw absorption for each layer.
-        call edline(igr,igt+45,igr+20,igt+45,3)
+        iigr=igr
+        iigt4=igt+45
+        iigr2=igr+20
+        call edline(iigr,iigt4,iigr2,iigt4,3)
         write(temp,'(A)')' Absorb'
         CALL wstxpt(igr+25,igt+45,temp)
         DO 46 IL=1,NTLED
@@ -760,11 +767,21 @@ C Draw absorption for each layer.
           call u2pixel(55.0,ABED(IL,3),ix3,iy3)
           call u2pixel(70.0,ABED(IL,4),ix4,iy4)
           call u2pixel(80.0,ABED(IL,5),ix5,iy5)
-          call edline(ix1,iy1,ix2,iy2,3)
-          call edline(ix2,iy2,ix3,iy3,3)
+          iix1=ix1
+          iiy1=iy1
+          iix2=ix2
+          iiy2=iy2
+          call edline(iix1,iiy1,iix2,iiy2,3)
+          iix3=ix3
+          iiy3=iy3
+          call edline(iix2,iiy2,iix3,iiy3,3)
           call esymbol(ix2,iy2,IL+3,1)
-          call edline(ix3,iy3,ix4,iy4,3)
-          call edline(ix4,iy4,ix5,iy5,3)
+          iix4=ix4
+          iiy4=iy4
+          call edline(iix3,iiy3,iix4,iiy4,3)
+          iix5=ix5
+          iiy5=iy5
+          call edline(iix4,iiy4,iix5,iiy5,3)
           call esymbol(ix3,iy3,IL+3,1)
   46    CONTINUE
         call forceflush()
