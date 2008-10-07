@@ -767,6 +767,13 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
       logical colok
       character acthor*1
 
+C Local variables to pass to edline and axiscale.
+#ifdef OSX
+      integer iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+#else
+      integer*8 iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+#endif
+
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
@@ -945,7 +952,10 @@ C use igr. If there are two axis then set right-most position.
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok) call winscl('z',I-1) ! symbol using line colour
             call wstxpt(igr+100,igt-22,'RH %')
-            call edline(igr+100,igt-40,igr+135,igt-40,5)
+            iigr100=igr+100
+            iigr135=igr+135
+            iigt40=igt-40
+            call edline(iigr100,iigt40,iigr135,iigt40,5)
             call esymbol(igr+120,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok) call winscl('-',0)
@@ -958,7 +968,10 @@ C If solar or wind direction is the other then use the +50 slot.
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok) call winscl('z',I-1) ! symbol using line colour
             call wstxpt(igr+50,igt-22,'RH %')
-            call edline(igr+50,igt-40,igr+85,igt-40,5)
+            iigr50=igr+50
+            iigr85=igr+85
+            iigt40=igt-40
+            call edline(iigr50,iigt40,iigr85,iigt40,5)
             call esymbol(igr+70,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok) call winscl('-',0)
@@ -968,7 +981,10 @@ C If solar or wind direction is the other then use the +50 slot.
      &                 1,1,'RH %')
             if(colok) call winscl('z',I-1) ! symbol using line colour
             call wstxpt(igr,igt-22,'RH ')
-            call edline(igr,igt-40,igr+35,igt-40,5)
+            iigr=igr
+            iigt40=igt-40
+            iigr35=igr+35
+            call edline(iigr,iigt40,iigr35,iigt40,5)
             call esymbol(igr+20,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok) call winscl('-',0)

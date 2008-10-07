@@ -1636,9 +1636,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Define the two surfaces.
@@ -1672,12 +1674,20 @@ C Define the two surfaces.
       DO 10 I=1,NDXE(IEG)-1
         CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
         CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYE(IEG)-1
         CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
         CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
       DO 30 I=1,NDXE(IEG)
@@ -2649,9 +2659,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -2689,12 +2701,20 @@ C Define the two surfaces.
       DO 10 I=1,NDXC(ICR)-1
         CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
         CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYC(ICR)-1
         CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
         CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
       ipos=0

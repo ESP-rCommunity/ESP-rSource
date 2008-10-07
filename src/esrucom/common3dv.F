@@ -645,7 +645,7 @@ C Draw succeeding points until last vertex.
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
           iix=ix
-	  iiy=iy
+          iiy=iy
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -669,7 +669,7 @@ C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
           iix=ix
-	  iiy=iy
+          iiy=iy
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -786,9 +786,9 @@ C Transform other end of line.
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline.
         iix=ix
-	iiy=iy
-	iix1=ix1
-	iiy1=iy1
+        iiy=iy
+        iix1=ix1
+        iiy1=iy1
         call edline(iix,iiy,iix1,iiy1,LD)
 
 C Move to next grid position.
@@ -823,9 +823,9 @@ C Transform other end of line.
 
 C Draw the dotted line after casting to local variable.
         iix=ix
-	iiy=iy
-	iix1=ix1
-	iiy1=iy1
+        iiy=iy
+        iix1=ix1
+        iiy1=iy1
         call edline(iix,iiy,iix1,iiy1,LD)
 
 C Move to next grid position.

@@ -2110,8 +2110,10 @@ C      REAL MATRIX_A,MATRIX_B
       LOGICAL ISEL,CSEL,INBOUND,CLOSE
 #ifdef OSX
       integer iupdown,isym    ! passed to etplot
+      integer iix1,iiy1,iix2,iiy2  ! passed to edline
 #else
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iix1,iiy1,iix2,iiy2 ! passed to edline
 #endif
 
       X=XYZICON(ICN,1)
@@ -2175,7 +2177,11 @@ C If select draw double thickness, otherwise use the line style of the icon.
               elseif(IVEICN(ICN,I,5).eq.1)then
                 call eswline(ix1,iy1,ix2,iy2)
               elseif(IVEICN(ICN,I,5).eq.2)then
-                call edline(ix1,iy1,ix2,iy2,3)
+                iix1=IX1
+                iiy1=IY1
+                iix2=IX2
+                iiy2=IY2
+                call edline(iix1,iiy1,iix2,iiy2,3)
               elseif(IVEICN(ICN,I,5).eq.3)then
                 call edash(ix1,iy1,ix2,iy2,3)
               elseif(IVEICN(ICN,I,5).eq.4)then
@@ -2329,15 +2335,15 @@ C Otherwise draw a square.
      &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
             iupdown=1
             CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
-     &                CONCP(ICN,I,2)-XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
-     &                CONCP(ICN,I,2)+XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)+XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)+XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)-XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
           endif
 
 C Reset the line colour to standard.

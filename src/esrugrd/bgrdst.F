@@ -1774,9 +1774,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -1874,7 +1876,11 @@ C Up edge details.
           ELSEIF(IMatU.GT.0)THEN
             CALL U2PIXEL(X1,Y2,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Down edge details.
@@ -1920,7 +1926,11 @@ C Right edge details.
           ELSEIF(IMatR.GT.0)THEN
             CALL U2PIXEL(X2,Y1,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
    10 CONTINUE
@@ -1949,9 +1959,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -2065,7 +2077,11 @@ C Down edge details.
           ELSEIF(IMatD.GT.0)THEN
             CALL U2PIXEL(X1,Y2,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Left edge details.
@@ -2083,7 +2099,11 @@ C Left edge details.
           ELSEIF(IMatL.GT.0)THEN
             CALL U2PIXEL(X2,Y1,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
 
@@ -2126,9 +2146,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -2240,7 +2262,11 @@ C Down edge details.
           ELSEIF(IMatD.GT.0)THEN
             CALL U2PIXEL(X1,Y2,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Left edge details.
@@ -2272,7 +2298,11 @@ C Right edge details.
           ELSEIF(IMatR.GT.0)THEN
             CALL U2PIXEL(X2,Y1,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
    10 CONTINUE

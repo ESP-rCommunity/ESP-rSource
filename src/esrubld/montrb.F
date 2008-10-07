@@ -203,12 +203,15 @@ C since not all compilers use the same default.
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character etext*82, clabel*20,nterm*1,tab*1,zname*12,zdesc*64
       logical colok
+
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
 #endif
 
 C Test save option selected.
@@ -337,7 +340,10 @@ C with no symbols.
                ix= 25
                clabel(1:3)='EXT'
                call wstxpt(ix,iy,clabel)
-               call edline(ix+5,iy,ix+35,iy,1)
+               iiy=iy
+               iix5=ix+5
+               iix35=ix+35
+               call edline(iix5,iiy,iix35,iiy,1)
 
 C Otherwise plot external temperature.
             else
@@ -392,7 +398,10 @@ C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
                   iy= igt+iyofst+(i*18)
                   ix= igr+25
                   call wstxpt(ix,iy,clabel)
-                  call edline(ix+5,iy+2,ix+35,iy+2,2)
+                  iiy2=iy+2
+                  iix5=ix+5
+                  iix35=ix+35
+                  call edline(iix5,iiy2,iix35,iiy2,2)
                   isr=i+mnzn
                   call esymbol(ix+20,iy+2,isr,0)
                endif
@@ -421,8 +430,11 @@ c else start plotting.
                if(mbstv.eq.3) then
                   ncoord1(i,2,1)=igl+int((ti+xadd)*xsc)
                   ncoord1(i,2,2)=igb-int((value1+yadd1)*ysc1)
-                  call edline (ncoord1(i,1,1),ncoord1(i,1,2),
-     &                         ncoord1(i,2,1),ncoord1(i,2,2),2)
+                  iix=ncoord1(i,1,1)
+                  iiy=ncoord1(i,1,2)
+                  iix2=ncoord1(i,2,1)
+                  iiy2=ncoord1(i,2,2)
+                  call edline (iix,iiy,iix2,iiy2,2)
                   isr=i+mnzn
                   if(j.eq.instep) call esymbol(ncoord1(i,2,1),
      &                   ncoord1(i,2,2),isr,0)
