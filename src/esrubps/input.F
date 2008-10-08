@@ -169,6 +169,10 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+
+C espriou.h provides current file.
+#include "espriou.h"
+
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
@@ -476,10 +480,11 @@ C with lltmp because the standard database path might be pre-pended.
         lndbp=lnblnk(standarddbpath)
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lltmp=LPCDB
-        elseif(ipathoptdb.eq.2)then
+        elseif(ipathpcdb.eq.2)then
           write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
         endif
+        write(currentfile,'(a)') lltmp(1:lnblnk(lltmp))
         call EFOPRAN(ipcdb,lltmp,20,1,IER)
         call mzpmxt(ipcdb)
 
@@ -548,7 +553,8 @@ C Free plant components database if opened.
 C If materials db not yet defined has not yet been opened do so.
 C Use the unit IFMAT=IFIL+5 for this via common condb.
       IF(.NOT.MATDBOK)THEN
-  55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+  55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)then
 C Database was not found, or file could not be read.
           if(dll)then
@@ -590,6 +596,7 @@ C code from esruprj/eddb.F subroutine opendb.
             goto 139  !  a binary file found so carry on.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+          write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
           call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
@@ -634,6 +641,7 @@ C Use file unit IAPROB to read db.
           call usrmsg(outs,' ','W')
         endif
       else
+        write(currentfile,'(a)') lfmul(1:lnblnk(lfmul))
         CALL ERMLDB(0,iuout,IER)
         if(IER.NE.0)then
           outs='Problem during reading of construction database.'
@@ -683,6 +691,7 @@ C been properly entered.
 C Collect & process single-year climate file
 C Note: the climate file uses a different error flag than
 C the global model definition, as it can be specified separately.
+         write(currentfile,'(a)') lclim(1:lnblnk(lclim))
          call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
