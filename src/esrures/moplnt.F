@@ -1163,7 +1163,7 @@ C 'irecln' is defined in 'plantdb.h'.
       lndbp=lnblnk(standarddbpath)
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         lltmp=LPCDB
-      elseif(ipathoptdb.eq.2)then
+      elseif(ipathpcdb.eq.2)then
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
       endif

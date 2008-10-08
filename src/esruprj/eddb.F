@@ -1770,7 +1770,7 @@ C If local or absolute path call addpath otherwise if a standard
 C database then set longtfile equal to LLTMP.
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         call addpath(LLTMP,longtfile,concat)
-      else
+      elseif(ipathpcdb.eq.2)then
         longtfile=LLTMP
       endif
       ltf=max(1,LNBLNK(longtfile))
