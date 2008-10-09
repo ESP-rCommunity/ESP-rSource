@@ -119,6 +119,7 @@ my $del_dir = 1;
 my %gDescriptions;
 my %gLong_codes;
 
+my $gVerboseArg="";
 
 #------------------------------------------------------------
 # Synopsys
@@ -436,6 +437,9 @@ if ( @ARGV ){
   }
 }
 
+if ( $verbose ) { $gVerboseArg = "-v"; }
+if ( $veryverbose ) { $gVerboseArg = "-vv"; }
+
 # Loop through version stack, and detect type
 
 
@@ -506,7 +510,7 @@ my $global_fail = 0;
 
 #Find a suitable folder to do testing in:
 
-my $TestFolder_root="/tmp/.test_esp-r";
+my $TestFolder_root="/home/cronjobs/.at";
 my $TestFolder=$TestFolder_root;
 my $count = 0;
 while ( -d $TestFolder ) {
@@ -1045,7 +1049,7 @@ if ( $test_regression ) {
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r_test "
            ."--ref_loc $ref_esp --test_loc $test_esp "
-           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite/ --save_results -v" );
+           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite/ --save_results $gVerboseArg" );
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
