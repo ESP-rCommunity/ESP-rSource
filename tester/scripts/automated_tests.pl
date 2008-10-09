@@ -106,7 +106,7 @@ my $veryverbose = 0;
 my $test_forcheck   = 1;
 my $test_builds     = 1;
 my $test_regression = 1;
-
+my $test_callgrind  = 0;
 # Additional compilation flags
 my %build_args;
 $build_args{"reference"} ="";
@@ -369,6 +369,11 @@ if ( @ARGV ){
         last SWITCH;
 
       }
+
+      if ($arg =~/^--run_callgrind/ ){
+        $test_callgrind = 1;
+        last SWITCH;
+      }
       
       # Destination mail
       if ($arg =~ /^--addresses/ ){
@@ -510,7 +515,7 @@ my $global_fail = 0;
 
 #Find a suitable folder to do testing in:
 
-my $TestFolder_root="/home/cronjobs/.at";
+my $TestFolder_root=$ENV{HOME}."/.at";
 my $TestFolder=$TestFolder_root;
 my $count = 0;
 while ( -d $TestFolder ) {
@@ -1029,7 +1034,7 @@ if ( $test_regression ) {
   while ( my ($key, $revision ) = each  %revisions ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
-    if ( $debug_forcheck ) {
+    if ( $debug_forcheck || $test_callgrind ) {
       buildESPr($build_args{"$key"},"default","debug","together");
     }else{
       execute("make clean");
@@ -1043,13 +1048,27 @@ if ( $test_regression ) {
   stream_out("Running regression test...");
   my $ref_esp = "$TestFolder/esp-r_reference/bin/";
   my $test_esp = "$TestFolder/esp-r_test/bin/";
+
+  my ($test_suite_dir, $call_grind_arg);
+
+  if ( $test_callgrind ){
+
+    $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/esru_benchmark_model/cfg/bld_basic_summer.cfg";
+    $call_grind_arg = "--run_callgrind";
+
+  }else{
+
+    $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/";
+    $call_grind_arg = "";
+  }
   
   chdir ("$TestFolder/$src_dirs{\"test\"}/tester/scripts");
   execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
            ."-d $TestFolder/esp-r_test "
            ."--ref_loc $ref_esp --test_loc $test_esp "
-           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite/ --save_results $gVerboseArg" );
+           ."-p $test_suite_dir --save_results $call_grind_arg $gVerboseArg" );
+
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
@@ -1131,11 +1150,19 @@ if ( scalar(@addresses) > 0 ){
   
   my ($subject);
 
-  if ( $global_fail  ){
-    $subject = "ESP-r automated test: Fail  ($revisions{\"test\"}) ";
+  if ( $test_callgrind ) {
+    $subject .= "ESP-r automated call-tree test: ";
   }else{
-    $subject = "ESP-r automated test: Pass  ($revisions{\"test\"}) ";
+    $subject .= "ESP-r automated test: ";
+    if ( $global_fail  ){
+      $subject .= "Fail ";
+    }else{
+      $subject .= "Pass ";
+    }
   }
+   
+
+  $subject .=  "($revisions{\"test\"}) ";
 
   $subject =~ s/branches\///g;
   
