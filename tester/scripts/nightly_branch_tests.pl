@@ -375,7 +375,7 @@ sub test_branch($){
     if ( $gBranches{$branch}{"tests"} !~ "STATIC" )      { $local_test_options .= " --skip-forcheck ";  }
     if ( $gBranches{$branch}{"tests"} !~ "BUILD" )       { $local_test_options .= " --skip-builds ";    }
     if ( $gBranches{$branch}{"tests"} !~ "REGRESSION" )  { $local_test_options .= " --skip-regression ";}
-    
+    if ( $gBranches{$branch}{"tests"} =~ "CALLGRIND" )   { $local_test_options .= " --run-callgrind ";}
     # Build url arguements 
     my $URL_1 = $gBranches{$branch}{"name"}."\@".$old_rev;
     my $URL_2 = $gBranches{$branch}{"name"}."\@".$gBranches{$branch}{"test_rev"};

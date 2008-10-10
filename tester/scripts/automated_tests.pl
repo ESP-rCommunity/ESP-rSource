@@ -370,7 +370,7 @@ if ( @ARGV ){
 
       }
 
-      if ($arg =~/^--run_callgrind/ ){
+      if ($arg =~/^--run-callgrind/ ){
         $test_callgrind = 1;
         last SWITCH;
       }
