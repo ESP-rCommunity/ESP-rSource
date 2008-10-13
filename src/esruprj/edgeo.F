@@ -6072,7 +6072,7 @@ C Miscel. geometric transforms. Ask which surface and setup temp array.
         H(6)='  apply several operations to the surface;'
         H(7)='  cancel (no action).'
         call ZSID(icomp,IS,ZSDES,ZSDESC,ZSDESS)
-        write(head,'(a,a)') 'Actions ',ZSDES
+        write(head,'(a,a)') 'Actions ',ZSDESS
         options(1)  ='a shift along the surface normal  '
         options(2)  ='b XYZ translate                   '
         options(3)  ='c rotate                          '
