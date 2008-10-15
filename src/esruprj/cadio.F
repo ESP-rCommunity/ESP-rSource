@@ -141,7 +141,7 @@ C Help text for this menu.
       H(48)='NOTE: if you are useing Native Windows version the paths'
       H(49)='to the exported files may not work correctly. '
  
-      CALL EMENU('Export Model',ITEMS1,43,INO1)
+      CALL EMENU('Export Model',ITEMS1,11,INO1)
 
 C Prepare filter command lines with path.
 
