@@ -2579,9 +2579,9 @@ C the user edited the value (iwmg=7).
 
 C Local variables to pass to edline.
 #ifdef OSX
-      integer iix,iily,iiuy,iirx
+      integer iix,iiy,iily,iilx,iiuy,iirx
 #else
-      integer*8 iix,iily,iiuy,iirx
+      integer*8 iix,iiy,iily,iilx,iiuy,iirx
 #endif       
 
       if(iwmg.eq.1)then
