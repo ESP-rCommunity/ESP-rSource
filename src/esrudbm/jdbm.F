@@ -103,11 +103,12 @@ C Name of current application
       character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
       character LGENDB*72,LAGENDB*72
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
-      character tfile*72,longtfile*144
+      character tfile*72
       character outs248*248,LTMP*144
       character path*72,upath*72,pass*12,H*72,outs*124
       character xfile*144,tg*1,delim*1,cfgroot*24
-      character curfile*72,dba*12,act*1,action*12
+      character dba*12,act*1,action*12
+C      character curfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
 
@@ -128,7 +129,7 @@ C Name of current application
       LIMIT =26
       NSIGFIG=3
       LAGENDB=' '
-      curfile=' '
+C      curfile=' '
       moddb=.false.
 
 C Text/graphic feedback redirection on channel ifil +9 
@@ -1203,6 +1204,9 @@ C Create a matching ascii version of the generic db.
                 goto 42
               endif
             elseif(idp.eq.11)then
+
+C Convert binary events profiles database into the ASCII version
+C filling the common blocks. 
               write(LPRFDB,'(a)') gendbfn(idp)
               IPRODB=IFIL+2
               CALL TROPRO(IAFIL,afil,IER)
@@ -1594,7 +1598,7 @@ C      common/gendb/LGENDB
       character docpth*24,tmppth*24,dbspth*24
       character H*72,outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
-      character LAGENDB*72,LGENDB*72,longtfile*144
+      character LAGENDB*72,LGENDB*72
       character dinstpath*48,path*72,dirpath*48
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
@@ -1610,7 +1614,6 @@ C Set folder separator (fs) to \ or / as required.
 C Setup string buffer with distribution database folder name.
       write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &  fs,'databases',fs
-      ldirpath=lnblnk(dirpath)
 
 C Assume no changes in database, that file does not exist and
 C it is not a new file. Also remember the database tag (db) in dbask.
