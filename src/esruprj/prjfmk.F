@@ -3909,7 +3909,6 @@ C gain patterns.
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -3928,8 +3927,13 @@ C Electrical data flag and elctrical data.
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-      DIMENSION  ICGSX(MC),ICGFX(MC),CGS(MC),CGL(MC)
-      DIMENSION  NO(100),DESC(100),IPRVAL(100)
+C Profile database commons.
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40
+
+      DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,lodlabel*6
       character*8 ll1,ll2,ll3
@@ -3948,39 +3952,42 @@ C Labels for loads.
       PL=0.
       RAD=0.5
       CON=0.5
-      call efopran(IPRODB,LPRFDB,10,1,IER)
-      IF(ier.ne.0)return
-      CALL edisp(iuout,' opened profiles db')
+      IPPFT=0
+      IPPF=0
 
-      IREC = 1
-      READ(IPRODB,REC=IREC)  NITEMS
-      DO 50 I = 1,NITEMS
-        IREC = IREC + 1
-        NO(I) = IREC
-        READ(IPRODB,REC=IREC)  NCG
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=180)  DESC(I)
-        IREC = IREC + NCG
+C Scan the binary event profiles database. If an error state is
+C returned then it might be an ASCII file, try and scan that.
+      call TRIPROBIN(IER)
+      if(ier.ne.0)then
+        CALL ERPFREE(IPRODB,ISTAT)
+        CALL USRMSG(' opened profiles db...',' ','-')
+        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        if(ier.ne.0)then
+          call usrmsg('Error opening the db. Please use one',
+     &                'of the other options.','W')
+          return
+        else
+          CALL ERPFREE(IPRODB,ISTAT)
+          CALL USRMSG(' opened profiles db...ok',' ','-')
+        endif
+      else
+        CALL USRMSG(' opened profiles db...ok',' ','-')
+      endif
+
+C Copy the string list of event profiles to local string variable.
+      DO 50 I = 1,NPDBITEMS
+        DESC(I)=PDBDESC(I)
    50 CONTINUE
-
+      
 C Present a list of profiles to select from.
       H(1)='Any one of the profiles may be selected.'
       IX=1
-      CALL EPICKS(IX,IPRVAL,' ',' Profiles in db: ',
+      NITEMS=NPDBITEMS
+      CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
      &         40,NITEMS,DESC,'db profiles',IER,1)
       IF(IX.EQ.0)RETURN
 
-      N=IPRVAL(1)
-      IREC = NO(N)
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=181)  NCG
-      IREC = IREC + 2
-
-C There are NCG gains to be added
-      DO 70 I = 1,NCG
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=183)  ICGSX(I),ICGFX(I),
-     &       CGS(I),CGL(I)
-        IREC = IREC + 1
-70    CONTINUE
+      INDEX=IPRVAL(1)
 
 C Identify nature of casual gain
       H(1)='Casual gains within a zone can be be designated to be '
@@ -4098,36 +4105,26 @@ C << and small power can be entered in terms of W/m2.
       ENDIF
  42   call usrmsg(' ',' ','-')
 
-      NCAS(IDAY) = NCAS(IDAY) + NCG
-      DO 140 I = 1,NCG
-	ICGS(IDAY,I+IN) = ICGSX(I)
-	ICGF(IDAY,I+IN) = ICGFX(I)
-	CMGS(IDAY,I+IN) = CGS(I)*PS/100.0
-	CMGL(IDAY,I+IN) = CGL(I)*PL/100.0
+      NCAS(IDAY) = NCAS(IDAY) + NCG(INDEX)
+      DO 140 I = 1,NCG(INDEX)
+	ICGS(IDAY,I+IN) = ICGS1(INDEX,I)
+	ICGF(IDAY,I+IN) = ICGF1(INDEX,I)
+	CMGS(IDAY,I+IN) = CGS1(INDEX,I)*PS/100.0
+	CMGL(IDAY,I+IN) = CGL1(INDEX,I)*PL/100.0
 	RADC(IDAY,+IN) = RAD
 	CONC(IDAY,I+IN) = CON
 	ICGT(IDAY,I+IN) = ICGTX
 	IF(IELF(ICOMP).GT.0) THEN
 	  PF(IDAY,I+IN)=PPF
 	  IPF(IDAY,I+IN)=IPPF
-	  PWR(IDAY,I+IN)=CGS(I)*PE/100.
+	  PWR(IDAY,I+IN)=CGS1(INDEX,I)*PE/100.
 	  BVOLT(IDAY,I+IN)=PBVOLT
 	  IPHAS(IDAY,I+IN)=IPPHAS
 	ENDIF
 140   CONTINUE
 
-  999 CALL ERPFREE(IPRODB,ISTAT)
+      CALL ERPFREE(IPRODB,ISTAT)
       RETURN
-
-180   call edisp(iuout,' Casual gain database read error.')
-      IER=1
-      goto 999
-181   call edisp(iuout,' Casual gain db NCG read error.')
-      IER=1
-      goto 999
-183   call edisp(iuout,' Casual gain db data read error.')
-      IER=1
-      goto 999
 
       END
 

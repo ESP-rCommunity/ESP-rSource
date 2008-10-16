@@ -1205,7 +1205,7 @@ C Create a matching ascii version of the generic db.
             elseif(idp.eq.11)then
               write(LPRFDB,'(a)') gendbfn(idp)
               IPRODB=IFIL+2
-              CALL TROPRO(iuout,IAFIL,afil,IER)
+              CALL TROPRO(IAFIL,afil,IER)
               if(ier.eq.0)then
                 lenf=lnblnk(afil)
                 write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -1459,9 +1459,12 @@ C Create a matching ascii version of the generic db.
               return
             endif
           elseif(idp.eq.11)then
+
+C Event profiles. 
+C << move to using common blocks version of events >>
             write(LPRFDB,'(a)') gendbfn(idp)
             IPRODB=IFIL+2
-            CALL TROPRO(iuout,IAFIL,afil,IER)
+            CALL TROPRO(IAFIL,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -2078,9 +2081,12 @@ C Create a matching ascii version of the generic db.
             gendbfn(idbhash)=LGENDB
             goto 42
           elseif(dbask(1:8).eq.'profiles')then
+
+C Event profiles database. 
+C << need to move to common block version of data >>
             write(LPRFDB,'(a)')  gendbfn(idbhash)
             IPRODB=IFIL+2
-            CALL TROPRO(iuout,IAFIL,afil,IER)
+            CALL TROPRO(IAFIL,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),

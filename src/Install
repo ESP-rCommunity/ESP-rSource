@@ -1713,7 +1713,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
   echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
-  echo "*evn ${DBInstDir}/databases/profiles.db2" >> ${ESPdir}/default
+  echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
   echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
   echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -2020,6 +2020,8 @@ echo " Installing standard databases. This may take some time."
 
   cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
   cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
+  cp ${SRCdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
+  cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
     
      cd ${SRCdir}/databases

@@ -1643,8 +1643,6 @@ C     if blank then no file name change implied.
       SUBROUTINE EDDBPCDB(moddb,APP)
 #include "esprdbfile.h"
 #include "plantdb.h"
-
-      PARAMETER  (MCP=35)
       
       integer lnblnk  ! function definition
 
@@ -2251,8 +2249,6 @@ C     if blank then no file name change implied.
 C
       SUBROUTINE EDDBPROFILE(moddb,APP)
 #include "esprdbfile.h"
-
-      PARAMETER  (MCP=35)
       
       integer lnblnk  ! function definition
 
@@ -2265,9 +2261,11 @@ C
       common/rpath/path
       common/deflt4/dinstpath
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MCP),ICGF1(MCP),CGS1(MCP),CGL1(MCP)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
-      CHARACTER H*72,LTMP*72,LASCI*72,DFILE*72,lltmp*144,lprev*144
+      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
+      character LLASCI*144,LASCI*72
       character longtfile*144,LCOPY*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
@@ -2325,14 +2323,14 @@ C Remember the initial file name in case user choice fails.
       H(19)='   and if you have permission to update the file you'
       H(20)='   can edit the entities in the database.'
       H(21)=' '
-      H(22)='b) Select from list (not available for optics databases).'
+      H(22)='b) Select from list (not available for events databases).'
       H(23)=' '
       H(24)='c) Make a new database: a new database will be created '
       H(25)='   based on the file name you supply. It will contain a'
       H(26)='   minimal number of items and you can then modify this'
       H(27)='   as required. '
       H(28)='   Exercise care if you use a text editor to copy sets'
-      H(29)='   of data from another optical database.'
+      H(29)='   of data from another event profile database.'
       H(30)=' '
       H(31)='d) copy default database: a project copy of the default'
       H(32)='  database will be made and you will be offered a '
@@ -2341,33 +2339,35 @@ C Remember the initial file name in case user choice fails.
       H(35)='e) binary -> ascii conversion saves current database '
       H(36)='  to a computer independant form.'
       H(37)=' '
-      H(38)='f) ascii -> binary useful when switching computers.'
-      H(39)=' '
+      H(38)='f) ascii -> binary useful when you need to pass the model.'
+      H(39)='   to someone with an old version of ESP-r that only reads'
+      H(40)='   a binary version,'
+      H(41)=' '
 
 C If GTK library then there are additional options so include in help.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.2)then
-        H(40)='g) browse ../dbs allows you to look in the model ../dbs'
-        H(41)='  folder for alternative optics files. If you do not'
-        H(42)='  find anything the previous value will be restored.'
-        H(43)=' '
-        H(44)='h) browse distribution displays files in the databases'
-        H(45)='  folder of the ESP-r distribution. If you do not find'
-        H(46)='  anything the previous value will be restored.'
-        H(47)=' '
-        H(48)='i) copy another database to the project allows you to'
-        H(49)=' locate a database and get a project copy of it.'
-      else
-        H(40)='g) select a file (X11 only): edit the file name'
-        H(41)='   and if it is found you can browse or edit it.'
-        H(42)='   Hint: if you eventually want to copy that other file'
-        H(43)='   into the model folder first select it and then ask'
-        H(44)='   for a copy.'
+        H(42)='g) browse ../dbs allows you to look in the model ../dbs'
+        H(43)='  folder for alternative profile files. If you do not'
+        H(44)='  find anything the previous name will be restored.'
         H(45)=' '
-        H(46)=' '
+        H(46)='h) browse distribution displays files in the databases'
+        H(47)='  folder of the ESP-r distribution. If you do not find'
+        H(48)='  anything the previous file will be restored.'
+        H(49)=' '
+        H(50)='i) copy another database to the project allows you to'
+        H(51)=' locate a database and get a project copy of it.'
+      else
+        H(42)='g) select a file (X11 only): edit the file name'
+        H(43)='   and if it is found you can browse or edit it.'
+        H(44)='   Hint: if you eventually want to copy that other file'
+        H(45)='   into the model folder first select it and then ask'
+        H(46)='   for a copy.'
         H(47)=' '
         H(48)=' '
         H(49)=' '
+        H(50)=' '
+        H(51)=' '
       endif
       CALL ERPFREE(IPRODB,ISTAT)
       call addpath(LLTMP,longtfile,concat)
@@ -2401,7 +2401,7 @@ C If db does not exist locally offer limited choices:
         call MENUATOL('  ','Event Profiles db',
      &    ' ','b select from list',
      &    'c create a new db','d copy the default db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         copydef=.true.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
@@ -2411,7 +2411,7 @@ C If corportate database then offer the following choices (incl /):
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy the default db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -2421,7 +2421,7 @@ C If corportate database then offer the following choices (without /):
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy the default db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         copydef=.false.
       else
 
@@ -2432,7 +2432,7 @@ C default database or the current database.
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy the default db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,49)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.9)copydef=.false.
       endif
@@ -2463,22 +2463,25 @@ C There is no select by list for events database.
       elseif(isw.eq.3)then
 
 C No event profile db found so set-up minimal common block, create
-C a new db, populate it and present editing facility.
+C a new ascii db, populate it and present editing facility.
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.profiledb'
+          write(LTMP,'(2a)') cfgroot(1:lr),'.profiledb.a'
         else
           write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.profiledb'
+     &      cfgroot(1:lr),'.profiledb.a'
         endif
  62     H(1)='An event profiles db holds a schedule of patterns'
-        H(2)='over a day. '
+        H(2)='over a day. When a new db is created in the model'
+        H(3)='it will be the ASCII version.'
         clkok=.false.
-        CALL EASKSCNCL(ltmp,' ',' Event Profiles db?',
+
+C << DPRFDB might point to binary or ascii, need to check >>
+        CALL EASKSCNCL(ltmp,' ','Event Profiles db? (ASCII)',
      &    'cancel',clkok,72,DPRFDB,'event profiles db',
-     &    IER,2)
+     &    IER,3)
         if(clkok)then
           LPRFDB=lprev  ! user canceled, restore initial name
 	  return
@@ -2489,28 +2492,22 @@ C a new db, populate it and present editing facility.
           goto 62
         endif
 
-C Create a minimal events databases.
+C Create a minimal events databases in common and write to ascii file.
+C The name of the ascii file includes an .a at the end.
         moddb=.true.
-        call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
         NPDBITEMS = 1
         NO(1) = 2
         NCG(1)= 1
         PDBDESC(1)='Always ON 100%'
-        ICGS1(1)=0
-        ICGF1(1)=24
-        CGS1(1)=100.0
-        CGL1(1)=100.0
-        lastrec=4
-        IREC = 1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450) NPDBITEMS
-        IREC=NO(1)
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(1)
-        IREC=IREC+1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)PDBDESC(1)
-        IREC=IREC+1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
-     &        ICGS1(1),ICGF1(1),CGS1(1),CGL1(1)
-        CALL ERPFREE(IPRODB,ISTAT)
+        ICGS1(1,1)=0
+        ICGF1(1,1)=24
+        CGS1(1,1)=100.0
+        CGL1(1,1)=100.0
+
+C The model database is now an ASCII version.
+        LLASCI=LPRFDB
+        IAF=IFIL+1
+        CALL TROPROCOM(IAF,LLASCI,IER)
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
@@ -2532,6 +2529,8 @@ C use the editing facility.
           goto 44
         endif
       elseif(isw.eq.4.or.isw.eq.9)then
+
+C << will need to check if the default is an ascii version >>
 
 C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
@@ -2557,22 +2556,22 @@ C code is general rather than specific (for later consolidation).
           iglib = igraphiclib()
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
-              CALL EASKF(lltmp,' ',' Event Profiles db (source)?',
+              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
      &          96,DPRFDB,'binary events db',IER,2)
             elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,' ',' Event Profiles db (source)?',
+              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
      &          124,DPRFDB,'binary events db',IER,2)
             elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,' ',' Event Profiles db (source)?',
+              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
      &          144,DPRFDB,'binary events db',IER,2)
             endif
             sourcefile = lltmp
           elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' ',' Event Profiles db (source)?',
+            CALL EASKF(lltmp,' Event Profiles db (source)?',' ',
      &        144,DPRFDB,'binary events db',IER,2)
             sourcefile = lltmp
           else
-            CALL EASKF(lltmp,' ','Event Profiles db (source)?',
+            CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
      &        96,DPRFDB,'binary events db',IER,2)
             sourcefile = lltmp
           endif
@@ -2585,6 +2584,12 @@ C If user request jump back and re-display the menu.
 
           LPRFDB=lltmp
         endif
+
+C << why is it eventdb here and profiledb elsewhere?? >>
+
+C << do we want to convert any binary version into a local
+C << ascii version?
+
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
@@ -2659,11 +2664,13 @@ C be pre-pended when using most inbuilt file opening calls.
 
       elseif(isw.eq.5)then
 
-C Profile db: BINARY > ASCII. 
+C Event profile db: BINARY > ASCII. 
 C Ask for the binary file name and then confirm the ASCII db name.
         IAF=IFIL+1
         H(1)='The events db contains one or more descriptions of'
-        H(2)='profiles created via a diary entry format.'
+        H(2)='profiles created via a diary entry format. This'
+        H(3)='otion converts from binary to asci version of the '
+        H(4)='file. '
         lltmp=LPRFDB
         llt=lnblnk(lltmp)
 
@@ -2674,20 +2681,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        96,DPRFDB,'binary events db',IER,2)
+     &        96,DPRFDB,'binary events db',IER,4)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        124,DPRFDB,'binary events db',IER,2)
+     &        124,DPRFDB,'binary events db',IER,4)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        144,DPRFDB,'binary events db',IER,2)
+     &        144,DPRFDB,'binary events db',IER,4)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      144,DPRFDB,'binary events db',IER,2)
+     &      144,DPRFDB,'binary events db',IER,4)
         else
           CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      96,DPRFDB,'binary events db',IER,2)
+     &      96,DPRFDB,'binary events db',IER,4)
         endif
 
 C If user request jump back and re-display the menu.
@@ -2702,20 +2709,23 @@ C If user request jump back and re-display the menu.
           goto 60
         endif
 
-C 144 -> 72 character switch so limit portion written to LASCI.
+C If LPRFDB does not end in .a then update LLASACI
         llt=lnblnk(LPRFDB)
-        if(llt.le.69)then 
-          write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+	if(LPRFDB(llt-1:llt).eq.'.a')then
+          LLASCI=LPRFDB
         else
-          write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+          if(llt.le.141)then 
+            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
+          else
+            write(LLASCI,'(2a)') LPRFDB(1:141),'.a'
+          endif
         endif
 
-        DFILE='./newprofiles.db1.a'
-        CALL EASKS(LASCI,' ASCII event profile? ',
-     &    ' ',72,DFILE,'ascii events db',IER,2)
+C Read binary file into common blocks.
+        call TRIPROBIN(IER)
 
-C Do conversion to ASCII and then redisplay the menu.
-        CALL TROPRO(iuout,IAF,LASCI,IER)
+C Write commons to ASCII and then redisplay the menu.
+        call TROPROCOM(IAF,LLASCI,IER)
         call tstamp('>','PRO: convert binary to ascii')
         goto 60
       elseif(isw.eq.6)then
@@ -2724,19 +2734,40 @@ C Profile db: ASCII > BINARY.
 C Ask for the ASCII file name and then confirm the binary db name.
         IAF=IFIL+1
         H(1)='The events db contains one or more descriptions of'
-        H(2)='profiles created via a diary entry format.'
+        H(2)='profiles created via a diary entry format. This option'
+        H(3)='allows you to convert an ASCII version to a binary'
+        H(4)='version of the file if you need to pass the model to'
+        H(5)='someone with an older version of ESP-r that only deals'
+        H(6)='with binary versions. '
+
+C Check the last two characters of the file name.
         llt=lnblnk(LPRFDB)
-        if(llt.le.69)then 
-          write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+	if(LPRFDB(llt-1:llt).eq.'.a')then
+          if(llt.le.69)then 
+            write(LASCI,'(a)') LPRFDB(1:llt)
+          else
+            write(LASCI,'(a)') LPRFDB(1:72)
+          endif
         else
-          write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+          if(llt.le.69)then 
+            write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+          else
+            write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+          endif
         endif
         CALL EASKS(LASCI,' ASCII event profile source? ',
-     &    ' ',72,'profiles.db1.a','ascii events db',IER,2)
+     &    ' ',72,'profiles.db1.a','ascii events db',IER,6)
 
         H(1)='The existing binary events db will be overwritten'
         H(2)='with the data from the ASCII version.'
-        write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+
+C If LPRFDB ends with .a then make up a temporary file name
+C for the binary that has the .a stripped off.
+	if(LPRFDB(llt-1:llt).eq.'.a')then
+          write(lltmp,'(a)') LPRFDB(1:llt-2)
+        else
+          write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+        endif
         llt=lnblnk(lltmp)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
@@ -2769,7 +2800,7 @@ C If user request jump back and re-display the menu.
 C Do conversion and then to prove that the file was correctly
 C converted proceed to browse/edit the details.
           LPRFDB=lltmp
-          CALL TRIPRO(iuout,IAF,LASCI,IER)
+          CALL TRIPRO(IAF,LASCI,IER)
           moddb=.true.
           goto 44
         else
@@ -2872,16 +2903,32 @@ C database contents.
      &  LPRFDB(1:lnblnk(LPRFDB))
       call edisp248(iuout,outs248,100)
       IER=0
-      call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
-      IF(ier.eq.0)then
-        CALL USRMSG(' opened profiles db...',' ','-')
-        IREC=1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NPDBITEMS
-        CALL USRMSG(' opened profiles db...ok',' ','-')
+
+C Scan the binary event profiles database. If an error state is
+C returned then it might be an ASCII file, try and scan that.
+      call TRIPROBIN(IER)
+      if(ier.eq.-2)then
         CALL ERPFREE(IPRODB,ISTAT)
+        CALL USRMSG(' opened profiles db...',' ','-')
+        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        if(ier.ne.0)then
+          call usrmsg('Error opening the db. Please use one',
+     &                'of the other options.','W')
+          LPRFDB=lprev
+          goto 60
+        else
+          CALL ERPFREE(IPRODB,ISTAT)
+          CALL USRMSG(' opened profiles db...ok',' ','-')
 
 C Call casfmk for the editing/browsing interface.
-        call casfmk(LPRFDB,ier)
+          call casfmk(ier)
+          return
+        endif
+      elseif(ier.eq.0)then
+        CALL USRMSG(' opened profiles db...ok',' ','-')
+
+C Call casfmk for the editing/browsing interface.
+        call casfmk(ier)
         return
       else
         call usrmsg('Error opening the db. Please use one',
@@ -2889,9 +2936,6 @@ C Call casfmk for the editing/browsing interface.
         LPRFDB=lprev
         goto 60
       endif
-
- 450  call edisp(iuout,'Event Profiles db error!')
-      call edisp(iuout,' ')
       return
 
       end
