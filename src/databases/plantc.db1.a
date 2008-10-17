@@ -95,7 +95,11 @@ signal set point                                                          0.
  CDATA variables:
     1  Water or Steam supply rate (kg/s)
 
- Number of additional output parameters:     0
+ Number of additional output parameters:     3
+ Additional output variables:
+    1 Vap. addition flow rate (kg/s) Type :    1
+    2 Heat demand of humidifier (W)  Type :    1
+    3 Heat gain from humidifier (W)  Type :    2
 
  Mass flow components data
 Power law mass flow component       m = a.dP^b
@@ -333,7 +337,9 @@ signal set point                                                          0.
  CDATA variables:
     1  Mass flow fraction allowed through damper (-)
 
- Number of additional output parameters:     0
+ Number of additional output parameters:     1
+ Additional output variables:
+     1 Damper position                 Type :    3
 
  Mass flow components data
 General flow corrector component    m = rho.f(comp, signal)
@@ -2266,7 +2272,9 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
  CDATA variables:
     1  Mass flow fraction allowed through valve (-)
 
- Number of additional output parameters:     0
+ Number of additional output parameters:     1
+ Additional output variables:
+     1 Valve position                 Type :    3
 
  Mass flow components data
 General flow corrector component    m = rho.f(comp, signal)
@@ -6081,5 +6089,585 @@ control period finish hour                                            0.0000
 open(1) shut(0) outside period                                        0.0000
 index for the sensed property                                         0.0000
 signal set point                                                      0.0000
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     94
+
+ Component Description
+    Generic type     : AC basic heat exchanger
+    Description      : air/air basic heat exchanger; 2 node model
+    Insertion date   : 11 Mar 92 20:53
+    Type: Single component                    Component code :    130
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  21,  21,
+
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   2    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    10.000        Range (Min Max):     10.000        10.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    1000.0        Range (Min Max):     1000.0        1000.0
+    3 UA modulus (W/K)
+      Value =    7.0000        Range (Min Max):     7.0000        7.0000
+ BDATA variables:
+    1 Heat exchanger effectiveness (-)
+      Value =    0.8000        Range (Min Max):     0.0100        1.0000
+    2 Moisture recovery (%)
+      Value =   25.0000        Range (Min Max):    0.00000       100.000
+
+ Number of additional output parameters:     0
+
+ Mass flow components data
+Power law mass flow component       m = a.dP^b
+Type :  15    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           1.0000
+flow coefficient a (kg/s/Pa^b)                                       0.10000
+flow exponent b (-)                                                  0.40000
+control flag                                                              0.
+control period day type                                                   0.
+control period start hour                                                 0.
+control period finish hour                                                0.
+open(1) shut(0) outside period                                            0.
+index for the sensed property                                             0.
+signal set point                                                          0.
+Power law mass flow component       m = a.dP^b
+Type :  15    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           1.0000
+flow coefficient a (kg/s/Pa^b)                                       0.10000
+flow exponent b (-)                                                  0.40000
+control flag                                                              0.
+control period day type                                                   0.
+control period start hour                                                 0.
+control period finish hour                                                0.
+open(1) shut(0) outside period                                            0.
+index for the sensed property                                             0.
+signal set point                                                          0.
 
 ---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     95
+
+ Component Description
+    Generic type     : AC damper
+    Description      : air duct damper; 1 node model; flow divert control
+    Insertion date   : 30 Aug 06 13:46
+    Type: Single component                    Component code :     80
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  21,
+
+ Miscellaneous Data
+    Adata items   :   4    Bdata items   :   0    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    1.0000        Range (Min Max):     1.0000        1.0000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    500.00        Range (Min Max):     500.00        500.00
+    3 UA modulus (W/K)
+      Value =    3.5000        Range (Min Max):     3.5000        3.5000
+    4 Auxilliary connection (-)
+      Value =    0.0           Range (Min Max):     0.0           100.00
+ CDATA variables:
+    1  Mass flow fraction allowed through damper (-)
+
+ Number of additional output parameters:     1
+ Additional output variables:
+    1 Damper position                 Type :    3
+
+ Mass flow components data
+General flow corrector component    m = rho.f(comp, signal)
+Type : 410    Init suppl dat :  17    Tot suppl dat :  17    No. of conns :   1
+fluid type (1=air, 2=water)                                           1.0000
+standard density rho 0 (kg/m^3)                                       1.2000
+standard pressure difference dP0 (Pa)                                 50.000
+characteristic; 1=linear, 2=logartihmic                               1.0000
+volume flow when fully open k,vs (m^3/s)                             0.60000E-01
+theoretical flow when closed, k,v0 (%)                                2.0000
+lower validity limit for charac., k,vr (%)                            3.0000
+control period day type                                               7.0000
+control period start hour                                                 0.
+control period finish hour                                            24.000
+value of H/H100 outside control period (%)                                0.
+index for sensed property S                                           1.0000
+signal lower limit Sl (?)                                             5.0000
+relative valve position H/H100 at Sl (%)                              100.00
+signal upper limit Su (?)                                             10.000
+relative valve position H/H100 at Su (%)                                  0.
+dS to overcome valve/damper hysteresis (?)                                0.
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     96
+ 
+ Component Description
+    Generic type     : WCH reversible heat pump
+    Description      : Basic reversible water loop heat pump; 2 node model
+    Insertion date   : 13 Oct 06 20:53
+    Type: Single component                    Component code :    360
+ 
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      2
+    Matrix positions :   1,   4,
+    Node connections :   1,   1,
+    Variable type    :  20,  21,
+ 
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   8    Cdata items   :   1
+ ADATA variables:
+    1 Mass of heat pump (kg)
+      Value =    150.00        Range (Min Max):     10.000        10.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    1000.0        Range (Min Max):     1000.0        1000.0
+    3 UA modulus (W/K)
+      Value =    7.0000        Range (Min Max):     7.0000        7.0000
+ BDATA variables:
+    1 COP heating (-)
+      Value =    3.0000        Range (Min Max):     0.0000        1.0000
+    2 COPh coefficient 1 (h2)
+      Value =    1.0000        Range (Min Max):    0.10000E-02    1000.0
+    3 COPh coefficient 2 (h1)
+      Value =    1.0000        Range (Min Max):    0.10000E-02    1000.0
+    4 COPh coefficient 3 (h0)
+      Value =    1.0000        Range (Min Max):    0.10000E-02    1000.0
+    5 COP cooling (-)
+      Value =    3.0000        Range (Min Max):     0.0000        1.0000
+    6 COPc coefficient 1 (h2)
+      Value =    1.0000        Range (Min Max):    0.10000E-02    1000.0
+    7 COPc coefficient 2 (h1)
+      Value =    1.0000        Range (Min Max):    0.10000E-02    1000.0
+    8 COPc coefficient 3 (h0)
+      Value =    1.0000        Range (Min Max):    0.10000E-02    1000.0
+ CDATA variables:
+    1 heat pump duty (W)
+ 
+ Number of additional output parameters:     6
+ Additional output variables:
+    1  heat pump duty         (W)    Type :    1
+    2  water heat transfer    (W)    Type :    1
+    3  air heat transfer      (W)    Type :    1
+    4  compressor power input (W)    Type :    1
+    5  COP heating                   Type :    1
+    6  COP cooling                   Type :    1
+ 
+ Mass flow components data
+Power law mass flow component       m = a.dP^b
+Type :  15    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (kg/s/Pa^b)                                       0.10000
+flow exponent b (-)                                                  0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+Power law mass flow component       m = a.dP^b
+Type :  15    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           1.0000
+flow coefficient a (kg/s/Pa^b)                                       0.10000
+flow exponent b (-)                                                  0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     97
+
+ Component Description
+    Generic type     : WCH basic radiator model
+    Description      : simple domestic hot water radiator; 2 node model
+    Insertion date   : 01 Nov 06 09:00
+    Type: Single component                    Component code :    350
+
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      3
+    Matrix positions :   1,   3,   4,
+    Node connections :   1,  -1,
+    Variable type    :  20,  20,
+
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :   9    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    25.000        Range (Min Max):     25.000        25.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    600.00        Range (Min Max):     600.00        600.00
+ BDATA variables:
+    1 Radiator surface area (m2)
+      Value =    2.0000        Range (Min Max):     1.3000        1.3000
+    2 Radiator heat transfer coefficient (W)
+      Value =    12.5          Range (Min Max):     1.0000        50.000
+    3 Nominal environment temperature (C)
+      Value =    20.000        Range (Min Max):     20.000        20.000
+    4 Index of coupled building zone (-)
+      Value =        0.        Range (Min Max):         0.            0.
+    5 Number of walls used for defining Te (-)
+      Value =        0.        Range (Min Max):         0.            0.
+    6 Index of 1st wall for defining Te (-)
+      Value =        0.        Range (Min Max):         0.            0.
+    7 Weighting factor 1st wall when defining Te (-)
+      Value =        0.        Range (Min Max):         0.            0.
+    8 Index of 2nd wall for defining Te (-)
+      Value =        0.        Range (Min Max):         0.            0.
+    9 Weighting factor 2nd wall when defining Te (-)
+      Value =        0.        Range (Min Max):         0.            0.
+
+ Number of additional output parameters:     3
+ Additional output variables:
+    1 Heat emission to environment   Type :    4
+    2 Mean radiator temperature      Type :    2
+    3 Environmental temperature      Type :    2
+
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                              0.
+control period day type                                                   0.
+control period start hour                                                 0.
+control period finish hour                                                0.
+open(1) shut(0) outside period                                            0.
+index for the sensed property                                             0.
+signal set point                                                          0.
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     98
+
+ Component Description
+    Generic type     : WCH pump
+    Description      : variable speed domestic WCH pump; 1 node model
+    Insertion date   : 11 Mar 92 21:50
+    Type: Single component                    Component code :    390
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   3    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    5.0000        Range (Min Max):     5.0000        5.0000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    2250.0        Range (Min Max):     2250.0        2250.0
+    3 UA modulus from wall to environment (W/K)
+      Value =   0.20000        Range (Min Max):    0.20000       0.20000
+ BDATA variables:
+    1 Rated total absorbed power (W)
+      Value =    150.00        Range (Min Max):     150.00        150.00
+    2 Rated mass flow rate (m^3/s)
+      Value =   0.30000E-03    Range (Min Max):    0.30000E-03   0.30000E-03
+    3 Overall efficiency (-)
+      Value =   0.70000        Range (Min Max):    0.70000       0.70000
+ CDATA variables:
+    1  Water mass flow rate (m^3/s)
+
+ Number of additional output parameters:     2
+ Additional output variables:
+    1 Real power comsump             Type :    1
+    2 Reac power comsump             Type :    1
+
+ Mass flow components data
+General flow inducer component      dP= a0+Sai(m/rho)^i
+Type : 310    Init suppl dat :   7    Tot suppl dat :   7    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+lower polynomial validity limit (m^3/s)                              0.10000
+upper polynomial validity limit (m^3/s)                              0.40000
+fit coefficient a0 (Pa/(m^3/s)^0)                                    0.50000
+fit coefficient a1 (Pa/(m^3/s)^1)                                    0.60000
+fit coefficient a2 (Pa/(m^3/s)^2)                                    0.50000
+fit coefficient a3 (Pa/(m^3/s)^3)                                         0.
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     99
+ 
+ Component Description
+    Generic type     : WCH heat rejection device
+    Description      : Air or evaporatively cooled rejection device; 1 node model
+    Insertion date   : 10 Nov 06 00:00
+    Type: Single component                    Component code :    370
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  20,
+ 
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   1    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    50.000        Range (Min Max):     50.000        50.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    600.00        Range (Min Max):     600.00        600.00
+    3 UA modulus (W/K)
+      Value =    20.000        Range (Min Max):     20.000        20.000
+ BDATA variables:
+    1 Parasitic fan or pump loads (W/W cooling)
+      Value =   0.10000        Range (Min Max):    0.10000        1.0000
+ CDATA variables:
+    1 Heat rejection (W)
+ 
+ Number of additional output parameters:     2
+ Additional output variables:
+    1 Heat rejected                  Type :    4
+    2 Parasitic losses               Type :    4
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     100
+ 
+ Component Description
+    Generic type     : WCH junction
+    Description      : WCH pipe converging multi-leg junction; 1 node model
+    Insertion date   : 16 Nov 06 21:48
+    Type: Single component                    Component code :    380
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :  10,
+    Variable type    :  20,
+ 
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   1    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =   0.10000        Range (Min Max):    0.10000       0.10000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    2250.0        Range (Min Max):     2250.0        2250.0
+    3 UA modulus from wall to environment (W/K)
+      Value =   0.20000E-01    Range (Min Max):    0.20000E-01   0.20000E-01
+ BDATA variables:
+    1 Number of connections (10 max)
+      Value =    2.0000        Range (Min Max):     2.0000        10.000
+ 
+ Number of additional output parameters:     0
+ 
+ Mass flow components data
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+General flow conduit component      m = rho.f(D,A,L,k,SCi)
+Type : 210    Init suppl dat :   6    Tot suppl dat :  13    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+conduit hydraulic diameter (m)                                       0.10000
+cross-sectional area (m^2)                                           0.12500E-01
+conduit length (m)                                                   0.50000
+absolute wall roughness (m)                                          0.60000E-03
+sum of local dynamic loss factors (-)                                0.50000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :     101
+
+ Component Description
+    Generic type     : AC fan
+    Description      : centrifugal fan, 1 node model ; mass flow control
+    Insertion date   : 11 Mar 92 20:37
+    Type: Single component                    Component code :    150
+
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   1,
+    Variable type    :  21,
+
+ Miscellaneous Data
+    Adata items   :   3    Bdata items   :   3    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    10.000        Range (Min Max):     10.000        10.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    500.00        Range (Min Max):     500.00        500.00
+    3 UA modulus (W/K)
+      Value =    7.0000        Range (Min Max):     7.0000        7.0000
+ BDATA variables:
+    1 Rated total absorbed power (W)
+      Value =    200.00        Range (Min Max):     200.00        200.00
+    2 Rated mass flow rate (m^3/s)
+      Value =   0.10000        Range (Min Max):    0.10000       0.10000
+    3 Overall efficiency (-)
+      Value =   0.70000        Range (Min Max):    0.70000       0.70000
+ CDATA variables:
+    1  Mass flow rate (m^3/s)
+
+ Number of additional output parameters:     3
+ Additional output variables:
+    1 Real power consump             Type :    1
+    2 Reac power consump             Type :    1
+    3 Internal heat generation       Type :    2
+
+ Mass flow components data
+General flow inducer component      dP= a0+Sai(m/rho)^i
+Type : 310    Init suppl dat :   7    Tot suppl dat :   7    No. of conns :   0
+fluid type (1=air, 2=water)                                           1.0000
+lower polynomial validity limit (m^3/s)                              0.10000
+upper polynomial validity limit (m^3/s)                              0.40000
+fit coefficient a0 (Pa/(m^3/s)^0)                                    0.50000
+fit coefficient a1 (Pa/(m^3/s)^1)                                    0.60000
+fit coefficient a2 (Pa/(m^3/s)^2)                                    0.50000
+fit coefficient a3 (Pa/(m^3/s)^3)                                         0.
+

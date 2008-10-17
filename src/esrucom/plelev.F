@@ -44,6 +44,9 @@ C IUF is file unit for geometry, utility file units.
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -58,7 +61,6 @@ C IUF is file unit for geometry, utility file units.
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -210,11 +212,11 @@ C If there is a ground, ITDSP is flagged and plan view draw it.
 C Print labels and return to default font.
       call winfnt(IFS)
       if(direc.eq.'P')then
-        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(1:lnblnk(LSNAM))
       elseif(direc.eq.'S')then
-        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(1:lnblnk(LSNAM))
       elseif(direc.eq.'E')then
-        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(1:lnblnk(LSNAM))
       endif
       iy= igt-10
       ix = igl

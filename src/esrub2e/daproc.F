@@ -1211,6 +1211,7 @@ C the BEMS update file. Control law start times and dates of validity.
 
 # include "b2e.h"
 # include "building.h"
+# include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN  
       COMMON/FILEP/IFIL
@@ -1228,12 +1229,6 @@ C Commom for the optimim start/stop simulation.
 
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
-
-C Commons for control variables
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
 
 C Control law mapping
       common/cctl/icascf(mcom)

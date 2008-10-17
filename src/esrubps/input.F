@@ -264,7 +264,7 @@ C Material data arrays.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,h*72,spsname*8,L144*144
+      CHARACTER outs*124,h*72,spsname*8,L144*144,fs*1
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -276,7 +276,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll,close
+      logical dll,close,unixok
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -298,10 +298,20 @@ C Flag to enable inter-domain iteration
 
 C Status of multi-year climate database
       logical bMY_clm_err 
+      integer lndbp   ! for length of standard database path
+      character lltmp*144  ! to re-create plant database file name with path
 
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Initialize the system variables.
       GAM=0.5
@@ -459,11 +469,18 @@ C Fluid flow simulation parameters if fluid flow network defined.
       if(iairn.ge.1.or.iflwn.eq.1) call mflwsu
 
 C Unless building only, plant matrix template setup & checks.
-C If plant component db file unit not set use iaprob
-C <<< width of plant db 20???? >>>
+C If plant component db file unit not set use iaprob. Work
+C with lltmp because the standard database path might be pre-pended.
       if(indcfg.ne.1) then
         if(ipcdb.eq.0)ipcdb=IAPROB
-        call EFOPRAN(ipcdb,LPCDB,20,1,IER)
+        lndbp=lnblnk(standarddbpath)
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lltmp=LPCDB
+        elseif(ipathoptdb.eq.2)then
+          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+        endif
+        call EFOPRAN(ipcdb,lltmp,20,1,IER)
         call mzpmxt(ipcdb)
 
 C Default flag for plant<->electrical network interdomain iteration
@@ -826,7 +843,11 @@ C IREP=1 implies no reporting or data checking.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -891,7 +912,7 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LMOIST,LMSTR
+      CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,H*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1372,6 +1393,8 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1404,7 +1427,7 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 
       CHARACTER NAME*5,OUTSTR*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,Lflpar
+      CHARACTER*72 LCFD,Lflpar
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,lfil
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
@@ -1781,6 +1804,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -1791,13 +1815,14 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       logical prob,dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER CXSTR*78
 
       newgeo=.false.  ! assume older format geometry.

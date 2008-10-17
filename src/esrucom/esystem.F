@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -25,6 +25,8 @@ C  CONXINFO: returns an English description of the inter-connections
 C            in the configuration file. 
 C  HZSTOCON: Scans the current connections list and builds array
 C            IZSTOCN(MCOMP,MS) holding the connection index.
+C findwhichdbpath: takes a database file name and checks to see if
+C            the path is local or absolute or standard database folder.
 
 
 C ******************** ERSYS 
@@ -150,7 +152,10 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/ER1/IER1
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -225,6 +230,7 @@ C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
 C DBZN (15 char) name of the zone or control etc it is associated with.
+C DBSN (15 char) name of the surface within the associated zone.
        COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Configuration control.
@@ -395,7 +401,6 @@ C igcepflag=1 indicates GCEP models are active; 0 indicates no GCEP models.
       common/gcepinfo/igcep
       common/gcepfile/gcepfile
 
-
 C Bidirectional raw optical data file.
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
@@ -454,7 +459,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg,idty
       INTEGER IRNCMD,IRNCMF
-
+      INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
 
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
@@ -462,9 +467,10 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
-      CHARACTER*72 FILE,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD,LCNN
+      CHARACTER*72 FILE,LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
+      character lworking*144
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
@@ -499,6 +505,9 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character HDR*12
       character ipvact*3  ! to singnal internal or external IPV file
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -811,11 +820,19 @@ C If '* CONFIGURATION' found then read in the databases.
         endif
       endif
 
-C Read databases until '* PROJ LOG' found.
+C Read databases until '* PROJ LOG' found.  If starts with *std
+C then set the whichdbpath variable to signal that it is in
+C the standard location. If tag does not start with *std then
+C check the intial portion of the file name to see if it is
+C local or absolute and if absolute whether it matches the
+C standard path.
 
 C Note that some file names could be long strings
 C so LSTRIPC and LOUTSTR are used.
   44  continue
+      lndbp=lnblnk(standarddbpath)
+      call isunix(unixok)
+
       CALL LSTRIPC(IUC,LOUTSTR,99,ND,1,'db names',IER)
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
@@ -824,6 +841,13 @@ C so LSTRIPC and LOUTSTR are used.
       elseif(WORD(1:4).eq.'*mlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
       elseif(WORD(1:4).eq.'*opt')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
+
+C Process the file name folloing *opt and depending on its path
+C set the LOPTDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('opt',lworking,ier)
+      elseif(WORD(1:7).eq.'*stdopt')then
+        ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(LOUTSTR,K,LOPTDB,'W','optical db',IER)
       elseif(WORD(1:4).eq.'*prs')then
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
@@ -844,8 +868,19 @@ C climate database has been defined.
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
       elseif(WORD(1:4).eq.'*pdb')then
-        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant comp db',IER)
+        CALL EGETRM(LOUTSTR,K,lworking,'W','plant comp db',IER)
+
+C Process the file name folloing *pdb and depending on its path
+C set the LPCDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('pdb',lworking,ier)
+
+C debug.
+        write(6,*) lworking
         write(6,*) lpcdb
+        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
+      elseif(WORD(1:7).eq.'*stdpdb')then
+        ipathpcdb=2  ! standard folder for plant template database
+        CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
@@ -1185,6 +1220,30 @@ C There is a calendar of day types defined read its name.
         wkd2=wkday(idwe2)
       elseif(WORD(1:5).eq.'*year')then
         CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
+
+C Perform check that calendar day types correspond with simulation year
+C If more than three day types are declared then retain those day types
+C otherwise overwrite 
+        ICREPORT=0
+        DO 123 IDOL=1,365
+          IF(ICALENDER(IDOL).LE.3)THEN
+            CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+            CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+            IF(IDWKNUM.LT.6)THEN
+              IDTYY=1 ! WEEKDAY
+            ELSEIF(IDWKNUM.EQ.6)THEN
+              IDTYY=2 ! SATURDAY
+            ELSEIF(IDWKNUM.EQ.7)THEN
+              IDTYY=3 ! SUNDAY
+            ENDIF
+            IF(ICALENDER(IDOL).NE.IDTYY)THEN
+              ICALENDER(IDOL)=IDTYY
+              ICREPORT=1
+            ENDIF
+          ENDIF
+ 123    CONTINUE
+        IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
+     &    'Simulation year and calendar mismatch rectified')
       elseif(WORD(1:4).eq.'*img')then
 
 C An image file.
@@ -2850,6 +2909,8 @@ C array IZSTOCN(MCOM,MS) which holds the connection index.
 
       SUBROUTINE HZSTOCN
 #include "building.h"
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -2907,4 +2968,102 @@ C Check if ianc is a known anchor and then if there is a list.
         ier=1
         return
       endif
+      end
+
+C ******* findwhichdbpath
+C findwhichdbpath takes a database file name and checks to
+C see if the path is local or absolute or standard database folder.
+C Depending on which database (the parameter topic) the
+C common block file string and whichdbpath variable is updated.
+C topic =  'opt' for optics, 'pdb' for plant component templates
+      subroutine findwhichdbpath(topic,file,ier)
+      implicit none
+#include "esprdbfile.h"
+
+      integer lnblnk  ! function definition
+      integer ier  ! typd for passed parameter
+
+C Currently works with optical and plant template database.
+      character*(*) file
+      character topic*3 ! identify which type of database
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
+
+C Set OS and check that standarddbpath has been set.
+      lndbp=lnblnk(standarddbpath)
+      lnwkg=lnblnk(file)
+      if(lndbp.lt.1.or.lnwkg.lt.1)then
+        ier=2
+        return
+      endif
+      call isunix(unixok)
+      
+      if(unixok)then
+        if(file(1:7).eq.'../dbs/')then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=1  ! local folder for optical database
+            write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=1  ! local folder for plant database
+            write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
+          endif
+        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
+
+C The initial part of the path matches so only save the file name w/o path.
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=2
+            write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=2
+            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          endif
+        else
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=0
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=0
+            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          endif
+        endif
+      else
+        if(file(1:7).eq.'..\\dbs\\')then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=1  ! local folder for optical database
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=1  ! local folder for plant database
+            write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
+          endif
+        elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=2
+            write(LOPTDB,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=2
+            write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          endif
+        else
+          if(topic(1:3).eq.'opt')then
+            ipathoptdb=0
+            write(LOPTDB,'(a)') file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'pdb')then
+            ipathpcdb=0
+            write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          endif
+        endif
+      endif
+
+C Debug.
+      write(6,*) file
+      if(topic(1:3).eq.'opt')then
+        write(6,*) loptdb
+        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+      elseif(topic(1:3).eq.'pdb')then
+        write(6,*) LPCDB
+        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+      endif
+
+      return
       end

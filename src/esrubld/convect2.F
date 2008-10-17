@@ -103,7 +103,7 @@ C Commons added for ISO 15099 algorithm
       real veloc
 
       DOUBLE PRECISION NUAIR,LAMBAIR,RHOAIR,CPAIR,TFILM,BETA
-      DOUBLE PRECISION NUSS,RAS,vel2,CNUS
+      DOUBLE PRECISION NUSS,RAS,CNUS
       DOUBLE PRECISION FLIN,FLUT
 
 C Trace output. If there is a zone htc file note that data may

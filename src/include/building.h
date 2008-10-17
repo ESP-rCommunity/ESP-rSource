@@ -18,7 +18,7 @@ C Energy Simulation Research Unit of the University of Strathclyde.
 C Type declarations
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
       integer MTS,MGT,MCT,MTRACE,MGRDP,MLCOM,MDF,MDCFP,MDCFS,MDCFV
-      integer MCF,MBCDT,MBCDP,MTMC,MGAL,MANG,MGOPT,MISC,MSEN,MO,MF
+      integer MTMC,MGAL,MANG,MGOPT,MISC,MSEN,MO,MF
       integer MGRT,MGTV,MST, MS,MSM,MZS,MZRL,MEQ,MTR,MMLC,MCVT1
       integer MCVT2,MSCH,IRWMAX,MB,MOX,MOZ,misur,MCUB,MGC,MPATCH
       integer MTHF,MTHEQ,MDATA,MHCV,MFP,MSPMNOD,MSPMDAT,MVS,MGV,MLS
@@ -27,7 +27,6 @@ C Type declarations
       integer MGXYZ,MBTYP,MNM,MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID
       integer MMTR,MBND,MSNOD,MMAT,MIPVM,MIPVA,MSPS
       integer MDTY,MGTY,MGPER
-      integer MOL,MOCDT,MOCDP
 
 C For the building:
       PARAMETER (MCOM=28)
@@ -66,12 +65,6 @@ C Casual gain control settings:
       PARAMETER (MDCFP=5)
       PARAMETER (MDCFS=2)
       PARAMETER (MDCFV=145)
-
-C Zone control functions, day types, periods in day.
-      PARAMETER (MCF=28,MBCDT=10,MBCDP=8)
-
-C Optical control functions, day types, periods in day.
-      PARAMETER (MOL=8,MOCDT=8,MOCDP=8)
 
 C MTMC is number of different glazing systems per zone, 
 C MGAL is number of optical sets per optics db item 

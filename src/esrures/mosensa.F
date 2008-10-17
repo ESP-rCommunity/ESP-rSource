@@ -47,6 +47,7 @@ C can proceed.
       common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)

@@ -653,7 +653,6 @@ C     FEXP = SUPCMP(ICMP,3) - number of devices
 
 #include "net_flow.h"
 
-      COMMON/mfctl/ctlpos(MCNN)
       COMMON/MFLOW5/RHON(MNOD)
       COMMON/MFLOW9/ITPCMP(MCMP),ISDCMP(MCMP),ISDCNN(MCMP),
      &              SUPCMP(MCMP,MCMS)

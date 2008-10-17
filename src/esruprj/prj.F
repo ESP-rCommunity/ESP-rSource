@@ -58,7 +58,11 @@ C espriou.h provides currentfile, defdbfl exemfl.
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
@@ -163,7 +167,7 @@ C Name of current application
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
       character*72 LCFGF,H,LPRJLG
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN,LTMP
+      character*72 LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
@@ -3159,7 +3163,11 @@ C to include the path and create a string to drive the modules.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -3188,7 +3196,7 @@ C to include the path and create a string to drive the modules.
       character H*72,CXSTR*78
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LS
+      CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64,zn*12
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
 
@@ -3753,9 +3761,6 @@ C  iton is a toggle iton=0 initial state where images have not been scanned
 C    and iton=1 images have been displayed.
       common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
-c      dimension dh(60)
-c      CHARACTER dh*72
-
       character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
@@ -3854,17 +3859,6 @@ C Setup help text for the popup.
           h(9)='a model. '
           h(10)='Images of type GIF and XBM and ?? are supported.'
           CALL PHELPW(10,IHW,IER)
-C          dh(1)='Images can be associated with a model for various'
-C          dh(2)='purposes: '
-C          dh(3)=' * document conditions at the physical site'
-C          dh(4)=' * document assumptions in the model'
-C          dh(5)=' * indicate what performance is expected'
-C          dh(6)='   '
-C          dh(7)='Images are added to a model via the context->images'
-C          dh(8)='menu item. There can be up to 10 images associate'
-C          dh(9)='with a model. '
-C          dh(10)='Images of type GIF and XBM and ?? are supported.'
-C          call dupphelp(dh)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.
@@ -3943,11 +3937,13 @@ C of the same project that can later be modified.
       common/pophelp/h(60)
       common/user/browse
       common/C21/IFCFG,cfgroot,LCFGF
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       dimension items(7),items2(33)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H,LCFGF
+      CHARACTER*72 H,LCFGF
       CHARACTER ITEMS*36,ITEMS2*36,APP*4
       CHARACTER NBSTR*4,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
@@ -4318,6 +4314,8 @@ C << message to user that such a file does not exist
 C Path to model and command line file (if any). 
       common/OUTIN/IUOUT,IUIN
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
@@ -4338,6 +4336,9 @@ C   season assessment with all days included.
      &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -4371,7 +4372,6 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72,LCNN*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB

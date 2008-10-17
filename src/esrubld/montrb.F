@@ -51,6 +51,8 @@ c               3: zone temperature and plant flux.
 #include "monitor.h"
 
       common/outin/iuout,iuin
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
@@ -162,9 +164,13 @@ C Parameters for eline calls.
       parameter (LNMVAB=1, LNDRAB=0, LNMVRL=3, LNDRRL=2)
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GFONT/IFS,ITFS,IMFS
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
@@ -192,7 +198,6 @@ C since not all compilers use the same default.
       dimension ncoord(mcom,2,2), ncoord1(mcom,2,2),
      &          ncoord2(1,2,2)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character etext*82, clabel*20,nterm*1,tab*1,zname*12,zdesc*64
       logical colok

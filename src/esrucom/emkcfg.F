@@ -52,7 +52,11 @@ C ICLIM,LCLIM (for climate file)
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -241,7 +245,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
@@ -462,13 +466,13 @@ C Write databases related to this model.
 
 C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-c      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*opt  ',
      &      LOPTDB(1:lnblnk(LOPTDB))
-c      elseif(ipathoptdb.eq.2)then
-c        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
-c     &      LOPTDB(1:lnblnk(LOPTDB))
-c      endif
+      elseif(ipathoptdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
@@ -501,13 +505,13 @@ C Multiyear climate database
 
 C Plant database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
-c      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*pdb  ',
      &      LPCDB(1:lnblnk(LPCDB))
-c      elseif(ipathpcdb.eq.2)then
-c        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
-c     &      LPCDB(1:lnblnk(LPCDB))
-c      endif
+      elseif(ipathpcdb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdpdb  ',
+     &      LPCDB(1:lnblnk(LPCDB))
+      endif
 
 C HVAC
       IF (ihvacflag.EQ.1)then
@@ -1303,6 +1307,7 @@ C ****** Scan and report current mis-matches.
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)

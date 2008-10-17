@@ -230,6 +230,7 @@ C CFD small openings.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA

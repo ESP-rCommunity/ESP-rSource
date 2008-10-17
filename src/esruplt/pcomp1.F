@@ -468,6 +468,8 @@ C For the steam humidifier a conmstant effectiveness of 99% is assumed.
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       COMMON/PCDAT/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
 
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
       COMMON/ATPRES/PATMOS
       COMMON/WBULBO/IOPT
 
@@ -521,16 +523,17 @@ C Establish condensation heat of water; assume present component temp.
 
          ELSEIF(IHMOD.EQ.2) then
 
-C Calculate the enthalpy at the current temp and moisture content.
-           g1=CONVAR(ICON1,3)/CONVAR(ICON1,2)
-           g2=(CONVAR(ICON1,3)+PCDATF(IPCOMP,1))/CONVAR(ICON1,2)
-           hv=PCDATF(IPCOMP,1)*2675.8
-           H1=ENTHP2(CONVAR(ICON1,1),G1)
-           H2=H1+HV
-           H12=ENTHP2(CONVAR(ICON1,1),G2)
- 
-C Establish the energy flux added  to the air stream.
-           Q=(H2-H12)*1000.*PCDATF(IPCOMP,1)
+C Calculate the enthalpy at the current temp and moisture content. 
+c           g1=CONVAR(ICON1,3)/CONVAR(ICON1,2)
+c           g2=(CONVAR(ICON1,3)+PCDATF(IPCOMP,1))/CONVAR(ICON1,2)
+C Assume steam is added at 100C and cools sensibly to the temperature of
+C the humidifier component.
+           Q=PCDATF(IPCOMP,1)*2010.*(100.-CSVF(IPCOMP,1))
+           
+C	   hv=PCDATF(IPCOMP,1)*2454.
+C           H1=ENTHP2(CONVAR(ICON1,1),G1)
+C           H2=H1+HV
+C           H12=ENTHP2(CONVAR(ICON1,1),G2)
          ENDIF
 
 C Calculate current component time-constant TC
@@ -640,7 +643,20 @@ C Check that DXR does not exceed availabe vapour rate
 C Store added water vapour rate future value for energy balance usage
          PCDATF(IPCOMP,1)=COUT(3)
          PCQF(INOD1)=Q
+	 
+C Establish the energy needed to produce the steam assuming and inlet
+C temperature of 10C (m*Hv)
+         IF(IHMOD.EQ.1)THEN
+	   QH=0.0
+	 ELSEIF(IHMOD.EQ.2)THEN
+	   QH=CDATA(IPCOMP,1)*((2256.7*1000.)+(4200.*90.))
+	 ENDIF
       END IF
+C Save plant additional output.      
+      napdat(IPCOMP)=3
+      PCAOUT(IPCOMP,1)=PCDATF(IPCOMP,1)
+      PCAOUT(IPCOMP,2)=QH
+      PCAOUT(IPCOMP,3)=Q
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -662,7 +678,8 @@ C Trace output
             WRITE(ITU,*) ' HEFF   = ',HEFF,' (-)'
             WRITE(ITU,*) ' XMAX   = ',XMAX,' (kg,v/kg,a)'
             WRITE(ITU,*) ' DXR    = ',DXR,' (kg,v/s)'
-            WRITE(ITU,*) ' Q   = ',Q,' (W)'           
+            WRITE(ITU,*) ' Q   = ',Q,' (W)'  
+            WRITE(ITU,*) ' QH   = ',QH,' (W)'           
             WRITE(ITU,*) ' CDATA  = ',CDATA(IPCOMP,1)
          END IF
          WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
@@ -1561,6 +1578,8 @@ c     cdata: mass flow fraction entering damper.
      &             pcntmp(mpcom)
       common/pcond/convar(mpcon,mconvr),icontp(mpcon),
      &             icondx(mpcom,mnodec,mpconc)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+
 
       COMMON/FFN/IFLWN,ICFFS(MPCON)
 
@@ -1647,6 +1666,9 @@ c 2nd phase mass (ie. vapour) balance coefficients
          cout(2)=-pcondr(icon1)*fm
          cout(3)=0.
       end if
+C Save additional output.
+      napdat(ipcomp)=1
+      pcaout(ipcomp,1)=fm
 
 c Trace output
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.

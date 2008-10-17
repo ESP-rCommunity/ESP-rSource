@@ -312,6 +312,8 @@ C Tolerance for iteration of hydrogen flow matrix
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
@@ -673,6 +675,8 @@ C Tolerance for iteration of hydrogen flow matrix
       COMMON/PMSLV/IPMSLV
 
       common/spmfxst/ispmxist,spflnam 
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
 C Common for electrical file 
@@ -1734,6 +1738,8 @@ C askaboutcfd confirms simulation periods for CFD assessments.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       
 C Active domain common.
@@ -1812,8 +1818,8 @@ C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
-#include "plant.h"
 #include "esprdbfile.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -1822,7 +1828,11 @@ C prior to each simulation commencing.
       COMMON/SHOUT/ICOUT
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC7/ITCNST
@@ -1843,16 +1853,6 @@ C prior to each simulation commencing.
      &             NPGAP(MCOM,MS,MGP)
 
       COMMON/CCTLNM/CTLDOC,LCTLF
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &            ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),
-     &            tbcps(mcf,mbcdt,mbcdp),ibctyp(mcf,mbcdt,mbcdp),
-     &            ibclaw(mcf,mbcdt,mbcdp),bmiscd(mcf,mbcdt,mbcdp,misc)
-
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),TPCPS(MCL,MPCDT,MPCDP),
-     &IPCTYP(MCL,MPCDT,MPCDP),IPCLAW(MCL,MPCDT,MPCDP),
-     &PMISCD(MCL,MPCDT,MPCDP,MISC)
-
       COMMON/AVRAGE/IDAVER
       COMMON/BEFORM/IBEQNF
       COMMON/PCEQU/IMPEXP,RATIMP
@@ -1885,8 +1885,7 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER ctldoc*248
-      CHARACTER*72 LCFGF,LSNAM,LPROJ,LGEOM
-      CHARACTER*72 LSHAD,LTHRM,LCTLF,LUTIL
+      CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
       character outs*124,cfgroot*24,h*72
 
@@ -2179,6 +2178,8 @@ C ICNT    - counts trace output for page numbering purposes
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2467,15 +2468,18 @@ C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
 #include "building.h"
-#include "plant.h"
 #include "esprdbfile.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/save/isave
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -2483,18 +2487,8 @@ C if itru=33 then works as a header to the trace.
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &bmiscd(mcf,mbcdt,mbcdp,misc)
 
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      character*72 lsnam,lproj,lgeom,lafres
-      character*72 lshad,lthrm,lutil,lctlf,lcfgf,rfile
+      character*72 lafres,lctlf,lcfgf,rfile
       character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24
 
       dimension io(mcom)

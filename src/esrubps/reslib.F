@@ -52,6 +52,7 @@ C results library as well.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF

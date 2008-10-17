@@ -305,6 +305,8 @@ C IERR=1 if a scene file is missing.
       common/e2rf/rambfil,optnfil
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       common/radgt/iglzty

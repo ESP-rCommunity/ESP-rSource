@@ -51,8 +51,8 @@ C by invoking appropriate control routine (PCL??) for each active plant
 C control loop to establish CDATA for current time-step
 C
       SUBROUTINE CONTRL(iterp)
-#include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -61,14 +61,10 @@ C
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PTIME/PTIMEP,PTIMEF
       COMMON/Pctime/TIMSEC
-      COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
+      COMMON/CTLACTN/RINTGRL(MCF,2),DERIV(MCF)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -256,6 +252,7 @@ C component type's control variable (IPCVR)
       SUBROUTINE CLVAR(SVCTL,IPCMP,IPCVR)
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -266,10 +263,6 @@ C component type's control variable (IPCVR)
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
@@ -281,12 +274,12 @@ C component type's control variable (IPCVR)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
 
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
       COMMON/PTIME/PTIMEP,PTIMEF
 
       character outs*124
       
-      logical pcfngn,svcfgr
+      logical pcfngn,svcfgr,close
       
       svcfgr=.false.
 
@@ -413,7 +406,12 @@ C Controller type 10, 11, 17 or 23: senses relative humidity (%).
          ELSE IF(ICLCTP.EQ.10.OR.ICLCTP.EQ.11.OR.ICLCTP.EQ.17.or.
      &           iclctp.eq.23) THEN
             PATMOS=1013.25
-            SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
+            call eclose(CSVF(IN,2),0.00,0.01,close)
+            if(close)then
+	      SVCTL=0.0   ! trap for zero denominator
+            else
+              SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
+            endif
 
 C Multisensor loop controller - do nothing here
          ELSEIF(ICLCTP.EQ.41)THEN
@@ -515,6 +513,7 @@ C determines sensed condition SVCTLM(?,?).
       SUBROUTINE CLMVAR
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -525,10 +524,6 @@ C determines sensed condition SVCTLM(?,?).
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
@@ -539,8 +534,8 @@ C determines sensed condition SVCTLM(?,?).
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-      COMMON/CPMVAR/NPSEN(MCL),ISMODP(MCL),IPMSN(MCL,MPSEN,5),
-     &SVCTLM(MCL,MPSEN),SNWGTP(MPSEN)
+      COMMON/CPMVAR/NPSEN(MCF),ISMODP(MCF),IPMSN(MCF,MPSEN,5),
+     &SVCTLM(MCF,MPSEN),SNWGTP(MPSEN)
       character outs*124
 
 C Trace output
@@ -734,6 +729,7 @@ C multi-sensor control.
       SUBROUTINE CLAXSN(IAUXFN,SVCTLX)
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -742,8 +738,8 @@ C multi-sensor control.
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
 
-      COMMON/CPMVAR/NPSEN(MCL),ISMODP(MCL),IPMSN(MCL,MPSEN,5),
-     &SVCTLM(MCL,MPSEN),SNWGTP(MPSEN)
+      COMMON/CPMVAR/NPSEN(MCF),ISMODP(MCF),IPMSN(MCF,MPSEN,5),
+     &SVCTLM(MCF,MPSEN),SNWGTP(MPSEN)
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -881,7 +877,7 @@ C CLFNGR is a (user-defined) function generator.
 
       SUBROUTINE CLFNGR(IFNCT,SVCTL)
 #include "building.h"
-#include "plant.h"
+#include "control.h"
 
       COMMON/PTIME/PTIMEP,PTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -891,12 +887,7 @@ C CLFNGR is a (user-defined) function generator.
 
       common/pclsol/icfp,idtypp,iperp
 
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
-     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
-     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
      
       logical pcfngn
 
@@ -1157,7 +1148,6 @@ C CLVARN imposes non-ideal sensor characteristics on
 C the sensed variable returned from CFVAR routine.
 
       SUBROUTINE CLVARN(SVCT,SVCTLN)
-#include "plant.h"
 #include "building.h"
 #include "control.h"
 
@@ -1170,11 +1160,6 @@ C the sensed variable returned from CFVAR routine.
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/Pctime/TIMSEC
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
 
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
@@ -1281,11 +1266,6 @@ C the controller output sent from the calling routine.
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
       COMMON/Pctime/TIMSEC
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
 
       common/senact/realsn(MNONID,3,7),realac(MNONID,5,7),svctlp,
      &       deltap,ctldrp
@@ -1507,7 +1487,7 @@ C CLSNDL handles sensor delay.
       COMMON/PSTCTR/NSINCP,NSNCPR 
 
       COMMON/PCSNDL/SVSAV1(MNONID,MPDLAY),SVSAV2(MNONID,MPDLAY),
-     &              NSPSV(MCL)
+     &              NSPSV(MCF)
       COMMON/PTIME/PTIMEP,PTIMEF
 
 C Common block variables are:
@@ -1567,20 +1547,16 @@ C by setting all plant component control variables to zero
       SUBROUTINE PCL00
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PTIME/PTIMEP,PTIMEF
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1635,6 +1611,7 @@ C    or type 10: senses relative humidity
       SUBROUTINE PCL01(iterp)
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1646,16 +1623,12 @@ C    or type 10: senses relative humidity
       COMMON/PSTCTR/NSINCP,NSNCPR   
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/Pctime/TIMSEC
-      COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
-      COMMON/DIGPID/PID(MCL,7)
+      COMMON/CTLACTN/RINTGRL(MCF,2),DERIV(MCF)
+      COMMON/DIGPID/PID(MCF,7)
       COMMON/PSTAT/ISTATP
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
 C Reversible heat pump common
       common/rev_HP_logic/rev_heat_pump(MPCOM)
@@ -2139,6 +2112,7 @@ C                 or type 11: senses relative humidity.
       SUBROUTINE PCL02(iterp)
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2150,16 +2124,12 @@ C                 or type 11: senses relative humidity.
       COMMON/PSTCTR/NSINCP,NSNCPR   
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/Pctime/TIMSEC
-      COMMON/DIGPID/PID(MCL,7)
-      COMMON/CTLACTN/RINTGRL(MCL,2),DERIV(MCL)
+      COMMON/DIGPID/PID(MCF,7)
+      COMMON/CTLACTN/RINTGRL(MCF,2),DERIV(MCF)
       COMMON/PSTAT/ISTATP
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
       logical closea
 
 C Trace output
@@ -2584,6 +2554,7 @@ C                   or type 17: senses relative humidity
       SUBROUTINE PCL03
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2593,14 +2564,10 @@ C                   or type 17: senses relative humidity
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/HPCL03/HOUT(MPCOM),HSASC(MPCOM)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
       logical closea
 
 C Trace output
@@ -2715,6 +2682,7 @@ C or on a variable expecting some numerical value
       SUBROUTINE PCL04
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -2724,13 +2692,9 @@ C or on a variable expecting some numerical value
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
       LOGICAL CLOSEA
 
@@ -2836,6 +2800,7 @@ C                   or type 40: senses numerical value.
       subroutine pcl05
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/tc/itc,icnt
@@ -2845,19 +2810,15 @@ C                   or type 40: senses numerical value.
       common/ptime/ptimep,ptimef
 
       common/pclsol/icfp,idtypp,iperp
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
-     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
-     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
 c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
 c           only once.
-      dimension tmdr(mcl,2)
+      dimension tmdr(MCF,2)
       logical closea
 
 c Save contents of array 'tmdr'
@@ -2912,7 +2873,7 @@ c connection number.
 c If this is first pass, then initialise second 
 c data item of array 'tmdr'.
       if(ipass.eq.0) then
-         do 77 i=1,mcl
+         do 77 i=1,MCF
   77     tmdr(i,2)=0.0
          ipass=1
       endif
@@ -2993,6 +2954,7 @@ C controller's input sensor value.
       SUBROUTINE PCL06
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -3001,12 +2963,8 @@ C controller's input sensor value.
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &            ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),
-     &            tpcps(mcl,mpcdt,mpcdp),ipctyp(mcl,mpcdt,mpcdp),
-     &            ipclaw(mcl,mpcdt,mpcdp),pmiscd(mcl,mpcdt,mpcdp,misc)
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
       LOGICAL CLOSEA
 
@@ -3052,6 +3010,7 @@ C to zero.
       SUBROUTINE PCL07
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3064,14 +3023,9 @@ C to zero.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-
-      COMMON/NDUTY/NDUTYP(MCL),NTSOFF(MCL),NOFFCT(MCL),NDUTYS(MCL),
-     &NDUTYC(MCL),NSCPAV(MCL),CDATON(MPCOM,MMISCD,MCL)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/NDUTY/NDUTYP(MCF),NTSOFF(MCF),NOFFCT(MCF),NDUTYS(MCF),
+     &NDUTYC(MCF),NSCPAV(MCF),CDATON(MPCOM,MMISCD,MCF)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
 C COMMON BLOCK VARIABLES FOR 'NDUYTC' ARE:-
 C NDUTYP  = duty cycle period (in plant time-steps);
@@ -3170,6 +3124,7 @@ C PCL08 is a `Two-Position` controller.
       SUBROUTINE PCL08
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3183,11 +3138,7 @@ C PCL08 is a `Two-Position` controller.
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
 C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and
@@ -3203,7 +3154,7 @@ C Heating and cooling setpoint (oC)
 c tmdr(?,1) holds sum of mass diversion ratios
 c tmdr(?,2) indicates that (?,1) must be calculated
 c           only once.
-      dimension tmdr(mcl,2)
+      dimension tmdr(MCF,2)
 c      logical closea
 
 c Save contents of array 'tmdr'
@@ -3215,7 +3166,7 @@ C      ipass = 0
 c If this is first pass, then initialise second 
 c data item of array 'tmdr'.
       if(ipass.eq.0) then
-         do 77 i=1,mcl
+         do 77 i=1,MCF
   77     tmdr(i,2)=0.0
          ipass=1
       endif
@@ -3347,6 +3298,7 @@ C PCL09 is a multi-sensor `Two-Position` controller.
       SUBROUTINE PCL09
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3358,14 +3310,9 @@ C PCL09 is a multi-sensor `Two-Position` controller.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-
-      COMMON/PCLOP8/LASTOUT(MCL)
-      COMMON/CPMVAR/NPSEN(MCL),ISMODP(MCL),IPMSN(MCL,MPSEN,5),
-     &SVCTLM(MCL,MPSEN),SNWGTP(MPSEN)
+      COMMON/PCLOP8/LASTOUT(MCF)
+      COMMON/CPMVAR/NPSEN(MCF),ISMODP(MCF),IPMSN(MCF,MPSEN,5),
+     &SVCTLM(MCF,MPSEN),SNWGTP(MPSEN)
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -3479,6 +3426,7 @@ C PCL10 is a `Zero Energy Band' controller.
       SUBROUTINE PCL10
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3489,11 +3437,7 @@ C PCL10 is a `Zero Energy Band' controller.
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
 
       LOGICAL CLOSEA
 
@@ -3593,6 +3537,7 @@ C number based on logical (AND, OR) relationships of other control loops
       SUBROUTINE PCL14
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3609,11 +3554,7 @@ C number based on logical (AND, OR) relationships of other control loops
       common/cctlnm/ctldoc,lctlf
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
       COMMON/Pctime/TIMSEC
       COMMON/LOCAL2/IPREVON,ITSOR,IOR
       dimension ICTLR(4),LOGIC(4)
@@ -3745,6 +3686,7 @@ C Proportional Integral Room Controller
       SUBROUTINE PCL15
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3763,11 +3705,7 @@ C Proportional Integral Room Controller
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
       COMMON/LOCAL1/ISET,PHIMAX
       COMMON/Pctime/TIMSEC
       COMMON/PCLP14/DELTAI,IISET
@@ -3842,6 +3780,7 @@ C Outside temperature compensation controller
       SUBROUTINE PCL16
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -3860,11 +3799,7 @@ C Outside temperature compensation controller
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),NPCDT(MCL),
-     &            IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),
-     &            TPCPS(MCL,MPCDT,MPCDP),IPCTYP(MCL,MPCDT,MPCDP),
-     &            IPCLAW(MCL,MPCDT,MPCDP),PMISCD(MCL,MPCDT,MPCDP,MISC)
-      COMMON/PCLOP8/LASTOUT(MCL)
+      COMMON/PCLOP8/LASTOUT(MCF)
       COMMON/LOCAL1/ISET,PHIMAX
       
 C Fatal error test.

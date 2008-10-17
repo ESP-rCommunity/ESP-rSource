@@ -28,6 +28,8 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/GRSD31/INDLCL(MS)

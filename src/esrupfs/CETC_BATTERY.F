@@ -94,9 +94,9 @@ C ESP-r COMMONs
        COMMON/PCTIME/TIMSEC
        REAL    TIMSEC          !-length of time increment (second)
 
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout            !- write unit number
-      INTEGER iuin             !- read unit number
+C      COMMON/OUTIN/IUOUT,IUIN
+C      INTEGER iuout            !- write unit number
+C      INTEGER iuin             !- read unit number
 
 C Common holding the power-only component description read from the electric
 C network input file.
@@ -569,8 +569,8 @@ C Calculate and report SOC in %
 
      
 C    Calculate and report max battery heater power in W
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       heatersRes = POWCDAT(IPWC,13)/(nParal*nSerie)
       maxPowHeat = batVolt**2/heatersRes   
 
@@ -1052,7 +1052,7 @@ C proper node in the electrical network
       E0ExpB = POWCDAT(IPWC,19)
       E0ExpC = POWCDAT(IPWC,20)
       E0ExpD = POWCDAT(IPWC,21)
-      nSerie = POWCDAT(IPWC,2)
+      nSerie = int(POWCDAT(IPWC,2))
 
 C     Voltages are multiplied by the number of units connected in series
       batMaxVolt = POWCDAT(IPWC,5) * nSerie
@@ -1141,7 +1141,7 @@ C************** Initialisation
       capCoefB = POWCDAT(IPWC,23)
       capCoefC = POWCDAT(IPWC,24)
       cellCapRef = POWCDAT(IPWC,3)
-      nParal = POWCDAT(IPWC,1)
+      nParal = int(POWCDAT(IPWC,1))
 
 C************** Calculations
 C     Capacity of the battery is the capacity of one cell times the number of cells in parallel      
@@ -1242,8 +1242,8 @@ C************** Initialisation
          rIntEH2 = POWCDAT(IPWC,45)
          rIntEH3 = POWCDAT(IPWC,46)
       ENDIF
-      nSerie = POWCDAT(IPWC,2)
-      nParal = POWCDAT(IPWC,1)
+      nSerie = int(POWCDAT(IPWC,2))
+      nParal = int(POWCDAT(IPWC,1))
       cellCapRef = POWCDAT(IPWC,3)
 
 C************** Calculation
@@ -1838,8 +1838,8 @@ C Battery Parameters (technology and configuration)
 
 C************** Initialisation
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       thermalMass = POWCDAT(IPWC,11)*nParal*nSerie
       heatLossFact = POWCDAT(IPWC,12)*nParal*nSerie
 
@@ -2093,8 +2093,8 @@ C Battery Parameters (technology and configuration)
 
 C************** Initialisation
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       thermalMass = POWCDAT(IPWC,11)*nParal*nSerie
       heatLossFact = POWCDAT(IPWC,12)*nParal*nSerie
 
@@ -2338,8 +2338,8 @@ C************** Initialisation
       numIter = 0
       maxIter = 100
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       heatersRes = POWCDAT(IPWC,13)/(nParal*nSerie)
       batTOper = POWCDAT(IPWC,4)
 C      The position 50 is temporarily set here, needs to be changed once the
@@ -2548,8 +2548,8 @@ C Local variables
 
 C************** Initialisation
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       heatersRes = POWCDAT(IPWC,13)/(nParal*nSerie)
       batTEmer = POWCDAT(IPWC,14)
       batTOper = POWCDAT(IPWC,4)
@@ -2947,8 +2947,8 @@ C See BATTERY.h for definition of other variables related to battery life
 C
 C************** Initialisation
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       cellCapRef = POWCDAT(IPWC,3)
 
 C     The positions 51,52,53, and 54 are temporarily set here,
@@ -3165,8 +3165,8 @@ C Local variables
 
    
 C************** Initialisation
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       con_V3_discharged = POWCDAT(IPWC,3)
       con_H_discharged = POWCDAT(IPWC,4)
       electrolyteTemp = POWCDAT(IPWC,9)
@@ -3335,8 +3335,8 @@ C Coefficients for the correlated interal resistance equation
 
 C************** Initialisation
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
 
       IF(batMode .EQ. 0) THEN   ! charge mode -> use charge coefficients
          c0 = POWCDAT(IPWC,16)
@@ -3428,8 +3428,8 @@ C Local variables
       REAL electron_mole        ! number of electrons in or out (mole)
 
 C************** Initialisation
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
       con_V3_discharged = POWCDAT(IPWC,3)
       volume_electrolyte = POWCDAT(IPWC, 11)
 
@@ -3518,8 +3518,8 @@ C Local variables
 
 C************** Initialisation
 
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
 
 C    Parasitic power takes a constant value in the current stage. This can be improved 
 C    in the future to vary with the current.
@@ -3633,8 +3633,8 @@ C Local variables
 
 C************** Initialisation
 C
-      nParal = POWCDAT(IPWC,1)
-      nSerie = POWCDAT(IPWC,2)
+      nParal = int(POWCDAT(IPWC,1))
+      nSerie = int(POWCDAT(IPWC,2))
 
 C    Parasitic power takes a constant value in the current stage. This can be improved 
 C    in the future to vary with the current.
