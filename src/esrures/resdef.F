@@ -875,6 +875,8 @@ C ier is zero if no problems and -3 if user issued a cancel.
      &             NPGAP(MCOM,MS,MGP)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C      COMMON/RECV7/ZOA(MCOM)
+
+C Nothing references ZGAE and ZGAI.
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
       COMMON/RECV9/CHARDM(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -1224,6 +1226,9 @@ C but if using GTK then we need the full length to avoid truncation.
         if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 
+C The following line reads ncomp records which will contain zeros
+C (because there are no default doors and windows). ZGAE and ZGAI
+C are not referenced. Could we use these slots for something else?
       DO 140 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZGAE(I),ZGAI(I),
      &  xdum,xdum

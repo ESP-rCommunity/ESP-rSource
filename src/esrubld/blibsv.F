@@ -315,6 +315,9 @@ C     /
 C NB The following NCOMP records are used to store
 C external and internal window and door areas per zone.
 
+C << This data structure no longer exists so this section
+C << could be used for something else.
+
       IRECPL = IREC+NCOMP
       IREC = 2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  IRECPL

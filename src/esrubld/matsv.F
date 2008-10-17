@@ -48,6 +48,8 @@ c for transfer to the results database.  This cannot
 C be done prior to the time loop because the necessary adjacency
 C information is not established until the simulation commences.
 
+C << there is probably no reason to call this subroutine as there
+C << are no longer any so-called default windows and doors.
       subroutine mzwdar(icomp)
 #include "building.h"
 
@@ -77,13 +79,14 @@ C Find appropriate record in library.
       read(iunit,rec=irec,iostat=istat,err=1000)nst
       iresrv=nst-ncomp+icomp-1
 
-C Write to results library.
+C Write dummy values for default doors and windows to results library.
       irec=iresrv
       write(iunit,rec=irec,iostat=istat,err=1000)zgae,zgai,zdae,zdai
     5 return
 
  1000 write(outs,'(A,I5,A)')
-     &  ' mzwdar: results library error at record',irec,'.'
+     &  'mzwdar: results library error at record',irec,
+     &  ' while writing default window and door areas.'
       call edisp(iuout,outs)
       call epwait
       goto 5
