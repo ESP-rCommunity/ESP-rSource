@@ -355,6 +355,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
      &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       common/spmatlbl/spmlabel(mspmnod)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -420,7 +424,7 @@ C << rewrite logic to use G7 commons instead of these local variables. >>
       logical newgeo  ! to use for testing if new/old geometry file.
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
-      CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
+      CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
       CHARACTER TITL*72,DADESC*72,spitem2*32
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

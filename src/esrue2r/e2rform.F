@@ -598,6 +598,10 @@ C TMC data
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/grdisk/grdd,grcx,grcy
@@ -659,7 +663,7 @@ C Arrays of material properties.
       character BLKNAME*8,BLKMAT*12,ZSN*28
       character h*72,zname*12,ZN*12,zdesc*64,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
-      CHARACTER NAM*72,TITL*72,DESC*48,MLCN*12,OTF*4,OPT*12
+      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12

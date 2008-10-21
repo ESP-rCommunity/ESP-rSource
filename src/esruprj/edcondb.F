@@ -1768,6 +1768,10 @@ C If this parameter is changed also change it in subroutine GVALUE
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/pophelp/h(60)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/exporttg/xfile,tg,delim
@@ -1801,7 +1805,7 @@ C Arrays of material properties.
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch,closemat
 
-      CHARACTER H*72,DESC*48,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
+      CHARACTER H*72,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124,TITL*72,NAM*72
@@ -2401,6 +2405,10 @@ C << if needed.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -2438,7 +2446,7 @@ C Arrays of material properties.
 C      dimension SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
-      CHARACTER NAM*72,TITL*72,H*72,DESC*48,KEY*1,GDESCR*36
+      CHARACTER NAM*72,TITL*72,H*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12

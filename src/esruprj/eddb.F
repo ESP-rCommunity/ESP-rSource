@@ -1306,6 +1306,10 @@ C     if blank then no file name change implied.
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -1322,7 +1326,7 @@ C Default esp-r distribution path.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,modcon,modmlc,unixok,copydef,clkok
 
-      character H*72,LTMP*72,DESC*48,path*72,outs*124
+      character H*72,LTMP*72,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,message*48

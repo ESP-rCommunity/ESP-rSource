@@ -694,6 +694,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C Optical and geometric properties.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -731,7 +735,6 @@ C Arrays of material properties.
       LOGICAL MODGEO,MODCON,told,closemat
 
       DIMENSION ISD(19)
-      CHARACTER DESC*48
       CHARACTER TITL*72,NAM*72,ISD*46
       CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -1072,6 +1075,10 @@ C zone construction file with minimum intervention by the user.
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -1111,7 +1118,6 @@ C Arrays of material properties.
 
       CHARACTER outs*124,SSPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER DESC*48
       CHARACTER NAM*72,TITL*72
 
 C Assume no window optical properties asked for.
@@ -1449,6 +1455,10 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -1468,7 +1478,7 @@ C through each of the existing surfaces and finds unique optical types.
       logical canceled   ! toggle set if user interupts an edit session.
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
-      CHARACTER DESC*48,outs*124
+      CHARACTER outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER zname*12,zdesc*64,msg*28
@@ -2060,6 +2070,10 @@ C Loop through referenced mlc and derives the longest timeconstant.
       COMMON/C1/NCOMP,NCON
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2088,7 +2102,7 @@ C Arrays of material properties.
 
       character NAM*72,TITL*72,outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character MLCN*12,DESC*48,SSPARENT*12
+      character MLCN*12,SSPARENT*12
       logical found,closemat
 
 C Loop mlc db, if some surface references it, read properties for

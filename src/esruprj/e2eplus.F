@@ -63,6 +63,10 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -149,7 +153,7 @@ C Arrays of material properties.
 
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
-      CHARACTER NAM*72,TITL*72,DESC*48,outs*124,h*72
+      CHARACTER NAM*72,TITL*72,outs*124,h*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

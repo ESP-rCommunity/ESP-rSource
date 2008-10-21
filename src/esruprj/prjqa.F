@@ -78,6 +78,10 @@ C LPNF (72 char) plant network file name.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -195,7 +199,7 @@ C Remember if each zone is fully attributed.
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
-      character DESC*48,DESCRC*25
+      character DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character zname*12,cfgroot*24,ZN*12,SN*12
@@ -2513,6 +2517,10 @@ C << some variables are off - further debugging required.
       subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 #include "building.h"
 #include "esprdbfile.h"
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2541,8 +2549,7 @@ C Arrays of material properties.
       logical closemat
       
       dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER DESC*48,NAM*72
-      CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)

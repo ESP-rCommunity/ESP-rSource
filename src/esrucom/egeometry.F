@@ -256,6 +256,9 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
 C MLC commons to recover optical property name.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -267,7 +270,7 @@ C MLC commons to recover optical property name.
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
+      character ZN*12,phrase*64,zdesc*64,outs*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
@@ -1279,6 +1282,9 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
 C MLC commons to recover optical property name.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
                
@@ -1314,7 +1320,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
+      character ZN*12,phrase*64,zdesc*64,outs*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc

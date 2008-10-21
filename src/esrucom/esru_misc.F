@@ -3480,6 +3480,9 @@ C databases have been opened.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3502,7 +3505,7 @@ C Material data arrays.
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
-      character item*32,DESC*48,NAM*72,PNAM*20,H*72,outs*124
+      character item*32,NAM*72,PNAM*20,H*72,outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical close  ! to check version of materials db.
