@@ -94,7 +94,7 @@ C Simulator parameters.
       character ALABEL(5)*12,t20*20,act*1,H*72
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
       character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
-      character LTMPC*72,lltmpc*144
+      character lltmpc*144
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
       character graftitle*64,grlbl*24,t24*24,LTIME*5
       character LAPROB*72,RSNAME*40
@@ -169,23 +169,6 @@ C If user cancel.
 
         if(lltmpc(1:2).ne.'  '.and.lltmpc(1:4).ne.'UNKN')then
 
-C Also guess the name of the short file name for flow.
-          lrf=lnblnk(RFILE)
-          lrf3=lrf-3
-          lrf4=lrf-4
-          if(RFILE(lrf3:lrf).eq.'.res')then
-            write(LTMPC,'(2a)') RFILE(1:lrf4),'.mfr'
-          else
-            LTMPC=LAFRES
-          endif
-C          h(1)='If a network flow simulation was also undertaken'
-C          h(2)='you are asked for the name of the flow results file.'
-C          h(3)='A default name is provided which can be used if you'
-C          h(4)='did not modify it when undertaking the simulation.'
-C 22       call EASKS(LTMPC,'Flow library name?','(see help)',72,LAFRES,
-C     &               'flow library file',IER,4)
-C          if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
-
           IFRES=IFIL+4
           call EFOPRAN(IFRES,LLTMPC,NMRL,1,IER)
 
@@ -211,8 +194,9 @@ C name to report in header of graphs and scan its header.
         endif
       endif
 
-C Define prompt.
+C Define prompt and set an initial value for xquery.
       outs='  '
+      XQUERY=0.0
 
 C Check if can draw in colour.
       colok=.false.
@@ -257,7 +241,6 @@ C Ask for set point value.
           continue
         else
           H(1)='The ..'
-          XQUERY=0.0
           CALL EASKR(XQUERY,' ','  Test point value ? ',
      &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
         endif

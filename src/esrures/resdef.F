@@ -153,23 +153,23 @@ C file supplied. Save the current path to lpath and restore this
 C after the results file has been found and loaded so that subsequent
 C scans of cfg and zone files can be accomplished.
 C Debug.
-      write(outs248,*) 'MORFIL: current command file path is ',path
-      call edisp248(iuout,outs248,100)
-      write(outs248,*) 'MORFIL: cmdfile is ',lcmdfl
+C      write(outs248,*) 'MORFIL: current command file path is ',path
+C      call edisp248(iuout,outs248,100)
+      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
       call edisp248(iuout,outs248,100)
 
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
 
 C Debug.
-      write(outs248,*) 'MORFIL: local file is now ',ltmp
-      call edisp248(iuout,outs248,100)
-      write(outs248,*) 'MORFIL: rev path is ',path
-      call edisp248(iuout,outs248,100)
+C      write(outs248,*) 'MORFIL: local file is now ',ltmp
+C      call edisp248(iuout,outs248,100)
+C      write(outs248,*) 'MORFIL: rev path is ',path
+C      call edisp248(iuout,outs248,100)
 
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
-      write(6,*) 'MORFIL: exist is ',xst
+C      write(6,*) 'MORFIL: exist is ',xst
       IF(XST)THEN
 
 C See if this is a plant result file.
@@ -227,8 +227,8 @@ C          call edisp(iuout,outs)
 C Restore the path after getting results file name so model files
 C can be accessed.
         path=lpath
-        write(outs248,*) 'MORFIL: path reset to ',path
-        call edisp248(iuout,outs248,100)
+C        write(outs248,*) 'MORFIL: path reset to ',path
+C        call edisp248(iuout,outs248,100)
       ELSE
         call usrmsg(' Could not find: ',LTMP,'W')
         goto  6
