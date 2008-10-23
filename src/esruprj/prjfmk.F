@@ -83,7 +83,8 @@ C =2 with more than 3 day types allowed and sorted
 
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NAC,IACS,IACF,IPT,ICGT
       REAL ACI,ACV,TA
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -105,10 +106,9 @@ C Flags noting whether casual gain periods are currently sorted.
 C Flag noting whether file was browsed for (so that cfg can be
 C updated when the user exits).
       logical gotviabrowse
-      dimension iper(24),iperf(24)
 
       CHARACTER zname*12,zdesc*64,tcname*248
-      CHARACTER ITEM(14)*33,choices(12)*32,H*72,LTMP*72,GFILE*72
+      CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -268,20 +268,16 @@ C Display a bit of information about this browsed file.
       LPROJ(ICOMP)=LTMP
 
 C Debug.
-      write(6,*) 'lproj is ',lproj(icomp)
+C      write(6,*) 'lproj is ',lproj(icomp)
 
   5   MODOPR=.FALSE.
  
+C Instanciate for current day types prior to scanning the source operation file.
       DO 400 IDTY=1,NBDAYTYPE
         NAC(IDTY)=0
         NCAS(IDTY)=0
+        ctlstr(icomp,IDTY)='no control of air flow  '
  400  CONTINUE
-
-C Instanciate for initial weekday/saturday/sunday day types
-C prior to scanning the source operation file.
-      ctlstr(icomp,1)='no control of air flow  '
-      ctlstr(icomp,2)='no control of air flow  '
-      ctlstr(icomp,3)='no control of air flow  '
       oprdesc(icomp)='no operations notes (yet)'
       IER=0
 
@@ -350,8 +346,12 @@ C the definition already defined in another zone.
         h(28)='   folder serve as a resource for often-used patterns'
         h(29)='   of casual gains and scheduled air flows.'
         h(30)=' '
-        h(31)='After initiating one of the above actions you can edit'
-        h(32)='the data as required. '
+        h(31)=' nothing happens in the zone - does just this. It fills'
+        h(32)='   the file with zero occupants, lights, small power'
+        h(33)='   and no infiltration or ventilation for all day types.'
+        h(34)=' '
+        h(35)='After initiating one of the above actions you can edit'
+        h(36)='the data as required. '
         choices(1) ='a define from scratch '
         choices(2) ='b air flow     < another zone'
         choices(3) ='c casual gains < another zone'
@@ -359,10 +359,11 @@ C the definition already defined in another zone.
         choices(5) ='e air flow     < from pattern'
         choices(6) ='f casual gains < from pattern'
         choices(7) ='g air & gains  < from pattern'
-        choices(8) =' ________________________'
-        choices(9) ='! cancel operations     '
-        choices(10)='? help                  '
-        NIGU=10
+        choices(8) ='h nothing happens in the zone'
+        choices(9) =' ________________________'
+        choices(10)='! cancel                 '
+        choices(11)='? help                   '
+        NIGU=11
         IGU=-2
         if(mmod.eq.8)then
           CALL EMENU('Operations File Options',choices,NIGU,IGU)
@@ -373,18 +374,90 @@ C the definition already defined in another zone.
         if(igu.eq.0)then
           goto 19
         elseif(igu.eq.8)then
-          goto 19
+
+C Setup minimal description (single period for each type of casual
+C gain set to zeros with no infiltration and ventilation) and exit.
+          DO 399 IDTY=1,NBDAYTYPE
+            ctlstr(icomp,IDTY)='no control of air flow  '
+            NAC(IDTY)=1
+            IACS(IDTY,1)=0
+            IACF(IDTY,1)=24
+            ACI(IDTY,1)=0.0
+            ACV(IDTY,1)=0.0
+            IPT(IDTY,1)=0
+            TA(IDTY,1)=0.0
+            NCAS(IDTY)=3
+            ICGS(IDTY,1)=0
+            ICGF(IDTY,1)=24
+            CMGS(IDTY,1)=0.0
+            CMGL(IDTY,1)=0.0
+            RADC(IDTY,1)=0.5
+            CONC(IDTY,1)=0.5
+            ICGT(IDTY,1)=1
+            ICGS(IDTY,2)=0
+            ICGF(IDTY,2)=24
+            CMGS(IDTY,2)=0.0
+            CMGL(IDTY,2)=0.0
+            RADC(IDTY,2)=0.5
+            CONC(IDTY,2)=0.5
+            ICGT(IDTY,2)=2
+            ICGS(IDTY,3)=0
+            ICGF(IDTY,3)=24
+            CMGS(IDTY,3)=0.0
+            CMGL(IDTY,3)=0.0
+            RADC(IDTY,3)=0.5
+            CONC(IDTY,3)=0.5
+            ICGT(IDTY,3)=3
+ 399      CONTINUE
+
+C Instanciate for initial weekday/saturday/sunday day types
+C prior to scanning the source operation file.
+          write(oprdesc(icomp),'(2a)')
+     &    'nothing happens in this zone in terms of occupants lights',
+     &    ' and small power. There is not infiltration or ventilation.'
+
+C Set the default type labels for this zone
+          lodlabel(icomp,1)='Occupt'
+          lodlabel(icomp,2)='Lights'
+          lodlabel(icomp,3)='Equipt'  
+          lodlabel(icomp,4)='N/A   '  
+          lodlabel(icomp,5)='Ann.El'  
+          lodlabel(icomp,6)='N/A   ' 
+          lodlabel(icomp,7)='N/A   '
+          ip3ver(icomp)=2
+          MODOPR=.true.
+          sorted=.true.
+
+C Write file and return.
+          LTMP=LPROJ(ICOMP)
+          H(1)='A zone operation file contains schedules of air flow'
+          H(2)='and casual gains.  Air flows may have thermostatic'
+          H(3)='or wind speed control. '
+          CALL EASKS(LTMP,' ','Zone operations file name?',
+     &           72,GFILE,'operations file',IER,3)
+          IF(LTMP.NE.' ')THEN
+            call usrmsg(
+     &        'Updating model to reflect changes',
+     &        'in zone operations data or file name...','-')
+            LPROJ(ICOMP)=LTMP
+            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+            CALL EMKCFG('-',ier)
+            call usrmsg(
+     &        'Updating model to reflect changes',
+     &        'in zone operations data or file name...done.','-')
+          ENDIF
+         return  
         elseif(igu.eq.9)then
+          goto 19
+        elseif(igu.eq.10)then
 
 C User said to cancel so return from the subroutine without
 C doing anything.
-C          call edisp(iuout,
-C     &      'You asked to cancel so returning without changes.')
           return
-        elseif(igu.eq.10)then
+        elseif(igu.eq.11)then
 
 C Explain
-          CALL PHELPD('operation choices',32,'-',0,0,IER)
+          CALL PHELPD('operation choices',36,'-',0,0,IER)
           goto 19
         endif
 
@@ -760,25 +833,6 @@ C even if modopr has not been set.
           CALL ASKOK('Before exiting do you wish to',
      &      'save any changes made?',OK,DOK,4)
           IF(.not.OK) return
-          LTMP=LPROJ(ICOMP)
-   91     H(1)='A zone operation file contains schedules of air flow'
-          H(2)='and casual gains.  Air flows may have thermostatic'
-          H(3)='or wind speed control. '
-          CALL EASKS(LTMP,' ','Zone operations file name?',
-     &           72,GFILE,'operations file',IER,3)
-          IF(LTMP.NE.' ')THEN
-            call usrmsg(
-     &        'Updating model to reflect changes',
-     &        'in zone operations data or file name...','-')
-            LPROJ(ICOMP)=LTMP
-            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
-            CALL EMKCFG('-',ier)
-            call usrmsg(
-     &        'Updating model to reflect changes',
-     &        'in zone operations data or file name...done.','-')
-          ELSE
-            GOTO 91
-          ENDIF
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
@@ -1462,13 +1516,13 @@ C Add period
           ELSEIF(IY.EQ.2)THEN
             IDT=-1
             DO 400 IDTY=1,NBDAYTYPE
-            IF(NAC(IDTY).EQ.MA)THEN
-              CALL USRMSG('Sorry, too many periods in day type ',
-     &        calentag(idt),'W')
-              CALL EDISP(IUOUT,
-     &        'Add periods by individually choosing each day type')
-              IDT=0
-            ENDIF
+              IF(NAC(IDTY).EQ.MA)THEN
+                CALL USRMSG('Sorry, too many periods in day type ',
+     &            calentag(idt),'W')
+                CALL EDISP(IUOUT,
+     &            'Add periods by individually choosing each day type')
+                IDT=0
+              ENDIF
  400        CONTINUE
             IF(IDT.NE.0)THEN
               IDT=-1
@@ -3532,7 +3586,7 @@ C Now display the menu.
 
 C Import profile.
         IX=1
- 222    CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
+        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
      &  12,NBDAYTYPE,CALENTAG,
      &  'Import a profile for which day type?',IER,18)
         IW=KSTR(1)
@@ -4144,7 +4198,7 @@ C If silent is true then use icgs & icgf parameters.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY,IALL
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -4164,6 +4218,7 @@ C Base area for zones.
 
       integer IV,ipft,IPHAST  ! for local editing.
       real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
+      integer IALL
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -4500,7 +4555,7 @@ C  ICD - copy (=2) delete (=1) flag
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
@@ -4715,9 +4770,7 @@ C Base area for zones.
       character actcas*8
       character act*1   ! '-' normal, 's' silent
       LOGICAL XST,unixok,dok,ok
-
-C Flags noting whether casual gain periods are currently sorted.
-      logical problem,MODOPR
+      integer idty
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4740,7 +4793,6 @@ C so there is no need to clear nac
       lodlabel(idest,5)='AnnEl '  
       lodlabel(idest,6)='NA    ' 
       lodlabel(idest,7)='NA    '      
-      MODOPR=.FALSE.
 
 C First scan the source zone operation file if there is a problem
 C reading or it does not exist then return an error state.
@@ -5453,8 +5505,7 @@ C   ier - set to 1 if there was a problem
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
+      INTEGER NCAS,ICGS,ICGF,IDTY
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -5517,7 +5568,6 @@ C initcasday does initial setup of all casual day types.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -5528,11 +5578,8 @@ C initcasday does initial setup of all casual day types.
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT,ILEN
       REAL CMGS,CMGL,RADC,CONC
-      common/loadlabel/lodlabel(mcom,7)
       dimension iper(24),iperf(24)
-      CHARACTER*6 lodlabel
       character hold*48,H*72,OUTS*12,LOUTS*24,VOUTS*50
-      LOGICAL OK,DOK,XST,MODOPR,browse,clkok,unixok
 
       h(1)='For the current day type specify how many periods'
       h(2)='for each casual gain type (occupants, lights and'
