@@ -4056,15 +4056,39 @@ C Identify nature of casual gain
 
 C << this would be a good place to expand the logic so that lighting
 C << and small power can be entered in terms of W/m2.
-      H(1)='In order to expand the profile into energy values the'
-      H(2)='sensible and latent load in Watts equivalent to 100% is'
-      h(3)=' required. '
-      h(4)=' '
-      h(5)='Also supply the radiant and convective fraction for the'
-      h(6)='sensible load (these normally should sum to 1.00) '
+      H(1) ='In order to expand the profile into energy values the'
+      H(2) ='sensible and latent load in Watts equivalent to 100% is'
+      h(3) =' required. '
+      h(4) =' '
+      h(5) ='Also supply the radiant and convective fraction for the'
+      h(6) ='sensible load (these normally should sum to 1.00) '
+      h(7) =' '
+      h(8) ='The radiant and convective split of lighting fixtures is'
+      h(9) ='listed below(CIBSE Consice Handbook Table A6.5) : '
+      h(10)='  fluorescent radiant = 30  convective = 70'
+      h(11)='  tungsten    radiant = 85  convective = 15'
+      h(12)='  HP mercury sodium radiant = 50 convective = 50'
+      h(13)='  low pressure sodium radiant = 43 convective = 57'
+      h(14)=' '
+      h(15)='The position of lamps determines the distribution of '
+      h(16)='heat into room or ceiling void (CIBSE Table A6.4) '
+      h(17)='  recessed open fixture  upwards = 38 downwards = 62'
+      h(18)='  recessed with louvre   upwards = 45 downwards = 55'
+      h(19)='  recessed with diffuser upwards = 53 downwards = 47'
+      h(20)='  surface mount open fixt upwards = 12 downwards = 88'
+      h(21)='  surface mount enclosed prismatic up= 22 down = 78'
+      h(22)='  suspended near ceiling enclosed prismatic upwards = 6'
+      h(23)='     downwards = 94'
+      h(24)='  suspended or wall mounted or desk lamp upwards = 0'
+      h(25)=' '
+      h(26)='The radiant and convective split for office equipement'
+      h(27)='is typically: (CIBSE Table A6.9) '
+      h(28)=' desktop computer radiant = 14 convective = 86'
+      h(29)=' monitor (type not defined) radiant = 35 conv = 65'
+      h(30)=' laser printer  radiant 33 convective 67'
       CALL EASKS(HOLD,
      &  ' 100% sensible & latent loads, radiant & convective fraction:',
-     &        ' ',40,' 1000   0  0.5  0.5  ','profile info',IER,3)
+     &        ' ',40,' 1000   0  0.5  0.5  ','profile info',IER,30)
       K=0
       CALL EGETWR(HOLD,K,PS,0.0,999999.,'F','sensible 100%',IER)
       CALL EGETWR(HOLD,K,PL,0.0,999999.,'F','latent 100%',IER)
@@ -4273,10 +4297,56 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
       h(6)='  required (an object could be a person or computer).'
       h(7)=' Square meters per object - will use the floor area of the'
       h(8)='  zone to calculate the total gain.'
+      h(9)=' '
+      h(10)='ESP-r asks for fixed sensible and latent values. The'
+      h(11)='values for occupants are really a function of the current'
+      h(12)='zone temperature (CIBSE Concise Handbook Table 6.1)'
+      h(13)='If possible pick a value for the likely temperature rnage.'
+      h(14)='For an adult and average mix '
+      h(15)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
+      h(16)='Seated inactive    115     100  15     90  25      75  40'
+      h(17)='       avg mix     100      87  13     78  22      65  35'
+      h(18)='Seated light work  140     110  30    100  40      80  60'
+      h(19)='       avg mix     126      99  27     90  36      72  54'
+      h(20)='Seated office work 140     110  30    100  40      80  60'
+      h(21)='       avg mix     130     102  28     93  37      74  56'
+      h(22)='Standing light work 160    120  40    110  50      85  75'
+      h(23)='       avg mix      141    106  35     97  44      75  66'
+      h(24)='Light factory work 235     150  85    130 105     100 135'
+      h(25)='       avg mix     209     133  76    116  93      89 121'
+      h(26)='Medium factory work 265    160 105    140 125     105 160'
+      h(27)='       avg mix      249    150  99    132 117      99 150'
+      h(28)='Heavy factory work 440     220 220    190 250     135 305'
+      h(29)='       avg mix     440     220 220    190 250     135 305'
+      h(30)=' '
       IGU=1
-      CALL EASKABCD('Gain to be specified as:',' ','Watts',
+      CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
      &     'Watts per square meter','Watts per object',
-     &     'Square meters per object',IGU,8)
+     &     'Square meters per object',IGU,30)
+
+C Commonportion of help message.
+      h(3)=' '
+      h(4)='ESP-r asks for fixed sensible and latent values. The'
+      h(5)='values for occupants are really a function of the current'
+      h(6)='zone temperature (CIBSE Concise Handbook Table 6.1)'
+      h(7)='If possible pick a value for the likely temperature rnage.'
+      h(8)='For an adult and average mix '
+      h(9)='               Total W 15C sen lat 20C sen lat 24C sen lat'
+      h(10)='Seated inactive   115     100  15     90  25      75  40'
+      h(11)='       avg mix    100      87  13     78  22      65  35'
+      h(12)='Seated light work 140     110  30    100  40      80  60'
+      h(13)='       avg mix    126      99  27     90  36      72  54'
+      h(14)='Seated office work 140    110  30    100  40      80  60'
+      h(15)='       avg mix     130    102  28     93  37      74  56'
+      h(16)='Standing light work 160   120  40    110  50      85  75'
+      h(17)='       avg mix      141   106  35     97  44      75  66'
+      h(18)='Light factory work 235    150  85    130 105     100 135'
+      h(19)='       avg mix     209    133  76    116  93      89 121'
+      h(20)='Medium factory work 265   160 105    140 125     105 160'
+      h(21)='       avg mix      249   150  99    132 117      99 150'
+      h(22)='Heavy factory work 440    220 220    190 250     135 305'
+      h(23)='       avg mix     440    220 220    190 250     135 305'
+      h(24)=' '
       if (IGU.eq.1) then
 
 C Gain as W - require gain only.
@@ -4286,8 +4356,9 @@ C Gain as W - require gain only.
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
+        h(2)=' '
         call EASKS(HOLD,'Sensible and latent gain (W):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,1)
+     &          ' ',24,'0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,100000.0,'W','latent gain',IER)
@@ -4304,8 +4375,9 @@ C Gain as W/m^2 - require gain per square meter.
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
+        h(2)=' '
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,1)
+     &          ' ',24,'0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4327,7 +4399,7 @@ C << an actual cancel option not yet implemented >>
  40     h(1)='The number of objects for the current gain type is '
         h(2)='required. For example the number of people or computers.'
         CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
-     &    0,'W',100,'W',1,'no. objects',IERI,2)
+     &    0,'W',100,'W',1,'no. objects',IERI,24)
         if(ieri.eq.0)then
           continue
         elseif(ieri.eq.-3)then
@@ -4338,8 +4410,9 @@ C << an actual cancel option not yet implemented >>
 
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
+        h(2)=' '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-     &          ' ',24,'  0.   0. ','casual gn info',IER,1)
+     &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4361,7 +4434,7 @@ C If user cancels go back to initial question.
         h(1)='The floor area per object for the current gain type is '
         h(2)='required. For example the area per person.'
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
-     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,2)
+     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
         if(IERI.eq.0)then
           FLA=XFLA
           if (iabs(ICGTX).eq.1) then
@@ -4372,8 +4445,9 @@ C If user cancels go back to initial question.
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
+            h(2)=' '
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,1)
+     &          ' ',24,'0.   0. ','casual gn info',IER,24)
             K=0
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
             call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4393,8 +4467,32 @@ C Ask for rad/ conv split.
  70   write (HOLD,'(2f7.3,a)') RADCX,CONCX,'  '
       h(1)='Supply the radiant and convective fraction for'
       h(2)='the sensible load (should be <=1.00) '
-      call EASKS(HOLD,' Radiant & convective fraction:',
-     &        ' ',24,' 0.5  0.5  ','casual gn info',IER,2)
+      h(3) =' '
+      h(4) ='The radiant and convective split of lighting fixtures is'
+      h(5) ='listed below(CIBSE Consice Handbook Table A6.5) : '
+      h(6) ='  fluorescent radiant = 30  convective = 70'
+      h(7) ='  tungsten    radiant = 85  convective = 15'
+      h(8) ='  HP mercury sodium radiant = 50 convective = 50'
+      h(9) ='  low pressure sodium radiant = 43 convective = 57'
+      h(10)=' '
+      h(11)='The position of lamps determines the distribution of '
+      h(12)='heat into room or ceiling void (CIBSE Table A6.4) '
+      h(13)='  recessed open fixture  upwards = 38 downwards = 62'
+      h(14)='  recessed with louvre   upwards = 45 downwards = 55'
+      h(15)='  recessed with diffuser upwards = 53 downwards = 47'
+      h(16)='  surface mount open fixt upwards = 12 downwards = 88'
+      h(17)='  surface mount enclosed prismatic up= 22 down = 78'
+      h(18)='  suspended near ceiling enclosed prismatic upwards = 6'
+      h(19)='     downwards = 94'
+      h(20)='  suspended or wall mounted or desk lamp upwards = 0'
+      h(21)=' '
+      h(22)='The radiant and convective split for office equipement'
+      h(23)='is typically: (CIBSE Table A6.9) '
+      h(24)=' desktop computer radiant = 14 convective = 86'
+      h(25)=' monitor (type not defined) radiant = 35 conv = 65'
+      h(26)=' laser printer  radiant 33 convective 67'
+      call EASKS(HOLD,'Radiant & convective fraction: (see help)',
+     &        ' ',24,' 0.5  0.5  ','casual gn info',IER,26)
       K=0
       call EGETWR(HOLD,K,RAD,0.,1.0,'F','rad frac',IER)
       CMAX=1.00-RAD

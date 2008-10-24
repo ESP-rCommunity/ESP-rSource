@@ -112,15 +112,47 @@ C If initial settings and initial request ask parameters.
 C Confirm parameters and then exit.
         call edisp(iuout,' ')
         call edisp(iuout,'Please confirm general comfort parameters.')
-        H(1)='Clothing is specified in `clo` units between 0. & 3. '
+        H(1) ='Clothing is specified in `clo` units between 0. & 3. '
+        H(2) ='The following items can be added together to make up '
+        H(3) ='a clo value (ISO7730). '
+        H(4) =' Shirts: light short sleve 0.14, heavy short sleve 0.25'
+        H(5) ='         light long sleve  0.22, heavy long sleve  0.29'
+        H(6) =' Sweater: light 0.20, heavy 0.37'
+        H(7) =' Jacket:  light 0.22, heavy 0.49'
+        H(8) =' Underware: 0.05'
+        H(9) =' Trowsers: light 0.26, medium 0.32, heavy 0.44'
+        H(10)=' Socks: light 0.03, heavy 0.04'
+        H(11)=' Shoes: slippers 0.02, shoes 0.04, boots 0.08'
+        H(12)=' '
+        H(13)='Add these up and multiple by 0.82 to get clo. '
         call easkr(CLO,' ',' Clothing level ?',
-     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,1)
+     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,13)
 
-        H(1)='Activity may be in MET units or W/m^2. '
-        H(2)='Allowable range is 50 to 350 Watts.'
-        H(3)='                or 0.859 to 6.013 MET.'
-        CALL EASKAB(' ','Activity level units:',
-     &    'MET units','W/m^2 (body surface area)',IAU,3)
+        H(1) ='Activity may be in MET units or W/m^2. '
+        H(2) ='Allowable range is 50 to 350 Watts.'
+        H(3) ='                or 0.859 to 6.013 MET.'
+        H(4) =' '
+        H(5) ='Typical activities:(ISO7730) '
+        H(6) ='                    Met    W/m2'
+        H(7) =' Sleeping           0.7    40'
+        H(8) =' Reclining          0.8    45'
+        H(9) =' Seated relaxed     1.0    60'
+        H(10)=' Standing relaxed   1.2    70'
+        H(11)=' Walking (slow)     2.0   115'
+        H(12)=' Walking (moderate) 2.6   150'
+        H(13)=' Walking (fast)     3.8   220'
+        H(14)=' Typing at computer 1.1    65'
+        H(15)=' Sedentary activity 1.2    70'
+        H(16)=' Standing activity  1.4    80'
+        H(17)=' Packing/carying    2.1   120'
+        H(18)=' Light machine work 2.0   115'
+        H(19)=' Heavy machine work 4.0   235'
+        H(20)=' Cooking            1.6    95'
+        H(21)=' Cleaning           2.0   115'
+        H(22)=' Exercise           4.0   235'
+        H(23)=' '
+        CALL EASKAB(' ','Activity level units (see help):',
+     &    'MET units','W/m^2 (body surface area)',IAU,23)
         if(IAU.eq.1)then
 
 C When using MET units, convert back to W/M^2 for calculations.
@@ -128,11 +160,11 @@ C Assume default MET is equiv to 85W/m^2.
           ACTL = ACTL/58.2
           ACTLDEF = 85.0/58.2
           call easkr(ACTL,' ',' Activity level (MET)?',
-     &      0.859,'W',6.013,'W',ACTLDEF,'activity level MET',IER,3)
+     &      0.859,'W',6.013,'W',ACTLDEF,'activity level MET',IER,23)
           ACTL = ACTL * 58.2
         elseif(IAU.eq.2)then
           call easkr(ACTL,' ',' Activity level (W/m2)?',
-     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,3)
+     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,23)
         endif
 
         H(1)='Air velocity in a zone is specified in m/sec. '
@@ -279,23 +311,55 @@ C Find the day to analyse.
 
 C Clothing level.
         H(1)='Clothing is specified in `clo` units between 0. & 3. '
+        H(2) ='The following items can be added together to make up '
+        H(3) ='a clo value (ISO7730). '
+        H(4) =' Shirts: light short sleve 0.14, heavy short sleve 0.25'
+        H(5) ='         light long sleve  0.22, heavy long sleve  0.29'
+        H(6) =' Sweater: light 0.20, heavy 0.37'
+        H(7) =' Jacket:  light 0.22, heavy 0.49'
+        H(8) =' Underware: 0.05'
+        H(9) =' Trowsers: light 0.26, medium 0.32, heavy 0.44'
+        H(10)=' Socks: light 0.03, heavy 0.04'
+        H(11)=' Shoes: slippers 0.02, shoes 0.04, boots 0.08'
+        H(12)=' '
+        H(13)='Add these up and multiple by 0.82 to get clo. '
         call easkr(CLO,' ',' Clothing level ?',
-     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,1)
+     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,13)
       elseif(ino.eq.6)then
 
 C Activity level, may be entered in MET units or in W/m^2.
         H(1)='Activity may be in MET units or W/m^2. '
         H(2)='Allowable range is 50 to 350 Watts.'
         H(3)='                or 0.859 to 6.013 MET.'
+        H(4) =' '
+        H(5) ='Typical activities:(ISO7730) '
+        H(6) ='                    Met    W/m2'
+        H(7) =' Sleeping           0.7    40'
+        H(8) =' Reclining          0.8    45'
+        H(9) =' Seated relaxed     1.0    60'
+        H(10)=' Standing relaxed   1.2    70'
+        H(11)=' Walking (slow)     2.0   115'
+        H(12)=' Walking (moderate) 2.6   150'
+        H(13)=' Walking (fast)     3.8   220'
+        H(14)=' Typing at computer 1.1    65'
+        H(15)=' Sedentary activity 1.2    70'
+        H(16)=' Standing activity  1.4    80'
+        H(17)=' Packing/carying    2.1   120'
+        H(18)=' Light machine work 2.0   115'
+        H(19)=' Heavy machine work 4.0   235'
+        H(20)=' Cooking            1.6    95'
+        H(21)=' Cleaning           2.0   115'
+        H(22)=' Exercise           4.0   235'
+        H(23)=' '
         CALL EASKAB(' ','Activity level units:',
-     &    'MET units','W/m^2 (body surface area)',IAU,3)
+     &    'MET units','W/m^2 (body surface area)',IAU,23)
         if(IAU.eq.1)then
           call easkr(ACTL,' ',' Activity level ?',
-     &      0.859,'W',6.013,'W',50.0,'activity level MET',IER,1)
+     &      0.859,'W',6.013,'W',50.0,'activity level MET',IER,23)
           ACTL = ACTL * 58.2
         elseif(IAU.eq.2)then
           call easkr(ACTL,' ',' Activity level ?',
-     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,1)
+     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,23)
         endif
       elseif(ino.eq.7)then
 
@@ -409,6 +473,7 @@ C If output to file alter the edisp unit number.
         call edisp(itru,' ')
       endif
 
+C For each timestep in the day get the QW values used by MOMNRD.
       N=24*NTS
       DO 40 JTS=1,N
         ISET=ISIM
@@ -418,6 +483,8 @@ C If output to file alter the edisp unit number.
         QV(3)=0.0
         QV(4)=0.0
         QV(5)=A5
+
+C Get the current MRT in the zone.
         CALL MOMNRD(IZONE,TAIR,TS,QV,NSUR,TMRT)
 
 C Current time.
@@ -427,6 +494,11 @@ C Current time.
 C Comment WK out since it is in input file for 2 node model.
 C       WK=0.
 
+C This is the main calculation routine. It is passed the
+C current air temperature (TAIR), the MRT (TMRT), and the
+C users values for wind velocity (WVEL) and clothing value (CLO).
+C It returns an index of comfort (ICMFRT) and three variants
+C of comfort.
 C The LET* comfort routines implemented by Cor Pernot, FAGO-TNO.
       CALL LETDRIVR(TAIR,TMRT,WVEL,RHX,ACTL,CLO,SET,ICMFRT,PME,PMV,XPPD)
 
@@ -439,7 +511,8 @@ C of one of the casual gain types test here.
 C Debug...
 C        write(6,*)'icmfrt,izone,iday,ih,ioc',icmfrt,izone,iday,ih,ioc
 
-c Verbal category only printed if activity level is sedentary.
+C Verbal category only printed if activity level is sedentary.
+C << is there a way to equate category if non-sedintary? >>
         IF(ACTL.GE.100.)ICMFRT=11
         if(act.eq.'V')then
           write(outs,106,IOSTAT=IOS,ERR=1)TIME,TAIR,TMRT,RH,SET,PME,
@@ -456,6 +529,7 @@ c Verbal category only printed if activity level is sedentary.
         endif
    40 CONTINUE
 
+C Finished with that, seewhat user wants to do next.
       if(act.eq.'V')then
         CALL EASKAB(' ','Comfort:',
      &    'Continue with next day','Return to menu',IWW,0)
