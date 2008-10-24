@@ -706,6 +706,8 @@ C Increment input flag if no input data errors detected.
               call edisp(iuout, ' ')
               call edisp(iuout,
      &              'Fatal error: Model was not scanned correctly')
+              call pauses(3)   ! pause for 2 seconds then abort program.
+              call epagend
               stop 
             endif 
             if(dll)then
@@ -732,8 +734,13 @@ C Increment input flag if no input data errors detected.
                 dllmesg='IER1 flag set while scanning the model.'
                 ier=2
                 return
+              else
+                call usrmsg('IER1 flag set while scanning the model.',
+     &            ' ','W')
+                call pauses(2)   ! pause for 2 seconds then abort program.
+                CALL EPAGEND
+                STOP
               endif
-              STOP
             endif
           endif
         else
@@ -1144,6 +1151,7 @@ C Close moisture result library.
         CALL EPAGEND
         if( dll ) return
 
+        call epagend
         STOP
       else
 
@@ -1171,6 +1179,7 @@ C Error.
         CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
         if( dll ) return
+        call epagend
         STOP
       ENDIF
 
