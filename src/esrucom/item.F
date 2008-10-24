@@ -28,8 +28,8 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(21),GMENUS(21)
-      DIMENSION ISGGT(23),IVAL(23)
+      COMMON/TDFGH2/GTYPES(22),GMENUS(22)
+      DIMENSION ISGGT(24),IVAL(24)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
@@ -91,7 +91,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(21),GMENUS(21)
+      COMMON/TDFGH2/GTYPES(22),GMENUS(22)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -123,7 +123,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=21
+      NITEMS=22
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2)='CASUALT'
@@ -166,6 +166,9 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(20)='Optical set:'       
       GTYPES(21)='VERTSOL'
       GMENUS(21)='Vertical solar:'     
+      GTYPES(22)='HTCLSETP'
+      GMENUS(22)='H & C setpoints:'     
+
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
 
@@ -506,6 +509,23 @@ C Control state: one data item.
         GDHDRT(3)='Vertical solar radiation (0 to 999):'
         GMF(1)='REAL,1,0.0,0.0,999.9'
         MGMA(1)='Vertical solar rad (W/m2)   '
+        FOUND=.TRUE.
+
+      ELSEIF(FOCUS(1:8).EQ.'HTCLSETP')THEN
+
+C Control state: two data item.
+        GAIDE   ='Heating & Cooling setp. (degC)'
+        GHELP(1)='Assign Heating and cooling set-points in'
+        GHELP(2)='different columns (degC). Ideal control'
+        GHELP(3)='is used for this (BCL23)'        
+        GMH='3,2,0,0,2,0,-999.9'
+        GDHDRT(1)='   time  | Heating   |  Cooling   '
+        GDHDRT(2)='   of day| set-point |  set-point '
+        GDHDRT(3)='Heating set-points:'
+        GMF(1)='REAL,1,0.0,-300.0,300.0'
+        MGMA(1)='Heating set-points (degC): '
+        GMF(2)='REAL,2,0.0,-300.0,300.0'
+        MGMA(2)='Cooling set-points (degC): '
         FOUND=.TRUE.
         
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN

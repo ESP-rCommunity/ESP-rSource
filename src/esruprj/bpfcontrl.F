@@ -8073,7 +8073,7 @@ C Reading heating and cooling setpoints from temporal file
           prompt1(2)='Set the column number which contains heating'
           prompt2(2)='setpoint value in the temporal (tdf) file'
           ndec(2)=0; vmin(2)=1.0; vmax(2)=80.0; vdef(2)=5.0
-          menu(3)='Heating setpoint column number'
+          menu(3)='Cooling setpoint column number'
           prompt1(3)='Set the column number which contains cooling'
           prompt2(3)='setpoint value in the temporal (tdf) file'
           ndec(3)=0; vmin(3)=1.0; vmax(3)=80.0; vdef(3)=6.0

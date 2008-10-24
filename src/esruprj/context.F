@@ -1350,7 +1350,7 @@ C and present a different interface depending on file type.
       H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
       H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
-      H(33)=' '
+      H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
       H(34)='manage associations - you can add and delete associations'
       H(35)='  that have been previously defined. Note this does not'
       H(36)='  alter the contents of the temporal file.'
@@ -1886,7 +1886,8 @@ C << between 0.0 and 1.0 giving ON fraction.
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL'
-          elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
+          elseif(TTYPE(it)(1:6).eq.'ACTIVI'.or.
+     &           TTYPE(it)(1:6).eq.'HTCLSE')then
 
 C Depending on the type of the data, ask for associated zone.
             IC=-1
@@ -1963,8 +1964,13 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=5.0
-              cm(3)=6.0
+              if(TTYPE(it)(1:6).eq.'ACTIVI')then
+                cm(2)=5.0
+                cm(3)=6.0
+              elseif(TTYPE(it)(1:6).eq.'HTCLSE')then
+                cm(2)=2.0
+                cm(3)=3.0
+              endif         
             endif
 
             ibsn(ispl,1)=IC
@@ -1988,10 +1994,17 @@ C Confirm capacities.
             H(4)='required to define the columns in the tdf where the'
             H(5)='setpoints should be read from. Defaults are column 4'
             H(6)='for heating setpoint and column 5 for cooling.'
-            CALL EASKS(HOLD,
-     &      'Heating and cooling setpoint column number ',
-     &      '(respectively):',40,' 4.0 5.0 ',
-     &      ' track another column number(s)',IER,6)
+            if(TTYPE(it)(1:6).eq.'ACTIVI')then
+              CALL EASKS(HOLD,
+     &        'Heating and cooling setpoint column number ',
+     &        '(respectively):',40,' 5.0 6.0 ',
+     &        ' track another column number(s)',IER,6)
+            elseif(TTYPE(it)(1:6).eq.'HTCLSE')then     
+              CALL EASKS(HOLD,
+     &        'Heating and cooling setpoint column number ',
+     &        '(respectively):',40,' 2.0 3.0 ',
+     &        ' track another column number(s)',IER,6)
+            endif    
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
             CALL EGETWR(HOLD,K,cm(3),0.,80.,'F','Max columns cool',IER)
@@ -2232,7 +2245,7 @@ C Depending on the type of data, ask for associated surface
 
 C Depending on the type of data, ask for associated surface 
             IC=-1
- 353      izdef=0
+ 353        izdef=0
             call askzone(ic,izdef,
      &        ' Related zone where vertical solar data apply?',
      &        'Related zone','-','zone to assign solar data.',ier)
