@@ -500,13 +500,13 @@ C Save this to file before passing into the geometry editing facility.
 
 C Read in control file if defined.
       OKC=.false.
-      if(LCTLF(1:1).ne.' '.and.LCTLF(1:4).ne.'UNKN')OKC=.true.
-      if(OKC)then
-        ICTLF=IFIL+1
-        CALL ERPFREE(ICTLF,ISTAT)
-        call FINDFIL(LCTLF,XST)
-        IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
-      endif
+       if(LCTLF(1:1).ne.' '.and.LCTLF(1:4).ne.'UNKN')OKC=.true.
+       if(OKC)then
+         ICTLF=IFIL+1
+         CALL ERPFREE(ICTLF,ISTAT)
+         call FINDFIL(LCTLF,XST)
+         IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+       endif
 
       NCOMP=NCOMP+1
       NCCODE(ICOMP)=NCOMP
@@ -2508,6 +2508,9 @@ C =2 with more than 3 day types
       common/loadlabel/lodlabel(mcom,7)
       CHARACTER*6 lodlabel
 
+      COMMON/Vld20/Vldtng
+      logical Vldtng      
+
 C Paremeters passed in:
       character name*12   ! name given to the zone
       character shape*8   ! box or extrude
@@ -3103,6 +3106,7 @@ C Set to current format
         vflow='ach-ach '
         isource=0
         idest=icomp
+        Vldtng=.true.
         call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &    itrc,'s',ier)
 
@@ -3152,6 +3156,7 @@ C and act on the information within the file.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -3214,6 +3219,25 @@ C and one period for summer.
 C Typical periods win1|trn1|sum|trn2|win2 with start,finish
       common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
      &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+
+C Control documentation common
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
+      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
+      character glctldoc*248,opticdoc*248     
+  
+      common/cctlnm/ctldoc,lctlf
+      character LCTLF*72,CTLDOC*248  
+      
+      common/cctl/icascf(mcom)
+      integer icascf
+
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
+      integer IFCFG
                
       CHARACTER OUTSTR*248,WORD*32,outs*124
       character dstmp*24
@@ -3309,7 +3333,11 @@ C Site related local variables.
       integer simzonetimestep ! use for isbnstep
       integer simplanttimestep ! use for ispnstep
       integer simsavelevel  ! use for issave
-
+      integer i_ctl_link  !flag to indicate the zone has a basic control
+      real ht_Setpoint,cl_Setpoint !heating and cooling set-points
+      dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
+      integer isilentncf !silent decide how many control functions needed
+      
       IER=0
 
 C Determine operating system
@@ -3374,6 +3402,7 @@ C in the file.
         simzonetimestep=0
         simplanttimestep=0
         simsavelevel=0
+        isilentncf=0
         do 42 iz=1,MSZ
           name(iz) = ' '
           shape(iz) = ' '
@@ -3394,6 +3423,9 @@ C in the file.
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
           nbob(iz) = 0
+          ht_Setpoint(iz)= 0.0
+          cl_Setpoint(iz)= 0.0
+          i_ctl_link(iz)=0
           do 55 ibu=1,MB
             XOB(iz,ibu) = 0.0
             YOB(iz,ibu) = 0.0
@@ -3778,8 +3810,15 @@ C to the training/pattern folder.
       elseif(WORD(1:12).eq.'*environment')then
         goto 43
       elseif(WORD(1:8).eq.'*heating')then
+        CALL EGETWR(OUTSTR,K,ht_Setpoint(nsz),-102.,102.,'W',
+     &       'heat setp',IER)
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
+        CALL EGETWR(OUTSTR,K,cl_Setpoint(nsz),-102.,102.,'W',
+     &       'cool Setp',IER)
+        goto 43
+      elseif(WORD(1:14).eq.'*ideal_control')then
+        i_ctl_link(nsz)=1
         goto 43
       elseif(WORD(1:16).eq.'*weather_station')then
 
@@ -4104,7 +4143,7 @@ C << assessment expansion to be done >>
 
       endif
 
-C << location for further system level data >>
+C << location for further system level data >>                       
 
 C Update configuration file to know about the construction files.
       CALL EMKCFG('-',IER)
@@ -4187,7 +4226,35 @@ C be included in the version 1.1 geometry file.
             iobs(icomp)=0
             NB=0
           endif
-
+          if(i_ctl_link(isz).gt.0)then
+            isilentncf=1+isilentncf
+            ncf=isilentncf
+            IBSN(isilentncf,1)=0
+            IBSN(isilentncf,2)=0     
+            IBSN(isilentncf,3)=0
+            IBSN(isilentncf,4)=0 
+            IBAN(isilentncf,1)=0
+            IBAN(isilentncf,2)=0   
+            IBAN(isilentncf,3)=0
+            NBCDT(isilentncf)=1
+            IBCDV(isilentncf,1,1)=1
+            IBCDV(isilentncf,1,2)=365
+            NBCDP(isilentncf,1)=1
+            IBCTYP(isilentncf,1,1)=0
+            IBCLAW(isilentncf,1,1)=1
+            TBCPS(isilentncf,1,1)=0
+            BMISCD(isilentncf,1,1,1)=7
+            BMISCD(isilentncf,1,1,2)=999000
+            BMISCD(isilentncf,1,1,3)=0.0      
+            BMISCD(isilentncf,1,1,4)=999000
+            BMISCD(isilentncf,1,1,5)=0.0
+            BMISCD(isilentncf,1,1,6)= ht_Setpoint(isz)
+            BMISCD(isilentncf,1,1,7)=cl_Setpoint(isz)
+            BMISCD(isilentncf,1,1,8)=0.0
+            znctldoc='basic ideal controls'
+            ICASCF(isz)=ncf
+          endif
+          
           write(outs,'(2a)') 'Processing ',name(isz)
           call edisp(iuout,outs)
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
@@ -4196,6 +4263,24 @@ C be included in the version 1.1 geometry file.
      &      nbdoor(isz),hasdoor,hasname,hasconstruction,
      &      boundarytype,datamass,textmass,use,usefile(isz),IER)
   53    continue
+
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
+        endif
+        LN=max(1,LNBLNK(cfgroot))
+        if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
+          WRITE(LCTLF,'(2a)')cfgroot(1:ln),'.ctl'
+        else
+          WRITE(LCTLF,'(4a)') ctlpth(1:lnblnk(ctlpth)),fs,
+     &       cfgroot(1:ln),'.ctl'
+        endif      
+        ICTLF=IFIL+1
+        call CTLWRT(ICTLF,IER)
+
+C Update cfg file to know about the control file
+        CALL EMKCFG('-',IER)         
       endif
       RETURN
 
