@@ -1478,7 +1478,7 @@ C level).
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,tfile*72,ITEMS*34,H*72,key*1
+      character doit*248,tmode*8,ITEMS*34,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
@@ -1488,7 +1488,7 @@ C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
       character imgfmt*4,imgfoc*4,limgfil*72,t72*72
 
-      character brw*8,outs*124,dq*1,fs*1
+      character brw*11,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
@@ -1503,17 +1503,8 @@ C dd is character array for selecting simulation parameter sets.
       cr=cfgroot
       if(nsset.gt.0)isset=1
       t72='  '
-
-C When invoking doit commands we need to have a file separator
-C and a double quote character available in case of spaces in name.
-      call isunix(unixok)
-      if(unixok)then
-        dq = char(34)
-        fs = char(47)
-      else
-        dq = char(34)
-        fs = char(92)
-      endif
+      itrc=0   ! set initial value.
+      aut=' interactive'
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -1636,9 +1627,16 @@ C Display the simulation period.
         ITEMS(M+5) ='  NCM compliance checking N/A    '
       ENDIF
       ITEMS(M+6)   ='  ______________________________ '
-      ITEMS(M+7)   ='? help                           '
-      ITEMS(M+8)   ='- exit this menu                 '
-      MITEM=M+8
+      IF(ITRC.EQ.0)THEN
+        ITEMS(m+7) = 'v feedback >> silent              '
+      ELSEIF(ITRC.EQ.1)THEN
+        ITEMS(m+7) = 'v feedback >> summary             '
+      ELSEIF(ITRC.EQ.2)THEN
+        ITEMS(m+7) = 'v feedback >> detailed            '
+      ENDIF
+      ITEMS(M+8)   ='? help                           '
+      ITEMS(M+9)   ='- exit this menu                 '
+      MITEM=M+9
 
 C At each pass update for recent parameter changes.
       if(modparms)then
@@ -1675,7 +1673,12 @@ C Help text for this menu.
 
 C List help text for the simulations menu.
         CALL PHELPD('Simulation',14,'-',0,0,IER)
-      elseif(INO.EQ.MITEM-7)then
+      elseif(INO.EQ.MITEM-2)then
+
+C Toggle trace level.
+        ITRC=ITRC+1
+        IF(ITRC.GT.2)ITRC=0
+      elseif(INO.EQ.MITEM-8)then
 
 C Invoke simulator for the case of a simulation parameter set.
         if(nsset.gt.0)then
@@ -1714,11 +1717,21 @@ C Debug the patched file name.
             longtfile=longtfiledos
           endif
 
-C If browsing pass this information to bps.
+C If browsing pass this information to bps and if the user
+C has set the trace level above one add a -v optin to the
+C command line.
           if(browse)then
-            brw = ' -b yes'
+	    if(itrc.gt.1)then
+              brw = ' -v -b yes'
+            else
+              brw = ' -b yes'
+            endif
           else
-            brw = ' -b no '
+	    if(itrc.gt.1)then
+              brw = ' -v -b no '
+            else
+              brw = ' -b no '
+            endif
           endif
 
 C If prj initial size is a % of default pass this on to child with
@@ -1764,9 +1777,17 @@ C Debug the patched file name.
 
 C If browsing pass this information to bps.
           if(browse)then
-            brw = ' -b yes'
+	    if(itrc.gt.1)then
+              brw = ' -v -b yes'
+            else
+              brw = ' -b yes'
+            endif
           else
-            brw = ' -b no '
+	    if(itrc.gt.1)then
+              brw = ' -v -b no '
+            else
+              brw = ' -b no '
+            endif
           endif
 
 C If prj initial size is a % of default pass this on to child with
@@ -1786,7 +1807,7 @@ C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         endif
-      elseif(INO.EQ.MITEM-6)then
+      elseif(INO.EQ.MITEM-7)then
         H(1)='The first option computes the pressure induced'
         H(2)='fluid flow within a network of connected flow'
         H(3)='components representing the building and/or plant'
@@ -1844,16 +1865,24 @@ C Debug.
 C          call usrmsg('Beginning CFD only assessment via',doit,'-')
           call runit(doit,tmode)
         ENDIF
-      elseif(INO.EQ.MITEM-5)then
+      elseif(INO.EQ.MITEM-6)then
 
 C Visual simulation.  Starts e2r with configuration file. Depending on
 C if Unix or Windows setup the appropriate path.
 
 C If browsing pass this information to e2r.
         if(browse)then
-          brw = ' -b yes'
+	  if(itrc.gt.1)then
+            brw = ' -v -b yes'
+          else
+            brw = ' -b yes'
+          endif
         else
-          brw = ' -b no '
+	  if(itrc.gt.1)then
+            brw = ' -v -b no '
+          else
+            brw = ' -b no '
+          endif
         endif
 
         call tstamp('>','PRJ: beginning e2r')
@@ -1884,11 +1913,11 @@ C and change any / to \.
 C Debug.
         call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
-      elseif(INO.EQ.MITEM-4)then
+      elseif(INO.EQ.MITEM-5)then
 
 C IPV for the actual number of simulations required.
         call ipvactions(ier)
-      elseif(INO.EQ.MITEM-3)then
+      elseif(INO.EQ.MITEM-4)then
 
 C UK NCM Compliance checking
         IF(ISBEM.EQ.1)THEN

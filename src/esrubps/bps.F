@@ -274,7 +274,8 @@ C Name of current application
       
       character cAppName*12
       character sTimeout*72
-      integer iTimeoutFlag      
+      integer iTimeoutFlag
+      integer iverb     ! verbosity passed on command line
 
       LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
@@ -409,7 +410,9 @@ C all console write is rerouted to the log file
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
       else
-        call parsim(MODL,iappw,iappx,iappy,inf,browsing,sps,aut,actf)
+        call parsim(iverb,MODL,iappw,iappx,iappy,inf,browsing,sps,aut,
+     &    actf)
+        itrc=iverb    ! set trace after call to parsim
       endif
 
 C Detect if the simulator was started up from the project manager
