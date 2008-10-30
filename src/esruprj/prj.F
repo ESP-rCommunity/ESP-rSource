@@ -45,6 +45,8 @@ C LSBEM (SBEM database)
 C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
+#include "control.h"
+#include "net_flow.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -1006,7 +1008,26 @@ C Introduction.
         H(14)=' '
         H(15)='To list the invocation options supported by this tool'
         H(16)='enter `esp-r -help` at the command line prompt.'
-        CALL PHELPD('Introduction',16,'gen_esp_intr',0,0,IER)
+        H(17)=' '
+        H(18)='The version of prj supports models of the following'
+        H(19)='(maximum) complexity: '
+        write(H(20),'(a,i3)') 'Number of zones ',MCOM
+        write(H(21),'(a,i3)') 'Surfaces per zone ',MS
+        write(H(22),'(a,i3)') 'Edges per surface ',MC
+        write(H(23),'(a,i4)') 'Surfaces in model ',MCON
+        write(H(24),'(a,i3)') 'Zone control loops ',MCF
+        write(H(25),'(a,i3)') 'Control day types ',MCDT
+        write(H(26),'(a,i3)') 'Mass flow nodes  ',MNOD
+        write(H(27),'(a,i3)') 'Mass flow components ',MCMP
+        write(H(28),'(a,i3)') 'Mass flow connections ',MCNN
+        write(H(29),'(a,i3)') 'Control day types ',MCDT
+        write(H(30),'(a,i3)') 'Constructions in model ',MMLC
+        H(31)=' '
+        H(32)='If you need to work with more complex models then '
+        H(33)='you will need to update the parameters in the '
+        H(34)='source include folder, re-compile ESP-r and '
+        H(35)='then test it on increasingly complex models. '
+        CALL PHELPD('Introduction',35,'gen_esp_intr',0,0,IER)
         call tstamp('>','PRJ: intro help')
       ELSEIF(INO.EQ.2)THEN
 
@@ -1498,6 +1519,7 @@ C dd is character array for selecting simulation parameter sets.
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
 
+C Set initial values of local variables.
       modparms=.false.
       lr=lnblnk(cfgroot)
       cr=cfgroot
@@ -1505,6 +1527,7 @@ C dd is character array for selecting simulation parameter sets.
       t72='  '
       itrc=0   ! set initial value.
       aut=' interactive'
+      call isunix(unixok)
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -1700,6 +1723,7 @@ C Invoke simulator for the case of a simulation parameter set.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
+          call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -1758,6 +1782,7 @@ C Invoke simulator for the case without a simulation parameter set.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
+          call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -2607,6 +2632,7 @@ C Temporarily assume no browsing if in ipv mode.
           brw = ' -b no '
         endif
 
+        call isunix(unixok)
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
