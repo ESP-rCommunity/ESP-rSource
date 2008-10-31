@@ -500,13 +500,13 @@ C Save this to file before passing into the geometry editing facility.
 
 C Read in control file if defined.
       OKC=.false.
-       if(LCTLF(1:1).ne.' '.and.LCTLF(1:4).ne.'UNKN')OKC=.true.
-       if(OKC)then
-         ICTLF=IFIL+1
-         CALL ERPFREE(ICTLF,ISTAT)
-         call FINDFIL(LCTLF,XST)
-         IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
-       endif
+      if(LCTLF(1:1).ne.' '.and.LCTLF(1:4).ne.'UNKN')OKC=.true.
+      if(OKC)then
+        ICTLF=IFIL+1
+        CALL ERPFREE(ICTLF,ISTAT)
+        call FINDFIL(LCTLF,XST)
+        IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+      endif
 
       NCOMP=NCOMP+1
       NCCODE(ICOMP)=NCOMP
@@ -2510,6 +2510,9 @@ C =2 with more than 3 day types
 
       COMMON/Vld20/Vldtng
       logical Vldtng      
+      common/SLNTFULL/ifullysilent
+      integer ifullysilent !flag to drive the silent model creation without
+                           !questions about the operation files data
 
 C Paremeters passed in:
       character name*12   ! name given to the zone
@@ -2571,6 +2574,9 @@ C If browsing then user cannot create a new zone.
         return
       endif
 
+C Initialise flag
+      ifullysilent=0
+      
 C Set folder separator (fs) to \ or / as required.
       willneedtmc=.false.
       call isunix(unixok)
@@ -3105,6 +3111,7 @@ C Set to current format
         iflow='ach-ach '
         vflow='ach-ach '
         isource=0
+        ifullysilent=1
         idest=icomp
         Vldtng=.true.
         call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
@@ -3352,6 +3359,7 @@ C Set icomp to zero if there are no zones in the model.
       if(ncomp.eq.0)then
         icomp=0
       endif
+
 C Get the current folder and display options to the user.
 C first list any files with .cfg in name.
       odir=' '

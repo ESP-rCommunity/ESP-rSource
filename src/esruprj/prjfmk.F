@@ -2580,6 +2580,10 @@ C Scratch copy of air flow pattern from an operations file.
       COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
      &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
 
+      common/SLNTFULL/ifullysilent
+      integer ifullysilent !flag to drive the silent model creation without
+                           !questions about the operation files data
+
       character*(*) sfile
       character zname*12,zdesc*64,h*72
       CHARACTER oprdescc*248,ctlstrc*24
@@ -2589,6 +2593,7 @@ C Scratch copy of air flow pattern from an operations file.
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
       INTEGER IDTY
+      character actflatfile*1
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2626,10 +2631,15 @@ C the source zones air flows.
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
         if(isource.eq.0)then
-
+          if(ifullysilent.eq.1)then
+            actflatfile='-'
+          else
+            actflatfile='W'            
+          endif
+          
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
 C then jump to 32 to read in the destination operations file.
-          CALL ERZSCHED(IUO,sfile,IER)
+          CALL ERZSCHED(IUO,sfile,actflatfile,IER)
           goto 32
         else
 
@@ -2721,20 +2731,18 @@ C IF asked to copy all then
 C And any new file will be in the sorted format.
         ip3ver(idest)=2
       endif
-
-C Copy the local array data into the common blocks overwriting
-C the data implied by 'afact'. Also act on the iflow vflow directives.
-      if(isource.eq.0)then
-        VAL=10.0
-        h(1)='Because this is a pattern file there is no associated'
-        h(2)='zone and to do a ratio we need an assumed volume. '
-        CALL EASKR(VAL,' ','Assumed volume of source?',
-     &      0.10,'F',9999.0,'W',0.0,'assumed volume',IER,2)
-      endif
       if(iflow(1:7).eq.'ach-ach')then
         ratioif=1.0
       elseif(iflow(1:7).eq.'vol-vol')then
+
+C Copy the local array data into the common blocks overwriting
+C the data implied by 'afact'. Also act on the iflow vflow directives.
         if(isource.eq.0)then
+          VAL=10.0
+          h(1)='Because this is a pattern file there is no associated'
+          h(2)='zone and to do a ratio we need an assumed volume. '
+          CALL EASKR(VAL,' ','Assumed volume of source?',
+     &        0.10,'F',9999.0,'W',0.0,'assumed volume',IER,2)
           ratioif=VAL/VOL(idest)
         else
           ratioif=VOL(isource)/VOL(idest)
@@ -4647,6 +4655,10 @@ C Base area for zones.
       INTEGER NELC,IPFC,IPHASC
       REAL PFC,PWRC,BVOLTC
 
+      common/SLNTFULL/ifullysilent
+      integer ifullysilent !flag to drive the silent model creation without
+                           !questions about the operation files data
+
       character*(*) sfile
       CHARACTER oprdescc*248,ctlstrc*24
       character h*72
@@ -4657,7 +4669,8 @@ C Base area for zones.
       character actcas*8
       character act*1   ! '-' normal, 's' silent
       LOGICAL XST,unixok,dok,ok
-
+      character actflatfile*1
+      
 C Flags noting whether casual gain periods are currently sorted.
       logical problem,MODOPR
 
@@ -4701,10 +4714,14 @@ C the source zones air flows.
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
         if(isource.eq.0)then
-
+          if(ifullysilent.eq.1)then
+            actflatfile='-'
+          else
+            actflatfile='W'            
+          endif
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
 C then jump to 32 to read in the destination operations file.
-          CALL ERZSCHED(IUO,sfile,IER)
+          CALL ERZSCHED(IUO,sfile,act,IER)
           if(ier.ne.0)then
             call edisp(iuout,'Source operation file not clean...')
             ier=1
