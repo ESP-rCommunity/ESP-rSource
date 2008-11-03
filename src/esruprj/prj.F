@@ -1833,6 +1833,7 @@ C          call usrmsg('Begining simulation via',doit,'-')
           return
         endif
       elseif(INO.EQ.MITEM-7)then
+
         H(1)='The first option computes the pressure induced'
         H(2)='fluid flow within a network of connected flow'
         H(3)='components representing the building and/or plant'
@@ -1890,6 +1891,7 @@ C Debug.
 C          call usrmsg('Beginning CFD only assessment via',doit,'-')
           call runit(doit,tmode)
         ENDIF
+
       elseif(INO.EQ.MITEM-6)then
 
 C Visual simulation.  Starts e2r with configuration file. Depending on
@@ -1942,6 +1944,7 @@ C Debug.
 
 C IPV for the actual number of simulations required.
         call ipvactions(ier)
+
       elseif(INO.EQ.MITEM-4)then
 
 C UK NCM Compliance checking
@@ -1955,7 +1958,7 @@ C NCM details have not been completed do nothing
           CALL EDISP(IUOUT,
      &    'Complete NCM details from model context menu')
         ENDIF
-      elseif(MITEM.eq.10.and.INO.EQ.1)then
+      elseif(MITEM.eq.11.and.INO.EQ.1)then
 
 C Case of no initial sets, offer default or user defined sets. If the
 C data is internal to the file then it will already have been scanned.
@@ -2110,7 +2113,7 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.1)then
+      elseif(MITEM.eq.25.and.INO.EQ.1)then
 
 C Select an existing set, create a new one or cancel.
  170     do 60 ii=1, nsset
@@ -2207,7 +2210,7 @@ C << description first >>
           isset=IRT
         endif
         call scntcnst(TDM,istd,TCM,ISTC)
-      elseif(MITEM.eq.24.and.INO.EQ.2)then
+      elseif(MITEM.eq.25.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
@@ -2221,7 +2224,7 @@ C do not allow this set name to be changed.
           write(spfdescr(isset),'(a8)')de(1:8)
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.3)then
+      elseif(MITEM.eq.25.and.INO.EQ.3)then
         if(INDCFG.eq.2)then
           call edisp(iuout,'* Start-up days not applicable to plant.')
         else
@@ -2241,7 +2244,7 @@ C do not allow this set name to be changed.
             modparms=.true.
           endif 
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.4)then
+      elseif(MITEM.eq.25.and.INO.EQ.4)then
 
 C The simulation timestep. Edit local variable and if not canceling
 C instantiate it and also ask about results integration if more than
@@ -2292,7 +2295,7 @@ C There is temporal data so must save at each timestep.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.5)then
+      elseif(MITEM.eq.25.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           H(1)='Plant-side time step is an integer subdivision'
           H(2)='of the active building side time steps per hour.'
@@ -2307,7 +2310,7 @@ C There is temporal data so must save at each timestep.
             modparms=.true.
           endif
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.6)then
+      elseif(MITEM.eq.25.and.INO.EQ.6)then
         H(1)='Level 0 - summary table'
         H(2)='Level 1 - zone temperatures and plant demand'
         H(3)='Level 2 - as 1 + zone surface temperatures'
@@ -2323,14 +2326,14 @@ C There is temporal data so must save at each timestep.
           issave=issavet
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.7)then 
+      elseif(MITEM.eq.25.and.INO.EQ.7)then 
         CALL EDAY(isstday(isset),isstmon(isset),ISDS)
         CALL EDAY(isfnday(isset),isfnmon(isset),ISDF)
         call EASKPER('Assessment period:',ISDS,ISDF,IFDAY,IER)
         call EDAYR(ISDS,isstday(isset),isstmon(isset))
         call EDAYR(ISDF,isfnday(isset),isfnmon(isset))
         modparms=.true.
-      elseif(MITEM.eq.24.and.INO.EQ.8)then
+      elseif(MITEM.eq.25.and.INO.EQ.8)then
         h(1)='This library holds the predictions associated'
         h(2)='with a building simulation.'
         t72=sblres(isset)
@@ -2338,7 +2341,7 @@ C There is temporal data so must save at each timestep.
      &    'zones.res','bld library',IER,2)
         sblres(isset)=t72
         modparms=.true.
-      elseif(MITEM.eq.24.and.INO.EQ.9)then
+      elseif(MITEM.eq.25.and.INO.EQ.9)then
         if(IAIRN.ge.1)then
           h(1)='This library holds the predictions associated'
           h(2)='with a network flow simulation.'
@@ -2348,7 +2351,7 @@ C There is temporal data so must save at each timestep.
           sflres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.10)then
+      elseif(MITEM.eq.25.and.INO.EQ.10)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           h(1)='This library holds the predictions associated'
           h(2)='with a plant simulation.'
@@ -2358,11 +2361,11 @@ C There is temporal data so must save at each timestep.
           splres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.11)then
+      elseif(MITEM.eq.25.and.INO.EQ.11)then
         if(ispmxist.gt.0)then
           continue
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.12)then
+      elseif(MITEM.eq.25.and.INO.EQ.12)then
         if(MSTROK)then
           h(1)='This library holds the predictions associated'
           h(2)='with a moisture simulation.'
@@ -2372,7 +2375,7 @@ C There is temporal data so must save at each timestep.
           smstres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.13)then
+      elseif(MITEM.eq.25.and.INO.EQ.13)then
         if(ientxist.gt.0)then
           h(1)='This library holds the predictions associated'
           h(2)='with an electrical simulation.'
@@ -2382,7 +2385,7 @@ C There is temporal data so must save at each timestep.
           selres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.14)then
+      elseif(MITEM.eq.25.and.INO.EQ.14)then
         if(lnblnk(lipvdatf).eq.0)then
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
         else
@@ -2394,7 +2397,7 @@ C There is temporal data so must save at each timestep.
           sipvres=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.24.and.INO.EQ.15)then
+      elseif(MITEM.eq.25.and.INO.EQ.15)then
         h(1)='You can save changes to simulation parameter sets or'
         h(2)='dereference the current sets (e.g. to import new '
         h(3)='IPV assessment periods).'
