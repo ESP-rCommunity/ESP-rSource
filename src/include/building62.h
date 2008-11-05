@@ -101,7 +101,7 @@ C If MS changes, so should MEQ (MS+1) and MTR (MS+4).
       PARAMETER (MTR=66)
 
 C Multilayered construction limit
-      PARAMETER (MMLC=80)
+      PARAMETER (MMLC=120)
 
 C For the time-step controller:
       PARAMETER (MCVT1=6)
