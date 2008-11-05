@@ -151,6 +151,10 @@ C IPV description.
       common/IPVF/lipvdatf
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
+     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
 
 C Project demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -716,15 +720,27 @@ C name of the IPV file or write the data internal to the cfg file.
      &      lipvdatf(1:lnipv)
         endif
       else
-      
-C Use call to write into the cfg file itself and then clear name of
+
+C If the version of configuration file is 4 or greater
+C then there could be an embedded IPV description. Check
+C first if the number of IPV metrics or demand sets is greater than
+C zero. If so take common block information and include
+C it in the configuration file.
+        if(nms.gt.0.or.neds.gt.0)then
+
+C Use call mkipvdat to write into the cfg file and then clear name of
 C the external IPV file (also notify the user they can remove it).
-        ipvaction='cfg'
-        call mkipvdat(ifcfg,LCFGF,ipvaction)
-	if(lnipv.gt.0)then
-	  call usrmsg('You can removed the IPV file if you want',
+          ipvaction='cfg'
+          call mkipvdat(ifcfg,LCFGF,ipvaction)
+          if(lnipv.eq.0)then
+            continue
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            continue
+          else
+	    call usrmsg('Info merged. Remove the separate IPV file',
      &      lipvdatf,'W')
-	  lipvdatf=' '  ! ensure old file name is no longer referenced
+	    lipvdatf=' '  ! ensure old file name is no longer referenced
+          endif
         endif
       endif
 
