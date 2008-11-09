@@ -152,6 +152,8 @@ C the floor area (one) or it was calculated (zero).
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
       character TOSMLCN*32  ! to remember other side mlc name
+      character TOOTF*32    ! to remember other side OTF
+      character TOOPT*32    ! to remember other side optics
 
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
@@ -430,11 +432,17 @@ C Report on possible construction issues.
                 if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                   if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                     TOSMLCN=MLCN
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                   elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
                     TOSMLCN=MLCN
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   else
                     TOSMLCN=MLCN
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   endif
                 elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
@@ -453,11 +461,15 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                 else
                   if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                     TOSMLCN=MLCSYM
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   elseif(SSMLCN(icoth)(1:12).eq.MLCSYM(1:12))then
                     continue
                   else
                     TOSMLCN=MLCSYM
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   endif
                 endif
@@ -476,9 +488,10 @@ C used for a partition (and db does not have a linked MLC - inform the user.
      &                iuout,IER)
                   endif
 
-C Assign new MLC name to the icoth surface.
+C Assign new MLC name to the icoth surface as well as SSOTF with the
+C optical properties returned from parsemlcdesc.
                   SSMLCN(icoth)=TOSMLCN
-
+                  write(SSOTF(icoth),'(a)') TOOPT
                   call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
                     gversion(IC2(ioc)) =1.1
@@ -2942,6 +2955,8 @@ C Optical and geometric properties.
       character ozn*12  ! the name of the other zone
       character guesstype*24
       character TOSMLCN*32  ! to remember other side mlc name
+      character TOOTF*32    ! to remember other side OTF
+      character TOOPT*32    ! to remember other side optics
 
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
@@ -2963,6 +2978,8 @@ C Force redraw of zone on entry to highlight focus surface.
       MODIFY=.TRUE.
       newgeo=.false.  ! assume older format geometry.
       TOSMLCN=' '
+      TOOTF=' '
+      TOOPT=' '
 
 C Check which version.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -3332,11 +3349,17 @@ C the name does not match or is UNKN get user to confirm change.
                   if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                     if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                       TOSMLCN=MLCN
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                     elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN=MLCN
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     else
                       TOSMLCN=MLCN
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     endif
                   elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
@@ -3359,11 +3382,17 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                   else
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN=MLCSYM
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     elseif(SSMLCN(icoth)(1:12).eq.MLCSYM(1:12))then
                       TOSMLCN=MLCSYM
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                     else
                       TOSMLCN=MLCSYM
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     endif
                   endif
@@ -3385,8 +3414,10 @@ C zone.
      &                  iuout,IER)
                     endif
 
-C Assign new MLC name to the icoth surface.
+C Assign new MLC name to the icoth surface as well as SSOTF with the
+C optical properties returned from parsemlcdesc.
                     SSMLCN(icoth)=TOSMLCN
+                    write(SSOTF(icoth),'(a)') TOOPT
 
 C Logic to decide whether to update other zone geometry format.
                     call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
@@ -3408,9 +3439,10 @@ C Logic to decide whether to update other zone geometry format.
 C Read current zone data back in to commons. But the backed up data
 C might not include the name of the newly selected mlc name so just
 C to be sure reset smlcn with ssmlcn so it will show up in the menu
-C when it is re-freshed. << is there another way? >>
+C when it is re-freshed.
                     CALL ERCZONE(ICOMP)
                     SMLCN(is)=SSMLCN(ioc)
+                    SOTF(is)=SSOTF(ioc)
                     call usrmsg(' Updating other side...done.',' ','-')
                     updoth=.false.
                   endif
