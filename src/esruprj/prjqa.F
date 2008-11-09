@@ -235,6 +235,7 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical nameok  ! to use for testing if duplicate names in zone,
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1566,6 +1567,18 @@ C Consider glazing on walls to be a part of facade.
             endif
           else
             continue
+          endif
+
+C Check for duplicate surface names in this zone. Report is
+C duplicates are found.
+          write(SN,'(a12)')SSNAME(icc)
+          call snamdup(SN,izz,ij,nameok)
+          if(nameok)then
+            continue
+          else
+            write(outs,'(3a)') 'Surface ',SN(1:lnblnk(SN)),
+     &        ' has a duplicate name. Names must be unique!'
+            call edisp(itu,outs)
           endif
  111    continue
 

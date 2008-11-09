@@ -409,7 +409,19 @@ C construction on the other side. Logic is the same as in EDSURA.
           else
             showother=.false.
           endif
+
+C Report on any duplicate surface names.
           write(SN,'(a12)')SSNAME(ioc)
+          call snamdup(SN,icomp,is,nameok)
+          if(nameok)then
+            continue
+          else
+            write(outs,'(3a)') 'Surface ',SN(1:lnblnk(SN)),
+     &        ' has a duplicate name. Names must be unique!'
+            call edisp(iuout,outs)
+          endif
+
+C Report on possible construction issues.
           if(showother.and.icoth.ne.0)then
             do 17 ii=1,nmlc
               if(SSMLCN(ioc)(1:12).eq.DESC(ii)(1:12)) then
