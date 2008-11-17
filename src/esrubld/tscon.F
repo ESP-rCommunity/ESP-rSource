@@ -734,8 +734,12 @@ C IF AT PERIOD START TIME,
 C REMEMBER DAY AND HOUR TO REWIND TO,
         idysv=idy
         ihrsv=ihr
-C SET INITIALISATION COUNTER,
-        lgctin=1        
+
+C SET INITIALISATION COUNTER. This logic seems not to be being
+C called for most models with optimal start controllers. Also
+C set lgctin=1 in MAIN.
+        lgctin=1
+	        
 C SAVE DATA,
         if(irwcou.eq.0)call savepv
 C RETRIEVE DATA,

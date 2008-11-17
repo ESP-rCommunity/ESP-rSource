@@ -262,6 +262,10 @@ C Significant figure reporting limit (NSIGFIG).
 C Timeout information
       common/TIMEOUT/sTimeout,iTimeoutFlag
 
+C Commons for rewind controls (to allow lgctin to be set).
+      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
+     &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
+
 C Material data array.
       real matver
       integer matcats,matcatitems,matdbitems
@@ -372,6 +376,11 @@ C Flag indicating that CFD `small opening' areas have not yet been calculated.
 
 C Illuminance values held in database.
       NDBENT=0
+
+C Indicate th any timestep controller at the start of the simulation
+C to take the initial start time guess for optimal start and rewind
+C controls.
+      lgctin=1
 
 C Font sizes for graphic environment.
       IFS=1
