@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -3224,6 +3224,7 @@ C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*32
 
       integer igraphiclib  ! external definition
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3694,7 +3695,8 @@ C If there is a ground topology read it.
         endif
 
         IF(MMOD.EQ.8)then
-          call updwire(ncomp)
+          numberofzones=ncomp
+          call updwire(numberofzones)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -3818,7 +3820,10 @@ C mode (with blanks for the parameters).
         CFGOK=.TRUE.
 
 C Open default databases (user can alter later).
-        IF(MMOD.EQ.8)call updwire(ncomp)
+        IF(MMOD.EQ.8)then
+          numberofzones=ncomp
+          call updwire(numberofzones)
+        endif
         call opendb(ier)
         if(ier.ne.0)then
           call usrmsg(

@@ -30,6 +30,7 @@ C of lines to include in the text portion of the display.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
@@ -57,6 +58,8 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 
           CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(iglib.eq.2)then
           continue
         endif
@@ -107,6 +110,7 @@ C Display heading for climate graph.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
@@ -143,6 +147,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -151,6 +157,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -159,6 +167,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -167,6 +177,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           endif
         elseif(iglib.eq.2)then
           continue

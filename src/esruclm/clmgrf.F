@@ -30,6 +30,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RADTYP/IDNGH
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER*26 ITEM(16)
@@ -38,6 +39,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL mxmn
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+      integer igwid,igheight  ! for use with axiscale
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -155,6 +157,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -163,6 +167,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -171,6 +177,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -179,6 +187,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           endif
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
@@ -233,8 +243,10 @@ C Second set of axis.
         CALL EGETWR(HOLD,K,YMIN(6),0.,0.,'-','rh mn',IER)
         if(ier.ne.0)goto 43
         DO 70 I=1,6
-          call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,bysc,sca,
-     &              Xadd,addY)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,TMIN,TMAX,YMIN(I),YMAX(I),
+     &      XSC,bysc,sca,Xadd,addY)
           YSC(I)=bysc
           Yadd(I)=addY
   70    CONTINUE
@@ -286,6 +298,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.2)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -294,6 +308,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.1)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -302,6 +318,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.0)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -310,6 +328,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         endif
         if(IFS.ne.IMFS)call winfnt(IFS)
         call startbuffer()
@@ -365,6 +385,7 @@ C season (1 char) '-' do not bother 's' indicate season.
       PARAMETER (MT=24)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C THE FOLLOWING COMMON BLOCK CONTAINS THE SCALE AND pixel offsets
@@ -587,6 +608,7 @@ C onleft and onright passed in to indicate which axes to draw.
       SUBROUTINE CLMDRWD(IDAY,onleft,onright)
       PARAMETER (MT=24)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
@@ -709,6 +731,7 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
 
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -944,9 +967,11 @@ C   is negative draw only the past value.
       SUBROUTINE PCGRF(ICV,ICL,IDS,IDF)
       PARAMETER (MD=365,MT=24)
       COMMON/CLIM1/CLMV(7,MD,MT),ICMAX,ICMAX2,ICMIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
+      integer igwid,igheight  ! for use with axiscale
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
       DATA CLMVAR/'S rad W/m2','Temp Deg.C','Rel hum pc',
@@ -974,7 +999,9 @@ C  Draw the axis for the climatic variable and then draw the graph.
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
-      call axiscale(igw,igwh,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
      &              Xaddd,Yaddd)
       call linescale(igl,Xaddd,XSC,igb,Yaddd,YSC)
 

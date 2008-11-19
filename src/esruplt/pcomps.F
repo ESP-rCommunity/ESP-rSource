@@ -697,29 +697,29 @@ C Error handling
       STOP ' CMP05S: unresolvable error'
 C
       END
-C
+
 C ******************** CMP06S ********************
-C
+
 C CMP06S establishes for a plant component with plant db code 20 ie.
 C 1 node (ISV=21) AC  duct & condensation ?
 C whether the specified number of controlled variables is OK, and also
 C whether the number of connections to this component is correct
 C and whether the connected nodes are of a type as expected by the
 C corresponding coefficient generator routine
-C
+
       SUBROUTINE CMP06S(IPCOMP)
 #include "plant.h"
 #include "building.h"
-C
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-C
+
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
      &             ICONDX(MPCOM,MNODEC,MPCONC)
-C
+
 C Trace output
       IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
          WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
@@ -731,13 +731,13 @@ C Trace output
             IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
          END IF
       END IF
-C
+
 C Check user specified number of controlled variables
       NCITM=0
       IF(NCI(IPCOMP).NE.NCITM)
      &   WRITE(ITU,*) ' CMP06S warning: user specified wrong number',
      &                ' of controlled variables'
-C
+
 C Check component has 1 connection only, to "moist air"
       NCONS=1
       DO 10 IPCONC=1,MPCONC
@@ -752,17 +752,18 @@ C Check component has 1 connection only, to "moist air"
          GOTO 990
       END IF
    10 CONTINUE
-C
-C
+
+
       RETURN
-C
+
 C Error handling
   990 WRITE(IUOUT,*) ' CMP06S: connection error for component ',IPCOMP
-      WRITE(IUOUT,*) '         should be ',NCONS,' connection(s) to air'
+      WRITE(IUOUT,*) '   should be ',NCONS,' connection(s) to air'
+      WRITE(IUOUT,*) '   found ',IPCON,'.'
       STOP ' CMP06S: unresolvable error'
-C
+
       END
-C
+
 C ******************** CMP07S ********************
 C
 C CMP07S establishes for a plant component with plant db code 70 ie.

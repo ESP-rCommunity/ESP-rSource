@@ -65,6 +65,7 @@ C File unit
       COMMON/FILEP/IFIL
 
 C Interface frame dimensions
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
@@ -150,6 +151,7 @@ C Material data array.
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Initial assumptions (summary reporting).
       call ezero
@@ -319,11 +321,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -379,7 +384,10 @@ C set for wireframe drawing.
           MODBND=.TRUE.
           MODLEN=.TRUE.
           nzg=NCOMP
-          IF(MODEL.EQ.8)call updwire(ncomp)
+          IF(MODEL.EQ.8)then
+            numberofzones=ncomp
+            call updwire(numberofzones)
+          endif
           DO 444 I=1,nzg
             nznog(I)=I
  444      CONTINUE

@@ -610,6 +610,7 @@ C EDITOPT edits one set of optical properties via common block.
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GPICK/GS(MGOPT),nopt
@@ -620,6 +621,7 @@ C ilabs is string arry for layer insert/delet selection.
       CHARACTER KEY*1,T12*12,ilabs*43
       CHARACTER GS*52,ETEXT*72,GTEXT*72,temp*16
       logical edited
+      integer igwid,igheight  ! for use with axiscale
 
       IER=0
       edited=.false.
@@ -686,7 +688,11 @@ C (re)draw optical properties.
         YMAX=1.0
         CALL startbuffer()
         call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
-        call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.

@@ -41,6 +41,7 @@ C
       integer lnblnk  ! function definition
 
 C View parameters
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/NETPLOT/XSTRT,XFIN,ILINST(MERAWD),AXSC(5)
@@ -71,6 +72,7 @@ C The period details
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
       INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
+      integer igwid,igheight  ! for use with axiscale
 
 C Set up scaling and graph parameters
       VPOS=1E+15
@@ -348,7 +350,9 @@ C draw vertical axis.
             GMIN=YMIN(I)
             GMAX=YMAX(I)
             CALL DINTERVAL(XSTRT,XFIN,DT,NDEC,1)
-            CALL AXISCALE(IGW,IGWH,XSTRT,XFIN,GMIN,GMAX,
+            igwid=igw
+            igheight=igwh
+            call axiscale(igwid,igheight,XSTRT,XFIN,GMIN,GMAX,
      &                           TSC,YSC(I),SCA,XADD,YADD(I))
             IF (ILR(I).EQ.0) then
               CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),
@@ -831,6 +835,7 @@ C network corresponding to graphical result display.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/ELRFIL/ELRFLNAM
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Array of recovered data
@@ -863,6 +868,8 @@ C pixel references for calls to VIEWTEXT.
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,9,30,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 

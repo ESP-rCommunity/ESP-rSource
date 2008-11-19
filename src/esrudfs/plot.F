@@ -38,6 +38,7 @@ C LMON   - labels for monitoring values.
       SUBROUTINE PLOT(iplt,NPLT,ITM,NITER,RMX,NCRV,CRES,CMON,LRES,LMON)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Stores all MFRP residuals, maximum and minimum residuals and max X value.
@@ -50,6 +51,7 @@ C Stores all MFRP monitoring values, maximum and minimum values.
 
       CHARACTER title*124,LRES(4)*24,LMON(4)*24,LINE(4)*5
       DIMENSION ILINE(4),CRES(4),CMON(4)
+      integer igheight  ! for use with axiscale
 
       LOGICAL RDR
 
@@ -141,8 +143,9 @@ C Calculate plotting box locations.
         YMAX=1.
         YMIN=0.
         CALL startbuffer()
-        CALL axiscale(ipltwd,igwh,plxmin,plxmax,Ymin,Ymax,
-     &                                         xsc,ysc,sca,xadd,yadd)
+        igheight=igwh
+        CALL axiscale(ipltwd,igheight,plxmin,plxmax,Ymin,Ymax,
+     &                xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw residuals plot.
         CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
@@ -175,7 +178,8 @@ C Rescale axis for first curve.
         if (I.eq.1) then
           YMAX=RESMX
           YMIN=RESMN
-          CALL axiscale(ipltwd,igwh,Xmin,Xmax,Ymin,Ymax,
+          igheight=igwh
+          CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
           CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
         endif
@@ -207,7 +211,8 @@ C Plot monitoring curves.
 C Rescale axis for each curve.
         YMAX=XMONMX(I)
         YMIN=XMONMN(I)
-        CALL axiscale(ipltwd,igwh,Xmin,Xmax,Ymin,Ymax,
+        igheight=igwh
+        CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
         CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
 

@@ -869,8 +869,10 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       SUBROUTINE VAXIS(VITEM,HITEM)
 
       COMMON/VGRAF1/YMAXV,YMINV,YMAXH,YMINH
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character VITEM*24,HITEM*24,VIT*24,HIT*24
+      integer igwid,igheight  ! for use with axiscale
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -888,7 +890,9 @@ C Interval on horizontal axis.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 
@@ -918,6 +922,7 @@ C to graphical result display.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -941,6 +946,8 @@ C and the simulation and output timesteps.
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 

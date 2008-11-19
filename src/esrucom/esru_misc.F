@@ -232,6 +232,12 @@ C   losspercent and is assumed to apply to all zones in the model.
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent
+
+C IPV text strings
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
       
       CHARACTER*72 LCFD,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LPNF
@@ -329,7 +335,18 @@ C Clear pre-simulation sets.
         isfnday(i)=0
         isfnmon(i)=0
   39  continue
-
+  
+C Clear IPV strings and number of assessmments.
+      ipvtitl=' '
+      ipvvers=' '
+      ipvsynop=' '
+      ipvsimu=' '
+      nipvassmt=0
+      nipvdispjd=0
+      ipvastjd(1)=0
+      ipvafnjd(1)=0
+      ipvdispjd(1)=0
+      
 C Clear anchors.
       NALOC=0
       do 40 i=1,20

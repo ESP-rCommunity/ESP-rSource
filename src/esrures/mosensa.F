@@ -413,6 +413,7 @@ C SAINTER calculates summary statistics within result sets.
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -434,6 +435,7 @@ C SAINTER calculates summary statistics within result sets.
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
       logical graphit
       integer YAXSET, ADDLIN
+      integer igwid,igheight  ! for use with axiscale
 
       character outs*124,zname*12,zdesc*64,H*72
       character SLABEL*32,GLABEL*20
@@ -815,7 +817,9 @@ C Calculate overall standard deviation and display depending on IFMT.
         TMAX=FLOAT(IOH1)+DHR+1.0/FLOAT(NTS)
         call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
         IY1=1
-        call axiscale(igw,igwh,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
      &              YSC(1),sca,Xadd,Yadd(1))
         call vrtaxis(YMIN(1),YMAX(1),igl,igb,igt,Yadd(1),YSC(1),0,0,
      &               'Output')
@@ -1229,6 +1233,7 @@ C WHSET displays currently chosen sets and lets user toggle selections.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 

@@ -36,6 +36,7 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       character CTYPE*4
@@ -81,6 +82,7 @@ C converts into viewing coords, clips the image and draws it.
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer igwid,igheight  ! for use with axiscale
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -102,18 +104,22 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
       CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
-        CALL axiscale(igw,igwh,-1000.,1000.,-1000.,1000.,xsc,ysc,sca,
-     &                Xadd,Yadd)
+        call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
+     &                sca,Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ENDIF

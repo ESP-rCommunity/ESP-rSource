@@ -363,6 +363,7 @@ C IER=0 indicates no error.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -949,6 +950,8 @@ C Restore standard graphics window variables.
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
             CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igw=igr-igl
+            igwh=igb-igt
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -1683,6 +1686,7 @@ C IER=0 indicates no error.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -1817,6 +1821,8 @@ C Restore standard graphics window variables.
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
             CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igw=igr-igl
+            igwh=igb-igt
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -3947,6 +3953,7 @@ C and cell distribution for each region.
       common/pophelp/h(60)
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/ICFNOD/ICFD,ICP
@@ -3975,6 +3982,8 @@ C Reset the display bounds for grid display.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
         CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         GRMODE=.true.
       ENDIF
 

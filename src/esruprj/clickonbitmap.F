@@ -39,6 +39,7 @@ C via clicking on a bitmap.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       integer ncomp,ncon
@@ -281,6 +282,8 @@ C Otherwise clear ZN and ZD.
 C Give a bit more space in graphic feedback area for the bitmap.
       CALL startbuffer()
       CALL win3d(menuchw,1,3,1,1,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
   142 continue
     3 INO=-4
@@ -3066,6 +3069,7 @@ C inpm is the input mode.
      &  ipyw,nipwhis,ipxwhis,ipywhis)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       logical xbmnorth,xbmorigin

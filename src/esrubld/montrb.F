@@ -184,6 +184,7 @@ C Parameters for eline calls.
 
 c Graph commons.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/spad/mmod,limit,limtty
       COMMON/FILEP/IFIL
@@ -201,6 +202,7 @@ C since not all compilers use the same default.
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character etext*82, clabel*20,nterm*1,tab*1,zname*12,zdesc*64
       logical colok
+      integer igwid,igheight  ! for use with axiscale
 
 C Test save option selected.
 C [for NRCan]      tab=','
@@ -252,13 +254,15 @@ C If Plant flux then divide by 1000.0
       endif
 
 c Determine scaling ratios for the drawing and axis.
-      call axiscale(igw,igwh,xmin,xmax,yminb(1),ymaxb(1),xsc,ysc,sca,
-     &      xadd,yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,xmin,xmax,yminb(1),ymaxb(1),
+     &   xsc,ysc,sca,xadd,yadd)
 
 c Determine scaling ratios for other y axis.
       if(mbstv.eq.3)
-     &   call axiscale(igw,igwh,xmin,xmax,yminb(2),ymaxb(2),xsc,
-     &      ysc1,sca1,xadd,yadd1)
+     &   call axiscale(igwid,igheight,xmin,xmax,yminb(2),ymaxb(2),
+     &      xsc,ysc1,sca1,xadd,yadd1)
 
 c Draw a scale horizontal axis, move to beginning point.
       call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (h)')

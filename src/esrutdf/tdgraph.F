@@ -26,6 +26,7 @@ C Parameters for eline calls.
       parameter (LNMVAB=1, LNDRAB=0)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/TDFFT/LTDF,LTDFA
@@ -49,6 +50,7 @@ C Parameters for eline calls.
       CHARACTER PERST1*14,PERST2*44,PERST3*44      
       DIMENSION IFSYM(MBITS)
       logical colok
+      integer igwid,igheight  ! for use with axiscale
 
 C Start drawing; first header
       IF(MMOD.EQ.8)THEN
@@ -276,7 +278,10 @@ C Add in additional generic data definitions here.
 C    ......
       ENDIF
 
-      CALL axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       CALL dinterval(XMIN,XMAX,ddy1,ny,1)
 
 C Try axis of hours.

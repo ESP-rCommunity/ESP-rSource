@@ -125,6 +125,7 @@ C IPV description.
      &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -197,6 +198,7 @@ C Returned parameters from silentread.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
+      integer numberofzones ! to pass to updwire rather than ncomp
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
 
@@ -380,11 +382,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -697,7 +702,8 @@ C current number of zones if a model has been loaded.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         if(ier.eq.0)then
           IF(MMOD.EQ.8)then
-            call updwire(ncomp)
+            numberofzones=ncomp
+            call updwire(numberofzones)  ! pass local integer
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -3944,8 +3950,8 @@ C of the same project that can later be modified.
 
       dimension items(7),items2(33)
       CHARACTER*72 H,LCFGF
-      CHARACTER ITEMS*36,ITEMS2*36,APP*4
-      CHARACTER NBSTR*4,CFGROOT*24,OUTS*124
+      CHARACTER ITEMS*36,ITEMS2*36,APP*6
+      CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
 
       IF(BROWSE)THEN
@@ -3978,7 +3984,7 @@ C Help message for version manager menu
       H(21)= 'Several changes may be applied within a single'
       H(22)= 'variant.'
       H(23)= ' '
-      H(24)= 'A three character postfix is requested from the'
+      H(24)= 'A five character postfix is requested from the'
       H(25)= 'user and this is appended to the names of new files.'
       H(26)= ' '
       H(27)= ' '
@@ -4004,10 +4010,10 @@ C Ask for changes to be made
       MITEM=7
       CALL EMENU('Variants Manager',ITEMS,MITEM,INO)
       IF(INO.EQ.1)THEN
-        APP='_xyz'
+        APP='_xyz  '
         CALL EASKS(APP,' ',
-     &     'Specify up to 4 characters to append to project name?',
-     &     4,'project','root name modifier',IER,36)
+     &     'Specify up to 6 characters to append to project name?',
+     &     6,'project','root name modifier',IER,36)
         K=0
         CALL EGETRM(APP,K,NBSTR,'W','cfg modifier ',IER)
         APP=NBSTR
@@ -4274,7 +4280,7 @@ C<< It is intended that the data be modified interactively before
 C<< writing out to new files in the future and this has been implemented
 C<< for some of the options included in this subroutine.
 C For the following values of ILM the respective file will be copied and
-C renamed with APE appendage
+C renamed with APE character string appendage
 C ILM = 1 means global tasks and site exposure
 C ILM = 2 means geometry and attribution
 C ILM = 3 means site exposure & ground reflectance
@@ -4376,11 +4382,12 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       character ctldoc*248,lctlf*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
-      CHARACTER*24 dbspth,cfgroot,oldcfgroot
+      CHARACTER*24 dbspth,cfgroot
       CHARACTER OUTSTR*124
-      CHARACTER APE*4,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
+      CHARACTER APE*6,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       character ipvaction*3  ! to signal external ipv file
+      integer irootlen,iapelin  ! string buffer lengths
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -4446,6 +4453,10 @@ C of constructions does not re-do it.
 
 C If there is an existing shading file copy it to new name
 C so that subsequent changes are applied to the new file.
+
+C << what this logic does not yet do is check and see if there is an
+C << ascii version of the shading file and copy that as well.
+
             if(ISI(icomp).eq.1)then
               EXT='.shd'
               CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
@@ -4656,6 +4667,7 @@ C << an array so files did not need to be scanned.
      &        'Select zones for shading/insolation?',
      &        'Zone shading/insolation variant','s',ier)
           elseif(iw.eq.3)then
+            inpic=0
             continue
           endif
           if(iw.eq.1.or.iw.eq.2)then
@@ -4879,6 +4891,10 @@ C procedure can overwrite. Mark to update shading files.
                 CALL ERPFREE(IUF,ios)
                 ishad=1
                 ishd=1
+
+C << what the logic does not yet do is loot to see if there is an ascii
+C << version of the zone shading file and copy it to the new name.
+
  156          continue
 C              call edisp(iuout,
 C     &          '* Obstruction files being created/copied.')
@@ -5528,12 +5544,15 @@ C moisture, electrical and IPV
         SIPVRES=NNAME
         LRCR=2
 
-C Check length of cfgroot string.
-        IROOTLEN=LNBLNK(CFGROOT)
-        IF(IROOTLEN.GT.(24-3))THEN
-          IROOTLEN=21
+C Check length of cfgroot string. Figure out how to include the
+C whole of ape in the root name, even if this requires removing
+C some characters from the middle of the string buffer.
+        irootlen=LNBLNK(CFGROOT)
+	iapelin=lnblnk(ape)
+        IF(irootlen.GT.(24-iapelin))THEN
+          irootlen=24-iapelin
         ENDIF
-        write(cfgroot,'(2a)')cfgroot(1:irootlen),ape
+        write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:iapelin)
 
 C If a variant connections file also required set this up.
         if(docnn)then
@@ -5576,7 +5595,7 @@ C before an extension EXT, returning NEWNAM as the new file name
       SUBROUTINE FNCNGR(ORIGNAM,APP,EXT,NEWNAM)
 
       CHARACTER*(*) ORIGNAM,NEWNAM
-      CHARACTER APP*4,EXT*4,LEXT*6
+      CHARACTER APP*6,EXT*4,LEXT*6
 
       LCFIL=LNBLNK(ORIGNAM)
       LA=LNBLNK(APP)

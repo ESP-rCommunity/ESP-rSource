@@ -27,8 +27,10 @@ C ******* View cone for plan/elevation.
 #include "building.h"
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character direc*1
+      integer igwid,igheight  ! for use with axiscale
 
 C Set the length of the viewcone according to the image.
       PI = 4.0 * ATAN(1.0)
@@ -40,7 +42,10 @@ C Set the length of the viewcone according to the image.
 C Plot a heavy line along the view cone then
 C two light lines at edge of view cone.
       if(direc.eq.'P')then
-        call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &     Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call etplot(rvpx,rvpy,0,14)
         call etplot(rvpx,rvpy,0,0)
@@ -62,7 +67,10 @@ C two light lines at edge of view cone.
       elseif(direc.eq.'S')then
 
 C If south elevation, omitt the view-cone.
-        CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
+     &     Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call etplot(rvpx,rvpz,0,14)
         call etplot(rvpx,rvpz,0,0)
@@ -70,7 +78,10 @@ C If south elevation, omitt the view-cone.
         wze=VCL*vdz
         call etplot(rvpx+wxe,rvpz+wze,-302,0)
       elseif(direc.eq.'E')then
-        CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
+     &     Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call etplot(rvpy,rvpz,0,14)
         call etplot(rvpy,rvpz,0,0)
@@ -103,6 +114,7 @@ C ******* Default views formation.
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       common/rad2/mono,intext,ifocz
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -124,6 +136,7 @@ C ******* Default views formation.
       character zname*12,zdesc*64,outs*124,LBSRIF*72
       character doit*124,ltmp*72,trvewsh*10
       character vewcmds*124,rvewsh*10
+      integer igwid,igheight  ! for use with axiscale
 
 C Addview = true then save editing as a new view, if false
 C then it is an update to an existing view.
@@ -480,7 +493,10 @@ C Eye Point...(assume begins at centre of zone).
 C Select point from plan or current perspective.
           elseif(IEE.eq.2)then
             call usrmsg(' ',' Select point via cursor...','-')
-           call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+            igwid=igw
+            igheight=igwh
+            call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &        Xadd,Yadd)
             call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C << implemented in GTK? >>
@@ -659,7 +675,10 @@ C horiz axis...
           CALL EGETWR(HOLD,K,XMN,-300.,300.,'W','X min',IER)
           CALL EGETWR(HOLD,K,XMX,XMN,300.,'W','X max',IER)
           if(ier.ne.0)goto 41
-          call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &       Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
         elseif(ITPPSW.eq.1)then
  141      WRITE(HOLD,'(1x,2f8.3)')XMN,XMX
@@ -669,7 +688,10 @@ C horiz axis...
           CALL EGETWR(HOLD,K,XMN,-300.,300.,'W','X min',IER)
           CALL EGETWR(HOLD,K,XMX,XMN,300.,'W','X max',IER)
           if(ier.ne.0)goto 141
-          CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
         elseif(ITPPSW.eq.2)then
  241      WRITE(HOLD,'(1x,2f8.3)')YMN,YMX
@@ -679,7 +701,10 @@ C horiz axis...
           CALL EGETWR(HOLD,K,YMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,YMX,YMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 241
-          CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
         elseif(ITPPSW.eq.3)then
         endif
@@ -697,7 +722,10 @@ C vertical axis...
           CALL EGETWR(HOLD,K,YMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,YMX,YMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 144
-          call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
         elseif(ITPPSW.eq.1)then
  145      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
@@ -707,7 +735,10 @@ C vertical axis...
           CALL EGETWR(HOLD,K,ZMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,ZMX,ZMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 145
-          CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
         elseif(ITPPSW.eq.2)then
  245      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
@@ -717,7 +748,10 @@ C vertical axis...
           CALL EGETWR(HOLD,K,ZMN,-300.,300.,'W','Y min',IER)
           CALL EGETWR(HOLD,K,ZMX,ZMN,300.,'W','Y max',IER)
           if(ier.ne.0)goto 245
-          CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
+     &      Xadd,Yadd)
           call linescale(igl,Xadd,sca,igb,Yadd,sca)
         elseif(ITPPSW.eq.3)then
         endif

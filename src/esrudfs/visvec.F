@@ -28,6 +28,7 @@ C MAKS2D - draw 2d slices on screen.
       SUBROUTINE MAKS2D(ISUR,ilayer,name)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
@@ -50,6 +51,8 @@ C Set default values.
 C Clear viewing area, set and store scaling factors.
       CALL startbuffer()
       CALL win3d(menuchw,6,6,3,4,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
 C Set up the do loops according to which surface is being viewed.
 C East or west view.

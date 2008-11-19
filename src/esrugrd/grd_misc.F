@@ -239,6 +239,7 @@ C FACDRW draws the elevation of the surface.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       DIMENSION MTHNAM(12)
 
@@ -252,6 +253,8 @@ C FACDRW draws the elevation of the surface.
 C Display header information.
       call startbuffer()
       CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
       icon=IZSTOCN(icomp,isur)
       WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(icon)

@@ -1224,6 +1224,7 @@ C RESMN      - Minimum reverberation time
 #include "building.h"
 #include "acoustic.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/Zones/TxtZone
 
@@ -1235,6 +1236,7 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
+      integer igwid,igheight  ! for use with axiscale
 
 C Initialisation
       YMAX=1.0
@@ -1246,6 +1248,8 @@ C Setup the graph dimension according to the max and min RT
       IF ((MAll.EQ.4).AND.(MethodCalc.GT.1)) THEN
       ELSE
         Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         do 20 I=1,MNbAbs
           if (TReverb(I).gt.RESMX) then
             RESMX=TReverb(I)
@@ -1261,7 +1265,9 @@ C Calculate plotting box locations.
         plxmax=4000.
         YMAX=RESMX+0.5
         YMIN=0.
-        CALL axiscale(igw,igwh,plxmin,plxmax,Ymin,Ymax,                 
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
         CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
 
