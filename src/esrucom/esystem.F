@@ -263,8 +263,9 @@ C         'FCTL' is related to control composition
 C         'FDFS' is related to CFD domains
 C         'FPER' is related to predicted performance
 C         '****' is a general image displayed at startup
-C  limgfil (72 char) name of the image file << ?? longer string >>
-      character imgfmt*4,imgfoc*4,limgfil*72
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
       character imgdoc*248  ! text associated with image
       common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 

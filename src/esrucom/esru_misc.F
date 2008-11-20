@@ -430,7 +430,7 @@ C Assume there is not BSim-CFD conflation in any of the zones.
 C Clear image related data.
       noimg=0
       iton=0
-      do 6,IX=1,MING
+      do 6,IX=1,MIMG
         imgfmt(IX)=' '
         imgfoc(IX)=' '
         limgfil(IX)=' '
@@ -679,12 +679,6 @@ C Control
      &             opticdoc
 
 C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton

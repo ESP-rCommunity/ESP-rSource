@@ -1449,7 +1449,15 @@ C << to write only the header portion.
 
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -1470,7 +1478,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER LCFGF*72
       CHARACTER LCNN*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
-      character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
+      character indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character dstmp*24
@@ -1564,6 +1572,10 @@ C Write images if any.
         do 142 img=1,noimg
           WRITE(ioout,'(a,a4,2x,a4,2x,a)')'*img ',imgfmt(img),
      &      imgfoc(img),limgfil(img)(1:lnblnk(limgfil(img)))
+          if(icfgv.gt.3)then
+            WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)'*imdoc ',
+     &        imgdoc(img)(1:lnblnk(imgdoc(img)))
+          endif
  142    continue
       endif
 

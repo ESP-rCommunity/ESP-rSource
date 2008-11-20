@@ -2092,6 +2092,17 @@ C IPV data.
       common/IPVF/lipvdatf
       character lipvdatf*72
 
+C Images.
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
+
       character cfgroot*24,LCFGF*72,h*72,outs*124
       character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
@@ -2108,6 +2119,7 @@ C IPV data.
 C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
       integer iuo  ! file unit for operations file.
+      integer imgloop ! loop counter for images
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -2160,8 +2172,7 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         call askok('The current model uses an out-of-date format for',
      &    'some geometry or obstruction files. Update this?',ok,dok,5)
         if(ok)then
-	
-          
+
           do 776 iz=1,ncomp
             call eclose(gversion(iz),1.1,0.01,newgeo)
             if(newgeo)then
@@ -2393,6 +2404,16 @@ C be a black string.
             call ripvdat(IUO,lipvdatf,ipvaction,ier)
           endif
           icfgv=4   ! set to current version.
+
+C If there are any images associated with the model create a filler
+C string for the image documentation.
+          if(noimg.gt.0)then
+            do 22 imgloop=1,MIMG
+              imgdoc(imgloop)='no documentation (yet) for this image'
+  22        continue
+          endif
+
+C Update the model configuration file.
           CALL EMKCFG('-',IER)
 
 C Check if there were zone utility files and if so check and see if

@@ -113,7 +113,15 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
 
 C Images.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Radiance RIF file.
       common/radcfg/LRADCF
@@ -178,7 +186,7 @@ C Name of current application
       character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
-      character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
+      character ltcmdfl*144
       character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
@@ -1415,7 +1423,7 @@ C Toggle trace level.
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Allow user to change preferences for dates, time, wireframe view
-C and reporting/trace level.
+C and reporting/trace level and version of the model files.
         MODSIT=.false.
         call setup(MODSIT,ITRC,IER)
         if(MODSIT)then
@@ -1493,7 +1501,15 @@ C level).
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/user/browse
 
@@ -1507,7 +1523,7 @@ C level).
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
-      character imgfmt*4,imgfoc*4,limgfil*72,t72*72
+      character t72*72
 
       character brw*11,outs*124
       character descra*7,descrb*7,descrst*10,descrfn*10
@@ -3810,11 +3826,14 @@ C and the image browser has not been invoked do this now. In the case
 C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
+#include "building.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
+      common/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      common/CFGV/icfgv
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -3838,16 +3857,22 @@ C         'FDFS' is related to CFD domains
 C         'FPER' is related to predicted performance
 C         '****' is a general image displayed at startup
 C  limgfil (72 char) name of the image file << ?? longer string >>
-C  noimg is the number of images associated with the model.
-C  iton is a toggle iton=0 initial state where images have not been scanned
-C    and iton=1 images have been displayed.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
-      character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
+
+      character ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
+      integer idl  ! length of image documentation
 
       logical concat,show,unixok
 
@@ -3915,6 +3940,12 @@ C quotes are not required.
      &    'The image display tool has not be defined. Ask your',
      &    'administrator to update the .esprc file definition.','W')
               else
+
+C If recent version then display image documentation as well.
+                if(icfgv.gt.3)then
+                  call edisp(iuout,'  ')
+                  call edisp248(iuout,imgdoc(imgv),100)
+                endif
                 write(dolist,'(a,2x,a,a)')
      &            fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
      &            ilist(1:lnblnk(ilist)),' &'
@@ -3937,9 +3968,10 @@ C Setup help text for the popup.
           h(5)=' * indicate what performance is expected'
           h(6)='   '
           h(7)='Images are added to a model via the context->images'
-          h(8)='menu item. There can be up to 10 images associate with'
-          h(9)='a model. '
-          h(10)='Images of type GIF and XBM and ?? are supported.'
+          write(h(8),'(a,i2,a)')
+     &      'menu item. There can be up to ',MIMG,' images associated'
+          h(9)='with a model. '
+          h(10)='Images of type GIF and XBM and JPG are supported.'
           CALL PHELPW(10,IHW,IER)
 
           do 99 img=1,noimg
@@ -3967,25 +3999,32 @@ C and change any / to \.
                   longtfile=' '
                   longtfile=longtfiledos
                 endif
-                ixl=lnblnk(longtfile)
-                if(focus(1:4).eq.'****')then
-                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &              ' is a general topic.'
-                elseif(focus(1:4).eq.'FZON')then
-                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &              ' provides details of zone composition.'
-                elseif(focus(1:4).eq.'FNET')then
-                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &              ' provides details of network composition.'
-                elseif(focus(1:4).eq.'FCTL')then
-                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &              ' provides details of control composition.'
-                elseif(focus(1:4).eq.'FDFS')then
-                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &              ' provides details of the CFD domain.'
-                elseif(focus(1:4).eq.'FPER')then
-                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &              ' relates to model performance.'
+
+C If version 4 or newer then display the text otherwise make
+C up a general block of text for the image.
+                if(icfgv.gt.3)then
+                  idl=lnblnk(imgdoc(img))
+                  write(topic,'(a)') imgdoc(img)(1:idl)
+                else
+                  if(focus(1:4).eq.'****')then
+                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &                ' is a general topic.'
+                  elseif(focus(1:4).eq.'FZON')then
+                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &                ' provides details of zone composition.'
+                  elseif(focus(1:4).eq.'FNET')then
+                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &                ' provides details of network composition.'
+                  elseif(focus(1:4).eq.'FCTL')then
+                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &                ' provides details of control composition.'
+                  elseif(focus(1:4).eq.'FDFS')then
+                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &                ' provides details of the CFD domain.'
+                  elseif(focus(1:4).eq.'FPER')then
+                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &                ' relates to model performance.'
+                  endif
                 endif
 
 C Provide some feedback, set the title of the popup and then call C
@@ -3993,8 +4032,12 @@ C function in lib/esp_draw.c
                 call edisp(iuout,topic)
                 write(head,'(2a)') 'Image: ',longtfile(1:ixl)
                 act='-'
-                call popupimage(head,topic,act,longtfile)
-                iton=1
+                if(MMOD.eq.8)then
+                  call popupimage(head,topic,act,longtfile)
+                  iton=1
+                else
+                  call edisp(iuout,'Not in graphics mode.')
+                endif
               endif
             endif
   99      continue
