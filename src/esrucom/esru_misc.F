@@ -192,7 +192,15 @@ C Project log file, paths to standard file locations.
      &             dbspth
 
 C Images.
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -266,7 +274,7 @@ C IPV text strings
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
-      character imgfmt*4,imgfoc*4,limgfil*72,cfgroot*24,LCFGF*72
+      character cfgroot*24,LCFGF*72
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
 
@@ -419,13 +427,14 @@ C Assume there is not BSim-CFD conflation in any of the zones.
         icfdnd(i)=0
   5   continue
 
-C Images.
+C Clear image related data.
       noimg=0
       iton=0
-      do 6,IX=1,10
+      do 6,IX=1,MING
         imgfmt(IX)=' '
         imgfoc(IX)=' '
         limgfil(IX)=' '
+        imgdoc(IX)='-'
   6   continue
 
       IAIRN=0
@@ -571,11 +580,18 @@ C see if there are images associated with descriptive buttons.
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/entfile/entflnam, ientxist
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
       CHARACTER ctldoc*248,lctlf*72,LCFD*72,entflnam*72
       character LAPROB*72
-      character imgfmt*4,imgfoc*4,limgfil*72
 
       icfg_type = INDCFG
       icfgz = 0
@@ -663,12 +679,20 @@ C Control
      &             opticdoc
 
 C Images.
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
 
       character h*72,act*1
-      character imgfmt*4,imgfoc*4,limgfil*72,entflnam*72
+      character entflnam*72
       CHARACTER LCFD*72
       CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
       CHARACTER ctldoc*248,lctlf*72

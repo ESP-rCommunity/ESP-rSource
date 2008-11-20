@@ -1501,69 +1501,206 @@ C Create a matching ascii version of the generic db.
       end
 
 
-C ***** imgdisp
-C If there are associated images for startup or at specific points
-C and the image browser has not been invoked do this now.
+C ********** imgdisp
+C imgdisp displays images associated with start-up or at specific points
+C and the image browser has not been invoked do this now. In the case
+C of the GTK version use an in-built GTK function rather than an
+C external tool.
       subroutine imgdisp(iforce,focus,ier)
+#include "building.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
-C Images.
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
-      common/showimg/imgtyp,fmttag(5),fmtexe(5)
-      character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,longtfile*144,focus*4
-      logical concat,show
+      common/OUTIN/IUOUT,IUIN
+      common/CFGV/icfgv
+      common/pophelp/h(60)
 
-C Loop through the images and for those which match the "focus"
-C can be displayed with a known utility can be brought up. Iforce,
-C if set to 1 forces display.
+C A set of possible image formats which can be accepted within
+C a model configuration file. These definitions are held in the
+C .esprc file. To add additional image types and/or 3rd
+C party display applications edit the ESP-r Install script which
+C creates the .esprc file.
+C   imgtyp is the number of different image formats supported
+C   fmttag (4 char) is a tag for each image formt (e.g. GIF, XBMP)
+C   fmtexe (20 char) is the application name used to display
+C          images of type fmttag.
+      common/showimg/imgtyp,fmttag(5),fmtexe(5)
+
+C Images in the model.
+C  imgfmt (4 char) gives the format of each image associated with
+C         the model, it must match one of the known fmttag.
+C  imgfoc (4 char) associates an image with a specific topic:
+C         'FZON' is related to zone composition
+C         'FNET' is related to network composition
+C         'FCTL' is related to control composition
+C         'FDFS' is related to CFD domains
+C         'FPER' is related to predicted performance
+C         '****' is a general image displayed at startup
+C  limgfil (72 char) name of the image file << ?? longer string >>
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
+
+      character ilist*200,dolist*254
+      character fmttag*4,fmtexe*20,tfile*72,focus*4
+      character longtfile*144,longtfiledos*144
+      character topic*248,head*136,act*1,h*72
+      integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
+
+      logical concat,show,unixok
+
+C Check if Unix-based or DOS based.
+      call isunix(unixok)
+
+C Loop through the images and display those which match the 'focus'
+C and can be displayed with a known utility. Iforce, if set to 1,
+C forces display.
       if(noimg.eq.0)return
       if(imgtyp.eq.0)then
-        call edisp(iuout,' ')
-        call edisp(iuout,'No image display apps available..')
-        call edisp(iuout,'See tutorial to set up .esprc files.')
+        call edisp(iuout,'* No image display application available.')
+        call edisp(iuout,'Ask your administrator to define one via')
+        call edisp(iuout,'your .esprc file.')
         return
       endif
-      if((iton.eq.0.or.iforce.eq.1))then
-        do 498 imgv=1,imgtyp
-          ilist=' '
-          ix=1
-          do 49 img=1,noimg
-            if(imgfmt(img)(1:3).eq.fmttag(imgv)(1:3))then
 
-C If focus is `****` then show images marked with `****` or whos mark
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1)then
+
+C If X11 version then request an external agent to display the image.
+        if((iton.eq.0.or.iforce.eq.1))then
+          do 498 imgv=1,imgtyp
+            ilist=' '
+            ix=1
+            do 49 img=1,noimg
+              if(imgfmt(img)(1:3).eq.fmttag(imgv)(1:3))then
+
+C If focus is `****` then show images marked with `****` , otherwise
 C begins with and `S`, otherwise attempt to match the focus and the image. 
+                show=.false.
+                if(focus(1:4).eq.'****'.and.
+     &             imgfoc(img)(1:1).eq.'S')show=.true.
+                if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
+                if(show)then
+                  longtfile=' '
+                  if(unixok)then
+                    call addpath(limgfil(img),longtfile,concat)
+                  else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.  If X11 then an external application is used
+C an double quoting is useful. If GTK then internal function used and
+C quotes are not required.
+                    call addpath(limgfil(img),longtfile,concat)
+                    if(iglib.eq.1)then
+                      call cmdfiledos(longtfile,longtfiledos,ier)
+                    elseif(iglib.eq.2)then
+                      call imgfiledos(longtfile,longtfiledos,ier)
+                    endif
+                    longtfile=' '
+                    longtfile=longtfiledos
+                  endif
+                  ixl=lnblnk(longtfile)
+                  ixe=ix+ixl
+                  if(ixe.le.200)then
+                    WRITE(ilist(ix:ixe),'(a,2x)')longtfile(1:ixl)
+                  endif
+                  ix=ixe+1
+                endif
+              endif
+ 49         continue
+            if(ix.gt.1)then
+              dolist=' '
+              if(fmtexe(imgv)(1:2).eq.'  ')then
+                call usrmsg(
+     &    'The image display tool has not be defined. Ask your',
+     &    'administrator to update the .esprc file definition.','W')
+              else
+
+C If cfg recent version then display image documentation as well.
+                if(icfgv.gt.3)then
+                  call edisp248(iuout,imgdoc(img),100)
+                endif
+                write(dolist,'(a,2x,a,a)')
+     &            fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
+     &            ilist(1:lnblnk(ilist)),' &'
+                call runit(dolist,'graph')
+                iton=1
+              endif
+            endif
+ 498      continue
+        endif
+      elseif(iglib.eq.2)then
+
+C If GTK version then use GTK calls to display images in popup.
+        if((iton.eq.0.or.iforce.eq.1))then
+
+C Setup help text for the popup.
+          h(1)='Images can be associated with a model for various'
+          h(2)='purposes: '
+          h(3)=' * document conditions at the physical site'
+          h(4)=' * document assumptions in the model'
+          h(5)=' * indicate what performance is expected'
+          h(6)='   '
+          h(7)='Images are added to a model via the context->images'
+          h(8)='menu item. There can be up to 10 images associate with'
+          h(9)='a model. '
+          h(10)='Images of type GIF and XBM and ?? are supported.'
+          CALL PHELPW(10,IHW,IER)
+
+          do 99 img=1,noimg
+            if(imgfmt(img)(1:3).eq.'GIF'.or.
+     &         imgfmt(img)(1:4).eq.'XBMP'.or.
+     &         imgfmt(img)(1:3).eq.'TIF'.or.
+     &         imgfmt(img)(1:3).eq.'JPG')then
+
+C If focus is `****` then show images marked with `****` , otherwise
+C begins with and `S`, otherwise attempt to match the focus and the image. 
+C Create a string topic to pass to the display routine along with
+C the image file name.
+C << tag for editing ?? >>
               show=.false.
               if(focus(1:4).eq.'****'.and.
      &           imgfoc(img)(1:1).eq.'S')show=.true.
               if(imgfoc(img)(1:4).eq.focus(1:4))show=.true.
               if(show)then
                 longtfile=' '
-                call addpath(limgfil(img),longtfile,concat)
-                ixl=lnblnk(longtfile)
-                ixe=ix+ixl
-                if(ixe.le.200)then
-                  WRITE(ilist(ix:ixe),'(a,2x)')longtfile(1:ixl)
+                if(unixok)then
+                  call addpath(limgfil(img),longtfile,concat)
+                else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+                  call addpath(limgfil(img),longtfile,concat)
+                  call cmdfiledos(longtfile,longtfiledos,ier)
+                  longtfile=' '
+                  longtfile=longtfiledos
                 endif
-                ix=ixe+1
+                if(icfgv.gt.3)then
+                  idl=lnblnk(imgdoc(img))
+                  write(topic,'(a)') imgdoc(img)(1:idl)
+                endif
+
+C Provide some feedback, set the title of the popup and then call C
+C function in lib/esp_draw.c
+                call edisp(iuout,topic)
+                write(head,'(2a)') 'Image: ',longtfile(1:ixl)
+                act='-'
+                call popupimage(head,topic,act,longtfile)
+                iton=1
               endif
             endif
- 49       continue
-          if(ix.gt.1)then
-            dolist=' '
-            write(dolist,'(a,2x,a,a)')
-     &          fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
-     &          ilist(1:lnblnk(ilist)),' &'
-            call runit(dolist,'graph')
-            iton=1
-          endif
- 498    continue
+  99      continue
+        endif
       endif
+
       return
       end
-
 
 C *********** modifygdb deal with loading and/or conversion
 C of importing of generic database files. Act is << >>,

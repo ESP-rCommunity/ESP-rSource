@@ -26,6 +26,7 @@ C Type declarations
       integer MGXYZ,MBTYP,MNM,MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID
       integer MMTR,MBND,MSNOD,MMAT,MIPVM,MIPVA,MSPS
       integer MDTY,MGTY,MGPER
+      integer MIMG
       
 C For the building:
       PARAMETER (MCOM=42)
@@ -257,3 +258,6 @@ C less than or equal to MSPS.
 
 C Maximum number of simulation parameter sets.
       PARAMETER (MSPS=10)
+
+C Maximum number of images associated with model.
+      PARAMETER (MIMG=10)
