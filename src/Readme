@@ -1,8 +1,8 @@
 ===========================================================
 
-                   ESP-r
+                         ESP-r
 
-A multi-domain building performance simulation program
+   A multi-domain building performance simulation program
 
 Contents
 --------
@@ -22,10 +22,11 @@ Contents
 ===========================================================
 1. ACKNOWLEDGMENTS
 
-ESP-r is developed and distributed by the Energy Systems
-Research Unit (ESRU) of the University of Strathclyde and
-Natural Resources Canada (NRCan), in collaboration with
-researchers and practitioners around the world.
+ESP-r is developed and distributed by the Energy Systems Research Unit
+(ESRU) of the University of Strathclyde and Natural Resources Canada
+(NRCan), in collaboration with researchers and practitioners around
+the world.
+
 
 Send inquiries to:
 
@@ -39,30 +40,29 @@ Send inquiries to:
    http://www.esru.strath.ac.uk/
    esru@strath.ac.uk
 
-ESP-r is also supported through a community mailing list.
-To subscribe to the list, visit:
+ESP-r is also supported through a community mailing list.  To subscribe
+to the list, visit:
+
 
    http://lists.strath.ac.uk/mailman/listinfo/esp-r
 
 ===========================================================
 2. LICENSE
 
-ESP-r is free software.  You can redistribute it and/or
-modify it under the terms of the GNU General Public
-License as published by the Free Software Foundation,
-either version two of the License, or (at your option)
-any later version.
+ESP-r is free software.  You can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation, either version two of the License, or (at your
+option) any later version.
 
-ESP-r is distributed in the hope that it will be useful
-but WITHOUT ANY WARRANTY; without even the implied
-warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE. See the GNU General Public License for more
-details.
+ESP-r is distributed in the hope that it will be useful but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
 
-You should have received a copy of the GNU General Public
-License along with ESP-r. If not, write to the Free
-Software Foundation, Inc., 59 Temple Place, Suite 330,
-Boston, MA 02111-1307 USA.
+You should have received a copy of the GNU General Public License along
+with ESP-r. If not, write to the Free Software Foundation, Inc., 59
+Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+
 
 ===========================================================
 3. OBTAINING ESP-r.
@@ -71,82 +71,83 @@ ESP-r is distributed in two forms:
    i) precompiled binaries, and
   ii) version-controlled source code.
 
-Using the precompiled binaries is the easiest way to get
-ESP-r up and running, but you'll need the source code if
-you wish to modify ESP-r and contribute your changes to
-the community.
+Using the precompiled binaries is the easiest way to get ESP-r up and
+running, but you'll need the source code if you wish to modify ESP-r
+and contribute your changes to the community.
+
 
 Precompiled binaries
 ---------------------
-Precompiled binaries for Linux, Cygwin, Mac OSX and
-Microsoft Windows are available at:
+Precompiled binaries for Linux, Cygwin, Mac OSX and Microsoft Windows
+are available at:
 
-   ftp://ftp.strath.ac.uk/Esru_public/
+   ftp://ftp.strath.ac.uk/Esru_public
+/
 
 
 Version-controlled source code
 ------------------------------
-The ESP-r source code is stored on a publicly-accessible
-Subversion repository, called 'ESP-r Central'. 
+The ESP-r source code is stored on a publicly-accessible Subversion
+repository, called 'ESP-r Central'.
 
-You can learn more about accessing the ESP-r subversion
-repository here:
+You can learn more about accessing the ESP-r subversion repository here:
 
    http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm
 
-Source code for the current release can be downloaded using
-the subversion command:
+Source code for the current release can be downloaded using the subversion
+command:
 
    svn checkout https://esp-r.net/espr/esp-r/trunk/
 
-Source code for the latest 'development' version of ESP-r
-can be downloaded using the subversion command
+Source code for the latest 'development' version of ESP-r can be
+downloaded using the subversion command
 
    svn checkout https://esp-r.net/espr/esp-r/branches/development_branch
 
-Should you wish to contribute improvements to the archive,
-you'll also need a developer's account. Contact Alex 
-Ferguson (aferguso@nrcan.gc.ca) to arrange one.
+Should you wish to contribute improvements to the archive, you'll also
+need a developer's account. Contact Alex Ferguson (aferguso@nrcan.gc.ca)
+to arrange one.
 
 
 ===========================================================
 4. SYSTEM REQUIREMENTS
 
-ESP-r has been installed Solaris, Linux, Cygwin, MinGW and
-MAC OS X systems, using a variety of compiler and graphics
-library combinations. Some of these configurations have been
-thoroughly tested and are regarded as 'stable', while
-others remain in beta testing.
+ESP-r has been installed Solaris, Linux, Cygwin, MinGW and MAC
+OS X systems, using a variety of compiler and graphics library
+combinations. Some of these configurations have been thoroughly tested
+and are regarded as 'stable', while others remain in beta testing.
 
 While ESP-r has been built on all of the supported platforms and
-configurations, it is most routinely used on Linux.  Installation
-on common Linux distributions (including Ubuntu, Mandrake,
-Redhat/Fedora and Gentoo) has proven robust, and you can use it
-with confidence on these systems.
+configurations, it is most routinely used on Linux.  Installation on
+common Linux distributions (including Ubuntu, Mandrake, Redhat/Fedora and
+Gentoo) using the gcc 3.4 and gcc 4.1 compiler suites has proven robust,
+and you can use it with confidence on these systems.
 
-ESP-r is used less often on Solaris, Cygwin, MinGW and OS X. 
-systems. These systems are not be available to some ESP-r 
-developers, and some (such as MinGW) provide no standard 
-environment on which ESP-r developers can rely to ensure the 
-software functions correctly. While every effort is made to 
-assure the quality of ESP-r on these platforms, it may not 
-perform as expected on a particular system. Should you wish 
-to use ESP-r on a non-Linux platform, please review Section 
-10: "QUALITY ASSURANCE AND RELEASE TESTING", below. There,
-you will find an up-to-date description of the status of ESP-r 
-on each platform.
+ESP-r is used less often on Solaris, Cygwin, MinGW and OS X systems. These
+systems are not be available to some ESP-r developers, and some (such
+as MinGW) provide no standard environment on which ESP-r developers
+can rely to ensure the software functions correctly.  Moreover, some
+compilers suites, including gcc 4.2 and Intel 10.0 have proven erratic
+with the ESP-r source base. While every effort is made to assure the
+quality of ESP-r on these platforms, it may not perform as expected
+with these systems and compilers. Should you wish to use ESP-r on a
+non-Linux platform or with the gcc 4.2 / Intel compiler suites, please
+review Section 10: "QUALITY ASSURANCE AND RELEASE TESTING", below. There,
+you will find an up-to-date description of the status of ESP-r on each
+platform.
+
 
 Architectures
 -------------
 ESP-r is presently only supported on 32 bit systems.
 Installations on MinGW and OS X are regarded as 'beta'.
 
- ===========================================================
-                      Solaris  Linux   Cygwin  MinGW    OS X
  -----------------------------------------------------------
- 32-bit                  S       S       S       B       S
- 64-bit                  X       X       B       X       X
- ===========================================================
+                      Solaris  Linux   Cygwin  MinGW    OS X
+ ...........................................................
+ 32-bit                  S       S       S       B       B
+ 64-bit                  X       B       X       X       X
+ -----------------------------------------------------------
  S = Stable
  B = Beta testing
  X = Not supported
@@ -155,54 +156,48 @@ Installations on MinGW and OS X are regarded as 'beta'.
 Compilers
 ---------
 Compilation of ESP-r is presently only supported with
-the GNU GCC 3.X compiler set (gcc, g++ and g77) the Sun
-compiler set (cc, CC, f90). ESP-r also builds with the GNU
-GCC 4.1+ compiler set (gcc, g++ and gFortran) on Linux,
-but unexplained numerical differences have been observed
-between GCC 3 and GCC4 builds. Until these differences
-are resolved, use of GCC4 builds are recommended only for
-testing purposes.
+the following compiler sets:
+  - GCC 3.4 (gcc, g++ and g77)
+  - GCC 4.1 (gcc, g++ and gfortran)
+  - Sun cc / f90
 
- ===========================================================
-                      Solaris  Linux   Cygwin  MinGW    OS X
- -----------------------------------------------------------
-   Sun cc  / f90         S       -        -      -       -
-   gcc 3.X / g77         S       S        S      B       S
-   gcc 4.X / gFrotran    X       B        X      X       X
- ===========================================================
+Of these, The GCC 4.1 compiler has proven the most robust. For this
+reason, it is the recommended compiler for building ESP-r.
+
+ESP-r also builds with the GNU GCC 4.2+ and Intel 10.0 compiler suites
+on Linux, but these combinations behave unexpectedly in some situations
+Until these issues are resolved, use of GCC 4.2+ and Intel builds is
+recommended only for testing purposes.
+
+ ---------------------------------------------------------
+                    Solaris  Linux   Cygwin  MinGW    OS X
+ .........................................................
+ Sun cc  / f90         S       -        -      -       -
+ GCC 3.4.X / g77       S       S        S      B       B
+ GCC 4.1.2 / gFrotran  X       S        X      X       X
+ GCC 4.2.X / gFortran  X       B        X      X       X
+ Intel 10.0 / ifort    X       B        X      X       X
+ ---------------------------------------------------------
  S = Stable
  B = Beta testing
  X = Not supported
  - = Not applicable
 
-By installing the following packages, users of newer GCC
-4.X-based linux distributions can build ESP-r using GCC 3:
-  - compat-gcc-32
-  - compat-gcc-32-c++
-  - compat-gcc-32-g77
-  - compat-libf2c-32
-
-With these versions of gcc installed, invoke the Install
-script using the --gcc32 option:
-  
-  $ ./Install --gcc32
-
 Graphics libraries
 ------------------
-Traditionally, ESP-r incorporated an X11-based graphical
-interface and could also be built as a text-only shell
-application. Work is presently underway to modernize the
-ESP-r interface using the GTK interface, and GTK versions
-of ESP-r can be installed on all platforms provided the
-GTK libraries are available.  
+Traditionally, ESP-r incorporated an X11-based graphical interface and
+could also be built as a text-only shell application. Work is presently
+underway to modernize the ESP-r interface using the GTK interface,
+and GTK versions of ESP-r can be installed on all platforms provided
+the GTK libraries are available.
 
- ===========================================================
-                      Solaris  Linux   Cygwin  MinGW    OS X
  -----------------------------------------------------------
+                      Solaris  Linux   Cygwin  MinGW    OS X
+ ...........................................................
  X11                     S        S       S      -       S
  GTK                     B        B       B      B       B
  no graphics             S        S       S      B       S
- ===========================================================
+ -----------------------------------------------------------
  S = Stable
  B = Beta testing
  X = Not supported
@@ -213,16 +208,15 @@ GTK libraries are available.
 
 XML & CSV output
 ----------------
-By default, the ESP-r simulation engine (bps) writes out
-binary results libraries that must be post-processed using
-a separate tool (res). bps can also optionally export the
-results directly into ASCII XML and comma-separated-value
-formats, provided the GNU libxml2 library is available on
-the system.
+By default, the ESP-r simulation engine (bps) writes out binary results
+libraries that must be post-processed using a separate tool (res). bps
+can also optionally export the results directly into ASCII XML and
+comma-separated-value formats, provided the GNU libxml2 library is
+available on the system.
 
-If the GNU libxslt library is also available, bps can be
-configured to translate the XML result file into any user-
-specified ASCII format. 
+If the GNU libxslt library is also available, bps can be configured to
+translate the XML result file into any user- specified ASCII format.
+
 
 ===========================================================
 6. INSTALLATION
@@ -440,8 +434,8 @@ components:
 
   b) Cross-platform testing, which compares the predictions
      from the most recent version of ESP-r running on
-     different platforms and determines if differences
-     exist in the results.
+     different platforms and compilers, and determines
+     if differences exist in the results.
 
 Since ESP-r is most commonly used on Linux systems and
 has proven robust on this platform, regression testing is
@@ -456,38 +450,89 @@ not install or function correctly on some machines.
 The following table summarizes the most recent test results
 on each of ESP-r's supported platforms:
 
-  ======================================================================
-  Platform  Last test date      Notes
-  ---------------------------------------------------------------------
-  Linux     2008-04-21 (r2767)  A complete regression test was performed
-                                against last release (2007-11-07, r2115).
-                                Small numerical differences were
-                                introduced into results from models that
-                                invoke the ish shading tool; the solar
-                                insolation absorbed in the glazing
-                                differed by as much as 3.5 W (or 46%)
-                                These differences were anticipated
-                                by developers, who reconfigured ESP-r's
-                                shading algorithms.
-  ----------------------------------------------------------------------
-  Cygwin    2008-04-21 (r2767)  A cross platform test was performed
-                                comparing Cygwin output to linux
-                                results. No numerical differences were
-                                observed.
-  ----------------------------------------------------------------------
-  Solaris   2008-04-21 (r2767)  A qualitative comparison between
-                                Solaris and Linux versions was undertaken.
-                                Only trace differences were observed
-                                in the results. 
-  ----------------------------------------------------------------------
-  OS X      2008-04-21 (r2767)  A qualitative comparison between
-                                OS X and Linux versions was undertaken.
-                                Only trace differences were observed
-                                in the results. 
-  ----------------------------------------------------------------------
-  MinGW     -----               The cross platform test between Linux
-                                and MinGW was not undertaken.
-  =======================================================================
+                 Testing for ESP-r Release 11.6
+                (2008-11-21, svn revision r3670)
+ -----------------------------------------------------------------------
+ Platform  Compiler    Notes
+ .......................................................................
+ Linux     GCC 3.4.6   A complete regression test was performed against
+                       the last release (2008-04-21, r2115). This
+                       comparison highlighted numerical differences
+                       introduced by two bugfixes in the code
+                       (r2838 and r3088). No unintended effects were
+                       observed. GCC 3.4.6 continues to be supported,
+                       but comparisons suggest GCC 4.1.2 is more stable
+                       and robust. 
+
+           GCC 4.1.2   A comprehensive comparison between GCC 4.1.2, GCC
+                       3.4.6, Intel and sun cc builds suggests that the
+                       GCC 4.1.2 is the most stable and robust compiler
+                       for building ESP-r. For this reason, GCC 4.1.2
+                       is now the recommended compiler for building
+                       ESP-r.
+
+           GCC 4.2.3   The GCC 4.2.3 compiler suite  provides exact
+                       agreement with GCC 4.1.2 in all but a handful
+                       of test cases, where numerical exceptions cause
+                       floating point errors. For this reason, use of
+                       GCC 4.2 for research purposes is discouraged.
+
+           Intel 10.0  With optimization deactivated, the Intel
+                       compiler consistently produced results close to
+                       the gFortran and Sun f90 builds. But When the
+                       default optimization is activated (using the -O2)
+                       option, agreement between the Intel and GCC 4.1.2
+                       compiler deteriorates considerably. Nearly all of
+                       the models exhibit small, non-trace differences,
+                       and in every case these differences were slightly,
+                       or significantly larger than those observed with
+                       optimization deactivated.
+ ......................................................................
+ Cygwin    GCC 3.4.4   A comprehensive comparison to results from a
+                       Linux/GCC 3.4.6 build produced exact agreement.
+ ......................................................................
+ Solaris   Sun CC      A comprehensive comparison between results from
+                       the sun compiler suite and GCC 4.1.2 exhibited 
+                       good agreement. 
+                       
+ .......................................................................
+ OS X     GCC 3.4.6    A comprehensive comparison betwen results from
+                       an OS X build revealed unexplained non-trivial
+                       differences from GCC 3.4.6 and 4.1.2 Linux builds.
+                       For this reason, OS X builds should be used with
+                       caution.
+ .......................................................................
+ MinGW    GCC 3.4.5    The release compiles correctly on MinGW, but the
+                       testing tools do not correctly run in a DOS
+                       environment. For this reason, a comprehensive
+                       cross platform test has not been undertaken. 
+ -----------------------------------------------------------------------
+
+Numerical differences between the reference version of ESP-r (Linux,
+GCC 4.1.2 and X11) each platform and compiler combination
+and the reference version ares summarized below. Complete discussion of
+these results is provided in the file 'Release_testing_results.txt'.
+
+   Comparison of results from GCC4.1.2-compiled versions
+   (X11, Linux) with builds from other platform/compilers.
+ -----------------------------------------------------------------
+ Architecture     Platform    Compiler      Maximum difference (%)
+ .................................................................
+ IA-32            CYGWIN      GCC 3.4.4            3.18
+                  LINUX       GCC 3.4.6            3.18
+                              GCC 4.2.3            0.    (^1)
+                              Intel -O0            0.75 
+                              Intel -O2           38.781 (^2)
+ PowerPC          OSX         GCC 3.4             16.1
+ Sparc            SOLARIS     Sun CC/f90           1.80
+ .................................................................
+ NOTES:
+   1. Some test cases produced numerical exceptions and
+      floating point errors. 
+   2. When the default optimization is activated, agreement
+      between the Intel and GCC 4.1.2 builds deteriorates
+      considerably.
+ -----------------------------------------------------------------
 
 ===========================================================
 11. SUPPORT
