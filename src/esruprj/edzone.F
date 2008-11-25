@@ -1,4 +1,3 @@
-
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
@@ -2178,6 +2177,9 @@ C Climate data.
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
+      common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
+      character XMLMETRICS*248
+
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -2198,7 +2200,8 @@ C Passed in parameters.
       integer lnwg   ! length of weather ground string.
       integer igrfile ! unit number of ground file
       DIMENSION GVA(12)
-
+      character inpxmlfl*248 !to write out the input.xml file
+      
       IER=0
 
 C Determine operating system
@@ -2382,6 +2385,51 @@ C Debug.
         endif
         CALL EMKCFG('-',IER)
 
+C Also write the xml input file if there is a metric defined in the flat file
+        if(inumXMLmetrics.gt.0)then
+          if(unixok)then
+            fs = char(47)
+          else
+            fs = char(92)
+          endif
+
+C Write the XML input file
+          write(inpxmlfl,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &    'cfg/input.xml'
+          iuf=ifil+2
+          call efopseq(iuf,inpxmlfl,3,ier)
+          write(iuf,'(a)',iostat=ios) 
+     &      '<?xml version="1.0" encoding="UTF-8"?>'
+          write(iuf,'(a)',iostat=ios)'<configuration>'
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <apply_style_sheet>false</apply_style_sheet>'
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <dump_all_data>false</dump_all_data>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <hierarchy>flat</hierarchy>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <link_style_sheet>false</link_style_sheet>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <output_dictionary>true</output_dictionary>'  
+          write(iuf,'(a)',iostat=ios) 
+     &'  <report_startup_period_data>false</report_startup_period_data>'
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <save_to_disk>false</save_to_disk>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <time_step_averaging>false</time_step_averaging>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <enable_xml_wildcards>true</enable_xml_wildcards>'
+
+C Loop around the possible defined xml outputs
+          do 200 iwrxmlout=1,inumXMLmetrics
+          write(iuf,'(3a)',iostat=ios)'  <step_variable>', 
+     &      XMLMETRICS(iwrxmlout)(1:lnblnk(XMLMETRICS(iwrxmlout))),
+     &     '</step_variable>'
+ 200      continue       
+          write(iuf,'(a)',iostat=ios)'</configuration>'
+          call erpfree(iuf,istat)
+        endif
+      
 C Fall through point if no climates located.
   74    continue
       endif
@@ -3242,12 +3290,19 @@ C Control documentation common
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/C21/IFCFG,cfgroot,LCFGF
+
+C XMLMETRICS are the metrics that could be included in the input.xml
+C in case the flag: <dump_all_data> is false
+      common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
+      character XMLMETRICS*248
+      integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       integer IFCFG
                
       CHARACTER OUTSTR*248,WORD*32,outs*124
       character dstmp*24
+      character word248*248
 
       character act*1  ! action requested.
       character ipvact*1 ! action for clearipvdat
@@ -3344,7 +3399,7 @@ C Site related local variables.
       real ht_Setpoint,cl_Setpoint !heating and cooling set-points
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
-      
+        
       IER=0
 
 C Determine operating system
@@ -4037,6 +4092,24 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
           simact='i1d   '
         endif
         write(6,*) 'the value of simact is ',simact
+        goto 43
+      elseif(WORD(1:4).eq.'*ipv')then
+        goto 43
+      elseif(WORD(1:10).eq.'*start_xml')then  
+        inumXMLmetrics=0
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'read metrics',IER)  
+        K=0
+        CALL EGETW(OUTSTR,K,WORD248,'W','xml data',IER)
+        do while(WORD248(1:8).ne.'*end_xml')                           
+          inumXMLmetrics=1+inumXMLmetrics        
+          XMLMETRICS(inumXMLmetrics)=WORD248
+          CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'read metrics',IER)  
+          K=0
+          CALL EGETW(OUTSTR,K,WORD248,'W','xml data',IER)            
+        end do
+        if(WORD(1:8).eq.'*end_xml'.or.WORD248(1:8).eq.'*end_xml')then
+          goto 43
+        endif       
         goto 43
       else
         goto 43
