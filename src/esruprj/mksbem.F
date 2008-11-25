@@ -33,13 +33,18 @@ C sbmedit define high level data associated with UK NCM methodology.
 #include "building.h"
 #include "sbem.h"
 #include "tdf2.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL      
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -71,10 +76,6 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
      &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)          
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
@@ -105,7 +106,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
       CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
       character*35 ZITEMS(MCOM+4)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       real Air_infilt,gversion
       real light_input_watt !user input for heat gains from lights
                             !instead of using the values from the sbem database
@@ -153,7 +153,7 @@ C Set folder separator (fs) to \ or / as required.
       tab=','
 
 C place (temporary?) call to read sbem db
-c      call sbempr(ier)
+      call sbempr(ier)
 
 C Check if sbem project specific file exists if yes then read in details
 C from it.
@@ -1614,7 +1614,10 @@ C model.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY6/LINSTY(MCON)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -1657,12 +1660,12 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
 
       CHARACTER*1 ACT,fs
-      CHARACTER*4 APE,EXT
+      character EXT*4    ! up to 4 characters in file extension 
+      character APE*6    ! up to 6 characters in variant name
       CHARACTER SSPARENT*12,SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,LCNN*72,NNAME*72,H*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,SNM2*12,USE*8,USE2*8
@@ -1706,7 +1709,7 @@ C If not then advise user and send him/her back
         CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
         RETURN
       ENDIF
-      APE='_not'
+      APE='_not  '
       newgeo=.false.  ! assume older format geometry.
 
       H(1) = '*********************** IMPORTANT **********************'
@@ -2585,6 +2588,8 @@ C It finally generate BRUKL input document and other SBEM reports.
 #include "sbem.h"
 #include "building.h"
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -3469,6 +3474,8 @@ C Part L for England and Wales and Part F for Northern Ireland.
       SUBROUTINE BERTER(IER)
 #include "sbem.h"
 #include "building.h"
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
 
       INTEGER ICOMP

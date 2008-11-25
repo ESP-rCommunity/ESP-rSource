@@ -40,6 +40,7 @@ C Boston, MA 02111-1307 USA.
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/GFONT/IFS,ITFS,IMFS
       common/funit/iucfg, iupdb
@@ -142,6 +143,8 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,12,12,4,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw

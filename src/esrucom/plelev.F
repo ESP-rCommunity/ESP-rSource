@@ -44,6 +44,9 @@ C IUF is file unit for geometry, utility file units.
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -54,13 +57,14 @@ C IUF is file unit for geometry, utility file units.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
+      integer igwid,igheight  ! for use with axiscale
       logical newgeo  ! to use for testing if new/old geometry file.
       newgeo=.false.  ! assume older format geometry.
 
@@ -71,13 +75,19 @@ C IUF is file unit for geometry, utility file units.
       ENDIF
 
 C Define a viewing box, draw its border after clearing it and
-C return the offsets which define it.
+C return the offsets which define it. Recalculate igw and igwh
+C on fortran to address fault in 64 bit win3d code.
       call startbuffer()
       if(menuchw.ne.0)then
         CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       else
         CALL win3d(32,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       endif
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      
 C Reopen the dialogue box.
       CALL USRMSG(' ',' ','-')
 
@@ -87,17 +97,20 @@ C Place scaling in static C variables for use by line drawing routines.
 C Draw a scale horizontal axis, move to beginning point.
 C Draw a scale vertical axis.
       if(direc.eq.'P')then
-        CALL axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+        CALL axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         CALL horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
         CALL vrtaxis(YMN,YMX,igl,igb,igt,Yadd,sca,1,0,'^ North')
       elseif(direc.eq.'S')then
-        CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+        CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
         call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
       elseif(direc.eq.'E')then
-        CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+        CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call horaxis(YMN,YMX,igl,igr,igb,Xadd,sca,1,'North (m) ->')
         call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
@@ -210,11 +223,11 @@ C If there is a ground, ITDSP is flagged and plan view draw it.
 C Print labels and return to default font.
       call winfnt(IFS)
       if(direc.eq.'P')then
-        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(1:lnblnk(LSNAM))
       elseif(direc.eq.'S')then
-        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(1:lnblnk(LSNAM))
       elseif(direc.eq.'E')then
-        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(1:lnblnk(LSNAM))
       endif
       iy= igt-10
       ix = igl

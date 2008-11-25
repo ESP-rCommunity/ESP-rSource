@@ -283,7 +283,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir)/$(PROG2); fi
 
 clean:
-	rm -f core $(PROG) $(PROG2) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(OBJECTS) \
 	aim2_pretimestep.F arrow.F ascii_mat.F blcond.F bnlthp.F bpfcom.F bsimsel.F \
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F \
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \

@@ -304,47 +304,42 @@ C View frustrum clip flags
 
       ISTAT=-1
 
-C CONSIDER EACH CLIPPING PLANE IN TURN
-
+C Consider each clipping plant in turn.
       DO 100 J=1,6
 
-      EQN(1)=CLIPLN(J,1)
-      EQN(2)=CLIPLN(J,2)
-      EQN(3)=CLIPLN(J,3)
-      EQN(4)=CLIPLN(J,4)
+        EQN(1)=CLIPLN(J,1)
+        EQN(2)=CLIPLN(J,2)
+        EQN(3)=CLIPLN(J,3)
+        EQN(4)=CLIPLN(J,4)
 
-C FIND THE DISTANCE OF THE TEST POINT TO THE CLIPPING PLANE
+C Find the distance of the test point to the current clipping plane.
+        TDIS = EQN(1)*TPCLIP(1) + EQN(2)*TPCLIP(2) +
+     &         EQN(3)*TPCLIP(3) - EQN(4)
 
-      TDIS = EQN(1)*TPCLIP(1) + EQN(2)*TPCLIP(2) +
-     &       EQN(3)*TPCLIP(3) - EQN(4)
+C Find the status (ifbox) of the polygon represented by AX AY AZ to
+C the clipping plane equation.
+        CALL PLNBX(NAP,AX,AY,AZ,EQN,IFBOX)
 
-C FIND THE STATUS OF POLYGON TO THE CLIPPING PLANE EQN
+        IF (IFBOX) 30,50,30
 
-      CALL PLNBX(NAP,AX,AY,AZ,EQN,IFBOX)
-
-      IF (IFBOX) 30,50,30
-
-   30 IF ((IFBOX*TDIS).GE.0) GOTO 40
+   30   IF ((IFBOX*TDIS).GE.0) GOTO 40
 
 C ALL VERTEX POINTS ARE ON THE OPPOSITE SIDE OF THE CLIPPING PLANE
 C EQN TO THE TEST POINT. HENCE NO PART OF THE OBJECT BOUND BOX
 C IS WITHIN THE VIEW FRUSTRUM.
-
-      ISTAT=1
-      RETURN
+        ISTAT=1
+        RETURN
 
 C ALL VERTEX POINTS ARE ON THE SAME SIDE AS THE TEST POINT.
 C HENCE THE OBJECT NEED NOT BE CLIPPED BY THIS PLANE.
-
-   40 CONTINUE
-      IFCLIP(J)=0
-      GOTO 100
+   40   CONTINUE
+        IFCLIP(J)=0
+        GOTO 100
 
 C VERTEX POINTS ARE ON EITHER SIDE OF THE CLIPPING PLANE EQN
 C SO THE OBJECT MUST BE CLIPPED TO THIS PLANE
-
-   50 CONTINUE
-      IFCLIP(J)=1
+   50   CONTINUE
+        IFCLIP(J)=1
 
   100 CONTINUE
 
@@ -803,6 +798,9 @@ C ZBFLG()=0 bounds must be recalculated, ZBFLG()=1 use current value.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -819,7 +817,6 @@ C Ground geometry.
       LOGICAL   ISTOK,CLOSE
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER OUTSTR*124
 
       newgeo=.false.  ! assume older format geometry.
@@ -1074,6 +1071,7 @@ C INLNST: Initializes surface linestyle array line style.
       SUBROUTINE INLNST(ITYP)
 #include "building.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/RAY6/LINSTY(MCON)
 

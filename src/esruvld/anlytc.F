@@ -852,7 +852,11 @@ C *********************************************************************
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -864,7 +868,6 @@ C *********************************************************************
       character h*72,doit*124,cfgroot*24,MODE*4
       CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
       character LCMDFL*144
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
       logical xst
@@ -905,6 +908,7 @@ C Copy the default validation model.
       MODE='ALL '
       CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,ITRC,IER)
       NZONES=NCOMP
+      ISFSUM=0
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
       call eclose(gversion(IComp),1.1,0.01,newgeo)
       if(newgeo)then
@@ -925,13 +929,11 @@ C VMP111  modifies the variables of the validation model.
 C *********************************************************************
       SUBROUTINE VMP111
 #include "building.h"
+#include "control.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
@@ -1015,6 +1017,9 @@ C *********************************************************************
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GR1D05/LGRD1D
@@ -1022,7 +1027,6 @@ C *********************************************************************
       common/cctlnm/ctldoc,lctlf
 
       CHARACTER*72 LGRD1D
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER ctldoc*248,LCTLF*72
 

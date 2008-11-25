@@ -64,6 +64,7 @@ C File unit
       COMMON/FILEP/IFIL
 
 C Interface frame dimensions
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
@@ -83,6 +84,8 @@ C Scale the project
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/Displ/SelSurf(MCON)
 
@@ -201,6 +204,7 @@ C      CHARACTER tab*1
       CHARACTER*72 MatDesc,MatCat,LayerDes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Initial assumptions (summary reporting).
       call ezero
@@ -366,10 +370,13 @@ C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        igw=igr-igl
+        igwh=igb-igt
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -423,7 +430,10 @@ C properties, display it and then present the main menu.
           MODBND=.TRUE.
           MODLEN=.TRUE.
           nzg=NCOMP
-          IF(MMOD.EQ.8)call updwire(ncomp)
+          IF(MMOD.EQ.8)then
+            numberofzones=ncomp
+            call updwire(numberofzones)
+          endif
           DO 444 I=1,nzg
             nznog(I)=I
  444      CONTINUE

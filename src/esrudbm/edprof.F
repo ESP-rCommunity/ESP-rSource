@@ -339,6 +339,7 @@ C 'PROGRF' outputs a graphical display of the current event profile.
 C providing paramaters MGDB,MGCL,MGIT
       PARAMETER  (MC=35)
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/gendb6/ittag(MGIT),itmenu(MGIT)
@@ -349,6 +350,7 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       character DayT*8,Patr*8,ETEXT*72
       character ittag*12,itmenu*32
       logical vclose1,vclose2
+      integer igwid,igheight  ! for use with axiscale
 
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
 
@@ -357,7 +359,10 @@ C      DIMENSION VAL1(1440),VAL2(1440)
 
 C Set up data ready for graph drawing.
       call startbuffer()
-      call axiscale(igw,igwh,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (minutes)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')

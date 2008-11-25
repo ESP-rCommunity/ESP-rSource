@@ -999,7 +999,7 @@ case $compiler in
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
              *)    FFLAGS="$FFLAGS -finit-local-zero" ;;
            esac ;;
-   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags" ;;
+   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags -O0" ;;
 esac
 
 if [ "$platform" = "mingw" ] && [ "$xLibs" = "GTK" ]; then
@@ -1085,9 +1085,10 @@ case $xml_support in
        # -lxslt on cygwin/mingw.
        ULIBS="$ULIBS -lxml2";
 
-       # Append ws2_32 library on mingw.
+       # Append ws2_32 library on mingw and Crun to Sun
        case $platform in
             mingw)    ULIBS="$ULIBS -lws2_32";;
+            sun)    ULIBS="$ULIBS -lCrun";;
             *)        ULIBS="$ULIBS";;
        esac;
        # Flag xml for inclusion in bps

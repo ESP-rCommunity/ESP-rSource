@@ -46,6 +46,7 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       common/pophelp/h(60)
@@ -80,6 +81,7 @@ C Currently only one node plotted.
       logical OK,DOK
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer igwid,igheight  ! for use with axiscale
 
 C In order to pass strings across to C it is necessary to first
 C do an internal write placing an end marker which C can understand.
@@ -254,6 +256,8 @@ C Refresh the drawing area.
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         CALL win3d(menuchw,12,8,7,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
       ICOUNT=0
@@ -378,7 +382,10 @@ C Scale and draw axes.
       XMIN=0.
       XMAX=FLOAT(ICOUNT)/NTSPH+1.
       YMAX=YMAX+0.1
-      CALL axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
       CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)

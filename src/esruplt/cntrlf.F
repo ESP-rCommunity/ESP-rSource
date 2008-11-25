@@ -32,6 +32,7 @@ c strategy file.
       SUBROUTINE MZCSTR(IER)
 #include "plant.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -39,13 +40,9 @@ c strategy file.
 
       COMMON/CCTLNM/CTLDOC,LCTLF
 
-      COMMON/PCTL/NCL,IPSN(MCL,5),IPAN(MCL,4),NPCDT(MCL),
-     &IPCDV(MCL,MPCDT,2),NPCDP(MCL,MPCDT),TPCPS(MCL,MPCDT,MPCDP),
-     &IPCTYP(MCL,MPCDT,MPCDP),IPCLAW(MCL,MPCDT,MPCDP),
-     &PMISCD(MCL,MPCDT,MPCDP,MISC)
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS 
 
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
 
       logical ok,dok,PBYFIL,pcfngn
 
@@ -129,17 +126,11 @@ C `Function Generator` sensor .
       SUBROUTINE PFGRSD
 #include "plant.h"
 #include "building.h"
+#include "control.h"
       
       common/outin/iuout,iuin
-      
       common/pophelp/h(60)
-
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-
-      common/pcfngr/clfgsd(MCL,6),pcfngn,IDAYPD
+      common/pcfngr/clfgsd(MCF,6),pcfngn,IDAYPD
 
       character outs*124,H*72
       character hold*40,nterm*1

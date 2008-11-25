@@ -66,6 +66,8 @@ C and should just write out this data.
       COMMON/FILEP/IFIL
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -105,7 +107,6 @@ C updated when the user exits).
       logical gotviabrowse
       dimension iper(24),iperf(24)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER zname*12,zdesc*64,tcname*248
       CHARACTER ITEM(14)*33,choices(12)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
@@ -1234,6 +1235,8 @@ C IER=0 is OK.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1254,7 +1257,6 @@ C IER=0 is OK.
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
@@ -1658,6 +1660,8 @@ C IER=0 is OK.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -1690,7 +1694,6 @@ C of one signals m3/h and a value of 2 signals m3/s.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
@@ -2541,6 +2544,8 @@ C << initial intent to guide later revisions?
       common/pophelp/h(60)
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC2/VOL(MCOM)
@@ -2577,7 +2582,6 @@ C Scratch copy of air flow pattern from an operations file.
 
       character*(*) sfile
       character zname*12,zdesc*64,h*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER oprdescc*248,ctlstrc*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
@@ -3054,6 +3058,7 @@ C  ICOMP zone number
       subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -3087,6 +3092,9 @@ C Scan each days gains and find maximum flow.
 C Clear and setup plot area.
       CALL startbuffer()
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igheight=igwh
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
@@ -3099,12 +3107,12 @@ C Calculate plotting box locations.
       YMAXF=YMAX*VOL(ICOMP)/3600.
 
 C Scale and draw right hand (m^3/s) axis first.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAXF,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
       call vrtaxis(YMIN,YMAXF,igr,igb,igt,yadd,ysc,0,1,'Flow (m^3/s)')
 
 C Re-set scale for gain (W) axis.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAX,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw for first day type requested
@@ -4586,6 +4594,8 @@ C << initial intent to guide later revisions?
       common/pophelp/h(60)
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -4650,7 +4660,6 @@ C Base area for zones.
       character zname*12,zdesc*64,fs*1,GFILE*72,iwatt*8
       character actcas*8
       character act*1   ! '-' normal, 's' silent
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL XST,unixok,dok,ok
 
 C Flags noting whether casual gain periods are currently sorted.
@@ -4950,6 +4959,7 @@ C  ICOMP zone number
       
       integer lnblnk  ! function definition
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -4972,6 +4982,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
       character zname*12,zdesc*64
+      integer igheight  ! for use with axiscale
 
       logical COLOK
       IDTY=IDTYP
@@ -5053,6 +5064,9 @@ C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
 C Clear and setup plot area.
       CALL startbuffer()
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igheight=igwh
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
@@ -5069,12 +5083,12 @@ C Calculate plotting box locations.
       endif
 
 C Scale and draw right hand (W/m^2) axis first.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAXF,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
       call vrtaxis(YMIN,YMAXF,igr,igb,igt,yadd,ysc,0,1,'Gain (W/m^2)')
 
 C Re-set scale for gain (W) axis.
-      CALL axiscale(ipltwd,igwh,plxmin,plxmax,YMIN,YMAX,
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
      &                                         xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw first day type requested

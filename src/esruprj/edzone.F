@@ -63,7 +63,11 @@ C an extrusion. IER=0 OK.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -77,7 +81,6 @@ C an extrusion. IER=0 OK.
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER HOLD*32
@@ -538,7 +541,11 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -552,7 +559,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP,DFILE
+      CHARACTER*72 LTMP,DFILE
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -575,7 +582,7 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      H(1)='You may read in an existing ESP-r zone geometry file,'
+ 293  H(1)='You may read in an existing ESP-r zone geometry file,'
       H(2)='convert a cflow3/IES zip file into one or more zones'
       H(3)='(i.e whole model conversion)or create a zone by inputing'
       H(4)='data related to primitive shapes.'
@@ -584,7 +591,7 @@ C Set folder separator (fs) to \ or / as required.
      &  INZOPT,48)
 
 C Input dimensions.
- 293  if(INZOPT.eq.1)then
+      if(INZOPT.eq.1)then
 
 C Provide scratch description and the
 C default assumptions for other zone files.
@@ -992,6 +999,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -1014,7 +1022,10 @@ C espriou.h provides currentfile.
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -1032,16 +1043,6 @@ C espriou.h provides currentfile.
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-
-C Controls.
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
 
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
@@ -1069,7 +1070,6 @@ C Anchor data.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER cfgroot*24
@@ -1294,7 +1294,8 @@ C Shift sensor/actuator zone references > IW2 down one.
       endif
       
 C Loop through all other zones and if a surface attribute
-C faces the current zone then reset it to OUTSIDE.
+C faces the current zone then reset it to UNKNOWN. Also update
+C the values of ICT, IE2 and IC2.
       call usrmsg('Unlinking surfaces referencing this zone...',' ','-')
       do 25 IX=1,NCOMP
         if(IX.ne.IW2)then
@@ -1308,20 +1309,26 @@ C faces the current zone then reset it to OUTSIDE.
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
             if(SOTHER(ISX,1)(1:12).eq.zname(IW2)(1:12))then
-              SOTHER(ISX,1)='EXTERIOR'
+              SOTHER(ISX,1)='UNKNOWN'
               SOTHER(ISX,2)='0'
               SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='EXTERIOR'
+              SSOTHER(ioc,1)='UNKNOWN'
               SSOTHER(ioc,2)='0'
               SSOTHER(ioc,3)='0'
+              ICT(ioc)=-1
+              IE2(ioc)=0
+              IC2(ioc)=0
               changed = .true.
             elseif(SOTHER(ISX,1)(1:4).eq.'WITH')then
-              SOTHER(ISX,1)='EXTERIOR'
+              SOTHER(ISX,1)='UNKNOWN'
               SOTHER(ISX,2)='0'
               SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='EXTERIOR'
+              SSOTHER(ioc,1)='UNKNOWN'
               SSOTHER(ioc,2)='0'
               SSOTHER(ioc,3)='0'
+              ICT(ioc)=-1
+              IE2(ioc)=0
+              IC2(ioc)=0
               changed = .true.
             endif
    28     continue
@@ -1650,6 +1657,8 @@ C IER=0 OK.
       SUBROUTINE WARNMOD(ICOMP,act)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1658,7 +1667,6 @@ C IER=0 OK.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER act*3
 
       LOGICAL XST,comold,tmcold,vwfold,ishold
@@ -1666,7 +1674,11 @@ C IER=0 OK.
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'sat')then
         call FINDFIL(LTHRM(ICOMP),XST)
-        if(XST)comold = .true.
+        if(XST)then
+          comold = .true.
+        else
+          comold = .false.
+        endif
       endif
 
 C Check for implications of surface addition or removal or attribution change.
@@ -1675,27 +1687,43 @@ C << refine testing for setting tmcold >>
      &act(1:3).eq.'sat')then
         if(ITW(ICOMP).eq.1)then
           call FINDFIL(LTWIN(ICOMP),XST)
-          if(XST)tmcold = .true.
+          if(XST)then
+            tmcold = .true.
+          else
+            tmcold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'str')then
         if(IVF(ICOMP).eq.1)then
           call FINDFIL(LVIEW(ICOMP),XST)
-          if(XST)vwfold = .true.
+          if(XST)then
+            vwfold = .true.
+          else
+            vwfold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'str')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
-          if(XST)ishold = .true.
+          if(XST)then
+            ishold = .true.
+          else
+            ishold = .false.
+          endif
         endif
       endif
       if(act(1:3).eq.'ob-'.or.act(1:3).eq.'ob+')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
-          if(XST)ishold = .true.
+          if(XST)then
+            ishold = .true.
+          else
+            ishold = .false.
+          endif
         endif
       endif
 
@@ -1715,6 +1743,8 @@ C IER=0 OK.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -1724,7 +1754,6 @@ C IER=0 OK.
       common/C21/IFCFG,cfgroot,LCFGF
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER H*72,zname*12,zdesc*64,act*1
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
@@ -1843,12 +1872,16 @@ C     = 'in '  interactive new
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
 
-      character*72 LTHRM,LCFGF,LSHAD,LPROJ,LGEOM,LSNAM,LUTIL
+      character LCFGF*72
       CHARACTER ZNAME*12,ZN*12,longtfile*144,longtfiledos*144
       character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
       character act*3  ! the parameter passed
@@ -2329,6 +2362,9 @@ C Fell through, no change in climate and location.
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
      &    '. Previously used ',xlat,xlon,'.'
         call edisp(iuout,outs)
+
+C << place to define a calendar if this has not already been
+C << done.
 	
 C If there is ground temperature information scan that file and
 C put the data in UGRDTP.
@@ -2439,7 +2475,11 @@ C#include "esprdbfile.h"
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2504,7 +2544,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension textmass(4,3)
      
       DIMENSION XX(MS),YY(MS)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -3127,6 +3166,8 @@ C espriou.h provides currentfile.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C4/XLAT,XLON
       COMMON/FILEP/IFIL

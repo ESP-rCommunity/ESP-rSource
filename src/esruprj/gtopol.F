@@ -44,7 +44,11 @@ C ****** GTOPOL
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C6/INDCFG
@@ -56,7 +60,6 @@ C ****** GTOPOL
       dimension ivals(MGRT)
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER DESC*48,H*72,outs*124,ltmp*72,t15*15,ETEXT*82
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
 
       grmod=.true.
@@ -3276,6 +3279,7 @@ C output: triangle list
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -3290,6 +3294,7 @@ C output: triangle list
       CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
+      integer igwid,igheight  ! for use with axiscale
 
 C If there is a ground geometry then check its bounds.
       do 741 iv = 1,NGTV
@@ -3365,7 +3370,9 @@ C If viewpoint or bounds different then initialise viewing paramters.
 C Clear current viewing box.
         CALL startbuffer()
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
 

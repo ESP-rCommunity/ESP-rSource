@@ -142,6 +142,7 @@ C Graphics and ESP-r default commons
       COMMON/MOD/MODEL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -332,6 +333,8 @@ C messages to stderr in case of rule script program control.
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
         CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opensetup
@@ -965,6 +968,7 @@ C Connection commons
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Grid commons
@@ -981,6 +985,7 @@ C Grid commons
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12,OUTS1*26
       LOGICAL GON,SON,greyok
+      integer igwid,igheight  ! for use with axiscale
 
 C Clear the screen
       CALL startbuffer
@@ -1036,8 +1041,10 @@ C Draw the grid with the current scaling parameters.
         YMAX=VIEWLIM(6)
       ENDIF
 
-      CALL AXISCALE(IGW,IGWH,XMIN,XMAX,YMIN,YMAX,XSC,YSC,SCA,XADD,
-     &       YADD)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,SCA,
+     &       XADD,YADD)
 
 C Draw the Lower and Left extents of the grid and labels.
       IF(IVIEW.EQ.1.OR.IVIEW.EQ.2)THEN
@@ -2041,6 +2048,7 @@ C Grid commons
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
 
 C Icon commons
@@ -2329,6 +2337,7 @@ C Icon commons
      & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
      & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
 
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)

@@ -367,6 +367,8 @@ C << rewrite logic using G6 common block >>
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -409,15 +411,18 @@ C Arrays of material properties.
 C << rewrite logic to use G7 commons instead of these local variables. >>
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),spdesc(40),
+      DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
+C Note: spdesc is passed to subroutine MCDBSCAN in leu of sstr;
+C therefore spdesc must have the same dimensions as dummy arguement
+C sstr in spdesc.
+      dimension spdesc(90)
 
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
       integer header,footer
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
       CHARACTER TITL*72,DADESC*72,spitem2*32

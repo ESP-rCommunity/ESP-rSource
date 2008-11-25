@@ -41,6 +41,7 @@ C of inter-fabric temperature and condensation conditions.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
@@ -155,6 +156,7 @@ C to the fabric temperature or condensation information.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -187,6 +189,8 @@ C pixel references for calls to viewtext.
       IF(MMOD.EQ.8)THEN
         call startbuffer
         call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
       lsn1=MIN0(lnblnk(RFILE),22)
@@ -700,6 +704,7 @@ C condensation graphical output.
       SUBROUTINE MOIAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/OUTPCH/ICOUT
@@ -708,6 +713,7 @@ C condensation graphical output.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character outs*124
+      integer igwid,igheight  ! for use with axiscale
 
       XMAX=THKMAX
       XMIN=THKMIN
@@ -718,7 +724,9 @@ C condensation graphical output.
       call edisp(icout,outs)
 
 C Compute scaling factors and draw the axis.
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
@@ -735,6 +743,7 @@ C and vapour pressure gradients.
       SUBROUTINE MOIDRW(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -818,6 +827,9 @@ C period.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -858,7 +870,6 @@ C Arrays of material properties.
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1

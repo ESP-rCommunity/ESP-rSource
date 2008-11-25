@@ -36,6 +36,8 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
@@ -111,6 +113,8 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)

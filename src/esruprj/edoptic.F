@@ -59,22 +59,22 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*144,tg*1,delim*1
-c      character fs*1
       character OUTSTR*124,lfil*72,word*24,outs248*248
-c      character lworking*144
+      character lworking*144,fs*1
       dimension RVA(20),IVA(24)
 
       logical moddb,browse,OK,DOK,edt
-c      integer lndbp   ! for length of standard database path
-c      logical unixok  ! to check for database path file separators
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
-c      call isunix(unixok)
-c      if(unixok)then
-c        fs = char(47)
-c      else
-c        fs = char(92)
-c      endif
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER=0
       moddb = .false.
@@ -88,8 +88,7 @@ C select one and then edit/list details.  Setup for multi-page menu.
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
-   3  IER=0
-      ILEN=nopt
+   3  ILEN=nopt
       INO=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -465,23 +464,19 @@ C Check the value of whichdbpath variable to see what to do with
 C this file. If local or absolute path then use efopseq. If in
 C the standard location then create lworking which has path
 C prepended.
-
-C << comment out ipathoptdb because data structure is not implemented
-C << in this revision of esruprj
-
-C      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         CALL EFOPSEQ(IOPTDB,LOPTDB,1,IER)
         loptdbl=LOPTDB
-C      elseif(ipathoptdb.eq.2)then
-c        lndbp=lnblnk(standarddbpath)
-c        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-c     &    loptdb(1:lnblnk(loptdb))
+      elseif(ipathoptdb.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    loptdb(1:lnblnk(loptdb))
 
 C Debug.
-c        write(6,*) 'EDOPT working optics ',lworking
-C        CALL EFOPSEQ(IOPTDB,lworking,1,IER)
-C        loptdbl=lworking
-C      endif
+        write(6,*) 'EDOPT working optics ',lworking
+        CALL EFOPSEQ(IOPTDB,lworking,1,IER)
+        loptdbl=lworking
+      endif
 
       CALL EFDELET(IOPTDB,ISTAT)
       ioptl=ioptdb
@@ -615,6 +610,7 @@ C EDITOPT edits one set of optical properties via common block.
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GPICK/GS(MGOPT),nopt
@@ -625,6 +621,7 @@ C ilabs is string arry for layer insert/delet selection.
       CHARACTER KEY*1,T12*12,ilabs*43
       CHARACTER GS*52,ETEXT*72,GTEXT*72,temp*16
       logical edited
+      integer igwid,igheight  ! for use with axiscale
 
       IER=0
       edited=.false.
@@ -691,7 +688,11 @@ C (re)draw optical properties.
         YMAX=1.0
         CALL startbuffer()
         call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
-        call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.
@@ -1540,8 +1541,10 @@ C      integer lnblnk  ! function definition
       COMMON/RAY6/LINSTY(MCON)
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C24/IZSTOCN(MCOM,MS)
+C      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NSTMCFL flag for each model surface (connection). A non-zero
 C   number indicates bi-directional information is available.
@@ -1551,8 +1554,9 @@ C   Limited to 0 or 1 at present.
 
       DIMENSION VERT(35)
       character H*72,VERT*54,CXITM*43,key*1,lfil*72
-      character outs*124,bidirfile*72,DFILE*72,bidirname*12
-      logical MODIFY,MODLEN,MODBND,ok,dok
+      character bidirfile*72,DFILE*72,bidirname*12
+      logical MODIFY,MODLEN,MODBND !,ok,dok
+C      character outs*124
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.

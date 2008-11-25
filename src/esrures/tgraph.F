@@ -169,8 +169,10 @@ C act='p' iget parameters already set.
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
 
@@ -200,6 +202,7 @@ C act='p' iget parameters already set.
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
+      integer igwid,igheight  ! for use with axiscale
 
       logical kwatts,colok
 
@@ -438,8 +441,10 @@ C Round YMIN to a sensible value.
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
           call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
-          call axiscale(igw,igwh,TSTART-1.0,TFINSH,YMIN(I),YMAX(I),
-     &                             TSC,YSC(I),sca,Xadd,Yadd(I))
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
+     &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
             call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))
@@ -608,6 +613,7 @@ C to graphical result display.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -712,6 +718,8 @@ C Set standard fornt width so that space around graph is correct.
             call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         endif
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 
@@ -829,17 +837,9 @@ C ****************************************************
 
               SUBROUTINE MOCDAT(IZON,IDAY,TME)
          
-#include "plant.h"
 #include "building.h"
+#include "control.h"
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/CGHOPT/ERPLOT,TRPLOT,SPPLOT,NCTLGH,ICTLGH,ISP,ITHR
       COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP

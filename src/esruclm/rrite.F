@@ -30,6 +30,7 @@ C climate file.
       COMMON/RADTYP/IDNGH
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
@@ -149,6 +150,8 @@ C Reset to the normal graphics area before exiting.
             CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
           CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         return
       elseif(INO.eq.mitem-1)then

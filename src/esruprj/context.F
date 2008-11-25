@@ -40,11 +40,16 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC8/SLAT,SLON
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -91,7 +96,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
 
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,GTGEOM
+      character*72 GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character imgfmt*4,imgfoc*4,limgfil*72
@@ -100,7 +105,9 @@ C ITEMS is menu for site/context items.
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
-
+      integer icreport  ! to signal that calendar has been updated.
+      integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
@@ -541,18 +548,52 @@ C Weekends def.
       ELSEIF(INO.EQ.7)THEN
 
 C Change the year and if calendar has not been set up initialise
-C and then list the months of the year.
+C and then list the months of the year.  If there is an existing
+C calendar with the default day types and the year has changed
+C then re-initialize the calendar.
         H(1)='Control and scheduling actions the year to be defined.'
         H(2)='You may accept the one specified with the climate'
         H(3)='file or provide an alternative.'
+        H(4)=' '
+        H(5)='The choice is year impacts the day of the week for'
+        H(6)='1 January. It also will alter the day type associated'
+        H(7)='of days in the calendar which are the standard default'
+        H(8)='weekday/saturday/sunday (but not user defined day types.'
         iyeart=iyear
         CALL EASKI(iyeart,' ','Simulation year?',
-     &       1900,'W',2010,'W',2001,'year',IERI,3)
+     &       1900,'W',2010,'W',2001,'year',IERI,8)
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.
         if(nbdaytype.eq.0)then
           call calenmanage('i',ier)
+        elseif(nbdaytype.eq.3)then
+          call calenmanage('i',ier)
+        elseif(nbdaytype.gt.3)then
+
+C Perform check that calendar day types correspond with simulation year
+C If more than three day types are declared then retain those day types
+C otherwise overwrite. (Same logic as in esystem.F 
+          ICREPORT=0
+          DO 123 IDOL=1,365
+            IF(ICALENDER(IDOL).LE.3)THEN
+              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+              IF(IDWKNUM.LT.6)THEN
+                IDTYY=1 ! WEEKDAY
+              ELSEIF(IDWKNUM.EQ.6)THEN
+                IDTYY=2 ! SATURDAY
+              ELSEIF(IDWKNUM.EQ.7)THEN
+                IDTYY=3 ! SUNDAY
+              ENDIF
+              IF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY
+                ICREPORT=1
+              ENDIF
+            ENDIF
+ 123      CONTINUE
+          IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
+     &      'Simulation year and calendar mismatch rectified')
         endif
         dok=.false.
         H(1)='You can use the calandar to check that a day or days'
@@ -1218,6 +1259,7 @@ C temporal data to be associated with a model.
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
 #include "tdf2.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -1242,10 +1284,6 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
       common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
 
@@ -1962,8 +2000,8 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=4.0
-              cm(3)=5.0
+              cm(2)=5.0
+              cm(3)=6.0
             endif
 
             ibsn(ispl,1)=IC
@@ -3417,14 +3455,18 @@ C EDDGTP Sets up shading and insolation files
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,ZNAME*12,ZN*12,LCFGF*72
       character zdesc*64,outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok

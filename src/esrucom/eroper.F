@@ -136,7 +136,11 @@ C espriou.h provides currentfile.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
@@ -183,7 +187,6 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER outstr*124,outs*124,lodlabel*6
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
       logical havehi,dll
@@ -2546,7 +2549,11 @@ C UPDOPR     Updates all operations data when day types are incremented
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2567,7 +2574,7 @@ C UPDOPR     Updates all operations data when day types are incremented
       REAL PF,PWR,BVOLT
 
       INTEGER ITRC,ITRU,IUO,ICOMP,IER,ISTAT,NBDAYTYPEHOLD
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,H
+      CHARACTER H*72
       LOGICAL XST
 
 C Initialise local variables

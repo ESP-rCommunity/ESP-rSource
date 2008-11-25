@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -35,7 +35,6 @@ C information to be saved into a new file. ITRU unit number for user
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
 #include "building.h"
-#include "plant.h"
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "control.h"
@@ -57,7 +56,11 @@ C LPRFDB,IPRODB (for event profile database)
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
@@ -95,30 +98,6 @@ C Uncertainty.
      &  smstres(MSPS),selres(MSPS),sipvres
       common/entfile/entflnam,ientxist
 
-C Controls.
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
-      common/pctl/ncl,ipsn(mcl,5),ipan(mcl,4),npcdt(mcl),
-     &       ipcdv(mcl,mpcdt,2),npcdp(mcl,mpcdt),tpcps(mcl,mpcdt,mpcdp),
-     &       ipctyp(mcl,mpcdt,mpcdp),ipclaw(mcl,mpcdt,mpcdp),
-     &       pmiscd(mcl,mpcdt,mpcdp,misc)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/gctl/ngf,igsn(mgl,4),igan(mgl,3),ngcdt(mgl),
-     &       igcdv(mgl,mgcdt,2),ngcdp(mgl,mgcdt),tgcps(mgl,mgcdt,mgcdp),
-     &       igctyp(mgl,mgcdt,mgcdp),igclaw(mgl,mgcdt,mgcdp),
-     &       gmiscd(mgl,mgcdt,mgcdp,misc)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -151,7 +130,7 @@ C For optical controls
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(29)
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCNN
+      character*72 LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
@@ -1190,7 +1169,11 @@ C output, IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+     
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -1245,22 +1228,24 @@ C Descriptive label for a zone load or casual gain types.
       logical MODIFY,MODLEN,MODBND,concat,browse,QUIET
       logical XST,OKOB,OKZT,OKZR
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN,OKC,dok,clkok
-      logical unixok,silent
+      logical unixok
+      logical silent
 
 C Flag noting whether casual gain periods are currently sorted.
       logical sorted,problem
       logical newgeo  ! to use for testing if new/old geometry file.
-
+      
+      character ITEMS*32
+      integer ivals
       dimension ITEMS(25),IVALS(MCOM)
       dimension jict(MS),jic2(MS),jie2(MS)
       dimension jsotf(MS),jsmlcn(MS),jsvfc(ms),jsother(ms,3)
       dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character LCFGF*72,H*72,ITEMS*32,SFIL*72
+      character LCFGF*72,H*72,SFIL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -1277,6 +1262,10 @@ C Flag noting whether casual gain periods are currently sorted.
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer itru,ier  ! type for passed parameters
+      real val,x1,y1    ! type for passed parameters
+      integer inpic     ! type for passed parameters
+      integer iuf       ! file unit type
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -1437,14 +1426,14 @@ C Ask for transform distance then which zones and then apply.
           CALL EPICKS(INPIC,IVALS,' ','Zones to transform?',
      &                12,NCOMP,zname,'zone list',IER,1)
           IF(INPIC.EQ.0)GOTO 3
-  
+
 C Perform the global transform interactively.
           silent= .false.
           call globaltransform(valx,valy,valz,inpic,ivals,
      &      silent,itru,ier) 
           MODIFY=.TRUE.
           MODBND=.TRUE.
-  
+
         elseif(IRT.eq.2)then
 
 C Rotation degree and choices.
@@ -1486,7 +1475,7 @@ C Implement the rotations for the selected zones.
           endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
-  
+
         elseif(IRT.eq.3)then
 
           call serchrpl('a',itrc,iier)
@@ -1677,6 +1666,7 @@ C Save zone geometry, read in obstructions, write out to another
 C file and then recover the zone commons.
           if(IOBS(ic).eq.1)then
             dok=.true.
+            OKOB=.true.
             h(1)='The original zone had associated solar obstructions'
             h(2)='and you have two options '
             h(3)=' a) copy the obstructions so that modifications'
@@ -1745,7 +1735,7 @@ C Zone rotations and transforms.
               goto 3
             endif
           endif 
-   
+
 C Act on the skip transform request.   
           if(iclkok.eq.2) then
             okzt=.false.
@@ -1865,9 +1855,11 @@ C Now it is ok to write out the copied zone.
             newgeo = .true.
           endif
           if(newgeo)then
-            call geowrite(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+	    iuf=ifil+2
+            call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+	    iuf=ifil+2
+            call emkgeo(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           endif
           IF(IER.EQ.1)THEN
             dok=.true.
@@ -3194,7 +3186,11 @@ C espriou.h for parameter MFFOLD
       common/RAY3/MODIFY,MODLEN,MODBND
       common/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+     
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -3221,7 +3217,6 @@ C Defaults.
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
 
@@ -3229,6 +3224,7 @@ C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*32
 
       integer igraphiclib  ! external definition
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3699,7 +3695,8 @@ C If there is a ground topology read it.
         endif
 
         IF(MMOD.EQ.8)then
-          call updwire(ncomp)
+          numberofzones=ncomp
+          call updwire(numberofzones)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -3823,7 +3820,10 @@ C mode (with blanks for the parameters).
         CFGOK=.TRUE.
 
 C Open default databases (user can alter later).
-        IF(MMOD.EQ.8)call updwire(ncomp)
+        IF(MMOD.EQ.8)then
+          numberofzones=ncomp
+          call updwire(numberofzones)
+        endif
         call opendb(ier)
         if(ier.ne.0)then
           call usrmsg(
@@ -3843,7 +3843,7 @@ C << it would be clearer if all model I/O happened there >>
       
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -3855,7 +3855,7 @@ C << it would be clearer if all model I/O happened there >>
       logical concat,OK,DOK,browse,XST,deref,unixok
       character lradcf*72,dradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
-      character doit*124,tmode*8,tfile*72,H*72,act*1
+      character doit*124,tmode*8,H*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
@@ -3989,7 +3989,8 @@ C an offset from prj start position.
         CALL PHELPD('e2r finished menu',2,'-',0,0,IER)
 
 C Check if radiance scene file exists. If not or zero length or not correct 
-C file type then dereference it from the cfg file.
+C file type then dereference it from the cfg file. The alternative location
+C for the scene file is in ../rad if user owned the model.  
         if(.NOT.browse)then
           IRCFG=IFIL+1
           call ERPFREE(IRCFG,ISTAT)
@@ -4040,18 +4041,30 @@ C   silent (logical) if true then do not ask user about transforms
 C      of obstruction data.
       subroutine globaltransform(valx,valy,valz,izlistnb,izlist,
      &  silent,itru,ier)
+      implicit none
 #include "building.h"
       
       integer lnblnk  ! function definition
+      real valx,valy,valz  ! the transforms
+      integer izlistnb,izlist
+      dimension izlist(MCOM)  ! array of which zones are selected for transform.
+      logical silent  ! if true then skip dialogs
+      integer itru,ier  ! type for passed parameters
 
+      integer ifil
       common/FILEP/IFIL
+      integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer nzsur,nztv
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      integer ivf,isi,ihc,itw,icgc,iobs
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -4061,33 +4074,41 @@ C      of obstruction data.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
+      integer NSUR,JVN,NVER,NTV
+      real X,Y,Z
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      
+      integer nb
+      real XO,YO,ZO,DX,DY,DZ,BANG
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
 
+      real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-      CHARACTER CUBN*6
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical silent  ! if true then skip dialogs
-      real valx,valy,valz  ! the transforms
-      integer izlistnb,izlist
-      dimension izlist(MCOM)  ! array of which zones are selected for transform.
       
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zname*12,zdesc*64,ZN*12,h*72
       character outs*124
       logical DOK,OK
+      integer iuf   ! file type 
+      integer iicomp  ! index of current zone
+      integer itrc,ij,i,iz  ! types for local variables
        
       IUF=IFIL+2
       DO 83 IZ=1,izlistnb
         IF(izlist(IZ).GT.0)THEN
           IICOMP=izlist(IZ)
+          call sumrchg(IICOMP,'i',silent)  ! clear the whats changed data
           write(zn,'(A)') zname(IICOMP)
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),'...'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4118,6 +4139,8 @@ C Decide whether to upgrade the geometry file format.
 
 C After transform update the g6 & g7 commons and find dependencies.
           call zgupdate(0,IICOMP,ier)
+
+C Depending on the nature of the change update the common block pmchange.
           call warnmod(IICOMP,'str')
 
 C Transform any MRT sensors associated with this zone.
@@ -4197,6 +4220,8 @@ C apply the transform and write the file back out.
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),
      &      '...done'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+
+C Report to the user the implications of the recent change in the model.
           call sumrchg(IICOMP,'r',silent)
         endif
    83 continue
@@ -4216,18 +4241,31 @@ C   izlist is the array holding selected zone indicies to rotate
 C   silent (logical) if true then do not ask user about rotations
 C      of obstruction data.
       subroutine globalrotate(val,x1,y1,izlistnb,izlist,silent,itru,ier)
+
+      implicit none
 #include "building.h"
       
       integer lnblnk  ! function definition
+      integer izlistnb,izlist,itru,ier  ! type for passed parameters
+      dimension izlist(MCOM)  ! array of which zones are selected for transform.
+      real val        ! rotation angl
+      real x1,y1      ! the point to rotate around
+      logical silent  ! if true then skip dialogs
 
+      integer ifil
       common/FILEP/IFIL
+      integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer nzsur,nztv
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      integer ivf,isi,ihc,itw,icgc,iobs
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -4237,32 +4275,35 @@ C      of obstruction data.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      integer nb
+      real XO,YO,ZO,DX,DY,DZ,BANG
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
 
+      real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-      CHARACTER CUBN*6
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical silent  ! if true then skip dialogs
-      real x1,y1      ! the point to rotate around
-      integer izlistnb,izlist
-      dimension izlist(MCOM)  ! array of which zones are selected for transform.
       
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zname*12,zdesc*64,ZN*12,h*72
       character outs*124
       logical DOK,OK
+      integer itrc,iuf,iicomp,ij,iz,i
+      real A,pi,XR,YR,XXX,YYY,CA,SA
        
       IUF=IFIL+2
       DO 84 IZ=1,izlistnb
         IF(izlist(IZ).GT.0)THEN
           IICOMP=izlist(IZ)
+          call sumrchg(IICOMP,'i',silent)  ! clear the whats changed data
           write(zn,'(A)') zname(IICOMP)
           write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),'...'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
@@ -4287,6 +4328,8 @@ C      of obstruction data.
 
 C After transform update the g6 & g7 commons and find dependencies.
           call zgupdate(0,IICOMP,ier)
+
+C Depending on the nature of the change update the common block pmchange.
           call warnmod(IICOMP,'str')
 
 C Rotate any MRT sensors associated with this zone.
@@ -4320,7 +4363,6 @@ C Rotate any MRT sensors associated with this zone.
   76            continue
                 CALL EMKMRT(LVIEW(IICOMP),LGEOM(IICOMP),
      &                      NZSUR(IICOMP),IUF,IICOMP,'v',IER)
-
               endif
             endif
           endif

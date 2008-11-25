@@ -33,6 +33,8 @@ C facilities are 'hidden' in the current version.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       CHARACTER*23 ITEM(12)

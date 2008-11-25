@@ -19,6 +19,7 @@ C and says 'viewer bye-bye', and does a stop.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY 
       COMMON/NNAAMM/NAMDS,NAMPIC
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
 
@@ -31,6 +32,7 @@ C Redirected text/graphics parameters.
       character wins*20,outs*124,H*72,hold*36
       character xfile*144,tg*1,delim*1
       logical close,OK
+      integer igwid,igheight  ! for use with axiscale
 
 C MENU OF COMMANDS
       DATA XEQ,YEQ,ZEQ/'X=   ','Y=   ','Z=   '/
@@ -399,7 +401,10 @@ C IF NOT TEK ALWAYS INPUT NUMERICALLY
 C Get scaling factors and reduce the size of the plan and add to
 C the normal offsets to show the image near the centre.
       call usrmsg(' ',' Select point via cursor...','-')
-      call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       scap=sca*0.2
       addx=(FLOAT(igw)*0.4)/scap
       addy=(FLOAT(igwh)*0.4)/scap

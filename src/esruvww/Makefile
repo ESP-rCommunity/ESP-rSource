@@ -22,4 +22,4 @@ install:
 	@if [ -f $(PROGRAM) ]; then cp $(PROGRAM) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROGRAM) $(OBJECTS) wwlib.c
+	rm -f core $(PROGRAM) $(PROGRAM).exe $(OBJECTS) wwlib.c

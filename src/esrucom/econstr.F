@@ -1128,6 +1128,8 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
@@ -1400,7 +1402,7 @@ C Existing format - keep reading as previously for existing bidirectional files
         goto 42
       elseif(WORD(1:9).eq.'*set_type')then
         CALL EGETWI(OUTSTR,K,IV,1,100,'W','set types',IER)
-        ISETTYPE=IV
+        ISETTYPE=IV   ! not used yet
         goto 42
       elseif(WORD(1:8).eq.'*end_set')then
         goto 42

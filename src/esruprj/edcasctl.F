@@ -41,7 +41,11 @@ C EDCASCTL - edit casual gain control data.
       common/user/browse
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -93,7 +97,6 @@ C TMC common block:
       logical newgeo  ! to use for testing if new/old geometry file.
       logical browse
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24

@@ -75,6 +75,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean :
-	rm -f core $(PROG) $(OBJECTS) c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F item.F mfcdat.F nwkrewr.F \
 	pltcfg.F sort.F tdfile.F readTrnsys.F

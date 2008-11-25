@@ -53,6 +53,7 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
 #include "building.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -62,6 +63,7 @@ C ARF    - future time adjacent incident radiation & casual etc.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
@@ -111,10 +113,6 @@ C Control commons (for use with partition injections).
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
       COMMON/SETUQ/QPLTP(MCOM),QPLTF(MCOM),CONV(MCOM)
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
-     &IBCDV(MCF,MBCDT,2),NBCDP(MCF,MBCDT),TBCPS(MCF,MBCDT,MBCDP),
-     &IBCTYP(MCF,MBCDT,MBCDP),IBCLAW(MCF,MBCDT,MBCDP),
-     &BMISCD(MCF,MBCDT,MBCDP,MISC)
 
 C The following common saves the computed future time-row
 C values for use as present values at the next time-step.

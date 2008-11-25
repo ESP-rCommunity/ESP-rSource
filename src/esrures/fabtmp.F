@@ -43,6 +43,9 @@ C the results database.
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -50,7 +53,6 @@ C the results database.
 
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER outs*124
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -465,9 +467,11 @@ C temperature graphical output.
       SUBROUTINE MOFAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+      integer igwid,igheight  ! for use with axiscale
 
       CALL MOFHED(ICOMP,ISUR,'i')
       XMAX=THKMAX
@@ -475,7 +479,9 @@ C temperature graphical output.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
@@ -494,6 +500,7 @@ C If act = i then initial display, if act = s then single step display.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
@@ -523,9 +530,13 @@ C and the simulation and output timesteps.
         if(act.eq.'i')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(act.eq.'s')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
       ENDIF
 
@@ -600,6 +611,7 @@ C MOFDRW displays the construction temperature profiles.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)

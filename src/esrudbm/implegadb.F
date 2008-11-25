@@ -1230,8 +1230,8 @@ C LPRFDB,IPRODB (for event profile database)
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NITEMS,lastrec,NCG(100),NO(100),DESC(100)
-      CHARACTER DESC*40,OUTSTR*124,LASCI*72
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      CHARACTER PDBDESC*40,OUTSTR*124,LASCI*72
 
       IER =0
 
@@ -1240,8 +1240,8 @@ C LPRFDB,IPRODB (for event profile database)
       if(ier.ne.0)return
 
       IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NITEMS
-      IF(NITEMS.LE.0)THEN
+      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
+      IF(NPDBITEMS.LE.0)THEN
         CALL USRMSG(' ',' Events profiles db is empty !','W') 
         RETURN
       ENDIF
@@ -1260,18 +1260,18 @@ C Write out a file header.
 
 C Proceed
       IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NITEMS
+      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
 
-      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NITEMS
+      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NPDBITEMS
    21 FORMAT(I5,'    # Number of items')
 
-      DO 10 I = 1,NITEMS
+      DO 10 I = 1,NPDBITEMS
         IREC = IREC + 1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
         IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  DESC(I)
+        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
 
-        WRITE(IFA,22)NCG(I),DESC(I)
+        WRITE(IFA,22)NCG(I),PDBDESC(I)
    22   FORMAT(I5,3X,A40,'  # No periods & description',/,
      &                   '# start finish data data')
 

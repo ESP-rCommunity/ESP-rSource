@@ -171,6 +171,7 @@ C IEEE callback (Solaris)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
@@ -230,6 +231,7 @@ C CFD small openings.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -537,11 +539,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           CALL win3d(menuchw,16,16,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call opencpw
           call opensetup
           call updcapt(1)
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,16,16,5,4,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         call setzscale()
         mdispl=0

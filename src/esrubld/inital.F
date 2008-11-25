@@ -32,6 +32,7 @@ C temperature variable.
       subroutine mzini1
 #include "building.h"
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/climi/qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
       common/fvala/tfa(mcom),qfa(mcom)

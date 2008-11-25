@@ -47,7 +47,11 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -93,7 +97,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,H*72,outs*124,ITEMS1*34,CFGFN*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFGF
+      CHARACTER LCFGF*72
       character cfgroot*24
       character DCNN*72,LCNN*72
       character bl*2
@@ -783,6 +787,8 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY6/LINSTY(MCON)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -825,7 +831,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
+      CHARACTER H*72
       character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,zdesc*64,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
@@ -1007,7 +1013,10 @@ C Reset ICNT before commencing a new loop.
   210       CONTINUE
   200     CONTINUE
 
-C Depending on how many matches were found, proceed.
+C Depending on how many matches were found, proceed.  If there were
+C no matches then check for existing IDENTICAL or CONSTANT or GROUND
+C or ADIABATIC or BASESIMP or IDENT_CEN and set these if the user
+C asked to skip onfirmation.
           if(ipmatch.eq.0)then
 
 C If user said skip confirmation of marked IDENTICAL, check and update the
@@ -1028,7 +1037,7 @@ C surface attribute if it does not match and jump around.
                 write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
-            goto 110
+              goto 110
             endif
 
 C If user said skip confirmation of marked CONSTANT, check and update the
@@ -1442,9 +1451,21 @@ C CEN 13791 partition end.
             endif
           elseif(ipmatch.eq.1)then
 
-C Only one possible match, inform user and then proceed.
+C Only one possible matching surface, inform user and then proceed. If
+C selfcheck is false then the match is as a partition to a surface in
+C another zone. If selfcheck is true then we have a back-to-back
+C match and we need to test the value of M8SKP.
             II=ipmz(1)
             JJ=ipms(1)
+
+C Re-evaluate the state of selfcheck based on the surface that was
+C found to match.
+            if (II.EQ.IZ)then
+	      selfcheck=.true.  ! currently looking within zone
+            else
+              selfcheck=.false.
+            endif
+
             MODBND=.TRUE.
             if(MMOD.eq.8)then
               CALL INLNST(1)
@@ -1473,10 +1494,9 @@ C Only one possible match, inform user and then proceed.
               endif
             endif
 
-C Update surface attributes. If we are in the same room then we have
-C a back-to-back surface. If M8SKP was set to false then go ahead and
-C make it a partition without bothering to ask the user.
-            if(M8SKP)then
+C If an actual partition then no need for confirmation, just
+C update the attributes.
+            if(.NOT.selfcheck)then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
               write(tother(JS,3),'(i2.2)') IE2(ic)
@@ -1487,43 +1507,61 @@ C make it a partition without bothering to ask the user.
               WRITE(outs,'(4a)')' accepting match to surface ',
      &          SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               call edisp(iuout,outs)
+              goto 110  ! no need to check further
             else
-              h(1)='You asked to specify connection if a match was'
-              h(2)='found to another surface in the same room. '
-              CALL EASKABC('Matched surface within room:',' ',
-     &          'set to partition','set to ADIABETIC','set to UNKNOWN',
-     &          IRTA,2)
-              if(IRTA.eq.1)then
+	    
+C If we are in the same room then we have a back-to-back surface.
+C If M8SKP was set to false then go ahead and
+C make it a partition without bothering to ask the user.
+              if(M8SKP)then
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
                 write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
                 ICN=IZSTOCN(II,JJ)
                 SN=SSNAME(icn)
-                ZN=zname(II)
-                WRITE(outs,'(4a)')' accepting match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+                WRITE(outs,'(3a)')' accepting match to surface ',
+     &            SN(1:lnblnk(SN)),' in current zone.'
                 call edisp(iuout,outs)
-              elseif(IRTA.eq.2)then
-                IC1(IC)=IZ
-                IE1(IC)=JS
-                ICT(IC)=5
-                IE2(IC)=0
-                IC2(IC)=0
-                TOTHER(JS,1)='ADIABATIC'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
-              elseif(IRTA.eq.3)then
-                IC1(IC)=IZ
-                IE1(IC)=JS
-                ICT(IC)=-1
-                IE2(IC)=0
-                IC2(IC)=0
-                TOTHER(JS,1)='UNKNOWN'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
+                goto 110  ! no need to check further
+              else
+                h(1)='You asked to specify connection if a match was'
+                h(2)='found to another surface in the same room. '
+                CALL EASKABC('Matched surface within room:',' ',
+     &            'set to back-to-back','set to ADIABETIC',
+     &            'set to UNKNOWN',IRTA,2)
+                if(IRTA.eq.1)then
+                  write(TOTHER(JS,1),'(a)') 'ANOTHER'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  UPDGEO=.TRUE.
+                  ICN=IZSTOCN(II,JJ)
+                  SN=SSNAME(icn)
+                  WRITE(outs,'(3a)')' accepting match to surface ',
+     &              SN(1:lnblnk(SN)),' in current zone.'
+                  call edisp(iuout,outs)
+                elseif(IRTA.eq.2)then
+                  IC1(IC)=IZ
+                  IE1(IC)=JS
+                  ICT(IC)=5
+                  IE2(IC)=0
+                  IC2(IC)=0
+                  TOTHER(JS,1)='ADIABATIC'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  UPDGEO=.TRUE.
+                elseif(IRTA.eq.3)then
+                  IC1(IC)=IZ
+                  IE1(IC)=JS
+                  ICT(IC)=-1
+                  IE2(IC)=0
+                  IC2(IC)=0
+                  TOTHER(JS,1)='UNKNOWN'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  UPDGEO=.TRUE.
+                endif
+                goto 110  ! no need to check further
               endif
             endif
           elseif(ipmatch.gt.1)then
@@ -1754,7 +1792,11 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
@@ -1785,7 +1827,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       CHARACTER bl*2
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
 
 C General image option flags.
       newgeo=.false.  ! assume older format geometry.
@@ -2179,6 +2220,8 @@ C associated with a concept).
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -2731,6 +2774,8 @@ C Select one or more connections from a list.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -2921,7 +2966,11 @@ C espriou.h for climatelist file name.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -2950,7 +2999,7 @@ C IDST tool commands.
       character CMDLNAM*80,CMDLBL*12
       character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,DESC*48,outs*124,LTMP*72
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,clmdb
+      character clmdb*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
       character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
@@ -3306,7 +3355,11 @@ C Serchrpl handles search and replace of composition attributes.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/RAY3/MODIFY,MODLEN,MODBND
+      
+      integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -3333,7 +3386,7 @@ C Serchrpl handles search and replace of composition attributes.
       dimension IVALS(MCOM)
 C     dimension SNA(MS),PAZI(MS),PELV(MS)
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LTMP
+      character LTMP*72
       character H*72
       character DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

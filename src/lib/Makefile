@@ -139,23 +139,23 @@ version.o:
 TReportsManager.o:
 	rm -f TReportsManager.cpp ;
 	ln -s $(CETCdir)/h3kreports/TReportsManager.cpp .;
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c TReportsManager.cpp
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TReportsManager.cpp
 TBinnedData.o:
 	rm -f TBinnedData.cpp ;
 	ln -s $(CETCdir)/h3kreports/TBinnedData.cpp .;
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c TBinnedData.cpp
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TBinnedData.cpp
 TVariableData.o:
 	rm -f TVariableData.cpp ;
 	ln -s $(CETCdir)/h3kreports/TVariableData.cpp .;
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c TVariableData.cpp
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TVariableData.cpp
 TXMLAdapter.o:
 	rm -f TXMLAdapter.cpp ;
 	ln -s $(CETCdir)/h3kreports/TXMLAdapter.cpp . ;
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c TXMLAdapter.cpp
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TXMLAdapter.cpp
 TWildCards.o:
 	rm -f TWildCards.cpp ;
 	ln -s $(CETCdir)/h3kreports/TWildCards.cpp . ;
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c TWildCards.cpp
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TWildCards.cpp
 TReports_dummy.o:
 	rm -f TReports_dummy.F ;
 	ln -s $(CETCdir)/h3kreports/TReports_dummy.F . ;

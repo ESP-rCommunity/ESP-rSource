@@ -574,7 +574,7 @@ theVisual = XDefaultVisual(theDisp, theScreen);
 theCmap   = DefaultColormap(theDisp, theScreen);
 rootW     = RootWindow(theDisp,theScreen);
 dispDEEP  = DisplayPlanes(theDisp,theScreen);
-mdepth = dispDEEP;
+mdepth = (long int) dispDEEP;
 
 /* set colours for the border, background and forground */
 bd = WhitePixel(theDisp,theScreen);
@@ -961,7 +961,7 @@ char *act;  /* single character passed */
 long int *n;
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -1014,7 +1014,7 @@ long int *n;	/* index as in winscl_ */
 long int *xcolid;	/* index of colour used by X */
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -1845,9 +1845,15 @@ int  len;        /* len is length passed from fortran */
 void winfnt_(n)
  long int *n;
 {
+ long int font_index;
+ 
  char *test = "_A_V_";
  int vfw,lt;
-  if( *n == 0 ) {
+ 
+ font_index = *n;  /* cast to local variable */
+ if(font_index>=10) font_index=1;  /* in case of 64 bit huge number */
+
+  if( font_index == 0 ) {
     t0=(char *) getenv("EFONT_0");
     if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
       strcpy(font_0,"6x12");
@@ -1856,19 +1862,19 @@ void winfnt_(n)
     }
 /*    fst = XLoadQueryFont(theDisp,font_0); */
     fst = fst_0;
-  } else if( *n == 1 ) {
+  } else if( font_index == 1 ) {
 /*    fst = XLoadQueryFont(theDisp,font_1); */
     fst = fst_1;
-  } else if( *n == 2 ) {
+  } else if( font_index == 2 ) {
 /*    fst = XLoadQueryFont(theDisp,font_2); */
     fst = fst_2;
-  } else if( *n == 3 ) {
+  } else if( font_index == 3 ) {
 /*    fst = XLoadQueryFont(theDisp,font_3); */
     fst = fst_3;
-  } else if( *n == 4 ) {
+  } else if( font_index == 4 ) {
 /*    fst = XLoadQueryFont(theDisp,font_4); */
     fst = fst_4;
-  } else if( *n == 5 ) {
+  } else if( font_index == 5 ) {
 /*    fst = XLoadQueryFont(theDisp,font_5); */
     fst = fst_5;
   }
@@ -1878,7 +1884,7 @@ void winfnt_(n)
   f_lbearing = fst->max_bounds.lbearing;
   gcv.font = fst->fid;
   theGC = XCreateGC(theDisp,win, (GCFont | GCForeground | GCBackground), &gcv);
-  current_font = *n;
+  current_font = font_index;
 /* vfw and fst->max_bounds.width are the same for fixed width font, for proportional the vfw is less */
   lt = strlen(test);
   vfw = (XTextWidth(fst,test,lt)/lt);
@@ -2120,13 +2126,14 @@ this enables the size of the scroll bar to be set*/
  as its overall pixel width & height.
  dbx1 is the outer box (including axes) and viewbx is the image area.
 */
-void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
- long int	*menu_char,*gw,*gh;
+void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gwht)
+ long int	*menu_char,*gw,*gwht;
  long int	*cl,*cr,*ct,*cb;
  long int	*vl,*vr,*vt,*vb;
 {
  long int saved_font;	/* nominal font used within rest of application.  */
  int label_ht,mf_width;     /* box label height and width of menu characters */
+ int thegw,thegh;  /* local variable to take box dimensions from */
 
  saved_font = current_font;
  dbx1_avail = 1;        /* tell world that graphic box exists */
@@ -2156,13 +2163,15 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  viewbx.b_bottom = dbx1.b_bottom - 9 - (f_height * (*cb));
  viewbx.b_left = dbx1.b_left + 9 + (f_width * (*cl));
  viewbx.b_right = dbx1.b_right - (f_width * (*cr));
- *vl=viewbx.b_left;                   /* pixel @ left   */
- *vr=viewbx.b_right;                  /* pixel @ right  */
- *vt=viewbx.b_top;                    /* pixel @ top    */
- *vb=viewbx.b_bottom;                 /* pixel @ bottom */
+ *vl=(long int) viewbx.b_left;                   /* pixel @ left   */
+ *vr=(long int) viewbx.b_right;                  /* pixel @ right  */
+ *vt=(long int) viewbx.b_top;                    /* pixel @ top    */
+ *vb=(long int) viewbx.b_bottom;                 /* pixel @ bottom */
  xbox(viewbx,fg,white,BMCLEAR);	     /* clear viewing box */
- *gh=viewbx.b_bottom - viewbx.b_top;  /* viweing box pixel height  */
- *gw=viewbx.b_right - viewbx.b_left;  /* viweing box pixel width */
+ thegh= viewbx.b_bottom - viewbx.b_top;  /* viweing box pixel height  */
+ thegw= viewbx.b_right -  viewbx.b_left;  /* viweing box pixel width */
+ *gwht=(long int) thegh;   /* cast viweing box pixel height for return */
+ *gw  =(long int) thegw;   /*  cast viweing box pixel width for return */
 
 /* draw on the vertical and horizontal scroll bars */
   if(network_gpc)scrollvh();
@@ -2171,7 +2180,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  if ( wwc_ok == 1) {
    fprintf(wwc,"*win3d\n");
    fprintf(wwc,"%ld %ld %ld %ld %ld %ld %ld %ld %ld %ld %ld\n",
-		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gh);
+		*menu_char,*cl,*cr,*ct,*cb,*vl,*vr,*vt,*vb,*gw,*gwht);
  }
  return;
 } /* win3d_ */

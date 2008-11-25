@@ -46,6 +46,9 @@ C with the db at simulation time.
       common/filep/ifil
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -61,7 +64,6 @@ C with the db at simulation time.
       character ltrns*72
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)
@@ -952,6 +954,9 @@ C  ier (integer) is zero if no problems, -3 if empty.
       common/filep/ifil
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -963,7 +968,6 @@ C  ier (integer) is zero if no problems, -3 if empty.
 
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)
@@ -1145,6 +1149,9 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
 
       common/outin/iuout,iuin
       common/filep/ifil
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -1156,7 +1163,6 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/mtfile/ltrns,multic,mons,monf
 
       character ltrns*72
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character*3 month(12)
       character outs*124,louts*248,exportfile*72
       character outstr*124,loutstr*248

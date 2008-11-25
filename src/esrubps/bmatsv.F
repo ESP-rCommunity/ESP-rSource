@@ -44,6 +44,7 @@ C HOT3000: Fuel cell.
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "lookup_data.h"
+#include "control.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
@@ -56,7 +57,11 @@ C CWEC Degree Day and ground temperature parameters
       common/tc/itc,icnt
       common/trc/itrc
       COMMON/SAVE/ISAVE
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/c6/indcfg
@@ -154,10 +159,6 @@ C Common for 3D building model.
       COMMON/MOIST13/RLXln,RRLXln,RLXlnF,RRLXlnF,RLXlnT,RRLXlnT
       COMMON/MOIST14/DTfalse,TRMfls,TRMflsp1
 
-      common/bctl/ncf,ibsn(mcf,4),iban(mcf,3),nbcdt(mcf),
-     &       ibcdv(mcf,mbcdt,2),nbcdp(mcf,mbcdt),tbcps(mcf,mbcdt,mbcdp),
-     &       ibctyp(mcf,mbcdt,mbcdp),ibclaw(mcf,mbcdt,mbcdp),
-     &       bmiscd(mcf,mbcdt,mbcdp,misc)
       common/glbctl/global,glbrwd
       common/sysctl/ipassr
       common/glbsav/ksave
@@ -264,7 +265,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       character outs*124,STYPE*8
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LUTIL,LTHRM,LCFD,ENTFLNAM
+      character*72 LCFD,ENTFLNAM
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 

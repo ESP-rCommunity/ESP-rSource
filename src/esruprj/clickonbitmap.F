@@ -39,9 +39,13 @@ C via clicking on a bitmap.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -112,7 +116,6 @@ C end indices for each zone.
 
       CHARACTER*72 H
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3,DESC*48
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -279,6 +282,8 @@ C Otherwise clear ZN and ZD.
 C Give a bit more space in graphic feedback area for the bitmap.
       CALL startbuffer()
       CALL win3d(menuchw,1,3,1,1,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
   142 continue
     3 INO=-4
@@ -3064,6 +3069,7 @@ C inpm is the input mode.
      &  ipyw,nipwhis,ipxwhis,ipywhis)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       logical xbmnorth,xbmorigin

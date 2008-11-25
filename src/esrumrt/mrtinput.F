@@ -30,6 +30,8 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -53,7 +55,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),radtemp(MCUB)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr
       CHARACTER VERT*29,H*72,CUBN*6
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
 

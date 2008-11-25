@@ -444,6 +444,8 @@ C Help text for this menu.
 C If in graphic mode restore the standard win3d values for prj.
         if(MMOD.ge.8)then
           CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         RETURN
       ELSEIF(INO.EQ.(MVERT-1))THEN
@@ -801,10 +803,12 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MC),ICGF1(MC),CGS1(MC),CGL1(MC)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER PDBDESC*40,ETEXT*72
+      integer igwid,igheight  ! for use with axiscale
 
       DIMENSION VAL1(25),VAL2(25)
 
@@ -819,7 +823,12 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO).
 C Set up data ready for graph drawing.
       call startbuffer
       call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
-      call axiscale(igw,igwh,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (hours)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')

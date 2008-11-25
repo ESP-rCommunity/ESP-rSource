@@ -38,6 +38,7 @@ C IC = zone number (if in dfs set to 1)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -73,6 +74,8 @@ C Reset the display bounds for grid display.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
         CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         GRMODE=.true.
       ENDIF
       CALL INICNT
@@ -293,6 +296,8 @@ C Finish grid visualization, returning display to initial state.
         IF(MMOD.EQ.8)THEN
           call startbuffer()
           CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         ENDIF
         return
       ELSE 
@@ -321,6 +326,7 @@ C xax       - text for horiz axis.
      &                   plaw,TITLE,xax)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       character title*30,xax*10
@@ -328,6 +334,7 @@ C xax       - text for horiz axis.
       dimension NCEL(MNREG,MNZ),plaw(MNREG,MNZ)
       dimension NRG(4,MNZ),REG(MNREG,MNZ)
       dimension xgrd(MCEL1D)
+      integer igwid,igheight  ! for use with axiscale
 
 C x-z plane grid.
       call startbuffer()
@@ -336,7 +343,10 @@ C x-z plane grid.
       Xmax=Xmax+xoff
       Ymin=yoff
       Ymax=yoff+1.0
-      CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -395,11 +405,13 @@ C xax,yax   - text for horiz and vert axis.
       SUBROUTINE VGRID2D(xoff,yoff,xgrd,ygrd,nx,ny,title,xax,yax)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       character title*30,xax*10,yax*1
 
       dimension xgrd(MCEL1D),ygrd(MCEL1D)
+      integer igwid,igheight  ! for use with axiscale
 
 C x-z plane grid.
       call startbuffer()
@@ -407,7 +419,10 @@ C x-z plane grid.
       Xmax=xgrd(nx)+xoff
       Ymin=yoff
       Ymax=ygrd(ny)+yoff
-      CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
@@ -454,6 +469,7 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -493,6 +509,10 @@ C Set up grid information.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer
       CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Get bounds for image.
       HANG=ANG/2.0
@@ -503,7 +523,8 @@ C Get bounds for image.
 C Determine scaling ratios for the drawing and axis.
 C Determine the 2D coords of the site extremes.
       CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-      CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,Xadd,Yadd)
+      CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
 C Loop through all X-Y plane grid lines.

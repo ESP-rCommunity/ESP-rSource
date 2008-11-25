@@ -772,6 +772,7 @@ C corresponding to graphical result display.
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -805,6 +806,8 @@ C text dialogue box that would normally be displayed.
 C Reduce the white space on the right so the label percent is not
 C so separated from the axis.
           call win3d(menuchw,12,12,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
       ENDIF
@@ -899,8 +902,10 @@ C MODDRW draws a histogram of the frequency distribution.
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character alabel*60
+      integer igwid,igheight  ! for use with axiscale
 
       YMAX = IFREQ
       IF(IG.EQ.2)YMAX=ITOTAL
@@ -911,7 +916,9 @@ C MODDRW draws a histogram of the frequency distribution.
 C Reset graphing area.
 
 C Compute scales and offsets.
-      call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access.
@@ -933,7 +940,9 @@ C If moderate data range use mode 1, otherwise try 0.
 C Right axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
      &              Xadd,Padd)
       call vrtaxis(PMIN,PMAX,igr,igb,igt,Padd,psc,0,1,'Percent')
 

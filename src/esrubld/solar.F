@@ -42,6 +42,7 @@ C on internal and external surfaces.
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
@@ -172,7 +173,6 @@ C and future time rows. Units: W/m^2
 
       SUBROUTINE MZSLGN(ICOMP)
 #include "building.h"
-
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
@@ -205,12 +205,6 @@ C in elevation and azimuth.
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
      &              TVTR2(MCOM,MTMC,MBP)
 
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
-     
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
@@ -2841,7 +2835,10 @@ c         receiving internal surfaces.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -2862,7 +2859,7 @@ C Shading file record width found in mzshin.
      & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
      & pinsst(mcom,mgt,mt,misur)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LS,LUTIL
+      CHARACTER*72 LS
       DIMENSION ISS(12),ISADD(12)
       character outs*124,h*72
       logical OK,dok
@@ -3414,7 +3411,7 @@ C existing and new controls should be added here.
       SUBROUTINE MZSCTL(ICOMP,ISURFNumber,SRADDO,SRADF,ISET)
 #include "building.h"
 #include "tdf2.h"
-
+#include "control.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
@@ -3445,12 +3442,6 @@ C Tdf common block to allow using different bidirectional datasets
       COMMON/SHAD2/ISHD(MCOM),IGCS(MCOM,MS),PO(MCOM,MS,MT),
      & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
      & pinsst(mcom,mgt,mt,misur)
-
-C For optical controls
-      common/octl/nof,iosn(mol,4),ioan(mol,3),nocdt(mol),
-     &       iocdv(mol,mocdt,2),nocdp(mol,mocdt),tocps(mol,mocdt,mocdp),
-     &       ioctyp(mol,mocdt,mocdp),ioclaw(mol,mocdt,mocdp),
-     &       omiscd(mol,mocdt,mocdp,misc)
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT     
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS

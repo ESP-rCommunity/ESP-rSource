@@ -157,7 +157,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F convect2.F ctread.F \
 	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \

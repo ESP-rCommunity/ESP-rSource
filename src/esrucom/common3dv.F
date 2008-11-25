@@ -42,6 +42,9 @@ C then it represents the zone which is currently being edited.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -50,7 +53,6 @@ C then it represents the zone which is currently being edited.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       LOGICAL MODIFY,MODLEN,MODBND
 
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       character ETEXT*82
 
       SMALL=0.01
@@ -61,9 +63,11 @@ C If not in graphic mode return.
 C Tell wireframe control the current number of selected zones.
 C If only drawing a ground topology set updwire manually.
       if(itdsp.eq.6)then
-        call updwire(1)
+        numberofzones=1
+        call updwire(numberofzones)  ! pass local integer
       else
-        call updwire(nzg)
+        numberofzones=nzg
+        call updwire(numberofzones)  ! pass local integer
       endif
 
 C If altered then do a bound check on the current zone and update display.
@@ -257,6 +261,9 @@ C clips the image and draws it.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -268,7 +275,6 @@ C clips the image and draws it.
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER btemp*8,BLKNAME*8,BLKMAT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -802,7 +808,11 @@ C whether information about the zones is displayed or not.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
@@ -825,7 +835,7 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,H
+      CHARACTER H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER zname*12,zdesc*64,GMLCN*12,GSNAME*6,outs*124
 

@@ -27,6 +27,7 @@ C esrures/psychart.F - revised to for plotting climate data.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/grphlim/xmin,xmax,ytmin,ytmax
@@ -242,6 +243,8 @@ C Reset original screen size values on exit.
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
         endif
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
         RETURN        
       ELSE
@@ -266,12 +269,14 @@ C enthmaxy enthalpy y axis maximum
      &  enthminx,enthminy,enthmaxy)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       logical close,colok,cscaleok
       CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer igwid,igheight  ! for use with axiscale
 
       PATMOS=1013.25
       IF(MMOD.ne.8) return
@@ -290,12 +295,21 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
         call feedbox(menuchw,2,igfw,igfh)      
         call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
       elseif(iglib.eq.2)then
         CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
+        igwid=igw
+        igheight=igwh
       endif
 
       call startbuffer()
-10    CALL axiscale(igw,igwh,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,xadd,yadd)
+10    call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
+     &  xadd,yadd)
 
 C Draw the axes of the chart.
       CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')

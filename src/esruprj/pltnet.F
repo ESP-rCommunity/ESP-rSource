@@ -1242,11 +1242,21 @@ C    mode = 2 : Read data pointers only.
 C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      LOGICAL OK,dok
+      LOGICAL OK,dok,unixok
       CHARACTER*25 ZDESC
-      character h*72,buffer*72,ltmp*72,lltmp*144
+      character h*72,buffer*72,ltmp*72,fs*1
+      integer lndbp   ! for length of standard database path
+      character lltmp*144  ! to re-create plant database file name with path
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       
 C      if(mode.eq.1) then
 C Initialize plant component database file.
@@ -1282,14 +1292,26 @@ C name with the full path.
         CALL EASKF(lltmp,'Plant component database file name? ',' ',
      &    96,DPCDB,' Database name ',IER,7)
       endif
+      
+C Figure out local or standard database folder.
+      call findwhichdbpath('pdb',lltmp,ier)
+      lndbp=lnblnk(standarddbpath)
 
 C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
 C 'irecln' is defined in 'plantdf.h'. If plant template file unit has
-C not been set use the unit from the event profiles database.
+C not been set use the unit from the event profiles database. Use
+C same opening logic as in eddb.F and moplnt.F
          if(ipcdb.eq.0)ipcdb=iprodb
-         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
+         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+           lltmp=LPCDB
+         elseif(ipathpcdb.eq.2)then
+           write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+         endif
+	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
+C         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then

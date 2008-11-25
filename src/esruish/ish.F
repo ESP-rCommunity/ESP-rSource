@@ -105,6 +105,7 @@ C IEEE callback (Solaris)
       common/spad/mmod,limit,limtty
       common/image/imt,eyem(3),viewm(3),hith,yon,ang,hang,wide
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -119,7 +120,11 @@ C IEEE callback (Solaris)
       common/data1/ical,idifc,init
       common/mtfile/ltrns,multic,mons,monf
       common/g0/ctype(mcom),gversion(mcom),igupgrade
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -162,7 +167,7 @@ C Material data arrays.
       real matver
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
-      character*72 lcfgf,lsnam,lproj,lgeom,lshad,lthrm,lutil
+      character*72 lcfgf
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character items*26,ctype*4,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
@@ -183,6 +188,8 @@ C Material data arrays.
       logical changed_existing  ! to signal existing shd file updated
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer lnshd   ! length of current shading file string.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -334,11 +341,14 @@ C feedback).
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
         call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -513,9 +523,12 @@ C Open core of databases if not already done so.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
-               if(mmod.EQ.8)call updwire(ncomp)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
+               if(mmod.EQ.8)then
+                 numberofzones=ncomp   ! use local integer for updwire.
+                 call updwire(numberofzones)
+               endif
 
 C If inzone = 'All' display an image of the model. If inzone is
 C either a string which matches a zone name or is an index, then
@@ -546,6 +559,10 @@ C of paction (so that we do not do a recursive asci->bin->ascii.
                endif
             endif
          endif
+      else
+
+C There was no input file, at least clear the model common blocks.
+        call clrprb
       endif
 
 C If in conversion mode then call the relevant subroutine.
@@ -717,8 +734,8 @@ C done, ask user to delete the transitional files.
          endif
 
 C Computations finished, write out the ascii version of the database.
-         write(exportfile,'(2a)') 
-     &     lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+         lnshd=lnblnk(lshad(icomp))
+         write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
          if(paction(1:13).eq.'update_silent')then
            continue
          else
@@ -847,8 +864,8 @@ C GTK version will be returning the name with the full path.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
             endif
          endif
 
@@ -1234,9 +1251,9 @@ C Export or import ASCII (silent).
            h(3)='computer types.'
            call easkabc('Zone Shading & Insolation db has data!',
      &       'Options:','export ascii','import ascii','cancel',iw,3)
+           lnshd=lnblnk(lshad(icomp))
            if(iw.eq.1)then
-             write(exportfile,'(2a)') 
-     &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              call easks(exportfile,' ','Export file name?',72,
      &         'siexp.txt','shdins export',ier,3)
              write(outs,'(2a)') ' Creating ASCII file ',
@@ -1245,8 +1262,7 @@ C Export or import ASCII (silent).
              call sifexp(icomp,exportfile,ier)
              call pauses(1)
            elseif(iw.eq.2)then
-             write(exportfile,'(2a)') 
-     &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              call easks(exportfile,' ','Import file name?',72,
      &         'siexp.txt','shdins import',ier,3)
              write(outs,'(3a)') ' Reading ASCII file ',
@@ -1323,7 +1339,10 @@ C then offer to save or delete.
          endif
 
 C When exiting write out the ascii version of the database.
-         if(lshad(icomp)(1:4).eq.'UNKN')then
+         lnshd=lnblnk(lshad(icomp))
+         if(lshad(icomp)(1:4).eq.'UNKN'.or.
+     &      lshad(icomp)(1:2).eq.'  '.or.
+     &      lnshd.le.1.or.lnshd.ge.72)then
             continue
          else
          
@@ -1332,8 +1351,7 @@ C If the user has just opened an existing database but not
 C changed it then we do not need to write it out.
            if(loaded_existing)then
              if(changed_existing)then
-               write(exportfile,'(2a)') 
-     &          lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+               write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
                write(outs,'(2a)') ' Creating ASCII file ',
      &          exportfile(1:lnblnk(exportfile))
                call edisp(iuout,outs)
@@ -1343,8 +1361,7 @@ C changed it then we do not need to write it out.
                continue
              endif
            else
-             write(exportfile,'(2a)') 
-     &          lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
+             write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
              write(outs,'(2a)') ' Creating ASCII file ',
      &          exportfile(1:lnblnk(exportfile))
              call edisp(iuout,outs)
@@ -1399,6 +1416,9 @@ C  ifstat = 8  new file filled via import of ascii file
       common/filep/ifil
       common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c20/nzsur(mcom),nztv(mcom)
@@ -1410,7 +1430,6 @@ C  ifstat = 8  new file filled via import of ascii file
       common/ray3/modify,modlen,modbnd
       common/ract/paction
 
-      character*72 lsnam,lproj,lgeom,lshad,lthrm,lutil
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character h*72,ctype*4,exportfile*72,paction*16,outs*124
 
@@ -1551,8 +1570,9 @@ C Dummy routine (needed for call back from c.
 
 C ********** opendb
 C NOTE: This is a duplicate of code in esruprj/eddb.F but with the opening
-C of pressure coef db opening commented out. Perhaps it should
-C become common code?
+C of pressure coef db opening commented out. And if the materials db has
+C not been found (e.g. during an initial install) then it does not try
+C alternative locations).
 
 C Open materials constructions, multi-layer constructions and
 C optical properties databases. In the case of materials, first
@@ -1569,6 +1589,8 @@ C older ascii materials file to fill the materials data arrays.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/ract/paction
+      character paction*16
 
 C Material data arrays.
       real matver
@@ -1638,11 +1660,23 @@ C Check to see if the file has correct info.
       endif
 
         
-C Read multilayer db information into common.
+C Read multilayer db information into common. If in update_silent mode
+C ish might be called during install installation and as there are no
+C materials database but a local constructions database there will be
+C warnings which require an interaction and so treat update_silent as
+C a special case with no interaction.
  139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
+        if(paction(1:13).eq.'update_silent')then
+          if(IER.eq.1)then
+            MLDBOK=.FALSE.
+          elseif(IER.eq.2)then
+            MLDBOK=.FALSE.
+          endif
+	  goto 138    ! if silent and no materials jump to optics
+	endif
         IF(IER.eq.1)then
           write(outs,'(3a)') 
      &    ' Problems with materials used by Constructions db',
@@ -1805,7 +1839,7 @@ C Could not find Constructions db at this time, report to user.
       endif
 
 C Open optical Properties db and read into common.
-      SOPT='ALL'
+ 138  SOPT='ALL'
       CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
       if(ier.ne.0)then
         call usrmsg('Optical Properties db not found or',

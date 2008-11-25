@@ -95,6 +95,7 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -283,6 +284,8 @@ C STIME  - is used to transfer the simulation time to mfs
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)

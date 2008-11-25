@@ -121,6 +121,8 @@ C RCFDLIBH - read CFD library
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/ICFNOD/ICFD,ICP
 

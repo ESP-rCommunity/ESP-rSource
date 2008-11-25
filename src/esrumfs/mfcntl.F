@@ -22,14 +22,11 @@ C Boston, MA 02111-1307 USA.
 
 #include "building.h"
 #include "net_flow.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
       COMMON/mfctl/ctlpos(MCNN)
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
 
 C Variables for weekdays, and weekends.
@@ -142,16 +139,13 @@ C prevailing controller type, determines sensed condition (SVCTL).
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
-      common/fctl4/iasocc(mcc,MCMP),nfsup(mcc)
+      common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW4/ITND(MNOD),TNOD(MNOD)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -448,13 +442,9 @@ C << what comprises ON
 
 #include "net_flow.h"
 #include "building.h"
-
+#include "control.h"
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -513,13 +503,10 @@ C *******  FCL01 Proportional controller with hysteresis
 
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -557,13 +544,10 @@ C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
 
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
@@ -618,6 +602,7 @@ C ***** POSITN
       FUNCTION POSITN(SIGNAL)
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
 C     SIGL  - signal lower limit Sl (?)
 C     PSIGL - relative valve position H/H100 at Sl (%)
@@ -627,10 +612,6 @@ C     DSHY  - dS to overcome valve/damper hysteresis (?)
 
       COMMON/MFCPOS/HHH100(MCNN),HSASC(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       logical close
 
       SIGL=fmiscd(ICFP,IDTYPP,IPERP,2)
@@ -692,6 +673,7 @@ C logical AND/OR as specified in the sensor definition
  
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -699,10 +681,6 @@ C logical AND/OR as specified in the sensor definition
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       common/MFCTL/CTLPOS(MCNN)
       common/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       common/fcl0305/TSETPO
 
       REAL TSETPO
@@ -859,10 +837,12 @@ C by setting the ALPHA parameter = 0.
  
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
 C climate file commons
       COMMON/FILEP/IFIL
 
+      integer ncomp,ncon
       common/c1/ncomp,ncon
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -873,10 +853,6 @@ C climate file commons
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFCTL/CTLPOS(MCNN)
       common/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
 
 C Time and weather data.
 C Commented common blocks to be uncommented and checked for relevance 
@@ -1187,14 +1163,11 @@ C 1.0 is nominal rate or area, 1.5 would be 1.5 x nominal etc.).
 
 #include "net_flow.h"
 #include "building.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
-      common/fctl/ncc,ifsn(mcc,4),ifan(mcc,3),nfcdt(mcc),
-     &       ifcdv(mcc,mfcdt,2),nfcdp(mcc,mfcdt),tfcps(mcc,mfcdt,mfcdp),
-     &       ifctyp(mcc,mfcdt,mfcdp),ifclaw(mcc,mfcdt,mfcdp),
-     &       fmiscd(mcc,mfcdt,mfcdp,misc)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)

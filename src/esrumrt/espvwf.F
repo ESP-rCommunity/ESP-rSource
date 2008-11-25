@@ -49,6 +49,7 @@ C Revised to take in configuration file and zone focus.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/pophelp/h(60)
       COMMON/MRT2/GEOLOAD,MRTLOAD
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -75,7 +76,11 @@ C Path to model.
 
 C Indicator of possible focus zone.
       common/rzone/inzone
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -120,7 +125,6 @@ C Name of current application
       character outs*124,outs248*248,MODE*4
       CHARACTER H*72,OUTSTR*124,zname*12,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
@@ -131,6 +135,7 @@ C Name of current application
       character docpth*24,tmppth*24,dbspth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
@@ -293,11 +298,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -413,9 +421,9 @@ C successful then scan all the zones via ZDATA.
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
-            IF(MMOD.EQ.8) call updwire(ncomp)
-            NZONES=NCOMP
-            CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+            numberofzones=ncomp
+            IF(MMOD.EQ.8)call updwire(numberofzones)
+            CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
 C vwf file. If this file exists
@@ -549,9 +557,9 @@ C Find the path and local file name.
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
-          IF(MMOD.EQ.8) call updwire(ncomp)
-          NZONES=NCOMP
-          CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+          numberofzones=ncomp
+          IF(MMOD.EQ.8) call updwire(numberofzones)
+          CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
           call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 
@@ -855,6 +863,9 @@ C Calculate viewfactors for a zone.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -877,7 +888,6 @@ C outfile is the geometry file name for the zone with cube added.
       integer wrongrow
       character outs*124,h*72
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       logical OK,DOK,GEOLOAD,MRTLOAD
       dimension iivis(MSM)
 

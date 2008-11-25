@@ -765,6 +765,8 @@ C UAE04 edits casual gains in memory.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -1070,6 +1072,7 @@ C UAE05 edits convection coefficients algorithm choice.
 #include "building.h"
 #include "uncertainty.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 

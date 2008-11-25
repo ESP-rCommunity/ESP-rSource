@@ -51,6 +51,8 @@ C LPRFDB,IPRODB (for event profile database)
       common/pophelp/h(60)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -688,7 +690,11 @@ C LAPRES,IAPRES (for window pressure databases)
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/PREC2/VOL(MCOM)
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -719,7 +725,6 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER NDNAM*12,NODID*12,T12*12
       CHARACTER LAPROB*72,t72*72
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -1834,6 +1839,8 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1852,7 +1859,6 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       CHARACTER outs*124,H*72
-      character*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       LOGICAL OK,dok,MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -2090,6 +2096,8 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/PREC2/VOL(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -2110,6 +2118,8 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/RAY6/LINSTY(MCON)
 
 C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
@@ -2137,7 +2147,6 @@ C associated with the largest ventilation rate.
       logical closevz,closeiz,close,foundit
       character zname*12,zdesc*64,NDNAM*12, outs*124, MODE*1
       character*72 LAPROB,H
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 
 C Variables to keep track of the component index of the standard
