@@ -538,8 +538,8 @@ C Trace output.
      &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
      &         ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
-      write(outs,'(a,i3,i3,i3)') 'Number of panels in surface: ',npnnls
-      call edisp(itu,outs)
+C      write(outs,'(a,i3,i3,i3)') 'Number of panels in surface: ',npnnls
+C      call edisp(itu,outs)
       if(ispmtyp(ispmnod,2).gt.0)then
          write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qsole1
          call edisp(itu,outs)
@@ -2443,7 +2443,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -2591,7 +2591,7 @@ C except where explicitly redefined.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
-      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+C      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
@@ -2828,7 +2828,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3202,7 +3202,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3606,7 +3606,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
