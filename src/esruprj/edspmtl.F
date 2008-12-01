@@ -415,8 +415,12 @@ C Arrays of material properties.
 C << rewrite logic to use G7 commons instead of these local variables. >>
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),spdesc(40),
+      DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
+C Note: spdesc is passed to subroutine MCDBSCAN in leu of sstr;
+C therefore spdesc must have the same dimensions as dummy arguement
+C sstr in spdesc.
+      dimension spdesc(90)
 
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

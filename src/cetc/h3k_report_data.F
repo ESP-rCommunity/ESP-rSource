@@ -1809,30 +1809,30 @@ C........->Report data
 
 C......=====================================================
 C......NODE DATA
-         do iNode = 1, (nndc (iZone, iSurface )-1)
-            if ( iNode .gt. 9 ) then
-              write(cNode_Chars, '(I2)')  iNode
-            else
-              write(cNode_Chars, '(A,I1)') '0', iNode
-            endif
-            H3K_format = '(A,A,A,A,A,A,A)'
-
-C...........MLC layer temperature 
-C...........-> set name
-            WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
-     &         '/node_',cNode_Chars,
-     &         '/temperature'
-C...........->Report data     
-            call add_to_xml_reporting (
-     &         tfc(iZone,iSurface,iNode),
-     &         H3K_rep_NAME,
-     &         'units', '(oC)',
-     &         'Temperature at node within multilayer construction' )
-
-         enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
-
+!          do iNode = 1, (nndc (iZone, iSurface )-1)
+!             if ( iNode .gt. 9 ) then
+!               write(cNode_Chars, '(I2)')  iNode
+!             else
+!               write(cNode_Chars, '(A,I1)') '0', iNode
+!             endif
+!             H3K_format = '(A,A,A,A,A,A,A)'
+! 
+! C...........MLC layer temperature 
+! C...........-> set name
+!             WRITE(H3K_rep_NAME,H3K_FORMAT)
+!      &         'building/zone_',cZone_Chars,
+!      &         '/surface_',cSurf_Chars,
+!      &         '/node_',cNode_Chars,
+!      &         '/temperature'
+! C...........->Report data     
+!             call add_to_xml_reporting (
+!      &         tfc(iZone,iSurface,iNode),
+!      &         H3K_rep_NAME,
+!      &         'units', '(oC)',
+!      &         'Temperature at node within multilayer construction' )
+! 
+!          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
+! 
       enddo ! <- end iSurface 1,N of iZone
 
 
