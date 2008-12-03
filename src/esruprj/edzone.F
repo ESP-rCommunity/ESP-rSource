@@ -2416,7 +2416,7 @@ C Write the XML input file
           write(iuf,'(a)',iostat=ios) 
      &      '  <save_to_disk>false</save_to_disk>'  
           write(iuf,'(a)',iostat=ios) 
-     &      '  <time_step_averaging>false</time_step_averaging>'  
+     &      '  <time_step_averaging>true</time_step_averaging>'  
           write(iuf,'(a)',iostat=ios) 
      &      '  <enable_xml_wildcards>true</enable_xml_wildcards>'
 
