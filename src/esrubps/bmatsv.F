@@ -323,12 +323,13 @@ C water
 
       logical autook
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer istart  ! day loop counter initial day for rewind ctl
 
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
-C Store start time for reporting simulationd duration
+C Store start time for reporting simulation duration
       call cpu_time(sec_a)
 #endif
 
@@ -658,6 +659,8 @@ C Remember the 'start value' of the unix system clock.
       call getsecs(istime)
       iltime=istime
 
+C Jump back point for rewind controller goes back to the initial
+C day of the simulation. This might be in error.
 123   continue
 
 C At startup, SHOCC is initially out of sync with ESP-r time
@@ -734,7 +737,9 @@ C Initialize ground temperature profile parameters
 
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
-      do 10 i=iss,isf 
+      istart=iss  ! for initial pass use iss
+ 124  continue    ! jump back point if rewind control invoked
+      do 10 i=istart,isf 
 
 C For multi-year simulaitons, determine the current
 C and future time row years, and the incidies of these
@@ -1071,7 +1076,7 @@ C Output current simulation increment if trace on.
 C ** DEBUG ** Write nsinc to screen
 C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
-C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
+C           write(outs,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
 C     &                ' yr:', iMY_current_year
 C           call edisp(itu,outs)
 
@@ -1355,11 +1360,18 @@ C Perform ground simulation for the current time step
               CALL ERPFREE(ITAQ,ISTAT)
             ENDIF
 
-C For type 6 time-step controller, possibly 'rewind' simulation,
+C For type 6 time-step controller, possibly 'rewind' simulation to
+C the start of the current day and try again with updated control
+C start logic. The variable i is the current day index in the loop.
             if(itsct.eq.6.and.itsok.eq.1)then
               if(i.ge.itssch(ntsctr,4).and.i.le.itssch(ntsctr,5))then
                 call tscon6(i,j,ntsctr,irew)
-                if(irew)goto 123
+C Old logic.
+C                if(irew)goto 123
+                if(irew)then
+                  istart=i  ! set day loop to begin again with today
+                  goto 124
+                endif
               endif
             endif
 
