@@ -4317,10 +4317,14 @@ C IRWIND =  0 FOR CONTINUE AFTER DTOA.
           irwind=0   ! no need to shift time
           msg=' optimal start time does not need changing'
         endif
+
+C If within tollerance then set irwind to zero.
         if(irwfnl.eq.1)irwind=0
 
-C ESTABLISH future start time if adjusted forward 
         if(irwind.eq.1)then
+
+C ESTABLISH future start time if adjusted forward depending
+C on the value of irwlas.
           if(irwlas.eq.-1)then
             stfut=stpres+0.5*(stpas1-stpres)
           else if(irwlas.ne.-1)then
@@ -4330,6 +4334,9 @@ C ESTABLISH future start time if adjusted forward
               stfut=stpres+0.5*(stpres-stpas1)
             endif
             if(irwlas.eq.1)then
+
+C If the last action was also to move forward then also
+C check the temperatures. 
               call eclose(tctl,tctlsv,0.001,close)
               if(close)then
                 stfut=stpas1
@@ -4337,9 +4344,12 @@ C ESTABLISH future start time if adjusted forward
               endif
             endif
           endif
-
-C Adjust future start time if adjusted earlier in the day.
         else if(irwind.eq.-1)then
+
+C Adjust future start time if adjusted earlier in the day
+C and the prior action was to go later then use stpres-stpas1
+C if no prior change then use stpres-deltat earler otherwise
+C if the prior change was also earlier then check temperatures.
           if(irwlas.eq.1)then
             stfut=stpres-0.5*(stpres-stpas1)
           else if(irwlas.ne.1)then
@@ -4349,6 +4359,10 @@ C Adjust future start time if adjusted earlier in the day.
               stfut=stpres-0.5*(stpas1-stpres)
             endif
             if(irwlas.eq.-1)then
+
+C If the last rewind action was a shift to earlier and the
+C control temperature is close to the saved control temperature
+C then reset stfut and irwfnl.
               call eclose(tctl,tctlsv,0.001,close)
               if(close)then
                 stfut=stpas2
@@ -4370,7 +4384,7 @@ C Inject flux if before anticipated time (dtoa) and after optimal
 C start time.
       if(btimef.lt.dtoa)then
         irwind=99
-        msg=' initial optimal start between start and dtoa'
+        msg=' initial optimal start between start & dtoa'
         if(btimef.ge.stpres)then         
           q=bmiscd(icf,idtyp,iper,2)
         else
@@ -4437,9 +4451,8 @@ C CONVERT FROM (/M^2) IF NECESSARY.
 C TRACE OUTPUT,
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(41).ne.0) then
-         write(outs,'(A,F10.3,A,F7.3,A,F7.3,A,F7.3,A,F7.3)')
-     & ' BCL15: Qfuture=',qfut,' Tfuture=',tfut,
-     & ' STFUT=',stfut,' STPRES=',stpres,' TIMOPT=',timopt
+         write(outs,*) ' BCL15: Qfuture=',qfut,' Tfuture=',tfut,
+     & ' STFUT=',stfut,' STPRES=',stpres,' TIMOPT=',timopt,rewnd,pasone
          call edisp(itu,outs)
          write(outs,'(A,i3,A,i3,A,i3,A,i3,A,i3,A,i3,A,i3,A,i3,A,i3)')
      &     ' irwind=',IRWIND,' irwlas=',IRWLAS,' irwcnt=',IRWCNT,
@@ -4459,7 +4472,6 @@ C control period should start at or very soon after the time
 C of arrival.
       if(irwind.eq.0)then
         call mziboc
-C       lgctin=0
       endif
 
       return
@@ -4580,7 +4592,7 @@ C IRWIND =  0 FOR CONTINUE AFTER OCDT.
          else
            irwind=0
          endif
-      if(irwfnl.eq.1)irwind=0
+         if(irwfnl.eq.1)irwind=0
          
 C ESTABLISH FUTURE TRIAL STOP TIME;
          if(irwind.eq.1)then

@@ -1030,7 +1030,8 @@ c Global control: initialise commons, save/retrieve data.
               call RTRVPV
             endif
 
-C For type 6 time-step controller, retrieve and save data,
+C For type 6 time-step controller, retrieve and save data.
+C << why is tscon6 also called at line 1370 >>
             if(itsct.eq.6.and.itsok.eq.1)then
               if(i.ge.itssch(ntsctr,4).and.i.le.itssch(ntsctr,5))then
                 call tscon6(i,j,ntsctr,irew)
@@ -1306,6 +1307,7 @@ C transport miscellaneous simulation data to reporting object
                     call H3K_transport_mfn_data()
                  endif
               endif
+
 C If TSC type 2 is active then find sum of averages for zone air
 C temperature and zone air energy injection.
               if(itsct.eq.2.and.itsok.eq.1)then
