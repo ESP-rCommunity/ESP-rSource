@@ -1,0 +1,14 @@
+# transparent properties of Test_11 defined in zones/Test_11.tmc
+   7   # surfaces
+# tmc index for each surface
+0,0,0,0,0,0,1
+   5  Gunt2_shadd  # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.159   0.159   0.157   0.155   0.152   0.152
+# For each layer absorption @ 5 angles
+   0.225   0.225   0.225   0.226   0.227
+   0.000   0.000   0.000   0.000   0.000
+   0.023   0.023   0.024   0.024   0.025
+   0.000   0.000   0.000   0.000   0.000
+   0.016   0.016   0.016   0.016   0.016
+   0  # optical control flag
