@@ -850,6 +850,14 @@ C set the LOPTDB common block string via call to findwhichdbpath.
         ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(LOUTSTR,K,LOPTDB,'W','optical db',IER)
       elseif(WORD(1:4).eq.'*prs')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','pressure db',IER)
+
+C Process the file name folloing *prs and depending on its path
+C set the lapres common block string via call to findwhichdbpath.
+        call findwhichdbpath('prs',lworking,ier)
+C        CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
+      elseif(WORD(1:7).eq.'*stdprs')then
+        ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*evn')then
         CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profiles db',IER)
@@ -2976,6 +2984,7 @@ C see if the path is local or absolute or standard database folder.
 C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
+C       =  'prs' for pressure coef
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3007,6 +3016,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'prs')then
+            ipathapres=1  ! local folder for pressure database
+            write(lapres,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3017,6 +3029,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=2
             write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'prs')then
+            ipathapres=2
+            write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3025,6 +3040,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=0
             write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'prs')then
+            ipathapres=0
+            write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           endif
         endif
       else
@@ -3035,6 +3053,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg)   ! assign directly
+          elseif(topic(1:3).eq.'prs')then
+            ipathapres=1  ! local folder for pressure database
+            write(lapres,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3043,6 +3064,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=2
             write(LPCDB,'(a)')  file(lndbp+2:lnwkg)  ! without path
+          elseif(topic(1:3).eq.'prs')then
+            ipathapres=2
+            write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3051,6 +3075,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=0
             write(LPCDB,'(a)')  file(1:lnwkg)  ! assign directly
+          elseif(topic(1:3).eq.'prs')then
+            ipathapres=0
+            write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           endif
         endif
       endif
@@ -3063,6 +3090,9 @@ C Debug.
       elseif(topic(1:3).eq.'pdb')then
         write(6,*) LPCDB
         write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+      elseif(topic(1:3).eq.'prs')then
+        write(6,*) lapres
+        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       endif
 
       return

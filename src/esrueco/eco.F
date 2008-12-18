@@ -55,6 +55,7 @@ C default file names for databases
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),

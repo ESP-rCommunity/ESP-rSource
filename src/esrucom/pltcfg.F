@@ -664,6 +664,8 @@ C Check if there is a plant fluid flow network available: 0 = no
 
 C Read names of PROBLEM, PRESSURE DISTRIBUTION and RESULTS files, un-
 C less this was already done above (building side air flow wanted)
+
+C << should this be updated for ipath* >>
         IF(IAIRN.ge.0) THEN
           CALL STRIPC(iuc,OUTSTR,0,ND,1,'network file',IER)
           LAPROB=OUTSTR(1:72)

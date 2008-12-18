@@ -32,7 +32,11 @@ C Redirected text/graphics parameters.
       character wins*20,outs*124,H*72,hold*36
       character xfile*144,tg*1,delim*1
       logical close,OK
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C MENU OF COMMANDS
       DATA XEQ,YEQ,ZEQ/'X=   ','Y=   ','Z=   '/

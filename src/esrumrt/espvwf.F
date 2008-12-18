@@ -33,6 +33,7 @@ C Revised to take in configuration file and zone focus.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appw/iappw,iappx,iappy
       COMMON/FILEP/IFIL

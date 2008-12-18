@@ -169,6 +169,7 @@ C IEEE callback (Solaris)
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh

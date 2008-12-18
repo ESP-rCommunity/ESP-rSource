@@ -35,6 +35,7 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -82,7 +83,15 @@ C converts into viewing coords, clips the image and draws it.
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iix,iiy,iixlast,iiylast
+#endif
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -133,8 +142,11 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
-      WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-      CALL viewtext(ETEXT,1,1,1)
+      WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Beginning of loop to read in several ESP compatible geometry files.
       IZ=0
@@ -387,6 +399,8 @@ C move cursor to vertex and remember position.
           ENDIF
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
           IP1 = IBNXT(IP)
 
@@ -416,7 +430,9 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  iix=ix
+                  iiy=iy
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   found=.true.
                 endif
               endif
@@ -446,12 +462,16 @@ C move cursor back to vertex and remember position.
             CALL VERTLBL(ix,iy,IV,ier)
             ixlast=ix
             iylast=iy
+            iixlast=ix   ! cast for edline call
+            iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
@@ -477,7 +497,9 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  iix=ix
+                  iiy=iy
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   found=.true.
                 endif
               endif

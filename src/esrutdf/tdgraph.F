@@ -50,7 +50,13 @@ C Parameters for eline calls.
       CHARACTER PERST1*14,PERST2*44,PERST3*44      
       DIMENSION IFSYM(MBITS)
       logical colok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Start drawing; first header
       IF(MMOD.EQ.8)THEN
@@ -66,7 +72,10 @@ C Check if can draw in colour.
 
 C Title strings.
       WRITE(ETEXT,'(A,A)')  ' TDF file: ',LTDF(1:50)
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
       ETEXT=' '
       IVBTIM=1
       IVETIM=NTSPH*24
@@ -74,7 +83,8 @@ C Title strings.
      &           NTSPH,IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
       WRITE(ETEXT,'(A,I2,A,A38)') ' Timesteps per hour: ', NTSPH,
      &  ' overall ',PERST3(1:38)
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Draw a sets of labels and line types at top of the graph.
 C Must generalise this for various numbers of period fields.

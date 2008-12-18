@@ -341,6 +341,7 @@ C providing paramaters MGDB,MGCL,MGIT
       COMMON/OUTIN/IUOUT,IUIN
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/gendb6/ittag(MGIT),itmenu(MGIT)
 
@@ -350,7 +351,15 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       character DayT*8,Patr*8,ETEXT*72
       character ittag*12,itmenu*32
       logical vclose1,vclose2
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       call prsprof(idbh,iit,'g',NCG,Patr,DayT,ST,A,B,C,ier)
 
@@ -372,7 +381,10 @@ C Pick up the data increment for the horizontal axis.
 
 C Print header
       WRITE(ETEXT,'(2a)')'Profile: ',itmenu(iit)
-      call viewtext(ETEXT,1,0,IFS)
+      iside=1
+      isize=0
+      ifont=ifs
+      call viewtext(etext,iside,isize,ifont)
 
       DO 60 I=1,288
         VAL1(I)=0.
@@ -406,7 +418,9 @@ c Period of each event.
 C Plot VAL1 array. If both timestep values are zero then do not
 C bother to plot.
       IPEN=1
-      CALL ETPLOT(0.0,0.0,0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(0.0,0.0,iupdown,isym)
       DO 40 I=1,287
         MARK=0
         time1=(real(I)/12.0)
@@ -416,24 +430,33 @@ C bother to plot.
         if(vclose1.and.vclose2)then
           continue
         else
-          CALL ETPLOT(time1,VAL1(I),0,0)
-          CALL ETPLOT(time2,VAL1(I+1),1,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(time1,VAL1(I),iupdown,isym)
+          iupdown=1
+          CALL ETPLOT(time2,VAL1(I+1),iupdown,isym)
         endif
         call eclose(VAL2(I),0.0,0.001,vclose1)
         call eclose(VAL2(I+1),0.0,0.001,vclose2)
         if(vclose1.and.vclose2)then
           continue
         else
-          CALL ETPLOT(time1,VAL2(I),0,0)
-          CALL ETPLOT(time2,VAL2(I+1),-6,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(time1,VAL2(I),iupdown,isym)
+          iupdown=-6
+          CALL ETPLOT(time2,VAL2(I+1),iupdown,isym)
         endif
         call eclose(VAL3(I),0.0,0.001,vclose1)
         call eclose(VAL3(I+1),0.0,0.001,vclose2)
         if(vclose1.and.vclose2)then
           continue
         else
-          CALL ETPLOT(time1,VAL3(I),0,0)
-          CALL ETPLOT(time2,VAL3(I+1),-106,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(time1,VAL3(I),iupdown,isym)
+          iupdown=-106
+          CALL ETPLOT(time2,VAL3(I+1),iupdown,isym)
         endif
    40 CONTINUE
 

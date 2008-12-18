@@ -72,7 +72,15 @@ C The period details
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
       INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Set up scaling and graph parameters
       VPOS=1E+15
@@ -451,11 +459,13 @@ C Calculate the current time (day fraction).
 
 C Move the pen to the last plotted point for the recovered variable, 
 C unless the first time increment is being plotted.
+                iupdown=0
+                isym=0
                 IF(ILINST(I).EQ.0) THEN
-                  CALL ETPLOT(TIMEC,EVAL2(I),0,0)
+                  CALL ETPLOT(TIMEC,EVAL2(I),iupdown,isym)
                   ILINST(I)=1
                 ELSE
-                  CALL ETPLOT(TIMEOLD(I),YOLD(I),0,0) 
+                  CALL ETPLOT(TIMEOLD(I),YOLD(I),iupdown,isym) 
                 ENDIF
 
 C Check if a symbol needs to be plotted at this point and draw the point on the graph. 
@@ -465,7 +475,9 @@ C Check if a symbol needs to be plotted at this point and draw the point on the 
                 ELSE
                   IMARK=0
                 ENDIF
-                CALL ETPLOT(TIMEC,EVAL2(I),IPEN,IMARK)
+                iupdown=IPEN
+                isym=IMARK
+                CALL ETPLOT(TIMEC,EVAL2(I),iupdown,isym)
 
 C Store the plotted point and the time.
                 YOLD(I)=EVAL2(I)
@@ -500,8 +512,10 @@ C Make sure the label is within the string bounds (20 chars).
 
 C Combine the data decriptor and units to form the complete label. 
             WRITE(STR,'(A,1X,A)') 
-     &EVLABS(I)(1:LSTR),EXLAB(1:LNBLNK(EXLAB))
-            CALL ETLABEL(STR,TIMEOLD(I),YOLD(I),3,0)
+     &        EVLABS(I)(1:LSTR),EXLAB(1:LNBLNK(EXLAB))
+            ipos=3
+            isize=0
+            CALL ETLABEL(STR,TIMEOLD(I),YOLD(I),ipos,isize)
           ENDIF
  110    CONTINUE
 
@@ -854,6 +868,11 @@ C Array of recovered data
       CHARACTER EVLABS*16,EVLABU*4,EXLAB*5
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -875,13 +894,18 @@ C pixel references for calls to VIEWTEXT.
 
       WRITE(ETEXT,'(A,1X,A)') 'Electrical results output from ',
      &ELRFLNAM(1:LNBLNK(ELRFLNAM))
-      CALL VIEWTEXT(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(A)')PDESCR
-      CALL VIEWTEXT(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(A)')SDESCR
-      CALL VIEWTEXT(ETEXT,3,0,1)
+      iside=3
+      call viewtext(etext,iside,isize,ifont)
 
 
 C Write a maximum of four of the selected data entities to screen
@@ -918,7 +942,8 @@ C Scale scratch unit labels to match the axis scaling.
       IF(NVAL1.GT.4)THEN
         WRITE(LOUT(IPOS:IPOS+3),'(A)')'...'
       ENDIF        
-      CALL VIEWTEXT(LOUT,4,0,1)
+      iside=4
+      call viewtext(lout,iside,isize,ifont)
       RETURN
       END
 

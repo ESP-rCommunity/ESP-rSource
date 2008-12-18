@@ -649,6 +649,7 @@ C-----VERTLBL ----------------------------------------------------------
 C VERTLBL writes out a vertex label based on the coordinates passed
 C and the vertex number.
       SUBROUTINE VERTLBL(ix,iy,IP,ier)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER VTEXT*4,VT*4
 

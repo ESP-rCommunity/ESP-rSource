@@ -87,6 +87,11 @@ C will have been defined prior to calling edmrt.
       character docpth*24,tmppth*24,dbspth*24,act*1
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       cfgmod=.false.
       newgeo=.false.  ! assume older format geometry.
@@ -391,8 +396,11 @@ C the zone, obstructions and sensors.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       endif
       CALL ESCZONE(ICOMP)
       CALL DRWSEN(ier)
@@ -647,6 +655,11 @@ C EDMRTS: Edit details of a MRT sensor block.
       CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30,zname*12,zdesc*64
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Initial menu entry setup.
       write(head,'(A,A)')'  MRT details: ',zname(ICOMP)
@@ -681,8 +694,11 @@ C draw the sensor cubes.  Set all surface lines to standard width.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       endif
       CALL ESCZONE(ICOMP)
       CALL DRWSEN(ier)

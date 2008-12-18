@@ -3074,6 +3074,16 @@ C  ICOMP zone number
 
       character zname*12,zdesc*64,outs*124
       dimension TACI(24),TACV(24)
+#ifdef OSX
+      integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
+
       IDTY=IDTYP
       IDAY=IDTY-1
       JDAY=IDTY
@@ -3098,8 +3108,8 @@ C Clear and setup plot area.
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
-      iglsat=igl+ipltwd+9
-      iglsun=igl+2*(ipltwd+9)
+      iglsat=igl + int(ipltwd) + 9
+      iglsun=igl+2*(int(ipltwd)+9)
       plxmin=0.
       plxmax=24.
       YMAX=YMAX*1.1
@@ -3119,24 +3129,33 @@ C Scale and draw for first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Flow (ac/hr)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmin,YMIM,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmin,YMIN,0,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmax,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmin,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmax,YMAX,iupdown,isym)
 
 C Display air flow curves.
 C first day type requested
@@ -3154,12 +3173,22 @@ C first day type requested
       do 70 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        CALL etplot(XST,TACI(IHR),0,0)
-        CALL etplot(XFN,TACI(IHR),1,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACI(IHR+1),1,0)
-        CALL etplot(XST,TACV(IHR),0,0)
-        CALL etplot(XFN,TACV(IHR),-4,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
  70   continue
 
 C second day type requested
@@ -3177,12 +3206,22 @@ C second day type requested
       do 170 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        CALL etplot(XST,TACI(IHR),0,0)
-        CALL etplot(XFN,TACI(IHR),1,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACI(IHR+1),1,0)
-        CALL etplot(XST,TACV(IHR),0,0)
-        CALL etplot(XFN,TACV(IHR),-4,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
  170  continue
       call forceflush()
 
@@ -3201,30 +3240,48 @@ C third day type requested
       do 270 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        CALL etplot(XST,TACI(IHR),0,0)
-        CALL etplot(XFN,TACI(IHR),1,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACI(IHR+1),1,0)
-        CALL etplot(XST,TACV(IHR),0,0)
-        CALL etplot(XFN,TACV(IHR),-4,0)
-        if (IHR.ne.24) CALL etplot(XFN,TACV(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
  270  continue
 
 C Title and labels.
       write (outs,'(2a)') 'Scheduled air flows for ',ZNAME(ICOMP)
-      CALL viewtext(outs,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
 
       call wstxpt(igl+20,igt-65,'Infiltration')
       call wstxpt(igr-100,igt-65,'Ventilation')
       call pixel2u(igl+120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igl+180,igt-69,gx,gy)
-      CALL etplot(gx,gy,1,0)
+      iupdown=1
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-180,igt-69,gx,gy)
-      CALL etplot(gx,gy,-4,0)
+      iupdown=-4
+      CALL etplot(gx,gy,iupdown,isym)
 
-      ioff=(ipltwd/3)
+      ioff=(int(ipltwd)/3)
       call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
       call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
       call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
@@ -3852,7 +3909,6 @@ C gain patterns.
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -3871,8 +3927,13 @@ C Electrical data flag and elctrical data.
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-      DIMENSION  ICGSX(MC),ICGFX(MC),CGS(MC),CGL(MC)
-      DIMENSION  NO(100),DESC(100),IPRVAL(100)
+C Profile database commons.
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40
+
+      DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,lodlabel*6
       character*8 ll1,ll2,ll3
@@ -3891,39 +3952,42 @@ C Labels for loads.
       PL=0.
       RAD=0.5
       CON=0.5
-      call efopran(IPRODB,LPRFDB,10,1,IER)
-      IF(ier.ne.0)return
-      CALL edisp(iuout,' opened profiles db')
+      IPPFT=0
+      IPPF=0
 
-      IREC = 1
-      READ(IPRODB,REC=IREC)  NITEMS
-      DO 50 I = 1,NITEMS
-        IREC = IREC + 1
-        NO(I) = IREC
-        READ(IPRODB,REC=IREC)  NCG
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=180)  DESC(I)
-        IREC = IREC + NCG
+C Scan the binary event profiles database. If an error state is
+C returned then it might be an ASCII file, try and scan that.
+      call TRIPROBIN(IER)
+      if(ier.ne.0)then
+        CALL ERPFREE(IPRODB,ISTAT)
+        CALL USRMSG(' opened profiles db...',' ','-')
+        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        if(ier.ne.0)then
+          call usrmsg('Error opening the db. Please use one',
+     &                'of the other options.','W')
+          return
+        else
+          CALL ERPFREE(IPRODB,ISTAT)
+          CALL USRMSG(' opened profiles db...ok',' ','-')
+        endif
+      else
+        CALL USRMSG(' opened profiles db...ok',' ','-')
+      endif
+
+C Copy the string list of event profiles to local string variable.
+      DO 50 I = 1,NPDBITEMS
+        DESC(I)=PDBDESC(I)
    50 CONTINUE
-
+      
 C Present a list of profiles to select from.
       H(1)='Any one of the profiles may be selected.'
       IX=1
-      CALL EPICKS(IX,IPRVAL,' ',' Profiles in db: ',
+      NITEMS=NPDBITEMS
+      CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
      &         40,NITEMS,DESC,'db profiles',IER,1)
       IF(IX.EQ.0)RETURN
 
-      N=IPRVAL(1)
-      IREC = NO(N)
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=181)  NCG
-      IREC = IREC + 2
-
-C There are NCG gains to be added
-      DO 70 I = 1,NCG
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=183)  ICGSX(I),ICGFX(I),
-     &       CGS(I),CGL(I)
-        IREC = IREC + 1
-70    CONTINUE
+      INDEX=IPRVAL(1)
 
 C Identify nature of casual gain
       H(1)='Casual gains within a zone can be be designated to be '
@@ -4041,36 +4105,26 @@ C << and small power can be entered in terms of W/m2.
       ENDIF
  42   call usrmsg(' ',' ','-')
 
-      NCAS(IDAY) = NCAS(IDAY) + NCG
-      DO 140 I = 1,NCG
-	ICGS(IDAY,I+IN) = ICGSX(I)
-	ICGF(IDAY,I+IN) = ICGFX(I)
-	CMGS(IDAY,I+IN) = CGS(I)*PS/100.0
-	CMGL(IDAY,I+IN) = CGL(I)*PL/100.0
+      NCAS(IDAY) = NCAS(IDAY) + NCG(INDEX)
+      DO 140 I = 1,NCG(INDEX)
+	ICGS(IDAY,I+IN) = ICGS1(INDEX,I)
+	ICGF(IDAY,I+IN) = ICGF1(INDEX,I)
+	CMGS(IDAY,I+IN) = CGS1(INDEX,I)*PS/100.0
+	CMGL(IDAY,I+IN) = CGL1(INDEX,I)*PL/100.0
 	RADC(IDAY,+IN) = RAD
 	CONC(IDAY,I+IN) = CON
 	ICGT(IDAY,I+IN) = ICGTX
 	IF(IELF(ICOMP).GT.0) THEN
 	  PF(IDAY,I+IN)=PPF
 	  IPF(IDAY,I+IN)=IPPF
-	  PWR(IDAY,I+IN)=CGS(I)*PE/100.
+	  PWR(IDAY,I+IN)=CGS1(INDEX,I)*PE/100.
 	  BVOLT(IDAY,I+IN)=PBVOLT
 	  IPHAS(IDAY,I+IN)=IPPHAS
 	ENDIF
 140   CONTINUE
 
-  999 CALL ERPFREE(IPRODB,ISTAT)
+      CALL ERPFREE(IPRODB,ISTAT)
       RETURN
-
-180   call edisp(iuout,' Casual gain database read error.')
-      IER=1
-      goto 999
-181   call edisp(iuout,' Casual gain db NCG read error.')
-      IER=1
-      goto 999
-183   call edisp(iuout,' Casual gain db data read error.')
-      IER=1
-      goto 999
 
       END
 
@@ -4982,7 +5036,15 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
       character zname*12,zdesc*64
-      integer igheight  ! for use with axiscale
+#ifdef OSX
+      integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to etplot
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       logical COLOK
       IDTY=IDTYP
@@ -5070,8 +5132,8 @@ C Clear and setup plot area.
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
-      iglsat=igl+ipltwd+9
-      iglsun=igl+2*(ipltwd+9)
+      iglsat=igl + int(ipltwd) + 9
+      iglsun=igl+2*(int(ipltwd)+9)
       plxmin=0.
       plxmax=24.
       YMAX=AMAX1(YMAXWKD,YMAXSAT,YMAXSUN,10.0)*1.1
@@ -5095,24 +5157,33 @@ C Scale and draw first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Gain (W)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmax,YMIN,0,0)
-      CALL etplot(plxmax,YMAX,1,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmin,YMIM,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMIM,iupdown,isym)
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
-      CALL etplot(plxmin,YMIN,0,0)
-      CALL etplot(plxmin,YMAX,1,0)
-      CALL etplot(plxmax,YMAX,1,0)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmin,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmax,YMAX,iupdown,isym)
 
 C Scan gains and generate total curves.
 C first day type requested
@@ -5153,20 +5224,34 @@ C Plot curves.
         XFN=real(IHR)
         do 75 I=1,3
           if (COLOK) call winscl('z',I)
-          CALL etplot(XST,CGAINS(IHR,I),0,0)
-          CALL etplot(XFN,CGAINS(IHR,I),1,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),1,0)
-          CALL etplot(XST,CGAINL(IHR,I),0,0)
-          CALL etplot(XFN,CGAINL(IHR,I),-4,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),-4,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
+          iupdown=1
+          CALL etplot(XFN,CGAINS(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINS(IHR+1,I),iupdown,isym)
+          endif
+          iupdown=0
+          CALL etplot(XST,CGAINL(IHR,I),iupdown,isym)
+          iupdown=-4
+          CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
+          endif
           if (COLOK) call winscl('-',0)
  75     continue
-        CALL etplot(XST,CGAINTS(IHR),0,0)
-        CALL etplot(XFN,CGAINTS(IHR),1,0)
-        CALL etplot(XFN,CGAINTS(IHR+1),1,0)
-        CALL etplot(XST,CGAINTL(IHR),0,0)
-        CALL etplot(XFN,CGAINTL(IHR),-4,0)
-        CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,CGAINTS(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,CGAINTS(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTS(IHR+1),iupdown,isym)
+        iupdown=0
+        CALL etplot(XST,CGAINTL(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,CGAINTL(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  70   continue
 
 C second day type requested
@@ -5205,20 +5290,34 @@ C Plot curves.
         XFN=real(IHR)
         do 175 I=1,3
           if (COLOK) call winscl('z',I)
-          CALL etplot(XST,CGAINS(IHR,I),0,0)
-          CALL etplot(XFN,CGAINS(IHR,I),1,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),1,0)
-          CALL etplot(XST,CGAINL(IHR,I),0,0)
-          CALL etplot(XFN,CGAINL(IHR,I),-4,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),-4,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
+          iupdown=1
+          CALL etplot(XFN,CGAINS(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINS(IHR+1,I),iupdown,isym)
+          endif
+          iupdown=0
+          CALL etplot(XST,CGAINL(IHR,I),iupdown,isym)
+          iupdown=-4
+          CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
+          if (IHR.lt.24)then
+            CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
+          endif
           if (COLOK) call winscl('-',0)
  175    continue
-        CALL etplot(XST,CGAINTS(IHR),0,0)
-        CALL etplot(XFN,CGAINTS(IHR),1,0)
-        CALL etplot(XFN,CGAINTS(IHR+1),1,0)
-        CALL etplot(XST,CGAINTL(IHR),0,0)
-        CALL etplot(XFN,CGAINTL(IHR),-4,0)
-        CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,CGAINTS(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,CGAINTS(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTS(IHR+1),iupdown,isym)
+        iupdown=0
+        CALL etplot(XST,CGAINTL(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,CGAINTL(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  170  continue
 
 C third day type requested
@@ -5257,36 +5356,54 @@ C Plot curves.
         XFN=real(IHR)
         do 275 I=1,3
           if (COLOK) call winscl('z',I)
-          CALL etplot(XST,CGAINS(IHR,I),0,0)
-          CALL etplot(XFN,CGAINS(IHR,I),1,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),1,0)
-          CALL etplot(XST,CGAINL(IHR,I),0,0)
-          CALL etplot(XFN,CGAINL(IHR,I),-4,0)
-          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),-4,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XST,CGAINS(IHR,I),iupdown,isym)
+          iupdown=1
+          CALL etplot(XFN,CGAINS(IHR,I),iupdown,isym)
+          if (IHR.lt.24) CALL etplot(XFN,CGAINS(IHR+1,I),iupdown,isym)
+          iupdown=0
+          CALL etplot(XST,CGAINL(IHR,I),iupdown,isym)
+          iupdown=-4
+          CALL etplot(XFN,CGAINL(IHR,I),iupdown,isym)
+          if (IHR.lt.24) CALL etplot(XFN,CGAINL(IHR+1,I),iupdown,isym)
           if (COLOK) call winscl('-',0)
  275    continue
-        CALL etplot(XST,CGAINTS(IHR),0,0)
-        CALL etplot(XFN,CGAINTS(IHR),1,0)
-        CALL etplot(XFN,CGAINTS(IHR+1),1,0)
-        CALL etplot(XST,CGAINTL(IHR),0,0)
-        CALL etplot(XFN,CGAINTL(IHR),-4,0)
-        CALL etplot(XFN,CGAINTL(IHR+1),-4,0)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,CGAINTS(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,CGAINTS(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTS(IHR+1),iupdown,isym)
+        iupdown=0
+        CALL etplot(XST,CGAINTL(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,CGAINTL(IHR),iupdown,isym)
+        CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  270  continue
 
 C Title and labels.
       write (outs,'(2a)') 'Casual gains for ',ZNAME(ICOMP)
-      CALL viewtext(outs,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
 
       call wstxpt(igl+20,igt-65,' Total sensible')
       call wstxpt(igr-100,igt-65,'Total latent')
       call pixel2u(igl+120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igl+180,igt-69,gx,gy)
-      CALL etplot(gx,gy,1,0)
+      iupdown=1
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-120,igt-69,gx,gy)
-      CALL etplot(gx,gy,0,0)
+      iupdown=0
+      CALL etplot(gx,gy,iupdown,isym)
       call pixel2u(igr-180,igt-69,gx,gy)
-      CALL etplot(gx,gy,-4,0)
+      iupdown=-4
+      CALL etplot(gx,gy,iupdown,isym)
       do 300 I=1,3
         write(outs,'(2a)')
      &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
@@ -5295,19 +5412,24 @@ C Title and labels.
         write(outs,'(2a)')
      &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
         call wstxpt(igr-100,IY,outs)
-          if (COLOK) call winscl('z',I)
-          call pixel2u(igl+120,IY-4,gx,gy)
-          CALL etplot(gx,gy,0,0)
-          call pixel2u(igl+180,IY-4,gx,gy)
-          CALL etplot(gx,gy,1,0)
-          call pixel2u(igr-120,IY-4,gx,gy)
-          CALL etplot(gx,gy,0,0)
-          call pixel2u(igr-180,IY-4,gx,gy)
-          CALL etplot(gx,gy,-4,0)
-          if (COLOK) call winscl('-',0)
+        if (COLOK) call winscl('z',I)
+        call pixel2u(igl+120,IY-4,gx,gy)
+        iupdown=0
+        isym=0
+        CALL etplot(gx,gy,iupdown,isym)
+        call pixel2u(igl+180,IY-4,gx,gy)
+        iupdown=1
+        CALL etplot(gx,gy,iupdown,isym)
+        call pixel2u(igr-120,IY-4,gx,gy)
+        iupdown=0
+        CALL etplot(gx,gy,iupdown,isym)
+        call pixel2u(igr-180,IY-4,gx,gy)
+        iupdown=-4
+        CALL etplot(gx,gy,iupdown,isym)
+        if (COLOK) call winscl('-',0)
  300  continue
 
-      ioff=(ipltwd/3)
+      ioff=(int(ipltwd)/3)
       call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
       call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
       call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))

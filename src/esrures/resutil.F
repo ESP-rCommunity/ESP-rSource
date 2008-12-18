@@ -244,7 +244,11 @@ C AXISDRW - draw and label axes.
       character ALABEL(5)*12,act*1
 
       integer YAXSET, ADDLIN
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 
       write (6,*) 'AXISDRW',(YAXSET(I),I=1,5)

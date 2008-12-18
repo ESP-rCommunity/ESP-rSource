@@ -54,6 +54,11 @@ C then it represents the zone which is currently being edited.
       LOGICAL MODIFY,MODLEN,MODBND
 
       character ETEXT*82
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       SMALL=0.01
 
@@ -93,7 +98,10 @@ C If viewpoint or bounds different then initialise viewing paramters.
 
 C Remind user of which model even when looking at one zone.
         WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
 
 C Draw the selected bodies.
         CALL DRAWESP(ITRC,IER)
@@ -546,6 +554,7 @@ C ****** Routine to draw ground topology.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -559,6 +568,13 @@ C ****** Routine to draw ground topology.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
       CHARACTER GMLCN*12, GSNAME*6,stemp*7
+
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
 C Save the current font and switch to a smaller font for displaying
 C surface names etc. Ixc,iyc keep track of surface/pixel COG.
@@ -618,6 +634,8 @@ C Move to first point.
           call u2pixel(AAX,AAY,ix,iy)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           ixc=ixc+ix
           iyc=iyc+iy
 
@@ -626,14 +644,16 @@ C Draw succeeding points until last vertex.
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(linstyg(igs).eq.3)then
-            call edline(ixlast,iylast,ix,iy,2)
+            call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
             call edwline(ixlast,iylast,ix,iy)
           elseif(linstyg(igs).eq.1)then
             call eswline(ixlast,iylast,ix,iy)
           else
-            call edline(ixlast,iylast,ix,iy,LD)
+            call edline(iixlast,iiylast,iix,iiy,LD)
           endif
           ixc=ixc+ix
           iyc=iyc+iy
@@ -641,19 +661,23 @@ C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP1)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for call to edline
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(linstyg(igs).eq.3)then
-            call edline(ixlast,iylast,ix,iy,2)
+            call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
             call edwline(ixlast,iylast,ix,iy)
           elseif(linstyg(igs).eq.1)then
             call eswline(ixlast,iylast,ix,iy)
           else
-            call edline(ixlast,iylast,ix,iy,LD)
+            call edline(iixlast,iiylast,iix,iiy,LD)
           endif
           call forceflush()
 
@@ -692,6 +716,12 @@ C the viewport with the current scaling factors etc.
       DIMENSION COG1(3),COG2(3),COG3(3)
       logical close,greyok
 
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iiy,iix1,iiy1
+#else
+      integer*8 iix,iiy,iix1,iiy1
+#endif       
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
@@ -753,8 +783,13 @@ C Transform other end of line.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
-C Draw the dotted line.
-        call edline(ix,iy,ix1,iy1,LD)
+C Draw the dotted line, first take calculated pixels and
+C cast to local variable to pass to edline.
+        iix=ix
+        iiy=iy
+        iix1=ix1
+        iiy1=iy1
+        call edline(iix,iiy,iix1,iiy1,LD)
 
 C Move to next grid position.
         XINC=XINC+GRIDD
@@ -786,8 +821,12 @@ C Transform other end of line.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
-C Draw the dotted line.
-        call edline(ix,iy,ix1,iy1,LD)
+C Draw the dotted line after casting to local variable.
+        iix=ix
+        iiy=iy
+        iix1=ix1
+        iiy1=iy1
+        call edline(iix,iiy,iix1,iiy1,LD)
 
 C Move to next grid position.
         YINC=YINC+GRIDD

@@ -1212,122 +1212,133 @@ C the user. DIVXcf and DIVZcf are the width and height of the shading grids.
 
 
 C ********************* PANGS *********************
-C PANGS - computes the object body surface azimuth (PAZI), elevation
-C (PELV) and local X-Axis tilt (PTILT) where:
 C This is copied from esruish' PANGS.
-C   PAZI  - is the angle measured from north to the face normal,
+C pangs computes the azimuth (pazi), elevation (pelv) and local
+C x-axis tilt (ptilt) angles for the target surface where:
+
+C   pazi  - is the angle measured from north to the face normal,
 C           clockwise positive.
-C   PELV  - is the angle measured from the horizontal to the
+C   pelv  - is the angle measured from the horizontal to the
 C           face normal (upward facing horizontal surface 90 deg.,
 C           downward facing horizontal surface -90 deg., 
 C           vertical surface 0 deg.
-C   PTILT - is the angle between the face X-axis and the horizontal
-C           where the X-axis is the line joining the 1st and 2nd
+C   ptilt - is the angle between the face x-axis and the horizontal
+C           where the x-axis is the line joining the 1st and 2nd
 C           face vertices.
-      SUBROUTINE PANGS(IS)
+
+      subroutine pangs(is)
 #include "building.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/PANGL/PAZI,PELV,PTILT
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/pangl/pazi,pelv,ptilt
 
-      r=atan(1.0)/45.0
-      XSUM=0.
-      YSUM=0.
-      ZSUM=0.
+      logical bHorizontal
+
+      pi = 4.0 * atan(1.0)
+      r=pi/180.
+      xsum=0.
+      ysum=0.
+      zsum=0.
 
 C Compute azimuth and elevation angles for face 'IS'.
-      NV=NVER(IS)
-      DO 10 I=1,NV
-        K=I+1
-        IF(I.EQ.NV)K=1
-        IP1=JVN(IS,I)
-        IP2=JVN(IS,K)
-        XSUM=XSUM+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
-        YSUM=YSUM+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
-        ZSUM=ZSUM+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
-   10 CONTINUE
-      PAZI=90.0
+      nv=nver(is)
+      do 10 i=1,nv
+         k=i+1
+         if(i.eq.nv)k=1
+         ip1=jvn(is,i)
+         ip2=jvn(is,k)
+         xsum=xsum+y(ip1)*z(ip2)-z(ip1)*y(ip2)
+         ysum=ysum+z(ip1)*x(ip2)-x(ip1)*z(ip2)
+         zsum=zsum+x(ip1)*y(ip2)-y(ip1)*x(ip2)
+   10 continue
+      pazi=90.0
       if(abs(xsum).lt.0.00001)pazi=0.0
-      IF(XSUM.LT.0.0)PAZI=-90.0
-      PELV=90.0
+      if(xsum.lt.0.0)pazi=-90.0
+      pelv=90.0
       if(abs(zsum).lt.0.00001)pelv=0.0
-      IF(ZSUM.LT.0.0)PELV=-90.0
-      if(abs(ysum).lt.0.00001)goto 11
-      PAZI=ATAN2(XSUM,YSUM)/R
-   11 SRX2Y2=SQRT(XSUM*XSUM+YSUM*YSUM)
-      IF(PAZI.LT.0.)PAZI=PAZI+360.
-      if(abs(srx2y2).lt.0.00001)goto 12
-      PELV=ATAN2(ZSUM,SRX2Y2)/R
-   12 CONTINUE
+      if(zsum.lt.0.0)pelv=-90.0
+      if(abs(ysum).lt.0.00001)goto 1
+      pazi=atan2(xsum,ysum)/r
+    1 srx2y2=sqrt(xsum*xsum+ysum*ysum)
+      if(pazi.lt.0.)pazi=pazi+360.
+      if(abs(srx2y2).lt.0.00001)goto 2
+      pelv=atan2(zsum,srx2y2)/r
+    2 continue
 
 C Now compute local X-axis tilt angle.
-      IV1=JVN(IS,1)
-      IV2=JVN(IS,2)
+      iv1=jvn(is,1)
+      iv2=jvn(is,2)
       dz=z(iv2)-z(iv1)
-      DIST=sqrt((X(IV2)-X(IV1))**2+(Y(IV2)-Y(IV1))**2+
-     &          (Z(IV2)-Z(IV1))**2)
+      dist=((x(iv2)-x(iv1))**2+(y(iv2)-y(iv1))**2+
+     &(z(iv2)-z(iv1))**2)**.5
       ptilt=asin(dz/dist)/r
+      if(z(iv1).gt.z(iv2))ptilt=-ptilt
 
 C For the special case of a horizontal surface, the
 C azimuth calculated above is zero. It is now reset to
 C the azimuth of the plane comprising the first two
 C vertices of the face and the same two vertices but with
 C an adjusted Z value.
-      XSUM=0.
-      YSUM=0.
-      ZSUM=0.
-      DO 20 I=1,4
-        IF(I.EQ.1)THEN
-           IP1=JVN(IS,1)
-           IP2=JVN(IS,2)
-           XX1=X(IP1)
-           XX2=X(IP2)
-           YY1=Y(IP1)
-           YY2=Y(IP2)
-           ZZ1=Z(IP1)
-           ZZ2=Z(IP2)
-        ELSEIF(I.EQ.2)THEN
-           IP1=JVN(IS,2)
-           IP2=JVN(IS,2)
-           XX1=X(IP1)
-           XX2=X(IP2)
-           YY1=Y(IP1)
-           YY2=Y(IP2)
-           ZZ1=Z(IP1)
-           ZZ2=Z(IP2)+0.1
-        ELSEIF(I.EQ.3)THEN
-           IP1=JVN(IS,2)
-           IP2=JVN(IS,1)
-           XX1=X(IP1)
-           XX2=X(IP2)
-           YY1=Y(IP1)
-           YY2=Y(IP2)
-           ZZ1=Z(IP1)+0.1
-           ZZ2=Z(IP2)+0.1
-        ELSEIF(I.EQ.4)THEN
-           IP1=JVN(IS,1)
-           IP2=JVN(IS,1)
-           XX1=X(IP1)
-           XX2=X(IP2)
-           YY1=Y(IP1)
-           YY2=Y(IP2)
-           ZZ1=Z(IP1)+0.1
-           ZZ2=Z(IP2)
-        ENDIF
 
-        XSUM=XSUM+YY1*ZZ2-ZZ1*YY2
-        YSUM=YSUM+ZZ1*XX2-XX1*ZZ2
-        ZSUM=ZSUM+XX1*YY2-YY1*XX2
-   20 CONTINUE
-      PAZI=90.0
-      if(abs(xsum).lt.0.00001)pazi=0.0
-      IF(XSUM.LT.0.0)PAZI=-90.0
-      if(abs(ysum).lt.0.00001)goto 13
-      PAZI=ATAN2(XSUM,YSUM)/R
-   13 IF(PAZI.LT.0.)PAZI=PAZI+360.
+      call eclose ( abs(pelv), 90., 0.001, bHorizontal )
 
-      RETURN
-      END
+      if ( bHorizontal ) then
+
+        xsum=0.
+        ysum=0.
+        zsum=0.
+        do 20 i=1,4
+          if(i.eq.1)then
+              ip1=jvn(is,1)
+              ip2=jvn(is,2)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)
+              zz2=z(ip2)
+          elseif(i.eq.2)then
+              ip1=jvn(is,2)
+              ip2=jvn(is,2)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)
+              zz2=z(ip2)+0.1
+          elseif(i.eq.3)then
+              ip1=jvn(is,2)
+              ip2=jvn(is,1)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)+0.1
+              zz2=z(ip2)+0.1
+          elseif(i.eq.4)then
+              ip1=jvn(is,1)
+              ip2=jvn(is,1)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)+0.1
+              zz2=z(ip2)
+          endif
+          xsum=xsum+yy1*zz2-zz1*yy2
+          ysum=ysum+zz1*xx2-xx1*zz2
+          zsum=zsum+xx1*yy2-yy1*xx2
+  20    continue
+        pazi=90.0
+        if(abs(xsum).lt.0.00001)pazi=0.0
+        if(xsum.lt.0.0)pazi=-90.0
+        if(abs(ysum).lt.0.00001)goto 3
+        pazi=atan2(xsum,ysum)/r
+    3   if(pazi.lt.0.)pazi=pazi+360.
+
+      endif
+      return
+      end
 
 
 C ********************* POINT2 *********************

@@ -769,6 +769,7 @@ C corresponding to graphical result display.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -789,6 +790,11 @@ C corresponding to graphical result display.
       logical zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -829,7 +835,10 @@ C If output to file alter the edisp unit number.
       endif
       GTEXT=ETEXT
       if(act.eq.'g')then
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(itru,GTEXT)
       endif
@@ -838,7 +847,10 @@ C If output to file alter the edisp unit number.
      &   SDESCR(11:lnblnk(SDESCR))
       GTEXT=ETEXT
       if(act.eq.'g')then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(itru,GTEXT)
       endif
@@ -850,7 +862,10 @@ C if names of zones can be shown.
           WRITE(ETEXT,'(1x,2a)')'Using anchor list ',ALOCLBL(ialstused)
           GTEXT=ETEXT
           if(act.eq.'g')then
-            CALL viewtext(GTEXT,3,0,1)
+            iside=3
+            isize=0
+            ifont=1
+            call viewtext(gtext,iside,isize,ifont)
           else
             call edisp(itru,GTEXT)
           endif
@@ -859,7 +874,10 @@ C if names of zones can be shown.
           if(ierr.ne.1)then
             write(outsd1,'(1x,a)')outsd
             if(act.eq.'g')then
-              CALL viewtext(outsd1,3,0,1)
+              iside=3
+              isize=0
+              ifont=1
+              call viewtext(outsd1,iside,isize,ifont)
             else
               call edisp(itru,outsd1)
             endif
@@ -871,7 +889,10 @@ C if names of zones can be shown.
           GTEXT=' Not filtered by occupancy'
         endif
         if(act.eq.'g')then
-          CALL viewtext(GTEXT,4,0,1)
+          iside=4
+          isize=0
+          ifont=1
+          call viewtext(gtext,iside,isize,ifont)
         else
           call edisp(itru,GTEXT)
         endif
@@ -882,7 +903,10 @@ C if names of zones can be shown.
           GTEXT=' Not filtered by occupancy'
         endif
         if(act.eq.'g')then
-          CALL viewtext(GTEXT,3,0,1)
+          iside=3
+          isize=0
+          ifont=1
+          call viewtext(gtext,iside,isize,ifont)
         else
           call edisp(itru,GTEXT)
         endif
@@ -905,7 +929,11 @@ C MODDRW draws a histogram of the frequency distribution.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character alabel*60
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       YMAX = IFREQ
       IF(IG.EQ.2)YMAX=ITOTAL
