@@ -50,6 +50,7 @@ C Path to problem and command line file (if any).
       common/appw/iappw,iappx,iappy
 
       common/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC

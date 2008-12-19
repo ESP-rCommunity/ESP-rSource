@@ -1017,7 +1017,11 @@ C Assumes that the path to the image is given.
       integer lnrp  ! length of run path
       
       dimension UGRV(72),UGRANG(72)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
       
       logical XST,unixok
 

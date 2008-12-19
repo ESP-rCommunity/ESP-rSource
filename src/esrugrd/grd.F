@@ -45,6 +45,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

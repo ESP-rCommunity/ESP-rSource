@@ -58,6 +58,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/MOD/MODEL
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 

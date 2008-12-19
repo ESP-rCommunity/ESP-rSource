@@ -35,10 +35,16 @@ C  ERMRT:  Read the viewfactor/ MRT sensor definition file.
 C  EMKMRT: Write viewfactor/MRT sensor definition file based on 
 C          information in common blocks MRTC, MRTF.
 
-C  PLEQN   Finds equation of plane containing a polygon in PNTLST format. 
-C  ETRANSW: Transforms default Windows into global co-ordinates.
+C  PLEQN:  Finds the equation EQN to a plane containing a polygon
+C          defined as a set of X() Y() Z() verticies tracing the edges. 
+C  ETRANSW: used when creating an insert rectangular shape into a surface.
+C  TRANSUR: Transforms a surface along its normal.
+
 C  UV2AZ:  Recover azimuth & elevation from unit vector.
+C  LN2AZ:  Recover azimuth & elevation vector from two coordinates in space.
 C  AZ2UV:  Recover unit vector from azimuth & elevation.
+C  CHECKWARP: transforms surface into 2D and checks if points are
+C          are not in the plane of the surface.
 C  ESZONE  Saves the current contents of common blocks G1 G2 G4 G5
 C          into SG1 SG2 SG4 SG5.
 C  ERZONE  Recovers the saved contents of common blocks G1 G2 G4 G5
@@ -1654,6 +1660,8 @@ C       A*X + B*Y + C*Z = D
 C where the vector (A B C) is the unit normal vector to the plane.
 C The normal will point out from the surface if the vertices are 
 C passed in anti-clockwise.
+C If ierpln=-1 then SNORM is very close to zero
+C If ierpln=1 then number of points is zero
 
       SUBROUTINE PLEQN(X,Y,Z,NP,CG,EQN,IERPLN)
 #include "building.h"
@@ -1664,16 +1672,16 @@ C passed in anti-clockwise.
 
 C Initialise.
       IERPLN=0
-      CG(1)=0.
-      CG(2)=0.
-      CG(3)=0.
-      EQN(1)=0.
-      EQN(2)=0.
-      EQN(3)=0.
-      EQN(4)=0.
-      VN(1)=0.
-      VN(2)=0.
-      VN(3)=0.
+      CG(1)=0.00
+      CG(2)=0.00
+      CG(3)=0.00
+      EQN(1)=0.00
+      EQN(2)=0.00
+      EQN(3)=0.00
+      EQN(4)=0.00
+      VN(1)=0.00
+      VN(2)=0.00
+      VN(3)=0.00
 
 C Check that we have some points.
       if (NP.eq.0) then
@@ -1720,7 +1728,7 @@ C Do cross product and if VC is not close to zero then
 C normalise it (so that a polygon with long and short 
 C edges is treated correctly.
         call CROSS(VA,VB,VC)
-        SNORM=0.
+        SNORM=0.00
         SNORM=sqrt(VC(1)**2+VC(2)**2+VC(3)**2)
         close=.false.
         call eclose(SNORM,0.0,0.0001,close)
@@ -1895,8 +1903,8 @@ C MORS flag not recognised.
       END
 
 C ********************* ETRANSW 
-C ETRANSW transforms default windows into global co-ordinates.
-C OFFSET is the offset from the polygon (0.02 typically).
+C ETRANSW used when creating an insert rectangular shape into a surface.
+C OFFSET is the offset from the polygon (zero tpically).
 
 C STEP 1 - Find equation of surface (EQN(4)) via PLEQN and get centre
 C          Centre of Gravity (VP(3))
@@ -2083,11 +2091,12 @@ C Check if tollerably close to an axis.
       elseif(vdx.lt.0.0.and.vdy.gt.0.0)then
         azim=360.0-(acos(vdy/dist)/RAD)
       endif
+C      write(6,*)'UV2AZ azim elev <<vdx vdy vdz=',azim,elev,vdx,vdy,vdz
       return
       end
 
 C ******* LN2AZ
-C Recover azimuth & elevation from unit vector.
+C LN2AZ Recover azimuth & elevation vector from two coordinates in space.
       SUBROUTINE LN2AZ(x1,y1,z1,x2,y2,z2,azim,elev)
       logical clx0,cly0,clx1,cly1,clxm1,clym1
       PI = 4.0 * ATAN(1.0)
@@ -2156,9 +2165,89 @@ C Reconstitute the viewing vector.
         vdx = XYDIS*SIN(RYAZI)
         vdy = XYDIS*COS(RYAZI)
       ENDIF
-C      write(6,*)'azim elev >>vdx vdy vdz =',azim,elev,vdx,vdy,vdz
+C      write(6,*)'AZ2UV azim elev >>vdx vdy vdz=',azim,elev,vdx,vdy,vdz
       return
       end
+
+C ********************* CHECKWARP 
+C CHECKWARP transforms surface into 2D and checks if points are
+C are not in the plane of the surface.
+
+C STEP 1 - Find equation of surface (EQN(4)) via PLEQN and get centre
+C          Centre of Gravity (VP(3))
+C STEP 2 - Set up Eye Point normal to plane at C. of G. (EP(3))
+C STEP 3 - Find matrix and reverse matrix via EYEMAT to transform > 2D
+C isurf is the current surface index (for reporting)
+C N is the number of surface vertices, X,Y,Z are the surface vertex arrays,
+C iwhich is worst vertex off plane and ofby is amount it deviates.
+C ivoff is the number of vertices which are more than 1mm off.
+      SUBROUTINE CHECKWARP(ITRC,itru,isurf,N,X,Y,Z,iwhich,ofby,ivoff)
+      implicit none
+#include "building.h"
+      integer isurf,iwhich,itrc,itru,n,ivoff
+      real X,Y,Z,ofby
+      DIMENSION  X(MV),Y(MV),Z(MV)
+      
+      integer i,j,ierr   ! types for local variables
+      real TMAT,RMAT,VP,EP,EQN,X1,Y1,ZZZ,diff
+      DIMENSION  TMAT(4,4),RMAT(4,4)
+      DIMENSION  VP(3),EP(3),EQN(4)
+      CHARACTER OUTSTR*124
+      logical close
+
+C Find transformation matrices that normalise face.
+      call PLEQN(X,Y,Z,N,VP,EQN,IERR)
+
+      if (IERR .LT. 0) then
+        WRITE(OUTSTR,'(a,i3)') 
+     &    ' CHECKWARP Plane equation error for surface: ',isurf
+        return
+      endif
+      DO 250 J = 1,3
+        EP(J) = VP(J) + EQN(J)
+  250 CONTINUE
+  
+C Report if user has toggled trace on.
+      IF(ITRC.GT.1)THEN
+        WRITE(OUTSTR,'(a,i3)') 
+     &    ' CHECKWARP Plane equation data for surface: ',isurf
+        CALL EDISP(ITRU,outstr)
+        WRITE(OUTSTR,'(a,3F8.3)')' Center of grav:',(VP(I),I=1,3)
+        CALL EDISP(ITRU,OUTSTR)
+        WRITE(OUTSTR,'(a,4F8.3)')' Equation:',(EQN(I),I=1,4)
+        CALL EDISP(ITRU,OUTSTR)
+        WRITE(OUTSTR,'(a,3F8.3)')' Eye Point:',(EP(I),I=1,3)
+        CALL EDISP(ITRU,OUTSTR)
+      ENDIF
+      
+C Call eyemat with 1m offset.
+      CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
+
+C Transform all points in surface and check for ZZZ which differs
+C from the 1m offset.
+      ivoff=0
+      ofby=0.0
+      DO 300 I=1,N
+        CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
+        call eclose(ZZZ,1.0,0.001,close)
+        if(.NOT.close)then
+	  ivoff=ivoff+1   ! increment number of vertices off by more than 1mm
+	  diff=1.0-ZZZ
+          if(abs(diff).gt.abs(ofby))then  ! keep track of largest diff
+            iwhich=i
+            ofby=diff
+          endif
+          if(ITRC.GT.1)then
+            WRITE(OUTSTR,'(a,i3,a,i3,a,F7.4,a,3F8.4)')' Point ',I,
+     &        ' in surf ',isurf,' is off by ',diff,' @ ',X(I),Y(I),Z(I)
+            CALL EDISP(ITRU,OUTSTR)
+          endif
+        endif
+  300 CONTINUE
+
+      RETURN
+      END
+
 
 C ***************** ESCZONE 
 C ESZONE makes a copy of the current contents of common blocks G1 G3

@@ -45,6 +45,11 @@ C esrures/psychart.F - revised to for plotting climate data.
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*40,PERST3*40
       logical close,colok,cscaleok,ok,dok
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       PATMOS=1013.25
 
@@ -93,14 +98,20 @@ C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
  101    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT
-      CALL viewtext(GTEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(gtext,iside,isize,ifont)
 
       NTSPH=1
       CALL PERSTR(IYEAR,IDS,IT1,IDF,IT2,NTSPH,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
       write(etext,'(2A)') ' P',PERST3(2:40)
       GTEXT=ETEXT
-      call viewtext(gtext,2,0,1)
+      iside=2
+      isize=0
+      ifont=1
+      call viewtext(gtext,iside,isize,ifont)
 
 C Setup menu text.
       ITEM(1) ='1 plot data            '
@@ -276,7 +287,15 @@ C enthmaxy enthalpy y axis maximum
       CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       PATMOS=1013.25
       IF(MMOD.ne.8) return
@@ -319,7 +338,9 @@ C Draw the axes of the chart.
 C Store the scaling parameters used in drawing the axes
       CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
 C Draw the dry-bulb temperature lines
-      CALL etplot(0.,0.,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(0.,0.,iupdown,isym)
 
 C Set the intervals for the chart.
       IF(xmax.gt.40.0) then
@@ -335,18 +356,28 @@ C Set the intervals for the chart.
       ENDIF
 
       TD=0.
-  20  CALL etplot(TD,ymax,1,0)
+  20  iupdown=1
+      isym=0
+      CALL etplot(TD,ymax,iupdown,isym)
       TD=TD+TDINT
-      CALL etplot(TD,0.,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(TD,0.,iupdown,isym)
       IF(TD.LE.xmax) goto 20
 
 C Draw the moisture content lines
-      CALL etplot(0.,0.,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(0.,0.,iupdown,isym)
       GS=0.
-  30  CALL etplot(xmax,GS,1,0)
+  30  iupdown=1
+      isym=0
+      CALL etplot(xmax,GS,iupdown,isym)
       GS=GS+GSINT
 C      if(colok)call winscl('z',15)
-      CALL etplot(0.,GS,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(0.,GS,iupdown,isym)
       IF(GS.LE.ymax) goto 30 
       if(colok)call winscl('-',0)
 
@@ -358,11 +389,15 @@ C Draw on the RH curves.
           TD=FLOAT(ITD)
           GS=1000.*(HUMRT1(TD,RH,PATMOS,IOPT))
           IF(ITD.EQ.0)THEN
-            CALL etplot(TD,GS,0,0)
+            iupdown=0
+            isym=0
+            CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(GS.GT.0..AND.GS.LT.ymax.AND.IPFLAG.EQ.0) THEN
               if(colok)call winscl('z',17)
-              CALL etplot(TD,GS,-102,0)
+              iupdown=-102
+              isym=0
+              CALL etplot(TD,GS,iupdown,isym)
             ENDIF
 
 C Case where TD<60 and GS>30
@@ -371,7 +406,9 @@ C Case where TD<60 and GS>30
               GS=1000.*(HUMRT1(TD,RH,PATMOS,IOPT))
               IF(GS.GT.ymax) GOTO 60
               if(colok)call winscl('z',17)
-              CALL etplot(TD,GS,-102,0)
+              iupdown=-102
+              isym=0
+              CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1 
             ENDIF                                       
           ENDIF
@@ -383,7 +420,9 @@ C          IF(TD.EQ.int(xmax/2.)) THEN
             write(puts,*) INT(RH),'%'
             if(GS.LE.ymax)then
               if(colok)call winscl('z',17)
-              CALL etlabel(puts,TD,GS,0,0)
+              ipos=0
+              isize=0
+              CALL etlabel(puts,TD,GS,ipos,isize)
             endif
           ENDIF
           if(colok)call winscl('-',0)
@@ -398,17 +437,23 @@ C Draw on the lines of constant enthalpy.
           GS=FLOAT(IGS)
           TD=TDB(ENTH,(GS/1000.))
           IF(IGS.EQ.0.AND.TD.LT.xmax)THEN
-            CALL etplot(TD,GS,0,0)
+            iupdown=0
+            isym=0
+            CALL etplot(TD,GS,iupdown,isym)
           ELSEIF(IGS.EQ.0.AND.TD.GT.xmax)THEN
   110       GS=GS+0.05
             TD=TDB(ENTH,(GS/1000.))
             IF(TD.GT.xmax) GOTO 110
             if(colok)call winscl('z',24)
-            CALL etplot(TD,GS,0,0)
+            iupdown=0
+            isym=0
+            CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(TD.GT.0..AND.TD.LT.xmax.AND.IPFLAG.EQ.0) THEN
               if(colok)call winscl('z',24)
-              CALL etplot(TD,GS,-102,0)
+              iupdown=-102
+              isym=0
+              CALL etplot(TD,GS,iupdown,isym)
             ENDIF 
 
 C Case where TD<60 and GS>30
@@ -417,14 +462,18 @@ C Case where TD<60 and GS>30
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.GT.xmax) GOTO 90
               if(colok)call winscl('z',24)
-              CALL etplot(TD,GS,1,0) 
+              iupdown=1
+              isym=0
+              CALL etplot(TD,GS,iupdown,isym) 
             ENDIF
             IF(TD.LT.0..AND.IPFLAG.EQ.0) THEN
  100          GS=GS-0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.LT.0) GOTO 100
               if(colok)call winscl('z',24)
-              CALL etplot(TD,GS,-102,0)
+              iupdown=-102
+              isym=0
+              CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1
             ENDIF                                       
           ENDIF
@@ -442,16 +491,20 @@ C Draw on the enthalpy scales
             TD=Xmin
             GS=((ENTH-TD)/(1.82*TD+2500.))*1000.
             write(puts,*) IENTH
-            CALL etlabel(puts,Xmin-Xmax/XSC,GS,0,0)
+            ipos=0
+            isize=0
+            CALL etlabel(puts,Xmin-Xmax/XSC,GS,ipos,isize)
         ENDIF
   200 CONTINUE
 
       DO 210 IENTH=0,int(ENTHMAX),10
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINX.AND.ENTH.LE.ENTHMAX) THEN
-            TD=TDB(ENTH,(YMAX)/1000.)
-            write(puts,*) IENTH
-           CALL etlabel(puts,TD,YMAX+YMAX/YSC,0,0)
+          TD=TDB(ENTH,(YMAX)/1000.)
+          write(puts,*) IENTH
+          ipos=0
+          isize=0
+          CALL etlabel(puts,TD,YMAX+YMAX/YSC,ipos,isize)
         ENDIF
   210 CONTINUE
       call forceflush()

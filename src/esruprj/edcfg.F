@@ -150,7 +150,13 @@ C Uncertainty.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character ltpath*72,filen*72
+      character t144*144    ! for passing to erprcdb
       integer ictl
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -302,7 +308,10 @@ C Re-draw the configuration buttons.
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-            CALL viewtext(ETEXT,1,1,1)
+            iside=1
+            isize=1
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
           endif
         endif
         CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
@@ -462,7 +471,10 @@ C Domains associated with the model.
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:ln)
-          CALL viewtext(ETEXT,1,1,1)
+          iside=1
+          isize=1
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
         endif
       ELSEIF(INO.EQ.3)THEN
 
@@ -688,10 +700,11 @@ C unix and non-unix machine types).
           LFIL=LAPROB
 
 C Graphic network. Create a summary file of zone domain information
-C for `net` to use. Begin by reading current pressure database. Write
-C to unit number 42.
+C for `net` to use. Begin by reading current pressure database by
+C passing a black string to erprcdeb. Write to unit number 42.
           call tstamp('>','PRJ: export to graphic agent')
-          CALL ERPRCDB(LAPRES,0,3,IER)
+          t144='  '
+          CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) THEN
             CALL EDISP(IUOUT,'Error opening pressure coefficients db!.')
             call edisp(iuout,' ')
@@ -1266,6 +1279,11 @@ C Flag noting whether casual gain periods are currently sorted.
       real val,x1,y1    ! type for passed parameters
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -1331,8 +1349,11 @@ C (Re)Set all surfaces to standard line width.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-          CALL viewtext(ETEXT,1,1,1)
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          iside=1
+          isize=1
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
         endif
       endif
 
@@ -3225,6 +3246,11 @@ C Passed parameters for pregist.
 
       integer igraphiclib  ! external definition
       integer numberofzones ! to pass to updwire rather than ncomp
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3701,8 +3727,11 @@ C If there is a ground topology read it.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                           iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-          CALL viewtext(ETEXT,1,1,1)
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          iside=1
+          isize=1
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
         endif
 
 C Open core databases associated with the exemplar or new model.

@@ -376,7 +376,6 @@ C If output to file alter the edisp unit number.
  78   itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
-        call edisp(icout,' Comfort output being directed to file... ')
       endif
 
       if(act.eq.'V')then

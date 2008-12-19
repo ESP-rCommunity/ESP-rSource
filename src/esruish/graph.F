@@ -49,7 +49,11 @@ C to superimpose any direct shading.
       character blkname*8,blkmat*12,outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       iunit=ifil
 
@@ -197,6 +201,13 @@ C Draws the elevation of the target surface.
       character*72 etext*72,month*3
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer ipos,iupdown,isym     ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ipos,iupdown,isym     ! passed to etplot
+#endif
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
@@ -210,7 +221,10 @@ C Display header information. Calculate graphic boundaries.
       write(etext,1)month(mon),ihour,isur,ssname(icn)
     1 format('Direct shading: ',a3,', @ ',i2,':00, Surface ',i2,
      &       ' (',a,').')
-      call viewtext(etext,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Draw horizontal axis and move to start point.
       call horaxis(xmin,xmax,igl,igr,igb,Xadd,sca,0,'Horizontal')
@@ -219,11 +233,14 @@ C Draw vertical axis.
       call vrtaxis(zmin,zmax,igl,igb,igt,Zadd,sca,0,0,'Vertical')
 
 C Draw target surface.
-      call etplot(xft(1),zft(1),0,0)
+      iupdown=0
+      isym=0
+      call etplot(xft(1),zft(1),iupdown,isym)
+      iupdown=1
       do 10 i=2,nv
-         call etplot(xft(i),zft(i),1,0)
+         call etplot(xft(i),zft(i),iupdown,isym)
    10 continue
-      call etplot(xft(1),zft(1),1,0)
+      call etplot(xft(1),zft(1),iupdown,isym)
       call forceflush()
       return
       end
@@ -289,12 +306,21 @@ C and the surrounding obstruction blocks.
       common/prec8/slat,slon
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
 
       character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
       character tz*13,zdesc*64
       logical newgeo  ! used to test for new/old geometry file.
+#ifdef OSX
       integer igwid,igheight
+      integer iside,isize     ! passed to viewtext
+      integer ipos,iupdown,isym,ifont    ! passed to etplot
+#else
+      integer*8 igwid,igheight
+      integer*8 iside,isize     ! passed to viewtext
+      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+#endif
 
 C The right offset for the graphic box is the character width
 C of the menu. Also allow 2 text lines at the bottom for future
@@ -372,7 +398,9 @@ C output the zone name.
          call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       endif
       call u2pixel(x(1),y(1),ix,iy)
-      call etplot(x(1),y(1),0,0)
+      iupdown=0
+      isym=0
+      call etplot(x(1),y(1),iupdown,isym)
       if(lnblnk(zname(icomp)).gt.1)then
          write(tz,'(a)')zname(icomp)
          call winfnt(itfs)
@@ -382,30 +410,36 @@ C output the zone name.
          call wstxpt(ix+2,iy-2,'Target')
       endif
 
+      iupdown=0
+      isym=0
       do 40 i=1,nsur
          j=jvn(i,1)
-         call etplot(x(j),y(j),0,0)
+         call etplot(x(j),y(j),iupdown,isym)
          k=nver(i)
+         iupdown=-302
          do 50 l=2,k
             m=jvn(i,l)
-            call etplot(x(m),y(m),-302,0)
+            call etplot(x(m),y(m),iupdown,isym)
    50    continue
-           call etplot(X(J),Y(J),-302,0)
+         call etplot(X(J),Y(J),iupdown,isym)
    40 continue
 
 C Convert obstruction block geometry to GEN format (/g1/) and plot.
       if(nb.eq.0)goto 1
       do 60 ib= 1,nb
          call erecc(xo(ib),yo(ib),zo(ib),dx(ib),dy(ib),dz(ib),ang(ib))
+         iupdown=0
+         isym=0
          do 70 i=1,nsur
             j=jvn(i,1)
-            call etplot(x(j),y(j),0,0)
+            call etplot(x(j),y(j),iupdown,isym)
             k=nver(i)
+            iupdown=1
             do 80 l=2,k
                m=jvn(i,l)
-               call etplot(x(m),y(m),1,0)
+               call etplot(x(m),y(m),iupdown,isym)
    80       continue
-            call etplot(X(J),Y(J),1,0)
+            call etplot(X(J),Y(J),iupdown,isym)
    70    continue
 
          call u2pixel(X(J),Y(J),ix,iy)
@@ -433,6 +467,7 @@ C Draws a Mercator sun path diagram.
 
       common/spad/mmod,limit,limtty
       common/prec8/slat,slon
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
@@ -440,7 +475,16 @@ C Draws a Mercator sun path diagram.
       character etext*72,blab*3,month*3
       dimension month(12)
       logical above
-      integer igwid,igheight
+#ifdef OSX
+      integer igwid,igheight  ! passed to axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer ipos,iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! passed to axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ipos,iupdown,isym    ! passed to etplot
+#endif
+      real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &           'Sep','Oct','Nov','Dec'/
@@ -474,10 +518,15 @@ C Draw vertical axes on left and right.
 
 C Output a heading for the view.
       call edayr(ijday,ido,imo)
-      call viewtext('Mercator Sun Plot',2,1,ifs)
+      iside=2
+      isize=1
+      ifont=ifs
+      call viewtext('Mercator Sun Plot',iside,isize,ifont)
       write(etext,'(i2,1x,a3,a,f6.1,a,f5.1)')ido,month(imo),
      &                ' at Latitude',slat,', Longitude',slon
-      call viewtext(etext,3,1,ifs)
+      iside=3
+      isize=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Plot sun path, for each hour of the day get the azimuth and
 C elevation and plot that position on the graph with a symbol and
@@ -490,21 +539,29 @@ C time indication.
          call eazalts(stime,ijday,slat,slon,isunup,sazi,salt)
          if(salt.gt.0)then
             if(.not.above)then
-               call etplot(sazi,salt,0,0)
+               iupdown=0
+               isym=0
+               call etplot(sazi,salt,iupdown,isym)
                above=.true.
             endif
             iclkhr=ihr
             if(ihr.gt.12)iclkhr=ihr-12
             if(iclkhr.gt.9)then
                write(blab,'(i2)')iclkhr
-               call etlabel(blab,sazi,salt,4,itfs)
+               ipos=4
+               isize=itfs
+               call etlabel(blab,sazi,salt,ipos,isize)
             else
                write(blab,'(i1)')iclkhr
-               call etlabel(blab,sazi,salt,4,itfs)
+               ipos=4
+               isize=itfs
+               call etlabel(blab,sazi,salt,ipos,isize)
             endif
 
 C Plot a symbol at the sun position.
-            call etplot(sazi,salt,1,6)
+            iupdown=1
+            isym=6
+            call etplot(sazi,salt,iupdown,isym)
          endif
    10 continue
       call forceflush()

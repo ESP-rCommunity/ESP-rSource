@@ -334,7 +334,15 @@ C xax       - text for horiz axis.
       dimension NCEL(MNREG,MNZ),plaw(MNREG,MNZ)
       dimension NRG(4,MNZ),REG(MNREG,MNZ)
       dimension xgrd(MCEL1D)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C x-z plane grid.
       call startbuffer()
@@ -351,15 +359,21 @@ C x-z plane grid.
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
       call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
-      CALL viewtext(title,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(title,iside,isize,ifont)
 
 C Draw a bold box around domain.
       IPEN=-302
-      CALL etplot(xoff,yoff,0,0)
-      CALL etplot(xoff,yoff+1.0,IPEN,0)
-      CALL etplot(xoff+TOTDIS,yoff+1.0,IPEN,0)
-      CALL etplot(xoff+TOTDIS,yoff,IPEN,0)
-      CALL etplot(xoff,yoff,IPEN,0)
+      iupdown=0
+      isym=0
+      CALL etplot(xoff,yoff,iupdown,isym)
+      iupdown=IPEN
+      CALL etplot(xoff,yoff+1.0,iupdown,isym)
+      CALL etplot(xoff+TOTDIS,yoff+1.0,iupdown,isym)
+      CALL etplot(xoff+TOTDIS,yoff,iupdown,isym)
+      CALL etplot(xoff,yoff,iupdown,isym)
 
 C Draw solid lines at end of each region.
       NCTOT=0
@@ -367,12 +381,18 @@ C Draw solid lines at end of each region.
       do 10 I=1,NRG(IAX,ICFD)
         NCTOT=NCTOT+abs(NCEL(I,ICFD))
         IPEN=1
-        CALL etplot(xg+xoff,yoff,0,0)
-        CALL etplot(xg+xoff,yoff+1.0,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xg+xoff,yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xg+xoff,yoff+1.0,iupdown,isym)
         xg=xg+REG(I,ICFD)
  10   continue
-      CALL etplot(xg+xoff,yoff,0,0)
-      CALL etplot(xg+xoff,yoff+1.0,IPEN,0)
+      iupdown=0
+      isym=0
+      CALL etplot(xg+xoff,yoff,iupdown,isym)
+      iupdown=IPEN
+      CALL etplot(xg+xoff,yoff+1.0,iupdown,isym)
 
 C For each region calculate gridding.
 C Call griddist then plot.
@@ -387,8 +407,11 @@ C Call griddist then plot.
 C Now plot the grid lines.
       DO 30 I=2,NCTOT+2
         IPEN=-204
-        CALL etplot(xgrd(I)+xoff,yoff,0,0)
-        CALL etplot(xgrd(I)+xoff,yoff+1.0,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xgrd(I)+xoff,yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xgrd(I)+xoff,yoff+1.0,iupdown,isym)
    30 CONTINUE
 
       return
@@ -411,7 +434,15 @@ C xax,yax   - text for horiz and vert axis.
       character title*30,xax*10,yax*1
 
       dimension xgrd(MCEL1D),ygrd(MCEL1D)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C x-z plane grid.
       call startbuffer()
@@ -434,18 +465,27 @@ C Store the scaling parameters used in drawing the axes.
         call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,1,0,yax)
         call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,1,1,yax)
       endif
-      CALL viewtext(title,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(title,iside,isize,ifont)
       DO 30 I=2,nx
         IPEN=-204
         if (I.eq.2.or.I.eq.nx) IPEN=1
-        CALL etplot(xgrd(I)+xoff,yoff,0,0)
-        CALL etplot(xgrd(I)+xoff,ygrd(ny)+yoff,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xgrd(I)+xoff,yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xgrd(I)+xoff,ygrd(ny)+yoff,iupdown,isym)
    30 CONTINUE
       DO 40 K=2,ny
         IPEN=-204
         if (K.eq.2.or.K.eq.ny) IPEN=1
-        CALL etplot(xoff,ygrd(K)+yoff,0,0)
-        CALL etplot(xgrd(nx)+xoff,ygrd(K)+yoff,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL etplot(xoff,ygrd(K)+yoff,iupdown,isym)
+        iupdown=IPEN
+        CALL etplot(xgrd(nx)+xoff,ygrd(K)+yoff,iupdown,isym)
    40 CONTINUE
 
       return
@@ -492,6 +532,13 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 
       logical greyok
       character gact*3,zact*3
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iixs,iiys,iix,iiy
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iixs,iiys,iix,iiy
+#endif
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -550,7 +597,13 @@ C Draw dotted line.
                 call eline(ix,iy,0)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ixs,iys,ix,iy,5)
+
+C Draw the dotted line after casting to local variable.
+                iixs=ixs
+                iiys=iys
+                iix=ix
+                iiy=iy
+                call edline(iixs,iiys,iix,iiy,5)
                 if(greyok)call winscl('-',0)
                 call forceflush()
               endif
@@ -582,7 +635,11 @@ C Draw line to end point.
                 call eline(ix,iy,0)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ixs,iys,ix,iy,4)
+                iixs=ixs
+                iiys=iys
+                iix=ix
+                iiy=iy
+                call edline(iixs,iiys,iix,iiy,4)
                 if(greyok)call winscl('-',0)
                 call forceflush()
               endif
@@ -614,7 +671,11 @@ C Draw line to end point.
                 call eline(ix,iy,0)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call edline(ixs,iys,ix,iy,4)
+                iixs=ixs
+                iiys=iys
+                iix=ix
+                iiy=iy
+                call edline(iixs,iiys,iix,iiy,4)
                 if(greyok)call winscl('-',0)
                 call forceflush()
               endif

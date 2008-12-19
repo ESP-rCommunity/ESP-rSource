@@ -4,15 +4,27 @@ C ROUTINES FOR TERMINAL COMMUNICATION VIA SCRATCH PAD
 C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
 
 #include "viewer.h"
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-        character a*1
+      character a*1
+#ifdef OSX
+      integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       IF(IPLN.EQ.0)RETURN
           IF(ABS(X*SCAL-XORG).GT.390.0.OR.
      &       ABS(Y*SCAL-YORG).GT.390.)RETURN
-      CALL etplot(X,Y,0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(X,Y,iupdown,isym)
       a=char(ICH)
-      call etlabel(a,X,Y,0,ifs)
+      ipos=0
+      isize=ifs
+      call etlabel(a,X,Y,ipos,isize)
       RETURN
       END
 

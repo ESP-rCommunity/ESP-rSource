@@ -617,6 +617,17 @@ C convention except where explicitly redefined.
       character spmlabel*16,outs*124,spflnam*72,laprob*72,strspm*16,
      &          unitspm*16,txtspm*72
 
+      character lworking*144,fs*1
+      logical concat,xst,unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+     
 C Component data.
       inzone=ispmloc(ispmnod,1)
       insurf=ispmloc(ispmnod,2)
@@ -648,8 +659,18 @@ C Current weather data.
 C If no mass flow file exists then open wind pressure coefficients 
 C database, read coefficient sets and close.
       if(iairn.eq.0.and.iflwn.eq.0.and.nsinc.lt.2)then
-         iunit=ifil+1
+        iunit=ifil+1
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
          call efopseq(iunit,lapres,1,ier)
+        elseif(ipathapres.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+
+C Debug.
+C          write(6,*) 'working pressure coef ',lworking
+          CALL EFOPSEQ(IUNIT,lworking,1,IER)
+        endif
          if(ier.gt.0)then
             call edisp(iuout,
      &         'SPMCMP3 fatal error: when opening pressure coeff. db!')

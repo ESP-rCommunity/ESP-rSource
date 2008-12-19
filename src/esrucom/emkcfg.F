@@ -473,8 +473,18 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdopt  ',
      &      LOPTDB(1:lnblnk(LOPTDB))
       endif
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
+
+C Pressure coef database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
      &      LAPRES(1:lnblnk(LAPRES))
+      elseif(ipathapres.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdprs  ',
+     &      LAPRES(1:lnblnk(LAPRES))
+      endif
+C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
+C     &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',

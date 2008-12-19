@@ -95,6 +95,11 @@ C output, IER=0 OK.
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lzn  ! length of zone name string
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Clear number of TMC's and layers in each before loading common data.
       NTMC=0
@@ -398,8 +403,11 @@ C has resized the display, redraw.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &               iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        iside=1
+        isize=1
+        ifont=2
+        call viewtext(etext,iside,isize,ifont)
       endif
 
 C Help text for this menu.

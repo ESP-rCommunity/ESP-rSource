@@ -611,6 +611,7 @@ C series data ie. timesteps-vs-day-vs-data.
 #include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -633,7 +634,13 @@ C series data ie. timesteps-vs-day-vs-data.
       logical close,zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,iposi     ! passed to viewtext
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,iposi     ! passed to viewtext
+#endif
 
       DATA LNAME/'MASK.DAT'/
 
@@ -660,10 +667,14 @@ C pixel references for calls to viewtext.
       ENDIF
 
       WRITE(ETEXT,'(1X,A44,A,A20)')SDESCR,' Lib:',RFILE(1:20)
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(1x,A60)')PDESCR
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       ETEXT=' '
       if(zlist)then
@@ -673,7 +684,8 @@ C pixel references for calls to viewtext.
         write(ETEXT,'(a,f9.2,a,f9.2)') ' The data range is ',
      &  XXMIN,' to ',XXMAX
       endif
-      CALL viewtext(ETEXT,4,0,1)
+      iside=4
+      call viewtext(etext,iside,isize,ifont)
 
 C Scaling happens here...
       igwid=igw
@@ -687,7 +699,10 @@ C Scaling happens here...
       READ(LU1,REC=3) NXPNTS,NZPNTS
 
       NAME=TITLE(1:40)
-      call viewtext(NAME,6,1,2)
+      iside=6
+      isize=1
+      ifont=2
+      call viewtext(name,iside,isize,ifont)
 
 C Make sure all rotations are positive.
       ROTNX=ABS(ROTNXX)
@@ -773,7 +788,10 @@ C Display rotation parameters & yscale and zscale.
 59    WRITE(detail,'(A,F5.1,A,F5.1,A,F7.3,A,F7.3)')
      &   ' Rotation about X=',ROTNXX,', about Y=',ROTNYY,
      &   '  Yscale=',YSCALE,' Zscale=',ZSCALE
-      call viewtext(detail,3,0,1)
+      iside=3
+      isize=0
+      ifont=1
+      call viewtext(detail,iside,isize,ifont)
 
 C Set up the plotting direction to produce the proper mask.
 C Set vertices to be plotted by the frame routine into the
@@ -920,7 +938,9 @@ C Label axis.
         IX=IY-1
         WRITE(ANAME,'(A10)') AXIS(I)
         ANAME1=ANAME
-        call etlabel(ANAME1,VERTEX(IX),VERTEX(IY),IPOS(I),1)
+        iposi=ipos(i)
+        isize=1
+        call etlabel(ANAME1,VERTEX(IX),VERTEX(IY),iposi,isize)
 
 C Draw arrow on axis.
         CALL FLARROW(XYZARW,2*I-1,ARRW,COEFF,SCALE,XMIN,YMIN,
@@ -1007,12 +1027,17 @@ C Draw the frame (context of the surface plot).
       SUBROUTINE FRAMER(IVER,VERTEX,MASK,
      &           IPASS,XMAX,XMIN,YMAX,YMIN,SCALE,COEFF)
 
-      INTEGER DRAW
+      INTEGER DRAW,MOVE,NOMARK
       PARAMETER ( DRAW=1,MOVE=0,NOMARK=0 )
       REAL COEFF(5),XLT(2),YLT(2)
 
       DIMENSION  VERTEX(16),MASK(2000),ARRAY(100),IVER(12)
       dimension  zdat(100)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       DO 2 I=1,5
         ARRAY(I)=VERTEX(2*IVER(I)-1)
@@ -1043,20 +1068,25 @@ C     2          -1,0,5,COEFF,MASK,VERTEX,XLT,YLT,IALT,XLAST,YLAST)
 
       IY=2*IVER(6)
       IX=IY-1
-      call etplot(VERTEX(IX),VERTEX(IY),MOVE,NOMARK)
+      iupdown=MOVE
+      isym=NOMARK
+      call etplot(VERTEX(IX),VERTEX(IY),iupdown,isym)
+      iupdown=DRAW
       DO 10 J = 7,10
         IY=2*IVER(J)
         IX=IY-1
-        call etplot(VERTEX(IX),VERTEX(IY),DRAW,NOMARK)
+        call etplot(VERTEX(IX),VERTEX(IY),iupdown,isym)
    10 CONTINUE
 
       IY=2*IVER(11)
       IX=IY-1
-      call etplot(VERTEX(IX),VERTEX(IY),MOVE,NOMARK)
+      iupdown=MOVE
+      call etplot(VERTEX(IX),VERTEX(IY),iupdown,isym)
 
       IY=2*IVER(12)
       IX=IY-1
-      call etplot(VERTEX(IX),VERTEX(IY),DRAW,NOMARK)
+      iupdown=DRAW
+      call etplot(VERTEX(IX),VERTEX(IY),iupdown,isym)
 
       RETURN
       END
@@ -1153,12 +1183,17 @@ C ******************** PLOT3E ********************
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      INTEGER DRAW,HIGH
+      INTEGER DRAW,HIGH,MOVE,NOMARK
       PARAMETER ( DRAW=1,MOVE=0,NOMARK=0 )
 
       REAL XLT(2),YLT(2),COEFF(5)
       logical close
       DIMENSION  XDATA(100),YDATA(100),ZDATA(100),MASK(2000),VERTEX(16)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       IF(NLINE.EQ.-1) GOTO 15
       IF (NLINE .NE. IFIRST)  GOTO  20
@@ -1285,7 +1320,9 @@ C Remember latest point.
         YLAST=IY
 
 C Move back to first point on the line and store that point.
-        call etplot(X,Y,MOVE,NOMARK)
+        iupdown=MOVE
+        isym=NOMARK
+        call etplot(X,Y,iupdown,isym)
         JX=IX
         JY=IY
 
@@ -1366,7 +1403,11 @@ C No mask exists at this point.
 C Check to see if just emerged from mask.
 300     ML=MLOW
         MH=MHIGH
-        IF(LASTPT.EQ.-2) call etplot(XLAST,YLAST,MOVE,NOMARK)
+        if(LASTPT.EQ.-2)then
+          iupdown=MOVE
+          isym=NOMARK
+          call etplot(XLAST,YLAST,iupdown,isym)
+        endif
         LASTPT=0
 
 C Outside of the mask.
@@ -1390,7 +1431,9 @@ C Between new LOW mask and old LOW mask.
 
 C Just entered the mask.
 450     Y=JY
-        call etplot(X,Y,DRAW,NOMARK)
+        iupdown=DRAW
+        isym=NOMARK
+        call etplot(X,Y,iupdown,isym)
         LASTPT=-2
 
 520     XLAST=JX
@@ -1400,7 +1443,9 @@ C Just entered the mask.
 
 C Finish drawing the line if required.
         IF(LASTPT.EQ.-2) GOTO 530
-        call etplot(XLAST,YLAST,DRAW,NOMARK)
+        iupdown=DRAW
+        isym=NOMARK
+        call etplot(XLAST,YLAST,iupdown,isym)
 
 530   CONTINUE
 
@@ -1548,11 +1593,16 @@ C FLARROW Draw flat arrows. ie a 2D representation of a 3D figure.
       SUBROUTINE FLARROW(XYZARW,JAXIS,ARRW,COEFF,SCALE,XMIN,YMIN,
      1           YSCALE,ZSCALE)
 
-      INTEGER DRAW
+      INTEGER MOVE,DRAW,NOMARK
       logical close
       PARAMETER ( MOVE=0,DRAW=1,NOMARK=0 )
 
       REAL XYZARW(6,3),XYZ(10,3),COEFF(5)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Define arrow head.
       JPLUS1=JAXIS+1
@@ -1592,11 +1642,14 @@ C Convert to full screen size.
 50    CONTINUE
 
 C Move to point of arrow.
-      call etplot(XYZ(1,1),XYZ(1,2),MOVE,NOMARK)
+      iupdown=MOVE
+      isym=NOMARK
+      call etplot(XYZ(1,1),XYZ(1,2),iupdown,isym)
 
 C Draw rest of arrow.
+      iupdown=DRAW
       DO 70 I=2,4
-        call etplot(XYZ(I,1),XYZ(I,2),DRAW,NOMARK)
+        call etplot(XYZ(I,1),XYZ(I,2),iupdown,isym)
 70    CONTINUE
 
       RETURN

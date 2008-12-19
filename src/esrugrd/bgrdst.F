@@ -1762,6 +1762,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -1770,7 +1771,15 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -1796,7 +1805,10 @@ C Define the active scale.
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Row Number: ',IRow
-      CALL VIEWTEXT(Title,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL U2PIXEL(XMin,YMin,IX,IY)
@@ -1806,7 +1818,9 @@ C Draw a scale horizontal axis, move to beginning point.
       CALL ELINE(IX,IY,0)
       CALL ESYMBOL(IX,IY,24,ITFS+2)
       X=X*1.5
-      CALL ETLABEL('Column',X,YMin,0,ITFS+2)
+      ipos=0
+      isize=itfs+2
+      CALL ETLABEL('Column',X,YMin,ipos,isize)
 
 C Draw a scale vertical axis.
       CALL U2PIXEL(XMin,YMin,IX,IY)
@@ -1816,7 +1830,7 @@ C Draw a scale vertical axis.
       CALL ELINE(IX,IY,0)
       CALL ESYMBOL(IX,IY,24,ITFS+2)
       Y=YMax*0.35
-      CALL ETLABEL('Layer',XMin,Y,0,ITFS+2)
+      CALL ETLABEL('Layer',XMin,Y,ipos,isize)
 
 C Draw the gridding based on seperate control volumes.
       DO 10 ILay=4,(NLay-3),2
@@ -1829,7 +1843,7 @@ C The current control volume (CV) is a material.
           X=FLOAT(ICol)
           Y=FLOAT(ILay)
           WRITE(Label,'(I2)')IMat
-          CALL ETLABEL(Label,X,Y,0,ITFS+2)
+          CALL ETLABEL(Label,X,Y,ipos,isize)
 
 C Define the adjacent CVs.
           I=IGridN(IRow,ICol,ILay+2)
@@ -1857,12 +1871,16 @@ C Up edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X,Y+2.0,0,ITFS+2)
+              CALL ETLABEL(Label,X,Y+2.0,ipos,isize)
             ENDIF
           ELSEIF(IMatU.GT.0)THEN
             CALL U2PIXEL(X1,Y2,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Down edge details.
@@ -1875,7 +1893,7 @@ C Down edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X,Y-2.0,0,ITFS+2)
+              CALL ETLABEL(Label,X,Y-2.0,ipos,isize)
             ENDIF
           ENDIF
 
@@ -1889,7 +1907,7 @@ C Left edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X-2.0,Y,0,ITFS+2)
+              CALL ETLABEL(Label,X-2.0,Y,ipos,isize)
             ENDIF
           ENDIF
 
@@ -1903,12 +1921,16 @@ C Right edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X+2.0,Y,0,ITFS+2)
+              CALL ETLABEL(Label,X+2.0,Y,ipos,isize)
             ENDIF
           ELSEIF(IMatR.GT.0)THEN
             CALL U2PIXEL(X2,Y1,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
    10 CONTINUE
@@ -1925,6 +1947,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -1933,7 +1956,15 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -1959,7 +1990,10 @@ C Define the active scale.
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Column Number: ',ICol
-      CALL VIEWTEXT(Title,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL U2PIXEL(XMax,YMax,IX,IY)
@@ -1969,7 +2003,9 @@ C Draw a scale horizontal axis, move to beginning point.
       CALL ELINE(IX,IY,0)
       CALL ESYMBOL(IX,IY,24,ITFS+2)
       X=XMax*0.6
-      CALL ETLABEL('Layer',X,YMax,0,ITFS+2)
+      ipos=0
+      isize=itfs+2
+      CALL ETLABEL('Layer',X,YMax,ipos,isize)
 
 C Draw a scale vertical axis.
       CALL U2PIXEL(XMax,YMax,IX,IY)
@@ -1979,7 +2015,7 @@ C Draw a scale vertical axis.
       CALL ELINE(IX,IY,0)
       CALL ESYMBOL(IX,IY,24,ITFS+2)
       Y=YMax*0.65
-      CALL ETLABEL('Row',XMax,Y,0,ITFS+2)
+      CALL ETLABEL('Row',XMax,Y,ipos,isize)
 
 C Draw the gridding based on seperate control volumes.
       DO 10 IRow=4,(NRow-3),2
@@ -1994,7 +2030,7 @@ C The current control volume (CV) is a material.
           WRITE(Label,'(I2)')IMat
 
 C 0=centred, 1=right, 2=centred top, 3=left,4=centered bottom.
-          CALL ETLABEL(Label,X,Y,0,ITFS+2)
+          CALL ETLABEL(Label,X,Y,ipos,isize)
 
 C Define the adjacent CVs.
           I=IGridN(IRow-2,ICol,ILay)
@@ -2022,7 +2058,7 @@ C Up edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X,Y+2.0,0,ITFS+2)
+              CALL ETLABEL(Label,X,Y+2.0,ipos,isize)
             ENDIF
           ENDIF
 
@@ -2036,12 +2072,16 @@ C Down edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X,Y-2.0,0,ITFS+2)
+              CALL ETLABEL(Label,X,Y-2.0,ipos,isize)
             ENDIF
           ELSEIF(IMatD.GT.0)THEN
             CALL U2PIXEL(X1,Y2,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Left edge details.
@@ -2054,12 +2094,16 @@ C Left edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X-2.0,Y,0,ITFS+2)
+              CALL ETLABEL(Label,X-2.0,Y,ipos,isize)
             ENDIF
           ELSEIF(IMatL.GT.0)THEN
             CALL U2PIXEL(X2,Y1,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
 
@@ -2073,7 +2117,7 @@ C Right edge details.
           IBnd=IndSN(I)
           IF(IBnd.GT.0)THEN
             WRITE(Label,'(I2)')IBnd
-            CALL ETLABEL(Label,X+2.0,Y,0,ITFS+2)
+            CALL ETLABEL(Label,X+2.0,Y,ipos,isize)
           ENDIF
         ENDIF
    10 CONTINUE
@@ -2090,6 +2134,7 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -2098,7 +2143,15 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -2124,7 +2177,10 @@ C Define the active scale.
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Layer Number: ',ILay
-      CALL VIEWTEXT(Title,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL U2PIXEL(XMin,YMax,IX,IY)
@@ -2134,7 +2190,9 @@ C Draw a scale horizontal axis, move to beginning point.
       CALL ELINE(IX,IY,0)
       CALL ESYMBOL(IX,IY,24,ITFS+2)
       X=X*1.5
-      CALL ETLABEL('Column',X,YMax,0,ITFS+2)
+      ipos=0
+      isize=itfs+2
+      CALL ETLABEL('Column',X,YMax,ipos,isize)
 
 C Draw a scale vertical axis.
       CALL U2PIXEL(XMin,YMax,IX,IY)
@@ -2144,7 +2202,7 @@ C Draw a scale vertical axis.
       CALL ELINE(IX,IY,0)
       CALL ESYMBOL(IX,IY,24,ITFS+2)
       Y=YMax*0.65
-      CALL ETLABEL('Row',XMin,Y,0,ITFS+2)
+      CALL ETLABEL('Row',XMin,Y,ipos,isize)
 
 C Draw the gridding based on seperate control volumes.
       DO 10 IRow=4,(NRow-3),2
@@ -2157,7 +2215,7 @@ C The current control volume (CV) is a material.
           X=FLOAT(ICol)
           Y=FLOAT(NRow-IRow)
           WRITE(Label,'(I2)')IMat
-          CALL ETLABEL(Label,X,Y,0,ITFS+2)
+          CALL ETLABEL(Label,X,Y,ipos,isize)
 
 C Define the adjacent CVs.
           I=IGridN(IRow-2,ICol,ILay)
@@ -2185,7 +2243,7 @@ C Up edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X,Y+2.0,0,ITFS+2)
+              CALL ETLABEL(Label,X,Y+2.0,ipos,isize)
             ENDIF
           ENDIF
 
@@ -2199,12 +2257,16 @@ C Down edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X,Y-2.0,0,ITFS+2)
+              CALL ETLABEL(Label,X,Y-2.0,ipos,isize)
             ENDIF
           ELSEIF(IMatD.GT.0)THEN
             CALL U2PIXEL(X1,Y2,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Left edge details.
@@ -2217,7 +2279,7 @@ C Left edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X-2.0,Y,0,ITFS+2)
+              CALL ETLABEL(Label,X-2.0,Y,ipos,isize)
             ENDIF
           ENDIF
 
@@ -2231,12 +2293,16 @@ C Right edge details.
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
               WRITE(Label,'(I2)')IBnd
-              CALL ETLABEL(Label,X+2.0,Y,0,ITFS+2)
+              CALL ETLABEL(Label,X+2.0,Y,ipos,isize)
             ENDIF
           ELSEIF(IMatR.GT.0)THEN
             CALL U2PIXEL(X2,Y1,IX1,IY1)
             CALL U2PIXEL(X2,Y2,IX2,IY2)
-            CALL EDLINE(IX1,IY1,IX2,IY2,4)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
+            CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
    10 CONTINUE

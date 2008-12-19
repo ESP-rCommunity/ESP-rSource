@@ -62,6 +62,11 @@ C LPCDB - (144 char) plant template database file name
       common/C7/LPCDB
       character lpcdb*144
 
+C parameters for event profile databases
+C MPRFDBPER - (integer) number of periods in a profile
+      integer MPRFDBPER 
+      parameter (MPRFDBPER=35)
+
 C LPRFDB - (144 char) event profile database file name
       COMMON/PRODB/LPRFDB
       character LPRFDB*144

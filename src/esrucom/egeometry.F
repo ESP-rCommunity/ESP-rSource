@@ -2985,6 +2985,7 @@ C << IOUT is not used >>
       DIMENSION SNA(MS),XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION PAZI(MS),PELV(MS)
       LOGICAL CLOSE
+      character outs*124
 
 C Set area summations to zero & consider each surface of the zone in turn.
       PI = 4.0 * ATAN(1.0)
@@ -3022,7 +3023,10 @@ C Surface area is given by:
 
 C Check for -ve surface area: windows wrongly specified.
         IF(SNA(I).LT.0.00001)THEN
-          CALL USRMSG(' Window area must be < than face',' ','W')
+	  write(outs,'(a,i3,a)') ' Area of zone surf ',i,
+     &      ' is less than 0.00001m^2!'
+          CALL USRMSG(outs,
+     &      'Other geometric properties may be incorrect.','W')
           RETURN
         ENDIF
 
@@ -3067,6 +3071,13 @@ C horizontal measured vertically in degrees.
         IF(CLOSE)goto 60
         ELV=ATAN2(ZSUM(K),SRX2Y2)
         PELV(K)=ELV/R
+
+C << this could be a place to insert special logic for horizontal
+C << surfaces as done in pangs in esruish.
+C << note logic is slightly different for the pazi and pelv in
+C << pangs - it might be better?
+C << also - why not include surface tilt angle?
+	
    60 CONTINUE
       VOL=ABS(V)
 
@@ -3106,9 +3117,10 @@ C << could it use ?? instead of G1? >>
       COMMON/PREC2/VOL(MCOM)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
-      LOGICAL CLOSE
+      LOGICAL CLOSE,closeaz,closeel
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,outs*124
+      integer lln   ! length of surface name
 
 C ZGUPDATE assumes that the zone geometry file has been read prior to
 C its invocation and that the read of the model configuration file has
@@ -3161,7 +3173,9 @@ C Compute surface area and check for negative or near zero area.
         ZAREA=0.5*SQRT(XS*XS+YS*YS+ZS*ZS)
         SSNA(icc)=ZAREA
         IF(SSNA(icc).LT.0.00001)THEN
-          CALL USRMSG('ZGUPDATE: Surface is < 0.00001m^2!',
+	  write(outs,'(a,i3,a)') ' Area of surf connection ',icc,
+     &      ' is less than 0.00001m^2!'
+          CALL USRMSG(outs,
      &      'Other geometric properties may be incorrect.','W')
           ier=2
         ENDIF
@@ -3193,6 +3207,17 @@ C Derive the equation of the polygon.
    60   CONTINUE
         N = NVER(i)
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
+
+C See if any points are out of the plane.
+        iwhich=0
+        ofby=0.0
+	lln=lnblnk(ssname(icc)) 
+	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+	if(ivoff.gt.0)then
+	  write(outs,'(3a)') ' Surface ',ssname(icc)(1:lln),
+     &      ' is probably warped. Please check via surface transforms.'
+          call edisp(iuout,outs)
+        endif
 
 C Update the G7 common block.
         SSUREQN(icc,1)=EQN(1)
@@ -3246,17 +3271,34 @@ C horizontal measured vertically in degrees.
         IF(CLOSE) goto 63
         ELV=ATAN2(ZSUM(K),SRX2Y2)
         SSPELV(icc)=ELV/R
-   63   if(ITRC.gt.1)then 
+
+C Check that the azimuth and elevation based on surface normal are
+C the same as computed above.
+   63   vdx=SSUREQN(icc,1)
+        vdy=SSUREQN(icc,2)
+        vdz=SSUREQN(icc,3)
+        call UV2AZ(vdx,vdy,vdz,uazim,uelev)
+	call eclose(uazim,SSPAZI(icc),0.001,closeaz)
+	call eclose(uelev,SSPELV(icc),0.001,closeel)	
+
+C << this could be a place to insert special logic for horizontal
+C << surfaces as done in pangs in esruish.
+C << note logic is slightly different for the pazi and pelv in
+C << pangs - it might be better?
+C << also - why not include surface tilt angle?
+	
+        if(ITRC.gt.1)then 
           write(outs,*) 'name azi elv m2 ',SSNAME(icc),SSPAZI(icc),
      &      SSPELV(icc),SSNA(icc)
           call edisp(iuout,outs)
-          write(outs,*) 'SUREQN ',icc,SSUREQN(icc,1),SSUREQN(icc,2),
-     &      SSUREQN(icc,3),SSUREQN(icc,4)
+          write(outs,*) 'Unit vector azi elv         ',uazim,uelev,
+     &      closeaz,closeel
+          call edisp(iuout,outs)
+          write(outs,*) 'SUREQN of icc ',icc,SSUREQN(icc,1),
+     &      SSUREQN(icc,2),SSUREQN(icc,3),SSUREQN(icc,4)
           call edisp(iuout,outs)
           write(outs,*) 'SURCOG ',SSURCOG(icc,1),SSURCOG(icc,2),
-     &      SSURCOG(icc,3)
-          call edisp(iuout,outs)
-          write(outs,*) 'SURVN ',SSURVN(icc,1),SSURVN(icc,2),
+     &      SSURCOG(icc,3),' SURVN ',SSURVN(icc,1),SSURVN(icc,2),
      &      SSURVN(icc,3)
           call edisp(iuout,outs)
         endif
