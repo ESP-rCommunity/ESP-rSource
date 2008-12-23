@@ -1,4 +1,4 @@
-# composite construction db defined in /usr/esru/esp-r/databases/multicon.db1
+# composite construction db defined in ./multicon.db1
 # based on materials db /usr/esru/esp-r/databases/constr.db1
    23     # no of composites 
 # layers  description   optics name   symmetry tag
