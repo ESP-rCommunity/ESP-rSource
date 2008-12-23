@@ -95,6 +95,9 @@ Air heating + exhaust ventilation system with ducts .
   11                  2            22.00000   0.00000   0.00000
 # No mass flow network defined.
     1
+../networks/vent_recovery.afn    # leakage description
+/usr/esru/esp-r/databases/pressc.db1  # pressure distributions
+vent_recovery_win.mfr  # mass flow results libray name
 # Mass flow connection corresponds to --> plant connection
 # Mass flow connection no.
 11 2 3 4 5 6 7 8 9 4 10 11 11
