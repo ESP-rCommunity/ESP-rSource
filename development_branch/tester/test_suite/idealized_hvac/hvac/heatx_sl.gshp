@@ -1,0 +1,6 @@
+4			                # GSHP system type
+21.9      26.7      0.391    731.7   	# pipe size and properties
+967.8     3.99      0.7		        # fluid properties
+8.3       16.1      35	                # local ground properties
+2.20      2.80    0.72E-06   1.10E-06   # Slinky: Ks, Kw, Ds, Dw
+2.1       0.9       6.0                 # BD, Spiral, NumP

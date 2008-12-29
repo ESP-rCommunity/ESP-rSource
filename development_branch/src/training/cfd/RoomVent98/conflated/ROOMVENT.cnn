@@ -1,0 +1,9 @@
+*connections  for ROOMVENT
+*Date Wed Jul 28 12:25:34 2004
+      6   # number of connections
+   1   1   0   0   0  #   1  south in bottom is External
+   1   2   5   0   0  #   2  east in bottom is adiabatic
+   1   3   0   0   0  #   3  north in bottom is External
+   1   4   5   0   0  #   4  west in bottom is adiabatic
+   1   5   0   0   0  #   5  ceiling in bottom is External
+   1   6   0   0   0  #   6  floor in bottom is External

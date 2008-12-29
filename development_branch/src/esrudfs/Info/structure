@@ -1,0 +1,818 @@
+ reference_structure:
+
+
+       1  DFS    EZERO
+       2         PARPSF
+       3         SIZEINT
+       4         INT
+       5         EPAGES
+       6         MAX0
+       7         FEEDBOX
+       8         OPENGDISP
+       9         WIN3D
+      10         OPENSETUP
+      11         EDISP
+      12         USRHOME
+      13         LNBLNK
+      14         SCESPRC
+      15         ESCDEF
+      16         EFOPSEQ
+      17         CFDDTA STRIPC
+      18                USRMSG
+      19                EGETWI
+      20                EDISP
+      21                EGETW
+      22                EGETWR
+      23                ABS
+      24                IABS
+      25                MIN0
+      26                LNBLNK
+      27                INT
+      28                IGETND EDISP
+      29                IGETCN EDISP
+      30                IDSURF
+      31         ERPFREE
+      32         EMENU
+      33         EASKS
+      34         EASKAB
+      35         EASKR
+      36         CFMNGE FLOAT
+      37                INICNT EXP
+      38                       IABS
+      39                INTSTR
+      40                FPOPEN
+      41                REAOLD
+      42                INIT   AIRDEN
+      43                GRID
+      44                INDBND IABS
+      45                BLBNDR EDISP
+      46                CFAREA IABS
+      47                EFOPSEQ
+      48                IABS
+      49                CFCALC PROPS  ABS
+      50                              AIRDEN
+      51                              AIRBET
+      52                              MODPRO ABS
+      53                                     IABS
+      54                                     SQRT
+      55                                     ALOG
+      56                                     ETAND
+      57                       INT
+      58                       CALCU  AMAX1
+      59                              ABS
+      60                              MODUT  > 52
+      61                              MODUL  ABS
+      62                                     IABS
+      63                                     ETAND
+      64                              SQRT
+      65                              LISOLV
+      66                       CALCV  AMAX1
+      67                              ABS
+      68                              MODVT  > 52
+      69                              MODVL  > 61
+      70                              SQRT
+      71                              LISOLV
+      72                       CALCW  AMAX1
+      73                              ABS
+      74                              MODWT  > 52
+      75                              MODWL  > 61
+      76                              SQRT
+      77                              LISOLV
+      78                       CALCP  ABS
+      79                              RECRES ABS
+      80                              MODPP1 > 52
+      81                              LISOLV
+      82                       CALCTE AMAX1
+      83                              ABS
+      84                              MODTE  > 52
+      85                              LISOLV
+      86                       CALCED AMAX1
+      87                              ABS
+      88                              MODED  > 52
+      89                              LISOLV
+      90                       CALCT  AMAX1
+      91                              ABS
+      92                              MODTT  > 52
+      93                              MODTL  > 61
+      94                              LISOLV
+      95                       MFBNDR
+      96                       IABS
+      97                       CFMZBK
+      98                       BLBNDR > 45
+      99                       INOUT  AIRDEN
+     100                              ETAND
+     101                              SQRT
+     102                              ABS
+     103                       AMAX1
+     104                       EDISP
+     105                       PLOT   INT
+     106                              ABS
+     107                              WIN3DCLR
+     108                              AXISCALE
+     109                              HORAXIS
+     110                              LINESCALE
+     111                              ETPLOT
+     112                              VIEWTEXT
+     113                              ALOG
+     114                              EXPSTR LEN
+     115                                     LNBLNK
+     116                              INTSTR
+     117                       CHECK  EDISP
+     118                              EASKOK
+     119                              EASKI
+     120                              EASKR
+     121                CFCONV AMAX1
+     122                       AMIN1
+     123                       ABS
+     124                       IABS
+     125                MFSOLV
+     126                PRNNEW
+     127                INT
+     128                EGETW
+     129                PRNPHI
+     130                ERPFREE
+     131                EFDELET
+     132                VECTOR
+     133                LNBLNK
+     134                FTV    GETVEC
+     135                       SETGEO
+     136                       SETRES IFIX
+     137                              EDISP
+     138                       TRNSF1 ATAN
+     139                              PANGS  ATAN
+     140                                     ABS
+     141                                     ATAN2
+     142                                     SQRT
+     143                                     ASIN
+     144                              INT
+     145                              COS
+     146                              SIN
+     147                       TRNSF2
+     148                       MESH   AMAX1
+     149                              AMIN1
+     150                       PBYP   ERPFREE
+     151                              FPRAND
+     152                              POLY   ATAN
+     153                                     ABS
+     154                                     SQRT
+     155                                     AMAX1
+     156                                     SIN
+     157                                     COS
+     158                                     AMIN1
+     159                              FLOAT
+     160                              POINT2
+     161                       MAKBIT EFDELET
+     162         TCHILD
+     163         TERMODE
+     164         ADDPATH
+     165         RUNIT
+     166         PHELPD
+     167         EASKI
+     168         EGETW
+     169         PRNMAT CHAR
+     170                STRFUN
+     171                USRMSG
+     172                ERPFREE
+     173         INICNT > 37
+     174         GRID
+     175         EASKABC
+     176         EASKABCD
+     177         FTV    > 134
+     178         EASKOK
+     179         CFDFIN EASKOK
+     180                EFDELET
+     181                ERPFREE
+     182                EPAGEND
+
+
+     1.1  BNDARL > 61
+
+
+     2.1  BNDART > 52
+
+
+     3.1  MODPP  > 52
+
+
+     4.1  BNDARL
+
+
+     5.1  MODUL
+
+
+     6.1  MODVL
+
+
+     7.1  MODWL
+
+
+     8.1  MODTL
+
+
+     9.1  BLBNDR
+
+
+    10.1  DFSPER IABS
+    10.2         EASKOK
+    10.3         EDISP
+    10.4         EASKPER
+    10.5         EASKR
+
+
+    11.1  CFMNGE INICNT > 37
+    11.2         INTSTR
+    11.3         FPOPEN
+    11.4         REAOLD
+    11.5         INIT   > 42
+    11.6         GRID
+    11.7         INDBND > 44
+    11.8         INOUT  > 99
+    11.9         EFOPSEQ
+   11.10         CFCALC > 49
+   11.11         IABS
+   11.12         CFAREA > 46
+   11.13         CFCONV > 121
+   11.14         PRNNEW
+   11.15         INT
+   11.16         EGETW
+   11.17         PRNPHI
+   11.18         PRNMAT > 169
+   11.19         PRNTXT
+   11.20         ERPFREE
+   11.21         VECTOR
+
+
+    12.1  REAPRN
+
+
+    13.1  CGD    WINCLR
+    13.2         FEEDBOX
+    13.3         OPENGDISP
+    13.4         WIN3D
+    13.5         OPENCPW
+    13.6         OPENTUTORIAL
+    13.7         OPENSETUP
+    13.8         UPDWIRE
+    13.9         UPDCAPT
+   13.10         INICNT > 37
+   13.11         GRID
+   13.12         EMENU
+   13.13         WIN3DCLR
+   13.14         AMAX1
+   13.15         AXISCALE
+   13.16         LINESCALE
+   13.17         HORAXIS
+   13.18         VRTAXIS
+   13.19         VIEWTEXT
+   13.20         ETPLOT
+   13.21         EDISP
+   13.22         MAX0
+   13.23         INT
+
+
+    14.1  WIREPK
+
+
+    15.1  CPWPK
+
+
+    16.1  CFGPK
+
+
+    17.1  CHGAZI
+
+
+    18.1  CHGELEV
+
+
+    19.1  DFSPER
+
+
+    20.1  MZMRX5
+
+
+    21.1  CFDDTA
+
+
+    22.1  CFMNGE
+
+
+    23.1  LISOLV
+
+
+    24.1  LISOLV
+
+
+    25.1  MFBNDR MFSOLV
+    25.2         SNGL
+
+
+    26.1  MZMRX5 MZCNF1
+    26.2         MZSAD1
+    26.3         MZCMS5 MZPST1
+    26.4                CFMNGE > 36
+    26.5         MZCNB1
+
+
+    27.1  CFMZBK
+
+
+    28.1  RDFVP  EFOPSEQ
+    28.2         STRIPC
+    28.3         EGETW
+    28.4         EGETWI
+    28.5         EGETWR
+    28.6         EDISP
+    28.7         ERPFREE
+
+ global program analysis:
+
+   BNDARL                          
+ **[254 E] multiple declaration of entry
+   MODUL                           
+ **[254 E] multiple declaration of entry
+   MODVL                           
+ **[254 E] multiple declaration of entry
+   MODWL                           
+ **[254 E] multiple declaration of entry
+   MODTL                           
+ **[254 E] multiple declaration of entry
+   BLBNDR                          
+ **[254 E] multiple declaration of entry
+   CFMNGE                          
+ **[254 E] multiple declaration of entry
+   DFSPER                          
+ **[254 E] multiple declaration of entry
+   CFDDTA                          
+ **[254 E] multiple declaration of entry
+   CFMNGE                          
+ **[254 E] multiple declaration of entry
+   LISOLV                          
+ **[254 E] multiple declaration of entry
+   LISOLV                          
+ **[254 E] multiple declaration of entry
+   MFBNDR                          
+ **[254 E] multiple declaration of entry
+   MZMRX5                          
+ **[254 E] multiple declaration of entry
+   CFMZBK                          
+ **[254 E] multiple declaration of entry
+
+
+ program_units and entries analysed:
+
+ PROGRAM_UNIT                           PROGRAM_UNIT
+ OR ENTRY        PAGE FILE              OR ENTRY        PAGE FILE
+
+    AIRBET        2   airpr.F              AIRDEN        1   airpr.F
+    BLBNDR        3   blbndr.F             BLBNDR       26   cfdumb.F
+    BNDARL        4   bndaryl.F            BNDARL        5   bndldum.F
+    BNDART        5   bndaryt.F            CALCED       15   cfcalc.F
+    CALCP        12   cfcalc.F             CALCT        13   cfcalc.F
+    CALCTE       14   cfcalc.F             CALCU         9   cfcalc.F
+    CALCV        10   cfcalc.F             CALCW        11   cfcalc.F
+    CFAREA       19   cfconv.F             CFCALC        6   cfcalc.F
+    CFCONV       20   cfconv.F             CFDDTA       20   cfdat.F
+    CFDDTA       40   dfsdummy.F           CFDFIN       25   cfdfin.F
+    CFGPK        36   dfs.F                CFMNGE       30   cfmgerb.F
+    CFMNGE       31   cfmgerc.F            CFMNGE       40   dfsdummy.F
+    CFMZBK       27   cfdumb.F             CFMZBK       46   mzmrx5.F
+    CGD          34   cgd.F                CHECK        34   chkconvg.F
+    CHGAZI       37   dfs.F                CHGELEV      38   dfs.F
+    CPWPK        36   dfs.F                DFS          35   dfs.F
+    DFSPER       30   cfmgerb.F            DFSPER       39   dfsdummy.F
+    EXPSTR       48   plot.F               FTV          49   visual.F
+    GETVEC       50   visual.F             IDSURF       23   cfdat.F
+    IGETCN       21   cfdat.F              IGETND       22   cfdat.F
+    INDBND       16   cfcalc.F             INICNT       24   cfdat.F
+    INIT          7   cfcalc.F             INOUT        17   cfcalc.F
+    LISOLV       40   lisolv_1.F           LISOLV       41   lisolv_2.F
+    LISOLV       42   lisolv_3.F           MAKBIT       55   visual.F
+    MESH         58   visual.F             MFBNDR       28   cfdumm.F
+    MFBNDR       43   mfbndr.F             MODED         5   bndaryt.F
+    MODPP         5   bndaryt.F            MODPP1        5   bndaryt.F
+    MODPRO        5   bndaryt.F            MODTE         5   bndaryt.F
+    MODTL         4   bndaryl.F            MODTL         5   bndldum.F
+    MODTT         5   bndaryt.F            MODUL         4   bndaryl.F
+    MODUL         5   bndldum.F            MODUT         5   bndaryt.F
+    MODVL         4   bndaryl.F            MODVL         5   bndldum.F
+    MODVT         5   bndaryt.F            MODWL         4   bndaryl.F
+    MODWL         5   bndldum.F            MODWT         5   bndaryt.F
+    MZCMS5       45   mzmrx5.F             MZMRX5       40   dfsdummy.F
+    MZMRX5       44   mzmrx5.F             PANGS        59   visual.F
+    PBYP         54   visual.F             PLOT         47   plot.F
+    POINT2       60   visual.F             POLY         53   visual.F
+    PRNMAT       29   cfmatl.F             PRNNEW       33   cfutil.F
+    PRNPHI       32   cfutil.F             PRNTXT       31   cftext.F
+    PROPS         8   cfcalc.F             RDFVP        61   visual.F
+    REAOLD       33   cfutil.F             REAPRN       33   cfutil.F
+    RECRES       18   cfcalc.F             SETGEO       51   visual.F
+    SETRES       52   visual.F             STRFUN       29   cfmatl.F
+    TRNSF1       56   visual.F             TRNSF2       57   visual.F
+    VECTOR       50   visual.F             WIREPK       35   dfs.F
+
+
+ program_units and entries not analysed:
+
+    ADDPATH       AXISCALE      EASKAB EASKABC       EASKABCD      EASKI  EASKOK
+    EASKPER       EASKR  EASKS  EDISP  EFDELET       EFOPSEQ       EGETW  EGETWI
+    EGETWR EMENU  EPAGEND       EPAGES ERPFREE       ESCDEF ETAND  ETPLOT EZERO
+    FEEDBOX       FPOPEN FPRAND GRID   HORAXIS       INTSTR LINESCALE     LNBLNK
+    MFSOLV MZCNB1 MZCNF1 MZPST1 MZSAD1 OPENCPW       OPENGDISP     OPENSETUP
+    OPENTUTORIAL  PARPSF PHELPD RUNIT  SCESPRC       SIZEINT       STRIPC TCHILD
+    TERMODE       UPDCAPT       UPDWIRE       USRHOME       USRMSG VIEWTEXT
+    VRTAXIS       WIN3D  WIN3DCLR      WINCLR
+
+
+ cross_references:
+
+ PROGRAM_UNIT
+ OR ENTRY            TYPE NARG REFERENCED IN
+
+    ABS           R*4   IF  1  BNDARL BNDART CALCED CALCP  CALCT  CALCTE CALCU
+                               CALCV  CALCW  CFCONV CFDDTA INOUT  PANGS  PLOT
+                               POLY   PROPS  RECRES
+    ADDPATH              S  3  DFS
+    AIRBET        R*4    F  1  PROPS
+    AIRDEN        R*4    F  1  INIT   INOUT  PROPS
+    ALOG          R*4   IF  1  BNDART PLOT
+    AMAX1         R*4   IF     CALCED CALCT  CALCTE CALCU  CALCV  CALCW  CFCALC
+                               CFCONV CGD    MESH   POLY
+    AMIN1         R*4   IF     CFCONV MESH   POLY
+    ASIN          R*4   IF  1  PANGS
+    ATAN          R*4   IF  1  PANGS  POLY   TRNSF1
+    ATAN2         R*4   IF  2  PANGS
+    AXISCALE             S 11  CGD    PLOT
+    BLBNDR               S  0  CFCALC CFMNGE
+    BLBNDR               S  0
+    BNDARL               S  0
+    BNDARL               S  0
+    BNDART               S  0
+    CALCED               S  0  CFCALC
+    CALCP                S  0  CFCALC
+    CALCT                S  0  CFCALC
+    CALCTE               S  0  CFCALC
+    CALCU                S  0  CFCALC
+    CALCV                S  0  CFCALC
+    CALCW                S  0  CFCALC
+    CFAREA               S  1  CFMNGE CFMNGE
+    CFCALC               S  5  CFMNGE CFMNGE
+    CFCONV               S  4  CFMNGE CFMNGE
+    CFDDTA               S  3  DFS
+    CFDDTA               S  3
+    CFDFIN               S  0  DFS
+    CFGPK                S  1
+    CFMNGE               S  2  DFS    MZCMS5
+    CFMNGE               S  2
+    CFMNGE               S  2
+    CFMZBK               S  0  CFCALC
+    CFMZBK               S  0
+    CGD                  S  2
+    CHAR         CH*1   IF  1  PRNMAT
+    CHECK                S  2  CFCALC
+    CHGAZI               S  1
+    CHGELEV              S  1
+    COS           R*4   IF  1  POLY   TRNSF1
+    CPWPK                S  1
+    DFS                  P
+    DFSPER               S  0
+    DFSPER               S  0
+    EASKAB               S  6  DFS
+    EASKABC              S  7  DFS
+    EASKABCD             S  8  DFS
+    EASKI                S 11  CHECK  DFS
+    EASKOK               S  3  CFDFIN CHECK  DFS    DFSPER
+    EASKPER              S  4  DFSPER
+    EASKR                S 11  CHECK  DFS    DFSPER
+    EASKS                S  8  DFS
+    EDISP                S  2  BLBNDR CFCALC CFDDTA CGD    CHECK  DFS    DFSPER
+                               IGETCN IGETND RDFVP  SETRES
+    EFDELET              S  2  CFDFIN CFMNGE MAKBIT
+    EFOPSEQ              S  6  CFMNGE CFMNGE DFS    RDFVP
+    EGETW                S  7  CFDDTA CFMNGE CFMNGE DFS    RDFVP
+    EGETWI               S  9  CFDDTA RDFVP
+    EGETWR               S  9  CFDDTA RDFVP
+    EMENU                S  6  CGD    DFS
+    EPAGEND              S  0  CFDFIN
+    EPAGES               S  4  DFS
+    ERPFREE              S  2  CFDFIN CFMNGE CFMNGE DFS    PBYP   PRNMAT RDFVP
+    ESCDEF               S  4  DFS
+    ETAND         R*4    F  1  BNDARL BNDART INOUT
+    ETPLOT               S  4  CGD    PLOT
+    EXP           R*4   IF  1  INICNT
+    EXPSTR               S  5  PLOT
+    EZERO                S  0  DFS
+    FEEDBOX              S  4  CGD    DFS
+    FLOAT         R*4   IF  1  CFMNGE PBYP
+    FPOPEN               S  5  CFMNGE CFMNGE
+    FPRAND               S  5  PBYP
+    FTV                  S  5  CFMNGE DFS
+    GETVEC               S  1  FTV
+    GRID                 S  0  CFMNGE CFMNGE CGD    DFS
+    HORAXIS              S  9  CGD    PLOT
+    IABS          I*4   IF  1  BNDARL BNDART CFAREA CFCALC CFCONV CFDDTA CFMNGE
+                               CFMNGE DFSPER INDBND INICNT
+    IDSURF        I*4    F  1  CFDDTA
+    IFIX          I*4   IF  1  SETRES
+    IGETCN        I*4    F  5  CFDDTA
+    IGETND        I*4    F  3  CFDDTA
+    INDBND               S  0  CFMNGE CFMNGE
+    INICNT               S  0  CFMNGE CFMNGE CGD    DFS
+    INIT                 S  0  CFMNGE CFMNGE
+    INOUT                S  0  CFCALC CFMNGE
+    INT           I*4   IF  1  CFCALC CFDDTA CFMNGE CFMNGE CGD    DFS    PLOT
+                               TRNSF1
+    INTSTR               S  5  CFMNGE CFMNGE PLOT
+    LEN           I*4   IF  1  EXPSTR
+    LINESCALE            S  6  CGD    PLOT
+    LISOLV               S  7  CALCED CALCP  CALCT  CALCTE CALCU  CALCV  CALCW
+    LISOLV               S  7
+    LISOLV               S  7
+    LNBLNK        I*4    F  1  CFDDTA CFMNGE DFS    EXPSTR
+    MAKBIT               S  2  FTV
+    MAX0          I*4   IF     CGD    DFS
+    MESH                 S  1  FTV
+    MFBNDR               S  0  CFCALC
+    MFBNDR               S  0
+    MFSOLV               S  0  CFMNGE MFBNDR
+    MIN0          I*4   IF     CFDDTA
+    MODED                S  0  CALCED
+    MODPP                S  0
+    MODPP1               S  0  CALCP
+    MODPRO               S  0  PROPS
+    MODTE                S  0  CALCTE
+    MODTL                S  0  CALCT
+    MODTL                S  0
+    MODTT                S  0  CALCT
+    MODUL                S  0  CALCU
+    MODUL                S  0
+    MODUT                S  0  CALCU
+    MODVL                S  0  CALCV
+    MODVL                S  0
+    MODVT                S  0  CALCV
+    MODWL                S  0  CALCW
+    MODWL                S  0
+    MODWT                S  0  CALCW
+    MZCMS5               S  1  MZMRX5
+    MZCNB1               S  2  MZMRX5
+    MZCNF1               S  2  MZMRX5
+    MZMRX5               S  1
+    MZMRX5               S  1
+    MZPST1               S  5  MZCMS5
+    MZSAD1               S  2  MZMRX5
+    OPENCPW              S  1  CGD
+    OPENGDISP            S  6  CGD    DFS
+    OPENSETUP            S  1  CGD    DFS
+    OPENTUTORIAL         S  1  CGD
+    PANGS                S  1  TRNSF1
+    PARPSF               S  5  DFS
+    PBYP                 S  3  FTV
+    PHELPD               S  6  DFS
+    PLOT                 S 12  CFCALC
+    POINT2               S  3  PBYP
+    POLY                 S  3  PBYP
+    PRNMAT               S  1  CFMNGE DFS
+    PRNNEW               S  1  CFMNGE CFMNGE
+    PRNPHI               S  2  CFMNGE CFMNGE
+    PRNTXT               S  1  CFMNGE
+    PROPS                S  0  CFCALC
+    RDFVP                S  1
+    REAOLD               S  1  CFMNGE CFMNGE
+    REAPRN               S  1
+    RECRES        R*4    F  1  CALCP
+    RUNIT                S  2  DFS
+    SCESPRC              S  4  DFS
+    SETGEO               S  0  FTV
+    SETRES               S  1  FTV
+    SIN           R*4   IF  1  POLY   TRNSF1
+    SIZEINT              S  3  DFS
+    SNGL          R*4   IF  1  MFBNDR
+    SQRT          R*4   IF  1  BNDART CALCU  CALCV  CALCW  INOUT  PANGS  POLY
+    STRFUN               S  2  PRNMAT
+    STRIPC               S  8  CFDDTA RDFVP
+    TCHILD               S  1  DFS
+    TERMODE              S  2  DFS
+    TRNSF1               S  1  FTV
+    TRNSF2               S  0  FTV
+    UPDCAPT              S  1  CGD
+    UPDWIRE              S  1  CGD
+    USRHOME              S  1  DFS
+    USRMSG               S  4  CFDDTA PRNMAT
+    VECTOR               S  1  CFMNGE CFMNGE
+    VIEWTEXT             S  4  CGD    PLOT
+    VRTAXIS              S 10  CGD
+    WIN3D                S 11  CGD    DFS
+    WIN3DCLR             S  0  CGD    PLOT
+    WINCLR               S  0  CGD
+    WIREPK               S  1
+
+
+ COMMON_BLOCK TYPE   LENGTH        REFERENCED IN
+
+   /ACT/        N       396       #CFMNGE
+   /ALL/        N        36        BNDARL  BNDART  CALCED  CALCP   CALCT
+                                   CALCTE  CALCU   CALCV   CALCW   CFCONV  CGD
+                                   DFS     GETVEC #INICNT  INIT    PBYP
+                                   PRNMAT #PRNPHI  PRNTXT  PROPS  #REAPRN
+                                   SETGEO  SETRES  STRFUN  TRNSF2  VECTOR
+   /APPW/       N        12        CGD
+   /ARPOLY/     N        72        PBYP    POINT2 #POLY
+   /BIT1/       N      6400       #MAKBIT #PBYP
+   /BNDCND/     N         8        BNDART  CFCALC #INOUT
+   /BUOYAN/     N        12        CALCED  CALCTE  CALCW  #CFCALC #CFDDTA  INOUT
+                                   PROPS
+   /C1/         N         8        DFSPER
+   /CFCALL/     N         4       #CFMNGE
+   /CFDARE/     N       120       #CFAREA  CFCONV  CFMZBK
+   /CFDCNV/     N      4032       #CFMNGE #CFMZBK
+   /CFDCON/     N       120       #BNDARL #BNDART  CFCONV  CFMZBK
+   /CFDCTL/     N         4        CFMZBK  MZCMS5
+   /CFDFIL/            1596        CFCONV  CFDDTA  CFMNGE #DFS    #DFSPER
+   /CFDINI/     N         4       #CFDDTA  CFMNGE  CFMNGE
+   /CFDRES/     N         8        CFMNGE
+   /CFSEUP/     N       100       #DFSPER
+   /COEF/       N   1179648       #BNDARL #BNDART #CALCED #CALCP  #CALCT
+                                  #CALCTE #CALCU  #CALCV  #CALCW   LISOLV
+                                   LISOLV  LISOLV  RECRES
+   /CONST/      N        12        BNDARL  BNDART  CALCED  CALCT   CALCTE  CALCU
+                                   CALCV   CALCW   CFCALC  CFCONV  CFDDTA
+                                   CFMZBK #INICNT  INOUT   LISOLV  PLOT    PROPS
+   /DEFDB/     CH        92        DFS
+   /DEFLT3/    CH        72        DFS
+   /DIVCF/      N         8       #MESH    PBYP
+   /DUDVDW/     N    393216        CALCP  #CALCU  #CALCV  #CALCW
+   /EQNSLV/    CH        80       #CFDDTA
+   /EQTION/     N        40        CFCALC #CFDDTA  CHECK
+   /FDTRFC/     N        28        CFCALC #CFDDTA  CHECK
+   /FILEP/      N         4        CFDDTA  CGD    #DFS     STRFUN
+   /FLCNTR/     N    393216       #VECTOR
+   /FLUPRF/     N    393232        BNDARL #BNDART  CALCED  CALCP   CALCT
+                                   CALCTE  CALCU   CALCV   CALCW  #CFCALC
+                                   CFCONV #CHECK  #INICNT #INIT    INOUT
+                                   MFBNDR  PRNTXT #PROPS  #REAPRN  STRFUN
+   /FLUPRP/     N    131072        CALCED  CALCP   CALCT   CALCTE  CALCU   CALCV
+                                   CALCW  #INIT   #REAPRN
+   /FLVDAT/           13188        CFMNGE #RDFVP
+   /FLVPAR/            1516        RDFVP
+   /FVALA/      N       168        BLBNDR #CFMNGE
+   /FVALS/      N      2100        BLBNDR #CFMZBK #MZCMS5
+   /G1/         N      5408        MESH    PANGS  #SETGEO  TRNSF1
+   /G1T/        N       320        MESH   #TRNSF1
+   /G5/        CH      6888        CFMNGE  IDSURF
+   /GEOM/       N      1920        BNDARL  BNDART  CALCED  CALCP   CALCT
+                                   CALCTE  CALCU   CALCV   CALCW   CFAREA
+                                   CFCONV  CGD     INOUT   MFBNDR  PRNMAT
+                                   PRNPHI  PRNTXT  SETGEO  SETRES  STRFUN
+                                   VECTOR
+   /GFONT/      N         8        CGD    #DFS
+   /GRDMAX/     N        12       #CFDDTA
+   /GRID3/      N       480       #MESH
+   /GRIDFN/     N       120       #CFDDTA  INICNT
+   /HSRC/               632       #BLBNDR  BNDARL  BNDART #CFDDTA
+   /HTCCFD/     N      2016       #CFMNGE
+   /ICFCHM/     N         8        CFMNGE
+   /ICFCHN/     N        16        CFCALC  CFCONV  CFDFIN  CFMNGE  CFMNGE #DFS
+   /ICFNOD/     N         8        BLBNDR  BNDARL  BNDART  CFAREA  CFCALC
+                                   CFCONV  CFDDTA #CFMNGE #CFMNGE  CFMZBK #CGD
+                                   CHECK  #DFS     IDSURF  INDBND  INICNT  INIT
+                                   INOUT   MFBNDR  RECRES
+   /INCALC/     N        32        BNDARL  BNDART  CALCT   CALCU   CALCV   CALCW
+                                  #CFCALC  DFS     LISOLV  PLOT    PRNMAT
+                                   PRNPHI  PROPS  #REAPRN
+   /INITIA/     N        28       #CFDDTA #CFMNGE  INIT
+   /INTERP/     N       768        BNDART  CALCED  CALCP   CALCT   CALCTE  CALCU
+                                   CALCV   CALCW
+   /LINRFC/     N        32        CFCALC #CFDDTA #CHECK
+   /LINRFC1/    N         4        CFCALC #CFDDTA  CHECK
+   /MFLOW1/     N        12       #CFDDTA  IGETCN  IGETND
+   /MFLOW2/    CH       306       #CFDDTA  IGETCN  IGETND
+   /MFLOW3/     N      1000       #CFDDTA
+   /MFLOW4/     N       400       #CFDDTA #MFBNDR
+   /MFLOW7/    CH      1380        CFDDTA
+   /MFLOW8/    CH      3300       #CFDDTA  IGETCN
+   /MFLOW9/     N      4000       #CFDDTA
+   /MFLRES/     N      2784        MFBNDR
+   /MFLW10/     N      2772       #CFDDTA  IGETCN  MFBNDR
+   /MFS/        N         4        BNDARL  BNDART #CFCALC
+   /MFTRA/      N         4       #CGD    #DFS
+   /MOD/        N         4        CFCALC  CGD    #DFS
+   /MON/        N       848       #PLOT
+   /NDCFD/      N        12       #CFDDTA  CFMNGE  MZCMS5
+   /NDMAP/      N       604        BNDARL  BNDART #CFDDTA  CFMNGE  INDBND  INOUT
+                                  #MFBNDR  RECRES
+   /NORM/       N        24       #CALCED #CALCT  #CALCTE #CALCU  #CALCV  #CALCW
+                                  #CFCALC
+   /NSSWP/      N        28        CFCALC #CFDDTA  CHECK
+   /OUTIN/      N         8        CFCALC  CFDDTA  CFMNGE  CFMNGE  CGD     CHECK
+                                   CPWPK  #DFS     DFSPER  IGETCN  IGETND
+                                   MZCMS5  PLOT    PRNMAT  RDFVP   STRFUN
+   /PANGL/      N        12       #PANGS   TRNSF1
+   /PARAM1/     N        24        CFCALC #CFDDTA  CFMNGE  CFMNGE
+   /PARAM2/    CH       216       #CFDDTA  CFMNGE  CFMNGE  DFS
+   /PCOR/       N        28       #CALCP  #CFCALC #CHECK
+   /PERS/       N        28        CFMNGE
+   /POPHELP/   CH      4320       #CGD    #CHECK  #DFS
+   /PREC1/      N     12348        CFMZBK
+   /PREC7/      N         4        CFMNGE
+   /PREC9/      N     10164        CFMNGE  CFMZBK  MZCMS5  MZMRX5
+   /PRECZ/     CH      1596        CGD
+   /PRSREF/     N        12        CFCALC #CFDDTA  MFBNDR
+   /RELAX/      N        32       #CFDDTA
+   /RENORM/     N         4        CFCALC #CFDDTA
+   /RES/        N       856       #PLOT
+   /RPATH/     CH        72       #DFS
+   /SBDARY/     N      1084       #BLBNDR  BNDARL  BNDART  CFAREA  CFCONV
+                                  #CFDDTA  CFMNGE  INDBND
+   /SHOUT/      N         4       #CGD    #DFS
+   /SIMT/       N         8        CFMNGE #DFS
+   /SIMTIM/     N        32        CFMNGE
+   /SLICOM/     N        12        CFMNGE #DFS     PRNMAT  PRNTXT
+   /SPAD/       N        12       #CGD    #DFS
+   /STRF/       N      4096        PRNMAT #STRFUN
+   /SUSP/       N    262144        BNDART #CALCED #CALCTE
+   /TDIS/       N        16       #CALCED #CFCALC #CHECK
+   /TEMPF/      N    262168        BNDARL #BNDART  CALCED #CALCT   CALCTE  CALCW
+                                  #CFCALC  CFCONV #CHECK  #INICNT #INIT   #INOUT
+                                   MFBNDR  PRNMAT  PRNPHI  PRNTXT #PROPS
+                                  #REAPRN  VECTOR
+   /TEMPP/      N    131072        CALCT  #INIT   #REAPRN
+   /TEN/        N        16       #CALCTE #CFCALC #CHECK
+   /THETA/      N        80        BNDARL  BNDART #CFDDTA  INOUT
+   /TIMSTP/     N         4        CALCED  CALCP   CALCT   CALCTE  CALCU   CALCV
+                                   CALCW  #CFCALC
+   /TRNSF/      N        64       #TRNSF1  TRNSF2
+   /TURB/       N    131116       #BNDART  CALCED #CALCTE #INICNT  INOUT   PROPS
+   /TVECXYZ/    N    786432        POLY   #TRNSF2
+   /UDOT/      CH        72       #DFS
+   /UHOME/     CH        72        DFS
+   /URFDEN/     N         4       #CFCALC #CHECK   PROPS
+   /UTLCOM/     N        28        CFMNGE #DFS     PRNMAT
+   /UVEL/       N       400        BNDART #CALCU  #CFCALC #CHECK
+   /VARF/       N    917504       #BNDARL #BNDART  CALCED #CALCP   CALCT
+                                   CALCTE  CALCU   CALCV   CALCW   CFCALC
+                                  #INDBND #INIT   #INOUT  #MFBNDR  PRNMAT
+                                   PRNPHI  PRNTXT  PROPS  #REAPRN  STRFUN
+                                   VECTOR
+   /VARIC/      N        32       #CFDDTA
+   /VARP/       N    655360        CALCED  CALCTE  CALCU   CALCV   CALCW  #INIT
+                                  #REAPRN
+   /VECXYZ/     N    786432       #GETVEC  TRNSF2 #VECTOR
+   /VIEWPX/     N        28       #CGD    #DFS     PLOT
+   /VISFIL/    CH       144       #CFDDTA #CFMNGE  CFMNGE  DFS
+   /VISSET/     N        28       #CFMNGE #DFS     GETVEC  MAKBIT  MESH    PBYP
+                                   POLY   #SETRES
+   /VVEL/       N       400        BNDART #CALCV  #CFCALC #CHECK
+   /WALLF/      N   1572864       #BNDART
+   /WVEL/       N       400        BNDART #CALCW  #CFCALC #CHECK
+   /ZONEQN/     N      2800        CFMZBK #MZCMS5
+   /ZTURB/      N         8        CFCALC #CFDDTA  PROPS
+
+
+ UNIT_IDENTIFIER          ACCESS OPERATIONS    ACCESSED IN
+
+    '/USR/ESRU/BIN/MATLAB'               I     DFS
+    'RUNPHO'                             I     DFS
+    *                       S F    W           BLBNDR BNDARL CFDDTA CFMNGE
+                                               CFMZBK MFBNDR MZMRX5
+    ICFBIN                  D U  R W           MAKBIT PBYP
+    ICFBIT                  S F    W           MAKBIT
+    ICFVEC                  S F  R W         A CFMNGE GETVEC VECTOR
+    IFL                     S F    W   C     A CFCALC CFCONV CFMNGE CFMNGE
+                                               PRNMAT PRNPHI PRNTXT
+    IFL                     S U  R W           REAPRN
+    IFLPAR                  S F  R             RDFVP
+    IOUT                    S F    W           EXPSTR
+    IUOUT                   S F    W           CFCALC
+    LCFD(1)                              I     DFS
+    LVEC                                 I     CFMNGE DFS
+    RESFL                                I     DFS
+
+
+ INCLUDE_FILE                       REFERENCED IN
+
+    /usr/esru/include/building.h    BLBNDR CFCONV CFDDTA CFMNGE CFMZBK CGD
+                                    DFS    DFSPER IDSURF MESH   MZCMS5 MZMRX5
+                                    PANGS  RDFVP  SETGEO TRNSF1
+    /usr/esru/include/cfd.h         BLBNDR BNDARL BNDART CALCED CALCP  CALCT
+                                    CALCTE CALCU  CALCV  CALCW  CFAREA CFCALC
+                                    CFCONV CFDDTA CFMNGE CFMNGE CFMZBK CGD
+                                    CHECK  DFS    GETVEC INDBND INICNT INIT
+                                    INOUT  LISOLV LISOLV LISOLV MFBNDR MZCMS5
+                                    POLY   PRNMAT PRNPHI PRNTXT PROPS  RDFVP
+                                    REAPRN RECRES SETGEO SETRES STRFUN TRNSF2
+                                    VECTOR
+    /usr/esru/include/flowvis.h     MAKBIT PBYP   SETRES
+    /usr/esru/include/net_flow.h    CFDDTA CFMNGE IGETCN IGETND MFBNDR
+
+
+ *END OF ANALYSIS*
+
+ messages presented:
+   15x[254 E] multiple declaration of entry
+ number of error messages:           15
+
+ number of statements:            10550
+ number of subprograms:              73
+ number of source files:             27
+ number of include files:             3
+

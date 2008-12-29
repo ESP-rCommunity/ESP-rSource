@@ -1,0 +1,31 @@
+# Acoustic  properties of occupants and furniture of the zones in /export/home/citherle/eco_model2/cfg/eco_model2.cfg
+#
+# Public
+*Public_type, 2
+#   Public    |                     absorption coefficients public per frequency [Hz]
+#    type     |  100|  125|  160|  200|  250|  315|  400|  500|  630|  800| 1000| 1250| 1600| 2000| 2500| 3150| 4000
+ Standing,      0.12, 0.15, 0.18, 0.22, 0.25, 0.28, 0.32, 0.35, 0.38, 0.42, 0.45, 0.48, 0.52, 0.55, 0.55, 0.55, 0.55,      
+ Seat_chair,    0.13, 0.20, 0.27, 0.33, 0.40, 0.45, 0.50, 0.55, 0.57, 0.58, 0.60, 0.60, 0.60, 0.60, 0.57, 0.53, 0.50,
+#
+# Furniture
+*Furniture_type, 2
+# Furniture  |  Cat  |                          absorption coefficients public per frequency [Hz]
+#   type     |       |  100|  125|  160|  200|  250|  315|  400|  500|  630|  800| 1000| 1250| 1600| 2000| 2500| 3150| 4000
+ Uphol_chair,  Unit,   0.11, 0.14, 0.17, 0.20, 0.23, 0.27, 0.31, 0.35, 0.36, 0.38, 0.39, 0.38, 0.38, 0.37, 0.37, 0.38, 0.38,
+ Cupboard,     Surf,   0.22, 0.20, 0.18, 0.17, 0.15, 0.13, 0.12, 0.10, 0.10, 0.10, 0.10, 0.08, 0.07, 0.05, 0.05, 0.05, 0.05,
+#
+# Zone public and furniture
+*Zone, F3_318                         # Tag, zone name
+*Nb_public_type, 1                    # Tag, number of public types in zone
+  Standing,      1,                   # Occupant type, number of occupants
+*Nb_furniture_type, 2                 # Tag, number of furniture types in zone
+  Uphol_chair,    10,     none         # Public type, Nb or area, in front of
+  Cupboard,       11.00, 318_cor      # Public type, Nb or area, in front of
+#
+*Zone, F3_319                         # Tag, zone name
+*Nb_public_type, 1                    # Tag, number of public types in zone
+  Seat_chair,      1,                   # Occupant type, number of occupants
+*Nb_furniture_type, 2                 # Tag, number of furniture type in zone
+  Uphol_chair,    4,     none         # Public type, Nb or area, in front of
+  Cupboard,       8.0, 319_cor      # Public type, Nb or area, in front of
+*End_ACO

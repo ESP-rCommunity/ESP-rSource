@@ -1,0 +1,1107 @@
+These job.notes go along with case-, result- and temporary files
+in which the Nielsen-case is dealt with for a non-isothermal case.
+
+-----------------Marcel 29/06/95--------------------------
+
+Description of the case:
+
+   The case under investigation  originates from the 2-D test
+   case that was described in the IEA Annex 20  final report. It has been
+   proposed as a benchmark test for room air distribution models.
+
+   The geometry of the test case has the following specifications:
+   L/H= 3.0 , h/H= 0.056 and t/H= 0.16. The height of the room H is 3.0m
+
+   The Reynolds number, based on the slot height h, is 5000, leading
+   to an inlet velocity u=0.455 m/s.
+
+   Though the problem originally was a isothermal one, and only
+   measurement results are available for that case, a non-isothermal
+   case was proposed in the mentioned Annex 20 report. The Archimedes-
+   number was used for the criteria of the non-isothermal case.
+
+   Through the inlet cold air is introduced, whereas a heat flux through
+   the floor compensates for the heat loss through the outlet.
+
+   Geometry of the problem
+
+        ---------------------------------------------------        -
+    h   --->u (Ar > 0)                                    |        |
+        ----                                              |        |
+           |                                              |        | 
+           |                                              |        | H
+           |                                              ----     |
+           |       ^      ^   Q   ^       ^    Q   ^       ---> t  |
+           |_______|______|_______|_______|________|__________     _
+
+           |----------------------------------------------|
+                                 L
+
+
+Input variables for the first case:
+
+   Ar= beta*g*h*DeltaT/u^2= 0.04
+
+   beta = 1/293.15  1/K        DeltaT = 1.47   K
+   g    = 9.81      m/s^2      u      = 0.455  m/s
+   h    = 0.168     m
+
+   This results in the heat flux Q necessary to compensate
+
+   Q= DeltaT*u*h*cp*rho= 1.47*0.455*0.168*1006*1.194= 134.97 W
+
+   This heat flux is put into the room via the floor.
+
+---------------------------------------------------
+
+The simulation was started, by changing the case-file case_2_gridVZ.dfd.
+
+The following changes were performed:
+
+  Buoyancy was introduced via 
+#   Variables:
+         V   W  T   K   E  Buo  
+
+  The temperature for the inlet flow was set to 293.15-1.47-273.15=18.53'C.  
+  Instead of a Zero-velocity gradient opening type, a pressure outlet (inlet)
+  was defined. The temperature was 20.0'C
+# Opening type   location   Ii  If  Ji  Jf  Ki  Kf   P(Pa) or m(kg/s)   T('C)
+      Vel         South      1   1   1   1  19  20        9.082E-2      18.53
+      Pre         North      1   1  20  20   1   4          0.0         20.0
+
+  The constant temperature solid boundaries were changed into adiabatic
+  ones. At the floor the constant heat flux was introduced.
+#   Solid  Bnd. type     location   Ii  If  Ji  Jf  Ki  Kf    T('C) or H(W)
+         Heat              South     1   1   1   1   1  18        0.0
+         Heat              North     1   1  20  20   5  20        0.0
+         Heat              Low       1   1   1  20   1   1        134.97
+         Heat              High      1   1   1  20  20  20        0.0
+
+---Results
+
+The first simulation was started as a steady one, with a high relaxation 
+(V,W= 0.1), though there was no underrelaxation on the continuity equation.
+ After 1000 iterations the relaxation was changed:
+	P: 0.5      Linear
+	V,W,T: 0.3  Linear
+	K,E: 0.3    Inertia
+
+Another 1500 iterations were performed (steady) with these figures. Though 
+the solution was not converged, it was accepted, in order to see the
+quality of the results.
+
+(after 2500 iterations the residuals were:
+   Res. of mass    = 4.720e-3
+   Res. of Y-mom.  = 8.498e-3
+   Res. of Z-mom.  = 5.863e-3
+   Res. of energy  = 1.089e-2
+   Res. of t.ener. = 3.466e-5
+   Res. of dis.en. = 4.159e-4
+
+Normally the energy equation would not be regarded as converged. 
+The convergence criterium for that equation lies at about 1.0e-6, when
+it is normalized ! However this is not the case, her absolute values are
+given
+)
+
+The qualitative results are more or less OK. Only at the outlet weird vectors
+appear. This is possibly the result of using not the correct boundary
+condition for the outlet.
+
+Results can not be compared quantitatively because no results are available
+for Ar=0.04. But also quantitatively the results seem OK. Only the pressure
+is very high, and it is expected that this is also the cause for the
+things happening near the outlet. In a next simulation, the outlet is 
+taken as a zero-gradient one....
+
+-----------------------------------------------------------
+
+In the second try-out, the zero-gradient oulet was used instead of a
+pressure outlet.
+
+# Opening type   location   Ii  If  Ji  Jf  Ki  Kf   P(Pa) or m(kg/s)   T('C)
+      Vel         South      1   1   1   1  19  20        9.082E-2      18.53
+      Zero        North      1   1  20  20   1   4          0.0         20.0
+
+Otherwise no changes were made.
+
+The same strategy as described above was used for the calculation.
+
+
+---Results
+
+After 1500 iterations, de results looked acceptable, as well qualitatively
+and quantitatively. The spurious vectors, as found with pressure cells,
+did not appear anymore.
+Convergence was not yet reached, and therefore it was decided to let the
+simulation run for another 1000 iterations, and after that for another
+1000 iterations. During these iterations, the residuals only showed a very
+small decrease and the monitoring point showed constant values for the
+different variables. However convergence is still not reached.
+
+   Res. of mass    = 2.541e-3
+   Res. of Y-mom.  = 9.690e-4
+   Res. of Z-mom.  = 2.357e-3
+   Res. of energy  = 3.003e-3
+   Res. of t.ener. = 4.585e-6
+   Res. of dis.en. = 3.186e-6
+
+Because the calculation is a convergent one, another 500 iterations are
+performed, with higher relaxation factors for P,V,W and T.
+
+  P = 0.7
+  V,W and T= 0.5
+
+The results after 500 iterations have not been improved, nor done very much
+harm to the simulation. The residuals now are:
+
+   Res. of mass    = 3.555e-3
+   Res. of Y-mom.  = 7.829e-4
+   Res. of Z-mom.  = 2.006e-3
+   Res. of energy  = 1.554e-3
+   Res. of t.ener. = 5.824e-6  
+   Res. of dis.en. = 4.401e-6
+
+Because the monitoring point shows no sign of changement, the result is
+accepted, and the results can be viewed.
+
+The vector field and also the temperature field show reasonably well 
+agreement with the results as presented in Annex 20 (However, those
+results are for Ar=0.14). Compared to the isothermal case, the velocities
+in the room are higher, but the penetration length equals that of the room
+length. The pressure field is much different than in the isothermal case.
+A stratified pressure field is calculated in which the pressure difference
+is +/- 34 Pa. The influence of the buoyancy term seems to fade away the
+pressure differences calculated for the isothermal case. In the isothermal
+case the pressure distribution is totally different.
+
+
+The results can be found in
+  case_2_grid_BUO_04_VZ.dfd
+  case_2_grid_BUO_04_VZ.phi
+  case_2_grid_BUO_04_VZ.tmp
+
+
+
+----------------------------------
+----------------------------------
+ARCHIMEDES 0.08
+---------------------------------
+
+A new case is started in which the Archimedes-number is enlarged till 0.08.
+This case originates from case_2_grid_BUO_04_VZ.dfd.
+
+In order to reach the value 0.08, the inlet temperature has to be lowered 
+till 17.05'C. The heat flux coming in over the floor is now 270.86W.
+
+{
+   Ar= beta*g*h*DeltaT/u^2= 0.08
+
+   beta = 1/293.15  1/K        DeltaT = 2.95   K
+   g    = 9.81      m/s^2      u      = 0.455  m/s
+   h    = 0.168     m
+                                  
+   This resulted in the heat flux Q necessary to compensate
+      
+   Q= DeltaT*u*h*cp*rho= 2.95*0.455*0.168*1006*1.194= 270.86 W
+
+   This heat flux was put into the room via the floor.
+}
+
+############################################################################
+When overlooking the results and job.notes again, a mistake was noticed.
+
+The density is calculated from the temperature through:
+   rho= 1.1881*293.15/(273.15+theta)
+
+However in the calculations rho calculated at 18.53'C is used (rho= 1.194 
+kg/m^3). This should have been (theta=17.05'C) 
+   rho= 1.200 kg/m^3
+
+The heat flux at the floor therefore should have been higher, in order to
+keep the mean room temperature at 20'C, resulting in Archimedes is 0.08.
+
+   Q=2.95*0.455*0.168*1006*1.200= 272.22 W
+
+   DeltaQ= 0.5%
+
+The Archimedes number can be recalculated from the figures above:
+
+DeltaT ?
+   Q=DeltaT*u*h*cp*rho=
+   270.86=DeltaT*0.455*0.168*1006*1.200
+   DeltaT=2.935 K
+   Troom= 19.985'C 
+
+Ar ?
+   Ar=beta*g*h*DeltaT/u^2
+   Ar=1/293.135 *9.81*0.168*2.935/0.455^2= 0.0797
+
+######################################################################
+
+The relaxation factors used were:
+#   Relaxation factor type       variable       value
+           Linear                   P            0.5
+           Linear                   V            0.3
+           Linear                   W            0.3
+           Linear                   T            0.3
+           Inertia                  K            0.3
+           Inertia                  E            0.3
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+One more change was made, but not to the case file, but to the code. The
+turbulent Prandtl number for the enthalpy (temperature) was changed from 
+0.75 to 0.9, in order to have a better agreement with the value found in
+literature, and also used in Annex 20.
+
+Another remark can be made on the turbulent Prandtl number for epsilon.
+This is calculated from cappa, c1, c2 and cmu. This results in a value
+for this number of 1.217. In the Annex 20 this number is stated 1.3.
+However, because the determination occures according to literature, no
+changes are performed on this value.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+---Results
+
+
+After 500 iterations the residuals were:
+   Res. of mass    = 1.719e+2
+   Res. of Y-mom.  = 1.491e+5
+   Res. of Z-mom.  = 2.316e+4
+   Res. of energy  = 7.914e-1
+   Res. of t.ener. = 5.492e+3
+   Res. of dis.en. = 1.113e+5
+The problem was still converging, though the values at the monitoring point 
+showed hardly any variation.
+
+In order to have a better convergence, inertia were introduced. The 
+linear under-relaxation factors remain unchanged.
+          Inertia                  V            5
+          Inertia                  W            5   
+          Inertia                  T            5
+          Inertia                  K            5  
+          Inertia                  E            5
+
+The simulation was run another 500 iterations (1000 in total).
+The residuals were:
+   Res. of mass    = 2.856e+0
+   Res. of Y-mom.  = 1.822e+2
+   Res. of Z-mom.  = 3.359e+1
+   Res. of energy  = 2.621e-1
+   Res. of t.ener. = 4.380e-1
+   Res. of dis.en. = 4.220e+0
+The calculations are still converging. The monitoring points has not
+reached a stable point yet. Before changing any of the relaxation factors,
+it is thought best to run the simulation for another 500 iterations.
+
+The residuals are:
+   Res. of mass    = 1.276e-1
+   Res. of Y-mom.  = 7.011e-1
+   Res. of Z-mom.  = 5.451e-1
+   Res. of energy  = 1.974e-1
+   Res. of t.ener. = 2.024e-4
+   Res. of dis.en. = 3.518e-3
+The calculations are still converging, but one can see that over the last
+100 iterations the rate of convergence is slowing down. The values in the
+monitoring point are not yet stabilized.
+To increase the rate of convergence, the inertia for the variables is set
+to 10.0 (P is excluded, only linear relaxation).
+The calculation are started for another 500 iterations.
+
+The residuals are:
+   Res. of mass    = 8.093e-2
+   Res. of Y-mom.  = 4.153e-1
+   Res. of Z-mom.  = 4.939e-1
+   Res. of energy  = 1.030e-1
+   Res. of t.ener. = 1.586e-4
+   Res. of dis.en. = 3.298e-3
+Though the solution still converges, the rate has fallen down. constant
+values at the monitoring point have just been reached. The next move is 
+to increase the under-relaxation values somewhat:
+
+           Linear                   P            0.6
+           Linear                   V            0.6 (was meant to be 0.4
+           Linear                   W            0.6  was meant to be 0.4
+                                                     no correction possible) 
+           Linear                   T            0.4
+ 
+The results after 500 iterations (total 2500) are:
+   Res. of mass    = 2.773e-2
+   Res. of Y-mom.  = 3.742e-2
+   Res. of Z-mom.  = 2.251e-2
+   Res. of energy  = 8.816e-2
+   Res. of t.ener. = 3.383e-5
+   Res. of dis.en. = 2.706e-4
+At the start of these 500 iterations, the convergence rate was decreased
+untill almost zero. At the and, after 400 iterations, it picked up a higher
+convergence rate.
+Therefore no changes are made and another 500 iterations are performed.
+
+{
+Because the wrong answer was given at the question do you want to increase
+the number of iterations (-NO-, should have been -YES-). The simulation
+was stopped. The simulation is continued, by changing the case file
+accordingly. This means setting of the latest relaxation factors and 
+a positif answer to the question Re-initialize simulation ?
+}
+
+The results however now can be viewed, and judged on their validity...
+
+The results are qualitatively realistic, and so are the quantitative 
+results. 
+
+After 500 iterations (total 3000) the residuals are:
+   Res. of mass    = 1.774e-2
+   Res. of Y-mom.  = 4.435e-3
+   Res. of Z-mom.  = 9.039e-3
+   Res. of energy  = 5.912e-2
+   Res. of t.ener. = 9.194e-6
+   Res. of dis.en. = 8.094e-5
+
+The residual for the mass is not converging well. Therefore the problem
+again is restarted, but now also for P inertia is introduced.
+
+!!!!!!!!!!!!!!!!!!
+It is not possible to introduce the inertia for P during the simulations,
+whereas that is possible for the other variables.
+!!!!!!!!!!!!!!!!!!
+
+This will have a value of 10.0. Again 500 iterations are performed.
+
+After 3500 iterations the residuals are:
+   Res. of mass    = 1.181e-2
+   Res. of Y-mom.  = 3.044e-3
+   Res. of Z-mom.  = 6.235e-3
+   Res. of energy  = 3.986e-2
+   Res. of t.ener. = 5.530e-6
+   Res. of dis.en. = 5.243e-5
+
+Though the variables calculated in the monitoring position do not show any
+variation, it is still tried to get a better converged solution.
+
+For this, the linear relaxation factors are increased again 
+           Linear                   P            0.8
+           Linear                   T            0.6
+          (V and W are not increased !)
+and another 500 iterations are performed.
+
+The residuals are:
+   Res. of mass    = 8.107e-3
+   Res. of Y-mom.  = 3.088e-3
+   Res. of Z-mom.  = 4.308e-3
+   Res. of energy  = 1.686e-2
+   Res. of t.ener. = 5.023e-6
+   Res. of dis.en. = 4.874e-5
+The influence of the change of the linear relaxation factors is still
+appearing in the Y-mom.residual. However it is converging and therefore
+another 500 iteration will be performed, without any changes to the
+relaxation factors.
+
+After a total of 4500 iterations the residuals are:
+   Res. of mass    = 4.776e-3
+   Res. of Y-mom.  = 1.583e-3
+   Res. of Z-mom.  = 2.678e-3
+   Res. of energy  = 7.144e-3
+   Res. of t.ener. = 2.138e-6
+   Res. of dis.en. = 2.295e-5
+
+The calculation is still converging and the monitoring point shows hardly
+any variation for more than 1500 iterations.
+Therefore, it is thought that with another 500 iterations the results
+can be looked upon as converged.
+
+No changes are made to the relaxation factors.
+
+After a total of 5000 iterations the residuals are:
+   Res. of mass    = 3.466e-3   
+   Res. of Y-mom.  = 9.290e-4
+   Res. of Z-mom.  = 2.145e-3
+   Res. of energy  = 3.034e-3
+   Res. of t.ener. = 9.326e-7
+   Res. of dis.en. = 1.246e-5
+
+Though not totally converged, the calculation of this case is stopped,
+because the problem is still converging, but very slowly, and the variables
+at the monitoring point have reached a constant value.
+
+The results can be found in the files:
+   case_2_grid_BUO_08_VZ.dfd
+   case_2_grid_BUO_08_VZ.mon
+   case_2_grid_BUO_08_VZ.phi
+   case_2_grid_BUO_08_VZ.tmp.Z
+
+{The results at the 2500th are also available:
+   case_2_grid_BUO_08_VZ_2500.dfd  
+   case_2_grid_BUO_08_VZ_2500.mon
+   case_2_grid_BUO_08_VZ_2500.phi
+   case_2_grid_BUO_08_VZ_2500.tmp
+}
+
+
+----------------------------------
+----------------------------------
+ARCHIMEDES 0.12
+---------------------------------
+
+A new case is started in which the Archimedes-number is enlarged till 0.12.
+This case originates from case_2_grid_BUO_08_VZ.dfd.
+
+In order to reach the value 0.12, the inlet temperature has to be lowered
+till 15.581'C. The heat flux coming in over the floor is now 405.74W.
+
+{
+   Ar= beta*g*h*DeltaT/u^2= 0.12
+
+   beta = 1/293.15  1/K        DeltaT = 4.419  K
+   g    = 9.81      m/s^2      u      = 0.455  m/s  
+   h    = 0.168     m
+          
+   This resulted in the heat flux Q necessary to compensate
+
+   Q= DeltaT*u*h*cp*rho= 4.419*0.455*0.168*1006*1.194= 405.74 W
+
+   This heat flux was put into the room via the floor.
+}  
+
+############################################################################
+The same mistaken, as was noticed at Ar=0.08, has been made at this 
+point.
+   
+The value of rho should have been (theta=15.581'C)
+   rho= 1.206 kg/m^3
+
+The heat flux at the floor therefore should have been
+           
+   Q=4.419*0.455*0.168*1006*1.206= 409.82 W
+           
+   DeltaQ= 1.0%
+           
+The Archimedes number can be recalculated from the figures above:
+
+DeltaT ?
+   Q=DeltaT*u*h*cp*rho=
+   405.74=DeltaT*0.455*0.168*1006*1.206
+   DeltaT=4.375 K
+   Troom= 19.956'C
+
+Ar ?
+   Ar=beta*g*h*DeltaT/u^2
+   Ar=1/293.106 *9.81*0.168*4.375/0.455^2= 0.1188
+
+######################################################################
+
+The relaxation factors used were:
+#   Relaxation factor type       variable       value
+           Linear                   P            0.5
+           Linear                   V            0.3
+           Linear                   W            0.3
+           Linear                   T            0.3
+           Inertia                  K            0.3
+           Inertia                  E            0.3
+
+The initial condition were:
+#   Initial conditions variable          initial value
+           V                                    0.
+           T                                    20.0
+           k                                    0.0025
+           E                                    0.033
+
+
+---Results
+
+The case was started with 50 iterations, to see if the problem wasn't
+diverging at the start. After the first 50 iterations, the calculations 
+were continued.   
+
+After 500 iterations the residuals were:
+   Res. of mass    = 6.703e+1
+   Res. of Y-mom.  = 1.700e+5
+   Res. of Z-mom.  = 2.398e+4
+   Res. of energy  = 1.265e+0
+   Res. of t.ener. = 4.697e+3
+   Res. of dis.en. = 9.912e+4
+The problem was still converging, though monitoring point showed hardly
+any variation in the value for the variables.
+
+In order to have a better convergence, inertia are introduced. The
+linear under-relaxation factors remain unchanged.
+          Inertia                  V            5
+          Inertia                  W            5
+          Inertia                  T            5
+          Inertia                  K            5
+          Inertia                  E            5
+   
+The simulation was run another 500 iterations (1000 in total).
+The residuals were:
+   Res. of mass    = 7.701e-1
+   Res. of Y-mom.  = 1.723e+2
+   Res. of Z-mom.  = 3.092e+1
+   Res. of energy  = 4.254e-1
+   Res. of t.ener. = 3.661e-1
+   Res. of dis.en. = 3.588e+0
+ 
+The variables at the monitoring point have not reached a stable value yet.
+The simulation therefore is run another 500 iteration before making
+changes to the relaxation factors. The problem is converging well.
+
+The residuals are:
+   Res. of mass    = 1.108e-1
+   Res. of Y-mom.  = 4.496e-1
+   Res. of Z-mom.  = 2.619e-1
+   Res. of energy  = 2.365e-1
+   Res. of t.ener. = 1.366e-4
+   Res. of dis.en. = 3.519e-3
+The calculations are still converging, but one can see that over the last
+100 iterations the rate of convergence is slowing down. The values in the
+monitoring point are almost stabilized over the last 100 iterations.
+To increase the rate of convergence, the inertia for the variables is set
+to 10.0. In order to include P, the problem is restarted.
+
+Looking at the results after 1500 iterations (remind, this is not a
+converged one !), one can see the inlet flow dropping immediately when it is
+entering the room. The flow is counter clock wise and the cold spreads 
+over the floor from west to east. However it is heated up and at the east
+side of the room, the isothermes show an increase in the temperature.
+It is thought, that the result will be totally different after another
+1500 iterations.
+
+{
+SOMETHING WENT WRONG, WHEN RESTARTING THE CALCULATIONS.
+Therefore it was not possible anymore to use the results after 1500 
+iterations, and a fresh start had to be made. In order to reach the same
+point again, the calculation were performed as desribed above.
+
+Only this time the inertia for P is added to the relaxation factors, so
+that it (hopefully) will ask for it when changing the relaxation factors
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+In the file cfdat.F one can introduce the inertia for P. However, 
+the false time step is not used in the subroutine CALCP.
+
+So effectively nothing changes after introducing a false time step for P !
+See also the job.notes for Archimedes= 0.08.
+
+
+Therefore, the restarting of the simulation was unnecessary.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+}   
+
+
+The residuals after a total of 2000 iterations are:
+   Res. of mass    = 3.860e-2
+   Res. of Y-mom.  = 2.284e-1
+   Res. of Z-mom.  = 1.045e-1
+   Res. of energy  = 9.041e-2
+   Res. of t.ener. = 3.611e-5
+   Res. of dis.en. = 1.231e-3
+The solution still converges, but a constant value in the monitoring 
+point has not been reached yet. The horizontal velocity is negative, 
+which indicates that the flow still has a counterclock-wise circulation.
+ 
+It is thought best the proceed the simulation for 500 iterations more 
+to see if the values become constant again. Compared to the Archimedes=0.08
+case, the calculation is converging faster when using the same strategy.
+
+The residuals after a total of 2500 iterations are:
+   Res. of mass    = 2.895e-2
+   Res. of Y-mom.  = 1.506e-1
+   Res. of Z-mom.  = 6.512e-2
+   Res. of energy  = 5.697e-2
+   Res. of t.ener. = 2.884e-5
+   Res. of dis.en. = 7.058e-4
+
+The residuals donot converge regularly, but show a wave-like behaviour in 
+total have a small convergence rate. The variables at the monitoring point
+still have not reached a constant value. Especially V and W show also the
+wave like behaviour found in the residuals.
+
+It seems not wise to decrease the relaxation at this point, because it
+could cause an instability which could lead to a divergence of the
+problem. Therefore, again 500 iterations are performed without any changes
+to the solution procedure.
+
+The residuals after a total of 3000 iterations are:
+   Res. of mass    = 3.099e-2
+   Res. of Y-mom.  = 1.032e-1
+   Res. of Z-mom.  = 1.093e-1
+   Res. of energy  = 4.586e-2
+   Res. of t.ener. = 3.538e-5
+   Res. of dis.en. = 9.738e-4
+
+No stabiality was found within these 500 iterations. The residuals increased
+over the whole. The velocity still had a negative value.
+
+In order to get something happen, the underrelaxation will be decreased a 
+little bit:
+
+           Linear                   P            0.6
+           Linear                   V            0.4
+           Linear                   W            0.4
+           Linear                   T            0.4
+
+Another 500 iterations are performed:
+   Res. of mass    = 2.003e-1
+   Res. of Y-mom.  = 5.511e-1
+   Res. of Z-mom.  = 4.933e-1
+   Res. of energy  = 1.972e-1
+   Res. of t.ener. = 2.706e-4
+   Res. of dis.en. = 5.302e-3
+
+Looking at the residuals, it seems like decraesing the relaxation was 
+wrong. But in these 500 iterations the flow has made a reversal from
+counter clockwise to clockwise. At least, this can be expected from
+the velocity value in the monitoring point. Over the last 100 iterations
+the residuals are recovering from this reversal, but they haven't reached 
+the former values yet, let alone they could be smaller.
+
+Therefore, the calculation is continued without further changes.
+  
+After 4000 iterations, the residuals are:
+   Res. of mass    = 4.489e-2
+   Res. of Y-mom.  = 2.273e-1
+   Res. of Z-mom.  = 2.869e-1
+   Res. of energy  = 7.405e-2
+   Res. of t.ener. = 1.144e-4
+   Res. of dis.en. = 8.699e-4
+
+The convergence stil shows a wavy character. But it is thought that this
+is caused by the fact that the constant value of the variables in the 
+monitoring point have not been reached yet.
+That is why another 500 iterations will be performed without any changes to
+the solution procedure.
+
+   Res. of mass    = 4.412e-2
+   Res. of Y-mom.  = 3.213e-1
+   Res. of Z-mom.  = 3.369e-1
+   Res. of energy  = 1.344e-1
+   Res. of t.ener. = 1.086e-4
+   Res. of dis.en. = 4.840e-3
+
+As one can compare, the residuals have not decreased over the last 500
+iterations. The monitoring point shows still some changes in the values
+for P, V and W. Because it is thought that an decrease in the relaxtion
+will cause higher residuals, the calculation is again continued without
+further changes.
+
+After 5000 iterations, the residuals are:
+
+   Res. of mass    = 1.551e-2
+   Res. of Y-mom.  = 1.152e-2
+   Res. of Z-mom.  = 1.858e-2
+   Res. of energy  = 1.000e-1
+   Res. of t.ener. = 1.132e-5
+   Res. of dis.en. = 1.172e-4
+
+So, finally the convergence rate has increased. This took part especially
+over the iterations between 4500 and 4750. After that the rate decreased.
+The monitoring point is showing almost constant values for the variables,
+although P and W still are not totally constant.
+
+By increasing the time step from 10 to 25, the convergence rate is hoped
+to increase again. (false time step: 25, P excluded)
+
+Another 500 iterations are performed, resulting in the following residuals:
+
+   Res. of mass    = 1.107e-2
+   Res. of Y-mom.  = 1.282e-2
+   Res. of Z-mom.  = 1.319e-2
+   Res. of energy  = 6.878e-2
+   Res. of t.ener. = 7.382e-6
+   Res. of dis.en. = 1.032e-4
+
+Though the residuals have changed, the result isn't yet OK. Therefore,
+the linear underrelaxation factors will be changed:
+           Linear                   P            0.7
+           Linear                   V            0.5
+           Linear                   W            0.5
+           Linear                   T            0.5
+
+
+After 6000 iterations, the residuals are:
+   Res. of mass    = 9.892e-3
+   Res. of Y-mom.  = 9.046e-3
+   Res. of Z-mom.  = 9.604e-3
+   Res. of energy  = 3.968e-2
+   Res. of t.ener. = 6.236e-6
+   Res. of dis.en. = 9.411e-5
+The residuals for P, V and W are still too high to speak of a converged 
+solution, although the monitoring point shows a stable V-velocity and
+very slightly decreasing (hardly visible) P- en W-values.
+
+Again it is tried to increase the convergence by decreasing the relaxation
+through the linear relaxation factors:
+           Linear                   P            0.8
+           Linear                   V            0.6
+           Linear                   W            0.6
+           Linear                   T            0.6
+
+After 6500 iterations the residuals are:
+   Res. of mass    = 6.771e-3
+   Res. of Y-mom.  = 5.061e-3
+   Res. of Z-mom.  = 4.598e-3
+   Res. of energy  = 1.714e-2
+   Res. of t.ener. = 4.032e-6
+   Res. of dis.en. = 6.754e-5
+
+The calculation has a steady convergence rate and the monitoring point
+shows stable values. The calculation is continued for another 500 iterations
+in order to see if changes will occure.
+After 7000 iterations the residuals are:
+   Res. of mass    = 4.169e-3
+   Res. of Y-mom.  = 2.617e-3
+   Res. of Z-mom.  = 2.838e-3
+   Res. of energy  = 7.158e-3
+   Res. of t.ener. = 1.718e-6
+   Res. of dis.en. = 3.321e-5
+
+The calculation is still a converging one, whereas the values in the
+monitoring point are stable.
+
+After 7500 iterations the residuals are:
+   Res. of mass    = 2.895e-3
+   Res. of Y-mom.  = 1.341e-3
+   Res. of Z-mom.  = 2.132e-3
+   Res. of energy  = 2.929e-3
+   Res. of t.ener. = 7.631e-7
+   Res. of dis.en. = 1.400e-5
+
+The calculation is still a converging one, whereas the values in the
+monitoring point are stable. Therefore, for the sake of completeness,
+another 500 iterations will be performed. After that the problem will be
+regarded converged, when no 'strange' things happen !
+
+The final residuals, after 8000 iterations are:
+   Res. of mass    = 2.785e-3
+   Res. of Y-mom.  = 9.302e-4
+   Res. of Z-mom.  = 2.085e-3
+   Res. of energy  = 1.187e-3
+   Res. of t.ener. = 5.258e-7
+   Res. of dis.en. = 8.591e-6
+
+The convergence rate is very slow, however it is thought that can be
+increased by higher values for the linear underrelaxation factors. This
+however is not done anymore, because the simulation already can be
+regarded a converged one. This is subscribed by the fact that for the
+last 1500-2000 iterations no significant (=visible) changes have occured.
+
+The results can be found in the files:
+   case_2_grid_BUO_12_VZ.dfd 
+   case_2_grid_BUO_12_VZ.mon    
+   case_2_grid_BUO_12_VZ.phi 
+   case_2_grid_BUO_12_VZ.tmp
+
+{The results at the 1500th are also available:
+   case_2_grid_BUO_12_VZ_1500.dfd
+   case_2_grid_BUO_12_VZ_1500.mon
+   case_2_grid_BUO_12_VZ_1500.phi
+   case_2_grid_BUO_12_VZ_1500.tmp
+}
+
+
+----------------------------------
+----------------------------------
+ARCHIMEDES 0.14
+---------------------------------
+           
+A new case is started in which the Archimedes-number is enlarged till 0.14.
+This case originates from case_2_grid_BUO_08_VZ.dfd.
+
+In order to reach the value 0.14, the inlet temperature has to be lowered
+till 14.845'C. The heat flux coming in over the floor is now 473.32W.
+           
+{
+   Ar= beta*g*h*DeltaT/u^2= 0.14
+          
+   beta = 1/293.15  1/K        DeltaT = 5.155  K
+   g    = 9.81      m/s^2      u      = 0.455  m/s  
+   h    = 0.168     m
+   
+   This resulted in the heat flux Q necessary to compensate
+           
+   Q= DeltaT*u*h*cp*rho= 5.155*0.455*0.168*1006*1.194= 473.32 W
+           
+   This heat flux was put into the room via the floor.
+}
+
+############################################################################
+Again the rho used, was not the correct one. The value should have been 
+(theta=14.845'C)
+   rho= 1.209 kg/m^3
+
+The heat flux at the floor therefore should have been
+           
+   Q=5.155*0.455*0.168*1006*1.209= 479.26 W
+           
+   DeltaQ= 1.25%
+           
+The Archimedes number can be recalculated from the figures above:
+
+DeltaT ?
+   Q=DeltaT*u*h*cp*rho=
+   473.32=DeltaT*0.455*0.168*1006*1.209
+   DeltaT=5.091 K
+   Troom= 19.936'C
+           
+Ar ?
+   Ar=beta*g*h*DeltaT/u^2
+   Ar=1/293.086 *9.81*0.168*5.091/0.455^2= 0.1383
+   
+######################################################################
+           
+
+
+The relaxation factors used were:
+#   Relaxation factor type       variable       value
+           Linear                   P            0.5
+           Linear                   V            0.3
+           Linear                   W            0.3
+           Linear                   T            0.3
+           Inertia                  K            0.3
+           Inertia                  E            0.3  
+   
+The initial condition were:
+#   Initial conditions variable          initial value
+           V                                    0.   
+           T                                    20.0
+           k                                    0.0025
+           E                                    0.033
+          
+           
+---Results
+
+The case was started with 50 iterations, to see if the problem wasn't
+diverging at the start. After the first 50 iterations, the calculations
+were continued.
+           
+After 500 iterations the residuals were:
+   Res. of mass    = 4.057e+1
+   Res. of Y-mom.  = 1.738e+5
+   Res. of Z-mom.  = 2.321e+4
+   Res. of energy  = 1.568e+0
+   Res. of t.ener. = 4.244e+3
+   Res. of dis.en. = 8.951e+4
+The problem is still converging, though the  monitoring point showes hardly
+any variation in the value for the variables.
+ 
+In order to have a better convergence, inertia are introduced and 
+changed. The linear under-relaxation factors remain unchanged.
+          Inertia                  V            5
+          Inertia                  W            5
+          Inertia                  T            5
+          Inertia                  K            5
+          Inertia                  E            5
+
+The simulation was run another 500 iterations (1000 in total).
+The residuals were:
+   Res. of mass    = 1.007e+0
+   Res. of Y-mom.  = 1.611e+2
+   Res. of Z-mom.  = 2.868e+1
+   Res. of energy  = 5.120e-1
+   Res. of t.ener. = 3.228e-1
+   Res. of dis.en. = 3.122e+0
+
+The values at the monitoring point have, from their relative stable position,
+increased (however their values were, and still are negative, so the
+absolute value has decreased). Because of the fact that the value is
+negative, one can expect the flow to be counter clock wise.
+          
+The variables at the monitoring point have not reached a stable value yet.
+The simulation therefore is run another 500 iteration before making
+changes to the relaxation factors. The problem is converging well.
+   
+After 1500 iterations, the residuals are:
+   Res. of mass    = 1.078e-1
+   Res. of Y-mom.  = 6.604e-1
+   Res. of Z-mom.  = 2.889e-1
+   Res. of energy  = 2.257e-1
+   Res. of t.ener. = 8.989e-5
+   Res. of dis.en. = 2.650e-3
+The calculations are still converging, but one can see that over the last
+100 iterations the rate of convergence is slowing down. The values in the
+monitoring point are almost stabilized over the last 100 iterations.
+
+The horizontal velocity component is still negative, indicating a short
+penetration length of the inlet flow.
+Another 500 iterations will show if there is still a convergence.
+
+The residuals are:
+   Res. of mass    = 4.272e-2
+   Res. of Y-mom.  = 2.728e-1
+   Res. of Z-mom.  = 1.364e-1
+   Res. of energy  = 1.182e-1
+   Res. of t.ener. = 4.559e-5
+   Res. of dis.en. = 1.801e-3
+
+The problem is still a converging one, but the rate at which it is doing so
+is rather wavy. This can also be said of the values at the monitoring
+point. The horizontal velocity however still is negative.
+
+In order to try to get a more stable convergence rate, the linear under-
+relaxation is decreased
+          Linear                   P            0.6
+          Linear                   V            0.4
+          Linear                   W            0.4
+          Linear                   T            0.4
+          Linear                   K            1.0
+          Linear                   E            1.0
+The simulation is continued for another 500 iterations.
+
+The residuals after 2500 iterations are:
+   Res. of mass    = 2.215e-2
+   Res. of Y-mom.  = 7.612e-2
+   Res. of Z-mom.  = 3.381e-2
+   Res. of energy  = 3.785e-2
+   Res. of t.ener. = 1.836e-5
+   Res. of dis.en. = 6.494e-4
+
+The wavy convergence path still can be seen, but the frequency and the
+amplitude have decreased. The monitoring point also shows sinusiodal
+behaviour, but a demped one. The values are appraoching a constant value.
+The horizontal velocity is negative, again indicating that the flow at
+that point (+/- 3 m in front of the inlet) is counter clock wise.
+
+The calculation is continued for another 500 iteration in order to see
+if a constant value is reached and convergence still proceeds.
+
+   Res. of mass    = 1.071e-2
+   Res. of Y-mom.  = 1.462e-2
+   Res. of Z-mom.  = 1.088e-2
+   Res. of energy  = 1.891e-2
+   Res. of t.ener. = 3.152e-6
+   Res. of dis.en. = 1.949e-4
+
+The monitoring point still show a negative horizontal velocity, which 
+reaches a constant value. In order to improve the convergence, the linear 
+under relaxation factors are increased again, reducing the relaxation.
+
+          Linear                   P            0.7
+          Linear                   V            0.5
+          Linear                   W            0.5
+          Linear                   T            0.5
+          Linear                   K            1.0
+          Linear                   E            1.0
+
+After 3500 iterations the residuals are:
+   Res. of mass    = 7.447e-3
+   Res. of Y-mom.  = 2.970e-3
+   Res. of Z-mom.  = 5.563e-3
+   Res. of energy  = 7.301e-3
+   Res. of t.ener. = 2.303e-6
+   Res. of dis.en. = 1.020e-4
+
+Though the problem is a converging one, this cannot be regarded the
+final solution. Especially because a small increase (absolute= decrease)
+in the horizontal velocity can be noticed, whereas the pressure remains
+constant. Therefore the calculation are continued without any changes to
+the solution strategy.
+
+The resulting residuals are:
+   Res. of mass    = 5.574e-3
+   Res. of Y-mom.  = 1.326e-3
+   Res. of Z-mom.  = 3.039e-3
+   Res. of energy  = 2.841e-3
+   Res. of t.ener. = 6.038e-7
+   Res. of dis.en. = 3.408e-5
+
+The convergence rate decreased to about 0 at the end of the 500 iterations.
+In order to increase this figure again. The linear underrelaxation factors
+are increased again. The values at the monitoring point are changing 
+still a little bit. The new underrelaxation factors are:
+          Linear                   P            0.8
+          Linear                   V            0.6
+          Linear                   W            0.6
+          Linear                   T            0.6
+          Linear                   K            1.0
+          Linear                   E            1.0
+
+After 4500 iterations, the residuals are:
+   Res. of mass    = 5.393e-3
+   Res. of Y-mom.  = 7.512e-4
+   Res. of Z-mom.  = 2.140e-3
+   Res. of energy  = 7.625e-4
+   Res. of t.ener. = 2.556e-7
+   Res. of dis.en. = 1.264e-5
+
+Again, as described in the previous cases, the continuity-equation and the
+Z-mom.-equation have difficulties converging. In order to try to decrease
+the residuals, the false-time step will be set to 10, though this is at
+the moment not possible for P.
+
+5000 iterations resulted in the following residuals:
+   Res. of mass    = 4.959e-3
+   Res. of Y-mom.  = 7.265e-4
+   Res. of Z-mom.  = 1.820e-3
+   Res. of energy  = 1.638e-4
+   Res. of t.ener. = 1.284e-7
+   Res. of dis.en. = 4.333e-6
+
+The values at the montoring point have stabilized. This is also the case for
+the horizontal velocity, which still has a negative value. Therefore one
+may assume that the critical Archimedes number lies between 0.12 and 0.14.
+Because the residuals still do not show a converged solution again some
+changes in the underrelaxation are performed.
+          Linear                   P            0.9
+          Linear                   V            0.7
+          Linear                   W            0.7
+          Linear                   T            0.7
+          Linear                   K            1.0
+          Linear                   E            1.0
+And the calculation are continued again.
+After 5500 iterations the residuals are:
+   Res. of mass    = 6.579e-3
+   Res. of Y-mom.  = 7.495e-4
+   Res. of Z-mom.  = 2.054e-3
+   Res. of energy  = 5.623e-5
+   Res. of t.ener. = 1.275e-7
+   Res. of dis.en. = 5.116e-6
+So no gain can be seen yet from increasing the factors. However in the 
+last 50 iterations convergence reappeared again. Furthermore, the values in
+the monitoring didn't change.
+Therefore the calculations will be proceeded without any changes to the 
+solution strategy
+
+Residuals after 6000 iterations:
+   Res. of mass    = 6.032e-3
+   Res. of Y-mom.  = 7.138e-4
+   Res. of Z-mom.  = 2.098e-3
+   Res. of energy  = 5.270e-5
+   Res. of t.ener. = 1.517e-7
+   Res. of dis.en. = 5.768e-6
+
+Values at the monitoring point are constant.
+
+Residuals after 7000 iterations:
+   Res. of mass    = 5.990e-3
+   Res. of Y-mom.  = 6.798e-4
+   Res. of Z-mom.  = 1.934e-3
+   Res. of energy  = 5.107e-5
+   Res. of t.ener. = 1.208e-7
+   Res. of dis.en. = 4.640e-6
+
+Values at monitoring point are constant.
+
+Because an increase of the relaxation factor didn't result in much lower
+residuals and because the values at the monitoring point have remained 
+constant over the last 1500 iterations, the problem can be regarded
+converged.
+
+So no more iterations will be performed and the result can be looked upon
+via Photon.
+
+The results that can be seen, as expected, is one of a jet which falls 
+down within short distance of the inlet because of buoyancy effects.
+The penetration length is about 0.5m. Just beneath the inlet a small vortex
+can be noticed.
+The result coincides with the results Chen found. He calculated a critical
+Archimedes number of 0.142. From the calculations one can expect a 
+critical Archimedes number somewhat below 0.14.
+
+The initial and result-files are named:
+       case_2_grid_BUO_14_VZ.dfd.Z
+       case_2_grid_BUO_14_VZ.mon.Z
+       case_2_grid_BUO_14_VZ.phi.Z
+       case_2_grid_BUO_14_VZ.tmp.Z
+
+-----------------------------------------------------------------------

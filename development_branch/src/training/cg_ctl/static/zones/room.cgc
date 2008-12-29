@@ -1,0 +1,18 @@
+*Casual_gain_ctl
+*desc Ideal dimming control on avrg illuminance
+  2  0  0 # Gain to ctl on wkds & wkends
+  8 16  # Control period start & end hours
+  2  # No. of lighting zone(s)
+ 500.0  1.5  0.1  0.1  0 # Setpt, switch off lvl, min dim/el, delay
+  0.5  4  1 # % casual, no of sensors, calc type
+  2.000  2.000  0.900  0.000  0.000  1.000 # Sensor x y z & dir vect
+  2.000  3.000  0.900  0.000  0.000  1.000 # Sensor x y z & dir vect
+  3.000  2.000  0.900  0.000  0.000  1.000 # Sensor x y z & dir vect
+  3.000  3.000  0.900  0.000  0.000  1.000 # Sensor x y z & dir vect
+  3 # Control law: Dimming ideal   
+ 500.0  1.0  1.0  1.0  0 # Setpt, switch off lvl, min dim/el, delay
+  0.5  1  2 # % casual, no of sensors, calc type
+  2.000  4.000  0.900  0.000  0.000  1.000 # Sensor x y z & dir vect
+  1 # No of TMC(s) in zone 
+  7 0.0150 # TMC number & coresp DF 
+  4 # Control law: On-Off probab   

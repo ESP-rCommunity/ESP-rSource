@@ -1,0 +1,13 @@
+# operations of garage defined in: 
+# ../zones/garage.opr
+nil_operations  # description
+# control(no control of air flow  ), low & high setpoints 
+   0     0.000     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     0   # no Weekday casual gains 
+     0   # no Saturday casual gains 
+     0   # no Sunday casual gains 
+# Labels for gain types 
+ Occupt Lights Equipt

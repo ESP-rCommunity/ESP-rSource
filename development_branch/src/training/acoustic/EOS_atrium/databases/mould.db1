@@ -1,0 +1,428 @@
+# Mould data as of 9/1/96
+# Initial database will consist of three fields giving generic+species name 
+# min growth criteria equation and lookup table giving growth conditions above 
+# min growth line.
+#                 ******** MOULD DATABASE ************
+# Refer to "Development of a prototype technique for the prediction/alleviation
+# of conditions leading to mould growth in houses", Rowan et al
+# Moulds incorporated into the database are DEUTEROMYCETES. 
+#
+# Mould growth is divided into five bands with the following terminology 
+# defining prevalent conditions;
+# N - no growth
+# P - poor
+# M - moderate
+# G - good 
+# V - very good
+# Data Set 1.
+
+*MOULD
+Aspergillus Repens 
+
+# Min Growth Equation (cubic regression).
+# RH=a0+ a1T+ a2T^2+ a3T^3 
+99.4970567 -2.7821388 0.0975650515 -0.00102074853
+
+# Data for growth prediction
+# No of data points Entries per line.
+84 6
+73 5 N 73 10 N 73 15 N 73 20 N 73 25 N 73 30 N
+74 5 N 74 10 N 74 15 P 74 20 P 74 25 P 74 30 P
+75 5 N 75 10 N 75 15 M 75 20 M 75 25 P 75 30 P
+76 5 N 76 10 P 76 15 M 76 20 G 76 25 M 76 30 M
+77 5 N 77 10 P 77 15 M 77 20 G 77 25 G 77 30 G
+78 5 N 78 10 M 78 15 G 78 20 G 78 25 G 78 30 G
+79 5 N 79 10 M 79 15 G 79 20 G 79 25 G 79 30 G
+80 5 M 80 10 G 80 15 G 80 20 V 80 25 V 80 30 V
+81 5 M 81 10 G 81 15 G 81 20 V 81 25 V 81 30 V
+82 5 M 82 10 G 82 15 G 82 20 V 82 25 V 82 30 V
+83 5 M 83 10 G 83 15 V 83 20 V 83 25 V 83 30 V
+84 5 G 84 10 V 84 15 V 84 20 V 84 25 V 84 30 V
+85 5 G 85 10 V 85 15 V 85 20 V 85 25 V 85 30 V
+86 5 G 86 10 V 86 15 V 86 20 V 86 25 V 86 30 V
+
+# Extra field
+*TEXT
+Aspergillus repens
+
+This fungus is capabale of  growth  under  significantly  reduced
+levels  of free water and is therefore designated as a xerophilic
+organism. While this microorganism has not been frequently  iden-
+tified  from  the indoor environment, it exhibits growth require-
+ments similar to that of Eurotium spp. (a noted xerophilic  group
+of  moulds  which  are  often identified from mould infested wall
+surfaces when the surface RH has reached approximately 75 %)  and
+it  has  therefore  been  incorporated  into the mould prediction
+model.
+
+Aspergillus repens is considered a problem  in  relation  to  the
+storage  of cereal grains, and as such a vast number of data sets
+are available on the growth kinetics and requirements of this or-
+ganism under different environmental and storage conditions.  The
+critical growth requirements for this organism was inputted  into
+the  model,  with  the intention that the provision of conditions
+leading to its development  would  also  represent  environmental
+conditions  where the other xerophilic moulds (like Eurotium) may
+appear.
+
+
+A major drawback to the identification of mould species from con-
+taminated  wall  surfaces  has been the use of unsuitable culture
+media for the recovery of these organisms.  In  the  majority  to
+cases, the researchers employ a culture medium which has not been
+adjusted to a specific water  activity  level  (aw).   Therefore,
+xerophilic  moulds  which may be present in large numbers may not
+readily be detected as they maybe out competed by the the  faster
+growing  moulds  (which maybe present in a dormant spore state or
+actively growing but of minor  significance).  Under  these  cir-
+cumstances it is possible to obtain a false picture as to the ac-
+tual types and numbers of moulds present.
+
+*ENDTEXT
+
+# Extra field
+
+*END
+
+# Data Set 2.
+*MOULD
+Aspergillus versicolor 
+
+# Min Growth Equation (cubic regression).
+# RH=a0+ a1T+ a2T^2+ a3T^3 
+95.4773205 -1.42668687 0.0292976863 3.71254891e-05
+
+# Data for growth prediction
+# No of data points Entries per line.
+56 6
+76 5 N 76 10 N 76 15 N 76 20 N 76 25 N 76 30 N
+78 5 N 78 10 P 78 15 M 78 20 M 78 25 M 78 30 M
+80 5 N 80 10 P 80 15 M 80 20 G 80 25 G 80 30 M
+82 5 N 82 10 P 82 15 M 82 20 G 82 25 G 82 30 G
+84 5 N 84 10 M 84 15 G 84 20 V 84 25 V 84 30 V
+86 5 P 86 10 M 86 15 G 86 20 V 86 25 V 86 30 V
+88 5 M 88 10 G 88 15 V 88 20 V 88 25 V 88 30 V
+90 5 G 90 10 V 90 15 V 90 20 V 90 25 V 90 30 V
+92 5 V 92 10 V 92 15 V 92 20 V 92 25 V 92 30 V
+
+# Extra field
+*TEXT
+Aspergillus versicolor
+
+This mould is a primary coloniser of building fabrics as  it  can
+sustain  and tolerate growth at relatively low RH values. Indeed,
+the organism is a member of the  xerophilic  group  "Aspergillius
+glacus".  A characteristic of this fungal group is the ability to
+germinate, grow and sporulate at relatively  low  water  activity
+(equilibrated  relative  humidity) values.  Due to the ubiquitous
+nature of this mould (or group of  moulds),  A.   versicolor  can
+colonise  a  wide  variety  of  food  sources  including building
+fabric.  This microorganism has been reqularly isolated from both
+indoor air and wall surface samples.
+
+The minimum  relative  humidity  value  demonstrated  to  support
+growth  of  A.  versicolor  under  optimum  physiological  growth
+conditions, i.e. temperature of 25 degrees centrigrade and a rich
+nutritional  growth  medium  (food  stuffs) is approximately 75%.
+However, like the other higher fungi, once the temperature and or
+food  source  has  deviated  from  optimum, a higher equilibrated
+relative  humidity  usually  required  to  initiate  germination,
+growth and/or sporulation. Indeed, the miniumum RH value shown to
+support growth  of  this  organism  on  constructional  materials
+and/or  decorative  finishes  under  optimum conditions is higher
+than  that  required  for  similar  growth  on  foodstuffs,  i.e.
+approximately 79% RH.
+
+Aspergillus  versicolor  is  a  noted  producer  of   mycotoxins,
+including Nidulotoxin and Sterigmatocysin.
+*ENDTEXT
+
+# Extra field
+
+*END
+
+# Data Set 3.
+*MOULD
+Penicillium chrysogenum 
+
+# Min Growth Equation (cubic regression).
+# RH=a0+ a1T+ a2T^2+ a3T^3 
+91.8463696 -0.324428723 -0.0121968434 0.000499326459
+
+# Data for growth prediction
+# No of data points Entries per line.
+48 6
+83 5 N 83 10 N 83 15 N 83 20 N 83 25 N 83 30 N 
+84 5 N 84 10 N 84 15 P 84 20 M 84 25 P 84 30 P
+85 5 N 85 10 P 85 15 M 85 20 M 85 25 M 85 30 M
+86 5 P 86 10 M 86 15 G 86 20 G 86 25 G 86 30 G
+87 5 M 87 10 G 87 15 V 87 20 V 87 25 V 97 30 V
+88 5 M 88 10 G 88 15 V 88 20 V 88 25 V 88 30 V
+89 5 G 89 10 V 88 15 V 88 20 V 88 25 V 88 30 V
+90 5 V 90 10 V 90 15 V 90 20 V 90 25 V 90 30 V
+
+# Extra field
+*TEXT
+Penicillium chrysogenum
+
+A member of the higher fungi and commonly assigned to the  "Fungi
+imperfecti".  This  mould does not have a sexual (or telomorphic)
+growth cycle and therefore must rely on an asexual (oranamorphil-
+ic) means of reproduction.  Penicillium chrysogenum exists in two
+morphological forms (i.e. two physical states), a vegetative  my-
+celial form and a dormant spore or conidia form. Both pleomorphic
+forms can generate a new mould  under  favourable  growth  condi-
+tions. This mould has three distinctive growth cycle stages:
+
+1) germination; where a vegetative germ tube or  hyphae  develops
+from  the dormant spore.  2) mycelial outgrowth; where the hyphae
+(which resemble thread like structures)  grow  across  and  later
+penetrate the surface of a substrate (e.g. constructional materi-
+als).  These aggregated hyphae form a matt or mycelium  which  is
+clearly  visible as a fussy matt-like structure. The mycelium can
+also be described as a  "colony  form"  of  P.  chrysogenum.   3)
+sporulation;  due to either a depletion of nutrients, competition
+from neighbouring fungi,etc, the mould must either move to anoth-
+er  locaction  or  remain at the same location in a dormant form.
+This is achieved through the process of sporulation.  During  the
+formation  of  this  mycelium,  several fertile hyphae or conidi-
+phores will grow vertically. Conidia or fungal  spores  are  pro-
+duced at the end of the conidiophores on a structure known as the
+phialides andliberated or released into the environment.
+
+It is through the process of spore releasal that  P.  chrysogenum
+and  these  higher fungi may colonise other environments and wall
+surfaces.
+
+Penicillum chrysogenum is a common contaminant  of  various  sub-
+strates and is commonly found in the indoor environment.  The ma-
+jority of indoor mycological studies have revealed this  organism
+in  the  air  and  on  wall surfaces. Having established that the
+availability of free water is the critical factor influencing the
+initiation  and  development  of these higher fungi on foodstuffs
+and/or building fabric, the minimum water activity or equilibrat-
+ed  relative humidity limits shown to sustain growth of  Penicil-
+lium spp. is of paramount importance to the ESP-r  mould  predic-
+tion model. However, as there are many other inter-related param-
+eters which control the development of moulds on   any  substrate
+(refer  to  section   ) and considering that these factors rarely
+(if ever) act  independently,  the  identification  of  a  single
+minimum  RH  value for fungal growth cannot be made in isolation.
+The lowest RH value to  sustain  mould  growth  is  seen  at  the
+optimum tem- perature  (for  P. chrysogenum this is approximately
+25 to 30 de- gree centigrade. In fact, the minimum RH  value  for
+growth   of   a  paricular  mould  spp.  (or groups of moulds) is
+directly related to temperature, as the  temperature  moves  away
+from  optimum  a  greater RH value is required to initiate and/or
+provide the same amount  of  mould  growth.  Conversely,  if  the
+surface  RH  is  lower  or  higher   than  optimum, then either a
+higher temperature or a more nutritious substrate is required  to
+provide growth.  The lowest RH value at which P. chrysogenum will
+grow appears to be approximately 80% on foodstuffs and 84 to  85%
+on  building  materials (an inferior growth medium to foods). The
+relationship between surface temperature, relative  humidity  and
+mould  growth  can  be seen in figure I (section  ).  Penicillium
+chrysogenum is a noted producer of mycotoxins,  including  emodic
+acid, meleagin, penicillic acid, roquefortine C and cyclopiazonic
+acid. Although it is not the  most  xerophilic  (dyr  loving)  of
+moulds,   it   is   however   classified  as  a  xerophile  (i.e.
+microorganisms capable of growth at water activity  values  lower
+than 0.85 or 85% RH).  Although this mould is normally one of the
+primary colonisers of damp surfaces, is regularly recovered  from
+mould  infested  surfaces.  This  is  quite significant as marked
+changes in both the type  and  number  of  moulds  present  on  a
+surface  will  occur  as  the surface RH changes and species more
+competitive at higher moisture  levels  develop.   Indeed,  mould
+colonisation   follows  a  succession  in  which  species  occupy
+distinct positions that are very restricted by the surface RH (%)
+level (section  ).
+*ENDTEXT
+
+# Extra field
+
+*END
+
+# Data Set 4.
+*MOULD
+Cladisporium sphaerospermum 
+
+# Min Growth Equation (cubic regression).
+# RH=a0+ a1T+ a2T^2+ a3T^3 
+83.8478576 1.6926455 -0.0984225311 0.0016474372
+
+# Data for growth prediction
+# No of data points Entries per line.
+# (RH T GROWTH)
+36 6
+80 0 N 80 5 N 80 10 N 80 15 P 80 20 M 80 25 G 
+82 0 N 82 5 N 82 10 P 80 15 M 80 20 G 80 25 V
+84 0 N 84 5 P 84 10 M 84 15 G 84 20 V 84 25 V
+86 0 P 86 5 M 86 10 G 86 15 V 86 20 V 86 25 V
+88 0 M 88 5 G 88 10 V 88 15 V 88 20 V 88 25 V
+90 0 M 90 5 G 90 10 V 09 15 V 90 20 V 90 25 V     
+
+
+# Extra field
+*TEXT
+Cladosporium spp.
+
+A fungal genus with a world wide  distribution.  Several  species
+are plant pathogens or saprophytic and more or less host-specific
+on old or dead plant materials. Certain members of this genus ex-
+hibit both a sexual (telomorph) and an asexual (analmorph) repro-
+ductive growth phase. The telopmorphic  stage  is  designated  as
+Mycosphaerella,  e.g.  Cladosporium  herbarum  is  refered  to as
+Mycopshaerella tassiana when it is reproducing the sexually.
+
+Cladosporium sphaerospermum has been selected for the ESP-r mould
+prediction  model.  It is a common species with a world wide dis-
+tribution and occurring as a secondary invader on many  different
+plants.  It  has been isolated from air, soil, foodstuffs, seeds,
+paint, textiles, wall surfaces in mould infested buildings e.t.c.
+and occasionally from man and animals.
+
+Indeed, members of the genus Cladosporium are frequently isolated
+from  indoor air and surface samples and constitute the most com-
+monly occurring mould species in the indoor environment. While C.
+sphaerospermum  does  not  appear  to be a producer of mycotoxins
+(information gathered to date), a close relative C.  herbarum  is
+noted as a prolific producerof Epi- and fagi- cladosporic acid.
+
+The minimum RH at which C. sphaerospermun grows on foodstuffs and
+building materials has been shown to be approximately 85% and 92%
+respectively at a temperature of 18  to  25  degree  centrigrade.
+Surprisingly, Grant et al (1989) revealed that the this mould re-
+quires less free water (i.e. 90% RH) for growth  at  the  reduced
+storage  temperature  of  5 degree centrigrade when cultivated on
+building materials and decorative finishes.
+*ENDTEXT
+
+# Extra field
+
+*END
+
+# Data Set 5.
+*MOULD
+Ulcladium consortiale 
+
+# Min Growth Equation (cubic regression).
+# RH=a0+ a1T+ a2T^2+ a3T^3 
+98.6082834 -0.296213981 -0.0108636186 0.000489432441
+# Data for growth prediction
+# No of data points Entries per line.
+# (RH T GROWTH)
+36  6
+88 0 N 88 5 N 88 10 P 88 15 M 88 20 M 88 25 M
+90 0 N 90 5 N 90 10 M 90 15 G 90 20 G 90 25 G
+92 0 N 92 5 P 92 10 M 92 15 G 90 20 V 90 25 V
+94 0 N 94 5 M 94 10 G 94 15 V 94 20 V 94 25 V
+96 0 P 96 5 G 96 10 G 96 15 V 96 20 V 96 25 V
+98 0 P 96 5 G 96 10 V 96 15 V 96 20 V 96 25 V    
+
+
+# Extra field
+*TEXT
+Ulocladium species.
+
+The genus Ulocladium consists of a collection of moulds which be-
+long  to the higher fungi or "fungi imperfecti'.  As these moulds
+do not exhibit a normal sexual reproductive cycle,they rely on an
+asexual  means of propagation (therefore being classified as Deu-
+teromycetes type moulds).  Each mould exhibits a germination, my-
+celial  outgrowth  (vegetative)  and  sporulationstage  in  their
+growth cycle.  At each of these separate growth stages the  mould
+requires  a  generally requires a higher water activity level (or
+equilirated relative humidity values).
+
+The ESP-r mould prediction model forcasts conditions under  which
+these  mould  sustains and maintains growth, and conditions under
+at which these particular moulds either germinate or sporulate is
+not considered.  Moreover, creating a condition where germination
+occurs does not imply that the organism can go on to sustain  vi-
+able  growth  on  a  wall surface.  As can be identified from the
+newly defined growth limits within  the  ESP-r  Mould  prediction
+model  (for growth on either foodstuffs or constructional materi-
+al), Ulcladium spp. are considered as hydrophilic  organisms  re-
+quiring moderate amounts or free moisture.
+
+
+Members of the genus Ulocladium have  been  frequently  recovered
+from  air  and surface samples.The lowest water activity at which
+Ulcladium consortiale grows on foodstuffs is approx- imately 0.90
+(or  90%  RH)  at 18 to 25 degree centrigrade (i.e. under optimum
+conditions for growth) while a higher surface RH's  are  normally
+required  when  either  the food source and/orother growth condi-
+tions are  altered.   When  the  food  sourece  is  changed  from
+foodstuffs  to  a  less nutritious substrate like, constructional
+materials or decorative finishes, the amount of free water  avai-
+lability required to initiate and sustain growth increases to 93%
+RH over the same temperature range.  The  lowest  temperature  to
+support the growth of this member of the genus Uloladium is docu-
+mented to be approximately 4 degree centrigrade, however at  this
+reduced  temperature  the requirement for free water increases to
+97% RH.
+
+According to work carried out by the Smith et al (1994)  for  the
+European  Commission,  no member of the genus Ulocladium has been
+documented as a mycotoxin producer.
+
+Smith, J.E., Lewis, C.W.,  Anderson,  J.G.A  and  Solomons,  G.L.
+(1994)  Mycotoxins  in  human  nutrition and health.  Directorate
+General XII Science, Research and Development,  European  Commis-
+sion (Eur 16048)
+*ENDTEXT
+
+# Extra field
+
+*END
+
+# Data Set 6.
+*MOULD
+Stachybotrys atra 
+
+# Min Growth Equation (cubic regression).
+# RH=a0+ a1T+ a2T^2+ a3T^3 
+97.6717159 0.147287961 -0.0157970078 0.00035186356
+
+# Data for growth prediction
+# No of data points Entries per line.
+42 7
+94 5 N 94 10 N 94 15 N 94 20 N 94 25 N 94 30 N 94 35 N
+95 5 N 95 10 N 95 15 P 95 20 P 95 25 P 95 30 P 95 35 P
+96 5 N 96 10 P 96 15 M 96 20 M 96 25 M 96 30 M 96 35 M
+97 5 P 97 10 M 97 15 G 97 20 G 97 25 G 97 30 G 97 35 M
+98 5 M 98 10 G 98 15 V 98 20 V 98 25 V 98 30 V 98 35 G
+99 5 G 99 10 V 99 15 V 99 20 V 99 25 V 99 30 V 99 35 G
+
+# Extra field
+*TEXT
+Stachybotrys atra
+
+This organism is characterised by requiring high  water  activity
+levels  (or  equilibrate  RH)  in  order  to initiate and sustain
+growth. Stachybotrys atra requires a relative humidity of 95  and
+97  %  in order to grow onfoodstuffs and constructional materials
+respectively (under optimun growth temperatures 20 to  25  degree
+centrigrade).
+
+This mould can develop at temperatures as low as 2 to  4  degrees
+centrigrade.  It  has been isolated from the building environment
+and it is normally recovered from sites where there has been  wa-
+ter ingress (water leak) or locations of consistently high RH (at
+a thermal bridge). Stachybotrys atra is regarded  as  a  tertiary
+coloniser,  developing  on  wall  surface  only  when  the RH has
+reached very high levels (near saturation). However, once  condi-
+tions  exist  where  this mould can successfully develop, it will
+quickly grow and sometimes outcompete the primary  and/or  secon-
+dary colonisers. Therefore, detection of this organism at a loca-
+tion within the building is  indicative  of  either  poor  design
+and/or improper occupancy behaviour patterns.
+
+This microorganism is a prolific producer of a  wide  variety  of
+fungal mycotoxins, including satratoxins and various macrocyclic
+trichothecenes.
+*ENDTEXT
+
+# Extra field
+
+*END

@@ -1,0 +1,11 @@
+2.50                      # height 
+0.05                      # depth
+7.0                       # length
+5.0                       # width
+0.01                      # overlap (only important for BCCN_1 and BCCN_2)
+2.72                      # rsi
+0.85                      # soilk
+8                         # wtable
+8.9                       # Tg,avg
+14.19942                  # Tg,amp
+0.3824999                 # Ps

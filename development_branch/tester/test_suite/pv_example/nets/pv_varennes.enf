@@ -1,0 +1,42 @@
+* FileVersion
+      1.00
+* electrical network
+# ESP-r Electrical network file created with configuration file:
+  pv_varennes.cfg
+# Network description:
+  none
+* net type 
+  balanced
+* base power value (all nodes)
+     1000.00
+* phase angles (each phase)
+      0.00    120.00    240.00
+# List and details of nodes in the network
+* nodes
+    1
+# No.    Node name   Phase type   Phase Node type    Base volt
+    1  PV-node-A     d.c.            1  calc_PV           220.00    1
+** end nodes
+# List and details of load and generator connections to nodes
+* hybrid components
+    1
+# No. comp. type   comp. name      phase type  connects node(s)  location
+    1  spmaterial    PV-Array-A    d.c.            1    0    0     1    0    0
+# description:
+  none
+# No. of additional data items:
+    0
+** end hybrid
+# List and details of power only components
+* power-only components
+    0
+** end power-only 
+# Listing and Description of components connecting the nodes
+* connecting components
+    0
+** end connecting components
+# connections between nodes in the network 
+* connections
+    0
+** end connections
+** electrical network end

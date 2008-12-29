@@ -1,0 +1,91 @@
+Class TBinnedData
+
+Holds the aggregate data for a variable over its time period. Important Methods are:
+
+AddValue(double val)
+@param val new value
+Stores val, calculates the running sum, average, min, max, etc. Does *not* increment the total number of timesteps, for that, call Increment()
+
+Increment()
+Increments the total number of timesteps
+
+Log()
+Logs the output to cout
+
+
+
+
+Class TXMLAdapter
+
+This class in meant ot wrap an existing XML library in a simple, DOM-like interface. It's not meant ot be particulary fast or efficient. It meant only to keep all the calls to the XML library in one place, in case the library is changed.
+
+TXMLAdapter()
+Create a new XML tree
+
+TXMLAdapter(std::string filePath);
+@param filePath path to file
+Create a new XML tree and load in file at filePath
+
+std::string GetFirstNodeValue(std::string nodeName, TXMLNode parentNode)
+@param nodeName the name of the node to get the value of
+@param parentNode the node to search from
+Convienience method to return value of the first node with name matching nodeName
+
+std::vector<std::string> GetNodeValues(std::string nodeName, TXMLNode parentNode)
+@param nodeName the name of the node to get the value of
+@param parentNode the node to search from
+Convienience method to return value of the set of nodes with name matching nodeName 
+
+std::vector<TXMLNode> GetChildren(TXMLNode node, std::string name)
+@param node the parent node
+@param name name of nodes to return
+Returns all children nodes of node with name equal to name. If name is "", all children nodes will be returned
+
+TXMLNode RootNode();
+Returns the rode node
+
+
+TXMLNode AddNode(TXMLNode parent, std::string name, std::string value);
+Adds a node of name "name" and value "value" to parent. value can be ""
+
+void AddAttribute(TXMLNode node, std::string name, std::string value);
+Adds attribute with name "name" and value "value" to node.
+
+void SetStylesheet(std::string path);
+Sets the stylesheet for the document to the file located at path
+
+void WriteToFile(std::string filePath);
+Write XML document to file at filePath
+
+
+
+
+Class TVariableData
+TVariable Data contains the composite data for fro a particular variables. It stores all data (timestep and binned for hourly, daily, monthly and annually).   
+
+TVariableData();
+
+void Set(double val);
+Sets the current value of the variable. This method gets called often, so it should be fast.
+
+void SetMeta(std::string sMetaName, std::string sMetaValue);
+Set metadata for this variable. Overwrites any existing data for sMetaName
+
+void Update(  );
+void UpdateHourly(  );
+void UpdateDaily(  );
+void UpdateMonthly(  );
+void UpdateAnnual(  );
+void UpdateUserDefined(  );
+Update methods for time periods
+
+TBinnedData GetDataForDate(TTimeData date);
+Returns TBinnedData for the specified date 
+
+void Log();
+void OutputXML(TXMLAdapter *doc, TXMLNode parentNode);
+Serializes TBinnedData to XML in doc starting from parentNode
+
+
+- ToDo
+- expose user-defined time periods from Fortran or input file

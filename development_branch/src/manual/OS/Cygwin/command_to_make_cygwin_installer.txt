@@ -1,0 +1,64 @@
+
+May 2008 version of notes
+
+Create a link from /home/esru to /usr/esru
+
+ln -s /home/esru /usr/esru
+
+Ensure you can write to /home/esru
+
+The self extractor typically used to install a cygwin
+version of ESP-r needs a place to work. Typically you
+should create a folder precompiled_for_cygwin in
+/home/esru
+
+Do a typcial default install within the src folder
+that has been export(ed) or checked out from the svn 
+repository (export avoids the .svn folders)  Say no to the XML
+output (unless doing this for a special reason or on
+a computer you know has all of the xml support libraries).
+
+./Install -d /usr/esru
+
+To remove the .svn (hidden) folders from the compiled
+file folders go to /usr/esru/esp-r and issue the following
+two commands:
+  find . -name .svn -print > which_svn
+  
+  rm -rf `cat which_svn`
+
+After building X11 version create a tar file:
+tar cf esp-r_v11.5_X11_cygwin.tar esp-r
+
+then gzip the file and move it into precompiled_for_cygwin folder.
+gzip -9 esp-r_v11.5_X11_cygwin.tar
+mv esp-r_v11.5_X11_cygwin.tar.gz /home/esru/precompiled_for_cygwin
+
+A similar process needs to be done to create the GTK version.
+
+First (at a minimum) remove the executables from /home/esru/esp-r/bin
+so that the GTK compile does not have conflicts.
+
+If you want to back up the esp-r main distribution folder then
+mv /home/esru/esp-r /home/esru/esp-r_X11
+
+Retrun to your source folder and do a make clean command
+prior to invoking the Install script a second time.
+
+After building GTK version and removing the .svn folders the
+following commands will create the tar file:
+tar cf esp-r_v11.5_GTK_cygwin.tar esp-r
+
+then gzip the file and also move it into precompiled_for_cygwin folder.
+gzip -9 esp-r_v11.5_GTK_cygwin.tar
+mv esp-r_v11.5_GTK_cygwin.tar.gz /home/esru/precompiled_for_cygwin
+
+Remember to remove any older *.tar.gz files from the precompiled_for_cygwin
+folder so that are not included in the installer run file.
+
+the next line creates combined installer (user is asked which version to 
+extract) based on the assumption that makeself-2.1.4 has been installed
+in your own bin folder. If makeself is somewhere else adapt the command.
+
+~/bin/makeself-2.1.4/makeself.sh precompiled_for_cygwin
+esp-r_v11.5_cygwin_precomp.run "ESP-r V11.5 distribution for cygwin (standard install location)" ./setup

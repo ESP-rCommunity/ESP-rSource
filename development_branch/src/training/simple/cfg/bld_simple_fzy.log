@@ -1,0 +1,77 @@
+Notes on simple 1 zone building model with convective heating
+and fuzzy control:
+
+This model (bld_simple.cfg) relates to an L-shaped room
+with convective heating.  This simple representation
+contains a single thermal zone and is used to allow an
+exploration of an advanced control regime.
+
+The ideal convective heating control has been replaced by a fuzzy logic
+controller which attempts to maintain the room at 21degC. For more
+information (for those familiar with control theory) see the notes below.
+If you know little about control theory this exemplar is not likely
+to be of interest.
+
+The following files are used in this example problem.
+
+   file                 description
+________________________________________________________________
+bld_simple_fzy.cfg   problem configuration
+bld_simple_fzy.ctl   configuration control (convective heating
+                     and fuzzy control)
+bld_simple_fzy.log   project notes (this file)
+
+(zone files are in the directory ../zones)
+reception.geo       zone geometry
+reception.con       zone construction
+reception.opr       zone schedules
+reception.tmc       zone transparent properties
+________________________________________________________________
+
+Desciption of the fuzzy logic controller.
+
+PID (proportional+integral+derivative) controllers (both traditional and fuzzy 
+logic based) are either positional or incremental. The former outputs AN 
+ACTUATOR SIGNAL based on the error signal (set point - sensed condition), the 
+change of error and the error signal history; the latter outputs a CHANGE IN 
+ACTUATOR SIGNAL based on the error and change of error but with no summation 
+of the error signal history. 
+
+A modelling facility for all PID controller types is available in ESP-r. 
+
+The results are shown for both conventional and fuzzy logic based 
+incremental PI control of a single zone office. In both cases the set point 
+for the air point temperature is 21degC.
+
+The number of membership sets are user-specified. Here, five membership 
+functions for the error, change of error and output signal are defined:
+
+           NEGATIVE BIG (NB)
+           NEGATIVE SMALL (NS)
+           ZERO (ZR)
+           POSITIVE SMALL (NB)
+           POSITIVE BIG (PB)
+
+A look-up rule table onto which the controller inputs (error and change of 
+error) are mapped at each simulation time-step, is used as an inference 
+mechanism which creates a fuzzy output signal. A given input will normally 
+"trigger" a number of rules simultaneously, each triggered rule contributing 
+to the overall fuzzy output signal. For example, if the error is considered 
+NS and the change of error NB, then the contribution of this fired rule 
+to the output will be PB. If, on the other hand, the error is considered 
+PS and the change of error PB, then the contribution of this fired 
+ruke will be NB.
+
+                       ERROR
+                 NB  NS  ZR  PS  PB
+                 ------------------
+E  C   NB |      PB  PB  PB  PS  ZR             |
+R  H   NS |      PB  PS  PS  ZR  NS             |
+R  A   ZR |      PB  PS  ZR  NS  NB             | Look-up table.
+O  N   PS |      PS  ZR  NS  NS  NB             |
+R  G   PB |      ZR  NS  NB  NB  NB             |
+   E
+
+The fuzzy output at each simulation time-step is then defuzzified by either 
+the centre-of-area or the mean-of-max methods. For the test case considered 
+here, the center-of-area method was employed.

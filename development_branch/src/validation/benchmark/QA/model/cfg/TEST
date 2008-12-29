@@ -1,0 +1,51 @@
+#!/bin/sh
+# Main script to test the ESRU integrated simulator.
+
+VERSION="/usr/esru/esp-r/bin"
+VERSION="/home/jon/esru_jwh/esp-r/bin"
+
+#### Link appropriate shading file
+cd ../cfg
+$VERSION/ish -mode text -file bld_basic_shd.cfg -zone reception -act update_silent
+
+rm -f *.cfg.*_res
+rm -f *.cfg.*_res.data
+rm -f *.cfg.*_res.data.par
+
+# echo " Starting analysis"
+# echo "Winter runs"
+./SIMULATE.wc bld_basic.cfg $VERSION
+./ANALYSE bld_basic.cfg.wc_res $VERSION
+./ANALYSE_4 bld_basic.cfg.wc4_res $VERSION
+./ANALYSE_4 bld_basic.cfg.wc42_res $VERSION
+./ANALYSE_4 bld_basic.cfg.wc42i_res $VERSION
+./ANALYSE bld_basic.cfg.wcs_res $VERSION
+./ANALYSE_4 bld_basic.cfg.wc4s_res $VERSION
+./ANALYSE_4 bld_basic.cfg.wc42s_res $VERSION
+./ANALYSE_4 bld_basic.cfg.wc42is_res $VERSION
+
+./SIMULATE.nc bld_basic.cfg $VERSION
+./ANALYSE bld_basic.cfg.nc_res $VERSION
+./ANALYSE bld_basic.cfg.ncs_res $VERSION
+
+./SIMULATE.af bld_basic_af1.cfg $VERSION
+./ANALYSE bld_basic_af1.cfg.wc_res $VERSION
+./ANALYSE bld_basic_af1.cfg.wc10_res $VERSION
+./ANALYSE bld_basic_af1.cfg.wcs_res $VERSION
+./ANALYSE bld_basic_af1.cfg.wc10s_res $VERSION
+
+./SIMULATE.af bld_basic_af2.cfg $VERSION
+./ANALYSE bld_basic_af2.cfg.wc_res $VERSION
+./ANALYSE bld_basic_af2.cfg.wc10_res $VERSION
+./ANALYSE bld_basic_af2.cfg.wcs_res $VERSION
+./ANALYSE bld_basic_af2.cfg.wc10s_res $VERSION
+
+./SIMULATE.shd bld_basic_shd.cfg $VERSION
+./ANALYSE_4 bld_basic_shd.cfg.shd4_res $VERSION
+./ANALYSE_4 bld_basic_shd.cfg.shd4s_res $VERSION
+
+./SIMULATE.infil  office_operations.cfg $VERSION
+./ANALYSE_inf office_operations.cfg.infl_res $VERSION
+
+# clean up the *.par files.
+rm -f *.cfg.*_res.data.par

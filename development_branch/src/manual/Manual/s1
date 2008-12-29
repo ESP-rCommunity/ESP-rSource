@@ -1,0 +1,511 @@
+.ds CH
+.ds RH 1-%
+.ds LH ESP-r User Guide Version 10 Series
+.ps 12
+.vs 14
+.nr PS 12
+.nr VS 14
+.AM
+.EQ
+delim $$
+.EN
+.LP
+\ 
+.sp 5
+\ 
+.ce
+\fB\s+9Section One\s0\fR
+.sp 1
+.ce
+\fB\s+5General description of ESP-r\s0\fR
+.sp 0.5
+.ce
+\fB\s+5and its\s0\fR
+.sp 0.5
+.ce
+\fB\s+5associated documentation\s0\fR
+.sp 5
+.SH
+Contents
+.sp 1
+.IP 1.0
+Introduction
+.IP 1.1
+Purpose of ESP-r
+.IP 1.2
+Structure of ESP-r
+.IP 1.3
+Machine environment
+.IP 1.4
+System documentation
+.IP 1.5
+Further information
+.bp
+.SH
+1.0 Introduction
+.LP
+This first section of the User Guide gives a
+general overview of ESP-r (\fIEnvironmental Systems Performance; r for "research"\fR);
+a computing environment for building and/or plant energy simulation.
+The application potential of ESP-r is outlined by citing some
+typical design questions which the model has been used to answer.
+Then, the program modules which comprise the system are
+outlined, along with the essential hardware environment. Finally,
+some further information sources are indicated.
+.LP
+ESP-r is the outcome of model development projects funded
+over the years by the UK Science and Engineering Research Council
+(now EPSRC)
+and the European Commission's DGXII.  Significant contributions
+have also been made by many individuals as
+outlined in the \fIDevelopment history and acknowledgements\fP section.
+.LP
+ESP-r is free software. It is released under the
+GNU General Public License.
+.SH
+1.1 Purpose of ESP-r
+.LP
+ESP-r is a transient
+energy simulation system which is capable of modelling the
+energy and fluid flows within combined building and plant
+systems when constrained to conform to control action. The
+package comprises a number of interrelating program modules addressing
+project management, simulation, results recovery and display,
+database management and report writing.
+.LP
+One or more zones within a building are defined in terms of
+geometry, construction and usage profiles. These zones are then
+inter-locked to form a building, in whole or in part, and, optionally,
+the leakage distribution is defined to enable air flow simulation.
+The plant network is then defined by connecting
+individual components.
+And, finally, the multi-zone building and
+multi-component plant are connected and subjected to
+simulation processing against user-defined control. The entire
+data preparation exercise is achieved interactively, and with
+the aid of pre-existing databases which contain standard (or
+user-defined) constructions, event profiles and plant components. 
+Additional modules exist to permit an increase in
+simulation rigour if the related data is available.
+.LP
+A central Project Manager allows importing/ exporting of
+building geometry from/ to CAD packages and
+other specialised simulation environments such
+as Radiance for lighting simulation.
+.LP
+ESP-r is equally applicable to existing buildings and new
+designs, with or without advanced technological
+features.
+.\"	The package operates in
+.\"	.ul 1
+.\"	interactive menu
+.\"	and
+.\"	.ul 1
+.\"	expert function
+.\"	modes. In the former case the user picks a path through the
+.\"	various program modules by selecting commands from the menus
+.\"	displayed on the terminal. In this mode, the user is the expert;
+.\"	in driving ESP-r, posing the design problem and interpreting
+.\"	the simulation results. In the latter case a number of keyboard
+.\"	function buttons are active, each one corresponding to a standard
+.\"	performance appraisal such as comfort assessment, plant sizing,
+.\"	control system analysis, energy consumption estimation, and so on.
+.\"	Bound to each function button is a script which contains the
+.\"	.ul 1
+.\"	rules
+.\"	to be obeyed by ESP-r during simulation processing of the user's
+.\"	design problem. These rules can be examined at
+.\"	any time and are entirely
+.\"	user definable. Any new rules script can be easily bound to a keyboard
+.\"	button of the user's choice. ESP-r is now in `expert' mode, conducting
+.\"	simulations, analysing the results and recovering appropriate output
+.\"	displays.
+.\"	.LP
+.\"	In either mode, ESP-r
+The system offers sophisticated input/output facilities which
+enable the user to answer such design questions as
+.IP \(bu
+What, and when, are the peak building or plant loads and
+what are the rank-ordered causal energy flows?
+.IP \(bu
+What will be the effect of some design change, such as
+increasing wall insulation, altering the window shape and size,
+changing the glazing type or distribution, introducing
+daylight control devices, re-zoning the building, re-configuring the
+plant or changing the heating/ cooling control regime?
+.IP \(bu
+What is the optimum plant start time or the most effective
+algorithm for weather anticipation?
+.IP \(bu
+How will comfort levels vary throughout the building?
+.IP \(bu
+What benefits can be expected from the different possible lighting control
+strategies?
+.IP \(bu
+What are the relative merits of different heating and cooling
+systems and their associated controls?
+.IP \(bu
+How will temperature stratification, in terms of zone sensor
+and terminal unit location, affect energy consumption and
+comfort control?
+.IP \(bu
+What contribution does building infiltration and
+zone-coupled air flow make to the total boiler or chiller
+load and how
+can this be minimised?
+.IP \(bu
+How do suggested design alterations affect air flow and fresh air
+distribution (i.e. indoor air quality) within the building?
+.IP \(bu
+What is the effect of special glazings (such as thermotropic, holographic,
+low-e or electrochromic glazing) on summer overheating?
+.IP \(bu
+Which are the benefits from architectural building features such
+as atria, sunspaces, courtyards, etc?
+.IP \(bu
+What is the contribution (in terms of energy saving and
+thermal comfort) of a range of
+passive solar (heating or cooling) features?
+.IP \(bu
+What is the optimum arrangement of constructional elements
+to encourage good load levelling and hence efficient plant
+operation?
+.IP \(bu
+What are the energy consequences of non-compliance with
+prescriptive energy regulations or, conversely, how should a
+design be modified to come within some deemed-to-satisfy
+performance target?
+.IP \(bu
+Which heat recovery system performs best under a range of
+typical operating conditions?
+.LP
+and so on. This allows the user to understand better the
+interrelation between design and performance parameters,
+to then identify potential
+problem areas, and so implement and test appropriate building,
+plant and/or control modifications. The design to result is
+more energy conscious with better comfort levels attained
+throughout.
+.KF
+.PSPIC FIGS/fig1.1.epsi 14c 11c
+.sp 0.5
+.ce
+Figure 1.1 Structure of ESP-r
+.sp
+.KE
+.SH
+1.2 Structure of ESP-r
+.LP
+Figure 1.1 shows the relationship between the program
+and database modules which form the simulation environment.
+In this User Guide only the Users-side of the environment will
+be addressed.
+.LP
+The \fIProject Manager\fR
+allows the interactive definition of some building and plant
+configuration which is to be subjected to some weather
+influence and simulated over time. The complete description
+of the building and plant configuration is called the product model.
+All data items, as input,
+are subjected to strict range and legality checks before
+being directed to disk file for later recall. To ease the
+input burden, the user is given access to standard databases
+so that constructions, event profiles and plant components
+can be accessed by name or simple code number reference. Also, many input
+items have a corresponding default value so that typed responses
+can vary as a function of the design information to hand at any
+time during a design's evolution. The Project Manager also controls
+user access to the other ESP-r programs such as the Simulator for
+simulation and the Results Analyser for analysing the time-series
+of state variables as generated by the Simulator.
+.\"	.LP
+.\"	The ESP-r Reference Guide details the data structures of the ESP-r
+.\"	product model, as managed by the facilities of the Project Manager.
+.\"	The Reference Guide also gives information on the Technical Domain
+.\"	of the system. In this User Guide only some user related support
+.\"	applications and databases are outlined:
+.\".LP
+The \fITutorial Module\fR is linked to the tutorial material now
+held as Web pages. The content of the tutorial pages ranges from
+a general introduction to information on how to use ESP-r in a real
+world design context. The on-line tutorial mechanism is very powerful
+since it allows a user to look something up quickly when actually
+using ESP-r. Since they are in-built, the tutorials are much more
+easily kept up-to-date than this User Guide.
+.LP
+The \fIEvent Profiles Database Management Module\fR manages
+a number of standard or project-specific
+profiles which define the time dependent
+variations in zone occupancy, lighting, plant control and
+miscellaneous appliance usage. These profiles can then be
+accessed by the Project Manager to define zone and plant behaviour.
+.LP
+The \fIPlant Components Database Management Module\fR manages
+a plant components database.
+For each plant component, a summary
+description is held, along with the data required by the Simulator
+to allow the time dependent generation of the coefficients
+of the differential equations which represent component heat
+and mass balance. Component matrix template data is also
+held to dictate the whole-system matrix building undertaken at
+each simulation time-step. The database is then accessed
+from the Project Manager to enable plant network formulation by
+component interconnection.
+.LP
+The \fIClimate Database Management Module\fR manages and analyses
+climatic data collections. A climate
+collection spans any period from one day to one year and
+contains hourly values of dry bulb temperature, direct
+normal or total horizontal solar intensity, diffuse
+horizontal solar intensity, wind speed, wind direction and
+relative humidity. The climate management module
+offers solar radiation prediction, curve fitting to daily
+maximum and minimum data, statistical analysis, graphical
+and tabular display and general data management. The climate data
+is required by the Simulator to generate the time dependent
+boundary conditions for the building and plant configuration.
+.LP
+The \fISimulator\fR is the
+building and plant simulation
+engine which predicts building and plant energy/ fluid flows
+by a rigorous numerical method. The
+building/ plant network is divided into a large number of
+finite volumes. Then, at each time-step as a simulation proceeds, 
+an energy and mass balance is applied for all volumes,
+giving rise to a differential
+matrix for the entire system. This is then solved by custom
+matrix processing software in terms of any user-imposed control
+objectives.
+.LP
+The \fIResults Analysis Module\fR operates on the simulation results located in a
+database by the Simulator.
+A variety of output options are available: perspective
+visualisations, results interrogation, statistical analysis,
+graphical display, tabulations, frequency binning and 3D
+plotting.
+.LP
+The \fIInsolation and Shading Module\fP
+is a support module which predicts the time-series shading
+of external zone surfaces (opaque and transparent) as caused
+by facade and site obstructions and/or the time-series
+insolation of internal
+zone surfaces (opaque and transparent) as caused by solar
+penetration through windows. The predictions for any
+surface can, optionally, be archived in a
+shading/insolation
+database for access and use within a simulation.
+.LP
+The \fIView Factors Module\fR
+computes the black body view factors between each zone
+surface pairing for use by the Simulator
+to evaluate internal longwave radiative exchanges. It also
+evaluates zone comfort level variations.
+.LP
+Building/ plant fluid flow simulation
+can be performed by the Simulator
+in tandem with the heat balance calculations. In this case
+full account will be taken of buoyancy driven air movements
+between outside and inside and between internal zones. If pressure
+driven air flow dominates, it is possible to use
+the \fIFlows Simulation Module\fR in stand-alone mode
+to predict infiltration and zone-coupled air flow. Buoyancy
+effects are still included but correspond to fixed zone
+temperatures assigned by the user.
+.LP
+The \fIConstruction Data Management Module\fR
+manages (creates, modifies, edits and lists) primitive
+and composite constructions
+databases. The materials database contains the
+thermophysical properties of conductivity, density, specific
+heat, solar absorptivity and emissivity for a number of
+standard homogeneous elements. Diffusion resistance factors are
+also held as required by ESP-r's interstitial condensation
+computations. A second, project-related
+database can also be created to hold multilayered
+constructions formed from elements extracted from the
+materials' database. Both databases can then be accessed
+from the Project Manager as required.
+.LP
+A number of ESP-r modules create and/or manipulate
+random access, binary disk files such as the
+constructions databases, the event profiles database, and
+the simulation results database. They also allow
+for the transformation of ESP-r's binary files
+to ASCII format and vice versa. This permits
+the transmission of binary databases to
+other computer sites (via tape for example) and, if
+a user is experienced, direct file editing.
+.LP
+In normal use, the three main modules,
+the Project Manager, the Simulator and the Results Analyser,
+are used to investigate building and/or plant performance
+and, by iteration, to assess the consequences of any change
+to system design or control. The database modules
+help to reduce the input burden and the support modules
+exist to allow the subsystem they address to be treated with
+greater rigour, if this can be justified by the design
+objectives and data to hand.
+.LP
+The theories underlying ESP-r
+and the validity of the Simulator
+are summarised in Section 5 and presented, in detail, in the
+following references:
+.IP \(bu
+Clarke J A
+\fIEnergy Simulation in Building Design\fR, 2nd Edition,
+Butterworth-Heinemann, Oxford, 2001.
+.IP \(bu
+Tang D
+\fIModelling of Heating and Air-Conditioning Systems\fR,
+PhD Thesis, University of Strathclyde, 1985.
+.IP \(bu
+Hensen J L M
+\fIOn the Thermal Interaction of Building Structure
+and Heating and Ventilating System\fR,
+PhD Thesis, University of Eindhoven, 1991.
+.IP \(bu
+Aasem E O
+\fIPractical Simulation of Buildings and AIr-Conditioning Systems in
+the Transient Domain\fR,
+PhD Thesis, University of Strathclyde, 1993.
+.IP \(bu
+Negrao C O R
+\fIConflation of Computational Fluid Dynamics
+and Building Thermal Simulation\fR,
+PhD Thesis, University of Strathclyde, 1995.
+.IP \(bu
+Nakhi A E
+\fIAdaptive Construction Modelling Within Whole
+Building Dynamic Simulation\fR,
+PhD Thesis, University of Strathclyde, 1995.
+.IP \(bu
+Chow T T
+\fIAir-Conditioning Plant Component Taxonomy by
+Primitive Parts\fR,
+PhD Thesis, University of Strathclyde, 1995.
+.IP \(bu
+MacQueen J
+\fIThe Modelling and Simulation of Energy Management Control Systems\fR,
+PhD Thesis, University of Strathclyde, 1997.
+.IP \(bu
+Kelly N J
+\fITowards a Design Environment for Building-Integrated
+Energy Systems: The Integration of Electrical Power Flow
+Modelling with Building Simulation\fR,
+PhD Thesis, University of Strathclyde, 1998. 
+.IP \(bu
+Hand J W
+\fIRemoving Barriers to the Use of Simulation in the Building
+Design Professions\fR,
+PhD Thesis University of Strathclyde, 1998.
+.IP \(bu
+Beausoleil-Morrison I
+\fIThe Adaptive Coupling of Heat and Air Flow Modelling
+Within Dynamic Whole-Building Simulation\fR
+PhD Thesis, University of Strathclyde, 2000.
+.SH
+1.3 Machine environment
+.LP
+ESP-r requires the following hardware and software:
+.IP \(bu
+A UNIX\s-2\uTM\d\s0 or LINUX workstation\u#\d offering X-Windows
+and with at least 128 MBytes RAM.  Implementations exist for
+SUN, Silicon Graphics and Linux (PC and Mac) platforms.
+.IP \(bu
+A disk capacity to store the executables,
+manuals, tutorials, training examples (~25 MBytes),
+perhaps source code (~20 MBytes) and
+simulation results (~2 MBytes per zone-year at
+a one hour time step).
+.IP \(bu
+Fortran77 and C compilers.
+.IP \(bu
+A laser writer for graphical hard copy.
+.SH
+1.4 System documentation
+.LP
+In terms of usage, this User Guide and the web-based tutorial
+facilities of ESP-r are the main sources of documentation. In addition,
+a number of papers concerning ESP-r development and application can
+be found in the literature. A full list of publications can be found
+on the ESRU web site.
+.LP
+As indicated in the Table of Contents, the User Guide has a number of
+appendices. These are available from our FTP server: they can
+be automatically downloaded by accessing ESRU's publication list
+on the WWW (\fIhttp://www.esru.strath.ac.uk/\fP) or
+by direct \fIftp\fP (file transfer protocol) transfer. In the latter case,
+ftp to \fIftp.strath.ac.uk\fP and login as
+\fIanonymous\fP with your email address as the
+password. The documents will be found in directory \fIEsru_public/documents\fR.
+.LP
+Papers and technical reports cover issues such as:
+.IP \(bu
+How to add new entities such as climate data,
+project-specific construction databases and plant components.
+.IP \(bu
+A list of training assignments enabling an instructor to assess
+whether the training material is absorbed properly, and enabling
+the trainee to check whether the training material is understood.
+.IP \(bu
+Good practice guidelines for researchers interested in developing
+or expanding parts of ESP-r.
+.IP \(bu
+A bibliography describing much of ESP-r's
+technical detail and philosophy. This list includes books,
+journal articles, conference papers and internal
+ESRU reports.  In some cases \fIPostScript\fR or \fIpdf\fR versions of these
+publications are available. 
+.IP \(bu
+A summary of the tasks to be undertaken when implementing ESP-r at a
+particular site.
+.IP \(bu
+A summary of ESP-r's underlying data model.
+.IP \(bu
+Some step-by-step worked examples of simulation projects.
+.SH
+1.5 Further information
+.LP
+ESP-r is released under the terms of the GNU General Public License.
+It can be used for commercial or non-commercial work
+subject to the terms of this open source licence agreement.
+.LP
+Although ESP-r can be used for free, it is often the case that
+a new ESP-r site will incur a nominal expense.  For example it may
+be appropriate to send someone to one of the ESP-r courses which we
+organise regularly at ESRU (the cost is approximately \(Po500
+per person).  We strongly recommend this course of action for all
+new users to ensure that the learning process is as short and
+painless as possible.  Dates of forthcoming courses are listed
+on the ESRU web site. In addtion, ESRU offer a range of
+options for supporting the use of ESP-r in organisations.
+Contact ESRU for details.
+.LP
+ESP-r can be downloaded from the web site http://www.esru.strath.ac.uk
+by following the appropriate links to the software. Note that,
+because ESP-r is under active development at a growing number of sites, there
+are frequent updates and revisions.  
+.LP
+ESP-r is a building and plant energy simulation environment which
+is under development at various research centres throughout Europe 
+and elsewhere. These developments involve
+both enhancements and new developments to the existing system as 
+well as validation activities and application related research.
+.LP
+The people working with ESP-r keep in contact via
+an electronic communication platform. The purpose of this is to keep
+each other informed about ongoing and planned developments, system related
+publications, new results, emerged problems, upcoming releases, etc.
+To join, simply email the string "subscribe esp-r <your email address"
+to \fImajordomo@strath.ac.uk\fR.  After your name has been
+registered, you can communicate with 
+other subscribers by sending messages to \fIesp-r@strath.ac.uk\fR.
+Please note that any e-mail messages received by the virtual user
+esp-r@strath.ac.uk will be forwarded unmoderated to all people
+currently subscribed.
+.LP
+Further technical,
+operational or commercial details on ESP-r may be obtained from
+ESRU at the address on the front of this User Guide. Alternatively,
+you may want to browse through our web pages, which
+can be accessed from \fIhttp://www.esru.strath.ac.uk\fR.

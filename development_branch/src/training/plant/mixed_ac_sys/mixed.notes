@@ -1,0 +1,32 @@
+
+This is an air conditioning system which
+makes use of a mix of conventional plant components 
+and components based on primitive parts.
+
+You may wish to compare this with a fully conventional
+plant system in conv_ac_sys and the fully primitive
+parts based representation in prim_ac_sys.
+
+The configuration file is ahuPP.cfg
+The control file is ahuPP.ctl
+The plant network description is ahuPP.pnf
+
+The building portion of the problem is the
+standard three zone exemplar.
+
+You may look at a standard building & plant
+libraries in ahu_pp.res and ahu_pp.plr
+which are for a one day simulation on
+9th of July.  They use the standard climate
+database.  Interesting phychrometric data 
+can be plotted around mid-day which is
+at timestep 360.
+
+Use a one day startup period (otherwise it
+takes ages).
+
+Recommended building timesteps should be
+6 timesteps per hour.
+
+Recommended plant timesteps should be equivalent
+to 2 minute intervals (or less). 

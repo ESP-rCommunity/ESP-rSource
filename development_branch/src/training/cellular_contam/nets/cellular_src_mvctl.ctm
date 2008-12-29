@@ -1,0 +1,40 @@
+#ESP-r contaminant file
+../nets/cellular_src_mvctl.afn #fluid flow file for which this file is defined
+SECTION_1
+#no. of contaminants,timesteps/hour
+    1     12
+SECTION_2
+#name and ambient concentrations (kg/kg) of contaminants
+#(max conc, min conc, hour at which max conc occurs)
+#followed by no. of source/sink models and model no.s
+CO_2        
+0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480
+0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480 0.000480
+  2 1 2                                                                                                                         
+SECTION_3
+#first order rate constants (if defined)
+SECTION_4
+#node based information for contaminant
+CO_2        
+#node,node no.,initial conc.
+manager_a      1   0.000480
+manager_b      2   0.000480
+coridor        3   0.000480
+SECTION_5
+#component based information
+#all filter efficiencies other than nought are listed
+   0 #no. of components having efficiency other than nought
+#contaminant name and no.,component,filter efficiency
+SECTION_6
+#source and sink models
+#number of sources and sinks
+  2
+# Source/sink name, number, type, supplementary data items
+occup_man_a    1  6 -1.00000 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00                                                                            
+occup_man_b    2  6 -1.00000 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00                                                                            
+SECTION_7
+#source/sink linkage with nodes
+#node,node no.,no. of source/sink models linked,model no
+manager_a      1   1 1                                                                                                                           
+manager_b      2   1 2                                                                                                                           
+coridor        3   0                                                                                                                             

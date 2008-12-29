@@ -1,0 +1,24 @@
+# transparent properties of TIM defined in TIM.tmc
+   6   # surfaces
+# tmc index for each surface
+  1  0  0  0  0  0
+   4  # layers
+# Transmission @ 5 angles & visible tr.
+   0.000   0.000   0.000   0.000   0.000   0.990
+# For each layer absorption @ 5 angles
+   0.150   0.160   0.170   0.180   0.170
+   0.000   0.000   0.000   0.000   0.000
+   0.000   0.000   0.000   0.000   0.000
+   0.000   0.000   0.000   0.000   0.000
+   1  # blind/shutter control flag
+   1   1  # no control periods & sensor loc
+# Replacement properties for each control period
+   0  24   # period start and end 
+   0 100.0   # sensor type and actuation point
+# Alt transmission followed by absorpt for each layer
+   0.680   0.540   0.420   0.230   0.110
+   0.150   0.160   0.170   0.180   0.170
+   0.000   0.000   0.000   0.000   0.000
+   0.000   0.040   0.040   0.050   0.130
+   0.090   0.100   0.110   0.120   0.120
+   0

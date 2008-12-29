@@ -1,0 +1,65 @@
+   16    7   30    0.561    (nodes, components, connections, wind reduction)
+ Node   Fld. Type   Height    Temperature    Data_1       Data_2
+ hall      1    0   1.5000       20.000           0.           0.    
+ liv       1    0   1.5000       20.000           0.           0.    
+ bath      1    0   1.5000       20.000           0.           0.    
+ kitch     1    0   1.5000       20.000           0.           0.    
+ store     1    0   1.5000       20.000           0.           0.    
+ hal_up    1    0   3.6000       20.000           0.           0.    
+ bed1      1    0   3.6000       20.000           0.           0.    
+ bed2      1    0   3.6000       20.000           0.           0.    
+ bed3      1    0   3.6000       20.000           0.           0.    
+ loft      1    0   4.1500       20.000           0.           0.    
+ s_ext     1    3   2.4000           0.       5.0000       180.00    
+ n_ext     1    3   2.4000           0.       5.0000           0.    
+ e_ext     1    3   2.4000           0.       5.0000       270.00    
+ t_br      1    0   3.6000       20.000           0.           0.    
+ a_gap     1    0   3.6000       20.000           0.           0.    
+ coll      1    0   4.1500       20.000           0.           0.    
+ Comp   Type C+ L+ Description
+ so_vnt  120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+    1.00000    5.00000E-03    6.90000
+ door    130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+    1.00000   0.800000    1.80000    1.50000   0.900000
+ win     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+    1.00000    1.00000E-03    1.00000
+ stair    40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
+    1.00000    2.00000   0.950000
+ duct     40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
+    1.00000    0.050000   0.950000
+ win2     40  3  0 Common orifice flow component m = rho.f(Cd,A,rho,dP)  
+    1.00000    0.400000   0.650000
+ fan      30  2  0 Constant vol. flow rate component   m = rho.a               
+    1.00000    5.40000E-03
+ +Node   dHght   -Node   dHght   Comp     Snod1  Snod2
+ hall    0.000   s_ext   0.000   win                   
+ hall    0.000   bath    0.000   door                  
+ hall    0.000   kitch   0.000   door                  
+ hall    0.000   liv     0.000   door                  
+ hall    1.000   hal_up -1.100   stair                 
+ hal_up -1.100   hall    1.000   stair                 
+ hal_up  0.000   bed1    0.000   door                  
+ hal_up  0.000   bed2    0.000   door                  
+ hal_up  0.000   bed3    0.000   door                  
+ hal_up  0.900   loft   -0.750   win                   
+ loft   -0.750   hal_up  0.900   win                   
+ liv     0.000   s_ext   0.000   win2                   
+ hall    0.000   e_ext   0.000   win                   
+ bath    0.000   n_ext   0.000   win                   
+ kitch   0.000   n_ext   0.000   win2                   
+ store   0.000   n_ext   0.000   win                   
+ hal_up  0.000   e_ext   0.000   win                   
+ bed1    0.000   s_ext   0.000   win2                   
+ bed2    0.000   n_ext   0.000   win2                   
+ bed3    0.000   n_ext   0.000   win2                   
+ loft    0.000   s_ext   0.000   so_vnt                
+ loft    0.000   n_ext   0.000   so_vnt                
+ store   0.000   kitch   0.000   door                  
+ t_br    0.000   n_ext   0.000   door
+ a_gap   0.000   n_ext   0.000   door    
+ t_br    0.000   bed3    0.000   door
+ a_gap   0.000   bed3    0.000   door
+ loft    0.000   coll    0.000   door
+ coll    0.000   loft    0.000   door
+ coll    0.000   hal_up  0.000   fan
+

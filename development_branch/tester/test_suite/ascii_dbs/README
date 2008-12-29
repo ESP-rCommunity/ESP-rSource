@@ -1,0 +1,12 @@
+This folder is intended to hold model-specific ASCII
+databases associated with the test suite. It is imperative
+that binary databases not be included in this folder, as
+there is no means to convert test-suite databases from 
+ascii to binary formats during installation on other 
+platforms. 
+
+Current files: 
+
+ - ccht_constr.db1: MLC database describing 
+   constructions in CCHT test houses.
+

@@ -1,0 +1,20 @@
+This directory contains an exemplar control file 
+in which non-ideal sensor and actuator characteristics 
+are specified (i.e 4th sensor/actuator data itam = -1). 
+At the present time, such files are generated using a text editor.
+
+The control file has 4 plant control loops, 2 of which 
+(loops 1 and 3) have non-ideal sensor and actuator 
+characteristics imposed. Loop 3 contains a 
+description of each data entry.
+
+Points to note: 
+              1/ The first data entry of each line indicates whether
+                 characteristic is imposed (1) or not (-1). This 
+                 facilitates parametric and sensitivity studies of 
+                 the various non-ideal characteristics.
+              2/ For economy of memory space, there is limit of 
+                 2 control loops which may have non-ideal 
+                 sensor/actuator and  characteristics imposed. This 
+                 may be altered by amending the "control.h" include 
+                 file.

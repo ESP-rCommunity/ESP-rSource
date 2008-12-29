@@ -1,0 +1,24 @@
+#!/bin/sh
+# Convert materials database from ascii to binary format
+# modified for version with multi-year database option.
+DBdir=$1
+ASCdb=$2
+MATdb=$3
+if [ -f esruprj/prj ] ; then
+  PRJ=`pwd`/esruprj/prj
+else
+  PRJ=prj
+fi
+cd $DBdir
+rm -f $MATdb
+echo "Creating binary materials database in "$DBdir
+$PRJ -mode text >/dev/null 2>/dev/null <<zzz
+b
+d
+f
+$ASCdb
+$MATdb
+-
+-
+zzz
+echo " "

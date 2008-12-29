@@ -1,0 +1,51 @@
+*Operations 1.0
+*date Wed May  4 15:22:13 2005  # latest file modification 
+# operations of geometry_A defined in: 
+# ../zones/0.5-10_ach.opr
+night flush       # operation name
+# control(no control of air flow  ), low & high setpoints 
+   0     0.000     0.000
+     3   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0,  6,   10.000    0.000    0    0.000
+   6, 18,    0.500    0.000    0    0.000
+  18, 24,   10.000    0.000    0    0.000
+     3   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0,  6,   10.000    0.000    0    0.000
+   6, 18,    0.500    0.000    0    0.000
+  18, 24,   10.000    0.000    0    0.000
+     3   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0,  6,   10.000    0.000    0    0.000
+   6, 18,    0.500    0.000    0    0.000
+  18, 24,   10.000    0.000    0    0.000
+     7   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,   7,      0.0,      0.0, 0.500, 0.500
+    3,   7,  11,     19.8,      0.0, 0.500, 0.500
+    3,  11,  15,    198.0,      0.0, 0.500, 0.500
+    3,  15,  18,     19.8,      0.0, 0.500, 0.500
+    3,  18,  22,    297.0,      0.0, 0.500, 0.500
+    3,  22,  23,    198.0,      0.0, 0.500, 0.500
+    3,  23,  24,      0.0,      0.0, 0.500, 0.500
+     7   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,   7,      0.0,      0.0, 0.500, 0.500
+    3,   7,  11,     19.8,      0.0, 0.500, 0.500
+    3,  11,  15,    198.0,      0.0, 0.500, 0.500
+    3,  15,  18,     19.8,      0.0, 0.500, 0.500
+    3,  18,  22,    297.0,      0.0, 0.500, 0.500
+    3,  22,  23,    198.0,      0.0, 0.500, 0.500
+    3,  23,  24,      0.0,      0.0, 0.500, 0.500
+     7   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,   7,      0.0,      0.0, 0.500, 0.500
+    3,   7,  11,     19.8,      0.0, 0.500, 0.500
+    3,  11,  15,    198.0,      0.0, 0.500, 0.500
+    3,  15,  18,     19.8,      0.0, 0.500, 0.500
+    3,  18,  22,    297.0,      0.0, 0.500, 0.500
+    3,  22,  23,    198.0,      0.0, 0.500, 0.500
+    3,  23,  24,      0.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

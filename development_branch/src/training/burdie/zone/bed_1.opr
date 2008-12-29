@@ -1,0 +1,24 @@
+*Operations 1.0
+*date Wed Jul 28 12:18:34 2004  # latest file modification 
+# operations of bed_1 defined in: 
+# ../zone/bed_1.opr
+two people sleeping  # description
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000   100.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     2   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,    190.0,     90.0, 0.700, 0.300
+    1,   7,  24,      0.0,      0.0, 0.500, 0.500
+     2   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,    190.0,     90.0, 0.700, 0.300
+    1,   7,  24,      0.0,      0.0, 0.500, 0.500
+     2   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,    190.0,     90.0, 0.700, 0.300
+    1,   7,  24,      0.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

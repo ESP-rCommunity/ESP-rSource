@@ -1,0 +1,15 @@
+# composite construction db defined in mlc.db
+# based on materials db /usr/esru/esp-r/databases/material.db3.a
+    2     # no of composites 
+# layers  description   optics name   symmetry tag
+    3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  242    0.0060  Plate glass
+    0    0.0120  air  0.170 0.170 0.170
+  242    0.0060  Plate glass
+# layers  description   optics name   symmetry tag
+    3    typical_wall  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+    4    0.1000  Outer leaf brk
+  211    0.1390  Glasswool
+  107    0.0130  Gypsum plasterboard

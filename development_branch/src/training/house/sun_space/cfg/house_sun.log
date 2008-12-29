@@ -1,0 +1,53 @@
+Notes on house with sun space:
+
+The house is situated on a remote Scottish island in a
+high wind location.  The provision of an unheated space
+for inclement weather is part of the design brief.  Because
+of site constraints, the lounge faces south-west.
+
+The model contains ten thermal zones:
+  1) combined kitchen and lounge (kitliv)
+  2) hollow south-west wall (west_space)
+  3) passage (hall)
+  4) bathroom (bath)
+  5) bedroom (bed1)
+  6) bedroom (bed2)
+  7) buffer south-west portion (buf_1)
+  8) buffer north-east portion (buf_2)
+  9) upper buffer (buf_roof)
+ 10) roof over occupied space (roof)
+
+The deep window reveals and orientation requires
+an explicit treatment of shading and solar distribution.
+To this end, obstruction blocks are used to define the
+window reveals in the bedrooms and kitchen/lounge.
+
+The model employs seasonally adjusted air flow networks to 
+represent air movement.  There are timed extract fans in 
+the kitchen and bathroom and control logic to open the 
+windows if internal temperatures rise above a specified
+level.  
+
+The subdivision of the sun space into 3 thermal 
+zones allows the buoyancy force to be represented.
+This requires that `fictitious` boundaries be placed
+between these zones.
+
+THe south-west wall of the lounge is represented as
+a separate thermal zone rather than as a 
+multilayer construction because of the large void
+(300mm) and the convective/ radiant enchanges
+therein.
+
+There are 2 system configuration files in subdirectory cfg, 
+for the winter (ss_win.cfg) and summer (ss_sum.cfg) operation
+cases respectively.  These reference two separate  air
+flow networks flow/ss_win.afn and flow/sssum.afn.
+Summer control is based on the opening of windows if
+the temperature exceeds the set point.  Winter
+air flow is via cracks to the outside, partially open
+doors between rooms, and extract fans in the kitchen
+and bathroom which operate for several hours each day.
+
+The control files are ctl/ss_win.ctl and ctl/ss_win.ctl
+for summer and winter respectively.

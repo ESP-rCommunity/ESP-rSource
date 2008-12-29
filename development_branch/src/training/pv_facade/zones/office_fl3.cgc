@@ -1,0 +1,9 @@
+*Casual_gain_ctl
+*desc no description supplied
+  2  2  2 # Gain to ctl on wkds & wkends
+  8 18  # Control period start & end hours
+  1  # No. of lighting zone(s)
+ 500.0  1.5  0.1  0.1  0 # Setpt, switch off lvl, min dim/el, delay
+  1.0  1  1 # % casual, no of sensors, calc type
+ 20.000  7.000  9.300  0.000 -1.000  0.000 # Sensor x y z & dir vect
+  1 # Control law: On-Off          

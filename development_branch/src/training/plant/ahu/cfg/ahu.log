@@ -1,0 +1,51 @@
+
+                      Single zone air-conditioning system
+
+               This system is suitable for air-conditioning large sin-
+          gle  spaces, such as theatres, cinemas, restaurants, exhibi-
+          tion halls or factory spaces where no  spatial  sub-division
+          exists.
+
+               The heating coil is usually fed by  hot  water  from  a
+          boiler  whereas  the  coiling  coil  could  be either fed by
+          chilled water or could be directly connected to a refrigera-
+          tion  plant  and  so contain the actual refrigerant; this is
+          known as a direct expansion (DX) system. For  humidity  con-
+          trol,  this  system  can also be fitted with a humidifier so
+          that the relative humidity of the space supply  air  can  be
+          controlled if necessary.
+
+               The reception zone of the test building was coupled  to
+          the air-conditioning system and a fluid flow network defined
+          for the combined plant/building problem.
+
+               With the fluid flow network incorporated in the simula-
+          tion,  it is possible to include the air filter by introduc-
+          ing an additional flow resistance in the fluid flow  network
+          definition  file.   A  mechanical thermostat component (type
+          510) was used as a sensor to sense the zone  temperature  so
+          that the time lags associated with the sensor are taken into
+          account.
+
+               The thermostat component was installed  on  the  inside
+          surface  of  the south facing wall of the reception room and
+          two sensors were attached to it, one is used to actuate  the
+          heating  coil flux and the other to actuate the cooling coil
+          flux. The cooling set point was chosen  to  be  23C  with  a
+          throttling  range  of  1C  while  the  heating set point was
+          chosen to be 20C with a throttling range  of  1C.  An  addi-
+          tional  sensor was defined to sense the relative humidity of
+          the air in the fan and a controller (plant  control  law  2)
+          was  defined  to  actuate  the water spray flow rate between
+          0.02 kg/s and 0.003 kg/s for a relative humidity of 40%  and
+          60% respectively.
+
+               A summer  simulation  was  then  conducted  during  the
+          period  from  the  17th  July until 18th July using an ESP-r
+          test climate file.  The simulation time-steps were chosen to
+          be  15 mins for the building simulation and 1 minute for the
+          plant simulation.  It can be concluded from this  simulation
+          that  considering  a  temperature  sensor  as a component is
+          important for the determination of correct heating and cool-
+          ing  set  points  when  more  strict  temperature control is
+          required.

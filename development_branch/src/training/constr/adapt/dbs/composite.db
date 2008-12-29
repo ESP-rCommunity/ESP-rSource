@@ -1,0 +1,104 @@
+# composite construction db defined in ../databases/composite.db
+# based on primitive construction db ../databases/primitive.db
+   17     # no of composites 
+# layers  description   optics 
+    7    grnd_floor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.250  Common earch
+  262     0.150  Gravel based
+   32     0.150  Heavy mix concrete
+  201     0.020  Fibreboard
+  124     0.050  Cement screed
+   67     0.019  Chipboard
+  221     0.006  Wilton
+# layers  description   optics 
+    1    single_glaz   TRAN  SC_8985_04nb        
+# db ref  thick   db name & air gap R 
+  243     0.004  4mm clear float
+# layers  description   optics 
+    3    roof          OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  141     0.010  Clay tile
+  161     0.002  Bitumen felt
+   67     0.025  Chipboard
+# layers  description   optics 
+    1    int_doors     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   69     0.025  Oak (radial)
+# layers  description   optics 
+    5    ext_wall      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  125     0.005  White dry render
+    4     0.100  Outer leaf brick
+  201     0.050  Fibreboard
+    3     0.100  Inner leaf brick
+  104     0.010  Gypsum plaster
+# layers  description   optics 
+    3    ext_part      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  104     0.010  Gypsum plaster
+   28     0.150  Block inner (3% mc)
+  104     0.010  Gypsum plaster
+# layers  description   optics 
+    3    int_part      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  102     0.010  Light plaster
+   28     0.100  Block inner (3% mc)
+  102     0.010  Light plaster
+# layers  description   optics 
+    4    ceiling       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  221     0.025  Wilton
+   65     0.025  Flooring
+  201     0.050  Fibreboard
+  102     0.025  Light plaster
+# layers  description   optics 
+    4    upper_flor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  102     0.025  Light plaster
+  201     0.050  Fibreboard
+   65     0.025  Flooring
+  221     0.025  Wilton
+# layers  description   optics 
+    3    loft_ceil     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  211     0.010  Glasswool
+   67     0.020  Chipboard
+  102     0.005  Light plaster
+# layers  description   optics 
+    3    loft_floor    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  102     0.005  Light plaster
+   67     0.020  Chipboard
+  211     0.010  Glasswool
+# layers  description   optics 
+    3    dbl_glz       TRAN  DCF7365_10nb        
+# db ref  thick   db name & air gap R 
+  243     0.004  4mm clear float
+    0     0.002  air  0.170 0.170 0.170
+  243     0.004  4mm clear float
+# layers  description   optics 
+    1    dummy_surf    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    1     0.001  Paviour brick
+# layers  description   optics 
+    4    TI_glazing    TRAN  DCTIM_blind         
+# db ref  thick   db name & air gap R 
+  243     0.004  4mm clear float
+    0     0.085  air  0.170 0.170 0.170
+  302     0.100  TIM
+  303     0.002  polycarbonate
+# layers  description   optics 
+    2    mass_wall     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  104     0.010  Gypsum plaster
+  301     0.200  concrete_block
+# layers  description   optics 
+    2    rev_masswall  OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  301     0.200  concrete_block
+  104     0.010  Gypsum plaster
+# layers  description   optics 
+    1    fict_grnd     OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  263     0.100  Common earch

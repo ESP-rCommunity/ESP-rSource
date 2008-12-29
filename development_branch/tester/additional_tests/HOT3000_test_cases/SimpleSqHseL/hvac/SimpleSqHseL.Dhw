@@ -1,0 +1,17 @@
+#
+# Dhw input file
+#
+1    # Num of Dhw tanks
+4    # Num of Occupants
+8.700000    # Mean Grnd Temp 
+14.091919    # grnd temp 
+55.000000    # Hot Supply Temp
+1    # Zone location of tank
+1    # Fuel Type
+15    # Tank Type
+0.820000    # Tank efficiency
+2000.000000    # Tank Burner Capacity
+0.000000    # Pilot Energy Rate
+151.399994    # Tank Size
+10.000000    # Temperature Band
+0.000000    # Blanket RSI

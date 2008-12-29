@@ -1,0 +1,45 @@
+*connections  for rad_htg
+*Date Thu Feb  1 16:08:37 2007
+     42   # number of connections
+   1   1   0   0   0  #   1  Surf-1 in room is External
+   1   2   3   3   4  #   2  part-1a in room >|< Surf-4 in zone_S
+   1   3   3   4  10  #   3  part-2b in room >|< part-2b in zone_L
+   1   4   0   0   0  #   4  Surf-4 in room is External
+   1   5   3   2   5  #   5  ceiling in room >|< ceil_1 in roof_1
+   1   6   4   0   0  #   6  floor in room >|< user def ground profile 0
+   1   7   3   4  12  #   7  radiator in room >|< radiator in zone_L
+   1   8   0   0   0  #   8  window in room is External
+   1   9   3   4   5  #   9  part-2a in room >|< part-2a in zone_L
+   1  10   3   4  13  #  10  part-2c in room >|< part-2c in zone_L
+   1  11   3   4  11  #  11  part-2d in room >|< part-2d in zone_L
+   2   1   0   0   0  #  12  Surf-1 in roof_1 is External
+   2   2   0   0   0  #  13  Surf-2 in roof_1 is External
+   2   3   0   0   0  #  14  Surf-3 in roof_1 is External
+   2   4   0   0   0  #  15  Surf-4 in roof_1 is External
+   2   5   3   1   5  #  16  ceil_1 in roof_1 >|< ceiling in room
+   2   6   3   4   8  #  17  ceil_2 in roof_1 >|< ceil_1 in zone_L
+   3   1   0   0   0  #  18  Surf-1 in zone_S is External
+   3   2   0   0   0  #  19  Surf-2 in zone_S is External
+   3   3   3   4   1  #  20  Surf-3 in zone_S >|< Surf-1 in zone_L
+   3   4   3   1   2  #  21  Surf-4 in zone_S >|< part-1a in room
+   3   5   3   5   5  #  22  ceiling in zone_S >|< ceil_1 in roof_2
+   3   6   4   0   0  #  23  floor in zone_S >|< user def ground profile 0
+   4   1   3   3   3  #  24  Surf-1 in zone_L >|< Surf-3 in zone_S
+   4   2   0   0   0  #  25  Surf-2 in zone_L is External
+   4   3   0   0   0  #  26  Surf-3 in zone_L is External
+   4   4   0   0   0  #  27  Surf-4 in zone_L is External
+   4   5   3   1   9  #  28  part-2a in zone_L >|< part-2a in room
+   4   6   3   5   6  #  29  ceil_2 in zone_L >|< ceil_2 in roof_2
+   4   7   4   0   0  #  30  floor in zone_L >|< user def ground profile 0
+   4   8   3   2   6  #  31  ceil_1 in zone_L >|< ceil_2 in roof_1
+   4   9   0   0   0  #  32  window in zone_L is External
+   4  10   3   1   3  #  33  part-2b in zone_L >|< part-2b in room
+   4  11   3   1  11  #  34  part-2d in zone_L >|< part-2d in room
+   4  12   3   1   7  #  35  radiator in zone_L >|< radiator in room
+   4  13   3   1  10  #  36  part-2c in zone_L >|< part-2c in room
+   5   1   0   0   0  #  37  Surf-1 in roof_2 is External
+   5   2   0   0   0  #  38  Surf_2 in roof_2 is External
+   5   3   0   0   0  #  39  Surf-3 in roof_2 is External
+   5   4   0   0   0  #  40  Surf-4 in roof_2 is External
+   5   5   3   3   5  #  41  ceil_1 in roof_2 >|< ceiling in zone_S
+   5   6   3   4   6  #  42  ceil_2 in roof_2 >|< ceil_2 in zone_L

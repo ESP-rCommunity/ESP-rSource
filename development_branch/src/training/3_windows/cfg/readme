@@ -1,0 +1,15 @@
+
+Model for exploration of the sensitivity of flow to three
+different represenatations of single sided ventilation.
+
+Four variants of the model:
+
+a) 3_windows.cfg is three zone model without a flow network
+   (so that one can be added during a workshop)
+b) 3_windows_legacy.cfg is the model which uses a text-based
+   network flow file.
+c) 3_windows_do.cfg is the model which uses a text-based network
+   file derived fom a graphic network file (equivalent to the
+   legacy file)
+d) 3_windows_do6.cfg is the model which uses a graphic network
+   file.

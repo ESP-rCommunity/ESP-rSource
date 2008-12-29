@@ -1,0 +1,15 @@
+This model contains files for both Sun equipment and
+Linux/GNU PCs. The following files need to be copied
+or linked in order to run assessments:
+
+For Linux
+ln -s dec94.clm_linux dec94.clm
+cp dec94.tdf_linux dec94.tdf
+ln -s ../zones/fac_zone_c1.shd_linux ../zones/fac_zone_c1.shd
+
+For Sun
+ln -s dec94.clm_sun dec94.clm
+cp dec94.tdf_sun dec94.tdf
+ln -s ../zones/fac_zone_c1.shd_sun ../zones/fac_zone_c1.shd
+
+

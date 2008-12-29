@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	
+	<!--Misc parameters-->
+	
+	<hierarchy>tree</hierarchy>
+	<time_step_averaging>false</time_step_averaging>
+	<enable_xml_wildcards>true</enable_xml_wildcards>
+	<output_dictionary>true</output_dictionary>
+  <dump_all_data>true</dump_all_data>
+
+</configuration>

@@ -1,0 +1,18 @@
+# site obstruction file defined in ../zones/fac_zone_c1.obs
+# associated with zone geometry file ../zones/fac_zone_c1.geo
+ 0. 0.   # dummy values for site position
+   11    # no obstruction blocks
+# origin X Y Z, width, depth, height, rot angle, descr, material
+0.900 0.700 0.000 0.100 0.299 3.400 0.000 recess_w Facade_top # block 1
+5.501 0.700 0.000 0.100 0.299 3.400 0.000 recess_e Facade_top # block 2
+1.000 0.700 -0.100 4.500 0.299 0.100 0.000 recess_b Facade_top # block 3
+1.000 0.700 3.400 4.500 0.299 0.100 0.000 recess_t Facade_top # block 4
+1.000 0.400 2.050 4.500 0.599 0.010 0.000 LS_ex_t Light_sh_t # block 5
+1.000 0.400 2.040 4.500 0.599 0.010 0.000 LS_ex_b Light_sh_b # block 6
+1.950 0.700 0.980 0.010 0.299 1.070 0.000 Fin_left Frame # block 7
+3.249 0.700 0.980 0.010 0.299 1.070 0.000 Fin_cent Frame # block 8
+4.550 0.700 0.980 0.010 0.299 1.070 0.000 Fin_righ Frame # block 9
+1.000 1.010 2.050 4.500 1.000 0.010 0.000 LS_in_t Light_sh_t # block 10
+1.000 1.010 2.040 4.500 1.000 0.010 0.000 LS_in_b Light_sh_b # block 11
+# grid opq X opq Z win X win Z
+    15 15    10    10

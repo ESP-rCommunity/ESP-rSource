@@ -1,0 +1,43 @@
+#!/bin/csh
+# take esp-r source code directories and make a dos version of
+# source files in another location. Assumes location above the
+# individual esrubld esrubps etc. directories (i.e. esp-r).
+
+echo "usage example: first cd to esp-r directory level, then"
+echo "usage example: src2dos /usr3/jon/src/esp-rnt"
+echo "where /usr3/jon/src/esp-rnt is the location to put dosed source"
+echo currently working on $PWD and $1
+
+foreach i ( `ls -d esru* include lib/esru` )
+ echo $i
+ if ( -d $i ) then
+   /usr/bin/echo processing $i to $1/$i
+   foreach j ( `ls $i/*.F $i/*.f $i/*.h $i/Makefile` )
+    if ( -f $j ) then
+      /usr/bin/unix2dos $j $1/$j
+      /usr/bin/echo $j $1/$j finished
+     endif
+   end
+ endif
+end
+
+echo "now doing inclu_ed in each dosed esru folder..."
+cd $1
+echo now in `pwd`
+foreach i ( `ls -d esru*` )
+ echo $i
+ if ( -d $i ) then
+   cd $i
+   /usr/bin/echo inclue editing within $i
+   foreach j ( `ls *.F *.f` )
+     if ( -f $j ) then
+       set a = `expr length $j`
+       set b = `expr $a - 2`
+       set name = `expr substr $j 1 $b`
+       /usr/bin/sed -f /home/HOT3000/jon/bin/inclu_ed_script $j > ${name}.for
+       /usr/bin/echo $j ${name}.for
+     endif
+   end
+   cd ..
+  endif
+end

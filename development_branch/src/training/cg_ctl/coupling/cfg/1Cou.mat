@@ -1,0 +1,100 @@
+# Radiance opaque material definitions.
+# (first line of file must not be edited)
+ 
+  
+# External MLC Colours... 
+void plastic rc_ex_Floor
+0 
+0 
+5  0.3 0.3 0.3 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Floor
+0 
+0 
+5  0.3 0.3 0.3 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Ceiling
+0 
+0 
+5  0.3 0.3 0.3 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Ceiling
+0 
+0 
+5  0.7 0.7 0.7 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Facade_bot
+0 
+0 
+5  0.3 0.3 0.3 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Facade_bot
+0 
+0 
+5  0.50 0.50 0.50 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Facade_top
+0 
+0 
+5  0.30 0.30 0.30 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Facade_top
+0 
+0 
+5  0.5 0.5 0.5 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Frame
+0 
+0 
+5  0.80 0.80 0.80 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Frame
+0 
+0 
+5  0.80 0.80 0.80 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Int_wall
+0 
+0 
+5  0.3 0.3 0.3 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Int_wall
+0 
+0 
+5  0.50 0.50 0.50 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Light_sh_t
+0 
+0 
+5  0.80 0.80 0.80 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Light_sh_t
+0 
+0 
+5  0.80 0.80 0.80 0 0 
+  
+# External MLC Colours... 
+void plastic rc_ex_Light_sh_b
+0 
+0 
+5  0.40 0.40 0.40 0 0 
+  
+# Internal MLC Colours... 
+void plastic rc_in_Light_sh_b
+0 
+0 
+5  0.40 0.40 0.40 0 0 
+  

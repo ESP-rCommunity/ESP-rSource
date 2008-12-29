@@ -1,0 +1,25 @@
+# operations of liv_room defined in: 
+# ../zones/liv_room.opr
+nil_operations  # description
+# control(no control of air flow  ), low & high setpoints 
+   0     0.000     0.000   100.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     5   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   8,  21,    120.0,     80.0, 0.700, 0.300
+    1,   8,   9,    300.0,    380.0, 0.700, 0.300
+    1,   9,  24,     65.0,     55.0, 0.700, 0.300
+    1,  16,  21,    130.0,    110.0, 0.700, 0.300
+    1,  17,  24,     65.0,     55.0, 0.700, 0.300
+     2   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   8,  21,    260.0,    220.0, 0.700, 0.300
+    1,   9,  24,    130.0,    110.0, 0.700, 0.300
+     2   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   8,  21,    260.0,    220.0, 0.700, 0.300
+    1,   9,  24,    130.0,    110.0, 0.700, 0.300
+# Labels for gain types 
+ Occupt Lights Equipt

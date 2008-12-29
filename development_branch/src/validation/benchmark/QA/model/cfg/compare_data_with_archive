@@ -1,0 +1,28 @@
+#!/bin/csh -fb
+if ($#argv != 1) then
+echo " Usage:"
+echo " "
+echo " This script compares the output from a ./TEST"
+echo " with a previous archive. Run this script from"
+echo " the same folder as the script TEST and supply"
+echo " the path to the archive e.g."
+echo " ./compare_data_with_archive Archive_sun_10_2203"
+echo " "
+exit
+endif
+
+foreach i ( *.data )
+  echo " "
+  echo "comparing $i with $1/$i"
+  diff $i $1/$i |more
+  echo " "
+  set x="y"
+  echo "Proceed (y/n) ?"
+  set x = {$<}
+  if ( $x == "n") then
+    echo " "
+    echo "Ok, stopping further checks."
+    echo " "
+    exit
+  endif
+end

@@ -1,0 +1,21 @@
+# Optional zone files for F4_hall         instanced in file 
+# F4_hall.utl
+   0    # time-step air flow
+   0    # time-step casual gains
+   0    # view factors
+   1    # shading/ insolation
+F4_hall.shd
+   0    # convective heat transfer coefficients
+   0    # blind/ shutter control
+   1    # transparent construction data
+F4_hall.tmc
+   1    # casual gain control
+F4_hall.cgc
+   1    # obstructions
+F4_hall.obs
+   0    # control volumes
+   0    # connections
+   0    # nodes coordinates
+   0    # nodes temperature
+   0    # domain flow data
+   0    # moisture data

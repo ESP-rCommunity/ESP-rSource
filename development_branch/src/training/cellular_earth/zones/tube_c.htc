@@ -1,0 +1,10 @@
+*HC_CTL for zone tube_c
+*Date,Thu Oct 12 17:43:34 2006
+   1 # number control intervals
+  12 # number of surfaces
+# (inlet side_a side_b side_c side_d outlet side_e side_f side_g side_h top base)
+  0.00    24.00 # start and end time of interval
+   1 # calculation control type
+*Doc,User supplied hc values
+ 6.0000,6.0000,6.0000,6.0000,6.0000,6.0000,6.0000,6.0000,6.0000,6.0000,6.0000,6.0000
+ -1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000,-1.0000

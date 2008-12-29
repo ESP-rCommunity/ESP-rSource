@@ -1,0 +1,73 @@
+Steps in making a self extractor:
+
+First compile a standard version of esp-r (X11 version) in the standard location
+which on Linux should be /opt/esru. The following command is forcing the use
+of the 3.4 version of the GNU compilers
+
+  ./Install -d /opt/esru --compiler_version -3.4
+
+Second go to /opt/esru and clean up the installed folders of svn folders
+via the following commands:
+ find . -name .svn -print >which_svn
+ rm -rf `cat which_svn`
+
+create a tar file of the esp-r folder (the example below includes 
+a date string in the name of the tar file.
+
+ tar cf esp-r_X11_11.5_linux.tar esp-r
+ gzip -9 esp-r_X11_11.5_linux.tar
+
+There should be a folder /opt/pre_compiled_for_linux and the gziped tar file should
+be placed in it.
+
+If you want to keep the X11 distribution move the esru to esru_X11
+
+A similar process is taken for the GTK version.  Clear the standard source
+location:
+ make clean
+
+and compile a new GTK version of esp-r. 
+
+  ./Install -d /opt/esru --compiler_version -3.4
+
+Clean up the .svn in the installed location.
+Clean up the compiled distribution via the following commands:
+ cd /opt/esru
+ find . -name .svn -print >which_svn
+ rm -rf `cat which_svn`
+
+make a tar file and gzip it
+
+ tar cf esp-r_GTK_11.5_linux.tar esp-r
+ gzip -9 esp-r_GTK_11.5_linux.tar
+
+place it in the pre_compiled_for_linux folder.
+
+ mv esp-r_GTK_11.5_linux.tar.gz /opt/pre_compiled_for_linux
+
+In the precompiled_for_linux folder are a number of files as follows:
+
+License (text which is used to advise the user on license conditions.
+setup (a script which tells makeself.sh what to do during the extraction
+      process.
+
+The file that does most of the work is setup.  This needs to be edited
+slightly to include the specific ...tar.gz files.  
+
+The way that the self extractor is created is via a command similar
+to the one below (adapt for your makeself.sh location):
+
+~/bin/makeself-2.1.4/makeself.sh pre_compiled_for_linux esp-r_v11.5_linux_precomp.run "ESP-r V11.5 distribution for Linux (/opt/esru)" ./setup
+
+The items are as follows makeself.sh is a general script that creates installers. makeself-2.1.4 can
+be downloded from the web and it will create its own executables.  The command includes the full
+path to where makeself.sh is located on your machine. The 2nd item is the name of the folder where
+the files to be installed is located (as noted in the first step). The 3rd token is the name
+of the 'run' file that is going to be created (a run file is the finished esp-r installer that
+will be placed on the web). The string in quotes is a message that will be printed out when
+the installer runs. And lastly ./setup is the edited setup script within the precompiled_for_linux
+folder. This script needs to have a chmod a+x done on it.
+
+~/bin/makeself-2.1.4/makeself.sh pre_compiled_for_linux esp-r_v11.5_linux_precomp.run "ESP-r V11.5 distribution for Linux (/opt/esru)" ./setup
+
+It is A REALLY GOOD IDEA to test use of the self-extractor on a clean machine.

@@ -1,0 +1,10 @@
+*HC_CTL for zone Test_4
+*Date,Wed Apr 27 16:55:10 2005
+   1 # number control intervals
+   7 # number of surfaces
+# (Surf-1 Surf-2 Surf-3 Surf-4 Surf-5 Surf-6)
+  0.00    24.00 # start and end time of interval
+   1 # calculation control type
+*Doc,User supplied hc values
+ 2.5000,2.5000,2.5000,2.5000,2.5000,2.5000,2.5000
+ 13.500,13.500,13.500,13.500,13.500,13.500,13.500

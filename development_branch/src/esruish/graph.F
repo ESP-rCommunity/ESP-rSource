@@ -1,0 +1,569 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C GRAPH.F contains the following routines.
+C GRAPH:  Uses FACDRW to display the target surface
+C         and SHDDRW to superimpose any direct shading.
+C FACDRW: Draws the target surface elevation.
+C SHDDRW: Plots point on a surface to represent the
+C         directly shaded shaded portion.
+C SITPLN: Scales and draws the site plan showing zone and
+C         obstructions.
+C SUNPLT: Draws a Mercator sun-path diagram.
+
+C ********** GRAPH **********
+C Uses FACDRW to display the target surface and SHDDRW
+C to superimpose any direct shading.
+
+      subroutine graph(icomp)
+#include "building.h"
+
+      common/outin/iuout,iuin
+      common/filep/ifil
+      common/pophelp/h(60)
+      common/spad/mmod,limit,limtty
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/g1t/xft(mv),zft(mv)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/headl/irecs(ms)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+
+      character blkname*8,blkmat*12,outs*124,h*72
+      dimension ioshd(mox,moz),iva(ms)
+      logical ok,dok
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
+
+      iunit=ifil
+
+    2 call pickssur(icomp,np,'L',iva,ier)
+      if(np.eq.0)then
+        goto 1
+      else
+        is=iva(1)
+      endif
+
+C Retrieve surface transformed coordinates.
+      nv=nver(is)
+      irec=irecs(is)
+      read(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
+      irec=irec+1
+      read(iunit,rec=irec,iostat=istat,err=1000)(zft(i),i=1,nv)
+      irec=irec+1
+
+C Set up mesh centre points.
+      call mesh(is)
+
+C Make the right offset for the graphic box is the character
+C width of the menu.
+      ier=0
+      if(mmod.lt.8)then
+        call usrmsg('Not in graphic mode!',' ','W')
+        return
+      endif
+
+C Clear the viewing box, draw its border and return the offsets
+C that define it. The win3d parameters match those in facdrw
+C and sitpln.
+      call startbuffer()
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+
+C Update the plane equation.
+      call trnsf1(is)
+
+C Find maximum & minimum surface coordinates.
+      xmax=-1.E+8
+      zmax=-1.E+8
+      xmin=1.E+8
+      zmin=1.E+8
+      do 10 i=1,nv
+        xmax=amax1(xmax,xft(i))
+        zmax=amax1(zmax,zft(i))
+        xmin=amin1(xmin,xft(i))
+        zmin=amin1(zmin,zft(i))
+   10 continue
+
+C Reopen the dialogue box.
+      if(mmod.eq.8)call usrmsg(' ',' ','-')
+
+C Determine scaling ratios.
+      call axiscale(igwid,igheight,xmin,xmax,zmin,zmax,xsc,ysc,sca,
+     &  Xadd,Zadd)
+
+C Place scaling in static C variables for use by line drawing routines.
+      call linescale(igl,Xadd,sca,igb,Zadd,sca)
+
+C Output start hour.
+      ih=1
+      h(1)='Give the hour as an integer between 1 and 24.'
+      call easki(ih,' ','Output start hour?',
+     &     1,'F',24,'F',1,'output start',ier,0)
+
+C Hour-by-hour.
+      do 20 j=1,24
+         read(iunit,rec=irec,iostat=istat,err=1000)isunup
+         irec=irec+1
+         if(isunup.eq.0)goto 20
+
+C inds dictates whether direct shading is total, partial or zero.
+         read(iunit,rec=irec,iostat=istat,err=1000)inds
+         irec=irec+1
+
+C No direct shading.
+         if(inds.eq.-2)then
+            irec=irec+1
+            if(j.lt.ih)goto 20
+            call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
+     &                                               Xadd,Zadd,sca)
+
+C Total direct shading.
+         elseif(inds.eq.-1)then
+            irec=irec+1
+            if(j.lt.ih)goto 20
+            call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
+     &                                               Xadd,Zadd,sca)
+            call shddrw(is,1,ioshd)
+
+C Partial direct shading.
+         elseif(inds.eq.0)then
+            if(j.lt.ih)then
+               irec=irec+nox+1
+               goto 20
+            endif
+            do 30 k=1,nox
+               read(iunit,rec=irec,iostat=istat,err=1000)
+     &                                            (ioshd(k,l),l=1,noz)
+               irec=irec+1
+   30       continue
+            irec=irec+1
+            call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
+     &                                               Xadd,Zadd,sca)
+            call shddrw(is,2,ioshd)
+         endif
+
+         dok=.true.
+         call askok(' ','Next hour?',ok,dok,0)
+         if(.not.ok)goto 1
+   20 continue
+
+    1 dok=.true.
+      call askok(' ','Consider another surface?',ok,dok,0)
+      if(.not.ok)return
+      goto 2
+
+ 1000 write(outs,1001)irec
+ 1001 format('GRAPH: Zone transitional shading file error, record',i4)
+      call edisp(iuout,outs)
+      return
+      end
+
+C ********** FACDRW **********
+C Draws the elevation of the target surface.
+
+      subroutine facdrw(ihour,icomp,isur,nv,xmin,xmax,zmin,zmax,
+     &                                                Xadd,Zadd,sca)
+#include "building.h"
+
+      common/contr/mon,isc(ms),iyd
+      common/g1T/xft(mv),zft(mv)
+      common/c24/izstocn(mcom,ms)
+      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
+     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+
+      dimension month(12)
+      character*72 etext*72,month*3
+      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
+     &          ssparent*12,ssuse*8
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer ipos,iupdown,isym     ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ipos,iupdown,isym     ! passed to etplot
+#endif
+
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &            'Sep','Oct','Nov','Dec'/
+
+C Display header information. Calculate graphic boundaries.
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      icn=izstocn(icomp,isur)
+
+      write(etext,1)month(mon),ihour,isur,ssname(icn)
+    1 format('Direct shading: ',a3,', @ ',i2,':00, Surface ',i2,
+     &       ' (',a,').')
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(etext,iside,isize,ifont)
+
+C Draw horizontal axis and move to start point.
+      call horaxis(xmin,xmax,igl,igr,igb,Xadd,sca,0,'Horizontal')
+
+C Draw vertical axis.
+      call vrtaxis(zmin,zmax,igl,igb,igt,Zadd,sca,0,0,'Vertical')
+
+C Draw target surface.
+      iupdown=0
+      isym=0
+      call etplot(xft(1),zft(1),iupdown,isym)
+      iupdown=1
+      do 10 i=2,nv
+         call etplot(xft(i),zft(i),iupdown,isym)
+   10 continue
+      call etplot(xft(1),zft(1),iupdown,isym)
+      call forceflush()
+      return
+      end
+
+C ********** SHDDRW **********
+C Plots points on target surface representing direct shaded portion.
+
+      subroutine shddrw(is,ishad,ioshd)
+#include "building.h"
+
+      common/grid11/xop(mox,moz),zop(mox,moz)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      dimension ioshd(mox,moz)
+      character blkname*8,blkmat*12
+
+      do 10 i=1,nox
+         do 20 j=1,noz
+
+C ishad=2 corresponds to the partial shading case, while ishad=1
+C corresponds to 100% shading for which ioshd points falling outwith
+C the surface polygon will not have been set to -1.
+            if(ishad.eq.1)then
+               call point1(is,xop(i,j),zop(i,j),ians)
+               if(ians.eq.0)goto 20
+               goto 1
+            endif
+            if(ioshd(i,j).eq.1)goto 1
+            goto 20
+    1       call u2pixel(xop(i,j),zop(i,j),ix,iy)
+            call edwline(ix-1,iy,ix+1,iy)
+   20    continue
+   10 continue
+      call forceflush()
+      return
+      end
+
+C ********** SITPLN **********
+C Scales and draws the site plan showing the object boundary
+C and the surrounding obstruction blocks.
+
+      subroutine sitpln(icomp)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      common/spad/mmod,limit,limtty
+      common/outin/iuout,iuin
+      common/filep/ifil
+
+      character ctype*4
+      real gversion
+      integer igupgrade
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      common/precz/zname(mcom),zdesc(mcom)
+      common/prec8/slat,slon
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
+      common/gfont/ifs,itfs,imfs
+
+      character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
+      character tz*13,zdesc*64
+      logical newgeo  ! used to test for new/old geometry file.
+#ifdef OSX
+      integer igwid,igheight
+      integer iside,isize     ! passed to viewtext
+      integer ipos,iupdown,isym,ifont    ! passed to etplot
+#else
+      integer*8 igwid,igheight
+      integer*8 iside,isize     ! passed to viewtext
+      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+#endif
+
+C The right offset for the graphic box is the character width
+C of the menu. Also allow 2 text lines at the bottom for future
+C dialogue. Axiscale is in wwlib.c.
+      ier=0
+      if(mmod.lt.8)then
+        call usrmsg('Not in graphic mode!',' ','W')
+        return
+      endif
+      newgeo=.false.  ! assume old geometry format.
+
+C Define a viewing box, draw its border after clearing it and
+C return the offsets that define it and set local variables.
+      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+
+      call startbuffer()
+
+C Reopen the dialogue box.
+      call usrmsg(' ',' ','-')
+
+C Re-read zone geometry file and establish the maximum and minimum
+C vertix values.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+      else
+        call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+      endif
+      xmx=-1.E+8
+      ymx=-1.E+8
+      xmn=1.E+8
+      ymn=1.E+8
+      do 10 i=1,ntv
+         xmn=amin1(xmn,x(i))
+         ymn=amin1(ymn,y(i))
+         xmx=amax1(xmx,x(i))
+         ymx=amax1(ymx,y(i))
+   10 continue
+
+C Convert obstruction block geometry to GEN format (/g1/) and
+C establish maximum and minimum site coordinates.
+      do 20 i=1,nb
+         call erecc(xo(i),yo(i),zo(i),dx(i),dy(i),dz(i),ang(i))
+         do 30 j=1,ntv
+            xmn=amin1(xmn,x(j))
+            ymn=amin1(ymn,y(j))
+            xmx=amax1(xmx,x(j))
+            ymx=amax1(ymx,y(j))
+   30    continue
+   20 continue
+
+C Determine scaling ratios for the drawing and axis.
+      call axiscale(igwid,igheight,xmn,xmx,ymn,ymx,xsc,ysc,sca,
+     &  Xadd,Yadd)
+
+C Place scaling in static C variables for use by line drawing routines.
+      call linescale(igl,Xadd,sca,igb,Yadd,sca)
+
+C Draw a scale horizontal axis, move to beginning point.
+      call horaxis(xmn,xmx,igl,igr,igb,Xadd,sca,1,'East ->')
+
+C Draw a scale vertical axis.
+      call vrtaxis(ymn,ymx,igl,igb,igt,Yadd,sca,1,0,'^ North')
+
+C Re-read the geometry file, plot it and move to the first vertex and
+C output the zone name.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+         call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+      else
+         call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+      endif
+      call u2pixel(x(1),y(1),ix,iy)
+      iupdown=0
+      isym=0
+      call etplot(x(1),y(1),iupdown,isym)
+      if(lnblnk(zname(icomp)).gt.1)then
+         write(tz,'(a)')zname(icomp)
+         call winfnt(itfs)
+         call wstxpt(ix+2,iy-2,tz)
+      else
+         call winfnt(itfs)
+         call wstxpt(ix+2,iy-2,'Target')
+      endif
+
+      iupdown=0
+      isym=0
+      do 40 i=1,nsur
+         j=jvn(i,1)
+         call etplot(x(j),y(j),iupdown,isym)
+         k=nver(i)
+         iupdown=-302
+         do 50 l=2,k
+            m=jvn(i,l)
+            call etplot(x(m),y(m),iupdown,isym)
+   50    continue
+         call etplot(X(J),Y(J),iupdown,isym)
+   40 continue
+
+C Convert obstruction block geometry to GEN format (/g1/) and plot.
+      if(nb.eq.0)goto 1
+      do 60 ib= 1,nb
+         call erecc(xo(ib),yo(ib),zo(ib),dx(ib),dy(ib),dz(ib),ang(ib))
+         iupdown=0
+         isym=0
+         do 70 i=1,nsur
+            j=jvn(i,1)
+            call etplot(x(j),y(j),iupdown,isym)
+            k=nver(i)
+            iupdown=1
+            do 80 l=2,k
+               m=jvn(i,l)
+               call etplot(x(m),y(m),iupdown,isym)
+   80       continue
+            call etplot(X(J),Y(J),iupdown,isym)
+   70    continue
+
+         call u2pixel(X(J),Y(J),ix,iy)
+         write(blabel,2)ib
+    2    format('B',i2)
+         call wstxpt(ix+2,iy-2,blabel)
+   60 continue
+
+C Print labels and return to default font.
+    1 call winfnt(ifs)
+      write(sstr,3)slat,slon
+    3 format('Site Plan, Latitude ',f5.1,', Longitude ',f4.1)
+      iy=igt-5
+      ix=igl
+      call wstxpt(ix,iy,sstr)
+      call forceflush()
+
+      return
+      end
+
+C ********** SUNPLT **********
+C Draws a Mercator sun path diagram.
+
+      subroutine sunplt(ijday)
+
+      common/spad/mmod,limit,limtty
+      common/prec8/slat,slon
+      integer ifs,itfs,imfs
+      common/gfont/ifs,itfs,imfs
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+
+      character etext*72,blab*3,month*3
+      dimension month(12)
+      logical above
+#ifdef OSX
+      integer igwid,igheight  ! passed to axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer ipos,iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! passed to axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ipos,iupdown,isym    ! passed to etplot
+#endif
+      real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
+
+      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &           'Sep','Oct','Nov','Dec'/
+
+C Clear the viewing box, draw its border and return the offsets
+C that define it. On 64 bit machines igw and igwh can be incorrectly
+C returned so re-calculate. Call to axiscale works better if
+C local integer variables are used.
+      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+
+C Reopen the dialogue box.
+      if(mmod.eq.8)call usrmsg(' ',' ','-')
+
+C Determine scaling ratios.
+      call axiscale(igwid,igheight,0.,360.,0.,90.,xsc,ysc,sca,Xadd,Yadd)
+
+C Place scaling in static C variables for use by line drawing routines.
+      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+
+C Draw horizontal axis.
+      call horaxis(0.,360.,igl,igr,igb,Xadd,xsc,0,
+     &             'Azimuth deg.')
+
+C Draw vertical axes on left and right.
+      call vrtaxis(0.,90.,igl,igb,igt,Yadd,ysc,0,0,'Altitude deg.')
+      call vrtaxis(0.,90.,igr,igb,igt,Yadd,ysc,0,1,' ')
+
+C Output a heading for the view.
+      call edayr(ijday,ido,imo)
+      iside=2
+      isize=1
+      ifont=ifs
+      call viewtext('Mercator Sun Plot',iside,isize,ifont)
+      write(etext,'(i2,1x,a3,a,f6.1,a,f5.1)')ido,month(imo),
+     &                ' at Latitude',slat,', Longitude',slon
+      iside=3
+      isize=1
+      call viewtext(etext,iside,isize,ifont)
+
+C Plot sun path, for each hour of the day get the azimuth and
+C elevation and plot that position on the graph with a symbol and
+C time indication.
+      above=.false.
+      do 10 ihr=1,24
+         stime=float(ihr)
+         sazi=0.0
+         salt=0.0
+         call eazalts(stime,ijday,slat,slon,isunup,sazi,salt)
+         if(salt.gt.0)then
+            if(.not.above)then
+               iupdown=0
+               isym=0
+               call etplot(sazi,salt,iupdown,isym)
+               above=.true.
+            endif
+            iclkhr=ihr
+            if(ihr.gt.12)iclkhr=ihr-12
+            if(iclkhr.gt.9)then
+               write(blab,'(i2)')iclkhr
+               ipos=4
+               isize=itfs
+               call etlabel(blab,sazi,salt,ipos,isize)
+            else
+               write(blab,'(i1)')iclkhr
+               ipos=4
+               isize=itfs
+               call etlabel(blab,sazi,salt,ipos,isize)
+            endif
+
+C Plot a symbol at the sun position.
+            iupdown=1
+            isym=6
+            call etplot(sazi,salt,iupdown,isym)
+         endif
+   10 continue
+      call forceflush()
+      return
+      end

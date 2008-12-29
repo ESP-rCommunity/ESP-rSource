@@ -1,0 +1,744 @@
+*IPV_REPORT,3_windows.ipv
+ 
+*title,Test model for window air flow
+*version,base case
+*date,Fri May 14 12:07:09 2004
+*contact,See synopsis
+*location,See synopsis
+*climate,ESP test climate
+*latitude, 55.00
+*longitude,  0.00
+*synopsis,Test model for window air flow network options
+ 
+*simulations,  5
+# start & finish days for each season
+Mon  6 Feb 1967,Sun 12 Feb 1967,3_windows 1st winter run
+Mon 17 Apr 1967,Sun 23 Apr 1967,3_windows spring run
+Mon  3 Jul 1967,Sun  9 Jul 1967,3_windows summer run
+Mon  2 Oct 1967,Sun  8 Oct 1967,3_windows autumn run
+Mon 20 Nov 1967,Sun 26 Nov 1967,3_windows 2nd winter run
+ 
+*days,3
+# list of days with detailed information
+Wed 11 Jan 1967
+Wed  8 Mar 1967
+Wed  5 Jul 1967
+ 
+*groups, 4
+# group name & number of zones & zone names
+managers,3,manager,manager_t_b,manager_bi
+dbt_zones, 3,manager,manager_t_b,manager_bi
+infil_zones, 3,manager,manager_t_b,manager_bi
+vent_zones, 3,manager,manager_t_b,manager_bi
+*end_heading
+ 
+*assessment, 1,3_windows 1st winter run
+ 
+*report,70,diversified,capacity,managers
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1766.829,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,capacity,managers
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1766.829,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,capacity,managers
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,601.607,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,capacity,managers
+*title,Minimum capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-586.295,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,capacity,managers
+*title,Average capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,140.298,-12.831,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,integrated,managers
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,70.710,-6.467,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 1,distribution,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,frequency,13,5,10.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<10',0,0.0,0.0,0.0
+'10-12',0,0.00,0,0.00
+'12-14',0,0.00,0,0.00
+'14-16',0,0.00,0,0.00
+'16-18',293,58.13,293,58.13
+'18-20',46,9.13,339,67.26
+'20-22',131,25.99,470,93.25
+'22-24',10,1.98,480,95.24
+'24-26',24,4.76,504,100.00
+'26-28',0,0.00,504,100.00
+'28-30',0,0.00,504,100.00
+'30-32',0,0.00,504,100.00
+'>32',0,0.0,0.0,0.0
+*end_report
+ 
+*report, 1,stats,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,78.000,16.000,18.029,77.818,78.000,0.000,48.000
+*end_report
+ 
+*report,11,distribution,Infil,infil_zones
+*title,Infiltration load,W
+*format,frequency,4,5,-100.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<-100',0,0.0,0.0,0.0
+'-100-0',504,100.00,504,100.00
+'0-100',0,0.00,504,100.00
+'>100',0,0.0,0.0,0.0
+*end_report
+ 
+*report,11,stats,Infil,infil_zones
+*title,Infiltration load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-138.932,-94.207,-64.657,0.000,-138.932,-282.126,-283.850
+*end_report
+ 
+*report,12,distribution,Vent,vent_zones
+*title,Ventilation load,W
+*format,frequency,3,5,0.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<0',0,0.0,0.0,0.0
+'0-100',504,100.00,504,100.00
+*end_report
+ 
+*report,12,stats,Vent,vent_zones
+*title,Ventilation load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*end_assessment
+ 
+ 
+*assessment, 2,3_windows spring run
+ 
+*report,70,diversified,capacity,managers
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,997.407,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,capacity,managers
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,997.407,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,capacity,managers
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,349.301,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,capacity,managers
+*title,Minimum capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-1218.307,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,capacity,managers
+*title,Average capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,18.443,-88.605,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,integrated,managers
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,9.295,-44.657,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 1,distribution,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,frequency,13,5,10.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<10',0,0.0,0.0,0.0
+'10-12',0,0.00,0,0.00
+'12-14',0,0.00,0,0.00
+'14-16',0,0.00,0,0.00
+'16-18',196,38.89,196,38.89
+'18-20',69,13.69,265,52.58
+'20-22',80,15.87,345,68.45
+'22-24',79,15.67,424,84.13
+'24-26',80,15.87,504,100.00
+'26-28',0,0.00,504,100.00
+'28-30',0,0.00,504,100.00
+'30-32',0,0.00,504,100.00
+'>32',0,0.0,0.0,0.0
+*end_report
+ 
+*report, 1,stats,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,72.891,16.000,19.820,72.284,72.891,0.000,48.000
+*end_report
+ 
+*report,11,distribution,Infil,infil_zones
+*title,Infiltration load,W
+*format,frequency,4,5,-100.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<-100',0,0.0,0.0,0.0
+'-100-0',504,100.00,504,100.00
+'0-100',0,0.00,504,100.00
+'>100',0,0.0,0.0,0.0
+*end_report
+ 
+*report,11,stats,Infil,infil_zones
+*title,Infiltration load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-61.858,-78.540,-54.553,0.000,-61.858,-235.481,-241.973
+*end_report
+ 
+*report,12,distribution,Vent,vent_zones
+*title,Ventilation load,W
+*format,frequency,3,5,0.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<0',0,0.0,0.0,0.0
+'0-100',504,100.00,504,100.00
+*end_report
+ 
+*report,12,stats,Vent,vent_zones
+*title,Ventilation load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*end_assessment
+ 
+ 
+*assessment, 3,3_windows summer run
+ 
+*report,70,diversified,capacity,managers
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,capacity,managers
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,capacity,managers
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,capacity,managers
+*title,Minimum capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-1141.782,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,capacity,managers
+*title,Average capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-190.608,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,integrated,managers
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-96.067,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 1,distribution,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,frequency,13,5,10.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<10',0,0.0,0.0,0.0
+'10-12',0,0.00,0,0.00
+'12-14',0,0.00,0,0.00
+'14-16',0,0.00,0,0.00
+'16-18',0,0.00,0,0.00
+'18-20',23,4.56,23,4.56
+'20-22',141,27.98,164,32.54
+'22-24',114,22.62,278,55.16
+'24-26',202,40.08,480,95.24
+'26-28',24,4.76,504,100.00
+'28-30',0,0.00,504,100.00
+'30-32',0,0.00,504,100.00
+'>32',0,0.0,0.0,0.0
+*end_report
+ 
+*report, 1,stats,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,78.000,19.049,22.930,78.000,78.000,0.000,58.160
+*end_report
+ 
+*report,11,distribution,Infil,infil_zones
+*title,Infiltration load,W
+*format,frequency,4,5,-100.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<-100',0,0.0,0.0,0.0
+'-100-0',492,97.62,492,97.62
+'0-100',12,2.38,504,100.00
+'>100',0,0.0,0.0,0.0
+*end_report
+ 
+*report,11,stats,Infil,infil_zones
+*title,Infiltration load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,19.020,-50.037,-30.771,17.160,19.020,-147.794,-148.491
+*end_report
+ 
+*report,12,distribution,Vent,vent_zones
+*title,Ventilation load,W
+*format,frequency,3,5,0.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<0',0,0.0,0.0,0.0
+'0-100',504,100.00,504,100.00
+*end_report
+ 
+*report,12,stats,Vent,vent_zones
+*title,Ventilation load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*day_to_display,Wed  5 Jul 1967
+ 
+*report,70,demand,per_unit_time,managers
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+'00:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'01:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'02:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'03:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'04:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'05:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'06:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'07:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'08:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'09:30:30',0.0,-163.5,0.0,0.0,0.0,0.0
+'10:30:30',0.0,-922.0,0.0,0.0,0.0,0.0
+'11:30:30',0.0,-1590.5,0.0,0.0,0.0,0.0
+'12:30:30',0.0,-1910.8,0.0,0.0,0.0,0.0
+'13:30:30',0.0,-2066.5,0.0,0.0,0.0,0.0
+'14:30:30',0.0,-2039.4,0.0,0.0,0.0,0.0
+'15:30:30',0.0,-1473.0,0.0,0.0,0.0,0.0
+'16:30:30',0.0,-948.5,0.0,0.0,0.0,0.0
+'17:30:30',0.0,-443.6,0.0,0.0,0.0,0.0
+'18:30:30',0.0,-17.4,0.0,0.0,0.0,0.0
+'19:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'20:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'21:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'22:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+'23:30:30',0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report, 1,zone_dbt,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,tabular,24, 4
+*fields,Time,manager,manager_t_b,manager_bi
+*data
+'00:30:30',20.90,21.18,21.23
+'01:30:30',20.47,20.80,20.85
+'02:30:30',20.04,20.41,20.46
+'03:30:30',19.64,20.05,20.11
+'04:30:30',19.37,19.82,19.87
+'05:30:30',19.49,19.95,20.00
+'06:30:30',20.04,20.47,20.51
+'07:30:30',20.98,21.33,21.36
+'08:30:30',22.32,22.55,22.58
+'09:30:30',23.77,23.84,23.84
+'10:30:30',24.00,24.00,24.00
+'11:30:30',24.00,24.00,24.00
+'12:30:30',24.00,24.00,24.00
+'13:30:30',24.00,24.00,24.00
+'14:30:30',24.00,24.00,24.00
+'15:30:30',24.00,24.00,24.00
+'16:30:30',24.00,24.00,24.00
+'17:30:30',24.04,24.04,24.04
+'18:30:30',24.67,24.62,24.64
+'19:30:30',24.19,24.16,24.20
+'20:30:30',23.49,23.52,23.56
+'21:30:30',22.89,22.98,23.03
+'22:30:30',22.42,22.57,22.62
+'23:30:30',22.04,22.25,22.30
+*end_report
+ 
+*report,11,infiltration load,Infil,infil_zones
+*title,Infiltration load,W
+*format,tabular,24, 4
+*fields,Time,manager,manager_t_b,manager_bi
+*data
+'00:30:30',-35.22,-36.46,-36.68
+'01:30:30',-37.26,-38.70,-38.93
+'02:30:30',-38.61,-40.24,-40.48
+'03:30:30',-39.28,-41.10,-41.34
+'04:30:30',-38.95,-40.94,-41.17
+'05:30:30',-33.60,-35.65,-35.85
+'06:30:30',-27.70,-29.59,-29.76
+'07:30:30',-24.41,-25.95,-26.09
+'08:30:30',-26.07,-27.08,-27.19
+'09:30:30',-29.99,-30.28,-30.30
+'10:30:30',-28.61,-28.61,-28.61
+'11:30:30',-26.17,-26.17,-26.17
+'12:30:30',-25.11,-25.11,-25.11
+'13:30:30',-23.80,-23.80,-23.80
+'14:30:30',-22.93,-22.93,-22.93
+'15:30:30',-22.93,-22.93,-22.93
+'16:30:30',-22.93,-22.93,-22.93
+'17:30:30',-23.17,-23.17,-23.17
+'18:30:30',-28.91,-28.70,-28.80
+'19:30:30',-31.61,-31.49,-31.64
+'20:30:30',-31.72,-31.86,-32.04
+'21:30:30',-29.94,-30.36,-30.56
+'22:30:30',-27.91,-28.60,-28.80
+'23:30:30',-27.78,-28.70,-28.90
+*end_report
+ 
+*report,12,ventilation load,Vent,vent_zones
+*title,Ventilation load,W
+*format,tabular,24, 4
+*fields,Time,manager,manager_t_b,manager_bi
+*data
+'00:30:30',0.00,0.00,0.00
+'01:30:30',0.00,0.00,0.00
+'02:30:30',0.00,0.00,0.00
+'03:30:30',0.00,0.00,0.00
+'04:30:30',0.00,0.00,0.00
+'05:30:30',0.00,0.00,0.00
+'06:30:30',0.00,0.00,0.00
+'07:30:30',0.00,0.00,0.00
+'08:30:30',0.00,0.00,0.00
+'09:30:30',0.00,0.00,0.00
+'10:30:30',0.00,0.00,0.00
+'11:30:30',0.00,0.00,0.00
+'12:30:30',0.00,0.00,0.00
+'13:30:30',0.00,0.00,0.00
+'14:30:30',0.00,0.00,0.00
+'15:30:30',0.00,0.00,0.00
+'16:30:30',0.00,0.00,0.00
+'17:30:30',0.00,0.00,0.00
+'18:30:30',0.00,0.00,0.00
+'19:30:30',0.00,0.00,0.00
+'20:30:30',0.00,0.00,0.00
+'21:30:30',0.00,0.00,0.00
+'22:30:30',0.00,0.00,0.00
+'23:30:30',0.00,0.00,0.00
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 4,3_windows autumn run
+ 
+*report,70,diversified,capacity,managers
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,539.982,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,capacity,managers
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,539.982,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,capacity,managers
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,215.817,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,capacity,managers
+*title,Minimum capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-896.172,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,capacity,managers
+*title,Average capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,4.422,-80.398,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,integrated,managers
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,2.229,-40.521,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 1,distribution,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,frequency,13,5,10.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<10',0,0.0,0.0,0.0
+'10-12',0,0.00,0,0.00
+'12-14',0,0.00,0,0.00
+'14-16',0,0.00,0,0.00
+'16-18',81,16.07,81,16.07
+'18-20',148,29.37,229,45.44
+'20-22',110,21.83,339,67.26
+'22-24',75,14.88,414,82.14
+'24-26',90,17.86,504,100.00
+'26-28',0,0.00,504,100.00
+'28-30',0,0.00,504,100.00
+'30-32',0,0.00,504,100.00
+'>32',0,0.0,0.0,0.0
+*end_report
+ 
+*report, 1,stats,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,72.000,16.025,20.618,72.000,72.000,0.000,49.116
+*end_report
+ 
+*report,11,distribution,Infil,infil_zones
+*title,Infiltration load,W
+*format,frequency,4,5,-100.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<-100',0,0.0,0.0,0.0
+'-100-0',504,100.00,504,100.00
+'0-100',0,0.00,504,100.00
+'>100',0,0.0,0.0,0.0
+*end_report
+ 
+*report,11,stats,Infil,infil_zones
+*title,Infiltration load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-39.865,-58.009,-36.082,0.000,-39.865,-173.897,-176.504
+*end_report
+ 
+*report,12,distribution,Vent,vent_zones
+*title,Ventilation load,W
+*format,frequency,3,5,0.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<0',0,0.0,0.0,0.0
+'0-100',504,100.00,504,100.00
+*end_report
+ 
+*report,12,stats,Vent,vent_zones
+*title,Ventilation load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*end_assessment
+ 
+ 
+*assessment, 5,3_windows 2nd winter run
+ 
+*report,70,diversified,capacity,managers
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1591.182,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,diffuse,capacity,managers
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1591.182,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,in_one_zone,capacity,managers
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,538.776,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,minimum,capacity,managers
+*title,Minimum capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.000,-483.262,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,average,capacity,managers
+*title,Average capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,141.710,-5.005,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,70,demand,integrated,managers
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,71.422,-2.522,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report, 1,distribution,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,frequency,13,5,10.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<10',0,0.0,0.0,0.0
+'10-12',0,0.00,0,0.00
+'12-14',0,0.00,0,0.00
+'14-16',0,0.00,0,0.00
+'16-18',300,59.52,300,59.52
+'18-20',42,8.33,342,67.86
+'20-22',147,29.17,489,97.02
+'22-24',3,0.60,492,97.62
+'24-26',6,1.19,498,98.81
+'26-28',6,1.19,504,100.00
+'28-30',0,0.00,504,100.00
+'30-32',0,0.00,504,100.00
+'>32',0,0.0,0.0,0.0
+*end_report
+ 
+*report, 1,stats,ZndbT,dbt_zones
+*title,Dry bulb temperature,degC
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,78.000,16.000,17.869,78.000,78.000,0.000,48.000
+*end_report
+ 
+*report,11,distribution,Infil,infil_zones
+*title,Infiltration load,W
+*format,frequency,4,5,-100.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<-100',3,0.0,0.0,0.0
+'-100-0',501,100.00,501,100.00
+'0-100',0,0.00,501,100.00
+'>100',0,0.0,0.0,0.0
+*end_report
+ 
+*report,11,stats,Infil,infil_zones
+*title,Infiltration load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,-116.438,-100.085,-58.968,0.000,-116.438,-300.254,-301.070
+*end_report
+ 
+*report,12,distribution,Vent,vent_zones
+*title,Ventilation load,W
+*format,frequency,3,5,0.0,100.0,0.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+'<0',0,0.0,0.0,0.0
+'0-100',504,100.00,504,100.00
+*end_report
+ 
+*report,12,stats,Vent,vent_zones
+*title,Ventilation load,W
+*format,table,1,7
+*fields,maximum,minimum,average,diversified_max,distributed_max,diversified_min,distributed_min
+*data,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*end_assessment
+*end
+ 
+*Summary
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2.a
+*format,table,2,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,33.735,39.516,0.000,0.000,0.000,0.000
+*data,Total,73.25
+*end_report
+ 
+*report,74,power,capacity,aggregate
+*title,Maximum capacity,W/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,43.625,0.000,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report,75,emissions,pollutant,aggregate
+*title,Pollutant emissions,kg/m^2.a
+*format,table,3,6
+*fields,Pollutant,CO2,NOx,SOx,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,9.807,34.825,0.000,0.000,0.000,0.000
+*data,0.015,0.117,0.000,0.000,0.000,0.000
+*data,0.010,0.431,0.000,0.000,0.000,0.000
+*end_report
+ 
+*report76,distribution,thermal_comfort,aggregate
+*title,Resultant Temperature,degC
+*format,frequency,9,6,16.0,2.0,30.0
+*fields,range,winter,spring,summer,autumn,winter
+*data
+'<16',0,0,0,0,0
+'16-18',0,0,0,0,0
+'18-20',0,0,0,0,0
+'20-22',0,0,0,0,0
+'22-24',0,0,0,0,0
+'24-26',0,0,0,0,0
+'26-28',0,0,0,0,0
+'28-30',0,0,0,0,0
+'>30',0,0,0,0,0
+*end_report
+*end

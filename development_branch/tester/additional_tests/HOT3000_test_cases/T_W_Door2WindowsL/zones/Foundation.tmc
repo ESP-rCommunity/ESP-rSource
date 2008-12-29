@@ -1,0 +1,10 @@
+# transparent properties of Foundation defined in user/T_W_Door2WindowsL/zones/Foundation.tmc
+  11    # surfaces
+# tmc index for each surface
+  0  0  0  0  0  0  0  0  0  0  1
+   1  Window-27_b     # layers in tmc type  1
+# Transmission @ 5 angles & visible tr.
+0.000 0.000 0.105 0.108 0.105 0.880
+# For each layer absorption @ 5 angles
+0.8370 0.8210 0.7520 0.6390 0.3900 
+0   # blind/shutter control flag

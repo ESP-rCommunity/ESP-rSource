@@ -1,0 +1,30 @@
+*IPV,4,0
+*title,Linford house in winter buffer vent mode
+*version,Version linford base case winter        
+*date,Mon Nov  6 11:14:33 2006
+*synop,The linford house (typical detached UK housing stock).
+*images,0
+*simulations,5
+*period,37,43,linford 1st winter run                  
+*period,107,113,linford spring run                      
+*period,184,190,linford summer run                      
+*period,275,281,linford autumn run                      
+*period,324,330,linford 2nd winter run                  
+*display_days,5,38,108,185,276,325
+season multipliers: heating|cooling|lights|fans|smallp|DWH
+*win1,10.000,10.000,10.000,10.000,10.000,10.000
+*spr,9.000,9.000,9.000,9.000,9.000,9.000
+*sum,23.467,16.000,16.000,16.000,16.000,16.000
+*aut,8.419,8.000,8.000,8.000,8.000,8.000
+*win2,9.000,9.000,9.000,9.000,9.000,9.000
+*metrics,1
+# metric data: metric index, nb zones, 2 miscel , floor area
+*metric_1,6,1,1,9,98.7,1.000,1.000,comfort,ocup_zones,Resultant T (degC)
+  1,2,3,4,5,6,7,8,9
+*demand_sets, 1  # number of energy demand sets
+# nb. zones, 2 miscel, aggregate_toggle floor area, scaling descrip
+*energy_1,10,0,0,0,107.8,1.000,zone_heated
+  1,2,3,4,5,6,7,8,9,10
+# non-specific demands: occup/light/sm pwr/fans/pumps/lifts/dhw
+*dmds,0,0,0,0,0,0,0
+*end

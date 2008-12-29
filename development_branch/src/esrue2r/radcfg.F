@@ -1,0 +1,1527 @@
+C This file is part of the ESP-r system.
+C Copyright Energy Systems Research Unit, University of
+C Strathclyde, Glasgow Scotland, 2001.
+
+C ESP-r is free software.  You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation 
+C (version 2 orlater).
+
+C ESP-r is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+
+C You should have received a copy of the GNU General Public
+C License along with ESP-r. If not, write to the Free
+C Software Foundation, Inc., 59 Temple Place, Suite 330,
+C Boston, MA 02111-1307 USA.
+
+C RADCFG.F contains routines to control the exectution of RADIANCE from E2R.
+C This is mainl done via the RADCFG file which contains data on the RADIANCE 
+C rif file to be used and its intended purpose.
+
+C RADCFGIN:  reads the contents of the radiance configuration file.
+C RADCFGOUT: writes the contents of the radiance configuration file.
+C whichrif:  presents a list of existing rif files.
+C newscene:  asks default questions for new rif file or 
+C ADDSCENE:  allows the creation of a default translation from ESP-r to radiance.
+C setdfgrid: allows the creation of the daylight factor grid points.
+C DFGRIDLBL: writes out an index of daylight grid point (act = g|G) or
+C            the daylight factor (act = d|D).
+C SENLOC:    creates a file containing the sensor locations and orientations
+C checkrif:  checks for existing scenes or creates a new scene with the given 
+C            parameters if none found.
+C RDCFTMP:   Read in daylight coefficients to common and rewrites to casual 
+C            gain control file.
+
+
+C ********************* RADCFGIN *********************
+C RADCFGIN reads the contents of the radiance configuration file.
+      SUBROUTINE RADCFGIN
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
+      common/rpath/path
+      common/expath/runpath,pathtype
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/radcfg/LRADCF
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+      common/radgrid/LDFGRID
+      common/radabs/NABS
+      common/user/browse
+
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72
+      character LBSRIF*72,pfile*72,path*72,runpath*72,pathtype*24,fs*1
+      integer lnrp  ! length of run path
+
+      logical unixok
+      logical browse
+      
+      IRCFG = IFIL+17
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      lnrp=lnblnk(runpath)
+
+C Copy existing model to runpath (unix only).
+      if(unixok)then
+        if(browse)then
+          write (outs,'(6a)') 'cp -r ',path(1:lnblnk(path)),
+     &      radpth(1:lnblnk(radpth)),fs,'* ',runpath(1:lnrp)
+          call runit(outs,'-')
+        endif
+      else
+      
+C For native windows no need to copy.
+C        if(browse)then
+C          write (outs,'(6a)') 'xcopy /e /i /y /c ',path(1:lnblnk(path)),
+C     &      radpth(1:lnblnk(radpth)),fs,'* ',runpath(1:lnrp)
+C        endif
+C        call runit(outs,'-')
+      endif
+      if(unixok)then
+        if(browse)then
+          write (outs,'(5a)') 'cp -r ',path(1:lnblnk(path)),
+     &          LRADCF(1:lnblnk(LRADCF)),' ',runpath(1:lnrp)
+          call runit(outs,'-')
+        endif
+      else
+      
+C For native windows no need to copy.
+C        write (outs,'(5a)') 'xcopy /e /i /y /c ',path(1:lnblnk(path)),
+C     &          LRADCF(1:lnblnk(LRADCF)),' ',runpath(1:lnrp)
+C        call runit(outs,'-')
+      endif
+
+C Set file name including path.
+      write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
+
+C Initialise radiance cfg file.
+      call ERPFREE(IRCFG,ISTAT)
+      call FPOPEN(IRCFG,ISTAT,1,1,pfile)
+
+C Read lines from file, header first.
+      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'line 1',IER)
+      IF(IER.NE.0)RETURN
+      if (OUTSTR(1:13).ne.'*ESP-r visual') then
+        call usrmsg('The specified file is not an ESP-r - ',
+     &              'RADIANCE configuration file','F')
+      endif
+
+      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'date',IER)
+      write (outs,'(a,a)') 'Scenes last modified on ',
+     &                                         OUTSTR(1:lnblnk(OUTSTR))
+      call edisp (iuout,outs)
+
+C Now read number of rif files contained.
+      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif line',IER)
+      K=0
+      CALL EGETWI(OUTSTR,K,NRIF,1,MCOM+1,'W','no of rifs',IER)
+
+      
+C For each rif read 5 items of data
+      IER=0
+      do 10 I=1,NRIF
+
+C Reset the number of modelled blind states to zero.
+        NBSRIF(I)=-1
+ 30     CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif data',IER)
+        if (OUTSTR(1:9).eq.'*sceneEND') goto 20
+        if (IER.eq.0) then
+          K=0
+          CALL EGETW(OUTSTR,K,WORD,'W','data id',IFLAG)
+          if (WORD(1:4).eq.'*snm') then
+            CALL EGETW(OUTSTR,K,SCENE(I),'W','scene name',IFLAG)
+          elseif (WORD(1:4).eq.'*rnm') then
+
+C First rif name corresponds to default blind state, subsquent rifs within 
+C this scene represent alternate blind states.
+            NBSRIF(I)=NBSRIF(I)+1
+            if (NBSRIF(I).gt.NABS) then
+              call usrmsg('Scene has to many rif files.','  ','W')
+            endif
+            if (NBSRIF(I).eq.0) then
+              CALL EGETW(OUTSTR,K,RIFNAME(I),'W','rif name',IFLAG)
+            else
+              CALL EGETW(OUTSTR,K,LBSRIF(I),'W','bl st',IFLAG)
+            endif
+          elseif (WORD(1:4).eq.'*srt') then
+            CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
+          elseif (WORD(1:4).eq.'*rde') then
+            CALL EGETRM(OUTSTR,K,RIFDESC(I),'W','rif desc',IFLAG)
+          elseif (WORD(1:4).eq.'*rpu') then
+            CALL EGETW(OUTSTR,K,RIFPURP(I),'W','rif purp',IFLAG)
+          elseif (WORD(1:4).eq.'*rgd') then
+            CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
+          elseif (WORD(1:4).eq.'*slc') then
+            CALL EGETW(OUTSTR,K,LDFGRID,'W','sensor data',IFLAG)
+          else
+            call usrmsg(' Unrecognised data prefix.',' ','W')
+          endif
+        endif
+        goto 30
+ 20     continue
+ 10   continue
+
+      CALL ERPFREE(IRCFG,ISTAT)
+      RETURN
+      END
+
+C ********************* RADCFGOUT *********************
+C RADCFGOUT writes the contents of the radiance configuration file.
+      SUBROUTINE RADCFGOUT(ICHK)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/expath/runpath,pathtype
+      common/radcfg/LRADCF
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+      common/radgrid/LDFGRID
+
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character LRADCF*72,OUTS*72,LDFGRID*72,LBSRIF*72
+      character dstmp*24,pfile*72,runpath*72,pathtype*24
+      integer lnrp  ! length of run path
+
+C Check that ICHK is a sensible value.
+      lnrp=lnblnk(runpath)
+      IRCFG = IFIL+17
+      if (ICHK.ne.3.and.ICHK.ne.4) ICHK=4
+
+C Get current time.
+      call dstamp(dstmp)
+
+C Set file name including path and open.
+      write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
+      call ERPFREE(IRCFG,ISTAT)
+      call FPOPEN(IRCFG,ISTAT,1,ICHK,pfile)
+
+C Write header first.
+      write(IRCFG,'(a)')'*ESP-r visualisation scene configuration file.'
+      write(IRCFG,'(a,a)') dstmp,' # latest file modification.'
+
+C Now write number of rif files contained.
+      write(IRCFG,'(i3,a)') NRIF,' # No. of scenes'
+      
+C For each rif write 1) name. 2) root identifier. 3) short description 
+C and 4) intended use/ purpose.
+
+      do 10 I=1,NRIF
+
+C Find the longest string in this scene.
+        IML=10
+        ISLENG=LNBLNK(SCENE(I))
+        IF(ISLENG.GT.IML)IML=ISLENG
+        ISLENG=LNBLNK(RIFNAME(I))
+        IF(ISLENG.GT.IML)IML=ISLENG
+        ISLENG=LNBLNK(LBSRIF(I))
+        IF(ISLENG.GT.IML)IML=ISLENG
+        ISLENG=LNBLNK(SCENERT(I))
+        IF(ISLENG.GT.IML)IML=ISLENG
+        ISLENG=LNBLNK(RIFDESC(I))
+        IF(ISLENG.GT.IML)IML=ISLENG
+        ISLENG=LNBLNK(RIFPURP(I))
+        IF(ISLENG.GT.IML)IML=ISLENG
+
+        write(IRCFG,'(a,i3)') '# Scene number',I
+        OUTS=SCENE(I)
+        write(IRCFG,'(a,a,a)')'*snm ',OUTS(1:IML),' # Scene name'
+        OUTS=RIFNAME(I)
+        write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Rif name'
+        if (NBSRIF(I).gt.0) then
+          OUTS=LBSRIF(I)
+          write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Alternate rif'
+        endif
+        OUTS=SCENERT(I)
+        write(IRCFG,'(a,a,a)')'*srt ',OUTS(1:IML),' # Scene prefix'
+        OUTS=RIFDESC(I)
+        write(IRCFG,'(a,a,a)')'*rde ',OUTS(1:IML),' # Description'
+        OUTS=RIFPURP(I)
+        write(IRCFG,'(a,a,a)')'*rpu ',OUTS(1:IML),' # Intended use'
+        if (RIFPURP(I)(1:8).eq.'Day_fact') then
+          OUTS=LDFGRID
+          write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
+        elseif (RIFPURP(I)(1:8).eq.'Coupling') then
+          OUTS=LDFGRID
+          write(IRCFG,'(a,a,a)')'*slc ',OUTS(1:IML),
+     &                                          ' # Sensor locations'
+        endif
+        write(IRCFG,'(a)')'*sceneEND'
+ 10   continue
+
+      write(IRCFG,'(a)') '*end'
+      CALL ERPFREE(IRCFG,ISTAT)
+
+      RETURN
+      END
+
+C ********************* whichrif *********************
+C whichrif presents a list of existing rif files.
+C If MODE is 's' then create a static list, 'm' then allow modification.
+      SUBROUTINE whichrif(MODE)
+#include "building.h"
+#include "epara.h"
+
+      COMMON/FILEP/IFIL
+      common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
+      common/cmddata/zone,aim,act
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character MODE*1, H*72, VERT*24, KEY*1, LBSRIF*72
+      character zone*16,aim*12,act*72
+
+      dimension VERT(35)
+
+      LOGICAL SELECT,delzone,cpyzone,modscene
+
+ 1    IER=0
+      SELECT=.false.
+      delzone=.false.
+      cpyzone=.false.
+      modscene=.false.
+
+C Initialise scene menu variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+C Use shorter menu depending on what MOD is.
+      SELECT=.FALSE.
+      MHEAD=0
+      IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
+        MCTL=4
+      ELSE
+        MCTL=3
+      endif
+      ILEN=NRIF
+      IPACT=CREATE
+      CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+    3 M=MHEAD
+      DO 10 L=1,ILEN
+        IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+          M=M+1
+          CALL EMKEY(L,KEY,IER)
+          WRITE(VERT(M),14)KEY,SCENE(L)
+   14     FORMAT(A1,1X,A12)
+        ENDIF
+   10 CONTINUE
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text and info on portion seen.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)=  '  ------------------'
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT ('0 page part: ',I1,' -- of:',I1)
+      ENDIF
+
+C If MODE has been passed as a M then add an item at the end allowing
+C list to be modified otherwise blank choice.  If user is browsing
+C no need to show additional options.
+      IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
+        VERT(M+2)='* add/delete/copy  '
+        VERT(M+3)  ='? help           '
+        VERT(M+4)  ='- exit this menu '
+      ELSE
+        VERT(M+2)  ='? help           '
+        VERT(M+3)  ='- exit this menu '
+      ENDIF
+
+C Display the menu.
+      CALL EMENU('Scenes',VERT,MVERT,IVERT)
+      IF(IVERT.LE.MHEAD)THEN
+        IVERT=-1
+        goto 3
+      ELSEIF(IVERT.EQ.MVERT)THEN
+
+C If no selection has been made before exit then return.
+	IF(.NOT.SELECT)then
+          ICHK=4
+          if(modscene)call RADCFGOUT(ICHK)
+          RETURN
+        endif
+      ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C Produce help text.
+        H(1)='A scene will be selected from those available'
+        if (MODE.EQ.'M'.OR.MODE.EQ.'m') then
+          H(2)='The scene list can be modified by selecting *'
+        else
+          H(2)='  '
+        endif
+        H(3)='The < command selects by index rather than a-z.'
+        CALL PHELPD('scene section',3,'-',0,0,IER)
+      ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Decode from the potentially long list to the zone number via KEYIND.
+C If delete or copy scene previously selected then new selection should 
+C be deleted or copied, respectively.
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+        SELECT=.TRUE.
+        IRIFFOC=IFOC
+        if(delzone)then
+          do 1110 I=IFOC,NRIF
+            if (I.eq.NRIF) then
+              SCENE(I)='UNDEFINED'
+              RIFNAME(I)='UNKNOWN'
+              SCENERT(I)='UNKNOWN'
+              RIFDESC(I)='UNKNOWN'
+              RIFPURP(I)='UNKNOWN'
+              LBSRIF(I)='NONE'
+            else
+              SCENE(I)=SCENE(I+1)
+              RIFNAME(I)=RIFNAME(I+1)
+              SCENERT(I)=SCENERT(I+1)
+              RIFDESC(I)=RIFDESC(I+1)
+              RIFPURP(I)=RIFPURP(I+1)
+              LBSRIF(I)=LBSRIF(I+1)
+            endif
+ 1110     continue
+          NRIF=NRIF-1
+          IRIFFOC=1
+          modscene=.true.
+        elseif(cpyzone)then
+          NRIF=NRIF+1
+          SCENE(NRIF)=SCENE(IFOC)
+          RIFNAME(NRIF)=RIFNAME(IFOC)
+          SCENERT(NRIF)=SCENERT(IFOC)
+          RIFDESC(NRIF)=RIFDESC(IFOC)
+          RIFPURP(NRIF)=RIFPURP(IFOC)
+          LBSRIF(I)=LBSRIF(IFOC)
+          IRIFFOC=NRIF
+
+C Check new scenes data by calling newscene.  As newscene adds one to NRIF 
+C subtract one just now, no other data will be effected.
+          NRIF=NRIF-1
+          call usrmsg(' Edit copied scene.',' ','W')
+          call newscene('-')
+          modscene=.true.
+        endif
+
+C If a zone has been deleted then redisplay menu, 
+C foremost to reset IRIFFOC.
+        if (delzone) then
+          goto 1
+        else
+
+C Re-scan rif file if not a new zone.
+          ITA2 = IFIL+7
+          ITA3 = IFIL+10
+          call RRIF(ita2,ita3,RIFNAME(IRIFFOC),'r',ier)
+          RETURN
+        endif
+      endif
+
+C Scene list manipulation.
+      IF(IVERT.EQ.(MVERT-2))THEN
+
+C Allow a scene to be added or deleted.
+        IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
+          H(1)='As with other entities a standard set of add/delete'
+          H(2)='and copy functions is provided. '
+          CALL EASKATOG(' ','Action: ','add scene','delete scene',
+     &      'copy scene','cancel',' ',' ',' ',IW,2)
+          if(IW.EQ.1)then
+            delzone = .false.
+      H(1)='Radiance desktop creates allows the creation of separate'
+      H(2)='scenes each with a specific purpose. A modest scene can be'
+      H(3)='created silently with assumed defaults. '
+      H(4)=' '
+      H(5)='Once you have created a scene you can return to the'
+      H(6)='definition section to update or add detail to the model.'
+            CALL EASKABC(' ','Create scene:','silently',
+     &        'interactively','cancel',IWDV,6)
+            if (IWDV.eq.1) then
+              call newscene('c')
+              act='Create'
+              call autorad
+              ICHK=4
+              call radcfgout(ICHK)
+            elseif (IWDV.eq.1) then
+              call newscene('-')
+              act='Create'
+              call autorad
+              ICHK=4
+              call radcfgout(ICHK)
+            else
+              goto 92
+            endif
+            ICHK=4
+            call RADCFGOUT(ICHK)
+            RETURN
+          elseif(IW.EQ.2)then
+            delzone = .true.
+            call usrmsg(' ','Select scene to delete. ','-')
+            IVERT=-2
+            goto 3
+          elseif(IW.EQ.3)then
+            cpyzone = .true.
+            call usrmsg(' ','Select scene to copy. ','-')
+            IVERT=-2
+            goto 3
+          endif
+
+        ELSE
+
+C If there are enough items allow paging control via EKPAGE.
+          IF(IPFLG.EQ.1)THEN
+            IPACT=EDIT
+            CALL EKPAGE(IPACT)
+          ENDIF
+        ENDIF
+      
+      else
+
+C Not one of the legal menu choices.
+        IVERT=-1
+        goto 92
+      ENDIF
+      IVERT=-2
+      goto 3
+
+      END
+
+
+C ********************* newscene *********************
+C newscene asks default questions for new rif file or 
+C sets values if MODE='s' (silent) from command line or
+C if MODE='a' (aim) will ask for aim and name files automatically or
+C if MODE='c' (create) then allow all purposes and auto name files.
+      SUBROUTINE newscene(MODE)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      common/pophelp/h(60)
+
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      common/e2rc/crenrp,coconv
+      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
+      common/rad2/mono,intext,ifocz
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+      common/cmddata/zone,aim,act
+      common/radgt/iglzty
+      common/radrp/ipicx
+
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      dimension IVALS(MCOM)
+
+      character crenrp*160,coconv*40,cfgroot*24,LCFGF*72
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character h*72,zname*12,zdesc*64,MODE*1,outs*124,LBSRIF*72
+      character imgqua*6,detlvl*6,llvar*6,penumb*5
+      character zone*16,aim*12,act*72,dname*28,tname*28
+      character dname72*72,tname72*72
+
+C Ask for purpose of scene if new scene.
+      if (MODE.eq.'s') then
+        IZONE=0
+        IRP=0
+        if (aim(1:8).eq.'External') then
+          IRP=1
+          izone=-1
+          zone='FRED'
+        elseif (aim(1:8).eq.'Internal') then
+          IRP=2
+          call zindex(zone,izone)
+        elseif (aim(1:5).eq.'Glare') then
+          IRP=3
+          call zindex(zone,izone)
+        elseif (aim(1:8).eq.'Day_fact') then
+          IRP=4
+          call zindex(zone,izone)
+        elseif (aim(1:8).eq.'Coupling') then
+          IRP=5
+          call zindex(zone,izone)
+        elseif (aim(1:8).eq.'Day_coef') then
+          IRP=6
+          call zindex(zone,izone)
+        elseif (aim(1:7).eq.'Sun_pos') then
+          IRP=7
+          izone=-1
+        endif
+      elseif (MODE.eq.'a') then
+        H(1)='The purpose of the scene is used when creating the '
+        H(2)='scene description files. It is also used to control'
+        H(3)='the application of Radiance.'
+        ino=0
+        idno=1
+        call MENUATOL('Select a default scene.',' Default scene',
+     &    'a External images','b Internal images','c Glare sources',
+     &    'd Daylight factors',' ',' ',
+     &    ' ',' ',' ',' ',' ',' ',ino,idno,3)
+        IRP=INO
+      else
+        H(1)='The purpose of the scene is used when creating the '
+        H(2)='scene description files. It is also used to control'
+        H(3)='the application of Radiance.'
+        ino=0
+        idno=1
+        call MENUATOL('Select a scene purpose.',' Scene purpose',
+     &    'a External images','b Internal images','c Glare sources',
+     &    'd Daylight factors','e Coupling','f Daylight coefficients',
+     &    ' ',' ',' ',' ',' ',' ',ino,idno,3)
+        IRP=INO
+      endif
+
+C If no purpose then exit.
+      if(IRP.eq.0)return
+
+C Check for tmc file
+      call inqu_tmc
+
+C Reset glazing treatment to default.
+      iglzty=1
+
+C Add new rif file data.
+      NRIF=NRIF+1
+
+C Set new scene to focus scene.
+      IRIFFOC=NRIF
+
+C Reset the number of chosen zones (nzg) to NCOMP.
+      nzg=NCOMP
+      izgfoc=0
+      do 3 I=1,NCOMP
+        nznog(I)=I
+ 3    continue
+
+C Now ask for zone for internal and glare purposes.
+      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
+        if (IZONE.le.0) then
+          H(1)=' Pick a zone as the focus zone for the Radiance'
+          H(2)=' internal image calculations.'
+ 30       INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ',' Pick a focus zone: ',
+     &        12,NCOMP,zname,' zone list',IER,2)
+          if (INPIC.eq.0) goto 30
+          ifocz=IVALS(1)
+        else
+          ifocz=IZONE
+        endif
+      endif
+C Set assumptions for each scene purpose and gather any additional 
+C information.
+      if (IRP.eq.1) then 
+        RIFPURP(IRIFFOC)='External'
+        intext = 0
+        imgqua = 'Medium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 1
+        ipicx  = 258
+        penumb = 'False'
+        crenrp = '-av 10 10 10 '
+        coconv = '  '
+        ifocz = -1
+      elseif (IRP.eq.2) then 
+
+C Internal image selected.
+        RIFPURP(IRIFFOC)='Internal'
+        intext = 1
+        imgqua = 'Medium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 1
+        ipicx  = 258
+        penumb = 'False'
+        crenrp = '-av 1 1 1 '
+        coconv = '  '
+      elseif (IRP.eq.3) then 
+
+C Glare image selected.
+        RIFPURP(IRIFFOC)='Glare'
+        intext = 1
+        imgqua = 'Medium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'False'
+        crenrp = '-av 0 0 0 '
+        coconv = '  '
+      elseif (IRP.eq.4) then 
+
+C Daylight factor calculation selected.
+        RIFPURP(IRIFFOC)='Day_fact'
+        intext = 1
+        imgqua = 'High'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'True'
+        crenrp = '-av 0 0 0 -ab 1'
+        coconv = '  '
+      elseif (IRP.eq.5) then 
+
+C Coupling calculation selected. (thermal/lighting simulation)
+        RIFPURP(IRIFFOC)='Coupling'
+        intext = 1
+        imgqua = 'High'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'False'
+        crenrp = '-av 0 0 0  '
+        coconv = '  '
+      elseif (IRP.eq.6) then 
+
+C Daylight coefficient calculation selected. (thermal/lighting simulation)
+        RIFPURP(IRIFFOC)='Day_coef'
+        intext = 1
+        imgqua = 'High'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'False'
+        crenrp = '-av 0 0 0 '
+        coconv = '  '
+      elseif (IRP.eq.7) then 
+
+C Sun positions.
+        RIFPURP(IRIFFOC)='Sun_pos'
+        intext = 0
+        imgqua = 'Medium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 1
+        ipicx  = 258
+        penumb = 'False'
+        crenrp = '-av 10 10 10 '
+        coconv = ' '
+        ifocz = -1
+      endif
+
+C Set default names based on above.
+      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
+        write (outs,'(3a)') ZNAME(ifocz)(1:lnblnk(ZNAME(ifocz))),
+     &     '_',RIFPURP(IRIFFOC)(1:6)
+        write (RIFDESC(IRIFFOC),'(a,a,a,a,a)') 'Scene of ',
+     &     ZNAME(ifocz)(1:lnblnk(ZNAME(ifocz))),' for ',
+     &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
+      else
+        IL=min(lnblnk(cfgroot),21)
+        write (outs,'(3a)') cfgroot(1:IL),'_',RIFPURP(IRIFFOC)(1:6)
+        write (RIFDESC(IRIFFOC),'(a,a,a,a,a)') 'Scene of ',
+     &     cfgroot(1:lnblnk(cfgroot)),' for ',
+     &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
+      endif
+      write (SCENE(IRIFFOC),'(a)') outs(1:28)
+      write (SCENERT(IRIFFOC),'(a)') outs(1:28)
+      write (RIFNAME(IRIFFOC),'(a,a)') 
+     &              SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.rif'
+      write (LBSRIF(IRIFFOC),'(a,a)') 
+     &            SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'_a.rif'
+
+C Additional details for specific purposes.
+      if (IRP.eq.4) then
+
+C Set up daylight factor calc points.
+        call setdfgrid(MODE,izone,ier)
+      elseif (IRP.eq.5.or.IRP.eq.6) then 
+
+C Get sensor information from cgc file.
+        call SENLOC
+      endif
+
+C Clear command line variables.
+      zone='NONE'
+      aim='NONE'
+      act='NONE'
+
+C If not in silent mode then confirm names with user.
+      if (MODE.eq.'-') then
+
+C Ask for scene name.
+ 5      H(1)='Many Radiance models may be created for a given ESP-r '
+        H(2)='thermal model. Each of these Radiance models is called'
+        H(3)='a scene, e.g. one scene may be of the buildings '
+        H(4)='exterior and another could be an internal image of a'
+        H(5)='zone. Each scene can have multiple viewpoints.'
+        tname=SCENE(IRIFFOC)
+        dname=SCENE(IRIFFOC)
+        CALL EASKS(tname,'Scene name? ',' ',28,dname,'scene name',IER,5)
+        IF(tname(1:2).EQ.'  ') GOTO 5
+        SCENE(IRIFFOC)=tname
+
+C Ask for root name and use this for rif name.
+ 15     H(1)='The scene prefix (one word) is used in the creation of'
+        H(2)='the rif file name and as a root name for the description,'
+        H(3)='view, octree and image files. '
+        tname=SCENERT(IRIFFOC)
+        dname=SCENERT(IRIFFOC)
+        CALL EASKS(tname,'Scene root name?',' ',28,dname,'root name',
+     &    IER,3)
+        IF(tname(1:2).EQ.'  ') GOTO 15
+        SCENERT(IRIFFOC)=tname
+        write (RIFNAME(IRIFFOC),'(a,a)') 
+     &               SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.rif'
+        write (LBSRIF(IRIFFOC),'(a,a)') 
+     &             SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'_a.rif'
+
+C Ask for additional description.
+ 25     H(1)='The description is used as an additional aide to'
+        H(2)='identify a scenes contents.'
+        tname72=RIFDESC(IRIFFOC)
+        dname72=RIFDESC(IRIFFOC)
+        CALL EASKS(tname72,' Description ? ',' ',72,
+     &                                     dname72,'scene desc',IER,2)
+        IF(tname72(1:2).EQ.'  ') GOTO 25
+        RIFDESC(IRIFFOC)=tname72
+      endif
+
+C Call rifset to set up all remaining data.
+      call rifset(ifocz,'f')
+
+      RETURN
+      END
+
+C ********************** ADDSCENE **********************
+C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
+      subroutine ADDSCENE(IRCFG)
+      
+      integer lnblnk  ! function definition
+
+      common/pophelp/h(60)
+
+      common/expath/runpath,pathtype
+      common/radcfg/LRADCF
+      common/cmddata/zone,aim,act
+
+      CHARACTER H*72,LRADCF*72,runpath*72,pathtype*24,pfile*72
+      character zone*16,aim*12,act*72
+      integer lnrp  ! length of run path
+
+C Ask if a default image should be created.
+      lnrp=lnblnk(runpath)
+      H(1)='Radiance desktop creates allows the creation of separate'
+      H(2)='scenes each with a specific purpose. A modest scene can be'
+      H(3)='created silently with assumed defaults. '
+      H(4)=' '
+      H(5)='Once you have created a scene you can return to the'
+      H(6)='definition section to update or add detail to the model.'
+      CALL EASKABC('This is a new visualisation.',
+     &        'Create scene:','silently','interactively',
+     &        'cancel',IWDV,6)
+      if(IWDV.eq.1)then
+
+C Check for command line information.
+        call tstamp('>','E2R: creating default scene')
+        if (zone(1:4).ne.'NONE'.and.aim(1:4).ne.'NONE') then
+          call checkrif('n')
+        else
+          call newscene('a')
+          act='Create'
+          call autorad
+          ICHK=4
+          call radcfgout(ICHK)
+        endif
+      elseif(IWDV.eq.2)then
+
+C Create new scene file.
+        call tstamp('>','E2R: controlling default scene')
+        write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
+        call ERPFREE(IRCFG,ISTAT)
+        call FPOPEN(IRCFG,ISTAT,1,3,pfile)
+        call newscene('-')
+        act='Create'
+        call autorad
+        ICHK=4
+        call radcfgout(ICHK)
+      endif
+
+      RETURN
+      END
+
+C ********************** setdfgrid **********************
+C setdfgrid allows the creation of the daylight factor grid points.
+C if MODE is not - then sensor points file name confirmation required.
+      subroutine setdfgrid(MODE,izone,ier)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
+      common/pophelp/h(60)
+
+      common/expath/runpath,pathtype
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      common/rad2/mono,intext,ifocz
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/radgrid/LDFGRID
+      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
+
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY6/LINSTY(MCON)
+
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character h*72,zname*12,zdesc*64,LDFGRID*72,DESCRC*25
+      character outs*124,runpath*72,pathtype*24,tfile*72
+      character ITEM(MV)*15, t12*12, MODE*1
+
+      dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
+
+      LOGICAL MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
+      integer lnrp  ! length of run path
+
+C New grid so set number of grid points to zero.
+      lnrp=lnblnk(runpath)
+      NDFP=0
+      newgeo=.false.  ! assume older format geometry.
+
+C Remember current graphics display options.
+      call SVDSOPT
+
+C Ask for zone (if not defined), surface and working plane height.
+      if (IZONE.eq.0) then
+        H(1)=' Pick a zone as the focus zone for the Radiance'
+        H(2)=' daylight factor calculations.'
+ 32     INPIC=1
+        CALL EPICKS(INPIC,IVALS,
+     &        'Generate daylight factors for which zone. ',
+     &        '(You will then be asked to grid a surface.) ',
+     &        12,NCOMP,zname,'Select zone',IER,2)
+        if (INPIC.eq.0) goto 32
+        ifocz=IVALS(1)
+        nzg=1
+        nznog(1)=ifocz
+        izgfoc=0
+      else
+        ifocz=izone
+        nzg=1
+        nznog(1)=izone
+        izgfoc=0
+      endif
+      MODIFY=.TRUE.
+      MODLEN=.TRUE.
+      MODBND=.TRUE.
+      ITSNM=0
+      CALL ADJVIEW(ITRC,IER)
+
+C Ask for surface and highlight.
+      call EASKSUR(ifocz,IS,'-',
+     &    'Select a surface to grid. (You can then transform ',
+     &    'the grid perpendicular to this surface.)',IER)
+      CALL INLNST(1)
+      CALL SURADJ(ifocz,IS,IE,TMP,IZC,ISC,IC,DESCRC)
+      LINSTY(IC)=2
+      MODIFY=.TRUE.
+      ITVNO=0
+      CALL ADJVIEW(ITRC,IER)
+      CALL INLNST(1)
+
+      H(1)='The grid points on the chosen surface can be '
+      H(2)='transformed along the surface normal to give points in'
+      H(3)='a parallel plane.  This is useful for calculating'
+      H(4)='daylight factors on the working plane.'
+      H(5)='The grid can be transformed to the inside or outside'
+      H(6)='of the surface, and must be at least 1mm from the'
+      H(7)='surface.'
+      WPDIST=0.9
+      CALL EASKR(WPDIST,' Distance of grid from surface ? ',' ',0.001,
+     &                          'F',2.5,'W',0.9,'grid transform',IER,7)
+      H(1)='The grid can be transformed to the inside or outside'
+      H(2)='of the surface.  The default is inside.'
+      call EASKAB('Transform grid to: ',' ','Inside','Outside',IW,2)
+      if (IW.eq.1) then
+        dirf=-1.
+      else
+        dirf=1.
+      endif
+
+C Now read zone geometry file to enable edge selection.
+      ITA1 = IFIL+6
+      ITRC=0
+      call eclose(gversion(ifocz),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
+      else
+        call EGOMIN(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
+      endif
+
+C Generate a list of edges. JVN(MS,MV)
+      NI=0
+      do 10 I=1,NVER(IS)-1
+        write(ITEM(I),'(2(a,i3))')'edge v',JVN(IS,I),'->v',JVN(IS,I+1)
+        NI=NI+1
+ 10   continue
+      NI=NI+1
+      write(ITEM(NI),'(2(a,i3))')'edge v',JVN(IS,NI),'->v',JVN(IS,1)
+ 12   INPIC=1
+      H(1)='The grid will be formed in rows parallel '
+      H(2)='to the selected edge.'
+      CALL EPICKS(INPIC,ITEMV,
+     &        'Select an edge (defined by vertex numbers). ',
+     &        'The grid will be parallel to this edge. ',
+     &        15,NI,ITEM,'Select edge',IER,2)
+      if (INPIC.eq.0) goto 12
+
+C Translate edge selection into vertex numbers.
+      if (ITEMV(1).eq.NI) then
+        IVS=JVN(IS,NI)
+        IVE=JVN(IS,1)
+      else
+        IVS=JVN(IS,ITEMV(1))
+        IVE=JVN(IS,ITEMV(1)+1)
+      endif
+
+C Grid density.
+      H(1)=' A bounding box is created for the selected surface.'
+      H(2)=' The grid is specified by intersection points of lines'
+      H(3)=' parallel and perpendicular to the selected edge.'
+      H(4)=' The grid lines are equally spaced, starting half the'
+      H(5)=' width of a space from the edge, e.g. '
+      H(6)= '      ||     |          |'
+      H(7)= '      ||     |          |'
+      H(8)= '      ||<--->|<-------->|'
+      H(9)= '      || x/2 |     x    |'
+      H(10)='      ||     |          |'
+      H(11)='     edge    |          grid line 2'
+      H(12)='           grid line 1'
+
+C Major grid lines are parallel with the selected edge.
+      igmajor=4
+      igminor=6
+      write (t12,'(2i4)') igmajor,igminor
+ 25   CALL EASKS(t12,'Grid density? (First item is number of grid',
+     &      'points in the rows parallel to the chosen edge.) ',
+     &      12,' 2  2','grid density',IER,12)
+      K=0
+      CALL EGETWI(t12,K,igmajor,1,25,'W','grid lines',IER)
+      CALL EGETWI(t12,K,igminor,1,25,'W','grid lines',IER)
+      if (igmajor.lt.1.or.igminor.lt.1) then
+        call usrmsg('There must be at least 1 grid',
+     &              'line in each direction.','W')
+        goto 25
+      endif
+
+C Calculate grid points.
+      WPDIST=WPDIST*dirf
+      call GRID(IS,igmajor,igminor,IVS,IVE,WPDIST,DFPTS,NDFP,PEQN,IER)
+      call ERPFREE(ITA1,ISTAT)
+
+C Get file name for grid points.
+      write (LDFGRID,'(a,a4)') SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),
+     &                                                           '.grd'
+      H(1)=' Supply a local file name (i.e. without a path).'
+      if (MODE.eq.'-') then
+ 55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
+     &    ' ',72,'points.grd','df points file name',IER,1)
+        IF(LDFGRID.EQ.' ') GOTO 55
+      endif
+
+C Open df points file in working directory.
+      write (tfile,'(a,a)') runpath(1:lnrp),LDFGRID(1:lnblnk(LDFGRID))
+      call FPOPEN(ITA1,ISTAT,1,3,tfile)
+      do 552 IC=1,3
+        PEQN(IC)=PEQN(IC)*dirf
+ 552  continue
+
+C Write points and sensor direction (plane normal).
+      do 555 IV=1,NDFP
+       write(ITA1,'(6(f8.4,1x))')(DFPTS(IV,IX),IX=1,3),(PEQN(IY),IY=1,3)
+ 555  continue
+      DFDIR(1)=PEQN(1)
+      DFDIR(2)=PEQN(2)
+      DFDIR(3)=PEQN(3)
+      call ERPFREE(ITA1,ISTAT)
+
+C Display grid on the zone... (if in graphic mode)
+      if (MMOD.EQ.8) then
+        call edisp(iuout,'  ')
+        write (outs,'(a,a)') 'The proposed daylight factor calculation',
+     &                  ' points are shown as'
+        call edisp(iuout,outs)
+        call edisp(iuout,'dots in the graphic feedback.')
+        MODIFY=.TRUE.
+        ITZNM=1
+        ITSNM=1
+        ITVNO=1
+        CALL ADJVIEW(ITRC,IER)
+        CALL DFGRIDLBL('g')
+      endif
+
+C Reset the number of chosen zones (nzg) to NCOMP.
+      nzg=NCOMP
+      izgfoc=0
+      do 300 I=1,NCOMP
+        nznog(I)=I
+ 300  continue
+
+C Reset display options.
+      call RCDSOPT
+
+      return
+      end
+
+C ********************** DFGRIDLBL **********************
+C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
+C the daylight factor (act = d|D).
+      SUBROUTINE DFGRIDLBL(act)
+      
+      integer lnblnk  ! function definition
+
+C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      common/expath/runpath,pathtype
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
+      common/radgrid/LDFGRID
+
+      DIMENSION  COG1(3),COG2(3),COG3(3)
+
+      CHARACTER VT*5,act*1
+      character OUTSTR*124,tfile*72,LDFGRID*72
+      character runpath*72,pathtype*24
+      integer lnrp  ! length of run path
+
+      LOGICAL MODIFY,MODLEN,MODBND
+      
+C If not in graphical mode return.
+      if (MMOD.ne.8) return
+
+C If there are no grid points warn the user and check if
+C there is a *.df file or a *.df- file that can be scanned again.
+      if(NDFP.eq.0)then
+        ITA1 = IFIL+6
+        lnrp=lnblnk(runpath)
+
+        call ERPFREE(ITA1,ISTAT)
+        write(tfile,'(a,a)')runpath(1:lnrp),
+     &                      LDFGRID(1:lnblnk(LDFGRID))
+        call FPOPEN(ITA1,ISTAT,1,1,tfile)
+        if(ISTAT.eq.0)then
+          continue
+        else
+          call ERPFREE(ITA1,ISTAT)
+          write(tfile,'(3a)')runpath(1:lnrp),
+     &                      LDFGRID(1:lnblnk(LDFGRID)),'-'
+          call FPOPEN(ITA1,ISTAT,1,1,tfile)
+          if(ISTAT.eq.0)then
+            continue
+          else
+            CALL USRMSG('Could not read grid points file.',
+     &       'Cannot report without this information. Returning.','W')
+            return
+          endif
+        endif
+  42    CALL STRIPC(ITA1,OUTSTR,0,ND,0,'grid points',IFER)
+        if (IFER.eq.0) then
+          NDFP=NDFP+1
+          K=0
+          CALL EGETWR(OUTSTR,K,XTMP,0.,0.,'-','grid x',IER)
+          DFPTS(NDFP,1)=XTMP
+          CALL EGETWR(OUTSTR,K,XTMP,0.,0.,'-','grid y',IER)
+          DFPTS(NDFP,2)=XTMP
+          CALL EGETWR(OUTSTR,K,XTMP,0.,0.,'-','grid z',IER)
+          DFPTS(NDFP,3)=XTMP
+          CALL EGETWR(OUTSTR,K,DFDIR(1),0.,0.,'-','vec x',IER)
+          CALL EGETWR(OUTSTR,K,DFDIR(2),0.,0.,'-','vec y',IER)
+          CALL EGETWR(OUTSTR,K,DFDIR(3),0.,0.,'-','vec z',IER)
+          goto 42
+        endif
+        call ERPFREE(ITA1,ISTAT)
+        if (NDFP.eq.0) then
+          CALL USRMSG('Could not read grid points file.',
+     &      'Cannot report without this information. Returning.','W')
+          return
+        endif
+      endif
+
+C If vertices are to be labeled do it in the smallest font.
+      call SVDSOPT
+      IF(IFS.GT.0)CALL winfnt(0)
+      MODIFY=.TRUE.
+      MODLEN=.TRUE.
+      MODBND=.TRUE.
+      ITZNM=1
+      ITSNM=1
+      ITVNO=1
+      CALL ADJVIEW(ITRC,IER)
+
+C Loop through grid points.
+      do 10 I=1,NDFP
+        COG1(1)=DFPTS(I,1)
+        COG1(2)=DFPTS(I,2)
+        COG1(3)=DFPTS(I,3)
+        CALL VECTRN(COG1,TEMAT,COG2,IER)
+        CALL VECTRN(COG2,ETSMAT,COG3,IER)
+        call u2pixel(COG3(1),COG3(2),ix,iy)
+        CALL ecirc(ix,iy,3,1)
+        if(act.eq.'g'.or.act.eq.'G')then
+          IF(I.le.9)THEN
+            WRITE(VT,'(i1)') I
+          ELSEIF(I.gt.9.and.I.le.99)THEN
+            WRITE(VT,'(i2)') I
+          ELSEIF(I.gt.99)THEN
+            WRITE(VT,'(i3)') I
+          ENDIF
+        else
+          IF(DFVALS(I).lt.10.0)THEN
+            WRITE(VT,'(f4.2)') DFVALS(I)
+          ELSEIF(DFVALS(I).ge.10.0)THEN
+            WRITE(VT,'(f4.1)') DFVALS(I)
+          ENDIF
+        endif
+        CALL wstxpt(ix+1,iy-1,VT)
+ 10   continue
+
+C Reset display options.
+      call RCDSOPT
+      IF(IFS.GT.0)CALL winfnt(IFS)
+
+      RETURN
+      END
+
+
+C ********************** SENLOC **********************
+C SENLOC creates a file containing the sensor locations and orientations
+C for use with a 'Coupling' scene purpose.
+
+      SUBROUTINE SENLOC
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      common/expath/runpath,pathtype
+
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+     & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
+     & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
+     & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
+     & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
+
+      COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
+     & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
+
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/radgrid/LDFGRID
+      common/rad2/mono,intext,ifocz
+
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      CHARACTER*72 LCGCINT,LDFGRID
+      character outs*124,runpath*72,pathtype*24
+
+      logical XST
+
+      write(outs,'(a)')'Reading casual gain control file.'
+      call edisp (iuout,outs)
+      write(outs,'(a,a)')'Searching for sensor locations ',
+     &                                        'and orientations.'
+      call edisp (iuout,outs)
+
+C Define temporary unit numbers.
+      ITA1 = IFIL+6
+      call ERPFREE(ITA1,ISTAT)
+
+C Set local file name.
+      LCGCINT=LCGCIN(ifocz)
+      ICOMP=ifocz
+      ier=0
+      if (LCGCINT(1:2).eq.'  ') then
+        write(outs,'(a)')'Error: casual gain control file undefined!'
+        call edisp (iuout,outs)
+        return
+      endif
+      itrc=0
+      call ercgcf(itrc,itru,LCGCINT,ICOMP,ier)
+
+C Open sensor info file (do not add path as radiance is run locally).
+      write(LDFGRID,'(a,a)')
+     &            SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.slc'
+
+C Check for file (add working dir path)
+      write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
+     &                                      LDFGRID(1:lnblnk(LDFGRID))
+      call FINDFIL(outs,XST)
+      if(XST)then
+        call FPOPEN(ITA1,ISTAT,1,0,outs)
+        call EFDELET(ITA1,ISTAT)
+      endif
+      call FPOPEN(ITA1,ISTAT,1,2,outs)
+
+C Write sensor information to radiance grid file.
+      do 10 I=1,NLITZ(ICOMP)
+        if ((IDFST(ICOMP,I).EQ.4).or.(IDFST(ICOMP,I).EQ.5)) then
+          do 20 J=1,NDF(ICOMP,I)
+            write (ITA1,'(6f10.3)') CGX(ICOMP,I,J),CGY(ICOMP,I,J),
+     &         CGH(ICOMP,I,J),UX(ICOMP,I,J),UY(ICOMP,I,J),UH(ICOMP,I,J)
+ 20       continue
+        endif
+ 10   continue
+      call ERPFREE(ITA1,ISTAT)
+
+      RETURN
+      END
+
+C ********************* checkrif *********************
+C checkrif checks for existing scenes or creates a new scene with the given 
+C parameters if none found.
+C If filexst is 'o' then old file, 'n' then create a new file.
+      SUBROUTINE checkrif(filexst)
+#include "building.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/FILEP/IFIL
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/expath/runpath,pathtype
+
+      common/rad2/mono,intext,ifocz
+      common/radcfg/LRADCF
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
+      common/raddata2/NRIF,IRIFFOC
+      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+      common/cmddata/zone,aim,act
+
+      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character filexst*1,LRADCF*72,LBSRIF*72
+      character cfgroot*24,LCFGF*72
+      character zone*16,aim*12,act*72,pfile*72,runpath*72,pathtype*24
+
+      LOGICAL modscene
+
+      IRCFG=IFIL+17
+      ITA2=IFIL+7
+      ITA3=IFIL+10
+      IER=0
+      IRIFFOC=0
+      modscene=.false.
+
+C Clear rcf file unit no/ channel.
+      CALL ERPFREE(IRCFG,ISTAT)
+
+C Recover zone index from command line variable zone.
+      if (zone(1:4).eq.'Def_') then
+        izone=-1
+      else
+        if (aim(1:8).eq.'External') then
+          izone=-1
+          zone='  '
+        else
+          call zindex(zone,izone)
+        endif
+      endif
+
+C If rcf file does exist then search for existing rif file.
+      if (filexst.eq.'o') then
+        do 10 i=1,NRIF
+          if (RIFPURP(I)(1:5).eq.aim(1:5)) then
+
+C Possible match, further check - look at rif file.
+            ifocz=-1
+            call RRIF(ITA2,ITA3,RIFNAME(I),'s',IER)
+            if (ifocz.eq.IZONE) then
+
+C Got match.
+              IRIFFOC=I
+
+C Update sensor information from cgc file.
+              if(aim(1:8).eq.'Coupling'.or.aim(1:8).eq.'Day_coef')then
+                call SENLOC
+              endif
+
+C If daylight coefficients and act=create and model exists then issue warning.
+              if(aim(1:8).eq.'Day_coef'.and.act(1:6).eq.'Create')then
+                call usrmsg('Model already exists!',
+     &                      'Using existing model.','W')
+                act='Calculate'
+              endif
+              modscene=.true.
+            endif
+          endif
+ 10     continue
+      else
+
+C Create a new rcf file.
+        write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
+
+C Set file name including path and open.
+        write(pfile,'(a,a)') runpath(1:lnblnk(runpath)),
+     &                                         LRADCF(1:lnblnk(LRADCF))
+        call ERPFREE(IRCFG,ISTAT)
+        call FPOPEN(IRCFG,ISTAT,1,2,pfile)
+      endif
+
+C If not an existing scene then create it.
+      if (.not.modscene) then
+        call newscene('s')
+        IFC=3
+        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
+        if (NBSRIF(IRIFFOC).eq.1) then
+          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        endif
+
+C Update rcf file and configuration file.
+        ICHK=3
+        call RADCFGOUT(ICHK)
+      endif
+
+      return
+      end
+
+
+C ********************** RDCFTMP **********************
+C RDCFTMP Read in daylight coefficients to common and rewrites to casual 
+C gain control file.
+
+      SUBROUTINE RDCFTMP(LFTMP,ISET)
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+
+      COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
+     & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
+     & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
+     & SETPT(MCOM,MLCOM),SYSPER(MCOM,MLCOM),SOFFLL(MCOM,MLCOM),
+     & IOFFDT(MCOM,MLCOM),SMLOUT(MCOM,MLCOM),SMEOUT(MCOM,MLCOM)
+
+      COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
+     & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
+
+C Daylight coefficient common block data definition:
+C MCOM  - max no of thermal zones.
+C MLCOM - max no of lighting zones per thermal zone.
+C MDF   - max no of sensors per lighting zone.
+C MDCFP - max no of daylight coefficient data sets.
+C MDCFS - max no of alternative daylight coefficient data sets.
+C MDCFV - max no of sky patches.
+      COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
+     & IDCFID(MCOM,MLCOM,MDF)
+
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+      common/rad2/mono,intext,ifocz
+
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      CHARACTER*72 LCGCINT,LFTMP
+      character outs*124
+
+C Define temporary unit numbers.
+      ITA1 = IFIL+6
+      call ERPFREE(ITA1,ISTAT)
+
+C Set local file name.
+      LCGCINT=LCGCIN(ifocz)
+      ICOMP=ifocz
+      ier=0
+      if (LCGCINT(1:2).eq.'  ') then
+        write(outs,'(a)')'Error: casual gain control file undefined!'
+        call edisp (iuout,outs)
+        return
+      endif
+      itrc=0
+      call ercgcf(itrc,itru,LCGCINT,ICOMP,ier)
+
+C Read illuminance information from temp file.
+      call FPOPEN(ITA1,ISTAT,1,0,LFTMP)
+      do 5 IP=1,145
+       do 10 ILZ=1,NLITZ(ICOMP)
+        if (IDFST(ICOMP,ILZ).EQ.5) then
+         do 20 ISE=1,NDF(ICOMP,ILZ)
+          CALL STRIPC(ITA1,OUTS,0,ND,0,'transfer file',IER)
+          if (ier.ne.0) then 
+           call usrmsg('Cannot read transfer file:',LFTMP,'F')
+           return
+          endif
+          K=0
+          call EGETWR(OUTS,K,SIL,0.,10000.,'W','illuminance',IER)
+          JSEN=IDCFID(ICOMP,ILZ,ISE)
+          DCOEF(JSEN,ISET,IP)=SIL
+ 20      continue
+        endif
+ 10    continue
+ 5    continue
+      call ERPFREE(ITA1,ISTAT)
+
+C Write data to casual gain control file.
+      call CASCTMK(LCGCINT,ICOMP,'s',IER)
+
+      RETURN
+      END
