@@ -60,6 +60,7 @@ C in a new model file.
 #include "building.h"
 #include "cfd.h"
 #include "sbem.h"
+      include "RTC_data.h"
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       character CTYPE*4
@@ -305,6 +306,11 @@ C will be reset if `*hvac' included in .cfg.
       ihvacflag=0
       hvacfile='UNKNOWN'
 
+C Runtime coupling data
+      bRTCDemoDefined = .false.
+      cRTCDemoInfo    = 'UNKNOWN'
+      
+      
 C HOT3000: AIM-2.
       iAIM2=0
       LAIM2='UNKNOWN'

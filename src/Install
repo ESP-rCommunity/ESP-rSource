@@ -109,7 +109,8 @@ enableFPE="no"             # FPE-exception handling?
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
-skip_svn_query="no"
+skip_svn_query="no"        # Skip SVN query
+support_RTC="no"           # Add support for run-time couplings via COM
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -118,6 +119,8 @@ skip_svn_query="no"
 # Buildable targets:
 programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew win32test"
 # (bld plt, pro net and vww are not currently built)
+# (win32test is a set of rudementry windows programs used to 
+#  test the COM interface for runtime couplings)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -175,6 +178,7 @@ if [ $# -ne 0 ]; then
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
         --skip_svn_query) skip_svn_query="yes";    shift;;
+        --RTC)          support_RTC="yes";         shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -307,6 +311,9 @@ if [ $help -eq 1 ]; then
   echo "        mode. Default options will be selected, unless "
   echo "        alternatives are specified in command-line parameters."
   echo " "
+  echo "    --RTC: Include support for run-time couplings with external"
+  echo "        programs (such as TRNSYS)."
+  echo " "
   echo "    --X11, --GTK, --noX:"
   echo "        Build ESP-r using the specified graphics library (that",
   echo "        is; X11, GTK or noX for a console-only application)."
@@ -315,7 +322,7 @@ if [ $help -eq 1 ]; then
   echo "        in xml and csv formats. Requires the GNU libxml2 and"
   echo "        libstdc++ libraries."
   echo " "
-  echo "    -v, --verbose: Print compilation messages to screen."
+  echo "     -v, --verbose: Print compilation messages to screen."
   echo " "
   echo " Notes:"
   echo " "
@@ -556,11 +563,11 @@ fi
 #-----------------------------------------------------------
 if [ "$mode" = "interactive" ]; then
 
-   if [ "$platform" = "linux" ]  ||
+   if [ "$platform" = "linux"  ] ||
       [ "$platform" = "cygwin" ] ||
-      [ "$platform" = "mingw" ]  ||
-      [ "$platform" = "mac" ]  ||
-      [ "$platform" = "sun" ] ; then
+      [ "$platform" = "mingw"  ] ||
+      [ "$platform" = "mac"    ] ||
+      [ "$platform" = "sun"    ] ; then
       # XML available on platform
       if [ "${xml_libs_found}" = "no" ]; then
 
@@ -1064,6 +1071,9 @@ esac
 # Append versioning information library
 ULIBS="$ULIBS -lversion"
 
+# Append RT coupling library 
+ULIBS="$ULIBS -lRTC"
+
 # Append exception-handling library (which may contain a dummy
 # function if FPE handling is disabled)
 ULIBS="$ULIBS -lfpe"
@@ -1145,8 +1155,17 @@ if [ "$enableFPE" == "yes" ]; then
 fi
 
 # Append GCC3 fpe target to targets list
-
 targets="$gcc3_fpe_target $targets"
+
+# ---------- Runtime coupling ----------------------------
+# Possibly add support for experimental run-time couplings
+case $support_RTC in
+   yes) RTC_target="enableRTC"  ;;
+   *)   RTC_target="disableRTC" ;;
+esac
+
+# Append runtime coupling target to list:
+targets="$RTC_target $targets"
 
 #===========================================
 ##### End Computer Architecture
@@ -1538,6 +1557,11 @@ echo " Installing ESP-r system. This may take some time."
   else
     echo "       cXML_support      = \"unsupported\""                     >> ${SRCdir}/include/build_info.h 
   fi
+  if [ "$support_RTC" = "yes" ]; then
+    echo "       cRTC_support      = \"supported\""                       >> ${SRCdir}/include/build_info.h 
+  else
+    echo "       cRTC_support      = \"unsupported\""                     >> ${SRCdir}/include/build_info.h    
+  fi
   echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h 
 
 
@@ -1546,7 +1570,7 @@ echo " Installing ESP-r system. This may take some time."
 # Begin build 
 #---------------------------------------------------------------------
 targets="${targets} end_of_exes"
-# Build each executable, 1 by 1.
+# Build each executable, one by one.
 while [ "${targets}" != "end_of_exes" ]
 do
    # The following chunk of code is an ugly, but sh-compatable
@@ -1570,19 +1594,23 @@ do
     echo "Compilation of $target on `date`"> $make_msg_file
   fi
 
-   # Delete existing binary
+   
+   # Assign alias for targets that use non-standard 
+   # naming conventions (that is, esruXXX/XXX).
    case $target in
      libX11) result="${SRCdir}/lib/libxesru.a"    ;;
      libGTK) result="${SRCdir}/lib/libgtkesru.a"  ;;
      libnoX) result="${SRCdir}/lib/libnoxesru.a"  ;;
      enableXML | disableXML ) result="${SRCdir}/lib/libXML.a"  ;;
-     disableGccFPE | enableGccFPE) result="${SRCdir}/lib/libfpe.a" ;;
+     disableGccFPE | enableGccFPE ) result="${SRCdir}/lib/libfpe.a" ;;
+     enableRTC | disableRTC ) result="${SRCdir}/lib/libRTC.a";;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
      win32test) result="${SRCdir}/win32_apps/$target${EXE}" ;;
      *)      result="${SRCdir}/esru${target}/$target${EXE}"   ;;
    esac
-
+   
+   # Delete existing binary
    if [ -r $result ]; then
      if [ "${make_msg_file}" != "" ]; then
        echo " Deleting $result " >> $make_msg_file
@@ -1628,6 +1656,7 @@ do
 
         echo " Install: Fatal error. "
         echo " Executable ${target} could not be built!"
+        echo " (file ${result} could not be found.)"
         echo " Installation aborted."
         echo " "
         exit

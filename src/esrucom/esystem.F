@@ -140,6 +140,9 @@ C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
+
+      include "RTC_data.h"
+
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -591,6 +594,11 @@ C Wind-generated electricity
       iWndSupp = 0
       LWndSupp =' '
 
+     
+C Runtime coupling data
+      bRTCDemoDefined = .false.
+      cRTCDemoInfo    = 'UNKNOWN'     
+     
 C Clear zone related files.
       do 43 i=1,MCOM
         continue
@@ -947,8 +955,18 @@ C hvac file, test and see if it exists.
             call edisp(iuout,outs)
           endif
         endif
+        
+C Run-time Coupling:
+      elseif(WORD(1:4).eq.'*RTC')then
+      
+        RTCBlock: if ( WORD(5:9) .eq. '-Demo' ) then
+        
+          bRTCDemoDefined = .true. 
+          CALL EGETRM(LOUTSTR,K,cRTCDemoInfo,'W','RTC-demo-info',IER)
+        
+        endif RTCBlock
+      
       elseif(WORD(1:4).eq.'*aim')then
-
 C AIM-2, test and see if it exists.
         CALL EGETRM(LOUTSTR,K,LAIM2,'W','AIM-2 infil data',IER)
         XST=.FALSE.

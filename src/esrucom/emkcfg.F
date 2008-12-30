@@ -45,6 +45,9 @@ C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
+
+      include "RTC_data.h"
+ 
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -586,6 +589,14 @@ C Lookup table data file
      &     '  # Lookup table file name'
       endif 
 
+C Run-time couplings 
+      if ( bRTCDemoDefined ) then 
+         WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2) '*RTC-Demo  ',
+     &     cRTCDemoInfo
+     &     (1:lnblnk(cRTCDemoInfo)),
+     &     '  # Flag for simple RTC demo coupling'
+      endif       
+      
 C Write control file if known.
       if(lnblnk(lctlf).eq.0)then
         continue

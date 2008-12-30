@@ -50,6 +50,7 @@ C declare variables describing version and build information
       character cCPL*32              !
       character cXML_support*32      ! Flags for compile-time options
       character cXlibrary*32         !
+      character cRTC_support*32      !
       
       character cTemp_a*124, cTemp_b*124 ! Temporary strings
       integer iLen
@@ -101,6 +102,7 @@ C Arrays mapping binary names to longer descriptions
 C References:
       integer lnblnk
       logical rep_xmlstatus
+      logical bRTCenabled
       
 C include dynamically-created installation information. 
 #include "build_info.h"
@@ -290,7 +292,25 @@ C.........Compiliers ( eg: gcc/g++/g77)
      &         cXML_support(1:lnblnk(cXML_support))
         call edisp(iuout,cTemp_a) 
         
+       if ( bRTCenabled() ) then
 
+          write (cRTC_support, '(A)') "Supported"
+
+        else
+
+          write (cRTC_support, '(A)') "Unsupported"
+
+        endif 
+        
+        
+        write (cTemp_a,'(A,A)')   "  - RTC support:      ",
+     &         cRTC_support(1:lnblnk(cRTC_support))
+        call edisp(iuout,cTemp_a) 
+
+        
+
+        
+        
           
       endif
       

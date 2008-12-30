@@ -314,6 +314,9 @@ C BASESIMP.
 C Flag for whether there is basesimp file
       logical bsm_flag
 
+C Runtime coupling test function:
+      logical bRTCenabled
+      
 C Plant network data
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
@@ -445,6 +448,9 @@ C zone future air temperatures.
 C Initialise control parameters as required by building pid controller,
       call mzibct
 
+C If enabled, intitialize run-time coupling(s)
+      if ( bRTCenabled() ) call initializeRTC()      
+      
 C Initialise  Global Control parameters,
       ipassr=1
       glbrwd=.false.

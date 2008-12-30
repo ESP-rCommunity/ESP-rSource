@@ -34,7 +34,6 @@ disableGccFPE:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libNoFPE
 
-
 enableXML:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libH3KReports
@@ -42,7 +41,15 @@ enableXML:
 disableXML:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libNoH3KReports
-
+    
+enableRTC:    
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libRTC
+    
+disableRTC:
+	cd $(SRCdir)/lib; \
+	$(MAKE) the_libNoRTC   
+    
 # PROGRAMS:
 
 aco: 
