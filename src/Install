@@ -109,13 +109,14 @@ enableFPE="no"             # FPE-exception handling?
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
+skip_svn_query="no"
 
 #-----------------------------------------------------------
 # List of targets understood by bps
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew win32test"
 # (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
@@ -173,6 +174,7 @@ if [ $# -ne 0 ]; then
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
+        --skip_svn_query) skip_svn_query="yes";    shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -295,6 +297,11 @@ if [ $help -eq 1 ]; then
   echo "        This option significantly shortens the time required"
   echo "        to install training and validation files, but shading"
   echo "        files must be updated manually."
+  echo " "
+  echo "    --skip_svn_query: Skip recovery of versioning information "
+  echo "        from svn repostiory. May speed-up builds on some platforms"
+  echo "        but resulting binaries do not contain their svn revision "
+  echo "        number."
   echo " "
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
@@ -1397,12 +1404,15 @@ echo " Installing ESP-r system. This may take some time."
  # svn_info_command="cat ~/svn_info.txt"
  # svn_status_command="cat ~svn_status.txt"
   
- svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
- svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
- notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
+ if [ "$skip_svn_query" != "yes" ]; then 
+    svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
+    svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
+    notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
+    # Attempt to collect URL from svn info
+    URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+ fi
 
- # Attempt to collect URL from svn info
- URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+
 
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
@@ -1569,6 +1579,7 @@ do
      disableGccFPE | enableGccFPE) result="${SRCdir}/lib/libfpe.a" ;;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
+     win32test) result="${SRCdir}/win32_apps/$target${EXE}" ;;
      *)      result="${SRCdir}/esru${target}/$target${EXE}"   ;;
    esac
 
