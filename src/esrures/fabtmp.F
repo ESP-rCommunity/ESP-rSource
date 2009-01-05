@@ -467,9 +467,15 @@ C temperature graphical output.
       SUBROUTINE MOFAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       CALL MOFHED(ICOMP,ISUR,'i')
       XMAX=THKMAX
@@ -477,7 +483,9 @@ C temperature graphical output.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
@@ -496,7 +504,9 @@ C If act = i then initial display, if act = s then single step display.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -515,6 +525,11 @@ C If act = i then initial display, if act = s then single step display.
       character SSPARENT*12
       character act*1
       integer lml   ! string length for construction name.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. 
@@ -525,9 +540,13 @@ C and the simulation and output timesteps.
         if(act.eq.'i')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(act.eq.'s')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
       ENDIF
 
@@ -540,7 +559,10 @@ C and the simulation and output timesteps.
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -549,7 +571,10 @@ C and the simulation and output timesteps.
      &   SDESCR(11:lnblnk(SDESCR))
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -561,7 +586,10 @@ C and the simulation and output timesteps.
      &   SN(1:lnblnk(SN)),' of ',ZN(1:lnblnk(ZN)),' facing ',
      &   CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -580,7 +608,10 @@ C Print info on surface.
      &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,4,0,1)
+        iside=4
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -602,6 +633,7 @@ C MOFDRW displays the construction temperature profiles.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -612,6 +644,13 @@ C IPRZ is material db ref for each layer.
       DIMENSION XVAL1(MZS)
       character act*1,ETEXT*94,TDESCR*5,DS*7,DS1*10,CSTR*25,TCSTR*25
       character zname*12,zdesc*64,ZN*12
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Re-establish available colours.
       call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
@@ -666,14 +705,18 @@ C Commence drawing. Remember that everything shifted over 1
 C to allow for outside temp to be in VAL2(1,?)
           icnt=icnt+1
           X=THKMIN
-          call etplot(X,VAL2(1,J),0,0)
+          iupdown=0
+          isym=0
+          call etplot(X,VAL2(1,J),iupdown,isym)
           X=0.
+          iupdown=1
           DO 90 L=1,NNT
-            call etplot(X,VAL2(L+1,J),1,0)
+            call etplot(X,VAL2(L+1,J),iupdown,isym)
             M=((L-1)/2)+1
             X=X+ETHK(M)/2.
    90     CONTINUE
-          call etplot(THKMAX,VAL2(NNT+2,J),1,0)
+          iupdown=1
+          call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
           call forceflush
           if(act.eq.'a')then
 
@@ -694,20 +737,27 @@ C each timestep. Pause 200msec at each timestep.
             call STIME(j,TDESCR)
             call STDATE(IYEAR,ID,DS,DS1)
             WRITE(ETEXT,'(4A)')' Time ',DS1,' at ',TDESCR
-            call viewtext(ETEXT,5,0,1)
+            iside=5
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
 
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
               call winscl('i',nifgrey-1)
               X=THKMIN
-              call etplot(X,VAL2(1,J),0,0)
+              iupdown=0
+              isym=0
+              call etplot(X,VAL2(1,J),iupdown,isym)
               X=0.
+              iupdown=1
               DO 91 L=1,NNT
-                call etplot(X,VAL2(L+1,J),1,0)
+                call etplot(X,VAL2(L+1,J),iupdown,isym)
                 M=((L-1)/2)+1
                 X=X+ETHK(M)/2.
    91         CONTINUE
-              call etplot(THKMAX,VAL2(NNT+2,J),1,0)
+              iupdown=1
+              call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
               call forceflush()
               call winscl('-',0)
             endif

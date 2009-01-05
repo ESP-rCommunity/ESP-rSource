@@ -30,7 +30,9 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RADTYP/IDNGH
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER*26 ITEM(16)
       character hold*72,h*72
@@ -38,6 +40,11 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL mxmn
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -155,6 +162,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -163,6 +172,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -171,6 +182,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -179,6 +192,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           endif
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
@@ -233,8 +248,10 @@ C Second set of axis.
         CALL EGETWR(HOLD,K,YMIN(6),0.,0.,'-','rh mn',IER)
         if(ier.ne.0)goto 43
         DO 70 I=1,6
-          call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,bysc,sca,
-     &              Xadd,addY)
+          igwid=igw
+          igheight=igwh
+          call axiscale(igwid,igheight,TMIN,TMAX,YMIN(I),YMAX(I),
+     &      XSC,bysc,sca,Xadd,addY)
           YSC(I)=bysc
           Yadd(I)=addY
   70    CONTINUE
@@ -286,6 +303,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.2)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -294,6 +313,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.1)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -302,6 +323,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         elseif(onright.eq.0)then
           if(onleft.eq.2)then
             CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -310,6 +333,8 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
           elseif(onleft.eq.0)then
             CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
           endif
+          igw=igr-igl
+          igwh=igb-igt
         endif
         if(IFS.ne.IMFS)call winfnt(IFS)
         call startbuffer()
@@ -365,6 +390,7 @@ C season (1 char) '-' do not bother 's' indicate season.
       PARAMETER (MT=24)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C THE FOLLOWING COMMON BLOCK CONTAINS THE SCALE AND pixel offsets
@@ -388,6 +414,11 @@ C Typical periods and season definitions.
       integer onleft  ! number of left axis
       integer onright ! number of right axis
       integer months
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C The 6 dimensions are as follows:
 C  1= diff solar, 2= db temperature, 3 = dir solar rad,
@@ -471,9 +502,13 @@ C SHOULD DISTRIBUTION HAVE A LINE MARKING AT THIS TIME.
 
 C NOW PLOT DISRTIBUTION.
             IF(K.EQ.KS)then
-              call etplot(TIME,Y,0,0)
+              iupdown=0
+              isym=0
+              call etplot(TIME,Y,iupdown,isym)
             else
-              call etplot(TIME,Y,JPEN,MK)
+              iupdown=JPEN
+              isym=MK
+              call etplot(TIME,Y,iupdown,isym)
             endif
             if(K.eq.KF)PT24(I)=Y
    40     CONTINUE
@@ -587,6 +622,7 @@ C onleft and onright passed in to indicate which axes to draw.
       SUBROUTINE CLMDRWD(IDAY,onleft,onright)
       PARAMETER (MT=24)
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
@@ -604,6 +640,11 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       logical colok
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       DATA IPEN/-5,1,-5,-105,-105,-205/
       DATA MARK/8,6,1,4,5,3/
@@ -686,9 +727,13 @@ C SHOULD DISTRIBUTION HAVE A LINE MARKING AT THIS TIME.
 
 C NOW PLOT DISRTIBUTION.
           IF(K.EQ.KS)then
-            call etplot(TIME,Y,0,0)
+            iupdown=0
+            isym=0
+            call etplot(TIME,Y,iupdown,isym)
           else
-            call etplot(TIME,Y,JPEN,MK)
+            iupdown=JPEN
+            isym=MK
+            call etplot(TIME,Y,iupdown,isym)
           endif
           if(K.eq.KF)PT24(I)=Y
    40   CONTINUE
@@ -709,7 +754,9 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
 
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -719,6 +766,13 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
       integer onright ! number of right axis
       logical colok
       character acthor*1
+
+C Local variables to pass to edline and axiscale.
+#ifdef OSX
+      integer iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+#else
+      integer*8 iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+#endif
 
 C Check if can draw in colour.
       colok=.false.
@@ -898,7 +952,10 @@ C use igr. If there are two axis then set right-most position.
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok) call winscl('z',I-1) ! symbol using line colour
             call wstxpt(igr+100,igt-22,'RH %')
-            call edline(igr+100,igt-40,igr+135,igt-40,5)
+            iigr100=igr+100
+            iigr135=igr+135
+            iigt40=igt-40
+            call edline(iigr100,iigt40,iigr135,iigt40,5)
             call esymbol(igr+120,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok) call winscl('-',0)
@@ -911,7 +968,10 @@ C If solar or wind direction is the other then use the +50 slot.
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok) call winscl('z',I-1) ! symbol using line colour
             call wstxpt(igr+50,igt-22,'RH %')
-            call edline(igr+50,igt-40,igr+85,igt-40,5)
+            iigr50=igr+50
+            iigr85=igr+85
+            iigt40=igt-40
+            call edline(iigr50,iigt40,iigr85,iigt40,5)
             call esymbol(igr+70,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok) call winscl('-',0)
@@ -921,7 +981,10 @@ C If solar or wind direction is the other then use the +50 slot.
      &                 1,1,'RH %')
             if(colok) call winscl('z',I-1) ! symbol using line colour
             call wstxpt(igr,igt-22,'RH ')
-            call edline(igr,igt-40,igr+35,igt-40,5)
+            iigr=igr
+            iigt40=igt-40
+            iigr35=igr+35
+            call edline(iigr,iigt40,iigr35,iigt40,5)
             call esymbol(igr+20,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
             if(colok) call winscl('-',0)
@@ -944,9 +1007,17 @@ C   is negative draw only the past value.
       SUBROUTINE PCGRF(ICV,ICL,IDS,IDF)
       PARAMETER (MD=365,MT=24)
       COMMON/CLIM1/CLMV(7,MD,MT),ICMAX,ICMAX2,ICMIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
       DATA CLMVAR/'S rad W/m2','Temp Deg.C','Rel hum pc',
@@ -974,7 +1045,9 @@ C  Draw the axis for the climatic variable and then draw the graph.
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
-      call axiscale(igw,igwh,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
      &              Xaddd,Yaddd)
       call linescale(igl,Xaddd,XSC,igb,Yaddd,YSC)
 
@@ -991,13 +1064,16 @@ C If the previous data is to be drawn. Loop.
           call winscl('z',2)
         endif
         START=TMIN+1.0
-        call etplot(START,CLMV(7,IDS,1),0,0)
+        iupdown=0
+        isym=0
+        call etplot(START,CLMV(7,IDS,1),iupdown,isym)
         IHOUR=0
+        iupdown=1
         DO 100 I=IDS,IDF
           JJ=IHOUR
           DO 200 J=1,24
             IHOUR=JJ+J
-            call etplot(real(IHOUR),CLMV(7,I,J),1,0)
+            call etplot(real(IHOUR),CLMV(7,I,J),iupdown,isym)
   200     CONTINUE
   100   CONTINUE
         if(colok)then
@@ -1010,13 +1086,16 @@ C If the previous data is to be drawn. Loop.
 C  Draw graphs of either solar radiation,temperature,
 C  realtive humidity or wind velocity and direction.
       START=TMIN+1.0
-    7 call etplot(START,CLMV(ICVS,IDS,1),0,0)
+    7 iupdown=0
+      isym=0
+      call etplot(START,CLMV(ICVS,IDS,1),iupdown,isym)
       IHOUR=0
+      iupdown=1
       DO 10 I=IDS,IDF
         JJ=IHOUR
         DO 20 J=1,24
           IHOUR=JJ+J
-          call etplot(real(IHOUR),CLMV(ICVS,I,J),1,0)
+          call etplot(real(IHOUR),CLMV(ICVS,I,J),iupdown,isym)
    20   CONTINUE
    10 CONTINUE
       GOTO (3,1111,1111,1111,5,6),ICVS

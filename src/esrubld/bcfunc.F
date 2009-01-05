@@ -371,7 +371,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -600,7 +600,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -5852,8 +5852,7 @@ C ******************** BCL23
 C This subroutine dynamically allocates heating and cooling setpoint
 C temperatures from a previously defined temporal file based on column
 C numbers specifed in the contol law. It is a simplified implementation
-C of control law 1 (basic heating and cooling). It can use two items in tdf:
-C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
+C of control law 1 (basic heating and cooling)
       SUBROUTINE BCL23
 #include "building.h"
 #include "tdf2.h"
@@ -5871,7 +5870,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS)
 
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
@@ -5907,19 +5906,15 @@ C Read setpoints from tdf here (CSP and HSP)
 C "COLUMNSETP" is an integer specifying the column where the setpoints
 C should be read from. This could be the ISD but when calling the RCTDFB it
 C seems that is always set to 2 (and it is also used in few other places as 2).
-      COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
-      if(IACTIV(ICF).ne.0)then
-        itdi=IACTIV(ICF)
-      elseif(IHTCLSETP(ICF).ne.0)then
-        itdi=IHTCLSETP(ICF) 
-      endif   
-      IFOC=itdi
-      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-      HSP=VAL(COLUMNSETP)
-      COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
-      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-      CSP=VAL(COLUMNSETP)
-        
+       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
+       itdi=IACTIV(ICF)
+       IFOC=itdi
+       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+       HSP=VAL(COLUMNSETP)
+       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
+       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+       CSP=VAL(COLUMNSETP)
+
 C Debug.
 c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
 c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf

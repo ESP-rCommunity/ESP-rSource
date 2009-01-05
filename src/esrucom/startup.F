@@ -230,8 +230,8 @@ C Set defaults and exemplars depending on whether Unix or NT.
       endif
 
 C Debug.
-      write(6,*) 'standard databases are at ',
-     &  standarddbpath(1:lnblnk(standarddbpath))
+C      write(6,*) 'standard databases are at ',
+C     &  standarddbpath(1:lnblnk(standarddbpath))
 
 C If running in dll mode skip reading .esprc file.
       if(dll)then
@@ -1610,11 +1610,12 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C Debugging code.
+C        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1677,11 +1678,11 @@ C If act is asci2bin or bin2asci read ascii file name
         goto 41
 
   42    continue
-        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1748,12 +1749,12 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-     &    data2,data3
-        call edisp248(iuout,outs,90)
+C        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+C     &    data2,data3
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1831,12 +1832,12 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-     &    data2,data3
-        call edisp248(iuout,outs,90)
+C        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+C     &    data2,data3
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1896,10 +1897,10 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1953,10 +1954,10 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -2434,7 +2435,7 @@ C Errors.
       end
 
 C parcnv parse command line paramters for ecnv.
-      subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
+      subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       
       integer lnblnk  ! function definition
@@ -2443,7 +2444,7 @@ C parcnv parse command line paramters for ecnv.
 
       integer iargc,m
       integer termtype
-      integer i,itrc,itmprm,iobs,ichop
+      integer i,iverb,itmprm,iobs,ichop
       real conv
       character argument*72,prog*48,inf*144,outs*248,appn*24
       character iform*24,oform*24,ouf*144,ucfg*72,mode*8
@@ -2454,7 +2455,7 @@ C parcnv parse command line paramters for ecnv.
       ouf  = 'UNKNOWN'
       ucfg  = 'UNKNOWN'
       conv = 0.001
-      itrc = 0
+      iverb = 0
       itmprm = 1
       iobs  = 0
       ichop = 0
@@ -2510,7 +2511,7 @@ C If one parameter.
       call edisp(iuout,' ')
           stop
         elseif(argument(1:2).eq.'-v')then
-          itrc = 1
+          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:3).eq.'-mm')then
           conv = 0.001
         elseif(argument(1:6).eq.'-metre')then

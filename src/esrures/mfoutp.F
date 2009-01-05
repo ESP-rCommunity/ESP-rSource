@@ -47,6 +47,7 @@ C act='p' iget parameters already set.
       common/pophelp/h(60)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -101,6 +102,11 @@ C Simulator parameters.
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
@@ -659,7 +665,11 @@ C from zone iocpzone. Start with assumption of full occupancy.
               elseif (MENUTYPE.eq.3) then
 
 C Draw next section of line.
-                if (ioldpos.eq.1) call etplot(TIMEold(IX),Yold(IX),0,0)
+                iupdown=0
+                isym=0
+                if (ioldpos.eq.1)then
+                  call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                endif
                 ioldpos=0
                 IPEN=1
                 MARK=0
@@ -683,7 +693,9 @@ C than that of the number of colours re-use an earlier colour.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-                call etplot(TIME,Yold(IX),IPEN,MARK)
+                iupdown=IPEN
+                isym=MARK
+                call etplot(TIME,Yold(IX),iupdown,isym)
                 if(colok)call winscl('-',0)
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
@@ -1146,6 +1158,7 @@ C to graphical result display of network flows.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -1162,6 +1175,11 @@ C to graphical result display of network flows.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -1176,6 +1194,8 @@ C pixel references for calls to viewtext.
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 
@@ -1187,17 +1207,31 @@ C pixel references for calls to viewtext.
         WRITE(ETEXT,'(4A)')'Lib: ',LAFRES(1:lsn1),
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &  SDESCR(11:lnblnk(SDESCR))
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       iancline=0
       if(graftitle(1:2).ne.'  ')then
         t64=graftitle
-        if(iancline.gt.0)CALL viewtext(t64,4,1,2)
-        if(iancline.eq.0)CALL viewtext(t64,3,1,2)
+        if(iancline.gt.0)then
+          iside=4
+          isize=1
+          ifont=2
+          call viewtext(t64,iside,isize,ifont)
+        endif
+        if(iancline.eq.0)then
+          iside=3
+          isize=1
+          ifont=2
+          call viewtext(t64,iside,isize,ifont)
+        endif
       endif
 
       RETURN

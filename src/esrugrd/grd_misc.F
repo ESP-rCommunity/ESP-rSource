@@ -239,8 +239,16 @@ C FACDRW draws the elevation of the surface.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       DIMENSION MTHNAM(12)
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       CHARACTER*72 ETEXT
       CHARACTER*3 MTHNAM
@@ -252,12 +260,17 @@ C FACDRW draws the elevation of the surface.
 C Display header information.
       call startbuffer()
       CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
 
       icon=IZSTOCN(icomp,isur)
       WRITE(ETEXT,1)MTHNAM(MON),IHOUR,ISUR,SSNAME(icon)
     1 FORMAT(' Shading patterns: ',A3,' at hour',I3,' for surface',I3,
      &       ' ',a)
-      CALL viewtext(ETEXT,1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
@@ -267,12 +280,15 @@ C Draw a scale vertical axis.
 
 
 C DRAW ZONE FACE.
-      call etplot(XFT(1),ZFT(1),0,0)
+      iupdown=0
+      isym=0
+      call etplot(XFT(1),ZFT(1),iupdown,isym)
 
+      iupdown=1
       DO 10 I=2,NV
-        call etplot(XFT(I),ZFT(I),1,0)
+        call etplot(XFT(I),ZFT(I),iupdown,isym)
    10 CONTINUE
-      call etplot(XFT(1),ZFT(1),1,0)
+      call etplot(XFT(1),ZFT(1),iupdown,isym)
       call forceflush()
 
       RETURN

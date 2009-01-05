@@ -5,14 +5,28 @@ C------------------------
 #include "viewer.h2"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       character outs*80
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       LOGICAL J1J2
       IF(MMOD.LT.0)RETURN
       call startbuffer()
-      call axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       scap=sca*0.2
       addx=(FLOAT(igw)*0.4)/scap
       addy=(FLOAT(igwh)*0.4)/scap
@@ -36,15 +50,20 @@ C------------------------
 
         IF(X3.EQ.X2 .AND. Y3.EQ.Y2)GOTO 40
 
-        CALL etplot(X2,Y2,0,0)
-10      CALL etplot(X3,Y3,1,0)
+        iupdown=0
+        isym=0
+        CALL etplot(X2,Y2,iupdown,isym)
+10      iupdown=1
+        CALL etplot(X3,Y3,iupdown,isym)
 20      X1=X3
         Y1=Y3
         GOTO 40
 
 30      IF(J1J2)GOTO 40
 
-        CALL etplot(X2,Y2,1,0)
+        iupdown=1
+        isym=0
+        CALL etplot(X2,Y2,iupdown,isym)
         X1=X2
         Y1=Y2
 40      CONTINUE
@@ -55,9 +74,11 @@ C   PRINT Z LIMITS
 
 C   LABEL PLAN WITH E,F,M
       IPLN=1
-      call etlabel('Eye',DDDD(1),DDDD(2),0,ifs)
-      call etlabel('F',CCCC(1),CCCC(2),0,ifs)
-      call etlabel('M',BBBB(1),BBBB(2),0,ifs)
+      ipos=0
+      isize=ifs
+      call etlabel('Eye',DDDD(1),DDDD(2),ipos,isize)
+      call etlabel('F',CCCC(1),CCCC(2),ipos,isize)
+      call etlabel('M',BBBB(1),BBBB(2),ipos,isize)
       call forceflush()
 
       RETURN

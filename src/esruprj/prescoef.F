@@ -835,7 +835,8 @@ C default file names for databases
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
 
-      CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8,t72*72
+      CHARACTER naco*40,type*4,H*72,msga*124,msgb*124,tmode*8
+      character t144*144
       CHARACTER LAPROB*72,LTMP*72,LLTMP*144,outs248*248
       character doit*248
 
@@ -1327,9 +1328,9 @@ C Save data to file.
      &    'append to existing pres coef database',IWHICH,8)
         IF (IWHICH.EQ.1) THEN
 
-C Read in pc from file c2e.cpdb
-          t72='c2e.cpdb'
-          CALL ERPRCDB(t72,0,3,IER)
+C Read in pc from file c2e.cpdb rather than the standard pressure db.
+          t144='c2e.cpdb'
+          CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) return
 
           H(1)='To which file do you want to write the pressure data?'
@@ -1377,10 +1378,10 @@ C          if(ier.eq.-3) return ! cancel detected.
           endif
         ELSE
 
-C Read in pc from file c2e.cpdb
+C Read in pc from file c2e.cpdb rather than the standard pressure db.
           ndep=NPRE
-          t72='c2e.cpdb'
-          CALL ERPRCDB(t72,ndep,3,IER)
+          t144='c2e.cpdb'
+          CALL ERPRCDB(t144,ndep,3,IER)
           if (ier.ne.0) return
 
 C If LAPRES=DAPRES change LAPRES to local pressc.db1 and write data.
@@ -1401,22 +1402,19 @@ C current contents of pc-data in common block.
       SUBROUTINE EMKAPCDB(FINA,IER)
 #include "net_flow.h"
 #include "building.h"
-#include "esprdbfile.h"
       integer lnblnk  ! function definition
 
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFLDOC/DEPRE(MPRD)
       common/FILEP/IFIL
-      common/OUTIN/IUOUT,IUIN
 
-      character LAPROB*72,FINA*144
+      character FINA*144
       character DEPRE*40
 
 C Check the number of pressure coefficients and give a warning 
 C message if the number is too big.
       IF(NPRE.GT.MPRD)THEN
-        CALL LUSRMSG(' too many items to put in ',LAPRES,'W')
+        CALL LUSRMSG(' too many items to put in ',FINA,'W')
         IER=1
         RETURN
       ENDIF
@@ -1466,9 +1464,21 @@ C IER=0 OK, IER=1 problem.
       character DEPRE*40,KEY*1,outwin*72,H*72,COMPS*40
       character*72 ITEMS(14)
       character LAPROB*72
+      character lworking*144,fs*1
       LOGICAL OK,dok,moddb
+      integer lndbp   ! for length of standard database path
+      integer lnwkg   ! for length of working file name
+      logical unixok  ! to check for database path file separators
 
-      IER=0
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C      IER=0
       moddb =.false.
 
 C Create a menu showing the available database items.  Allow user to
@@ -1562,6 +1572,8 @@ C Check for changes/ask user to save.
      &      'Update the pressure coef. database for recent changes?',
      &      OK,dok,2)
           if(OK)then
+
+C << ipathapres >>
             CALL EMKAPCDB(LAPRES,IER)
             moddb =.false.     
           endif      
@@ -1574,6 +1586,7 @@ C The block with the help messages.
       ELSEIF(IVERT.EQ.(NITMS-2)) THEN
 
 C Update pressure coefficient database. 
+C << ipathapres >>
         CALL EMKAPCDB(LAPRES,IER)
         moddb =.false. 
       ELSEIF(IVERT.EQ.(NITMS-3))THEN
@@ -1743,10 +1756,10 @@ C Editing an existing pressure coefficient set
         CALL KEYIND(NITMS,IVERT,IFOC,IO)
         CALL EDPCST(IER,moddb,IFOC)
       else
-        INO=-1
+        INOO=-1
         GOTO 3 
       ENDIF
-      INO=-4
+      INOO=-4
       GOTO 3 
       END
 
@@ -1829,20 +1842,54 @@ C Check whether number of returned numbers is 8, if so, extract data.
 
 C ************* ERPRCDB
 C Given file name, read an ASCII pressure coefficient database.
+C If FINA is a blank then use the current lapres string (depending on
+C its location).
 C INPC is the number of pc sets that allready exist in case
 C that the data that is read in should be appended to an existing file.
       SUBROUTINE ERPRCDB(FINA,INPC,ICO,IER)
 #include "net_flow.h"
+#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       common/MFLDOC/DEPRE(MPRD)
 
-      CHARACTER OUTSTR*124,DEPRE*40,setn*40,FINA*72 
+      CHARACTER OUTSTR*124,DEPRE*40,setn*40,FINA*144 
+      character lworking*144,fs*1
+      logical unixok
 
-C Open the file, of problem return.
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C If FINA is blank then use the current lapres variable.
       IUM=IFIL+1
-      CALL EFOPSEQ(IUM,FINA,ICO,IER)
+      if(FINA(1:2).eq.'  ')then
+       
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          CALL EFOPSEQ(IUM,lapres,1,IER)
+        elseif(ipathapres.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+
+C Debug.
+          write(6,*) 'working pressure coef ',lworking
+          CALL EFOPSEQ(IUM,lworking,1,IER)
+        endif
+      else
+        CALL EFOPSEQ(IUM,FINA,1,IER)
+      endif
+
+C If problem return.
       IF(IER.NE.0) THEN
         CALL USRMSG('problems reading press coef db',' ','W')
         IER=1

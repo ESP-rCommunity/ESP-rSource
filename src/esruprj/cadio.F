@@ -62,6 +62,11 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       if(.NOT.cfgok)then
         call usrmsg(' You must load a model before',
@@ -130,10 +135,13 @@ C Help text for this menu.
       H(42)='   are > 4 sides use POLYLINE entities.  Or you could use'
       H(43)='   POLYLINE entities for all zone surfaces.'
       H(44)=' '
-      H(45)='NOTE: if you are useing Native Windows version the paths'
-      H(46)='to the exported files may not work correctly. '
+      H(45)='NOTE: if you need to debug the import of CAD data turn'
+      H(46)='the reporting level from silent or standard to detailed.'
+      H(47)=' '
+      H(48)='NOTE: if you are useing Native Windows version the paths'
+      H(49)='to the exported files may not work correctly. '
  
-      CALL EMENU('Export Model',ITEMS1,43,INO1)
+      CALL EMENU('Export Model',ITEMS1,11,INO1)
 
 C Prepare filter command lines with path.
 
@@ -344,8 +352,11 @@ C If user canceled the wireframe export loop back.
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-          CALL viewtext(ETEXT,1,1,1)
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          iside=1
+          isize=1
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
 
 C Toggle the wirefram export file closed.
           call usrmsg('sending wireframe...done.',' ','-')
@@ -518,7 +529,7 @@ C        call edisp(iuout,'Use a VRML viewer to explore it.')
       ELSEIF(INO1.EQ.10)THEN
       
 C Pop up the help text.
-       CALL PHELPD('export menu',46,'-',0,0,IER)
+       CALL PHELPD('export menu',49,'-',0,0,IER)
 
       ELSEIF(INO1.EQ.11)THEN
         RETURN

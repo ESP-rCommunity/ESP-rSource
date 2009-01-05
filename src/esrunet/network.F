@@ -142,7 +142,9 @@ C Graphics and ESP-r default commons
       COMMON/MOD/MODEL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/FUNIT/IUCFG,IUPDB
@@ -332,6 +334,8 @@ C messages to stderr in case of rule script program control.
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
         CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opensetup
@@ -965,6 +969,7 @@ C Connection commons
      & NCONWP(MNCNN),idatrdom(MNCNN),ddtagatr(MNCNN,MIATRB,5),
      & ddatrib(MNCNN,MIATRB,3),ddmenuatr(MNCNN,MIATRB)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Grid commons
@@ -981,6 +986,15 @@ C Grid commons
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12,OUTS1*26
       LOGICAL GON,SON,greyok
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Clear the screen
       CALL startbuffer
@@ -1036,8 +1050,10 @@ C Draw the grid with the current scaling parameters.
         YMAX=VIEWLIM(6)
       ENDIF
 
-      CALL AXISCALE(IGW,IGWH,XMIN,XMAX,YMIN,YMAX,XSC,YSC,SCA,XADD,
-     &       YADD)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,SCA,
+     &       XADD,YADD)
 
 C Draw the Lower and Left extents of the grid and labels.
       IF(IVIEW.EQ.1.OR.IVIEW.EQ.2)THEN
@@ -1085,10 +1101,16 @@ C Draw on the X grid lines.
           GSPCW=GRSPC(2)
         ENDIF
         GX=(INT(XMIN/GSPCW)*GSPCW)+GSPCW
-        CALL ETPLOT(GX,YMIN,0,0)    
-10      CALL ETPLOT(GX,YMAX,-203,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(GX,YMIN,iupdown,isym)    
+10      iupdown=-203
+        isym=0
+        CALL ETPLOT(GX,YMAX,iupdown,isym)
         GX=GX+GSPCW 
-        CALL ETPLOT(GX,YMIN,0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(GX,YMIN,iupdown,isym)
         IF(GX.LT.XMAX) GOTO 10
 
 C Draw on the Y grid lines.
@@ -1100,10 +1122,16 @@ C Draw on the Y grid lines.
           GSPCH=GRSPC(3)
         ENDIF
         GY=(INT(YMIN/GSPCH)*GSPCH)+GSPCH
-        CALL ETPLOT(XMIN,GY,0,0)    
-20      CALL ETPLOT(XMAX,GY,-203,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XMIN,GY,iupdown,isym)    
+20      iupdown=-203
+        isym=0
+        CALL ETPLOT(XMAX,GY,iupdown,isym)
         GY=GY+GSPCH
-        CALL ETPLOT(XMIN,GY,0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XMIN,GY,iupdown,isym)
         IF(GY.LT.YMAX) GOTO 20
 
 C Return to black lines after drawing grid.
@@ -1112,7 +1140,10 @@ C Return to black lines after drawing grid.
 
 C Draw on the network description. 
       WRITE(OUTS1,'(A,A)')'Network Type: ',NWKTYPSTR(INWKTYP)(1:12)
-      CALL viewtext(OUTS1,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs1,iside,isize,ifont)
 
 C Redraw the icons with the current scaling, limits and layer values
       IF(NNICN.GT.0)THEN
@@ -2041,6 +2072,7 @@ C Grid commons
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
 
 C Icon commons
@@ -2055,6 +2087,7 @@ C Icon commons
      & NWICNTXT(MICN,60) 
 
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C connection points property array
@@ -2075,6 +2108,13 @@ C      REAL ENV,PARA,CPARA,SUB_MATRIX_A,SUB_MATRIX_B
 C      REAL MATRIX_A,MATRIX_B
 
       LOGICAL ISEL,CSEL,INBOUND,CLOSE
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+      integer iix1,iiy1,iix2,iiy2  ! passed to edline
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iix1,iiy1,iix2,iiy2 ! passed to edline
+#endif
 
       X=XYZICON(ICN,1)
       Y=XYZICON(ICN,2)
@@ -2137,7 +2177,11 @@ C If select draw double thickness, otherwise use the line style of the icon.
               elseif(IVEICN(ICN,I,5).eq.1)then
                 call eswline(ix1,iy1,ix2,iy2)
               elseif(IVEICN(ICN,I,5).eq.2)then
-                call edline(ix1,iy1,ix2,iy2,3)
+                iix1=IX1
+                iiy1=IY1
+                iix2=IX2
+                iiy2=IY2
+                call edline(iix1,iiy1,iix2,iiy2,3)
               elseif(IVEICN(ICN,I,5).eq.3)then
                 call edash(ix1,iy1,ix2,iy2,3)
               elseif(IVEICN(ICN,I,5).eq.4)then
@@ -2285,18 +2329,21 @@ C            WRITE(6,*),CPP(1,III),III
           else
 
 C Otherwise draw a square.
+            iupdown=0
+            isym=0
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)-XYSIZCP/2.,0,0)
+     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
+            iupdown=1
             CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
-     &                CONCP(ICN,I,2)-XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)+XYSIZCP/2.,
-     &                CONCP(ICN,I,2)+XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)+XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)+XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)+XYSIZCP/2.,iupdown,isym)
             CALL ETPLOT(CONCP(ICN,I,1)-XYSIZCP/2.,
-     &                CONCP(ICN,I,2)-XYSIZCP/2.,1,0)
+     &                CONCP(ICN,I,2)-XYSIZCP/2.,iupdown,isym)
           endif
 
 C Reset the line colour to standard.
@@ -2329,6 +2376,7 @@ C Icon commons
      & NIVE(MICN),NIVD(MICN),IVDOT(MICN,MICND,4),NIVA(MICN),
      & IVARC(MICN,MICND,7),NIVL(MICN),IVLBL(MICN,MICND,3),NIVT(MICN)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/MENUCHW,IGL,IGR,IGT,IGB,IGW,IGWH
 
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)

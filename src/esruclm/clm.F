@@ -32,7 +32,9 @@ C climatic data sets compatible with ESP-r.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -234,11 +236,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call opencpw
           call opensetup
           call updcapt(1)
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         call setzscale()
         call setgscale()
@@ -544,6 +550,8 @@ C Graphic analysis. Enlarge graphics area if small.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
             elseif(iglib.eq.2)then
               continue
             endif
@@ -576,6 +584,8 @@ C Psychrometric analysis. Enlarge graphics area if small.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
             elseif(iglib.eq.2)then
               continue
             endif
@@ -1015,8 +1025,10 @@ C hour in any specified day.
       common/appw/iappw,iappx,iappy
       COMMON/RADTYP/IDNGH
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/exporttg/xfile,tg,delim
@@ -1047,7 +1059,9 @@ C displaying the following data.
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           CALL win3d(menuchw,10,22,5,3,igl,igr,igt,igb,igw,igwh)
-        elseif(iglib.eq.2)then
+          igw=igr-igl
+          igwh=igb-igt
+       elseif(iglib.eq.2)then
           continue
         endif
       ENDIF

@@ -37,6 +37,7 @@ C The routine PCHELP contains a description of a
 C database entry.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
@@ -49,6 +50,7 @@ C Path to problem and command line file (if any).
       common/appw/iappw,iappx,iappy
 
       common/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -154,7 +156,9 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
      &'ESP-r Plant db Manager: enquiries to esru@strath.ac.uk')
 
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,7,1,1,3,igl,igr,igt,igb,igw,igh)
+        CALL win3d(menuchw,7,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw

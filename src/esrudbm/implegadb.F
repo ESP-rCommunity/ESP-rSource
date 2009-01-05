@@ -926,7 +926,11 @@ C Close file before exiting.
 C ************* IMPROFL 
 C IMPROFL: Imports from legacy ascii profile file (AFIL) to a generic
 C profile db file (BFIL). Unit IFA is the asci file channel and
-C IFB as the binary channel. 
+C IFB as the binary channel.
+
+C Use the event common blocks for the data - the ASCII file is
+C not actually used.
+ 
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
       
@@ -951,10 +955,16 @@ C IFB as the binary channel.
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
      &               nbitrep(MGIT),ibitusc(MGIT)
 
+C Event profiles common blocks.
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40
+
       dimension DayT(72),ST(72),FN(72),A(72),B(72),C(72)
       dimension Patr(72)
 
-      CHARACTER OUTSTR*124,AFIL*72,BFIL*72
+      CHARACTER AFIL*72,BFIL*72
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character itdat*248,itrep*248
@@ -962,7 +972,7 @@ C IFB as the binary channel.
       character dbnote*72,c8*8,c20*20,outs*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
-      character dstmp*24,DESC*40,DayT*8,Patr*8
+      character dstmp*24,DayT*8,Patr*8
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -996,15 +1006,8 @@ C The binary file will be overwritten.
         return
       endif
 
-C Open the ASCII file for reading.
-      CALL EFOPSEQ(IFA,AFIL,1,IER)
-
-C Proceed, there is only one category in a legacy pressure db file
-C so put all of these in one category.
-      CALL STRIPC(IFA,OUTSTR,0,ND,1,'no items',IER)
-      IF(IER.NE.0)RETURN
-      K=0
-      CALL EGETWI(OUTSTR,K,nbitem(idbh),1,1,'-','nb items',IER)
+C Use the PDBITM and PDBELM common blocks.
+      nbitem(idbh)=NPDBITEMS
       nbcatit(1)=nbitem(idbh)
 
 C Write out db header and place holders for category start record pointers
@@ -1048,12 +1051,8 @@ C should match that in instanitm of dbmedit.F
         nbitdat(iit)=19
         nbitrep(iit)=18
 
-        CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCG,DESC',IER)
-        IF(IER.NE.0)RETURN
-        K=0
-        CALL EGETWI(OUTSTR,K,NCG,0,0,'-','NCG',IER)
-        CALL EGETRM(OUTSTR,K,DESC,'W','profile descr',IER)
-        write(itmenu(iit),'(a)') DESC(1:32)
+C NCG and DESC from commons.
+        write(itmenu(iit),'(a)') PDBDESC(iit)(1:32)
         do 119 J = 1,72
           DayT(j)='all'
           Patr(j)='none'
@@ -1063,26 +1062,24 @@ C should match that in instanitm of dbmedit.F
           B(j)=0.0
           C(j)=0.0
   119   continue
-        DO 20 J = 1,NCG
-          CALL STRIPC(IFA,OUTSTR,0,ND,1,'ST,FN,A,B',IER)
-          IF(IER.NE.0)RETURN
-          K=0
-          CALL EGETWR(OUTSTR,K,ST(j),0.,0.,'-','Start',IER)
-          CALL EGETWR(OUTSTR,K,FN(j),0.,0.,'-','Finish',IER)
-          CALL EGETWR(OUTSTR,K,A(j),0.,0.,'-','VAL 1',IER)
-          CALL EGETWR(OUTSTR,K,B(j),0.,0.,'-','VAL 2',IER)
+        DO 20 J = 1,NCG(iit)
+          ST(j)=ICGS1(iit,j)
+          FN(j)=ICGF1(iit,j)
+          A(j)=CGS1(iit,j)
+          B(j)=CGL1(iit,j)
    20   CONTINUE
 
 C If last FN is not 24.0 then increment periods with ST equal to
 C the last FN.
-        if(FN(NCG).lt.24.0)then
-          NCG=NCG+1
-          ST(NCG)=FN(NCG-1)
+        if(FN(NCG(iit)).lt.24.0)then
+          NCG(iit)=NCG(iit)+1
+          ST(NCG(iit))=FN(NCG(iit)-1)
         endif
-        if(lnblnk(DESC).lt.32)then
-          write(itdoc,'(2a)') DESC(1:lnblnk(DESC)),' is...'
+        if(lnblnk(PDBDESC(iit)).lt.32)then
+          write(itdoc,'(2a)') PDBDESC(iit)(1:lnblnk(PDBDESC(iit))),
+     &      ' is...'
         else
-          write(itdoc,'(2a)') DESC(1:32),' is...'
+          write(itdoc,'(2a)') PDBDESC(iit)(1:32),' is...'
         endif
 
         IREC=IREC+1
@@ -1104,7 +1101,7 @@ C write itdoc into next record.
 
 C Write values.
 C Repeting data next (encode into itrep strings).
-        call prsprof(idbh,iit,'p',NCG,Patr,DayT,ST,A,B,C,ier)
+        call prsprof(idbh,iit,'p',NCG(iit),Patr,DayT,ST,A,B,C,ier)
         do 246 ij=1,nbitdat(iit)
           IREC=IREC+1
           WRITE(IFB,REC=IREC,IOSTAT=IOS,ERR=1)itdat(ij)
@@ -1220,25 +1217,33 @@ C File errors.
 
       END
 
-C **************** TROPRO (copied from eprfilec.F)
+C **************** TROPRO (copied from esruprj/edpro.F)
 C TROPRO creates an ASCII profiles db from the binary profiles db.
-      SUBROUTINE TROPRO(ITRU,IFA,LASCI,IER)
+C NOTE LASCI is 72 char. This is called only by esrudbm.
+      SUBROUTINE TROPRO(IFA,LASCI,IER)
 #include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LPRFDB,IPRODB (for event profile database)
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      CHARACTER PDBDESC*40,OUTSTR*124,LASCI*72
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40,LASCI*72
+      character ermsg*48   ! for read error messages
+      character outs*124   ! string buffer for messages
 
       IER =0
 
+C Because it is a binary file we are expecting a non-zero ier
+C does not require that we attempt to scan an ascii version of
+C the event profiles db.
       CALL ERPFREE(IPRODB,ISTAT)
       call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
       if(ier.ne.0)return
 
+      ermsg='reading record one number of profiles '
       IREC=1
       READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
       IF(NPDBITEMS.LE.0)THEN
@@ -1253,21 +1258,25 @@ C Open or overwrite the ASCII file.
         IER=1
         RETURN
       ENDIF
+      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
       
 C Write out a file header.
       WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
   30  FORMAT('# events profiles db defined in ',A)
 
 C Proceed
+      ermsg='reading record one number of profiles '
       IREC=1
       READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
 
       WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NPDBITEMS
-   21 FORMAT(I5,'    # Number of items')
+   21 FORMAT(I5,'    # Number of profiles')
 
       DO 10 I = 1,NPDBITEMS
+        write(ermsg,'(a,i2)') 'reading number events in profile ',I
         IREC = IREC + 1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
+        write(ermsg,'(a,i2)') 'reading description of profile ',I
         IREC = IREC + 1
         READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
 
@@ -1277,8 +1286,14 @@ C Proceed
 
 C For each period.
         DO 20 J = 1,NCG(I)
+          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
+     &      ' at period ',J
           IREC = IREC + 1
           READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
+          ICGS1(I,J)=IS
+          ICGF1(I,J)=IF
+          CGS1(I,J)=A
+          CGL1(I,J)=B
           WRITE(IFA,23,IOSTAT=ISTAT,ERR=1000)IS,IF,A,B
    23     FORMAT(I4,',',I4,',',F8.3,',',F8.3)
    20   CONTINUE
@@ -1291,9 +1306,9 @@ C For each period.
  1000 CALL USRMSG(' ',' ASCII file write error in ','W')
       goto 99
 
- 1001 WRITE(OUTSTR,1004)IREC
- 1004 FORMAT(' File read error ! record',I6)
-      CALL USRMSG(' ',OUTSTR,'W')
+ 1001 write(outs,'(3a,i4)') 'In profile db: error ',
+     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
+      call edisp(iuout,outs)
       goto 99
 
       END

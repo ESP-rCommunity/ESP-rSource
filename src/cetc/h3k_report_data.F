@@ -75,12 +75,6 @@ C.....Zone volumes.
       common/prec2/vol(mcom)
       real vol
 
-C Zone areas
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-      real ZBASEA
-      integer IBASES,IUZBASEA,IZBASELIST
-
       common/c20/nzsur(mcom),nztv(mcom)
       integer nzsur           ! # of surfaces in a zone
       integer nztv            ! # of verticies in a zone (not used)
@@ -307,7 +301,6 @@ C.....Local variables
       REAL TMA                  ! Mean air point temperature (oC)
       real trsum
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
-      REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area  
       INTEGER i_ZnCtl           ! Zone control flag
 
 
@@ -334,9 +327,6 @@ C----------------------------------------------------------------------
       real fZoneSolarGains                ! Total solar insolation
       real fZoneUsefulSolarGains          ! Solar gains coincident with
                                           !   heaiting loads
-C       real fm2ZoneUsefulSolarGains        ! As fZoneUsefulSolarGains but
-C                                           ! per m2 of floor area
-                                          
       real fZoneAdverseSolarGains         ! Gains coincident with cooling
 
       real fZoneSurfaceFlux               ! Flux across all zone surfaces
@@ -344,10 +334,6 @@ C                                           ! per m2 of floor area
       real fZoneHeatFlux                  ! Sum of conduction+infiltration
       real fZoneHeatLoad                  !     - when positive
       real fZoneCoolLoad                  !     - when negative
-      real fm2ZoneHeatLoad                !fZoneHeatLoad per m2
-      real fm2ZoneCoolLoad                !fZoneCoolLoad per m2
-      real fm2ZoneHeatFlux                !fZoneHeatFlux per m2
-      
       real fZoneHeatFluxAboveGrade        ! Heat flux through above-grade
                                           !    components 
       real fZoneHeatLossBelowGrade
@@ -358,8 +344,6 @@ C                                           ! per m2 of floor area
       real fZoneVentilationLoad           ! Ventilation load
       real fZoneInternalGains             ! Internal gains
       real fZoneUsefulInternalGains       ! Useful internal gains
-C       real fm2ZoneUsefulInternalGains     ! As fZoneUsefulInternalGains but
-C                                           ! per m2 of floor area
       real fZoneAdverseInternalGains      ! Gains during cooling
 
       real fZoneHeatLossWindows           ! Heat load metrics for
@@ -981,15 +965,11 @@ C-----------------------------------------------------------------------
         fZoneUsefulSolarGains    = fZoneSolarGains
         fZoneUsefulInternalGains = fZoneInternalGains
 
-C Calculate these variables also per zone floor area        
-C         fm2ZoneUsefulSolarGains    = fZoneSolarGains/zbasea(iZone)
-C         fm2ZoneUsefulInternalGains = fZoneInternalGains/zbasea(iZone)
       else
 
         fZoneUsefulSolarGains    = 0.0
         fZoneUsefulInternalGains = 0.0
-C         fm2ZoneUsefulSolarGains  = 0.0
-C         fm2ZoneUsefulInternalGains =0.0
+
       endif are_gains_useful
 
 C.....Set flag if zone is heated.
@@ -1069,22 +1049,7 @@ C.....Internal gains
 
       fSUMAdverseInternalGains =   fSUMAdverseInternalGains
      &                           + fZoneAdverseInternalGains
-C 
-C C Calculate loads per m2
-C       fm2ZoneHeatLoad=fZoneHeatLoad/zbasea(iZone)
-C       fm2ZoneCoolLoad=fZoneCoolLoad/zbasea(iZone)
-C       
-C       fm2SUMNetLoad=fm2SUMNetLoad/zbasea(iZone)
-C       fm2SUMHeatLoss=fm2SUMHeatLoss/zbasea(iZone)
-C       fm2SUMHeatGain=fm2SUMHeatGain/zbasea(iZone)
-C       fm2SUMHeatLossInfiltration=fm2SUMHeatLossInfiltration/
-C      &  zbasea(iZone)      
-C       fm2SUMHeatGainInfiltration=fm2SUMHeatGainInfiltration/
-C      &  zbasea(iZone)
-C       fm2SUMInternalGains=fm2SUMInternalGains/zbasea(iZone)
-C       fSUMUsefulInternalGains=fm2SUMUsefulInternalGains/zbasea(iZone)    
-C       fm2SUMAdverseInternalGains=fSUMAdverseInternalGains/zbasea(iZone) 
-      
+
 C=======================================================================
 C
 C     Pass data to H3KReports
@@ -1128,28 +1093,7 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         H3K_rep_NAME(1:16)//'/supplied_energy/cooling',
      &         'units', '(W)',
      &         'Zone net heat extraction ' )
-     
-C Convert heat injection/extraction metrics to "per m2 of floor area"
-      Qm2_ZONE=Q_ZONE/zbasea(iZone)
-      Qm2_Heat=Q_Heat/zbasea(iZone)
-      Qm2_cool=Q_cool/zbasea(iZone)
-      call add_to_xml_reporting (
-     &         Qm2_ZONE,
-     &          H3K_rep_NAME(1:16)//'/supplied_energy/net_Perm2',
-     &         'units', '(W/m2)',
-     &         'Zone net heat injection/extraction ' )
 
-      call add_to_xml_reporting (
-     &         Qm2_Heat,
-     &         H3K_rep_NAME(1:16)//'/supplied_energy/heating_Perm2',
-     &         'units', '(W/m2)',
-     &         'Zone net heat injection ' )
-
-      call add_to_xml_reporting (
-     &         Qm2_cool,
-     &         H3K_rep_NAME(1:16)//'/supplied_energy/cooling_Perm2',
-     &         'units', '(W/m2)',
-     &         'Zone net heat extraction ' )
 
 C.....Total heating and cooling loads
       call add_to_xml_reporting (
@@ -1170,31 +1114,6 @@ C.....Total heating and cooling loads
      &         fZoneHeatFlux,
      &         H3K_rep_NAME(1:16)//'/thermal_loads/net_load',
      &         'units', '(W)',
-     &         'Net load ( heat gain/loss trough envelope + '
-     &         // ' ventilation and infiltration loads )' )
-
-C Conver Total heating and cooling loads to  "per m2 of floor area"
-      fm2ZoneHeatLoad=fZoneHeatLoad/zbasea(iZone)
-      fm2ZoneCoolLoad=fZoneCoolLoad/zbasea(iZone)
-      fm2ZoneHeatFlux=fZoneHeatFlux/zbasea(iZone)
-      call add_to_xml_reporting (
-     &         fm2ZoneHeatLoad,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/heating/total_Perm2',
-     &         'units', '(W/m2)',
-     &         'Total heating load ( heat loss trough envelope + '
-     &         // ' ventilation and infiltration loads )' )
-
-      call add_to_xml_reporting (
-     &         fm2ZoneCoolLoad,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/cooling/total_Perm2',
-     &         'units', '(W/m2)',
-     &         'Total cooling load ( heat gain trough envelope + '
-     &         // ' ventilation and infiltration loads )' )
-
-      call add_to_xml_reporting (
-     &         fm2ZoneHeatFlux,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/net_load_Perm2',
-     &         'units', '(W/m2)',
      &         'Net load ( heat gain/loss trough envelope + '
      &         // ' ventilation and infiltration loads )' )
 
@@ -1390,15 +1309,7 @@ C.....Zone solar gains coinciding with heating loads
      & 'Solar gains admitted through glazing that supplant heating '
      & // 'loads')
 
-C C.....Zone solar gains coinciding with heating loads per m2 of floor area
-C       call add_to_xml_reporting (
-C      & fm2ZoneUsefulSolarGains,
-C      & H3K_rep_NAME(1:16)//'/insolation/useful_per_m2',
-C      & 'units', '(W/m2)',
-C      & 'Solar gains admitted through glazing that supplant heating '
-C      & // 'loads')
-
-C.....Zone solar gains coinciding with heating loads !cooling loads?
+C.....Zone solar gains coinciding with heating loads
       call add_to_xml_reporting (
      & fZoneAdverseSolarGains,
      & H3K_rep_NAME(1:16)//'/insolation/adverse',
@@ -1421,14 +1332,6 @@ C.....Useful internal gains
      &         'units', '(W)',
      &         'Internal heat gains'
      &         // '(convective + radiant) that supplant heating loads' )
-
-C C.....Useful internal gains per m2
-C       call add_to_xml_reporting (
-C      &         fm2ZoneUsefulInternalGains,
-C      &         H3K_rep_NAME(1:16)//'/internal_gains/useful_per_m2',
-C      &         'units', '(W/m2)',
-C      &         'Internal heat gains'
-C      &         // '(convective + radiant) that supplant heating loads' )
 
 C.....Adverse internal gains
       call add_to_xml_reporting (
@@ -1906,30 +1809,30 @@ C........->Report data
 
 C......=====================================================
 C......NODE DATA
-         do iNode = 1, (nndc (iZone, iSurface )-1)
-            if ( iNode .gt. 9 ) then
-              write(cNode_Chars, '(I2)')  iNode
-            else
-              write(cNode_Chars, '(A,I1)') '0', iNode
-            endif
-            H3K_format = '(A,A,A,A,A,A,A)'
-
-C...........MLC layer temperature 
-C...........-> set name
-            WRITE(H3K_rep_NAME,H3K_FORMAT)
-     &         'building/zone_',cZone_Chars,
-     &         '/surface_',cSurf_Chars,
-     &         '/node_',cNode_Chars,
-     &         '/temperature'
-C...........->Report data     
-            call add_to_xml_reporting (
-     &         tfc(iZone,iSurface,iNode),
-     &         H3K_rep_NAME,
-     &         'units', '(oC)',
-     &         'Temperature at node within multilayer construction' )
-
-         enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
-
+!          do iNode = 1, (nndc (iZone, iSurface )-1)
+!             if ( iNode .gt. 9 ) then
+!               write(cNode_Chars, '(I2)')  iNode
+!             else
+!               write(cNode_Chars, '(A,I1)') '0', iNode
+!             endif
+!             H3K_format = '(A,A,A,A,A,A,A)'
+! 
+! C...........MLC layer temperature 
+! C...........-> set name
+!             WRITE(H3K_rep_NAME,H3K_FORMAT)
+!      &         'building/zone_',cZone_Chars,
+!      &         '/surface_',cSurf_Chars,
+!      &         '/node_',cNode_Chars,
+!      &         '/temperature'
+! C...........->Report data     
+!             call add_to_xml_reporting (
+!      &         tfc(iZone,iSurface,iNode),
+!      &         H3K_rep_NAME,
+!      &         'units', '(oC)',
+!      &         'Temperature at node within multilayer construction' )
+! 
+!          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
+! 
       enddo ! <- end iSurface 1,N of iZone
 
 

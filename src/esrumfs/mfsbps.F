@@ -116,18 +116,39 @@ C LAPRES,IAPRES (for window pressure databases)
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
       CHARACTER*72 LAPROB
       character outs*124
+      character lworking*144,fs*1
+      logical concat,xst,unixok,close
 
       PARAMETER (SMALL=1.0E-15)
 
       IER1=0
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C If for some reason IAPRES is still zero set it to IFIL+4
       if(IAPRES.eq.0)IAPRES=IFIL+4
       IUNIT=IFIL+4
 
 C Open WIND PRESSURE COEFFICIENTS file, read coefficient
-C sets and close.
-      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
+C sets and close. Adjust file name depending on location.
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        CALL EFOPSEQ(IAPRES,lapres,1,IER)
+      elseif(ipathapres.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lapres(1:lnblnk(lapres))
+
+C Debug.
+        write(6,*) 'working pressure coef ',lworking
+        CALL EFOPSEQ(IAPRES,lworking,1,IER)
+      endif
+C      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
       IF(ier.ne.0) GOTO 2
       READ(IAPRES,*,IOSTAT=ISTAT,ERR=3,END=4) NPRE
       DO 100 J=1,NPRE

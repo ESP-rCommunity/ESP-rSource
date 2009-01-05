@@ -105,7 +105,9 @@ C ITEMS is menu for site/context items.
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
-
+      integer icreport  ! to signal that calendar has been updated.
+      integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
 
@@ -546,18 +548,52 @@ C Weekends def.
       ELSEIF(INO.EQ.7)THEN
 
 C Change the year and if calendar has not been set up initialise
-C and then list the months of the year.
+C and then list the months of the year.  If there is an existing
+C calendar with the default day types and the year has changed
+C then re-initialize the calendar.
         H(1)='Control and scheduling actions the year to be defined.'
         H(2)='You may accept the one specified with the climate'
         H(3)='file or provide an alternative.'
+        H(4)=' '
+        H(5)='The choice is year impacts the day of the week for'
+        H(6)='1 January. It also will alter the day type associated'
+        H(7)='of days in the calendar which are the standard default'
+        H(8)='weekday/saturday/sunday (but not user defined day types.'
         iyeart=iyear
         CALL EASKI(iyeart,' ','Simulation year?',
-     &       1900,'W',2010,'W',2001,'year',IERI,3)
+     &       1900,'W',2010,'W',2001,'year',IERI,8)
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.
         if(nbdaytype.eq.0)then
           call calenmanage('i',ier)
+        elseif(nbdaytype.eq.3)then
+          call calenmanage('i',ier)
+        elseif(nbdaytype.gt.3)then
+
+C Perform check that calendar day types correspond with simulation year
+C If more than three day types are declared then retain those day types
+C otherwise overwrite. (Same logic as in esystem.F 
+          ICREPORT=0
+          DO 123 IDOL=1,365
+            IF(ICALENDER(IDOL).LE.3)THEN
+              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+              IF(IDWKNUM.LT.6)THEN
+                IDTYY=1 ! WEEKDAY
+              ELSEIF(IDWKNUM.EQ.6)THEN
+                IDTYY=2 ! SATURDAY
+              ELSEIF(IDWKNUM.EQ.7)THEN
+                IDTYY=3 ! SUNDAY
+              ENDIF
+              IF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY
+                ICREPORT=1
+              ENDIF
+            ENDIF
+ 123      CONTINUE
+          IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
+     &      'Simulation year and calendar mismatch rectified')
         endif
         dok=.false.
         H(1)='You can use the calandar to check that a day or days'
@@ -1349,32 +1385,31 @@ C and present a different interface depending on file type.
       H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
       H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
       H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
-      H(32)=' VERTSOL -Vertical solar radiation data for a facade'
-      H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
-      H(34)='manage associations - you can add and delete associations'
-      H(35)='  that have been previously defined. Note this does not'
-      H(36)='  alter the contents of the temporal file.'
-      H(37)=' '
-      H(38)='dereference temporal file - this removes current links'
-      H(39)='  between the model and entities in the temporal file.'
-      H(40)='  It does not remove the temporal file.'
-      H(41)=' '
-      H(42)='create file - you supply a file name, if it exists it'
-      H(43)='  is scanned otherwise a minimal file is created.'
-      H(44)=' '
-      H(45)='edit/list - contents of the current file are presented'
-      H(46)='  and if you have permission you can alter its contents.'
-      H(47)=' '
-      H(48)='General instructions for setting up a temporal file:'
-      H(49)='a) Decide the period of the data (start and end dates)'
-      H(50)='   as well as frequency (1stph to 60 tsph).'
-      H(51)='b) If data is to be imported from a file with columns'
-      H(52)='   of data take a note of which columns are required.'
-      H(53)='c) Plan the names of the temporal entities you will be'
-      H(54)='   be creating as well as which zones or controls in '
-      H(55)='   the model are going to be associates with the'
-      H(56)='   entities in the temporal file.'
-      H(57)=' '
+      H(32)=' '
+      H(33)='manage associations - you can add and delete associations'
+      H(34)='  that have been previously defined. Note this does not'
+      H(35)='  alter the contents of the temporal file.'
+      H(36)=' '
+      H(37)='dereference temporal file - this removes current links'
+      H(38)='  between the model and entities in the temporal file.'
+      H(39)='  It does not remove the temporal file.'
+      H(40)=' '
+      H(41)='create file - you supply a file name, if it exists it'
+      H(42)='  is scanned otherwise a minimal file is created.'
+      H(43)=' '
+      H(44)='edit/list - contents of the current file are presented'
+      H(45)='  and if you have permission you can alter its contents.'
+      H(46)=' '
+      H(47)='General instructions for setting up a temporal file:'
+      H(48)='a) Decide the period of the data (start and end dates)'
+      H(49)='   as well as frequency (1stph to 60 tsph).'
+      H(50)='b) If data is to be imported from a file with columns'
+      H(51)='   of data take a note of which columns are required.'
+      H(52)='c) Plan the names of the temporal entities you will be'
+      H(53)='   be creating as well as which zones or controls in '
+      H(54)='   the model are going to be associates with the'
+      H(55)='   entities in the temporal file.'
+      H(56)=' '
 
 C Begin with high level menu.
     3 INO=-4
@@ -1388,9 +1423,9 @@ C Begin with high level menu.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(58)='At the current time there are no temporal definitions;'
-        H(59)='you must create them before you can use them.'
-        nbhelp=59
+        H(57)='At the current time there are no temporal definitions;'
+        H(58)='you must create them before you can use them.'
+        nbhelp=58
         WRITE(ITEMS(1),'(A)')'a create temporal entities file'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
         WRITE(ITEMS(3),'(A)')'c not applicable '
@@ -1415,9 +1450,10 @@ C Begin with high level menu.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(58)='An outdated file format is associated with the'
-        H(59)='model. Update this by selecting the edit option or '
-        H(60)='(dereferences the temporal definitions from your model).'
+        H(57)='An outdated file format is associated with the'
+        H(58)='model. Update this by selecting the edit option'
+        H(59)='(or dereferences the temporal definitions from'
+        H(60)='your model).'
         nbhelp=60
         WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1438,9 +1474,9 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(58)='You may view the temporal data associated with the'
-          H(59)='model by selecting the view entities option.'
-          nbhelp=59
+          H(57)='You may view the temporal data associated with the'
+          H(58)='model by selecting the view entities option.'
+          nbhelp=58
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1459,9 +1495,10 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(58)='An outdated file format is associated with the model.'
-          H(59)='Update this by selecting the edit entities or option'
-          H(60)='(derefence the temporal derfinition from your model).'
+          H(57)='An outdated file format is associated with the'
+          H(58)='model. Update this by selecting the edit entities'
+          H(59)='option (or derefence the temporal derfinition from'
+          H(60)='your model).'
           nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1483,9 +1520,9 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(58)='You can view the temporal data associated with the'
-          H(59)='model via selecting the view entities option.'
-          nbhelp=59
+          H(57)='You can view the temporal data associated with the'
+          H(58)='model via selecting the view entities option.'
+          nbhelp=58
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1886,8 +1923,7 @@ C << between 0.0 and 1.0 giving ON fraction.
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL'
-          elseif(TTYPE(it)(1:6).eq.'ACTIVI'.or.
-     &           TTYPE(it)(1:6).eq.'HTCLSE')then
+          elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
 
 C Depending on the type of the data, ask for associated zone.
             IC=-1
@@ -1964,13 +2000,8 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              if(TTYPE(it)(1:6).eq.'ACTIVI')then
-                cm(2)=5.0
-                cm(3)=6.0
-              elseif(TTYPE(it)(1:6).eq.'HTCLSE')then
-                cm(2)=2.0
-                cm(3)=3.0
-              endif         
+              cm(2)=5.0
+              cm(3)=6.0
             endif
 
             ibsn(ispl,1)=IC
@@ -1994,17 +2025,10 @@ C Confirm capacities.
             H(4)='required to define the columns in the tdf where the'
             H(5)='setpoints should be read from. Defaults are column 4'
             H(6)='for heating setpoint and column 5 for cooling.'
-            if(TTYPE(it)(1:6).eq.'ACTIVI')then
-              CALL EASKS(HOLD,
-     &        'Heating and cooling setpoint column number ',
-     &        '(respectively):',40,' 5.0 6.0 ',
-     &        ' track another column number(s)',IER,6)
-            elseif(TTYPE(it)(1:6).eq.'HTCLSE')then     
-              CALL EASKS(HOLD,
-     &        'Heating and cooling setpoint column number ',
-     &        '(respectively):',40,' 2.0 3.0 ',
-     &        ' track another column number(s)',IER,6)
-            endif    
+            CALL EASKS(HOLD,
+     &      'Heating and cooling setpoint column number ',
+     &      '(respectively):',40,' 4.0 5.0 ',
+     &      ' track another column number(s)',IER,6)
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
             CALL EGETWR(HOLD,K,cm(3),0.,80.,'F','Max columns cool',IER)
@@ -2230,8 +2254,10 @@ C Update the control file and link the control loop to the correct zone.
           elseif(TTYPE(it)(1:8).eq.'BIDIRSET')then
 
 C Depending on the type of data, ask for associated surface 
+C(at the moment only bidirectional - in future vertical solar 
+C radiation data can be added based on the same structure).
             IC=-1
- 352      izdef=0
+ 352        izdef=0
             call askzone(ic,izdef,
      &        ' Related zone for bidirectional data set?',
      &        'Related zone','-','Optical sets require a zone.',ier)
@@ -2240,20 +2266,6 @@ C Depending on the type of data, ask for associated surface
             call easksur(IC,ISUR,'-',
      &           'Select surface for bidirectional dataset',' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 352
-            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
-          elseif(TTYPE(it)(1:7).eq.'VERTSOL')then
-
-C Depending on the type of data, ask for associated surface 
-            IC=-1
- 353        izdef=0
-            call askzone(ic,izdef,
-     &        ' Related zone where vertical solar data apply?',
-     &        'Related zone','-','zone to assign solar data.',ier)
-            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 353
-            write(DBZN(ITE),'(a)') zname(IC)(1:12)
-            call easksur(IC,ISUR,'-',
-     &           'Select surface to apply vertical solar data',' ',IER)
-            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 353
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           else
             DBZN(ITE)='ALL'
@@ -2981,6 +2993,11 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
       DIMENSION m1slots(42,2),m2slots(42,2)
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Text for each slot.
       character*3 am1slots(42),am2slots(42)
@@ -3125,7 +3142,10 @@ C Fill second month with real data or blanks.
         if(MMOD.eq.8)call startbuffer()
         line=3
         write(etext,'(20x,i4)') iyear
-        CALL viewtext(ETEXT,line,0,2)
+        iside=line
+        isize=0
+        ifont=2
+        call viewtext(etext,iside,isize,ifont)
 
 C If number of months to display is a multiple of 2 display side by side.
 C imon1 and imon2 are possible months to dispalay (if zero then do not).
@@ -3142,10 +3162,14 @@ C heading and then find the start day of the week for each.
             imon2=im+1
             line=line+1
             write(etext,'(8x,a,17x,a)') ramonth(imon1),ramonth(imon2)
-            CALL viewtext(ETEXT,line,0,2)
+            iside=line
+            isize=0
+            ifont=2
+            call viewtext(etext,iside,isize,ifont)
             line=line+1
             write(etext,'(a)') mohead
-            CALL viewtext(ETEXT,line,0,2)
+            iside=line
+            call viewtext(etext,iside,isize,ifont)
             call edayr(mdays(imon1),idayn,imthn)
             call eweekd(idayn,imthn,iyear,im1dwk)
             call edayr(mdays(imon2),idayn,imthn)
@@ -3156,10 +3180,14 @@ C heading and then find the start day of the week for each.
               imon2=0
               line=line+1
               write(etext,'(8x,a)') ramonth(imon1)
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              isize=0
+              ifont=2
+              call viewtext(etext,iside,isize,ifont)
               line=line+1
               write(etext,'(a)') mohead(1:22)
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              call viewtext(etext,iside,isize,ifont)
               call edayr(mdays(imon1),idayn,imthn)
               call eweekd(idayn,imthn,iyear,im1dwk)
               im2dwk=0
@@ -3168,10 +3196,14 @@ C heading and then find the start day of the week for each.
               imon2=im+1
               line=line+1
               write(etext,'(8x,a,17x,a)') ramonth(imon1),ramonth(imon2)
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              isize=0
+              ifont=2
+              call viewtext(etext,iside,isize,ifont)
               line=line+1
               write(etext,'(a)') mohead
-              CALL viewtext(ETEXT,line,0,2)
+              iside=line
+              call viewtext(etext,iside,isize,ifont)
               call edayr(mdays(imon1),idayn,imthn)
               call eweekd(idayn,imthn,iyear,im1dwk)
               call edayr(mdays(imon2),idayn,imthn)
@@ -3293,7 +3325,10 @@ C Also include list of day types.
         line=line+2
         call winscl('-',0)
         write(etext,*) 'Calendar: ',calename
-        CALL viewtext(ETEXT,line,0,2)
+        iside=line
+        isize=0
+        ifont=2
+        call viewtext(etext,iside,isize,ifont)
         do 151 icd = 1,nbdaytype
           line=line+1
           write(etext,*) calentag(icd),' ',calendayname(icd)

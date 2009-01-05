@@ -61,6 +61,11 @@ C ****** GTOPOL
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER DESC*48,H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       grmod=.true.
 
@@ -159,7 +164,10 @@ C If ground needs drawing or updating do it here.
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         grmod=.false.
@@ -2468,6 +2476,11 @@ C IER=1 problem.
       CHARACTER VERT*35,KEY*1,HOLD*72,H*72,DESC*48,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -2946,20 +2959,25 @@ C Draw the (perhaps clipped) rectangle.
           DO 302 JB = 1,NB
             IP = IABS(IBPNT)
             CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,0,0)
+            iupdown=0
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
 C Draw succeeding points until last vertex.
             IP1 = IBNXT(IP)
  451        CONTINUE
             CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
             IP1 = IBNXT(IP1)
             IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
             CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            call etplot(AAX,AAY,iupdown,isym)
   302     CONTINUE
    32     CONTINUE
           call forceflush()
@@ -3197,13 +3215,24 @@ C ****** Routine to update-draw ground during triangulation.
 
       character*(*) msg
       character outs*72
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       CALL startbuffer()
       izgfoc=0
       CALL ADJVIEW(0,IER)
       WRITE(outs,'(A,i3,A,i3)')' Verts: ',IVV,' surfs ',NGTG
-      CALL viewtext(outs,1,0,1)
-      CALL viewtext(msg,2,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
+      iside=2
+      call viewtext(msg,iside,isize,ifont)
 
       if(IVV.eq.0)return
       do 42 iv = 1,IVV
@@ -3226,9 +3255,13 @@ C ****** Routine to update-draw ground during triangulation.
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           if(J.eq.1)then
-            call etplot(COG3(1),COG3(2),0,0)
+            iupdown=0
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
           else
-            call etplot(COG3(1),COG3(2),1,0)
+            iupdown=1
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
           endif
  1100   CONTINUE
 
@@ -3238,7 +3271,9 @@ C Finish off the surface.
         COG1(3)=ZGT(JGVN(igs,1))
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call etplot(COG3(1),COG3(2),1,0)
+        iupdown=1
+        isym=0
+        call etplot(COG3(1),COG3(2),iupdown,isym)
   43  continue
       call forceflush()
       call pauses(1)
@@ -3279,6 +3314,7 @@ C output: triangle list
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -3293,6 +3329,11 @@ C output: triangle list
       CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C If there is a ground geometry then check its bounds.
       do 741 iv = 1,NGTV
@@ -3368,7 +3409,9 @@ C If viewpoint or bounds different then initialise viewing paramters.
 C Clear current viewing box.
         CALL startbuffer()
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
 

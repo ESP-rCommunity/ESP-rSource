@@ -1163,7 +1163,7 @@ C 'irecln' is defined in 'plantdb.h'.
       lndbp=lnblnk(standarddbpath)
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         lltmp=LPCDB
-      elseif(ipathoptdb.eq.2)then
+      elseif(ipathpcdb.eq.2)then
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
       endif
@@ -1372,6 +1372,7 @@ C act='p' iget parameters already set.
       common/pophelp/h(60)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -1424,6 +1425,13 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer YAXSET, ADDLIN
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -2001,18 +2009,33 @@ C Write graph head and set up axis positions and draw.
             call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
           call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         ENDIF
 
         WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &    SDESCR(11:lnblnk(SDESCR))
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
 
         iancline=0
         if(graftitle(1:2).ne.'  ')then
           t64=graftitle
-          if(iancline.gt.0)CALL viewtext(t64,3,1,2)
-          if(iancline.eq.0)CALL viewtext(t64,2,1,2)
+          if(iancline.gt.0)then
+            iside=3
+            isize=1
+            ifont=2
+            call viewtext(t64,iside,isize,ifont)
+          endif
+          if(iancline.eq.0)then
+            iside=2
+            isize=1
+            ifont=2
+            call viewtext(t64,iside,isize,ifont)
+          endif
         endif
 
         call AXISPOS
@@ -2262,7 +2285,11 @@ C from zone iocpzone. Start with assumption of full occupancy.
               elseif (MENUTYPE.eq.3) then
 
 C Draw next section of line.
-                if(ioldpos.eq.1) call etplot(TIMEold(IX),Yold(IX),0,0)
+                iupdown=0
+                isym=0
+                if(ioldpos.eq.1)then
+                  call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                endif
                 ioldpos=0
                 IPEN=1
                 MARK=0
@@ -2285,7 +2312,9 @@ C than that of the number of colours re-use an earlier colour.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-                call etplot(GTIME,Yold(IX),IPEN,MARK)
+                iupdown=IPEN
+                isym=MARK
+                call etplot(GTIME,Yold(IX),iupdown,isym)
                 if(colok)call winscl('-',0)
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
@@ -2499,7 +2528,11 @@ C from zone iocpzone. Start with assumption of full occupancy.
                 elseif (MENUTYPE.eq.3) then
 
 C Draw next section of line.
-                  if (ioldpos.eq.1)call etplot(TIMEold(IX),Yold(IX),0,0)
+                  iupdown=0
+                  isym=0
+                  if (ioldpos.eq.1)then
+                    call etplot(TIMEold(IX),Yold(IX),iupdown,isym)
+                  endif
                   ioldpos=0
                   IPEN=1
                   MARK=0
@@ -2522,7 +2555,9 @@ C than that of the number of colours re-use an earlier colour.
 
 C Plot the current value - this has already been copied to Yold and
 C then reset to forground colour.
-                  call etplot(GTIME,Yold(IX),IPEN,MARK)
+                  iupdown=IPEN
+                  isym=MARK
+                  call etplot(GTIME,Yold(IX),iupdown,isym)
                   if(colok)call winscl('-',0)
                   call forceflush()
                 elseif (MENUTYPE.eq.5) then
@@ -2618,12 +2653,17 @@ C Write graph head and set up axis positions and draw.
                 call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               endif
               call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+              igw=igr-igl
+              igwh=igb-igt
               call startbuffer()
             ENDIF
 
             WRITE(ETEXT,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &        SDESCR(11:lnblnk(SDESCR))
-            CALL viewtext(ETEXT,1,0,1)
+            iside=1
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
             TLABEL='  '
             if(NPGET.eq.1)then
               write (TLABEL,'(2a,f6.2)')

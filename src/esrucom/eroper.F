@@ -720,7 +720,7 @@ C Maximum number of casual gains/day       MC=20
 C IUO is the file unit to use
 C FILE (variable width char) is the name of the file to scan.
 
-      SUBROUTINE ERZSCHED(IUO,FILE,actflatfile,IER)
+      SUBROUTINE ERZSCHED(IUO,FILE,IER)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -771,26 +771,20 @@ C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24,H*72
       character louts*248
-      character actflatfile*1  ! action requested.
       logical havehi,dll,ok,dok
       INTEGER IDTY,IR
       REAL R
 
       dok=.false.
- 
-      if(actflatfile(1:1).eq.'W')then
+
 C Compose help message
-        H(1) ='The number of day types defined in the operations file'
-        H(2) ='from outside the current model definitiion should be '
-        H(3) ='the same as the number of day types defined in the '
-        H(4) ='current model. If this is not the case then the data '
-        H(5) ='imported may corrupt the operations file in the current '
-        H(6) ='model.'
-        CALL PHELPD('Warning',6,'-',0,0,IER)
-        call askok(' ','Import data?',OK,dok,3)
-      elseif(actflatfile(1:1).eq.'-')then
-        ok=.true.
-      endif
+      H(1) ='The number of day types defined in the operations file'
+      H(2) ='from outside the current model definitiion should be '
+      H(3) ='the same as the number of day types defined in the current'
+      H(4) ='model. If this is not the case then the data imported may'
+      H(5) ='corrupt the operations file in the current model.'
+      CALL PHELPD('Warning',5,'-',0,0,IER)
+      call askok(' ','Import data?',OK,dok,3)
       if(.not.ok)return
 
 C Check if running in dll mode.

@@ -105,10 +105,12 @@ C IEEE callback (Solaris)
       common/spad/mmod,limit,limtty
       common/image/imt,eyem(3),viewm(3),hith,yon,ang,hang,wide
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray2/itdsp,itbnd,itept,itznm,itsnm,itvno,itorg,itsnr,
@@ -188,6 +190,12 @@ C Material data arrays.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
+      integer numberofzones ! to pass to updwire rather than ncomp
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -339,11 +347,14 @@ C feedback).
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
         call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -518,9 +529,12 @@ C Open core of databases if not already done so.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
-               if(mmod.EQ.8)call updwire(ncomp)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
+               if(mmod.EQ.8)then
+                 numberofzones=ncomp   ! use local integer for updwire.
+                 call updwire(numberofzones)
+               endif
 
 C If inzone = 'All' display an image of the model. If inzone is
 C either a string which matches a zone name or is an index, then
@@ -856,8 +870,8 @@ C GTK version will be returning the name with the full path.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
             endif
          endif
 
@@ -953,7 +967,10 @@ C Generate a heading for the view.
                write(etext,'(a,i2,1x,a3,a,a5,a,f6.1,a,f5.1)')
      &            'View @ ',ido,month(imo),', ',descrh,
      &            ' Sun position - azimuth ',sazi,', altitude ',salt
-               call viewtext(etext,2,1,ifs)
+               iside=2
+               isize=1
+               ifont=ifs
+               call viewtext(etext,iside,isize,ifont)
                call easkab(' ','View:','next hour','exit',iw,0)
                if(iw.eq.1)then
                   stime=stime+((60.0/float(nts))/60.0)
@@ -1595,6 +1612,7 @@ C Material data arrays.
       DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
+      character t144*144   ! for use with erprcdb
       integer nclass  ! number of material classifications
 
       IER=0
@@ -1844,7 +1862,8 @@ C Open optical Properties db and read into common.
 C Open the Pressure Coefficients db.
 C      call FINDFIL(LAPRES,XST)
 C      if(XST)then
-C        CALL ERPRCDB(LAPRES,0,3,IER)
+C        t144='  '
+C        CALL ERPRCDB(t144,0,3,IER)
 C        call usrmsg(' ',' ','-')
 C      else
 C        call usrmsg('Pressure Coefficients db not found',

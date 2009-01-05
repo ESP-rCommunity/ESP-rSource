@@ -42,6 +42,11 @@ C writes the recovered data to array GOTDAT
       CHARACTER FILENM*72,OUTSTR*124,OUTSTR2*124,txt*30,H*72
       character outs*124
       integer ncomp
+#ifdef OSX
+      integer ipos,isize      ! for use with etlabel
+#else
+      integer*8 ipos,isize      ! for use with etlabel
+#endif
 
       h(1)='A moisture results file holds data from an integrated'
       h(2)='zone and surface moisture asessment. The data for each '
@@ -139,7 +144,9 @@ C re-scan the first line.
         goto 12
       endif
       write(txt,'(a,i2,a,i2)') 'Zone (in list) ',iz,' Surface ',is-2
-      call etlabel(txt,xmax/2+xmin/2,ymax+4.,0,2)
+      ipos=0
+      isize=2
+      call etlabel(txt,xmax/2+xmin/2,ymax+4.,ipos,isize)
 
    10 CONTINUE
       DO 20 ICOMP=1,NAZ

@@ -710,6 +710,8 @@ C min-exponent for system
 C Round-off error
       real fRoundoffError
 
+      logical bClose
+
 C Components for float:
 
       integer iFloatBasis
@@ -718,6 +720,12 @@ C Components for float:
       save iFloatPrecision
       
 !       print*, "bSPEqual: comparing ", fFloat1, " and ", fFloat2
+!
+      call eclose ( fFloat1, fFloat2, 1.0E-03, bClose )
+      if ( .not. bclose ) then
+        bSPEqual = .false.
+        return
+      endif
 
 C Establish the minimum exponent distinguisable on the system
       if ( .not. bInitialized ) then

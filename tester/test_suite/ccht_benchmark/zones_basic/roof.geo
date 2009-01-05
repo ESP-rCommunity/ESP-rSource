@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,roof # tag version, format, zone name
-*date Fri Aug 17 15:30:15 2007  # latest file modification 
+*date Sun Sep 14 23:22:01 2008  # latest file modification 
 roof describes the two-level roof of the house
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,8.08500  #   1
@@ -8,7 +8,7 @@ roof describes the two-level roof of the house
 *vertex,0.00000,9.20000,8.08500  #   4
 *vertex,5.75000,4.60000,11.92000  #   5
 *vertex,6.25000,4.60000,11.92000  #   6
-*vertex,12.00000,1.00000,9.08500  #   7
+*vertex,12.00000,1.10000,9.08500  #   7
 *vertex,12.00000,8.20000,9.08500  #   8
 *vertex,12.00000,12.20000,8.08500  #   9
 *vertex,0.00000,12.20000,8.08500  #  10
@@ -29,7 +29,7 @@ roof describes the two-level roof of the house
 *edges,6,3,2,1,4,10,9  # 10
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -51,4 +51,4 @@ roof describes the two-level roof of the house
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,10,   142.68 0  # zone base list
+*base_list,1,10,   146.40 0  # zone base list

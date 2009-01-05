@@ -1660,7 +1660,8 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
 
       CHARACTER*1 ACT,fs
-      CHARACTER*4 APE,EXT
+      character EXT*4    ! up to 4 characters in file extension 
+      character APE*6    ! up to 6 characters in variant name
       CHARACTER SSPARENT*12,SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
@@ -1708,7 +1709,7 @@ C If not then advise user and send him/her back
         CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
         RETURN
       ENDIF
-      APE='_not'
+      APE='_not  '
       newgeo=.false.  ! assume older format geometry.
 
       H(1) = '*********************** IMPORTANT **********************'

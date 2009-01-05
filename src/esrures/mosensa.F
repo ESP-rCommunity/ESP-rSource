@@ -413,6 +413,7 @@ C SAINTER calculates summary statistics within result sets.
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
@@ -434,6 +435,13 @@ C SAINTER calculates summary statistics within result sets.
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
       logical graphit
       integer YAXSET, ADDLIN
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       character outs*124,zname*12,zdesc*64,H*72
       character SLABEL*32,GLABEL*20
@@ -729,64 +737,76 @@ C Assume fully occupied.
             if (IMET.eq.1) then 
               VHI=VAL(3,J)+sqrt(VAL(1,J))
               VLO=VAL(3,J)-sqrt(VAL(2,J))
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VAL(3,J),0,0)
+                call etplot(HR,VAL(3,J),iupdown,isym)
               else
-                call etplot(HRold,VMEANold,0,0)
+                call etplot(HRold,VMEANold,iupdown,isym)
               endif
               VMEANold=VAL(3,J)
-              MARK=4
-              IPEN=-303
-              call etplot(HR,VAL(3,J),IPEN,MARK)
+              iupdown=-303
+              isym=4
+              call etplot(HR,VAL(3,J),iupdown,isym)
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VHI,0,0)
+                call etplot(HR,VHI,iupdown,isym)
               else
-                call etplot(HRold,VHIold,0,0)
+                call etplot(HRold,VHIold,iupdown,isym)
               endif
-              MARK=2
-              IPEN=1
-              call etplot(HR,VHI,IPEN,MARK)
+              iupdown=1
+              isym=2
+              call etplot(HR,VHI,iupdown,isym)
               VHIold=VHI
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VLO,0,0)
+                call etplot(HR,VLO,iupdown,isym)
               else
-                call etplot(HRold,VLOold,0,0)
+                call etplot(HRold,VLOold,iupdown,isym)
               endif
-              MARK=3
-              IPEN=1
-              call etplot(HR,VLO,IPEN,MARK)
+              iupdown=1
+              isym=3
+              call etplot(HR,VLO,iupdown,isym)
               VLOold=VLO
               HRold=HR
             else
               SD=sqrt(VAL(4,J)/float(NVAL(1)-1))
               SDH=VAL(3,J)+SD
               SDL=VAL(3,J)-SD
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VAL(3,J),0,0)
+                call etplot(HR,VAL(3,J),iupdown,isym)
               else
-                call etplot(HRold,VMEANold,0,0)
+                call etplot(HRold,VMEANold,iupdown,isym)
               endif
               VMEANold=VAL(3,J)
-              MARK=4
-              IPEN=-303
-              call etplot(HR,VAL(3,J),IPEN,MARK)
+              iupdown=-303
+              isym=4
+              call etplot(HR,VAL(3,J),iupdown,isym)
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,SDH,0,0)
+                call etplot(HR,SDH,iupdown,isym)
               else
-                call etplot(HRold,SDHold,0,0)
+                call etplot(HRold,SDHold,iupdown,isym)
               endif
-              MARK=2
-              IPEN=1
-              call etplot(HR,SDH,IPEN,MARK)
+              iupdown=1
+              isym=2
+              call etplot(HR,SDH,iupdown,isym)
               SDHold=SDH
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,SDL,0,0)
+                call etplot(HR,SDL,iupdown,isym)
               else
-                call etplot(HRold,SDLold,0,0)
+                call etplot(HRold,SDLold,iupdown,isym)
               endif
-              MARK=3
-              IPEN=1
-              call etplot(HR,SDL,IPEN,MARK)
+              iupdown=1
+              isym=3
+              call etplot(HR,SDL,iupdown,isym)
               SDLold=SDL
               HRold=HR
             endif
@@ -815,7 +835,9 @@ C Calculate overall standard deviation and display depending on IFMT.
         TMAX=FLOAT(IOH1)+DHR+1.0/FLOAT(NTS)
         call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
         IY1=1
-        call axiscale(igw,igwh,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
      &              YSC(1),sca,Xadd,Yadd(1))
         call vrtaxis(YMIN(1),YMAX(1),igl,igb,igt,Yadd(1),YSC(1),0,0,
      &               'Output')
@@ -1229,6 +1251,7 @@ C WHSET displays currently chosen sets and lets user toggle selections.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 

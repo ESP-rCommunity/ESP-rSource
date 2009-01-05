@@ -1224,6 +1224,7 @@ C RESMN      - Minimum reverberation time
 #include "building.h"
 #include "acoustic.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/Zones/TxtZone
 
@@ -1235,6 +1236,15 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initialisation
       YMAX=1.0
@@ -1246,6 +1256,8 @@ C Setup the graph dimension according to the max and min RT
       IF ((MAll.EQ.4).AND.(MethodCalc.GT.1)) THEN
       ELSE
         Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         do 20 I=1,MNbAbs
           if (TReverb(I).gt.RESMX) then
             RESMX=TReverb(I)
@@ -1261,7 +1273,9 @@ C Calculate plotting box locations.
         plxmax=4000.
         YMAX=RESMX+0.5
         YMIN=0.
-        CALL axiscale(igw,igwh,plxmin,plxmax,Ymin,Ymax,                 
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
         CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
 
@@ -1272,19 +1286,28 @@ C Scale and draw monitoring plot.
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1
         write(title,'(20x,2a)') 'Reverberation time for space: ',TxtZone
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
 
 C Write the label concerning the calculation mode used
       IF (MAll.LT.4) THEN
         IPS=IPS+1
         write(title,'(1x,2a)') 'Method: ',CalName(MethodCalc)(1:11)
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
       IF ((MAll.EQ.4).AND.(MethodCalc.EQ.1)) THEN
         IPS=IPS+1
         write(title,'(1x,a)') 'Method: All'
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
 
 C Define for each calculation method which symbol to use on the curve
@@ -1298,10 +1321,14 @@ C Define for each calculation method which symbol to use on the curve
 
 
 C Plot reverberation time curve
-      CALL etplot(125.,TReverb(1),0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(125.,TReverb(1),iupdown,isym)
       do 30 I=1,MNbABS
           FREQ=INT(100* EXP((I-1)/3.*LOG(2.)))
-          CALL etplot(FREQ,TReverb(I),1,Isymbol)
+          iupdown=1
+          isym=Isymbol
+          CALL etplot(FREQ,TReverb(I),iupdown,isym)
  30   continue
 
 C Label curves
@@ -1309,7 +1336,10 @@ C Label curves
         IPS=IPS+1
         write(title,'(40x,3(a,8x))')'Sabine (x)','Eyring (+)',
      &                              'Millington (.)'
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
 
       RETURN

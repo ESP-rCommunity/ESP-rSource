@@ -122,9 +122,11 @@ C then set iclkok variable and jump to browse functions.
         H(1)='The system control file holds the definition of the'
         H(2)='building/plant control systems. The file is optional.'
         H(3)='The browse option presents a list of files in the'
-        H(4)='project `ctl` folder.'
-        CALL EASKS2CMD(LASCI,' ','Control file?',
-     &    'ignore','browse',iclkok,72,' ','Control file',IER,4)
+        H(4)='project `ctl` folder. If you do not select one then'
+        H(5)='it is assumed that you do not want any control.'
+        H(6)='If you cancel then nothing will be changed.'
+        CALL EASKS2CMD(LASCI,'Control file? (suggested name)',' ',
+     &    'cancel','browse',iclkok,72,' ','Control file',IER,6)
         if(iclkok.eq.1)then
           return
         endif
@@ -150,15 +152,21 @@ C            call edisp(iuout,'Reading existing control file.')
         H(4)='from your model but does not delete it. Your may'
         H(5)='re-establish this control by re-referencing the control'
         H(6)='file in a later session.'
-        CALL EASKS2CMD(LASCI,' Control file? (see help)',
-     &  ' ','dereference','browse',iclkok,72,' ','Control file',IER,6)
+        H(7)=' '
+        H(8)='The browse option presents a list of files in the'
+        H(9)='project `ctl` folder. If you do not select one then'
+        H(10)='it is assumed that you do not want any control.'
+        H(11)='If you cancel then nothing will be changed.'
+        CALL EASKS2CMD(LASCI,'Control file? (see help)',
+     &  ' ','dereference','browse',iclkok,72,' ','Control file',IER,11)
       endif
       call usrmsg(' ',' ','-')
 
 C If user wishes to deselect current control reset file name to
-C blank and save the configuration file.
+C blank, call ezctli to clear commons and save the configuration file.
       if(iclkok.eq.1)then
         if(cfgok.and.(.NOT.browse))then
+	  call ezctli
           LCTLF='  '
           CALL EMKCFG('-',IER)
           call usrmsg(' ',' ','-')
@@ -169,7 +177,6 @@ C blank and save the configuration file.
         endif
         return
       elseif(iclkok.eq.2)then
-        call edisp(iuout,'2nd alternate selected')
         sfile=' '
         snpfile=' '
         call edisp(iuout,' ')
@@ -183,10 +190,25 @@ C blank and save the configuration file.
             write(LASCI,'(3a)')ctlpth(1:lnblnk(ctlpth)),fs,
      &        snpfile(1:lnblnk(snpfile))
           else
-            LASCI=LCTLF
+
+C If the user supplied a blank file then this is the same as
+C de-referencing the file.
+            call edisp(iuout,
+     &        'A blank control file name returned. Clearing data.') 
+	    call ezctli
+            LCTLF='  '
+            CALL EMKCFG('-',IER)
+            goto 44
           endif
         else
-          LASCI=LCTLF
+
+C If the user did not select a file then this is the same as
+C de-referencing the file. 
+          call edisp(iuout,'No control file selected. Clearing data.') 
+	  call ezctli
+          LCTLF='  '
+          CALL EMKCFG('-',IER)
+          goto 44
         endif
       endif
       IF(LASCI(1:2).NE.'  ')LCTLF=LASCI
@@ -561,13 +583,7 @@ C Edit building/plant/flow/global control description.
 c Relate control functions to the appropriate zones
 c from the configuration file.
         if(icfoc.eq.0)then
-          NZT=NCOMP
-          H(1)=
-     &      'This should match the current system configuration file.'
-          CALL EASKI(NZT,' ','Number of zones in model?',
-     &      1,'F',MCOM,'F',NCOMP,'no of zones',IERI,1)
-          if(ieri.eq.-3) goto 92
-          NZ=NZT
+          NZ=NCOMP
           IF(NZ.GT.1.OR.NCF.GT.1)GOTO 304
 
 c Match single zone with single control function.
@@ -8073,7 +8089,7 @@ C Reading heating and cooling setpoints from temporal file
           prompt1(2)='Set the column number which contains heating'
           prompt2(2)='setpoint value in the temporal (tdf) file'
           ndec(2)=0; vmin(2)=1.0; vmax(2)=80.0; vdef(2)=5.0
-          menu(3)='Cooling setpoint column number'
+          menu(3)='Heating setpoint column number'
           prompt1(3)='Set the column number which contains cooling'
           prompt2(3)='setpoint value in the temporal (tdf) file'
           ndec(3)=0; vmin(3)=1.0; vmax(3)=80.0; vdef(3)=6.0

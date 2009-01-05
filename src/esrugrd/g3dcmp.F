@@ -286,13 +286,23 @@ C *********************************************************************
       SUBROUTINE DRWSRF(IS)
 #include "building.h"
 
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Define the  MAX & MIN surface coordinates.
       XMAX=XMAXS(IS)
@@ -305,19 +315,26 @@ C which define it.  The win3d parameters match those in FACDRW
 C and SITPLN.
       call startbuffer()
       CALL win3d(29,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Reopen the dialogue box.
       CALL usrmsg(' ',' ','-')
 
 C Determine scaling ratios for the drawing and axis.
-      CALL axiscale(igw,igwh,XMIN,XMAX,ZMIN,ZMAX,xsc,ysc,sca,
+      call axiscale(igwid,igheight,XMIN,XMAX,ZMIN,ZMAX,xsc,ysc,sca,
      &              Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
       call linescale(igl,Xadd,sca,igb,Zadd,sca)
 
 C Display header information.
-      CALL VIEWTEXT('Elevation View',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Elevation View',iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
@@ -332,8 +349,11 @@ C Draw a scale vertical axis.
         X2=XVRT(IS,IV2)
         Z2=ZVRT(IS,IV2)
         IPEN=1
-        CALL ETPLOT(X1,Z1,0,0)
-        CALL ETPLOT(X2,Z2,IPEN,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(X1,Z1,iupdown,isym)
+        iupdown=IPEN
+        CALL ETPLOT(X2,Z2,iupdown,isym)
         CALL U2PIXEL(X1,Z1,IX,IY)
         CALL ECIRC(IX,IY,3,1)
         IVRT1=ILINB(IS,IL,1)
@@ -348,8 +368,11 @@ C Draw a scale vertical axis.
           X2=XVRT(IS,IV2)
           Z2=ZVRT(IS,IV2)
           IPEN=-204
-          CALL ETPLOT(X1,Z1,0,0)
-          CALL ETPLOT(X2,Z2,IPEN,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(X1,Z1,iupdown,isym)
+          iupdown=IPEN
+          CALL ETPLOT(X2,Z2,iupdown,isym)
    30   CONTINUE
       ENDIF
       call forceflush()
@@ -662,6 +685,11 @@ C *********************************************************************
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       SML=-1.E-4
       CALL POINT1(IS,XVALU,ZVALU,IANS)
@@ -716,8 +744,11 @@ C *********************************************************************
         CALL VRTNUM(IS,XMIN2,ZVALU,NUM)
         ILINE(IS,NLINA(IS),2)=NUM
         IF(MMOD.EQ.8)THEN
-          CALL ETPLOT(XMIN1,ZVALU,0,0)
-          CALL ETPLOT(XMIN2,ZVALU,-204,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(XMIN1,ZVALU,iupdown,isym)
+          iupdown=-204
+          CALL ETPLOT(XMIN2,ZVALU,iupdown,isym)
         ENDIF
       ELSE
         CALL USRMSG(' ','Selected point is not within the surface!','W')
@@ -738,6 +769,11 @@ C *********************************************************************
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       SML=-1.E-4
       CALL POINT1(IS,XVALU,ZVALU,IANS)
@@ -792,8 +828,11 @@ C *********************************************************************
         CALL VRTNUM(IS,XVALU,ZMIN2,NUM)
         ILINE(IS,NLINA(IS),2)=NUM
         IF(MMOD.EQ.8)THEN
-          CALL ETPLOT(XVALU,ZMIN1,0,0)
-          CALL ETPLOT(XVALU,ZMIN2,-204,0)
+          iupdown=0
+          isym=0
+          CALL ETPLOT(XVALU,ZMIN1,iupdown,isym)
+          iupdown=-204
+          CALL ETPLOT(XVALU,ZMIN2,iupdown,isym)
         ENDIF
       ELSE
         CALL USRMSG(' ','Selected point is not within the surface!','W')
@@ -1150,7 +1189,8 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -1161,6 +1201,13 @@ C *********************************************************************
 
       DIMENSION XEDG(8),YEDG(8),ZEDG(8)
       DIMENSION XS(8),YS(8),ZS(8)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       IVRT1=IVXEDG(IEG,1)
       IVRT2=IVXEDG(IEG,2)
@@ -1215,8 +1262,12 @@ C Find 2D extremes coordinates.
 
 C Clear the graphical feedback window.
       CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
-     &              XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,
+     &              SCA,XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the two extreme vertices.
@@ -1228,21 +1279,30 @@ C Locate and label the two extreme vertices.
       CALL VERTLBL(IX,IY,IVRT2,IER)
 
 C Draw the edge.
-      CALL ETPLOT(XS(1),YS(1),0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
+      iupdown=1
       DO 120 I=2,4
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   120 CONTINUE
-      CALL ETPLOT(XS(1),YS(1),1,0)
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
       DO 130 I=5,8
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   130 CONTINUE
-      CALL ETPLOT(XS(5),YS(5),1,0)
-      CALL ETPLOT(XS(2),YS(2),0,0)
-      CALL ETPLOT(XS(6),YS(6),1,0)
-      CALL ETPLOT(XS(3),YS(3),0,0)
-      CALL ETPLOT(XS(7),YS(7),1,0)
-      CALL ETPLOT(XS(4),YS(4),0,0)
-      CALL ETPLOT(XS(8),YS(8),1,0)
+      CALL ETPLOT(XS(5),YS(5),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(2),YS(2),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(6),YS(6),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(3),YS(3),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(7),YS(7),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(4),YS(4),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(8),YS(8),iupdown,isym)
 
 C Draw the gridding lines.
       CALL EDGNUM(IS1,IS2,IVRT1,IVRT2,IEG)
@@ -1253,7 +1313,9 @@ C Draw the gridding lines.
         ZEDG(I)=ZEDG(I-4)+DZE(IEG,IDZ)*DCOSE(IEG,3,3)
         CALL ORTTRN(XEDG(I),YEDG(I),ZEDG(I),TEMAT,AX,AY,AZ,IERR)
         CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-        CALL ETPLOT(XS(I),YS(I),0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
         XEDG(I-4)=XEDG(I)
         YEDG(I-4)=YEDG(I)
         ZEDG(I-4)=ZEDG(I)
@@ -1263,12 +1325,16 @@ C Draw the gridding lines.
           ZEDG(I)=ZEDG(I-4)+DZE(IEG,IDZ)*DCOSE(IEG,3,3)
           CALL ORTTRN(XEDG(I),YEDG(I),ZEDG(I),TEMAT,AX,AY,AZ,IERR)
           CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-          CALL ETPLOT(XS(I),YS(I),-204,0)
+          iupdown=-204
+          isym=0
+          CALL ETPLOT(XS(I),YS(I),iupdown,isym)
           XEDG(I-4)=XEDG(I)
           YEDG(I-4)=YEDG(I)
           ZEDG(I-4)=ZEDG(I)
   150   CONTINUE
-        CALL ETPLOT(XS(5),YS(5),-204,0)
+        iupdown=-204
+        isym=0
+        CALL ETPLOT(XS(5),YS(5),iupdown,isym)
   140 CONTINUE
       call forceflush()
 
@@ -1551,11 +1617,13 @@ C *********************************************************************
       SUBROUTINE FHCEDG(IZ,IEG,IL)
 #include "building.h"
 
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D25/NDXE(MEZ),DXE(MEZ,MZE)
@@ -1565,6 +1633,15 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1576,7 +1653,11 @@ C Define the two surfaces.
       YMX2=FLOAT(NDYE(IEG))
       XYMX=AMAX1(XMX2,YMX2)
       CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,IX,IY)
@@ -1593,12 +1674,20 @@ C Define the two surfaces.
       DO 10 I=1,NDXE(IEG)-1
         CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
         CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYE(IEG)-1
         CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
         CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
       DO 30 I=1,NDXE(IEG)
@@ -1608,24 +1697,35 @@ C Define the two surfaces.
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')ITPEDG(IEG,I,J,IL)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          ipos=0
+          isize=itfs
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
    30 CONTINUE
-      CALL VIEWTEXT('Material Types',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Material Types',iside,isize,ifont)
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
       WRITE(LABELN,'(A,I2)')'V',IVXEDG(IEG,1)
-      CALL ETLABEL(LABELN,XLAB,YLAB,2,ITFS)
+      ipos=2
+      isize=itfs
+      CALL ETLABEL(LABELN,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is1)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMX2/2.
       YLAB=YMN2-XYMX/10.
-      CALL ETLABEL(LABELS,XLAB,YLAB,2,ITFS+2)
+      ipos=2
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is2)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMN2-XMX2/10.
       YLAB=YMX2/2.
-      CALL ETLABEL(LABELS,XLAB,YLAB,1,ITFS+2)
+      ipos=1
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       call forceflush()
 
       RETURN
@@ -2115,7 +2215,8 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
@@ -2127,6 +2228,13 @@ C *********************************************************************
 
       DIMENSION XCRN(8),YCRN(8),ZCRN(8)
       DIMENSION XS(8),YS(8),ZS(8)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       IVRX=IVXCRN(ICR)
 
@@ -2178,7 +2286,11 @@ C Find 2D extremes coordinates.
 
 C Clear the graphical feedback window.
       CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &              XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
@@ -2188,21 +2300,31 @@ C Locate and label the vertex.
       CALL VERTLBL(IX,IY,IVRX,IER)
 
 C Draw the corner.
-      CALL ETPLOT(XS(1),YS(1),0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
+      iupdown=1
       DO 160 I=2,4
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   160 CONTINUE
-      CALL ETPLOT(XS(1),YS(1),1,0)
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
       DO 170 I=5,8
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   170 CONTINUE
-      CALL ETPLOT(XS(5),YS(5),1,0)
-      CALL ETPLOT(XS(2),YS(2),0,0)
-      CALL ETPLOT(XS(6),YS(6),1,0)
-      CALL ETPLOT(XS(3),YS(3),0,0)
-      CALL ETPLOT(XS(7),YS(7),1,0)
-      CALL ETPLOT(XS(4),YS(4),0,0)
-      CALL ETPLOT(XS(8),YS(8),1,0)
+      iupdown=1
+      CALL ETPLOT(XS(5),YS(5),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(2),YS(2),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(6),YS(6),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(3),YS(3),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(7),YS(7),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(4),YS(4),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(8),YS(8),iupdown,isym)
 
 C Draw the gridding lines.
       DO 180 IDZ=1,NDZC(ICR)-1
@@ -2212,7 +2334,9 @@ C Draw the gridding lines.
         ZCRN(I)=ZCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,3)
         CALL ORTTRN(XCRN(I),YCRN(I),ZCRN(I),TEMAT,AX,AY,AZ,IERR)
         CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-        CALL ETPLOT(XS(I),YS(I),0,0)
+        iupdown=0
+        isym=0
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
         XCRN(I-4)=XCRN(I)
         YCRN(I-4)=YCRN(I)
         ZCRN(I-4)=ZCRN(I)
@@ -2222,12 +2346,16 @@ C Draw the gridding lines.
           ZCRN(I)=ZCRN(I-4)+DZC(ICR,IDZ)*DCOSC(ICR,3,3)
           CALL ORTTRN(XCRN(I),YCRN(I),ZCRN(I),TEMAT,AX,AY,AZ,IERR)
           CALL ORTTRN(AX,AY,AZ,ETSMAT,XS(I),YS(I),ZS(I),IERR)
-          CALL ETPLOT(XS(I),YS(I),-204,0)
+          iupdown=-204
+          isym=0
+          CALL ETPLOT(XS(I),YS(I),iupdown,isym)
           XCRN(I-4)=XCRN(I)
           YCRN(I-4)=YCRN(I)
           ZCRN(I-4)=ZCRN(I)
   190   CONTINUE
-        CALL ETPLOT(XS(5),YS(5),-204,0)
+        iupdown=-204
+        isym=0
+        CALL ETPLOT(XS(5),YS(5),iupdown,isym)
   180 CONTINUE
       call forceflush()
 
@@ -2512,11 +2640,13 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
       COMMON/GR3D35/NDXC(MEZ),DXC(MEZ,MZE)
@@ -2526,6 +2656,15 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
 C Return if not in graghical mode.
       IF(MMOD.LT.8)RETURN
@@ -2541,7 +2680,11 @@ C Define the two surfaces.
       XYMX=AMAX1(XMX2,YMX2)
       call startbuffer()
       CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,IX,IY)
@@ -2558,14 +2701,24 @@ C Define the two surfaces.
       DO 10 I=1,NDXC(ICR)-1
         CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
         CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYC(ICR)-1
         CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
         CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
+      ipos=0
+      isize=itfs
       DO 30 I=1,NDXC(ICR)
         XCF=XCF+1.
         YCF=-0.5
@@ -2573,24 +2726,33 @@ C Define the two surfaces.
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')ITPCRN(ICR,I,J,IL)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
    30 CONTINUE
-      CALL VIEWTEXT('Material Types',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Material Types',iside,isize,ifont)
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
       WRITE(LABELN,'(A,I2)')'V',IVXCRN(ICR)
-      CALL ETLABEL(LABELN,XLAB,YLAB,2,ITFS)
+      ipos=2
+      isize=itfs
+      CALL ETLABEL(LABELN,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is1)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMX2/2.
       YLAB=YMN2-XYMX/10.
-      CALL ETLABEL(LABELS,XLAB,YLAB,2,ITFS+2)
+      ipos=2
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       icon=IZSTOCN(iz,is2)
       WRITE(LABELS,'(A12)') SSNAME(icon)
       XLAB=XMN2-XMX2/10.
       YLAB=YMX2/2.
-      CALL ETLABEL(LABELS,XLAB,YLAB,1,ITFS+2)
+      ipos=1
+      isize=itfs+2
+      CALL ETLABEL(LABELS,XLAB,YLAB,ipos,isize)
       call forceflush()
 
       RETURN

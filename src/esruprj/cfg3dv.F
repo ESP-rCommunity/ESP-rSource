@@ -40,6 +40,7 @@ C then it represents the zone which is currently being edited.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       LOGICAL MODIFY,MODLEN,MODBND
+      integer numberofzones ! to pass to updwire rather than ncomp
 
       SMALL=0.01
 
@@ -47,7 +48,8 @@ C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C Tell wireframe control the current number of selected zones.
-      call updwire(nzg)
+      numberofzones=nzg
+      call updwire(numberofzones)  ! pass local integer
 
 C If altered then do a bound check on the current zone and update display.
       IF(MODIFY)THEN
@@ -93,7 +95,9 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -133,6 +137,15 @@ C NZJVN : topology of vertices associated with each connection.
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
       CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64
 
+C Local variables to pass to edline and axiscale.
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iix,iiy,iixlast,iiylast
+#endif
+
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
@@ -153,18 +166,22 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
       CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
-        CALL axiscale(igw,igwh,-1000.,1000.,-1000.,1000.,xsc,ysc,sca,
-     &                Xadd,Yadd)
+        CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
+     &                sca,Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ENDIF
@@ -398,6 +415,8 @@ C move cursor to vertex and remember position.
           ENDIF
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
           IP1 = IBNXT(IP)
 
@@ -425,7 +444,9 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  iix=ix
+                  iiy=iy
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   write(6,*) 'duplicate edge.'
                   found=.true.
                 endif
@@ -457,12 +478,16 @@ C move cursor back to vertex and remember position.
             CALL VERTLBL(ix,iy,IV,ier)
             ixlast=ix
             iylast=iy
+            iixlast=ix   ! cast for edline call
+            iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
           ixlast=ix
           iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
@@ -486,7 +511,9 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  iix=ix
+                  iiy=iy
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   write(6,*) 'duplicate edge.'
                   found=.true.
                 endif

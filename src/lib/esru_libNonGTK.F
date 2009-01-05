@@ -4043,8 +4043,8 @@ C iappx & iappy are the upper-left position on the monitor <not yet implemented 
 C menuchw is the initial request for menu width (in characters)
       SUBROUTINE EPAGES(MODEL,IIN,IOUT,iappwi,iapphi,iappx,iappy,
      &  menuchw,TITLE)
-C     SUBROUTINE EPAGES(MODEL,IIN,IOUT,TITLE)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       CHARACTER*(*) TITLE
       CHARACTER HEAD*255
@@ -4254,20 +4254,39 @@ C items in call to evwmenu.
       character*(*) name, items(*)
       character itypes*40
 
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+C computers cast the parameters passed into ewmenu to local variables
+C of either integer or integer*8 to match the long int variables in
+C the C function evwmenu.  Do reverse cast after return from evwmenu.
+#ifdef OSX
+      integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#else
+      integer*8 impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#endif
+
 C Append a null terminator to the title string if possible.
       iw=LEN(items(1))
       write(itypes,9)
    9  format(40('-'))
       call updmenu(items,itypes,nitms,iw)
-      call evwmenu (name,impx,impy,iw,irpx,irpy,ino,ipflg,iuresp)
+      inoe=ino   ! assign to local passed parameters
+      impxe=impx   
+      impye=impy   
+      irpxe=irpx
+      irpye=irpy
+      call evwmenu (name,impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp)
+      ino=inoe  !  cast back from returned parameter
+      irpx=irpxe
+      irpy=irpye
       if (ino.lt.0) then
 
 C Overload INO with click position and button.  A nine digit number is
 C used the first digit is the mouse button and the next 4 represent the
 C x pixel and the last 4 the y pixel.
         ino=-100000000*iuresp-10000*irpx-irpy
-C Debug...        write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       endif
+C Debug...
+C      write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
       end
 
@@ -4277,11 +4296,32 @@ C allows the string widths to be variable widths.
       SUBROUTINE VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
       character*(*) name, items(*)
       character itypes*40
+      integer iw,irpx,irpy
 
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+C computers cast the parameters passed into ewmenu to local variables
+C of either integer or integer*8 to match the long int variables in
+C the C function evwmenu.  Do reverse cast after return from evwmenu.
+#ifdef OSX
+      integer impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#else
+      integer*8 impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+#endif
+      iwe=iw    ! assign to local passed parameter
       write(itypes,9)
    9  format(40('-'))
-      call updmenu(items,itypes,nitms,iw)
-      call evwmenu (name,impx,impy,iw,irpx,irpy,ino,ipflg,iuresp)
+      call updmenu(items,itypes,nitms,iwe)
+      inoe=ino   ! assign to local passed parameters
+      impxe=impx   
+      impye=impy   
+      irpxe=irpx
+      irpye=irpy
+      call evwmenu (name,impxe,impye,iw,irpx,irpy,inoe,ipflg,iuresp)
+      ino=inoe  !  cast back from returned parameter
+      irpx=irpxe
+      irpy=irpye
+C Debug
+C      write(6,*) 'VWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
       end
 
@@ -5629,7 +5669,9 @@ C UPDVIEW is called from C code in wwlib.c with values to update common
 C blocks GFONT, VIEWPX and SPAD. Set REFRESH=true.  Set MODIFY=true
 C to force any wire-frame images to be redrawn.
       subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FRESH/refrsh
@@ -9115,6 +9157,7 @@ C EYEMAT provides transform eyepoint - viewpoint....
       common/OUTIN/IUOUT,IUIN
 
       DIMENSION  EP(3),VP(3),TMAT(4,4),RMAT(4,4)
+      character outs*124
 
       DELTA = 10E-6
 
@@ -9135,6 +9178,8 @@ C EYEMAT provides transform eyepoint - viewpoint....
       IF (ABS(EPRIME).GT.DELTA) GOTO 110
       SINPHI = 1.0
       COSPHI = 0.0
+      write(outs,*) ' EP is ',EP,' VP is ',VP
+      call edisp(iuout,outs)
       call edisp(iuout,'Eye point & viewed point too close together')
       call edisp(iuout,'so a view || to the Z axis is assumed.')
       GOTO 130
@@ -9228,7 +9273,9 @@ C then it represents the zone which is currently being edited.
       COMMON/C1/NCOMP,NCON
       common/rpath/path
       common/appw/iappw,iappx,iappy
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON

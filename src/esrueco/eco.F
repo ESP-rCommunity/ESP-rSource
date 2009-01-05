@@ -55,6 +55,7 @@ C default file names for databases
 
 C Commons for I/O Channel, mode type and fonts.
       COMMON/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
@@ -64,6 +65,7 @@ C File unit
       COMMON/FILEP/IFIL
 
 C Interface frame dimensions
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
@@ -203,6 +205,7 @@ C      CHARACTER tab*1
       CHARACTER*72 MatDesc,MatCat,LayerDes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Initial assumptions (summary reporting).
       call ezero
@@ -368,10 +371,13 @@ C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        igw=igr-igl
+        igwh=igb-igt
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -425,7 +431,10 @@ C properties, display it and then present the main menu.
           MODBND=.TRUE.
           MODLEN=.TRUE.
           nzg=NCOMP
-          IF(MMOD.EQ.8)call updwire(ncomp)
+          IF(MMOD.EQ.8)then
+            numberofzones=ncomp
+            call updwire(numberofzones)
+          endif
           DO 444 I=1,nzg
             nznog(I)=I
  444      CONTINUE

@@ -210,7 +210,9 @@ C  terms of a dimensionless number - the CSI.
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/exporttgi/ixopen,ixloc,ixunit
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
@@ -284,6 +286,8 @@ C displaying the following data.
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
         call usrmsg(' ',' ','-')
       ENDIF

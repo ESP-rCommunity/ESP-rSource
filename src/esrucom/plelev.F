@@ -57,12 +57,21 @@ C IUF is file unit for geometry, utility file units.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/precz/zname(MCOM),zdesc(MCOM)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
       logical newgeo  ! to use for testing if new/old geometry file.
       newgeo=.false.  ! assume older format geometry.
 
@@ -73,13 +82,19 @@ C IUF is file unit for geometry, utility file units.
       ENDIF
 
 C Define a viewing box, draw its border after clearing it and
-C return the offsets which define it.
+C return the offsets which define it. Recalculate igw and igwh
+C on fortran to address fault in 64 bit win3d code.
       call startbuffer()
       if(menuchw.ne.0)then
         CALL win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       else
         CALL win3d(32,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       endif
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      
 C Reopen the dialogue box.
       CALL USRMSG(' ',' ','-')
 
@@ -89,17 +104,20 @@ C Place scaling in static C variables for use by line drawing routines.
 C Draw a scale horizontal axis, move to beginning point.
 C Draw a scale vertical axis.
       if(direc.eq.'P')then
-        CALL axiscale(igw,igwh,XMN,XMX,YMN,YMX,xsc,ysc,sca,Xadd,Yadd)
+        CALL axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         CALL horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
         CALL vrtaxis(YMN,YMX,igl,igb,igt,Yadd,sca,1,0,'^ North')
       elseif(direc.eq.'S')then
-        CALL axiscale(igw,igwh,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+        CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
         call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
       elseif(direc.eq.'E')then
-        CALL axiscale(igw,igwh,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,Xadd,Yadd)
+        CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
+     &    Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
         call horaxis(YMN,YMX,igl,igr,igb,Xadd,sca,1,'North (m) ->')
         call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
@@ -126,13 +144,19 @@ C Check for a zone obstructions file.
 
         if(direc.eq.'P')then
           call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,2),ix,iy)
-          call etplot(ZCOG(newfoc,1),ZCOG(newfoc,2),0,0)
+          iupdown=0
+          isym=0
+          call etplot(ZCOG(newfoc,1),ZCOG(newfoc,2),iupdown,isym)
         elseif(direc.eq.'S')then
           call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,3),ix,iy)
-          call etplot(ZCOG(newfoc,1),ZCOG(newfoc,3),0,0)
+          iupdown=0
+          isym=0
+          call etplot(ZCOG(newfoc,1),ZCOG(newfoc,3),iupdown,isym)
         elseif(direc.eq.'E')then
           call u2pixel(ZCOG(newfoc,2),ZCOG(newfoc,3),ix,iy)
-          call etplot(ZCOG(newfoc,2),ZCOG(newfoc,3),0,0)
+          iupdown=0
+          isym=0
+          call etplot(ZCOG(newfoc,2),ZCOG(newfoc,3),iupdown,isym)
         endif
         IF(lnblnk(zname(newfoc)).GT.1)THEN
           write(tz,'(A)')zname(newfoc)
@@ -145,20 +169,26 @@ C Check for a zone obstructions file.
 
         DO 400 I=1,NSUR
           J=JVN(I,1)
-          if(direc.eq.'P')call etplot(X(J),Y(J),0,0)
-          if(direc.eq.'S')call etplot(X(J),Z(J),0,0)
-          if(direc.eq.'E')call etplot(Y(J),Z(J),0,0)
+          iupdown=0
+          isym=0
+          if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
+          if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
+          if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
 
           K=NVER(I)
           DO 50 L=2,K
             M=JVN(I,L)
-            if(direc.eq.'P')call etplot(X(M),Y(M),-302,0)
-            if(direc.eq.'S')call etplot(X(M),Z(M),-302,0)
-            if(direc.eq.'E')call etplot(Y(M),Z(M),-302,0)
+            iupdown=-302
+            isym=0
+            if(direc.eq.'P')call etplot(X(M),Y(M),iupdown,isym)
+            if(direc.eq.'S')call etplot(X(M),Z(M),iupdown,isym)
+            if(direc.eq.'E')call etplot(Y(M),Z(M),iupdown,isym)
    50     CONTINUE
-          if(direc.eq.'P')call etplot(X(J),Y(J),-302,0)
-          if(direc.eq.'S')call etplot(X(J),Z(J),-302,0)
-          if(direc.eq.'E')call etplot(Y(J),Z(J),-302,0)
+          iupdown=-302
+          isym=0
+          if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
+          if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
+          if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
   400   CONTINUE
         call forceflush()
 
@@ -169,19 +199,25 @@ C and plotting.
           CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
           DO 422 I=1,NSUR
             J=JVN(I,1)
-            if(direc.eq.'P')call etplot(X(J),Y(J),0,0)
-            if(direc.eq.'S')call etplot(X(J),Z(J),0,0)
-            if(direc.eq.'E')call etplot(Y(J),Z(J),0,0)
+            iupdown=0
+            isym=0
+            if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
+            if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
+            if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
             K=NVER(I)
             DO 424 L=2,K
               M=JVN(I,L)
-              if(direc.eq.'P')call etplot(X(M),Y(M),1,0)
-              if(direc.eq.'S')call etplot(X(M),Z(M),1,0)
-              if(direc.eq.'E')call etplot(Y(M),Z(M),1,0)
+              iupdown=1
+              isym=0
+              if(direc.eq.'P')call etplot(X(M),Y(M),iupdown,isym)
+              if(direc.eq.'S')call etplot(X(M),Z(M),iupdown,isym)
+              if(direc.eq.'E')call etplot(Y(M),Z(M),iupdown,isym)
   424       CONTINUE
-            if(direc.eq.'P')call etplot(X(J),Y(J),1,0)
-            if(direc.eq.'S')call etplot(X(J),Z(J),1,0)
-            if(direc.eq.'E')call etplot(Y(J),Z(J),1,0)
+            iupdown=1
+            isym=0
+            if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
+            if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
+            if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
   422     CONTINUE
           if(direc.eq.'P')call u2pixel(X(J),Y(J),ix,iy)
           if(direc.eq.'S')call u2pixel(X(J),Z(J),ix,iy)
@@ -198,13 +234,17 @@ C If there is a ground, ITDSP is flagged and plan view draw it.
         if(direc.eq.'P')then
           DO 401 I=1,NGT
             J=JGVN(I,1)
-            call etplot(XGT(J),YGT(J),0,0)
+            iupdown=0
+            isym=0
+            call etplot(XGT(J),YGT(J),iupdown,isym)
             K=NGVER(I)
+            iupdown=-203
+            isym=0
             DO 501 L=2,K
               M=JGVN(I,L)
-              call etplot(X(M),Y(M),-203,0)
+              call etplot(X(M),Y(M),iupdown,isym)
   501       CONTINUE
-            call etplot(X(J),Y(J),-203,0)
+            call etplot(X(J),Y(J),iupdown,isym)
   401     CONTINUE
         endif
       endif

@@ -411,8 +411,12 @@ C Arrays of material properties.
 C << rewrite logic to use G7 commons instead of these local variables. >>
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),spdesc(40),
+      DIMENSION PNAM(ME),item(ME+10),spitem(40),spitem2(40),
      &dadesc(40), SPMISC(MPWDAT),SPVAR(MPWDAT),SPSTR(90),SSTR(90)
+C Note: spdesc is passed to subroutine MCDBSCAN in leu of sstr;
+C therefore spdesc must have the same dimensions as dummy arguement
+C sstr in spdesc.
+      dimension spdesc(90)
 
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -425,7 +429,7 @@ C << rewrite logic to use G7 commons instead of these local variables. >>
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER spflnam*72,spdesc*72
-      CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72
+      CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72, t144*144
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
 
 C Set the special components reporting variable
@@ -687,7 +691,7 @@ C General image option flags.
         CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','inlet.',IER)
       ELSE
         CALL EASKSUR(IZ,ISO,'-','Select surface for special',
-     &'component. ',IER)
+     &    'component. ',IER)
       ENDIF
       CALL EPMENRC
       if(SOTF(ISO)(1:4).eq.'OPAQ')then
@@ -736,10 +740,13 @@ C Store the surface and zone information.
 C Determine the surface type
 C Create a menu showing the available database items. 
 C Allow user to select one. Begin by reading current database.
-        CALL ERPRCDB(LAPRES,0,3,IER)
+C Begin by reading current database (signal by passing a
+C blank string to erprcdb).
+        t144='  '
+        CALL ERPRCDB(t144,0,3,IER)
         if (ier.ne.0) THEN
           CALL EDISP(IUOUT,
-     &'Error opening pressure coefficients database.')
+     &      'Error opening pressure coefficients database.')
           RETURN
         endif
 
@@ -946,7 +953,10 @@ C Recover the related zone.
 
 C Create a menu showing the available database items. 
 C Allow user to select one. Begin by reading current database.
-        CALL ERPRCDB(LAPRES,0,3,IER)
+C Begin by reading current database
+C (signal by passing a blank string to erprcdb).
+        t144='  '
+        CALL ERPRCDB(t144,0,3,IER)
         if (ier.ne.0) THEN
           CALL EDISP(IUOUT,'Error opening pressure coefficients file.')
           RETURN

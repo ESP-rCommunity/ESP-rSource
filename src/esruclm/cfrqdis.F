@@ -30,6 +30,7 @@ C of the user-specified time-dependant variable.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
       common/exporttgi/ixopen,ixloc,ixunit
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/IFDFLG/IFLAGF
@@ -42,6 +43,11 @@ C of the user-specified time-dependant variable.
       logical graph_ok,ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Identify specific variable to examine
 C and set up relevant label type for axis.
@@ -121,11 +127,16 @@ C bounds and redraw the image before presenting the command menu.
 C GTK note: the call to win3d is a new requirement (until such time
 C as the C automatically refreshes the coordinates).
           CALL win3d(menuchw,9,8,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
 
         CALL CHEAD(11)
-        CALL viewtext(' Frequency analysis',3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(' Frequency analysis',iside,isize,ifont)
 
 C Set axis label flag IL.
         IF(IGET.EQ.1)IL=2
@@ -378,7 +389,13 @@ C 'HISDRW' draws a histogram of the frequency distribution
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       CHARACTER*10 LABELX,LABLSX(5)
       DATA LABLSX /'Temp. degC',
@@ -396,14 +413,16 @@ C 'HISDRW' draws a histogram of the frequency distribution
 C Percentage (right) axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,sca,
-     &              Xadd,YaddP)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,
+     &              sca,Xadd,YaddP)
       call vrtaxis(PMIN,PMAX,igr,igb,igt,YaddP,YSCP,0,1,'Percent')
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
-      call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,XSC,YSC,sca,
-     &              Xadd,Yadd)
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,
+     &              sca,Xadd,Yadd)
       call linescale(igl,Xadd,XSC,igb,Yadd,YSC)
 
 C Pick up the data increment for the horizontal axis and then draw

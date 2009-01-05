@@ -1306,7 +1306,7 @@ C same opening logic as in eddb.F and moplnt.F
          if(ipcdb.eq.0)ipcdb=iprodb
          if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
            lltmp=LPCDB
-         elseif(ipathoptdb.eq.2)then
+         elseif(ipathpcdb.eq.2)then
            write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
          endif

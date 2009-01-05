@@ -415,16 +415,14 @@ C in res for the simplified convection calculation approaches.
         do 42 ICOMP=1,NCOMP
           if(IHC(ICOMP).EQ.1.and.ISAVE.lt.4)SAVE4=.true.
    42   continue
-        if (autook) then
-          if(SAVE4.and.ISAVE.ne.4)then
-            dok=.true.
-            h(1)='A model which includes a (non-standard) convection'
-            h(2)='regime must be run with save level 4 (full energy '
-            h(3)='balance). You should say yes. '
-            CALL ASKOK(' Convection regime file detected.',
-     &                 ' Change save level to 4 ? ',SAVE4OK,dok,3)
-            if(SAVE4OK)ISAVE=4
-          endif
+        if(SAVE4.and.ISAVE.ne.4)then
+          dok=.true.
+          h(1)='A model which includes a (non-standard) convection'
+          h(2)='regime must be run with save level 4 (full energy '
+          h(3)='balance). You should say yes. '
+          CALL ASKOK(' Convection regime file detected.',
+     &               ' Change save level to 4 ? ',SAVE4OK,dok,3)
+          if(SAVE4OK)ISAVE=4
         endif
         call tstamp('>','SIM: enter simulate')
         call SIMCON

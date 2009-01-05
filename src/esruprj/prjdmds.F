@@ -859,8 +859,13 @@ C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
-      DIMENSION  ICGS(MC),ICGF(MC),CGS(MC),CGL(MC)
-      DIMENSION  NO(100),DESC(100),IPRVAL(100)
+C Profile database commons.
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40,outs248*248
+
+      DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,blodlabel*6
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
@@ -881,39 +886,44 @@ C Labels for loads.
       PL=0.
       RAD=0.5
       CON=0.5
-      call efopran(IPRODB,LPRFDB,10,1,IER)
-      IF(ier.ne.0)return
-      CALL edisp(iuout,' opened profiles db')
+      
+      llt=lnblnk(LPRFDB)
+      write(outs248,'(2a)') 'Accessing event profile db: ',
+     &  LPRFDB(1:llt)
+      call edisp248(iuout,outs248,100)
 
-      IREC = 1
-      READ(IPRODB,REC=IREC)  NITEMS
-      DO 50 I = 1,NITEMS
-        IREC = IREC + 1
-        NO(I) = IREC
-        READ(IPRODB,REC=IREC)  NCG
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=180)  DESC(I)
-        IREC = IREC + NCG
+C Scan the binary event profiles database. If an error state is
+C returned then it might be an ASCII file, try and scan that.
+      call TRIPROBIN(IER)
+      if(ier.ne.0)then
+        CALL ERPFREE(IPRODB,ISTAT)
+        CALL USRMSG(' opened profiles db...',' ','-')
+        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        if(ier.ne.0)then
+          call usrmsg('Error opening the db. Please use one',
+     &                'of the other options.','W')
+          return
+        else
+          CALL ERPFREE(IPRODB,ISTAT)
+          CALL USRMSG(' opened profiles db...ok',' ','-')
+        endif
+      else
+        CALL USRMSG(' opened profiles db...ok',' ','-')
+      endif
+
+C Copy the string list of event profiles to local string variable.
+      DO 50 I = 1,NPDBITEMS
+        DESC(I)=PDBDESC(I)
    50 CONTINUE
 
 C Present a list of profiles to select from.
       H(1)='Any one of the profiles may be selected.'
       IX=1
       CALL EPICKS(IX,IPRVAL,' ',' Profiles in database: ',
-     &         40,NITEMS,DESC,'event database profiles',IER,1)
+     &         40,NPDBITEMS,DESC,'event database profiles',IER,1)
       IF(IX.EQ.0)RETURN
 
-      N=IPRVAL(1)
-      IREC = NO(N)
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=181)  NCG
-      IREC = IREC + 2
-
-C There are NCG gains to be added
-      DO 70 I = 1,NCG
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=183)  ICGS(I),ICGF(I),
-     &       CGS(I),CGL(I)
-        IREC = IREC + 1
-70    CONTINUE
+      INDEX=IPRVAL(1)
 
 C Identify nature of demands
       H(1)='Project level demands can be be designated to be '
@@ -958,30 +968,20 @@ C Depending on type set relevant idmdinc value.
       if(IDAY.ge.1.and.IDAY.le.nbdaytype)then
 
 C The current calendar day type gains.
-        NBCAS(iday) = NBCAS(iday) + NCG
-        DO 140 I = 1,NCG
-          IBCGS(iday,I+IN) = ICGS(I)
-          IBCGF(iday,I+IN) = ICGF(I)
-          CBMGS(iday,I+IN) = CGS(I)*PS/100.0
-          CBMGL(iday,I+IN) = CGL(I)*PL/100.0
+        NBCAS(iday) = NBCAS(iday) + NCG(INDEX)
+        DO 140 I = 1,NCG(INDEX)
+          IBCGS(iday,I+IN) = ICGS1(INDEX,I)
+          IBCGF(iday,I+IN) = ICGF1(INDEX,I)
+          CBMGS(iday,I+IN) = CGS1(INDEX,I)*PS/100.0
+          CBMGL(iday,I+IN) = CGL1(INDEX,I)*PL/100.0
           BRADC(iday,I+IN) = RAD
           BCONC(iday,I+IN) = CON
           IBCGT(iday,I+IN) = ICGT
 140     CONTINUE
       endif
 
-  999 CALL ERPFREE(IPRODB,ISTAT)
+      CALL ERPFREE(IPRODB,ISTAT)
       RETURN
-
-180   call edisp(iuout,' Casual gain database read error.')
-      IER=1
-      goto 999
-181   call edisp(iuout,' Casual gain db NCG read error.')
-      IER=1
-      goto 999
-183   call edisp(iuout,' Casual gain db data read error.')
-      IER=1
-      goto 999
 
       END
 

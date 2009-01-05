@@ -41,6 +41,7 @@ C of inter-fabric temperature and condensation conditions.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
@@ -155,7 +156,9 @@ C to the fabric temperature or condensation information.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -174,6 +177,11 @@ C to the fabric temperature or condensation information.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lml   ! string length for construction name.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -187,6 +195,8 @@ C pixel references for calls to viewtext.
       IF(MMOD.EQ.8)THEN
         call startbuffer
         call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
       lsn1=MIN0(lnblnk(RFILE),22)
@@ -198,7 +208,10 @@ C pixel references for calls to viewtext.
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -207,7 +220,10 @@ C pixel references for calls to viewtext.
      &  SN(:lnblnk(SN)),' of ',ZN(:lnblnk(ZN)),' facing ',
      &  CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -225,7 +241,10 @@ C Display surface information.
       WRITE(ETEXT,'(5a,f6.2,a)')' It is ',TSTR,', composed of ',
      &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -233,7 +252,10 @@ C Display surface information.
       call STDATE(IYEAR,IDAYO,DS,DS1)
       WRITE(ETEXT,'(3A,f6.2)')' Time ',DS1,' at ',TIMO
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,4,0,1)
+        iside=4
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -700,6 +722,7 @@ C condensation graphical output.
       SUBROUTINE MOIAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/OUTPCH/ICOUT
@@ -708,6 +731,11 @@ C condensation graphical output.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character outs*124
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       XMAX=THKMAX
       XMIN=THKMIN
@@ -718,7 +746,9 @@ C condensation graphical output.
       call edisp(icout,outs)
 
 C Compute scaling factors and draw the axis.
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
@@ -735,6 +765,7 @@ C and vapour pressure gradients.
       SUBROUTINE MOIDRW(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -750,6 +781,13 @@ C IPRZ is primitive db ref for each layer.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character CSTR*25,TCSTR*25,zname*12,zdesc*64,ZN*12
+#ifdef OSX
+      integer ipos,isize      ! for use with etlabel
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 ipos,isize      ! for use with etlabel
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Determine the 'other' zone and connection information.
       CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
@@ -772,20 +810,34 @@ C Draw construction section.
 
 C Plot saturated vapour pressure.
       NN=2*NE(ISUR)+1
-      call etplot(THKMIN,PSSO,0,0)
+      iupdown=0
+      isym=0
+      call etplot(THKMIN,PSSO,iupdown,isym)
+      iupdown=1
       DO 20 I=1,NN
-        call etplot(THKN(I)*1000.,PSS(I),1,0)
+        call etplot(THKN(I)*1000.,PSS(I),iupdown,isym)
    20 CONTINUE
-      call etplot(THKMAX,PSSI,1,0)
-      call etlabel('Sat Vap Pres',THKMAX,PSSI,3,1)
+      iupdown=1
+      call etplot(THKMAX,PSSI,iupdown,isym)
+      ipos=3
+      isize=1
+      call etlabel('Sat Vap Pres',THKMAX,PSSI,ipos,isize)
 
 C Plot vapour pressure.
-      call etplot(THKMIN,PSO,0,0)
+      iupdown=0
+      isym=0
+      call etplot(THKMIN,PSO,iupdown,isym)
+      iupdown=-5
+      isym=6
       DO 30 I=1,NN
-        call etplot(THKN(I)*1000.,PS(I),-5,6)
+        call etplot(THKN(I)*1000.,PS(I),iupdown,isym)
    30 CONTINUE
-      call etplot(THKMAX,PSI,-5,0)
-      call etlabel('Vap Pres',THKMAX,PSI,3,1)
+      iupdown=-5
+      isym=0
+      call etplot(THKMAX,PSI,iupdown,isym)
+      ipos=3
+      isize=1
+      call etlabel('Vap Pres',THKMAX,PSI,ipos,isize)
 
       RETURN
       END

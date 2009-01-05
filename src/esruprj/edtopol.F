@@ -1013,7 +1013,10 @@ C Reset ICNT before commencing a new loop.
   210       CONTINUE
   200     CONTINUE
 
-C Depending on how many matches were found, proceed.
+C Depending on how many matches were found, proceed.  If there were
+C no matches then check for existing IDENTICAL or CONSTANT or GROUND
+C or ADIABATIC or BASESIMP or IDENT_CEN and set these if the user
+C asked to skip onfirmation.
           if(ipmatch.eq.0)then
 
 C If user said skip confirmation of marked IDENTICAL, check and update the
@@ -1034,7 +1037,7 @@ C surface attribute if it does not match and jump around.
                 write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
               endif
-            goto 110
+              goto 110
             endif
 
 C If user said skip confirmation of marked CONSTANT, check and update the
@@ -1448,9 +1451,21 @@ C CEN 13791 partition end.
             endif
           elseif(ipmatch.eq.1)then
 
-C Only one possible match, inform user and then proceed.
+C Only one possible matching surface, inform user and then proceed. If
+C selfcheck is false then the match is as a partition to a surface in
+C another zone. If selfcheck is true then we have a back-to-back
+C match and we need to test the value of M8SKP.
             II=ipmz(1)
             JJ=ipms(1)
+
+C Re-evaluate the state of selfcheck based on the surface that was
+C found to match.
+            if (II.EQ.IZ)then
+	      selfcheck=.true.  ! currently looking within zone
+            else
+              selfcheck=.false.
+            endif
+
             MODBND=.TRUE.
             if(MMOD.eq.8)then
               CALL INLNST(1)
@@ -1479,10 +1494,9 @@ C Only one possible match, inform user and then proceed.
               endif
             endif
 
-C Update surface attributes. If we are in the same room then we have
-C a back-to-back surface. If M8SKP was set to false then go ahead and
-C make it a partition without bothering to ask the user.
-            if(M8SKP)then
+C If an actual partition then no need for confirmation, just
+C update the attributes.
+            if(.NOT.selfcheck)then
               write(TOTHER(JS,1),'(a)') 'ANOTHER'
               write(tother(JS,2),'(i2.2)') IC2(ic)
               write(tother(JS,3),'(i2.2)') IE2(ic)
@@ -1493,43 +1507,61 @@ C make it a partition without bothering to ask the user.
               WRITE(outs,'(4a)')' accepting match to surface ',
      &          SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               call edisp(iuout,outs)
+              goto 110  ! no need to check further
             else
-              h(1)='You asked to specify connection if a match was'
-              h(2)='found to another surface in the same room. '
-              CALL EASKABC('Matched surface within room:',' ',
-     &          'set to partition','set to ADIABETIC','set to UNKNOWN',
-     &          IRTA,2)
-              if(IRTA.eq.1)then
+	    
+C If we are in the same room then we have a back-to-back surface.
+C If M8SKP was set to false then go ahead and
+C make it a partition without bothering to ask the user.
+              if(M8SKP)then
                 write(TOTHER(JS,1),'(a)') 'ANOTHER'
                 write(tother(JS,2),'(i2.2)') IC2(ic)
                 write(tother(JS,3),'(i2.2)') IE2(ic)
                 UPDGEO=.TRUE.
                 ICN=IZSTOCN(II,JJ)
                 SN=SSNAME(icn)
-                ZN=zname(II)
-                WRITE(outs,'(4a)')' accepting match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+                WRITE(outs,'(3a)')' accepting match to surface ',
+     &            SN(1:lnblnk(SN)),' in current zone.'
                 call edisp(iuout,outs)
-              elseif(IRTA.eq.2)then
-                IC1(IC)=IZ
-                IE1(IC)=JS
-                ICT(IC)=5
-                IE2(IC)=0
-                IC2(IC)=0
-                TOTHER(JS,1)='ADIABATIC'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
-              elseif(IRTA.eq.3)then
-                IC1(IC)=IZ
-                IE1(IC)=JS
-                ICT(IC)=-1
-                IE2(IC)=0
-                IC2(IC)=0
-                TOTHER(JS,1)='UNKNOWN'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
+                goto 110  ! no need to check further
+              else
+                h(1)='You asked to specify connection if a match was'
+                h(2)='found to another surface in the same room. '
+                CALL EASKABC('Matched surface within room:',' ',
+     &            'set to back-to-back','set to ADIABETIC',
+     &            'set to UNKNOWN',IRTA,2)
+                if(IRTA.eq.1)then
+                  write(TOTHER(JS,1),'(a)') 'ANOTHER'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  UPDGEO=.TRUE.
+                  ICN=IZSTOCN(II,JJ)
+                  SN=SSNAME(icn)
+                  WRITE(outs,'(3a)')' accepting match to surface ',
+     &              SN(1:lnblnk(SN)),' in current zone.'
+                  call edisp(iuout,outs)
+                elseif(IRTA.eq.2)then
+                  IC1(IC)=IZ
+                  IE1(IC)=JS
+                  ICT(IC)=5
+                  IE2(IC)=0
+                  IC2(IC)=0
+                  TOTHER(JS,1)='ADIABATIC'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  UPDGEO=.TRUE.
+                elseif(IRTA.eq.3)then
+                  IC1(IC)=IZ
+                  IE1(IC)=JS
+                  ICT(IC)=-1
+                  IE2(IC)=0
+                  IC2(IC)=0
+                  TOTHER(JS,1)='UNKNOWN'
+                  write(tother(JS,2),'(i2.2)') IC2(ic)
+                  write(tother(JS,3),'(i2.2)') IE2(ic)
+                  UPDGEO=.TRUE.
+                endif
+                goto 110  ! no need to check further
               endif
             endif
           elseif(ipmatch.gt.1)then

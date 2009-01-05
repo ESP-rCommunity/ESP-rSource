@@ -574,7 +574,7 @@ theVisual = XDefaultVisual(theDisp, theScreen);
 theCmap   = DefaultColormap(theDisp, theScreen);
 rootW     = RootWindow(theDisp,theScreen);
 dispDEEP  = DisplayPlanes(theDisp,theScreen);
-mdepth = dispDEEP;
+mdepth = (long int) dispDEEP;
 
 /* set colours for the border, background and forground */
 bd = WhitePixel(theDisp,theScreen);
@@ -961,7 +961,7 @@ char *act;  /* single character passed */
 long int *n;
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -1014,7 +1014,7 @@ long int *n;	/* index as in winscl_ */
 long int *xcolid;	/* index of colour used by X */
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -7309,14 +7309,14 @@ int		len_title;
   unsigned int start_height,start_width;
 
   if(m_lines == 0)return;	/* don't bother if no menu */
-  iw = *iwth;  /* character width to display */
+  iw = (int) *iwth;  /* character width to display */
 
-  xb = *impx;  yb = *impy; pflg = *ipflg;
+  xb = (int) *impx;  yb = (int) *impy; pflg = (int) *ipflg;
   f_to_c_l(titleptr,&len_title,&lt1);  /* get actual width of title xrt_height*/
   changed_font = 0; label_font = 0;
   saved_font = use_font = current_font; /* save existing font  */
-  *irpx = 0;
-  *irpy = 0;
+  *irpx = (long int) 0;
+  *irpy = (long int) 0;
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
@@ -7431,7 +7431,7 @@ int		len_title;
              iy = menubx.b_top + ((i + 1) * (f_height+2)) + 5;
              hl_box.b_bottom = iy + 3;
              hl_box.b_top = hl_box.b_bottom - (f_height+4);
-/* debug     fprintf(stderr,"m_list %s %d %d %d %d\n",m_list[i],i,iy,hl_box.b_bottom,hl_box.b_top);  */
+/* debug     fprintf(stderr,"m_list %s %d %d %d %d\n",m_list[i],i,iy,hl_box.b_bottom,hl_box.b_top); */
              xbox(hl_box,fg,ginvert, BMCLEAR | BMNOT );        /* grey item */
              XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
              XDrawString(theDisp,win,theGC,menubx.b_left+10,iy,m_list[i],iw);  /* print text */
@@ -7439,20 +7439,20 @@ int		len_title;
              XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
              Timer(300);
              xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
-             *ino = i +1;  /* compensate for c starting at zero */
-             *uresp = 0;
+             *ino = (long int) i +1;  /* compensate for c starting at zero */
+             *uresp = (long int) 0;
    	     break;
            }
          } else if (!xboxinside(gmenubx,x,y)){   /* outside menu - check aux menu */
            no_valid_event = FALSE;
 /* debug   fprintf(stderr,"outside menu at x %d y %d\n",x,y); */
-           *irpx=x;
-           *irpy=y;
+           *irpx=(long int) x;
+           *irpy=(long int) y;
            iaux = aux_menu((XEvent *) &event);
            i = OFFEND;
            if ( iaux == 5 ) {
 /* debug     fprintf(stderr,"Inside graphics display x %d y %d button %d\n",x,y,butid); */
-             *uresp=butid;    /* Set to id of button pressed */
+             *uresp=(long int) butid;    /* Set to id of button pressed */
            }
            break;
          }
@@ -7497,7 +7497,7 @@ int		len_title;
         if(blen > 0) {
           if (buf[0] == '\r' || buf[0] == '\n' ) {
             no_valid_event = FALSE;
-            *uresp = 0;
+            *uresp = (long int) 0;
             xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear help box */
    	    break;
           } else if (buf[0] == '\010') {  /*  buf[0] is BS  */
@@ -7523,12 +7523,12 @@ int		len_title;
 
 /* user has pressed a key equivalent to an item first character, confirm by hilighting item */
                 no_valid_event = FALSE;
-                *ino = index+1;   /* add 1 to compensate for c starting at zero */
-                *uresp = 0;
+                *ino = (long int) index + (long int) 1;   /* add 1 to compensate for c starting at zero */
+                *uresp = (long int) 0;
                 iy = menubx.b_top + ((index + 1) * (f_height+2)) + 5;
                 hl_box.b_bottom = iy + 3;
                 hl_box.b_top = hl_box.b_bottom - (f_height+4);
-/* debug        fprintf(stderr,"m_list %s %d %d\n",m_list[index],index,iy);  */
+/* debug        fprintf(stderr,"m_list %s %d %d\n",m_list[index],index,iy); */
                 xbox(hl_box,fg,ginvert, BMCLEAR | BMNOT );        /* invert box */
                 XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
                 XDrawString(theDisp,win,theGC,menubx.b_left+10,iy,m_list[index],iw);  /* print text */
@@ -7542,7 +7542,7 @@ int		len_title;
    	    break;
           }
         } else {
-/* debug  fprintf(stderr,"track_edit_str nothing in buf \n");  */
+/* debug  fprintf(stderr,"track_edit_str nothing in buf \n"); */
         }
         break;
     }
