@@ -548,7 +548,7 @@ C and if so do what it says.
             call edisp248(iuout,doc,80)
             if(theprimedirective(1:3).eq.'new')then
               call usrmsg('Processing of silent file complete.',
-     &          'Exiting from project manager','W')
+     &          'Exiting from project manager','P')
               CALL EPAGEND
               STOP
             else

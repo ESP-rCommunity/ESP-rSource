@@ -1385,31 +1385,32 @@ C and present a different interface depending on file type.
       H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
       H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
       H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
-      H(32)=' '
-      H(33)='manage associations - you can add and delete associations'
-      H(34)='  that have been previously defined. Note this does not'
-      H(35)='  alter the contents of the temporal file.'
-      H(36)=' '
-      H(37)='dereference temporal file - this removes current links'
-      H(38)='  between the model and entities in the temporal file.'
-      H(39)='  It does not remove the temporal file.'
-      H(40)=' '
-      H(41)='create file - you supply a file name, if it exists it'
-      H(42)='  is scanned otherwise a minimal file is created.'
-      H(43)=' '
-      H(44)='edit/list - contents of the current file are presented'
-      H(45)='  and if you have permission you can alter its contents.'
-      H(46)=' '
-      H(47)='General instructions for setting up a temporal file:'
-      H(48)='a) Decide the period of the data (start and end dates)'
-      H(49)='   as well as frequency (1stph to 60 tsph).'
-      H(50)='b) If data is to be imported from a file with columns'
-      H(51)='   of data take a note of which columns are required.'
-      H(52)='c) Plan the names of the temporal entities you will be'
-      H(53)='   be creating as well as which zones or controls in '
-      H(54)='   the model are going to be associates with the'
-      H(55)='   entities in the temporal file.'
-      H(56)=' '
+      H(32)=' VERTSOL -Vertical solar radiation data for a facade'
+      H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
+      H(34)='manage associations - you can add and delete associations'
+      H(35)='  that have been previously defined. Note this does not'
+      H(36)='  alter the contents of the temporal file.'
+      H(37)=' '
+      H(38)='dereference temporal file - this removes current links'
+      H(39)='  between the model and entities in the temporal file.'
+      H(40)='  It does not remove the temporal file.'
+      H(41)=' '
+      H(42)='create file - you supply a file name, if it exists it'
+      H(43)='  is scanned otherwise a minimal file is created.'
+      H(44)=' '
+      H(45)='edit/list - contents of the current file are presented'
+      H(46)='  and if you have permission you can alter its contents.'
+      H(47)=' '
+      H(48)='General instructions for setting up a temporal file:'
+      H(49)='a) Decide the period of the data (start and end dates)'
+      H(50)='   as well as frequency (1stph to 60 tsph).'
+      H(51)='b) If data is to be imported from a file with columns'
+      H(52)='   of data take a note of which columns are required.'
+      H(53)='c) Plan the names of the temporal entities you will be'
+      H(54)='   be creating as well as which zones or controls in '
+      H(55)='   the model are going to be associates with the'
+      H(56)='   entities in the temporal file.'
+      H(57)=' '
 
 C Begin with high level menu.
     3 INO=-4
@@ -1423,9 +1424,9 @@ C Begin with high level menu.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(57)='At the current time there are no temporal definitions;'
-        H(58)='you must create them before you can use them.'
-        nbhelp=58
+        H(58)='At the current time there are no temporal definitions;'
+        H(59)='you must create them before you can use them.'
+        nbhelp=59
         WRITE(ITEMS(1),'(A)')'a create temporal entities file'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
         WRITE(ITEMS(3),'(A)')'c not applicable '
@@ -1450,10 +1451,9 @@ C Begin with high level menu.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(57)='An outdated file format is associated with the'
-        H(58)='model. Update this by selecting the edit option'
-        H(59)='(or dereferences the temporal definitions from'
-        H(60)='your model).'
+        H(58)='An outdated file format is associated with the'
+        H(59)='model. Update this by selecting the edit option or '
+        H(60)='(dereferences the temporal definitions from your model).'
         nbhelp=60
         WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1474,9 +1474,9 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(57)='You may view the temporal data associated with the'
-          H(58)='model by selecting the view entities option.'
-          nbhelp=58
+          H(58)='You may view the temporal data associated with the'
+          H(59)='model by selecting the view entities option.'
+          nbhelp=59
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1495,10 +1495,9 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(57)='An outdated file format is associated with the'
-          H(58)='model. Update this by selecting the edit entities'
-          H(59)='option (or derefence the temporal derfinition from'
-          H(60)='your model).'
+          H(58)='An outdated file format is associated with the model.'
+          H(59)='Update this by selecting the edit entities or option'
+          H(60)='(derefence the temporal derfinition from your model).'
           nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1520,9 +1519,9 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(57)='You can view the temporal data associated with the'
-          H(58)='model via selecting the view entities option.'
-          nbhelp=58
+          H(58)='You can view the temporal data associated with the'
+          H(59)='model via selecting the view entities option.'
+          nbhelp=59
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1923,7 +1922,8 @@ C << between 0.0 and 1.0 giving ON fraction.
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL'
-          elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
+          elseif(TTYPE(it)(1:6).eq.'ACTIVI'.or.
+     &           TTYPE(it)(1:6).eq.'HTCLSE')then
 
 C Depending on the type of the data, ask for associated zone.
             IC=-1
@@ -2000,8 +2000,13 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=5.0
-              cm(3)=6.0
+              if(TTYPE(it)(1:6).eq.'ACTIVI')then
+                cm(2)=5.0
+                cm(3)=6.0
+              elseif(TTYPE(it)(1:6).eq.'HTCLSE')then
+                cm(2)=2.0
+                cm(3)=3.0
+              endif         
             endif
 
             ibsn(ispl,1)=IC
@@ -2025,10 +2030,17 @@ C Confirm capacities.
             H(4)='required to define the columns in the tdf where the'
             H(5)='setpoints should be read from. Defaults are column 4'
             H(6)='for heating setpoint and column 5 for cooling.'
-            CALL EASKS(HOLD,
-     &      'Heating and cooling setpoint column number ',
-     &      '(respectively):',40,' 4.0 5.0 ',
-     &      ' track another column number(s)',IER,6)
+            if(TTYPE(it)(1:6).eq.'ACTIVI')then
+              CALL EASKS(HOLD,
+     &        'Heating and cooling setpoint column number ',
+     &        '(respectively):',40,' 5.0 6.0 ',
+     &        ' track another column number(s)',IER,6)
+            elseif(TTYPE(it)(1:6).eq.'HTCLSE')then     
+              CALL EASKS(HOLD,
+     &        'Heating and cooling setpoint column number ',
+     &        '(respectively):',40,' 2.0 3.0 ',
+     &        ' track another column number(s)',IER,6)
+            endif    
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
             CALL EGETWR(HOLD,K,cm(3),0.,80.,'F','Max columns cool',IER)
@@ -2254,10 +2266,8 @@ C Update the control file and link the control loop to the correct zone.
           elseif(TTYPE(it)(1:8).eq.'BIDIRSET')then
 
 C Depending on the type of data, ask for associated surface 
-C(at the moment only bidirectional - in future vertical solar 
-C radiation data can be added based on the same structure).
             IC=-1
- 352        izdef=0
+ 352      izdef=0
             call askzone(ic,izdef,
      &        ' Related zone for bidirectional data set?',
      &        'Related zone','-','Optical sets require a zone.',ier)
@@ -2266,6 +2276,20 @@ C radiation data can be added based on the same structure).
             call easksur(IC,ISUR,'-',
      &           'Select surface for bidirectional dataset',' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 352
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
+          elseif(TTYPE(it)(1:7).eq.'VERTSOL')then
+
+C Depending on the type of data, ask for associated surface 
+            IC=-1
+ 353        izdef=0
+            call askzone(ic,izdef,
+     &        ' Related zone where vertical solar data apply?',
+     &        'Related zone','-','zone to assign solar data.',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 353
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &           'Select surface to apply vertical solar data',' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 353
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           else
             DBZN(ITE)='ALL'
