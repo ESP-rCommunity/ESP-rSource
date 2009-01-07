@@ -999,7 +999,7 @@ case $compiler in
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
              *)    FFLAGS="$FFLAGS -finit-local-zero -m32" ;;
            esac ;;
-   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags" ;;
+   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags -O0" ;;
 esac
 
 if [ "$platform" = "mingw" ] && [ "$xLibs" = "GTK" ]; then
@@ -1063,7 +1063,7 @@ ULIBS="$ULIBS -lfpe"
 
 # Append X11 library paths to ULIBS as required
 case $xLibs in
-  X11) ULIBS="$ULIBS -lxesru -L/usr/X11R6/lib -lX11";;
+  X11) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
   GTK) ULIBS="$ULIBS -lgtkesru -L${XINSTALLDIR}";;
   noX) ULIBS="$ULIBS -lnoxesru";;
 esac
@@ -1073,7 +1073,12 @@ esac
 case $xml_support in
   yes) 
        # Link xml libraries, along with stdc++.
-       ULIBS="$ULIBS -lXML -lstdc++";
+       case $compiler in
+         sunF90)  ULIBS="$ULIBS -lXML -lCstd";;
+         GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
+         intel)   ULIBS="$ULIBS -lXML -lstdc++";;
+       esac;
+#        ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in
@@ -1085,9 +1090,10 @@ case $xml_support in
        # -lxslt on cygwin/mingw.
        ULIBS="$ULIBS -lxml2";
 
-       # Append ws2_32 library on mingw.
+       # Append ws2_32 library on mingw and Crun to Sun
        case $platform in
             mingw)    ULIBS="$ULIBS -lws2_32";;
+            sun)    ULIBS="$ULIBS -lCrun";;
             *)        ULIBS="$ULIBS";;
        esac;
        # Flag xml for inclusion in bps
@@ -1712,7 +1718,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
   echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
-  echo "*evn ${DBInstDir}/databases/profiles.db2" >> ${ESPdir}/default
+  echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
   echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
   echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -2019,6 +2025,8 @@ echo " Installing standard databases. This may take some time."
 
   cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
   cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
+  cp ${SRCdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
+  cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
     
      cd ${SRCdir}/databases
