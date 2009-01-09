@@ -8,7 +8,7 @@ extern "C"
    *  Flag for RTC support 
    */
 
-  bool bRTCsupported__()
+  bool brtcsupported_()
   {
     return true;
   }

@@ -28,7 +28,9 @@ C=======================================================================
 
        logical function bRTCsupported()
        implicit none 
-       bRTCEnabled = .false. 
+       
+       bRTCsupported = .false. 
+       
        return 
        end 
        

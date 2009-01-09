@@ -45,7 +45,16 @@ C=======================================================================
       implicit none 
                
       include "RTC_data.h"         
+
+C.....Function in libRTC.a indicating if RTC support is active
+      logical bRTCsupported
+           
+C.....First, check if support was added during compilation.           
+      RTCsupport: if ( bRTCsupported ) then
                
+               
+      endif RTCsupport
+      
       return 
       end function bRTCenabled
 

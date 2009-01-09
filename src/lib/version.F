@@ -102,7 +102,7 @@ C Arrays mapping binary names to longer descriptions
 C References:
       integer lnblnk
       logical rep_xmlstatus
-      logical bRTCenabled
+      logical bRTCsupported
       
 C include dynamically-created installation information. 
 #include "build_info.h"
@@ -292,7 +292,7 @@ C.........Compiliers ( eg: gcc/g++/g77)
      &         cXML_support(1:lnblnk(cXML_support))
         call edisp(iuout,cTemp_a) 
         
-       if ( bRTCenabled() ) then
+       if ( bRTCsupported() ) then
 
           write (cRTC_support, '(A)') "Supported"
 
