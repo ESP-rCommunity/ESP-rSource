@@ -197,6 +197,8 @@ C If autook then do not preserve previous results sets.
           goto 8
         endif
       else
+
+C Autook not set so ask for confirmation.
         h(1)='A previous assessment or assessments are stored in'
         h(2)='this file. If the model is the same it should be safe'
         h(3)='to append another assessment. '
@@ -222,7 +224,7 @@ C If autook then do not preserve previous results sets.
 
       IF(OK)then
 
-c Determine if design data has been changed.
+C User wants to preserve data. Determine if design data has been changed.
         dok=.false.
         h(1)='If the model has changed the differences might cause'
         h(2)='eratic performance results recovery. Take care! '
@@ -240,12 +242,13 @@ c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
 
-C izver is the version flag: 
+C izver is the version flag for building results: 
 C   izver=1 tells res that the results files have associated descriptive strings.
 C   izver=2 tells res that aggregate inside and outside face convective transfer 
 C     is included in zone info. 
 C   izver=3 total exterior transparent and floor areas saved for each zone
-        izver=3
+C   izver<4 does not include explicit conv/rad/latent gain fields for each casual gain type.
+        izver=4
         WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       endif
 
