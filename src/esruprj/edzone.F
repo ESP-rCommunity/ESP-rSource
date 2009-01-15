@@ -3406,8 +3406,12 @@ C Site related local variables.
       integer simplanttimestep ! use for ispnstep
       integer simsavelevel  ! use for issave
       integer i_ctl_link  !flag to indicate the zone has a basic control
+      integer i_Hum_ctl_link !flag to indicate the zone has a basic control WITH humidity ranges   
       real ht_Setpoint,cl_Setpoint !heating and cooling set-points
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
+      dimension i_Hum_ctl_link(MCOM)
+      dimension HumMax_Setpoint(MCOM),HumMin_Setpoint(MCOM)
+      real HumMax_Setpoint,HumMin_Setpoint !humidity maximum and minimum setpoints
       integer isilentncf !silent decide how many control functions needed
         
       IER=0
@@ -3499,6 +3503,7 @@ C in the file.
           ht_Setpoint(iz)= 0.0
           cl_Setpoint(iz)= 0.0
           i_ctl_link(iz)=0
+          i_Hum_ctl_link(nsz)=0
           do 55 ibu=1,MB
             XOB(iz,ibu) = 0.0
             YOB(iz,ibu) = 0.0
@@ -3893,6 +3898,13 @@ C to the training/pattern folder.
       elseif(WORD(1:14).eq.'*ideal_control')then
         i_ctl_link(nsz)=1
         goto 43
+      elseif(WORD(1:23).eq.'*humidity_ideal_control')then
+        i_Hum_ctl_link(nsz)=1
+        call egetwr(outstr,k,HumMax_Setpoint(nsz),0.,100.,'W',
+     &       'cool Setp',IER)   
+        call egetwr(outstr,k,HumMin_Setpoint(nsz),0.,100.,'W',
+     &       'cool Setp',IER)             
+        goto 43        
       elseif(WORD(1:16).eq.'*weather_station')then
 
 C If there is a line with the root name of a climate file look
@@ -4334,14 +4346,22 @@ C be included in the version 1.1 geometry file.
             IBCTYP(isilentncf,1,1)=0
             IBCLAW(isilentncf,1,1)=1
             TBCPS(isilentncf,1,1)=0
-            BMISCD(isilentncf,1,1,1)=7
+            BMISCD(isilentncf,1,1,1)=11
             BMISCD(isilentncf,1,1,2)=999000
             BMISCD(isilentncf,1,1,3)=0.0      
             BMISCD(isilentncf,1,1,4)=999000
             BMISCD(isilentncf,1,1,5)=0.0
             BMISCD(isilentncf,1,1,6)= ht_Setpoint(isz)
             BMISCD(isilentncf,1,1,7)=cl_Setpoint(isz)
-            BMISCD(isilentncf,1,1,8)=0.0
+            if(i_Hum_ctl_link(isz).gt.0)then
+              BMISCD(isilentncf,1,1,8)=HumMax_Setpoint(isz)
+              BMISCD(isilentncf,1,1,9)=HumMin_Setpoint(isz)
+              BMISCD(isilentncf,1,1,10)=10.0
+              BMISCD(isilentncf,1,1,11)=10.0 
+              BMISCD(isilentncf,1,1,12)=1.0                                                        
+            else
+              BMISCD(isilentncf,1,1,8)=0.0            
+            endif
             znctldoc='basic ideal controls'
             ICASCF(isz)=ncf
           endif
