@@ -138,6 +138,10 @@ C HP Relative humidity - present time row
 C HF relative humidity - future time row
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
+C .... should be climate data:
+      COMMON/atpres/PATMOS
+      real PATMOS  ! atmospheric pressure - a constant, sadly
+
 C.....Surface orientation flags
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient
@@ -173,6 +177,19 @@ C.....Ventilation, infiltration data
       real cvvp, cvvf           ! Conductances assoc. w/ ventilation
                                 !   on present and future time rows
       real qvnp,xx3,cvvpm,cvvfm ! Not used in current context 
+
+C ..... Zone humidity data
+      COMMON/VAPC2/ZMDAP(MCOM),ZMDAF(MCOM)
+      real ZMDAP,ZMDAF  ! zone present and future mass of dry air [kg]
+      
+      COMMON/PVALG/GPA(MCOM)
+      COMMON/FVALG/GFA(MCOM)
+      real GPA,GFA   ! zone pres. and fut. air moisture content [kg/(kg dry air)]
+
+      COMMON/MOIST54/Pfair(MCOM),Ffair(MCOM),Sfair(MCOM)
+      real Pfair,Ffair,Sfair  ! zone future air node partial vapour
+                              ! pressure, future xxx and 
+                              ! future saturation vapour pressure (? mbar?)
 
 C.....Zone boundary conditions
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
@@ -302,7 +319,8 @@ C.....Sky temperature and cloud cover; ground temperature,
       REAL TBSUTH,TBEAST,TBWEST
 
 C.....Local variables
-      REAL TMA                  ! Mean air point temperature (oC)
+C      REAL TMA                  ! Mean air point temperature (oC)
+      REAL ZRH                  ! Zone Relative Humidity (-)
       real trsum
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       INTEGER i_ZnCtl           ! Zone control flag
@@ -324,6 +342,11 @@ C.....DECLARATIONS for H3Kreporting object
 C lnblnk is a function returning the index of last non-blank character in a string.
       INTEGER LNBLNK
 
+C .... Humidity functions
+      REAL PCRH2
+      REAL DEWPT
+      REAL HUMR
+      
 C.....Timerows (named constants)
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2)
@@ -1096,6 +1119,42 @@ C.....AIR POINT TEMPERATURE
      &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/temp',
      &         'units', '(oC)',
      &         'Zone air-point temperature' )
+
+C .... ZONE DRY AIR MASS
+      call add_to_xml_reporting (
+     &         ZMDAF(iZone),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/mass',
+     &         'units', '(kg)',
+     &         'Zone dry air mass' )
+
+C .... ZONE AIR MOISTURE CONTENT
+      call add_to_xml_reporting (
+     &         GFA(iZone),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/moisture',
+     &         'units', '(kg/kg_dry-air)',
+     &         'Zone air moisture content' )
+     
+C .... ZONE AIR NODE PARTIAL VAPOUR PRESSURE
+      call add_to_xml_reporting (
+     &         Pfair(iZone),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/pvap',
+     &         'units', '(Pa)',
+     &         'Zone air node partial vapour pressure' )
+
+C .... ZONE AIR NODE RELATIVE HUMIDITY    
+      ZRH=PCRH2(TFA(iZone),GFA(iZone),PATMOS)
+      call add_to_xml_reporting (
+     &         ZRH,
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/rh',
+     &         'units', '(-)',
+     &         'Zone air node relative humidity' )
+
+C.....Zone air saturation temperature
+      call add_to_xml_reporting (
+     &         DEWPT(HUMR(TFA(iZone),ZRH,PATMOS),PATMOS),
+     &         H3K_rep_NAME(1:iH3K_NameLen)// '/air_point/tsat',
+     &         'units', '(oC)',
+     &         'Zone air saturation temperature' )
 
 C.....ZONE HEAT INJECTION / EXTRACTION
 
