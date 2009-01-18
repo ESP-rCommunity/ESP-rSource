@@ -2900,6 +2900,21 @@ C          call edisp248(6,message,80)
      &    cm(7),' Running mean response parameter ',CM(8),
      &    ' Comfort band (default is 2) ',CM(9)
           call SDELIM(lmsg,message,'S',IW)
+        ELSEIF(IBCLAW(II,JJ,KK).EQ.25)then
+          SSTR='Deadband heat/cool control'
+          cm(2)=bmiscd(II,JJ,KK,2)
+          cm(3)=bmiscd(II,JJ,KK,3)
+          cm(4)=bmiscd(II,JJ,KK,4)
+          cm(5)=bmiscd(II,JJ,KK,5)
+          cm(6)=bmiscd(II,JJ,KK,6)
+          cm(7)=bmiscd(II,JJ,KK,7)
+          write(lmsg,'(a,f9.1,a,f9.1,a,f7.2,a,f7.2,a,f7.2,a,f7.2,a)') 
+     &    ' max heating capacity ',cm(2),' W. max cooling capacity ',
+     &    cm(3),' W. Heating lower setpoint ',cm(4),
+     &   ' oC. Heating upper setpoint ',cm(5),
+     &   ' oC. Cooling lower setpoint ',cm(6),
+     &   ' oC. Cooling upper setpoint ',cm(7),' oC'          
+          call SDELIM(lmsg,message,'S',IW)                    
         ELSEIF(IBSN(II,1).EQ.-99)then
           SSTR='control law not used'
           message='type -99 control law not used'

@@ -1251,7 +1251,7 @@ C Plant common required for building/plant flux linkage
       common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
 
-      DIMENSION SALT(24),IVALS(24)
+      DIMENSION SALT(25),IVALS(25)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
@@ -1399,7 +1399,7 @@ C law can be jumped around.
         useold=.false.
         iclawt=-1
   77    if(useold)then
-          if(iclawt.ge.0.and.iclawt.le.23)then
+          if(iclawt.ge.0.and.iclawt.le.25)then
             iclaw=iclawt
             IBCLAW(II,JJ,KK)=iclaw
             useold=.false.
@@ -1410,7 +1410,7 @@ C law can be jumped around.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
      &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.
-     &      or.iclaw.eq.24)then
+     &      or.iclaw.eq.24.or.iclaw.eq.25)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1458,6 +1458,7 @@ C starting up the menu based control period definition.
         SALT(22)='VAV cooling with CAV reheat            '
         SALT(23)='Match sensed values (ideal:2 setpoints)'
         SALT(24)='Adaptive human comfort model           '
+        SALT(25)='Deadband control for heating/cooling   '
         if(iclaw.ne.0)then
           write(outs,'(a,a)') 'Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
@@ -1526,7 +1527,7 @@ C starting up the menu based control period definition.
         H(59)='control law 11 where values from the temporal file'
         H(60)='are taken to set the setpoints for heating and cooling'
   63    CALL EPICKS(IX,IVALS,' ','Control law:',
-     &    40,24,SALT,'control law (indented=old or obscure)',IER,60)
+     &    40,25,SALT,'control law (indented=old or obscure)',IER,60)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -2597,11 +2598,20 @@ C Slave Capacity Controller or VAV controller.
             goto 77
           endif
           goto 92
-        elseif(IBCLAW(II,JJ,KK).eq.23)then  
 
+C Code seems to be repeated at this stage for each control law. It could
+C be used once. Adding bcl25 together with bcl23 below in order to test
+C a possible shrinking of this repetitive code
+        elseif(IBCLAW(II,JJ,KK).eq.23.or.IBCLAW(II,JJ,KK).eq.25)then  
+C BCL23:
 C Read setpoints from temporal file. This control law was developed for
 C the UK NCM and takes in setpoints from tdf data and is based on the
 C logic on control law 1
+
+C BCL25:
+C Read upper and lower heating and cooling setpoints. Also maximum
+C heating and cooling capacities. This is a deadband control developed
+C for future use in demand side management controls.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -6209,7 +6219,7 @@ C   for control law one.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
-      DIMENSION VERT(35),SALT(24),IVALS(24)
+      DIMENSION VERT(35),SALT(25),IVALS(25)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
       integer ivals              ! for return of selection array.
@@ -6450,6 +6460,7 @@ C control law to trap changes.
           SALT(22)='VAV cooling with CAV reheat (BETA)     '
           SALT(23)='Match sensed values (ideal:2 setpoints)'
           SALT(24)='Adaptive human comfort model           '
+          SALT(25)='Deadband control for heating/cooling   '
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -6521,7 +6532,7 @@ C Re-instanciate help specifically for summary of control laws.
           H(59)='Values from the temporal file are taken to set setpnts'
           H(60)='Further details within each control law interface. '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,24,SALT,'control law (indented=old or obscure)',IER,60)
+     &      42,25,SALT,'control law (indented=old or obscure)',IER,60)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -6742,6 +6753,16 @@ C At the moment it does what the control law 11 does
               cmlocal(8)=0.8
               cmlocal(9)=2.0
               goto 90
+            elseif(iclaw.eq.25)then
+              cmlocal(1)=6.0     
+              cmlocal(2)=1000.0  !Maximum heating capacity 
+              cmlocal(3)=1000.0     !Maximum cooling capacity 
+              cmlocal(4)=17.0  !Heating lower limit setpoint
+              cmlocal(5)=20.0     !Heating upper limit setpoint
+              cmlocal(6)=24.0    !Cooling lower limit setpoint
+              cmlocal(7)=28.0    !Heating upper limit setpoint
+              ier=25
+              goto 90
             else
 
             endif
@@ -6760,8 +6781,8 @@ C The user did not alter the control law.
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Edit data item identified by KEYIND
-        CALL KEYIND(MVERT,IVERT,IFOC,IO)
-
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)                     
+              
 C prompt1 (72 char) first easkr prompt
 C prompt2 (72 char) second easkr prompt
 C ndec (int) number of decimal places to display
@@ -7027,6 +7048,8 @@ C it points to the same zone as is used by the master controller.
           elseif(iclaw.eq.23)then
             modval=.true.
           elseif(iclaw.eq.24)then
+            modval=.true.
+          elseif(iclaw.eq.25)then
             modval=.true.
           else
 
@@ -8153,9 +8176,58 @@ C comfort temperature the control is activated
           menu(9)='Comfort band '
           prompt1(9)='Comfort band (default is 2deg) '
           prompt2(9)=' '
-          ndec(9)=3; vmin(8)=0.0; vmax(8)=0.99; vdef(8)=2.0
+          ndec(9)=3; vmin(9)=0.0; vmax(9)=0.99; vdef(9)=2.0
           nmenulines=9    ! set to the last cm index used
           nctlhelp=18
+        elseif(iclaw.eq.25)then    
+         
+C Reading heating and cooling setpoints from temporal file
+          H(1)='This control law defines deadband setpoints for heating'
+          H(2)='and cooling. The logic for heating is: '
+          H(3)='if Tair>=Thsetp,upper then heating is off,'
+          H(4)='elseif Tair>Thsetp,lower then 3 cases are possible:'
+          H(5)='   a) Tair,currentTimestep > Tair,previousTimestep. In'
+          H(6)='      this case temperature within the zone increases '
+          H(7)='      and heating is on. '
+          H(8)='   b) Tair,currentTimestep = Tair,previousTimestep. In'
+          H(9)='      this case heating will be on if it was on at the'
+          H(10)='      previous timestep and off if it was off at the '
+          H(11)='      previous timestep. '
+          H(12)='   c) Tair,currentTimestep < Tair,previousTimestep. In'
+          H(13)='      this case heating will be off.  '
+          H(14)='else the temperature within the zone is lower or equal'
+          H(15)='than the lower setpoint and heating will be on.'
+          H(16)=' '
+          H(17)='Similar rules are applied for cooling.'
+          prompt1(1)=' '
+          prompt2(1)=' '
+          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
+          menu(2)='Maximum heating capacity (W)'
+          prompt1(2)='Maximum heating capacity (W) '
+          prompt2(2)='which is available to meet the demand. '
+          ndec(2)=0; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
+          menu(3)='Maximum cooling capacity (W)'
+          prompt1(3)='Maximum cooling capacity (W) '
+          prompt2(3)='which is available to meet the demand.'
+          ndec(3)=0; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
+          menu(4)='Heating lower setpoint (oC)'
+          prompt1(4)='Heating setpoint (oC) that defines '
+          prompt2(4)=' the lower limit for the deadband. '
+          ndec(4)=1; vmin(4)=-100.0; vmax(4)=100.0; vdef(4)=17.0          
+          menu(5)='Heating upper setpoint (oC)'
+          prompt1(5)='Heating setpoint (oC) that defines '
+          prompt2(5)='the upper limit for the deadband. '
+          ndec(5)=1; vmin(5)=-100.0; vmax(5)=100.0; vdef(5)=20.0   
+          menu(6)='Cooling lower setpoint (oC)'
+          prompt1(6)='Cooling setpoint (oC) that defines '
+          prompt2(6)='the lower limit for the deadband. '
+          ndec(6)=1; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=24.0          
+          menu(7)='Cooling upper setpoint (oC)'
+          prompt1(7)='Cooling setpoint (oC) that defines'
+          prompt2(7)='the upper limit for the deadband. '
+          ndec(7)=1; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=28.0  
+          nmenulines=7    ! set to the last cm index used
+          nctlhelp=17
         else
           h(1)=' '
           h(2)=' '

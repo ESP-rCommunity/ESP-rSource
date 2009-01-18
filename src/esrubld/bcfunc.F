@@ -50,6 +50,7 @@ C      BCL21: master slave capacity inj/ext controller
 C      BCL22: VAV with CAV with reheat air supply controller
 C      BCL23: Match sensed values (ideal:2 setpoints)
 C      BCL24: Adaptive human comfort model
+C      BCL25: Deadband control for heating and cooling
 C      BCL99: constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine
@@ -68,7 +69,9 @@ C The main building control function executive.
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       common/dllerr/dllsubr,dllmesg
-
+      common/TempPr/prevTimstpZtemp !temporarily store previous timestep zone temper.
+      real prevTimstpZtemp(MCOM)
+      
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
@@ -95,8 +98,8 @@ C negated then property substitution active within zone
 C associated with control function.
    76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
       GOTO
-     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
-     & ,IFUNC
+     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,
+     & 25),IFUNC
       GOTO 98
 
 C CL1 is basic control with potential for a different heating and
@@ -210,11 +213,17 @@ C CL22 VAV and CAV air based controller
 C CL23 sensed setpoint based controller
    23 call BCL23
       goto 99
-      
-C CL24 Adaptive human comfort model
+
+C CL24 Adaptive human comfort model      
    24 call BCL24(ier)
       goto 99
-      
+
+C CL25 Deadband control for heating and cooling
+   25 call BCL25(ier)
+      prevTimstpZtemp(icomp)=TNP
+      write(6,*) 'prvTims',prevTimstpZtemp(icomp)    
+      goto 99      
+
 C New control laws should be inserted here.
    98 continue
       write(outs,'(a,i3,a)')' Zone control function',IFUNC,
@@ -6214,6 +6223,222 @@ C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
       endif
   999 H(1) = 'A data i/o error has occured in the program at BCL24'
       H(2) = 'and it is probably best not to go on. '
+      H(3) = 'Program is taking one step back.'
+      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+      RETURN
+      END
+
+
+C ******************** BCL25
+C Deadband control for heating and cooling. Upper and lower heating and
+C cooiling setpoints are provided by the user together with maximum heating 
+C and cooling capacity.
+C .....................IMPROVE DOCUMENTATION ...............
+C .....................IMPROVE DOCUMENTATION ...............
+      SUBROUTINE BCL25(IER)
+
+#include "building.h"
+#include "control.h"
+
+C climate file commons
+      COMMON/FILEP/IFIL
+      COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
+     &             DFLP,DFLF,HFLP,HFLF
+
+      common/pophelp/h(60)
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/BTIME/BTIMEP,BTIMEF
+      common/dllerr/dllsubr,dllmesg
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+c      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+c      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
+      common/TempPr/prevTimstpZtemp !temporarily store previous timestep zone temper.
+      real prevTimstpZtemp(mcom)      
+
+      DIMENSION ICLM(24,6)
+      PARAMETER (MMD=20)
+      REAL PREVTEMP(MMD)
+      character dllsubr*12,dllmesg*124,outs*124,H*72
+      logical dll
+      real QHM !max heating capacity (W)
+      real QHN !min heating capacity (W) - set to 0 for this control law
+      real QCM !max cooling capacity (W)
+      real QCN !min cooling capacity (W) - set to 0 for this control law
+      real lower_HSP !lower heating set point temp. (deg.C)
+      real upper_HSP !upper heating set point temp. (deg.C)
+      real lower_CSP !lower cooling set point temp. (deg.C)
+      real upper_CSP !upper cooling set point temp. (deg.C)
+
+C Check to see if running in dll mode.
+      call isadll(dll)
+
+C Fatal error test.
+      if(bmiscd(icf,idtyp,iper,1).lt.6.)goto 99
+
+C Trace output
+      if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
+     &   itrace(41).ne.0) then
+        if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
+          write(outs,'(a,i2)') 
+     &      'Entering subroutine BCL25 sensing in zone ',
+     &      IBSN(ICF,1)
+          call edisp(itu,outs)
+        elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
+          write(outs,'(a,i2,a,i2)') 
+     &      'Entering subroutine BCL25 sensing in zone ',
+     &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
+          call edisp(itu,outs)
+        else
+          call edisp(itu,' Entering subroutine BCL25')
+        endif
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+C Determine sensed temperature.
+      CALL CFVAR(TCTL,IER)
+      if(ier.eq.2)then
+        return
+      endif
+
+C User should make sure that cooling setpoints are higher than heating setpoints
+      QHM=BMISCD(ICF,IDTYP,IPER,2)
+      QHN=0.0
+      QCM=-BMISCD(ICF,IDTYP,IPER,3)
+      QCN=0.0
+      lower_HSP=BMISCD(ICF,IDTYP,IPER,4)
+      upper_HSP=BMISCD(ICF,IDTYP,IPER,5)
+      lower_CSP=BMISCD(ICF,IDTYP,IPER,6)
+      upper_CSP=BMISCD(ICF,IDTYP,IPER,7)
+C       write(6,*) 'lower H: ',lower_HSP
+C       write(6,*) 'upper H: ',upper_HSP
+C       write(6,*) 'lower C: ',lower_CSP
+C       write(6,*) 'upper C: ',upper_CSP      
+      QFUT=0.
+      TFUT=TNP
+
+C If between upper heating and lower cooling setp. then free float
+      IF(TCTL.GE.upper_HSP.and.TCTL.LE.lower_CSP)then
+        TFUT=TNP
+c        TFUT=BB3/BB1        
+        QFUT=0.0
+        RETURN
+      endif
+
+C<<<<use eclose >>>>>>>>   
+      if(TCTL.ge.upper_CSP)then
+C <<<only cooling is on with maximum power >>>>>>>
+        IPLT=2   
+        TCONT=lower_CSP    
+        TFUT=(BB3-BB2*QCM)/BB1
+        QFUT=QCM
+        return      
+      elseif(TCTL.gt.lower_CSP)then
+C<<<<need here previous timestep temperature>>>>>>>>> 
+C<<<make it working only for zone air temperature for now>>>
+C<<<use TPA(IICOMP) as previous timestep temperature of the zone?? >>>
+C <<<TEST this - Otherwise there may be a need for iteration >>>>
+        if(TCTL.gt.prevTimstpZtemp(iicomp))then
+          write(6,*) 'tfut_greater',TFUT
+C Temperature within zone increases, so turn cooling off
+          TFUT=BB3/BB1        
+          QFUT=0.0
+          return
+C<<<CALL ECLOSE FOR THE NEXT ONE >>>>
+        elseif(TCTL.eq.prevTimstpZtemp(iicomp))then
+          write(6,*) 'tfut_equal',prevTimstpZtemp(iicomp)
+
+C Check if cooling was on at previous timestep (use QFUT=0 for this)
+C<<<ECLOSE is essential here >>>>
+          if(QFUT.eq.0.0)then
+            TFUT=BB3/BB1        
+            return
+          else
+
+C Cooling is on            
+            IPLT=2   
+            TCONT=lower_CSP    
+            TFUT=(BB3-BB2*QCM)/BB1
+            QFUT=QCM
+            return           
+          endif
+        else
+
+C zone temper. is greater than lower cooling setpoint but it decreases
+C <<<< (if comparison with previous timestep is correct)>>>
+C Cooling is on
+          IPLT=2   
+          TCONT=lower_CSP    
+          TFUT=(BB3-BB2*QCM)/BB1
+          QFUT=QCM 
+          return           
+        endif
+      elseif(TCTL.gt.lower_HSP)then
+C<<<<need here previous timestep temperature>>>>>>>>> 
+C<<<make it working only for zone air temperature for now>>>
+C<<<use TPA(IICOMP) as previous timestep temperature of the zone?? >>>
+C <<<TEST this - Otherwise there may be a need for iteration >>>>
+        if(TCTL.gt.prevTimstpZtemp(iicomp))then
+          write(6,*) 'Heat_tfut_greater',prevTimstpZtemp(iicomp)
+C temperature within zone increases so heating is on
+          IPLT=1
+          TCONT=upper_HSP 
+          TFUT=(BB3-BB2*QHM)/BB1
+          QFUT=QHM
+          return              
+
+C<<<CALL ECLOSE FOR THE NEXT ONE >>>>
+        elseif(TCTL.eq.prevTimstpZtemp(iicomp))then  
+          write(6,*) 'Heat_tfut_equal',prevTimstpZtemp(iicomp)
+C Check if heating was on at previous timestep (use QFUT=0. for this)
+C<<<ECLOSE is essential here >>>>
+          if(QFUT.eq.0.0)then
+            TFUT=BB3/BB1        
+            return
+          else          
+
+C Heating is on
+            IPLT=1
+            TCONT=upper_HSP            
+            TFUT=(BB3-BB2*QHM)/BB1
+            QFUT=QHM
+            return          
+          endif
+        else
+
+C zone temper. is greater than lower heating setpoint but it decreases
+C <<<< (if comparison with previous timestep is correct)>>>
+C Heating is off
+          return        
+        endif      
+      elseif(TCTL.le.lower_HSP)then
+
+C heating is on
+        IPLT=1
+        TCONT=upper_HSP           
+        TFUT=(BB3-BB2*QHM)/BB1
+        QFUT=QHM
+        return    
+      endif
+      
+      RETURN
+   99 write(outs,'(a)')' BCL25: data incomplete.'
+      if(dll)then
+        dllsubr='BCL25'
+        dllmesg=outs
+        ier=2
+        return
+      else
+        call edisp(iuout,outs)
+        call epwait
+        call epagend
+        STOP
+      endif
+  999 H(1) = 'A data i/o error has occured in the program at BCL25'
+      H(2) = '(deadband control) and it is probably best not to go on. '
       H(3) = 'Program is taking one step back.'
       CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
       RETURN
