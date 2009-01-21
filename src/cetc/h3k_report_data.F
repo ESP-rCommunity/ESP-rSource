@@ -1146,7 +1146,7 @@ C .... ZONE AIR NODE RELATIVE HUMIDITY
       call add_to_xml_reporting (
      &         ZRH,
      &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/rh',
-     &         'units', '(-)',
+     &         'units', '(%)',
      &         'Zone air node relative humidity' )
 
 C.....Zone air saturation temperature

@@ -1791,6 +1791,10 @@ C Common for relative humidity control (ideal)
       COMMON/MOIST53/Ppair(MCOM),Fpair(MCOM),Spair(MCOM)
       COMMON/MOIST54/Pfair(MCOM),Ffair(MCOM),Sfair(MCOM)
 
+C Common for surface condensation on glass (SPMCMP57())
+      common/surfcond/mh2o(mcom,ms),dmh2op(mcom),dmh2of(mcom)
+      real mh2o,dmh2op,dmh2of
+
 c Common for time step computed parameters of HVAC system
 c in common/hvac_timestep_parameters is included via hvac_parameters.h.
       character outs*124
@@ -1821,6 +1825,8 @@ C Initialise.
       VSRCF(ICOMP)=0.0
       ZMDAF(ICOMP)=1.2*VOL(ICOMP)
       GFA(ICOMP)=0.0
+      dmh2op(icomp)=0.0 ! from SPMCMP57()
+      dmh2of(icomp)=0.0 ! from SPMCMP57()
 
     5 VCIP(ICOMP)=VCIF(ICOMP)
       VCCP(ICOMP)=VCCF(ICOMP)
@@ -1865,14 +1871,14 @@ C Total mass flow rate lost from the zone (no moisture included).
 C Zonal mass of dry air (relies on DENSIT in MFUTIL of ESRUmfs).
       ZMDAF(ICOMP)=DENSIT(1,TFA(ICOMP))*VOL(ICOMP)
 
-
 C Perform a free float air node moisture balance.
 C Calculate RHS of equation from (future value = present value + all in - all out).
 C Mass flow into the zone is averaged over present and future timesteps, this mirrors 
 C the treatment of exfiltration. (Previously only future inlet flows were considered 
 C leading to instability with timesteps over 3 minutes).
-C Last line of equation takes into account the effect of a
-C cooling coil on zone moisture balance.
+C 2nd to last line of equation takes into account the effect of a
+C cooling coil on zone moisture balance, last line takes effect of surface condensation
+C on glass into account (SPMCMP57()).
       RHS=GPA(ICOMP)*ZMDAP(ICOMP)+
      &    (VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)+
      &    VSRCF(ICOMP))*3600./(2*NTSTEP)+
@@ -1880,6 +1886,7 @@ C cooling coil on zone moisture balance.
      &    VSRCP(ICOMP))*3600./(2*NTSTEP)-
      &    GPA(ICOMP)*VCLP(ICOMP)*3600./(2.*NTSTEP)
      &    + coil_moist_in(ICOMP) - coil_moist_out1(ICOMP)  
+     &    + dmh2op(icomp)*0.5+dmh2of(icomp)*0.5 
 
 C Equation modified to account for cooling coil operation effect on 
 C zone moisture balance.

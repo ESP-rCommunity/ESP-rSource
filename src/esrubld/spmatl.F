@@ -45,6 +45,7 @@ C SPMCMP53 - phase change material model 1;
 C SPMCMP54 - phase change material model 2;
 C SPMCMP55 - phase change material model 3;
 C SPMCMP56 - phase change material model 4 (with sub-cooling).
+C SPMCMP57 - hydrophob surface with condensation / evaporation;
 
       subroutine spmmod(icomp)
 #include "building.h"
@@ -87,13 +88,15 @@ C zone then call the relevant subroutine.
                   call spmcmp55(icomp,ispmnod)
                elseif(ispmtype.eq.56)then
                   call spmcmp56(icomp,ispmnod)
+               elseif(ispmtype.eq.57)then
+                  call spmcmp57(icomp,ispmnod)
                endif
             endif
          enddo
       endif
       return
       end
- 
+
 C ***************** SPMCMP1 *****************
 C A crystalline silicon solar cell model (after Nick Kelly) with
 C efficiency determined as a function of cell temperature. Defining
@@ -4115,6 +4118,307 @@ C Set new k.
       return
       end
 
+C ***************** SPMCMP57 *****************
+C A model of hydrophob surface condensation / evaporation and corresponding 
+C heat gain / loss to / from the surface. 
+C Mass transport to / from the surface (kg/s) is calculated from the Lewis 
+C relationship (see e.g. Recknagel-Sprenger, 03/04, p. 169): 
+C        Ev=hc/cp Asurf (Wsurf-Wzone)  (kg/s)
+C where,
+C       hc = convective heat transfer coefficient (W/(m^2 K))
+C       Asurf = surface area (m^2)
+C       Tsurf = surface temperature (degC)
+
+      subroutine spmcmp57(icomp,ispmnod)
+#include "building.h"
+
+C N.B. All parameters comply with the Fortran implicit naming convention
+C except where explicitly redefined.
+      common/tc/itc,icnt
+      common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
+      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      common/spmfxst/ispmxist,spflnam
+      common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+      common/spmatlbl/spmlabel(mspmnod)   
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
+     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      common/zonspmf/zspmf1(mcom),zspmf2(mcom)
+      common/evapsur/vapsur(mcom)
+      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/vthp14/thrmli(mcom,ms,me,7)
+      common/fvala/tfa(mcom),qfa(mcom)
+      common/fvals/tfs(mcom,ms),qfs(mcom)
+      common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
+     &              hcof(mcom,ms)
+      common/fvalg/gfa(mcom)
+      COMMON/VAPC2/ZMDAP(MCOM),ZMDAF(MCOM)
+      common/atpres/patmos
+
+c Common for the number of time steps per hour
+      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      
+C Generic nodal flux common allowing a positive or negative flux
+C to be applied to a node; genflxp is updated in mzls5.
+      common/genflux/genflxf(mcom,ms,mn),genflxp(mcom,ms,mn)
+
+      common/surfcond/mh2o(mcom,ms),dmh2op(mcom),dmh2of(mcom)
+      real mh2o,dmh2op,dmh2of
+
+      character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
+     &          txtspm*72
+
+C local variables
+      real time_step,mcond_max,mcond,dT,Qavail,cp
+      real mvap,mvap_max,beta
+      real dast_min,dast_max,asurf_min,asurf_max
+      real den_h2o,zrh
+      
+C surface location.
+      if(icomp.ne.ispmloc(ispmnod,1))then
+         write(outs,*)'SPMAT57 fatal error: incorrect zone assignment!'
+         call edisp(iuout,outs)
+         stop
+      endif
+      isurf=ispmloc(ispmnod,2)
+      inode=ispmloc(ispmnod,3)
+      ielem=nint(real(inode)/2.)
+
+C initialize
+      if(nsinc.le.1)then
+        mh2o(icomp,isurf)=0.0
+        dmh2op(icomp)=0.0
+        dmh2of(icomp)=0.0
+      endif
+
+      time_step=3600./float(ntstep)
+      den_h2o=1010.0 !  kg/m^3
+
+C set required local variables      
+      mvap=0.0
+      mcond=0.0
+      beta=0.0
+
+      asurf=sna(icomp,isurf)
+      tsurf=tfs(icomp,isurf)
+      alpha=hcif(icomp,isurf)  ! W/(m2 K)
+
+      tzone=tfa(icomp)
+      wzone=gfa(icomp)              !   zone moisture content, kg_h2o/kg_dry-air
+      zrh=pcrh2(tzone,wzone,patmos) ! zone relative humidity, %
+      zrh=min(100.0,zrh)            ! more than 100% is not possible, however pcrh2 returns values in excess of this!!
+
+      pD=zrh*SATVP(tzone)/100.0 ! vapour pressure at rh, tzone; mbar
+      psurf_sat=SATVP(tsurf)    ! saturation vapour pressure at tsurf; mbar
+
+      tz_sat=dewpt(humr(tzone,zrh,PATMOS),PATMOS)
+
+C Store old future value as current present value
+      dmh2op(icomp)=dmh2of(icomp)
+      
+C set "usable" thickness of surface material and surface properties
+      efthk=min(0.001,thrmli(icomp,isurf,ielem,4))
+      den=thrmli(icomp,isurf,ielem,2)
+      sht=thrmli(icomp,isurf,ielem,3)
+
+C check case
+C 1. Surface temperature tsurf is > 0°C
+      if (tsurf .gt. 0.0) then
+C                    here we assume "standard" condensation / evaporation
+C                              (a) psurf_sat < pD, 
+        if (tsurf .lt. (tz_sat-0.05)) then
+          if (psurf_sat .lt. pD) then ! condensation will occur this TS
+C                              Calculate available capacity; hereby assume that we can not condensate more than
+C                              will lead to a dT increase of surface temperature due to condensation heat gain
+            dT=tz_sat-tsurf
+            Qavail=sht*den*efthk*dT/time_step ! J/(s m^2)
+            mcond_max=Qavail*asurf*time_step/cndwat1(tsurf) ! kg
+C                            - calc mass flux to surface, Zuercher, page 57
+            beta=3.5E06*alpha/(461.5*(273.15+(tsurf+tzone)*0.5)) ! mg/(m2 h Pa)
+            mcond=asurf*beta*(pD-psurf_sat)*100 ! mg/h
+            mcond=mcond*time_step/3600. ! mg
+            mcond=mcond*1.0E-06 ! kg
+C                             and save total amount condensated with amount from earlier TSs
+            mcond=min(mcond_max,mcond)
+            dmh2of(icomp)=-mcond
+            mh2o(icomp,isurf)=mh2o(icomp,isurf)+mcond
+C                           - change heat balance of surface (genflxf()?)
+C                              Enthalpy of condensation / vapourization of water at tsurf (J/kg)
+            hvap=cndwat1(tsurf)
+C                              Surface condensation gain (J/(s m^2)).      
+            genflxf(icomp,isurf,inode)=mcond*hvap/(asurf*time_step)
+          endif
+        elseif (tsurf .gt. (tz_sat+0.1)) then
+C                   (b) tsurf > tz_sat
+C                         if mh2o > 0 (there is liquid present) then
+          if (mh2o(icomp,isurf) .gt. 0.0) then
+            if (psurf_sat .gt. pD) then
+C                                 - calc mass flux from surface and change total condensated amount
+              dT=tsurf-tz_sat
+              Qavail=sht*den*efthk*dT/time_step ! J/(s m^2)
+              mvap_max=Qavail*asurf*time_step/cndwat1(tsurf) ! kg
+C                                - calc mass flux to surface, Zuercher, page 57
+              beta=3.5E06*alpha/(461.5*(273.15+(tsurf+tzone)*0.5)) ! mg/(m2 h Pa)
+              mvap=asurf*beta*(psurf_sat-pD)*100 ! mg/h
+              mvap=mvap*time_step/3600. ! mg
+              mvap=mvap*1.0E-06 ! kg
+C                                  and save total amount condensated with amount from earlier TSs
+              mvap=min(mvap_max,mvap)
+              dmh2of(icomp)=mvap
+              mh2o(icomp,isurf)=mh2o(icomp,isurf)-mvap
+              mh2o(icomp,isurf)=max(0.0,mh2o(icomp,isurf))
+C                                - change heat balance of surface (genflxf()?)
+C                                   Enthalpy of vapourization of water at tsurf (J/kg)
+              hvap=cndwat1(tsurf)
+C                                   Surface condensation gain (J/(s m^2)).      
+              genflxf(icomp,isurf,inode)=-mvap*hvap/(asurf*time_step)
+            endif
+          endif
+        endif
+C 2. Surface temperature is < 0°C
+      else
+C                        here we assume re-/sublimation (additional heat term)
+C  Proceed as above, however include heat of melting / freezing in energy balance
+        if (tsurf .lt. (tz_sat-0.05)) then
+          if (psurf_sat .lt. pD) then ! sublimation will occur this TS
+C                              Calculate available capacity; hereby assume that we can not condensate more than
+C                              will lead to a dT increase of surface temperature due to condensation heat gain
+            dT=tz_sat-tsurf
+            Qavail=sht*den*efthk*dT/time_step ! J/(s m^2)
+            mcond_max=Qavail*asurf*time_step/(1.13*cndwat1(tsurf)) ! kg
+C                            - calc mass flux to surface, Zuercher, page 57
+            beta=3.5E06*alpha/(461.5*(273.15+(tsurf+tzone)*0.5)) ! mg/(m2 h Pa)
+            mcond=asurf*beta*(pD-psurf_sat)*100 ! mg/h
+            mcond=mcond*time_step/3600. ! mg
+            mcond=mcond*1.0E-06 ! kg
+C                             and save total amount condensated with amount from earlier TSs
+            mcond=min(mcond_max,mcond)
+            dmh2of(icomp)=-mcond
+            mh2o(icomp,isurf)=mh2o(icomp,isurf)+mcond
+C                           - change heat balance of surface (genflxf()?)
+C                              Enthalpy of sublimation / re-sublimation of ice at tsurf; approximation (J/kg)
+            hvap=1.13*cndwat1(tsurf)
+C                              Surface condensation gain (J/(s m^2)).      
+            genflxf(icomp,isurf,inode)=mcond*hvap/(asurf*time_step)
+          endif
+        elseif (tsurf .gt. (tz_sat+0.1)) then
+C                   (b) tsurf > tz_sat
+C                         if mh2o > 0 (there is ice present) then
+          if (mh2o(icomp,isurf) .gt. 0.0) then
+            if (psurf_sat .gt. pD) then
+C                                 - calc mass flux from surface and change total condensated amount
+              dT=tsurf-tz_sat
+              Qavail=sht*den*efthk*dT/time_step ! J/(s m^2)
+              mvap_max=Qavail*asurf*time_step/(1.13*cndwat1(tsurf)) ! kg
+C                                - calc mass flux to surface, Zuercher, page 57
+              beta=3.5E06*alpha/(461.5*(273.15+(tsurf+tzone)*0.5)) ! mg/(m2 h Pa)
+              mvap=asurf*beta*(psurf_sat-pD)*100 ! mg/h
+              mvap=mvap*time_step/3600. ! mg
+              mvap=mvap*1.0E-06 ! kg
+C                                  and save total amount condensated with amount from earlier TSs
+              mvap=min(mvap_max,mvap)
+              dmh2of(icomp)=mvap
+              mh2o(icomp,isurf)=mh2o(icomp,isurf)-mvap
+              mh2o(icomp,isurf)=max(0.0,mh2o(icomp,isurf))
+C                                - change heat balance of surface (genflxf()?)
+C                                   Enthalpy of re-sublimation of ice at tsurf; approximation (J/kg)
+              hvap=1.13*cndwat1(tsurf)
+              genflxf(icomp,isurf,inode)=-mvap*hvap/(asurf*time_step)
+            endif
+          endif
+        endif
+      endif
+
+C Calculate percentage of surface area for which water amount theoretically is enough to be visible
+      asurf_min=100.0*mh2o(icomp,isurf)/(asurf*den_h2o*1.9E-04)
+      asurf_max=100.0*mh2o(icomp,isurf)/(asurf*den_h2o*9.5E-05)
+
+C Because there may be more than one evaporative surface
+C per zone, Ev is added to the current value of vapsur(icomp).
+C      vapsur(icomp)=vapsur(icomp)+ev
+
+
+C Results output.
+      ndatspm(ispmnod)=6
+
+      dataspm(ispmnod,1)=genflxf(icomp,isurf,inode)
+      strspm(ispmnod,1)='/QPhCh'
+      unitspm(ispmnod,1)='(W/m^2)'
+      txtspm(ispmnod,1)='Evaporation heat'
+
+      dataspm(ispmnod,2)=mcond*1000./time_step
+      strspm(ispmnod,2)='/MCond'
+      unitspm(ispmnod,2)='(g/s)'
+      txtspm(ispmnod,2)='Condensation rate'    
+
+      dataspm(ispmnod,3)=mh2o(icomp,isurf)
+      strspm(ispmnod,3)='/totH2O'
+      unitspm(ispmnod,3)='(kg)'
+      txtspm(ispmnod,3)='total condensated mass on surface'
+      
+      dataspm(ispmnod,4)=mvap*1000./time_step
+      strspm(ispmnod,4)='/MEvap'
+      unitspm(ispmnod,4)='(g/s)'
+      txtspm(ispmnod,4)='Evaporation rate'
+      
+      dataspm(ispmnod,5)=asurf_min
+      strspm(ispmnod,5)='/A_min'
+      unitspm(ispmnod,5)='(m^2)'
+      txtspm(ispmnod,5)='Area frac. for visibility, lower'
+
+      dataspm(ispmnod,6)=asurf_max
+      strspm(ispmnod,6)='/A_max'
+      unitspm(ispmnod,6)='(m^2)'
+      txtspm(ispmnod,6)='Area frac. for visibility, upper'
+
+      write(*,"(15(a,E11.4))")
+     & "tsurf=",tsurf," tzone=",tzone," tz_sat=",tz_sat,
+     & " zrh=",zrh," pD=",pD," psurf_sat=",psurf_sat,
+     & " QPhCh=",genflxf(icomp,isurf,inode),
+     & " Qavail=",Qavail," MConTS=",mcond,
+     & " MEvaTS=",mvap," M_tot=",mh2o(icomp,isurf),
+     & " beta=",beta," gfa=",gfa(icomp),
+     & " asur_min=",asurf_min," asur_max=",asurf_max
+
+C As a temporary measure, use zone-related variables, zspmf1 and zspmf2,
+C for results library storage. Output is limited to one special material
+C per zone.
+      zspmf1(ispmloc(ispmnod,1))=dataspm(ispmnod,1)
+      zspmf2(ispmloc(ispmnod,1))=dataspm(ispmnod,2)   
+
+C XML output.
+      call SurfCond_to_h3k(icomp,inode,isurf,ispmnod)
+
+C Trace output.
+      if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999     
+      write(outs,'(a,a)') 'Trace output from SPMCMP57 for ',
+     &                                              spmlabel(ispmnod)
+      call edisp(itu,outs)
+      write(outs,'(a,2x,i4,2x,i4,2x,i4)')
+     &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
+     &                          ispmloc(ispmnod,2),ispmloc(ispmnod,3)
+      call edisp(itu,outs)
+      call edisp(itu,' ')
+      write(outs,'(a)') 'Evaporation from surface (kg):'
+      call edisp(itu,outs)
+      write(outs,'(f7.4)') ev
+      call edisp(itu,outs)
+      write(outs,'(a)') 'Evaporative heat loss from surface (W/m^2):' 
+      call edisp(itu,outs) 
+      write(outs,'(F10.4)') genflxf(icomp,isurf,inode)
+      call edisp(itu,outs)   
+      write(outs,'(a)') 'Evaporative heat loss from surface (W):' 
+      call edisp(itu,outs) 
+      write(outs,'(F10.4)')genflxf(icomp,isurf,inode)*sna(icomp,isurf)
+      call edisp(itu,outs)   
+  999 return
+      end
+
+      
+C ========================================================
+C Utility routines
+C=========================================================
 C ***************** PCM_to_h3k *****************
 C This routine transfers PCM domain data to the H3K reporting
 C facilities. Created by Achim Geissler, June 17 2008.
@@ -4165,6 +4469,72 @@ C Pad index to 'XX'.
       ndat=min0(8,ndatspm(ispmnod)) !- maximum of 8 entries possible
 
 C Output available PCM layer data.
+      do idat=1,ndat
+         call add_to_xml_reporting(
+     &     dataspm(ispmnod,idat),
+     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
+     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
+     &     '/nd' // cNode_Chars // 
+     &     strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
+     &     'units',
+     &     unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
+     &     txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
+      enddo
+
+      return
+      end
+
+      
+C ***************** SurfCond_to_h3k *****************
+C This routine transfers PCM domain data to the H3K reporting
+C facilities. Created by Achim Geissler, Jan 16 2009.
+
+      subroutine SurfCond_to_h3k(iZone,iNode,iSurf,ispmnod)
+      implicit none
+
+#include "building.h"
+
+C Parameters.
+      integer iZone,iNode,iSurf,ispmnod
+
+C Commons.
+      common/spmatlbl/spmlabel(mspmnod)
+      character spmlabel*16
+      common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
+     &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
+      integer ndatspm		!- number of results items for each special material
+      real dataspm		!- results data for special material
+      character strspm*16
+      character unitspm*16	!- unit for data item
+      character txtspm*72	!- description of data item
+
+C Local variables.
+      character*2 cZone_Chars, cSurf_Chars, cNode_Chars
+      integer ndat,idat
+
+C References.
+      integer lnblnk
+
+C Pad index to 'XX'.
+      if(iZone.gt.9)then
+         write(cZone_Chars,'(i2)')iZone
+      else
+         write(cZone_Chars,'(a,i1)') '0',iZone
+      endif
+      if(isurf.gt.9)then
+         write(cSurf_Chars,'(i2)')isurf
+      else
+         write(cSurf_Chars,'(a,i1)') '0',isurf
+      endif
+      if(inode.gt.9)then
+         write(cNode_Chars,'(i2)')inode
+      else
+         write(cNode_Chars,'(a,i1)') '0',inode
+      endif
+
+      ndat=min0(8,ndatspm(ispmnod)) !- maximum of 8 entries possible
+
+C Output available surface condensation data.
       do idat=1,ndat
          call add_to_xml_reporting(
      &     dataspm(ispmnod,idat),
