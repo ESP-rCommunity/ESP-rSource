@@ -357,9 +357,6 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -411,7 +408,7 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 
       CHARACTER BCFfile*72,WORD*30,OUTSTR*124,RmStr*124,outs*174
       CHARACTER LCFGF*72,cfgroot*24,CompDes*74,EOFT*4
-      CHARACTER BCFName*72, System*72,BCFVer*5
+      CHARACTER DESC*48,BCFName*72, System*72,BCFVer*5
       character Tmpstr*24
       CHARACTER SyTrevPt*12, SyTrevDe*40, AbsUnit*5, AbsFreq(MNbAbs)*9
       CHARACTER*12 FabPt,TrPt,RecyPt,ReTrPt,BurnPt,BuTrPt,DumpPt,DuTrPt

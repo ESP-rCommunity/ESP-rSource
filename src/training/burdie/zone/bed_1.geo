@@ -32,22 +32,22 @@ GEN  bed_1  bed_1 describes a south facing bedroom  # type, name, descr
    4, 13, 14,  8,  7,
    4, 15, 16, 17, 18,
 # unused index
- 0,0,0,0,0,0,0,0,0,0
+  0 0 0 0 0 0 0 0 0 0
 # surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     1   8   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  construction environment
+# id  surface      geom  loc/  mlc db       environment
 # no  name         type  posn  name         other side
   1, bed1_ex_s     OPAQ  VERT  ext_wall_up  EXTERIOR       
   2, bed1_sim_e    OPAQ  VERT  intern_wall  SIMILAR        
-  3, bed_2_r       OPAQ  VERT  partition    ANOTHER        
-  4, hallup_r_1    OPAQ  VERT  partition    ANOTHER        
-  5, hallup_r_2    OPAQ  VERT  partition    ANOTHER        
-  6, hallup_r_3    OPAQ  VERT  partition    ANOTHER        
-  7, loft_r        OPAQ  CEIL  ceil_loft    ANOTHER        
-  8, liv_r         OPAQ  FLOR  ceiling_rev  ANOTHER        
-  9, loft_s_r      OPAQ  VERT  ext_wall_up  ANOTHER        
+  3, bed_2_r       OPAQ  VERT  partition    bed_2          
+  4, hallup_r_1    OPAQ  VERT  partition    hall_up        
+  5, hallup_r_2    OPAQ  VERT  partition    hall_up        
+  6, hallup_r_3    OPAQ  VERT  partition    hall_up        
+  7, loft_r        OPAQ  CEIL  ceil_loft    loft           
+  8, liv_r         OPAQ  FLOR  ceiling_rev  living_room    
+  9, loft_s_r      OPAQ  VERT  ext_wall_up  loft           
  10, s_glaz        TRAN  VERT  glazing      EXTERIOR       
 # base
-  8  0  0  0  0  0    13.26 0
+  8  0  0  0  0  0    13.26

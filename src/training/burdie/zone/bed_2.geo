@@ -37,24 +37,24 @@ GEN  bed_2  bed_2 describes a north facing bedroom  # type, name, descr
    4, 19, 10,  4, 20,
    4, 10, 19, 21,  8,
 # unused index
- 0,0,0,0,0,0,0,0,0,0,0,0
+  0 0 0 0 0 0 0 0 0 0 0 0
 # surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     1   6   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  construction environment
+# id  surface      geom  loc/  mlc db       environment
 # no  name         type  posn  name         other side
-  1, bed1_r        OPAQ  VERT  partition    ANOTHER        
+  1, bed1_r        OPAQ  VERT  partition    bed_1          
   2, bed2_sim_e    OPAQ  VERT  intern_wall  SIMILAR        
   3, bed2_ex_n     OPAQ  VERT  ext_wall_up  EXTERIOR       
-  4, bed_3_r       OPAQ  VERT  partition    ANOTHER        
-  5, loft_r        OPAQ  CEIL  ceil_loft    ANOTHER        
-  6, liv_r         OPAQ  FLOR  ceiling_rev  ANOTHER        
-  7, loft_n_r      OPAQ  VERT  ext_wall_up  ANOTHER        
-  8, store_r       OPAQ  FLOR  ceiling_rev  ANOTHER        
-  9, kitch_r       OPAQ  FLOR  ceiling_rev  ANOTHER        
+  4, bed_3_r       OPAQ  VERT  partition    bed_3          
+  5, loft_r        OPAQ  CEIL  ceil_loft    loft           
+  6, liv_r         OPAQ  FLOR  ceiling_rev  living_room    
+  7, loft_n_r      OPAQ  VERT  ext_wall_up  loft           
+  8, store_r       OPAQ  FLOR  ceiling_rev  store          
+  9, kitch_r       OPAQ  FLOR  ceiling_rev  kitchen        
  10, n_glaz        TRAN  VERT  glazing      EXTERIOR       
- 11, xSurf-10      OPAQ  VERT  partition    ANOTHER        
- 12, xbed_2_r      OPAQ  VERT  partition    ANOTHER        
+ 11, xSurf-10      OPAQ  VERT  partition    bed_3_air_gap  
+ 12, xbed_2_r      OPAQ  VERT  partition    t_bridge       
 # base
-  6  8  9  0  0  0    11.88 0
+  6  8  9  0  0  0    11.88

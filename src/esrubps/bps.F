@@ -262,10 +262,6 @@ C Significant figure reporting limit (NSIGFIG).
 C Timeout information
       common/TIMEOUT/sTimeout,iTimeoutFlag
 
-C Commons for rewind controls (to allow lgctin to be set).
-      COMMON/OPTCTL/IRWIND,IRWLAS,IRWCNT,IRWCSV,IRWCHP,IRWCHN,IRWCHG,
-     &LGCTIN,INITCT,STFUT,STPRES,STPAS1,STPAS2,IRWFNL,TCTLSV
-
 C Material data array.
       real matver
       integer matcats,matcatitems,matdbitems
@@ -278,8 +274,7 @@ C Name of current application
       
       character cAppName*12
       character sTimeout*72
-      integer iTimeoutFlag
-      integer iverb     ! verbosity passed on command line
+      integer iTimeoutFlag      
 
       LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
@@ -377,11 +372,6 @@ C Flag indicating that CFD `small opening' areas have not yet been calculated.
 C Illuminance values held in database.
       NDBENT=0
 
-C Indicate th any timestep controller at the start of the simulation
-C to take the initial start time guess for optimal start and rewind
-C controls.
-      lgctin=1
-
 C Font sizes for graphic environment.
       IFS=1
       ITFS=1
@@ -419,9 +409,7 @@ C all console write is rerouted to the log file
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
       else
-        call parsim(iverb,MODL,iappw,iappx,iappy,inf,browsing,sps,aut,
-     &    actf)
-        itrc=iverb    ! set trace after call to parsim
+        call parsim(MODL,iappw,iappx,iappy,inf,browsing,sps,aut,actf)
       endif
 
 C Detect if the simulator was started up from the project manager
@@ -718,8 +706,6 @@ C Increment input flag if no input data errors detected.
               call edisp(iuout, ' ')
               call edisp(iuout,
      &              'Fatal error: Model was not scanned correctly')
-              call pauses(3)   ! pause for 2 seconds then abort program.
-              call epagend
               stop 
             endif 
             if(dll)then
@@ -746,13 +732,8 @@ C Increment input flag if no input data errors detected.
                 dllmesg='IER1 flag set while scanning the model.'
                 ier=2
                 return
-              else
-                call usrmsg('IER1 flag set while scanning the model.',
-     &            ' ','W')
-                call pauses(2)   ! pause for 2 seconds then abort program.
-                CALL EPAGEND
-                STOP
               endif
+              STOP
             endif
           endif
         else
@@ -1163,7 +1144,6 @@ C Close moisture result library.
         CALL EPAGEND
         if( dll ) return
 
-        call epagend
         STOP
       else
 
@@ -1191,7 +1171,6 @@ C Error.
         CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
         if( dll ) return
-        call epagend
         STOP
       ENDIF
 

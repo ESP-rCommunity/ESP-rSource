@@ -2983,10 +2983,6 @@ C espriou.h for climatelist file name.
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -3002,7 +2998,7 @@ C IDST tool commands.
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLNAM*80,CMDLBL*12
       character LCFGF*72,cfgroot*24,h*72
-      character CXITM*43,outs*124,LTMP*72
+      character CXITM*43,DESC*48,outs*124,LTMP*72
       character clmdb*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
@@ -3378,10 +3374,6 @@ C Serchrpl handles search and replace of composition attributes.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -3396,6 +3388,7 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
 
       character LTMP*72
       character H*72
+      character DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character zname*12,ZN*12,outs*124,SN*12,SSPARENT*12
       character zdesc*64,DESCRC*25,act*1

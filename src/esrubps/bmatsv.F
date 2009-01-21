@@ -113,7 +113,7 @@ C TDF commons. zrotp is the previous rotation angle for each zone.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       common/zrotat/zrotp(mcom)
 
 C Common for thermophysical property replacement.
@@ -323,13 +323,12 @@ C water
 
       logical autook
       logical newgeo  ! to use for testing if new/old geometry file.
-      integer istart  ! day loop counter initial day for rewind ctl
 
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
-C Store start time for reporting simulation duration
+C Store start time for reporting simulationd duration
       call cpu_time(sec_a)
 #endif
 
@@ -659,8 +658,6 @@ C Remember the 'start value' of the unix system clock.
       call getsecs(istime)
       iltime=istime
 
-C Jump back point for rewind controller goes back to the initial
-C day of the simulation. This might be in error.
 123   continue
 
 C At startup, SHOCC is initially out of sync with ESP-r time
@@ -737,9 +734,7 @@ C Initialize ground temperature profile parameters
 
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
-      istart=iss  ! for initial pass use iss
- 124  continue    ! jump back point if rewind control invoked
-      do 10 i=istart,isf 
+      do 10 i=iss,isf 
 
 C For multi-year simulaitons, determine the current
 C and future time row years, and the incidies of these
@@ -1030,8 +1025,7 @@ c Global control: initialise commons, save/retrieve data.
               call RTRVPV
             endif
 
-C For type 6 time-step controller, retrieve and save data.
-C << why is tscon6 also called at line 1370 >>
+C For type 6 time-step controller, retrieve and save data,
             if(itsct.eq.6.and.itsok.eq.1)then
               if(i.ge.itssch(ntsctr,4).and.i.le.itssch(ntsctr,5))then
                 call tscon6(i,j,ntsctr,irew)
@@ -1077,7 +1071,7 @@ C Output current simulation increment if trace on.
 C ** DEBUG ** Write nsinc to screen
 C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
-C           write(outs,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
+C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
 C     &                ' yr:', iMY_current_year
 C           call edisp(itu,outs)
 
@@ -1307,7 +1301,6 @@ C transport miscellaneous simulation data to reporting object
                     call H3K_transport_mfn_data()
                  endif
               endif
-
 C If TSC type 2 is active then find sum of averages for zone air
 C temperature and zone air energy injection.
               if(itsct.eq.2.and.itsok.eq.1)then
@@ -1362,18 +1355,11 @@ C Perform ground simulation for the current time step
               CALL ERPFREE(ITAQ,ISTAT)
             ENDIF
 
-C For type 6 time-step controller, possibly 'rewind' simulation to
-C the start of the current day and try again with updated control
-C start logic. The variable i is the current day index in the loop.
+C For type 6 time-step controller, possibly 'rewind' simulation,
             if(itsct.eq.6.and.itsok.eq.1)then
               if(i.ge.itssch(ntsctr,4).and.i.le.itssch(ntsctr,5))then
                 call tscon6(i,j,ntsctr,irew)
-C Old logic.
-C                if(irew)goto 123
-                if(irew)then
-                  istart=i  ! set day loop to begin again with today
-                  goto 124
-                endif
+                if(irew)goto 123
               endif
             endif
 

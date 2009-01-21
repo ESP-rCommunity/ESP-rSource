@@ -36,23 +36,23 @@ GEN  living_room  living_room is the ground level lounge  # type, name, descr
    5, 16, 14, 10, 17,  7,
    4, 18, 19, 20, 21,
 # unused index
- 0,0,0,0,0,0,0,0,0,0,0
+  0 0 0 0 0 0 0 0 0 0 0
 # surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     1   6   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  construction environment
+# id  surface      geom  loc/  mlc db       environment
 # no  name         type  posn  name         other side
   1, liv_ex_s      OPAQ  VERT  ext_wall_low EXTERIOR       
   2, liv_sim_e     OPAQ  VERT  intern_wall  SIMILAR        
-  3, kitch_r       OPAQ  VERT  partition    ANOTHER        
-  4, hall_r        OPAQ  VERT  partition    ANOTHER        
-  5, bed_3_r       OPAQ  CEIL  ceiling      ANOTHER        
+  3, kitch_r       OPAQ  VERT  partition    kitchen        
+  4, hall_r        OPAQ  VERT  partition    hall           
+  5, bed_3_r       OPAQ  CEIL  ceiling      bed_3          
   6, floor         OPAQ  FLOR  grnd_floor   GROUND         
-  7, hall_up_r     OPAQ  CEIL  ceiling      ANOTHER        
-  8, bed_1_r       OPAQ  CEIL  ceiling      ANOTHER        
-  9, store_r       OPAQ  VERT  partition    ANOTHER        
- 10, bed_2_r       OPAQ  CEIL  ceiling      ANOTHER        
+  7, hall_up_r     OPAQ  CEIL  ceiling      hall_up        
+  8, bed_1_r       OPAQ  CEIL  ceiling      bed_1          
+  9, store_r       OPAQ  VERT  partition    store          
+ 10, bed_2_r       OPAQ  CEIL  ceiling      bed_2          
  11, s_glaz        TRAN  VERT  glazing      EXTERIOR       
 # base
-  6  0  0  0  0  0    17.76 0
+  6  0  0  0  0  0    17.76

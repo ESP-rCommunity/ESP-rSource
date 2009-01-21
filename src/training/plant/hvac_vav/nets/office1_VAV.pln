@@ -87,7 +87,7 @@
     1
 ../nets/office1_VAV.mfn
 /usr/esru/esp-r/databases/pressc.db1
-office1summer.mfr
+/tmp/office1summer.mfr
 # Mapping of mass flow network connections to
 # plant network connections.
    4    5    6    6    9    7

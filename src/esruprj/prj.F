@@ -45,8 +45,6 @@ C LSBEM (SBEM database)
 C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
-#include "control.h"
-#include "net_flow.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -113,15 +111,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
 
 C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
 C Radiance RIF file.
       common/radcfg/LRADCF
@@ -186,7 +176,7 @@ C Name of current application
       character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
-      character ltcmdfl*144
+      character imgfmt*4,imgfoc*4,limgfil*72,ltcmdfl*144
       character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
@@ -558,7 +548,7 @@ C and if so do what it says.
             call edisp248(iuout,doc,80)
             if(theprimedirective(1:3).eq.'new')then
               call usrmsg('Processing of silent file complete.',
-     &          'Exiting from project manager','W')
+     &          'Exiting from project manager','P')
               CALL EPAGEND
               STOP
             else
@@ -1016,26 +1006,7 @@ C Introduction.
         H(14)=' '
         H(15)='To list the invocation options supported by this tool'
         H(16)='enter `esp-r -help` at the command line prompt.'
-        H(17)=' '
-        H(18)='The version of prj supports models of the following'
-        H(19)='(maximum) complexity: '
-        write(H(20),'(a,i3)') 'Number of zones ',MCOM
-        write(H(21),'(a,i3)') 'Surfaces per zone ',MS
-        write(H(22),'(a,i3)') 'Edges per surface ',MC
-        write(H(23),'(a,i4)') 'Surfaces in model ',MCON
-        write(H(24),'(a,i3)') 'Zone control loops ',MCF
-        write(H(25),'(a,i3)') 'Control day types ',MCDT
-        write(H(26),'(a,i3)') 'Mass flow nodes  ',MNOD
-        write(H(27),'(a,i3)') 'Mass flow components ',MCMP
-        write(H(28),'(a,i3)') 'Mass flow connections ',MCNN
-        write(H(29),'(a,i3)') 'Control day types ',MCDT
-        write(H(30),'(a,i3)') 'Constructions in model ',MMLC
-        H(31)=' '
-        H(32)='If you need to work with more complex models then '
-        H(33)='you will need to update the parameters in the '
-        H(34)='source include folder, re-compile ESP-r and '
-        H(35)='then test it on increasingly complex models. '
-        CALL PHELPD('Introduction',35,'gen_esp_intr',0,0,IER)
+        CALL PHELPD('Introduction',16,'gen_esp_intr',0,0,IER)
         call tstamp('>','PRJ: intro help')
       ELSEIF(INO.EQ.2)THEN
 
@@ -1423,7 +1394,7 @@ C Toggle trace level.
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Allow user to change preferences for dates, time, wireframe view
-C and reporting/trace level and version of the model files.
+C and reporting/trace level.
         MODSIT=.false.
         call setup(MODSIT,ITRC,IER)
         if(MODSIT)then
@@ -1501,21 +1472,13 @@ C level).
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/user/browse
 
       dimension ITEMS(25)
 
-      character doit*248,tmode*8,ITEMS*34,H*72,key*1
+      character doit*248,tmode*8,tfile*72,ITEMS*34,H*72,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
@@ -1523,9 +1486,9 @@ C level).
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
-      character t72*72
+      character imgfmt*4,imgfoc*4,limgfil*72,t72*72
 
-      character brw*11,outs*124
+      character brw*8,outs*124,dq*1,fs*1
       character descra*7,descrb*7,descrst*10,descrfn*10
 
       logical DOK,OK,MSTROK,MSTRZN,XST,modparms
@@ -1535,15 +1498,22 @@ C dd is character array for selecting simulation parameter sets.
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
 
-C Set initial values of local variables.
       modparms=.false.
       lr=lnblnk(cfgroot)
       cr=cfgroot
       if(nsset.gt.0)isset=1
       t72='  '
-      itrc=0   ! set initial value.
-      aut=' interactive'
+
+C When invoking doit commands we need to have a file separator
+C and a double quote character available in case of spaces in name.
       call isunix(unixok)
+      if(unixok)then
+        dq = char(34)
+        fs = char(47)
+      else
+        dq = char(34)
+        fs = char(92)
+      endif
 
 C Do an initial check to see if the model is attributed and
 C constructions are known.
@@ -1666,16 +1636,9 @@ C Display the simulation period.
         ITEMS(M+5) ='  NCM compliance checking N/A    '
       ENDIF
       ITEMS(M+6)   ='  ______________________________ '
-      IF(ITRC.EQ.0)THEN
-        ITEMS(m+7) = 'v feedback >> silent              '
-      ELSEIF(ITRC.EQ.1)THEN
-        ITEMS(m+7) = 'v feedback >> summary             '
-      ELSEIF(ITRC.EQ.2)THEN
-        ITEMS(m+7) = 'v feedback >> detailed            '
-      ENDIF
-      ITEMS(M+8)   ='? help                           '
-      ITEMS(M+9)   ='- exit this menu                 '
-      MITEM=M+9
+      ITEMS(M+7)   ='? help                           '
+      ITEMS(M+8)   ='- exit this menu                 '
+      MITEM=M+8
 
 C At each pass update for recent parameter changes.
       if(modparms)then
@@ -1712,12 +1675,7 @@ C Help text for this menu.
 
 C List help text for the simulations menu.
         CALL PHELPD('Simulation',14,'-',0,0,IER)
-      elseif(INO.EQ.MITEM-2)then
-
-C Toggle trace level.
-        ITRC=ITRC+1
-        IF(ITRC.GT.2)ITRC=0
-      elseif(INO.EQ.MITEM-8)then
+      elseif(INO.EQ.MITEM-7)then
 
 C Invoke simulator for the case of a simulation parameter set.
         if(nsset.gt.0)then
@@ -1739,7 +1697,6 @@ C Invoke simulator for the case of a simulation parameter set.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -1757,21 +1714,11 @@ C Debug the patched file name.
             longtfile=longtfiledos
           endif
 
-C If browsing pass this information to bps and if the user
-C has set the trace level above one add a -v optin to the
-C command line.
+C If browsing pass this information to bps.
           if(browse)then
-	    if(itrc.gt.1)then
-              brw = ' -v -b yes'
-            else
-              brw = ' -b yes'
-            endif
+            brw = ' -b yes'
           else
-	    if(itrc.gt.1)then
-              brw = ' -v -b no '
-            else
-              brw = ' -b no '
-            endif
+            brw = ' -b no '
           endif
 
 C If prj initial size is a % of default pass this on to child with
@@ -1798,7 +1745,6 @@ C Invoke simulator for the case without a simulation parameter set.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call isunix(unixok)
           if(unixok)then
             call addpath(LCFGF,longtfile,concat)
           else
@@ -1818,17 +1764,9 @@ C Debug the patched file name.
 
 C If browsing pass this information to bps.
           if(browse)then
-	    if(itrc.gt.1)then
-              brw = ' -v -b yes'
-            else
-              brw = ' -b yes'
-            endif
+            brw = ' -b yes'
           else
-	    if(itrc.gt.1)then
-              brw = ' -v -b no '
-            else
-              brw = ' -b no '
-            endif
+            brw = ' -b no '
           endif
 
 C If prj initial size is a % of default pass this on to child with
@@ -1848,8 +1786,7 @@ C          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         endif
-      elseif(INO.EQ.MITEM-7)then
-
+      elseif(INO.EQ.MITEM-6)then
         H(1)='The first option computes the pressure induced'
         H(2)='fluid flow within a network of connected flow'
         H(3)='components representing the building and/or plant'
@@ -1907,25 +1844,16 @@ C Debug.
 C          call usrmsg('Beginning CFD only assessment via',doit,'-')
           call runit(doit,tmode)
         ENDIF
-
-      elseif(INO.EQ.MITEM-6)then
+      elseif(INO.EQ.MITEM-5)then
 
 C Visual simulation.  Starts e2r with configuration file. Depending on
 C if Unix or Windows setup the appropriate path.
 
 C If browsing pass this information to e2r.
         if(browse)then
-	  if(itrc.gt.1)then
-            brw = ' -v -b yes'
-          else
-            brw = ' -b yes'
-          endif
+          brw = ' -b yes'
         else
-	  if(itrc.gt.1)then
-            brw = ' -v -b no '
-          else
-            brw = ' -b no '
-          endif
+          brw = ' -b no '
         endif
 
         call tstamp('>','PRJ: beginning e2r')
@@ -1956,12 +1884,11 @@ C and change any / to \.
 C Debug.
         call usrmsg('Beginning visual assessment via',doit,'-')
         call runit(doit,tmode)
-      elseif(INO.EQ.MITEM-5)then
+      elseif(INO.EQ.MITEM-4)then
 
 C IPV for the actual number of simulations required.
         call ipvactions(ier)
-
-      elseif(INO.EQ.MITEM-4)then
+      elseif(INO.EQ.MITEM-3)then
 
 C UK NCM Compliance checking
         IF(ISBEM.EQ.1)THEN
@@ -1974,7 +1901,7 @@ C NCM details have not been completed do nothing
           CALL EDISP(IUOUT,
      &    'Complete NCM details from model context menu')
         ENDIF
-      elseif(MITEM.eq.11.and.INO.EQ.1)then
+      elseif(MITEM.eq.10.and.INO.EQ.1)then
 
 C Case of no initial sets, offer default or user defined sets. If the
 C data is internal to the file then it will already have been scanned.
@@ -2129,7 +2056,7 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.1)then
+      elseif(MITEM.eq.24.and.INO.EQ.1)then
 
 C Select an existing set, create a new one or cancel.
  170     do 60 ii=1, nsset
@@ -2226,7 +2153,7 @@ C << description first >>
           isset=IRT
         endif
         call scntcnst(TDM,istd,TCM,ISTC)
-      elseif(MITEM.eq.25.and.INO.EQ.2)then
+      elseif(MITEM.eq.24.and.INO.EQ.2)then
 
 C If there is an IPV descripton and this set is one,
 C do not allow this set name to be changed.
@@ -2240,7 +2167,7 @@ C do not allow this set name to be changed.
           write(spfdescr(isset),'(a8)')de(1:8)
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.3)then
+      elseif(MITEM.eq.24.and.INO.EQ.3)then
         if(INDCFG.eq.2)then
           call edisp(iuout,'* Start-up days not applicable to plant.')
         else
@@ -2260,7 +2187,7 @@ C do not allow this set name to be changed.
             modparms=.true.
           endif 
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.4)then
+      elseif(MITEM.eq.24.and.INO.EQ.4)then
 
 C The simulation timestep. Edit local variable and if not canceling
 C instantiate it and also ask about results integration if more than
@@ -2311,7 +2238,7 @@ C There is temporal data so must save at each timestep.
           endif
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.5)then
+      elseif(MITEM.eq.24.and.INO.EQ.5)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           H(1)='Plant-side time step is an integer subdivision'
           H(2)='of the active building side time steps per hour.'
@@ -2326,7 +2253,7 @@ C There is temporal data so must save at each timestep.
             modparms=.true.
           endif
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.6)then
+      elseif(MITEM.eq.24.and.INO.EQ.6)then
         H(1)='Level 0 - summary table'
         H(2)='Level 1 - zone temperatures and plant demand'
         H(3)='Level 2 - as 1 + zone surface temperatures'
@@ -2342,14 +2269,14 @@ C There is temporal data so must save at each timestep.
           issave=issavet
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.7)then 
+      elseif(MITEM.eq.24.and.INO.EQ.7)then 
         CALL EDAY(isstday(isset),isstmon(isset),ISDS)
         CALL EDAY(isfnday(isset),isfnmon(isset),ISDF)
         call EASKPER('Assessment period:',ISDS,ISDF,IFDAY,IER)
         call EDAYR(ISDS,isstday(isset),isstmon(isset))
         call EDAYR(ISDF,isfnday(isset),isfnmon(isset))
         modparms=.true.
-      elseif(MITEM.eq.25.and.INO.EQ.8)then
+      elseif(MITEM.eq.24.and.INO.EQ.8)then
         h(1)='This library holds the predictions associated'
         h(2)='with a building simulation.'
         t72=sblres(isset)
@@ -2357,7 +2284,7 @@ C There is temporal data so must save at each timestep.
      &    'zones.res','bld library',IER,2)
         sblres(isset)=t72
         modparms=.true.
-      elseif(MITEM.eq.25.and.INO.EQ.9)then
+      elseif(MITEM.eq.24.and.INO.EQ.9)then
         if(IAIRN.ge.1)then
           h(1)='This library holds the predictions associated'
           h(2)='with a network flow simulation.'
@@ -2367,7 +2294,7 @@ C There is temporal data so must save at each timestep.
           sflres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.10)then
+      elseif(MITEM.eq.24.and.INO.EQ.10)then
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
           h(1)='This library holds the predictions associated'
           h(2)='with a plant simulation.'
@@ -2377,11 +2304,11 @@ C There is temporal data so must save at each timestep.
           splres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.11)then
+      elseif(MITEM.eq.24.and.INO.EQ.11)then
         if(ispmxist.gt.0)then
           continue
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.12)then
+      elseif(MITEM.eq.24.and.INO.EQ.12)then
         if(MSTROK)then
           h(1)='This library holds the predictions associated'
           h(2)='with a moisture simulation.'
@@ -2391,7 +2318,7 @@ C There is temporal data so must save at each timestep.
           smstres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.13)then
+      elseif(MITEM.eq.24.and.INO.EQ.13)then
         if(ientxist.gt.0)then
           h(1)='This library holds the predictions associated'
           h(2)='with an electrical simulation.'
@@ -2401,7 +2328,7 @@ C There is temporal data so must save at each timestep.
           selres(isset)=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.14)then
+      elseif(MITEM.eq.24.and.INO.EQ.14)then
         if(lnblnk(lipvdatf).eq.0)then
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
         else
@@ -2413,7 +2340,7 @@ C There is temporal data so must save at each timestep.
           sipvres=t72
           modparms=.true.
         endif
-      elseif(MITEM.eq.25.and.INO.EQ.15)then
+      elseif(MITEM.eq.24.and.INO.EQ.15)then
         h(1)='You can save changes to simulation parameter sets or'
         h(2)='dereference the current sets (e.g. to import new '
         h(3)='IPV assessment periods).'
@@ -2651,7 +2578,6 @@ C Temporarily assume no browsing if in ipv mode.
           brw = ' -b no '
         endif
 
-        call isunix(unixok)
         if(unixok)then
           call addpath(LCFGF,longtfile,concat)
         else
@@ -3826,14 +3752,11 @@ C and the image browser has not been invoked do this now. In the case
 C of the GTK version use an in-built GTK function rather than an
 C external tool.
       subroutine imgdisp(iforce,focus,ier)
-#include "building.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      common/CFGV/icfgv
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -3857,22 +3780,16 @@ C         'FDFS' is related to CFD domains
 C         'FPER' is related to predicted performance
 C         '****' is a general image displayed at startup
 C  limgfil (72 char) name of the image file << ?? longer string >>
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+C  noimg is the number of images associated with the model.
+C  iton is a toggle iton=0 initial state where images have not been scanned
+C    and iton=1 images have been displayed.
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
-
-      character ilist*200,dolist*254
+      character imgfmt*4,imgfoc*4,limgfil*72,ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
-      integer idl  ! length of image documentation
 
       logical concat,show,unixok
 
@@ -3940,12 +3857,6 @@ C quotes are not required.
      &    'The image display tool has not be defined. Ask your',
      &    'administrator to update the .esprc file definition.','W')
               else
-
-C If recent version then display image documentation as well.
-                if(icfgv.gt.3)then
-                  call edisp(iuout,'  ')
-                  call edisp248(iuout,imgdoc(imgv),100)
-                endif
                 write(dolist,'(a,2x,a,a)')
      &            fmtexe(imgv)(1:lnblnk(fmtexe(imgv))),
      &            ilist(1:lnblnk(ilist)),' &'
@@ -3968,10 +3879,9 @@ C Setup help text for the popup.
           h(5)=' * indicate what performance is expected'
           h(6)='   '
           h(7)='Images are added to a model via the context->images'
-          write(h(8),'(a,i2,a)')
-     &      'menu item. There can be up to ',MIMG,' images associated'
-          h(9)='with a model. '
-          h(10)='Images of type GIF and XBM and JPG are supported.'
+          h(8)='menu item. There can be up to 10 images associate with'
+          h(9)='a model. '
+          h(10)='Images of type GIF and XBM and ?? are supported.'
           CALL PHELPW(10,IHW,IER)
 
           do 99 img=1,noimg
@@ -3999,32 +3909,25 @@ C and change any / to \.
                   longtfile=' '
                   longtfile=longtfiledos
                 endif
-
-C If version 4 or newer then display the text otherwise make
-C up a general block of text for the image.
-                if(icfgv.gt.3)then
-                  idl=lnblnk(imgdoc(img))
-                  write(topic,'(a)') imgdoc(img)(1:idl)
-                else
-                  if(focus(1:4).eq.'****')then
-                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &                ' is a general topic.'
-                  elseif(focus(1:4).eq.'FZON')then
-                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &                ' provides details of zone composition.'
-                  elseif(focus(1:4).eq.'FNET')then
-                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &                ' provides details of network composition.'
-                  elseif(focus(1:4).eq.'FCTL')then
-                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &                ' provides details of control composition.'
-                  elseif(focus(1:4).eq.'FDFS')then
-                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &                ' provides details of the CFD domain.'
-                  elseif(focus(1:4).eq.'FPER')then
-                    write(topic,'(3a)') ' Image ',longtfile(1:ixl),
-     &                ' relates to model performance.'
-                  endif
+                ixl=lnblnk(longtfile)
+                if(focus(1:4).eq.'****')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' is a general topic.'
+                elseif(focus(1:4).eq.'FZON')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of zone composition.'
+                elseif(focus(1:4).eq.'FNET')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of network composition.'
+                elseif(focus(1:4).eq.'FCTL')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of control composition.'
+                elseif(focus(1:4).eq.'FDFS')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' provides details of the CFD domain.'
+                elseif(focus(1:4).eq.'FPER')then
+                  write(topic,'(3a)') ' Image ',longtfile(1:ixl),
+     &              ' relates to model performance.'
                 endif
 
 C Provide some feedback, set the title of the popup and then call C
@@ -4032,12 +3935,8 @@ C function in lib/esp_draw.c
                 call edisp(iuout,topic)
                 write(head,'(2a)') 'Image: ',longtfile(1:ixl)
                 act='-'
-                if(MMOD.eq.8)then
-                  call popupimage(head,topic,act,longtfile)
-                  iton=1
-                else
-                  call edisp(iuout,'Not in graphics mode.')
-                endif
+                call popupimage(head,topic,act,longtfile)
+                iton=1
               endif
             endif
   99      continue

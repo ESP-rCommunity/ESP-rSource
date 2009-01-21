@@ -234,9 +234,6 @@ C SDDEF002 - Composite constructions dietribution definition.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -269,7 +266,7 @@ C Arrays of material properties.
 
       CHARACTER NAM*72,TITL*72
       CHARACTER H*72, LELM(MMLC*ME)*36
-      CHARACTER MATNAM*12
+      CHARACTER DESC*48, MATNAM*12
 
       DIMENSION IVALE(MMLC*ME)
 

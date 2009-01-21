@@ -18,7 +18,7 @@ OBJECTS = res.o arrow.o ascii_mat.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o 
 	  comfort.o convect2.o ctread.o design.o dmdrep.o dossupport.o e3dviews.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o emfnetw.o enerbs.o \
 	  enerbz.o enetmisc.o enetrdisp.o enetres.o enetrewr.o eroper.o \
-	  esru_misc.o esystem.o fabcon.o fabtmp.o fanger.o frqdis.o iaq.o initalc.o \
+	  esru_misc.o esystem.o fabcon.o fabtmp.o frqdis.o iaq.o initalc.o \
 	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfutil.o \
 	  mocfd.o moclim.o moget.o moplnt.o mosensa.o nwkrewr.o plot3d.o \
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
@@ -95,9 +95,6 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
-fanger.F:
-	rm -f fanger.F
-	ln -s $(COMdir)/fanger.F .
 initalc.F:
 	rm -f initalc.F
 	ln -s $(CTLdir)/initalc.F .
@@ -164,6 +161,6 @@ clean:
 	arrow.F ascii_mat.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F convect2.F ctread.F \
 	dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
-	esystem.F fanger.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
+	esystem.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
 	visgrd.F visual.F visvec.F

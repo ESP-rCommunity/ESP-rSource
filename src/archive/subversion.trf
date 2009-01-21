@@ -6,17 +6,15 @@ delim $$
 .TL
 An Overview of Subversion for ESP-r Central Users
 .br
-Version of January 4, 2008
-.sp
+Version of July 6, 2007
+.sp 2
 .LP
 ESP-r's source code was placed under a version control system in April 2006 to
 facilitate its management and development.  This version control system is called Subversion.
 Subversion maintains a record of changes to the source code and provides a means for dealing
 with concurrent changes to source files. It also allows developers a convenient method of
 contributing to the ESP-r code base.  This document describes how to use Subversion to checkout a
-working copy, to add and remove files, and to commit files back to the ESP-r code base. It
-is also useful to read the other documents in the \fIarchive\fR folder which complement
-this document.
+working copy, to add and remove files, and to commit files back to the ESP-r code base.
 .LP
 .I "Revision history"
 .LP
@@ -25,11 +23,6 @@ strongly encouraged. The troff-formatted source file for the latest
 version can be obtained at the following url:
 .IP
 \fIhttps://esp-r.net/espr/esp-r/branches/development_branch/src/archive/subversion.trf\fR
-.LP
-To generate an A4 postscript document from this file via the groff suite of
-tools (available for many operating systems) issue the following command:
-.IP
-\fI cat subversion.trf | eqn | tbl | groff -mms -dpaper=a4 -P-pa4 > subversion.ps\fR
 .LP
 .\" ---------------------- Introduction -----------------
 .NH
@@ -53,8 +46,7 @@ Subversion, by Collins-Sussman, Fitzpatrick and Pilato:
 .I
 Obtaining a Subversion Client
 .LP
-Command line clients for various operating systems can be downloaded from the 
-subversion website: 
+A command line client can be downloaded from the subversion website: 
 .IP
 \fIhttp://subversion.tigris.org/project_packages.html\fR
 .LP
@@ -68,9 +60,7 @@ Anonymous access for Non-Developers
 .LP
 If you do not plan to modify ESP-r source code, you may download a working copy using
 anonymous access. This is convenient for students and professionals who simply wish to
-download and compile the latest version of ESP-r or make minor modifications such
-as increasing the maximum geometric complexity by adjusting parameters in the source
-code header files. 
+download and compile the latest version of ESP-r. 
 .LP
 The following command will download ESP-r's source code from the ESP-r Central repository to
 the current working directory of your local computer:
@@ -80,30 +70,18 @@ svn checkout  https://esp-r.net/espr/esp-r/trunk/
 .DE
 With this working directory, you will be able to compile ESP-r on your
 own computer. Though you will also be able to alter the source code,
-you, will be unable to make changes to the ESP-r Central repository.
-The \fItrunk\fR is the official release that is updated a few times
-per year. If you want the latest version you would use an alternative
-checkout command:
-.LD
-.fam C
-svn checkout  https://esp-r.net/espr/esp-r/development_branch/
-.DE
-.LP
+you, will be unable to make changes to the ESP-r Central repository,
 If you're contemplating modifying ESP-r, are strongly encouraged to
-obtain a developer's account. The GNU public license includes a
-provision that changes you make to ESP-r should be shared with
-the community and such contributions are made via subversion
-commands described in this document and the other documents in
-the \fIarchive'\fR folder.
+obtain a developer's account.
 .\" -------------------- Development -----------------
 .NH 
 ESP-r Development with Subversion. 
 .LP
 If you wish to make changes to the ESP-r Central repository, you must become familiar with the
-concepts of working on ``branches'', merging your changes back into your branch in the repository
-and documenting your work so that others in the community can take advantage of the
-changes that you contribute. These concepts are not trivial, and it is very important that 
-you become comfortable with them.
+concepts of working on ``branches'' and merging branches back into the main ``trunk'' of
+the repository.
+These concepts are not trivial, and it is very important that you become comfortable
+with them.
 .LP
 For a complete description of branches and merging, please refer to chapter 4 of Versioning
 control with Subversion, by Collins-Sussman, Fitzpatrick and Pilato:
@@ -112,13 +90,12 @@ control with Subversion, by Collins-Sussman, Fitzpatrick and Pilato:
 .LP
 ESP-r development occurs on separate ``sub-branches'' that are assigned to individual contributors
 or teams of contributors. Contributors modify and commit their code on to these sub-branches, where
-they can be inspected by others. After completing a rigourous testing process, the ESP-r archivist merges
+they can be inspected by others. After completing a rigorous testing process, the ESP-r archivist merges
 contributions from a sub-branch on to the main development branch, where they can be
 accessed by all developers. 
 .LP
 A complete description of the ESP-r Subversion branch structure is available in the document
-``Structure of the ESP-r source code archive'' which also includes further suggestions
-for how development work is managed within the ESP-r development community.
+``Structure of the ESP-r source code archive''.
 .LP
 .I
 Obtaining a Developer's Account and Sub-branch
@@ -140,9 +117,6 @@ To perform a checkout, use the following command:
 svn checkout https://esp-r.net/espr/esp-r/branches/<sub-branch_name>
 .DE
 Provide your developer's account name and password when prompted.
-.LP
-Note that changes that you make in your working directory are NOT recorded
-in your branch of the repository until you issue a relevant subversion command. 
 .LP
 .NH
 Common Subversion Commands
@@ -172,42 +146,8 @@ Check the STATUS of your workspace.
 .LP
 This command will list all the files you have changed relative to the sub-branch you are working on,
 which is handy to use before a ``commit'' or an ``update''.
-.LD
-.fam C
-svn status <directory_or_filename>
-.DE
 .LP
-If the status list is long you may wish to re-direct the output
-to a file named current_status.txt use the following command:
-.LD
-.fam C
-svn status <directory_or_filename> >current_status.txt
-.DE
-.LP
-If you see a file marked with a '?' in the status list this signals
-that it is not known within the repository. If you want
-the file to be known then issue the following sequence of commands:
-.LD
-.fam C
-svn add <path_to_file_or_folder_to_be_added>
-svn commit <path_to_file_or_folder_to_be_added>
-.DE
-.LP
-If the file or files to be added are the only pending tasks then you could
-issue a more general command:
-.LD
-.fam C
-svn add <path_to_file_or_folder_to_be_added>
-svn commit
-.DE
-.LP
-Remember that files within the working directory which are not
-part of the repository risk being lost. Some files should not
-be included in the repository - for example, object files and
-executables created during the compile process are not part of
-the repository.  Typically only the ASCII version of databases
-are included in the repository (binary versions are created
-during the Install process).
+        svn status <directory_or_filename>
 .LP
 .I
 UPDATE files/directories of your workspace.
@@ -220,9 +160,7 @@ the project branch. The ``update'' command will update your local copy
 with any changes that other developers have committed to the project
 branch since your last checkout/update. \fIBut be careful!\fR It automatically merges
 code into your files, so inspect all updated files and ensure your code
-still works correctly. Some developers create a local archive or backup
-copies of files which are work-in-progress prior to issuing ``update''
-commands.
+still works correctly.
 .LD
 .fam C
 svn update  <directory_or_file_to_be_updated>
@@ -233,17 +171,13 @@ modified in your local copy. Conflicts are discussed in detail below.
 .I
 COMMIT your changes to the repository. 
 .LP
-This command will commit all file changes, as well as Adds and Removes, to the 
-branch you are working on.  See the repository document for further advise
-on how to plan your commits. Only valid ESP-r developer account holders can use 
-this command to update their branch of the repository or joint branches which
-they may be working on. 
+This command will commit all file changes, as well as Adds and Removes, to the branch you are working on.
+Only valid ESP-r developer account holders can use this command. 
 .LD
 .fam C
 svn commit <directory_or_filename>
 .DE
-A text editor will be opened after you issue the above command. You can nominate
-which editor to use by setting the SVN_EDITOR environment variable. Enter a detailed message
+A text editor will be opened after you issue the above command.  Enter a detailed message
 that elaborates the reasons for your coding change/addition, the intent of your code, and
 the testing that you have conducted.  You should indicate in detail what impact this change
 has upon ESP-r functionality, and in particular, the impact it has upon calculation results.
@@ -251,14 +185,11 @@ This message will be permanently recorded in ESP-r Central's repository log and 
 as a reference for other developers and for yourself in the future.  Use proper sentence
 structure and grammar to effectively communicate this critical information to your colleagues.
 .LP
-Within 24 hours of committing your changes, you will receive an automatically-generated
+Within 24 hours of commiting your changes, you will receive an automatically-generated
 test report comparing the new version you've submitted with the previous version
 on your sub-branch. This test report will tell you if your new version compiles
 correctly in various configurations, and will also highlight any questionable
-syntax and potentially erroneous code introduced by your commit.  Note that this
-report is based on differences between your current commit and the previous
-state of your branch. To review the full syntax report you will have to
-run the syntax checking software yourself.
+syntax and potentially erroneous code introduced by your commit.
 .NH
 Conflicts
 .LP
@@ -301,7 +232,7 @@ merge again using a clean working copy!\fR
 .LP
 The following example illustrates the steps involved in updating your sub-branch
 with changes in the development branch for the first time:
-.sp
+.bp
 .IP 1. 4
 Determine the revision number at which your branch was created:
 .LD
@@ -368,12 +299,10 @@ U Makefile
 .IP 6. 4
 Check to see if there are any conflicts and check the changes that have been merged.
 In the case that there are conflicts between the local changes and those on the development
-branch subversion will create a \fIleft\fR and \fIright\fR version of the source file
-and it will embed in the source files markings <<<<<<<  or >>>>>>> indicating
-where the conflict is located. Manually edit the source file and if you are
-happy with the result issue a "svn resolved" command. If you want to take
-the development branch version execute an "svn revert". To check the status
-of your work issue the command:
+branch, execute "svn revert". Then modify the files flagged in conflict  during
+ to resolve the reported conflicts. Once all the
+conflicts are resolved, execute the  previous "svn merge" command once more.
+Again, make sure  no  conflicts are reported.
 .LD
 .fam C
 svn status

@@ -173,6 +173,7 @@ C and future time rows. Units: W/m^2
 
       SUBROUTINE MZSLGN(ICOMP)
 #include "building.h"
+#include "tdf2.h"
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
 C to 20 for the present.
@@ -365,7 +366,16 @@ C Bidirectional data - explicit definitions:
                              !situations.
       integer IBISET_timestep !the bidirectional dataset number to use. 
                               !Use the number specified in tdf if exists. Otherwise use the 1st dataset.                 
-      
+
+C Tdf common block to allow using vertical solar radiation data
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+      DIMENSION VAL(MBITS+2)            
+      real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
+
       ZAREA=ZOA(ICOMP)
 
 C      write (6,*) 'solar ',btimef
@@ -585,6 +595,30 @@ C First write out data into a temporary file for checking.
      &                   ' meas. diffuse',SRADF(ISRF)
               write(42,*)'---------------------------------------------'
             endif
+          endif
+
+C Replace calculated values by measured values from tdf file
+C Use the ratio of direct/diffuse as calculated to divide
+C the measured values into direct and diffuse components.
+C Temporal (TDF) vertical solar radiation data
+          if(IVERSOL(icomp,isrf).ne.0)then
+            IFOC=IVERSOL(icomp,isrf)
+            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)             
+            if(val(isd).gt.sradf(ISRF))then
+
+C Sum direct and diffuse components
+              sumDirDiff=sradf(ISRF)+sraddo(ISRF)
+              call eclose(sumDirDiff,0.00,0.00001,closea)
+              if (closea) then
+                sumDirDiff=1.0
+              endif
+              radrat=sraddo(ISRF)/sumDirDiff
+              sraddo(ISRF)=val(isd)*radrat
+              sradf(ISRF)=val(isd)*(1.-radrat)
+            else
+              sraddo(ISRF)=0.0
+              sradf(ISRF)=val(isd)
+            endif          
           endif
         ENDIF
    3  CONTINUE
@@ -3414,10 +3448,6 @@ C existing and new controls should be added here.
 #include "control.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/OUTIN/IUOUT,IUIN
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -3430,7 +3460,7 @@ C Tdf common block to allow using different bidirectional datasets
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       COMMON/trc/itrc ! needed to recover tdf data
 
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),
@@ -3480,7 +3510,7 @@ C Daylight coeff specific
 
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
-
+      CHARACTER DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124

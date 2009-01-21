@@ -315,9 +315,6 @@ C     /
 C NB The following NCOMP records are used to store
 C external and internal window and door areas per zone.
 
-C << This data structure no longer exists so this section
-C << could be used for something else.
-
       IRECPL = IREC+NCOMP
       IREC = 2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  IRECPL
@@ -764,7 +761,7 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day

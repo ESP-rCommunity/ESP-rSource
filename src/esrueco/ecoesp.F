@@ -1068,9 +1068,6 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -1082,7 +1079,7 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER H*72
+      CHARACTER H*72,DESC*48
 
 C Read database if not already done.
       if (.not.MLDBOK) then 
@@ -1460,9 +1457,6 @@ C
       common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
      &  IZBASELIST(MCOM)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -1582,7 +1576,7 @@ C
       character SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER zname*12,zdesc*64
+      CHARACTER DESC*48,zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
       CHARACTER StepName*36,StepSName*12
@@ -2510,9 +2504,6 @@ C phylosophy as LCACalc
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2663,7 +2654,7 @@ C Arrays of material properties.
       CHARACTER SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER zname*12,zdesc*64
+      CHARACTER DESC*48,zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
       CHARACTER H*72,outs*160,ITEM*36, Tmpstring*72

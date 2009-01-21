@@ -48,10 +48,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
@@ -82,7 +78,7 @@ C NZJVN : topology of vertices associated with each connection.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12,zname*12,zdesc*64,t13*13
+      CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSX

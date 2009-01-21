@@ -14,7 +14,7 @@ echo " (cfg zones ctl nets) and standard file names"
 echo " (*.geo *.cfg *.con *.tmc etc.). It does NOT" 
 echo " alter (*.shd or binary databases)"
 echo "  "
-echo "It requires the Linux utility fromdos." 
+echo "It requires the Linux utility dos2unix" 
 echo "  "
 echo "The script searches for backslashes and converts them to "
 echo "forward slashes. It also looks for c:\Esru and replaces it with  "
@@ -49,8 +49,7 @@ foreach i ( `ls -d cfg zones nets ctl doc` )
         sed 's/c:/\/usr/g' $j-tf1 > $j-tf2       
         sed 's/C:/\/usr/g' $j-tf2 > $j-tf3       
         sed 's/Esru/esru/g' $j-tf3 > $j
-        fromdos $j-tf2
-        mv $j-tf2 $j
+        dos2unix -U $j
         rm -f $j-tf1 $j-tf2 $j-tf3
         echo "$j  finished"
       endif
@@ -66,7 +65,7 @@ foreach i ( `ls -d dbs databases` )
     echo $i
     echo "*" Checking folder $i >>../mprogress
     cd $i
-    foreach j ( `ls *.txt *.asc multicon.* optic* *.a *opticdb *materialdb *constrdb` )
+    foreach j ( `ls *.txt *.asc multicon.* optic* *.a` )
       if ( -f $j ) then
         echo "checking for slash in $j" 
         rm -f $j-tf1 $j-tf2
@@ -74,8 +73,7 @@ foreach i ( `ls -d dbs databases` )
         sed 's/\\/\//g' $j > $j-tf1        
         sed 's/c:/\/usr/g' $j-tf1 > $j-tf2       
         sed 's/Esru/esru/g' $j-tf2 > $j
-        fromdos $j-tf2
-        mv $j-tf2 $j
+        dos2unix -U $j
         rm -f $j-tf1 $j-tf2
         echo "$j  finished"
       endif

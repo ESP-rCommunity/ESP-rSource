@@ -48,8 +48,6 @@ c for transfer to the results database.  This cannot
 C be done prior to the time loop because the necessary adjacency
 C information is not established until the simulation commences.
 
-C << there is probably no reason to call this subroutine as there
-C << are no longer any so-called default windows and doors.
       subroutine mzwdar(icomp)
 #include "building.h"
 
@@ -79,14 +77,13 @@ C Find appropriate record in library.
       read(iunit,rec=irec,iostat=istat,err=1000)nst
       iresrv=nst-ncomp+icomp-1
 
-C Write dummy values for default doors and windows to results library.
+C Write to results library.
       irec=iresrv
       write(iunit,rec=irec,iostat=istat,err=1000)zgae,zgai,zdae,zdai
     5 return
 
  1000 write(outs,'(A,I5,A)')
-     &  'mzwdar: results library error at record',irec,
-     &  ' while writing default window and door areas.'
+     &  ' mzwdar: results library error at record',irec,'.'
       call edisp(iuout,outs)
       call epwait
       goto 5
@@ -2246,7 +2243,7 @@ C For each zone a pointer to relevant temporal db entry 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
 C Common for 3D building model.
       COMMON/GRND101/NNODTG,ITCNSTG,TEMP3G(MCOM),AREAGD(MCOM)

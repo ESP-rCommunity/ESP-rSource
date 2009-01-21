@@ -1,4 +1,3 @@
-
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
@@ -2185,6 +2184,9 @@ C Climate data.
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
+      common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
+      character XMLMETRICS*248
+
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -2205,7 +2207,8 @@ C Passed in parameters.
       integer lnwg   ! length of weather ground string.
       integer igrfile ! unit number of ground file
       DIMENSION GVA(12)
-
+      character inpxmlfl*248 !to write out the input.xml file
+      
       IER=0
 
 C Determine operating system
@@ -2392,6 +2395,51 @@ C Debug.
         endif
         CALL EMKCFG('-',IER)
 
+C Also write the xml input file if there is a metric defined in the flat file
+        if(inumXMLmetrics.gt.0)then
+          if(unixok)then
+            fs = char(47)
+          else
+            fs = char(92)
+          endif
+
+C Write the XML input file
+          write(inpxmlfl,'(3a)') mpath(1:lnblnk(mpath)),fs,
+     &    'cfg/input.xml'
+          iuf=ifil+2
+          call efopseq(iuf,inpxmlfl,3,ier)
+          write(iuf,'(a)',iostat=ios) 
+     &      '<?xml version="1.0" encoding="UTF-8"?>'
+          write(iuf,'(a)',iostat=ios)'<configuration>'
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <apply_style_sheet>false</apply_style_sheet>'
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <dump_all_data>false</dump_all_data>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <hierarchy>flat</hierarchy>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <link_style_sheet>false</link_style_sheet>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <output_dictionary>true</output_dictionary>'  
+          write(iuf,'(a)',iostat=ios) 
+     &'  <report_startup_period_data>false</report_startup_period_data>'
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <save_to_disk>false</save_to_disk>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <time_step_averaging>true</time_step_averaging>'  
+          write(iuf,'(a)',iostat=ios) 
+     &      '  <enable_xml_wildcards>true</enable_xml_wildcards>'
+
+C Loop around the possible defined xml outputs
+          do 200 iwrxmlout=1,inumXMLmetrics
+          write(iuf,'(3a)',iostat=ios)'  <step_variable>', 
+     &      XMLMETRICS(iwrxmlout)(1:lnblnk(XMLMETRICS(iwrxmlout))),
+     &     '</step_variable>'
+ 200      continue       
+          write(iuf,'(a)',iostat=ios)'</configuration>'
+          call erpfree(iuf,istat)
+        endif
+      
 C Fall through point if no climates located.
   74    continue
       endif
@@ -2470,10 +2518,6 @@ C#include "esprdbfile.h"
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2522,6 +2566,12 @@ C =2 with more than 3 day types
       common/loadlabel/lodlabel(mcom,7)
       CHARACTER*6 lodlabel
 
+      COMMON/Vld20/Vldtng
+      logical Vldtng      
+      common/SLNTFULL/ifullysilent
+      integer ifullysilent !flag to drive the silent model creation without
+                           !questions about the operation files data
+
 C Paremeters passed in:
       character name*12   ! name given to the zone
       character shape*8   ! box or extrude
@@ -2553,7 +2603,7 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character fs*1
+      character fs*1,DESC*48
       CHARACTER zname*12,zdesc*64
       character ctldoc*248,LCTLF*72,zd*64
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
@@ -2582,6 +2632,9 @@ C If browsing then user cannot create a new zone.
         return
       endif
 
+C Initialise flag
+      ifullysilent=0
+      
 C Set folder separator (fs) to \ or / as required.
       willneedtmc=.false.
       call isunix(unixok)
@@ -3116,7 +3169,9 @@ C Set to current format
         iflow='ach-ach '
         vflow='ach-ach '
         isource=0
+        ifullysilent=1
         idest=icomp
+        Vldtng=.true.
         call COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &    itrc,'s',ier)
 
@@ -3166,6 +3221,7 @@ C and act on the information within the file.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -3228,9 +3284,35 @@ C and one period for summer.
 C Typical periods win1|trn1|sum|trn2|win2 with start,finish
       common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
      &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+
+C Control documentation common
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc
+      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
+      character glctldoc*248,opticdoc*248     
+  
+      common/cctlnm/ctldoc,lctlf
+      character LCTLF*72,CTLDOC*248  
+      
+      common/cctl/icascf(mcom)
+      integer icascf
+
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+
+C XMLMETRICS are the metrics that could be included in the input.xml
+C in case the flag: <dump_all_data> is false
+      common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
+      character XMLMETRICS*248
+      integer inumXMLmetrics !counts for the number of xml metrics defined
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
+      integer IFCFG
                
       CHARACTER OUTSTR*248,WORD*32,outs*124
       character dstmp*24
+      character word248*248
 
       character act*1  ! action requested.
       character ipvact*1 ! action for clearipvdat
@@ -3323,7 +3405,11 @@ C Site related local variables.
       integer simzonetimestep ! use for isbnstep
       integer simplanttimestep ! use for ispnstep
       integer simsavelevel  ! use for issave
-
+      integer i_ctl_link  !flag to indicate the zone has a basic control
+      real ht_Setpoint,cl_Setpoint !heating and cooling set-points
+      dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
+      integer isilentncf !silent decide how many control functions needed
+        
       IER=0
 
 C Determine operating system
@@ -3338,6 +3424,7 @@ C Set icomp to zero if there are no zones in the model.
       if(ncomp.eq.0)then
         icomp=0
       endif
+
 C Get the current folder and display options to the user.
 C first list any files with .cfg in name.
       odir=' '
@@ -3388,6 +3475,7 @@ C in the file.
         simzonetimestep=0
         simplanttimestep=0
         simsavelevel=0
+        isilentncf=0
         do 42 iz=1,MSZ
           name(iz) = ' '
           shape(iz) = ' '
@@ -3408,6 +3496,9 @@ C in the file.
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
           nbob(iz) = 0
+          ht_Setpoint(iz)= 0.0
+          cl_Setpoint(iz)= 0.0
+          i_ctl_link(iz)=0
           do 55 ibu=1,MB
             XOB(iz,ibu) = 0.0
             YOB(iz,ibu) = 0.0
@@ -3792,8 +3883,15 @@ C to the training/pattern folder.
       elseif(WORD(1:12).eq.'*environment')then
         goto 43
       elseif(WORD(1:8).eq.'*heating')then
+        CALL EGETWR(OUTSTR,K,ht_Setpoint(nsz),-102.,102.,'W',
+     &       'heat setp',IER)
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
+        CALL EGETWR(OUTSTR,K,cl_Setpoint(nsz),-102.,102.,'W',
+     &       'cool Setp',IER)
+        goto 43
+      elseif(WORD(1:14).eq.'*ideal_control')then
+        i_ctl_link(nsz)=1
         goto 43
       elseif(WORD(1:16).eq.'*weather_station')then
 
@@ -4005,6 +4103,24 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
         endif
         write(6,*) 'the value of simact is ',simact
         goto 43
+      elseif(WORD(1:4).eq.'*ipv')then
+        goto 43
+      elseif(WORD(1:10).eq.'*start_xml')then  
+        inumXMLmetrics=0
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'read metrics',IER)  
+        K=0
+        CALL EGETW(OUTSTR,K,WORD248,'W','xml data',IER)
+        do while(WORD248(1:8).ne.'*end_xml')                           
+          inumXMLmetrics=1+inumXMLmetrics        
+          XMLMETRICS(inumXMLmetrics)=WORD248
+          CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'read metrics',IER)  
+          K=0
+          CALL EGETW(OUTSTR,K,WORD248,'W','xml data',IER)            
+        end do
+        if(WORD(1:8).eq.'*end_xml'.or.WORD248(1:8).eq.'*end_xml')then
+          goto 43
+        endif       
+        goto 43
       else
         goto 43
       endif
@@ -4118,7 +4234,7 @@ C << assessment expansion to be done >>
 
       endif
 
-C << location for further system level data >>
+C << location for further system level data >>                       
 
 C Update configuration file to know about the construction files.
       CALL EMKCFG('-',IER)
@@ -4201,7 +4317,35 @@ C be included in the version 1.1 geometry file.
             iobs(icomp)=0
             NB=0
           endif
-
+          if(i_ctl_link(isz).gt.0)then
+            isilentncf=1+isilentncf
+            ncf=isilentncf
+            IBSN(isilentncf,1)=0
+            IBSN(isilentncf,2)=0     
+            IBSN(isilentncf,3)=0
+            IBSN(isilentncf,4)=0 
+            IBAN(isilentncf,1)=0
+            IBAN(isilentncf,2)=0   
+            IBAN(isilentncf,3)=0
+            NBCDT(isilentncf)=1
+            IBCDV(isilentncf,1,1)=1
+            IBCDV(isilentncf,1,2)=365
+            NBCDP(isilentncf,1)=1
+            IBCTYP(isilentncf,1,1)=0
+            IBCLAW(isilentncf,1,1)=1
+            TBCPS(isilentncf,1,1)=0
+            BMISCD(isilentncf,1,1,1)=7
+            BMISCD(isilentncf,1,1,2)=999000
+            BMISCD(isilentncf,1,1,3)=0.0      
+            BMISCD(isilentncf,1,1,4)=999000
+            BMISCD(isilentncf,1,1,5)=0.0
+            BMISCD(isilentncf,1,1,6)= ht_Setpoint(isz)
+            BMISCD(isilentncf,1,1,7)=cl_Setpoint(isz)
+            BMISCD(isilentncf,1,1,8)=0.0
+            znctldoc='basic ideal controls'
+            ICASCF(isz)=ncf
+          endif
+          
           write(outs,'(2a)') 'Processing ',name(isz)
           call edisp(iuout,outs)
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
@@ -4210,6 +4354,24 @@ C be included in the version 1.1 geometry file.
      &      nbdoor(isz),hasdoor,hasname,hasconstruction,
      &      boundarytype,datamass,textmass,use,usefile(isz),IER)
   53    continue
+
+        if(unixok)then
+          fs = char(47)
+        else
+          fs = char(92)
+        endif
+        LN=max(1,LNBLNK(cfgroot))
+        if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
+          WRITE(LCTLF,'(2a)')cfgroot(1:ln),'.ctl'
+        else
+          WRITE(LCTLF,'(4a)') ctlpth(1:lnblnk(ctlpth)),fs,
+     &       cfgroot(1:ln),'.ctl'
+        endif      
+        ICTLF=IFIL+1
+        call CTLWRT(ICTLF,IER)
+
+C Update cfg file to know about the control file
+        CALL EMKCFG('-',IER)         
       endif
       RETURN
 

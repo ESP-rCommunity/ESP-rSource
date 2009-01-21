@@ -10197,9 +10197,6 @@ C IER=0 OK, IER=1 problem.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/rpath/path
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -10229,7 +10226,7 @@ C ITPPSW current view - perspective/plan/south/west
       CHARACTER H*72,FALT*37,path*72,act*1
       character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
       character gopt*32,hopt*32,iopt*32,jopt*32,kopt*32,lopt*32
-      CHARACTER head*19
+      CHARACTER DESC*48,head*19
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return

@@ -9279,10 +9279,6 @@ C then it represents the zone which is currently being edited.
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -9317,7 +9313,7 @@ C ITPPSW current view - perspective/plan/south/west
       CHARACTER FALT*37,MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1
-      CHARACTER head*19
+      CHARACTER DESC*48,head*19
 
       dimension mthnam(12),iavdec(12)
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/

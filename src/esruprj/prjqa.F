@@ -78,10 +78,6 @@ C LPNF (72 char) plant network file name.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -199,7 +195,7 @@ C Remember if each zone is fully attributed.
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
-      character DESCRC*25
+      character DESC*48,DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character zname*12,cfgroot*24,ZN*12,SN*12
@@ -235,7 +231,6 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical nameok  ! to use for testing if duplicate names in zone,
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1568,18 +1563,6 @@ C Consider glazing on walls to be a part of facade.
           else
             continue
           endif
-
-C Check for duplicate surface names in this zone. Report is
-C duplicates are found.
-          write(SN,'(a12)')SSNAME(icc)
-          call snamdup(SN,izz,ij,nameok)
-          if(nameok)then
-            continue
-          else
-            write(outs,'(3a)') 'Surface ',SN(1:lnblnk(SN)),
-     &        ' has a duplicate name. Names must be unique!'
-            call edisp(itu,outs)
-          endif
  111    continue
 
 C Write out UA information if extra information requested.
@@ -2092,17 +2075,6 @@ C IPV data.
       common/IPVF/lipvdatf
       character lipvdatf*72
 
-C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
-
       character cfgroot*24,LCFGF*72,h*72,outs*124
       character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
@@ -2119,7 +2091,6 @@ C Images.
 C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
       integer iuo  ! file unit for operations file.
-      integer imgloop ! loop counter for images
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -2172,7 +2143,8 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         call askok('The current model uses an out-of-date format for',
      &    'some geometry or obstruction files. Update this?',ok,dok,5)
         if(ok)then
-
+	
+          
           do 776 iz=1,ncomp
             call eclose(gversion(iz),1.1,0.01,newgeo)
             if(newgeo)then
@@ -2404,16 +2376,6 @@ C be a black string.
             call ripvdat(IUO,lipvdatf,ipvaction,ier)
           endif
           icfgv=4   ! set to current version.
-
-C If there are any images associated with the model create a filler
-C string for the image documentation.
-          if(noimg.gt.0)then
-            do 22 imgloop=1,MIMG
-              imgdoc(imgloop)='no documentation (yet) for this image'
-  22        continue
-          endif
-
-C Update the model configuration file.
           CALL EMKCFG('-',IER)
 
 C Check if there were zone utility files and if so check and see if
@@ -2551,10 +2513,6 @@ C << some variables are off - further debugging required.
       subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 #include "building.h"
 #include "esprdbfile.h"
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2583,7 +2541,8 @@ C Arrays of material properties.
       logical closemat
       
       dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER DESC*48,NAM*72
+      CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)

@@ -35,6 +35,7 @@ C  cmp64c 1 node (ISV=20) water/steam flow converger
 C  cmp65c 3 node (ISV=20) water/steam flow diverger
 C  cmp66c 3 node (ISV=21) moist air flow diverger
 C  cmp68c 1 node (ISV=21) moist air flow converger
+C  cmp95c 1 node (ISV=20) radiant heating/cooling system
 
 C ******************** CMP53C ********************
 

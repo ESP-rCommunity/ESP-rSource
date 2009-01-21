@@ -64,7 +64,7 @@ foreach i ( `ls -d dbs databases` )
     echo $i
     echo "*" Checking folder $i >>../mprogress
     cd $i
-    foreach j ( `ls *.txt *.asc multicon.* optic* *.a *opticdb *materialdb *constrdb` )
+    foreach j ( `ls *.txt *.asc multicon.* optic* *.a` )
       if ( -f $j ) then
         echo "checking for slash in $j" 
         rm -f $j-tf1 $j-tf2

@@ -835,7 +835,6 @@ C exemplar (char 144) is the full path to selected cfg file.
 C useraction (char 8) is passed in to specify the task.
 C ier (integer) is returned as 1 if no exemplars file found.
       subroutine rexmpl(iexfil,exemplar,useraction,ier)
-#include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
       
@@ -852,22 +851,14 @@ C espriou.h provides currentfile, defdbfl exemfl.
 
 C Images - included to warn user on subsequent browsing sessions
 C to quit the image browser.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
       dimension name(30),mitem(30),label(30),inl2in(30),group(15)
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
       character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
-      character doit*248,upath*72
+      character imgfmt*4,imgfoc*4,limgfil*72,doit*248,upath*72
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
 
@@ -1531,15 +1522,7 @@ C ICLIM,LCLIM (for climate file)
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       common/hvacinfo/ihvacflag,hvacfile
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       common/aim2def/iAIM2,LAIM2
@@ -1566,7 +1549,7 @@ C The string buffer doit is only used within ifdef code.
       character path*72,upath*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character tp*32,tr*32
+      character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
       character LTDF*72,LTDFA*72,GTGEOM*72,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1

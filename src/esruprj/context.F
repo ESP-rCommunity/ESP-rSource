@@ -19,18 +19,12 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C context.F contains:
-C  EDSITE: edits site/general information for system configuration file
-C  Roaming:  manages data associated with rotating a model as a
-C            function of time.  .
-C  manageimages: allows the user to manage images associated with
-C            a model 
+C  EDSITE: edits site/general information for system configuration file.
 C  Setuptemporal: coordinates access to and initial creation of
 C                 temporal data to be associated with a model.
 C  PECONV: conversion factors for primary energy units.
 C  Calenmanage: sets up and manages a calendar for ESP-r.
 C  Calenprint:  displays a calendar for year iyear (or a few months)
-C  EDDGTP:      sets up ground temperature profiles
-C  EDDSHD:      sets up shading and insolation files
 
 C ************* EDSITE 
 C EDSITE Edits site/general information for system configuration file.
@@ -82,15 +76,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
 C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
 
@@ -113,6 +99,7 @@ C ITEMS is menu for site/context items.
       character*72 GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
+      character imgfmt*4,imgfoc*4,limgfil*72
       character act*1,GTNAME*15
       character D64*64  ! default string for editing
       character ipvact*3  ! to denote whether in cfd file or external
@@ -959,7 +946,7 @@ C Changing orientation as a function of time.
       END
 
 c ****** ROAMING *****
-C Roaming manages data associated with rotating a model as a
+C This subroutine manages data associated with rotating a model as a
 C function of time. Important variables are defined in roam.h
       SUBROUTINE ROAMING
 #include "building.h"
@@ -1072,22 +1059,13 @@ C model including view and add images (delete not yet working).
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/CFGV/icfgv
       common/pophelp/h(60)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
 C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
       logical MODSIT,browse,XST,unixok
 
@@ -1095,12 +1073,11 @@ C ITEMS is menu for site/context items, ITEMIMG is menu for editing
 C and control of project images.
       character*33 ITEMIMG(20)
       character H*72,outs*124
-      character limg*72,key*1,fs*1
+      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,key*1,fs*1
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72
-      character tcname*248   ! for editing image notes
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1134,16 +1111,12 @@ C Set folder separator (fs) to \ or / as required.
 C Help text for menu.
       h(1)='Images may be associated with a model for various'
       h(2)='purposes - for example to record site conditions'
-      write(h(3),'(a,i2,a)') 
-     &  'or corresponding design drawings. Up to ',MIMG,' images'
+      h(3)='or corresponding design drawings. Up to 10 images'
       h(4)='may be associated with a model.'
       h(5)=' '
       h(6)='The following image types are supported: gif, tiff,'
       h(7)='jpeg and X11 bitmap. To edit an image name, select'
       h(8)='it from the list.'
-      h(9)=' '
-      h(10)='Newer model configuration files can also include a'
-      h(11)='text block explaining the image. '
 
       CALL EMENU('Project Images',ITEMIMG,nimgitms,INOI)
       if(INOI.EQ.nimgitms)then
@@ -1154,7 +1127,7 @@ C Update configuration if images have changed.
         endif
         return
       elseif(INOI.EQ.nimgitms-1)then
-        CALL PHELPD('Model images',11,'-',0,0,IER)
+        CALL PHELPD('Model images',8,'-',0,0,IER)
       elseif(INOI.EQ.nimgitms-2)then
 
 C Display each of the current images by topic.
@@ -1184,7 +1157,7 @@ C Add images from images folder or other location.
      &    'add from standard folder','add from another folder',
      &    'delete','cancel',IOK,4)
         if(iok.eq.1)then
-          if(noimg.ge.MING)then
+          if(noimg.ge.10)then
             call edisp(iuout,'No more images can be associated with')
             call edisp(iuout,'the current model.')
             continue
@@ -1206,6 +1179,7 @@ C Try to use information gathered from file scan.
               if(snpfile(1:2).ne.'  ')then
                 write(limg,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
      &            snpfile(1:lnblnk(snpfile))
+C                write(6,*) limg
               else
                 write(limg,'(a)')imgpth(1:lnblnk(imgpth))
               endif
@@ -1222,21 +1196,11 @@ C Try to use information gathered from file scan.
               limgfil(noimg)=limg
               imgfmt(noimg)=iformat
               imgfoc(noimg)=ifocus
-
-C Edit image documentation if version supports it.
-              if(icfgv.gt.3)then
-                H(1)='Notes (<248 char) for images can help with' 
-                H(2)='communicating supporting information.'
-                tcname=imgdoc(noimg)
-                CALL EASKS248(tcname,' ','Image notes:',
-     &            72,'associated image','image notes',IER,2)
-                if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
-              endif
               modsit=.true.
             endif
           endif
         elseif(iok.eq.2)then
-          if(noimg.ge.MIMG)then
+          if(noimg.ge.10)then
             call edisp(iuout,'No more images can be associated with')
             call edisp(iuout,'the current model.')
             continue
@@ -1252,16 +1216,6 @@ C Edit image documentation if version supports it.
               limgfil(noimg)=limg
               imgfmt(noimg)=iformat
               imgfoc(noimg)=ifocus
-
-C Edit image description if version supports it.
-              if(icfgv.gt.3)then
-                H(1)='Notes (<248 char) for images can help with' 
-                H(2)='communicating supporting information.'
-                tcname=imgdoc(noimg)
-                CALL EASKS248(tcname,' ','Image notes:',
-     &            72,'associated image','image notes',IER,2)
-                if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
-              endif
               modsit=.true.
               goto 36
             endif
@@ -1281,13 +1235,7 @@ C Edit image description if version supports it.
       elseif(INOI.EQ.1.and.noimg.gt.0)THEN
         goto 36
       elseif(inoi.gt.1.and.inoi.lt.nimgitms-4.and.noimg.gt.0)THEN
-
-C Update the tags associated with the image. Remind the user about
-C what they selected first.
-        WRITE(outs,'(6a)') ' format ',imgfmt(inoi-2),
-     &    ' focus ',imgfoc(inoi-2),' file ',limgfil(inoi-2) 
-        call edisp(iuout,outs)  
-
+C        write(6,*) 'inoi ',inoi
         limg=limgfil(inoi-2)
         iformat=imgfmt(inoi-2)
         ifocus=imgfoc(inoi-2)
@@ -1298,16 +1246,6 @@ C what they selected first.
           limgfil(inoi-2)=limg
           imgfmt(inoi-2)=iformat
           imgfoc(inoi-2)=ifocus
-
-C Edit current image description if version allows.
-          if(icfgv.gt.3)then
-            H(1)='Notes (<248 char) for images can help with' 
-            H(2)='communicating supporting information.'
-            tcname=imgdoc(inoi-2)
-            CALL EASKS248(tcname,' ','Image notes:',
-     &        72,'associated image','image notes',IER,2)
-            if(tcname(1:2).ne.'  ')imgdoc(inoi-2)=tcname
-          endif
           MODSIT=.true.
         endif
       endif
@@ -1447,31 +1385,32 @@ C and present a different interface depending on file type.
       H(29)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
       H(30)=' ACTIVITY -global database: gains,setpoints, etc.'
       H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
-      H(32)=' '
-      H(33)='manage associations - you can add and delete associations'
-      H(34)='  that have been previously defined. Note this does not'
-      H(35)='  alter the contents of the temporal file.'
-      H(36)=' '
-      H(37)='dereference temporal file - this removes current links'
-      H(38)='  between the model and entities in the temporal file.'
-      H(39)='  It does not remove the temporal file.'
-      H(40)=' '
-      H(41)='create file - you supply a file name, if it exists it'
-      H(42)='  is scanned otherwise a minimal file is created.'
-      H(43)=' '
-      H(44)='edit/list - contents of the current file are presented'
-      H(45)='  and if you have permission you can alter its contents.'
-      H(46)=' '
-      H(47)='General instructions for setting up a temporal file:'
-      H(48)='a) Decide the period of the data (start and end dates)'
-      H(49)='   as well as frequency (1stph to 60 tsph).'
-      H(50)='b) If data is to be imported from a file with columns'
-      H(51)='   of data take a note of which columns are required.'
-      H(52)='c) Plan the names of the temporal entities you will be'
-      H(53)='   be creating as well as which zones or controls in '
-      H(54)='   the model are going to be associates with the'
-      H(55)='   entities in the temporal file.'
-      H(56)=' '
+      H(32)=' VERTSOL -Vertical solar radiation data for a facade'
+      H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
+      H(34)='manage associations - you can add and delete associations'
+      H(35)='  that have been previously defined. Note this does not'
+      H(36)='  alter the contents of the temporal file.'
+      H(37)=' '
+      H(38)='dereference temporal file - this removes current links'
+      H(39)='  between the model and entities in the temporal file.'
+      H(40)='  It does not remove the temporal file.'
+      H(41)=' '
+      H(42)='create file - you supply a file name, if it exists it'
+      H(43)='  is scanned otherwise a minimal file is created.'
+      H(44)=' '
+      H(45)='edit/list - contents of the current file are presented'
+      H(46)='  and if you have permission you can alter its contents.'
+      H(47)=' '
+      H(48)='General instructions for setting up a temporal file:'
+      H(49)='a) Decide the period of the data (start and end dates)'
+      H(50)='   as well as frequency (1stph to 60 tsph).'
+      H(51)='b) If data is to be imported from a file with columns'
+      H(52)='   of data take a note of which columns are required.'
+      H(53)='c) Plan the names of the temporal entities you will be'
+      H(54)='   be creating as well as which zones or controls in '
+      H(55)='   the model are going to be associates with the'
+      H(56)='   entities in the temporal file.'
+      H(57)=' '
 
 C Begin with high level menu.
     3 INO=-4
@@ -1485,9 +1424,9 @@ C Begin with high level menu.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(57)='At the current time there are no temporal definitions;'
-        H(58)='you must create them before you can use them.'
-        nbhelp=58
+        H(58)='At the current time there are no temporal definitions;'
+        H(59)='you must create them before you can use them.'
+        nbhelp=59
         WRITE(ITEMS(1),'(A)')'a create temporal entities file'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
         WRITE(ITEMS(3),'(A)')'c not applicable '
@@ -1512,10 +1451,9 @@ C Begin with high level menu.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(57)='An outdated file format is associated with the'
-        H(58)='model. Update this by selecting the edit option'
-        H(59)='(or dereferences the temporal definitions from'
-        H(60)='your model).'
+        H(58)='An outdated file format is associated with the'
+        H(59)='model. Update this by selecting the edit option or '
+        H(60)='(dereferences the temporal definitions from your model).'
         nbhelp=60
         WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1536,9 +1474,9 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(57)='You may view the temporal data associated with the'
-          H(58)='model by selecting the view entities option.'
-          nbhelp=58
+          H(58)='You may view the temporal data associated with the'
+          H(59)='model by selecting the view entities option.'
+          nbhelp=59
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1557,10 +1495,9 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(57)='An outdated file format is associated with the'
-          H(58)='model. Update this by selecting the edit entities'
-          H(59)='option (or derefence the temporal derfinition from'
-          H(60)='your model).'
+          H(58)='An outdated file format is associated with the model.'
+          H(59)='Update this by selecting the edit entities or option'
+          H(60)='(derefence the temporal derfinition from your model).'
           nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1582,9 +1519,9 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(57)='You can view the temporal data associated with the'
-          H(58)='model via selecting the view entities option.'
-          nbhelp=58
+          H(58)='You can view the temporal data associated with the'
+          H(59)='model via selecting the view entities option.'
+          nbhelp=59
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1985,7 +1922,8 @@ C << between 0.0 and 1.0 giving ON fraction.
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL'
-          elseif(TTYPE(it)(1:6).eq.'ACTIVI')then
+          elseif(TTYPE(it)(1:6).eq.'ACTIVI'.or.
+     &           TTYPE(it)(1:6).eq.'HTCLSE')then
 
 C Depending on the type of the data, ask for associated zone.
             IC=-1
@@ -2062,8 +2000,13 @@ C Add another controls
               ibsn(ispl,2)=0
               ibsn(ispl,3)=0
               ibsn(ispl,4)=0
-              cm(2)=5.0
-              cm(3)=6.0
+              if(TTYPE(it)(1:6).eq.'ACTIVI')then
+                cm(2)=5.0
+                cm(3)=6.0
+              elseif(TTYPE(it)(1:6).eq.'HTCLSE')then
+                cm(2)=2.0
+                cm(3)=3.0
+              endif         
             endif
 
             ibsn(ispl,1)=IC
@@ -2087,10 +2030,17 @@ C Confirm capacities.
             H(4)='required to define the columns in the tdf where the'
             H(5)='setpoints should be read from. Defaults are column 4'
             H(6)='for heating setpoint and column 5 for cooling.'
-            CALL EASKS(HOLD,
-     &      'Heating and cooling setpoint column number ',
-     &      '(respectively):',40,' 4.0 5.0 ',
-     &      ' track another column number(s)',IER,6)
+            if(TTYPE(it)(1:6).eq.'ACTIVI')then
+              CALL EASKS(HOLD,
+     &        'Heating and cooling setpoint column number ',
+     &        '(respectively):',40,' 5.0 6.0 ',
+     &        ' track another column number(s)',IER,6)
+            elseif(TTYPE(it)(1:6).eq.'HTCLSE')then     
+              CALL EASKS(HOLD,
+     &        'Heating and cooling setpoint column number ',
+     &        '(respectively):',40,' 2.0 3.0 ',
+     &        ' track another column number(s)',IER,6)
+            endif    
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
             CALL EGETWR(HOLD,K,cm(3),0.,80.,'F','Max columns cool',IER)
@@ -2316,10 +2266,8 @@ C Update the control file and link the control loop to the correct zone.
           elseif(TTYPE(it)(1:8).eq.'BIDIRSET')then
 
 C Depending on the type of data, ask for associated surface 
-C(at the moment only bidirectional - in future vertical solar 
-C radiation data can be added based on the same structure).
             IC=-1
- 352        izdef=0
+ 352      izdef=0
             call askzone(ic,izdef,
      &        ' Related zone for bidirectional data set?',
      &        'Related zone','-','Optical sets require a zone.',ier)
@@ -2328,6 +2276,20 @@ C radiation data can be added based on the same structure).
             call easksur(IC,ISUR,'-',
      &           'Select surface for bidirectional dataset',' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 352
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
+          elseif(TTYPE(it)(1:7).eq.'VERTSOL')then
+
+C Depending on the type of data, ask for associated surface 
+            IC=-1
+ 353        izdef=0
+            call askzone(ic,izdef,
+     &        ' Related zone where vertical solar data apply?',
+     &        'Related zone','-','zone to assign solar data.',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 353
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &           'Select surface to apply vertical solar data',' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 353
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
           else
             DBZN(ITE)='ALL'
@@ -2796,7 +2758,7 @@ C Help.
 
 C Add or delete a day type.
           if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
-            write(h(1),'(a,i3,a)')'There can be up to ',MDTY,
+            write(h(1),'(a,i4,a)')'There can be up to ',MDTY,
      &      ' day types.'
             h(2)='Day types cannot be deleted (yet) but may not'
             h(3)='not be assigned to any day at all. The equivalent'
@@ -3530,7 +3492,7 @@ C Ground temperature profiles....
       END
 
 C ********** EDDSHD **************
-C EDDSHD Sets up shading and insolation files
+C EDDGTP Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"

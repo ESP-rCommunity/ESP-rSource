@@ -1,0 +1,10 @@
+*connections  for Test_4
+*Date Mon Dec  8 00:27:41 2008
+      7   # number of connections
+   1   1   5   0   0  #    1 South in Test_4 is adiabatic
+   1   2   5   0   0  #    2 East in Test_4 is adiabatic
+   1   3   5   0   0  #    3 North in Test_4 is adiabatic
+   1   4   0   0   0  #    4 West in Test_4 is External
+   1   5   5   0   0  #    5 Ceiling in Test_4 is adiabatic
+   1   6   5   0   0  #    6 Floor in Test_4 is adiabatic
+   1   7   0   0   0  #    7 window in Test_4 is External

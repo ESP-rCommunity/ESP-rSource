@@ -491,10 +491,6 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -527,7 +523,7 @@ C Arrays of material properties.
       character SSPARENT*12
       CHARACTER zname*12
       CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,TITL*72,GDESCR*36
+      character iprtext*4,DESC*48,TITL*72,GDESCR*36
 
 C Heading if all surfaces.
       if(isur.eq.0)then

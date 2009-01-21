@@ -2599,10 +2599,6 @@ C It finally generate BRUKL input document and other SBEM reports.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -2640,7 +2636,7 @@ C Build variable (These should eventually be placed in build_info.h)
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72
       character*12 SN,ZSN,FN,ZFN,RN,ZRN,TRN,ZTRN
-      CHARACTER SSPARENT*12,TMPSTR*24,TMPSTR2*70
+      CHARACTER SSPARENT*12,TMPSTR*24,DESC*48,TMPSTR2*70
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character zname*12,zdesc*64
       LOGICAL CONTEXT,BNDRY,ISNEAR,XST

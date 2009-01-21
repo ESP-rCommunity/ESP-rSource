@@ -86,7 +86,7 @@ C (Re)assign values for common OPTCTL,
       irwchn=0
       irwchg=0
       irwfnl=0      
-C      lgctin=0
+      lgctin=0
       initct=0
       stfut=0.
       stpres=0.

@@ -83,8 +83,7 @@ C =2 with more than 3 day types allowed and sorted
 
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NAC,IACS,IACF,IPT,ICGT
+      INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -106,9 +105,10 @@ C Flags noting whether casual gain periods are currently sorted.
 C Flag noting whether file was browsed for (so that cfg can be
 C updated when the user exits).
       logical gotviabrowse
+      dimension iper(24),iperf(24)
 
       CHARACTER zname*12,zdesc*64,tcname*248
-      CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
+      CHARACTER ITEM(14)*33,choices(12)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -268,16 +268,20 @@ C Display a bit of information about this browsed file.
       LPROJ(ICOMP)=LTMP
 
 C Debug.
-C      write(6,*) 'lproj is ',lproj(icomp)
+      write(6,*) 'lproj is ',lproj(icomp)
 
   5   MODOPR=.FALSE.
  
-C Instanciate for current day types prior to scanning the source operation file.
       DO 400 IDTY=1,NBDAYTYPE
         NAC(IDTY)=0
         NCAS(IDTY)=0
-        ctlstr(icomp,IDTY)='no control of air flow  '
  400  CONTINUE
+
+C Instanciate for initial weekday/saturday/sunday day types
+C prior to scanning the source operation file.
+      ctlstr(icomp,1)='no control of air flow  '
+      ctlstr(icomp,2)='no control of air flow  '
+      ctlstr(icomp,3)='no control of air flow  '
       oprdesc(icomp)='no operations notes (yet)'
       IER=0
 
@@ -346,12 +350,8 @@ C the definition already defined in another zone.
         h(28)='   folder serve as a resource for often-used patterns'
         h(29)='   of casual gains and scheduled air flows.'
         h(30)=' '
-        h(31)=' nothing happens in the zone - does just this. It fills'
-        h(32)='   the file with zero occupants, lights, small power'
-        h(33)='   and no infiltration or ventilation for all day types.'
-        h(34)=' '
-        h(35)='After initiating one of the above actions you can edit'
-        h(36)='the data as required. '
+        h(31)='After initiating one of the above actions you can edit'
+        h(32)='the data as required. '
         choices(1) ='a define from scratch '
         choices(2) ='b air flow     < another zone'
         choices(3) ='c casual gains < another zone'
@@ -359,11 +359,10 @@ C the definition already defined in another zone.
         choices(5) ='e air flow     < from pattern'
         choices(6) ='f casual gains < from pattern'
         choices(7) ='g air & gains  < from pattern'
-        choices(8) ='h nothing happens in the zone'
-        choices(9) =' ________________________'
-        choices(10)='! cancel                 '
-        choices(11)='? help                   '
-        NIGU=11
+        choices(8) =' ________________________'
+        choices(9) ='! cancel operations     '
+        choices(10)='? help                  '
+        NIGU=10
         IGU=-2
         if(mmod.eq.8)then
           CALL EMENU('Operations File Options',choices,NIGU,IGU)
@@ -374,90 +373,18 @@ C the definition already defined in another zone.
         if(igu.eq.0)then
           goto 19
         elseif(igu.eq.8)then
-
-C Setup minimal description (single period for each type of casual
-C gain set to zeros with no infiltration and ventilation) and exit.
-          DO 399 IDTY=1,NBDAYTYPE
-            ctlstr(icomp,IDTY)='no control of air flow  '
-            NAC(IDTY)=1
-            IACS(IDTY,1)=0
-            IACF(IDTY,1)=24
-            ACI(IDTY,1)=0.0
-            ACV(IDTY,1)=0.0
-            IPT(IDTY,1)=0
-            TA(IDTY,1)=0.0
-            NCAS(IDTY)=3
-            ICGS(IDTY,1)=0
-            ICGF(IDTY,1)=24
-            CMGS(IDTY,1)=0.0
-            CMGL(IDTY,1)=0.0
-            RADC(IDTY,1)=0.5
-            CONC(IDTY,1)=0.5
-            ICGT(IDTY,1)=1
-            ICGS(IDTY,2)=0
-            ICGF(IDTY,2)=24
-            CMGS(IDTY,2)=0.0
-            CMGL(IDTY,2)=0.0
-            RADC(IDTY,2)=0.5
-            CONC(IDTY,2)=0.5
-            ICGT(IDTY,2)=2
-            ICGS(IDTY,3)=0
-            ICGF(IDTY,3)=24
-            CMGS(IDTY,3)=0.0
-            CMGL(IDTY,3)=0.0
-            RADC(IDTY,3)=0.5
-            CONC(IDTY,3)=0.5
-            ICGT(IDTY,3)=3
- 399      CONTINUE
-
-C Instanciate for initial weekday/saturday/sunday day types
-C prior to scanning the source operation file.
-          write(oprdesc(icomp),'(2a)')
-     &    'nothing happens in this zone in terms of occupants lights',
-     &    ' and small power. There is not infiltration or ventilation.'
-
-C Set the default type labels for this zone
-          lodlabel(icomp,1)='Occupt'
-          lodlabel(icomp,2)='Lights'
-          lodlabel(icomp,3)='Equipt'  
-          lodlabel(icomp,4)='N/A   '  
-          lodlabel(icomp,5)='Ann.El'  
-          lodlabel(icomp,6)='N/A   ' 
-          lodlabel(icomp,7)='N/A   '
-          ip3ver(icomp)=2
-          MODOPR=.true.
-          sorted=.true.
-
-C Write file and return.
-          LTMP=LPROJ(ICOMP)
-          H(1)='A zone operation file contains schedules of air flow'
-          H(2)='and casual gains.  Air flows may have thermostatic'
-          H(3)='or wind speed control. '
-          CALL EASKS(LTMP,' ','Zone operations file name?',
-     &           72,GFILE,'operations file',IER,3)
-          IF(LTMP.NE.' ')THEN
-            call usrmsg(
-     &        'Updating model to reflect changes',
-     &        'in zone operations data or file name...','-')
-            LPROJ(ICOMP)=LTMP
-            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
-            CALL EMKCFG('-',ier)
-            call usrmsg(
-     &        'Updating model to reflect changes',
-     &        'in zone operations data or file name...done.','-')
-          ENDIF
-         return  
-        elseif(igu.eq.9)then
           goto 19
-        elseif(igu.eq.10)then
+        elseif(igu.eq.9)then
 
 C User said to cancel so return from the subroutine without
 C doing anything.
+C          call edisp(iuout,
+C     &      'You asked to cancel so returning without changes.')
           return
-        elseif(igu.eq.11)then
+        elseif(igu.eq.10)then
 
 C Explain
-          CALL PHELPD('operation choices',36,'-',0,0,IER)
+          CALL PHELPD('operation choices',32,'-',0,0,IER)
           goto 19
         endif
 
@@ -833,6 +760,25 @@ C even if modopr has not been set.
           CALL ASKOK('Before exiting do you wish to',
      &      'save any changes made?',OK,DOK,4)
           IF(.not.OK) return
+          LTMP=LPROJ(ICOMP)
+   91     H(1)='A zone operation file contains schedules of air flow'
+          H(2)='and casual gains.  Air flows may have thermostatic'
+          H(3)='or wind speed control. '
+          CALL EASKS(LTMP,' ','Zone operations file name?',
+     &           72,GFILE,'operations file',IER,3)
+          IF(LTMP.NE.' ')THEN
+            call usrmsg(
+     &        'Updating model to reflect changes',
+     &        'in zone operations data or file name...','-')
+            LPROJ(ICOMP)=LTMP
+            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+            CALL EMKCFG('-',ier)
+            call usrmsg(
+     &        'Updating model to reflect changes',
+     &        'in zone operations data or file name...done.','-')
+          ELSE
+            GOTO 91
+          ENDIF
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
@@ -1516,13 +1462,13 @@ C Add period
           ELSEIF(IY.EQ.2)THEN
             IDT=-1
             DO 400 IDTY=1,NBDAYTYPE
-              IF(NAC(IDTY).EQ.MA)THEN
-                CALL USRMSG('Sorry, too many periods in day type ',
-     &            calentag(idt),'W')
-                CALL EDISP(IUOUT,
-     &            'Add periods by individually choosing each day type')
-                IDT=0
-              ENDIF
+            IF(NAC(IDTY).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+              CALL EDISP(IUOUT,
+     &        'Add periods by individually choosing each day type')
+              IDT=0
+            ENDIF
  400        CONTINUE
             IF(IDT.NE.0)THEN
               IDT=-1
@@ -2634,6 +2580,10 @@ C Scratch copy of air flow pattern from an operations file.
       COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
      &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
 
+      common/SLNTFULL/ifullysilent
+      integer ifullysilent !flag to drive the silent model creation without
+                           !questions about the operation files data
+
       character*(*) sfile
       character zname*12,zdesc*64,h*72
       CHARACTER oprdescc*248,ctlstrc*24
@@ -2643,6 +2593,7 @@ C Scratch copy of air flow pattern from an operations file.
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
       INTEGER IDTY
+      character actflatfile*1
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2680,10 +2631,15 @@ C the source zones air flows.
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
         if(isource.eq.0)then
-
+          if(ifullysilent.eq.1)then
+            actflatfile='-'
+          else
+            actflatfile='W'            
+          endif
+          
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
 C then jump to 32 to read in the destination operations file.
-          CALL ERZSCHED(IUO,sfile,IER)
+          CALL ERZSCHED(IUO,sfile,actflatfile,IER)
           goto 32
         else
 
@@ -2775,20 +2731,18 @@ C IF asked to copy all then
 C And any new file will be in the sorted format.
         ip3ver(idest)=2
       endif
-
-C Copy the local array data into the common blocks overwriting
-C the data implied by 'afact'. Also act on the iflow vflow directives.
-      if(isource.eq.0)then
-        VAL=10.0
-        h(1)='Because this is a pattern file there is no associated'
-        h(2)='zone and to do a ratio we need an assumed volume. '
-        CALL EASKR(VAL,' ','Assumed volume of source?',
-     &      0.10,'F',9999.0,'W',0.0,'assumed volume',IER,2)
-      endif
       if(iflow(1:7).eq.'ach-ach')then
         ratioif=1.0
       elseif(iflow(1:7).eq.'vol-vol')then
+
+C Copy the local array data into the common blocks overwriting
+C the data implied by 'afact'. Also act on the iflow vflow directives.
         if(isource.eq.0)then
+          VAL=10.0
+          h(1)='Because this is a pattern file there is no associated'
+          h(2)='zone and to do a ratio we need an assumed volume. '
+          CALL EASKR(VAL,' ','Assumed volume of source?',
+     &        0.10,'F',9999.0,'W',0.0,'assumed volume',IER,2)
           ratioif=VAL/VOL(idest)
         else
           ratioif=VOL(isource)/VOL(idest)
@@ -3586,7 +3540,7 @@ C Now display the menu.
 
 C Import profile.
         IX=1
-        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
+ 222    CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
      &  12,NBDAYTYPE,CALENTAG,
      &  'Import a profile for which day type?',IER,18)
         IW=KSTR(1)
@@ -4056,39 +4010,15 @@ C Identify nature of casual gain
 
 C << this would be a good place to expand the logic so that lighting
 C << and small power can be entered in terms of W/m2.
-      H(1) ='In order to expand the profile into energy values the'
-      H(2) ='sensible and latent load in Watts equivalent to 100% is'
-      h(3) =' required. '
-      h(4) =' '
-      h(5) ='Also supply the radiant and convective fraction for the'
-      h(6) ='sensible load (these normally should sum to 1.00) '
-      h(7) =' '
-      h(8) ='The radiant and convective split of lighting fixtures is'
-      h(9) ='listed below(CIBSE Consice Handbook Table A6.5) : '
-      h(10)='  fluorescent radiant = 30  convective = 70'
-      h(11)='  tungsten    radiant = 85  convective = 15'
-      h(12)='  HP mercury sodium radiant = 50 convective = 50'
-      h(13)='  low pressure sodium radiant = 43 convective = 57'
-      h(14)=' '
-      h(15)='The position of lamps determines the distribution of '
-      h(16)='heat into room or ceiling void (CIBSE Table A6.4) '
-      h(17)='  recessed open fixture  upwards = 38 downwards = 62'
-      h(18)='  recessed with louvre   upwards = 45 downwards = 55'
-      h(19)='  recessed with diffuser upwards = 53 downwards = 47'
-      h(20)='  surface mount open fixt upwards = 12 downwards = 88'
-      h(21)='  surface mount enclosed prismatic up= 22 down = 78'
-      h(22)='  suspended near ceiling enclosed prismatic upwards = 6'
-      h(23)='     downwards = 94'
-      h(24)='  suspended or wall mounted or desk lamp upwards = 0'
-      h(25)=' '
-      h(26)='The radiant and convective split for office equipement'
-      h(27)='is typically: (CIBSE Table A6.9) '
-      h(28)=' desktop computer radiant = 14 convective = 86'
-      h(29)=' monitor (type not defined) radiant = 35 conv = 65'
-      h(30)=' laser printer  radiant 33 convective 67'
+      H(1)='In order to expand the profile into energy values the'
+      H(2)='sensible and latent load in Watts equivalent to 100% is'
+      h(3)=' required. '
+      h(4)=' '
+      h(5)='Also supply the radiant and convective fraction for the'
+      h(6)='sensible load (these normally should sum to 1.00) '
       CALL EASKS(HOLD,
      &  ' 100% sensible & latent loads, radiant & convective fraction:',
-     &        ' ',40,' 1000   0  0.5  0.5  ','profile info',IER,30)
+     &        ' ',40,' 1000   0  0.5  0.5  ','profile info',IER,3)
       K=0
       CALL EGETWR(HOLD,K,PS,0.0,999999.,'F','sensible 100%',IER)
       CALL EGETWR(HOLD,K,PL,0.0,999999.,'F','latent 100%',IER)
@@ -4222,7 +4152,7 @@ C If silent is true then use icgs & icgf parameters.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY,IALL
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -4242,7 +4172,6 @@ C Base area for zones.
 
       integer IV,ipft,IPHAST  ! for local editing.
       real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
-      integer IALL
 
 C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
@@ -4297,56 +4226,10 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
       h(6)='  required (an object could be a person or computer).'
       h(7)=' Square meters per object - will use the floor area of the'
       h(8)='  zone to calculate the total gain.'
-      h(9)=' '
-      h(10)='ESP-r asks for fixed sensible and latent values. The'
-      h(11)='values for occupants are really a function of the current'
-      h(12)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(13)='If possible pick a value for the likely temperature rnage.'
-      h(14)='For an adult and average mix '
-      h(15)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
-      h(16)='Seated inactive    115     100  15     90  25      75  40'
-      h(17)='       avg mix     100      87  13     78  22      65  35'
-      h(18)='Seated light work  140     110  30    100  40      80  60'
-      h(19)='       avg mix     126      99  27     90  36      72  54'
-      h(20)='Seated office work 140     110  30    100  40      80  60'
-      h(21)='       avg mix     130     102  28     93  37      74  56'
-      h(22)='Standing light work 160    120  40    110  50      85  75'
-      h(23)='       avg mix      141    106  35     97  44      75  66'
-      h(24)='Light factory work 235     150  85    130 105     100 135'
-      h(25)='       avg mix     209     133  76    116  93      89 121'
-      h(26)='Medium factory work 265    160 105    140 125     105 160'
-      h(27)='       avg mix      249    150  99    132 117      99 150'
-      h(28)='Heavy factory work 440     220 220    190 250     135 305'
-      h(29)='       avg mix     440     220 220    190 250     135 305'
-      h(30)=' '
       IGU=1
-      CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
+      CALL EASKABCD('Gain to be specified as:',' ','Watts',
      &     'Watts per square meter','Watts per object',
-     &     'Square meters per object',IGU,30)
-
-C Commonportion of help message.
-      h(3)=' '
-      h(4)='ESP-r asks for fixed sensible and latent values. The'
-      h(5)='values for occupants are really a function of the current'
-      h(6)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(7)='If possible pick a value for the likely temperature rnage.'
-      h(8)='For an adult and average mix '
-      h(9)='               Total W 15C sen lat 20C sen lat 24C sen lat'
-      h(10)='Seated inactive   115     100  15     90  25      75  40'
-      h(11)='       avg mix    100      87  13     78  22      65  35'
-      h(12)='Seated light work 140     110  30    100  40      80  60'
-      h(13)='       avg mix    126      99  27     90  36      72  54'
-      h(14)='Seated office work 140    110  30    100  40      80  60'
-      h(15)='       avg mix     130    102  28     93  37      74  56'
-      h(16)='Standing light work 160   120  40    110  50      85  75'
-      h(17)='       avg mix      141   106  35     97  44      75  66'
-      h(18)='Light factory work 235    150  85    130 105     100 135'
-      h(19)='       avg mix     209    133  76    116  93      89 121'
-      h(20)='Medium factory work 265   160 105    140 125     105 160'
-      h(21)='       avg mix      249   150  99    132 117      99 150'
-      h(22)='Heavy factory work 440    220 220    190 250     135 305'
-      h(23)='       avg mix     440    220 220    190 250     135 305'
-      h(24)=' '
+     &     'Square meters per object',IGU,8)
       if (IGU.eq.1) then
 
 C Gain as W - require gain only.
@@ -4356,9 +4239,8 @@ C Gain as W - require gain only.
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
-        h(2)=' '
         call EASKS(HOLD,'Sensible and latent gain (W):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'0.   0. ','casual gn info',IER,1)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,100000.0,'W','latent gain',IER)
@@ -4375,9 +4257,8 @@ C Gain as W/m^2 - require gain per square meter.
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
-        h(2)=' '
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'0.   0. ','casual gn info',IER,1)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4399,7 +4280,7 @@ C << an actual cancel option not yet implemented >>
  40     h(1)='The number of objects for the current gain type is '
         h(2)='required. For example the number of people or computers.'
         CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
-     &    0,'W',100,'W',1,'no. objects',IERI,24)
+     &    0,'W',100,'W',1,'no. objects',IERI,2)
         if(ieri.eq.0)then
           continue
         elseif(ieri.eq.-3)then
@@ -4410,9 +4291,8 @@ C << an actual cancel option not yet implemented >>
 
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
-        h(2)=' '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-     &          ' ',24,'  0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'  0.   0. ','casual gn info',IER,1)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4434,7 +4314,7 @@ C If user cancels go back to initial question.
         h(1)='The floor area per object for the current gain type is '
         h(2)='required. For example the area per person.'
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
-     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
+     &    0.1,'F',100.0,'W',1.0,'area per object',IERI,2)
         if(IERI.eq.0)then
           FLA=XFLA
           if (iabs(ICGTX).eq.1) then
@@ -4445,9 +4325,8 @@ C If user cancels go back to initial question.
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
-            h(2)=' '
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,24)
+     &          ' ',24,'0.   0. ','casual gn info',IER,1)
             K=0
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
             call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
@@ -4467,32 +4346,8 @@ C Ask for rad/ conv split.
  70   write (HOLD,'(2f7.3,a)') RADCX,CONCX,'  '
       h(1)='Supply the radiant and convective fraction for'
       h(2)='the sensible load (should be <=1.00) '
-      h(3) =' '
-      h(4) ='The radiant and convective split of lighting fixtures is'
-      h(5) ='listed below(CIBSE Consice Handbook Table A6.5) : '
-      h(6) ='  fluorescent radiant = 30  convective = 70'
-      h(7) ='  tungsten    radiant = 85  convective = 15'
-      h(8) ='  HP mercury sodium radiant = 50 convective = 50'
-      h(9) ='  low pressure sodium radiant = 43 convective = 57'
-      h(10)=' '
-      h(11)='The position of lamps determines the distribution of '
-      h(12)='heat into room or ceiling void (CIBSE Table A6.4) '
-      h(13)='  recessed open fixture  upwards = 38 downwards = 62'
-      h(14)='  recessed with louvre   upwards = 45 downwards = 55'
-      h(15)='  recessed with diffuser upwards = 53 downwards = 47'
-      h(16)='  surface mount open fixt upwards = 12 downwards = 88'
-      h(17)='  surface mount enclosed prismatic up= 22 down = 78'
-      h(18)='  suspended near ceiling enclosed prismatic upwards = 6'
-      h(19)='     downwards = 94'
-      h(20)='  suspended or wall mounted or desk lamp upwards = 0'
-      h(21)=' '
-      h(22)='The radiant and convective split for office equipement'
-      h(23)='is typically: (CIBSE Table A6.9) '
-      h(24)=' desktop computer radiant = 14 convective = 86'
-      h(25)=' monitor (type not defined) radiant = 35 conv = 65'
-      h(26)=' laser printer  radiant 33 convective 67'
-      call EASKS(HOLD,'Radiant & convective fraction: (see help)',
-     &        ' ',24,' 0.5  0.5  ','casual gn info',IER,26)
+      call EASKS(HOLD,' Radiant & convective fraction:',
+     &        ' ',24,' 0.5  0.5  ','casual gn info',IER,2)
       K=0
       call EGETWR(HOLD,K,RAD,0.,1.0,'F','rad frac',IER)
       CMAX=1.00-RAD
@@ -4653,7 +4508,7 @@ C  ICD - copy (=2) delete (=1) flag
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
@@ -4858,6 +4713,10 @@ C Base area for zones.
       INTEGER NELC,IPFC,IPHASC
       REAL PFC,PWRC,BVOLTC
 
+      common/SLNTFULL/ifullysilent
+      integer ifullysilent !flag to drive the silent model creation without
+                           !questions about the operation files data
+
       character*(*) sfile
       CHARACTER oprdescc*248,ctlstrc*24
       character h*72
@@ -4868,7 +4727,10 @@ C Base area for zones.
       character actcas*8
       character act*1   ! '-' normal, 's' silent
       LOGICAL XST,unixok,dok,ok
-      integer idty
+      character actflatfile*1
+      
+C Flags noting whether casual gain periods are currently sorted.
+      logical problem,MODOPR
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4891,6 +4753,7 @@ C so there is no need to clear nac
       lodlabel(idest,5)='AnnEl '  
       lodlabel(idest,6)='NA    ' 
       lodlabel(idest,7)='NA    '      
+      MODOPR=.FALSE.
 
 C First scan the source zone operation file if there is a problem
 C reading or it does not exist then return an error state.
@@ -4909,10 +4772,14 @@ C the source zones air flows.
       if(XST)then
         CALL ERPFREE(IUO,ISTAT)
         if(isource.eq.0)then
-
+          if(ifullysilent.eq.1)then
+            actflatfile='-'
+          else
+            actflatfile='W'            
+          endif
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
 C then jump to 32 to read in the destination operations file.
-          CALL ERZSCHED(IUO,sfile,IER)
+          CALL ERZSCHED(IUO,sfile,act,IER)
           if(ier.ne.0)then
             call edisp(iuout,'Source operation file not clean...')
             ier=1
@@ -5603,7 +5470,8 @@ C   ier - set to 1 if there was a problem
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,IDTY
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -5666,6 +5534,7 @@ C initcasday does initial setup of all casual day types.
       
       integer lnblnk  ! function definition
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -5676,8 +5545,11 @@ C initcasday does initial setup of all casual day types.
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT,ILEN
       REAL CMGS,CMGL,RADC,CONC
+      common/loadlabel/lodlabel(mcom,7)
       dimension iper(24),iperf(24)
+      CHARACTER*6 lodlabel
       character hold*48,H*72,OUTS*12,LOUTS*24,VOUTS*50
+      LOGICAL OK,DOK,XST,MODOPR,browse,clkok,unixok
 
       h(1)='For the current day type specify how many periods'
       h(2)='for each casual gain type (occupants, lights and'

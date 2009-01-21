@@ -86,15 +86,7 @@ C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
 C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
@@ -235,6 +227,7 @@ C Generic databases from esprdbfile.h.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
+      character imgfmt*4,imgfoc*4,limgfil*72
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
@@ -545,16 +538,11 @@ C Write alternative definition of weekends if not default.
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 
-C Write images if any. If the version of the configuration file
-C is greater than 3 then also write out documentation.
+C Write images if any.
       if(noimg.gt.0)then
         do 42 img=1,noimg
           WRITE(IFCFG,'(a,a4,2x,a4,2x,a)',IOSTAT=IOS,ERR=2)'*img ',
      &     imgfmt(img),imgfoc(img),limgfil(img)(1:lnblnk(limgfil(img)))
-          if(icfgv.gt.3)then
-            WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)'*imdoc ',
-     &        imgdoc(img)(1:lnblnk(imgdoc(img)))
-          endif
  42     continue
       endif
 

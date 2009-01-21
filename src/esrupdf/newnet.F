@@ -2106,9 +2106,6 @@ C The routine presents a list of surface layers.
       common/pophelp/h(60)
       common/FILEP/IFIL
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2141,7 +2138,7 @@ C Arrays of material properties.
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32
-      CHARACTER NAM*72,PNAM*20,H*72
+      CHARACTER DESC*48,NAM*72,PNAM*20,H*72
       CHARACTER TITL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

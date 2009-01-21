@@ -32,22 +32,22 @@ GEN  kitchen  kitchen describes the north facing kitchen  # type, name, descr
    4, 13, 14, 15, 16,
    4,  8, 17, 18, 12,
 # unused index
- 0,0,0,0,0,0,0,0,0,0
+  0 0 0 0 0 0 0 0 0 0
 # surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     1   6   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  construction environment
+# id  surface      geom  loc/  mlc db       environment
 # no  name         type  posn  name         other side
-  1, liv_r         OPAQ  VERT  partition    ANOTHER        
-  2, store_r       OPAQ  VERT  partition    ANOTHER        
+  1, liv_r         OPAQ  VERT  partition    living_room    
+  2, store_r       OPAQ  VERT  partition    store          
   3, kitch_ex_n    OPAQ  VERT  ext_wall_low EXTERIOR       
-  4, hall_r        OPAQ  VERT  partition    ANOTHER        
-  5, bed_2_r       OPAQ  CEIL  ceiling      ANOTHER        
+  4, hall_r        OPAQ  VERT  partition    hall           
+  5, bed_2_r       OPAQ  CEIL  ceiling      bed_2          
   6, floor         OPAQ  FLOR  grnd_floor   GROUND         
-  7, bathrm_r      OPAQ  VERT  partition    ANOTHER        
-  8, bed_1_r       OPAQ  CEIL  ceiling      ANOTHER        
+  7, bathrm_r      OPAQ  VERT  partition    bathroom       
+  8, bed_1_r       OPAQ  CEIL  ceiling      bed_3          
   9, n_glaz        TRAN  VERT  glazing      EXTERIOR       
- 10, xfirst        OPAQ  CEIL  ceiling      ANOTHER        
+ 10, xfirst        OPAQ  CEIL  ceiling      bed_3_air_gap  
 # base
-  6  0  0  0  0  0     8.37 0
+  6  0  0  0  0  0     8.37

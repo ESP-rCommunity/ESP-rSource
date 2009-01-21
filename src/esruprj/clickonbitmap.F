@@ -74,10 +74,6 @@ C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -119,7 +115,7 @@ C end indices for each zone.
       dimension VIEWLIM(6),GRSPC(3),IVALS(MCOM)
 
       CHARACTER*72 H
-      CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3
+      CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3,DESC*48
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

@@ -26,20 +26,20 @@ GEN  bathroom  bathroom describes the lower level toilet  # type, name, descr
    4,  9, 10, 11, 12,
    4, 13, 14,  7,  8,
 # unused index
- 0,0,0,0,0,0,0,0
+  0 0 0 0 0 0 0 0
 # surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     1   6   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  construction environment
+# id  surface      geom  loc/  mlc db       environment
 # no  name         type  posn  name         other side
-  1, hall_r        OPAQ  VERT  partition    ANOTHER        
-  2, kitch_r       OPAQ  VERT  partition    ANOTHER        
+  1, hall_r        OPAQ  VERT  partition    hall           
+  2, kitch_r       OPAQ  VERT  partition    kitchen        
   3, bath_ex_n     OPAQ  VERT  ext_wall_low EXTERIOR       
   4, bath_ex_w     OPAQ  VERT  ext_wall_low EXTERIOR       
-  5, bed_1_r       OPAQ  CEIL  ceiling      ANOTHER        
+  5, bed_1_r       OPAQ  CEIL  ceiling      bed_3          
   6, floor         OPAQ  FLOR  grnd_floor   GROUND         
   7, n_glaz        TRAN  VERT  glazing      EXTERIOR       
-  8, air_gap_r     OPAQ  CEIL  ceiling      ANOTHER        
+  8, air_gap_r     OPAQ  CEIL  ceiling      bed_3_air_gap  
 # base
-  6  0  0  0  0  0     3.57 0
+  6  0  0  0  0  0     3.57

@@ -719,11 +719,10 @@ C TSCON6 checks if `rewind` operation is required for type 6 TSC.
 
       character outs*124
       
-C Reset the rewind flag `IREW`.
+C RESET REWIND FLAG, `IREW`,
       irew=.false.
 
-C Possibly save and retrieve releated data.
-
+C POSSIBLY SAVE & RETRIEVE DATA:
 C IF AT PERIOD START TIME,
       if(ihr.eq.itssch(ntsctr,1).or.(tsclaw.and.
      &(ihr.eq.1.and.itssch(ntsctr,1).eq.24.and.(nsinc.eq.1.or.pasone))))
@@ -732,57 +731,47 @@ C IF AT PERIOD START TIME,
 
         if(itssch(ntsctr,1).eq.itssch(ntsctr,2).and.idy.ne.idysv)goto 75
         if(nsinc.le.nsncv1)goto 75
-	
-C Remember day and hour to rewind to.
+C REMEMBER DAY AND HOUR TO REWIND TO,
         idysv=idy
         ihrsv=ihr
-
-C SET INITIALISATION COUNTER. This logic seems not to be being
-C called for most models with optimal start controllers. Also
-C set lgctin=1 in MAIN.
-        lgctin=1
-	        
-C Save the data,
+C SET INITIALISATION COUNTER,
+        lgctin=1        
+C SAVE DATA,
         if(irwcou.eq.0)call savepv
-	
-C or retrieve the data.
+C RETRIEVE DATA,
         if(irwcou.gt.0)call rtrvpv
-	
-C Remember nsinc to avoid saving twice at the same TIME-STEP.
+C REMEMBER NSINC TO AVOID SAVING TWICE AT SAME TIME-STEP,
         nsncv1=nsinc+1
       endif
 
-C Set rewind flag (rewnd):
+C SET REWIND FLAG:
 C IF AT PERIOD STOP TIME,
 75    if(ihr.eq.(itssch(ntsctr,2)))then
         
-C If menu driven input (rewnd actually set elsewhere but not
-C active yet, so temporarily set to true).
+C IF MENU DRIVEN INPUT,
+C (rewnd actually set elsewhere but not active yet, so temporarily ...),
         if(.not.tsclaw)rewnd=.true.
 
-C In the case of time step control set up control law. 
+C IN THE CASE OF TSC SET UP CONTROL LAW, 
         if(itssch(ntsctr,1).eq.itssch(ntsctr,2).and.idy.eq.idysv)then
-          irew=.false.
+           irew=.false.
         endif
 
-C Set rewind flag (irew) to indicate rewind necessary in MZNUMA.
+C SET REWIND FLAG INDICATING REWIND NECESSARY IN MZNUMA,
         if(rewnd.and.nsinc.eq.nsncv2)then
-          irew=.true.
-	     
-C Increment the rewind counter.
-          irwcou=irwcou+1
-	     
-C If menu drive limit the number of rewind operations to irwmax.
-          if(.not.tsclaw.and.irwcou.gt.irwmax)then
-            irew=.false.
-            irwcou=0
-          endif 
+             irew=.true.
+C INCREMENT REWIND COUNTER,
+             irwcou=irwcou+1
+C IF MENU DRIVEN INPUT, LIMIT NO. OF REWIND OPERATIONS,
+             if(.not.tsclaw.and.irwcou.gt.irwmax)then
+                irew=.false.
+                irwcou=0
+             endif 
         else
-          irew=.false.
+           irew=.false.
         endif
       endif
-      
-C Remember nsinc to avoid incrementing `IRWCOU` twice at the same TIME-STEP.
+C REMEMBER NSINC TO AVOID INCREMENTING `IRWCOU` TWICE AT SAME TIME-STEP,
       nsncv2=nsinc+1
             
 C TRACE OUTPUT ?
@@ -791,12 +780,19 @@ C TRACE OUTPUT ?
       write(outs,'(A,I4)')
      & ' Subroutine TSCON6   Trace output',icnt
       call edisp(itu,outs)
+      call edisp(itu,' ')
       ICNT=ICNT+1
 
-      write(outs,*)
-     & ' day=',IDY,' hour=',IHR,' nsinc=',nsinc,' irew=',IREW,
-     & ' IRWCOU=',irwcou,' lgctin=',lgctin,' nsncv2=',nsncv2,
-     & ' IHRSV=',IHRSV,' IDYSV=',IDYSV,' rewnd=',rewnd
+      write(outs,'(A,I4,A,I4,A,I4)')
+     & ' IDAY=',IDY,' IHR=',IHR,' NSINC=',nsinc
+      call edisp(itu,outs)
+
+      write(outs,'(A,I4,A,I4)')
+     & ' IREW=',IREW,' IRWCOU=',irwcou
+      call edisp(itu,outs)
+
+      write(outs,'(A,I4,A,I4)')
+     & ' IHRSV=',IHRSV,' IDYSV=',IDYSV
       call edisp(itu,outs)
       
 9999  RETURN

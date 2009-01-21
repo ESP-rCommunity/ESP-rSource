@@ -2070,10 +2070,6 @@ C << written at the end of the process. This has yet to be done.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -2091,7 +2087,7 @@ C << written at the end of the process. This has yet to be done.
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12
+      CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12,DESC*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,act*2,T14*14
       character guesstype*24  ! for context of surface addition

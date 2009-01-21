@@ -275,18 +275,18 @@ C each period. Include the verbose decoding of data in the comment line.
             IF(NITEMS.EQ.1)goto 601
 
 C Write control data and compact, if very long then use two lines.
-            if(NITEMS.lt.19)then
-              WRITE(outs,'(19f12.5)',IOSTAT=ios,ERR=1)
+            if(NITEMS.lt.20)then
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
      &          (FMISCD(II,JJ,KK,L),L=2,NITEMS)
               call SDELIM(outs,outsd,'S',IW)
               write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
             else
-              WRITE(outs,'(19f12.5)',IOSTAT=ios,ERR=1)
-     &          (FMISCD(II,JJ,KK,L),L=2,18)
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (FMISCD(II,JJ,KK,L),L=2,19)
               call SDELIM(outs,outsd,'S',IW)
               write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
-              WRITE(outs,'(19f12.5)',IOSTAT=ios,ERR=1)
-     &          (FMISCD(II,JJ,KK,L),L=19,nitems)
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (FMISCD(II,JJ,KK,L),L=20,nitems)
               call SDELIM(outs,outsd,'S',IW)
               write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
             endif

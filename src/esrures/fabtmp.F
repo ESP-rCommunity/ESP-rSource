@@ -152,9 +152,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -186,7 +183,7 @@ C Arrays of material properties.
       logical closemat
       DIMENSION ICLN(30)
 
-      CHARACTER outs*124,NAM*72,TITL*72,CSTR*25
+      CHARACTER outs*124,DESC*48,NAM*72,TITL*72,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 

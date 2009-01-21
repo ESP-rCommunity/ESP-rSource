@@ -371,7 +371,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -600,7 +600,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -4204,7 +4204,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
 
       LOGICAL tsclaw,rewnd,pasone,close
       
-      CHARACTER OUTS*124,msg*48
+      CHARACTER OUTS*124
 
 C COMMON BLOCK VARIABLES FOR OPTCTL:-
 C     IRWIND = FLAG INDICATING REWIND CALLED FOR,
@@ -4241,9 +4241,9 @@ C A2      =  EXT TEMP. "       "   "     "        "     "
       timdif=bmiscd(icf,idtyp,iper,6)
       initim=int(bmiscd(icf,idtyp,iper,7))
       if(initim.eq.1)then
-        stinit=4.    
+         stinit=4.    
       else if(initim.eq.2)then
-        stinit=bmiscd(icf,idtyp,iper,8)
+         stinit=bmiscd(icf,idtyp,iper,8)
       else if(initim.eq.3)then
         a0=bmiscd(icf,idtyp,iper,8)
         a1=bmiscd(icf,idtyp,iper,9)
@@ -4287,44 +4287,35 @@ C         OF BUILDING HVAC SYSTEMS, TRODHEIM, SINTEF.
       endif
 
 C IF FIRST PASS, SET INITIAL TRIAL START TIME,
-C Note that lgctin will have been set in MAIN to one and
-C after stpres is set reset lgctin.
       if(lgctin.eq.1.and.irwcnt.eq.0)then
         stpres=stinit
       endif  
 
 C SAVE PRESENT VALUES,
       if(lgctin.eq.1.and.irwcnt.gt.irwcsv)then
-        stpas2=stpas1
-        stpas1=stpres
-        stpres=stfut
-        irwcsv=irwcnt
+         stpas2=stpas1
+         stpas1=stpres
+         stpres=stfut
+         irwcsv=irwcnt
       endif
 
 C REWIND OR CONTINUE SIMULATION ?
 C IRWIND = +1 FOR REWIND AND FORWARD ADJUST TRIAL TIME;
 C IRWIND = -1 FOR REWIND AND BACKWARD ADJUST TRIAL TIME.
-C IRWIND = 99 FOR CONTINUE UNTIL DTOA;
-C IRWIND =  0 FOR CONTINUE AFTER DTOA. 
+C IRWIND = 99 FOR CONTINUE UNTIL DTAO;
+C IRWIND =  0 FOR CONTINUE AFTER DTAO. 
       if(btimef.ge.dtoa)then
-        if(tctl.gt.thi)then
-          irwind=1   ! shift time later
-          msg=' rewind request for later optimal start'
-        else if(tctl.lt.tlo)then
-          irwind=-1  ! shift time earlier
-          msg=' rewind request for earlier optimal start'
-        else
-          irwind=0   ! no need to shift time
-          msg=' optimal start time does not need changing'
-        endif
+         if(tctl.gt.thi)then
+           irwind=1
+         else if(tctl.lt.tlo)then
+           irwind=-1
+         else
+           irwind=0
+         endif
+      if(irwfnl.eq.1)irwind=0
 
-C If within tollerance then set irwind to zero.
-        if(irwfnl.eq.1)irwind=0
-
+C ESTABLISH FUTURE TRIAL START TIME,
         if(irwind.eq.1)then
-
-C ESTABLISH future start time if adjusted forward depending
-C on the value of irwlas.
           if(irwlas.eq.-1)then
             stfut=stpres+0.5*(stpas1-stpres)
           else if(irwlas.ne.-1)then
@@ -4334,24 +4325,17 @@ C on the value of irwlas.
               stfut=stpres+0.5*(stpres-stpas1)
             endif
             if(irwlas.eq.1)then
-
-C If the last action was also to move forward then also
-C check the temperatures. 
               call eclose(tctl,tctlsv,0.001,close)
               if(close)then
                 stfut=stpas1
                 irwfnl=1
               endif
             endif
-          endif
+         endif
+          
         else if(irwind.eq.-1)then
-
-C Adjust future start time if adjusted earlier in the day
-C and the prior action was to go later then use stpres-stpas1
-C if no prior change then use stpres-deltat earler otherwise
-C if the prior change was also earlier then check temperatures.
           if(irwlas.eq.1)then
-            stfut=stpres-0.5*(stpres-stpas1)
+             stfut=stpres-0.5*(stpres-stpas1)
           else if(irwlas.ne.1)then
             if(irwchg.eq.0)then
               stfut=stpres-deltat
@@ -4359,10 +4343,6 @@ C if the prior change was also earlier then check temperatures.
               stfut=stpres-0.5*(stpas1-stpres)
             endif
             if(irwlas.eq.-1)then
-
-C If the last rewind action was a shift to earlier and the
-C control temperature is close to the saved control temperature
-C then reset stfut and irwfnl.
               call eclose(tctl,tctlsv,0.001,close)
               if(close)then
                 stfut=stpas2
@@ -4374,17 +4354,16 @@ C then reset stfut and irwfnl.
 
 C ACCEPT CURRENT TRIAL TIME AS OPTIMUM START TIME,
           timopt=stpres
+
         endif
       endif
       
       call eclose(btimef,dtoa,0.001,close)
       if(close)q=0.
 
-C Inject flux if before anticipated time (dtoa) and after optimal
-C start time.
+C POSSIBLY INJECT FLUX,      
       if(btimef.lt.dtoa)then
-        irwind=99
-        msg=' initial optimal start between start & dtoa'
+      irwind=99
         if(btimef.ge.stpres)then         
           q=bmiscd(icf,idtyp,iper,2)
         else
@@ -4397,21 +4376,18 @@ C CONTINUE WITH SIMULATION IF < MINIMUM TEMPERATURE DIFFERENCE
      &    timdif.and.irwlas.ne.0)then
         timopt=stpres
         irwind=0
-        msg=' optimal start found, continuing'
       endif
 
 C CONTINUE WITH SIMULATION IF `TIMOPT' < 0.0
-      if(irwind.eq.-1.and.stfut.lt.0.0.and.stpres.le.0.0)then
+      if(irwind.eq.-1.and.stfut.lt.0.and.stpres.le.0)then
         irwind=0
         timopt=stpres
-        msg=' optimal start found before midnight, continuing'
       endif
 
 C CONTINUE WITH SIMULATION IF `TIMOPT' > DTOA,
       if(irwind.eq.1.and.stfut.ge.dtoa)then
         irwind=0
         timopt=stpres
-        msg=' optimal start found after dtoa, continuing'
       endif
 
 C SET REWIND POSITIVE (IRWCHP), NEGATIVE (IRWCHN), & CHANGE (IRWCHG) FLAGS,
@@ -4424,15 +4400,18 @@ C REMEMBER PRESENT REWIND FLAG,
         irwlas=irwind
       endif
 
-C Set rewind flag and remember the current sensed value
-C otherwise unset the rewind flag.
+C SET REWND FLAG
       if(btimef.ge.dtoa.and.(irwind.eq.1.or.irwind.eq.-1))then
         rewnd=.true.
+C REMEMBER CURRENT SENSED VALUE,
         tctlsv=tctl
         irwcnt=irwcnt+1
       else
         rewnd=.false.
       endif
+      
+C RESET VARIABLES,
+      if(irwind.eq.0)call mziboc
 
 C CONVERT FROM (/M^2) IF NECESSARY.
       isur=0
@@ -4451,27 +4430,11 @@ C CONVERT FROM (/M^2) IF NECESSARY.
 C TRACE OUTPUT,
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(41).ne.0) then
-         write(outs,*) ' BCL15: Qfuture=',qfut,' Tfuture=',tfut,
-     & ' STFUT=',stfut,' STPRES=',stpres,' TIMOPT=',timopt,rewnd,pasone
-         call edisp(itu,outs)
-         write(outs,'(A,i3,A,i3,A,i3,A,i3,A,i3,A,i3,A,i3,A,i3,A,i3)')
-     &     ' irwind=',IRWIND,' irwlas=',IRWLAS,' irwcnt=',IRWCNT,
-     &     ' irwcsv=',IRWCSV,' irwcmp=',IRWCHP,' irwcmn=',IRWCHN,
-     &     ' irwchg=',IRWCHG,' lgctin=',LGCTIN,' initct=',INITCT
-         call edisp(itu,outs)
-         write(outs,'(A,F9.3,A,F8.3,A,F8.3,A,F8.3,A,A)')
-     &     ' tctl=',tctl,' thi=',thi,' tlo=',tlo,
-     &     ' desired T=',dtmp,msg(1:lnblnk(msg))
+         write(outs,'(A,F10.3,A,F8.3,A,F10.3,A,F10.3,A,F10.3)')
+     & ' BCL15: Qfuture=',qfut,' Tfuture=',tfut,
+     & ' STFUT=',stfut,' STPRES=',stpres,' TIMOPT=',timopt
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL15')
-      endif
-      
-C If we are within the desired band at that time of arrival then
-C clear the common block variables. This implies that the next
-C control period should start at or very soon after the time
-C of arrival.
-      if(irwind.eq.0)then
-        call mziboc
       endif
 
       return
@@ -4592,7 +4555,7 @@ C IRWIND =  0 FOR CONTINUE AFTER OCDT.
          else
            irwind=0
          endif
-         if(irwfnl.eq.1)irwind=0
+      if(irwfnl.eq.1)irwind=0
          
 C ESTABLISH FUTURE TRIAL STOP TIME;
          if(irwind.eq.1)then
@@ -4698,7 +4661,6 @@ C CONTINUE WITH SIMULATION IF `TIMOPT' > OCDT,
         lgctin=0
       endif
 
-C SET REWIND POSITIVE (IRWCHP), NEGATIVE (IRWCHN), & CHANGE (IRWCHG) FLAGS,
       if(irwind.eq.1)irwchp=1
       if(irwind.eq.-1)irwchn=1
       if(irwchp.eq.1.and.irwchn.eq.1)irwchg=1
@@ -5890,7 +5852,8 @@ C ******************** BCL23
 C This subroutine dynamically allocates heating and cooling setpoint
 C temperatures from a previously defined temporal file based on column
 C numbers specifed in the contol law. It is a simplified implementation
-C of control law 1 (basic heating and cooling)
+C of control law 1 (basic heating and cooling). It can use two items in tdf:
+C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
       SUBROUTINE BCL23
 #include "building.h"
 #include "tdf2.h"
@@ -5908,7 +5871,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
@@ -5944,15 +5907,19 @@ C Read setpoints from tdf here (CSP and HSP)
 C "COLUMNSETP" is an integer specifying the column where the setpoints
 C should be read from. This could be the ISD but when calling the RCTDFB it
 C seems that is always set to 2 (and it is also used in few other places as 2).
-       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
-       itdi=IACTIV(ICF)
-       IFOC=itdi
-       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-       HSP=VAL(COLUMNSETP)
-       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
-       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-       CSP=VAL(COLUMNSETP)
-
+      COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
+      if(IACTIV(ICF).ne.0)then
+        itdi=IACTIV(ICF)
+      elseif(IHTCLSETP(ICF).ne.0)then
+        itdi=IHTCLSETP(ICF) 
+      endif   
+      IFOC=itdi
+      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+      HSP=VAL(COLUMNSETP)
+      COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
+      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+      CSP=VAL(COLUMNSETP)
+        
 C Debug.
 c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
 c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
@@ -6274,10 +6241,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
 
@@ -6337,7 +6300,7 @@ C Arrays of material properties.
       logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character titl*72,nam*72
+      character desc*48,titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 

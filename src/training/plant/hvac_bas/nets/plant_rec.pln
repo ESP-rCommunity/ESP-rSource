@@ -74,7 +74,7 @@ network for basic recirculation control.
     1
 ../nets/bld_rec.afn
 /usr/esru/esp-r/databases/pressc.db1
-bld_recircwin.mfr 
+/tmp/bld_recircwin.mfr 
 # Mapping of mass flow network connections to
 # plant network connections.
    7    7   13    8    9    9

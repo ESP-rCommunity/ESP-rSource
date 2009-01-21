@@ -27,12 +27,11 @@ C Type declarations
       integer MGXYZ,MBTYP,MNM,MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID
       integer MMTR,MBND,MSNOD,MMAT,MIPVM,MIPVA,MSPS
       integer MDTY,MGTY,MGPER
-      integer MIMG
-      
+
 C For the building:
-      PARAMETER (MCOM=52)
-      PARAMETER (MCON=2000)
-      PARAMETER (MTV=200)
+      PARAMETER (MCOM=28)
+      PARAMETER (MCON=1000)
+      PARAMETER (MTV=250)
       PARAMETER (MV=24)
       PARAMETER (ME=8)
       PARAMETER (MGP=3)
@@ -105,7 +104,7 @@ C If MS changes, so should MEQ (MS+1) and MTR (MS+4).
       PARAMETER (MTR=66)
 
 C Multilayered construction limit
-      PARAMETER (MMLC=120)
+      PARAMETER (MMLC=80)
 
 C For the time-step controller:
       PARAMETER (MCVT1=6)
@@ -259,6 +258,3 @@ C less than or equal to MSPS.
 
 C Maximum number of simulation parameter sets.
       PARAMETER (MSPS=10)
-
-C Maximum number of images associated with model.
-      PARAMETER (MIMG=10)

@@ -89,15 +89,7 @@ C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
 C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
-      integer noimg  ! number of images
-      integer iton   ! zero if images not yet shown, one if yes
-      common/imagfi/noimg,iton
+      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
@@ -159,10 +151,6 @@ C IPV description.
       common/IPVF/lipvdatf
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
 
 C Project demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -264,6 +252,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
+      character imgfmt*4,imgfoc*4,limgfil*72
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
@@ -686,16 +675,11 @@ C If SBEM compliance checking is active write name and path of SBEM db
         WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
       ENDIF
 
-C Write images if any. If the version of the configuration file
-C is greater than 3 then also write out documentation.
+C Write images if any.
       if(noimg.gt.0)then
         do 42 img=1,noimg
           WRITE(IFCFG,'(a,a4,2x,a4,2x,a)',IOSTAT=IOS,ERR=2)'*img ',
      &     imgfmt(img),imgfoc(img),limgfil(img)(1:lnblnk(limgfil(img)))
-          if(icfgv.gt.3)then
-            WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)'*imdoc ',
-     &        imgdoc(img)(1:lnblnk(imgdoc(img)))
-          endif
  42     continue
       endif
 
@@ -732,27 +716,15 @@ C name of the IPV file or write the data internal to the cfg file.
      &      lipvdatf(1:lnipv)
         endif
       else
-
-C If the version of configuration file is 4 or greater
-C then there could be an embedded IPV description. Check
-C first if the number of IPV metrics or demand sets is greater than
-C zero. If so take common block information and include
-C it in the configuration file.
-        if(nms.gt.0.or.neds.gt.0)then
-
-C Use call mkipvdat to write into the cfg file and then clear name of
+      
+C Use call to write into the cfg file itself and then clear name of
 C the external IPV file (also notify the user they can remove it).
-          ipvaction='cfg'
-          call mkipvdat(ifcfg,LCFGF,ipvaction)
-          if(lnipv.eq.0)then
-            continue
-          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-            continue
-          else
-	    call usrmsg('Info merged. Remove the separate IPV file',
+        ipvaction='cfg'
+        call mkipvdat(ifcfg,LCFGF,ipvaction)
+	if(lnipv.gt.0)then
+	  call usrmsg('You can removed the IPV file if you want',
      &      lipvdatf,'W')
-	    lipvdatf=' '  ! ensure old file name is no longer referenced
-          endif
+	  lipvdatf=' '  ! ensure old file name is no longer referenced
         endif
       endif
 

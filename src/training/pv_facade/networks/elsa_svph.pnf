@@ -132,9 +132,6 @@ ELSA building PV facade heat recovery and mechanical ventilation syste
   0
 # Mass flow network definition.
     1
-../networks/elsa.afn    # leakage description
-/usr/esru/esp-r/databases/pressc.db1  # pressure distributions
-elsa_win.mfr  # mass flow results libray name
 # Mapping of mass flow network connections to
 # plant network connections.
    6    6    6    6    6    6

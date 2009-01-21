@@ -385,10 +385,6 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -399,7 +395,7 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER H*72
+      CHARACTER H*72,DESC*48
 
 C Read database if not already done.
       if (.not.MLDBOK) then 

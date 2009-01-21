@@ -40,24 +40,24 @@ GEN  bed_3  bed_3 describes room with moisture details  # type, name, descr
    4, 17, 18, 19, 20,
    4, 21, 22, 23, 24,
 # unused index
- 0,0,0,0,0,0,0,0,0,0,0,0
+  0 0 0 0 0 0 0 0 0 0 0 0
 # surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
     1   6   0   0    # default insolation distribution
 # surface attributes follow: 
-# id  surface      geom  loc/  construction environment
+# id  surface      geom  loc/  mlc db       environment
 # no  name         type  posn  name         other side
-  1, hallup_r      OPAQ  VERT  partition    ANOTHER        
-  2, bed_2_r       OPAQ  VERT  partition    ANOTHER        
-  3, bed3_ex_n     OPAQ  VERT  air_gap_int  ANOTHER        
+  1, hallup_r      OPAQ  VERT  partition    hall_up        
+  2, bed_2_r       OPAQ  VERT  partition    bed_2          
+  3, bed3_ex_n     OPAQ  VERT  air_gap_int  bed_3_air_gap  
   4, bed3_ex_w     OPAQ  VERT  ext_wall_up  EXTERIOR       
-  5, loft_r        OPAQ  CEIL  ceil_loft    ANOTHER        
-  6, kitch_r       OPAQ  FLOR  ceiling_rev  ANOTHER        
-  7, bath_r        OPAQ  FLOR  ceiling_rev  ANOTHER        
-  8, hall_r        OPAQ  FLOR  ceiling_rev  ANOTHER        
-  9, liv_r         OPAQ  FLOR  ceiling_rev  ANOTHER        
- 10, loft_n_r      OPAQ  VERT  t_bridge     ANOTHER        
+  5, loft_r        OPAQ  CEIL  ceil_loft    loft           
+  6, kitch_r       OPAQ  FLOR  ceiling_rev  kitchen        
+  7, bath_r        OPAQ  FLOR  ceiling_rev  bathroom       
+  8, hall_r        OPAQ  FLOR  ceiling_rev  hall           
+  9, liv_r         OPAQ  FLOR  ceiling_rev  living_room    
+ 10, loft_n_r      OPAQ  VERT  t_bridge     t_bridge       
  11, n_glaz        TRAN  VERT  glazing      EXTERIOR       
  12, w_glaz        TRAN  VERT  glazing      EXTERIOR       
 # base
-  6  7  8  9  0  0    10.67 0
+  6  7  8  9  0  0    10.67
