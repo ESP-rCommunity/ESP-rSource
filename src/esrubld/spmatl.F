@@ -4130,11 +4130,11 @@ C Set new k.
       end
 
 C ***************** SPMCMP57 *****************
-C A model of hydrophob surface condensation / evaporation and corresponding 
+C (c) A. Geissler, Yuanda-Europe, January 2009 - GPL
+C A model of surface condensation / evaporation and corresponding 
 C heat gain / loss to / from the surface. 
-C Mass transport to / from the surface (kg/s) is calculated from the Lewis 
-C relationship (see e.g. Recknagel-Sprenger, 03/04, p. 169): 
-C        Ev=hc/cp Asurf (Wsurf-Wzone)  (kg/s)
+C Mass transport to / from the surface (kg/s) is calculated ...
+C
 C where,
 C       hc = convective heat transfer coefficient (W/(m^2 K))
 C       Asurf = surface area (m^2)
@@ -4362,14 +4362,14 @@ C Results output.
       unitspm(ispmnod,9)='(%)'
       txtspm(ispmnod,9)='Area frac. for visibility, external, upper'
 
-      write(*,"(14(a,E11.4))")
-     & "ts_i=",tsurf(2)," tz_i=",tzone(2)," tz_sat_i=",tz_sat(2),
-     & " zrh_i=",zrh(2)," pD_i=",pD(2)," ps_sat_i=",psurf_sat(2),
-     & " QPhCh=",genflxf(icomp,isurf,inode),
-     & " Qavail=",Qavail,
-     & " MFlux_i=",mflux(2)," M_tot_i=",mh2o(icomp,isurf,2),
-     & " beta=",beta," wz_i=",wzone(2),
-     & " a_min_i=",asurf_min(2)," a_max_i=",asurf_max(2)
+C      write(*,"(14(a,E11.4))")
+C     & "ts_i=",tsurf(2)," tz_i=",tzone(2)," tz_sat_i=",tz_sat(2),
+C     & " zrh_i=",zrh(2)," pD_i=",pD(2)," ps_sat_i=",psurf_sat(2),
+C     & " QPhCh=",genflxf(icomp,isurf,inode),
+C     & " Qavail=",Qavail,
+C     & " MFlux_i=",mflux(2)," M_tot_i=",mh2o(icomp,isurf,2),
+C     & " beta=",beta," wz_i=",wzone(2),
+C     & " a_min_i=",asurf_min(2)," a_max_i=",asurf_max(2)
 
 C As a temporary measure, use zone-related variables, zspmf1 and zspmf2,
 C for results library storage. Output is limited to one special material
@@ -4381,8 +4381,9 @@ C XML output.
       call SurfCond_to_h3k(icomp,inode,isurf,ispmnod)
 
 C Trace output.
-      if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999     
+      if(itc.le. 0 .or. nsinc .lt. itc .or. ispmxist .eq. 0) goto 999
+      if(itrace(19).eq. 0 .or.
+     &            nsinc .gt. itcf .or. izntrc(icomp) .ne. 1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP57 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -4391,17 +4392,17 @@ C Trace output.
      &                          ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
       call edisp(itu,' ')
-      write(outs,'(a)') 'Evaporation from surface (kg):'
+      write(outs,'(a)') 'Flux to / from internal surface (g/s):'
       call edisp(itu,outs)
-      write(outs,'(f7.4)') ev
+      write(outs,'(f7.4)') mflux(2)
       call edisp(itu,outs)
-      write(outs,'(a)') 'Evaporative heat loss from surface (W/m^2):' 
+      write(outs,'(a)') 'Heat flux due flux to / from surface (W/m^2):' 
       call edisp(itu,outs) 
       write(outs,'(F10.4)') genflxf(icomp,isurf,inode)
       call edisp(itu,outs)   
-      write(outs,'(a)') 'Evaporative heat loss from surface (W):' 
+      write(outs,'(a)') 'Total mass on internal surface (kg):' 
       call edisp(itu,outs) 
-      write(outs,'(F10.4)')genflxf(icomp,isurf,inode)*sna(icomp,isurf)
+      write(outs,'(F10.6)')mh2o(icomp,isurf,2)
       call edisp(itu,outs)   
   999 return
       end
