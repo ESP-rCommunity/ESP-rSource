@@ -47,6 +47,10 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -76,7 +80,7 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72,outs*124
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
       CHARACTER WORD*20,TITL*72,MLCN*12,OTF*4,OPT*12,MLCSYM*12
       DIMENSION ICLN(30)
@@ -393,9 +397,12 @@ C << note if transparent also should check optical properties >>
       subroutine ismlcsymmetric(ifoc,layermatch) 
 
 #include "building.h"
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      CHARACTER DESC*48
+
       logical layermatch,closea,closeb,closec,closed,closee
 
 C If one layer then it is symmetric.
@@ -465,6 +472,9 @@ C construction based on contents of common MLC.
       
       integer lnblnk  ! function definition
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GVALCAL/CLAMDA(MMLC)
@@ -496,7 +506,7 @@ C Arrays of material properties.
       logical closemat
 
       DIMENSION PNAM(ME)
-      CHARACTER OUTSTR*124,DESC*48,NAM*72,PNAM*72
+      CHARACTER OUTSTR*124,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
 
@@ -669,6 +679,9 @@ C on contents of common MLC.
       
       integer lnblnk  ! function definition
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -696,7 +709,7 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER OUTSTR*124,DESC*48,NAM*72
+      CHARACTER OUTSTR*124,NAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
 
@@ -794,6 +807,9 @@ C IER=0 OK, IER=1 problem.
 C#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -801,7 +817,7 @@ C#include "esprdbfile.h"
 
       DIMENSION IVAL(MMLC),COMPS(MMLC)
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,DESC*48,COMPS*33
+      CHARACTER H*72,COMPS*33
 
       IER=0
       ISEL=0
@@ -938,6 +954,9 @@ C This subroutine uses the material array data in matdatarray if available.
       
       integer lnblnk  ! function definition
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -970,7 +989,7 @@ C Arrays of material properties.
       logical closemat
 
       DIMENSION PNAM(ME)
-      CHARACTER DESC*48,NAM*72,TITL*72,PNAM*72
+      CHARACTER NAM*72,TITL*72,PNAM*72
 
 C Assume that data on composites is in common MLC.
       IF(.NOT.MLDBOK)THEN

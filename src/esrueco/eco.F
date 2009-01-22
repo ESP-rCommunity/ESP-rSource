@@ -91,7 +91,9 @@ C Zone information
       COMMON/Displ/SelSurf(MCON)
 
 C Composites information
-
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -180,7 +182,7 @@ C Arrays of material properties.
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
       CHARACTER LCFGF*72,cfgroot*24
-      CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
+      CHARACTER H*72,outs*124,ITEM*35,Hold*24
       CHARACTER zname*12,zdesc*64
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM

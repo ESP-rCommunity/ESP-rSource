@@ -162,6 +162,9 @@ C NM (Integer): dummy variable : Material ID related to Ist Composite and the Jt
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -237,7 +240,6 @@ C NM (Integer): dummy variable : Material ID related to Ist Composite and the Jt
       COMMON/LCAUnit/UnitEner,UnitMass,UnitImp
       COMMON/LCAFlag/ILoss,ICalType,Irep
 
-      CHARACTER DESC*48
       CHARACTER*12 FabPt,TrPt,RecyPt,ReTrPt,BurnPt,BuTrPt,DumpPt,DuTrPt
       CHARACTER*12 ComAsPt,CoTrPt,MaintPt,AsProjPt
       CHARACTER*1 ComAsPa,MaintTyp,LayerCat,MainPart,AsProjPa,LayerTyp

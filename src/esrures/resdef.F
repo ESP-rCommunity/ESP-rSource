@@ -45,6 +45,7 @@ C routines.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
       common/rpath/path
       common/rcmd/lcmdfl
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -60,8 +61,9 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
  
-      character LTMP*72,H*72,outs*124
+      character LTMP*72,H*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -88,7 +90,7 @@ C assigned database.
         H(6)='usually exists. This is a link to an example results'
         H(7)='library set up when ESP was first installed.'
         LTMP=' '
-        ltmpc=LCMDFL
+        ltmpc=LCMDFL   ! the file name that was passed in the command line
         llt=lnblnk(ltmpc)
 
 C Use ifdefs because the X11 version will be returning only the
@@ -122,7 +124,20 @@ C will act on this.
         endif
 
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
+
+C Save back the command file name. While here also assume that any
+C other results files will be found in the same location and make
+C up full length strings that guess what those file names will be.
           LCMDFL=ltmpc
+          lrf=lnblnk(ltmpc)
+          lrf3=lrf-3
+          lrf4=lrf-4
+          if(ltmpc(lrf3:lrf).eq.'.res')then
+            write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
+            write(PFILEABS,'(2a)') ltmpc(1:lrf4),'.plr'
+          else
+            continue
+          endif
         else
           goto 6
         endif
@@ -137,12 +152,21 @@ C Temporarily find the path and local file name for the results
 C file supplied. Save the current path to lpath and restore this
 C after the results file has been found and loaded so that subsequent
 C scans of cfg and zone files can be accomplished.
-C      write(6,*) 'MORFIL: current path is ',path
-C      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
+C Debug.
+C      write(outs248,*) 'MORFIL: current command file path is ',path
+C      call edisp248(iuout,outs248,100)
+      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
+      call edisp248(iuout,outs248,100)
+
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
-C      write(6,*) 'MORFIL: local file is now ',ltmp
-C      write(6,*) 'MORFIL: rev path is ',path
+
+C Debug.
+C      write(outs248,*) 'MORFIL: local file is now ',ltmp
+C      call edisp248(iuout,outs248,100)
+C      write(outs248,*) 'MORFIL: rev path is ',path
+C      call edisp248(iuout,outs248,100)
+
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
 C      write(6,*) 'MORFIL: exist is ',xst
@@ -198,12 +222,13 @@ C          call edisp(iuout,outs)
             IBLIB=1
           endif
         endif
-        RFILE=LTMP
+        RFILE=LTMP   ! save the non-path part of the results file
 
 C Restore the path after getting results file name so model files
 C can be accessed.
         path=lpath
-C        write(6,*) 'MORFIL: path reset to ',path
+C        write(outs248,*) 'MORFIL: path reset to ',path
+C        call edisp248(iuout,outs248,100)
       ELSE
         call usrmsg(' Could not find: ',LTMP,'W')
         goto  6
@@ -875,6 +900,8 @@ C ier is zero if no problems and -3 if user issued a cancel.
      &             NPGAP(MCOM,MS,MGP)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C      COMMON/RECV7/ZOA(MCOM)
+
+C Nothing references ZGAE and ZGAI.
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
       COMMON/RECV9/CHARDM(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -1224,6 +1251,9 @@ C but if using GTK then we need the full length to avoid truncation.
         if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 
+C The following line reads ncomp records which will contain zeros
+C (because there are no default doors and windows). ZGAE and ZGAI
+C are not referenced. Could we use these slots for something else?
       DO 140 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZGAE(I),ZGAI(I),
      &  xdum,xdum

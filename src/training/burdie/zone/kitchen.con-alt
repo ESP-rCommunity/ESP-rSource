@@ -10,6 +10,7 @@
      3,     1  #  7 bathrm_r     partition   
      3,     1  #  8 bed_1_r      ceiling     
      3,     1  #  9 n_glaz       glazing     
+     3,     1  # 10 xfirst       ceiling     
 # air gap position & resistance for surface  1
   2,   0.170,
 # air gap position & resistance for surface  2
@@ -26,8 +27,10 @@
   2,   0.170,
 # air gap position & resistance for surface  9
   2,   0.170,
+# air gap position & resistance for surface 10
+  2,   0.170,
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
+# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
      0.4200,    1200.0,     837.0,  0.0130,   0,   0.00, 0.00000, 0.00000  #  1  1
      0.0000,       0.0,       0.0,  0.0570,   0,   0.00, 0.00000, 0.00000  #     2
      0.4200,    1200.0,     837.0,  0.0130,   0,   0.00, 0.00000, 0.00000  #     3
@@ -58,13 +61,14 @@
      0.7600,    2710.0,     837.0,  0.0040,   0,   0.00, 0.00000, 0.00000  #  9  1
      0.0000,       0.0,       0.0,  0.0100,   0,   0.00, 0.00000, 0.00000  #     2
      0.7600,    2710.0,     837.0,  0.0040,   0,   0.00, 0.00000, 0.00000  #     3
+     0.1400,     600.0,    1210.0,  0.0150,   0,   0.00, 0.00000, 0.00000  # 10  1
+     0.0000,       0.0,       0.0,  0.1000,   0,   0.00, 0.00000, 0.00000  #     2
+     0.0300,     290.0,    2000.0,  0.0100,   0,   0.00, 0.00000, 0.00000  #     3
 # for each surface: inside face emissivity
-  0.91 0.91 0.91 0.91 0.90 0.90 0.91 0.90 0.83
+ 0.91000,0.91000,0.91000,0.91000,0.90000,0.90000,0.91000,0.90000,0.83000,0.90000
 # for each surface: outside face emissivity
-  0.91 0.91 0.90 0.91 0.91 0.90 0.91 0.91 0.83
+ 0.91000,0.91000,0.90000,0.91000,0.91000,0.90000,0.91000,0.91000,0.83000,0.91000
 # for each surface: inside face solar absorptivity
-  0.50 0.50 0.60 0.50 0.60 0.60 0.50 0.60 0.05
+ 0.50000,0.50000,0.60000,0.50000,0.60000,0.60000,0.50000,0.60000,0.0500000,0.60000
 # for each surface: outside face solar absorptivity
-  0.50 0.50 0.80 0.50 0.65 0.85 0.50 0.65 0.05
-# inside and exterior glazing maintenance factors
-   0.00   0.00
+ 0.50000,0.50000,0.80000,0.50000,0.65000,0.85000,0.50000,0.65000,0.0500000,0.65000

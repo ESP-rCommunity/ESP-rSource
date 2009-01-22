@@ -6241,6 +6241,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
 
@@ -6300,7 +6304,7 @@ C Arrays of material properties.
       logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character desc*48,titl*72,nam*72
+      character titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 

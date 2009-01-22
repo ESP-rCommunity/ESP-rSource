@@ -52,6 +52,10 @@ C ****** GTOPOL
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C6/INDCFG
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
@@ -59,7 +63,7 @@ C ****** GTOPOL
       character*32 VERTS(MGRT)
       dimension ivals(MGRT)
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
-      CHARACTER DESC*48,H*72,outs*124,ltmp*72,t15*15,ETEXT*82
+      CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
@@ -2450,6 +2454,10 @@ C IER=1 problem.
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -2473,7 +2481,7 @@ C IER=1 problem.
 
       DIMENSION VERT(36)
       DIMENSION  XX(8),YY(8),ZZ(8),XT(8),YT(8),ZT(8),jvn1(8)
-      CHARACTER VERT*35,KEY*1,HOLD*72,H*72,DESC*48,SN*6
+      CHARACTER VERT*35,KEY*1,HOLD*72,H*72,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
 #ifdef OSX
