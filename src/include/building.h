@@ -15,7 +15,7 @@ C Type declarations.
       integer MXEC,MYEC,MCVV,MNOD3,MCFF3,MNOD3T,MGXYZ,MBTYP,MNM
       integer MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID,MMTR,MBND,MSNOD
       integer MMAT,MIPVM,MIPVA,MSPS,MDTY,MGTY,MGPER
-      integer MCNDV,MCNDC,MPICK,MVAR
+      integer MCNDV,MCNDC,MPICK,MVAR,MSPMRES
 
 C Geometry.
       PARAMETER (MCOM=52)	!- Zones.
@@ -59,6 +59,7 @@ C Variable thermo-physical properties.
 C Special materials.
       PARAMETER (MSPMNOD=40)	!- Special materials.
       PARAMETER (MSPMDAT=21)	!- Defining data items.
+      PARAMETER (MSPMRES=10)	!- Number of result data.
 
 C Casual gains.
       PARAMETER (MCT=7,MGTY=7)	!- Casual gain types.

@@ -1217,19 +1217,22 @@ C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_cool=Q_cool/zbasea(iZone)
       call add_to_xml_reporting (
      &         Qm2_ZONE,
-     &          H3K_rep_NAME(1:16)//'/supplied_energy/net_Perm2',
+     &          H3K_rep_NAME(1:iH3K_NameLen)
+     &                                //'/supplied_energy/net_Perm2',
      &         'units', '(W/m2)',
      &         'Zone net heat injection/extraction ' )
 
       call add_to_xml_reporting (
      &         Qm2_Heat,
-     &         H3K_rep_NAME(1:16)//'/supplied_energy/heating_Perm2',
+     &         H3K_rep_NAME(1:iH3K_NameLen)
+     &                          //'/supplied_energy/heating_Perm2',
      &         'units', '(W/m2)',
      &         'Zone net heat injection ' )
 
       call add_to_xml_reporting (
      &         Qm2_cool,
-     &         H3K_rep_NAME(1:16)//'/supplied_energy/cooling_Perm2',
+     &         H3K_rep_NAME(1:iH3K_NameLen)
+     &                          //'/supplied_energy/cooling_Perm2',
      &         'units', '(W/m2)',
      &         'Zone net heat extraction ' )
 
@@ -1263,21 +1266,24 @@ C Conver Total heating and cooling loads to  "per m2 of floor area"
       fm2ZoneHeatFlux=fZoneHeatFlux/zbasea(iZone)
       call add_to_xml_reporting (
      &         fm2ZoneHeatLoad,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/heating/total_Perm2',
+     &         H3K_rep_NAME(1:iH3K_NameLen)
+     &                  //'/thermal_loads/heating/total_Perm2',
      &         'units', '(W/m2)',
      &         'Total heating load ( heat loss trough envelope + '
      &         // ' ventilation and infiltration loads )' )
 
       call add_to_xml_reporting (
      &         fm2ZoneCoolLoad,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/cooling/total_Perm2',
+     &         H3K_rep_NAME(1:iH3K_NameLen)
+     &                  //'/thermal_loads/cooling/total_Perm2',
      &         'units', '(W/m2)',
      &         'Total cooling load ( heat gain trough envelope + '
      &         // ' ventilation and infiltration loads )' )
 
       call add_to_xml_reporting (
      &         fm2ZoneHeatFlux,
-     &         H3K_rep_NAME(1:16)//'/thermal_loads/net_load_Perm2',
+     &         H3K_rep_NAME(1:iH3K_NameLen)
+     &                      //'/thermal_loads/net_load_Perm2',
      &         'units', '(W/m2)',
      &         'Net load ( heat gain/loss trough envelope + '
      &         // ' ventilation and infiltration loads )' )

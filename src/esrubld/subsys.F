@@ -1792,7 +1792,9 @@ C Common for relative humidity control (ideal)
       COMMON/MOIST54/Pfair(MCOM),Ffair(MCOM),Sfair(MCOM)
 
 C Common for surface condensation on glass (SPMCMP57())
-      common/surfcond/mh2o(mcom,ms),dmh2op(mcom),dmh2of(mcom)
+C     1 ... external surface of ms
+C     2... internal surface of ms
+      common/surfcond/mh2o(mcom,ms,2),dmh2op(mcom,2),dmh2of(mcom,2)
       real mh2o,dmh2op,dmh2of
 
 c Common for time step computed parameters of HVAC system
@@ -1825,8 +1827,10 @@ C Initialise.
       VSRCF(ICOMP)=0.0
       ZMDAF(ICOMP)=1.2*VOL(ICOMP)
       GFA(ICOMP)=0.0
-      dmh2op(icomp)=0.0 ! from SPMCMP57()
-      dmh2of(icomp)=0.0 ! from SPMCMP57()
+      do i=1,2
+        dmh2op(icomp,i)=0.0 ! from SPMCMP57()
+        dmh2of(icomp,i)=0.0 ! from SPMCMP57()
+      enddo
 
     5 VCIP(ICOMP)=VCIF(ICOMP)
       VCCP(ICOMP)=VCCF(ICOMP)
@@ -1878,7 +1882,7 @@ C the treatment of exfiltration. (Previously only future inlet flows were consid
 C leading to instability with timesteps over 3 minutes).
 C 2nd to last line of equation takes into account the effect of a
 C cooling coil on zone moisture balance, last line takes effect of surface condensation
-C on glass into account (SPMCMP57()).
+C on internal surface of glass into account (SPMCMP57()).
       RHS=GPA(ICOMP)*ZMDAP(ICOMP)+
      &    (VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)+
      &    VSRCF(ICOMP))*3600./(2*NTSTEP)+
@@ -1886,7 +1890,7 @@ C on glass into account (SPMCMP57()).
      &    VSRCP(ICOMP))*3600./(2*NTSTEP)-
      &    GPA(ICOMP)*VCLP(ICOMP)*3600./(2.*NTSTEP)
      &    + coil_moist_in(ICOMP) - coil_moist_out1(ICOMP)  
-     &    + dmh2op(icomp)*0.5+dmh2of(icomp)*0.5 
+     &    + dmh2op(icomp,2)*0.5+dmh2of(icomp,2)*0.5 
 
 C Equation modified to account for cooling coil operation effect on 
 C zone moisture balance.

@@ -611,6 +611,42 @@ Hvap is the enthalpy of the vapour at the surface temperature
 Hsl is the enthalpy of liquid water at the surface temperature
 
 *ENDTEXT
+*END
+
+#############################
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     8            57
+*DESC
+Surface_Condensation   
+*SPECDATA
+ 1                   
+ 1.0      Calculation mode (1.0 - default).        
+*TEXT
+This material is designed to book-keep condensation amount on a
+glass surface, e.g. for a curtain glass of a double skin facade.
+
+Both exterior and interior surfaces are tracked.
+
+Mass transport coefficient (Zuercher et. al. - Bauphysik - page 57): 
+  beta=3.5E06*hc/(461.5*(273.15+(ts + tz)*0.5)) ! mg/(m2 h Pa)
+  q =Asurf*beta*(pD-pSurf_Sat)*100 ! mg/h
+
+Where 
+  - ts and tz are the surface and zone temperatures in degC, respectively.
+  - hc is the convective heat transfer coefficient
+  - Asurf is the surface of the component
+  - pD and pSurf_Sat are the zone air point and surface saturation
+    partial vapour pressures in mbar, respectively.
+
+Note: There are no checks for usage in external surfaces only
+incorporated.
+
+*ENDTEXT
+*END
+################################
 *SPECMATL
 *IDDATA
 # Category | Assoc. special 
