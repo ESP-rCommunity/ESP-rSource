@@ -269,10 +269,15 @@ C         'FDFS' is related to CFD domains
 C         'FPER' is related to predicted performance
 C         '****' is a general image displayed at startup
 C  limgfil (72 char) name of the image file << ?? longer string >>
-C  noimg is the number of images associated with the model.
-C  iton is a toggle iton=0 initial state where images have not been scanned
-C    and iton=1 images have been displayed.
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
@@ -477,7 +482,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
-      character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
+      character zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
@@ -1120,13 +1125,18 @@ C There is a calendar of day types defined read its name.
         CALL EGETWI(OUTSTR,K,IYEAR,1900,2020,'W','year',IER)
       elseif(WORD(1:4).eq.'*img')then
 
-C An image file.
+C An image file. If this is a version 4 file then there will be
+C a subsequent (long) line with documentation for the images.
         noimg=noimg+1
         CALL EGETW(OUTSTR,K,WORD2,'W','img format',IFLAG)
         write(imgfmt(noimg),'(a4)') WORD2(1:4)
         CALL EGETW(OUTSTR,K,WORD2,'W','focus',IFLAG)
         write(imgfoc(noimg),'(a4)') WORD2(1:4)
         CALL EGETRM(OUTSTR,K,limgfil(noimg),'W','image file',IER)
+      elseif(WORD(1:6).eq.'*imdoc')then
+        if(noimg.gt.0)then
+          CALL EGETRM(LOUTSTR,K,imgdoc(noimg),'W','image docum',IER)
+        endif
       elseif(WORD(1:6).eq.'*pecnv')then
 
 C System level primary energy conversion data, set flag.

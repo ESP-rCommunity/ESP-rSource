@@ -1,0 +1,117 @@
+Synopsis
+ 
+This is a synopsis of the model ct.pnf defined in ct.cfg generated on Wed Nov
+26 16:07:40 2008. Notes associated with the model are in ct.log
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+The climate used is: ESP test climate and is held in:
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : /usr/esru/esp-r/databases/material.db3.a
+ constructions          : ./multicon.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+ Plant control includes  1 loops.
+no descrip
+ 
+ The sensor for function  1 sensed value from function generator.
+ The actuator for function  1 is plant component   3:temp_source @ node no.  2
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 undefined > plant     Null controller.
+ 
+The model includes a plant network.
+ 
+ The plant network contains  4 components from /usr/esru/esp-r/databases/plantc.db1
+ 
+ Component: fan ( 1) code  1, db reference  3
+ Control data:    2.500
+ Modified parameters for fan
+ Component total mass (kg)                          :   10.000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   7.0000
+ Rated total absorbed power (W)                     :   200.00
+ Rated volume flow rate (m^3/s)                     :   3.0000
+ Overall efficiency (-)                             :  0.70000
+ 
+ Component: pump ( 2) code  2, db reference 15
+ Control data:    0.006
+ Modified parameters for pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   150.00
+ Rated volume flow rate (m^3/s)                     :  0.80000E-02
+ Overall efficiency (-)                             :  0.70000
+ 
+ Component: temp_source ( 3) code  3, db reference 24
+ Control data:    9.000   35.000
+ 
+ Component: cool_twr ( 4) code  4, db reference 53
+ No Control data
+ Modified parameters for cool_twr
+ Component Mass (kg)                                :   50.000
+ Packing volume (m^3)                               :   35.700
+ Mass transfer contact area per m^3 of packing (m^- :   5.0000
+ Vapour transfer coefficient (kg/sm^2)              :  0.70000E-02
+ UA modulus for component (W/K)                     :  0.10000E-02
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ 
+ Nb of plant component connections:  6
+ Con receiving component node type sending component node
+ 
+  1 cool_twr node 1 (zone air or ambient.) fan node 1 details:     1.00    0.00    0.00
+  1 cool_twr node 1 (zone air or ambient.) fan node 1 details:     1.00    0.00    0.00
+ 
+  2 temp_source node 1 (from another component.) cool_twr node 1 details:     1.00    0.00    0.00
+  2 temp_source node 1 (from another component.) cool_twr node 1 details:     1.00    0.00    0.00
+ 
+  3 fan node 1 (from another component.) temp_source node 1 details:     1.00    0.00    0.00
+  3 fan node 1 (from another component.) temp_source node 1 details:     1.00    0.00    0.00
+ 
+  4 cool_twr node 2 (from another component.) temp_source node 2 details:     1.00    0.00    0.00
+  4 cool_twr node 2 (from another component.) temp_source node 2 details:     1.00    0.00    0.00
+ 
+  5 pump node 1 (from another component.) cool_twr node 2 details:     1.00    0.00    0.00
+  5 pump node 1 (from another component.) cool_twr node 2 details:     1.00    0.00    0.00
+ 
+  6 temp_source node 2 (from another component.) pump node 1 details:     1.00    0.00    0.00
+  6 temp_source node 2 (from another component.) pump node 1 details:     1.00    0.00    0.00
+ 
+ No of component containments =  0
+  Component      | Containment descr. | Type
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:

@@ -102,7 +102,15 @@ C Uncertainty.
 
       common/idstb/nidst
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
@@ -125,7 +133,6 @@ C Uncertainty.
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
-      character imgfmt*4,imgfoc*4,limgfil*72
       character*72 LCFGF,LPRJLG
       character LCTLF*72,ctldoc*248,lradcf*72,LTDFA*72
       character LTDF*72,LAPROB*72 

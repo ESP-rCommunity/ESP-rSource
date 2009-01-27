@@ -62,6 +62,11 @@ C act='p' iget parameters already set.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
+
+C Defaults.
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
@@ -88,17 +93,20 @@ C Simulator parameters.
       character outs*124,louts*248,TLABEL*60,trange*20,tranged*20
       character ALABEL(5)*12,t20*20,act*1,H*72
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32,LTMPC*72
+      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
+      character lltmpc*144
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
       character graftitle*64,grlbl*24,t24*24,LTIME*5
       character LAPROB*72,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
       character xfile*144,tg*1,delim*1,tab*1
       dimension FMAX(MFRS), FMIN(MFRS), FTOTSD(MFRS)
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
       dimension TMAX(MFRS), TMIN(MFRS), IQHRS(MFRS)
 
       integer YAXSET, ADDLIN
+      integer iglib
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -121,48 +129,74 @@ C If there was a flow network defined ask for the flow results file.
 C Assume standard naming convention (*.mfr for flow results), if the
 C user specified a different flow results file then he will have to
 C specify it here as well.
-          lrf=lnblnk(RFILE)
-          lrf3=lrf-3
-          lrf4=lrf-4
-          LRFW=LNBLNK(LAFRES)
-          if(RFILE(lrf3:lrf).eq.'.res')then
-            write(LTMPC,'(2a)') RFILE(1:lrf4),'.mfr'
-          else
-            LTMPC=LAFRES
+        lltmpc=LAFRESABS   ! based on the file name that was passed in the command line
+        llt=lnblnk(lltmpc)
+
+C Use ifdefs because the X11 version will be returning only the
+C name of the file, while the GTK version will be returning the
+C name with the full path.
+   22   H(1)='A flow results library is created by the simulator. It'
+        H(2)='will contain the time series results for flow'
+        H(3)='simulations. '
+        H(4)='On computers running UNIX, the file: '
+        write(H(5),'(5x,a60)') DAFRES(1:60)
+        H(6)='usually exists. This is a link to an example results'
+        H(7)='library set up when ESP was first installed.'
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
+     &      'flow library file',IER,7)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmpc,'Flow Library name ? ',' ',124,DAFRES,
+     &      'flow library file',IER,7)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
+     &      'flow library file',IER,7)
           endif
-          h(1)='If a network flow simulation was also undertaken'
-          h(2)='you are asked for the name of the flow results file.'
-          h(3)='A default name is provided which can be used if you'
-          h(4)='did not modify it when undertaking the simulation.'
- 22       call EASKS(LTMPC,'Flow library name?','(see help)',72,LAFRES,
-     &               'flow library file',IER,4)
-          if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
-            IFRES=IFIL+4
-            call EFOPRAN(IFRES,LTMPC,NMRL,1,IER)
+        elseif(iglib.eq.2)then
+          CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
+     &      'flow library file',IER,7)
+        else
+          CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
+     &    'flow library file',IER,7)
+        endif
+
+C If user cancel.
+        if(ier.eq.-3)then
+          return
+        endif
+
+        if(lltmpc(1:2).ne.'  '.and.lltmpc(1:4).ne.'UNKN')then
+
+          IFRES=IFIL+4
+          call EFOPRAN(IFRES,LLTMPC,NMRL,1,IER)
 
 C If there were no errors opening the file then remember its
 C name to report in header of graphs and scan its header.
-            if(ier.eq.0)then
-              IFLIB=1
-              LAFRES=LTMPC
-              call MFREADH(IFRES,ITRC)
-            else
-              h(1)='There was a problem opening the flow results'
-              h(2)='file. Check the name given and also check the'
-              h(3)='folder to see if the file exists.'
-              write(outs,'(3a)') 'Problem encountered opening ',
-     &          ltmpc(1:lnblnk(ltmpc)),'!'
-              call easkab(outs,'Options:','respecify','cancel',
-     &          ii,3)
-              if(ii.eq.1)goto 22
-              return
-            endif
+          if(ier.eq.0)then
+            IFLIB=1
+            LAFRES=LLTMPC(1:72)   ! remember some of the file name
+            call MFREADH(IFRES,ITRC)
+          else
+            h(1)='There was a problem opening the flow results'
+            h(2)='file. Check the name given and also check the'
+            h(3)='folder to see if the file exists.'
+            write(louts,'(3a)') 'Problem encountered opening ',
+     &        lltmpc(1:lnblnk(lltmpc)),'!'
+            call edisp248(iuout,louts,100)
+            call easkab(' ','Options:','respecify','cancel',
+     &        ii,3)
+            if(ii.eq.1)goto 22
+            return
           endif
+        endif
         endif
       endif
 
-C Define prompt.
+C Define prompt and set an initial value for xquery.
       outs='  '
+      XQUERY=0.0
 
 C Check if can draw in colour.
       colok=.false.
@@ -207,7 +241,6 @@ C Ask for set point value.
           continue
         else
           H(1)='The ..'
-          XQUERY=0.0
           CALL EASKR(XQUERY,' ','  Test point value ? ',
      &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
         endif

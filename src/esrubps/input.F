@@ -734,8 +734,11 @@ C Warn the user that the climate file definition has failed.
               
                call edisp (iuout, outs)
                if ( autook ) then
+
 C If running silently, stop
                   call edisp(iuout,outs)               
+                  call pauses(3)   ! pause for 3 seconds then abort program.
+                  call epagend
                   stop
                else
 C If running interactively, warn user and free file channel
@@ -804,6 +807,8 @@ C Error.
         ELSE
           CALL EPAGEND
           CALL ERPFREE(ICLIM,ISTAT)
+          call pauses(2)   ! pause for 2 seconds then abort program.
+          call epagend
           STOP
         ENDIF
       endif
@@ -816,6 +821,7 @@ C Error.
       else
         CALL USRMSG(' Error occured at the first record ',
      &              ' in the ground connections file.','W')
+        call pauses(2)   ! pause for 2 seconds then abort program.
         CALL EPAGEND
         STOP
       endif
@@ -970,7 +976,7 @@ C Read contents of the I'th zone data files.
             return
           else
             call edisp(iuout,outs)
-            call epwait
+            call pauses(3)   ! pause for 3 seconds then abort program.
             CALL EPAGEND
             STOP
           endif
@@ -1007,7 +1013,7 @@ C Zero the thermal bridge heat loss before (perhaps) reading in from geometry fi
             return
           else
             call edisp(iuout,outs)
-            call epwait
+            call pauses(3)   ! pause for 3 seconds then abort program.
             CALL EPAGEND
             STOP
           endif
@@ -1024,7 +1030,7 @@ C Zero the thermal bridge heat loss before (perhaps) reading in from geometry fi
             return
           else
             call edisp(iuout,outs)
-            call epwait
+            call pauses(3)   ! pause for 3 seconds then abort program.
             CALL EPAGEND
             STOP
           endif
@@ -1143,7 +1149,7 @@ C Make sure the other side is an allowable surface.
             return
           else
             call edisp(iuout,outs)
-            call epwait
+            call pauses(3)   ! pause for 3 seconds then abort program.
             CALL EPAGEND
             STOP
           endif
@@ -1165,7 +1171,7 @@ C has reciprocal information.
             return
           else
             call edisp(iuout,outs)
-            call epwait
+            call pauses(3)   ! pause for 3 seconds then abort program.
             CALL EPAGEND
             STOP
           endif
@@ -1740,6 +1746,7 @@ C mode.
 
             if ( autook ) then
 
+              call pauses(3)   ! pause for 3 seconds then abort program.
               stop
 
             else
@@ -1791,7 +1798,7 @@ C Check that we have enough info to proceede if autook
             return
           else
             call usrmsg(outs,' ','W')
-            call epwait
+            call pauses(2)   ! pause for 2 seconds then abort program.
             CALL EPAGEND
             STOP
           endif

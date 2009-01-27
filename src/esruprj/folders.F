@@ -73,7 +73,15 @@ C Project log file.
       common/LOG/LPRJLG
 
 C Images.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -98,7 +106,7 @@ C Passed in parameters.
       character doit*248,tfile*72,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
-      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*2
+      character limg*72,act*2
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
@@ -107,6 +115,7 @@ C Passed in parameters.
 
       integer iyeart    ! for local editing
       integer lnmp,lncr ! for with of mpath & cfgroot strings
+      character tcname*248   ! for editing image notes
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -639,8 +648,18 @@ C Provide a listing of the current contents of the ../images folder.
           noimg=noimg+1
           imgfmt(noimg)=iformat
           imgfoc(noimg)=ifocus
+
+C Edit operation description if newer file.
+          if(icfgv.gt.3)then
+            H(1)='Notes (<248 char) for images can help with' 
+            H(2)='communicating supporting information.'
+            tcname=imgdoc(noimg)
+            CALL EASKS248(tcname,' ','Image notes:',
+     &        72,'associated image','image notes',IER,2)
+            if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
+          endif
         endif
-        if(noimg.lt.10)then
+        if(noimg.lt.MIMG)then
           dok=.false.
           h(1)='If you have more images select ok.'
           CALL ASKOK(' ',' Another image?',OK,dok,1)

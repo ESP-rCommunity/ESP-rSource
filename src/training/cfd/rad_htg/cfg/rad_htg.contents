@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model zone heated by radiator, cfd not active.
-defined in rad_htg.cfg generated on Thu Feb  1 16:09:06 2007. Notes associated
+defined in rad_htg.cfg generated on Wed Nov 26 16:10:44 2008. Notes associated
 with the model are in rad_htg.log
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
@@ -9,16 +9,33 @@ from the local time meridian. The year used in simulations is 1999 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
 The climate used is: ESP test climate and is held in:
-/home/jon/esru_longGTK/esp-r/climate/clm67 and uses hour centred solar data.
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /home/jon/esru_longGTK/esp-r/databases/pressc.db1
- materials              : /home/jon/esru_longGTK/esp-r/databases/constr.db1
- constructions          : /home/jon/esru_longGTK/esp-r/databases/multicon.db1
- plant components       : /home/jon/esru_longGTK/esp-r/databases/plantc.db1
- event profiles         : /home/jon/esru_longGTK/esp-r/databases/profiles.db1
- optical properties     : /home/jon/esru_longGTK/esp-r/databases/optics.db1
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db1
+ constructions          : ./multicon.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
  
  ____________________________________________________________
  
@@ -66,36 +83,45 @@ ID Zone         Volume|          Surface
  room describes a...
  There is 22.400m2 of exposed surface area, 22.400m2 of which is vertical.
  Outside walls are 141.33 % of floor area & avg U of 0.393 & UA of 8.3253
- Glazing is 8.0000 % of floor & 5.3571 % facade with avg U of 0.000 & UA of 0.00
+ Glazing is 8.0000 % of floor & 5.3571 % facade with avg U of 2.811 & UA of 3.3728
  
  A summary of the surfaces in room( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.20    180.   0. Surf-1       OPAQ VERT extern_wall  ||< external
-  2  9.91     90.   0. part-1a      OPAQ VERT int_part     ||< Surf-4:zone_S
-  3  2.80      0.   0. part-2b      OPAQ VERT int_part     ||< part-2b:zone_L
-  4  14.0    270.   0. Surf-4       OPAQ VERT extern_wall  ||< external
-  5  15.0      0.  90. ceiling      OPAQ CEIL ceiling      ||< ceil_1:roof_1
-  6  15.0      0. -90. floor        OPAQ FLOR floor_1      ||< user def grnd profile  0
-  7  1.000     0.   0. radiator     OPAQ VERT int_part     ||< radiator:zone_L
-  8  1.20    180.   0. window       TRAN VERT d_glz        ||< external
-  9  4.09     90.   0. part-2a      OPAQ VERT int_part     ||< part-2a:zone_L
- 10  1.80      0.   0. part-2c      OPAQ VERT int_part     ||< part-2c:zone_L
- 11  2.80      0.   0. part-2d      OPAQ VERT int_part     ||< part-2d:zone_L
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  7.20    180.   0. Surf-1       OPAQUE VERT extern_wall  ||< external
+  2  9.91     90.   0. part-1a      OPAQUE VERT int_part     ||< Surf-4:zone_S
+  3  2.80      0.   0. part-2b      OPAQUE VERT int_part     ||< part-2b:zone_L
+  4  14.0    270.   0. Surf-4       OPAQUE VERT extern_wall  ||< external
+  5  15.0      0.  90. ceiling      OPAQUE CEIL ceiling      ||< ceil_1:roof_1
+  6  15.0      0. -90. floor        OPAQUE FLOR floor_1      ||< user def grnd profile  0
+  7  1.000     0.   0. radiator     OPAQUE VERT int_part     ||< radiator:zone_L
+  8  1.20    180.   0. window       DCF767 VERT d_glz        ||< external
+  9  4.09     90.   0. part-2a      OPAQUE VERT int_part     ||< part-2a:zone_L
+ 10  1.80      0.   0. part-2c      OPAQUE VERT int_part     ||< part-2c:zone_L
+ 11  2.80      0.   0. part-2d      OPAQUE VERT int_part     ||< part-2d:zone_L
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+nil_operations
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -109,25 +135,34 @@ nil_operations
  
  A summary of the surfaces in roof_1( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  1.50    180.   0. Surf-1       OPAQ VERT roof_1       ||< external
-  2  13.5     90.  56. Surf-2       OPAQ VERT roof_2       ||< external
-  3  1.50      0.   0. Surf-3       OPAQ VERT roof_1       ||< external
-  4  13.5    270.  56. Surf-4       OPAQ VERT roof_2       ||< external
-  5  15.0      0. -90. ceil_1       OPAQ FLOR ceiling_rev  ||< ceiling:room
-  6  7.50      0. -90. ceil_2       OPAQ FLOR ceiling_rev  ||< ceil_1:zone_L
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.50    180.   0. Surf-1       OPAQUE VERT roof_1       ||< external
+  2  13.5     90.  56. Surf-2       OPAQUE SLOP roof_2       ||< external
+  3  1.50      0.   0. Surf-3       OPAQUE VERT roof_1       ||< external
+  4  13.5    270.  56. Surf-4       OPAQUE SLOP roof_2       ||< external
+  5  15.0      0. -90. ceil_1       OPAQUE FLOR ceiling_rev  ||< ceiling:room
+  6  7.50      0. -90. ceil_2       OPAQUE FLOR ceiling_rev  ||< ceil_1:zone_L
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
+ 
+ Air schedule notes:
+nil_operations
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -140,25 +175,34 @@ nil_operations
  
  A summary of the surfaces in zone_S( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.00    180.   0. Surf-1       OPAQ VERT extern_wall  ||< external
-  2  9.91     90.   0. Surf-2       OPAQ VERT extern_wall  ||< external
-  3  7.00      0.   0. Surf-3       OPAQ VERT int_part     ||< Surf-1:zone_L
-  4  9.91    270.   0. Surf-4       OPAQ VERT int_part     ||< part-1a:room
-  5  8.85      0.  90. ceiling      OPAQ CEIL ceiling      ||< ceil_1:roof_2
-  6  8.85      0. -90. floor        OPAQ FLOR floor_1      ||< user def grnd profile  0
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  7.00    180.   0. Surf-1       OPAQUE VERT extern_wall  ||< external
+  2  9.91     90.   0. Surf-2       OPAQUE VERT extern_wall  ||< external
+  3  7.00      0.   0. Surf-3       OPAQUE VERT int_part     ||< Surf-1:zone_L
+  4  9.91    270.   0. Surf-4       OPAQUE VERT int_part     ||< part-1a:room
+  5  8.85      0.  90. ceiling      OPAQUE CEIL ceiling      ||< ceil_1:roof_2
+  6  8.85      0. -90. floor        OPAQUE FLOR floor_1      ||< user def grnd profile  0
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
+ 
+ Air schedule notes:
+nil_operations
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -168,38 +212,47 @@ nil_operations
  zone_L describes a...
  There is 33.488m2 of exposed surface area, 33.488m2 of which is vertical.
  Outside walls are 175.22 % of floor area & avg U of 0.393 & UA of 11.973
- Glazing is 17.241 % of floor & 8.9584 % facade with avg U of 0.000 & UA of 0.00
+ Glazing is 17.241 % of floor & 8.9584 % facade with avg U of 2.811 & UA of 8.4320
  
  A summary of the surfaces in zone_L( 4) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  7.00    180.   0. Surf-1       OPAQ VERT int_part     ||< Surf-3:zone_S
-  2  11.1     90.   0. Surf-2       OPAQ VERT extern_wall  ||< external
-  3  12.4      0.   0. Surf-3       OPAQ VERT extern_wall  ||< external
-  4  7.00    270.   0. Surf-4       OPAQ VERT extern_wall  ||< external
-  5  4.09    270.   0. part-2a      OPAQ VERT int_part     ||< part-2a:room
-  6  9.90      0.  90. ceil_2       OPAQ CEIL ceiling      ||< ceil_2:roof_2
-  7  17.4      0. -90. floor        OPAQ FLOR floor_1      ||< user def grnd profile  0
-  8  7.50      0.  90. ceil_1       OPAQ CEIL ceiling      ||< ceil_2:roof_1
-  9  3.00      0.   0. window       TRAN VERT d_glz        ||< external
- 10  2.80    180.   0. part-2b      OPAQ VERT int_part     ||< part-2b:room
- 11  2.80    180.   0. part-2d      OPAQ VERT int_part     ||< part-2d:room
- 12  1.000   180.   0. radiator     OPAQ VERT int_part     ||< radiator:room
- 13  1.80    180.   0. part-2c      OPAQ VERT int_part     ||< part-2c:room
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  7.00    180.   0. Surf-1       OPAQUE VERT int_part     ||< Surf-3:zone_S
+  2  11.1     90.   0. Surf-2       OPAQUE VERT extern_wall  ||< external
+  3  12.4      0.   0. Surf-3       OPAQUE VERT extern_wall  ||< external
+  4  7.00    270.   0. Surf-4       OPAQUE VERT extern_wall  ||< external
+  5  4.09    270.   0. part-2a      OPAQUE VERT int_part     ||< part-2a:room
+  6  9.90      0.  90. ceil_2       OPAQUE CEIL ceiling      ||< ceil_2:roof_2
+  7  17.4      0. -90. floor        OPAQUE FLOR floor_1      ||< user def grnd profile  0
+  8  7.50      0.  90. ceil_1       OPAQUE CEIL ceiling      ||< ceil_2:roof_1
+  9  3.00      0.   0. window       DCF767 VERT d_glz        ||< external
+ 10  2.80    180.   0. part-2b      OPAQUE VERT int_part     ||< part-2b:room
+ 11  2.80    180.   0. part-2d      OPAQUE VERT int_part     ||< part-2d:room
+ 12  1.000   180.   0. radiator     OPAQUE VERT int_part     ||< radiator:room
+ 13  1.80    180.   0. part-2c      OPAQUE VERT int_part     ||< part-2c:room
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+nil_operations
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -213,25 +266,34 @@ nil_operations
  
  A summary of the surfaces in roof_2( 5) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  1.25    180.   0. Surf-1       OPAQ VERT roof_1       ||< external
-  2  10.6     90.  45. Surf_2       OPAQ VERT roof_2       ||< external
-  3  1.25      0.   0. Surf-3       OPAQ VERT roof_1       ||< external
-  4  13.5    270.  56. Surf-4       OPAQ VERT roof_2       ||< external
-  5  8.85      0. -90. ceil_1       OPAQ FLOR ceiling_rev  ||< ceiling:zone_S
-  6  9.90      0. -90. ceil_2       OPAQ FLOR ceiling_rev  ||< ceil_2:zone_L
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.25    180.   0. Surf-1       OPAQUE VERT roof_1       ||< external
+  2  10.6     90.  45. Surf_2       OPAQUE SLOP roof_2       ||< external
+  3  1.25      0.   0. Surf-3       OPAQUE VERT roof_1       ||< external
+  4  13.5    270.  56. Surf-4       OPAQUE SLOP roof_2       ||< external
+  5  8.85      0. -90. ceil_1       OPAQUE FLOR ceiling_rev  ||< ceiling:zone_S
+  6  9.90      0. -90. ceil_2       OPAQUE FLOR ceiling_rev  ||< ceil_2:zone_L
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
+ 
+ Air schedule notes:
+nil_operations
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -241,10 +303,29 @@ nil_operations
  
  Outside walls are 89.818 % of floor area & avg U of 0.497 & UA of 36.835
  Sloped roof is 62.023 % of floor area & avg U of 3.402 & UA of 174.07
- Glazing is 5.0909 % of floor & 5.3640 % facade with avg U of 0.000 & UA of 0.00
+ Glazing is 5.0909 % of floor & 5.3640 % facade with avg U of 2.811 & UA of 11.805
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of transparent construction: d_glz        with DCF7671_06nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of d_glz is      4.20
  
  Details of opaque construction: extern_wall
  
@@ -262,7 +343,7 @@ nil_operations
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   162   12.0     0.190   960.   837. 0.90 0.90    15.  0.06 Roofing felt
-    2   21   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 Light mix
+    2   21   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 Light mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   151    8.0     0.380  1120.   840. 0.90 0.60    12.  0.02 Ceiling (plaster)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.799  1.902  1.678 (partition)  1.548
@@ -272,7 +353,7 @@ nil_operations
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 Common earch
+ Ext   263  100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 Common earth
     2   82  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 Red granite
     3   32   50.0     1.400  2100.   653. 0.90 0.65    19.  0.04 Heavy mix concrete
  Int   124   50.0     1.400  2100.   650. 0.91 0.65    19.  0.04 Cement screed

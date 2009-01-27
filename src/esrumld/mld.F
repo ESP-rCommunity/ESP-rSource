@@ -187,7 +187,7 @@ C Initialise the ststistical results
       nitem=8
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
-      call askabout('mld',1)
+      call askabout('mld ',1)
 
       call emenu(head,item,nitem,ino)
 
@@ -210,7 +210,7 @@ C Set statistics reporting flag to ON or OFF  .
       elseif(ino.eq.7) then
 
 C Help via the askabout facility in esru_ask.F The zero requests display
-        call askabout('mld',0)
+        call askabout('mld ',0)
         goto 2
       elseif(ino.eq.8) then
         CALL EPAGEND
