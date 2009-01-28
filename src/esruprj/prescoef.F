@@ -1478,7 +1478,6 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C      IER=0
       moddb =.false.
 
 C Create a menu showing the available database items.  Allow user to

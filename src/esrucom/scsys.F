@@ -99,7 +99,17 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+
+C Images.
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/defdb/dfdblbl,defdbfl
       common/spmfxst/ispmxist,spflnam
@@ -234,7 +244,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,ZN*12
-      character imgfmt*4,imgfoc*4,limgfil*72,zname*12,zdesc*64
+      character zname*12,zdesc*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character lradcf*72

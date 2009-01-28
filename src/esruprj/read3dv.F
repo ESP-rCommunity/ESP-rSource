@@ -51,6 +51,10 @@ C converts into viewing coords, clips the image and draws it.
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -81,7 +85,7 @@ C converts into viewing coords, clips the image and draws it.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,ETEXT*82
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
-      CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
+      CHARACTER MLCN*12,zname*12,zdesc*64,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale

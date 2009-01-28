@@ -75,6 +75,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/PREC2/VOL(MCOM)
@@ -136,7 +140,7 @@ C the floor area (one) or it was calculated (zero).
       CHARACTER H*72,zname*12,zdesc*64,HEAD*32,SALT*33,hold*36
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER DESC*48,DESCRC*25
+      CHARACTER DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER D14*14,T14*14,D12*12,T12*12,LTMP*72,GFILE*72
@@ -148,6 +152,8 @@ C the floor area (one) or it was calculated (zero).
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
       character TOSMLCN*32  ! to remember other side mlc name
+      character TOOTF*32    ! to remember other side OTF
+      character TOOPT*32    ! to remember other side optics
 
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
@@ -405,7 +411,19 @@ C construction on the other side. Logic is the same as in EDSURA.
           else
             showother=.false.
           endif
+
+C Report on any duplicate surface names.
           write(SN,'(a12)')SSNAME(ioc)
+          call snamdup(SN,icomp,is,nameok)
+          if(nameok)then
+            continue
+          else
+            write(outs,'(3a)') 'Surface ',SN(1:lnblnk(SN)),
+     &        ' has a duplicate name. Names must be unique!'
+            call edisp(iuout,outs)
+          endif
+
+C Report on possible construction issues.
           if(showother.and.icoth.ne.0)then
             do 17 ii=1,nmlc
               if(SSMLCN(ioc)(1:12).eq.DESC(ii)(1:12)) then
@@ -414,11 +432,17 @@ C construction on the other side. Logic is the same as in EDSURA.
                 if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                   if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                     TOSMLCN=MLCN
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                   elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
                     TOSMLCN=MLCN
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   else
                     TOSMLCN=MLCN
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   endif
                 elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
@@ -437,11 +461,15 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                 else
                   if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                     TOSMLCN=MLCSYM
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   elseif(SSMLCN(icoth)(1:12).eq.MLCSYM(1:12))then
                     continue
                   else
                     TOSMLCN=MLCSYM
+                    write(TOOTF,'(a)')OTF
+                    write(TOOPT,'(a)')OPT
                     updoth=.true.
                   endif
                 endif
@@ -460,9 +488,10 @@ C used for a partition (and db does not have a linked MLC - inform the user.
      &                iuout,IER)
                   endif
 
-C Assign new MLC name to the icoth surface.
+C Assign new MLC name to the icoth surface as well as SSOTF with the
+C optical properties returned from parsemlcdesc.
                   SSMLCN(icoth)=TOSMLCN
-
+                  write(SSOTF(icoth),'(a)') TOOPT
                   call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
                     gversion(IC2(ioc)) =1.1
@@ -2886,6 +2915,10 @@ C Optical and geometric properties.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2912,7 +2945,6 @@ C Optical and geometric properties.
 
       DIMENSION SALT(11),IVAL(MCOM)  ! ,bl(144)
       CHARACTER*33 ISD(22)
-      CHARACTER DESC*48
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
@@ -2923,6 +2955,8 @@ C Optical and geometric properties.
       character ozn*12  ! the name of the other zone
       character guesstype*24
       character TOSMLCN*32  ! to remember other side mlc name
+      character TOOTF*32    ! to remember other side OTF
+      character TOOPT*32    ! to remember other side optics
 
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
@@ -2944,6 +2978,8 @@ C Force redraw of zone on entry to highlight focus surface.
       MODIFY=.TRUE.
       newgeo=.false.  ! assume older format geometry.
       TOSMLCN=' '
+      TOOTF=' '
+      TOOPT=' '
 
 C Check which version.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -3313,11 +3349,17 @@ C the name does not match or is UNKN get user to confirm change.
                   if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                     if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                       TOSMLCN=MLCN
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                     elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN=MLCN
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     else
                       TOSMLCN=MLCN
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     endif
                   elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
@@ -3340,11 +3382,17 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                   else
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN=MLCSYM
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     elseif(SSMLCN(icoth)(1:12).eq.MLCSYM(1:12))then
                       TOSMLCN=MLCSYM
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                     else
                       TOSMLCN=MLCSYM
+                      write(TOOTF,'(a)')OTF
+                      write(TOOPT,'(a)')OPT
                       updoth=.true.
                     endif
                   endif
@@ -3366,8 +3414,10 @@ C zone.
      &                  iuout,IER)
                     endif
 
-C Assign new MLC name to the icoth surface.
+C Assign new MLC name to the icoth surface as well as SSOTF with the
+C optical properties returned from parsemlcdesc.
                     SSMLCN(icoth)=TOSMLCN
+                    write(SSOTF(icoth),'(a)') TOOPT
 
 C Logic to decide whether to update other zone geometry format.
                     call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
@@ -3389,9 +3439,10 @@ C Logic to decide whether to update other zone geometry format.
 C Read current zone data back in to commons. But the backed up data
 C might not include the name of the newly selected mlc name so just
 C to be sure reset smlcn with ssmlcn so it will show up in the menu
-C when it is re-freshed. << is there another way? >>
+C when it is re-freshed.
                     CALL ERCZONE(ICOMP)
                     SMLCN(is)=SSMLCN(ioc)
+                    SOTF(is)=SSOTF(ioc)
                     call usrmsg(' Updating other side...done.',' ','-')
                     updoth=.false.
                   endif
@@ -5845,6 +5896,10 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/G2/NGL(MS)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -5875,7 +5930,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION VERT(36),options(9)
       DIMENSION TMAT(4,4),RMAT(4,4),EQN(4),CG(3),EP(3)  ! for warp checks
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
-      CHARACTER VERT*34,options*34,KEY*1,H*72,DESC*48,SN*12,T14*14,D14*14
+      CHARACTER VERT*34,options*34,KEY*1,H*72,SN*12,T14*14,D14*14
       character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       CHARACTER SNAME1*12,SNAMED*12,msgv*48
@@ -8046,6 +8101,10 @@ C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -8083,7 +8142,6 @@ C   losspercent and is assumed to apply to all zones in the model.
       CHARACTER H*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER DESC*48
       CHARACTER outs*124
       character SIGSTR*12,t16a*16,t16b*16,act*1
       character TBRIDGE*58

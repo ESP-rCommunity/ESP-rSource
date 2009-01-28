@@ -64,6 +64,10 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -81,7 +85,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,zname*12,HOLD*24
-      character blkroot*6,mat*12,DESC*48,tbn*8
+      character blkroot*6,mat*12,tbn*8
       character holds*36,SFIL*72,DSFIL*72,ZN*12,zdesc*64
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -952,6 +956,10 @@ C EDOBSB: Edit details of an obstruction block.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -973,7 +981,7 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       LOGICAL MODIFY,MODLEN,MODBND
       DIMENSION VERT(19),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S8*8
-      character BLKNAME*8,BLKMAT*12,HOLD*32,DESC*48,outs*124
+      character BLKNAME*8,BLKMAT*12,HOLD*32,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
 

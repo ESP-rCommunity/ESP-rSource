@@ -182,7 +182,9 @@ C
 
 C rlegacymat: scan legacy ASCII file and fill common blocks.
 C mkascimat:  creates ascii material file (version 1.1) based on
+C             current information in common matdatarray and matnamearray.
 C rascimat:   fills common matdatarray and matnamearray from
+C             current ASCII material database. 
 
 C ************* rlegacymat 
 C rlegacymat: Fills common matdatarray and matnamearray from

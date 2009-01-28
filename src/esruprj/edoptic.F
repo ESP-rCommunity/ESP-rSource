@@ -59,7 +59,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER SOPT*12,GTYPE*12,GDESCR*36,KEY*1,loptdbl*144
       character cpsopt*12,cpgdescr*36,SALT*48,layout*7
       CHARACTER xfile*144,tg*1,delim*1
-      character OUTSTR*124,lfil*72,word*24,outs248*248
+      character OUTSTR*124,lfil*72,DFILE*72,word*24,outs248*248
       character lworking*144,fs*1
       dimension RVA(20),IVA(24)
 
@@ -267,7 +267,15 @@ C Import (from WINDOW 4.1 or Window 5.1 or 5.2 )....
      &      'Please revise the database.','W')
           endif
         elseif(IOW.eq.2)then
+
+C Ask for WIS report file and then attempt to scan it.
           lfil='/tmp/testtag.txt'
+          H(1)='This is a WIS report file. You should provide the'
+          H(2)='full path to this file.'
+          DFILE='wis.txt'
+          CALL EASKS(lfil,'WIS file name?',
+     &     ' ',72,DFILE,'optical properties import file',IER,2)
+          IER=0
           iwin4=IPRODB
           CALL EFOPSEQ(iwin4,lfil,1,IER)
   77      CALL STRIPC(iwin4,OUTSTR,99,ND,1,'line 1',IER)

@@ -19,12 +19,18 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C context.F contains:
-C  EDSITE: edits site/general information for system configuration file.
+C  EDSITE: edits site/general information for system configuration file
+C  Roaming:  manages data associated with rotating a model as a
+C            function of time.  .
+C  manageimages: allows the user to manage images associated with
+C            a model 
 C  Setuptemporal: coordinates access to and initial creation of
 C                 temporal data to be associated with a model.
 C  PECONV: conversion factors for primary energy units.
 C  Calenmanage: sets up and manages a calendar for ESP-r.
 C  Calenprint:  displays a calendar for year iyear (or a few months)
+C  EDDGTP:      sets up ground temperature profiles
+C  EDDSHD:      sets up shading and insolation files
 
 C ************* EDSITE 
 C EDSITE Edits site/general information for system configuration file.
@@ -76,7 +82,15 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
 
 C Images.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
 
@@ -99,7 +113,6 @@ C ITEMS is menu for site/context items.
       character*72 GTGEOM
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
-      character imgfmt*4,imgfoc*4,limgfil*72
       character act*1,GTNAME*15
       character D64*64  ! default string for editing
       character ipvact*3  ! to denote whether in cfd file or external
@@ -946,7 +959,7 @@ C Changing orientation as a function of time.
       END
 
 c ****** ROAMING *****
-C This subroutine manages data associated with rotating a model as a
+C Roaming manages data associated with rotating a model as a
 C function of time. Important variables are defined in roam.h
       SUBROUTINE ROAMING
 #include "building.h"
@@ -1059,13 +1072,22 @@ C model including view and add images (delete not yet working).
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
+      common/CFGV/icfgv
       common/pophelp/h(60)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
 C Images.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
       logical MODSIT,browse,XST,unixok
 
@@ -1073,11 +1095,12 @@ C ITEMS is menu for site/context items, ITEMIMG is menu for editing
 C and control of project images.
       character*33 ITEMIMG(20)
       character H*72,outs*124
-      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,key*1,fs*1
+      character limg*72,key*1,fs*1
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72
+      character tcname*248   ! for editing image notes
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1111,12 +1134,16 @@ C Set folder separator (fs) to \ or / as required.
 C Help text for menu.
       h(1)='Images may be associated with a model for various'
       h(2)='purposes - for example to record site conditions'
-      h(3)='or corresponding design drawings. Up to 10 images'
+      write(h(3),'(a,i2,a)') 
+     &  'or corresponding design drawings. Up to ',MIMG,' images'
       h(4)='may be associated with a model.'
       h(5)=' '
       h(6)='The following image types are supported: gif, tiff,'
       h(7)='jpeg and X11 bitmap. To edit an image name, select'
       h(8)='it from the list.'
+      h(9)=' '
+      h(10)='Newer model configuration files can also include a'
+      h(11)='text block explaining the image. '
 
       CALL EMENU('Project Images',ITEMIMG,nimgitms,INOI)
       if(INOI.EQ.nimgitms)then
@@ -1127,7 +1154,7 @@ C Update configuration if images have changed.
         endif
         return
       elseif(INOI.EQ.nimgitms-1)then
-        CALL PHELPD('Model images',8,'-',0,0,IER)
+        CALL PHELPD('Model images',11,'-',0,0,IER)
       elseif(INOI.EQ.nimgitms-2)then
 
 C Display each of the current images by topic.
@@ -1157,7 +1184,7 @@ C Add images from images folder or other location.
      &    'add from standard folder','add from another folder',
      &    'delete','cancel',IOK,4)
         if(iok.eq.1)then
-          if(noimg.ge.10)then
+          if(noimg.ge.MING)then
             call edisp(iuout,'No more images can be associated with')
             call edisp(iuout,'the current model.')
             continue
@@ -1179,7 +1206,6 @@ C Try to use information gathered from file scan.
               if(snpfile(1:2).ne.'  ')then
                 write(limg,'(3a)')imgpth(1:lnblnk(imgpth)),fs,
      &            snpfile(1:lnblnk(snpfile))
-C                write(6,*) limg
               else
                 write(limg,'(a)')imgpth(1:lnblnk(imgpth))
               endif
@@ -1196,11 +1222,21 @@ C                write(6,*) limg
               limgfil(noimg)=limg
               imgfmt(noimg)=iformat
               imgfoc(noimg)=ifocus
+
+C Edit image documentation if version supports it.
+              if(icfgv.gt.3)then
+                H(1)='Notes (<248 char) for images can help with' 
+                H(2)='communicating supporting information.'
+                tcname=imgdoc(noimg)
+                CALL EASKS248(tcname,' ','Image notes:',
+     &            72,'associated image','image notes',IER,2)
+                if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
+              endif
               modsit=.true.
             endif
           endif
         elseif(iok.eq.2)then
-          if(noimg.ge.10)then
+          if(noimg.ge.MIMG)then
             call edisp(iuout,'No more images can be associated with')
             call edisp(iuout,'the current model.')
             continue
@@ -1216,6 +1252,16 @@ C                write(6,*) limg
               limgfil(noimg)=limg
               imgfmt(noimg)=iformat
               imgfoc(noimg)=ifocus
+
+C Edit image description if version supports it.
+              if(icfgv.gt.3)then
+                H(1)='Notes (<248 char) for images can help with' 
+                H(2)='communicating supporting information.'
+                tcname=imgdoc(noimg)
+                CALL EASKS248(tcname,' ','Image notes:',
+     &            72,'associated image','image notes',IER,2)
+                if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
+              endif
               modsit=.true.
               goto 36
             endif
@@ -1235,7 +1281,13 @@ C                write(6,*) limg
       elseif(INOI.EQ.1.and.noimg.gt.0)THEN
         goto 36
       elseif(inoi.gt.1.and.inoi.lt.nimgitms-4.and.noimg.gt.0)THEN
-C        write(6,*) 'inoi ',inoi
+
+C Update the tags associated with the image. Remind the user about
+C what they selected first.
+        WRITE(outs,'(6a)') ' format ',imgfmt(inoi-2),
+     &    ' focus ',imgfoc(inoi-2),' file ',limgfil(inoi-2) 
+        call edisp(iuout,outs)  
+
         limg=limgfil(inoi-2)
         iformat=imgfmt(inoi-2)
         ifocus=imgfoc(inoi-2)
@@ -1246,6 +1298,16 @@ C        write(6,*) 'inoi ',inoi
           limgfil(inoi-2)=limg
           imgfmt(inoi-2)=iformat
           imgfoc(inoi-2)=ifocus
+
+C Edit current image description if version allows.
+          if(icfgv.gt.3)then
+            H(1)='Notes (<248 char) for images can help with' 
+            H(2)='communicating supporting information.'
+            tcname=imgdoc(inoi-2)
+            CALL EASKS248(tcname,' ','Image notes:',
+     &        72,'associated image','image notes',IER,2)
+            if(tcname(1:2).ne.'  ')imgdoc(inoi-2)=tcname
+          endif
           MODSIT=.true.
         endif
       endif
@@ -2758,7 +2820,7 @@ C Help.
 
 C Add or delete a day type.
           if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
-            write(h(1),'(a,i4,a)')'There can be up to ',MDTY,
+            write(h(1),'(a,i3,a)')'There can be up to ',MDTY,
      &      ' day types.'
             h(2)='Day types cannot be deleted (yet) but may not'
             h(3)='not be assigned to any day at all. The equivalent'
@@ -3492,7 +3554,7 @@ C Ground temperature profiles....
       END
 
 C ********** EDDSHD **************
-C EDDGTP Sets up shading and insolation files
+C EDDSHD Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"

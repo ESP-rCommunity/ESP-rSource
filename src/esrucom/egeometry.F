@@ -256,6 +256,9 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
 C MLC commons to recover optical property name.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -267,7 +270,7 @@ C MLC commons to recover optical property name.
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
+      character ZN*12,phrase*64,zdesc*64,outs*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
@@ -1279,6 +1282,9 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
 C MLC commons to recover optical property name.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
                
@@ -1314,7 +1320,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124,DESC*48
+      character ZN*12,phrase*64,zdesc*64,outs*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc
@@ -3530,65 +3536,76 @@ C            call edisp(iuout,outs)
 
 C If most the edges are shared with other similarly facing surfaces
 C then if act='c' and the call surrel did not find it ask the user
-C what to do.
+C what to do.  If there are duplicate surfaces in the zone then
+C the other surface might have exactly the same number of edges.
           if(act.eq.'c')then
             if(SSPARENT(icc)(1:2).eq.'  ')then
               if(nbedgshr(icc).eq.NVER(isurf).or.
      &           nbedgshr(icc).eq.(NVER(isurf)-1))then
 
-                KFLAG = -1
-                call SORTI(iwhich,iwhichs,list,KFLAG)
+C If the two surfaces have the same number of edges then it is
+C likely that these are duplicate surfaces. 
+                if(NVER(iosurf).eq.NVER(isurf))then
 
-C If all of iwhich is the same number excluding zero then use it.
-                same=.true.
-                do 442 im=1,list-1
-                  if(iwhich(im).ne.0.and.iwhich(im+1).ne.0)then
-                    if(iwhich(im).ne.iwhich(im+1)) same=.false.
-                  endif
-  442           continue
-                if(same)then
-                  ibinval=iwhich(1)
+C Debug
+C                  write(6,*) 'Probable dup surfaces ',iosurf,isurf,
+C     &              NVER(iosurf),NVER(isurf)
+                  continue
                 else
-                  ibinval=0
-                endif
+                  KFLAG = -1
+                  call SORTI(iwhich,iwhichs,list,KFLAG)
+
+C If all of iwhich is the same number (excluding zero) then use it.
+                  same=.true.
+                  do 442 im=1,list-1
+                    if(iwhich(im).ne.0.and.iwhich(im+1).ne.0)then
+                      if(iwhich(im).ne.iwhich(im+1)) same=.false.
+                    endif
+  442             continue
+                  if(same)then
+                    ibinval=iwhich(1)
+                  else
+                    ibinval=0
+                  endif
 
 C If current surface already marked and is the same as ibinval then do not
 C bother the user. If ibinval was set to zero then clear SSPARENT.
-                if(ibinval.ne.0)then
-                  if(SSPARENT(icc).eq.ssname(ibinval))then
-                    ok=.true.
-                  else
-                    write(outs,'(5a)') 'Is ',ssname(icc),
-     &                ' a subsurface of ',ssname(ibinval),'?'
-                    dok=.true.
+                  if(ibinval.ne.0)then
+                    if(SSPARENT(icc).eq.ssname(ibinval))then
+                      ok=.true.
+                    else
+                      write(outs,'(5a)') 'Is ',ssname(icc),
+     &                  ' a subsurface of ',ssname(ibinval),'?'
+                      dok=.true.
                     h(1)='The shape & edges of the two surfaces suggest'
                     h(2)='that one is a subsurface. If not say no. '
-                    call askok(outs,' ',ok,dok,2)
-                  endif
-                  if(ok)then
-                    SSPARENT(icc)=ssname(ibinval)
-                  endif
-                else
-                  dok=.false.
-                  h(1)='Is its parent surface in the current'
-                  h(2)='zone. If not say no. '
-                  izz=ic1(icc)
-                  write(outs,'(5a)') 'Does ',ssname(icc),
-     &              ' have a parent surface in ',zname(izz),'?'
-                  call askok(outs,
-     &              ' (saying no sets parent to blank)',ok,dok,2)
-                  if(ok)then
-                    write(outs,'(5a)') 'Specify parent surface for ',
-     &                ssname(icc),' in ',zname(izz),'.'
-                    call easksur(izz,iss,'-',outs,' ',ier)
-                    ibinval=izstocn(izz,iss)
-                    if(ibinval.ne.0)then
+                      call askok(outs,' ',ok,dok,2)
+                    endif
+                    if(ok)then
                       SSPARENT(icc)=ssname(ibinval)
+                    endif
+                  else
+                    dok=.false.
+                    h(1)='Is its parent surface in the current'
+                    h(2)='zone. If not say no. '
+                    izz=ic1(icc)
+                    write(outs,'(5a)') 'Does ',ssname(icc),
+     &                ' have a parent surface in ',zname(izz),'?'
+                    call askok(outs,
+     &                ' (saying no sets parent to blank)',ok,dok,2)
+                    if(ok)then
+                      write(outs,'(5a)') 'Specify parent surface for ',
+     &                  ssname(icc),' in ',zname(izz),'.'
+                      call easksur(izz,iss,'-',outs,' ',ier)
+                      ibinval=izstocn(izz,iss)
+                      if(ibinval.ne.0)then
+                        SSPARENT(icc)=ssname(ibinval)
+                      else
+                        SSPARENT(icc)=' '
+                      endif
                     else
                       SSPARENT(icc)=' '
                     endif
-                  else
-                    SSPARENT(icc)=' '
                   endif
                 endif
               endif
@@ -3616,6 +3633,10 @@ C   drawn above as well as the case of a door normally inserted
 C   which is not at the edge of the parent.
 C Act = 's' for a strict definition where a child must be fully
 C   bounded by the parent.
+
+C Note: if surface I and J both have the name number of vertices then
+C a match should be discounted because the two surfaces are likely to
+C be duplicates.
 
       SUBROUTINE SURREL(ACT,ICOMP,IER)
 #include "building.h"
@@ -3747,6 +3768,16 @@ C so as to pick up the door-in-corner.
             elseif(act.eq.'s'.and.(ICOMVER(JSUR).GE.NVER(JSUR)))then
               continue
             else
+              goto 105
+            endif
+
+C If isur and jsur both have the same number of edges then it is likely
+C that we have duplicate surfaces.
+            if(NVER(JSUR).eq.NVER(ISUR))then
+
+C Debug.
+C              write(6,*) 'Probable dup surfaces ',jsur,isur,
+C     &          NVER(jsur),NVER(isur)
               goto 105
             endif
           endif
