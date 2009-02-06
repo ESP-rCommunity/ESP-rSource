@@ -90,7 +90,8 @@ C For each zone a pointer to relevant temporal entry 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IHTCLFLUX(MCOM)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL OPTDF,OPIMP,OPEXP,XST
 
@@ -140,7 +141,9 @@ C Search instances in temporal file to find match(s).
                   if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')IACTIV(itd3)=itd4
                   if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
      &               IHTCLSETP(itd3)=itd4
-
+                  if(DBTASK(ITD1)(1:8).eq.'HCQPOWER')
+     &               IHTCLFLUX(itd3)=itd4
+     
 C Bidirectional data are assigned per surface
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
                         DO 75 IS=1,NZSUR(itd3)

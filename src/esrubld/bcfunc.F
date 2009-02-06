@@ -380,7 +380,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IHTCLFLUX(MCOM)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -609,7 +610,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IHTCLFLUX(MCOM)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -3231,6 +3233,7 @@ C ON condition is reached.
       SUBROUTINE BCL10
 #include "building.h"
 #include "control.h"
+#include "tdf2.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -3242,9 +3245,19 @@ C ON condition is reached.
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
-      
-      character outs*124
+ 
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     & 	     IHTCLFLUX(MCOM)      
+      DIMENSION VAL(MBITS+2) 
 
+      character outs*124
+      logical closeHflag,closeCflag
+      real QMINrequired,QMAXrequired,QHFluxLeftover,QCFluxLeftover !comments to follow...
+      
 c Fatal error test.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.0)GOTO 99
 
@@ -3277,31 +3290,146 @@ c CSPOFF = cooling OFF set point temp. (deg.C)
       CSPON=BMISCD(ICF,IDTYP,IPER,6)
       CSPOFF=BMISCD(ICF,IDTYP,IPER,7)
 
+C If a flag in the control file exists in order to assign heating
+C and cooling capacities from external file (temporal file/tdf) then
+C take data at each timestep for these fluxes. 
+C The flag for this is 0.123 (no integer are currently allowed in control files)
+      call eclose(QHM,0.123,0.001,closeHflag)
+      call eclose(QCM,0.123,0.001,closeCflag)
+      if(closeHflag.and.closeCflag)then
+       
+C Take input from tdf for both heating and cooling
+        if(IHTCLFLUX(ICF).ne.0)then
+          itdi=IHTCLFLUX(ICF) 
+        endif        
+        IFOC=itdi
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+        QHM=VAL(ISD)  
+        QCM=-VAL(ISD+1)                   
+      elseif(closeHflag.and.(.not.closeCflag))then   
+         
+C Take input from tdf only for heating      
+        if(IHTCLFLUX(ICF).ne.0)then
+          itdi=IHTCLFLUX(ICF) 
+        endif        
+        IFOC=itdi
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+        QHM=VAL(ISD)  
+      elseif(.not.closeHflag.and.closeCflag)then     
+
+C Take input from tdf only for cooling  
+        if(IHTCLFLUX(ICF).ne.0)then
+          itdi=IHTCLFLUX(ICF) 
+        endif        
+        IFOC=itdi
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)  
+        QCM=-VAL(ISD+1)       
+      endif     
+
 C Note that heating and cooling throttling ranges may overlap. In
 C this case simultaneous heating and cooling may result.
-
 C Heating cycle:
-      IF(TCTL.LT.HSPON)THEN
-         QH=QHM
-         LASTH(IICOMP)='ON '
-      ELSEIF(TCTL.GT.HSPOFF)THEN
-         QH=0.
-         LASTH(IICOMP)='OFF'
-      ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
-         IF(LASTH(IICOMP).EQ.'ON ')QH=QHM
-         IF(LASTH(IICOMP).EQ.'OFF')QH=0.
+      IF(closeHflag.or.closeCflag)THEN
+      
+C Read heating capacity from external file     
+        IF(TCTL.LT.HSPON)THEN
+          QMINrequired=(BB3-BB1*HSPON)/BB2
+          QMAXrequired=(BB3-BB1*HSPOFF)/BB2
+          IF(QHM.GE.QMAXrequired)THEN
+            QH=QMAXrequired
+            QHFluxLeftover=QHM-QH  
+            LASTH(IICOMP)='ON'
+          ELSEIF(QHM.GE.QMINrequired)THEN
+            QH=QHM
+            QHFluxLeftover=0.0
+            LASTH(IICOMP)='ON'
+          ELSE
+            QH=QMINrequired
+            QHFluxLeftover=QHM-QH
+            LASTH(IICOMP)='ON'
+          ENDIF  
+        ELSEIF(TCTL.GT.HSPOFF)THEN
+          QH=0.
+          QHFluxLeftover=QHM
+          LASTH(IICOMP)='OFF'
+        ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
+          QMAXrequired=(BB3-BB1*HSPOFF)/BB2
+          IF(QHM.GE.QMAXrequired)THEN
+            QH=QMAXrequired
+            QHFluxLeftover=QHM-QH
+            LASTH(IICOMP)='ON'
+          ELSE
+            QH=QHM
+            QHFluxLeftover=0
+            LASTH(IICOMP)='ON'
+          ENDIF         
+        ENDIF
+        write(96,*) 'Heating leftover,',QHFluxLeftover
+
+C Using the value defined in interface      
+      ELSE      
+        IF(TCTL.LT.HSPON)THEN
+          QH=QHM
+          LASTH(IICOMP)='ON '
+        ELSEIF(TCTL.GT.HSPOFF)THEN
+          QH=0.
+          LASTH(IICOMP)='OFF'
+        ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
+          IF(LASTH(IICOMP).EQ.'ON ')QH=QHM
+          IF(LASTH(IICOMP).EQ.'OFF')QH=0.
+        ENDIF
       ENDIF
 
 C Cooling cycle:
-      IF(TCTL.GT.CSPON)THEN
-         QC=QCM
-         LASTC(IICOMP)='ON '
-      ELSEIF(TCTL.LT.CSPOFF)THEN
-         QC=0.
-         LASTC(IICOMP)='OFF'
-      ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
-         IF(LASTC(IICOMP).EQ.'ON ')QC=QCM
-         IF(LASTC(IICOMP).EQ.'OFF')QC=0.
+      IF (closeHflag.or.closeCflag)THEN      
+
+C Read cooling capacity from tdf file      
+        IF(TCTL.GT.CSPON)THEN
+          QMINrequired=(BB3-BB1*CSPON)/BB2
+          QMAXrequired=(BB3-BB1*CSPOFF)/BB2
+          IF(QCM.GE.QMAXrequired)THEN
+            QC=QMAXrequired
+            QCFluxLeftover=QCM-QC
+            LASTC(IICOMP)='ON'
+          ELSEIF(QCM.GE.QMINrequired)THEN
+            QC=QCM
+            QCFluxLeftover=0
+            LASTC(IICOMP)='ON'
+          ELSE
+            QC=QMINrequired
+            QCFluxLeftover=QCM-QC
+            LASTC(IICOMP)='ON'
+          ENDIF
+        ELSEIF(TCTL.LT.CSPOFF)THEN
+          QC=0.
+          QCFluxLeftover=QCM
+          LASTC(IICOMP)='OFF'
+        ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
+          QMAXrequired=(BB3-BB1*CSPOFF)/BB2
+          IF(QCM.GE.QMAXrequired) THEN
+            QC=QMAXrequired
+            QCFluxLeftover=QCM-QC
+            LASTC(IICOMP)='ON'
+          ELSE
+            QC=QCM
+            QCFluxLeftover=0
+            LASTC(IICOMP)='ON'
+          ENDIF
+        ENDIF 
+        write(96,*) 'Cooling leftover,',QCFluxLeftover
+        
+C Using the value defined in interface     
+      ELSE      
+        IF(TCTL.GT.CSPON)THEN
+           QC=QCM
+           LASTC(IICOMP)='ON '
+        ELSEIF(TCTL.LT.CSPOFF)THEN
+           QC=0.
+           LASTC(IICOMP)='OFF'
+        ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
+           IF(LASTC(IICOMP).EQ.'ON ')QC=QCM
+           IF(LASTC(IICOMP).EQ.'OFF')QC=0.
+        ENDIF
       ENDIF
 
 C Convert from (/m^2) if necessary.
@@ -5880,8 +6008,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
-
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IHTCLFLUX(MCOM)
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       DIMENSION VAL(MBITS+2)

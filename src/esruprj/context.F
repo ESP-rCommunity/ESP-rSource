@@ -1387,10 +1387,10 @@ C and present a different interface depending on file type.
       H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
       H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
-      H(34)='manage associations - you can add and delete associations'
-      H(35)='  that have been previously defined. Note this does not'
-      H(36)='  alter the contents of the temporal file.'
-      H(37)=' '
+      H(33)=' HCQPOWER -Specify columns to read fluxes for H&C.'
+      H(35)='manage associations - you can add and delete associations'
+      H(36)='  that have been previously defined. Note this does not'
+      H(37)='  alter the contents of the temporal file.'
       H(38)='dereference temporal file - this removes current links'
       H(39)='  between the model and entities in the temporal file.'
       H(40)='  It does not remove the temporal file.'
@@ -1922,8 +1922,22 @@ C << between 0.0 and 1.0 giving ON fraction.
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 254
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL'
+          elseif(TTYPE(it)(1:6).eq.'HCQPOW')then
+
+C << Think about what this could be used for...it has to be used with
+C a controller: currently with bcl10 (deadband on/off)
+            IC=-1
+ 266        izdef=0
+            call askzone(ic,izdef,' Related zone for assigning fluxes?',
+     &        'Related zone','-','Fluxes must be assigned to a zone.',
+     &         ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 266
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL'          
           elseif(TTYPE(it)(1:6).eq.'ACTIVI'.or.
      &           TTYPE(it)(1:6).eq.'HTCLSE')then
+C     &           TTYPE(it)(1:6).eq.'HTCLSE'.or.
+C     &           TTYPE(it)(1:6).eq.'HCQPOW')then
 
 C Depending on the type of the data, ask for associated zone.
             IC=-1
@@ -2006,6 +2020,9 @@ C Add another controls
               elseif(TTYPE(it)(1:6).eq.'HTCLSE')then
                 cm(2)=2.0
                 cm(3)=3.0
+C               elseif(TTYPE(it)(1:6).eq.'HCQPOW')then
+C                 cm(2)=2.0
+C                 cm(3)=3.0
               endif         
             endif
 
@@ -2040,6 +2057,11 @@ C Confirm capacities.
      &        'Heating and cooling setpoint column number ',
      &        '(respectively):',40,' 2.0 3.0 ',
      &        ' track another column number(s)',IER,6)
+C             elseif(TTYPE(it)(1:6).eq.'HCQPOW')then     
+C               CALL EASKS(HOLD,
+C      &        'Heating and cooling fluxes column number ',
+C      &        '(respectively):',40,' 2.0 3.0 ',
+C      &        ' track another column number(s)',IER,6)
             endif    
             K=0
             CALL EGETWR(HOLD,K,cm(2),0.,80.,'F','Max columns heat',IER)
