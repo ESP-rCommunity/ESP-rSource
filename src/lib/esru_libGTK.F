@@ -6021,10 +6021,14 @@ C pophelp where IL is the number of lines of help under consideration.
       SUBROUTINE PHELPW(IL,IHW,IER)
       common/pophelp/h(60)
       CHARACTER h*72
+      integer ill   ! local loop
+
       IER=0
       IHW=0
-      IF(IL.GT.0)THEN
-        DO 10 I=1,IL
+      ill=il                ! cast to local loop
+      IF(ILL.GT.60) ILL=60  ! protect against array error
+      IF(ILL.GT.0)THEN
+        DO 10 I=1,ILL
           IX=max(1,LNBLNK(h(I)))
           IF(IX.GT.IHW)IHW=IX
   10    CONTINUE
