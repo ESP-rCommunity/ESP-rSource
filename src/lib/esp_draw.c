@@ -1198,8 +1198,12 @@ void edline_(x1,y1,x2,y2,ipdis)
   ix2 = (gint) *x2;         /* end point  */
   iy2 = (gint) *y2;
 
-/* Begin with finding out the length of the line. */
+/* Begin with finding out the length (pixels) of the line. */
   crow = (double) (( *x1 - *x2 ) * ( *x1 - *x2) + ( *y1 - *y2) * ( *y1 - *y2));
+  if( crow <= 2.0) {
+    gdk_draw_point(gr_image,gc,ix1,iy1);	/* if short line draw point */
+    return;
+  }
   ldis = (gint) sqrt(crow);
   if( ldis <= 3 ) {
     gdk_draw_point(gr_image,gc,ix1,iy1);	/* if short line draw point */
