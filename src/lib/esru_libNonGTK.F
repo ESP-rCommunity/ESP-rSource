@@ -4051,6 +4051,7 @@ C menuchw is the initial request for menu width (in characters)
 
       CHARACTER*5 MM
       integer ifont   ! to pass to winfnt
+      integer immod   ! to pass to jwinint
 
 c If MMOD set to valid index, assume it, dont ask.
       MM=' '
@@ -4079,7 +4080,8 @@ C Pass application size via sizehwxy.
           iwidth=iappwi
           call sizehwxy(ihight,iwidth,iappx,iappy)
         endif
-        call jwinint(8,HEAD)
+        immod=8
+        call jwinint(immod,HEAD)
         ifont=1
         call winfnt(ifont)
 
