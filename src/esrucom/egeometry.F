@@ -90,6 +90,7 @@ C conversion to the 'G1' format takes place.
  
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -112,11 +113,6 @@ C             vertices in each face
 C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-C NGL       - contains the number of windows in each face (set to zero)
-C             this is depreciated as the default window data structure is no
-C             longer used.        
-      COMMON/G2/NGL(MS)
 
 C Default solar distribution and shading directives.
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)

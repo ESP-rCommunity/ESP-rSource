@@ -1602,6 +1602,7 @@ C All networks (plant, airflow, contaminants etc) are removed from the
 C model.
       SUBROUTINE EMKSBM
 #include "building.h"
+#include "geometry.h"
 #include "sbem.h"
 #include "esprdbfile.h"
       
@@ -1639,7 +1640,7 @@ C << G1 is probably not the common block to use for this >>
       real gversion
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      COMMON/G2/NGL(MS)
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),

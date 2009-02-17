@@ -5872,6 +5872,7 @@ C menu. ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 C Make use of VERINFO to display the current vertex surface connections.
       SUBROUTINE EDVLIST(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -5893,7 +5894,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       integer igupgrade
       COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G2/NGL(MS)
+
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
@@ -7288,6 +7289,7 @@ C << conversion to the 'G1' format takes place.
  
       SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -7309,10 +7311,9 @@ C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-C NGL       - contains the number of windows in each face (set to zero)
-C             this is depreciated as the default window data structure is no
-C             longer used.        
-      COMMON/G2/NGL(MS)
+C NGL (from geometry.h) - contains the nb of windows in each face
+C   this is depreciated.        
+
 
 C Default solar distribution and shading directives.
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
