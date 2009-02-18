@@ -479,13 +479,9 @@ C Rotate if required.
       ENDIF
 
 C Read line of unused indices (one per surface) if any index is
-C non zero then it represents a depreciated default window, warn the
-C user and set NGL to 0.
+C non zero then it represents a depreciated default window.
       IRVA=NSUR
       CALL EGETWIA(IUNIT,IVA,IRVA,0,MG,'F','def window list',IER)
-      DO 14 KS=1,NSUR
-        NGL(KS)=0
-   14 CONTINUE
 
 C Read the window dimension details and advise user (if IVA non-zero).
       DO 16 KS=1,NSUR

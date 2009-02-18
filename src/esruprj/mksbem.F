@@ -2267,7 +2267,6 @@ C Make one child in this surface
                   ICON=IZSTOCN(icomp,nsur)+1
                   NSUR=NSUR+1
                   NZTV(ICOMP)=NTV
-                  NGL(NSUR)=0
                   WRITE(SNAME(ICOMP,NSUR),'(2A)')
      &            CHAR(96+IELF),'_not_glz'
                   COE(1)=SSURCOG(ICN,1)
@@ -2385,7 +2384,6 @@ C set to 1. If it has not been set then define a frame for the window
               ICON=IZSTOCN(icomp,nsur)+1
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
-              NGL(NSUR)=0
               WRITE(SNAME(ICOMP,NSUR),'(2A)')CHAR(96+IELF),'_frame'
               COE(1)=SSURCOG(ICN,1)
               COE(2)=SSURCOG(ICN,2)

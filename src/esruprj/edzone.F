@@ -305,9 +305,6 @@ C this if user supplied information exists.
 
 C << does this fill all of the G5 variables? >>
         CALL FILSUR(iuout,ICOMP,0)
-        DO 44 I=1,NSUR
-          NGL(I)=0
-   44   CONTINUE
 
 C Update the connection list and hash.
         ICCC=NCON
@@ -391,7 +388,6 @@ C User will begin with a minimal GEN body.
         SUSE(1,1)='-'
         SUSE(1,2)='-'
         SPARENT(1)='-'
-        NGL(1)=0
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=1
 
@@ -2762,7 +2758,6 @@ C Begin with default assumptions for each surface then overwrite.
 C Update the connection list.
       ICCC=NCON
       DO 32 ICC=1,NSUR
-        NGL(ICC)=0
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=ICC

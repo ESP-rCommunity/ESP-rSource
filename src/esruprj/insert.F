@@ -362,7 +362,6 @@ C G5 contents into the surface below. The G6 commons were done already.
           DO 67 IV=1,NVER(IS)
             JVN(IS,IV)=JVN(IS+1,IV)
    67     CONTINUE
-          NGL(IS)=NGL(IS+1)
    66   CONTINUE
    65   NSUR=NSUR-1
         NZSUR(ICOMP)=NSUR
@@ -679,7 +678,6 @@ C Up the surface count.
         NSUR=NSUR+1
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
-        NGL(NSUR)=0
         NVER(NSUR)=NVER1
         SNAME(ICOMP,NSUR)=SNAME1
         SOTF(NSUR)=SOTF1
@@ -1053,7 +1051,6 @@ C surface in the zone`.
         NSUR=NSUR+1
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
-        NGL(NSUR)=0
 
 C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
@@ -1457,7 +1454,6 @@ C Remember the reverse order of vertices for matching surface.
 
       WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
       write(SOTF(NSUR),'(a)') OPT(1:12)
-      NGL(NSUR)=0
 
 C If version 1.1 of geometry specify the use of the surface.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -1519,7 +1515,6 @@ C If SN is less than 12 characters add an _
 
         WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
         write(SOTF(NSUR),'(a)') OPT(1:12)
-        NGL(NSUR)=0
 
 C If version 1.1 of geometry specify the use of the surface.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -2450,7 +2445,6 @@ C If in silent mode assign construction otherwise select.
           IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
         endif
       endif
-      NGL(NSUR)=0
 
 C If version 1.1 of geometry specify the use of the surface.
       call eclose(gversion(icomp),1.1,0.01,newgeo)

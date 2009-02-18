@@ -1738,7 +1738,6 @@ C instanciate the common blocks.
               SUSE(1,1)='-'
               SUSE(1,2)='-'
               SPARENT(1)='-'
-              NGL(1)=0
 
 C Update the connection list for an initial surface.
               ICCC=NCON
@@ -2017,9 +2016,6 @@ C Convert into a gen body and update nzsur and nztv
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
             CALL FILSUR(iuout,ICOMP,0)
-            DO 444 I=1,NSUR
-              NGL(I)=0
-  444       CONTINUE
 
 C Update the connection list.
             ICCC=NCON

@@ -6770,7 +6770,6 @@ C Up the surface count and zone surface attributes.
           ICONT=IZSTOCN(icomp,nsur)+1
           NSUR=NSUR+1
           NZSUR(ICOMP)=NZSUR(ICOMP)+1
-          NGL(NSUR)=0
           SNAME(ICOMP,NSUR)=SNAME1
           SMLCN(NSUR)='UNKNOWN'
           SVFC(NSUR)='UNKN'
@@ -7692,9 +7691,6 @@ C handle (easily if one per surface) and convert it to a transparent
 C surface later on in the subroutine. 
       IRVA=NSUR
       CALL EGETWIA(IUNIT,IVA,IRVA,0,3,'F','def window list',IER)
-      DO 14 KS=1,NSUR
-        NGL(KS)=0
-   14 CONTINUE
 
 C Read the window dimension details and advise user (if IVA non-zero).
       nbdef=0
