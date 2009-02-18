@@ -37,6 +37,9 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 
       subroutine inscon(icomp,icstat,act)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -50,8 +53,6 @@ C                 in common.
       common/pophelp/h(60)
       common/filep/ifil
 
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
-
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
@@ -64,7 +65,7 @@ C                 in common.
       common/ract/paction
 
       dimension month(12),iavdec(12)
-      character zname*12,ctype*4
+      character zname*12
       character paction*16
       character*72 h
       character month*3,outs*124,tbase*72,ltrns*72,act*1,zdesc*64
@@ -213,6 +214,7 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 c   ntmc   - how many insolation sources were found
       subroutine findtmc(icomp,act,ntmc)
 #include "building.h"
+#include "geometry.h"
 
 C   ntmc & nwins: the number of insolation sources (i.e. external
 C                 and transparent surfaces); the latter is held
@@ -222,8 +224,6 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
       common/filep/ifil
-
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
@@ -253,7 +253,6 @@ C isurfinso list of insolation sources.
      &       lstsfcalc(mcom,ms),nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension iva(ms)
-      character ctype*4
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
       character paction*16

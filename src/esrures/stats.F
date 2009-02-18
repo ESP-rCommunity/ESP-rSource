@@ -2082,6 +2082,7 @@ C << file does not need to be scanned to get the surface emissivity.
       SUBROUTINE CASDIST(act)
 
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2105,10 +2106,6 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)

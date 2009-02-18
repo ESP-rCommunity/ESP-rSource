@@ -1470,15 +1470,12 @@ C inqu_tmc: Check if tmc control active.
       subroutine inqu_tmc
 #include "building.h"
 
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl

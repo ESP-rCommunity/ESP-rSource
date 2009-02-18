@@ -840,6 +840,9 @@ C *********************************************************************
       SUBROUTINE VCpyDr(NPER,ier)
 #include "building.h"
 
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -848,11 +851,6 @@ C *********************************************************************
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl
@@ -1006,6 +1004,7 @@ C         files.
 C *********************************************************************
       SUBROUTINE VSaveP(NPER,ier)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1013,11 +1012,6 @@ C *********************************************************************
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),

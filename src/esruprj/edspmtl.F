@@ -338,6 +338,7 @@ C Data items.
       subroutine EDSPM(ISPM,MODE,ITRU)
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -361,11 +362,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C << rewrite logic using G6 common block >>
 

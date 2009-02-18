@@ -30,6 +30,7 @@ C MZINPT code in espbps/input.f.
 
       SUBROUTINE MOGCFG
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
 
@@ -38,11 +39,6 @@ C MZINPT code in espbps/input.f.
       COMMON/FILEP/IFIL
       common/trc/itrc
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl

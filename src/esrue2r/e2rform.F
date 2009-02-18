@@ -289,6 +289,9 @@ C Translate esp data to radiance geom and materials.
 C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -296,11 +299,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -557,6 +555,7 @@ C mkriofil: Write inside/outside materials and composition files.
 C If ACT='i' then interactive, ACT='s' for silent.
       SUBROUTINE mkriofil(ftr,fict,ACT,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -567,10 +566,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

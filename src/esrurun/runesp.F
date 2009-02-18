@@ -46,6 +46,7 @@ C ************************************************************
 
       program runesp
 #include "building.h"
+#include "geometry.h"
 #include "uncertainty.h"
 #include "espriou.h"
 #include "esprdbfile.h"
@@ -67,11 +68,6 @@ C ************************************************************
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth

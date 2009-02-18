@@ -37,6 +37,9 @@ C Sets up the parameters relating to shading computation.
 
       subroutine shdcon(icomp,ier,act)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -44,10 +47,6 @@ C Sets up the parameters relating to shading computation.
       common/pophelp/h(60)
       common/outin/iuout,iuin
 
-      character ctype*4
-      real gversion
-      integer igupgrade
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/contr/mon,isc(ms),iyd
       common/mtfile/ltrns,multic,mons,monf
       common/ract/paction
@@ -180,15 +179,12 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 c   icont  - >0 if shaded surfaces were found
       subroutine findisc(icomp,ier,act,icont)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
 
-      character ctype*4
-      real gversion
-      integer igupgrade
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd

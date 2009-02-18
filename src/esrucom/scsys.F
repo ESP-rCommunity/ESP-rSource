@@ -24,6 +24,7 @@ C file names. No range checking is done, ie assumed to have
 C been checked elsewhere.  
       SUBROUTINE ESCSYS(FILE,IUC,IUF,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "tdf2.h"
 #include "cfd.h"
@@ -76,12 +77,6 @@ C espriou.h provides currentfile.
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-
-C CTYPE (3 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*3
-      real gversion
-      COMMON/G0/CTYPE,gversion
 
 C Common blocks as in esystem.F (some omitted).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)

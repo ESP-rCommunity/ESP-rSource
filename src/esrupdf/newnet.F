@@ -1036,6 +1036,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
@@ -1054,11 +1055,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
@@ -2538,6 +2534,7 @@ C D - delete
       SUBROUTINE EDBPLINK(MODE,IS)
 
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "control.h"
 
@@ -2563,11 +2560,6 @@ C Common for the building plant lin
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR

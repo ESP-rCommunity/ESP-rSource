@@ -31,6 +31,7 @@ C ********************* sbmedit
 C sbmedit define high level data associated with UK NCM methodology.
       subroutine sbmedit
 #include "building.h"
+#include "geometry.h"
 #include "sbem.h"
 #include "tdf2.h"
 #include "control.h"
@@ -50,7 +51,6 @@ C sbmedit define high level data associated with UK NCM methodology.
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -93,7 +93,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character subpath*72         
       CHARACTER OUTSTR*124     
  
-      integer igupgrade
       CHARACTER SSPARENT*12,ACT*1,ADF*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       dimension IVALSS(29)       ! array to get epicks answer from
@@ -102,11 +101,11 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,tab*1
-      character outs*124,outs248*248,h*72,CTYPE*4,GUESS*24
+      character outs*124,outs248*248,h*72,GUESS*24
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
       CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
       character*35 ZITEMS(MCOM+4)
-      real Air_infilt,gversion
+      real Air_infilt
       real light_input_watt !user input for heat gains from lights
                             !instead of using the values from the sbem database
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
@@ -1635,11 +1634,6 @@ C << G1 is probably not the common block to use for this >>
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

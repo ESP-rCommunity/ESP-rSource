@@ -116,6 +116,9 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -198,13 +201,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 

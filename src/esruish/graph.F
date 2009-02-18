@@ -283,6 +283,7 @@ C and the surrounding obstruction blocks.
 
       subroutine sitpln(icomp)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -290,10 +291,6 @@ C and the surrounding obstruction blocks.
       common/outin/iuout,iuin
       common/filep/ifil
 
-      character ctype*4
-      real gversion
-      integer igupgrade
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)

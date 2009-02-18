@@ -64,14 +64,13 @@ C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file. 
       SUBROUTINE CLRPRB
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2272,13 +2271,9 @@ C ESZONE makes a copy of the current contents of common blocks G1 G3
 C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ESCZONE(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion,gversion1
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      real gversion1
       COMMON/SG0/CTYPE1,gversion1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
@@ -2338,13 +2333,9 @@ C ERZONE recovers the saved contents of common blocks G1 G2 G3
 C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ERCZONE(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion,gversion1
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      real gversion1
       COMMON/SG0/CTYPE1,gversion1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),

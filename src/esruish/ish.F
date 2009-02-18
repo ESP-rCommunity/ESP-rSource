@@ -83,6 +83,9 @@ C Sets up defaults and offers main menu.
 
       program ish
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
@@ -120,7 +123,6 @@ C IEEE callback (Solaris)
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
       common/mtfile/ltrns,multic,mons,monf
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -170,7 +172,7 @@ C Material data arrays.
       character*72 lname,ltrns,tbase,h
       character*72 lcfgf
       character*72 lview,lhcco,ltwin,lcgcin,zobs
-      character items*26,ctype*4,cAppName*12
+      character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
       character descrh*5,descrd*5,zname*12,zdesc*64,inf*144,lcmdfl*144
       character path*72,upath*72,cfgroot*24,outstr*124
@@ -1416,6 +1418,7 @@ C  ifstat = 8  new file filled via import of ascii file
 
       subroutine shdprb(itc,silent,icomp,ifstat)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1423,7 +1426,6 @@ C  ifstat = 8  new file filled via import of ascii file
       common/outin/iuout,iuin
       common/pophelp/h(60)
       common/filep/ifil
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
 
       integer nccode,indutl
@@ -1440,7 +1442,7 @@ C  ifstat = 8  new file filled via import of ascii file
       common/ract/paction
 
       character*72 lview,lhcco,ltwin,lcgcin,zobs
-      character h*72,ctype*4,exportfile*72,paction*16,outs*124
+      character h*72,exportfile*72,paction*16,outs*124
 
       logical modify,modlen,modbnd,silent,xst
       logical newgeo  ! Used to test for new/old geometry file.

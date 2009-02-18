@@ -33,6 +33,8 @@ C Control interface for defining vertices or a floor plan extrusion
 C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -54,12 +56,6 @@ C via clicking on a bitmap.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/G4/NDP(MCOM),IDPN(MCOM,3)

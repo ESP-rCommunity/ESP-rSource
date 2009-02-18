@@ -843,6 +843,7 @@ C Icomp : Zone number
 C Iskip : If = 0, then skip the list of surfaces menu
       SUBROUTINE ZoneDisp(icomp, iskip)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
 
       COMMON/FILEP/IFIL
@@ -850,10 +851,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -1448,6 +1445,7 @@ C
 
       SUBROUTINE LCAcalc(itrc,Ichanel)
 #include "building.h"
+#include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
       
@@ -1466,10 +1464,6 @@ C
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2500,6 +2494,7 @@ C phylosophy as LCACalc
 
       SUBROUTINE LCADet(itrc,Ichanel)
 #include "building.h"
+#include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
       
@@ -2516,10 +2511,6 @@ C phylosophy as LCACalc
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)

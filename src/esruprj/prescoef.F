@@ -335,6 +335,7 @@ C should calculate pressure coefficients.
       SUBROUTINE EDCPFAC(ITRC,IER)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -345,10 +346,6 @@ C should calculate pressure coefficients.
       common/pophelp/h(60)
       common/FILEP/IFIL
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),

@@ -32,6 +32,7 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       SUBROUTINE MOSCAS(IZONE,ISFN,IANZSE)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -48,10 +49,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
