@@ -279,15 +279,7 @@ C Establish if this database contains result-sets.
 C Read in all file names and miscellaneous data associated
 C with the results held in this database and stored in the
 C header block.
-    8 if (NSIM.lt.31) then
-        if (MNRS.gt.30) then
-          ISTREC=MNRS
-        else
-          ISTREC=30
-        endif
-      else
-        ISTREC=MNRS
-      endif
+    8 ISTREC=MNRS
       CALL MOINIT(ISTREC,IER)
 
 C If the user was asked to browse for the model configuration file
