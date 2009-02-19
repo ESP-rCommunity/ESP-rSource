@@ -173,6 +173,7 @@ C and future time rows. Units: W/m^2
 
       SUBROUTINE MZSLGN(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
@@ -191,8 +192,6 @@ C in elevation and azimuth.
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),

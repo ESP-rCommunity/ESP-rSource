@@ -12,4 +12,7 @@ C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
       integer igupgrade
       common/g2/gversion(MCOM),igupgrade
 
+C Default solar distribution and shading directives.
+      integer ndp,idpn
+      common/g4/ndp(MCOM),idpn(MCOM,3)
 

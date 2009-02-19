@@ -65,13 +65,12 @@ C in a new model file.
       SUBROUTINE CLRPRB
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4.
 #include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2278,7 +2277,6 @@ C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/SG4/NDP1,IDPN1(3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2340,7 +2338,6 @@ C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/SG4/NDP1,IDPN1(3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)

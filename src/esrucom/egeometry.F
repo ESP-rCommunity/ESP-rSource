@@ -91,7 +91,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4.
 #include "geometry.h"
 
 C espriou.h provides current file.
@@ -108,9 +108,6 @@ C             vertices in each face
 C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-C Default solar distribution and shading directives.
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C Include ishdirc common in legacy file read so that some inference
 C can be made in case the data is saved to version 1.1 file.
@@ -949,7 +946,7 @@ C with user before overwriting.
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -966,7 +963,6 @@ C << todo: emkgeo could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
@@ -1180,7 +1176,7 @@ C       +ve).
       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4.
 #include "geometry.h"
 
 C espriou.h provides currentfile.
@@ -1198,9 +1194,6 @@ C             vertices in each face
 C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-C Default solar distribution and shading directives.
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -2093,7 +2086,6 @@ C << todo: geowrite could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -4039,7 +4031,8 @@ C file.
 C << update documentation as well as reporting based on files >>
       SUBROUTINE INSINFO(ICOMP,ITRU)
 #include "building.h"
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
+#include "geometry.h"
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)

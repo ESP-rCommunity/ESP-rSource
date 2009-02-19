@@ -2336,6 +2336,8 @@ C ************* EDINSUL
 C Edit zone insolation distribution.
       SUBROUTINE EDINSUL(ICOMP,IER)
 #include "building.h"
+
+C Get common blocks g0/g2/g4 from geometry.h
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -2344,7 +2346,6 @@ C Edit zone insolation distribution.
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -7294,10 +7295,6 @@ C NVER      - contains the number of vertices in each face
 
 C NGL (from geometry.h) - contains the nb of windows in each face
 C   this is depreciated.        
-
-
-C Default solar distribution and shading directives.
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C SNAME (12 char) - surface name attribute
 C ZBASEA    - area of base (m^2)

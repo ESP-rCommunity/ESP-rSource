@@ -34,7 +34,7 @@ C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -58,7 +58,6 @@ C geometry.h provides commons G0 and G2.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)

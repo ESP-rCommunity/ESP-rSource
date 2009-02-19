@@ -38,6 +38,8 @@ C SCRZONE provides initial form of an enclosure as either a prism or
 C an extrusion. IER=0 OK. 
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
+
+C Use geometry for common g0/g2/g4.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -49,7 +51,6 @@ C an extrusion. IER=0 OK.
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -998,7 +999,6 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2495,7 +2495,6 @@ C#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
