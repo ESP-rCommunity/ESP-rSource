@@ -1097,6 +1097,7 @@ C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
 
@@ -1130,9 +1131,6 @@ C TDF commons.
       COMMON/PREC2/VOL(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
-
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
      
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS

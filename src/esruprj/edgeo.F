@@ -40,7 +40,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "net_flow.h"
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4/prec17.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -104,11 +104,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user has defined
-C the floor area (one) or it was calculated (zero).
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C prec17 common is described in geometry.h.
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -7370,13 +7366,6 @@ C ZDESC ( char) - zone notes.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero).
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl

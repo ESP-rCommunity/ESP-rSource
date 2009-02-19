@@ -398,7 +398,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/G4/prec17.
 #include "geometry.h"
 #include "power.h"
       
@@ -428,8 +428,6 @@ C Commons for electrical data
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/CASGFA/FLOORA(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Derived casual gain and electrical data.

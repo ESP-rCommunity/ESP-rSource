@@ -2580,6 +2580,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       SUBROUTINE NCMCAL(IER)
 #include "sbem.h"
 #include "building.h"
+#include "geometry.h"
       common/FILEP/IFIL
       
       integer ncomp,ncon
@@ -2599,8 +2600,6 @@ C It finally generate BRUKL input document and other SBEM reports.
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
      
 C Build variable (These should eventually be placed in build_info.h)
       character cBuilder*32          ! User who compiled system

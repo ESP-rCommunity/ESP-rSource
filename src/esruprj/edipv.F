@@ -280,6 +280,7 @@ C Define information used in generating IPV.
 C If act = 'i' then initialise variables.
       subroutine ipvdat(act)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
@@ -295,8 +296,6 @@ C espriou.h for climatelist file name.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C IPV description.

@@ -61,6 +61,7 @@ C*******************************************************************************
       SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "aim2_common.h"
 #include "control.h"
 C.....Passed variable
@@ -74,12 +75,6 @@ C.....Common variables
 C.....Zone volumes.
       common/prec2/vol(mcom)
       real vol
-
-C Zone areas
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-      real ZBASEA
-      integer IBASES,IUZBASEA,IZBASELIST
 
       common/c20/nzsur(mcom),nztv(mcom)
       integer nzsur           ! # of surfaces in a zone

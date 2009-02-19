@@ -91,7 +91,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4.
+C geometry.h provides commons G0/G2/G4/prec17.
 #include "geometry.h"
 
 C espriou.h provides current file.
@@ -224,13 +224,7 @@ C ZNAME (12 char) - the zone name.
 C ZDESC ( char) - zone notes.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list. 
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C common/PREC17 is defined in geometry.h
       
 C Save total transparent surface area for surfaces connected to external BC.
       common/PREC18/ZTRANA(MCOM)
@@ -946,7 +940,7 @@ C with user before overwriting.
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4.
+C geometry.h provides commons G0/G2/G4/prec17.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -966,8 +960,6 @@ C << calling code to signal that ZNDATA could be used instead.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
 C Dummy array for default windows.
@@ -1176,7 +1168,7 @@ C       +ve).
       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4.
+C geometry.h provides commons G0/G2/G4/prec17.
 #include "geometry.h"
 
 C espriou.h provides currentfile.
@@ -1204,9 +1196,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
 C SNAME (12 char) - surface name attribute
-C ZBASEA    - area of base (m^2)
-C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
-C             base area has been supplied by the user.
 C SOTF (32 char) - surface attribute indicating OPAQUE or an optical property.
 C SVFC (4 char) - string indicating whether the surface is to be
 C     counted as a FLOR (face up), VERT (wall), CEIL (face down),
@@ -1239,13 +1228,7 @@ C ZNAME (12 char) - the zone name.
 C ZDESC ( char) - zone notes.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C prec17 common described in geometry.h
       
 C Save total transparent surface area for surfaces connected to external BC.
 
@@ -2106,14 +2089,6 @@ C ZDESC ( char) - zone notes.
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
                
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
@@ -2886,6 +2861,7 @@ C (G7,PREC2,PREC2,PREC17,C20,C24) have been filled. It does not
 C require a recent scan of zone geometry.
       SUBROUTINE ZINFOREP(itu,icomp)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2895,8 +2871,6 @@ C require a recent scan of zone geometry.
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC2/VOL(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       character zname*12,zdesc*64

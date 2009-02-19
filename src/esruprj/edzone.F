@@ -39,7 +39,7 @@ C an extrusion. IER=0 OK.
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
 
-C Use geometry for common g0/g2/g4.
+C Use geometry for common g0/g2/g4/prec16.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -58,8 +58,6 @@ C Use geometry for common g0/g2/g4.
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1005,8 +1003,6 @@ C espriou.h provides currentfile.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC2/VOL(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2508,8 +2504,6 @@ C#include "esprdbfile.h"
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

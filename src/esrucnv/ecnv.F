@@ -962,6 +962,7 @@ C **** wegeom
 C write esp geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -974,13 +975,7 @@ C write esp geometry file.
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C common prec17 is described in geometry.h.
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)

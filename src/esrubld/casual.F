@@ -46,6 +46,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
@@ -62,9 +63,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)

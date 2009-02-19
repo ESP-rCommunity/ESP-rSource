@@ -1294,6 +1294,7 @@ C The current implemented pattern is three periods in a
 C typical day with free float outside of occupied period.
       subroutine setcontrol(setpoints)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1301,8 +1302,6 @@ C typical day with free float outside of occupied period.
       common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
