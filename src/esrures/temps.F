@@ -101,10 +101,11 @@ C surface temperature information. Note
 C << TA QM no longer used, but ordering not changed. >>
       SUBROUTINE MOMNRD(ICOMP,TA,TS,QM,NS,TMNRD)
 #include "building.h"
+CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
 
 C Sum product of opaque surface temperatures and areas.
       ZPROD=0.
@@ -124,10 +125,11 @@ C surface temperature information.
 C << GEP, GIP, QM, TA not used >>
       SUBROUTINE MOMRTS(ICOMP,TA,TS,QM,NS,OP,GEP,GIP,TMRTS)
 #include "building.h"
+CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS),OP(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
 
 C Sum product of surface temperatures and areas.
       ZPROD=0.
@@ -149,10 +151,11 @@ C surface temperature information.
 C << QM not used >>
       SUBROUTINE MORESL(ICOMP,TA,TS,QM,NS,TRESL)
 #include "building.h"
+CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
 
 C Sum product of opaque surface temperatures and areas.
       ZPROD=0.

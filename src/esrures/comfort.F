@@ -751,6 +751,7 @@ C << todo - use of explicit read of casual gains >>
 
       subroutine getocup(izone,iday,ih,ioc,ier)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever
@@ -777,8 +778,6 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X2a_QTOTOCCUP
       REAL X2c_QTOTEQUIP
-      
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)

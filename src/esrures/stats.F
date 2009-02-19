@@ -2117,7 +2117,7 @@ C << file does not need to be scanned to get the surface emissivity.
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)

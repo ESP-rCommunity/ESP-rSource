@@ -498,6 +498,7 @@ C corresponding to graphical result display.
 C If act = i then initial display, if act = s then single step display.
       SUBROUTINE MOFHED(ICOMP,ISUR,act)
 #include "building.h"
+CC#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -510,7 +511,7 @@ C If act = i then initial display, if act = s then single step display.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM

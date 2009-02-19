@@ -865,6 +865,7 @@ C ISTREC is the start record.
 C ier is zero if no problems and -3 if user issued a cancel.
       SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 
       integer lnblnk  ! function definition
@@ -890,7 +891,7 @@ C ier is zero if no problems and -3 if user issued a cancel.
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
 C      COMMON/RECV7/ZOA(MCOM)
 
 C Nothing references ZGAE and ZGAI.
@@ -923,6 +924,19 @@ C longtmp is the model configuration file with full path.
       IREC=ISTREC+2
       IBP=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
+
+C If an oder library the start record is probably 32 so if
+C the data scan yields a silly number reset IREC and try and
+C read again.
+      if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
+        IREC=30+2
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
+        if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
+          write(6,*) 'WARNING: ncomp at record was dubious',NCOMP,IREC
+          write(6,*) 'this results file needs to be scanned with'
+          write(6,*) 'an older version of res.'
+        endif
+      endif
       IREC=IREC+1
       IF(NCOMP.GT.0)goto 3
       IBP=2
@@ -1086,7 +1100,10 @@ C else read in transparent and floor areas as described.
         IREC=IREC+NCOMP+NCOMP
       else
       
-C Read floor area of each zone.
+C Read floor area of each zone (this is actually already available
+C in common block prec17 defined in geometry.h. Potentially we
+C do not need to read this array here. But later if we decide not
+C to scan geometry files this line would be needed.
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
