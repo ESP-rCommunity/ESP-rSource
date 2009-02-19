@@ -4305,8 +4305,8 @@ C                   Surface condensation gain (J/(s m^2)).
 C Calculate percentage of surface area for which water amount theoretically is enough to be visible
 C Note: This approximation does not distinguish between water and ice ...
       do i=1,2
-        asurf_min(i)=100.0*mh2o(icomp,isurf,i)/(asurf*den_h2o*1.9E-04)
-        asurf_max(i)=100.0*mh2o(icomp,isurf,i)/(asurf*den_h2o*9.5E-05)
+        asurf_min(i)=100.0*mh2o(icomp,isurf,i)/(asurf*den_h2o*1.9E-07)
+        asurf_max(i)=100.0*mh2o(icomp,isurf,i)/(asurf*den_h2o*9.5E-08)
       enddo
 
 C Because there may be more than one evaporative surface
