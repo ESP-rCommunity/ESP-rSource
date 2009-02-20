@@ -26,3 +26,7 @@ C number of items in the list.
       common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
+C The following section will hold derived data such as volume and surface
+C areas which are of general interest to many subroutines.
+C << data structures to be added here >>
+
