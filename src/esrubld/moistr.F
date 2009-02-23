@@ -955,10 +955,10 @@ C Implicitness degrees between 0 and 1 inclusive are allowed.
 C *********************************************************************
       SUBROUTINE MZMSTU(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)

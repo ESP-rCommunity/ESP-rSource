@@ -1128,7 +1128,6 @@ C TDF commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
      
@@ -1744,6 +1743,7 @@ C a moisture balance at the air point.
 
       SUBROUTINE MZVAPC(ICOMP,ZRH,CNDS)
 #include "building.h"
+#include "geometry.h"
 
 #include "hvac_parameters.h"
 #include "hvac_common.h"
@@ -1751,8 +1751,6 @@ C a moisture balance at the air point.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
-
-      COMMON/PREC2/VOL(MCOM)
 
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP

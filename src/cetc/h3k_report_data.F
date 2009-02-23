@@ -72,9 +72,6 @@ C.....Common variables
       integer ncomp          ! number of zones
       integer ncon           ! number of connections 
 
-C.....Zone volumes.
-      common/prec2/vol(mcom)
-      real vol
 
       common/c20/nzsur(mcom),nztv(mcom)
       integer nzsur           ! # of surfaces in a zone

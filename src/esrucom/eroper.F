@@ -1457,6 +1457,7 @@ C control from zone operation common block data.
 C << need to update reporting for different day types and ctl periods >>
       SUBROUTINE VENTINF(ICOMP,ITRU)
 #include "building.h"
+#include "geometry.h"
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
@@ -1466,7 +1467,6 @@ C << need to update reporting for different day types and ctl periods >>
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT

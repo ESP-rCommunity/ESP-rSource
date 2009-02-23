@@ -125,7 +125,7 @@ C Set VEWF array in preparation for editing or silent creation.
       endif
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
+      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
       NS=NZSUR(ICOMP)
       DO 111 I=1,NS
         II=I
@@ -539,7 +539,7 @@ C use in area weighted computation.
 
 C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 
-          CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
+          CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
           NS=NZSUR(icomp)
           DO 11 I=1,NS
             II=I

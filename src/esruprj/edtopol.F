@@ -3449,7 +3449,7 @@ C Search and replace by finding matching constructions.
               endif
 
 C Instead of calling zinfo use common block G7
-C              CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+C              CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
               WRITE(outs,93)
               call edisp(iuout,outs)
               WRITE(outs,94)
@@ -3657,7 +3657,7 @@ C << of TRAN for SSOTF.
             endif
 
 C Use G7 common blocks rather than call zinfo.
-C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
             WRITE(outs,93)
    93     FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')

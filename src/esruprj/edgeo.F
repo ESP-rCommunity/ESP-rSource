@@ -40,7 +40,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "net_flow.h"
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/prec17.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -80,7 +80,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C NB number of obstruction blocks.
@@ -7796,7 +7795,8 @@ C Estimate base area.
 C If base area has not yet been calculated, do this now and
 C get surface areas via call to zinfo.
       if(checkbase)then
-        call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+        call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+	vol(icomp)=zvol
         do 43 ijj=1,NSUR
           if(SVFC(ijj).eq.'FLOR')then
 

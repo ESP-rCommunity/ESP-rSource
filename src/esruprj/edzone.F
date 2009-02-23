@@ -1002,7 +1002,6 @@ C espriou.h provides currentfile.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

@@ -690,7 +690,6 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/PREC2/VOL(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2082,6 +2081,7 @@ C << should mode Z be visible when user first enters flow facility? >>
 
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
 
@@ -2089,7 +2089,6 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       

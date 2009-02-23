@@ -281,7 +281,7 @@ C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/prec17.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -297,7 +297,6 @@ C geometry.h provides commons G0/G2/G4/prec17.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)

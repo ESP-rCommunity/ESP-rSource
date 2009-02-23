@@ -597,6 +597,7 @@ C ndbph is number of data blocks/hr for monitor function.
 
       SUBROUTINE MZLS3(ICOMP,IDAY,ITSMUS,ndbph)
 #include "building.h"
+#include "geometry.h"
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
@@ -636,7 +637,6 @@ C Commons for summary of solar (for results library)
      &  q2wall(2),q2rem(2)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)

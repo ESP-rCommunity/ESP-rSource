@@ -523,6 +523,7 @@ C STUPST Sets up the zone matrix for the zone with a structured mesh.
 C *********************************************************************
       SUBROUTINE STUPST(IComp)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &ARF(MCOM,MS)
@@ -530,7 +531,6 @@ C *********************************************************************
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &HCOF(MCOM,MS)
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)

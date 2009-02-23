@@ -31,7 +31,7 @@ C ioout (integer) is the file unit to write to
 C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/prec17.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -85,7 +85,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),

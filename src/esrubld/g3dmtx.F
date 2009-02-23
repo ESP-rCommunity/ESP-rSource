@@ -423,9 +423,8 @@ C 3D zones.
 C *********************************************************************
       SUBROUTINE MZ3SU2(ICOMP,SUMA1,SUMA2,SUMA3)
 #include "building.h"
+#include "geometry.h"
 #include "control.h"
-
-      COMMON/PREC2/VOL(MCOM)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)

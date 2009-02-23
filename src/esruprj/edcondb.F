@@ -3011,9 +3011,6 @@ C << geometry file before writing it out.
               call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
             endif
 
-C Instead of zinfo use the info in common G7
-C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
-
    93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')
             WRITE(outs,93)

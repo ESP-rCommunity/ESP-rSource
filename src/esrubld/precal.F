@@ -130,11 +130,11 @@ c VOL    - zone bounded volume
 
       SUBROUTINE MZVOLM(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
-      COMMON/PREC2/VOL(MCOM)
 
       V=0.
 
@@ -297,6 +297,7 @@ C may have a different value defined for the above variables
 
       SUBROUTINE MZVENC(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty
@@ -304,7 +305,6 @@ C may have a different value defined for the above variables
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
       INTEGER ICCN

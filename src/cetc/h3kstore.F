@@ -680,6 +680,7 @@ C     ndbph is number of data blocks/hr for monitor function.
       SUBROUTINE H3KSTORE_SAVELEVEL5(ICOMP,IDAY,ITSMUS,ndbph)
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "control.h"
 
 C     #include "cfd.h"
@@ -764,9 +765,6 @@ C     Commons for summary of solar (for results library)
 
       COMMON/CCTL/ICASCF
       INTEGER ICASCF(MCOM)
-
-      COMMON/PREC2/VOL
-      REAL VOL(MCOM)
 
       COMMON/precz/zname,zdesc
         CHARACTER*12  zname(MCOM)

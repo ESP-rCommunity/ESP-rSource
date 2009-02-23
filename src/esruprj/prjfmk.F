@@ -952,8 +952,8 @@ C << must be revised for multiple day types and periods. >>
       SUBROUTINE EDAFCTL(ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
       common/pophelp/h(60)
-      COMMON/PREC2/VOL(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
@@ -2155,6 +2155,7 @@ C     =2 infil, =0 ventilation attributes.
 
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2165,7 +2166,6 @@ C     =2 infil, =0 ventilation attributes.
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -2590,6 +2590,7 @@ C << initial intent to guide later revisions?
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,act,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2602,7 +2603,6 @@ C LPROJ   - zone scheduling (operation file)
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/PREC2/VOL(MCOM)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
@@ -3119,10 +3119,10 @@ C  ICOMP zone number
 
       subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
+#include "geometry.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)

@@ -91,7 +91,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/prec17.
 #include "geometry.h"
 
 C espriou.h provides current file.
@@ -872,7 +872,8 @@ C Now close geometry data file.
 C If base area has not yet been calculated, do this now and calculate 
 C transparent area for surfaces connected to external type BC.
 C Get surface areas via call to zinfo.
-      call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+      call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+      vol(ICOMP)=zvol
       ZTRANA(ICOMP)=0.
       lastlist=0
       do 43 ijj=1,NSUR
@@ -1168,7 +1169,7 @@ C       +ve).
       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/prec17.
 #include "geometry.h"
 
 C espriou.h provides currentfile.
@@ -1991,7 +1992,8 @@ C Now close geometry data file.
 C If base area has not yet been calculated, do this now and calculate 
 C transparent area for surfaces connected to external type BC.
 C Get surface areas via call to zinfo.
-      call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+      call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+      vol(ICOMP)=zvol
       ZTRANA(ICOMP)=0.
       do 43 ijj=1,NSUR
         if(checkbase)then
@@ -2870,7 +2872,6 @@ C require a recent scan of zone geometry.
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       character zname*12,zdesc*64
@@ -2922,9 +2923,9 @@ C SNA   - surface area of each polygon
 C ZOA   - total surface area associated with zone.
 C PAZI  - plane azimuth angle
 C PELV  - plane elevation angle
-C VOL   - zone bounded volume
+C ZVOL   - zone bounded volume
 C << IOUT is not used >>
-      SUBROUTINE ZINFO(IOUT,SNA,ZOA,PAZI,PELV,VOL)
+      SUBROUTINE ZINFO(IOUT,SNA,ZOA,PAZI,PELV,ZVOL)
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -3025,10 +3026,10 @@ C << pangs - it might be better?
 C << also - why not include surface tilt angle?
 	
    60 CONTINUE
-      VOL=ABS(V)
+      ZVOL=ABS(V)
 
 C Check for small volume.
-      IF(VOL.LE.0.00001)THEN
+      IF(ZVOL.LE.0.00001)THEN
         CALL USRMSG(' Negative or zero zone volume detected. Vertex', 
      &    ' information may be in error or surfaces incomplete.','W')
         RETURN
@@ -3049,6 +3050,7 @@ C SSURVN(MCON,3)  - unit normal vector from COG of polygon.
 C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
 #include "building.h"
+#include "geometry.h"
 
 C << could it use ?? instead of G1? >>
 
@@ -3060,7 +3062,6 @@ C << could it use ?? instead of G1? >>
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/PREC2/VOL(MCOM)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
       LOGICAL CLOSE,closeaz,closeel
@@ -3915,7 +3916,7 @@ C << should this also fill G6?? >>.
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.  Gather misc zone infor-
 C mation so make a probable guess at locations.
-      CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+      CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
       if(ISUR.eq.0)then
         DO 44 I=1,NSUR
           SOTF(I)='OPAQUE'

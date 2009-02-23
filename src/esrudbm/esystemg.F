@@ -118,7 +118,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/prec2.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -203,7 +203,6 @@ C LPNF (72 char) plant network file name.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/CFGV/icfgv
-      COMMON/PREC2/VOL(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 

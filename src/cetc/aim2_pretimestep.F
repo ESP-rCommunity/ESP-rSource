@@ -738,11 +738,9 @@ C   USE AIM2_CALC_DATA
       IMPLICIT NONE
 
 #include "building.h"
+#include "geometry.h"
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
-      COMMON/PREC2/VOL(MCOM)
-      REAL VOL
-
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 

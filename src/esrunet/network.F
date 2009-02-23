@@ -3166,6 +3166,7 @@ C are returned. If ier=-1 then summary file was not available.
       subroutine selrelexttag(exttag,AVAL,SVAL,ier)
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -3176,7 +3177,6 @@ C are returned. If ier=-1 then summary file was not available.
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
 
 C Summary of external data.
       common/exsum/isexavail,iuex
@@ -3636,9 +3636,9 @@ C file for the current model. File is assumed to be open on
 C unit iuex.
       subroutine listexttag(exttag,ier)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
 
 C Summary of external data.
       common/exsum/isexavail,iuex

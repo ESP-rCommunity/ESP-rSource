@@ -403,6 +403,7 @@ c solved simultaneously at the current simulation time-step.
 
       SUBROUTINE MZSETU(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 #include "control.h"
 
@@ -410,7 +411,6 @@ c solved simultaneously at the current simulation time-step.
       COMMON/TC/ITC,ICNT
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)

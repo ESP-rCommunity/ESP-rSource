@@ -308,7 +308,7 @@ C Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
 
 C Loop through all vertices and find the top and bottom of the zone.
         ZMX=-1.E+7
@@ -570,7 +570,7 @@ C RE-Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
         FLA=0.
 
 C Loop through all vertices and find the top and bottom of the zone.
@@ -934,7 +934,7 @@ C Read in the zone geometry.
         else
           call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
         endif
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
         WRITE(ioout,'(a)')' '
         WRITE(ioout,'(3a)')'# zone ',zname(newfoc),' starts here....'
         do 5 j=1,nsur

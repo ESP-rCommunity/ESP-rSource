@@ -28,5 +28,8 @@ C number of items in the list.
 
 C The following section will hold derived data such as volume and surface
 C areas which are of general interest to many subroutines.
-C << data structures to be added here >>
+C VOL   - zone bounded volume (m^3)
+      real vol
+      common/prec2/vol(MCOM)
+
 
