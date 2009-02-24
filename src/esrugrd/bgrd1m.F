@@ -34,7 +34,7 @@ C *********************************************************************
       SUBROUTINE MENU1M(IDRW1,IDRW2,ITRC)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -55,7 +55,6 @@ C geometry.h provides commons G0 and G2.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/MOIST02/LMOIST(MCOM)

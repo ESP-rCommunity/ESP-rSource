@@ -117,7 +117,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/prec2.
+C geometry.h provides commons G0/G2/prec2/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -181,9 +181,8 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
-C NZSUR is the number of surfaces in each zone.
-C NZTV is the number of vertices in each zone.
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+C NZSUR is the number of surfaces in each zone (from geometry.h).
+C NZTV is the number of vertices in each zone (from geometry.h).
 
 C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating

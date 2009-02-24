@@ -32,6 +32,7 @@ C DRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
       SUBROUTINE DRAWESP(ITRC,ier)
 #include "building.h"
+#include "geometry.h"
       PARAMETER  (MPL = 200 )
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -54,7 +55,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,

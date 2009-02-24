@@ -605,6 +605,7 @@ C IERR is zero is ok, 101 if there was a problem with the location
 C   specification and 2 if there was a cancel issued during editing.
       subroutine LOCDEF(ITEM,IERR)
 #include "building.h"
+#include "geometry.h"
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -612,7 +613,6 @@ C   specification and 2 if there was a cancel issued during editing.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/precz/zname(MCOM),zdesc(MCOM)

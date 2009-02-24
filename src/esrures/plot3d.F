@@ -38,6 +38,7 @@ C user-specified variable.
 
       SUBROUTINE MO3DPL
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -58,7 +59,6 @@ C user-specified variable.
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       CHARACTER*23 ITEM(28)
       CHARACTER*10 ITITLX,ITITLY,ITITLZ

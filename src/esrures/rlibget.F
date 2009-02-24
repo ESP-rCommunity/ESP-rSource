@@ -73,10 +73,10 @@ C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GCFRAC(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
 
@@ -155,9 +155,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GCASR(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C Send record and column jump to GFIXED for location of QCASR.
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -179,9 +179,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GCASC(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IRJUMP = 2
@@ -202,9 +202,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZRH(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IRJUMP = 2
@@ -225,9 +225,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZDP(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -267,9 +267,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZLLH(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -298,9 +298,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZLLC(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -329,9 +329,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZLL(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -354,9 +354,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZSPM1(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -379,9 +379,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GZSPM2(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
@@ -550,9 +550,9 @@ C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GTMCON(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GE.1.AND.ISAVE.LE.4)THEN
         IRJUMP = 0
@@ -575,9 +575,9 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GOUTOPQ(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GE.2.AND.ISAVE.LE.4)THEN
         IRJUMP = 0
@@ -599,9 +599,9 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GOUTTRN(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GE.2.AND.ISAVE.LE.4)THEN
         IRJUMP = 0
@@ -623,9 +623,9 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GOPQIN(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GE.2.AND.ISAVE.LE.4)THEN
         IRJUMP = 1
@@ -647,9 +647,9 @@ C Given IDAY, IZONE returns values for each timestep in common GVAL.
 
       SUBROUTINE GTRNIN(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GE.2.AND.ISAVE.LE.4)THEN
         IRJUMP = 1
@@ -696,9 +696,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GQV1(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IRJUMP = 0
@@ -720,9 +720,9 @@ C CALLS: GFIXED
 
       SUBROUTINE GQV2(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       IF(ISAVE.GT.1.AND.ISAVE.LE.4)THEN
         IRJUMP = 0
@@ -866,9 +866,9 @@ C Given IDAY, IZONE returns GSURIC at each time step in common XDUM.
 C CALLS:  CSCONV
       SUBROUTINE GSURIC(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       common/recver/izver,ipver,iever
       DIMENSION CQ(MTS)
@@ -1163,10 +1163,10 @@ C CALLS: GFIXED
 
       SUBROUTINE GTBR(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       common/recver/izver,ipver,iever
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C Get thermal bridge data only if save is level 2 -4.
       if(izver.lt.4)then
@@ -1193,10 +1193,10 @@ C CALLS: GFIXED
 
       SUBROUTINE GAIRSTOR(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       common/recver/izver,ipver,iever
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C Get heat stored in the zone air only if save is level 2 -4.
       if(izver.lt.4)then
@@ -1226,10 +1226,10 @@ C CALLS: MOREC1 MOREC2
       SUBROUTINE GZTMS(IDAY,IZ,ISET,ITS,ZTMS,ZTMSO,TMA,TMCON,QW1,QW2,
      &                                                          QSA,RH)
 #include "building.h"
+#include "geometry.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
 
       character outs*124
@@ -1306,11 +1306,10 @@ C CALLS: MOREC1 MOREC2
 
       SUBROUTINE GZSOLA(IDAY,IZ,ITS,QI,QE,QSA,TQI,TQE)
 #include "building.h"
-CC#include "geometry.h"
+#include "geometry.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
 
@@ -1438,10 +1437,10 @@ C avqcrioth = other radiant casual gain absorbed at surface
      &  qcondi,qstori,qstore,qconde,qconve,qlwrde,qlwrbd,qlwrsk,
      &  qswrde,avqcrioc,avqcrili,avqcrisp,avqcrioth)
 #include "building.h"
+#include "geometry.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
       common/recver/izver,ipver,iever
 
@@ -1511,10 +1510,10 @@ C CALLS: MOREC1 MOREC2
 
       SUBROUTINE G4ALLS(IDAY,IZONE,ITS,IGET,FLUX)
 #include "building.h"
+#include "geometry.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
       DIMENSION FLUX(MS),XD(MZS)
 
@@ -1634,10 +1633,10 @@ C theonectld (integer index) if non-zero the index of the gain to control.
      & perocupc,perlightc,perequipc,otherc,perocupr,perlightr,
      & perequipr,otherr,perocupl,perlightl,perequipl,otherl,theonectld)
 #include "building.h"
+#include "geometry.h"
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
 
       character outs*124
@@ -1781,13 +1780,13 @@ C hours.
 
       SUBROUTINE MMAPER
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -1992,6 +1991,7 @@ C CALLS: MOREC1 MOREC2
 
       SUBROUTINE HASHL
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1999,7 +1999,6 @@ C CALLS: MOREC1 MOREC2
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
       COMMON/FILEP/IFIL
 

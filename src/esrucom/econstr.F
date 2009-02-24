@@ -56,13 +56,13 @@ C ABSE    - solar absorptivity of external surfaces.
 
       SUBROUTINE ECONST(LCONS,IUNIT,ICOMP,ITRC,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -320,12 +320,12 @@ C is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
@@ -477,13 +477,13 @@ C CONINF provides a description of the constructions in a zone based
 C on common blocks. If isur=0 then all, otherwise for one surface. 
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

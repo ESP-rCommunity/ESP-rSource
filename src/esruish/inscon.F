@@ -38,7 +38,7 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
       subroutine inscon(icomp,icstat,act)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -57,7 +57,6 @@ C                 in common.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/precz/zname(mcom),zdesc(mcom)
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
@@ -231,7 +230,6 @@ C                 in common.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -447,8 +445,8 @@ C            in the misur list.
 
       subroutine insolc(icomp)
 #include "building.h"
+#include "geometry.h"
 
-      common/c20/nzsur(mcom),nztv(mcom)
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/sunhr/isunhr
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)

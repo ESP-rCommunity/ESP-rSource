@@ -60,6 +60,7 @@ C  Check whether it is an ascii file or a binary file. Depending on
 C which create the scratch or ascii version.
       subroutine supplyandcheck(tfile,act,ier)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
 #include "control.h"      
@@ -81,7 +82,6 @@ C Related to TDF ITEMS file.
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)   
         

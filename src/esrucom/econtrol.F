@@ -3713,6 +3713,7 @@ C control loops for legality.
 
       subroutine ezctlc(ier)
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
@@ -3724,7 +3725,6 @@ C control loops for legality.
       common/c1/ncomp,ncon
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       COMMON/MFLOW1/NNOD,NCMP,NCNN

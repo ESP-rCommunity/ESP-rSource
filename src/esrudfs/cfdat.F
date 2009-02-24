@@ -1463,12 +1463,12 @@ C   surf (12 char) is passed parameter. The current zone is taken
 C   from common block variable icp.
       FUNCTION IDSURF(SURF)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ICFNOD/ICFD,ICP
 

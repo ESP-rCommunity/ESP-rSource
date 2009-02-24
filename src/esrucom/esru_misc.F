@@ -65,7 +65,7 @@ C in a new model file.
       SUBROUTINE CLRPRB
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4.
+C geometry.h provides commons G0/G2/G4/c20.
 #include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
@@ -116,7 +116,6 @@ C HOT3000: AIM-2.
       common/C4/XLAT,XLON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)
@@ -1257,11 +1256,11 @@ C ERMRT Read the MRT sensor definition file. IC is the zone index
 C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
@@ -3314,6 +3313,7 @@ C If MOD = '-' name list only, MOD = 'M' attribute Many, MOD = 'A'
 C show attributes in list.
       SUBROUTINE EASKSUR(IZONE,IS,MOD,PROMPT1,PROMPT2,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -3325,7 +3325,6 @@ C show attributes in list.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       DIMENSION VERT(35),VERTS(35)

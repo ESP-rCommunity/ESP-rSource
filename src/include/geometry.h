@@ -16,6 +16,11 @@ C Default solar distribution and shading directives.
       integer ndp,idpn
       common/g4/ndp(MCOM),idpn(MCOM,3)
 
+C NZSUR is the number of surfaces in each zone.
+C NZTV is the number of vertices in each zone.
+      integer nzsur,nztv
+      common/c20/nzsur(MCOM),nztv(MCOM)
+
 C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
 C which make up the floor, IUZBASEA signals that the user selected
 C specific surfaces (two), has edited the floor area (one) or it was

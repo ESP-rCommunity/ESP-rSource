@@ -548,13 +548,13 @@ C itrc indicator so that debug can be done from command line.
 
       subroutine genplin(itrc)
 #include "building.h"
+#include "geometry.h"
       parameter (MAXPNT = 100)
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins

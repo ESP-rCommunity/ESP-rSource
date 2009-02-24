@@ -557,11 +557,10 @@ C until the glitches have been sorted.
 
       SUBROUTINE MOSRGT(IZONE,ISFN,IDAY,IE)
 #include "building.h"
-CC#include "geometry.h"
+#include "geometry.h"
 #include "control.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 C      common/recver/izver,ipver,iever

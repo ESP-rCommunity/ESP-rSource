@@ -40,6 +40,7 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -49,7 +50,6 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
       common/pophelp/h(60)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/loadlabel/lodlabel(mcom,7)
       COMMON/precz/zname(MCOM),zdesc(MCOM)

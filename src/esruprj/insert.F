@@ -73,7 +73,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -1222,7 +1221,6 @@ C   for new position, IER is -3 user aborted action.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1546,6 +1544,7 @@ C   using this index negate the index of the first surface and
 C   pass back in ier.
       SUBROUTINE ADDVERT(icomp,NUM,ACTION,IER)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1553,7 +1552,6 @@ C   pass back in ier.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
       logical ok,dok,matchver
 
@@ -2028,7 +2026,7 @@ C << written at the end of the process. This has yet to be done.
 #include "building.h"
 #include "geometry.h"
       PARAMETER  (MPL = 200 )
-      
+
       integer lnblnk  ! function definition
 
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
@@ -2045,7 +2043,6 @@ C << written at the end of the process. This has yet to be done.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

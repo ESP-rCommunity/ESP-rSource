@@ -686,6 +686,7 @@ c later within the simulation time-stepping.
 
       SUBROUTINE MZSHIN(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/TC/ITC,ICNT
@@ -697,7 +698,6 @@ c later within the simulation time-stepping.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/rsolmax/maxrec(mcom)

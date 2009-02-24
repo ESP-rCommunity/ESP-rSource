@@ -504,6 +504,7 @@ C   gact = xyz then draw all face grids
 C izone is the index of the zone to be drawin (if zero do not bother`).
       SUBROUTINE VGRID3D(zact,gact,izone)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
       PARAMETER  (MPL = 200 )
 
@@ -515,7 +516,6 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
       COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
      &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 

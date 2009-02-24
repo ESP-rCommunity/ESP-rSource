@@ -30,6 +30,7 @@ C Portions of the DXF translation can be traced back (eventually)
 C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
@@ -75,7 +76,6 @@ C ESP-r commons.
       common/C3F/LCNN
       COMMON/C6/INDCFG
       common/CFGV/icfgv
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -968,7 +968,6 @@ C write esp geometry file.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
@@ -1088,6 +1087,7 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
 
       subroutine putcoods(itrc)
 #include "building.h"
+#include "geometry.h"
       parameter (MAXLAY = 80)
       
       integer lnblnk  ! function definition
@@ -1105,7 +1105,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       common/dxfe/oformat,indxzon,head
@@ -1346,7 +1345,7 @@ C **** matchv
 C Matches or adds a vertex to a zone.
       subroutine matchv(iz,is,match,x1,y1,z1)
 #include "building.h"
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+#include "geometry.h"
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 

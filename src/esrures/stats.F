@@ -2090,7 +2090,6 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)

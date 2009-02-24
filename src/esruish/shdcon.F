@@ -182,7 +182,6 @@ c   icont  - >0 if shaded surfaces were found
 #include "geometry.h"
 
       common/outin/iuout,iuin
-      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
 
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),

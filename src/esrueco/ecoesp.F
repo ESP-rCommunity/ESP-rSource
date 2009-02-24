@@ -864,8 +864,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
@@ -1171,11 +1169,10 @@ C square meter of the selected composite.
 
       FUNCTION STEPIMP(IZ,I,J,K,L,NoStep)
 #include "building.h"
+#include "geometry.h"
 #include "LCA.h"
 
       COMMON/CompDim/HeightCo,WidthCo, Perimeter, Area
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/EIAScnPt/FabPt(MMAT),TrPt(MMAT,MNbTrans),
@@ -1455,8 +1452,6 @@ C
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -1476,7 +1471,6 @@ C
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -2523,7 +2517,6 @@ C phylosophy as LCACalc
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -4106,13 +4099,13 @@ C the perimiter of the polygon. Assumes that the surface is
 C in the current zones common blocks.
       subroutine surfprm(izone,isurf,dupedges,perim)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       DIMENSION x1(3),x2(3)
       logical dupedges
 

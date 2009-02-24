@@ -84,7 +84,7 @@ C Sets up defaults and offers main menu.
       program ish
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -130,7 +130,6 @@ C IEEE callback (Solaris)
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/c21/ifcfg,cfgroot,lcfgf
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
@@ -1432,7 +1431,6 @@ C  ifstat = 8  new file filled via import of ascii file
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
       common/udesc/lview(mcom),lhcco(mcom),

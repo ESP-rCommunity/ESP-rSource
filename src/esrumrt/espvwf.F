@@ -24,7 +24,7 @@ C Revised to take in configuration file and zone focus.
       program espvwf
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -88,7 +88,6 @@ C Indicator of possible focus zone.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -859,6 +858,7 @@ C Calculate viewfactors for a zone.
       SUBROUTINE CALVF(ICOMP)
 
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -868,7 +868,6 @@ C Calculate viewfactors for a zone.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/MRT2/GEOLOAD,MRTLOAD

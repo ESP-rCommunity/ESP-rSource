@@ -1074,7 +1074,7 @@ C ****** Scan and report current mis-matches.
       subroutine ckcurmatch(prob,iprob,ier)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1083,7 +1083,6 @@ C geometry.h provides commons G0 and G2.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

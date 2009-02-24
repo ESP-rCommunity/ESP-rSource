@@ -546,6 +546,7 @@ C MGLTBL: monthly multi-column tabular listing for selected
 C gains and losses.
       SUBROUTINE MGLTBL
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -554,7 +555,6 @@ C gains and losses.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
@@ -865,9 +865,9 @@ C CALLS: GZTMS.
 
       SUBROUTINE CZMRT(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       DIMENSION ZTMS(MS),YDUM(MS),TSO(MS)
@@ -902,9 +902,9 @@ C CALLS:  GZTMS.
 
       SUBROUTINE CZRESL(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       DIMENSION ZTMS(MS),YDUM(MS),TSO(MS)
 

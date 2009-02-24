@@ -207,7 +207,6 @@ C Common for electrical file.
       CHARACTER LCMDFL*144
 
 C Additional commons for SHOCC.
-      common/c20/nzsur(mcom),nztv(mcom)
 
 C SNAME (12 char) - surface name attribute
 C ZBASEA    - area of base (m^2)

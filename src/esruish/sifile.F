@@ -75,6 +75,7 @@ C  ifstat = 5  error writing record 4 of file
 
       subroutine sifile(icomp,ifstat)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -85,7 +86,6 @@ C  ifstat = 5  error writing record 4 of file
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
       common/ract/paction

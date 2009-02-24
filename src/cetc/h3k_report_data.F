@@ -72,11 +72,6 @@ C.....Common variables
       integer ncomp          ! number of zones
       integer ncon           ! number of connections 
 
-
-      common/c20/nzsur(mcom),nztv(mcom)
-      integer nzsur           ! # of surfaces in a zone
-      integer nztv            ! # of verticies in a zone (not used)
-
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       integer nConst          ! # of surfaces per zone
