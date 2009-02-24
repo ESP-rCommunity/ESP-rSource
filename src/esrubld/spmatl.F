@@ -96,7 +96,7 @@ C zone then call the relevant subroutine.
       endif
       return
       end
-
+ 
 C ***************** SPMCMP1 *****************
 C A crystalline silicon solar cell model (after Nick Kelly) with
 C efficiency determined as a function of cell temperature. Defining
@@ -543,8 +543,8 @@ C Trace output.
      &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
      &         ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
-C      write(outs,'(a,i3,i3,i3)') 'Number of panels in surface: ',npnnls
-C      call edisp(itu,outs)
+c      write(outs,'(a,i3,i3,i3)') 'Number of panels in surface: ',npnnls
+c      call edisp(itu,outs)
       if(ispmtyp(ispmnod,2).gt.0)then
          write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qsole1
          call edisp(itu,outs)
@@ -618,13 +618,10 @@ C convention except where explicitly redefined.
 
       real minu,maxu,minv,maxv,inc
       complex vspm
-      logical close
+      logical unixok
 
       character spmlabel*16,outs*124,spflnam*72,laprob*72,strspm*16,
-     &          unitspm*16,txtspm*72
-
-      character lworking*144,fs*1
-      logical concat,xst,unixok
+     &          unitspm*16,txtspm*72,lworking*144,fs*1
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -633,7 +630,7 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-     
+
 C Component data.
       inzone=ispmloc(ispmnod,1)
       insurf=ispmloc(ispmnod,2)
@@ -665,18 +662,15 @@ C Current weather data.
 C If no mass flow file exists then open wind pressure coefficients 
 C database, read coefficient sets and close.
       if(iairn.eq.0.and.iflwn.eq.0.and.nsinc.lt.2)then
-        iunit=ifil+1
-        if(ipathapres.eq.0.or.ipathapres.eq.1)then
-         call efopseq(iunit,lapres,1,ier)
-        elseif(ipathapres.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+         iunit=ifil+1
+         if(ipathapres.eq.0.or.ipathapres.eq.1)then
+            call efopseq(iunit,lapres,1,ier)
+         elseif(ipathapres.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &      lapres(1:lnblnk(lapres))
-
-C Debug.
-C          write(6,*) 'working pressure coef ',lworking
-          CALL EFOPSEQ(IUNIT,lworking,1,IER)
-        endif
+            call efopseq(iunit,lworking,1,ier)
+         endif
          if(ier.gt.0)then
             call edisp(iuout,
      &         'SPMCMP3 fatal error: when opening pressure coeff. db!')
@@ -2035,7 +2029,7 @@ C function of the tint value.
       do iang2=1,5
          tmct(icomp,itmcfl(icomp,isur),iang2)=tran0(ispmnod,iang2)*tint
 
-C Adjust the layer absorption as a function of this transmissione
+C Adjust the layer absorption as a function of this transmission
 C change.
          tmca(icomp,itmcfl(icomp,isur),ilyr,iang2)=
      &       tran0(ispmnod,iang2)*(1.- tint)+abs0(ispmnod,ilyr,iang2)
@@ -2623,7 +2617,7 @@ C except where explicitly redefined.
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
-C      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+c      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/vthp15/vcp(ms,mn,2),qcp(ms,mn)
       common/vthp16/vcf(ms,mn,2),qcf(ms,mn)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,MSPMRES),
@@ -2658,7 +2652,7 @@ C Melting and solidification temperatures (degC).
       tsoli=spmdat(ispmnod,2)
 
 C Conductivity in solid and liquid state (W/m.degC).
-      consoL=spmdat(ispmnod,3)
+      consol=spmdat(ispmnod,3)
       conliq=spmdat(ispmnod,4)
 
 C Specific heat capacity in solid and liquid state (J/kg.degC).
@@ -4129,6 +4123,7 @@ C Set new k.
       return
       end
 
+
 C ***************** SPMCMP57 *****************
 C (c) A. Geissler, Yuanda-Europe, January 2009 - GPL
 C A model of surface condensation / evaporation and corresponding 
@@ -4406,7 +4401,6 @@ C Trace output.
       call edisp(itu,outs)   
   999 return
       end
-
       
 C ========================================================
 C Utility routines
@@ -4476,7 +4470,6 @@ C Output available PCM layer data.
 
       return
       end
-
       
 C ***************** SurfCond_to_h3k *****************
 C This routine transfers PCM domain data to the H3K reporting
