@@ -6553,13 +6553,14 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    axxmn=(float)*xmn; axxmx=(float)*xmx;
    axymn=(float)*ymn; axymx=(float)*ymx;
    
-/* Derive factors for horizontal axis. */
+/* Derive factors for horizontal axis. Note: fabs takes and returns double
+   while fabsf takes and returns a float value */
     if (axxmn < 0.0 && axxmx >= 0.0) {
-	axxsc = axgw / (axxmx + fabs(axxmn));
-	axxadd = fabs(axxmn);
+	axxsc = axgw / (axxmx + fabsf(axxmn));
+	axxadd = fabsf(axxmn);
     } else if (axxmn < 0.0 && axxmx <= 0.0) {
-	axxsc = axgw / (fabs(axxmn) - fabs(axxmx));
-	axxadd = fabs(axxmn);
+	axxsc = axgw / (fabsf(axxmn) - fabsf(axxmx));
+	axxadd = fabsf(axxmn);
     } else if (axxmn > 0.0 && axxmx > 0.0) {
 	axxsc = axgw / (axxmx - axxmn);
 	axxadd = -(axxmn);
@@ -6569,11 +6570,11 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
     }
 /* Derive factors for vertical axis. */
     if (axymn < 0.0 && axymx >= 0.0) {
-	axysc = axgh / (axymx + fabs(axymn));
-	axyadd = fabs(axymn);
+	axysc = axgh / (axymx + fabsf(axymn));
+	axyadd = fabsf(axymn);
     } else if (axymn < 0.0 && axymx <= 0.0) {
-	axysc = axgh / (fabs(axymn) - fabs(axymx));
-	axyadd = fabs(axymn);
+	axysc = axgh / (fabsf(axymn) - fabsf(axymx));
+	axyadd = fabsf(axymn);
     } else if (axymn > 0.0 && axymx > 0.0) {
 	axysc = axgh / (axymx - axymn);
 	axyadd = -(axymn);
@@ -6666,7 +6667,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
 
     if (mde == 0) {
 	vv = *v2 - *v1;
-	v = fabs(vv);
+	v = fabs(vv);  /* ?? fabs((double)vv) */
 	x = log10(v);
 	ix = x;
         if (x < 0.0) ix=ix-2;
@@ -6966,12 +6967,12 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  nintvl = rintvl;
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
-   if(*xmn < 0. && fabs(resid) > 0.0001) {
+   if(*xmn < 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        XDrawLine(theDisp,win,theGC,ofl,ofb,ix,iy);
-   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
@@ -7120,12 +7121,12 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  nintvl = rintvl;
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
-   if(*xmn < 0. && fabs(resid) > 0.0001) {
+   if(*xmn < 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        XDrawLine(theDisp,win,theGC,ofl,ofb,ix,iy);
-   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
