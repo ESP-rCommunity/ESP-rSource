@@ -6553,14 +6553,13 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    axxmn=(float)*xmn; axxmx=(float)*xmx;
    axymn=(float)*ymn; axymx=(float)*ymx;
    
-/* Derive factors for horizontal axis. Note: fabs takes and returns double
-   while fabsf takes and returns a float value */
+/* Derive factors for horizontal axis. */
     if (axxmn < 0.0 && axxmx >= 0.0) {
-	axxsc = axgw / (axxmx + fabsf(axxmn));
-	axxadd = fabsf(axxmn);
+	axxsc = axgw / (axxmx + (-1.0 * axxmn));
+	axxadd = (-1.0 * axxmn);
     } else if (axxmn < 0.0 && axxmx <= 0.0) {
-	axxsc = axgw / (fabsf(axxmn) - fabsf(axxmx));
-	axxadd = fabsf(axxmn);
+	axxsc = axgw / ((-1.0 * axxmn) - (-1.0 * axxmx));
+	axxadd = (-1.0 * axxmn);
     } else if (axxmn > 0.0 && axxmx > 0.0) {
 	axxsc = axgw / (axxmx - axxmn);
 	axxadd = -(axxmn);
@@ -6570,11 +6569,11 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
     }
 /* Derive factors for vertical axis. */
     if (axymn < 0.0 && axymx >= 0.0) {
-	axysc = axgh / (axymx + fabsf(axymn));
-	axyadd = fabsf(axymn);
+	axysc = axgh / (axymx + (-1.0 * axymn));
+	axyadd = (-1.0 * axymn);
     } else if (axymn < 0.0 && axymx <= 0.0) {
-	axysc = axgh / (fabsf(axymn) - fabsf(axymx));
-	axyadd = fabsf(axymn);
+	axysc = axgh / ((-1.0 * axymn) - (-1.0 * axymx));
+	axyadd = (-1.0 * axymn);
     } else if (axymn > 0.0 && axymx > 0.0) {
 	axysc = axgh / (axymx - axymn);
 	axyadd = -(axymn);
