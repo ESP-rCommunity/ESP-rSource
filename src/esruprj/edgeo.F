@@ -728,6 +728,7 @@ C Zone description
      &           64,D64,'zone descr',IER,1)
         if(T64(1:2).eq.'  ')goto 64
         zdesc(icomp)=T64
+        lnzdesc(icomp)=lnblnk(T64)  ! update the length of this string.
         call tstamp('>','PRJ: edited zone description')
         MODIFY=.TRUE.
         MODGEO=.TRUE.
@@ -7350,7 +7351,7 @@ C    otherwise  -,- )
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C ZNAME (12 char) - the zone name from geometry.h.
-C ZDESC ( char) - zone notes.
+C ZDESC (64 char) - zone notes from geometry.h.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -7494,11 +7495,13 @@ C is tested for illegal characters.
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         zname(ICOMP)=' '
         zdesc(ICOMP)=' '
+        lnzdesc(ICOMP)=0
       ELSEIF(ND.EQ.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         call egetrm(outstr,K,phrasea,'W','Z description',IER)
         zdesc(ICOMP)=' '
+        lnzdesc(ICOMP)=0
       ELSEIF(ND.gt.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -7510,11 +7513,13 @@ C Combine the comment from the first line with the one after the zone CTYPE.
         iprc= 63 - ipra
         iwidth=ipra + iprb + 1
         if(iwidth.lt.64)then
-          write(ZDESC(ICOMP),'(3a)') phrasea(1:ipra),' ',
+          write(zdesc(ICOMP),'(3a)') phrasea(1:ipra),' ',
      &      phraseb(1:iprb)
+          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         else
-          write(ZDESC(ICOMP),'(3a)') phrasea(1:ipra),' ',
+          write(zdesc(ICOMP),'(3a)') phrasea(1:ipra),' ',
      &      phraseb(1:iprc)
+          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         endif
       ENDIF
       write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
@@ -7530,6 +7535,7 @@ C Fill in a default zone name and description if blank.
       if(zdesc(ICOMP)(1:1).EQ.' ')then
         write(zdesc(ICOMP),'(a,a)') 
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.

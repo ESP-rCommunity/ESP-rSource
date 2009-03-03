@@ -1700,6 +1700,7 @@ C instanciate the common blocks.
               icomp=incomp
               call st2name(ZN,zname(ICOMP))
               zdesc(ICOMP)=zd
+              lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
               LGEOM(ICOMP)=DFILE
               LTHRM(ICOMP)=CFILE
               LPROJ(ICOMP)=OFILE
@@ -1999,6 +2000,7 @@ C instanciate the common blocks.
               icomp=incomp
               call st2name(ZN,zname(ICOMP))
               zdesc(ICOMP)=zd
+              lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
               LGEOM(ICOMP)=DFILE
               LTHRM(ICOMP)=CFILE
               LPROJ(ICOMP)=OFILE
@@ -2041,8 +2043,9 @@ C Complete zone data before exiting.
               IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
             ENDIF
             if(zdesc(ICOMP)(1:2).EQ.'  ')then
-              write(zdesc(ICOMP),'(a,a)') 
+              write(zdesc(ICOMP),'(2a)') 
      &          zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+              lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
             endif
 
 C Set type type and version based on current value of igupgrade.
@@ -2070,7 +2073,7 @@ C Update the G7 common blocks and then assign ZBASEA.
  
 C Save this to file before passing into the geometry editing facility.
             write(outs,'(3a)') 'Updating ',
-     &        zdesc(ICOMP)(1:lnblnk(zdesc(ICOMP))),'...'
+     &        zdesc(ICOMP)(1:lnzdesc(ICOMP)),'...'
             call edisp(iuout,outs)
             call eclose(gversion(ICOMP),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -2087,7 +2090,7 @@ C Save this to file before passing into the geometry editing facility.
             ENDIF
 
             write(outs,'(3a)') 'Updating ',
-     &        zdesc(ICOMP)(1:lnblnk(zdesc(ICOMP))),'...done.'
+     &        zdesc(ICOMP)(1:lnzdesc(ICOMP)),'...done.'
             call edisp(iuout,outs)
 
 C Read in control file if defined, setup additional file names and then

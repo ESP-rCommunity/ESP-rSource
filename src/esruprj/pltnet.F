@@ -1243,7 +1243,7 @@ C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok,unixok
-      CHARACTER*25 ZDESC
+      CHARACTER*25 PZDESC
       character h*72,buffer*72,ltmp*72,fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
@@ -1339,8 +1339,8 @@ C File doesn't exist.
 
 C Old file, so check header.
          IREC = 1
-         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
-         IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
+         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) PZDESC
+         IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
             ok=.false.
             dok=.true.
             h(1)='The file exists, but is either not a plant db file'

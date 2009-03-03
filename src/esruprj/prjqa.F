@@ -1368,7 +1368,7 @@ C Jump if no zones.
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,2x,a)') IVALS(IZ),
      &      zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),OPQ,TRN,
      &      ZBASEA(IVALS(IZ)),
-     &      zdesc(IVALS(IZ))(1:lnblnk(zdesc(IVALS(IZ))))
+     &      zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
           else
             aok=' part-attributed '
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,a)') IVALS(IZ),

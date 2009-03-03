@@ -1147,7 +1147,7 @@ C naout (number of additional output data) is returned.
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
       LOGICAL OK,dok,unixok
-      CHARACTER ZDESC*25,cdate*16,buffer*80,adopdsc*30
+      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30
       character h*72,fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
@@ -1200,8 +1200,8 @@ C File doesn't exist.
 
 C Old file, so check header.
       iorec = 1
-      READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) ZDESC
-      IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
+      READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) PZDESC
+      IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
          ok=.false.
          dok=.false.
          h(1)='The plant component database associated with the model'

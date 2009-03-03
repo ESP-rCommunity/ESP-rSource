@@ -1673,6 +1673,7 @@ C Read the geometry to fill in the data below.
      &      IER,2)
           IF(zd.eq.' '.or.ier.ne.0)goto 40
           zdesc(NCOMP)=zd
+          lnzdesc(NCOMP)=lnblnk(zd)  ! update the length of this string.
 
 C If an obstruction file check if this should be copied as well.
 C Save zone geometry, read in obstructions, write out to another

@@ -124,6 +124,7 @@ C Clear 'conflated only' commons.
       do 2 I=1,MCOM
         zname(I)=' '
         zdesc(I)=' '
+        lnzdesc(I)=0
  2    continue
  
 C Set defaults.

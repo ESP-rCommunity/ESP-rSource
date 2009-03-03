@@ -460,6 +460,7 @@ C Clear SHOCC zone information as well.
         CTYPE(IX)=' '
         gversion(ix)=1.0
         zdesc(IX)=' '
+        lnzdesc(IX)=0
         zname(IX)=' '
         LPROJ(IX)='UNKNOWN'
         LGEOM(IX)='UNKNOWN'

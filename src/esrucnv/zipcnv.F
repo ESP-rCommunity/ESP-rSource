@@ -156,6 +156,7 @@ C second is the zone name, if more items then not a proper name.
         write(CTYPE(ic),'(a)')WORD(1:lnblnk(WORD))
         zname(IC)=' '
         zdesc(IC)=' '
+        lnzdesc(IC)=0
       ELSEIF(ND.EQ.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(ic),'(a)') WORD(1:lnblnk(WORD))
@@ -163,6 +164,7 @@ C second is the zone name, if more items then not a proper name.
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
         zdesc(IC)=' '
+        lnzdesc(IC)=0
       ELSEIF(ND.gt.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(IC),'(a)') WORD(1:lnblnk(WORD))
@@ -170,7 +172,8 @@ C second is the zone name, if more items then not a proper name.
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
         call egetrm(outstr,K,phrase,'W','Z description',IER)
-        ZDESC(IC)=phrase
+        zdesc(IC)=phrase
+        lnzdesc(IC)=lnblnk(phrase)  ! update the length of this string.
       ENDIF
 
 C Fill in a default zone name if blank or UNKNOWN.
@@ -181,6 +184,7 @@ C Fill in a default zone name if blank or UNKNOWN.
       if(zdesc(IC)(1:1).EQ.' ')then
         write(zdesc(IC),'(a,a)') 
      &    zname(IC)(1:lnblnk(zname(IC))),' describes a...'
+        lnzdesc(IC)=lnblnk(zdesc(IC))  ! update the length of this string.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.

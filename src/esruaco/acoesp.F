@@ -232,7 +232,7 @@ C Two zones cannot have the same number.
 C ******************** ZNLIST (edited from esrures/utils.F) *******
 C ZNLIST takes the current selected zones and builds a descriptive
 C string to be used in headers. 
-C zdescr : string contening the name of slected zone(s)
+C zdescr : string containing the names of the slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"

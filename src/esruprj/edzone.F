@@ -149,12 +149,13 @@ C << Unix vs NT needs to be updated >>
 
       H(1)='The zone description allows further information about'
       H(2)='zone form and composition to be recorded.'
-      write(zd,'(a,a)') 
+      write(zd,'(2a)') 
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a'
  43   CALL EASKS(zd,'What does it represent?','(<64 characters)',
      &            64,'no description entered','zone descr',IER,2)
       IF(zd.eq.' '.or.ier.ne.0)goto 43
       zdesc(ICOMP)=zd
+      lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
 
 C Allow user choices of beginning as a simple shape (with image feedback). 
       IER=0
@@ -441,8 +442,9 @@ C High level info for all cases except clickonbitmap.
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
       ENDIF
       if(zdesc(ICOMP)(1:2).EQ.'  ')then
-        write(zdesc(ICOMP),'(a,a)') 
+        write(zdesc(ICOMP),'(2a)') 
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
       CTYPE(icomp)='GEN '
       NDP(ICOMP)=3
@@ -1499,6 +1501,7 @@ C and zone based data.
         NCCODE(IX)=NCCODE(IX+1)-1
         zname(IX)=zname(IX+1)
         zdesc(IX)=zdesc(IX+1)
+        lnzdesc(IX)=lnzdesc(IX+1)
         LPROJ(IX)=LPROJ(IX+1)
         LGEOM(IX)=LGEOM(IX+1)
         LTHRM(IX)=LTHRM(IX+1)
@@ -2649,6 +2652,7 @@ C << Unix vs Windows needs to be updated >>
      &  zname(ICOMP)(1:znl),' auto-generated for shape ',
      &  shape(1:lnblnk(shape)),' & attributes.'
       zdesc(ICOMP)=zd
+      lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
 
 C Choices based on the value of shape. 
       IER=0

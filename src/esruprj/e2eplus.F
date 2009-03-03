@@ -1846,7 +1846,7 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
 C Read in the zone geometry.
         WRITE(ioout,'(a)',iostat=ios,err=5) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=5) '! ',
-     &    zdesc(mz)(1:lnblnk(zdesc(mz)))
+     &    zdesc(mz)(1:lnzdesc(mz))
         WRITE(ioout,'(a)',iostat=ios,err=5) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=5) 'ZONE',com
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',

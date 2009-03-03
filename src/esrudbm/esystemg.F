@@ -1767,6 +1767,7 @@ C Quick read, get the zone name and the number of surfaces.
             write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
             zname(ICOMP)=' '
             zdesc(ICOMP)=' '
+            lnzdesc(ICOMP)=0
           ELSEIF(ND.EQ.2)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
             write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -1774,6 +1775,7 @@ C Quick read, get the zone name and the number of surfaces.
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
             zdesc(ICOMP)=' '
+            lnzdesc(ICOMP)=0
           ELSEIF(ND.gt.2)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
             write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -1782,6 +1784,7 @@ C Quick read, get the zone name and the number of surfaces.
             call st2name(ZN,zname(ICOMP))
             call egetrm(outstr,K,phrase,'W','Z description',IER)
             ZDESC(ICOMP)=phrase
+            lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
           ENDIF
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
           K=0
@@ -1812,6 +1815,7 @@ C Fill in a default zone name if blank or UNKNOWN.
         if(zdesc(ICOMP)(1:1).EQ.' ')then
           write(zdesc(ICOMP),'(2a)') 
      &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         endif
 
 C Reporting.

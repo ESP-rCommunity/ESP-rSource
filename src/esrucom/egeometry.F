@@ -221,7 +221,7 @@ C if the common block C24 has been filled.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C ZNAME (12 char) - the zone name (from geometry.h).
-C ZDESC ( char) - zone notes.
+C ZDESC (64 char) - zone notes (from geometry.h).
 
 C common/PREC17 is defined in geometry.h
       
@@ -308,6 +308,7 @@ C the should use georead to scan the file.
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -315,6 +316,7 @@ C the should use georead to scan the file.
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -323,6 +325,7 @@ C the should use georead to scan the file.
           call st2name(ZN,zname(ICOMP))
           call egetrm(outstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
+          lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
         IF(IFLAG.NE.0)GOTO 1001
         gversion(icomp) = 1.0   ! set the version number.
@@ -336,8 +339,9 @@ C Fill in a default zone name and description if blank.
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
-        write(zdesc(ICOMP),'(a,a)') 
+        write(zdesc(ICOMP),'(2a)') 
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.
@@ -996,11 +1000,11 @@ C over-write) or create a new file.
      &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),GENFIL(1:lnblnk(GENFIL))
   30  FORMAT('# geometry of ',a,' defined in: ',a)
       lz=lnblnk(zname(ICOMP))
-      ld=lnblnk(zdesc(ICOMP))
 
 C File is always a GEN type as this is representation in common.
       WRITE(IFILG,'(a3,2x,A,2x,a,2x,a)',IOSTAT=ios,ERR=13) 'GEN',
-     &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:ld),'# type, name, descr'
+     &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:lnzdesc(ICOMP)),
+     &  '# type, name, descr'
 
 C Vertex coordinates.
       WRITE(IFILG,'(I8,I8,F8.3,4x,A)',IOSTAT=ios,ERR=13)
@@ -1222,7 +1226,7 @@ C if the common block C24 has been filled.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C ZNAME (12 char) - the zone name (from geometry.h).
-C ZDESC ( char) - zone notes.
+C ZDESC (64 char) - zone notes (from geometry.h).
 
 C prec17 common described in geometry.h
       
@@ -1337,6 +1341,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -1344,6 +1349,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -1352,6 +1358,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           call st2name(ZN,zname(ICOMP))
           call egetrm(outstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
+          lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
         IF(IFLAG.NE.0)GOTO 1001
 
@@ -1410,6 +1417,7 @@ C is short, but will be extended to 248 char.
         zdesc(ICOMP)=' '
         CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'Z description',IER)
         write(zdesc(ICOMP),'(a)') LOUTSTR(1:64)
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
 
 C Next look for *vertex lines, incrementing the value of NTV
 C as each of these lines is scanned. If the tag is *edges then
@@ -2078,7 +2086,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C ZNAME (12 char) - the zone name (from geometry.h).
-C ZDESC ( char) - zone notes.
+C ZDESC (64 char) - zone notes (from geometry.h).
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -2166,8 +2174,7 @@ C Write out the header including date stamp and documentation.
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*date ',dstmp,
      &  '  # latest file modification '
 
-      ld=lnblnk(zdesc(ICOMP))
-      write(ifilg,'(a)',IOSTAT=IOS,ERR=13) zdesc(ICOMP)(1:ld)
+      write(ifilg,'(a)',IOSTAT=IOS,ERR=13)zdesc(ICOMP)(1:lnzdesc(ICOMP))
 
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
      &  '# tag, X co-ord, Y co-ord, Z co-ord'
@@ -2895,7 +2902,7 @@ C Report data to required number of significant figures.
      &     'm^2 & user list floor area of ',T12A(1:LSTRA),'m^2'
       endif
       call edisp(itu,outstr)
-      WRITE(outstr,'(1x,A)') zdesc(ICOMP)
+      WRITE(outstr,'(1x,A)') zdesc(ICOMP)(1:lnzdesc(ICOMP))
       call edisp(itu,outstr)
       return
       end
