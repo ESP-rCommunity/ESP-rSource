@@ -53,7 +53,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -106,7 +105,6 @@ C << what about including common zndata in this manipulation? >>
       character SUSE11*8,SUSE12*8
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,zdesc*64
       CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248

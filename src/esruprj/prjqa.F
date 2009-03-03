@@ -29,7 +29,7 @@ C the current model.
       subroutine prjqa(ier)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/prec2/c20.
+C geometry.h provides commons G0/G2/prec2/precz/c20.
 #include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
@@ -85,7 +85,6 @@ C LPNF (72 char) plant network file name.
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
@@ -197,9 +196,9 @@ C Remember if each zone is fully attributed.
       character DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,cfgroot*24,ZN*12,SN*12
+      character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
@@ -2070,7 +2069,6 @@ C not browsing.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -2099,7 +2097,7 @@ C Images.
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,zdesc*64,ZN*12
+      character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
       logical ok,dok,ddok,found,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.

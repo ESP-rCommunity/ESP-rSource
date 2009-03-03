@@ -38,7 +38,7 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
       subroutine inscon(icomp,icstat,act)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -57,17 +57,15 @@ C                 in common.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/precz/zname(mcom),zdesc(mcom)
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
       dimension month(12),iavdec(12)
-      character zname*12
       character paction*16
       character*72 h
-      character month*3,outs*124,tbase*72,ltrns*72,act*1,zdesc*64
+      character month*3,outs*124,tbase*72,ltrns*72,act*1
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc

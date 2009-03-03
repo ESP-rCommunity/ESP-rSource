@@ -42,6 +42,7 @@ C can proceed.
 
       SUBROUTINE MOSA
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -50,12 +51,10 @@ C can proceed.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
-      CHARACTER ITEM(10)*25, H*72, zname*12,zdesc*64, outs*124
+      CHARACTER ITEM(10)*25,H*72,outs*124
 
 C Check that the result library contains the results from a 
 C uncertainty analysis.
@@ -124,6 +123,7 @@ C SAINTRA calculates summary statistics within result sets.
 
       SUBROUTINE SAINTRA
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -131,8 +131,6 @@ C SAINTRA calculates summary statistics within result sets.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
@@ -147,7 +145,7 @@ C SAINTRA calculates summary statistics within result sets.
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS)
-      character outs*124,zname*12,zdesc*64,RSNAME*40,H*72
+      character outs*124,RSNAME*40,H*72
       character SLABEL*32,GLABEL*20, HEAD1*108, HEAD2*108
 
       logical display, TOTALS
@@ -408,6 +406,7 @@ C SAINTER calculates summary statistics within result sets.
 
       SUBROUTINE SAINTER
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -420,8 +419,6 @@ C SAINTER calculates summary statistics within result sets.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
@@ -443,7 +440,7 @@ C SAINTER calculates summary statistics within result sets.
       integer*8 iupdown,isym    ! passed to etplot
 #endif
 
-      character outs*124,zname*12,zdesc*64,H*72
+      character outs*124,H*72
       character SLABEL*32,GLABEL*20
 
 C Call the menu of choices (this also sets some default options).
@@ -856,6 +853,7 @@ C SAPARSEN calculates individual parameter uncertainties.
 
       SUBROUTINE SAPARSEN
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -863,8 +861,6 @@ C SAPARSEN calculates individual parameter uncertainties.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SIMPKA/NSIM
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
@@ -880,7 +876,7 @@ C SAPARSEN calculates individual parameter uncertainties.
       dimension YTOT(MZS), YTOTAB(MZS)
       dimension IUNC(MNFA), IPT(MNRS,MNFA)
       
-      character outs*124,zname*12,zdesc*64,RSNAME*40
+      character outs*124,RSNAME*40
       character SLABEL*32,GLABEL*20
       
 C Call the menu of choices (this also sets some default options).

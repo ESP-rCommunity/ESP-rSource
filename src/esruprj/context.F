@@ -37,6 +37,7 @@ C EDSITE Edits site/general information for system configuration file.
 C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
 
@@ -51,7 +52,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/C1/NCOMP,NCON
       common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC8/SLAT,SLON
 
       integer nccode,indutl
@@ -106,7 +106,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
       character*10 wkday(7)
-      character zname*12,zdesc*64,SEXP*31,SALT*31,hold*72,ZN*12
+      character SEXP*31,SALT*31,hold*72,ZN*12
 
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
@@ -1320,6 +1320,7 @@ C temporal data to be associated with a model.
 
       SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "control.h"
       
@@ -1328,7 +1329,6 @@ C temporal data to be associated with a model.
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1359,7 +1359,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character*72 LTDF,LTDFA,DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      character zname*12,zdesc*64,OUTSTR*124,HDR*12
+      character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -3558,12 +3558,12 @@ C EDDSHD Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -3576,8 +3576,8 @@ C EDDSHD Sets up shading and insolation files
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 
-      character H*72,ZNAME*12,ZN*12,LCFGF*72
-      character zdesc*64,outs*248,CFGROOT*24
+      character H*72,ZN*12,LCFGF*72
+      character outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok
 
       if(ncomp.eq.0)then

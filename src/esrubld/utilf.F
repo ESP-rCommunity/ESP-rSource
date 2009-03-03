@@ -698,12 +698,11 @@ c later within the simulation time-stepping.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/rsolmax/maxrec(mcom)
 
       CHARACTER LS*72
-      character outs*124,h*72,zname*12,zdesc*64
+      character outs*124,h*72
 
       DIMENSION ISUM1(12),ISUM2(12),PS(24),
      &          IGC(MS),ISADD(12),ISHD(12)

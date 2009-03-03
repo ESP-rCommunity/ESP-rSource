@@ -785,7 +785,6 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -818,7 +817,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
       logical closea,closee,close,longpause
       logical newgeo  ! to use for testing if new/old geometry file.
-      character outs*124,CXSTR*78,zname*12,SN*12,ZN*12
+      character outs*124,CXSTR*78,SN*12,ZN*12
       character SO*24,TOTHER*24
       character DESCRC*25
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -826,7 +825,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER H*72
-      character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,zdesc*64,bl*2
+      character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
 
@@ -1800,7 +1799,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1814,7 +1812,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78,outs*124
-      CHARACTER OUTSTR*124,SO*12,TMP*54,zname*12,zdesc*64,H*72
+      CHARACTER OUTSTR*124,SO*12,TMP*54,H*72
       CHARACTER bl*2
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -3369,7 +3367,6 @@ C Serchrpl handles search and replace of composition attributes.
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 
@@ -3382,8 +3379,8 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character LTMP*72
       character H*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character zname*12,ZN*12,outs*124,SN*12,SSPARENT*12
-      character zdesc*64,DESCRC*25,act*1
+      character ZN*12,outs*124,SN*12,SSPARENT*12
+      character DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
       character AL8*12,AL9*12,CXITM*43

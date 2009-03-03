@@ -30,7 +30,7 @@ C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -55,13 +55,12 @@ C geometry.h provides commons G0 and G2.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
+      CHARACTER sstr*90,blabel*4,direc*1
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
 #ifdef OSX

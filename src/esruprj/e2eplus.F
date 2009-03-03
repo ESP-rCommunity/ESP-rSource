@@ -31,7 +31,7 @@ C ioout (integer) is the file unit to write to
 C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -84,7 +84,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -187,7 +186,7 @@ C surface can be resolved into a quad).
       real loadcasp,ver  ! file version passed to subroutine
       integer iver    ! file version as integer
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
-      character zname*12,zdesc*64,act*1,layname*25
+      character act*1,layname*25
       character T25*25,T25a*25,t12a*12
       character*10 wkday(7)
       character*9 RAMONTH(12)

@@ -151,7 +151,7 @@ C to the fabric temperature or condensation information.
 
       SUBROUTINE MOIHED(ICOMP,ISUR)
 #include "building.h"
-CC#include "geometry.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -161,7 +161,6 @@ CC#include "geometry.h"
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
@@ -174,7 +173,7 @@ CC#include "geometry.h"
 
       CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RSNAME*40,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character zname*12,zdesc*64,TSTR*6,ZN*12,SN*12,DS*7,DS1*10
+      character TSTR*6,ZN*12,SN*12,DS*7,DS1*10
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lml   ! string length for construction name.
@@ -280,8 +279,6 @@ C timestep.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -292,7 +289,7 @@ C timestep.
       DIMENSION TSURF(MS),TSO(MS),ihit(ms)
       CHARACTER*1 A(MS)
       character outs*124,xfile*144,TDESCR*5,DESCR1*10,DESCR*7
-      character zname*12,zdesc*64,tg*1,delim*1,CSTR*25
+      character tg*1,delim*1,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical found
@@ -765,10 +762,10 @@ C and vapour pressure gradients.
 
       SUBROUTINE MOIDRW(ICOMP,ISUR)
 #include "building.h"
+#include "geometry.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C IPRZ is primitive db ref for each layer.
       common/T8/IPRZ(MS,ME)
@@ -781,7 +778,7 @@ C IPRZ is primitive db ref for each layer.
       COMMON/VAP3/PSS(MN),PS(MN),PSSI,PSSO,PSI,PSO,
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
-      character CSTR*25,TCSTR*25,zname*12,zdesc*64,ZN*12
+      character CSTR*25,TCSTR*25,ZN*12
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
@@ -862,7 +859,6 @@ C period.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -909,7 +905,7 @@ C Arrays of material properties.
       common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
-      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
+      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1

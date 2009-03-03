@@ -766,10 +766,6 @@ C     Commons for summary of solar (for results library)
       COMMON/CCTL/ICASCF
       INTEGER ICASCF(MCOM)
 
-      COMMON/precz/zname,zdesc
-        CHARACTER*12  zname(MCOM)
-        CHARACTER*64 zdesc(MCOM)
-
       COMMON/PREC9/NCONST,NELTS,NGAPS,NPGAP
         INTEGER NCONST(MCOM),NELTS(MCOM,MS)
         INTEGER NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)

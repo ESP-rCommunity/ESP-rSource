@@ -615,8 +615,6 @@ C   specification and 2 if there was a cancel issued during editing.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -630,7 +628,7 @@ C   specification and 2 if there was a cancel issued during editing.
       character LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER H*72, ZNAME*12, zdesc*64, STMP*12
+      CHARACTER H*72,STMP*12
 
       integer idst,ihst,idft,ihft   ! for local editing.
       integer idf,ids,ihf,ihs

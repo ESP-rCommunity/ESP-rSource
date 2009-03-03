@@ -60,7 +60,6 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -81,7 +80,7 @@ C converts into viewing coords, clips the image and draws it.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,ETEXT*82
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
-      CHARACTER MLCN*12,zname*12,zdesc*64,t13*13
+      CHARACTER MLCN*12,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale

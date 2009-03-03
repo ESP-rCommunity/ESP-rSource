@@ -53,7 +53,6 @@ C user-specified variable.
 
       COMMON/PLT3D/ISUR,NCNOUT,NELOUT,NPSOUT,NNDOUT,INEXWC,
      &             ICRCG,INEXSC,ICI
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
@@ -64,7 +63,7 @@ C user-specified variable.
       CHARACTER*10 ITITLX,ITITLY,ITITLZ
       CHARACTER*40 ITITLE
       DIMENSION DATA(10),CQ(MTS)
-      CHARACTER LNAME*72,outs*124,H*72,zname*12,zdesc*64,etxt*10
+      CHARACTER LNAME*72,outs*124,H*72,etxt*10
       logical zlist
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -609,6 +608,7 @@ C Plot a 3D surface representation of 2D arrays of time
 C series data ie. timesteps-vs-day-vs-data. 
       SUBROUTINE SURF3(LU1,ROTNXX,ROTNYY,YS,ZS,xxmin,xxmax,zlist)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
@@ -617,7 +617,6 @@ C series data ie. timesteps-vs-day-vs-data.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       REAL MARGIN
       PARAMETER ( MARGIN=75.0,BMARGN=55.0,IRANDR=1,
@@ -630,7 +629,7 @@ C series data ie. timesteps-vs-day-vs-data.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER*40 TITLE,NAME
       CHARACTER*10 AXIS(3),ANAME,ANAME1
-      character detail*72,zname*12,zdesc*64
+      character detail*72
       logical close,zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

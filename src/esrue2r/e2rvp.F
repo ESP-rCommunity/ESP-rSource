@@ -124,6 +124,7 @@ C If south elevation, omitt the view-cone.
 C ******* Default views formation.
       SUBROUTINE VEWFORM(IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -133,7 +134,6 @@ C ******* Default views formation.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
@@ -160,7 +160,7 @@ C ******* Default views formation.
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
 
       character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
-      character zname*12,zdesc*64,outs*124,LBSRIF*72
+      character outs*124,LBSRIF*72
       character doit*124,ltmp*72,trvewsh*10
       character vewcmds*124,rvewsh*10
 #ifdef OSX

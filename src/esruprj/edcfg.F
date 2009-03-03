@@ -36,7 +36,7 @@ C output; IER=0 indicates no error.
       subroutine edcfg(ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/prec2.
+C geometry.h provides commons G0/G2/prec2/precz.
 #include "geometry.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -76,7 +76,6 @@ C LPRFDB,IPRODB (for event profile database)
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/user/browse
       common/uhome/upath
       common/CFGV/icfgv
@@ -140,7 +139,7 @@ C Uncertainty.
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72,upath*72,remainder*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
-      character zname*12,zdesc*64,CXITM*43,outs*124,fs*1
+      character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
       character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
@@ -1201,7 +1200,6 @@ C output, IER=0 indicates no error.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -1259,12 +1257,12 @@ C Flag noting whether casual gain periods are currently sorted.
       character SSPARENT*12
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
-      character doit*248,tmode*8,zname*12,DSFIL*72,ZN*12
+      character doit*248,tmode*8,DSFIL*72,ZN*12
       character outs*124,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character HOLD*32,zdesc*64,zd*64
+      character HOLD*32,zd*64
       CHARACTER ETEXT*82
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
@@ -4081,7 +4079,6 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -4114,7 +4111,7 @@ C      of obstruction data.
       
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character zname*12,zdesc*64,ZN*12,h*72
+      character ZN*12,h*72
       character outs*124
       logical DOK,OK
       integer iuf   ! file type 
@@ -4276,7 +4273,6 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -4305,7 +4301,7 @@ C      of obstruction data.
       
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character zname*12,zdesc*64,ZN*12,h*72
+      character ZN*12,h*72
       character outs*124
       logical DOK,OK
       integer itrc,iuf,iicomp,ij,iz,i

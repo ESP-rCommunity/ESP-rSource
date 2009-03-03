@@ -477,16 +477,15 @@ C names beside the layer number.
 C *********************************************************************
       SUBROUTINE WRTLYR(ICOMP,ICNST,ILYR,NAMELYR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      CHARACTER NAMELYR*124,zdesc*64
-      CHARACTER zname*12
+      CHARACTER NAMELYR*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lnsn

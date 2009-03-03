@@ -33,7 +33,7 @@ C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/c20.
+C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -54,12 +54,11 @@ C geometry.h provides commons G0/G2/G4/c20.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
 
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
-      CHARACTER OUTSTR*124,WORD*20,zname*12,zdesc*64,phrase*64
+      CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,LCNN*72,cfgroot*24
       character oformat*24,head*4,LOUT*72,SOTF*4,SN*12

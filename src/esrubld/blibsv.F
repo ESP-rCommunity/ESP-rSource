@@ -57,7 +57,6 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -71,7 +70,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       dimension izdum(MZS)
       CHARACTER*72 LCFGF
-      CHARACTER ZNAME*12,zdesc*64,ZNPAD*15,doit*248,outs248*248
+      CHARACTER ZNPAD*15,doit*248,outs248*248
       CHARACTER*6 NAME
       character outs*124,tfile*72,cfgroot*24,longtfile*144
       logical concat
@@ -637,7 +636,6 @@ C Commons for summary of solar (for results library)
      &  q2wall(2),q2rem(2)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -779,7 +777,7 @@ C Local variables for casual gains.
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       PARAMETER       (SMALL=1.0E-15)
 
-      character outs*144,zname*12,zdesc*64
+      character outs*144
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,bresfil*72
       logical close
 

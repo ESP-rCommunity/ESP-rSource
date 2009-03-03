@@ -105,6 +105,7 @@ C columns listed above.
 
       SUBROUTINE MFMENU
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
       
       integer lnblnk  ! function definition
@@ -114,7 +115,6 @@ C columns listed above.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -157,7 +157,7 @@ C air flow reporting.
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
       character ll1*8,ll2*8,ll3*8,lodlabel*6
-      character zname*12,zdesc*64,zn*12
+      character zn*12
 
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
 

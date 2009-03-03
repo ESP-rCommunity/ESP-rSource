@@ -147,6 +147,7 @@ C Display Zones list and wait for INIPIC item selected
 
       SUBROUTINE Zoneslist
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -154,14 +155,13 @@ C Display Zones list and wait for INIPIC item selected
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/surfsel/isursel(MCON),NbSurSel(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION IVALZ(MCOM)
-      CHARACTER H*72,zname*12,zdesc*64
+      CHARACTER H*72
       
       do 5 i=1,MCOM
         NbSurSel(i) = 0
@@ -236,12 +236,12 @@ C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
+      CHARACTER zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
@@ -281,7 +281,7 @@ C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17.
+C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -297,11 +297,9 @@ C geometry.h provides commons G0/G2/G4/prec2/prec17.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER outs*124
@@ -487,7 +485,6 @@ C          1 = textual feedback or 2 = File
 #include "acoustic.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -515,7 +512,6 @@ C          1 = textual feedback or 2 = File
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER zname*12,zdesc*64
       CHARACTER*36 RevLabA,RevLabB
       CHARACTER*63 FreqLabA,FreqLabB
       CHARACTER extraouts*189, outs*156

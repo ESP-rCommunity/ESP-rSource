@@ -46,7 +46,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -69,7 +68,7 @@ C =2 with more than 3 day types
       logical SNAPSH
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER TSTR*10,CSTR*25,zname*12,zdesc*64
+      CHARACTER TSTR*10,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SN*12,ZN*12
@@ -288,9 +287,9 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
       SUBROUTINE MOSCS2(IZONE,ISFN,IANZSE,IE,IZC)
 
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       common/loadlabel/lodlabel(mcom,7)
 
@@ -298,7 +297,6 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
 
       CHARACTER*18 LABELS(16)
       character outs*124,lodlabel*6
-      character zname*12,zdesc*64
 
 C Initial labels, 8-13 will be overwritten if user labels are available.
       LABELS(1)=' Conductive flux  '

@@ -523,6 +523,7 @@ C if MODE='a' (aim) will ask for aim and name files automatically or
 C if MODE='c' (create) then allow all purposes and auto name files.
       SUBROUTINE newscene(MODE)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -531,7 +532,6 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/e2rc/crenrp,coconv
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
@@ -550,7 +550,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
 
       character crenrp*160,coconv*40,cfgroot*24,LCFGF*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character h*72,zname*12,zdesc*64,MODE*1,outs*124,LBSRIF*72
+      character h*72,MODE*1,outs*124,LBSRIF*72
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character zone*16,aim*12,act*72,dname*28,tname*28
       character dname72*72,tname72*72
@@ -902,7 +902,6 @@ C if MODE is not - then sensor points file name confirmation required.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -918,7 +917,7 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/RAY6/LINSTY(MCON)
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character h*72,zname*12,zdesc*64,LDFGRID*72,DESCRC*25
+      character h*72,LDFGRID*72,DESCRC*25
       character outs*124,runpath*72,pathtype*24,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 

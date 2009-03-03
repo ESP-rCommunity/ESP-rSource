@@ -28,7 +28,7 @@ C ******* Translate esp data to tsbi3 file geom and materials.
       SUBROUTINE e2tsbi3(itrc,incobs,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -54,7 +54,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
 C Arrays of material properties.
@@ -86,7 +85,7 @@ C Arrays of material properties.
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       dimension iprndx(50),optndx(50)
-      character optndx*12,OPT*12,ZSN*28,q*1,zname*12,zdesc*64,T12*12
+      character optndx*12,OPT*12,ZSN*28,q*1,T12*12
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION ZSN(MS)
       character CONTYPE*12
@@ -760,7 +759,6 @@ C creates a grey-scale VRML 2.0 world.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -803,7 +801,7 @@ C Arrays of material properties.
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER GMLCN*12,GSNAME*6
-      character ZSN*28,q*1,zname*12,zdesc*64
+      character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
       logical XST,numb

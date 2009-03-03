@@ -144,6 +144,7 @@ C  itrc the level of reporting (zero is quiet).
 
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -153,7 +154,6 @@ C LPCDB/IPCDB (for plant template database)
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/C6/INDCFG
       COMMON/C8/LPNAM
@@ -186,7 +186,6 @@ C Electrical details for specified plant components
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      
-      CHARACTER ZNAME*12,ZDESC*64
       character loutstr*248,louts*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)

@@ -39,7 +39,7 @@ C an extrusion. IER=0 OK.
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
 
-C Use geometry for common g0/g2/g4/prec16/c20.
+C Use geometry for common g0/g2/g4/prec16/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -57,7 +57,6 @@ C Use geometry for common g0/g2/g4/prec16/c20.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -80,7 +79,7 @@ C Use geometry for common g0/g2/g4/prec16/c20.
       CHARACTER HOLD*32
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character MODE*4,SSPARENT*12,fs*1
-      CHARACTER OUTSTR*124,H*72,zname*12,ZN*12,zdesc*64
+      CHARACTER OUTSTR*124,H*72,ZN*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -541,7 +540,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -552,7 +550,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       CHARACTER SPARENT*12
       CHARACTER OUTSTR*124,H*72,ctldoc*248,LCTLF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,zname*12,zdesc*64
+      character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72,fs*1,outs*124
 
       LOGICAL OK,DOK,XST,OKC,unixok
@@ -999,7 +997,6 @@ C espriou.h provides currentfile.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1053,7 +1050,7 @@ C Anchor data.
       CHARACTER cfgroot*24
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER H*72,zname*12,zdesc*64,ctldoc*248,LCTLF*72,outs*124
+      CHARACTER H*72,ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
@@ -1716,6 +1713,7 @@ C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1727,12 +1725,11 @@ C IER=0 OK.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold
       common/C21/IFCFG,cfgroot,LCFGF
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER H*72,zname*12,zdesc*64,act*1
+      CHARACTER H*72,act*1
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok
@@ -1842,12 +1839,12 @@ C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
       subroutine comissionish(iz,act,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       
@@ -1860,8 +1857,8 @@ C     = 'in '  interactive new
       common/appw/iappw,iappx,iappy
 
       character LCFGF*72
-      CHARACTER ZNAME*12,ZN*12,longtfile*144,longtfiledos*144
-      character TMODE*8,zdesc*64,outs*248,DOIT*248,CFGROOT*24
+      CHARACTER ZN*12,longtfile*144,longtfiledos*144
+      character TMODE*8,outs*248,DOIT*248,CFGROOT*24
       character act*3  ! the parameter passed
       logical XST,concat,unixok
 
@@ -2499,7 +2496,6 @@ C#include "esprdbfile.h"
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2580,7 +2576,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character fs*1
-      CHARACTER zname*12,zdesc*64
       character ctldoc*248,LCTLF*72,zd*64
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

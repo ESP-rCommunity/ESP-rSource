@@ -150,7 +150,6 @@ C CovSurf   : Name of a surface behind a furniture (Extracted from ACA file)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/AbsoCoef/SysAbsCo(MMLC,MNbAbs),PubAbsCo(MaxPub,MNbAbs),
      &                FurAbsCo(MaxPub,MNbAbs),AirAbs(MNbAbs)
 
@@ -165,7 +164,7 @@ C CovSurf   : Name of a surface behind a furniture (Extracted from ACA file)
       COMMON/CPubFurZone/CovSurf(MaxFur)
       COMMON/MetNam/ACOName,CalName(4),LabFreq(MNbAbs)
       CHARACTER CalName*12
-      CHARACTER zname*12,zdesc*64, outs*124
+      CHARACTER outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER PubType*12, FurType*12, FurCat*4, CovSurf*12

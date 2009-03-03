@@ -40,6 +40,7 @@ C fluid flow model description file.
 
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
@@ -57,7 +58,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -71,7 +71,7 @@ C LPRFDB,IPRODB (for event profile database)
 
       CHARACTER*33 ITEM1(24)
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER H*72,LTMP*72,zname*12,zdesc*64,outs*124,outstr*124
+      CHARACTER H*72,LTMP*72,outs*124,outstr*124
       character cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -2088,7 +2088,6 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       
@@ -2140,7 +2139,7 @@ C associated with the largest ventilation rate.
 
       LOGICAL MODIFY,MODLEN,MODBND,XST
       logical closevz,closeiz,close,foundit
-      character zname*12,zdesc*64,NDNAM*12, outs*124, MODE*1
+      character NDNAM*12, outs*124, MODE*1
       character*72 LAPROB,H
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 

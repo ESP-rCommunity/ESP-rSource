@@ -54,6 +54,7 @@ C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -72,7 +73,6 @@ C LPROJ   - zone scheduling (operation file)
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -107,7 +107,7 @@ C Flag noting whether file was browsed for (so that cfg can be
 C updated when the user exits).
       logical gotviabrowse
 
-      CHARACTER zname*12,zdesc*64,tcname*248
+      CHARACTER tcname*248
       CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1278,6 +1278,7 @@ C IER=0 is OK.
       SUBROUTINE EDAIR2(ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -1286,7 +1287,6 @@ C IER=0 is OK.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       integer nccode,indutl
@@ -1311,7 +1311,7 @@ C IER=0 is OK.
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-      character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
+      character vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
@@ -1703,6 +1703,7 @@ C IER=0 is OK.
       SUBROUTINE EDAIR3(ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -1711,7 +1712,6 @@ C IER=0 is OK.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       integer nccode,indutl
@@ -1748,7 +1748,7 @@ C of one signals m3/h and a value of 2 signals m3/s.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
+      character vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
@@ -2164,14 +2164,12 @@ C     =2 infil, =0 ventilation attributes.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
 
-      character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
+      character OUTS*124,HOLD*16,h*72
 
 C Working variables
       real ACIX,ACVX,TAX,XTA,XACH
@@ -2431,10 +2429,10 @@ C  ICD - copy (=2) delete (=1) flag
 
       subroutine CDAIRFL(ICD)
 #include "building.h"
+#include "geometry.h"
 
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2445,7 +2443,7 @@ C  ICD - copy (=2) delete (=1) flag
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
 
-      character zname*12,zdesc*64,h*72,VERT(3*MA)*35,OUTS*124,OUT*4
+      character h*72,VERT(3*MA)*35,OUTS*124,OUT*4
       INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilen,ilm
 
       dimension IVERT(3*MA),ITEMP(3*MA)
@@ -2604,8 +2602,6 @@ C LPROJ   - zone scheduling (operation file)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
       common/p3ver/ip3ver(MCOM)
@@ -2639,7 +2635,7 @@ C Scratch copy of air flow pattern from an operations file.
                            !questions about the operation files data
 
       character*(*) sfile
-      character zname*12,zdesc*64,h*72
+      character h*72
       CHARACTER oprdescc*248,ctlstrc*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
@@ -3123,7 +3119,6 @@ C  ICOMP zone number
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -3134,7 +3129,7 @@ C  ICOMP zone number
       INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
       REAL ACI,ACV,TA
 
-      character zname*12,zdesc*64,outs*124
+      character outs*124
       dimension TACI(24),TACV(24)
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
@@ -3359,6 +3354,7 @@ C Returns: ICGS*(),ICGF*(),CMGS*(),CMGL*(),RADC*(),CONC*() common.
 C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -3374,7 +3370,6 @@ C ITRC is the trace level, IER=0 is OK.
       common/user/browse
 
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -3404,7 +3399,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
       character lodlabel*6,typstr*8,H*72
-      character zname*12,zdesc*64,title*28
+      character title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
 C   e.g. 123W in source zone is also 123W in destination zone.
@@ -4812,8 +4807,6 @@ C LPROJ   - zone scheduling (operation file)
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
       common/p3ver/ip3ver(MCOM)
@@ -4870,7 +4863,7 @@ C Descriptive label for a zone load or casual gain.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character lodlabel*6,lodlabelc*6
-      character zname*12,zdesc*64,fs*1,GFILE*72,iwatt*8
+      character fs*1,GFILE*72,iwatt*8
       character actcas*8
       character act*1   ! '-' normal, 's' silent
       LOGICAL XST,unixok,dok,ok
@@ -5178,7 +5171,6 @@ C  ICOMP zone number
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -5195,7 +5187,7 @@ C Descriptive label for a zone load or casual gain.
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
       character lodlabel*6, outs*124
-      character zname*12,zdesc*64
+
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext

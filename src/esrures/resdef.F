@@ -766,6 +766,7 @@ C NZNO - zone number of each.
 
       SUBROUTINE MOZDFN
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -776,10 +777,9 @@ C NZNO - zone number of each.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION IVALS(MCOM)
-      character ZNAME*12,zdesc*64,H*72
+      character H*72
 
 C If default setup then link in all zones in the model.
       IF(IDEFLT.EQ.1)then
@@ -849,7 +849,7 @@ C           which solar energy is injected in the absence
 C           of internal insolation information.
 C LSNAM   - is the name of the entire system.
 C NCCODE  - zone code.
-C ZNAME   - zone name.
+C ZNAME   - zone name (from geometry.h).
 C NCONST  - number of multilayered constructions in
 C           each zone.
 C NELTS   - number of homogeneous elements in each
@@ -886,7 +886,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -913,7 +912,7 @@ C Defaults.
       CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
-      CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24
+      CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

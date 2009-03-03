@@ -117,7 +117,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/prec2/c20.
+C geometry.h provides commons G0/G2/prec2/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -197,7 +197,6 @@ C LPNF (72 char) plant network file name.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -472,7 +471,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
-      character zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
@@ -2811,16 +2809,15 @@ C if possible. If ICON=0 then generate a text heading.
 
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12
+      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer ICM  ! connection for current surface.

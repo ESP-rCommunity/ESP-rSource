@@ -1261,6 +1261,7 @@ C ICOMP is the zone number.
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -1270,7 +1271,6 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
@@ -1303,8 +1303,7 @@ C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
 
-      character OPFIL*72,zname*12,lodlabel*6
-      character zdesc*64
+      character OPFIL*72,lodlabel*6
       character dstmp*24
       logical Vldtng
 
@@ -2058,8 +2057,6 @@ C Returns IER=0 if all ok.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -2089,7 +2086,7 @@ C   W/m2 or person/m2, if three then non-zero are mixed.
 
       logical close,needtodivide,writeit
 
-      character H*72,zname*12,zdesc*64,outs*124
+      character H*72,outs*124
 
 C Temporary arrays: MC array is 72 so that is
 C   sized for 24 hours X 3 day types. Array size should be

@@ -866,7 +866,6 @@ C whether information about the zones is displayed or not.
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -881,7 +880,7 @@ C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER zname*12,zdesc*64,GMLCN*12,GSNAME*6,outs*124
+      CHARACTER GMLCN*12,GSNAME*6,outs*124
 
       IER=0
       IUF=IFIL+1

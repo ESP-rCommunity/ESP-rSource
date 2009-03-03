@@ -670,16 +670,16 @@ C CONXMENU returns an English description in CXITM of the inter-connection
 C information. This is shorter than the string returned by CONXINFO. 
       SUBROUTINE CONXMENU(ICON,CXITM)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12
+      CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12
+
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer ICM  ! connection for current surface.

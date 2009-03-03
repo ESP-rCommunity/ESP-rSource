@@ -40,7 +40,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "net_flow.h"
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -79,7 +79,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -130,7 +129,7 @@ C prec17 common is described in geometry.h.
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10),trnalt(17),IVLST(MTV)
-      CHARACTER H*72,zname*12,zdesc*64,HEAD*32,SALT*33,hold*36
+      CHARACTER H*72,HEAD*32,SALT*33,hold*36
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER DESCRC*25
@@ -2331,7 +2330,7 @@ C Edit zone insolation distribution.
       SUBROUTINE EDINSUL(ICOMP,IER)
 #include "building.h"
 
-C Get common blocks g0/g2/g4 from geometry.h
+C Get common blocks g0/g2/g4/precz from geometry.h
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -2359,7 +2358,6 @@ C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
 C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -2370,7 +2368,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       DIMENSION IALT(8),IVAL(8),IVA(MS)
       dimension isd(16)
       CHARACTER IALT*36,H*72
-      CHARACTER zname*12,zdesc*64,isd*33,SFIL*72,DSFIL*72
+      CHARACTER isd*33,SFIL*72,DSFIL*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ZN*12
       character LCFGF*72,cfgroot*24
@@ -2707,13 +2705,11 @@ C IVA array of selections is returned.
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION STMP(MS),IVA(MS),IVALS(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character H*72,STMP*42,act*1,msg1*32,msg2*32
-      CHARACTER zname*12,zdesc*64
 
       IER=0
       IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
@@ -2895,7 +2891,6 @@ C << possible to alter the inside/outside hc from this interface? >>
 
 C Optical and geometric properties.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2934,7 +2929,7 @@ C Optical and geometric properties.
       CHARACTER*33 ISD(22)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
+      CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,H*72,SN*12,SN2*12,T14*14
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -4637,7 +4632,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -4652,7 +4646,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
-      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*36
+      CHARACTER VERT*33,KEY*1,H*72,head*28,HOLD*36
       character outs*124,headv*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -5867,7 +5861,6 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -5914,7 +5907,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION TMAT(4,4),RMAT(4,4),EQN(4),CG(3),EP(3)  ! for warp checks
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       CHARACTER VERT*34,options*34,KEY*1,H*72,SN*12,T14*14,D14*14
-      character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
+      character head*32,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       CHARACTER SNAME1*12,SNAMED*12,msgv*48
       character hold64*64,t248*248,OPT*12
@@ -7356,9 +7349,8 @@ C    otherwise  -,- )
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
+C ZNAME (12 char) - the zone name from geometry.h.
 C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -7385,11 +7377,11 @@ C be inserted.
       dimension iwhichsurfw(MS), iwhichsurfd(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER OUTSTR*124,WORD*20,zname*12
+      CHARACTER OUTSTR*124,WORD*20
       character lzip*72,dfile*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      character phrasea*64,phraseb*64,zdesc*64,outs*124
+      character phrasea*64,phraseb*64,outs*124
       character dllsubr*12,dllmesg*124,act*2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24

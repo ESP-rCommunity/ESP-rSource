@@ -42,13 +42,12 @@ C tzph,tzpc are zone heating/cooling use over time.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
-      character LTMP*72,zname*12,zdesc*64
+      character LTMP*72
       character cfgroot*24,tab*1
       character*72 lcfgf
       CHARACTER DS*7,DS1*10,DE*7,DE1*10

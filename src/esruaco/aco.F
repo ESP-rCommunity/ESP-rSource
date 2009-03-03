@@ -45,6 +45,7 @@ C                           furniture
 
       PROGRAM RevTime
 #include "building.h"
+#include "geometry.h"
 #include "acoustic.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -85,7 +86,6 @@ C Scale the project
 
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -146,7 +146,7 @@ C Material data array.
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 path,upath
       CHARACTER fs*1,outsd*124
-      CHARACTER zname*12,zdesc*64,TxtZone*72,CLMRF*72,TTmp*72
+      CHARACTER TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 
       CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12

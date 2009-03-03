@@ -563,7 +563,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -655,7 +654,7 @@ C Arrays of material properties.
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,LBSRIF,aglzfil
       character BLKNAME*8,BLKMAT*12,ZSN*28
-      character h*72,zname*12,ZN*12,zdesc*64,outs*124,material*12,QT*1
+      character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144

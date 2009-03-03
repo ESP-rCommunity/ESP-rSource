@@ -380,6 +380,7 @@ C above.
 
       SUBROUTINE GOMENU
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -388,7 +389,6 @@ C above.
       common/pophelp/h(60)
 
       common/loadlabel/lodlabel(mcom,7)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
 
@@ -441,7 +441,7 @@ C TDF commons.
       character H*72,xfile*144,tg*1,delim*1
       character SLABEL*32,GLABEL*20,SUFFIX*8,lodlabel*6
       character ll1*8,ll2*8,ll3*8
-      CHARACTER zname*12,zdesc*64,outs*124,pifltog*4,lpifl*72
+      CHARACTER outs*124,pifltog*4,lpifl*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       character graftitle*64,grlbl*24,t64*64,t24*24

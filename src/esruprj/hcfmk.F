@@ -39,7 +39,7 @@ C control file.
       SUBROUTINE HCFMK(ITRC,ITRU,IUF,ICOMP,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -48,7 +48,6 @@ C geometry.h provides commons G0 and G2.
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -68,7 +67,7 @@ C geometry.h provides commons G0 and G2.
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
 
       CHARACTER*72 LTMP
-      character HFILE*72,H*72,zname*12,zdesc*64,head*33
+      character HFILE*72,H*72,head*33
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER ITEM(29)*33
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -2976,13 +2975,12 @@ C As well as documentation based on the last edit by the user.
       COMMON/Vld20/Vldtng
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       common/HCFPHI/hcfpdescr(MP)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       dimension HCIA(MS),HCEA(MS),IHCIA(MS),IHCEA(MS)
       character*12 sn(MS)
       character hcfpdescr*72,dstmp*24,t117*117,FILE*72
-      CHARACTER zname*12,zdesc*64,louts*248
+      CHARACTER louts*248
       CHARACTER SSPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       logical Vldtng

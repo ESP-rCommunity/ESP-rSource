@@ -37,4 +37,9 @@ C VOL   - zone bounded volume (m^3)
       real vol
       common/prec2/vol(MCOM)
 
+C ZNAME (12 char) - the zone name.
+C ZDESC ( char) - zone notes.
+      character zname*12,zdesc*64
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
 

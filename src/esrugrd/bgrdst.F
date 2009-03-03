@@ -1470,7 +1470,7 @@ C *********************************************************************
       SUBROUTINE SLCTZN(ITRC,SZN,IZ,ZONOK)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1485,7 +1485,6 @@ C geometry.h provides commons G0 and G2.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/GRSD31/INDLCL(MS)
@@ -1505,7 +1504,7 @@ C geometry.h provides commons G0 and G2.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER SZN*12,zname*12,zdesc*64,H*72
+      CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
       newgeo=.false.  ! assume older format geometry.

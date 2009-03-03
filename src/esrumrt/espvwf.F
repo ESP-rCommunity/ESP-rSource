@@ -24,7 +24,7 @@ C Revised to take in configuration file and zone focus.
       program espvwf
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -42,7 +42,6 @@ C geometry.h provides commons G0/G2/c20.
       COMMON/FILEP/IFIL
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -122,12 +121,12 @@ C Name of current application
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
-      CHARACTER H*72,OUTSTR*124,zname*12,CUBN*6,ITEM*29
+      CHARACTER H*72,OUTSTR*124,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      character path*72,upath*72,cfgroot*24,zdesc*64
+      character path*72,upath*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

@@ -56,7 +56,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -82,7 +81,7 @@ C NZJVN : topology of vertices associated with each connection.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12,zname*12,zdesc*64,t13*13
+      CHARACTER MLCN*12,t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSX

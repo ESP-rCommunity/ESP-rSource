@@ -80,7 +80,6 @@ C ESP-r commons.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -117,7 +116,7 @@ C Material data array.
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
-      character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*144
+      character RZNAME*24,head*4,ZN*12,LTMP*144
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character path*72,upath*72,LCNN*72
       character upgcfg*72
@@ -967,7 +966,6 @@ C write esp geometry file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
@@ -978,7 +976,7 @@ C common prec17 is described in geometry.h.
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)
-      character lf*72,zname*12,zdesc*64,SN*12,SOTF*4,louts*248
+      character lf*72,SN*12,SOTF*4,louts*248
       integer lnzn
        
       ier=0
@@ -1262,6 +1260,7 @@ C conversion is stuffing layer 1 named zero into a zone named
 C first then accept match.
       subroutine matchl(il,head,RZNAME,match,im)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1269,10 +1268,9 @@ C first then accept match.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/layers/layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      character layname*72,zname*12,zdesc*64,TZNAME*24,RZNAME*24,head*4
+      character layname*72,TZNAME*24,RZNAME*24,head*4
       logical match
 
       head=' '

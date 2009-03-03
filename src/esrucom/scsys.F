@@ -73,7 +73,6 @@ C espriou.h provides currentfile.
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
 C Common blocks as in esystem.F (some omitted).
@@ -237,7 +236,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,ZN*12
-      character zname*12,zdesc*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character lradcf*72

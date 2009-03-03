@@ -52,7 +52,6 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/C21/IFCFG,cfgroot,LCFGF
       common/loadlabel/lodlabel(mcom,7)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -70,7 +69,7 @@ C Pre calculated data (filtered).
       character longtfile*144,longtfiledos*144
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
-      character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
+      character outs*124,TSTR*24,H*72,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3

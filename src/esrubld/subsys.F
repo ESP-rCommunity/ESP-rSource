@@ -51,12 +51,12 @@ C    SBC       = Stefan-Boltzmann constant.
 
       SUBROUTINE MZCFGG(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
 
       COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON /PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -78,7 +78,7 @@ C values for use as present values at the next time-step.
       COMMON/COE31PS/HRPS(MCOM,MS,MS),ZHRPS(MCOM,MS)
       common/ts4/itsitr(msch),itrpas
 
-      character outs*144,zname*12,zdesc*64
+      character outs*144
 
       DIMENSION QX(MS,MS)
 
@@ -250,6 +250,7 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -257,7 +258,6 @@ C  difference between the external ambient and surface temperatures.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/DNORGH/IRTYPE
 
@@ -324,7 +324,7 @@ c This common block is used to define the sky temperature calculation method
                                    ! 5 = Swinbank (clear - uses wet bulb T); 
 
 
-      character outs*124,ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64
+      character outs*124,ZSDES*28,ZSDESC*20,ZSDESS*16
       DIMENSION PROPB(8),PROPS(8),PROPG(8)
       DIMENSION TBLD(MS),HROF(MS)
       DIMENSION QELWFC(MS)
@@ -1116,7 +1116,6 @@ C                 external temperature (for use in MZLS3).
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C TDF commons.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
@@ -1172,7 +1171,7 @@ C mechanical ventilation and infiltration.
       PARAMETER    (SMALL=1.0E-15)
       DIMENSION VAL(MBITS+2)
 
-      CHARACTER LAPROB*72,zname*12,zdesc*64
+      CHARACTER LAPROB*72
       character outs*124
       logical close
 

@@ -196,7 +196,6 @@ C in elevation and azimuth.
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -328,7 +327,7 @@ C Required for WATSUN-PV model
 
       logical bCloseToZero     ! Boolean used for comparison to zero
 
-      character outs*124,zname*12,zdesc*64,vsnam*72
+      character outs*124,vsnam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
@@ -1909,12 +1908,12 @@ c Britain).
 
       SUBROUTINE MZSANG
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/BTIME/BTIMEP,BTIMEF
@@ -1924,7 +1923,7 @@ c Britain).
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character outs*124,zname*12,zdesc*64
+      character outs*124
       logical close
 
       ISUNUP=1

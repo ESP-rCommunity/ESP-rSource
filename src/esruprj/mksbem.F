@@ -54,7 +54,6 @@ C sbmedit define high level data associated with UK NCM methodology.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -102,7 +101,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,tab*1
       character outs*124,outs248*248,h*72,GUESS*24
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
-      CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
+      CHARACTER HSYSNM*70,KEY*1,TMPSTR*64
       character*35 ZITEMS(MCOM+4)
       real Air_infilt
       real light_input_watt !user input for heat gains from lights
@@ -2596,7 +2595,6 @@ C It finally generate BRUKL input document and other SBEM reports.
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
      
 C Build variable (These should eventually be placed in build_info.h)
       character cBuilder*32          ! User who compiled system
@@ -2631,7 +2629,6 @@ C Build variable (These should eventually be placed in build_info.h)
       character*12 SN,ZSN,FN,ZFN,RN,ZRN,TRN,ZTRN
       CHARACTER SSPARENT*12,TMPSTR*24,TMPSTR2*70
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character zname*12,zdesc*64
       LOGICAL CONTEXT,BNDRY,ISNEAR,XST
       REAL TMPREAL
       REAL tot_floor_area,tot_ext_area

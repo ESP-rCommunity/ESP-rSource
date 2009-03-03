@@ -705,6 +705,7 @@ C the zone no are recorded in NZNOG
 
       SUBROUTINE Zoneslist
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -712,7 +713,6 @@ C the zone no are recorded in NZNOG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -723,7 +723,7 @@ C the zone no are recorded in NZNOG
       DIMENSION IVALZ(MCOM)
      
 
-      CHARACTER H*72,zname*12,zdesc*64
+      CHARACTER H*72
       
       do 5 i=1,MCOM
         NbSurSel(i) = 0
@@ -797,12 +797,12 @@ C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
-      
+#include "geometry.h"
+
       integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
+      CHARACTER zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
@@ -860,7 +860,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
@@ -869,7 +868,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       DIMENSION VERT(35)
 
-      CHARACTER H*72,zname*12,zdesc*64
+      CHARACTER H*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER VERT*44,KEY*1,head*31,OutStr*124
@@ -1476,7 +1475,6 @@ C
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -1570,7 +1568,6 @@ C
       character SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
       CHARACTER StepName*36,StepSName*12
@@ -2522,7 +2519,6 @@ C phylosophy as LCACalc
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -2647,7 +2643,6 @@ C Arrays of material properties.
       CHARACTER SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
       CHARACTER H*72,outs*160,ITEM*36, Tmpstring*72

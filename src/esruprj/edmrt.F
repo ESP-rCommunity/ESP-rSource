@@ -55,7 +55,6 @@ C will have been defined prior to calling edmrt.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -78,7 +77,7 @@ C will have been defined prior to calling edmrt.
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character doit*248,tmode*8,tfile*72,zname*12,zdesc*64,ZN*12
+      character doit*248,tmode*8,tfile*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,act*1
       character longtfile*144,longtfiledos*144
@@ -630,13 +629,13 @@ C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
       SUBROUTINE EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -648,7 +647,7 @@ C EDMRTS: Edit details of a MRT sensor block.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
-      CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30,zname*12,zdesc*64
+      CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
 #ifdef OSX

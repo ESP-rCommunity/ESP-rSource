@@ -1562,6 +1562,7 @@ C AIM2_report decodes the AIM-2 common blocks into a brief report.
 
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 #include "espriou.h"
@@ -1581,9 +1582,6 @@ C espriou.h provides currentfile.
      &     bWindowsAreOpen,
      &     fDeltaTInttoExt,
      &     fWindowLowSetpoint
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      character zname*12,zdesc*64
 
       REAL fWindowSetpoint,fACSetPoint
       INTEGER iWindowControlZone

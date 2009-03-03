@@ -39,7 +39,7 @@ C output, IER=0 OK.
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "epara.h"
       
@@ -63,7 +63,6 @@ C geometry.h provides commons G0/G2/c20.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -84,7 +83,7 @@ C geometry.h provides commons G0/G2/c20.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
       CHARACTER*72 DFILE
-      CHARACTER zname*12,zdesc*64,SFILE*72,H*72,LTMP*72
+      CHARACTER SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82
@@ -1276,7 +1275,6 @@ C the number of composite layers to build this up.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1296,7 +1294,7 @@ C the number of composite layers to build this up.
 
       dimension ival(MS)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER zname*12,zdesc*64,H*72,TOPTIC*12,louts*248
+      CHARACTER H*72,TOPTIC*12,louts*248
 
 C If in quiet mode then the file should exist, but if it is not a 
 C silly name open it and inform.
@@ -1448,7 +1446,6 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1479,7 +1476,7 @@ C through each of the existing surfaces and finds unique optical types.
       CHARACTER outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER zname*12,zdesc*64,msg*28
+      CHARACTER msg*28
       
 C If tmc data has already been read in (ie NTMC>0) then move on to
 C a display of the current data.

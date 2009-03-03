@@ -655,6 +655,7 @@ C Subroutine MKSBEM writes out a project specific SBEM file that holds
 C data relevant to the UK National Calculation Method.
       SUBROUTINE MKSBEM
 #include "building.h"
+#include "geometry.h"
 #include "sbem.h"
       
       integer lnblnk  ! function definition
@@ -664,10 +665,8 @@ C data relevant to the UK National Calculation Method.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       CHARACTER CFGROOT*24,LCFGF*72,TMPSTR*64
-      CHARACTER ZNAME*12,ZDESC*64
       integer ireadactivityindex
       
       TMPSTR=' '

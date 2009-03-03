@@ -84,7 +84,7 @@ C Sets up defaults and offers main menu.
       program ish
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -145,7 +145,6 @@ C Indicator of possible focus zone and action to take.
       common/rzone/inzone
       common/ract/paction
 
-      common/precz/zname(mcom),zdesc(mcom)
       common/prec8/slat,slon
 
 C Project journal on/off, unit number, cmd, file name.
@@ -173,7 +172,7 @@ C Material data arrays.
       character*72 lview,lhcco,ltwin,lcgcin,zobs
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
-      character descrh*5,descrd*5,zname*12,zdesc*64,inf*144,lcmdfl*144
+      character descrh*5,descrd*5,inf*144,lcmdfl*144
       character path*72,upath*72,cfgroot*24,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72

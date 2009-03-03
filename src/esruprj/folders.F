@@ -1299,7 +1299,6 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/user/browse
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1321,7 +1320,7 @@ C CFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)
-      character ITEMS*72,zname*12,zdesc*64,head*25,path*72,L*72,ZN*12
+      character ITEMS*72,head*25,path*72,L*72,ZN*12
       character LCFD*72,H*72,outs*124
       character D*72,T15*12,D15*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

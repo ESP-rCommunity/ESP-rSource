@@ -9654,10 +9654,12 @@ C GETZONENAMES calls the c function putzonename to fill the C zonenames variable
       subroutine GETZONENAMES
 #include "building.h"
 
-      COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+C Get precz common block from geometry.h
+#include "geometry.h"
 
-      character zname*12,zdesc*64,t12*12
+      COMMON/C1/NCOMP,NCON
+
+      character t12*12
 
       do 10 I=1,NCOMP
         t12=zname(I)
@@ -9806,6 +9808,7 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
 
       COMMON/FILEP/IFIL
@@ -9818,7 +9821,6 @@ C then it represents the zone which is currently being edited.
       common/appw/iappw,iappx,iappy
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
@@ -9846,7 +9848,7 @@ C ITPPSW current view - perspective/plan/south/west
       logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,OK,DOK,found,concat,redraw
       DIMENSION IVALS(MCOM),MTHNAM(12)
-      CHARACTER H*72,zname*12,zdesc*64,LFIL*72,outs*124
+      CHARACTER H*72,LFIL*72,outs*124
       CHARACTER MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
       character doit*124,tmode*8,longtfile*72, hold*24,act*1

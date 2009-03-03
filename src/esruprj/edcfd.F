@@ -53,6 +53,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDCOMP(izone,iuf,IER)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
       
       integer lnblnk  ! function definition
@@ -65,7 +66,6 @@ C IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -77,7 +77,7 @@ C IER=0 indicates no error.
 
       character H*72,OUTSTR*124,WORD*124
       CHARACTER ITEM(11)*34
-      character zname*12,zdesc*64,ltmp*72,dtmp*72,LCFD*72
+      character ltmp*72,dtmp*72,LCFD*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI

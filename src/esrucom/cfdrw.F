@@ -497,6 +497,7 @@ C DFDREAD - Reads the CFD configuration file (version 2,2.1 and 2.2)
 #include "cfd.h"
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -520,7 +521,6 @@ C   Zplawe(IREG,ICFD) - East wall z-power law coef of region IREG per domain (IC
 C      (used in the case of curvilinear Z)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
      &  NCELZE(MNREG,MNZ),XREG(MNREG,MNZ),YREG(MNREG,MNZ),
      &  ZREG(MNREG,MNZ),ZREGE(MNREG,MNZ),Xplaw(MNREG,MNZ),
@@ -590,7 +590,7 @@ C Common block for calculation of turbulent Schmidt number for contaminants
       LOGICAL CALLMA,CALPOL
       Character OUTSTR*124,WORD*124,POLNAM*12,SRCE*12
       CHARACTER TITLE*72,CFTRFL*72,LPHI*72,LCFD*72
-      CHARACTER outs*124,TYPE*6,zname*12,zdesc*64,phrase*64
+      CHARACTER outs*124,TYPE*6,phrase*64
       character VOLNAME*12, VCsurf*12
 C      character LCND*12, LXND*12, LCNN*12
       LOGICAL BUOYA,BOUSSA

@@ -563,7 +563,6 @@ C gains and losses.
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -571,7 +570,7 @@ C gains and losses.
 
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
-      character outs*124,zname*12,zdesc*64,prompt*124,outsl*144
+      character outs*124,prompt*124,outsl*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72

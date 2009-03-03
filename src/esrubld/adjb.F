@@ -53,6 +53,7 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
 #include "building.h"
+#include "geometry.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
@@ -69,7 +70,6 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -136,7 +136,7 @@ C      DIMENSION tsurm(3)
 C      data init/1/
 C FINISH SPECIAL mod for PASSYS
 
-      CHARACTER zname*12,zdesc*64,outs*124
+      CHARACTER outs*124
       LOGICAL ATRACE
 
 C Flag trace info.

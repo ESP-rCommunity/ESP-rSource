@@ -31,6 +31,7 @@ C CGD - domain grid visualization.
 C IC = zone number (if in dfs set to 1)
       subroutine cgd(IC,IER)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -40,7 +41,6 @@ C IC = zone number (if in dfs set to 1)
       COMMON/SHOUT/ICOUT
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -50,7 +50,7 @@ C IC = zone number (if in dfs set to 1)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
       CHARACTER ITEM(16)*32, H*72
-      character outs*124,zname*12,zdesc*64,ETEXT*30
+      character outs*124,ETEXT*30
 
       logical GRMODE
 

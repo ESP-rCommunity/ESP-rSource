@@ -680,6 +680,7 @@ C interaction is begun.
 #include "epara.h"
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -689,11 +690,10 @@ C interaction is begun.
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
       DIMENSION VERT(35),CSTR(4)
-      CHARACTER PCNAME*15,ZNAME*12,ZDESC*64,CSTR*9
+      CHARACTER PCNAME*15,CSTR*9
       character*(*) head
       character sendstr*20,sendnd*12,recvnd*12 
       CHARACTER H*72,VERT*88,KEY*1,MOD*1
@@ -940,17 +940,17 @@ C interaction is begun.
 #include "epara.h"
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
       COMMON/C11/NCONT,IPCC(MPCOM),INDCP(MPCOM),CNTDAT(MPCOM,3)  
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       DIMENSION VERT(35)
-      CHARACTER PCNAME*15, zname*12
+      CHARACTER PCNAME*15
       character*(*) head
-      CHARACTER H*72,VERT*44,KEY*1,MOD*1,CNTSTR*20,zdesc*64
+      CHARACTER H*72,VERT*44,KEY*1,MOD*1,CNTSTR*20
       LOGICAL SELECT,OK,dok
 
 C Initialise node menu variables based on window size. 

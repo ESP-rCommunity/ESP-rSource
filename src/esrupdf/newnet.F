@@ -2314,6 +2314,7 @@ C interaction is begun.
       SUBROUTINE ASKBPLINK(head,MOD,IS,IER)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "control.h"      
 
@@ -2331,20 +2332,19 @@ C Common for the building plant link
       COMMON/PCNAM/PCNAME(MPCOM)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pcsort/icode(maxpc)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      DIMENSION VERT(35), CTYPE(4)
+      DIMENSION VERT(35), PCTYPE(4)
       CHARACTER PCNAME*15
 
       character*(*) head
-      CHARACTER H*72,VERT*64,KEY*1,MOD*1,ctype*12,desc*12,tstr*15,
-     &zname*12,zdesc*64,tstr1*15
+      CHARACTER H*72,VERT*64,KEY*1,MOD*1,pctype*12,desc*12,tstr*15,
+     &tstr1*15
       LOGICAL SELECT
 
 C Currently three types of linkages are supported.
-      ctype(1)= 'convective'
-      ctype(2)= 'conv/rad'
-      ctype(3)= 'embedded'
+      pctype(1)= 'convective'
+      pctype(2)= 'conv/rad'
+      pctype(3)= 'embedded'
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -2372,11 +2372,11 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           IF(IPCLINKT(L).EQ.1)THEN
-            WRITE(desc,'(A12)')ctype(1)
+            WRITE(desc,'(A12)')pctype(1)
           ELSEIF(IPCLINKT(L).EQ.2)THEN
-            WRITE(desc,'(A12)')ctype(2)
+            WRITE(desc,'(A12)')pctype(2)
           ELSE
-            WRITE(desc,'(A12)')ctype(3)
+            WRITE(desc,'(A12)')pctype(3)
           ENDIF
  
 C Create reporting strings, avoiding zero pointers.

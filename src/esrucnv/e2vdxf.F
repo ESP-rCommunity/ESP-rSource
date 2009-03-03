@@ -26,7 +26,7 @@ C THF (THINGS) file for use in MicroGDS.
       subroutine e2vdxf(itrc,incobs,ichop)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -40,7 +40,6 @@ C geometry.h provides commons G0 and G2.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -57,7 +56,7 @@ C geometry.h provides commons G0 and G2.
       logical doobs
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character oformat*24,head*4,zname*12,ZN*12,zdesc*64,outs*124
+      character oformat*24,head*4,ZN*12,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -458,7 +457,6 @@ C THF (THINGS) file for use in MicroGDS.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -475,7 +473,7 @@ C THF (THINGS) file for use in MicroGDS.
       common/dxfe/oformat,indxzon,head
       LOGICAL doobs
 
-      character oformat*24,head*4,zname*12,ZN*12,zdesc*64,outs*124
+      character oformat*24,head*4,ZN*12,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

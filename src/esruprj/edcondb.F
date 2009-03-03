@@ -2379,7 +2379,7 @@ C << if needed.
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -2397,7 +2397,6 @@ C geometry.h provides commons G0 and G2.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2450,7 +2449,7 @@ C      dimension SNA(MS),PAZI(MS),PELV(MS)
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character zname*12,zdesc*64,ZN*12,SN*12,SSPARENT*12
+      character ZN*12,SN*12,SSPARENT*12
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN

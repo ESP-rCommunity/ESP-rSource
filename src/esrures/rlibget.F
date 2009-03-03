@@ -933,19 +933,18 @@ C Given IDAY, returns sky lux level at each time step in common XDUM.
 C CALLS: 
       SUBROUTINE GILLUM(IDAY)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/AVRAGE/IDAVER
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
 C Start definition of Perez model coefficients
 C (Solar Energy Vol. 44. No. 5. pp. 271-289, 1990):
       DIMENSION  ASUN(8),ASKY(8),CSUN(8),CSKY(8),DSUN(8),DSKY(8)
-      character zname*12,zdesc*64
       logical closea
 
 C   Coefficients:

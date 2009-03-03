@@ -40,6 +40,7 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
 
       PROGRAM eco
 #include "building.h"
+#include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -84,7 +85,6 @@ C Scale the project
 
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -183,7 +183,6 @@ C Arrays of material properties.
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
       CHARACTER LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*124,ITEM*35,Hold*24
-      CHARACTER zname*12,zdesc*64
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER path*72,upath*72,L144*144
@@ -853,8 +852,7 @@ C update menu text
           TxtZone = 'UNKNOWN' 
           ISel = 0    
           if (nzg .EQ. 1) then
-            write(TxtZone,'(a)')
-     &                      zname(nznog(1))(1:12)
+            write(TxtZone,'(a)') zname(nznog(1))(1:12)
             if (NbSurSel(nznog(1)) .EQ. 1) then
               TxtCompo =  Sname(nznog(1),Isursel(1))(1:12)
             elseif (NbSurSel(nznog(1)) .EQ. NbSurSel(nznog(1))) then

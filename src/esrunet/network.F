@@ -3176,7 +3176,6 @@ C are returned. If ier=-1 then summary file was not available.
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Summary of external data.
       common/exsum/isexavail,iuex
@@ -3194,7 +3193,7 @@ C znamecon is the zone name associated with inside face a conneciton
       dimension snacon(MCON),surazi(MCON),surelv(MCON),surzmin(MCON)
       dimension surzcog(MCON),surzmax(MCON),conname(MCON)
       dimension snamecon(MCON),znamecon(MCON)
-      CHARACTER H*72,outstr*124,DEPRE*40,t72*72,zname*12,zdesc*64
+      CHARACTER H*72,outstr*124,DEPRE*40,t72*72
       CHARACTER PCITM(35)*42,KEY*1,exttag*12,WORD*20,SVAL*12,conname*43
       CHARACTER PSITM(35)*60
       character snamecon*12,znamecon*12,outs*124,tl*18,tc*18,tt*18
@@ -3638,13 +3637,12 @@ C unit iuex.
 #include "building.h"
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Summary of external data.
       common/exsum/isexavail,iuex
 
       dimension zx(MCOM),zy(MCOM),zz(MCOM)
-      CHARACTER outstr*124,zname*12,zdesc*64
+      CHARACTER outstr*124
       CHARACTER exttag*12,WORD*20,outs*124
       LOGICAL isexavail
 

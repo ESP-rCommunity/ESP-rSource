@@ -34,7 +34,7 @@ C *********************************************************************
       SUBROUTINE MENU1M(IDRW1,IDRW2,ITRC)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -42,7 +42,6 @@ C geometry.h provides commons G0/G2/c20.
       COMMON/HELP/IHELPM
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 
@@ -65,11 +64,10 @@ C geometry.h provides commons G0/G2/c20.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
-      CHARACTER*12 ZONENM,ZNAME
+      CHARACTER*12 ZONENM
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,outsd*124,outs72*72,OTHSTR*30
-      CHARACTER zdesc*64
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
       DIMENSION IVALZ(MCOM),IVALS(MS)

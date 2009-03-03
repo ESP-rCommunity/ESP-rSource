@@ -295,7 +295,6 @@ C espriou.h for climatelist file name.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C IPV description.
@@ -392,7 +391,7 @@ C ITME is menu for energy deman sets.
 C ITMM is menu for metric sets.
       DIMENSION ITMGET(15),ITM(31),ITMM(13),ITME(14),IVALS(MCOM)
       character ITM*48,ITMM*41,ITME*33,ITMGET*33,H*72,hold*40,hold5*50
-      character act*1,zname*12,zdesc*64
+      character act*1
       character lipvimg*72,lipvdatf*72,outs*124
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF

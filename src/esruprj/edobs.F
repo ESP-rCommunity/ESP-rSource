@@ -49,7 +49,6 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -81,9 +80,9 @@ C LPRFDB,IPRODB (for event profile database)
       character*30 PICK(MB)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,zname*12,HOLD*24
+      CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,HOLD*24
       character blkroot*6,mat*12,tbn*8
-      character holds*36,SFIL*72,DSFIL*72,ZN*12,zdesc*64
+      character holds*36,SFIL*72,DSFIL*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
@@ -640,7 +639,7 @@ C the block information.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -658,13 +657,11 @@ C geometry.h provides commons G0 and G2.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
       CHARACTER H*72,BLKNAME*8,BLKMAT*12,LTMP*72,OFILE*72
-      character zname*12,zdesc*64
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24

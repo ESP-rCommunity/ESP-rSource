@@ -23,7 +23,7 @@ C file.
       subroutine e2zip(itrc,incobs,ichop)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -35,14 +35,13 @@ C geometry.h provides commons G0 and G2.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       dimension ndum(MS)
 
-      character zname*12,zdesc*64,outs*124
+      character outs*124
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Setup standard assumptions.

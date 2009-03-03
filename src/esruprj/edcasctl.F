@@ -27,7 +27,7 @@ C EDCASCTL - edit casual gain control data.
       SUBROUTINE  EDCASCTL(ITRC,ICOMP,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -42,7 +42,6 @@ C geometry.h provides commons G0/G2/c20.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/user/browse
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -95,7 +94,7 @@ C TMC common block:
       logical newgeo  ! to use for testing if new/old geometry file.
       logical browse
 
-      character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
+      character H*72,outs*124,LTMP*72,DTMP*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

@@ -9269,6 +9269,7 @@ C then it represents the zone which is currently being edited.
 
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
 
       COMMON/FILEP/IFIL
@@ -9283,7 +9284,6 @@ C then it represents the zone which is currently being edited.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       character DESC*48
@@ -9319,7 +9319,7 @@ C ITPPSW current view - perspective/plan/south/west
       logical MODIFY,MODLEN,MODBND
       LOGICAL OPTKOK,CLOSE,OK,dok,found,concat,redraw
       DIMENSION ITEMS(23),IVALS(MCOM),FALT(7),IVAL(7)
-      CHARACTER ITEMS*32,H*72,zname*12,zdesc*64,LFIL*72,outs*124
+      CHARACTER ITEMS*32,H*72,LFIL*72,outs*124
       CHARACTER FALT*37,MTHNAM*3,ETEXT*60
       CHARACTER DESCRH*5,DESCRD*5,path*72
       character doit*248,tmode*8,longtfile*144, hold*24,act*1

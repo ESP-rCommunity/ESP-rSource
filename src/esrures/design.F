@@ -31,6 +31,7 @@ C design question facility.
 
       SUBROUTINE MODESQ
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -38,7 +39,6 @@ C design question facility.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/DESQ0/DQA(MCOM),DQB(MCOM),DQC(MCOM),DQD(MCOM)
       COMMON/DESQ/IDESQ,IDQV1,IDQV2,IDQV3,DQV1,DQV2,DQV3
@@ -48,7 +48,7 @@ C design question facility.
       DIMENSION IRANK(MCOM),VRANK(MCOM),KDUM(MCOM),ZDUM(MCOM),
      &          LABEL(10)
 
-      character outs*124,H*72,zname*12,zdesc*64
+      character outs*124,H*72
       CHARACTER*10 LABEL
       CHARACTER*16 ITEM(10)
       logical close

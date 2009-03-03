@@ -994,7 +994,6 @@ C geometry.h provides commons G0 and G2.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D09/XP(3),YP(3),ZP(3)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
@@ -1004,7 +1003,7 @@ C geometry.h provides commons G0 and G2.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER SZN*12,zname*12,zdesc*64,H*72
+      CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
       newgeo=.false.  ! assume older format geometry.
@@ -1104,6 +1103,7 @@ C READ3D reads 3D gridding cofiguration file.
 C *********************************************************************
       SUBROUTINE READ3D(IZ)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1111,7 +1111,6 @@ C *********************************************************************
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1137,7 +1136,7 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER STRG*124,FILE3D*72
-      CHARACTER H*72,WORD*124,zname*12,zdesc*64
+      CHARACTER H*72,WORD*124
 
       IER=0
 
@@ -1444,6 +1443,7 @@ C SAVE3D saves 3D gridding configuration file.
 C *********************************************************************
       SUBROUTINE SAVE3D(IZ)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1451,7 +1451,6 @@ C *********************************************************************
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1477,7 +1476,7 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER*72 FILE3D
-      CHARACTER H*72,WORD*124,zname*12,zdesc*64
+      CHARACTER H*72,WORD*124
 
       WRITE(WORD,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.c3d'
       FILE3D=WORD(1:72)

@@ -91,7 +91,7 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
 #include "geometry.h"
 
 C espriou.h provides current file.
@@ -220,9 +220,8 @@ C if the common block C24 has been filled.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
+C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C common/PREC17 is defined in geometry.h
       
@@ -245,13 +244,13 @@ C MLC commons to recover optical property name.
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*20,zname*12
+      CHARACTER OUTSTR*124,LGEOM*72,WORD*20
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124
+      character ZN*12,phrase*64,outs*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
@@ -940,7 +939,7 @@ C with user before overwriting.
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17/c20.
+C geometry.h provides commons G0/G2/G4/prec17/precz/c20.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -958,13 +957,12 @@ C << calling code to signal that ZNDATA could be used instead.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
 C Dummy array for default windows.
       dimension NGLD(MS)
 
-      CHARACTER GENFIL*72,zname*12,zdesc*64,louts*248
+      CHARACTER GENFIL*72,louts*248
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SO*15    ! to write out legacy
@@ -1167,7 +1165,7 @@ C       +ve).
       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
 #include "geometry.h"
 
 C espriou.h provides currentfile.
@@ -1223,9 +1221,8 @@ C if the common block C24 has been filled.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
+C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C prec17 common described in geometry.h
       
@@ -1271,13 +1268,13 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
 
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*32,zname*12
+      CHARACTER OUTSTR*124,LGEOM*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124
+      character ZN*12,phrase*64,outs*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc
@@ -2080,9 +2077,8 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
+C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -2112,7 +2108,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       character BLKNAME*8,BLKMAT*12
 
-      CHARACTER GENFIL*72,zname*12,zdesc*64
+      CHARACTER GENFIL*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,outsd*124,outs72*72,OTHSTR*30
@@ -2678,13 +2674,12 @@ C If context is .true. then give verbose description of the boundary.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER zname*12,OUTSTR*124,zdesc*64,OTHSTR*30
+      CHARACTER OUTSTR*124,OTHSTR*30
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,SIGSTR*12
 C      character SO*15  ! buffer to use for sother() info.
@@ -2777,8 +2772,6 @@ C the connections file).
 #include "geometry.h"
       
       integer lnblnk  ! function definition
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2786,8 +2779,7 @@ C the connections file).
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER OTHSTR*30,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12
+      CHARACTER OTHSTR*30,SST2*12,ZST2*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
@@ -2866,9 +2858,7 @@ C require a recent scan of zone geometry.
       common/SFIG/NSIGFIG
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      character zname*12,zdesc*64
       character outstr*124,t10*10,t10a*10,T12*12,T12A*12
 
       zoa=0.0
@@ -3277,7 +3267,6 @@ C      integer lnblnk  ! function definition
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
      &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -3299,7 +3288,6 @@ C   where a surface such as a floor has been subdivided)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
@@ -4136,15 +4124,15 @@ C ZINDEX is passed a string (which might be a zone name or an index) and
 C returns an index to the matching zone.  If no match then returns 0. 
       SUBROUTINE ZINDEX(STRING,index)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      CHARACTER zname*12,ZN*12,zdesc*64
+      CHARACTER ZN*12
       character*(*) STRING
 
 C If ALL then return negative of NCOMP.

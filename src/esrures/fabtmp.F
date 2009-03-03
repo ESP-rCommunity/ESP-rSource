@@ -498,7 +498,7 @@ C corresponding to graphical result display.
 C If act = i then initial display, if act = s then single step display.
       SUBROUTINE MOFHED(ICOMP,ISUR,act)
 #include "building.h"
-CC#include "geometry.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -510,7 +510,6 @@ CC#include "geometry.h"
       COMMON/GFONT/IFS,ITFS,IMFS
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -520,7 +519,7 @@ CC#include "geometry.h"
 
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40,SN*12
+      character TSTR*6,ZN*12,RSNAME*40,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character act*1
@@ -624,6 +623,7 @@ C MOFDRW displays the construction temperature profiles.
 
       SUBROUTINE MOFDRW(ICOMP,ISUR,act)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -636,14 +636,13 @@ C MOFDRW displays the construction temperature profiles.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
       DIMENSION XVAL1(MZS)
       character act*1,ETEXT*94,TDESCR*5,DS*7,DS1*10,CSTR*25,TCSTR*25
-      character zname*12,zdesc*64,ZN*12
+      character ZN*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

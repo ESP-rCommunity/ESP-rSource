@@ -29,6 +29,7 @@ C if these are 0 then use default values.
       program dfs
 #include "cfd.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
       
@@ -85,8 +86,7 @@ C Lisolv selector.
 C Small openings.
       common/SSOinit/areaSSO
 
-C Commons used when conflated which should be cleared in stand alone mode.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+C Common precz when conflated should be cleared in stand alone mode.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -109,7 +109,6 @@ C Material data arrays.
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
       CHARACTER*72 LVEC,LBIT,t72,vecfil
-      character zname*12,zdesc*64
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT

@@ -53,7 +53,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
@@ -64,7 +63,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       
       character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
 
-      CHARACTER zname*12,zdesc*64
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
       CHARACTER*26 LABELS(17)
       CHARACTER*9 TITLE1(17)

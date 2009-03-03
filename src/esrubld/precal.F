@@ -398,7 +398,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17.
+C geometry.h provides commons G0/G2/G4/prec17/precz.
 #include "geometry.h"
 #include "power.h"
       
@@ -428,7 +428,6 @@ C Commons for electrical data
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/CASGFA/FLOORA(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Derived casual gain and electrical data.
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
@@ -454,7 +453,7 @@ C - Alex Feb. 20 2004
       INTEGER iNumb_Gain_coupling,index
       REAL Coupling_Gain_info
 
-      character outs*124,zname*12,zdesc*64
+      character outs*124
       logical close
 
       REAL PQ,PR,PA
@@ -797,6 +796,7 @@ c           surface respectively
 
       SUBROUTINE MZMISC(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -808,14 +808,13 @@ c           surface respectively
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC10/NWINS(MCOM,MS)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
-      character zname*12,zdesc*64,outs*124
+      character outs*124
 
       SLAT=XLAT
       SLON=XLON

@@ -36,6 +36,7 @@ C CFDDTA - Reads the CFD configuration file.
 #include "cfd.h"
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -64,7 +65,6 @@ C   Zplawe(IREG,ICFD) - East wall z-power law coef of region IREG per domain (IC
 C      (used in the case of curvilinear Z)
       COMMON/FILEP/IFIL
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
      &  NCELZE(MNREG,MNZ),XREG(MNREG,MNZ),YREG(MNREG,MNZ),
      &  ZREG(MNREG,MNZ),ZREGE(MNREG,MNZ),Xplaw(MNREG,MNZ),
@@ -157,7 +157,7 @@ C Flow visualization common blocks.
       CHARACTER*72 TITLE,CFTRFL,HSID,LPHI,LCFD,Lflpar
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12,NDNAM*12,outs*124
       CHARACTER*72 LVEC,LBIT
-      character solveqn*80,zname*12,zdesc*64
+      character solveqn*80
       LOGICAL BUOYA,BOUSSA
 
       IFL=IFIL+1

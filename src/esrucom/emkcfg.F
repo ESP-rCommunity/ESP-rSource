@@ -29,6 +29,7 @@ C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -67,7 +68,6 @@ C ICLIM,LCLIM (for climate file)
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
@@ -259,7 +259,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
 
       CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
-      CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
+      CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -1232,16 +1232,15 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12
+      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 

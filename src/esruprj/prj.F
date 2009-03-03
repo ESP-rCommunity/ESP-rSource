@@ -3273,7 +3273,6 @@ C to include the path and create a string to drive the modules.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -3289,7 +3288,7 @@ C to include the path and create a string to drive the modules.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER*72 LS
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64,zn*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16,zn*12
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
 
       logical XST,asked,dok,sorted,problem
@@ -4463,7 +4462,6 @@ C   season assessment with all days included.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
@@ -4493,7 +4491,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot
       CHARACTER OUTSTR*124
-      CHARACTER APE*6,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
+      CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       character ipvaction*3  ! to signal external ipv file
       integer irootlen,iapelin  ! string buffer lengths

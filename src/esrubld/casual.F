@@ -726,7 +726,7 @@ C  FRAC : fraction of casual gain (returned value)
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -752,7 +752,6 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -805,7 +804,6 @@ C Illuminance database.
       character outs*124,doit*124,outstr*124,cfgroot*24
 
       character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
-      character zname*12,zdesc*64
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST

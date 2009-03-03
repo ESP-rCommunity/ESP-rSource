@@ -690,7 +690,7 @@ C IREP=1 implies no reporting or data checking.
       SUBROUTINE MZPREC(IREP,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -732,7 +732,6 @@ C         if = 0 then use compiled pattern.
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC7/ITCNST
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -780,7 +779,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       character outs*124,CXSTR*78,spflnam*72,lfil*72,H*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      character zname*12,zdesc*64
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124
