@@ -66,47 +66,47 @@ c Set area summations to zero.
 
 c And consider each surface of the current zone in turn.
       DO 10 I=1,NSUR
-      XS=0.
-      YS=0.
-      ZS=0.
-      ZMAX=-1.E+10
-      ZMIN=1.E+10
-      NV=NVER(I)
+        XS=0.
+        YS=0.
+        ZS=0.
+        ZMAX=-1.E+10
+        ZMIN=1.E+10
+        NV=NVER(I)
 
 c Compute gross surface area.
-      ADDL=0.
-      DO 20 J=1,NV
-        K=J+1
-        IF(J.EQ.NV)K=1
-        IP1=JVN(I,J)
-        IP2=JVN(I,K)
-        ZMAX=AMAX1(ZMAX,Z(IP1))
-        ZMIN=AMIN1(ZMIN,Z(IP1))
-        XS=XS+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
-        YS=YS+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
-        ZS=ZS+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
-        ADDL=ADDL+SQRT((X(IP2)-X(IP1))**2+(Y(IP2)-Y(IP1))**2+
-     &(Z(IP2)-Z(IP1))**2)
-   20 CONTINUE
-      XSUM(I)=XS
-      YSUM(I)=YS
-      ZSUM(I)=ZS
-      ZAREA=.5*SQRT(XS*XS+YS*YS+ZS*ZS)
-      APRAT(ICOMP,I)=4.*ZAREA/ADDL
-      HEIGHT(ICOMP,I)=ZMAX-ZMIN
+        ADDL=0.
+        DO 20 J=1,NV
+          K=J+1
+          IF(J.EQ.NV)K=1
+          IP1=JVN(I,J)
+          IP2=JVN(I,K)
+          ZMAX=AMAX1(ZMAX,Z(IP1))
+          ZMIN=AMIN1(ZMIN,Z(IP1))
+          XS=XS+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
+          YS=YS+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
+          ZS=ZS+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
+          ADDL=ADDL+SQRT((X(IP2)-X(IP1))**2+(Y(IP2)-Y(IP1))**2+
+     &         (Z(IP2)-Z(IP1))**2)
+   20   CONTINUE
+        XSUM(I)=XS
+        YSUM(I)=YS
+        ZSUM(I)=ZS
+        ZAREA=.5*SQRT(XS*XS+YS*YS+ZS*ZS)
+        APRAT(ICOMP,I)=4.*ZAREA/ADDL
+        HEIGHT(ICOMP,I)=ZMAX-ZMIN
 
 c Surface area is given by:
-      SNA(ICOMP,I)=ZAREA
+        SNA(ICOMP,I)=ZAREA
 
 c Check for -ve surface area: windows wrongly specified.
-      IER=0
-      IF(SNA(ICOMP,I).LT.0.00001)then
-        call edisp(iuout,' Negative surface area detected. ')
-        IER=1
-      endif
+        IER=0
+        IF(SNA(ICOMP,I).LT.0.00001)then
+          call edisp(iuout,' Negative surface area detected.')
+          IER=1
+        endif
 
 c And surface area summations by:
-      ZOA(ICOMP)=ZOA(ICOMP)+SNA(ICOMP,I)
+        ZOA(ICOMP)=ZOA(ICOMP)+SNA(ICOMP,I)
    10 CONTINUE
       RETURN
       END

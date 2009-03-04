@@ -102,9 +102,11 @@ C Clear dummy zones variable (in place of old NDOORS array).
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSNAM
       IREC = IREC + 1
 
+C Record width is slightly sensitive to the number of zones in the model
+C an extra record is used.
       NCP=NCOMP
       IF(NCOMP.GT.20)NCP=20
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCCODE(I),I=1,NCP)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  4
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),
@@ -112,26 +114,33 @@ C Clear dummy zones variable (in place of old NDOORS array).
       IREC = IREC + 1
     4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
       IREC=IREC+1
+
+C Write one operation file name per record.
       DO 20 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
       IREC = IREC + 1
    20 CONTINUE
 
+C Write one geometry file name per record.
       DO 40 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
       IREC = IREC + 1
    40 CONTINUE
 
+C Write one shading file name per record.
       DO 60 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
       IREC = IREC + 1
    60 CONTINUE
 
+C Write one construction file name per record.
       DO 80 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
       IREC = IREC + 1
    80 CONTINUE
 
+C Record width is not sensitive to the number of surfaces in the model
+C extra records are used.
       X=FLOAT(NCON)/20.
       N=INT(X)+1
       DO 100 I = 1,N
@@ -181,6 +190,8 @@ C Write out 15 char string for zone name (so reading logic the same).
       IREC = IREC + 1
   150 CONTINUE
 
+C Record width is slightly sensitive to the number of zones. A second
+C record is used if more than 20 zones.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCONST(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  5
@@ -228,21 +239,27 @@ C DUMP FOR ALL THREE POSSIBLE AIR GAPS
   180 CONTINUE
 
 C Save floor area of each zone.
+C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZBASEA(I),I=1,NCOMP)
       IREC = IREC + 1
 C      write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
 
 C Save area of transparent surfaces connected to external type BC.
+C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZTRANA(I),I=1,NCOMP)
       IREC = IREC + 1
 C      write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
 
-C Save surface area of each surface in each zone.
+C Save surface area of each surface in each zone. Record width is
+C sensitive to the number of surfaces in the zone.
       DO 230 I=1,NCOMP
       NN=NCONST(I)
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(SNA(I,J),J=1,NN)
       IREC=IREC+1
   230 CONTINUE
+
+C Write one data record per zone.
+C << more items could be written into this e.g. ZBASEA and ZTRANA >>
       DO 240 I=1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZOA(I)
       IREC=IREC+1

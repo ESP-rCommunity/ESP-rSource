@@ -891,7 +891,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
      &             NPGAP(MCOM,MS,MGP)
       COMMON/RECV5/SNA(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
-C      COMMON/RECV7/ZOA(MCOM)
 
 C Nothing references ZGAE and ZGAI.
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
@@ -1104,26 +1103,28 @@ C Read floor area of each zone (this is actually already available
 C in common block prec17 defined in geometry.h. Potentially we
 C do not need to read this array here. But later if we decide not
 C to scan geometry files this line would be needed.
+C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
 C Read area of transparent surfaces connected to external boundary.
+C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
       endif
 
-C Read surface areas.
+C Read surface areas in each zone.
       DO 90 I=1,NCOMP
         NN=NCONST(I)
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(SNA(I,J),J=1,NN)
         IREC=IREC+1
    90 CONTINUE
 
-C ZOA Not needed.
+C ZOA Not needed so skip ncomp records
+C << could be location of other one-per-zone data >>.
       DO 100 I=1,NCOMP
-C        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZOA(I)
         IREC=IREC+1
   100 CONTINUE
       DO 110 I=1,NCOMP
