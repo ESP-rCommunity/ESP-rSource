@@ -889,7 +889,8 @@ C ier is zero if no problems and -3 if user issued a cancel.
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/RECV5/SNA(MCOM,MS),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
+      common/PREC18/ZTRANA(MCOM)
 C      COMMON/RECV7/ZOA(MCOM)
 
 C Nothing references ZGAE and ZGAI.
@@ -1107,7 +1108,7 @@ C to scan geometry files this line would be needed.
         IREC=IREC+1
 C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
-C Read area of transparent surfaces connected to external type BC.
+C Read area of transparent surfaces connected to external boundary.
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
