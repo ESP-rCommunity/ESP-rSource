@@ -327,8 +327,8 @@ C Read geometry file for chosen zone.
       CALL ADJVIEW(ITRC,IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZAO,PAZI,PELV,ZVOL)
-      ZVOL = Vol(icomp)
+      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       FLA=0.
       IFLA=0
@@ -346,7 +346,7 @@ C Recover zone data (read only, no display).
 C Display high level data.
       write(outs,'(A,A)')' Composition of ',ZNAME(ICOMP)
       call edisp(iuout,outs)
-      WRITE(outs,'(a,f8.2,a)')'  Volume :          ',ZVOL,'m^3'
+      WRITE(outs,'(a,f8.2,a)')'  Volume :          ',VOL(ICOMP),'m^3'
       call edisp(iuout,outs)
       WRITE(outs,'(a,f8.2,a)')'  Base/floor area : ',ZBASEA(ICOMP),'m^2'
       call edisp(iuout,outs)

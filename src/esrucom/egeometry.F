@@ -223,7 +223,7 @@ C if the common block C24 has been filled.
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
 
-C common/PREC17 is defined in geometry.h
+C zbasea(),ibases(),iuzbasea(),izbaselist() are defined in geometry.h
       
 C Save total transparent surface area for surfaces connected to external BC.
       common/PREC18/ZTRANA(MCOM)
@@ -877,10 +877,11 @@ C Now close geometry data file.
    44 CALL ERPFREE(IUNIT,ios)
 
 C If base area has not yet been calculated, do this now and calculate 
-C transparent area for surfaces connected to external type BC.
+C transparent area for surfaces connected to external boundary conditions.
 C Get surface areas via call to zinfo.
       call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
-      vol(ICOMP)=zvol
+      vol(icomp)=zvol
+      zonetotsurfacearea(icomp)=zoa
       ZTRANA(ICOMP)=0.
       lastlist=0
       do 43 ijj=1,NSUR
@@ -2000,10 +2001,11 @@ C Now close geometry data file.
    44 CALL ERPFREE(IUNIT,ios)
 
 C If base area has not yet been calculated, do this now and calculate 
-C transparent area for surfaces connected to external type BC.
+C transparent area for surfaces connected to external boundary.
 C Get surface areas via call to zinfo.
       call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
       vol(ICOMP)=zvol
+      zonetotsurfacearea(ICOMP)=zoa
       ZTRANA(ICOMP)=0.
       do 43 ijj=1,NSUR
         if(checkbase)then
@@ -2864,21 +2866,10 @@ C require a recent scan of zone geometry.
       SUBROUTINE ZINFOREP(itu,icomp)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
       common/SFIG/NSIGFIG
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/C24/IZSTOCN(MCOM,MS)
       character outstr*124,t10*10,t10a*10,T12*12,T12A*12
 
-      zoa=0.0
-      do 42 ij=1,nzsur(icomp)
-        ic=izstocn(icomp,ij)
-        if(ic.gt.0)zoa=zoa+ssna(ic)
-  42  continue
       call edisp(itu,' ')
 
 C Convert nsur,ntv,zvol etc into strings with no leading spaces.
@@ -2895,7 +2886,7 @@ C Report data to required number of significant figures.
       WRITE(outstr,'(3a)')' It encloses a volume of ',T12(1:LSTR),
      &   'm^3 of space, with a total surface'
       call edisp(itu,outstr)
-      call SIGFIG(ZOA,NSIGFIG,RNO,T12,LSTR)
+      call SIGFIG(zonetotsurfacearea(icomp),NSIGFIG,RNO,T12,LSTR)
       call SIGFIG(ZBASEA(ICOMP),NSIGFIG,RNO,T12A,LSTRA)
       if(IUZBASEA(icomp).eq.0)then
         write(outstr,'(5a)') ' area of ',T12(1:LSTR),
@@ -3048,6 +3039,8 @@ C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
 #include "building.h"
 #include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
 C << could it use ?? instead of G1? >>
 

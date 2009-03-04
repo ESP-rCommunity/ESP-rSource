@@ -903,6 +903,7 @@ C Multi-page list
 
 C Recover zone data (read only, no display).
       CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      vol(icomp)=zvol
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
       TRN=0.
@@ -927,7 +928,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Set up header text.
-      WRITE(VERT(1),'(a,f8.2,a)')'  Volume :          ',ZVOL,'m^3'
+      WRITE(VERT(1),'(a,f8.2,a)')'  Volume :          ',VOL(icomp),'m^3'
       WRITE(VERT(2),'(a,f8.2,a)')'  Base/floor area : ',ZBASEA(icomp),
      &  'm^2'
       WRITE(VERT(3),'(a,f8.2,a)')'  Opaque constr. (OPQ):  ',OPQ,'m^2'
@@ -1971,6 +1972,7 @@ C If approach is model based, read the current zone information
             call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           endif
           call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
+          vol(ICurZone)=zvol
           context=.false.
         ENDIF
 
@@ -3146,6 +3148,7 @@ C If approach is model based, read the current zone information
      &          IER)
             endif
             call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
+            vol(ICurZone)=zvol
             context=.false.
           ENDIF
 

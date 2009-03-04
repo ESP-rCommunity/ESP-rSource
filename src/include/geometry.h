@@ -33,9 +33,10 @@ C number of items in the list.
 
 C The following section will hold derived data such as volume and surface
 C areas which are of general interest to many subroutines.
-C VOL   - zone bounded volume (m^3)
-      real vol
-      common/prec2/vol(MCOM)
+C vol   - zone bounded volume (m^3)
+C zonetotsurfacearea - area (m2) of surfaces associated with each zone.
+      real vol,zonetotsurfacearea
+      common/prec2/vol(MCOM),zonetotsurfacearea(MCOM)
 
 C zname (12 char) - the zone name.
 C zedsc (64 char) - zone notes.

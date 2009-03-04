@@ -7792,6 +7792,7 @@ C get surface areas via call to zinfo.
       if(checkbase)then
         call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
 	vol(icomp)=zvol
+        zonetotsurfacearea(icomp)=zoa
         do 43 ijj=1,NSUR
           if(SVFC(ijj).eq.'FLOR')then
 
