@@ -730,10 +730,10 @@ C If older geometry file ask for the obstruction file, if it exists
 C then read it in, if not found create one with default information.
 C In either case offer the choice to dereference obstructions.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(OFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.obs'
+        WRITE(OFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.obs'
       else
         WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.obs'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.obs'
       endif
 
 C If silent is true create standard name. If this matches an

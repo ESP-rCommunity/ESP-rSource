@@ -55,8 +55,6 @@ C ARF    - future time adjacent incident radiation & casual etc.
 #include "building.h"
 #include "geometry.h"
 #include "control.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -163,8 +161,8 @@ C Zone-by-zone.
         if(ATRACE)then
           call edisp(itu,' ')
           write(outs,'(1x,A,A,I2,A,I2,A)') 
-     &       zname(icomp)(1:lnblnk(zname(icomp))),' (',ICOMP,') with ',
-     &       NC,' surfaces, units W/m^2 '
+     &      zname(icomp)(1:lnzname(icomp)),' (',ICOMP,') with ',
+     &      NC,' surfaces, units W/m^2 '
           call edisp(itu,outs)
           write(outs,'(8x,A,13x,A)')'inside face','|      other face'
           call edisp(itu,outs)

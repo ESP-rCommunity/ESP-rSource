@@ -175,11 +175,10 @@ C Assume that no alterations have been made to geometry.
 
 C GFILE is the default file name for any geom file to be created,
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &      '.geo'
+        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       else
         WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       endif
 
 C On entry to zone level determine its bounds for future comparison.
@@ -706,13 +705,13 @@ C Zone name, make sure it has no illegal characters.
         if(T14(1:2).NE.'  ')then
           write(T12,'(a)') T14(1:12)
           call st2name(T12,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
 
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &        '.geo'
+            WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
           else
             WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &        zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
           endif
           call tstamp('>','PRJ: edited zone name')
           MODIFY=.TRUE.
@@ -7494,6 +7493,7 @@ C is tested for illegal characters.
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         zname(ICOMP)=' '
+        lnzname(ICOMP)=0
         zdesc(ICOMP)=' '
         lnzdesc(ICOMP)=0
       ELSEIF(ND.EQ.2)THEN
@@ -7531,10 +7531,11 @@ C Fill in a default zone name and description if blank.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')then
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
         write(zdesc(ICOMP),'(a,a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+     &    zname(ICOMP)(1:lnzname(ICOMP)),' describes a '
         lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
 
@@ -7803,7 +7804,7 @@ C If surface `flor` not included in the list add it.
           endif
   43    continue
         write(outs,'(a,f6.2,3a)') 'Base area estimated at ',
-     &     ZBASEA(ICOMP),'m^2 for ',zname(icomp),
+     &     ZBASEA(ICOMP),'m^2 for ',zname(icomp)(1:lnzname(icomp)),
      &    ' (probably an older file).'
         call edisp(itru,outs)
         if(lastlist.gt.0)iuzbasea(icomp)=0
@@ -7884,10 +7885,10 @@ C Update the G7 common blocks and then write out configuration file.
 
 C Make up a zone geometry file name for this new zone.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+        WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       else
         WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       endif
       LGEOM(icomp)= DFILE
       write(outs,'(A,A)') 'Updating initial surfaces in ',zname(icomp)

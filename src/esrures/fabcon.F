@@ -272,8 +272,6 @@ C timestep.
       SUBROUTINE MOSURC(IZONE,izrh,iverb)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       common/exporttg/xfile,tg,delim
@@ -318,7 +316,7 @@ C For each day of the reporting period.
       NC=NZSUR(IZONE)
       if(iverb.eq.0)then
         write(outs,'(2a)')' Summary condensation report for: ',
-     &     zname(IZONE)(1:lnblnk(zname(IZONE)))
+     &    zname(IZONE)(1:lnzname(IZONE))
         call edisp(itru,outs)
       endif
       DO 30 IDO=IODS,IODF
@@ -328,7 +326,7 @@ C Heading.
           CALL STDATE(IYEAR,IDO,DESCR,DESCR1)
           call edisp(itru,' ')
           write(outs,'(a,a,a,a10)')' Summary condensation report for: ',
-     &      zname(IZONE)(1:lnblnk(zname(IZONE))),' on ',DESCR1
+     &      zname(IZONE)(1:lnzname(IZONE)),' on ',DESCR1
           call edisp(itru,outs)
           call edisp(itru,' ')
           call edisp(itru,' Time                       Surface')
@@ -385,7 +383,7 @@ C izctime is number of timesteps when some surface in zone has condensation.
   42  continue
       hrs=izctime(IZONE)*TFACT
       WRITE(outs,'(2a,i5,f8.2)') ' Total occurances & hours in ',
-     &  zname(IZONE)(1:lnblnk(zname(IZONE))),izctime(IZONE),hrs
+     &  zname(IZONE)(1:lnzname(IZONE)),izctime(IZONE),hrs
       call edisp(itru,outs)
       RETURN
       END

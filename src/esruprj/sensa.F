@@ -683,7 +683,7 @@ C Otherwise select the zones from a list of zone names.
           H(3)='You may choose them in any order. '
           INPIC=NCOMP
           CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-     &                          12,NCOMP,ZNAME,' zone list',IERR,3)
+     &      12,NCOMP,ZNAME,' zone list',IERR,3)
 
 C Check for errors.
           if (IERR.ne.0) goto 999
@@ -727,8 +727,8 @@ C are applicable.
           call edisp(iuout,'  ')
           H(1)=' Pick one, several or all surfaces for inclusion.'
           call EPICKS(INPIC,IVALS,' Which surfaces to include: ',
-     &         ' (If surface selection not required choose * All) ',
-     &                       12,NZSUR(IZONE),STMP,ZNAME(IZONE),IERR,1)
+     &      ' (If surface selection not required choose * All) ',
+     &      12,NZSUR(IZONE),STMP,ZNAME(IZONE),IERR,1)
 
 C Check for errors.
           if (IERR.ne.0) goto 999

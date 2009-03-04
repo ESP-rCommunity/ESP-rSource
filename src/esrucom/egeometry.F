@@ -297,6 +297,7 @@ C the should use georead to scan the file.
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(ICOMP))
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
         CALL ERPFREE(IUNIT,ios)
         call georead(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
@@ -307,6 +308,7 @@ C the should use georead to scan the file.
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
+          lnzname(ICOMP)=0
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
@@ -315,6 +317,7 @@ C the should use georead to scan the file.
           CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
@@ -323,6 +326,7 @@ C the should use georead to scan the file.
           CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           call egetrm(outstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
           lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
@@ -334,13 +338,14 @@ C the should use georead to scan the file.
 C The file format is prior to 1.1 so continue scanning.
 C Fill in a default zone name and description if blank.
       if(zname(ICOMP)(1:2).EQ.'  '.OR.
-     &     zname(ICOMP)(1:7).EQ.'UNKNOWN')then
+     &   zname(ICOMP)(1:7).EQ.'UNKNOWN')then
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
         write(zdesc(ICOMP),'(2a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+     &    zname(ICOMP)(1:lnzname(ICOMP)),' describes a '
         lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
 
@@ -997,9 +1002,9 @@ C over-write) or create a new file.
       ENDIF
 
       WRITE(IFILG,30,IOSTAT=ios,ERR=13)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),GENFIL(1:lnblnk(GENFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),GENFIL(1:lnblnk(GENFIL))
   30  FORMAT('# geometry of ',a,' defined in: ',a)
-      lz=lnblnk(zname(ICOMP))
+      lz=lnzname(ICOMP)
 
 C File is always a GEN type as this is representation in common.
       WRITE(IFILG,'(a3,2x,A,2x,a,2x,a)',IOSTAT=ios,ERR=13) 'GEN',
@@ -1333,6 +1338,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(ICOMP))
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
       else
         K=0
@@ -1340,6 +1346,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
+          lnzname(ICOMP)=0
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
@@ -1348,6 +1355,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
@@ -2167,7 +2175,7 @@ C over-write) or create a new file.
       write(currentfile,'(a)') GENFIL(1:lnblnk(GENFIL))
 
 C Write out the header including date stamp and documentation.
-      lz=lnblnk(zname(ICOMP))
+      lz=lnzname(ICOMP)
       write(ifilg,'(6a)',IOSTAT=ios,ERR=13) '*Geometry 1.1',tab,
      &  'GEN',tab,zname(ICOMP)(1:lz),
      &  ' # tag version, format, zone name'
@@ -2672,8 +2680,6 @@ C If context is .true. then give verbose description of the boundary.
       SUBROUTINE SURINFO(ICOMP,ITRU,context)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       common/SFIG/NSIGFIG
 
@@ -2697,7 +2703,7 @@ C Check version number of file.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
 
 C Surface summary: print header, followed by surface information.
-      lzn=LNBLNK(zname(ICOMP))
+      lzn=lnzname(ICOMP)
       call edisp(ITRU,' ')
       write(outstr,'(3a,i2,a)')' A summary of the surfaces in ',
      &  zname(ICOMP)(1:lzn),'(',icomp,') follows:'
@@ -2879,7 +2885,7 @@ C Convert nsur,ntv,zvol etc into strings with no leading spaces.
       CALL INTSTR(NZSUR(icomp),t10,lna,IER)
       CALL INTSTR(NZTV(icomp),t10a,lnaa,IER)
       WRITE(outstr,'(3a,i2,5a)')' Zone ',
-     &   zname(ICOMP)(1:LNBLNK(zname(ICOMP))),
+     &   zname(ICOMP)(1:lnzname(ICOMP)),
      &   ' (',ICOMP,') is composed of ',t10(1:lna),' surfaces and ',
      &   t10a(1:lnaa),' vertices.'
       call edisp(itu,outstr)
@@ -3264,8 +3270,6 @@ C act is '-' derive geometric data or 'c' also determine parent
       subroutine suredgeadj(itrc,act,izone,ier)
 #include "building.h"
 #include "geometry.h"
-      
-C      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4153,7 +4157,7 @@ C Loop through each of the zones and see if a match.
       lstr = lnblnk(STRING)
       do 42 i = 1, NCOMP
         ZN = zname(i)
-        lzn = lnblnk(ZN)
+        lzn = lnzname(i)
         if(lstr.eq.lzn)then
           if(STRING(1:lstr).eq.ZN(1:lzn))then
             index = i

@@ -169,7 +169,7 @@ C day number.
 
 C Attempt to open the relevant zone transitional shading file 
 C for this month. If unknown call igeoms to set up grid.
-      write(ltrns,'(a)')zname(icomp)(1:lnblnk(zname(icomp)))
+      write(ltrns,'(a)')zname(icomp)(1:lnzname(icomp))
       write(tbase,'(a,a3)')ltrns(:lnblnk(ltrns)),month(mon)
       call erpfree(iunit,istat)
       call findfil(tbase,xst)

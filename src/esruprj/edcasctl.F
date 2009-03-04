@@ -112,11 +112,10 @@ C Assume daylight coeffs do need calculated.
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DLCGCIN,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.cgc'
+        WRITE(DLCGCIN,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.cgc'
       else
         WRITE(DLCGCIN,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cgc'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.cgc'
       endif
       if(ICGC(ICOMP).NE.0)then
         call FINDFIL(LCGCIN(ICOMP),XST)

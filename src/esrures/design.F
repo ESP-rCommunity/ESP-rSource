@@ -150,7 +150,7 @@ C Check upper limit.
         call edisp(icout,' Answer: overheating occurs in zone(s):')
         call edisp(icout,' ')
         do 19 J=1,NZONES
-          write(outs,'(A12)')zname(IRANK(J))
+          write(outs,'(A)')zname(IRANK(J))(1:lnzname(IRANK(J)))
           call edisp(icout,outs)
    19   CONTINUE
       ENDIF
@@ -201,7 +201,7 @@ C Check upper limit.
         call edisp(icout,' ')
         call edisp(icout,' Answer: underheating occurs in zone(s):')
         do 12 J=1,NZONES
-          write(outs,'(A12)')zname(KDUM(J))
+          write(outs,'(A)')zname(KDUM(J))(1:lnzname(KDUM(J)))
           call edisp(icout,outs)
    12   CONTINUE
       ENDIF
@@ -248,7 +248,7 @@ C rules probably required.
       POFTOT=SUM/TVAL
       IF(POFTOT.LT.0.75)goto 53
 
-      write(outs,'(A,A12,A)')' Main gains to ',zname(NZNO(1)),' are:'
+      write(outs,'(3A)')' Main gains to ',zname(NZNO(1)),' are:'
       call edisp(icout,outs)
       DO 55 I=1,IK
       IR=IRANK(I)
@@ -304,7 +304,7 @@ C rules are probably required.
       POFTOT=SUM/TVAL
       IF(POFTOT.LT.0.75)goto 73
 
-      write(outs,'(A,A12,A)')' Main losses from',zname(NZNO(1)),' are:'
+      write(outs,'(3A)')' Main losses from',zname(NZNO(1)),' are:'
       call edisp(icout,outs)
       DO 75 I=1,IK
         IR=KDUM(I)

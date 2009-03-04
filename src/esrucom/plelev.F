@@ -156,7 +156,7 @@ C Check for a zone obstructions file.
           isym=0
           call etplot(ZCOG(newfoc,2),ZCOG(newfoc,3),iupdown,isym)
         endif
-        IF(lnblnk(zname(newfoc)).GT.1)THEN
+        IF(lnzname(newfoc).GT.1)THEN
           write(tz,'(A)')zname(newfoc)
           call winfnt(ITFS)
           call wstxpt(ix+2,iy-2,tz)

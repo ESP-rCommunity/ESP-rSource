@@ -1339,7 +1339,7 @@ C If version 1 write out header.
      &  '  # latest file modification '
       endif
       WRITE(IUO,30,IOSTAT=IOS,ERR=1)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),OPFIL(1:lnblnk(OPFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),OPFIL(1:lnblnk(OPFIL))
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
 C Write the common block data to the file.
@@ -2047,8 +2047,6 @@ C Returns IER=0 if all ok.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU,IER)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2123,13 +2121,13 @@ C Warn user if the zone base area is still zero.
       if(close)then
         FLOOR=1.0
         write(outs,'(3a,F6.1,a)') 'The base area of ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    zname(icomp)(1:lnzname(icomp)),
      &    ' has been set to ',FLOOR,'m^2.'
         call edisp(iuout,outs)
       else
         FLOOR=ZBASEA(ICOMP)
         write(outs,'(3a,F6.1,a)') 'The base area of ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    zname(icomp)(1:lnzname(icomp)),
      &    ' is',FLOOR,'m^2.'
         call edisp(iuout,outs)
       endif

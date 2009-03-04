@@ -284,8 +284,6 @@ C and the surrounding obstruction blocks.
       subroutine sitpln(icomp)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
@@ -397,7 +395,7 @@ C output the zone name.
       iupdown=0
       isym=0
       call etplot(x(1),y(1),iupdown,isym)
-      if(lnblnk(zname(icomp)).gt.1)then
+      if(lnzname(icomp).gt.1)then
          write(tz,'(a)')zname(icomp)
          call winfnt(itfs)
          call wstxpt(ix+2,iy-2,tz)

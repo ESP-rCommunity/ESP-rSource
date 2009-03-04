@@ -547,7 +547,7 @@ C a list.
 
 C Set up zone transitional shading file based on zone name.
 C Set logical status flags based on returned value of istat.
-               write(lname,'(a)')zn(1:lnblnk(zn))
+               write(lname,'(a)')zname(icomp)(1:lnzname(icomp))
                ok=.true.
                ltrns=lname
                itc=0
@@ -672,41 +672,38 @@ C starting calculations.
 C Proceed with shading and then insolation calculations.
             if(iobs(icomp).eq.1)then
                call egomst(iuf,zobs(icomp),0,0,iuout,ier)
-               zn=zname(icomp)
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...'
+     &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
                call tstamp('>','Ish: re-calculate shading')
                call shdcon(icomp,ier,'s')
                changed_existing=.true.  ! so we know to update ASCII on exit
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...done.'
+     &           zname(icomp)(1:lnzname(icomp)),'...done.'
                call edisp(iuout,outs)
             elseif(iobs(icomp).eq.2)then
-               zn=zname(icomp)
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...'
+     &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
                call tstamp('>','Ish: re-calculate shading')
                call shdcon(icomp,ier,'s')
                changed_existing=.true.  ! so we know to update ASCII on exit
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...done.'
+     &           zname(icomp)(1:lnzname(icomp)),'...done.'
                call edisp(iuout,outs)
             else
                call edisp(iuout,
      &           'No obstructions, calculating insolation.')
             endif
             icstat=0
-            zn=zname(icomp)
             write(outs,'(3a)')'Insolation calculations for ',
-     &                        zn(1:lnblnk(zn)),'...'
+     &        zname(icomp)(1:lnzname(icomp)),'...'
             call edisp(iuout,outs)
             call tstamp('>','Ish: start insolation computation')
             call inscon(icomp,icstat,'s')
             changed_existing=.true.  ! so we know to update ASCII on exit
             write(outs,'(3a)')'Insolation calculations for ',
-     &                        zn(1:lnblnk(zn)),'...done.'
+     &        zname(icomp)(1:lnzname(icomp)),'...done.'
             call edisp(iuout,outs)
          else
             call usrmsg('Unknown Zone Shading & Insolation file.',
@@ -727,7 +724,7 @@ C done, ask user to delete the transitional files.
                do 155 ix=1,ncomp
                   do 156 im=1,12
                      write(lname,'(a,a3)')
-     &                    zname(ix)(1:lnblnk(zname(ix))),month(im)
+     &                    zname(ix)(1:lnzname(ix)),month(im)
                      call efopran(iunit,lname,irecw,0,ier)
                      if(ier.eq.0)call efdelet(iunit,istat)
  156              continue
@@ -887,12 +884,12 @@ C Read geometry file for either calculation purpose.
          ier=0
          icomp=ic
          zn=zname(icomp)
-         write(outs,'(2a)')'Ish: shift zone focus to: ',zn
+         write(outs,'(2a)')'Ish: shift zone focus to: ',zname(icomp)
          call tstamp('>',outs)
 
 C If there is an existing transitional shading file with 
 C the zone's name as root, ask whether to use it.
-         write(lname,'(a)')zname(icomp)(1:lnblnk(zname(icomp)))
+         write(lname,'(a)')zname(icomp)(1:lnzname(icomp))
          ltrns=lname
          istat=0
          call shdprb(itc,silent,icomp,istat)
@@ -1298,8 +1295,7 @@ C Redirect synoptic outputs and result of ASHRAE method to a
 C user specified file.
       elseif(inos.eq.21)then
          if(ixopen.eq.0)then
-            write(xfile,'(2a)')zname(icomp)(1:lnblnk(zname(icomp))),
-     &                         '.txt'  ! initial file name
+            write(xfile,'(2a)')zname(icomp)(1:lnzname(icomp)),'.txt'  ! initial file name
          endif
          call edisp(iuout,' ')
          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Report',ier)
@@ -1335,7 +1331,7 @@ C then offer to save or delete.
                do 55 ix=1,ncomp
                   do 56 im=1,12
                      write(lname,'(A,A3)')
-     &                      zname(ix)(1:lnblnk(zname(ix))),month(im)
+     &                 zname(ix)(1:lnzname(ix)),month(im)
                      call efopran(iunit,lname,irecw,0,ier)
                      if(ier.eq.0)then
                         write(outs,'(2a)') 'Deleting ',lname

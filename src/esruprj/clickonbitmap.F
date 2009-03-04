@@ -1699,6 +1699,7 @@ C instanciate the common blocks.
             if(addinganother)then
               icomp=incomp
               call st2name(ZN,zname(ICOMP))
+              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
               zdesc(ICOMP)=zd
               lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
               LGEOM(ICOMP)=DFILE
@@ -1999,6 +2000,7 @@ C instanciate the common blocks.
             if(addinganother)then
               icomp=incomp
               call st2name(ZN,zname(ICOMP))
+              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
               zdesc(ICOMP)=zd
               lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
               LGEOM(ICOMP)=DFILE
@@ -2041,10 +2043,11 @@ C Complete zone data before exiting.
             IF(zname(ICOMP)(1:2).EQ.'  ')THEN
               IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
               IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             ENDIF
             if(zdesc(ICOMP)(1:2).EQ.'  ')then
               write(zdesc(ICOMP),'(2a)') 
-     &          zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),' describes a...'
               lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
             endif
 
@@ -2507,11 +2510,10 @@ C Save current batch of obstructions, first ask which zone it is related to.
           IC=IVALS(1)
           if(IC.gt.0.and.NB.gt.0)then
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(OFILE,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),
-     &          '.obs'
+              WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
             else
               WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &          zname(IC)(1:lnblnk(zname(IC))),'.obs'
+     &          zname(IC)(1:lnzname(IC)),'.obs'
             endif
             H(1)='In order to account for external shading devices,'
             H(2)='window reveals, trees, outside walls, etc. in a '

@@ -546,7 +546,7 @@ C Set the wind reduction factor.
 C Link nodes and zones.
         DO 33 IZ=1,NCOMP
           if(ICAAS(IZ).gt.0)then
-            write(outs,'(3A)')zname(IZ)(:lnblnk(zname(IZ))),
+            write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
      &         ' is currently linked to: ',NDNAM(ICAAS(IZ))
             h(1)='You can have nodes which are not linked to a '
             h(2)='thermal zone, but if you do link nodes and zones '
@@ -563,8 +563,8 @@ C Link nodes and zones.
               ICAAS(IZ)=0
             endif
           else
-            write(outs,'(A,A)') zname(IZ)(:lnblnk(zname(IZ))),
-     &                          ' has no mass flow node. '
+            write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
+     &                          ' has no mass flow node.'
             CALL EASKAB(outs,' ','accept','select a node',iacc,3)
             if(iacc.eq.1)then
               ICAAS(IZ)=0
@@ -2178,7 +2178,7 @@ C Clear zone->node mapping
 
 C Get zone information. 
             WRITE(OUTS,'(A,A12)')
-     &        'Generating fluid flow node for ', ZNAME(IZ)
+     &        'Generating fluid flow node for ',ZNAME(IZ)
             CALL edisp(iuout,OUTS)
             ICAAS(IZ)=NNOD
 
@@ -2366,7 +2366,7 @@ C Clear vent and infil flow rates and vent source zone index (initial pass).
 
 C Get zone information. 
             WRITE(OUTS,'(A,A12)')
-     &        'Generating flow node for zone:', ZNAME(IZ)
+     &        'Generating flow node for zone:',ZNAME(IZ)
             CALL edisp(iuout,OUTS)
             ICAAS(IZ)=NNOD
 
@@ -2488,7 +2488,7 @@ C used with the current zone index.
             IF(IGN.EQ.0)THEN
 
 C There are no flow periods on any day, write crack connections only.
-              WRITE(OUTS,'(A,A12,A)')
+              WRITE(OUTS,'(3A)')
      &          'No operation ventilation or infiltration so zone: ',
      &          ZNAME(IZ),' has cracks only.'
               call edisp(iuout,outs)
@@ -2797,8 +2797,8 @@ C grill to use and write that connection out.
           ELSE
 
 C There is no operations file so write crack connections only.
-            WRITE(OUTS,'(A,A12,A)')
-     &        'No schedules so making zone: ', ZNAME(IZ),
+            WRITE(OUTS,'(3A)')
+     &        'No schedules so making zone: ',ZNAME(IZ),
      &        ' with cracks only.'
             call edisp(iuout,outs)
             NCNN=NCNN+1

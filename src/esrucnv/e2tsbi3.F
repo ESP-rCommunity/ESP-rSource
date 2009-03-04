@@ -348,7 +348,7 @@ C Zone connections field - add 9 to esp zone index.
              lizc = 4
           endif
 
-C         write(zsn(is),'(3a)') zname(mz)(1:lnblnk(zname(mz))),':',
+C         write(zsn(is),'(3a)') zname(mz)(1:lnzname(mz)),':',
 C    &       SNAME(mz,is)
 
 C Eliminate double definition of surfaces
@@ -584,7 +584,7 @@ C Loop through all vertices and find the top and bottom of the zone.
   44    continue
 
 C Write zone name.
-        WRITE(ioout,'(3a)')q,zname(mz)(1:lnblnk(zname(mz))),q
+        WRITE(ioout,'(3a)')q,zname(mz)(1:lnzname(mz)),q
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
@@ -977,7 +977,7 @@ C For the inside and outside layer get surface properties.
 
 C Remeber characters in surface name
           lsn=lnblnk(sname(newfoc,j))
-          write(zsn(j),'(3a)') zname(newfoc)(1:lnblnk(zname(newfoc))),
+          write(zsn(j),'(3a)') zname(newfoc)(1:lnzname(newfoc)),
      &      ':',sname(newfoc,j)(1:lsn)
           lzsn=lnblnk(zsn(j))
 
@@ -1029,8 +1029,7 @@ C Ensure first character is not a number.
             WRITE(ioout,'(a)') '        ccw TRUE'
             WRITE(ioout,'(a)') '        solid FALSE'
             WRITE(ioout,'(3a)')'        coord DEF COORD_',
-     &        zname(newfoc)(1:lnblnk(zname(newfoc))),
-     &        ' Coordinate { point ['
+     &        zname(newfoc)(1:lnzname(newfoc)),' Coordinate { point ['
 
 C Note on coordinates:
 C In esp-r the +Z is up, in VRML +Y is up.  In esp-r and VRML +X is same.
@@ -1088,7 +1087,7 @@ C Write differently if opaque or transparent.
               WRITE(ioout,'(a)')'        solid TRUE'
             endif
             WRITE(ioout,'(2a)') '        coord USE COORD_',
-     &        zname(newfoc)(1:lnblnk(zname(newfoc)))
+     &        zname(newfoc)(1:lnzname(newfoc))
             WRITE(ioout,'(a)')  '        coordIndex [ '
             write(outs,'(24I4)') (JVN(J,K)-1,K=1,NVER(j))
             call sdelim(outs,outsd,'C',IW)

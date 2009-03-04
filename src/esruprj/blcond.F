@@ -494,7 +494,7 @@ C *********************************************************************
       lnsn=lnblnk(ssname(ioc))
 
       WRITE(NAMELYR,'(5A,I2,A)') ' WARNING The layer ( ',
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),', ',
+     &  zname(ICOMP)(1:lnzname(ICOMP)),', ',
      &  SSNAME(ioc)(1:lnsn),', ',ILYR,') is already defined.'
       RETURN
       END

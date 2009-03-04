@@ -39,8 +39,6 @@ C user-specified variable.
       SUBROUTINE MO3DPL
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -125,7 +123,7 @@ C Instanciate h() array for the menu.
       h(2)='any help associated with it. '
 
       CALL EMENU('  3D profile',ITEM,NITMS,INO)
-      write(outs,'(a,a,a)')'In zone ',zname(II)(1:lnblnk(zname(II))),
+      write(outs,'(a,a,a)')'In zone ',zname(II)(1:lnzname(II)),
      &      ' please select a surface...'
 
 C Test for illegal menu pick.

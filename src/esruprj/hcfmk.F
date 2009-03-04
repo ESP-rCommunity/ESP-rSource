@@ -83,10 +83,10 @@ C in case it is useful.
       newgeo=.false.  ! assume older format geometry.
       IHCFP=0
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.htc'
+        WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
       else
         WRITE(HFILE,'(A,A,A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.htc'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
       endif
       IF(IHC(ICOMP).EQ.1)THEN
 
@@ -2993,7 +2993,7 @@ C As well as documentation based on the last edit by the user.
 
       call dstamp(dstmp)
       write(iuf,'(2a)',IOSTAT=ISTAT,ERR=990) '*HC_CTL for zone ',
-     &  zname(icomp)(1:lnblnk(zname(icomp)))
+     &  zname(icomp)(1:lnzname(icomp))
       write(iuf,'(2a)',IOSTAT=ISTAT,ERR=990) '*Date,',dstmp
       WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
      &        IHCFP,' # number control intervals'

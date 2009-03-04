@@ -105,10 +105,10 @@ C If user is browsing model then give warning and exit.
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(VFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.vwf'
+        WRITE(VFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       else
         WRITE(VFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.vwf'
+     &        zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       endif
  
       write(head,'(2A)')'  Viewfactors in ',zname(ICOMP)

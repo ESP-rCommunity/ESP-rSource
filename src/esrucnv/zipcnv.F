@@ -155,6 +155,7 @@ C second is the zone name, if more items then not a proper name.
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(ic),'(a)')WORD(1:lnblnk(WORD))
         zname(IC)=' '
+        lnzname(IC)=0
         zdesc(IC)=' '
         lnzdesc(IC)=0
       ELSEIF(ND.EQ.2)THEN
@@ -163,6 +164,7 @@ C second is the zone name, if more items then not a proper name.
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
+        lnzname(IC)=lnblnk(zname(IC))  ! update string length
         zdesc(IC)=' '
         lnzdesc(IC)=0
       ELSEIF(ND.gt.2)THEN
@@ -171,6 +173,7 @@ C second is the zone name, if more items then not a proper name.
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
+        lnzname(IC)=lnblnk(zname(IC))  ! update string length
         call egetrm(outstr,K,phrase,'W','Z description',IER)
         zdesc(IC)=phrase
         lnzdesc(IC)=lnblnk(phrase)  ! update the length of this string.
@@ -180,10 +183,11 @@ C Fill in a default zone name if blank or UNKNOWN.
       IF(zname(IC)(1:2).EQ.'  '.OR.zname(IC)(1:7).EQ.'UNKNOWN')THEN
         IF(IC.LE.9)WRITE(zname(IC),'(A5,I1)')'Zone-',IC
         IF(IC.GT.9)WRITE(zname(IC),'(A5,I2)')'Zone-',IC
+        lnzname(IC)=lnblnk(zname(IC))  ! update string length
       ENDIF
       if(zdesc(IC)(1:1).EQ.' ')then
         write(zdesc(IC),'(a,a)') 
-     &    zname(IC)(1:lnblnk(zname(IC))),' describes a...'
+     &    zname(IC)(1:lnzname(IC)),' describes a...'
         lnzdesc(IC)=lnblnk(zdesc(IC))  ! update the length of this string.
       endif
 
@@ -309,9 +313,9 @@ C Create and write geometry file.
         ier=0
         CALL EFOPSEQ(iotmp2,LGEOM(IC),3,IER)
         write(iotmp2,'(a,a,a,a)')'# geometry of ',
-     &       zname(ic)(1:lnblnk(zname(ic))),' defined in: ',
+     &       zname(ic)(1:lnzname(ic)),' defined in: ',
      &       LGEOM(IC)(1:lnblnk(LGEOM(IC)))
-        write(iotmp2,'(a,a)')'GEN ',zname(ic)(1:lnblnk(zname(ic)))
+        write(iotmp2,'(a,a)')'GEN ',zname(ic)(1:lnzname(ic))
         write(iotmp2,'(I8,I8,a)')NTV,NSUR,
      &      '   0.000    # vertices, surfaces, rotation angle'
         write(iotmp2,'(a)')'#  X co-ord, Y co-ord, Z co-ord '

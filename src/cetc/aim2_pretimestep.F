@@ -1917,7 +1917,7 @@ C Describe crawl space, attic and controls.
       if(AIM2_CrawlSpace_zone.eq.0)then
         crawl='There is no crawl space.'
       else
-        llna=lnblnk(zname(AIM2_CrawlSpace_zone))
+        llna=lnzname(AIM2_CrawlSpace_zone)
         write(crawl,'(3a)') 
      &    'Zone ',zname(AIM2_CrawlSpace_zone)(1:llna),
      &    ' is the crawl space.'
@@ -1925,14 +1925,14 @@ C Describe crawl space, attic and controls.
       if(AIM2_attic_zone.eq.0)then
         attic='There is no attic space.'
       else
-        llna=lnblnk(zname(AIM2_attic_zone))
+        llna=lnzname(AIM2_attic_zone)
         write(attic,'(3a)') 
      &    'Zone ',zname(AIM2_attic_zone)(1:llna),
      &    ' is the attic space.'
       endif
 
       outs248 = ' '
-      llna=lnblnk(zname(AIM2_ref_zone))
+      llna=lnzname(AIM2_ref_zone)
       write(outs248,'(3a,i2,4a)') 
      &  'Indoor air temperatures are taken from ',
      &  zname(AIM2_ref_zone)(1:llna),

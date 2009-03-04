@@ -125,10 +125,10 @@ C Get the name of the CFD input file.
       if(LCFD(izone)(1:2).eq.'  ')then
         if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
           WRITE(LCFD(izone),'(A,A4)')
-     &      zname(izone)(1:lnblnk(zname(izone))),'.dfd'
+     &      zname(izone)(1:lnzname(izone)),'.dfd'
         else
           WRITE(LCFD(izone),'(A,A,A,A4)') netpth(1:lnblnk(netpth)),'/',
-     &      zname(izone)(1:lnblnk(zname(izone))),'.dfd'
+     &      zname(izone)(1:lnzname(izone)),'.dfd'
         endif
       endif
       H(1)='A CFD input file holds the definition of the'

@@ -870,8 +870,8 @@ C Write building zone to HVAC system linkage information
           WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
         ENDIF
         WRITE(IUF,'(3A,I3,A)',IOSTAT=IOS,ERR=3)
-     &     'Zone ',ZNAME(IZ),' is linked to system number ',
-     &     IHLZ(IZ),TMPSTR
+     &   'Zone ',ZNAME(IZ),' is linked to system number ',
+     &   IHLZ(IZ),TMPSTR
  102  CONTINUE
 
 C Write DHW generator information
@@ -900,8 +900,8 @@ C Write building zone to DHW system linkage information
           WRITE(TMPSTR,'(2A)')' (HVAC system) ',HVACNAME(-IDHWLZ(IZ))
         ENDIF
         WRITE(IUF,'(3A,I3,A)',IOSTAT=IOS,ERR=3)
-     &     'Zone ',ZNAME(IZ),' is linked to DHW system number ',
-     &     IDHWLZ(IZ),TMPSTR
+     &   'Zone ',ZNAME(IZ),' is linked to DHW system number ',
+     &   IDHWLZ(IZ),TMPSTR
  104  CONTINUE
 
 C Write building zone to activity type linkage information
@@ -927,7 +927,7 @@ C Check if there is a user defined entry for lighting heat gains
           WRITE(IUF,'(6A,1X,F7.2)') 'User_defined',' ','Zone',
      &    zname(iz),
      &    ' is linked to user defined lighting heat gains of (W): ',
-     &        '  ',LIGHTWATTAGE(IZ)
+     &    '  ',LIGHTWATTAGE(IZ)
              
 C Otherwise take the suggested values (gains) for the specified 
 C lighting type

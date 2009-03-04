@@ -137,7 +137,7 @@ C While looping remember the connection associated with zone:surf.
               write(outs,'(5a)') 
      &          'Freeing `other side` information of ',
      &          ssname(ixu)(1:lnblnk(ssname(ixu))),' ',
-     &          zname(iotherzone)(1:lnblnk(zname(iotherzone))),'...'
+     &          zname(iotherzone)(1:lnzname(iotherzone)),'...'
               call edisp(iuout,outs)
 
 C The ssother() array has changed so the other zone should
@@ -191,7 +191,7 @@ C be rewritten. Scan it and update ssother and then write.
               iotherzone=IC1(IXU)
               write(outs,'(3a)') 
      &          'Freeing `other side` information in ',
-     &          zname(iotherzone)(1:lnblnk(zname(iotherzone))),'...'
+     &          zname(iotherzone)(1:lnzname(iotherzone)),'...'
               call edisp(iuout,outs)
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
               if(newgeo)then
@@ -688,7 +688,7 @@ C Up the surface count.
 C Generate combined name for dialog.
         ZSDES=' '
         WRITE(ZSDES,'(a,a1,a)') SNAME1(1:lnblnk(SNAME1)),':',
-     &    ZNAME(icomp)(1:lnblnk(ZNAME(icomp)))
+     &    ZNAME(icomp)(1:lnzname(icomp))
 
         H(1)='Actions: '
         H(2)=' Shift surface along (+=outwards) surface normal.'

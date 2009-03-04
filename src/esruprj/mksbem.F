@@ -473,7 +473,7 @@ C Begin with high level menu.
         DO 111 IZ=1,NCOMP
           CALL EMKEY(IZ,KEY,IER)
           WRITE(ZITEMS(IZ),'(A1,1X,A,F6.2)')KEY,
-     &         zname(IZ)(1:lnblnk(zname(IZ))),ACH(IZ)
+     &      zname(IZ)(1:lnzname(IZ)),ACH(IZ)
  111    CONTINUE 
         M=NCOMP
         ZITEMS(M+1)= ' ______________________________ '
@@ -918,14 +918,14 @@ C If no zones specified in model advise user and go back to menu
               WRITE(TMPSTR,'(2A)')' ',HVACNAME(IZ)
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
-     &       'Zone ',ZNAME(IZ),' is linked to system number ',
-     &       IHLZ(IZ),TMPSTR
+     &       'Zone ',zname(IZ)(1:lnzname(iz)),
+     &       ' is linked to system number ',IHLZ(IZ),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  102      CONTINUE
           DO 402 IZ=1,NCOMP
             IA=1
             WRITE(OUTS,'(2A)')'Choose HVAC system for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
      &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,2)
@@ -959,14 +959,14 @@ C Link DHW systems and zones
      &        HVACNAME(-IDHWLZ(IZ))
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
-     &       'Zone ',ZNAME(IZ),' is linked to system number ',
+     &       'Zone ',zname(IZ),' is linked to system number ',
      &       ABS(IDHWLZ(IZ)),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  109      CONTINUE
           DO 404 IZ=1,NCOMP
             IA=1
             WRITE(OUTS,'(2A)')'Choose DHW system for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  915        CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
      &      70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,2)
@@ -1001,7 +1001,7 @@ C Link DHW systems and zones
               ENDIF
  130        CONTINUE
             WRITE(OUTS,'(2A)')'Choose activity for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             IX=1
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
      &      40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,2)
@@ -1023,7 +1023,7 @@ C with tdf)
                   theactivityindex(IZ)=IAT
                   IACTYTYP(IZ)=mainactivity
                   write(outs,*)'for zone ',
-     &            zname(iz)(1:lnblnk(zname(iz))),
+     &            zname(iz)(1:lnzname(iz)),
      &            ' activity is:',roomactname(iat)
                   CALL EDISP(IUOUT,OUTS(1:LNBLNK(OUTS)))
                   goto 151
@@ -1041,7 +1041,7 @@ C Link lighting systems with zones
         DO 160 IZ=1,NCOMP
           ILIGHTUSER(IZ)=0
           CALL EASKABC('Choose one of the options for defining lighting
-     &    heat gains from lights for: ',zname(IZ)(1:lnblnk(zname(IZ))),
+     &    heat gains from lights for: ',zname(IZ)(1:lnzname(IZ)),
      &    'user defined W/m2 per 100lux','pick from list','continue',
      &    Iwaylight,2)
           IF(Iwaylight.EQ.1)THEN
@@ -1055,12 +1055,12 @@ C value is a realistic one
             light_input_watt=LIGHTWATTAGE(IZ)
             CALL EASKR(light_input_watt,
      &      'Enter heat gains from lights in watts (assuming 100% on)
-     &      for zone:',zname(IZ)(1:lnblnk(zname(IZ))),0.,'F',0.,'-',
+     &      for zone:',zname(IZ)(1:lnzname(IZ)),0.,'F',0.,'-',
      &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)          
             LIGHTWATTAGE(IZ)=light_input_watt
           ELSE
             WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
      &      70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
             ILITYP(IZ)=LSYS(1)
@@ -3145,7 +3145,7 @@ C Write information about systems
 
 C Write remainder of the check information
       do 30 iz=1, ncomp
-        WRITE(IUF,'(3a)',iostat=ios) '"',zname(iz)(1:lnblnk(zname(IZ))),
+        WRITE(IUF,'(3a)',iostat=ios) '"',zname(iz)(1:lnzname(IZ)),
      &      '" = CHECK3'
 
 C Leave this at Low risk for the moment but it has to change at the moment

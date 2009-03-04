@@ -1566,6 +1566,7 @@ C Edit zone name - read and then write the geometry file.
         CALL EASKS(T15,' ','Zone name?',12,D15,'zone name',IER,2)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
+	  lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1
@@ -2272,7 +2273,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.cvs'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.cvs'
         D = 'new.cvs'
         H(1)='The 3D control volumes file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2281,7 +2282,7 @@ C There is no zone view factor file so offer restricted choice.
         CALL EASKS(L,outs,' ',72,D,'control volumes',IER,2)
         if(L(1:2).ne.'  ')L3DCVS(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.cnc'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.cnc'
         D = 'new.cnc'
         H(1)='The 3D node connections file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2289,7 +2290,7 @@ C There is no zone view factor file so offer restricted choice.
      &      ' ',72,D,'control connections file',IER,2)
         if(L(1:2).ne.'  ')L3DCNC(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.ndc'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.ndc'
         D = 'new.ndc'
         H(1)='The 3D nodes coordinates file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2297,7 +2298,7 @@ C There is no zone view factor file so offer restricted choice.
      &      ' ',72,D,'3D coordinates file',IER,2)
         if(L(1:2).ne.'  ')L3DNDC(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.3dt'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.3dt'
         D = 'new.3dt'
         H(1)='The 3D nodes temperatures file defines the'
         H(2)='location of additional construction nodes'
@@ -2328,7 +2329,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.mst'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.mst'
         D = 'new.mst'
         H(1)='The moisture file holds moisture transport data'
         H(2)='for nodes. << more text to be added here >>'
@@ -2359,7 +2360,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.csm'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.csm'
         D = 'new.csm'
         H(1)='The structured mesh file holds structured mesh data'
         H(2)='for a zone.'

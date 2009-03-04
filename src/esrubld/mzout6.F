@@ -54,8 +54,6 @@ C tzph,tzpc are zone heating/cooling use over time.
       CHARACTER min*420
 
       DIMENSION Total_zone_H(MCOM),Total_zone_C(MCOM)
-      integer iZoneNameLen(MCOM)
-      save iZoneNameLen
       integer icfgNameLen
       save icfgNameLen
 
@@ -155,9 +153,6 @@ C Find diversifide totals for heating and cooling and occurance.
   42  continue
 
       if ( .not. bInitialized ) then
-        do I=1, NCOMP
-          iZoneNameLen(I) = lnblnk(zname(I))
-        enddo 
         icfgNameLen = lnblnk(LCFGF)
         bInitialized = .true.
       endif
@@ -169,124 +164,124 @@ C Find diversifide totals for heating and cooling and occurance.
         TPC=TZPC(I)/((1000.0*NTSTEP)*ZBASEA(I))
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH1',tab,TZPHM(I,1)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH1',tab,TZPHM(I,1)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC1',tab,TZPCM(I,1)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC1',tab,TZPCM(I,1)
         call edisp(IWU,min)
 
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH2',tab,TZPHM(I,2)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH2',tab,TZPHM(I,2)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC2',tab,TZPCM(I,2)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC2',tab,TZPCM(I,2)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH3',tab,TZPHM(I,3)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH3',tab,TZPHM(I,3)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC3',tab,TZPCM(I,3)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC3',tab,TZPCM(I,3)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH4',tab,TZPHM(I,4)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH4',tab,TZPHM(I,4)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC4',tab,TZPCM(I,4)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC4',tab,TZPCM(I,4)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH5',tab,TZPHM(I,5)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH5',tab,TZPHM(I,5)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC5',tab,TZPCM(I,5)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC5',tab,TZPCM(I,5)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH6',tab,TZPHM(I,6)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH6',tab,TZPHM(I,6)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC6',tab,TZPCM(I,6)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC6',tab,TZPCM(I,6)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH7',tab,TZPHM(I,7)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH7',tab,TZPHM(I,7)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC7',tab,TZPCM(I,7)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC7',tab,TZPCM(I,7)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH8',tab,TZPHM(I,8)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH8',tab,TZPHM(I,8)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC8',tab,TZPCM(I,8)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC8',tab,TZPCM(I,8)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH9',tab,TZPHM(I,9)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH9',tab,TZPHM(I,9)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC9',tab,TZPCM(I,9)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC9',tab,TZPCM(I,9)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH10',tab,TZPHM(I,10)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH10',tab,TZPHM(I,10)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC10',tab,TZPCM(I,10)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC10',tab,TZPCM(I,10)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH11',tab,TZPHM(I,11)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH11',tab,TZPHM(I,11)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MC11',tab,TZPCM(I,11)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC11',tab,TZPCM(I,11)
         call edisp(IWU,min)
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'MH12',tab,TZPHM(I,12)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MH12',tab,TZPHM(I,12)
         call edisp(IWU,min)  
 
         write(min,'(6a,f10.1)') 
-     &     LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &     tab,'MC12',tab,TZPCM(I,12)
+     &   LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &   tab,'MC12',tab,TZPCM(I,12)
 
         call edisp(IWU,min)      
         Total_zone_H(I)=0.0
@@ -297,14 +292,14 @@ C Find diversifide totals for heating and cooling and occurance.
   420   continue
   
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'ZAH',tab,Total_zone_H(I)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'ZAH',tab,Total_zone_H(I)
 
         call edisp(IWU,min)                     
 
         write(min,'(6a,f10.1)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:iZoneNameLen(I)),
-     &      tab,'ZAC',tab,Total_zone_C(I)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'ZAC',tab,Total_zone_C(I)
 
         call edisp(IWU,min)  
   

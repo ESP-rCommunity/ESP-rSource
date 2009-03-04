@@ -136,7 +136,7 @@ C Show the zone selection menu.
         H(3)=' '
         INPICK=1
    20   CALL EPICKS(INPICK,IVALZ,' ',' ',12,
-     &                             NCOMP,zname,' Select Zone',IER,3)
+     &    NCOMP,zname,' Select Zone',IER,3)
         IZ2=IVALZ(1)
         IF(IZ2.GE.1.AND.IZ2.LE.NCOMP)THEN
           IZ=IZ2

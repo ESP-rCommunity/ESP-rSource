@@ -150,11 +150,10 @@ C just write operations file
 
 C GFILE is the default file name for any operations file.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.opr'
+        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       else
         WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.opr'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       endif
 
 C LPROJ() might already have a name, but not yet exist. Check for this. 
@@ -485,7 +484,7 @@ C flows are to preserve ach or volume of flow.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -626,7 +625,7 @@ C Ask which zone, then confirm whether absolute W values are to be scaled.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 39
@@ -1281,7 +1280,7 @@ C IER=0 is OK.
 #include "geometry.h"
 #include "epara.h"
       
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1438,10 +1437,10 @@ C Help text for this menu.
 C Now display the menu.
       if(mmod.eq.8)then
         write (title,'(2a)') 'Air flow in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       else
         write (title,'(2a)') 'Ventilation in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       endif
       CALL EMENU(title,VERT,MVERT,IVERT)
 
@@ -1544,7 +1543,7 @@ C flows are to preserve ac/h or volume of flow.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -1706,7 +1705,7 @@ C IER=0 is OK.
 #include "geometry.h"
 #include "epara.h"
       
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1884,10 +1883,10 @@ C Help text for this menu.
 C Now display the menu.
       if(mmod.eq.8)then
         write (title,'(2a)') 'Air flow in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       else
         write (title,'(2a)') 'Ventilation in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       endif
       CALL EMENU(title,VERT,MVERT,IVERT)
       if (IVERT.EQ.MVERT) then
@@ -1993,7 +1992,7 @@ C flows are to preserve ac/h or volume of flow.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -2156,8 +2155,6 @@ C     =2 infil, =0 ventilation attributes.
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2300,7 +2297,7 @@ C Present zone list.
      &       ier)
             if (IER.ne.0.or.IV.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -2760,11 +2757,10 @@ C then clear casual gain data structure and create a new file.
 
 C IF asked to copy all then 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(GFILE,'(2a)') 
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+          WRITE(GFILE,'(2a)') zname(idest)(1:lnzname(idest)),'.opr'
         else
           WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+     &      zname(idest)(1:lnzname(idest)),'.opr'
         endif
         write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
         if(act(1:1).eq.'s')then
@@ -3581,8 +3577,7 @@ C Now display the menu.
       if(mmod.eq.8)then
         write(title,'(a,a)') 'Casual gains in ',zname(ICOMP)
       else
-        write(title,'(a,a)') 'Gains: ',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP)))
+        write(title,'(a,a)') 'Gains: ',zname(ICOMP)(1:lnzname(ICOMP))
       endif
       CALL EMENU(title,VERT,MVERT,IVERT)
       if (IVERT.EQ.1)THEN
@@ -3836,7 +3831,7 @@ C confirm whether absolute W values are to be scaled.
      &      ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 39
@@ -4988,10 +4983,10 @@ C name based on the zone name.
         call edisp(iuout,'Destination operation file not found...')
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(GFILE,'(2a)') 
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+     &      zname(idest)(1:lnzname(idest)),'.opr'
         else
           WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+     &      zname(idest)(1:lnzname(idest)),'.opr'
         endif
         write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
         if(act(1:1).eq.'s')then

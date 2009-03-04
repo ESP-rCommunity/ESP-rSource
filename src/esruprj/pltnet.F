@@ -746,24 +746,21 @@ C current menu line index. Build up text strings for the menu.
           ELSEIF(IPCT(L).EQ.2) THEN 
             if(isvt.eq.0.or.isvt.eq.10.or.isvt.eq.20) then
               WRITE(SENDND,'(A,I2)')'water node',IPN2(L)
-              WRITE(SENDSTR,'(A)')
-     &'fixed temp' 
+              WRITE(SENDSTR,'(A)')  'fixed temp' 
             elseif(isvt.eq.1.or.isvt.eq.11.or.isvt.eq.21) then
               WRITE(SENDND,'(A,I2)')'air node',IPN2(L)
-              WRITE(SENDSTR,'(A)')
-     &'fix temp/RH' 
+              WRITE(SENDSTR,'(A)')  'fix temp/RH' 
             elseif(isvt.eq.9.or.isvt.eq.19.or.isvt.eq.29) then
               WRITE(SENDND,'(A,I2)')'solid node',IPN2(L)
-              WRITE(SENDSTR,'(A)')
-     &'fixed temp' 
+              WRITE(SENDSTR,'(A)')  'fixed temp' 
             endif            
           ELSEIF(IPCT(L).EQ.4) THEN
             IF(PCONSD(L,1).GT.0.) THEN
               ICZ=NINT(PCONSD(L,1))
-              WRITE(SENDSTR,'(A12)')ZNAME(ICZ)(1:12)
+              WRITE(SENDSTR,'(A)')ZNAME(ICZ)(1:12)
               WRITE(SENDND,'(A)')'zone air'
             ELSE
-              WRITE(SENDSTR,'(A13)')'outside air  '
+              WRITE(SENDSTR,'(A)')'outside air  '
               WRITE(SENDND,'(A)')'ambient '
             ENDIF
           ENDIF
@@ -987,7 +984,7 @@ C current menu line index. Build up text strings for the menu.
           ELSEIF(INDCP(L).EQ.2)THEN
             WRITE(CNTSTR,'(A,F7.3)') 'fix temp: ',CNTDAT(L,1)
           ELSEIF(INDCP(L).EQ.3)THEN
-            WRITE(CNTSTR,'(A,A12)') 'zone: ',ZNAME(NINT(CNTDAT(L,1)))
+            WRITE(CNTSTR,'(A,A)') 'zone: ',ZNAME(NINT(CNTDAT(L,1)))
           ENDIF
           WRITE(VERT(M),'(A1,1X,A15,1X,A20,1X,I3)')KEY,PCNAME(IPCC(L)),
      &CNTSTR,INDCP(L)

@@ -739,10 +739,10 @@ C Sun positions.
 
 C Set default names based on above.
       if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
-        write (outs,'(3a)') ZNAME(ifocz)(1:lnblnk(ZNAME(ifocz))),
+        write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
      &     '_',RIFPURP(IRIFFOC)(1:6)
-        write (RIFDESC(IRIFFOC),'(a,a,a,a,a)') 'Scene of ',
-     &     ZNAME(ifocz)(1:lnblnk(ZNAME(ifocz))),' for ',
+        write (RIFDESC(IRIFFOC),'(5a)') 'Scene of ',
+     &     zname(ifocz)(1:lnzname(ifocz)),' for ',
      &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
       else
         IL=min(lnblnk(cfgroot),21)

@@ -462,6 +462,7 @@ C Clear SHOCC zone information as well.
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '
+        lnzname(IX)=0
         LPROJ(IX)='UNKNOWN'
         LGEOM(IX)='UNKNOWN'
         LTHRM(IX)='UNKNOWN'
@@ -1552,7 +1553,7 @@ C (ask user for confirmation to over-write) or create a new file.
 
 C Write out the file data.
       WRITE(IUF,30,IOSTAT=IOS,ERR=14)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),LMRT(1:lnblnk(LMRT))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),LMRT(1:lnblnk(LMRT))
   30  FORMAT('# zone viewfactors and MRT sensor definition of ',a,/,
      &'# defined in ',a)
 
@@ -3314,8 +3315,6 @@ C show attributes in list.
 #include "building.h"
 #include "geometry.h"
 #include "epara.h"
-      
-      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
@@ -3339,8 +3338,7 @@ C show attributes in list.
         IER=1
         RETURN
       ENDIF
-      write(title,'(a,a)') '  Surfaces in ',
-     &  zname(IZONE)(1:lnblnk(zname(IZONE)))
+      write(title,'(2a)')'  Surfaces in ',zname(IZONE)(1:lnzname(IZONE))
 
 C Initialise surface menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -3725,7 +3723,7 @@ C *********************************************************************
       NUMCH=lnblnk(FILENM)
       IF(NUMCH.LE.0.OR.NUMCH.GE.72)THEN
         IF(ICOMP.GT.0.AND.ICOMP.LE.NCOMP)THEN
-          WRITE(FILENM,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),EXT
+          WRITE(FILENM,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),EXT
         ELSEIF(ICOMP.EQ.-1)THEN
           WRITE(FILENM,'(A6,A4)')'ground',EXT
         ELSE
@@ -3735,7 +3733,7 @@ C *********************************************************************
       CALL FINDFIL(FILENM,XST)
       IF(XST)THEN
         IF(ICOMP.GT.0.AND.ICOMP.LE.NCOMP)THEN
-          WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),EXT
+          WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),EXT
         ELSEIF(ICOMP.EQ.-1)THEN
           WRITE(DFILE,'(A6,A4)')'ground',EXT
         ELSE
@@ -3831,8 +3829,6 @@ C Similar to code ZLIST in esrures/utils.F.
       SUBROUTINE ZNARLIST(inlist,list,insize,zdescr,length,ierr)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       dimension list(insize)
       CHARACTER zdescr*248,outs*248,outsd*248
@@ -3841,7 +3837,7 @@ C Similar to code ZLIST in esrures/utils.F.
       t124=' '
       length=0
       do 42 i=1,inlist
-        lna=lnblnk(zname(list(i)))
+        lna=lnzname(list(i))
         length=length+lna+1
   42  continue
       if(length.lt.236)then

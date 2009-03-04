@@ -106,7 +106,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
       character*10 wkday(7)
-      character SEXP*31,SALT*31,hold*72,ZN*12
+      character SEXP*31,SALT*31,hold*72
 
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
@@ -246,10 +246,8 @@ C If there was a change in location, but no zones defined just return.
             if(ISI(iz).eq.1)then
               call FINDFIL(LSHAD(iz),XST)
               if(XST)then
-                write(ZN,'(A)') zname(iz)
-                LNZ=max(1,LNBLNK(ZN))
-                write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
-     &            ' is out of date.'
+                write(outs,'(3a)') 'Shading for ',
+     &            zname(iz)(1:lnzname(iz)),' is out of date.'
                 call edisp(iuout,outs)
               endif
             endif
@@ -270,8 +268,6 @@ C If there was a change in location, but no zones defined just return.
             do 43 iz=1,ncomp
               if(ISI(iz).eq.0) goto 43
               call FINDFIL(LSHAD(iz),XST)
-              write(ZN,'(A)') zname(iz)
-              LNZ=max(1,LNBLNK(ZN))
               if(XST)then
 
 C Get logical name of terminal type, expand model name
@@ -288,7 +284,7 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                   h(1)='Each zone is calculated in turn. If you do '
                   h(2)='one zone then you should do all zones.'
                   write(outs,'(3a)') 'Proceed with shading for ',
-     &              zn(1:lnz),'?'
+     &              zname(iz)(1:lnzname(iz)),'?'
                   CALL ASKOK(outs,' ',OK,DOK,2)
                   if(OK)then
                     call comissionish(iz,'ir ',ier)
@@ -3559,8 +3555,6 @@ C EDDSHD Sets up shading and insolation files
       SUBROUTINE EDDSHD
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
@@ -3576,7 +3570,7 @@ C EDDSHD Sets up shading and insolation files
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 
-      character H*72,ZN*12,LCFGF*72
+      character H*72,LCFGF*72
       character outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok
 
@@ -3591,9 +3585,7 @@ C Check if Unix-based or DOS based.
         if(ISI(iz).eq.1)then
           call FINDFIL(LSHAD(iz),XST)
           if(XST)then
-            write(ZN,'(A)') zname(iz)
-            LNZ=max(1,LNBLNK(ZN))
-            write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+            write(outs,'(3a)') 'Shading for ',zname(iz)(1:lnzname(iz)),
      &        ' is out of date.'
             call edisp(iuout,outs)
           endif
@@ -3610,8 +3602,6 @@ C Check if Unix-based or DOS based.
         do 43 iz=1,ncomp
           if(ISI(iz).eq.0) goto 43
           call FINDFIL(LSHAD(iz),XST)
-          write(ZN,'(A)') zname(iz)
-          LNZ=max(1,LNBLNK(ZN))
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
@@ -3625,7 +3615,7 @@ C as the command line.
             h(1)='Each zone is calculated in sequence.'
             h(2)='If you do one, you should do all.'
             write(outs,'(3a)') 'Proceed with shading for ',
-     &            zn(1:lnz),' ?'
+     &        zname(iz)(1:lnzname(iz)),' ?'
             CALL ASKOK(outs,' ',OK,DOK,2)
             if(OK)then
               call comissionish(iz,'ira',ier)

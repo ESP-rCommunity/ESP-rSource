@@ -606,17 +606,15 @@ C string to be used in headers.
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
 
-C Get common block precz from geometry.h
+C Get common block precz/lnprecz from geometry.h
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       CHARACTER zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,NZ
-        lna=lnblnk(zname(NZNO(i)))
+        lna=lnzname(NZNO(i))
         length=length+lna+1
   42  continue
       if(length.lt.72)then
@@ -655,8 +653,6 @@ C a different colour for each name.
       SUBROUTINE COLZNLIST(line,isize,ierr)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -667,7 +663,7 @@ C zone index that fit within 72 characters.
       length=0
       isecond=0
       do 42 i=1,NZ
-        lna=lnblnk(zname(NZNO(i)))
+        lna=lnzname(NZNO(i))
         length=length+lna+1
         if(length.lt.72)isecond=i
   42  continue
@@ -686,7 +682,7 @@ C Set ix to last character position before looping through zones.
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
           call findviewtext(icx,line,isize,ix,iy)
-          lna=lnblnk(zname(NZNO(i)))
+          lna=lnzname(NZNO(i))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
@@ -709,7 +705,7 @@ C Set ix to last character position before looping through zones.
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
           call findviewtext(icx,line,isize,ix,iy)
-          lna=lnblnk(zname(NZNO(i)))
+          lna=lnzname(NZNO(i))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
@@ -725,7 +721,7 @@ C If there is a second line that can be created do it.
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
             call findviewtext(icx,line+1,isize,ix,iy)
-            lna=lnblnk(zname(NZNO(i)))
+            lna=lnzname(NZNO(i))
             write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
@@ -742,7 +738,7 @@ C Then get index of colour for this zone, then plot text in that colour.
           call wstxpt(ix,iy,word)
           icx=11
           call findviewtext(icx,line,isize,ix,iy)
-          lna=lnblnk(zname(NZNO(1)))
+          lna=lnzname(NZNO(1))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(1))
           call winscl('-',0)

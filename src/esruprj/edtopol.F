@@ -817,7 +817,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
       logical closea,closee,close,longpause
       logical newgeo  ! to use for testing if new/old geometry file.
-      character outs*124,CXSTR*78,SN*12,ZN*12
+      character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -1496,9 +1496,8 @@ C update the attributes.
               UPDGEO=.TRUE.
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(icn)
-              ZN=zname(II)
               WRITE(outs,'(4a)')' accepting match to surface ',
-     &          SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+     &          SN(1:lnblnk(SN)),' in ',zname(II)(1:lnzname(II))
               call edisp(iuout,outs)
               goto 110  ! no need to check further
             else
@@ -1577,15 +1576,14 @@ C is of a reasonable orientation.
               call eclose(SELV,0.0,3.0,closee)
               ICN=IZSTOCN(IIx,JJx)
               SN=SSNAME(ICN)
-              ZN=zname(IIx)
               if(closea.and.closee)then
                 WRITE(outs,'(4a)')
      &            ' Probable (orientation close) match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+     &            SN(1:lnblnk(SN)),' in ',zname(IIx)(1:lnzname(IIx))
               else
                 WRITE(outs,'(4a)')
      &            ' Possible (orientation not close) match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+     &            SN(1:lnblnk(SN)),' in ',zname(IIx)(1:lnzname(IIx))
               endif
               call edisp(iuout,outs)
  841        continue
@@ -1628,9 +1626,8 @@ C the view on it and calculate the angle of view to that box.
               if(MMOD.eq.8)CALL CADJVIEW(0,IER)
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(ICN)
-              ZN=zname(II)
               WRITE(outs,'(4a)')' Probable match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
+     &            SN(1:lnblnk(SN)),' in ',zname(II)(1:lnzname(II))
               dok=.true.
               h(1)='If there is more than ONE possible matching '
               h(2)='geometric connection you are asked to confirm'

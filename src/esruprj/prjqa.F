@@ -1874,7 +1874,7 @@ C as an earlier one.
             endif
  101        if(duplicate.and.ilcot.ne.0)then
               write(outs,'(2a)') ' Uses same operations as zone ',
-     &          zname(ilcot)
+     &          zname(ilcot)(1:lnzname(ilcot))
               call edisp(itu,outs)
             else
               CALL ERPFREE(IUF,ISTAT)
@@ -1901,7 +1901,7 @@ C as an earlier one.
             endif
           else
             write(outs,'(2a)') ' No operations defined for zone ',
-     &        zname(IVALS(IZ))
+     &        zname(IVALS(IZ))(1:lnzname(IVALS(IZ)))
             call edisp(itu,'  ')
             call edisp(itu,outs)
           endif

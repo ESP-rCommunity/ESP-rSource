@@ -357,7 +357,7 @@ C If in quiet mode then file should exist.
 
 C Write out the construction file data.
       WRITE(IFILT,30,IOSTAT=IOS,ERR=146)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),CONFIL(1:lnblnk(CONFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),CONFIL(1:lnblnk(CONFIL))
   30  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
      &'# no of |air |surface(from geo)| multilayer construction',/,
      &'# layers|gaps|  no.  name      | database name ')
@@ -528,7 +528,7 @@ C Arrays of material properties.
 C Heading if all surfaces.
       if(isur.eq.0)then
         CALL EDISP(ITRU,' ')
-        WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP))),ICOMP
+        WRITE(OUTS,9996)zname(ICOMP)(1:lnzname(ICOMP)),ICOMP
  9996   FORMAT(' Zone construction details for ',A,' (',I2,')')
         CALL EDISP(ITRU,OUTS)
       endif
@@ -829,7 +829,7 @@ C if the surface attribute should be updated.
 C Reporting.
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
-        WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
+        WRITE(OUTS,9996)zname(ICOMP)(1:lnzname(ICOMP))
  9996   FORMAT(' Transparent construction file details for ',A)
         CALL EDISP(ITRU,OUTS)
         CALL EDISP(ITRU,' ')
@@ -863,7 +863,7 @@ C the list points to an existing set of properties.
             write(outs,'(6a,1x,a)')
      &      ' Mismatched TMC & mlc layers: ',
      &      SSNAME(icn)(1:lnblnk(SSNAME(icn))),' in ',
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' composed of ',
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' composed of ',
      &      SSMLCN(icn),TOPTIC(ICOMP,I)
             call edisp(iuout,outs)
             goto 1002
@@ -908,7 +908,7 @@ C Calculate reflectance.
   100   CONTINUE
         IF(SUM.LT.0..OR.SUM.GT.1.)then
           write(outs,'(3a,i2,a,f6.3)')' In ',
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' tmc ',
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' tmc ',
      &      i,': the optical reflectance is ',SUM
           CALL EDISP(ITRU,outs)
           CALL EDISP(ITRU,' Reading of zone optics terminated.')

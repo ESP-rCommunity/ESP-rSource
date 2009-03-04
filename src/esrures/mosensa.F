@@ -101,7 +101,7 @@ C Instanciate h() strings for this menu.
       elseif(INO.EQ.3)then
         NZ=1
         CALL EPICKS(NZ,NZNO,' ',' Which zone to include: ',
-     &                              12,NCOMP,zname,' zone list',IER,1)
+     &    12,NCOMP,zname,' zone list',IER,1)
       elseif(INO.EQ.5)then
         CALL SAINTRA
       elseif(INO.EQ.6) then

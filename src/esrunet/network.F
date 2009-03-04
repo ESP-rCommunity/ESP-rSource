@@ -3180,7 +3180,8 @@ C are returned. If ier=-1 then summary file was not available.
 C Summary of external data.
       common/exsum/isexavail,iuex
 
-      dimension AVAL(6),SVAL(6),zx(MCOM),zy(MCOM),zz(MCOM)
+      dimension AVAL(6),SVAL(6),zx(MCOM),zy(MCOM),zz(MCOM),zn(MCOM)
+      dimension zv(MCOM)
 
 C snacon is the surface area associated with a connection,
 C surazi is the azimuth associated with a connection,
@@ -3197,6 +3198,7 @@ C znamecon is the zone name associated with inside face a conneciton
       CHARACTER PCITM(35)*42,KEY*1,exttag*12,WORD*20,SVAL*12,conname*43
       CHARACTER PSITM(35)*60
       character snamecon*12,znamecon*12,outs*124,tl*18,tc*18,tt*18
+      character zn*12
       LOGICAL OK,DOK,isexavail
 
 C Rewind summary file if it exists (assumed to be open on unit iuex).
@@ -3369,8 +3371,8 @@ C Setup multi-page menu.
           else
             inz=inz+1
             K=0
-            CALL EGETW(OUTSTR,K,zname(inz),'W','zone name',IFLAG)
-            CALL EGETWR(OUTSTR,K,VOL(inz),0.,0.,'-','zone vol',IER)
+            CALL EGETW(OUTSTR,K,zn(inz),'W','zone name',IFLAG)
+            CALL EGETWR(OUTSTR,K,zv(inz),0.,0.,'-','zone vol',IER)
             CALL EGETWR(OUTSTR,K,zx(inz),0.,0.,'-','zone cog X',IER)
             CALL EGETWR(OUTSTR,K,zy(inz),0.,0.,'-','zone cog Y',IER)
             CALL EGETWR(OUTSTR,K,zz(inz),0.,0.,'-','zone cog Z',IER)
@@ -3399,7 +3401,7 @@ C current menu line index. Build up text strings for the menu.
             IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
               M=M+1
               CALL EMKEY(M,KEY,IER)   
-              WRITE(PCITM(M),'(A1,1X,A,2F8.2)')KEY,zname(IM),vol(im),
+              WRITE(PCITM(M),'(A1,1X,A,2F8.2)')KEY,zn(IM),zv(im),
      &          zz(im)
             ENDIF
   202     CONTINUE
@@ -3457,7 +3459,7 @@ C Ask whether choice is OK.
           write(t72,'(a,a)')'Use ',zname(ifoc)
           CALL ASKOK(t72,'attributes with this component?',OK,dok,3)
           IF(.NOT.OK)GOTO 71
-          AVAL(1)=VOL(ifoc)
+          AVAL(1)=zv(ifoc)
           AVAL(2)=zx(ifoc)
           AVAL(3)=zy(ifoc)
           AVAL(4)=zz(ifoc)
@@ -3635,15 +3637,15 @@ C file for the current model. File is assumed to be open on
 C unit iuex.
       subroutine listexttag(exttag,ier)
 #include "building.h"
-#include "geometry.h"
+CC#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
 
 C Summary of external data.
       common/exsum/isexavail,iuex
 
-      dimension zx(MCOM),zy(MCOM),zz(MCOM)
+      dimension zx(MCOM),zy(MCOM),zz(MCOM),zn(MCOM),zv(MCOM)
       CHARACTER outstr*124
-      CHARACTER exttag*12,WORD*20,outs*124
+      CHARACTER exttag*12,WORD*20,outs*124,zn*12
       LOGICAL isexavail
 
 C Rewind the .summary file and read in the first line.
@@ -3685,12 +3687,12 @@ C Scan the model summary file and report on zone names, volumes and height.
           else
             inz=inz+1
             K=0
-            CALL EGETW(OUTSTR,K,zname(inz),'W','zone name',IFLAG)
-            CALL EGETWR(OUTSTR,K,VOL(inz),0.,0.,'-','zn vol',IER)
+            CALL EGETW(OUTSTR,K,zn(inz),'W','zone name',IFLAG)
+            CALL EGETWR(OUTSTR,K,zv(inz),0.,0.,'-','zn vol',IER)
             CALL EGETWR(OUTSTR,K,zx(inz),0.,0.,'-','zn cog X',IER)
             CALL EGETWR(OUTSTR,K,zy(inz),0.,0.,'-','zn cog Y',IER)
             CALL EGETWR(OUTSTR,K,zz(inz),0.,0.,'-','zn cog Z',IER)
-            write(outs,'(4X,A,2F8.2)') zname(inz),vol(inz),zz(inz)
+            write(outs,'(4X,A,2F8.2)') zn(inz),zv(inz),zz(inz)
             call edisp(iuout,outs)
             goto 43
           endif

@@ -2042,6 +2042,7 @@ C fully read to find the number of surfaces in the zone.
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
+            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             CALL ERPFREE(IUF,ios)
             call georead(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
             gversion(icomp) = 1.1   ! set the version number.
@@ -2055,6 +2056,7 @@ C file version is prior to version 1.1.
               CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
               write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
               zname(ICOMP)=' '
+              lnzname(ICOMP)=0
               zdesc(ICOMP)=' '
               lnzdesc(ICOMP)=0
             ELSEIF(ND.EQ.2)THEN
@@ -2063,6 +2065,7 @@ C file version is prior to version 1.1.
               CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
               ZN=WORD(1:12)
               call st2name(ZN,zname(ICOMP))
+              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
               zdesc(ICOMP)=' '
               lnzdesc(ICOMP)=0
             ELSEIF(ND.gt.2)THEN
@@ -2071,6 +2074,7 @@ C file version is prior to version 1.1.
               CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
               ZN=WORD(1:12)
               call st2name(ZN,zname(ICOMP))
+              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
               call egetrm(outstr,K,phrase,'W','Z description',IER)
               ZDESC(ICOMP)=phrase
               lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
@@ -2095,17 +2099,19 @@ C Close geometry file and set version number.
           NZSUR(ICOMP)=0
           NZTV(ICOMP)=0
           VOL(ICOMP)=0.0
+          lnzname(ICOMP)=0
         ENDIF
 
 C Fill in a default zone name if blank or UNKNOWN.
         IF(zname(ICOMP)(1:2).EQ.'  '.OR.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')THEN
-            IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
-            IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
+          IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then
           write(zdesc(ICOMP),'(2a)') 
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a'
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' describes a'
           lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         endif
 

@@ -618,7 +618,7 @@ C Use logic similar to ZNLIST in esrures/utils.F
 C Use longer outs string length in case of longer list.
             length=0
             do 242 ik=1,nzedg(ij)
-              lna=lnblnk(zname(izedg(ij,ik)))
+              lna=lnzname(izedg(ij,ik))
               length=length+lna+1
  242        continue
             if(length.lt.236)then
@@ -640,7 +640,7 @@ C Use longer string length in case of many zones.
      &        tab,nzmg(ij)
             length=0
             do 142 ik=1,nzmg(ij)
-              lna=lnblnk(zname(izmg(ij,ik)))
+              lna=lnzname(izmg(ij,ik))
               length=length+lna+1
  142        continue
             if(length.lt.236)then
@@ -1843,7 +1843,7 @@ C Set hour format flag to julian decimal for following reports.
                   IGETNO(I,8)=1
                   SLABEL(I)='Guth comfort index,-'
                 endif
-                lnz=lnblnk(ZNAME(izmg(ig,i)))
+                lnz=lnzname(izmg(ig,i))
                 write (GLABEL(I),'(a,a)')ZNAME(izmg(ig,i))(1:lnz),
      &            SUFFIX
   350         CONTINUE
@@ -1855,7 +1855,7 @@ C Set hour format flag to julian decimal for following reports.
      &          tab,'24',tab,nzmg(ig)+1
               call edisp(itru,outs)
               write(outs,'(32A)',IOSTAT=IOS,ERR=1) '*fields Time ',
-     &          (ZNAME(izmg(ig,j)),j=1,nzmg(ig))
+     &          (zname(izmg(ig,j)),j=1,nzmg(ig))
               call eddisp(itru,outs)
               call edisp(itru,'*data ')
 

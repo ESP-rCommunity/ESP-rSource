@@ -2233,8 +2233,8 @@ C Update labels to match the current zone.
 
 C Output general header information.
         write(outs,'(3a,i2,a)')
-     &    ' Casual gains distribution (kWhrs) for ',zname(IZONE),'(',
-     &    IZONE,')'
+     &    ' Casual gains distribution (kWhrs) for ',
+     &    zname(IZONE)(1:lnzname(IZONE)),' (',IZONE,')'
         call edisp(itru,' ')
         call edisp(itru,outs)
 

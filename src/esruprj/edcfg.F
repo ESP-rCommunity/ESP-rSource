@@ -848,7 +848,7 @@ C network commons and list out those commons.
 C Link nodes and zones.
           DO 33 IZ=1,NCOMP
             if(ICAAS(IZ).gt.0)then
-              write(outs,'(3A)')zname(IZ)(1:lnblnk(zname(IZ))),
+              write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
      &          'is currently linked to:',NDNAM(ICAAS(IZ))
               h(1)='You may have nodes that are not linked to a zone'
               h(2)='but where network nodes and zones are linked, the'
@@ -866,7 +866,7 @@ C Link nodes and zones.
                 ICAAS(IZ)=0
               endif
             else
-              write(outs,'(A,A)') zname(IZ)(1:lnblnk(zname(IZ))),
+              write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
      &          'has no mass flow node.'
               CALL EASKAB(outs,' ','ok','select a node',iacc,3)
               if(iacc.eq.1)then
@@ -1655,19 +1655,19 @@ C Read the geometry to fill in the data below.
      &      ' ( <12 char, no blanks) ?',12,'new_zone','zone name',IER,3)
           IF(ZN.eq.' '.or.ier.ne.0)goto 42
           call st2name(ZN,zname(NCOMP))
+          lnzname(NCOMP)=lnblnk(zname(NCOMP))
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DFILE,'(A,A4)') zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &      '.geo'
+            WRITE(DFILE,'(A,A4)') zname(NCOMP)(1:lnzname(NCOMP)),'.geo'
           else
             WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &         zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.geo'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.geo'
           endif
           LGEOM(NCOMP)=DFILE
 
           H(1)='The zone description allows information about'
           H(2)='zone form and composition to be recorded.'
-          write(zd,'(a,a)') 
-     &      zname(NCOMP)(1:lnblnk(zname(NCOMP))),' describes a '
+          write(zd,'(2a)') 
+     &      zname(NCOMP)(1:lnzname(NCOMP)),' describes a '
   40      CALL EASKS(zd,'What does it represent?',
      &      ' (<64 char)',64,'no description entered','zone descr',
      &      IER,2)
@@ -1699,11 +1699,11 @@ C file and then recover the zone commons.
                 IOBS(NCOMP)=1 
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(DFILE,'(2a)') 
-     &              zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.obs'
+     &              zname(NCOMP)(1:lnzname(NCOMP)),'.obs'
                 else
                   WRITE(DFILE,'(4a)') 
      &              zonepth(1:lnblnk(zonepth)),fs,
-     &              zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.obs'
+     &              zname(NCOMP)(1:lnzname(NCOMP)),'.obs'
                 endif
                 ZOBS(NCOMP)=DFILE
                 CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
@@ -1946,15 +1946,13 @@ C Construction and zone TMC file.
 C DFILE is the default file name for any TMC file to be created,
 C CFILE is default for constr file.
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &        '.tmc'
-            WRITE(CFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &        '.con'
+            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),'.tmc'
+            WRITE(CFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),'.con'
           else
             WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &        zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.tmc'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.tmc'
             WRITE(CFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &        zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.con'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.con'
           endif
           if(irop.eq.1)then
 
@@ -2071,11 +2069,10 @@ C point to it, otherwise offer option to browse for an existing file.
             if(irop.eq.1.or.irop.eq.2) irop=4
           endif
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &        '.opr'
+            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),'.opr'
           else
             WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &        zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.opr'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.opr'
           endif
           if(irop.eq.1)then
 
@@ -2135,11 +2132,11 @@ C See if the source zone has a viewfactor file.
      &        'Options:','copy file','point to file',
      &        'browse file','cancel',' ',' ',' ',irop,5)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
+              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.vwf'
             else
               WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &          zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.vwf'
+     &          zname(NCOMP)(1:lnzname(NCOMP)),'.vwf'
             endif
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
@@ -2199,11 +2196,11 @@ C See if the source zone has a casual gain control file.
      &        'Options:','copy file','point to file',
      &        'browse file','cancel',' ',' ',' ',irop,4)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
+              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.cgc'
             else
               WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &          zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.cgc'
+     &          zname(NCOMP)(1:lnzname(NCOMP)),'.cgc'
             endif
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
@@ -2260,11 +2257,11 @@ C See if the source zone has a convection regime file.
      &        'Options:','copy file','point file',
      &        'browse file','cancel',' ',' ',' ',irop,4)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
+              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.htc'
             else
               WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &          zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.htc'
+     &          zname(NCOMP)(1:lnzname(NCOMP)),'.htc'
             endif
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
@@ -2619,11 +2616,11 @@ C Global tasks.
                 ISI(ICOMP)=1
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LSHAD(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 else
                   WRITE(LSHAD(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 endif
 
 C Create a small place-holder file that subsequent calculation
@@ -2631,7 +2628,7 @@ C procedure can overwrite.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &            zname(icomp)(1:lnblnk(zname(icomp)))
+     &            zname(icomp)(1:lnzname(icomp))
                 CALL ERPFREE(IUF,ios)
 
 C << note: the add insolation option actually should cause
@@ -2666,10 +2663,10 @@ C If browsing, do not save files but allow ish to be started.
         endif
         IF(ISI(IC).eq.0)THEN
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(SFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.shd'
+            WRITE(SFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.shd'
           else
             WRITE(SFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(IC)(1:lnblnk(zname(IC))),'.shd'
+     &        zname(IC)(1:lnzname(IC)),'.shd'
           endif
           DSFIL = 'new.shd'
           H(1)='The zone shading/insulation database holds time'
@@ -2686,10 +2683,10 @@ C If browsing, do not save files but allow ish to be started.
 
 C Confirm existing shading file name and offer option to dereference.
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.shd'
+            WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.shd'
           else
             WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(IC)(1:lnblnk(zname(IC))),'.shd'
+     &        zname(IC)(1:lnzname(IC)),'.shd'
           endif
           SFIL = LSHAD(IC)
           clkok=.false.
@@ -2804,11 +2801,11 @@ C Global tasks.
                 ICOMP=ivals(IC)
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LVIEW(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
+     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
                 else
                   WRITE(LVIEW(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
+     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
                 endif
                 silent=.true.
                 if(iw.eq.1)then
@@ -2994,16 +2991,16 @@ C If browsing do not save files but allow grd to be started.
 
 C Offer creation of moisture transport data file or dereference.
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(SFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.mst'
+          WRITE(SFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.mst'
         else
           WRITE(SFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.mst'
+     &      zname(IC)(1:lnzname(IC)),'.mst'
         endif
         DSFIL = SFIL
         H(1)='The moisture file holds moisture transport data'
         H(2)='for nodes.'
         write(outs,'(3a)')'Moisture transport file for ',
-     &    zname(IC)(1:lnblnk(zname(IC))),'?'
+     &    zname(IC)(1:lnzname(IC)),'?'
         clkok=.false.
         if(.NOT.MSTRZN(IC))then
 
@@ -3070,10 +3067,10 @@ C << What does ignore mean here? >>
 
 C Confirm file names.
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.cvs'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.cvs'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.cvs'
+     &      zname(IC)(1:lnzname(IC)),'.cvs'
         endif
         SFIL = L3DCVS(IC)
         H(1)='The 3D control volumes file defines...'
@@ -3083,10 +3080,10 @@ C Confirm file names.
         if(SFIL(1:2).ne.'  ') L3DCVS(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.cnc'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.cnc'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.cnc'
+     &      zname(IC)(1:lnzname(IC)),'.cnc'
         endif
         SFIL = L3DCNC(IC)
         H(1)='The 3D control volumes connections file defines...'
@@ -3096,10 +3093,10 @@ C Confirm file names.
         if(SFIL(1:2).ne.'  ') L3DCNC(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.ndc'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.ndc'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.ndc'
+     &      zname(IC)(1:lnzname(IC)),'.ndc'
         endif
         SFIL = L3DNDC(IC)
         H(1)='The 3D nodes coordinates file defines...'
@@ -3109,10 +3106,10 @@ C Confirm file names.
         if(SFIL(1:2).ne.'  ') L3DNDC(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.3dt'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.3dt'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.3dt'
+     &      zname(IC)(1:lnzname(IC)),'.3dt'
         endif
         SFIL = L3DTAQ(IC)
         H(1)='The 3D nodes temperatures file defines...'

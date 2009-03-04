@@ -3249,14 +3249,14 @@ C Copy new data into IGETNO array if a selection has been made.
                     write (GLABEL(NGET),'(a,a)')
      &                                  ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnblnk(ZNAME(IZ))
+                    IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
                     write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
      &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
                   else
-                    write (GLABEL(NGET),'(a,a)')
-     &                   ZNAME(IZ)(1:lnblnk(ZNAME(IZ))),SUFFIX
+                    write(GLABEL(NGET),'(2a)')ZNAME(IZ)(1:lnzname(IZ)),
+     &                SUFFIX
                   endif
                 else
                   if (SLIST) then
@@ -3264,12 +3264,11 @@ C Copy new data into IGETNO array if a selection has been made.
                     IZLEN=lnblnk(ZSDESC)
                     write (GLABEL(NGET),'(a)') ZSDESC(1:IZLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnblnk(ZNAME(IZ))
-                    write (GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
-     &                                                  ' S',ISFSEL(IG)
+                    IZLEN=lnzname(IZ)
+                    write(GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
+     &                ' S',ISFSEL(IG)
                   else
-                    write(GLABEL(NGET),'(a)')
-     &                    ZNAME(IZ)(1:lnblnk(ZNAME(IZ)))
+                    write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
                   endif
                 endif
               else
@@ -3307,14 +3306,14 @@ C specific information.
                     write (GLABEL(NGET),'(a,a)')
      &                                  ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnblnk(ZNAME(IZ))
+                    IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
                     write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
      &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
                   else
                     write (GLABEL(NGET),'(a,a)')
-     &                   ZNAME(IZ)(1:lnblnk(ZNAME(IZ))),SUFFIX
+     &                ZNAME(IZ)(1:lnzname(IZ)),SUFFIX
                   endif
                 else
                   if (SLIST) then
@@ -3322,12 +3321,11 @@ C specific information.
                     IZLEN=lnblnk(ZSDESC)
                     write (GLABEL(NGET),'(a)') ZSDESC(1:IZLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnblnk(ZNAME(IZ))
+                    IZLEN=lnzname(IZ)
                     write (GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
      &                                                  ' S',ISFSEL(IG)
                   else
-                    write(GLABEL(NGET),'(a)')
-     &                    ZNAME(IZ)(1:lnblnk(ZNAME(IZ)))
+                    write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
                   endif
                 endif
               endif

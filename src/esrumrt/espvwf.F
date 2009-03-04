@@ -614,8 +614,8 @@ C Read geometry file for either calculation purpose
         CALL EASKGEOF('Select a zone to assess:',CFGOK,IC,'-',IER)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 10
         IER=0
+        write(outs,'(a,a)')'VWF: shift zone focus to: ',zname(IC)
         ZN=zname(IC)
-        write(outs,'(a,a)')'VWF: shift zone focus to: ',ZN
         call tstamp('>',outs)
         goto 42
       ELSEIF(INO.EQ.6)THEN
@@ -716,10 +716,10 @@ C Save view factor file.
         H(2)='each of the surfaces in a zone as well as MRT sensor'
         H(3)='definitions.'
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DFILE,'(A,A4)')zn(1:lnblnk(zn)),'.vwf'
+          WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
         else
           WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zn(1:lnblnk(zn)),'.vwf'
+     &      zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
         endif
         LTMP=LVIEW(icomp)
         CALL EASKS(LTMP,' Viewfactor & MRT file name ?',' ',
@@ -767,12 +767,11 @@ C drawn and remember number of surfaces to pass to sensor file.
 
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.
-      ZN=zname(ICOMP)
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-       WRITE(VFILE,'(A,A4)')zn(1:lnblnk(zn)),'.vwf'
+       WRITE(VFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       else
         WRITE(VFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zn(1:lnblnk(zn)),'.vwf'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       endif
 
 C Get mrt file name. If it exists read it, if not create one with 

@@ -237,15 +237,13 @@ C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
-        lna=lnblnk(zname(nznog(i)))
+        lna=lnzname(nznog(i))
         length=length+lna+1
   42  continue
       if(length.lt.72)then

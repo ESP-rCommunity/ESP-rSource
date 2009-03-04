@@ -1766,6 +1766,7 @@ C Quick read, get the zone name and the number of surfaces.
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
             write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
             zname(ICOMP)=' '
+            lnzname(ICOMP)=0
             zdesc(ICOMP)=' '
             lnzdesc(ICOMP)=0
           ELSEIF(ND.EQ.2)THEN
@@ -1774,6 +1775,7 @@ C Quick read, get the zone name and the number of surfaces.
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
+            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             zdesc(ICOMP)=' '
             lnzdesc(ICOMP)=0
           ELSEIF(ND.gt.2)THEN
@@ -1782,6 +1784,7 @@ C Quick read, get the zone name and the number of surfaces.
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
+            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             call egetrm(outstr,K,phrase,'W','Z description',IER)
             ZDESC(ICOMP)=phrase
             lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
@@ -1799,6 +1802,7 @@ C Close geometry file.
           write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
+          lnzname(ICOMP)=7
           write(outs,'(a)')LGEOM(ICOMP)
           CALL USRMSG(' geometry file not found ',outs,'W')
           NZSUR(ICOMP)=0
@@ -1809,12 +1813,13 @@ C Close geometry file.
 C Fill in a default zone name if blank or UNKNOWN.
         IF(zname(ICOMP)(1:2).EQ.'  '.OR.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')THEN
-            IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
-            IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
+          IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then
           write(zdesc(ICOMP),'(2a)') 
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' describes a...'
           lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         endif
 

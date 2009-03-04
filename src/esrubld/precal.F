@@ -401,8 +401,6 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
 C geometry.h provides commons G0/G2/G4/prec17/precz.
 #include "geometry.h"
 #include "power.h"
-      
-      integer lnblnk  ! function definition
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -478,8 +476,8 @@ C Establish if floor area needs be specified.
 C Floor area is required, if trace level is verbose echo the base area.
           FLOORA(ICOMP)=ZBASEA(ICOMP)
           write(outs,'(a,a,a,F6.1,a)') 'The base area of ',
-     &                     zname(icomp)(1:lnblnk(zname(icomp))),
-     &                     ' is',FLOORA(ICOMP),'m^2.'
+     &      zname(icomp)(1:lnzname(icomp)),
+     &      ' is',FLOORA(ICOMP),'m^2.'
           if (itrc.gt.1) call edisp(iuout,outs)
         endif
       else

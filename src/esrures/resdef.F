@@ -1033,6 +1033,7 @@ C     IREC=IREC+3*NCOMP
       DO 20 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)znpad
         write(ZNAME(I),'(a)') znpad(1:12)
+	lnzname(I)=lnblnk(znpad)  ! update string length
         IREC=IREC+1
    20 CONTINUE
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=1,NCP)

@@ -799,14 +799,12 @@ C length : Length of zdescr
 #include "building.h"
 #include "geometry.h"
 
-      integer lnblnk  ! function definition
-
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
-        lna=lnblnk(zname(nznog(i)))
+        lna=lnzname(nznog(i))
         length=length+lna+1
   42  continue
       if(length.lt.72)then
@@ -2035,7 +2033,7 @@ C already scaned. No need to test the last zone
               DO 345 IT=1,(IZ-1)
 C if other side is one of the previous zone,  go to next surface
                 if(SSOTHER(Iother,1)(1:lnblnk(SSOTHER(Iother,1))).EQ. 
-     &             Zname(nznog(IT))(1:lnblnk(Zname(nznog(IT)))) ) then
+     &             zname(nznog(IT))(1:lnzname(nznog(IT))) ) then
                   Exist=.TRUE.
                   IOpsitZone= ic2(IZSTOCN(ICurZone,N))
                   IOpositSurf = ie2(IZSTOCN(ICurZone,N))
@@ -3222,7 +3220,7 @@ C already scaned. No need to test the last zone
                 DO 345 IT=1,(IZ-1)
 C if other side is one of the previous zone,  go to next surface
                   if(SSOTHER(Iother,1)(1:lnblnk(SSOTHER(Iother,1))).EQ. 
-     &              Zname(nznog(IT))(1:lnblnk(Zname(nznog(IT)))) ) then
+     &              zname(nznog(IT))(1:lnzname(nznog(IT))) ) then
                     Exist=.TRUE.
                     IOpsitZone= ic2(IZSTOCN(ICurZone,N))
                     IOpositSurf = ie2(IZSTOCN(ICurZone,N))
@@ -3250,9 +3248,9 @@ C     &                                LayerNam(IOpositComp,ip)
 C                        CALL edisp(Ichanel,outs)
 C 394                  CONTINUE
 C                    endif
-                    WRITE(outs,'(a12,2x,7a)')Zname(nznog(IZ)),  
+                    WRITE(outs,'(a12,2x,7a)')zname(nznog(IZ)),  
      &                    Sname(nznog(IZ),N),' Already accounted as ',
-     &                     'Zone: ', Zname(IOpsitZone),', ',
+     &                     'Zone: ', zname(IOpsitZone),', ',
      &                     'Surface :', Sname(IOpsitZone,IOpositSurf)
                     CALL edisp(Ichanel,outs)
 
@@ -3342,7 +3340,7 @@ C Mass of one surface and sum over the zone
             IF (itrc.EQ.3) THEN
               IF (ICalType.EQ.1) THEN
                 IV = IV + 1
-                WRITE(outs,93) ' Zone: ',Zname(nznog(IZ)),
+                WRITE(outs,93) ' Zone: ',zname(nznog(IZ)),
      &                         ' Surface: ', SName(nznog(IZ),ICurSurf),
      &                         ' Composite: ',SMLCN(ICurSurf),
      &                         'Area [m2]: ',Area,
@@ -3856,12 +3854,12 @@ C Next Surface
               IF (ICalType.eq.1) THEN
                 if (itrc.eq.1) then
                   IF (M.eq.14) THEN
-                    WRITE(outs,818) Zname(nznog(IZ)),
+                    WRITE(outs,818) zname(nznog(IZ)),
      &                           TotRecyZ + TotBurnZ + TotDumpZ,
      &                           TotRecyZ, TotBurnZ, TotDumpZ
  818                FORMAT(1x,A12,10x,4(1P1E9.3,6x))
                   ELSE
-                    WRITE (outs,812)Zname(nznog(IZ)),
+                    WRITE (outs,812) zname(nznog(IZ)),
      &                        (ZoneTot(IY),IY=1,MIMP)
  812                FORMAT(1X,A18, 4(3x, 1P1E9.3))
                   ENDIF
@@ -3883,7 +3881,7 @@ C Next Surface
      &                          TotRecyZ, TotBurnZ, TotDumpZ
  820                 FORMAT(1x,A,2x,4(1P1E9.3,14x))
                   ELSE                
-                    WRITE (outs,84)Zname(nznog(IZ)),
+                    WRITE (outs,84) zname(nznog(IZ)),
      &                           (ZoneTot(IY),IY=1,MIMP)
  84                 FORMAT(2X,A12,5x, 4(3x, 1P1E9.3))
                   ENDIF

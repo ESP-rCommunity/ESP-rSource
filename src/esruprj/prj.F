@@ -3597,11 +3597,10 @@ C Now look for unknown files.
       geofok=.true.
       do 46 i=1,ncomp
         if(LGEOM(i)(1:7).eq.'UNKNOWN'.or.LGEOM(i)(1:2).eq.'  ')then
-          write(zn,'(a)') zname(i)
           geofok=.false.
           if(lh.lt.60)then
             lh=lh+1
-            write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+            write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
      &        ' geometry undefined.'
           endif
         else
@@ -3626,11 +3625,10 @@ C Now look for unknown files.
       oprfok=.true.
       do 43 i=1,ncomp
         if(LPROJ(i)(1:7).eq.'UNKNOWN'.or.LPROJ(i)(1:2).eq.'  ')then
-          write(zn,'(a)') zname(i)
           oprfok=.false.
           if(lh.lt.60)then
             lh=lh+1
-            write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+            write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
      &        ' operations undefined.'
           endif
         else
@@ -3671,12 +3669,11 @@ C Do cursory check to see if the file is sorted.
       lh=0
       confok=.true.
       do 45 i=1,ncomp
-        write(zn,'(a)') zname(i)
         if(LTHRM(i)(1:7).eq.'UNKNOWN'.or.LTHRM(i)(1:2).eq.'  ')then
           confok=.false.
           if(lh.lt.60)then
             lh=lh+1
-            write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+            write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
      &        ' constructions undefined.'
           endif
         else
@@ -3729,13 +3726,12 @@ C Zone construction file exists so attempt to scan it.
       IUO=IFIL+1
       do 52 i=1,ncomp
         if(isi(i).eq.1)then
-          write(zn,'(a)') zname(i)
           LS=LSHAD(I)
           if(LS(1:7).eq.'UNKNOWN'.or.LS(1:2).eq.'  ')then
             shdok=.false.
             if(lh.lt.60)then
               lh=lh+1
-              write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+              write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
      &        ' shading undefined.'
             endif
           else
@@ -4786,11 +4782,11 @@ C << need to deal with file separator more generically >>
                 ISI(ICOMP)=1
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LSHAD(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 else
                   WRITE(LSHAD(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 endif
                 EXT='.shd'
                 CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
@@ -4801,7 +4797,7 @@ C procedure can overwrite. Mark for performing shading calculatons.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &            zname(icomp)(1:lnblnk(zname(icomp)))
+     &            zname(icomp)(1:lnzname(icomp))
                 CALL ERPFREE(IUF,ios)
                 ishad=1
                 ishd=1
@@ -4830,11 +4826,11 @@ C If v1.1 geometry file, set iobs=2 and add an initial block via ecrobs.
 C Older format geometry file so use separate zone obstructions file.
                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                     WRITE(ZOBS(icomp),'(A,A4)')
-     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+     &                zname(icomp)(1:lnzname(icomp)),'.obs'
                   else
                     WRITE(ZOBS(icomp),'(3A,A4)') 
      &                zonepth(1:lnblnk(zonepth)),'/',
-     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+     &                zname(icomp)(1:lnzname(icomp)),'.obs'
                   endif
                   EXT='.obs'
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
@@ -4961,11 +4957,11 @@ C out default block.
                   IOBS(ICOMP)=1
                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                     WRITE(ZOBS(icomp),'(A,A4)')
-     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+     &                zname(icomp)(1:lnzname(icomp)),'.obs'
                   else
                     WRITE(ZOBS(icomp),'(3A,A4)') 
      &                zonepth(1:lnblnk(zonepth)),'/',
-     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
+     &                zname(icomp)(1:lnzname(icomp)),'.obs'
                   endif
                   EXT='.obs'
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
@@ -4979,11 +4975,11 @@ C fileis so create a base name for shading file and then tweak the name via fncn
                 ISI(ICOMP)=1
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LSHAD(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 else
                   WRITE(LSHAD(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 endif
                 EXT='.shd'
                 CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
@@ -4994,7 +4990,7 @@ C procedure can overwrite. Mark to update shading files.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &            zname(icomp)(1:lnblnk(zname(icomp)))
+     &            zname(icomp)(1:lnzname(icomp))
                 CALL ERPFREE(IUF,ios)
                 ishad=1
                 ishd=1
@@ -5047,11 +5043,11 @@ C before calling mrt.
               elseif(IVF(icomp).eq.0)then
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LVIEW(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
+     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
                 else
                   WRITE(LVIEW(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
+     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
                 endif
                 EXT='.vwf'
                 CALL FNCNGR(LVIEW(ICOMP),APE,EXT,NNAME)

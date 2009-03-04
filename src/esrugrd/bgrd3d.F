@@ -1104,8 +1104,6 @@ C *********************************************************************
       SUBROUTINE READ3D(IZ)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1140,7 +1138,7 @@ C *********************************************************************
 
       IER=0
 
-      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.c3d'
+      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.c3d'
       FILE3D=WORD(1:72)
 
 C Open the file.
@@ -1444,8 +1442,6 @@ C *********************************************************************
       SUBROUTINE SAVE3D(IZ)
 #include "building.h"
 #include "geometry.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1478,7 +1474,7 @@ C *********************************************************************
       CHARACTER*72 FILE3D
       CHARACTER H*72,WORD*124
 
-      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.c3d'
+      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.c3d'
       FILE3D=WORD(1:72)
       H(1)='    Input the name for the zone file in which'
       H(2)=' the multi-gridding configuration details are'

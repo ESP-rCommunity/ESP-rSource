@@ -91,7 +91,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       character docpth*24,tmppth*24,dbspth*24,TOPTIC*12,OPTIC*12
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
       logical newgeo  ! to use for testing if new/old geometry file.
-      integer lzn  ! length of zone name string
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -108,13 +107,13 @@ C Clear number of TMC's and layers in each before loading common data.
 C DFILE is the default file name for any TMC file to be created,
 C UFILE is default for utility file. CFILE is default for constr file.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.tmc'
-        WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+        WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
+        WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.con'
       else
         WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.tmc'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
       endif
       IUF=IFIL+2
 
@@ -464,8 +463,8 @@ C Help text for this menu.
       H(54)='intended.'
 
 C Now display the menu.
-      lzn=lnblnk(zname(ICOMP))
-      write(head,'(3a)')'Composition of `',zname(ICOMP)(1:lzn),'`'
+      write(head,'(3a)') 'Composition of `',
+     &  zname(ICOMP)(1:lnzname(ICOMP)),'`'
       CALL EMENU(head,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -1322,7 +1321,7 @@ C            call edisp(iuout,LTWIN(ICOMP))
 
 C Write out the transparent construction file data.
       WRITE(IFU,30,IOSTAT=ISTAT,ERR=98)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),
+     &  zname(ICOMP)(1:lnzname(ICOMP)),
      &  LTWIN(ICOMP)(1:lnblnk(LTWIN(ICOMP)))
   30  FORMAT('# transparent properties of ',a,' defined in ',a)
 
@@ -1611,7 +1610,7 @@ C Save ITMCFL.
 C Display of current information...
    90 CONTINUE
       CALL EDISP(ITRU,' ')
-      WRITE(outs,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
+      WRITE(outs,9996)zname(ICOMP)(1:lnzname(ICOMP))
  9996 FORMAT(' Transparent construction file details for ',A)
       CALL EDISP(ITRU,outs)
       CALL EDISP(ITRU,' ')

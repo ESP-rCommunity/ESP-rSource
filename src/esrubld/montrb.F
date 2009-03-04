@@ -388,7 +388,7 @@ c each curve as 'Z??' where 'Z' stands for zone.
                endif
                clabel='                    '
 C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
-               ln=lnblnk(zname(mzone(i)))
+               ln=lnzname(mzone(i))
                write(clabel,'(2a)') zname(mzone(i))(1:ln),nterm
                ncoord(i,1,1)=igl+int((0+xadd)*xsc)
                ncoord(i,1,2)=igb-int((value+yadd)*ysc)

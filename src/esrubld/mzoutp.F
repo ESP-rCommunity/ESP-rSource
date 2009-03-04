@@ -32,8 +32,6 @@ C tzph,tzpc are zone heating/cooling use over time.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "sbem.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -189,25 +187,25 @@ c Write save option 0 data.
       CALL EDAY(LD1,LM1,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Temp',tab,VA,tab,' in ',
-     & zname(IA)(1:lnblnk(zname(IA))),' on ',DS1,'@',TZA
+     & zname(IA)(1:lnzname(IA)),' on ',DS1,'@',TZA
       call edisp(IWU,outs)
 
       CALL EDAY(LD2,LM2,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Min_Temp',tab,VB,tab,' in ',
-     & zname(IB)(1:lnblnk(zname(IB))),' on ',DS1,'@',TZB
+     & zname(IB)(1:lnzname(IB)),' on ',DS1,'@',TZB
       call edisp(IWU,outs)
 
       CALL EDAY(LD3,LM3,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Heat',tab,VC,tab,' in ',
-     & zname(IC)(1:lnblnk(zname(IC))),' on ',DS1,'@',TZC
+     & zname(IC)(1:lnzname(IC)),' on ',DS1,'@',TZC
       call edisp(IWU,outs)
 
       CALL EDAY(LD4,LM4,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Cool',tab,VD,tab,' in ',
-     & zname(ID)(1:lnblnk(zname(ID))),' on ',DS1,'@',TZD
+     & zname(ID)(1:lnzname(ID)),' on ',DS1,'@',TZD
       call edisp(IWU,outs)
 
       call edisp(IWU,' ')

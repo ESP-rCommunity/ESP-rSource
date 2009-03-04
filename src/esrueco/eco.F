@@ -862,7 +862,7 @@ C update menu text
             endif
           elseif (nzg .LT. ncomp) then
             write(TxtZone,'(2a)')
-     &        zname(nznog(1))(1:lnblnk(zname(nznog(1)))),' + other'
+     &        zname(nznog(1))(1:lnzname(nznog(1))),' + other'
           elseif (nzg .EQ. ncomp) then
              write(TxtZone,'(a)')' All zones'
           endif

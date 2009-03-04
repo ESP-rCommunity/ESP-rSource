@@ -584,6 +584,7 @@ C Assuming a single esp-r zone so create file names etc.
                  endif
                  NCCODE(NCOMP)=NCOMP
                  write(zname(NCOMP),'(a)') ZN
+                 lnzname(NCOMP)=lnblnk(ZN)
                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                    write(lf,'(a,a4)') ZN(1:ln),'.geo'
                  else
@@ -612,6 +613,7 @@ C Found a new zone so create file names etc.
                    endif
                    NCCODE(NCOMP)=NCOMP
                    write(zname(NCOMP),'(a)') ZN
+                   lnzname(NCOMP)=lnblnk(ZN)
                    if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                      write(lf,'(a,a4)') ZN(1:ln),'.geo'
                    else
@@ -631,11 +633,11 @@ C that zone files live in same folder as the configuration file.
                        if(zonepth(1:2).eq.'  '.or.
      &                    zonepth(1:2).eq.'./')then
                          write(lf,'(a,a4)') 
-     &                     zname(im)(1:lnblnk(zname(im))),'.obs'
+     &                     zname(im)(1:lnzname(im)),'.obs'
                        else
                          write(lf,'(a,a1,a,a4)') 
      &                     zonepth(1:lnblnk(zonepth)),fs,
-     &                     zname(im)(1:lnblnk(zname(im))),'.obs'
+     &                     zname(im)(1:lnzname(im)),'.obs'
                        endif
                        ZOBS(im)=lf
                        if(itrc.gt.1)then
@@ -832,7 +834,7 @@ C zone.
      &            err=903)
             endif
   142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
-            if(ZN(:lnblnk(ZN)).eq.zname(ivv)(:lnblnk(zname(ivv))))then
+            if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
               NB=NB+1
               XO(NB)=TXO
               YO(NB)=TYO
@@ -982,10 +984,9 @@ C Use YOS to hold dummy values for surface indentation.
       ier=0
       CALL EFOPSEQ(iotmp2,lf,3,IER)
       if(ier.ne.0)goto 903
-      lnzn=lnblnk(zname(iv))
+      lnzn=lnzname(iv)
       write(iotmp2,'(4a)')'# geometry of ',
-     &       zname(iv)(1:lnzn),' defined in: ',
-     &       lf(1:lnblnk(lf))
+     &  zname(iv)(1:lnzn),' defined in: ',lf(1:lnblnk(lf))
       write(iotmp2,'(5a)')'GEN ',zname(iv)(1:lnzn),' ',
      &  zname(iv)(1:lnzn),' was imported from DXF  # type, name, descr'
       write(iotmp2,'(I8,I8,a)')NZTV(iv),NZSUR(iv),

@@ -123,6 +123,7 @@ C Material data arrays.
 C Clear 'conflated only' commons.
       do 2 I=1,MCOM
         zname(I)=' '
+        lnzname(I)=0
         zdesc(I)=' '
         lnzdesc(I)=0
  2    continue

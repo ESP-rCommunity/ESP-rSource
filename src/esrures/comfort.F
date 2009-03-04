@@ -445,7 +445,7 @@ C If output to file alter the edisp unit number.
         call edisp(itru,'  ')
         write(outs,'(A,A,A,I3,A,I3)',IOSTAT=IOS,ERR=1)
      &    ' Comfort assessment for ',
-     &    zname(IZONE)(:lnblnk(zname(IZONE))),' on  Day',IDCO,
+     &    zname(IZONE)(1:lnzname(IZONE)),' on  Day',IDCO,
      &    ' of month',IMCO
         call edisp(itru,outs)
         call edisp(itru,' ')

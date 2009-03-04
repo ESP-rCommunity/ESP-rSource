@@ -126,22 +126,20 @@ C illegal characters.
      &           12,'New zone','zone name',IER,3)
       IF(ZN.eq.' '.or.ier.ne.0)goto 42
       call st2name(ZN,zname(ICOMP))
+      lnzname(icomp)=lnblnk(zname(ICOMP))  ! update this string length.
 
 C << Unix vs NT needs to be updated >>
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.geo'
-        WRITE(CFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.con'
-        WRITE(OFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.opr'
+        WRITE(DFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
+        WRITE(CFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        WRITE(OFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       else
         WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &     zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+     &     zname(ICOMP)(1:lnzname(ICOMP)),'.con'
         WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.opr'
+     &     zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       endif
       LGEOM(ICOMP)=DFILE
       LTHRM(ICOMP)=CFILE
@@ -149,8 +147,7 @@ C << Unix vs NT needs to be updated >>
 
       H(1)='The zone description allows further information about'
       H(2)='zone form and composition to be recorded.'
-      write(zd,'(2a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a'
+      write(zd,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),' describes a'
  43   CALL EASKS(zd,'What does it represent?','(<64 characters)',
      &            64,'no description entered','zone descr',IER,2)
       IF(zd.eq.' '.or.ier.ne.0)goto 43
@@ -440,10 +437,11 @@ C High level info for all cases except clickonbitmap.
       IF(zname(ICOMP)(1:2).EQ.'  ')THEN
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length for this string.
       ENDIF
       if(zdesc(ICOMP)(1:2).EQ.'  ')then
-        write(zdesc(ICOMP),'(2a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+        write(zdesc(ICOMP),'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),
+     &    ' describes a '
         lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
       CTYPE(icomp)='GEN '
@@ -795,10 +793,10 @@ C Update the G7 common blocks and then write out configuration file.
 C Check to see if there are other zone files which can be associated
 C with this new zone.
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DFILE,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.opr'
+          WRITE(DFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.opr'
         else
           WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.opr'
+     &      zname(IC)(1:lnzname(IC)),'.opr'
         endif
         dok=.false.
         h(1)='If you are extending a model via the use of existing'
@@ -860,10 +858,10 @@ C                write(6,*) ltmp
         CALL ASKOK(' ','Also use an existing constructions file? ',
      &    OK,dok,3)
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DFILE,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.con'
+          WRITE(DFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.con'
         else
           WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.con'
+     &      zname(IC)(1:lnzname(IC)),'.con'
         endif
         if(OK)then
           if(LTHRM(IC)(1:4).eq.'UNKN'.or.LTHRM(IC)(1:2).eq.'  ')then
@@ -1128,7 +1126,7 @@ C Reset strings which hold mass flow links so that subsequent
 C write of configuration file will generate proper text.
 C If a node is linked to zone to be deleted then check with user.
             if(ICAAS(IW).gt.0)then
-              write(outs,'(3A)')zname(IW)(1:lnblnk(zname(IW))),
+              write(outs,'(3A)')zname(IW)(1:lnzname(IW)),
      &          ' is linked to ventilation network node: ',
      &          NDNAM(ICAAS(IW))
               DOK=.true.
@@ -1373,8 +1371,8 @@ C Air flows
 C Update operations file if any changes.
         if(modopr)then
           call edisp(iuout,' ')
-          write(outs,'(1X,A,A)') zname(ix)(1:lnblnk(zname(ix))),
-     &                          ' has inter-zone ventilation with the'
+          write(outs,'(1X,A,A)') zname(ix)(1:lnzname(ix)),
+     &      ' has inter-zone ventilation with the'
           call edisp(iuout,outs)
           call edisp(iuout,' zone to be deleted.  Links have been')
           call edisp(iuout,' removed and the operation file is now')
@@ -1500,6 +1498,7 @@ C and zone based data.
         NZTV(IX)=NZTV(IX+1)
         NCCODE(IX)=NCCODE(IX+1)-1
         zname(IX)=zname(IX+1)
+        lnzname(IX)=lnzname(IX+1)
         zdesc(IX)=zdesc(IX+1)
         lnzdesc(IX)=lnzdesc(IX+1)
         LPROJ(IX)=LPROJ(IX+1)
@@ -1752,7 +1751,7 @@ C Check if Unix-based or DOS based.
         if(comold.or.tmcold.or.vwfold.or.ishold)then
           nh=nh+1
           write(h(nh),'(3a)') 'For ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),' the last action makes:'
+     &    zname(icomp)(1:lnzname(icomp)),' the last action makes:'
         endif
         if(comold)then
           nh=nh+1
@@ -1881,7 +1880,7 @@ C Check if Unix-based or DOS based.
 C Check if file exists and get local zone name for feedback.
       call FINDFIL(LSHAD(iz),XST)
       write(ZN,'(A)') zname(iz)
-      LNZ=max(1,LNBLNK(ZN))
+      LNZ=max(1,lnzname(iz))  ! find current lenght of at least on character
 
 C Clear command and setup terminal type.
       doit = ' '
@@ -2596,7 +2595,6 @@ C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
       integer newsurf   ! index of surface when adding door/glazing
-      integer znl       ! length of zone name string.
       integer ibcs      ! connection associated with base surface
 
 C If browsing then user cannot create a new zone.
@@ -2628,28 +2626,28 @@ C Creation of a new zone, begin with name, trapping out
 C illegal characters.
       call tstamp('>','PRJ: new zone')
       call st2name(name,zname(ICOMP))
-      znl=lnblnk(zname(ICOMP))
+      lnzname(ICOMP)=lnblnk(zname(ICOMP))
 
 C << Unix vs Windows needs to be updated >>
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(2a)') zname(ICOMP)(1:znl),'.geo'
-        WRITE(CFILE,'(2a)') zname(ICOMP)(1:znl),'.con'
-        WRITE(TFILE,'(2a)') zname(ICOMP)(1:znl),'.tmc'
-        WRITE(OFILE,'(2a)') zname(ICOMP)(1:znl),'.opr'
+        WRITE(DFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
+        WRITE(CFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        WRITE(TFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
+        WRITE(OFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       else
         WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:znl),'.geo'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:znl),'.con'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
         WRITE(TFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:znl),'.tmc'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(OFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:znl),'.opr'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       endif
       LGEOM(ICOMP)=DFILE
 
       write(zd,'(4a)') 
-     &  zname(ICOMP)(1:znl),' auto-generated for shape ',
+     &  zname(ICOMP)(1:lnzname(ICOMP)),' auto-generated for shape ',
      &  shape(1:lnblnk(shape)),' & attributes.'
       zdesc(ICOMP)=zd
       lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
@@ -3082,7 +3080,7 @@ C it should be overwritten.
       LTHRM(ICOMP)=CFILE
       CALL EFOPSEQ(IUF,LTHRM(ICOMP),3,IER)
       WRITE(IUF,31,IOSTAT=IOS,ERR=146)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),CFILE(1:lnblnk(CFILE))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),CFILE(1:lnblnk(CFILE))
   31  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
      &'# no of |air |surface(from geo)| multilayer construction',/,
      &'# layers|gaps|  no.  name      | database name ')
