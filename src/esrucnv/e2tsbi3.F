@@ -225,7 +225,7 @@ C Now for each mlc, write out its fields.
       do 36 ino = 1,NMLC
         WRITE(CONTYPE,'(A)') DESC(ino)(15:18)
         IF(CONTYPE.EQ.' ')CONTYPE='OPAQ'
-        IF(CONTYPE.EQ.'TRAN')THEN
+        IF(CONTYPE(1:4).NE.'OPAQ')THEN
            WRITE(CONTYPE,'(A)') DESC(ino)(21:32)
         ELSE
            CONTYPE='OPAQ'
@@ -350,7 +350,7 @@ C Zone connections field - add 9 to esp zone index.
              lizc = 4
           endif
 
-C         write(zsn(is),'(3a)') zname(mz)(:lnblnk(zname(mz))),':',
+C         write(zsn(is),'(3a)') zname(mz)(1:lnblnk(zname(mz))),':',
 C    &       SNAME(mz,is)
 
 C Eliminate double definition of surfaces
@@ -406,7 +406,7 @@ C Surface sloped, assume square.
 C Conversion to tsbi3 elevation of surfaces
           felv=ABS(PELV(is)-90.)
 
-          WRITE(ioout,'(3a,4F8.3)') q,zsn(is)(:lnblnk(zsn(is))),q,
+          WRITE(ioout,'(3a,4F8.3)') q,zsn(is)(1:lnblnk(zsn(is))),q,
      &      PAZI(is),felv,swid,surh
           WRITE(ioout,'(a)') '-9999.00 -9999.00 -9999.00 '
 
@@ -435,7 +435,7 @@ C 4 parameter field.
 
 C Find composite which matches. 
 
-          IF(SOTF(IS).eq.'TRAN')THEN
+          IF(SOTF(IS)(1:4).ne.'OPAQ')THEN
 
 C Opaque constructions in this surface - NONE
             WRITE(ioout,'(a)') '  -1' 
@@ -454,10 +454,10 @@ C one matching the current MLC optics.
 C << the #glass_lib match is optndx(iiii) which should be >>
 C << substituted in the write statement below >>
 C Window NoOf, name and type
-C           WRITE(ioout,'(12a)')'1 ',q,zsn(is)(:lnblnk(zsn(is))),q,
+C           WRITE(ioout,'(12a)')'1 ',q,zsn(is)(1:lnblnk(zsn(is))),q,
 C    &            ' ',q,SMLCN(is)(1:lnblnk(SMLCN(is))),q,
 C    &            ' ',q,'unknown',q
-            WRITE(ioout,'(12a)')'1 ',q,zsn(is)(:lnblnk(zsn(is))),q,
+            WRITE(ioout,'(12a)')'1 ',q,zsn(is)(1:lnblnk(zsn(is))),q,
      &            ' ',q,optndx(iiii),q,' ',q,'unknown',q
 
 C Calculate the window U-value
@@ -541,7 +541,7 @@ C External obstracles - NONE
      &           DBSHT,E,AE,DRV,TITL,NAM)
             endif
             WRITE(ioout,'(f8.3,8a,F8.2)') sna(is),'  ',
-     &        q,zsn(is)(:lnblnk(zsn(is))),q,'   ',
+     &        q,zsn(is)(1:lnblnk(zsn(is))),q,'   ',
      &        q,SMLCN(is)(1:lnblnk(SMLCN(is))),q,AE 
             WRITE(ioout,'(a)') '-1' 
           ENDIF
@@ -801,6 +801,7 @@ C Arrays of material properties.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
+      character MLCSYM*12
       CHARACTER cfgroot*24,LCFGF*72
       CHARACTER NAM*72,TITL*72,BLKNAME*8,BLKMAT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -842,15 +843,7 @@ C Define a VRML material for each construction in the database.
 
 C Pick up general description of the composite.
         ifound=im
-        WRITE(MLCN,'(A)')DESC(IM)(1:12)
-        WRITE(OTF,'(A)') DESC(IM)(15:18)
-        IF(OTF.EQ.' ')OTF='OPAQ'
-        IF(OTF.EQ.'TRAN')THEN
-          WRITE(OPT,'(A)') DESC(IM)(21:32)
-          IF(OPT.EQ.' ')OPT='UNKNOWN'
-        ELSE
-          OPT='OPAQUE'
-        ENDIF
+        call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
 
 C For the inside and outside layer get surface properties (AE & AI).
         if(closemat)then
@@ -880,7 +873,7 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF.EQ.'TRAN')then
+        if(OTF(1:4).NE.'OPAQ')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
             gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))
@@ -904,7 +897,7 @@ C << surface should be skipped logic for later...>>
         WRITE(ioout,'(5a)')'parameter [ ',q,'target = description',q,
      &    ' ]'
         WRITE(ioout,'(a)') '  children [ Shape {'
-        if(OTF.EQ.'TRAN')then
+        if(OTF(1:4).NE.'OPAQ')then
           WRITE(ioout,'(3a)')
      &      '   appearance DEF Glass_',MLCN(1:lnblnk(MLCN)),
      &      ' Appearance {'
@@ -958,15 +951,7 @@ C through each of the MLC and finding a match.
 
 C Pick up general description of the composite.
               ifound=im
-              WRITE(MLCN,'(A)')DESC(IM)(1:12)
-              WRITE(OTF,'(A)') DESC(IM)(15:18)
-              IF(OTF.EQ.' ')OTF='OPAQ'
-              IF(OTF.EQ.'TRAN')THEN
-                WRITE(OPT,'(A)') DESC(IM)(21:32)
-                IF(OPT.EQ.' ')OPT='UNKNOWN'
-              ELSE
-                OPT='OPAQUE'
-              ENDIF
+              call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
 
 C For the inside and outside layer get surface properties.
               if(closemat)then
@@ -1030,7 +1015,7 @@ C (which holds the coordinates of the zone along with the first surface.
           WRITE(ioout,'(a)') '  children ['
           WRITE(ioout,'(a)') '    Shape {'
           if(j.eq.1)then
-            if(OTF.EQ.'TRAN')then
+            if(OTF(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '      appearance USE Glass_',MLCN(1:lnblnk(MLCN))
             else
@@ -1087,7 +1072,7 @@ C Write a comma separated list of vertices (in both directions) with a trailing 
           else
 
 C Write differently if opaque or transparent.
-            if(OTF.EQ.'TRAN')then
+            if(OTF(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '     appearance USE Glass_',MLCN(1:lnblnk(MLCN))
             else
@@ -1103,7 +1088,7 @@ C Write differently if opaque or transparent.
      &          sname(newfoc,j)(1:lsn),' IndexedFaceSet {'
             endif
             WRITE(ioout,'(a)')  '        ccw TRUE'
-            if(OTF.EQ.'TRAN')then
+            if(OTF(1:4).NE.'OPAQ')then
               WRITE(ioout,'(a)')'        solid FALSE'
             else
               WRITE(ioout,'(a)')'        solid TRUE'
@@ -1134,10 +1119,14 @@ C Write differently if opaque or transparent.
 C If there are obstructions associated with this zone read them in
 C and convert into GB1 commons and write them out using similar
 C logic.
-        IF(IOBS(newfoc).EQ.1)then
+        if(IOBS(newfoc).EQ.1)then
           CALL EGOMST(ITA1,ZOBS(newfoc),0,0,iuout,IER)
           WRITE(outs,'(a,a)')' Scanning : ',ZOBS(newfoc)
           CALL edisp(iuout,outs)
+          WRITE(ioout,'(a)')' '
+          WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
+     &      'obstructions start here....'
+        elseif(IOBS(newfoc).EQ.2)then
           WRITE(ioout,'(a)')' '
           WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
      &      'obstructions start here....'
@@ -1188,9 +1177,10 @@ C (which holds its coordinates of along with the first surface.
      &       '.html',hc,BLKNAME(IB)(1:lsn),q,' ]'
             WRITE(ioout,'(a)') '  children ['
             WRITE(ioout,'(a)') '    Shape {'
-            if(kbs.eq.1)then
+            if(kbs.eq.1)then   ! include the block material
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',MLCN(1:lnblnk(MLCN))
+     &          '     appearance USE Solid_',
+     &          BLKMAT(IB)(1:lnblnk(BLKMAT(IB)))
               call ifnumber(BLKNAME(IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',
@@ -1231,7 +1221,8 @@ C Write a comma separated list of vertices with a trailing -1.
               WRITE(ioout,'(a)') '  '
             else
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',MLCN(1:lnblnk(MLCN))
+     &          '     appearance USE Solid_',
+     &          BLKMAT(IB)(1:lnblnk(BLKMAT(IB)))
               call ifnumber(BLKNAME(IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',

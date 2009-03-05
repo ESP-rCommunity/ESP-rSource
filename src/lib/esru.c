@@ -63,32 +63,52 @@ void winfnt_(font_index)
  */
 
 
-  if (ifont_index == 0 ) {
-   pfd = pango_font_description_from_string("Serif,Medium 8");
-   f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
-   f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
- 
+  if (butn_fnt == 0 ) {
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+     f_height = font_calculations_array[courier_small].f_height;
+     f_width  = font_calculations_array[courier_small].f_width;
+#else
+     pfd = pango_font_description_from_string("Serif,Medium 8");
+     f_height = font_calculations_array[serif_small].f_height;   // pre-calculated value of f_height is read from the array
+     f_width  = font_calculations_array[serif_small].f_width;    // pre-calculated value of f_width  is read from the array
+#endif 
    //fprintf(stderr,"graphic_reset at serif medium 8 change font height and width is %d %d %d\n", f_height, f_width, ifont_index);	//debug
     
   } else if (ifont_index == 1 ) {
-   pfd = pango_font_description_from_string("Serif,Medium 10");
-   f_height = font_calculations_array[serif_medium].f_height;
-   f_width  = font_calculations_array[serif_medium].f_width;
- 
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+     f_height = font_calculations_array[courier_medium].f_height;
+     f_width  = font_calculations_array[courier_medium].f_width;
+#else
+     pfd = pango_font_description_from_string("Serif,Medium 10");
+     f_height = font_calculations_array[serif_medium].f_height;
+     f_width  = font_calculations_array[serif_medium].f_width;
+#endif
    //fprintf(stderr,"graphic_reset at serif medium 10 change font height and width is %d %d %d\n", f_height, f_width,ifont_index );	//debug
       
    } else if (ifont_index == 2 ) {
-   pfd = pango_font_description_from_string("Serif,Medium 12");
-   f_height = font_calculations_array[serif_large].f_height;
-   f_width  = font_calculations_array[serif_large].f_width;
- 
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+     f_height = font_calculations_array[courier_large].f_height;
+     f_width  = font_calculations_array[courier_large].f_width;
+#else
+     pfd = pango_font_description_from_string("Serif,Medium 12");
+     f_height = font_calculations_array[serif_large].f_height;
+     f_width  = font_calculations_array[serif_large].f_width;
+#endif
    // fprintf(stderr,"graphic_reset at serif medium 12 change font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	
 
    } else if (ifont_index == 3 ) {
-   pfd = pango_font_description_from_string("Serif,Medium 14");
-   f_height = font_calculations_array[serif_largest].f_height;
-   f_width  = font_calculations_array[serif_largest].f_width;
- 
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+     f_height = font_calculations_array[courier_largest].f_height;
+     f_width  = font_calculations_array[courier_largest].f_width;
+#else
+     pfd = pango_font_description_from_string("Serif,Medium 14");
+     f_height = font_calculations_array[serif_largest].f_height;
+     f_width  = font_calculations_array[serif_largest].f_width;
+#endif 
    //fprintf(stderr,"graphic_reset at serif medium 14 change font height and width is %d %d %d \n", f_height, f_width, ifont_index);	//debug	
    }
    
