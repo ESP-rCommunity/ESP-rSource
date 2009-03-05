@@ -879,7 +879,7 @@ C         if = 0 then use compiled pattern.
       common/C25/igttype,GTMP(12)
       common/ground/grdtmp(12,mgrdp)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC7/ITCNST
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),

@@ -57,7 +57,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC3I/CHARDM(MCOM,MS)
@@ -261,7 +261,7 @@ C sensitive to the number of surfaces in the zone.
 C Write one data record per zone.
 C << more items could be written into this e.g. ZBASEA and ZTRANA >>
       DO 240 I=1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZOA(I)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)zonetotsurfacearea(I)
       IREC=IREC+1
   240 CONTINUE
       DO 250 I=1,NCOMP
@@ -630,7 +630,7 @@ C#include "cfd.h"
 
       COMMON/SAVE/ISAVE
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/recver/izver,ipver,iever
@@ -1452,7 +1452,7 @@ C For each casual gain type.
         ENDIF
 
 C Casual gains and average FRACtion controlled.
-        QCASR=QCASRT(icomp)*(ZOA(ICOMP))/2.0
+        QCASR=QCASRT(icomp)*(zonetotsurfacearea(ICOMP))/2.0
         QCASC=QCASCT/2.0
         if(ICGCTL(ICOMP).gt.0)then
           FRAC=(CGCTL(ICOMP,1,ICGCTL(ICOMP))+
@@ -2343,10 +2343,11 @@ C Possibly all calculations should use the IVTHPZ in the future?
       SUBROUTINE SURBAL(ICOMP)
 
 #include "building.h"
+#include "geometry.h"
 C#include "cfd.h"
 #include "control.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
@@ -2399,6 +2400,7 @@ C Energy balance.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL IVTHPS,IVTHPZ
+      real zoar  ! local for zonetotsurfacearea(MCOM)
 
 C Do for all surfaces.
       do 10 ISFN=1,NCONST(ICOMP)
@@ -2446,8 +2448,9 @@ C -- Longwave radiation.
         qlwrdi(ICOMP,ISFN,2)=qlwrdi(ICOMP,ISFN,2)*sna(ICOMP,ISFN)
 
 C -- Radiant casual gains are area AND emissivity weighted.
+        zoar = zonetotsurfacearea(ICOMP) ! assign local value
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
-        qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoa(ICOMP)*sna(ICOMP,ISFN)*
+        qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoar*sna(ICOMP,ISFN)*
      &                                      ei(ICOMP,ISFN)/emarea(ICOMP)
 
 C -- Plant radiant energy.

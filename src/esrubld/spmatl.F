@@ -143,7 +143,7 @@ C Special materials
       COMMON/COE32/QSOLI(MS,2),QSOLE(MS,2)
       COMMON/PVPNL/TPNL,QPNL,PVPWR
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
@@ -494,7 +494,7 @@ C Special materials
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
      &ARP(MCOM,MS),ARF(MCOM,MS)  
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/SOLEXT/EXRAD(MS),EXDIR(MS),EXDIF(MS),EXSHAD(MS),
@@ -1032,7 +1032,7 @@ C Special materials
       COMMON/COE32/QSOLI(MS,2),QSOLE(MS,2)
       COMMON/PVPNL/TPNL,QPNL,PVPWR
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       
       REAL MU
@@ -1511,7 +1511,7 @@ C of the component has only been roughly verified.
       COMMON/ZONSPMF/ZSPMF1(MCOM),ZSPMF2(MCOM)
 C Evaporation common block for use in MZVAPC.
       common/evapsur/vapsur(mcom)
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
@@ -1667,7 +1667,7 @@ C Special materials
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/VTHP15/VCP(MS,MN,2),QCP(MS,MN)
       COMMON/VTHP16/VCF(MS,MN,2),QCF(MS,MN)
@@ -2021,9 +2021,8 @@ C Special materials
       COMMON/PVPNL/TPNL,QPNL,PVPWR
       real    tpnl,qpnl,pvpwr
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       real    sna            !- surface area (m2)
-      real    zoa            !- total surface area of the bounding zone
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       integer isd1           !- start day number 

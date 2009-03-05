@@ -60,7 +60,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
       common/btime/btimep,btimef
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -641,9 +640,9 @@ C If first timestep set previous values to current.
 C Sum present and future time rows and convert radiant casual 
 C variables to W/m^2.
       QCASCT=QCASC(1)+QCASC(2)
-      QCASRT(icomp)=(QCASR(1)+QCASR(2))/ZOA(ICOMP)
-      QCASR(1)=QCASR(1)/ZOA(ICOMP)
-      QCASR(2)=QCASR(2)/ZOA(ICOMP)
+      QCASRT(icomp)=(QCASR(1)+QCASR(2))/zonetotsurfacearea(ICOMP)
+      QCASR(1)=QCASR(1)/zonetotsurfacearea(ICOMP)
+      QCASR(2)=QCASR(2)/zonetotsurfacearea(ICOMP)
       QCASRS(ICOMP)=QCASR(2)
       QCASLT=QLATN(1)+QLATN(2)
 
@@ -669,9 +668,9 @@ C Output computed results.
       call edisp(itu,outs)
 
 C Display radiant contribution as Watts.
-      RWP=QCASR(1)*ZOA(ICOMP)
-      RWF=QCASR(2)*ZOA(ICOMP)
-      RW=QCASRT(icomp)*ZOA(ICOMP)
+      RWP=QCASR(1)*zonetotsurfacearea(ICOMP)
+      RWF=QCASR(2)*zonetotsurfacearea(ICOMP)
+      RW=QCASRT(icomp)*zonetotsurfacearea(ICOMP)
       write (outs,9994) RWP,RWF,QCASC(1),QCASC(2),QLATN(1),QLATN(2)
  9994 format(' Total gain    |',2F10.2,'|',2F10.2,'|',2F10.2)
       call edisp(itu,outs)

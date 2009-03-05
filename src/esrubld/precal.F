@@ -30,30 +30,26 @@ C      MZMISC
 
 c ******************** MZAREA ********************
 
-c MZAREA computes the area of each component surface.   The
-c area of each window is computed  for each multi-
-c layered construction in turn and the total subtracted from
-c the gross surface area of the corresponding face.
-c The total internal opaque surface, total default window 
-c are also computed.
+c MZAREA computes the area of each zone surface as well
+c as hydraulic diameter and characteristic height.
 
 c Common block variables are:
 
 c SNA     - surface area of each multilayered construction
-c ZOA     - total surface area bounding zone
 c APRAT   - surface hydraulic diameter (4*Area/Perimeter)
 c HEIGHT  - records for each surface the difference between the
 c           max. and min. Z-value.   For vertical surfaces this is
 c           used as the characteristic dimension (rather than APRAT)
 c           in the computation of convection coefficients.
-
+c zonetotsurfacearea - total surface area in the zone (held in geometry.h)
       SUBROUTINE MZAREA(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)
 
 c The information contained in the following common block represents
@@ -62,7 +58,7 @@ c for use in subroutines MZVOLM, MZPAZI and MZCFGB.
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
 
 c Set area summations to zero.
-      ZOA(ICOMP)=0.
+      zonetotsurfacearea(ICOMP)=0.
 
 c And consider each surface of the current zone in turn.
       DO 10 I=1,NSUR
@@ -106,7 +102,7 @@ c Check for -ve surface area: windows wrongly specified.
         endif
 
 c And surface area summations by:
-        ZOA(ICOMP)=ZOA(ICOMP)+SNA(ICOMP,I)
+        zonetotsurfacearea(ICOMP)=zonetotsurfacearea(ICOMP)+SNA(ICOMP,I)
    10 CONTINUE
       RETURN
       END
@@ -232,6 +228,7 @@ c unavailable.
 
       SUBROUTINE MZVFCL(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -240,7 +237,7 @@ c unavailable.
 
       COMMON/V2/CFB(MCOM,MST,MST)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       character outs*124
 
@@ -251,7 +248,8 @@ c unavailable.
       JJ=J
       CFB(ICOMP,II,JJ)=0.0
       IF(II.EQ.JJ)goto 20
-      CFB(ICOMP,II,JJ)=(SNA(ICOMP,JJ)/(ZOA(ICOMP)-SNA(ICOMP,II)))
+      CFB(ICOMP,II,JJ)=
+     &  (SNA(ICOMP,JJ)/(zonetotsurfacearea(ICOMP)-SNA(ICOMP,II)))
    20 CONTINUE
    10 CONTINUE
 
@@ -398,7 +396,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17/precz.
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz.
 #include "geometry.h"
 #include "power.h"
 
@@ -424,7 +422,7 @@ C Commons for electrical data
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CASGFA/FLOORA(MCOM)
 
 C Derived casual gain and electrical data.

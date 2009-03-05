@@ -589,8 +589,8 @@ C node.
 C *********************************************************************
       SUBROUTINE ENRGYI(ICOMP,I1S,SUM,Q3PTOT,Q3FTOT)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/PREC14/emarea(MCOM)
       COMMON/COE32/QSOLI(MS,2),QSOLE(MS,2)
@@ -599,8 +599,8 @@ C *********************************************************************
       COMMON/GR3D102/ASURFO(MCOM,MS),ASURFI(MCOM,MS)
 
       ARIA=ASURFI(ICOMP,I1S)*EI(ICOMP,I1S)/EMAREA(ICOMP)
-      QCASRP=QCASR(1)*ZOA(ICOMP)*ARIA
-      QCASRF=QCASR(2)*ZOA(ICOMP)*ARIA
+      QCASRP=QCASR(1)*zonetotsurfacearea(ICOMP)*ARIA
+      QCASRF=QCASR(2)*zonetotsurfacearea(ICOMP)*ARIA
       PADDR=QPLTP(ICOMP)*(1.-CONV(ICOMP))*ARIA
       Q3PTOT=ASURFI(ICOMP,I1S)*QSOLI(I1S,1)+SUM+QCASRP+PADDR
       Q3FTOT=ASURFI(ICOMP,I1S)*QSOLI(I1S,2)+QCASRF
@@ -1125,7 +1125,7 @@ C *********************************************************************
       SUBROUTINE FILL1D(ICOMP)
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 

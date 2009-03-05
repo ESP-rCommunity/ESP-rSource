@@ -688,31 +688,30 @@ C     #include "cfd.h"
 
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER ITC,ICNT
 
       COMMON/FILEP/IFIL
-      INTEGER	IFIL
+      INTEGER IFIL
 
 
 
-        COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
-        INTEGER ITCF
-        INTEGER ITRACE(MTRACE)
-        INTEGER IZNTRC(MCOM)
-        INTEGER ITU
+      COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
+      INTEGER ITCF
+      INTEGER ITRACE(MTRACE)
+      INTEGER IZNTRC(MCOM)
+      INTEGER ITU
 
-	COMMON/BTIME/BTIMEP,BTIMEF
-	REAL	BTIMEP,BTIMEF
+      COMMON/BTIME/BTIMEP,BTIMEF
+      REAL BTIMEP,BTIMEF
 
       COMMON/LIBREC/IRECPL
-       INTEGER IRECPL
+      INTEGER IRECPL
 
       COMMON/SAVE/ISAVE
       INTEGER ISAVE
 
-      COMMON/PREC1/SNA,ZOA
-      REAL SNA(MCOM,MS),ZOA(MCOM)
-
+      COMMON/PREC1/SNA(MCOM,MS)
+      REAL SNA
 
       common/prec7/itcnst
       INTEGER itcnst
@@ -807,13 +806,13 @@ C     Commons for summary of solar (for results library)
         INTEGER ITER
 
       COMMON/LS3A/TMIXP
-	REAL TMIXP
+      REAL TMIXP
 
 C THE DEFINITION OF LIGHTS common block HAS CHANGED. 
       COMMON/LIGHTS/ICGCTL(MCOM)
       INTEGER ICGCTL
 C      COMMON/LIGHTS/FRACP,FRACF,FRACS
-C	REAL FRACP,FRACF,FRACS(MCOM)
+C      REAL FRACP,FRACF,FRACS(MCOM)
 
       COMMON/ADJC/IE,ATP,ATF,ARP,ARF
         INTEGER IE(MCOM,MS)
@@ -1006,7 +1005,7 @@ C     zones.
 C
 C     - Alex, Feb 24 2004. 
 C
-C     QCASR=QCASRT(icomp)*(ZOA(ICOMP))/2.0
+C     QCASR=QCASRT(icomp)*(zonetotsurfacearea(ICOMP))/2.0
 C     QCASC=QCASCT/2.0
 C--------------------------------------------------------------------
       Call TrackBuildingTimeSteps()

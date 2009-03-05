@@ -193,7 +193,7 @@ C in elevation and azimuth.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -374,7 +374,7 @@ C Tdf common block to allow using vertical solar radiation data
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
 
-      ZAREA=ZOA(ICOMP)
+      ZAREA=zonetotsurfacearea(ICOMP)
 
 C      write (6,*) 'solar ',btimef
 

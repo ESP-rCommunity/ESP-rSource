@@ -66,7 +66,7 @@ C ARF    - future time adjacent incident radiation & casual etc.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -136,6 +136,7 @@ C FINISH SPECIAL mod for PASSYS
 
       CHARACTER outs*124
       LOGICAL ATRACE
+      real zoar  ! local real for zonetotsurfacearea(MCOM)
 
 C Flag trace info.
       ATRACE=.FALSE.
@@ -192,7 +193,8 @@ C     &      QPLTP(ICOMP),QPLTF(ICOMP)
           APp(ICOMP,I)=APf(ICOMP,I)
 
 C For reporting radiant casual at inside face.
-          qradcin(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+          zoar=zonetotsurfacearea(icomp)
+          qradcin(I)=(QCASRT(icomp)*zoar*0.5)*
      &                    ei(icomp,I)/emarea(icomp)
 
 C For reporting plant radiant energy at inside face.
@@ -253,7 +255,8 @@ C Plant radiant energy at other face same as inside face.
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
-              qradcas(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+              zoar=zonetotsurfacearea(icomp)
+              qradcas(I)=(QCASRT(icomp)*zoar*0.5)*
      &                    ei(icomp,I)/emarea(icomp)
               
 C Instead, use the future zone radiative casual gains, and append
@@ -317,8 +320,8 @@ C Plant radiant energy at other face.
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
-              
-              qradcas(I)=(QCASRT(ICPLE)*zoa(ICPLE)*0.5)*
+              zoar=zonetotsurfacearea(ICPLE)
+              qradcas(I)=(QCASRT(ICPLE)*zoar*0.5)*
      &                 ei(ICPLE,ISCPLE)/emarea(ICPLE)
 
 C Instead, use the future zone radiative casual gains, and append
@@ -334,8 +337,8 @@ C     &         / sna(iCPLE,iSCPLE)
 
 C Debug...
 C      write(6,'(A,4I4,4F8.2)')'iz is oiz ois qr QCASRT zoa sna=',
-C     &        icomp,i,ICPLE,ISCPLE,qradcas(I),QCASRT(ICPLE),zoa(ICPLE),
-C     &        sna(ICPLE,ISCPLE)
+C     &        icomp,i,ICPLE,ISCPLE,qradcas(I),QCASRT(ICPLE),
+C     &        zonetotsurfacearea(ICPLE),sna(ICPLE,ISCPLE)
 
               ARF(ICOMP,I)=QSLIF(ICPLE,ISCPLE)+qlwsum(I)+qradcas(I)+
      &                     qpltro(I)
@@ -451,7 +454,8 @@ C the inside of the wall (CEN is in a universe where this happens).
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
-              qradcas(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+              zoar=zonetotsurfacearea(icomp)
+              qradcas(I)=(QCASRT(icomp)*zoar*0.5)*
      &                    ei(icomp,I)/emarea(icomp)
               
 C Instead, use the future zone radiative casual gains, and append
