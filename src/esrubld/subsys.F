@@ -1897,24 +1897,29 @@ C Trace ... does the moisture equation balance?
      &  IZNTRC(ICOMP).NE.1) THEN
           CONTINUE        
         ELSE
+
+C Write header of the trace message.
+          write(outs,'(A,I4)')' Subroutine MZVAPC   Trace output',ICNT
+          call edisp(itu,outs)
+          write(outs,'(23X,A,I4)')' Zone',ICOMP
+          ICNT=ICNT+1
+          CALL DAYCLK(IDYP,BTIMEF,ITU)
+          call edisp(itu,outs)
+
 C Left hand side
-          WRITE(OUTS,'(A)')' Left hand side '
+          WRITE(OUTS,'(A)')' Left hand side of mass balance'
           CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A,F10.5)') 'Future mass (kg)', 
+          WRITE(OUTS,'(A,F10.5)') ' Future mass (kg)', 
      &      GFA(ICOMP)*ZMDAF(ICOMP)
           CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A,F10.5)') 'Present mass (kg)', 
+          WRITE(OUTS,'(A,F10.5)') ' Present mass (kg)', 
      &      GPA(ICOMP)*ZMDAP(ICOMP)
-          CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A)')' Future - present mass (kg):'
-          CALL EDISP(ITU,OUTS)
           CALL EDISP(ITU,OUTS)
 
           AHS=GFA(ICOMP)*ZMDAF(ICOMP) - GPA(ICOMP)*ZMDAP(ICOMP)
-          WRITE(OUTS,'(F10.5)') AHS
+          WRITE(OUTS,'(A,F10.5)')' Future - present mass (kg):',AHS
           CALL EDISP(ITU,OUTS)
-     &    
-C
+
 C Right hand side
           WRITE(OUTS,'(A)') ' '
           CALL EDISP(ITU,OUTS)
@@ -2044,14 +2049,8 @@ C Trace output ?
 
       IF(ITRACE(10).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 9999
-      write(outs,'(A,I4)')' Subroutine MZVAPC   Trace output',ICNT
-      call edisp(itu,outs)
-      write(outs,'(23X,A,I4)')' Zone',ICOMP
-      ICNT=ICNT+1
-      CALL DAYCLK(IDYP,BTIMEF,ITU)
-      call edisp(itu,outs)
 
-C Output computed results.
+C Append computed results to early trace statements.
       write(outs,9997)ZMDAP(ICOMP),ZMDAF(ICOMP)
  9997 format(' ZMDAP = ',F14.6,' ZMDAF = ',F14.6)
       call edisp(itu,outs)
