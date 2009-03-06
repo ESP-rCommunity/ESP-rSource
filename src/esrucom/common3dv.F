@@ -784,12 +784,17 @@ C Transform other end of line.
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
 C Draw the dotted line, first take calculated pixels and
-C cast to local variable to pass to edline.
-        iix=ix
-        iiy=iy
-        iix1=ix1
-        iiy1=iy1
-        call edline(iix,iiy,iix1,iiy1,LD)
+C cast to local variable to pass to edline. Only do this if
+C the length of the line is more than one pixel.
+        if(ix.eq.ix1.and.iy.eq.iy1)then
+          continue
+        else
+          iix=ix
+          iiy=iy
+          iix1=ix1
+          iiy1=iy1
+          call edline(iix,iiy,iix1,iiy1,LD)
+        endif
 
 C Move to next grid position.
         XINC=XINC+GRIDD
@@ -822,11 +827,15 @@ C Transform other end of line.
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
 C Draw the dotted line after casting to local variable.
-        iix=ix
-        iiy=iy
-        iix1=ix1
-        iiy1=iy1
-        call edline(iix,iiy,iix1,iiy1,LD)
+        if(ix.eq.ix1.and.iy.eq.iy1)then
+          continue
+        else
+          iix=ix
+          iiy=iy
+          iix1=ix1
+          iiy1=iy1
+          call edline(iix,iiy,iix1,iiy1,LD)
+        endif
 
 C Move to next grid position.
         YINC=YINC+GRIDD

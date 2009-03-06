@@ -3316,7 +3316,7 @@ C Note for GTK, LTMP will be returned with the absolute path to the
 C folder even if prj started up in the cfg folder. There is subsequent
 C logic which determines if we actually are browsing.
           CALL EASKF(LTMP,' ',' System configuration file?',144,DFCFG,
-     &      'config file name',IER,167)
+     &      'config file name',IER,16)
         else
           CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
      &      'config file name',IER,16)
