@@ -804,8 +804,6 @@ C write can use G6 common blocks).
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
@@ -3356,8 +3354,6 @@ C Serchrpl handles search and replace of composition attributes.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS

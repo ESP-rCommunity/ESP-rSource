@@ -60,8 +60,6 @@ C << what about including common zndata in this manipulation? >>
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       
@@ -2948,6 +2946,7 @@ C           is the point of insertion (so as to know when to
 C           stop shifting).
       subroutine adjcbg6g7(act,ix,icon)
 #include "building.h"
+#include "geometry.h"
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -2965,8 +2964,6 @@ C   where a surface such as a floor has been subdivided)
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

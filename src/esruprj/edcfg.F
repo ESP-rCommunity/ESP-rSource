@@ -36,7 +36,7 @@ C output; IER=0 indicates no error.
       subroutine edcfg(ITRC,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/prec2/precz.
+C geometry.h provides commons G0/G2/G7/prec2/precz.
 #include "geometry.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -74,8 +74,6 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/user/browse
       common/uhome/upath
       common/CFGV/icfgv

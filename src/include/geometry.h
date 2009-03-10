@@ -38,6 +38,16 @@ C zonetotsurfacearea - area (m2) of surfaces associated with each zone.
       real vol,zonetotsurfacearea
       common/prec2/vol(MCOM),zonetotsurfacearea(MCOM)
 
+      real ssna    ! surface area of each polygon
+      real sspazi  ! plane azimuth angle (degrees 0=north, 90=west)
+      real sspelv  ! plane elevation angle (degrees 0=wall, 90=ceiling -90=floor
+      real ssperim ! perimeter of each surface (m).
+      real ssureqn ! equation of each polygon A*X + B*Y + C*Z = D
+      real ssurcog ! vertex weighted COG of polygon,
+      real ssurvn  ! unit normal vector from COG of polygon.
+      common/g7/ssna(MCON),sspazi(MCON),sspelv(MCON),ssperim(MCON),
+     &          ssureqn(MCON,4),ssurcog(MCON,3),ssurvn(MCON,3)
+
 C zname (12 char) - the zone name.
 C zedsc (64 char) - zone notes.
 C lnzname,lnzdesc - length of strings.

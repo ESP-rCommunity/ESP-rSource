@@ -40,7 +40,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "net_flow.h"
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -71,8 +71,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -2895,8 +2893,6 @@ C Optical and geometric properties.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -8060,8 +8056,6 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
 C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -8589,8 +8583,6 @@ C been made.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)

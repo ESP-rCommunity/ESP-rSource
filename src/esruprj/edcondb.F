@@ -2379,7 +2379,7 @@ C << if needed.
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G2/G7/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -2401,8 +2401,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -3410,8 +3408,6 @@ C so that partitions are counted as half area).
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character mlcname*12,SSPARENT*12

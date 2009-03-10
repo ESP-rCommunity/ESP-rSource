@@ -29,7 +29,7 @@ C the current model.
       subroutine prjqa(ier)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/prec2/precz/c20.
+C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
 #include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
@@ -74,8 +74,6 @@ C LPNF (72 char) plant network file name.
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS

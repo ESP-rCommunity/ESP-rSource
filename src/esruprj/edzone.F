@@ -39,7 +39,7 @@ C an extrusion. IER=0 OK.
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
 
-C Use geometry for common g0/g2/g4/prec16/precz/c20.
+C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -55,8 +55,6 @@ C Use geometry for common g0/g2/g4/prec16/precz/c20.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2490,8 +2488,6 @@ C#include "esprdbfile.h"
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS

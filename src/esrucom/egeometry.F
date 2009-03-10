@@ -2687,8 +2687,6 @@ C If context is .true. then give verbose description of the boundary.
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
@@ -3028,12 +3026,12 @@ C Check for small volume.
 
 C ********************** ZGUPDATE
 C 'ZGUPDATE' takes the geometry commons G1 and updates G7 & PREC2
-C SSNA(MCON)    - surface area of each polygon
-C SSPAZI(MCON)  - plane azimuth angle
-C SSPELV(MCON)  - plane elevation angle
-C SSPERIM(MCON)  - perimeter of each surface.
-C SUREQN(MCON,4)- equation of each polygon
-C SSURCOG(MCON,3) - vertex weighted COG of polygon,
+C SSNA(MCON)    - surface area of each polygon (from geometry.h)
+C SSPAZI(MCON)  - plane azimuth angle (from geometry.h)
+C SSPELV(MCON)  - plane elevation angle (from geometry.h)
+C SSPERIM(MCON)  - perimeter of each surface (from geometry.h)
+C SUREQN(MCON,4)- equation of each polygon (from geometry.h)
+C SSURCOG(MCON,3) - vertex weighted COG of polygon (from geometry.h)
 C SSURVN(MCON,3)  - unit normal vector from COG of polygon.
 C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
@@ -3048,8 +3046,6 @@ C << could it use ?? instead of G1? >>
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
@@ -3269,8 +3265,6 @@ C act is '-' derive geometric data or 'c' also determine parent
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -3571,8 +3565,6 @@ C be duplicates.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C G9 holds information on children of a surface.
       integer nbchild       ! how many children (up to 4)
@@ -3782,11 +3774,11 @@ C << zone geometry file if havec24 is true?
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
+C Variables from geometry.h:
 C SSURCOG is centre of gravity of surface (vertex weighted).
 C SSUREQN is the surface equation A*X + B*Y + C*Z = D
 C SSURVN is point 1 unit vectpr off of surface COG along the normal.
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
