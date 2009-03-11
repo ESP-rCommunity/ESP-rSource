@@ -62,7 +62,6 @@ C          block sctl to have been filled for the current period.
      &             opticdoc
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -4121,7 +4120,6 @@ C Edit flow control function II.
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
@@ -5023,7 +5021,6 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5752,7 +5749,6 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -6204,8 +6200,6 @@ C   for control law one.
       common/sctlmenu/menu(misc),prompt1(misc),prompt2(misc)
       common/sctldata/ndec(misc),vmin(misc),vmax(misc),
      &  vdef(misc),nctlhelp,nmenulines
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
       DIMENSION VERT(35),SALT(24),IVALS(24)

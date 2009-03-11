@@ -2244,14 +2244,11 @@ C will be truncated at the width ISTRW.
 
       SUBROUTINE EPICKS(INPICK,IVALS,PROMP1,PROMP2,
      &                ISTRW,NSTALT,STALT,ERMSG,IER,NHELP)
+#include "epara.h"
 
-C For page control of the menus.
-      integer CREATE,PREV,NEXT,EDIT
-      PARAMETER (CREATE=1,PREV=3,NEXT=6,EDIT=20)
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       LOGICAL FOUND,ALL
 
       DIMENSION IVALS(NSTALT)
@@ -4058,11 +4055,8 @@ C          block PMENU, otherwise ask for action to be taken.
 C IPM,MPM: current and last page of menu,
 C IST    : is the data array index at the beginning of the menu.
       SUBROUTINE EKPAGE(IPACT)
+#include "epara.h"
 
-C For page control of the menus.
-      integer CREATE,PREV,NEXT,EDIT
-      PARAMETER (CREATE=1,PREV=3,NEXT=6,EDIT=20)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
       CHARACTER H*72
@@ -4174,7 +4168,7 @@ C ******************* KEYIND
 C KEYIND decodes the index INO and returns the array index IA of the item
 C displayed and whether INO is within the list.
       SUBROUTINE KEYIND(MENUL,INO,IA,INOUT)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+#include "epara.h"
 
 C Assume blank returned key, 0 array index, outwith list.
       IA=0
@@ -4194,7 +4188,7 @@ C This is useful if a second menu is about to be called and
 C knowledge of the first is required.  See also EPMENRC which pops the
 C information back into common PMENU.
       SUBROUTINE EPMENSV
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+#include "epara.h"
       COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
      &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
       MILEV=MILEV+1
@@ -4232,7 +4226,7 @@ C EPMENRC recovers menu definitions (common block PMENU) from common
 C block PMENUSV.
 C This is useful if returning from a second menu.  See also EPMENSV.
       SUBROUTINE EPMENRC
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+#include "epara.h"
       COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
      &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
       MILEV=MILEV-1

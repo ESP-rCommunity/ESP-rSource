@@ -1249,7 +1249,6 @@ C WHSET displays currently chosen sets and lets user toggle selections.
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       CHARACTER VERT(35)*65, H*72, RSNAME*40, KEY*1
       LOGICAL SELECT

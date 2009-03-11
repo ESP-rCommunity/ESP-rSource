@@ -236,7 +236,6 @@ C EDGOGET allows removal of output requests.
 #include "building.h"
 
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)

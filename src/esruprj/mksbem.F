@@ -2657,9 +2657,9 @@ C Call calculator for BER and TER
 
 C Start writing BRUKL file
 C Building, owner, certifier detail...
-      ILEN=LNBLNK(LASBEM)
-      IF(LASBEM(ILEN-4:ILEN).EQ.'.ncm')THEN
-        WRITE(BRUKFL,'(2A)')LASBEM(1:ILEN-4),'.inp'
+      ILN=LNBLNK(LASBEM)
+      IF(LASBEM(ILN-4:ILN).EQ.'.ncm')THEN
+        WRITE(BRUKFL,'(2A)')LASBEM(1:ILN-4),'.inp'
       ELSE
         WRITE(BRUKFL,'(2a)')CFGROOT(1:LNBLNK(CFGROOT)),'.inp'
       ENDIF

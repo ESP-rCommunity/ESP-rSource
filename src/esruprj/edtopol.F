@@ -2207,7 +2207,6 @@ C associated with a concept).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
@@ -2761,7 +2760,6 @@ C Select one or more connections from a list.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION iconnpk(lconnpk),VERT(35),flag(mcon)

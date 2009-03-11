@@ -340,7 +340,6 @@ C should calculate pressure coefficients.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
       common/pophelp/h(60)
@@ -1446,7 +1445,6 @@ C IER=0 OK, IER=1 problem.
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFLDOC/DEPRE(MPRD)
       common/pophelp/h(60)

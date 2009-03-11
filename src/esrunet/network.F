@@ -1168,14 +1168,12 @@ C This routine manages the network icons, can be called from the C-side
 C to handle deletion of icons.
       SUBROUTINE NETWMIC(IMODE,IMOPT)
 
-# include "gnetwk.h"
+#include "gnetwk.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
 
       COMMON/POPHELP/H(60)  
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Icon commons       
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -2852,7 +2850,6 @@ C in the main menu which calls this subroutine.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Global attributes commons (associated with igatrdom(),dgtagatr(),
 C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
@@ -3103,7 +3100,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
      &          IVMAX,'W',IVALD,'glob atrib intg data',IER,0)
               if(ier.eq.0)then
                 write(istr,'(I8)') IVAL
-                call removepad(istr,inpstr,ilen,iflag)
+                call removepad(istr,inpstr,ilena,iflag)
                 write(DATCATIE(IAST,ISL,1),'(A)') inpstr
                 write(ddgatrib(ICATIE(IAST,ISL),1),'(A)') inpstr
               endif
@@ -3124,7 +3121,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
               CALL EASKR(VAL,t32,' ',VMIN,'W',
      &          VMAX,'W',VALD,'atrib real data',IER,1)
               if(ier.eq.0)then
-                call relstr(val,vnpstr,ilen,iflag)
+                call relstr(val,vnpstr,ilena,iflag)
                 WRITE(DATCATIE(IAST,ISL,1),'(a)') vnpstr
                 WRITE(ddgatrib(ICATIE(IAST,ISL),1),'(a)') vnpstr
               endif
@@ -3136,7 +3133,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
               CALL EASKS(VSTR,t32,' ',12,'nothing',
      &          'atrib text data',IER,0)
               if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
-                call removepad(vstr,vnpstr,ilen,iflag)
+                call removepad(vstr,vnpstr,ilena,iflag)
                 DATCATIE(IAST,ISL,1)=VNPSTR
                 ddgatrib(ICATIE(IAST,ISL),1)=VNPSTR
               endif
@@ -3173,7 +3170,6 @@ C are returned. If ier=-1 then summary file was not available.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
 

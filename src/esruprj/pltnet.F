@@ -471,7 +471,6 @@ C interaction is begun.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcsort/icode(maxpc)
 
@@ -689,7 +688,6 @@ C interaction is begun.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
       DIMENSION VERT(35),CSTR(4)
@@ -943,7 +941,6 @@ C interaction is begun.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       DIMENSION VERT(35)
       CHARACTER PCNAME*15
       character*(*) head

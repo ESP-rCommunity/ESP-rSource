@@ -2324,7 +2324,6 @@ C NS is the number of surface in the zone << why pass this value? >>
       common/HCFPHI/hcfpdescr(MP)
       COMMON/HCCEN/CENLOC(MP,14)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       character H*72,outs*124,SN*12,ITEM(MS+5)*30,KEY*1,SSPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER stuff*10

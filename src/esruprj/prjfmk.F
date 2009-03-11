@@ -1286,8 +1286,6 @@ C      integer lnblnk  ! function definition
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -1710,8 +1708,6 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -2441,15 +2437,15 @@ C  ICD - copy (=2) delete (=1) flag
       REAL ACI,ACV,TA
 
       character h*72,VERT(3*MA)*35,OUTS*124,OUT*4
-      INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilen,ilm
+      INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilistlen,ilm
 
       dimension IVERT(3*MA),ITEMP(3*MA)
 
-       ILEN=0
+      ilistlen=0
 
 C Set up menu of current definitions.
       DO 399 IDTY=1,NBDAYTYPE
-        ILEN=ILEN+NAC(IDTY)
+        ilistlen=ilistlen+NAC(IDTY)
  399  CONTINUE
 
 C Loop through the items until the page to be displayed.
@@ -2481,14 +2477,14 @@ C To delete period(s) redisplay the menu and allow user to indicate
 C which one, then collapse the period list.
       if (ICD.eq.1) then
         H(1)='One or more of the periods may be deleted.'
-        call EPICKS(ILEN,IVERT,' ','Air flow period(s) to delete:',
+        call EPICKS(ilistlen,IVERT,' ','Air flow period(s) to delete:',
      &         35,M,VERT,'Air flow period to delete',IER,1)
 
 C Delete items in IVERT array. Sort IVERT first.
-        if (ILEN.gt.0) then
+        if (ilistlen.gt.0) then
           KFLAG=-1
           call SORTI(IVERT,ITEMP,NBDAYTYPE*MA,KFLAG)
-          do 100 IJ=1,ILEN
+          do 100 IJ=1,ilistlen
             IAFP=IVERT(IJ)
             IGOON=1
             ILET=0
@@ -3365,8 +3361,6 @@ C ITRC is the trace level, IER=0 is OK.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -3404,7 +3398,7 @@ C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
       character act*8,iwatt*8
-      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,ILEN,IOPT,ICGTS,IDTYP
+      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,IOPT,ICGTS,IDTYP
       dimension kstr(MDTY),ILLEN(MDTY)
 
 C If not browsing, take the information from loadcnt
@@ -4670,6 +4664,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6,h*72,VERT(3*MC)*35
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
+      integer ilistlen
 
 C Choose day type to delete/copy period from
       IX=1
@@ -4687,7 +4682,7 @@ C Choose day type to delete/copy period from
 
       IDT=kstr(1)
       M=0
-      ILEN=NCAS(IDT)
+      ilistlen=NCAS(IDT)
       DO 10 L=1,NCAS(IDT)
         M=M+1
         if(ICGT(IDT,L).gt.0)then
@@ -4707,14 +4702,15 @@ C Choose day type to delete/copy period from
 
       IF(ICD.EQ.1)THEN
         H(1)='One or more of the periods may be deleted (removed).'
-        call EPICKS(ILEN,IVERT,' ','Casual gain period(s) to delete:',
-     &         35,M,VERT,'Casual gain period to delete',IER,1)
+        call EPICKS(ilistlen,IVERT,' ',
+     &    'Casual gain period(s) to delete:',
+     &    35,M,VERT,'Casual gain period to delete',IER,1)
 
 C Delete items in IVERT array. Sort IVERT first.
-        if (ILEN.gt.0) then
+        if (ilistlen.gt.0) then
           KFLAG=-1
           call SORTI(IVERT,ITEMP,MC,KFLAG)
-          do 100 IJ=1,ILEN
+          do 100 IJ=1,ilistlen
             ICGP=IVERT(IJ)
             call insdelcasper(icomp,IDT,'d',icgp,ier)
             M=M-1
@@ -5671,7 +5667,7 @@ C initcasday does initial setup of all casual day types.
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,ILEN
+      INTEGER NCAS,ICGS,ICGF,ICGT,ILN
       REAL CMGS,CMGL,RADC,CONC
       dimension iper(24),iperf(24)
       character hold*48,H*72,OUTS*12,LOUTS*24,VOUTS*50
@@ -5698,8 +5694,8 @@ C initcasday does initial setup of all casual day types.
         hold='                                    '
         write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         OUTS=CALENTAG(IDTY)
-        ILEN=LNBLNK(OUTS)
-        WRITE(VOUTS,'(3A)')'No. of ',OUTS(1:ILEN),
+        ILN=LNBLNK(OUTS)
+        WRITE(VOUTS,'(3A)')'No. of ',OUTS(1:ILN),
      &  ' casual gain periods?'
         CALL EASKS(HOLD,VOUTS,
      &  'occupants / lights / equipment or small power',
@@ -5714,7 +5710,7 @@ C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
         ipcount=NCAS(IDTY)
         if(nbocper.gt.0)then
-          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' occupant'
+          WRITE(LOUTS,'(2A)')OUTS(1:ILN),' occupant'
           call initcasper(nbocper,iper,iperf,'i',LOUTS)
           do 71 ij=1,nbocper
             ipcount=ipcount+1
@@ -5728,7 +5724,7 @@ C Increment ipcount for each new period.
   71      continue
         endif
         if(nbltper.gt.0)then
-          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' lighting'
+          WRITE(LOUTS,'(2A)')OUTS(1:ILN),' lighting'
           call initcasper(nbltper,iper,iperf,'i',LOUTS)
           do 72 ij=1,nbltper
             ipcount=ipcount+1
@@ -5742,7 +5738,7 @@ C Increment ipcount for each new period.
   72      continue
         endif
         if(nbspper.gt.0)then
-          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' small power'
+          WRITE(LOUTS,'(2A)')OUTS(1:ILN),' small power'
           call initcasper(nbspper,iper,iperf,'i',LOUTS)
           do 73 ij=1,nbspper
             ipcount=ipcount+1

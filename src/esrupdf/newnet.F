@@ -1704,7 +1704,6 @@ C Electrical details for specified plant components
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       DIMENSION VERT(35),IEPMAP(MPCOM)
       CHARACTER PCNAME*15,STR*8
       character*(*) head
@@ -2330,7 +2329,6 @@ C Common for the building plant link
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pcsort/icode(maxpc)
 
       DIMENSION VERT(35), PCTYPE(4)

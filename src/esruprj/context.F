@@ -2630,7 +2630,6 @@ C act (char*1) action to take 'i' initialise, '-' interactive
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)

@@ -286,7 +286,6 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/cmddata/zone,aim,act
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),

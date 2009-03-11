@@ -347,15 +347,15 @@ C Boundary conditions.
           PCCSTR=' '
           PCCSTRA=' '
           DO 91 ICTM=1,NCTM
-            CALL RELSTR(VOLPOL(ICTM,I,ICFD),PCCSTRA,ILEN,IER)
+            CALL RELSTR(VOLPOL(ICTM,I,ICFD),PCCSTRA,ILN,IER)
             IF(SRCE(I,ICTM,ICFD)(:1).EQ.' '.OR.ICTDFAF.NE.1)THEN
               PCCSTRB='none'
             ELSE
               PCCSTRB=SRCE(I,ICTM,ICFD)(1:12)
             ENDIF
-            WRITE(PCCSTRA,'(A,1X,A)')PCCSTRA(1:ILEN),PCCSTRB(1:12)
+            WRITE(PCCSTRA,'(A,1X,A)')PCCSTRA(1:ILN),PCCSTRB(1:12)
             WRITE(PCCSTR,'(A,1X,A)')PCCSTR(1:NLEN),PCCSTRA
-            NLEN=NLEN+ILEN+1+12
+            NLEN=NLEN+ILN+1+12
  91       CONTINUE
           write(IUF,'(A,1X,F7.1,1X,I3,1X,F4.2,1X,A)',IOSTAT=ios,ERR=3) 
      &           VOLNAME(I,ICFD),VOLHeat(I,ICFD),IDCasgn(I,ICFD)
@@ -662,8 +662,8 @@ C Text feedback.
         else
           call edisp(itu,'A CFD domain has been included in the model.')
         endif
-        ilen=max(1,lnblnk(TITLE(ICFD)))
-        write(outs,'(a,a)')'Description is: ',TITLE(ICFD)(1:ilen)
+        iln=max(1,lnblnk(TITLE(ICFD)))
+        write(outs,'(a,a)')'Description is: ',TITLE(ICFD)(1:iln)
         call edisp(itu,outs)
       endif
 
@@ -1999,7 +1999,7 @@ C and constant pressure (type 1) type nodes.
 
 C Get CFD opening number as integer
       IER=0
-      CALL INTSTR(IV,OPNO,ILEN,IER)
+      CALL INTSTR(IV,OPNO,ILN,IER)
       IF(IER.NE.0)RETURN
 
 C Check if this subroutine was called previously for the same opening
@@ -2007,7 +2007,7 @@ C If yes then this subroutine should not run again (because it will make
 C more nodes and connections each time it is run)
       OK=.FALSE.
       DO 1 I=1,NNOD
-        write(CHECKER1,'(2a)')OPNO(1:ILEN),OPENNAM(1:(12-ILEN))
+        write(CHECKER1,'(2a)')OPNO(1:ILN),OPENNAM(1:(12-ILN))
         IF(NDNAM(I).EQ.CHECKER1)OK=.TRUE.
  1    CONTINUE
       IF(OK)GOTO 2
@@ -2047,7 +2047,7 @@ C ICNRMV = list of connections to remove when CFD active.
 C A new node must be created to represent the control volumes of the 
 C opening
       NNOD=NNOD+1
-      NDNAM(NNOD)=OPNO(1:ILEN)//OPENNAM(1:(12-ILEN))
+      NDNAM(NNOD)=OPNO(1:ILN)//OPENNAM(1:(12-ILN))
       NDFLD(NNOD)=1
       NDTYP(NNOD)=1
       HNOD(NNOD)=HNOD(IND)

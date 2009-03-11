@@ -48,7 +48,6 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       common/pophelp/h(60)
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)

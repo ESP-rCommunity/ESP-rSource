@@ -606,7 +606,7 @@ C              write(6,*)'number of data attributes ',iatrdom(id)
 
 C If dtagatr(id,ii,1) is location then datrib(id,ii,1) is delta
                   if(dtagatr(id,ii,1)(1:8).eq.'location')then
-                    call relstr(delta,vnpstr,ilen,iflag)
+                    call relstr(delta,vnpstr,ilena,iflag)
                     write(ddatrib(nicnn,ii,1),'(a)') vnpstr
                   else
                     ddatrib(NICNN,ii,1)=datrib(id,ii,1)

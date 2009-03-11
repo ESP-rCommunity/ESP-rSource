@@ -64,7 +64,6 @@ C geometry.h provides commons G0 and G2.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/user/browse
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
