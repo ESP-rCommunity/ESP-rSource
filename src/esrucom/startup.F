@@ -2178,7 +2178,7 @@ C  to be passed to e2r from the invocation line.
       
       integer lnblnk  ! function definition
 
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
 
 C Application name
       common/APPNAME/cAppName

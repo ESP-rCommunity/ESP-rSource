@@ -265,7 +265,6 @@ C If IVAL is outwith range for failure then set to default.
 
 C Clear string buffers and instantiate 'ask'
    20 WORD=' '
-      ask ='        '
       WRITE(ask,'(I5)',iostat=ios,err=1)IVAL
 
 C Remember value passed in in case of a cancel.
@@ -495,8 +494,6 @@ C    ...
       CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
       LOGICAL OK,close,DOK
 
-      IER=0
-
 C If RVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.RVAL.LT.RMIN)RVAL=DEFLT
       if(MAXACT.EQ.'F'.and.RVAL.GT.RMAX)RVAL=DEFLT
@@ -506,7 +503,6 @@ C instantiated on the Fortran side before the call).
       CALL ECLOSE(RVAL,0.00,0.000001,CLOSE)
       if(close)RVAL=0.0
    20 WORD=' '
-      ask='           '
       if(abs(rval).gt.1.E+6)then
         WRITE(ask,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
       elseif(abs(rval).le.1.E+6.and.rval.gt.1.E+4)then
@@ -1161,8 +1157,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
       LOGICAL OK,DOK
 
-   20 IER=0
-      WORD=' '
+   20 WORD=' '
       last=max(1,lnblnk(STRVAL))
       LASTS=STRVAL(1:last)
       if (last.gt.6) then
@@ -1340,9 +1335,10 @@ C DSTR is a string to use as a default.
      &   NHELP)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
+C      common/pophelp/h(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER H*72,t72*72,t72a*72,t72b*72,t72c*72
+C      character H*72
+      character t72*72,t72a*72,t72b*72,t72c*72
       LOGICAL next
 
 C Find breakpoints near 72 144 216 and 248 characters.
@@ -1358,12 +1354,10 @@ C Create working strings for each section of text. Either as blanks
 C in the case of a short initial string or in lengths of ~72 char.
 C Remember the lengths in lt72 lt72a etc. in case user edits only
 C a portion of the text block.
-      t72=' '
       t72a=' '
       t72b=' '
       t72c=' '
       write(t72,'(a)') STRVAL(1:ip72)
-      lt72=max(1,lnblnk(t72))
       if(ip144.gt.ip72)write(t72a,'(a)') STRVAL(ip72+1:ip144)
       lt72a=max(1,lnblnk(t72a))
       if(ip216.gt.ip144)write(t72b,'(a)') STRVAL(ip144+1:ip216)
@@ -2051,8 +2045,8 @@ C will be truncated at the width ISTRW.
      &                ISTRW,NSTALT,STALT,ERMSG,IER,NHELP)
 
 C For page control of the menus.
-      integer CREATE,PREV,NEXT,EDIT
-      PARAMETER (CREATE=1,PREV=3,NEXT=6,EDIT=20)
+      integer CREATE,EDIT
+      PARAMETER (CREATE=1,EDIT=20)
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -2086,15 +2080,13 @@ C If paged menu include another control line (blank for readability).
       IALLOW=INPICK
 
 C Clear IVALS and INPICK.
-      IER=0
       INPICK=0
       DO 40 I=1,NSTALT
         IVALS(I)=0
    40 CONTINUE
 
 C Initial menu entry setup.
-   92 IER=0
-      IVERT=-3
+   92 IVERT=-3
 
 C Generate text for title.
     3 lne=max(1,LNBLNK(ERMSG))
@@ -2213,17 +2205,13 @@ C Within the header so skip request.
 
 C Produce help text for the menu.
         IF(NHELP.GT.0.AND.NHELP.LT.60)then
-C          WRITE(H(NHELP+1),65)
           CALL PHELPD('user pick string',NHELP,'-',0,0,IER)
         ELSEIF(NHELP.EQ.60)then
           CALL PHELPD('user pick string',NHELP,'-',0,0,IER)
         ELSEIF(NHELP.EQ.0)then
           WRITE(H(1),'(A,A)')'No help available for ',ERMSG
-C          WRITE(H(2),65)
           CALL PHELPD('user pick string',2,'-',0,0,IER)
         ENDIF
-C  65    format(' Type key to select, repeat as',
-C     &         ' required. -Exit to return marked list.')
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
         if(MMOD.EQ.8)then
           IVERT=-1
@@ -2729,8 +2717,6 @@ C of help supplied and then provide the prompt again.
       ENDIF
       RETURN
 
-   1  write(6,*) 'EASKatog: error composing message or prompt.'
-      return
       END
 
 C ************* EASKPER
@@ -2756,15 +2742,15 @@ C returned. They're not referenced when multiyear simulations are disabled
 C ************* EAskPerYear
 C EASKPER: Provides multi-year capable interface to the more general
 C eAskPerGen below.
-      SUBROUTINE eAskPerYear(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,IER)
+      SUBROUTINE eAskPerYear(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,ier)
       CHARACTER*(*) PROMP1
-      integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
+      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
 
       logical bMY_enabled
       parameter ( bMY_enabled = .true. )
 
 C initial values of iBYr iEYr are not need for single-year simulation
-      call eAskPerGen(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,bMY_enabled,
+      call eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,bMY_enabled,
      &                IER)
 
       return
@@ -2776,8 +2762,9 @@ C eAskPerGen: Provides interface to specification of a multiyear period of days.
 C returns IBDOY and IEDOY based on the current settings of IFDAY.
 C iBYr,iEYr are the begining year and ending year of the period.
 C Promp1 gives the context of the request for a period.
-      SUBROUTINE eAskPerGen(PROMP1,IBDOY,IEDOY,iBYr,iEYr,IFDAY,
+      SUBROUTINE eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,
      &                      bMY_enabled,IER)
+      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
       common/pophelp/h
       CHARACTER*(*) PROMP1
       CHARACTER*72 h(60)
@@ -2803,7 +2790,7 @@ C IFDAY describes how the date will be formatted:
 C   IFDAY = 0 -> DDD (1->365)
 C   IFDAY = 1 -> DD MM (1->31,1->12)
 
-        IF(IFDAY.EQ.0)THEN
+        IF(ifday.EQ.0)THEN
 C Day of year to be provided
 
           if ( .not. bMY_enabled ) then
@@ -2811,14 +2798,14 @@ C Single year version
             H(1)='Period  must be within a calendar year.'
 
 C Get start & end day
-            write(HOLD,'(I4,I4)')IBDOY,IEDOY
+            write(HOLD,'(I4,I4)')ibdoy,iedoy
             CALL EASKS(HOLD,PROMP1,' Start and end day of year?',16,
      &      ' 1  1 ','start & end day of year',IER,1)
 
-            CALL EGETWI(HOLD,K,IBDOY,1,365,'F','start doy',IER)
+            CALL EGETWI(HOLD,K,ibdoy,1,365,'F','start doy',IER)
             if ( ier .ne. 0 ) bDateOK = .false.
 
-            CALL EGETWI(HOLD,K,IEDOY,1,365,'F','end doy',IER)
+            CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
             if ( ier .ne. 0 ) bDateOK = .false.
 
 
@@ -2828,11 +2815,11 @@ C Multi-year version
             H(2)='and end dates.'
 
 C Get start day and year
-            write(HOLD,'(I4,I5)') IBDOY,iBYr
+            write(HOLD,'(I4,I5)') ibdoy,iBYr
             CALL EASKS(HOLD,PROMP1,' Start day and year?',16,
      &      ' 1  2000 ','start day and year',IER,2)
 
-            CALL EGETWI(HOLD,K,IBDOY,1,365,'F','start doy',IER)
+            CALL EGETWI(HOLD,K,ibdoy,1,365,'F','start doy',IER)
             if  ( ier .ne. 0 ) BDateok = .false.
 
             CALL EGETWI(HOLD,K,iBYr,1900,2100,'F','start year',IER)
@@ -2842,11 +2829,11 @@ C Reset string index K
             K=0
 
 C Get end day and year
-            write(HOLD,'(I4,I5)') IEDOY,iEYr
+            write(HOLD,'(I4,I5)') iedoy,iEYr
             CALL EASKS(HOLD,PROMP1,' End day and year?',16,
      &      ' 365 2000 ','end day and year',IER,2)
 
-            CALL EGETWI(HOLD,K,IEDOY,1,365,'F','end doy',IER)
+            CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
             if  ( ier .ne. 0 ) BDateok = .false.
 
             CALL EGETWI(HOLD,K,iEYr,1900,2100,'F','end year',IER)
@@ -2854,12 +2841,12 @@ C Get end day and year
 
           endif !<- matches if ( .not. bMY_enabled )...
 
-        ELSEIF ( IFDAY .eq. 1 .or. IFDAY .eq. 2 ) THEN
+        ELSEIF ( ifday .eq. 1 .or. ifday .eq. 2 ) THEN
 
 C Day & month or day, month & year to be provided
 C Start date: Convert to dd mm format:
 
-          CALL EDAYR(IBDOY,IBD,IBM)
+          CALL EDAYR(ibdoy,IBD,IBM)
 
           if ( .not. bMY_enabled ) then
 C Get day & month
@@ -2904,37 +2891,37 @@ C Convert year string, if necessary
 
           endif
 
-C Check range, then convert to IBDOY.
+C Check range, then convert to ibdoy.
           if ( bDateOK ) CALL EDAYCH(IBD,IBM,ier)
 
           if ( ier .eq. 1 ) bDateOK = .false.
 
-          if ( bDateOK ) CALL EDAY(IBD,IBM,IBDOY)
+          if ( bDateOK ) CALL EDAY(IBD,IBM,ibdoy)
 
 C Only ask for end date if start-date successfully defined
           if ( bDateOK ) then
 
 C End date, set at least equal to the beginning day.
-            if ( .not. bMY_enabled .and. IEDOY.le.IBDOY ) then
-              IEBODY = IBDOY + 1
+            if ( .not. bMY_enabled .and. iedoy.le.ibdoy ) then
+              iedoy = ibdoy + 1
             elseif ( bMY_enabled ) then
 
 C Convert end-date into EDAYR friendly format and
 C check that end date is not before start-date.
-              iEDOY = iEDoy - ( iEYr - iBYr ) * 365
-              if ( ( iEYr .eq. iBYr .and. IEDOY .le. IBDOY ) .or.
+              iedoy = iedoy - ( iEYr - iBYr ) * 365
+              if ( ( iEYr .eq. iBYr .and. iedoy .le. ibdoy ) .or.
      &             ( iEYr .lt. iBYr ) ) then
-                IEDOY=IBDOY+1
+                iedoy=ibdoy+1
                 iEyr=iBYr
-                if (iEDOY .gt. 365 ) then
-                  iEDOY = 1
+                if (iedoy .gt. 365 ) then
+                  iedoy = 1
                   iEYr = iEyr + 1
                 endif
               endif
             endif ! <- matches ' elseif (bMY_enabled)...
 
 C Convert end-day to day-month format
-            CALL EDAYR(IEDOY,IED,IEM)
+            CALL EDAYR(iedoy,IED,IEM)
 
             if ( .not. bMY_enabled ) then
               write(HOLD,'(I2,A,I2)') IED,' ',IEM
@@ -2977,15 +2964,15 @@ C Convert year string, if necessary
 
             endif
 
-C Check range, then convert to IEDOY.
+C Check range, then convert to iedoy.
             if ( bDateOK )  CALL EDAYCH(IED,IEM, ier )
 
             if ( ier .ne. 0 ) bDateOK = .false.
 
-            if ( bDateOK ) CALL EDAY(IED,IEM,IEDOY)
+            if ( bDateOK ) CALL EDAY(IED,IEM,iedoy)
 
-C For multi-year simulations, convert IEDOY:
-            IEDOY = IEDOY + ( iEYr - iBYr ) * 365
+C For multi-year simulations, convert iedoy:
+            iedoy = iedoy + ( iEYr - iBYr ) * 365
 
           endif
         endif
@@ -3040,7 +3027,7 @@ C Note: mingw compilers require fstring to be declaired length (not *(*).
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*(*) path,filen,fstring
 C      character fstring*72
-      character fs*1,fs1*1
+      character fs*1
       logical unixok
       integer ilbfstr  ! last actual char in fstring
       integer ipos     ! the leftward moving character position
@@ -3145,8 +3132,9 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       LOGICAL XST,OK,concat,DOK
       CHARACTER*(*) SFILE
-      CHARACTER outs*144,LFIL*72,h*72
-      character tfile*144,longtfile*144
+C      character outs*144
+      CHARACTER LFIL*72,h*72
+      character longtfile*144
 
       LFIL=' '
       longtfile=' '
@@ -3157,12 +3145,18 @@ C      call edisp(iuout,outs)
 
 C Add path to file if required then get length of file name.
       XST=.false.
-      IER=-301
-      if(SFILE(1:2).eq.'  ')return
-      if(SFILE(1:4).eq.'UNKN')return
-      if(SFILE(1:4).eq.'unkn')return
+      if(SFILE(1:2).eq.'  ')then
+        IER=-301
+        return
+      elseif(SFILE(1:4).eq.'UNKN')then
+        IER=-301
+        return
+      elseif(SFILE(1:4).eq.'unkn')then
+        IER=-301
+        return
+      endif
+      
       call addpath(SFILE,longtfile,concat)
-      IER=0
 
  10   ltf=max(1,LNBLNK(longtfile))
       IF(IUN.NE.0)CALL ERPFREE(IUN,ISTAT)
@@ -3254,7 +3248,6 @@ C Close the initial file before asking the user for new file.
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
       ELSE
-C        CALL USRMSG(' ','Unknown existence flag passed!','W')
         IER=1
         RETURN
       ENDIF
@@ -3288,8 +3281,9 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       LOGICAL XST,OK,concat,DOK
       CHARACTER*(*) SFILE
-      CHARACTER outs*144,LFIL*72,h*72
-      character tfile*144,longtfile*144
+C      character outs*144
+      CHARACTER LFIL*72,h*72
+      character longtfile*144
 
 C Debug.
 C      WRITE(outs,'(A,A)')' EFOPRAN: ',SFILE(1:lnblnk(SFILE))
@@ -3298,12 +3292,18 @@ C      call edisp(iuout,outs)
       LFIL=' '
       longtfile=' '
       XST=.false.
-      IER=-301
-      if(SFILE(1:2).eq.'  ')return
-      if(SFILE(1:4).eq.'UNKN')return
-      if(SFILE(1:4).eq.'unkn')return
+      if(SFILE(1:2).eq.'  ')then
+        IER=-301
+        return
+      elseif(SFILE(1:4).eq.'UNKN')then
+        IER=-301
+        return
+      elseif(SFILE(1:4).eq.'unkn')then
+        IER=-301
+        return
+      endif
+
       call addpath(SFILE,longtfile,concat)
-      IER=0
 
 C Length of file.
   10  ltf=max(1,LNBLNK(longtfile))
@@ -3669,8 +3669,8 @@ C IST    : is the data array index at the beginning of the menu.
       SUBROUTINE EKPAGE(IPACT)
 
 C For page control of the menus.
-      integer CREATE,PREV,NEXT,EDIT
-      PARAMETER (CREATE=1,PREV=3,NEXT=6,EDIT=20)
+      integer CREATE,PREV,NEXT
+      PARAMETER (CREATE=1,PREV=3,NEXT=6)
       COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -4164,7 +4164,9 @@ C Generate menu depending on terminal.
 
 C Bitmapped screen :  do calls for raster menu, 0,0 are passed
 C to define std upper right position, IRPX,IRPY not used.
-        CALL EWMENU(NAME,ITEMS,NITMS,0,0,IRPX,IRPY,INO)
+        irpx=0
+        irpy=0
+        CALL EWMENU(NAME,ITEMS,NITMS,0,0,irpx,irpy,INO)
         return
       else
         IF(INO.GE.-1)GO TO 20
@@ -4277,9 +4279,15 @@ C Append a null terminator to the title string if possible.
       irpxe=irpx
       irpye=irpy
       call evwmenu (name,impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp)
+#ifdef OSX
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
+#else
+      ino=int(inoe)  !  cast back from returned parameter to integer
+      irpx=int(irpxe)
+      irpy=int(irpye)
+#endif
       if (ino.lt.0) then
 
 C Overload INO with click position and button.  A nine digit number is
@@ -4318,10 +4326,17 @@ C the C function evwmenu.  Do reverse cast after return from evwmenu.
       impye=impy   
       irpxe=irpx
       irpye=irpy
-      call evwmenu (name,impxe,impye,iw,irpx,irpy,inoe,ipflg,iuresp)
+      call evwmenu (name,impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp)
+#ifdef OSX
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
+#else
+      ino=int(inoe)  !  cast back from returned parameter to integer
+      irpx=int(irpxe)
+      irpy=int(irpye)
+#endif
+
 C Debug
 C      write(6,*) 'VWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
       return
@@ -6203,7 +6218,6 @@ C espriou.h provides currentfile.
       CHARACTER*(*) WORD, STRING, MSG
       CHARACTER ACT*1,A*1,loutstr*248
 
-      IER=0
       WORD=' '
       LS=LEN(STRING)
       LW=LEN(WORD)
@@ -7258,13 +7272,10 @@ C in RSTR where RSTR has no leading blanks.
 
 
       CHARACTER*(*) TSTR,RSTR,MSG
-      character ACT*1,A*1,loutstr*248,outs*124
-
-      IER=0
+      character ACT*1,A*1,loutstr*248
 
 C LS is th maximum length of STRING, L the current position,
 C LR the maximum length of RSTR.
-      ier=0
       RSTR=' '
       LS=LEN(TSTR)
       LR=LEN(RSTR)
@@ -7498,7 +7509,7 @@ C blanks. ISWD is the actual length of the resulting string.
 
       CHARACTER*10 CSTR, FSTR
       character outs*124
-      IFLAG=0
+
       ISWD=0
       fstr = ' '
 
@@ -9329,13 +9340,17 @@ C ITPPSW current view - perspective/plan/south/west
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
+#ifdef OSX
+      integer ivt2,ivt3,ivt4  ! for use with viewtext
+#else
+      integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
+#endif
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C Initial menu entry setup with one line header, 3 control lines.
       redraw=.false.
-      IER=0
       ITPPSW=0
       IUF=IFIL+1
 
@@ -9778,7 +9793,10 @@ C Generate a heading for the view.
           WRITE(ETEXT,'(A,I2,1X,A3,A,A5,A,F6.1,A,F5.1)')
      &      ' View: ',IDO,MTHNAM(IMO),' @ ',DESCRH,
      &      ' Solar azimuth',SAZI,', elevation',SALT
-          CALL viewtext(ETEXT,2,1,IFS)
+          ivt2=2
+          ivt3=1
+          ivt4=IFS
+          CALL viewtext(ETEXT,ivt2,ivt3,ivt4)
           CALL EASKAB(' ','New view point:',
      &        'next hour','exit',IW,0)
           if(IW.eq.1)then
@@ -9941,7 +9959,6 @@ C    SA.VAsq - SB.VA.VB = RHSb
 
 C Check for parallel lines.
 C Calculate some data here for use later.
-      DOT=0.
       VAsq=0.
       VBsq=0.
       VAVB=0.0

@@ -4640,7 +4640,7 @@ C TEST REPLY IS IN MENU
 C++++++++++ EWMENU +++++++++++++++++++++++++++++++++++++++++++++
 C EWMENU: Is the binding to C function for menu dialogue.  It
 C allows the string widths to be variable widths. Uses width of
-C items in call to evwmenu.
+C items passed in call to vwmenu.
       SUBROUTINE EWMENU(name,items,nitms,impx,impy,irpx,irpy,ino)
       character*(*) name, items(*)
       character itypes*40

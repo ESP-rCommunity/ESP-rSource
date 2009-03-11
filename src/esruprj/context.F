@@ -931,7 +931,7 @@ C Position specific pressure coef.
       ELSEIF(INO.EQ.22)THEN
 
 C Temporal definitions.
-        call setuptemporal(ITRC,MODSIT,IER)
+        call setuptemporal(MODSIT,IER)
 C          MODSIT=.true.
 
       ELSEIF(INO.EQ.24)THEN
@@ -1066,7 +1066,6 @@ C model including view and add images (delete not yet working).
       
       integer lnblnk  ! function definition
 
-      COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/CFGV/icfgv
       common/pophelp/h(60)
@@ -1085,7 +1084,7 @@ C Images.
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-      logical MODSIT,browse,XST,unixok
+      logical MODSIT,browse,unixok
 
 C ITEMS is menu for site/context items, ITEMIMG is menu for editing
 C and control of project images.
@@ -1180,7 +1179,7 @@ C Add images from images folder or other location.
      &    'add from standard folder','add from another folder',
      &    'delete','cancel',IOK,4)
         if(iok.eq.1)then
-          if(noimg.ge.MING)then
+          if(noimg.ge.MIMG)then
             call edisp(iuout,'No more images can be associated with')
             call edisp(iuout,'the current model.')
             continue
@@ -1314,7 +1313,7 @@ C ************* setuptemporal
 C Setuptemporal coordinates access to and initial creation of
 C temporal data to be associated with a model.
 
-      SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
+      SUBROUTINE setuptemporal(MODSIT,IER)
 #include "building.h"
 #include "geometry.h"
 #include "tdf2.h"
@@ -1471,8 +1470,7 @@ C and present a different interface depending on file type.
       H(57)=' '
 
 C Begin with high level menu.
-    3 INO=-4
-      IER=0
+    3 IER=0
       IRT=-1
 
       if(itdflg.eq.0)then
@@ -3432,7 +3430,7 @@ C Errors for debug printing.
 C   14 if(IOS.eq.2)then
 C        CALL USRMSG(' No prmission to write array in ',' ','W')
 C      else
-C        CALL USRMSG(' Long arrary write error in ',' ','W')
+C        CALL USRMSG(' Long array write error in ',' ','W')
 C      endif
 C      IER=1
 C      return
