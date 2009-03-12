@@ -9275,6 +9275,7 @@ C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
 #include "espriou.h"
 
       COMMON/FILEP/IFIL
@@ -9317,7 +9318,6 @@ C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK

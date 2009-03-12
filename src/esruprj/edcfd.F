@@ -471,8 +471,8 @@ C No cancels so instanciate variables.
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
       call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(iyend),Y(iyend),Z(iyend),ang)
-      call eclose(ang,90.00,0.1,close)
+     &                       Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
+      call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
      &     'X & Y axes are not orthogonal. Please check and respecify.',
@@ -483,8 +483,8 @@ C Check X and Y.
 
 C Check X and Z.
       call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang)
-      call eclose(ang,90.00,0.1,close)
+     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+      call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
      &     'X & Z axes are not orthogonal. Please check and respecify.',
@@ -495,8 +495,8 @@ C Check X and Z.
 
 C Check Y and Z.
       call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang)
-      call eclose(ang,90.00,0.1,close)
+     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+      call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
      &     'Y & Z axes are not orthogonal. Please check and respecify.',
@@ -515,8 +515,8 @@ C Non orthogonal.
 
 C Check Y and Ze.
         call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &                Z(iorg),X(izende),Y(izende),Z(izende),ang)
-        call eclose(ang,90.00,0.1,close)
+     &                Z(iorg),X(izende),Y(izende),Z(izende),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call usrmsg(' Y & Ze axes are not orthogonal. ',
      &                ' Please check and respecify.','W')
@@ -635,8 +635,8 @@ C No cancels so instanciate variables.
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
         call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &               Z(iorg),X(iyend),Y(iyend),Z(iyend),ang)
-        call eclose(ang,90.00,0.1,close)
+     &               Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' X & Y axes are not orthogonal. Respecify.')
           goto 9
@@ -644,8 +644,8 @@ C Check X and Y.
 
 C Check X and Z.
         call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izend),Y(izend),Z(izend),ang)
-        call eclose(ang,90.00,0.1,close)
+     &               Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' X & Z axes are not orthogonal. Respecify.')
           goto 9
@@ -653,8 +653,8 @@ C Check X and Z.
 
 C Check Y and Z.
         call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izend),Y(izend),Z(izend),ang)
-        call eclose(ang,90.00,0.1,close)
+     &               Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' Y & Z axes are not orthogonal. Respecify.')
           goto 9
@@ -3749,14 +3749,13 @@ C TOPBOT: Define upper and lower curvilinear x-section for use in
 C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND

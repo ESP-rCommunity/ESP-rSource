@@ -505,17 +505,14 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
       SUBROUTINE VGRID3D(zact,gact,izone)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
 #include "cfd.h"
-      PARAMETER  (MPL = 200 )
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
@@ -774,13 +771,11 @@ C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
       SUBROUTINE VSB3D(ISBHL)
 #include "cfd.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
@@ -1029,13 +1024,11 @@ C ********************* VAO3D *********************
 C VAO3D - draws the air openings - highlighting the chosen one.
       SUBROUTINE VAO3D(IOPENHL)
 #include "cfd.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),

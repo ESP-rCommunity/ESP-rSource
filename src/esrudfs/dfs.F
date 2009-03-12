@@ -32,6 +32,7 @@ C if these are 0 then use default values.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -47,7 +48,6 @@ C if these are 0 then use default values.
       common/appw/iappw,iappx,iappy
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 

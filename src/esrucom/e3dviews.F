@@ -40,16 +40,11 @@ C BNDOBJ:  Does range checking on objects to be displayed.
 C-----------------------------------------------------------------------
 C     LENS - initialise viewing parameters
       SUBROUTINE LENS(IER)
+#include "prj3dv.h"
+C prj3dv.h provides common blocks drwmat clip and image
 
 C Viewing transformation matrices TEMAT is:
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
-
-C View frustrum clip flags
-      COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
-
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
       DIMENSION T1MAT(4,4),T2MAT(4,4),R1MAT(4,4)
 
@@ -293,11 +288,8 @@ C     ISTAT =  1 ALL THE POLYGON IS OUTSIDE THE VIEW FRUSTRUM
 C     ISTAT = -1 THE POLYGON STRADDLES THE VIEW FRUSTRUM
 
       SUBROUTINE CLIPFL(NAP,AX,AY,AZ,ISTAT)
-
-      PARAMETER  ( MPL = 200 )
-
-C View frustrum clip flags
-      COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
+#include "prj3dv.h"
+C prj3dv.h provides common block clip.
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL)
       DIMENSION  EQN(4)
@@ -355,9 +347,7 @@ C     ISTAT = -1 THE POLYGON STRADDLES THE VIEW FRUSTRUM
 
       SUBROUTINE CLIPSUR(NAP,AX,AY,AZ,ISTAT)
 #include "building.h"
-
-C View frustrum clip flags.
-      COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
+#include "prj3dv.h"
 
       DIMENSION  AX(MV),AY(MV),AZ(MV),EQN(4)
 
@@ -401,8 +391,8 @@ C SO THE OBJECT MUST BE CLIPPED TO THIS PLANE
 
 C-------- PLNBX --------------------------------------------------------
       SUBROUTINE  PLNBX(NA,AX,AY,AZ,EQN,IFBOX)
-C                 ------
-C     MPL   =  Max. number of vertices in polygon structure
+
+C MPL =  Max. number of vertices in polygon structure
       PARAMETER  (MPL = 200 )
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),EQN(4)
@@ -477,12 +467,7 @@ C Find equation of plane (as in PLNBX) but for AX(MV),AY(MV,AZ(MV).
 C------- CUTPOL ------------------------------------------------------
 C CUTPOL: cuts a polygon within a viewing frustrum.
       SUBROUTINE  CUTPOL(NA,NAP,IAPNT,AX,AY,AZ,IANXT,ISTAT)
-
-C     MPL   =  Max. number of vertices in polygon structure
-      PARAMETER  (MPL = 200 )
-
-C View frustrum clip flags.
-      COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
+#include "prj3dv.h"
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  EQNP(4),ADST(100)
@@ -565,9 +550,7 @@ C This might result in a extra points and cause IAPNT to be returned
 C as a different index. 
       SUBROUTINE  CUTSUR(NA,NAP,IAPNT,AX,AY,AZ,IANXT,ISTAT)
 #include "building.h"
-
-C View frustrum clip flags.
-      COMMON/CLIP/TPCLIP(3),IFCLIP(6),CLIPLN(6,4)
+#include "prj3dv.h"
 
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  EQNP(4),ADST(MV)
@@ -723,8 +706,7 @@ C SITE2D Returns the 2D viewing coords of the current site extremes
 C found in common block RAY5.
       SUBROUTINE SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
 #include "building.h"
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+#include "prj3dv.h"
 
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
@@ -778,10 +760,9 @@ C BNDOBJ: Does range checking on objects to be displayed.
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
-
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C XMN,YMN,ZMN are the model minimum bounds.
 C XMX,YMX,ZMX are the model maximum bounds.
@@ -1098,7 +1079,7 @@ C SAVEVIEW: Save the current wireframe view information (eye/view points,
 C angle of view and bounds.
       subroutine saveview
 #include "building.h"
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+#include "prj3dv.h"
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGESV/imtsv,OEYEM(3),OVIEWM(3),OHITH,OYON,OANG,OHANG,
      &  OWIDE
@@ -1130,7 +1111,7 @@ C RECOVIEW: Recover wireframe view information (eye/view points,
 C angle of view and bounds.
       subroutine recoview
 #include "building.h"
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+#include "prj3dv.h"
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/IMAGESV/imtsv,OEYEM(3),OVIEWM(3),OHITH,OYON,OANG,OHANG,
      &  OWIDE

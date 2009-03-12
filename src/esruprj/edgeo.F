@@ -4623,6 +4623,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "epara.h"
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -4634,8 +4635,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
       logical withinbox  ! true if point within bounding box.
 
@@ -5060,9 +5059,9 @@ C Angle between two lines.
             iwhich3=IVLST(3)
             call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
-     &        ang)
+     &        ang3)
             write(outs,'(a,3i3,a,f9.4)') ' Angle between verts ',
-     &        iwhich1,iwhich2,iwhich3,' is ',ang
+     &        iwhich1,iwhich2,iwhich3,' is ',ang3
             call edisp(itru,outs)
           endif
           MODIFY=.true.
@@ -5850,6 +5849,7 @@ C Make use of VERINFO to display the current vertex surface connections.
 #include "building.h"
 #include "geometry.h"
 #include "epara.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -5881,8 +5881,6 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/RAY6/LINSTY(MCON)
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -6165,12 +6163,12 @@ C Rotate around a point in the surface (offer user cancel option).
           endif
           H(1)='The rotation is applied with positive'
           H(2)='being anticlockwise. '
-          ANG=0.
-          CALL EASKR(ANG,' ','Rotation (+ = anticlockwise)?',
+          ANGR=0.
+          CALL EASKR(ANGR,' ','Rotation (+ = anticlockwise)?',
      &       -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=XX(IRV)
@@ -6586,7 +6584,7 @@ C Get azimuth and length and height.
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height:',
      &      ' ',36,' 180.0 1.0 1.0  ','azim length height',IER,6)
           K=0
-          CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Azim',IER)
+          CALL EGETWR(HOLDS,K,AANG,0.0,360.0,'W','Azim',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
           CALL EGETWR(HOLDS,K,DDZ,0.0,50.0,'W','width',IER)
 
@@ -6617,7 +6615,7 @@ C Get rotation and length and height.
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
      &      ' ',36,' 180.0  1.0  1.0  ','rotation length height',IER,3)
           K=0
-          CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Rot',IER)
+          CALL EGETWR(HOLDS,K,AANG,0.0,360.0,'W','Rot',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
           CALL EGETWR(HOLDS,K,DDZ,0.0,50.0,'W','width',IER)
 
@@ -6842,16 +6840,16 @@ C Use logic similar to parsemlcdesc to find the optical name.
 C Instanciate the new surface via call addmass with all of the parameters.
           if(IRT.eq.6)then
             call addmass(1,ICOMP,'VS','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.7)then
             call addmass(1,ICOMP,'HS','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.9)then
             call addmass(1,ICOMP,'VM','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.10)then
             call addmass(1,ICOMP,'HM','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           endif
 
 C Track users confirmation of new surface.
@@ -7000,11 +6998,10 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKVERT(INPICK,IVLST,TITLE,PROMPT1,PROMPT2,NHELP,IER)
 #include "building.h"
 #include "epara.h"
+#include "prj3dv.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       DIMENSION  item(36)
       DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2

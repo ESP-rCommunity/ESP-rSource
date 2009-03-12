@@ -29,6 +29,7 @@ C EDCASCTL - edit casual gain control data.
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -84,8 +85,6 @@ C TMC common block:
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       DIMENSION ITMC2DF(30),KSTR(MDTY)
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)

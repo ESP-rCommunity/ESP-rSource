@@ -9666,6 +9666,7 @@ C Get precz common block from geometry.h
 C ************* GDUPDATE
 C GDUPDATE Update the graphical display of the model.
       subroutine GDUPDATE
+#include "prj3dv.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -9688,7 +9689,6 @@ C ITVNO vertex toggle: display = 0, hidden = 1
 C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
       logical MODIFY,MODLEN,MODBND
       DIMENSION MTHNAM(12)
@@ -9803,6 +9803,7 @@ C then it represents the zone which is currently being edited.
       SUBROUTINE EVSET(ITRC,act,IER)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
 #include "espriou.h"
 
       COMMON/FILEP/IFIL
@@ -9836,7 +9837,6 @@ C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK
       logical MODIFY,MODLEN,MODBND

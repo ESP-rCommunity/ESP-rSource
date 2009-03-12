@@ -46,6 +46,7 @@ C << what about including common zndata in this manipulation? >>
       SUBROUTINE ADDSUR(ITRC,ICOMP,IWHICH,ACTION,MODE,ISCOPT,IER)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -72,8 +73,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -116,7 +115,7 @@ C << what about including common zndata in this manipulation? >>
       valx=0.0
       valy=0.0
       valz=0.0
-      ang=0.0
+      angr=0.0
       IOK=0
       IRV=1
 
@@ -713,7 +712,7 @@ C Create string buffer for variables with space at the end.
             H(7)='zero then that transform will have no effect. '
             hold64='                                                  '
             write(hold64,'(f9.4,2x,3f9.3,i4,f9.3,a)') vdis,valx,valy,
-     &        valz,irv,ang,'   '
+     &        valz,irv,angr,'   '
  552        CALL EASKS(hold64,
      &'Distance along normal, X Y & Z offsets, vertex, rotation angle:',
      &' ',64,' 0.0  0.0  0.0 0. 1  0.0  ','combined transforms',IER,7)
@@ -725,7 +724,7 @@ C Create string buffer for variables with space at the end.
             CALL EGETWR(HOLD64,K,VALY,-50.0,50.0,'W','Y off',IER)
             CALL EGETWR(HOLD64,K,VALZ,-50.0,50.0,'W','Z off',IER)
             CALL EGETWI(HOLD64,K,irv,0,nver1,'W','vertex index',IER)
-            CALL EGETWR(HOLD64,K,ang,-359.0,359.0,'W','rotation ang',
+            CALL EGETWR(HOLD64,K,angr,-359.0,359.0,'W','rotation ang',
      &        IER)
           endif
 
@@ -743,9 +742,9 @@ C Do each of the transforms in order.
             Z1(I)=Z1(I)+VALZ
  553      continue
 
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=X1(IRV)
@@ -812,13 +811,13 @@ C Rotate around a point in the surface.
             if(ieri.eq.-3)then
               goto 166
             endif
-            ANG=0.
-            CALL EASKR(ANG,' ',' Rotation (deg + = anticlockwise) ? ',
+            ANGR=0.
+            CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
      &       -359.0,'W',359.0,'W',0.0,'rotation',IER,8)
           endif
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=X1(IRV)
@@ -1199,7 +1198,7 @@ C   horizontal mass 'HM' or horizontal single 'HS'.
 C MODE (1 char) passed `s` is silent (no graphic feedback) or 'g' graphic
 C   feedback.
 C VALOX,VALOY,VALOZ is the XYZ of the origin of the surface.
-C ANG is the azimuth in degrees.
+C AANG is the azimuth in degrees.
 C DDX, DDZ length and width of rectangle.
 C sn (12 char) surface name
 C constr (12 char) the name of the construction for then new surface(s).
@@ -1207,13 +1206,13 @@ C opt (12 char) the name of the optical set for the new surface(s).
 C IER is zero then no issue during creation, IER is -1 then user asked
 C   for new position, IER is -3 user aborted action.
       SUBROUTINE ADDMASS(ITRC,ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
-     &   ANG,DDX,DDZ,SN,constr,OPT,IER)
+     &   AANG,DDX,DDZ,SN,constr,OPT,IER)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
-      PARAMETER  (MPL = 200 )
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1227,8 +1226,6 @@ C   for new position, IER is -3 user aborted action.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       character constr*12,act*2,mode*1,OPT*12,h*72
       character outs*124,SN*12
@@ -1260,8 +1257,8 @@ C Set PI and RAD.
 
       if(act(1:1).eq.'V'.or.act(1:1).eq.'v')then
 
-C Set second coord along DDX metres at ANG-90.
-        RYAZI = (ANG-90.0)*RAD
+C Set second coord along DDX metres at AANG-90.
+        RYAZI = (AANG-90.0)*RAD
         RSALT = 0.00
         z3 = DDX*SIN(RSALT)
         XYDIS = DDX*COS(RSALT)
@@ -1297,8 +1294,8 @@ C Z adjusted.
         ZZW(4) = VALOZ
 
 C Now rotate around the first coordinate.
-        if(ANG.LT.-.01.OR.ANG.GT..01)then
-          A=-ANG*PI/180.
+        if(AANG.LT.-.01.OR.AANG.GT..01)then
+          A=-AANG*PI/180.
           CA=COS(A)
           SA=SIN(A)
           XX1=XXW(1)
@@ -1881,12 +1878,11 @@ C << could this be done with G6 and with ??
 
       SUBROUTINE CKVERT(ivb,ICOMP,bounded,iub,inve,IER)
 #include "building.h"
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV),ITV2(MS*MV),irelsur(MS*MV)
@@ -2021,12 +2017,9 @@ C << written at the end of the process. This has yet to be done.
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
 #include "geometry.h"
-      PARAMETER  (MPL = 200 )
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
-
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN

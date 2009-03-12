@@ -36,6 +36,7 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE ADJVIEW(ITRC,IER)
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -48,7 +49,6 @@ C then it represents the zone which is currently being edited.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       LOGICAL MODIFY,MODLEN,MODBND
@@ -120,7 +120,7 @@ C ********* chgazi
 C CHGAZI is called from C code in wwlib.c with an increment or decrement
 C to the viewing azimuth.  If not needed then provide a dummy. 
       subroutine chgazi(icazi)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+#include "prj3dv.h"
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
       PI = 4.0 * ATAN(1.0)
@@ -156,7 +156,7 @@ C ********* chgelev
 C CHGELEV is called from C code in wwlib.c with an increment or decrement
 C to the viewing elevation.  If not needed then provide a dummy. 
       subroutine chgelev(icelev)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+#include "prj3dv.h"
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
 
@@ -255,6 +255,7 @@ C clips the image and draws it.
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -266,8 +267,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -434,12 +433,11 @@ C into common block BG1 and then converts into viewing coords,
 C clips the image and draws it.
       SUBROUTINE DRWSEN(ier)
 #include "building.h"
+#include "prj3dv.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
@@ -548,11 +546,9 @@ C Complete the polygon.
 C ****** Routine to draw ground topology.
       SUBROUTINE EGRNDR(IER)
 #include "building.h"
-      PARAMETER  (MPL = 200 )
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -707,10 +703,9 @@ C density GD, and dot density LD within
 C the viewport with the current scaling factors etc.
       SUBROUTINE DSGRID(RH,GD,LD,IER)
 #include "building.h"
+#include "prj3dv.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       DIMENSION COG1(3),COG2(3),COG3(3)
       logical close,greyok

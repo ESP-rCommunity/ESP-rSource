@@ -28,11 +28,10 @@ C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
-
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

@@ -28,10 +28,9 @@ C Returns the corner points of the arrow as pixel locations in 'ipoints'.
 C IDRAW=0 don't draw; =1 shaft single line thickness; =2 shaft double line thickness.
 
       SUBROUTINE ARROW(P,Q,al,aw,ipoints,act,IDRAW)
+#include "prj3dv.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       DIMENSION P(3),Q(3),SNORM(3),A(3),PLANE(4),CORNER(4,3)
       DIMENSION VEC(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
       character act*1

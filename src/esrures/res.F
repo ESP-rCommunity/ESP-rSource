@@ -59,6 +59,7 @@ C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -70,7 +71,6 @@ C default file names for databases
       common/appw/iappw,iappx,iappy
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT

@@ -1187,12 +1187,11 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWEDG(IEG)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D25/NDXE(MEZ),DXE(MEZ,MZE)
@@ -2212,12 +2211,11 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWCRN(ICR)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)

@@ -53,6 +53,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+#include "prj3dv.h"
+C prj3dv.h provides common blocks drwmat clip and image
       
       integer lnblnk  ! function definition
 
@@ -76,7 +78,6 @@ C Help
       COMMON/pophelp/h(60)
 
 C View point, view direction, ...
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
 C Scale the project

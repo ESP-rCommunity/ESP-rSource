@@ -33,7 +33,7 @@ C converts into viewing coords, clips the image and draws it.
       SUBROUTINE DRAWESP(ITRC,ier)
 #include "building.h"
 #include "geometry.h"
-      PARAMETER  (MPL = 200 )
+#include "prj3dv.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -58,8 +58,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates of each vertice in zone.

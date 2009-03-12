@@ -33,12 +33,12 @@ C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE CADJVIEW(ITRC,IER)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       LOGICAL MODIFY,MODLEN,MODBND
       integer numberofzones ! to pass to updwire rather than ncomp
 
@@ -91,7 +91,7 @@ C converts into viewing coords, clips the image and draws it.
       SUBROUTINE CDRAWESP(ITRC,ier)
 #include "building.h"
 #include "geometry.h"
-      PARAMETER  (MPL = 200 )
+#include "prj3dv.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -115,8 +115,6 @@ C converts into viewing coords, clips the image and draws it.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates of each vertice in zone.

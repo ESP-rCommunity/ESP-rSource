@@ -89,6 +89,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
+#include "prj3dv.h"
 
 C IEEE callback (Solaris)
 #ifdef SUN
@@ -106,7 +107,6 @@ C IEEE callback (Solaris)
       common/filep/ifil
       common/tc/itc,icnt
       common/spad/mmod,limit,limtty
-      common/image/imt,eyem(3),viewm(3),hith,yon,ang,hang,wide
       common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh

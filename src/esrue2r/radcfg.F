@@ -1120,6 +1120,7 @@ C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -1132,8 +1133,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
       common/radgrid/LDFGRID
 

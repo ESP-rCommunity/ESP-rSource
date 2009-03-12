@@ -27,6 +27,7 @@ C viewpoint is changed.
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+#include "prj3dv.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -41,7 +42,6 @@ C geometry.h provides commons G0 and G2.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
       logical OK,DOK,MODSIT,browse,defview,unixok
       logical closea,closeb,closec,closed,concat

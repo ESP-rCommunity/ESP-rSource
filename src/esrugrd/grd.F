@@ -37,6 +37,7 @@ C << file names can be in place.
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+#include "prj3dv.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -61,7 +62,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C Path to problem
       common/rpath/path

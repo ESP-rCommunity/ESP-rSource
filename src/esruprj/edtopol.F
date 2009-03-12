@@ -770,6 +770,7 @@ C the user to confirm before writing to temporary configuration file.
      &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 #include "building.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -778,7 +779,6 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND

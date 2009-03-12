@@ -1629,8 +1629,8 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
      fprintf(wwc,"%ld %ld %f %f %f %f %f %f %f %f %f \n",
 	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd);
     }
-    fprintf(stderr,"axiscale %ld %ld %f %f %f %f %f %f %f %f %f \n",
-	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd); /* */
+/*    fprintf(stderr,"axiscale %ld %ld %f %f %f %f %f %f %f %f %f \n",
+	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd);  */
   return;
 } /* axscale_ */
 

@@ -50,11 +50,11 @@ C default file names for databases
 C espriou.h provides currentfile, defdbfl exemfl.
 #include "control.h"
 #include "net_flow.h"
+#include "prj3dv.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
 
-      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
