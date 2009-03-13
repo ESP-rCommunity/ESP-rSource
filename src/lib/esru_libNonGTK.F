@@ -27,7 +27,7 @@ C           checking as passed parameters.
 C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
 C  EASKF:   Ask user for a file name with prompt, error messages & help.
 C  EASKS:   Ask user for a string with prompt, error messages & help.
-C EASKS248: Edit a long (248 char) string in sections.
+C  EASKS248: Edit a long (248 char) string in sections.
 C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
 C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
 C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
@@ -818,7 +818,6 @@ C In text mode, remind user of current value.
 
 C A 'D' or 'd' detected, set to default value.
             call edisp(iuout,DSTR)
-            call edisp(iuout,' ')
             RVAL=DEFLT
             RETURN
           ELSEIF(A.EQ.'H'.OR.A.EQ.'h'.OR.A.EQ.'?')THEN
@@ -2010,8 +2009,6 @@ C Must have input a character string.
       END
 
 
-
-
 C ************* EPICKS
 c EPICKS is a facility allowing a number of selections to be made
 C from an array of strings passed into the routine. EPICKS
@@ -2166,7 +2163,7 @@ C If a long list include page facility text.
   115     FORMAT   ('0 Page part: ',I2,' of ',I2)
         ELSEIF(ISTRW.GT.28)THEN
           WRITE(LISTA(M+2),116)IPM,MPM
-  116     FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' ---')
+  116     FORMAT   ('0 Page --- part: ',I2,' of ',I2,' ---')
         ENDIF
       ENDIF
       if(MMOD.EQ.8)then
@@ -3104,11 +3101,9 @@ C          call edisp(iuout,'No folder separator found.')
      &    'fdroot: error composing path or file from string.')
         call edisp(iuout,fstring)
       endif
-      call edisp(iuout,' ')
       return
       end
       
-
 C ******************** EFOPSEQ
 C EFOPSEQ: Open a sequential ASCII file and return appropriate
 C messages and error status.
@@ -3152,7 +3147,7 @@ C Add path to file if required then get length of file name.
         IER=-301
         return
       endif
-      
+
       call addpath(SFILE,longtfile,concat)
 
  10   ltf=max(1,LNBLNK(longtfile))
@@ -3618,7 +3613,7 @@ C Dos.
       SUBROUTINE c2fstr(cstr,fstr)
       CHARACTER*(*) cstr,fstr
 
-      fstr = ' '
+      fstr = ' '    ! clear the return string
       K=0
       DO 99 I=1,LEN(cstr)
         IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
@@ -5267,7 +5262,6 @@ C Set folder separator (fs) to \ or / as required.
       endif
       if(OTHER(1:1).ne.'-')then
         write(tut_path,'(4a)')instpath(1:ln),fs,'tutorial',fs
-C        tut_path='/usr/esru/tutorial/'
         write(LTUT,'(A,A)') tut_path(1:lnblnk(tut_path)),'esp-r.tut'
         iftut=IFIL-1
         if(iftut.NE.0)CALL ERPFREE(iftut,ISTAT)
@@ -6357,7 +6351,11 @@ C comma is found.
         CALL EDISP(iuout,STRING)
       endif
       GOTO 100
-   1  write(6,*) 'EGETP: error writing warning re: ',STRING
+   1  if(IOS.eq.2)then
+        write(6,*) 'EGETP: permission error writing warning re: ',STRING
+      else
+        write(6,*) 'EGETP: error writing warning re: ',STRING
+      endif
 
       END
 
@@ -7071,7 +7069,6 @@ C word, otherwise read another line from the file.
 
       end
 
-
 C *************** EGETAGWSA
 C EGETAGWSA recovers (ISVA) words into string array (SVA) from a string
 C TSTR (from position K) and if TSTR does not hold all of the array then
@@ -7256,14 +7253,12 @@ C word, otherwise read another line from the file.
 
       end
 
-
 C ***************** EGETRM
 C EGETRM returns the remainder of a text string TSTR after position k
 C in RSTR where RSTR has no leading blanks.
       SUBROUTINE EGETRM(TSTR,K,RSTR,ACT,MSG,IER)
 #include "espriou.h"
       common/OUTIN/IUOUT,IUIN
-
 
       CHARACTER*(*) TSTR,RSTR,MSG
       character ACT*1,A*1,loutstr*248
