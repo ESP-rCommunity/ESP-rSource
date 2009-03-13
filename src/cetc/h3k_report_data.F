@@ -520,6 +520,8 @@ C----------------------------------------------------------------------
       real fSurface_radiant_gain   ! Function returining the
                                    ! radiant gain on a surface (W)
 
+      real PSat01 ! Function returns the saturation vapour pressure at temperature T
+      
 C----------------------------------------------------------------------
 C      Root Names
 C----------------------------------------------------------------------
@@ -1186,13 +1188,6 @@ C .... ZONE AIR MOISTURE CONTENT
      &         'units', '(kg/kg_dry-air)',
      &         'Zone air moisture content' )
      
-C .... ZONE AIR NODE PARTIAL VAPOUR PRESSURE
-      call add_to_xml_reporting (
-     &         Pfair(iZone),
-     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/pvap',
-     &         'units', '(Pa)',
-     &         'Zone air node partial vapour pressure' )
-
 C .... ZONE AIR NODE RELATIVE HUMIDITY    
       ZRH=PCRH2(TFA(iZone),GFA(iZone),PATMOS)
       call add_to_xml_reporting (
@@ -1200,6 +1195,14 @@ C .... ZONE AIR NODE RELATIVE HUMIDITY
      &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/rh',
      &         'units', '(%)',
      &         'Zone air node relative humidity' )
+
+C .... ZONE AIR NODE PARTIAL VAPOUR PRESSURE
+      call add_to_xml_reporting (
+C     &         Pfair(iZone),
+     &         ZRH/100.0*Psat01(TFA(iZone)),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/pvap',
+     &         'units', '(Pa)',
+     &         'Zone air node partial vapour pressure' )
 
 C.....Zone air saturation temperature
       call add_to_xml_reporting (
@@ -2045,6 +2048,11 @@ C DF Wind direction - future time row
 C HP Relative humidity - present time row
 C HF relative humidity - future time row
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+
+C .... should be climate data:
+      COMMON/atpres/PATMOS
+      real PATMOS  ! atmospheric pressure - a constant, sadly
+
 C.....Zone averaging
       common/avrage/idaver      ! Flag for timestep averaging
       integer idaver
@@ -2068,8 +2076,10 @@ C.....DECLARATIONS for H3Kreporting object
 C----------------------------------------------------------------------     
 C     References
 C----------------------------------------------------------------------
-      REAL HUMR      ! Function returning the humidity ratio
+      REAL HUMR     ! Function returning the humidity ratio
+      REAL HUMRT1   ! Function returning the humidity ratio kg/kg (esrucom/psychro.F)
       REAL DEWPT    ! Function returning the saturation temperature
+      real PSat01   ! Function returns the saturation vapour pressure at temperature T (esrubld/mstmsc.F)
 
 C.....The following code is used to transport data to
 C.....the H3K reporting object.
@@ -2111,6 +2121,19 @@ C.....Relative humidity
      &         'units', '(%)',
      &         'Climate relative humidity' )
 
+C .... Ambient AIR PARTIAL VAPOUR PRESSURE
+      call add_to_xml_reporting (
+     &         HF/100.0*Psat01(TF),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/pvap',
+     &         'units', '(Pa)',
+     &         'Climate partial vapour pressure' )
+
+C .... Ambient AIR MOISTURE CONTENT
+      call add_to_xml_reporting (
+     &         HUMRT1(TF,HF,PATMOS,0),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/moisture',
+     &         'units', '(kg/kg_dry-air)',
+     &         'Climate moisture content' )
 
 C.....WIND VELOCITY
       call add_to_xml_reporting (

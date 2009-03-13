@@ -219,10 +219,10 @@ C default values.  Note that iteration parameter initial
 C values should be set equal to corresponding plant
 C iteration parameters MAXITP, PERREL, and PERMFL.
       MAXITF=100
-      FERREL=.01
-      FERMFL=.0005
-      PMAX=50.
-      STEFFR=-0.5
+      FERREL=.001
+      FERMFL=5.0E-10
+      PMAX=5.
+      STEFFR=-0.25
       IPSMOD=1
       MSLVTP=2
       MFTRAC=-1
