@@ -888,7 +888,7 @@ C debug.
       elseif(WORD(1:5).eq.'*sbem')then
 
 C SBEM database file.
-        CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
+        CALL EGETRM(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
         ISBEM=1
         IRNCMD=1
 

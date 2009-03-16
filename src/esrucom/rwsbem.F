@@ -58,7 +58,7 @@ C Initialise counters
 C Read SBEM database. Assign from default name. Return with
 C ier set to 1 if the standard file cannot be opened.
 C << to be changed >>
-      LSBEM=DSBEM
+      write(LSBEM,'(a)') DSBEM(1:lnblnk(DSBEM))
       IUF=IFIL+1
       CALL EFOPSEQ(IUF,LSBEM,1,IER)
       if(IER.ne.0)then
