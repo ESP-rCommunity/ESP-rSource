@@ -531,6 +531,12 @@ C reflect whether the standard database folder is being used.
      &      LPCDB(1:lnblnk(LPCDB))
       endif
 
+C UK SBEM database.
+      IF(ISBEM.EQ.1)THEN
+        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
+     &    DSBEM(1:lnblnk(DSBEM))
+      ENDIF
+
 C HVAC
       IF (ihvacflag.EQ.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*hvac  ',
@@ -672,18 +678,23 @@ C Write alternative definition of weekends if not default.
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 
-C If SBEM compliance checking is active write name and path of SBEM db
-
-C << the sbem database should be with the other databases >>
-C << also move to using LSBEM for file name >>
-
+C If SBEM compliance checking is active write name of NCM file.
       IF(ISBEM.EQ.1)THEN
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',DSBEM
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',LASBEM
+        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',
+     &    LASBEM(1:lnblnk(LASBEM))
       ENDIF
       IF(INOTI.EQ.1)THEN
         WRITE(OUTS,'(2A)')'*not # UK NCM notional model (10% thermal',
      &  ' bridges included in all exterior surfaces)'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ELSEIF(INOTI.EQ.2)THEN
+        WRITE(OUTS,'(A)')'*ref # UK NCM reference model'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ELSEIF(INOTI.EQ.3)THEN
+        WRITE(OUTS,'(A)')'*typ # UK NCM typical model'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ELSEIF(INOTI.EQ.4)THEN
+        WRITE(OUTS,'(A)')'*str # UK NCM stripped model'
         WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
       ENDIF
 

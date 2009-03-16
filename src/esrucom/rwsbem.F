@@ -27,15 +27,8 @@ C ********************* sbempr
 C Subroutine SBEMPR reads SBEM database
       SUBROUTINE SBEMPR(IER)
 #include "esprdbfile.h"
-C esprdbfile.h supplies the following:
-C LAPRES,IAPRES (for window pressure databases)
-C LOPTDB,IOPTDB (for optical database)
-C LPCDB/IPCDB (for plant template database)
-C LPRFDB,IPRODB (for event profile database)
-C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-C ICLIM,LCLIM (for climate file)
-C LSBEM (SBEM database)
-C default file names for databases
+C esprdbfile.h supplies LSBEM (SBEM database)
+C and default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
@@ -62,11 +55,17 @@ C Initialise counters
       IHSYS=0
       IBRUK=0
 
-C Read SBEM database. Assign from default name.
+C Read SBEM database. Assign from default name. Return with
+C ier set to 1 if the standard file cannot be opened.
 C << to be changed >>
       LSBEM=DSBEM
       IUF=IFIL+1
       CALL EFOPSEQ(IUF,LSBEM,1,IER)
+      if(IER.ne.0)then
+        write(6,*) 'error while opening ',LSBEM
+        ier=1
+        return
+      endif
       write(currentfile,'(a)') LSBEM(1:lnblnk(LSBEM))
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
       IF(OUTSTR(1:5).NE.'*sbem')then

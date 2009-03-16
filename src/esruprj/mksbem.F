@@ -2634,7 +2634,6 @@ C Check information about building, certifier and owner to be present
       
 C Read *.ncm file and SBEM database
       CALL RSBEM
-c      CALL SBEMPR(IER)
 
 C Following parameters to be present when writing BRUKL file
 C Place holder static values are used currently

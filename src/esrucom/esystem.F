@@ -885,6 +885,13 @@ C debug.
       elseif(WORD(1:7).eq.'*stdpdb')then
         ipathpcdb=2  ! standard folder for plant template database
         CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
+      elseif(WORD(1:5).eq.'*sbem')then
+
+C SBEM database file.
+        CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
+        ISBEM=1
+        IRNCMD=1
+
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
@@ -1354,13 +1361,6 @@ C CPCALC global information.
 
 C Radiance scene file.
         CALL EGETRM(LOUTSTR,K,lradcf,'W','radiance scene file',IER)
-      elseif(WORD(1:5).eq.'*sbem')then
-
-C SBEM database file.
-C << this should be with the other databases >>
-        CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
-        ISBEM=1
-        IRNCMD=1
       elseif(WORD(1:4).eq.'*ncm')then
 
 C SBEM project specific file
