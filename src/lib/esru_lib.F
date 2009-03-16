@@ -184,6 +184,10 @@ C  EDDISP:  As edisp with text separated with current delimiter.
 C EDISP248 Displays a 248 char block of text (text or graphic).
 C clrtextbuf: Clears the graphic text buffer common blocks.
 
+C  UPDVIEW: Called from C to pass back updates to common VIEWPX & GFONT
+C  WIREPK:  Called from 'C' upon a wireframe control button pick.
+C  EPROMPT: Does nothing, for compatibility only.
+
 C ************** st2name
 C Given `string' swap blanks & wildcards to _ : return as `name'.
       SUBROUTINE st2name(string,name)
@@ -6425,4 +6429,65 @@ C clrtextbuf clears the text buffer common blocks.
   42  continue
       return
       end
+
+C ********* UPDVIEW
+C UPDVIEW is called from C code in esru_x.c or esp-r.c with values to 
+C update commonblocks GFONT, VIEWPX and SPAD. Set REFRESH=true.
+C Set MODIFY=true to force any wire-frame images to be redrawn.
+      subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FRESH/refrsh
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+      logical refrsh
+
+      IFS=ifsc
+      ITFS=itfsc
+      IMFS=imfsc
+      igl=ilc
+      igr=irc
+      igt=itc
+      igb=ibc
+      igw=iwc
+      igwh=ihc
+      LIMTTY=lttyc
+      LIMIT=1
+      refrsh=.TRUE.
+      MODIFY=.TRUE.
+
+      return
+      end
+
+C ********* WIREPK
+C WIREPK is called from C code in esru_x.c or esp-r.c  with current
+C number of zones which have been selected for display.
+C Compilation of X11 or GTK version assumes this will be available in
+C each modules code somewhere.  If not needed then provide a dummy.
+      subroutine wirepk(inpk)
+#include "building.h"
+
+C izgfoc is the graphic focus zone, nzg is the number of zones selected
+C and nznog array of selected zone indices.
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      if(inpk.ne.nzg)then
+        call edisp(iuout,'Mismatch between inpk and nzg.')
+      endif
+      CALL EVSET(1,'B',IER)
+      if(ier.ne.0)then
+        call edisp(iuout,'Problem after image button pick.')
+      endif
+
+      return
+      end
+
+C ******************** EPROMPT
+C EPROMPT: Does nothing, for compatibility only.
+      SUBROUTINE EPROMPT
+      RETURN
+      END
 

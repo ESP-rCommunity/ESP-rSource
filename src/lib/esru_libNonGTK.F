@@ -59,12 +59,7 @@ C  LUSRMSG:  Generic long message/prompt facility for all terminal types.
 C  EDISP:   Generic send text to scrolling display (text or graphic).
 C  PHELPD:  Displays the current contents of common pophelp.
 C  PHELPW:  Returns the width IWH of the longest popup help string.
-C  UPDVIEW: Called from C to pass back updates to common VIEWPX & GFONT
 
-
-C  EPROMPT: Does nothing, for compatibility only.
-
-C  WIREPK:  Called from 'C' upon a wireframe control button pick.
 C  EVSET:   provides setup environment for wire frame view w/in prj.
 C Startbuffer: wrapper around call to win3dclr
 C popupimage: display image with documentation (dummy of GTK version)
@@ -2393,7 +2388,6 @@ C Setup a single line menu to pick from via EASKS.
         WRITE(IUOUT,'(a)')MSG3(1:LN3)
 
 C Querry yes or no.
-        CALL EPROMPT
         READ(IUIN,'(A2)',IOSTAT=IOS,ERR=1)ANS
         IF(ANS(1:1).EQ.'Y'.OR.ANS(1:1).EQ.'y')THEN
           OK=.TRUE.
@@ -4217,67 +4211,6 @@ C pophelp where IL is the number of lines of help under consideration.
       RETURN
       END
 
-C ********* UPDVIEW
-C UPDVIEW is called from C code in wwlib.c with values to update common
-C blocks GFONT, VIEWPX and SPAD. Set REFRESH=true.  Set MODIFY=true
-C to force any wire-frame images to be redrawn.
-      subroutine updview(ifsc,itfsc,imfsc,ilc,irc,itc,ibc,iwc,ihc,lttyc)
-      integer ifs,itfs,imfs
-      COMMON/GFONT/IFS,ITFS,IMFS
-      integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/FRESH/refrsh
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      LOGICAL MODIFY,MODLEN,MODBND
-      logical refrsh
-
-      IFS=ifsc
-      ITFS=itfsc
-      IMFS=imfsc
-      igl=ilc
-      igr=irc
-      igt=itc
-      igb=ibc
-      igw=iwc
-      igwh=ihc
-      LIMTTY=lttyc
-      LIMIT=1
-      refrsh=.TRUE.
-      MODIFY=.TRUE.
-
-      return
-      end
-
-C ******************** EPROMPT
-C EPROMPT: Does nothing, for compatibility only.
-      SUBROUTINE EPROMPT
-      RETURN
-      END
-
-
-C ********* WIREPK
-C WIREPK is called from C code in wwlib.c with its current idea as to
-C the number of zones which have currently been selected for display.
-C Compilation of wwlib.c assumes this will be available in each modules
-C code somewhere.  If not needed then provide a dummy.
-      subroutine wirepk(inpk)
-#include "building.h"
-
-C izgfoc is the graphic focus zone, nzg is the number of zones selected
-C and nznog array of selected zone indices.
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      if(inpk.ne.nzg)then
-        call edisp(iuout,'Mismatch between inpk and nzg.')
-      endif
-      CALL EVSET(1,'B',IER)
-      if(ier.ne.0)then
-        call edisp(iuout,'Problem after image button pick.')
-      endif
-
-      return
-      end
 
 C ************* EVSET
 C EVSET provides setup environment for wire frame view w/in prj.
