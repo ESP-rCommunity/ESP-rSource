@@ -87,6 +87,40 @@ C  DPACC:   Provides double precision accumulation of inner products for
 C           CROUT in the form SUM(+,-)SUM(+,-)AB.
 C  EYEMAT:  Provides transform eyepoint - viewpoint....
 
+C  INTSTR: Converts integer into string (10 char) w/o leading blanks.
+C  RELSTR: Converts a real into a string (12 char) w/o leading blanks.
+C  REL16STR: Converts a real into a string (16 char) w/o leading blanks.
+C  EXPSTR: Converts a exponential into a string (10 char) w/o leading blanks.
+C  ARLIST: takes a real array (rlist) and builds a packed string.
+C  AILIST: takes an int array (ilist) and builds a packed string.
+C  ASLIST: takes an string array (list*24) and builds a packed string.
+C  ASLIST2 takes the range (inst to inil) items of an string array (list)
+C  ASFLIST: takes an string array (list*48) and builds a packed string.
+C  STRIPC: Strips comments from a ASCII file str (124 char) & returns data.
+C  LSTRIPC: Strips comments from a ASCII file str (248 char) & returns data.
+C  STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
+C  CHITMS: Checks a character string & returns the number of data items.
+C  LCHITMS Checks a (248) character string (A), returning the number of data
+C  CHITMS400: Checks a (400) character string & returns the number of data items.
+C  CHARCH: Routine to check a string for a specific number of data items.
+C  NOYES:  INTEGER FUNCTION to read the answer Y,y,1,N,n,0 to a question.
+C  IFIRST: Function returning ASCII value for 1st char in a string ISTR.
+
+C  EDAY:   Returns the year day number when passed the day of month & month.
+C  EDAYR: returns the day and month numbers from the day-of-year.
+C  EWEEKD: returns the day of the week given the day of month, month
+C          and year as integers.
+C  EDAYCH: Checks for errors in the users specification of the day & month.
+C  DATTIM: returns UNIX time via a string in the form : 16 Sep 73 14:23.
+C  STDATE: Takes the day of year and returns two descriptive strings:
+C          DESCR takes the form '12 Jan' & DESCR1 takes the form 'Fri 12 Jan'.
+C  ESTIME: Takes an integer timestep and returns two string descriptions:
+C          DESCRH in the form '12h28' & DESCRD which takes the form of 12.46.
+C  EDTIME: takes an real time and returns two string descriptions:
+C          DESCRH in the form '12h28' and DESCRD which takes the form of 12.46,
+C  EPERSTR: creates three strings representing the start and
+C           stop time of a diary period.
+
 
 C ************** st2name
 C Given `string' swap blanks & wildcards to _ : return as `name'.
@@ -2725,4 +2759,1316 @@ C EYEMAT provides transform eyepoint - viewpoint....
       RMAT(4,4) = SCALE
 
       RETURN
+      END
+
+C ***************** INTSTR
+C INTSTR converts an integer into a string (10 char long) with no
+C leading blanks. ISWD is the length of the resulting string.
+      SUBROUTINE INTSTR(INTIN,FSTR,ISWD,IFLAG)
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*10 CSTR, FSTR
+      character outs*124
+      IFLAG=0
+      ISWD=0
+      fstr = ' '
+
+C Internal write to STR.
+      WRITE(CSTR,'(I10)',ERR=999)INTIN
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
+
+  100 ISWD=max(1,LNBLNK(FSTR))
+      RETURN
+
+ 999  WRITE(outs,*) ' INTSTR: invalid integer: ',INTIN
+      call edisp(iuout,outs)
+      IFLAG=1
+      RETURN
+
+      END
+
+C *********************** RELSTR
+C RELSTR converts a real into a string (12 char) with no leading
+C blanks. ISWD is the actual length of the resulting string. Takes
+C the magnitude of the number into account.
+      SUBROUTINE RELSTR(RELIN,FSTR,ISWD,IFLAG)
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*12 CSTR, FSTR
+      character outs*124
+      logical close
+
+      IFLAG=0
+      ISWD=0
+      fstr = ' '
+
+C Internal write to STR. If trivally close to zero set, otherwise
+C write out in an appropriate format given the magnitude of the
+C real value.
+      rval=relin
+      CALL ECLOSE(rval,0.00,0.000001,CLOSE)
+      if(close)then
+        rval=0.00
+        fstr='0.00'
+        iswd=4
+        return
+      endif
+      if(abs(rval).gt.1000000.0)then
+        WRITE(CSTR,'(1PE12.6)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.1000000.0.and.abs(rval).gt.10000.0)then
+        WRITE(CSTR,'(F12.3)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.10000.0.and.abs(rval).gt.0.1)then
+        WRITE(CSTR,'(F11.5)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.0.1.and.abs(rval).gt.0.00001)then
+        WRITE(CSTR,'(F12.10)',IOSTAT=ios,ERR=999)RVAL
+      else
+        WRITE(CSTR,'(F12.4)',IOSTAT=ios,ERR=999)RVAL
+      endif
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
+
+  100 ISWD=max(1,LNBLNK(FSTR))
+      RETURN
+
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) ' RELSTR: permission issue: ',RELIN
+      else
+        WRITE(outs,*) ' RELSTR: invalid real or > 12 char: ',RELIN
+      endif
+      call edisp(iuout,outs)
+      IFLAG=1
+      RETURN
+
+      END
+
+
+C *********************** REL16STR
+C REL16STR converts a real into a string (16 char) with no leading
+C blanks. ISWD is the actual length of the resulting string. Takes
+C the magnitude of the number into account.
+      SUBROUTINE REL16STR(RELIN,FSTR,ISWD,IFLAG)
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*16 CSTR, FSTR
+      character outs*124
+      logical close
+
+      IFLAG=0
+      ISWD=0
+      fstr = ' '
+
+C Internal write to STR. If trivally close to zero set, otherwise
+C write out in an appropriate format given the magnitude of the
+C real value.
+      rval=relin
+      CALL ECLOSE(rval,0.00,0.000001,CLOSE)
+      if(close)then
+        rval=0.00
+        fstr='0.00'
+        iswd=4
+        return
+      endif
+      if(abs(rval).gt.1000000.0)then
+        WRITE(CSTR,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.1000000.0.and.abs(rval).gt.10000.0)then
+        WRITE(CSTR,'(G15.5)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.10000.0.and.abs(rval).gt.0.1)then
+        WRITE(CSTR,'(G14.5)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.0.1.and.abs(rval).gt.0.00001)then
+        WRITE(CSTR,'(F10.7)',IOSTAT=ios,ERR=999)RVAL
+      elseif(rval.le.0.00001)then
+        WRITE(CSTR,'(1PE14.6)',IOSTAT=ios,ERR=999)RVAL
+      else
+        WRITE(CSTR,'(F14.4)',IOSTAT=ios,ERR=999)RVAL
+      endif
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
+
+  100 ISWD=max(1,LNBLNK(FSTR))
+      RETURN
+
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) ' REL16STR: permission issue: ',RELIN
+      else
+        WRITE(outs,*) ' REL16STR: invalid real or > 12 char: ',RELIN
+      endif
+      call edisp(iuout,outs)
+      IFLAG=1
+      RETURN
+
+      END
+
+
+C *********************** EXPSTR
+C EXPSTR converts a exponential into a string (10 char) with no leading
+C blanks. ISWD is the actual length of the resulting string.
+      SUBROUTINE EXPSTR(RELIN,FSTR,ISWD,IFLAG)
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*10 CSTR, FSTR
+      character outs*124
+
+      ISWD=0
+      fstr = ' '
+
+C Internal write to STR.
+      WRITE(CSTR,'(1PE10.3)',IOSTAT=ISTAT,ERR=999)RELIN
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
+
+  100 ISWD=max(1,LNBLNK(FSTR))
+      RETURN
+
+ 999  WRITE(outs,*) ' EXPSTR: invalid real or > 10 char: ',RELIN
+      call edisp(iuout,outs)
+      IFLAG=1
+      RETURN
+
+      END
+
+C ******************** ARLIST ********************
+C ARLIST takes the first (inst to inrl) items of a real array (rlist)
+C of array size (inrs) and builds a packed string (pckstr)
+C and returns pckstr and the actual character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items.
+
+      SUBROUTINE ARLIST(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
+      dimension rlist(inrs)
+      character*(*) pckstr
+      CHARACTER item*16,delm*1
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set ierr to one
+C if the array cannot be written out fully in the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inrl
+        item=' '
+        rval=rlist(i)
+        call rel16str(rval,item,lna,ier)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma. If attempting to write past the end of
+C pckstr then set itrunc to the last successfully written
+C rlist index.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inrl)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna+1
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+   1  continue
+C      write(6,*) 'ARLIST: truncation writing array at item: ',itrunc,
+C     &  ' & pos ',length
+      return
+      END
+
+C ******************** AILIST ********************
+C AILIST takes the range (inst to inil) items of an integer array (ilist)
+C of array size (inisz) and builds a packed string (pckstr) and
+C returns pckstr and written character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items.
+
+      SUBROUTINE AILIST(inst,inil,ilist,inisz,delm,pckstr,length,itrunc)
+      dimension ilist(inisz)
+      character*(*) pckstr
+      CHARACTER item*10,delm*1
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set itrunc to the
+C last sucessful items of the array cannot be written out fully in
+C the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inil
+        item=' '
+        ival=ilist(i)
+        CALL INTSTR(ival,item,lna,IER)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma before looping back for another item. If a
+C single character then ixl is ix.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inil)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+   1  continue
+C      write(6,*) 'AILIST: truncation writing array at item: ',itrunc,
+C     &  ' & pos ',length
+      return
+      END
+
+C ******************** ASLIST ********************
+C ASLIST takes the range (inst to inil) items of an string array (list)
+C of array size (inisz) and builds a packed string (pckstr) and
+C returns pckstr and written character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items. It is assumed
+C that each string array item is less than 32 characters wide.
+
+      SUBROUTINE ASLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
+      dimension list(inisz)
+      character*(*) pckstr,list
+      CHARACTER item*32,delm*1
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set itrunc to the
+C last sucessful items of the array cannot be written out fully in
+C the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inil
+        lna=max(1,LNBLNK(list(i)))
+        if(lna.gt.32) lna=32
+        write(item,'(a)') list(i)(1:lna)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma before looping back for another item. If a
+C single character then ixl is ix.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inil)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna+1
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+   1  continue
+C      write(6,*) 'ASLIST: truncation writing array at item: ',itrunc,
+C     &  ' & pos ',length
+      return
+      END
+
+C ******************** ASLIST2 ********************
+C ASLIST2 takes the range (inst to inil) items of an string array (list)
+C of 2_dimensional array size (inisz,inisz2) and builds a packed string
+C (pckstr) of the row (inirw) and
+C returns pckstr and written character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items. It is assumed
+C that each string array item is less than 24 characters wide.
+
+      SUBROUTINE ASLIST2(inst,inil,list,inisz,inisz2,inirw,
+     &delm,pckstr,length,itrunc)
+      dimension list(inisz,inisz2)
+      character*(*) pckstr,list
+      CHARACTER item*24,delm*1
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set itrunc to the
+C last sucessful items of the array cannot be written out fully in
+C the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inil
+        lna=max(1,LNBLNK(list(i,inirw)))
+        if(lna.gt.24) lna=24
+        write(item,'(a)') list(i,inirw)(1:lna)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma before looping back for another item. If a
+C single character then ixl is ix.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inil)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna+1
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+   1  continue
+C      write(6,*) 'ASLIST2: truncation writing array at item: ',itrunc,
+C     &  ' & pos ',length
+      return
+      END
+
+C ******************** ASFLIST ********************
+C ASFLIST takes the range (inst to inil) items of an string array (list)
+C of array size (inisz) and builds a packed string (pckstr) and
+C returns pckstr and written character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items. It is assumed
+C that each string array item is less than 48 characters wide.
+
+      SUBROUTINE ASFLIST(inst,inil,list,inisz,delm,pckstr,length,itrunc)
+      dimension list(inisz)
+      character*(*) pckstr,list
+      CHARACTER item*48,delm*1
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set itrunc to the
+C last sucessful items of the array cannot be written out fully in
+C the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inil
+        lna=max(1,LNBLNK(list(i)))
+        if(lna.gt.48) lna=48
+        write(item,'(a)') list(i)(1:lna)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma before looping back for another item. If a
+C single character then ixl is ix.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inil)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna+1
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+   1  continue
+C      write(6,*) 'ASFLIST: truncation writing array at item: ',itrunc,
+C     &  ' & pos ',length
+      return
+      END
+
+C ******************** STRIPC
+C STRIPC strips comments from a ASCII file string and returns the data.
+C It assumes that if a string begins with a '#' then the whole line is
+C a comment an the next line is read.  If a ' #' is discovered within
+C a line the rest of the line is removed.
+C IER=0 if ok. MSG is a text string used in error messages. If
+C IR=0 then acts silently, otherwise notes when EOF found.
+C IEXP is the number of expected items in the line:
+C   IEXP = 0 means don't care or already know no. items - don't check
+C   IEXP >0  means a specific number of items expected (error if not)
+C   IEXP = 99 check number of items and return in ITEMS
+
+      SUBROUTINE STRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
+
+      CHARACTER*124 tmp,STRING,OUTSTR
+      character loutstr*248
+      CHARACTER*(*) MSG
+
+C Read a line of the file, strip off any trailing blanks, if the first
+C character is a # then read the next line from the file.
+      IER=0
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+   10 FORMAT(A124)
+      tmp=STRING(1:LNBLNK(STRING))
+
+C Take the string and check for a #, discarding any text which follows.
+      iloc = INDEX(tmp,'#')
+      if(iloc.eq.1)then
+        goto 8
+      elseif(iloc.eq.0)then
+        OUTSTR=tmp
+      elseif(iloc.gt.1)then
+        OUTSTR=tmp(1:ILOC-1)
+      endif
+
+C Find out the number of separate words/string groupings.
+      if(IEXP.eq.99)then
+        CALL CHITMS(OUTSTR,ITEMS)
+      elseif(IEXP.eq.0)then
+        ITEMS=0
+      elseif(IEXP.gt.0)then
+        CALL CHITMS(OUTSTR,ITEMS)
+        if(IEXP.ne.ITEMS)then
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(3A,I3,3A)')'In ',currentfile(1:LN),
+     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,OUTSTR,'F')
+          else
+            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+     &         MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,OUTSTR,'F')
+          endif
+        endif
+      endif
+
+    4 RETURN
+
+  101 IER=1
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') in...'
+        else
+          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+     &      MSG(1:LNM),') in...'
+        endif
+        CALL LUSRMSG(loutstr,OUTSTR,'W')
+      ENDIF
+      goto 4
+
+  102 IER=2
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') EOF sensed.'
+        else
+          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+     &      MSG(1:LNM),' EOF sensed.'
+        endif
+        CALL LUSRMSG(' ',loutstr,'-')
+      ENDIF
+      goto 4
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'STRIPC: permission error writing warning ',OUTSTR
+      else
+        write(6,*) 'STRIPC: error writing warning re: ',OUTSTR
+      endif
+
+      END
+
+C ******************** LSTRIPC
+C LSTRIPC strips comments from a ASCII file (long) string and returns the data.
+C It assumes that if a string begins with a '#' then the whole line is
+C a comment an the next line is read.  If a ' #' is discovered within
+C a line the rest of the line is removed.
+C IER=0 if ok. MSG is a text string used in error messages. If
+C IR=0 then acts silently, otherwise notes when EOF found.
+C IEXP is the number of expected items in the line:
+C   IEXP = 0 means don't care or already know no. items - don't check
+C   IEXP >0  means a specific number of items expected (error if not)
+C   IEXP = 99 check number of items and return in ITEMS
+
+      SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
+
+      CHARACTER*248 OUTSTR,STRING,TMP
+      CHARACTER loutstr*248
+      CHARACTER*(*) MSG
+
+C Read a line of the file, strip off any trailing blanks, if the first
+C character is a # then read the next line from the file.
+      IER=0
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+   10 FORMAT(A)
+      tmp=STRING(1:LNBLNK(STRING))
+
+C Take the string and check for a #, discarding any text which follows.
+      iloc = INDEX(tmp,'#')
+      if(iloc.eq.1)then
+        goto 8
+      elseif(iloc.eq.0)then
+        OUTSTR=tmp
+      elseif(iloc.gt.1)then
+        OUTSTR=tmp(1:ILOC-1)
+      endif
+
+C Find out the number of separate words/string groupings.
+      if(IEXP.eq.99)then
+        CALL LCHITMS(OUTSTR,ITEMS)
+      elseif(IEXP.eq.0)then
+        ITEMS=0
+      elseif(IEXP.gt.0)then
+        CALL LCHITMS(OUTSTR,ITEMS)
+        if(IEXP.ne.ITEMS)then
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(3A,I3,3A)')' In ',currentfile(1:LN),
+     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,OUTSTR,'F')
+          else
+            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+     &         MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,OUTSTR,'F')
+          endif
+        endif
+      endif
+
+    4 RETURN
+
+  101 IER=1
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') in...'
+        else
+          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+     &      MSG(1:LNM),') in...'
+        endif
+        CALL LUSRMSG(loutstr,OUTSTR,'W')
+      ENDIF
+      goto 4
+
+  102 IER=2
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') EOF sensed.'
+        else
+          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+     &      MSG(1:LNM),' EOF sensed.'
+        endif
+        CALL LUSRMSG(' ',loutstr,'-')
+      ENDIF
+      goto 4
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'LSTRIPC: permission error writing warning ',OUTSTR
+      else
+        write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+      endif
+      return
+
+      END
+
+C ******************** STRIPC400
+C STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
+C It assumes that if a string begins with a '#' then the whole line is
+C a comment an the next line is read.  If a ' #' is discovered within
+C a line the rest of the line is removed.
+C IER=0 if ok. MSG is a text string used in error messages. If
+C IR=0 then acts silently, otherwise notes when EOF found.
+C IEXP is the number of expected items in the line:
+C   IEXP = 0 means don't care or already know no. items - don't check
+C   IEXP >0  means a specific number of items expected (error if not)
+C   IEXP = 99 check number of items and return in ITEMS
+
+      SUBROUTINE STRIPC400(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
+
+      CHARACTER*400 OUTSTR,STRING,TMP
+      CHARACTER loutstr*248
+      character truncstr*248   ! truncate outsr for reporting.
+      CHARACTER*(*) MSG
+
+C Read a line of the file, strip off any trailing blanks, if the first
+C character is a # then read the next line from the file.
+      IER=0
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+   10 FORMAT(A)
+      tmp=STRING(1:LNBLNK(STRING))
+
+C Take the string and check for a #, discarding any text which follows.
+      iloc = INDEX(tmp,'#')
+      if(iloc.eq.1)then
+        goto 8
+      elseif(iloc.eq.0)then
+        OUTSTR=tmp
+      elseif(iloc.gt.1)then
+        OUTSTR=tmp(1:ILOC-1)
+      endif
+      lastcc = MIN0(LNBLNK(OUTSTR),247)
+      write(truncstr,'(a)') OUTSTR(1:lastcc)
+
+C Find out the number of separate words/string groupings.
+      if(IEXP.eq.99)then
+        CALL CHITMS400(OUTSTR,ITEMS)
+      elseif(IEXP.eq.0)then
+        ITEMS=0
+      elseif(IEXP.gt.0)then
+        CALL CHITMS400(OUTSTR,ITEMS)
+        if(IEXP.ne.ITEMS)then
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(3A,I3,3A)')' In ',currentfile(1:LN),
+     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,truncstr,'F')
+          else
+            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+     &         MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,truncstr,'F')
+          endif
+        endif
+      endif
+
+    4 RETURN
+
+  101 IER=1
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') in...'
+        else
+          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+     &      MSG(1:LNM),') in...'
+        endif
+        CALL LUSRMSG(loutstr,OUTSTR,'W')
+      ENDIF
+      goto 4
+
+  102 IER=2
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') EOF sensed.'
+        else
+          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+     &      MSG(1:LNM),' EOF sensed.'
+        endif
+        CALL LUSRMSG(' ',loutstr,'-')
+      ENDIF
+      goto 4
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'LSTRIPC: permission error writing warning ',OUTSTR
+      else
+        write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+      endif
+      return
+
+      END
+
+C ********************* CHITMS
+C CHITMS checks a character string (A), returning the number of data
+C items (IW) separated by ' ' tab or ','.  Note to keep from
+C overwriting the string passed, deal with a copy.
+      SUBROUTINE CHITMS(A,IW)
+      CHARACTER*(*) A
+      CHARACTER B*124,C*1
+
+      lastcc = MIN0(LNBLNK(A),123)
+      WRITE(B,'(A)',IOSTAT=IOS,ERR=1) A(1:lastcc+1)
+C      WRITE(B,'(A)') A(1:LNBLNK(A)+1)
+
+C Loop through B and convert all ',' and 'tabs' to blanks.
+      DO 100 I=1,LNBLNK(B)+1
+        C=B(I:I)
+        IF(C.EQ.','.OR.ICHAR(C).EQ.9) B(I:I)=' '
+  100 CONTINUE
+
+C Loop through B and see how many 'words'.
+      K=0
+      IW=0
+  102 IW=IW+1
+
+C Start by skipping blanks before the word.
+   10 K=K+1
+      C=B(K:K)
+      IF(C.EQ.' ') GOTO 10
+
+C Loop character by character until separator is found.
+   20 K=K+1
+      C=B(K:K)
+      IF(K.GE.LNBLNK(B))RETURN
+      IF(C.EQ.' ') GOTO 102
+      GOTO 20
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'CHITMS: permission error in internal write: ',A
+      else
+        write(6,*) 'CHITMS: error in internal write: ',A
+      endif
+      return
+
+      END
+
+C ********************* LCHITMS
+C LCHITMS checks a long character string (A), returning the number of data
+C items (IW) separated by ' ' tab or ',' or '|'.  Note to keep from
+C overwriting the string passed, deal with a copy.
+      SUBROUTINE LCHITMS(A,IW)
+      CHARACTER*(*) A
+      CHARACTER B*248,C*1
+
+      lastcc = MIN0(LNBLNK(A),247)
+      WRITE(B,'(A)',IOSTAT=IOS,ERR=1) A(1:lastcc+1)
+
+C Loop through B and convert all ',' 'tabs' '|' to blanks.
+      DO 100 I=1,LNBLNK(B)+1
+        C=B(I:I)
+        IF(C.EQ.','.OR.ICHAR(C).EQ.9.OR.ICHAR(C).EQ.124) B(I:I)=' '
+  100 CONTINUE
+
+C Loop through B and see how many 'words'.
+      K=0
+      IW=0
+  102 IW=IW+1
+
+C Start by skipping blanks before the word.
+   10 K=K+1
+      C=B(K:K)
+      IF(C.EQ.' ') GOTO 10
+
+C Loop character by character until separator is found.
+   20 K=K+1
+      C=B(K:K)
+      IF(K.GE.LNBLNK(B))RETURN
+      IF(C.EQ.' ') GOTO 102
+      GOTO 20
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'LCHITMS: permission error in internal write: ',A
+      else
+        write(6,*) 'LCHITMS: error in internal write: ',A
+      endif
+      return
+
+      END
+
+C ********************* CHITMS400
+C CHITMS400 checks a 400 long char string (A), returning the number of data
+C items (IW) separated by ' ' tab or ',' or '|'.  Note to keep from
+C overwriting the string passed, deal with a copy.
+      SUBROUTINE CHITMS400(A,IW)
+      CHARACTER*(*) A
+      CHARACTER B*400,C*1
+
+      lastcc = MIN0(LNBLNK(A),247)
+      WRITE(B,'(A)',IOSTAT=IOS,ERR=1) A(1:lastcc+1)
+
+C Loop through B and convert all ',' 'tabs' '|' to blanks.
+      DO 100 I=1,LNBLNK(B)+1
+        C=B(I:I)
+        IF(C.EQ.','.OR.ICHAR(C).EQ.9.OR.ICHAR(C).EQ.124) B(I:I)=' '
+  100 CONTINUE
+
+C Loop through B and see how many 'words'.
+      K=0
+      IW=0
+  102 IW=IW+1
+
+C Start by skipping blanks before the word.
+   10 K=K+1
+      C=B(K:K)
+      IF(C.EQ.' ') GOTO 10
+
+C Loop character by character until separator is found.
+   20 K=K+1
+      C=B(K:K)
+      IF(K.GE.LNBLNK(B))RETURN
+      IF(C.EQ.' ') GOTO 102
+      GOTO 20
+
+   1  if(IOS.eq.2)then
+        write(6,*) 'CHITMS400: permission error in internal write: ',A
+      else
+        write(6,*) 'CHITMS400: error in internal write: ',A
+      endif
+      return
+
+      END
+
+C ******************* CHARCH
+C CHARCH: Older routine to check a string for a number of data items.
+C This is an older version of CHITMS, however it modifies the string A.
+      SUBROUTINE CHARCH(A,ND,IERR)
+      CHARACTER*72 A
+
+C Number of commas required.
+      NC=ND
+
+C Assign field (comma) counter, character counter
+C and field start indicator.
+      IC=0
+      ICC=0
+      ISC=0
+
+      DO 10 I=1,72
+
+C Jump if required number of commas found.
+      IF(IC.EQ.NC)goto 10
+
+      ICC=I
+      IF(A(I:I).EQ.',')goto 1
+      IF(A(I:I).EQ.' ')goto 2
+      goto 3
+
+    2 IF(ISC.EQ.0)goto 10
+      A(I:I)=','
+      goto 1
+
+    3 IF(ISC.EQ.0)ISC=I
+      goto 10
+
+    1 IC=IC+1
+      ISC=0
+
+   10 CONTINUE
+
+      IERR=-ICC
+      IF(IC.NE.NC)IERR=1
+
+      RETURN
+      END
+
+C ******************** NOYES
+C NOYES is an INTEGER FUNCTION which is used to read the answer to a
+C question.  A line is read from the user, and the value of the
+C function is as follows:-
+C   1 The answer was '1', ' Y', or '  YES'
+C   0 The answer was '0', ' N', or '  NO'
+C  -1 otherwise.
+      FUNCTION NOYES(J)
+      PARAMETER ( IUIN=5 )
+      CHARACTER IA*3
+
+      READ(IUIN,100)IA
+ 100  FORMAT(A3)
+      IF(IA.EQ.'1'.OR.IA.EQ.'Y'.OR.IA.EQ.'y'
+     &            .OR.IA.EQ.'yes'.OR.IA.EQ.'YES')THEN
+        NOYES=1
+        RETURN
+      ELSEIF(IA.EQ.'0'.OR.IA.EQ.'N'.OR.IA.EQ.'n'
+     &                .OR.IA.EQ.'no'.OR.IA.EQ.'NO')THEN
+        NOYES=0
+        RETURN
+      ELSE
+        NOYES=-1
+        RETURN
+      ENDIF
+      END
+
+c ******************** IFIRST
+C IFIRST: Returns the ASCII value for the first character in
+C a string ISTR.
+      FUNCTION IFIRST(ISTR)
+      CHARACTER*1 JSTR
+      CHARACTER*(*) ISTR
+      JSTR=ISTR(1:1)
+      IFIRST=ICHAR(JSTR)
+      RETURN
+      END
+
+c ******************** EDAY
+C EDAY Returns year day number IYDN when passed the day of the month
+C IDAYN and the month number IMTHN. 1st Jan= 1, 31st Dec=365, no leap
+C years considered.
+      SUBROUTINE EDAY(IDAYN,IMTHN,IYDN)
+      DIMENSION MONTH(12)
+      DATA MONTH/31,28,31,30,31,30,31,31,30,31,30,31/
+      IYDN=IDAYN
+      IF(IMTHN.EQ.1)RETURN
+      DO 10 I=2,IMTHN
+        IYDN=IYDN+MONTH(I-1)
+   10 CONTINUE
+      RETURN
+      END
+
+C *********************** EDAYR
+C 'EDAYR' returns the day and month numbers from the day-of-year where:
+C day-of-year 1 = 1st January and day-of-year 365 = 31st December.
+C NO LEAP YEARS ARE CONSIDERED!
+      SUBROUTINE EDAYR(IYDN,IDAYN,IMTHN)
+      DIMENSION MONTH(12),IACTOT(11)
+      DATA MONTH/31,28,31,30,31,30,31,31,30,31,30,31/
+      DATA IACTOT/31,59,90,120,151,181,212,243,273,304,334/
+      IMTHN=1
+
+C Determine the month number.
+      DO 10 I=1,11
+        IF(IYDN.GT.IACTOT(I))IMTHN=IMTHN+1
+   10 CONTINUE
+
+C Determine the day of the month.
+      IF(IMTHN.EQ.1)THEN
+        IDAYN=IYDN
+        RETURN
+      ELSE
+        IDAYN=0
+        J=IMTHN-1
+        DO 20 I=1,J
+          IDAYN=IDAYN+MONTH(I)
+   20   CONTINUE
+        IDAYN=IYDN-IDAYN
+        RETURN
+      ENDIF
+      END
+
+C ********************** EWEEKD
+C 'EWEEKD' returns the day of the week given the day of month, month
+C and year as integers.
+C MON=1, TUE=2, WED=3, THU=4, FRI=5, SAT=6 AND SUN=7.
+      SUBROUTINE EWEEKD(ND,NM,NY,IDAY)
+      common/OUTIN/IUOUT,IUIN
+      DIMENSION MMTH(12),MYR(5)
+      character outs*124
+      DATA MMTH/1,4,4,0,2,5,0,3,6,1,4,6/
+      DATA MYR/2,4,2,0,6/
+
+      IF(ND.EQ.0.OR.NM.EQ.0.OR.NY.EQ.0)goto 50
+      IL1=MOD(NY,100)
+      IL2=MOD(IL1,4)
+      IL3=MOD(NY,1000)
+      LEAP=0
+      IF(IL2.NE.0)goto 11
+      IF(IL3.EQ.0.OR.IL1.NE.0)LEAP=1
+   11 IF(LEAP.EQ.0.AND.NM.EQ.2.AND.ND.EQ.29)goto 50
+      II=IL1/4
+      IDAY=IL1+II+ND+MMTH(NM)
+      IF(LEAP.EQ.1.AND.(NM.EQ.1.OR.NM.EQ.2))IDAY=IDAY-1
+      IL2=INT(.01*(NY-IL1+1))
+      IL2=IL2-15
+      IF(IL2.LE.0.OR.IL2.GT.5)goto 50
+      IL3=MYR(IL2)
+      IF(IL2.NE.2.OR.NM.GT.9)goto 12
+      IF(NM.EQ.9.AND.ND.GE.14)goto 12
+      IF(NM.EQ.9.AND.ND.GT.2)goto 50
+      IL3=1
+   12 IDAY=IDAY+IL3+5
+      IDAY=MOD(IDAY,7)+1
+      goto  10
+   50 WRITE(outs,'(a,3I6,a)')' The date ',ND,NM,NY,' is illegal.'
+      call edisp(iuout,outs)
+   10 CONTINUE
+      RETURN
+      END
+
+C ********************* EDAYCH
+C EDAYCH will check for errors in the users specification of the day and
+C month under consideration.
+      SUBROUTINE EDAYCH(ID,IM,IERR)
+      common/OUTIN/IUOUT,IUIN
+      DIMENSION MNTH(12)
+      DATA MNTH/31,28,31,30,31,30,31,31,30,31,30,31/
+      IERR=0
+      IF(IM.LT.1.OR.IM.GT.12)THEN
+        call edisp(iuout,' Month value outwith allowable range. ')
+        IERR=1
+      ENDIF
+      IF(ID.LT.1.OR.ID.GT.MNTH(IM))THEN
+        call edisp(iuout,' Day value outwith allowable monthly range.')
+        IERR=1
+      ENDIF
+      RETURN
+      END
+
+C ********************* DATTIM
+C DATTIM returns UNIX time via a string in the form : 16 Sep 73 14:23.
+      SUBROUTINE DATTIM(DT)
+      CHARACTER*(*) DT
+      CHARACTER*24 TUNIX
+
+      CALL FDATE(TUNIX)
+      DT(1:6) = TUNIX(5:10)
+      DT(7:7) = ' '
+      DT(10:15) = TUNIX(11:16)
+      RETURN
+      END
+
+C ******************** STDATE
+C STDATE takes the day of year and returns two descriptive strings.
+C DESCR takes the form '12-Jan' and DESCR1 takes the form 'Fri-12-Jan'.
+      SUBROUTINE STDATE(IYEAR,IDOY,DESCR,DESCR1)
+      common/OUTIN/IUOUT,IUIN
+      DIMENSION MTHNAM(12),DAYNAM(7)
+
+      CHARACTER MTHNAM*3,DAYNAM*3,DESCR*7,DESCR1*10
+      DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
+     &            'Sep','Oct','Nov','Dec'/
+      DATA DAYNAM/'Mon','Tue','Wed','Thu','Fri','Sat','Sun'/
+
+C Determine whether IDAY is a weekday, saturday or sunday.
+C Determine the month and day of month via EDAYR.
+      CALL EDAYR(IDOY,IDAYN,IMTHN)
+      CALL EWEEKD(IDAYN,IMTHN,IYEAR,IDWK)
+
+C Build up the descriptive text strings if a known month. Trap out
+C of range idwk and imthn to prevent string array crashes.
+      if(imthn.gt.0.and.imthn.le.12)then
+        WRITE(DESCR,'(i2.2,2a)',ERR=1)IDAYN,'-',MTHNAM(IMTHN)
+        if(idwk.gt.0.and.idwk.le.7)then
+          WRITE(DESCR1,'(2a,i2.2,2a)',ERR=1)DAYNAM(IDWK),'-',IDAYN,'-',
+     &      MTHNAM(IMTHN)
+        else
+          WRITE(DESCR1,'(a,i2.2,2a)',ERR=1) 'XXX-',IDAYN,'-',
+     &      MTHNAM(IMTHN)
+        endif
+      else
+        WRITE(DESCR,'(i2.2,a)',ERR=1)IDAYN,'-XXX'
+        if(idwk.gt.0.and.idwk.le.7)then
+          WRITE(DESCR1,'(2a,i2.2,a)',ERR=1)DAYNAM(IDWK),'-',IDAYN,'-XXX'
+        else
+          WRITE(DESCR1,'(a,i2.2,a)',ERR=1) 'XXX-',IDAYN,'-XXX'
+        endif
+      endif
+
+      RETURN
+ 1    call usrmsg('STDATE: problem writing date strings.',' ','W')
+      END
+
+C ******************** ESTIME
+C ESTIME takes an integer timestep and returns two string descriptions:
+C DESCRH in the form '12h28' and DESCRD which takes the form of 12.46,
+C As well as the time as a fraction of a day TIMER.
+C STIME takes timestep averaging IDAVER into account ie. 0=averaging,
+C 1=no averaging. NTS is the number of timesteps per hour.
+      SUBROUTINE ESTIME(NTS,IDAVER,ITIME,DESCRH,DESCRD,TIMER)
+      CHARACTER*5 DESCRH, DESCRD
+
+      ADJUST=0.
+      IF(IDAVER.EQ.0)ADJUST=1.0/(FLOAT(NTS)*2.0)
+      TIMER=FLOAT(ITIME)/FLOAT(NTS)
+      TIMER=TIMER-ADJUST
+      MIN=INT((TIMER-AINT(TIMER))*60.)
+      WRITE(DESCRH,'(i2.2,a,i2.2)',ERR=1)INT(TIMER),'h',MIN
+      WRITE(DESCRD,'(f5.2)',IOSTAT=IOS,ERR=1)TIMER
+      TIMER=TIMER/24.0
+      RETURN
+
+ 1    if(IOS.eq.2)then
+        call usrmsg('ESTIME: permission writing time strings.',' ','W')
+      else
+        call usrmsg('ESTIME: problem writing time strings.',' ','W')
+      endif
+      return
+
+      END
+
+C ******************** EDTIME
+C EDTIME takes an real time and returns two string descriptions:
+C DESCRH in the form '12h28' and DESCRD which takes the form of 12.46,
+C As well as the time as a fraction of a day TIMER.
+      SUBROUTINE EDTIME(TIME,DESCRH,DESCRD,TIMER)
+      CHARACTER*5 DESCRH, DESCRD
+
+      MIN=INT((TIME-AINT(TIME))*60.)
+      WRITE(DESCRH,'(i2.2,a,i2.2)',ERR=1)INT(TIME),'h',MIN
+      WRITE(DESCRD,'(f5.2)',IOSTAT=IOS,ERR=1)TIME
+      TIMER=TIME/24.0
+      RETURN
+
+ 1    if(IOS.eq.2)then
+        call usrmsg('EDTIME: permission writing time strings.',' ','W')
+      else
+        call usrmsg('EDTIME: problem writing time strings.',' ','W')
+      endif
+      return
+
+      END
+
+C ************* EPERSTR
+C EPERSTR creates three strings representing the start and stop
+C time of a diary period based on the preferred time & date
+C display format.
+C IFDAY  0 gives 'DOY 10', 1 gives '10 Jan', 2 gives 'Fri 10 Jan'
+C IFTIME 0 gives '10h30', 1 gives '10.50', 2 gives '0.4375'
+C PERST1 (14 char) is:' 10h00  15h30 ',' 10.00  15.50 ',' 0.4375 0.6458'
+C PERST3 (44 char):
+C if IFDAY=0 then it is: 'period: DOY 100 to DOY 112, 1990'
+C if IFDAY=1 then it is: 'period: 10 Jan to 31 Jan, 1990'
+C if IFDAY=2 then it is: 'period: Mon 10 Jan to Mon 17 Jan, 1990'
+C PERST2 (44 char) includes the time of day but not the year.
+C IER=0 OK, IER=1 problem.
+C BTIM and PETIM are in terms of decimal fractions of a day.
+      SUBROUTINE EPERSTR(IYEAR,IBDOY,IBTIM,IEDOY,IETIM,NTSPH,
+     &           IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
+      CHARACTER T1H*5, T1D*5, T2H*5, T2D*5
+      CHARACTER PERST1*14,PERST2*44,PERST3*44,DS*7,DS1*10,DE*7,DE1*10
+
+      IER=0
+
+C Generate view period string based on IBDOY,IEDOY,BTIM,ETIM
+      CALL STDATE(IYEAR,IBDOY,DS,DS1)
+      CALL STDATE(IYEAR,IEDOY,DE,DE1)
+      CALL ESTIME(NTSPH,1,IBTIM,T1H,T1D,TIMER1)
+      CALL ESTIME(NTSPH,1,IETIM,T2H,T2D,TIMER2)
+      FD1=FLOAT(IBDOY)+TIMER1
+      FD2=FLOAT(IEDOY)+TIMER2
+      IF(IFTIME.EQ.0)THEN
+        WRITE(PERST1,1,IOSTAT=IOS,ERR=10)T1H,T2H
+    1   FORMAT(' ',A5,'  ',A5,' ')
+      ELSEIF(IFTIME.EQ.1)THEN
+        WRITE(PERST1,1,IOSTAT=IOS,ERR=10)T1D,T2D
+      ELSEIF(IFTIME.EQ.2)THEN
+        WRITE(PERST1,2,IOSTAT=IOS,ERR=10)TIMER1,TIMER2
+    2   FORMAT(2F7.4)
+      ENDIF
+
+      IF(IFDAY.EQ.0)THEN
+        WRITE(PERST3,3,IOSTAT=IOS,ERR=10)IBDOY,IEDOY,IYEAR
+    3   FORMAT('period: DOY ',I3,' to DOY ',I3,', ',I4)
+        IF(IFTIME.EQ.0)THEN
+          WRITE(PERST2,4,IOSTAT=IOS,ERR=10)IBDOY,T1H,IEDOY,T2H
+    4     FORMAT('period: DOY ',I3,' @ ',A5,' to DOY ',I3,' @ ',A5)
+        ELSEIF(IFTIME.EQ.1)THEN
+          WRITE(PERST2,4,IOSTAT=IOS,ERR=10)IBDOY,T1D,IEDOY,T2D
+        ELSEIF(IFTIME.EQ.2)THEN
+          WRITE(PERST2,5,IOSTAT=IOS,ERR=10)FD1,FD2
+    5     FORMAT('period: DOY ',F10.6,' to DOY ',F10.6)
+        ENDIF
+      ELSEIF(IFDAY.EQ.1)THEN
+        WRITE(PERST3,6,IOSTAT=IOS,ERR=10)DS,DE,IYEAR
+    6   FORMAT('period: ',A7,' to ',A7,', ',I4)
+        IF(IFTIME.EQ.0)THEN
+          WRITE(PERST2,7,IOSTAT=IOS,ERR=10)DS,T1H,DE,T2H
+    7     FORMAT('period: ',A7,' @ ',A5,' to ',A7,' @ ',A5)
+        ELSE
+          WRITE(PERST2,7,IOSTAT=IOS,ERR=10)DS,T1D,DE,T2D
+        ENDIF
+      ELSEIF(IFDAY.EQ.2)THEN
+        WRITE(PERST3,8,IOSTAT=IOS,ERR=10)DS1,DE1,IYEAR
+    8   FORMAT('period: ',A10,' to ',A10,', ',I4)
+        IF(IFTIME.EQ.0)THEN
+          WRITE(PERST2,9,IOSTAT=IOS,ERR=10)DS1,T1H,DE1,T2H
+    9     FORMAT('period: ',A10,'@',A5,' - ',A10,'@',A5)
+        ELSE
+          WRITE(PERST2,9,IOSTAT=IOS,ERR=10)DS1,T1D,DE1,T2D
+        ENDIF
+      ENDIF
+      RETURN
+
+  10  if(IOS.eq.2)then
+        write(6,*) 'EPERSTR: permission error writing strings.'
+      else
+        write(6,*) 'EPERSTR: error writing warning or strings.'
+      endif
+      return
+
       END
