@@ -218,8 +218,6 @@ C DHW.
       character sDHW_InputFileName*72
       INTEGER   iDHW_FLAG
 
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-
 C Fuel cell.
       common/Fcell/iFClds,LFClds
 
@@ -254,7 +252,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LCNN
@@ -676,6 +673,10 @@ C Write alternative definition of weekends if not default.
      &  IYEAR,' # assessment year'
 
 C If SBEM compliance checking is active write name and path of SBEM db
+
+C << the sbem database should be with the other databases >>
+C << also move to using LSBEM for file name >>
+
       IF(ISBEM.EQ.1)THEN
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',DSBEM
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',LASBEM

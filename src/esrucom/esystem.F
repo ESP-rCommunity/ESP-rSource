@@ -1356,7 +1356,8 @@ C Radiance scene file.
         CALL EGETRM(LOUTSTR,K,lradcf,'W','radiance scene file',IER)
       elseif(WORD(1:5).eq.'*sbem')then
 
-C SBEM database file
+C SBEM database file.
+C << this should be with the other databases >>
         CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
         ISBEM=1
         IRNCMD=1

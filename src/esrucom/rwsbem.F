@@ -47,9 +47,6 @@ C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER OUTSTR*124,LOUTSTR*248
       CHARACTER*42 WORD,FUELNAM
       CHARACTER SYSNAM*60
@@ -65,7 +62,8 @@ C Initialise counters
       IHSYS=0
       IBRUK=0
 
-C Read SBEM database
+C Read SBEM database. Assign from default name.
+C << to be changed >>
       LSBEM=DSBEM
       IUF=IFIL+1
       CALL EFOPSEQ(IUF,LSBEM,1,IER)

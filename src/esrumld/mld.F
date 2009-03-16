@@ -53,14 +53,14 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
       character path*72,upath*72
