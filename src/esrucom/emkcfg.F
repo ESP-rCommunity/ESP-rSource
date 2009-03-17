@@ -531,10 +531,16 @@ C reflect whether the standard database folder is being used.
      &      LPCDB(1:lnblnk(LPCDB))
       endif
 
-C UK SBEM database.
+C UK SBEM database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
       IF(ISBEM.EQ.1)THEN
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
-     &    DSBEM(1:lnblnk(DSBEM))
+        if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
+     &      LSBEM(1:lnblnk(LSBEM))
+        elseif(ipathsbem.eq.2)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdsbem  ',
+     &      LSBEM(1:lnblnk(LSBEM))
+        endif
       ENDIF
 
 C HVAC

@@ -36,9 +36,9 @@ C Standard path to corporate databases (based on Install data)
 C Array of integers indicating whether database is defined via
 C an absolute path (zero), local path (one), standard path (2)
       common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
-     &                   ipathmat,ipathmul,ipathclim
+     &                   ipathmat,ipathmul,ipathclim,ipathsbem
       integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
-     &                   ipathmat,ipathmul,ipathclim
+     &                   ipathmat,ipathmul,ipathclim,ipathsbem
 
 C Array of integers representing file unit numbers of databases
       integer iapres  ! file unit of wind pressure coef database

@@ -40,13 +40,15 @@ C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
-      CHARACTER OUTSTR*124,LOUTSTR*248
+      CHARACTER OUTSTR*124,LOUTSTR*248,fs*1
       CHARACTER*42 WORD,FUELNAM
       CHARACTER SYSNAM*60
       CHARACTER*40 ACTNAME
       CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
       CHARACTER*102 ACTDOC  ! to hold documentation string for activity
-      integer NIT
+      character*144 lworking ! for processing the path of LSBEM
+      integer NIT,lndbp
+      logical unixok
       
 C Initialise counters
       IDEBUG=0
@@ -55,18 +57,56 @@ C Initialise counters
       IHSYS=0
       IBRUK=0
 
-C Read SBEM database. Assign from default name. Return with
-C ier set to 1 if the standard file cannot be opened.
-C << to be changed >>
-      write(LSBEM,'(a)') DSBEM(1:lnblnk(DSBEM))
-      IUF=IFIL+1
-      CALL EFOPSEQ(IUF,LSBEM,1,IER)
-      if(IER.ne.0)then
-        write(6,*) 'error while opening ',LSBEM
-        ier=1
-        return
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
       endif
-      write(currentfile,'(a)') LSBEM(1:lnblnk(LSBEM))
+
+C Read SBEM database. If lsbem has not yet been assigned
+C then assign from default name (which has a
+C full path). Process DSBEM with findwhichdbpath. Use the value
+C of ipathsbem to control file opening logic. This is similar
+C to the logic used for the optics database which is also ASCII.
+      if(isbem.eq.0)then
+        write(lworking,'(a)') DSBEM(1:lnblnk(DSBEM))
+        call findwhichdbpath('sbm',lworking,ier)
+      endif
+      IUF=IFIL+1
+      if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
+        CALL EFOPSEQ(IUF,LSBEM,1,IER)
+        if(IER.ne.0)then
+          write(6,*) 'error while opening ',LSBEM
+          ier=1
+          return
+        endif
+      elseif(ipathsbem.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lsbem(1:lnblnk(lsbem))
+
+C Debug.
+        write(6,*) 'working sbem ',lworking
+        CALL EFOPSEQ(IUF,lworking,1,IER)
+        if(IER.ne.0)then
+          write(6,*) 'error while opening ',lworking
+          ier=1
+          return
+        endif
+      endif
+
+C Remember the current file name for inclusion in errors.
+      if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
+        write(currentfile,'(a)') LSBEM(1:lnblnk(LSBEM))
+      elseif(ipathsbem.eq.2)then
+        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
+      endif
+
+C Start reading the tokens in the SBEM file. Many of the lines
+C in the file are fixed format (data is expected at a specific
+C point in the line).
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
       IF(OUTSTR(1:5).NE.'*sbem')then
         CONTINUE ! WARNING MSG TO GO HERE
