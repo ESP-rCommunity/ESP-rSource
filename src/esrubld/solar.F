@@ -3525,8 +3525,9 @@ C Definitions for daylight coefficient patch altitude:
                                       !from the constructions database (i.e. the one "actuated")
 
       real TVT,TVT2,TVT3,TVT4,TVT5,TVT6 !Local variables to calculate the visible transmittance 
-                                        !for the different daylight setpoints and controls
-                                        !(i.e. one for each of the 6 datasets for bidirectional sets)
+      real TVT7,TVT8,TVT9,TVT10,TVT11   !for the different daylight setpoints and controls
+      real TVT12,TVT13,TVT14,TVT15,TVT16 !(i.e. one for each of the 16 datasets for bidirectional sets)
+      
       integer i_ctlZone  !This is used when the sensor is located to another zone and indicates 
                          !which zone. It will take the value of iosn(1,1).
 
@@ -3625,7 +3626,7 @@ C<<<Check if instead if iosn(1,1) we should use iosn(iol,1) as in bcfunc.F>>>
 C                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
 C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
  
-C Allow max 6 setpoints and datasets to be used for the moment.
+C Allow max 16 setpoints and datasets to be used for the moment.
                     if(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,4))then
@@ -3638,13 +3639,33 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                       ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,12))then
                       ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,14))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,15))
+                   elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,16))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,17))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,18))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,19))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,20))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,21))
+                   elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,22))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,23))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,24))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,25))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,26))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,27))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,28))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,29))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,30))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,31))
+                    elseif(TFA(ICOMP).GT.OMISCD(1,IDTYP,IPER,32))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,33))
                     else
                       ISET=1
                     endif
                   elseif(iosn(1,1).eq.-3)then
 
 C Senses outside db.
-C Allow max 6 setpoints and datasets to be used for the moment.
+C Allow max 16 setpoints and datasets to be used for the moment.
                     if(TF.GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,4))then
@@ -3657,6 +3678,26 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                       ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(TF.GT.OMISCD(1,IDTYP,IPER,12))then
                       ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,14))then                      
+                      ISET=int(OMISCD(1,IDTYP,IPER,15))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,16))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,17))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,18))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,19))                     
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,20))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,21))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,22))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,23))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,24))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,25))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,26))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,27))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,28))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,29))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,30))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,31))
+                    elseif(TF.GT.OMISCD(1,IDTYP,IPER,32))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,33))
                     else
                       ISET=1
                     endif
@@ -3679,7 +3720,7 @@ C Using the same calculation for POO and POFF as in MZSLGN
                     rad_on_surf=SRADDO*(1.-shd_po_fctr_ctl)
      &                         +SRADF*(1.-shd_pof_fctr_ctl)                                       
 
-C Allow max 6 setpoints and datasets to be used for the moment.
+C Allow max 16 setpoints and datasets to be used for the moment.
                     if(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,4))then
@@ -3692,6 +3733,26 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                       ISET=int(OMISCD(1,IDTYP,IPER,11))
                     elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,12))then
                       ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,14))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,15))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,16))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,17))                      
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,18))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,19))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,20))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,21))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,22))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,23))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,24))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,25))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,26))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,27))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,28))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,29))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,30))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,31))
+                    elseif(rad_on_surf.GT.OMISCD(1,IDTYP,IPER,32))then
+                      ISET=int(OMISCD(1,IDTYP,IPER,33))
                     else
                       ISET=1
                     endif
@@ -3852,6 +3913,26 @@ C and "tidy-up" reasons
      &                 ((OMISCD(1,IDTYP,IPER,10))/ELLUM)*TMVISUAL(1,1)
                       TVT6=
      &                 ((OMISCD(1,IDTYP,IPER,12))/ELLUM)*TMVISUAL(1,1)
+                      TVT7=
+     &                 ((OMISCD(1,IDTYP,IPER,14))/ELLUM)*TMVISUAL(1,1)
+                      TVT8=
+     &                 ((OMISCD(1,IDTYP,IPER,16))/ELLUM)*TMVISUAL(1,1)
+                      TVT9=
+     &                 ((OMISCD(1,IDTYP,IPER,18))/ELLUM)*TMVISUAL(1,1)
+                      TVT10=
+     &                 ((OMISCD(1,IDTYP,IPER,20))/ELLUM)*TMVISUAL(1,1)
+                      TVT11=
+     &                 ((OMISCD(1,IDTYP,IPER,22))/ELLUM)*TMVISUAL(1,1)
+                      TVT12=
+     &                 ((OMISCD(1,IDTYP,IPER,24))/ELLUM)*TMVISUAL(1,1)
+                      TVT13=
+     &                 ((OMISCD(1,IDTYP,IPER,26))/ELLUM)*TMVISUAL(1,1)
+                      TVT14=
+     &                 ((OMISCD(1,IDTYP,IPER,28))/ELLUM)*TMVISUAL(1,1)     
+                      TVT15=
+     &                 ((OMISCD(1,IDTYP,IPER,30))/ELLUM)*TMVISUAL(1,1)   
+                      TVT16=
+     &                 ((OMISCD(1,IDTYP,IPER,32))/ELLUM)*TMVISUAL(1,1)  
                       if(TVT.GT.TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3))))
      &                  then
                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,3)))=TVT
@@ -3889,15 +3970,85 @@ C and "tidy-up" reasons
      &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,11))))
      &                          then
 
-C Identation has been slightly changed here
+C Identation has been slightly changed here and below
                                 if(TVT6.GT.
      &                         TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13))))
      &                            then
                                TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13)))=
      &                            TVT6                         
                                   ISET=int(OMISCD(1,IDTYP,IPER,13))
-                                else
-                                  continue
+                                elseif(TVT6.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,13))))then 
+                                  if(TVT7.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,15))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,15)))=TVT7   
+                                    ISET=int(OMISCD(1,IDTYP,IPER,15))  
+                                  elseif(TVT7.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,15))))then  
+                                    if(TVT8.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,17))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,17)))=TVT8   
+                                      ISET=int(OMISCD(1,IDTYP,IPER,17)) 
+                                    elseif(TVT8.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,17))))then  
+                                      if(TVT9.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,19))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,19)))=TVT9   
+          ISET=int(OMISCD(1,IDTYP,IPER,19))     
+                                      elseif(TVT9.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,19))))then 
+                                        if(TVT10.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,21))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,21)))=TVT10   
+          ISET=int(OMISCD(1,IDTYP,IPER,21))     
+                                        elseif(TVT10.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,21))))then
+                                          if(TVT11.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,23))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,23)))=TVT11   
+          ISET=int(OMISCD(1,IDTYP,IPER,23))     
+                                          elseif(TVT11.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,23))))then     
+                                            if(TVT12.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,25))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,25)))=TVT12   
+          ISET=int(OMISCD(1,IDTYP,IPER,25))     
+                                            elseif(TVT12.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,25))))then    
+                                              if(TVT13.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,27))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,27)))=TVT13   
+          ISET=int(OMISCD(1,IDTYP,IPER,27))     
+                                              elseif(TVT13.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,27))))then  
+                                                if(TVT14.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,29))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,29)))=TVT14   
+          ISET=int(OMISCD(1,IDTYP,IPER,29))                                                                                
+                                                elseif(TVT14.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,29))))then  
+                                                  if(TVT15.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,31))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,31)))=TVT15 
+          ISET=int(OMISCD(1,IDTYP,IPER,31))                                                                                
+                                                  elseif(TVT15.LE.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,31))))then 
+                                                    if(TVT16.GT.
+     &  TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,33))))then
+          TMVISUAL(1,int(OMISCD(1,IDTYP,IPER,33)))=TVT16 
+          ISET=int(OMISCD(1,IDTYP,IPER,33))             
+                                                    else
+                                                      continue
+                                                    endif
+                                                  endif
+                                                endif
+                                              endif
+                                            endif
+                                          endif
+                                        endif
+                                      endif
+                                    endif
+                                  endif
                                 endif
                               endif
                             endif
@@ -3912,7 +4063,7 @@ C Sense temperature in another zone
 C iosn(1,1) will specify which zone
                     i_ctlZone=iosn(1,1)
 
-C Allow max 6 setpoints and datasets to be used for the moment.                                        
+C Allow max 16 setpoints and datasets to be used for the moment.                                        
                     if(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,2))then                      
                       ISET=int(OMISCD(1,IDTYP,IPER,3))
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,4))then
@@ -3927,6 +4078,36 @@ C Allow max 6 setpoints and datasets to be used for the moment.
                     elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,12))
      &                then
                       ISET=int(OMISCD(1,IDTYP,IPER,13))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,14))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,15))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,16))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,17))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,18))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,19))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,20))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,21))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,22))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,23))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,24))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,25))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,26))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,27))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,28))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,29))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,30))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,31))
+                    elseif(TFA(i_ctlZone).GT.OMISCD(1,IDTYP,IPER,32))
+     &                then
+                      ISET=int(OMISCD(1,IDTYP,IPER,33))
                     else
                       ISET=1
                     endif                  

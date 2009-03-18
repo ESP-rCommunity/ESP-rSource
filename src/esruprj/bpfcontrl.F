@@ -2708,8 +2708,8 @@ C      DIMENSION IGVAL(60)
       logical logic_cminitial ! needed to initialise cmlocal array in order to save values              
       dimension cmlocal(misc)   ! for local editing of cm data.
       real cmlocal
-      dimension sorting(6),bsorting(6),sort_tmp(6),bsort_tmp(6) ! for local sorting of cm bidirectional data.
-      dimension sortset(6),sortmerge(6)   
+      dimension sorting(16),bsorting(16),sort_tmp(16),bsort_tmp(16) ! for local sorting of cm bidirectional data.
+      dimension sortset(16),sortmerge(16)   
       real sorting,bsorting,sort_tmp,bsort_tmp,sortset,sortmerge
       integer isortCounter,ibsortCounter
       integer LL
@@ -2723,9 +2723,10 @@ C Optical control day types.
       J=IV
       JJ=J
       logic_cminitial=.false.
+
 C Logical needed to initialiase cm arrays
 C This initialiasation applies only to ioclaw=2. It will have to change in the future
-      do 952 inmisc=1,6
+      do 952 inmisc=1,16
         if(.not.logic_cminitial)then
           cm(2*inmisc)=-30.0
           cm(2*inmisc+1)=1.
@@ -2913,14 +2914,14 @@ C        endif
 
 C<<<<<<<<attempt to introduce an emenu here
           logic_cminitial=.true.
-          cm(1)=12.
+          cm(1)=32.
   
           do 11 ij=1,misc
             cmlocal(ij)=cm(ij)
   11      continue
 
-C Set it to 12 for the moment
-         do 852 inmisc=1,6
+C Set it to 28 for the moment
+         do 852 inmisc=1,16
             sorting(inmisc)=0.0
             bsorting(inmisc)=0.0
             sortmerge(inmisc)=0.0
@@ -2929,8 +2930,8 @@ C Set it to 12 for the moment
 
 C Number of actual items displayed.
   741     IER=0
-          M=6
-          MVERT=9
+          M=16
+          MVERT=19
           do 963 ibictl_item=1,M
             isetp_displayCM=2*ibictl_item
             idat_displayCM=isetp_displayCM+1     
@@ -2979,7 +2980,7 @@ C Now display the menu.
 
 C Sort the setpoints in descending order.
 C Use a temporary array to hold them for sorting
-            do 147 ix=1,6           
+            do 147 ix=1,16           
               if(cmlocal(ix*2).ge.0.0)then
 
 C Get the positives for sorting
@@ -2993,17 +2994,17 @@ C Make them positive for using them in SORTR
               bsorting(ix)=abs(bsorting(ix))                 
   147       continue
             KFLAG = -1
-            call SORTR(sorting,sort_tmp,6,KFLAG)
-            call SORTR(bsorting,bsort_tmp,6,KFLAG)
+            call SORTR(sorting,sort_tmp,16,KFLAG)
+            call SORTR(bsorting,bsort_tmp,16,KFLAG)
             isortCounter=0
             ibsortCounter=0
 
 C assign (next line only) back the negative values as they were before the sorting
-            do 159 irevert=1,6
+            do 159 irevert=1,16
               bsorting(irevert)=-bsorting(irevert)            
   159       continue
-            do 146 ixreturn=1,6
-              do 145 ixmatch=1,6
+            do 146 ixreturn=1,16
+              do 145 ixmatch=1,16
                 CALL ECLOSE(sorting(ixreturn),cmlocal(ixmatch*2),0.01,
      &               bNumsAreEqual)
                 if(bNumsAreEqual)then
@@ -3051,16 +3052,16 @@ C do not count when there is dublication
                   ibsortCounter=ibsortCounter+1
 
 C sortmerge will merge sorting and bsorting back together                  
-C 6 is the total number of sortmerge (e.g. set-points). The aim is to place
+C 16 is the total number of sortmerge (e.g. set-points). The aim is to place
 C the negatives at the end of the array
                   if(ibsortCounter.gt.0)then
-                    sortmerge(7-ibsortCounter)=cmlocal(ixmatch*2) 
-                    sortset(7-ibsortCounter)=cmlocal(ixmatch*2+1)
+                    sortmerge(17-ibsortCounter)=cmlocal(ixmatch*2) 
+                    sortset(17-ibsortCounter)=cmlocal(ixmatch*2+1)
                   endif
                 endif
   145         continue                             
   146       continue
-            do 144 ipassback=1,6 
+            do 144 ipassback=1,16
               cmlocal(ipassback*2)=sortmerge(ipassback)
               cmlocal(ipassback*2+1)=sortset(ipassback)
 C              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
