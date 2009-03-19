@@ -5900,8 +5900,8 @@ void edline_(x1,y1,x2,y2,ipdis)
   }
 
   ldash = *ipdis;
-  ix = *x1;         /* first point in case of short line */
-  iy = *y1;
+  ix = (int) *x1;         /* first point in case of short line */
+  iy = (int) *y1;
   xx1 = (float) *x1;  xx2 = (float) *x2;  /* use floats for calcs */
   yy1 = (float) *y1;  yy2 = (float) *y2;
 
@@ -5959,8 +5959,8 @@ void edwline_(x1,y1,x2,y2)
     fprintf(wwc,"%ld %ld %ld %ld\n",*x1,*y1,*x2,*y2);
   }
 
-  ix = *x1;  iy = *y1;     /* convert to local variables */
-  jx = *x2;  jy = *y2;
+  ix = (int) *x1;  iy = (int) *y1;     /* convert to local variables */
+  jx = (int) *x2;  jy = (int) *y2;
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,ix,iy,jx,jy);
   return;
@@ -5980,8 +5980,8 @@ void eswline_(x1,y1,x2,y2)
     fprintf(wwc,"*eswline\n");
     fprintf(wwc,"%ld %ld %ld %ld\n",*x1,*y1,*x2,*y2);
   }
-  ix = *x1;  iy = *y1;     /* convert to local variables */
-  jx = *x2;  jy = *y2;
+  ix = (int) *x1;  iy = (int) *y1;     /* convert to local variables */
+  jx = (int) *x2;  jy = (int) *y2;
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,ix,iy,jx,jy);	/* draw the line */
   return;
@@ -6022,11 +6022,11 @@ void edash_(x1,y1,x2,y2,ipdis)
     fprintf(wwc,"%ld %ld %ld %ld %ld\n",*x1,*y1,*x2,*y2,*ipdis);
   }
 
-  ldash = *ipdis;
-  ix1 = ixl = *x1;         /* give values to local variables */
-  iy1 = iyl = *y1;
-  ix2 = *x2;
-  iy2 = *y2;
+  ldash = (int) *ipdis;
+  ix1 = ixl = (int) *x1;         /* give values to local variables */
+  iy1 = iyl = (int) *y1;
+  ix2 = (int) *x2;
+  iy2 = (int) *y2;
 
   if(ldash == 0) {    /* clear dash_on & dash_rem and return */
     dash_on = 0;
@@ -6129,11 +6129,11 @@ void echain_(x1,y1,x2,y2,ipdis)
     fprintf(wwc,"%ld %ld %ld %ld %ld\n",*x1,*y1,*x2,*y2,*ipdis);
   }
 
-  ldash = *ipdis;
-  ix1 = ixl = *x1;         /* give values to local variables */
-  iy1 = iyl = *y1;
-  ix2 = *x2;
-  iy2 = *y2;
+  ldash = (int) *ipdis;
+  ix1 = ixl = (int) *x1;         /* give values to local variables */
+  iy1 = iyl = (int) *y1;
+  ix2 = (int) *x2;
+  iy2 = (int) *y2;
 
   if(ldash == 0) {    /* clear dash_on & dash_rem and return */
     dash_on = 0;
@@ -6314,7 +6314,7 @@ void egrbox_(x,y,dx,dy,gp)
   yo = *y;     /* origin y coord */
   dx1 = *dx;   /* delta width (ie. x axis) */
   dy1 = *dy;   /* delta height (ie. y axis) */
-  gpo = *gp;   /* grey step as in gscale */
+  gpo = (int) *gp;   /* grey step as in gscale */
 
 /* convert into pixels and move to origin*/
   u2pixel_(&xo,&yo,&lix,&liy);
@@ -6412,7 +6412,7 @@ void ecirarc_(x,y,ths,thf,r,num,di)
   yo   = *y;    /* start of arc y coord */
   ths1 = *ths;  /* angle (deg between positive x axis and start of arc */
   thf1 = *thf;  /* angle (deg between positive x axis and end of arch */
-  nseg = *num;  /* straight line segment resolution */
+  nseg = (int) *num;  /* straight line segment resolution */
   di1  = *di;   /* line type 0. solid, > 0. dashed shading */
   radius = *r;  /* radius of arc in user units  */
 
@@ -6473,10 +6473,10 @@ void ecirc_(x,y,rad,operation)
   long int *x, *y, *rad, *operation;
 {
   int x1,y1,rad1,op,ul,ut,boxdim;
-  x1 = *x;
-  y1 = *y;
-  rad1 = *rad;
-  op = *operation;
+  x1 = (int) *x;
+  y1 = (int) *y;
+  rad1 = (int) *rad;
+  op = (int) *operation;
   ul = x1 - rad1; /* left edge */
   ut = y1 - rad1; /* top edge */
   boxdim = rad1 + rad1;
@@ -6509,12 +6509,12 @@ void earc_(x,y,rad,ang1,ang2,operation)
   long int *x, *y, *rad, *operation, *ang1, *ang2;
 {
   int x1,y1,rad1,op,ul,ut,boxdim,an1,an2;
-  x1 = *x;
-  y1 = *y;
-  rad1 = *rad;
-  op = *operation;
-  an1 = *ang1;
-  an2 = *ang2;
+  x1 = (int) *x;
+  y1 = (int) *y;
+  rad1 = (int) *rad;
+  op = (int) *operation;
+  an1 = (int) *ang1;
+  an2 = (int) *ang2;
   ul = x1 - rad1; /* left edge */
   ut = y1 - rad1; /* top edge */
   boxdim = rad1 + rad1;
@@ -6662,7 +6662,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
     int ix,nd,mde;
     double dx, dz;
 
-    mde = *mode;
+    mde = (int) *mode;
 
     if (mde == 0) {
 	vv = *v2 - *v1;
@@ -6722,7 +6722,7 @@ void labelstr(n,val,WticC,sstr)
 {
   int idum, n1, ticc;
   float val1;
-  n1 = *n;
+  n1 = (int) *n;
   val1 = *val;
 
   if (n1==0){
@@ -6786,7 +6786,8 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
     fprintf(wwc,"%s\n",msg2);
  }
 
- ofl = *offl; ofb = *offb; oft = *offt; mde = *mode; sid = *side;
+ ofl = (int) *offl; ofb = (int) *offb; oft = (int) *offt;
+ mde = *mode; sid = (int) *side;
 
 /* Define tic intervals (DDX data increment, NY decimal places). */
  dinterval_(ymn, ymx, &ddy, &ny, &mde);
@@ -6939,7 +6940,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
    fprintf(wwc,"%s\n",msg2);
  }
 
- ofl = *offl; ofr = *offr; ofb = *offb; mde = *mode;
+ ofl = (int) *offl; ofr = (int) *offr; ofb = (int) *offb; mde = *mode;
 
 /* Define tic intervals (DDX data increment, NX num decimal places). */
  dinterval_(xmn, xmx, &ddx, &nx, &mde);
@@ -7072,8 +7073,8 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
    fprintf(wwc,"%s\n",msg2);
  }
 
- ofl = *offl; ofr = *offr; ofb = *offb; mde = *mode;
- iind = *ind; iidiv = *idiv; iisjday = *isjday;
+ ofl = (int) *offl; ofr = (int) *offr; ofb = (int) *offb; mde = *mode;
+ iind = (int) *ind; iidiv = (int) *idiv; iisjday = (int) *isjday;
 
 /* Define tic intervals (DDX data increment, NX num decimal places). */
  dinterval_(xmn, xmx, &ddx, &nx, &mde);
@@ -8335,14 +8336,14 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
  long int eyex,eyey,sym,sz;  /* centre for image symbols and symbol index and size */
  long int saved_font;
  int bh,hdl;
- int oocfgz = *icfgz;	/* toggle for zones button */
- int iioocfgz = *iicfgz;	/* toggle for zones images */
- int oocfgn = *icfgn;	/* toggle for network button */
- int iioocfgn = *iicfgn;	/* toggle for network images */
- int oocfgc = *icfgc;	/* toggle for control button */
- int iioocfgc = *iicfgc;	/* toggle for control images */
- int oocfgdfn = *icfgdfn;	/* toggle for domain button */
- int iioocfgdfn = *iicfgdfn;	/* toggle for domain images */
+ int oocfgz = (int) *icfgz;	/* toggle for zones button */
+ int iioocfgz = (int) *iicfgz;	/* toggle for zones images */
+ int oocfgn = (int) *icfgn;	/* toggle for network button */
+ int iioocfgn = (int) *iicfgn;	/* toggle for network images */
+ int oocfgc = (int) *icfgc;	/* toggle for control button */
+ int iioocfgc = (int) *iicfgc;	/* toggle for control images */
+ int oocfgdfn = (int) *icfgdfn;	/* toggle for domain button */
+ int iioocfgdfn = (int) *iicfgdfn;	/* toggle for domain images */
  ocfgz = oocfgz; ocfgn = oocfgn; ocfgc = oocfgc; ocfgdfn = oocfgdfn; /* remember toggles */
  iiocfgz = iioocfgz; iiocfgn = iioocfgn; iiocfgc = iioocfgc; iiocfgdfn = iioocfgdfn; /* remember images */
 
