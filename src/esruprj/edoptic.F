@@ -632,12 +632,12 @@ C ilabs is string arry for layer insert/delet selection.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iigr,iigr2,iigt2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
-      integer iix4,iiy4,iix5,iiy5
+      integer iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iigr,iigr2,iigt2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
-      integer*8 iix4,iiy4,iix5,iiy5
+      integer*8 iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4
 #endif
 
       IER=0
@@ -734,7 +734,8 @@ C Draw visible as a circle.
         CALL wstxpt(igr+25,igt,temp)
 
 C Draw direct transmission.
-        call edwline(igr,igt+15,igr+20,igt+15)
+        iid1=igr; iid2=igt+15; iid3=igr+20; iid4=igt+15;
+        call edwline(iid1,iid2,iid3,iid4)
         write(temp,'(A)')' Direct trn'
         CALL wstxpt(igr+25,igt+15,temp)
         call u2pixel(0.0,DGED(1),ix1,iy1)
@@ -742,13 +743,17 @@ C Draw direct transmission.
         call u2pixel(55.0,DGED(3),ix3,iy3)
         call u2pixel(70.0,DGED(4),ix4,iy4)
         call u2pixel(80.0,DGED(5),ix5,iy5)
-        call edwline(ix1,iy1,ix2,iy2)
-        call edwline(ix2,iy2,ix3,iy3)
-        call edwline(ix3,iy3,ix4,iy4)
-        call edwline(ix4,iy4,ix5,iy5)
+        iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2;
+        iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4;
+        iix5=ix5; iiy5=iy5;
+        call edwline(iix1,iiy1,iix2,iiy2)
+        call edwline(iix2,iiy2,iix3,iiy3)
+        call edwline(iix3,iiy3,iix4,iiy4)
+        call edwline(iix4,iiy4,iix5,iiy5)
 
 C Draw reflection.
-        call eswline(igr,igt+30,igr+20,igt+30)
+        iid1=igr; iid2=igt+30; iid3=igr+20; iid4=igt+30;
+        call eswline(iid1,iid2,iid3,iid4)
         write(temp,'(A)')' Reflection'
         CALL wstxpt(igr+25,igt+30,temp)
         call u2pixel(0.0,sr(1),ix1,iy1)
@@ -756,10 +761,13 @@ C Draw reflection.
         call u2pixel(55.0,sr(3),ix3,iy3)
         call u2pixel(70.0,sr(4),ix4,iy4)
         call u2pixel(80.0,sr(5),ix5,iy5)
-        call eswline(ix1,iy1,ix2,iy2)
-        call eswline(ix2,iy2,ix3,iy3)
-        call eswline(ix3,iy3,ix4,iy4)
-        call eswline(ix4,iy4,ix5,iy5)
+        iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2;
+        iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4;
+        iix5=ix5; iiy5=iy5;
+        call eswline(iix1,iiy1,iix2,iiy2)
+        call eswline(iix2,iiy2,iix3,iiy3)
+        call eswline(iix3,iiy3,iix4,iiy4)
+        call eswline(iix4,iiy4,iix5,iiy5)
 
 C Draw absorption for each layer.
         iigr=igr
@@ -774,20 +782,13 @@ C Draw absorption for each layer.
           call u2pixel(55.0,ABED(IL,3),ix3,iy3)
           call u2pixel(70.0,ABED(IL,4),ix4,iy4)
           call u2pixel(80.0,ABED(IL,5),ix5,iy5)
-          iix1=ix1
-          iiy1=iy1
-          iix2=ix2
-          iiy2=iy2
+          iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2;
+          iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4;
+          iix5=ix5; iiy5=iy5;
           call edline(iix1,iiy1,iix2,iiy2,3)
-          iix3=ix3
-          iiy3=iy3
           call edline(iix2,iiy2,iix3,iiy3,3)
           call esymbol(ix2,iy2,IL+3,1)
-          iix4=ix4
-          iiy4=iy4
           call edline(iix3,iiy3,iix4,iiy4,3)
-          iix5=ix5
-          iiy5=iy5
           call edline(iix4,iiy4,iix5,iiy5,3)
           call esymbol(ix3,iy3,IL+3,1)
   46    CONTINUE

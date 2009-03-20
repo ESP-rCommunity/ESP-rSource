@@ -36,6 +36,17 @@ C      COMMON/OUTIN/IUOUT,IUIN
       character act*1
 C     character outs*124
 
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iixp,iiyp,iixq,iiyq
+      integer iixc1,iiyc1,iixc2,iiyc2
+      integer iixc3,iiyc3,iixc4,iiyc4
+#else
+      integer*8 iixp,iiyp,iixq,iiyq
+      integer*8 iixc1,iiyc1,iixc2,iiyc2
+      integer*8 iixc3,iiyc3,iixc4,iiyc4
+#endif     
+
 C Calculate the vector between P and Q.
       do 10 I=1,3
         SNORM(I)=Q(I)-P(I)
@@ -180,16 +191,19 @@ C Draw the damn thing!
 
 C Draw the arrow. (IDRAW determines shaft width).
       if (IDRAW.gt.0) then
-        if (IDRAW.eq.1) call eswline(ixp,iyp,ixq,iyq)
-        if (IDRAW.eq.2) call edwline(ixp,iyp,ixq,iyq)
-        call eswline(ixc1,iyc1,ixc2,iyc2)
-        call eswline(ixc2,iyc2,ixc3,iyc3)
-        call eswline(ixc3,iyc3,ixc4,iyc4)
-        call eswline(ixc4,iyc4,ixc1,iyc1)
-        call eswline(ixc1,iyc1,ixq,iyq)
-        call eswline(ixc2,iyc2,ixq,iyq)
-        call eswline(ixc3,iyc3,ixq,iyq)
-        call eswline(ixc4,iyc4,ixq,iyq)
+        iixp=ixp; iiyp=iyp; iixq=ixq; iiyq=iyq;
+        iixc1=ixc1; iiyc1=iyc1; iixc2=ixc2; iiyc2=iyc2;
+        iixc3=ixc3; iiyc3=iyc3; iixc4=ixc4; iiyc4=iyc4;
+        if (IDRAW.eq.1) call eswline(iixp,iiyp,iixq,iiyq)
+        if (IDRAW.eq.2) call edwline(iixp,iiyp,iixq,iiyq)
+        call eswline(iixc1,iiyc1,iixc2,iiyc2)
+        call eswline(iixc2,iiyc2,iixc3,iiyc3)
+        call eswline(iixc3,iiyc3,iixc4,iiyc4)
+        call eswline(iixc4,iiyc4,iixc1,iiyc1)
+        call eswline(iixc1,iiyc1,iixq,iiyq)
+        call eswline(iixc2,iiyc2,iixq,iiyq)
+        call eswline(iixc3,iiyc3,iixq,iiyq)
+        call eswline(iixc4,iiyc4,iixq,iiyq)
       endif
       call forceflush()
 

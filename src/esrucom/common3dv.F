@@ -286,6 +286,11 @@ C geometry.h provides commons G0 and G2.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -380,8 +385,8 @@ C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -391,12 +396,14 @@ C If IP1 is ever negative then jump to a later point.
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           call forceflush()
 
@@ -406,19 +413,21 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           call forceflush()
  1000   CONTINUE
@@ -442,6 +451,11 @@ C clips the image and draws it.
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
       CHARACTER temp*7,CUBN*6
 
@@ -508,8 +522,8 @@ C First move to the beginning (as passed back from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -519,7 +533,9 @@ C If IP1 is ever negative then jump to a later point.
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          call eswline(ixlast,iylast,ix,iy)
+          iix=ix
+          iiy=iy
+          call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
 
 C Repeat until next point is the first, remember position and skip
@@ -528,14 +544,16 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          call eswline(ixlast,iylast,ix,iy)
+          iix=ix
+          iiy=iy
+          call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
  1000   CONTINUE
   301 CONTINUE
@@ -627,8 +645,6 @@ C Move to first point.
           IP = IABS(IBPNT)
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          ixlast=ix
-          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
           ixc=ixc+ix
@@ -644,9 +660,9 @@ C Draw succeeding points until last vertex.
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           elseif(linstyg(igs).eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           else
             call edline(iixlast,iiylast,iix,iiy,LD)
           endif
@@ -654,8 +670,6 @@ C Draw succeeding points until last vertex.
           iyc=iyc+iy
 
           IP1 = IBNXT(IP1)
-          ixlast=ix
-          iylast=iy
           iixlast=ix   ! cast for call to edline
           iiylast=iy
           IF(IP1 .NE. IP) GOTO 451
@@ -668,9 +682,9 @@ C Complete ground surface.
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           elseif(linstyg(igs).eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           else
             call edline(iixlast,iiylast,iix,iiy,LD)
           endif

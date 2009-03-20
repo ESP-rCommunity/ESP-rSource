@@ -412,8 +412,6 @@ C move cursor to vertex and remember position.
             IV=NZJVN(icc,IP)
             CALL VERTLBL(ix,iy,IV,ier)
           ENDIF
-          ixlast=ix
-          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
 
@@ -423,6 +421,8 @@ C move cursor to vertex and remember position.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -431,7 +431,7 @@ C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
             if(NAP.ne.NBP)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -454,18 +454,20 @@ C with the co-planer.
 C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
+              iix=ix
+              iiy=iy
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
+                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
-                call eswline(ixlast,iylast,ix,iy)
+                if(greyok) call winscl('i',nifgrey-3)
+                call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           ixc=ixc+ix
           iyc=iyc+iy
@@ -475,16 +477,12 @@ C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
             IV=NZJVN(icc,IP1)
             CALL VERTLBL(ix,iy,IV,ier)
-            ixlast=ix
-            iylast=iy
             iixlast=ix   ! cast for edline call
             iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
-          ixlast=ix
-          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
@@ -493,12 +491,14 @@ C Complete the polygon.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
             if(NAP.ne.NBP)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -510,8 +510,6 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  iix=ix
-                  iiy=iy
                   call edline(iixlast,iiylast,iix,iiy,LD)
                   write(6,*) 'duplicate edge.'
                   found=.true.
@@ -522,17 +520,17 @@ C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
+                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call eswline(ixlast,iylast,ix,iy)
+                call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           ixc=ixc+ix
           iyc=iyc+iy
