@@ -71,6 +71,8 @@ C                         If i?sn(?,2)>0 and i?sn(?,3)>0 then sensor is
 C                                        the construction node defined by
 C                                        construction i?sn(?,2), node
 C                                        position i?sn(?,3).
+C                        If ifsn(?,4)=-66 then sensor senses relativ
+C                                        humidity in that zone's air point
 C           ibsn(?,1)= 0; control is on associated zone's air point.
 C           iosn(?,1)= 0; control is on associated zone's air point.
 C           ipsn(?,1)= 0; - not active for plant side.
@@ -207,7 +209,7 @@ C ifctyp |- Defines the controller type for each flow control function
 C           for day type, and period:
 C           0: --------not applicable-------
 C           1: senses dry bulb temp.        , actuates mass flow rate
-C           2: --------not applicable-------
+C           2: senses relative humidity , actuates mass flow rate  !! no plant necessary !!
 C           3: senses enthalpy              , actuates mass flow rate
 C           4: --------not applicable-------
 C           5: senses 1th ph. mass flow rate, actuates mass flow rate
@@ -216,7 +218,7 @@ C           7: senses 2nd ph. mass flow rate, actuates mass flow rate
 C           8: --------not applicable-------
 C           9: additional plt output        , actuates mass flow rate
 C          10: --------not applicable-------
-C          11: relative humidity            , actuates mass flow rate
+C          11: relative humidity            , actuates mass flow rate !! plant only !!
 C          12 -> 23: ---not applicable------
 C          24: temperature difference       , actuates mass flow rate
 C          25: absolute temperature diff.   , actuates mass flow rate
@@ -2175,6 +2177,7 @@ C Flow actuator.
 C Flow control type.
         SSTR='undefined > flow '
         IF(IFCTYP(II,JJ,KK).eq.1)SSTR= 'dry bulb > flow   '
+        IF(IFCTYP(II,JJ,KK).eq.2)SSTR= 'RH w/o plt > flow '
         IF(IFCTYP(II,JJ,KK).eq.3)SSTR= 'enthalpy > flow   '
         IF(IFCTYP(II,JJ,KK).eq.5)SSTR= '1st phase > flow  '
         IF(IFCTYP(II,JJ,KK).eq.7)SSTR= '2nd phase > flow  '
@@ -3525,7 +3528,7 @@ C Flow Sensor.
           else
             sn='-'
           endif
-          IF(icsn(2).EQ.0)THEN
+          IF ((icsn(2).EQ.0).AND.(icsn(4).NE.-66))THEN
             WRITE(SSTR,'(3a)')'senses dry bulb temperature in ',
      &        zn(1:lnblnk(zn)),'.'
             WRITE(SSTRB,'(3a)') 'senses dry bulb T in ',
@@ -3540,6 +3543,11 @@ C Flow Sensor.
      &        ' in ',zn(1:lnblnk(zn)),'.'
             WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
      &        ' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF (icsn(4).EQ.-66) THEN
+            WRITE(SSTR,'(3a)')'senses relative humidity in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)')'senses RH within ',
+     &        zn(1:lnblnk(zn)),'.'
           ENDIF
         ELSEIF(icsn(1).EQ.-1)THEN
           WRITE(SSTR,163)icsn(2),icsn(1)

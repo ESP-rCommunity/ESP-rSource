@@ -113,7 +113,7 @@ C Nicol control algorithm
 C PI controller
       ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
          CALL FCL05
- 
+
 C New controllers inserted here!
       ELSE
         WRITE(outs,*) 'MFCNTR: invalid m. flow control law ',
@@ -161,6 +161,8 @@ C prevailing controller type, determines sensed condition (SVCTL).
       REAL QDATA,PCAOUT
       INTEGER napdat
 
+      COMMON/FVALG/GFA(MCOM) ! for humidity control
+
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
@@ -171,6 +173,7 @@ C Establish sensor location
       IFS1=IFSN(ICFP,1)
       IFS2=IFSN(ICFP,2)
       IFS3=IFSN(ICFP,3)
+      IFS4=IFSN(ICFP,4) !  for humidity control
 
 C Locate the actuated flow connection
       IF((IFAN(ICFP,1).lt.-4).or.(IFAN(ICFP,1).gt.-3)) THEN
@@ -198,7 +201,8 @@ C Match mass flow controller type.
           STOP
         endif
       else
-        if((ICLCTP.NE.1.AND.ICLCTP.NE.3.AND.ICLCTP.NE.5.AND.ICLCTP.NE.7
+        if((ICLCTP.NE.1.AND.ICLCTP.NE.2.AND.ICLCTP.NE.3
+     &           .AND.ICLTP.NE.5.AND.ICLCTP.NE.7
      &           .AND.ICLCTP.NE.9.AND.ICLCTP.NE.11.AND.ICLCTP.NE.41)
      &           .AND.(ICLCTP.LT.24.OR.ICLCTP.GT.34))then
           WRITE(outs,*) ' CFFVAR: mass flow control function ',ICFP
@@ -213,11 +217,13 @@ C Match mass flow controller type.
       endif
 
 C Determine sensed condition depending on the sensor location
-C Sensor measures building zone related temperature
+C Sensor measures building zone related temperature or humidity
       IF(IFS1.GT.0) THEN
         SVCTL=TFA(IFS1)
         IF(IFS2.GT.0.AND.IFS3.EQ.0) SVCTL=TFS(IFS1,IFS2)
         IF(IFS2.GT.0.AND.IFS3.GT.0) SVCTL=TFC(IFS1,IFS2,IFS3)
+c Sense humidity
+        IF(IFS4.EQ.-66) SVCTL=GFA(IFS1)
 
 C Sensor measures plant node state-space variable
       ELSE IF(IFS1.EQ.-1.AND.IFS3.GT.0) THEN
