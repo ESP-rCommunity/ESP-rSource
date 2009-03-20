@@ -162,6 +162,7 @@ C prevailing controller type, determines sensed condition (SVCTL).
       INTEGER napdat
 
       COMMON/FVALG/GFA(MCOM) ! for humidity control
+      common/atpres/patmos
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
@@ -169,6 +170,9 @@ C prevailing controller type, determines sensed condition (SVCTL).
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       character outs*124
 
+C external function reference
+      real pcrh2
+      
 C Establish sensor location
       IFS1=IFSN(ICFP,1)
       IFS2=IFSN(ICFP,2)
@@ -202,7 +206,7 @@ C Match mass flow controller type.
         endif
       else
         if((ICLCTP.NE.1.AND.ICLCTP.NE.2.AND.ICLCTP.NE.3
-     &           .AND.ICLTP.NE.5.AND.ICLCTP.NE.7
+     &           .AND.ICLCTP.NE.4.AND.ICLTP.NE.5.AND.ICLCTP.NE.7
      &           .AND.ICLCTP.NE.9.AND.ICLCTP.NE.11.AND.ICLCTP.NE.41)
      &           .AND.(ICLCTP.LT.24.OR.ICLCTP.GT.34))then
           WRITE(outs,*) ' CFFVAR: mass flow control function ',ICFP
@@ -222,8 +226,14 @@ C Sensor measures building zone related temperature or humidity
         SVCTL=TFA(IFS1)
         IF(IFS2.GT.0.AND.IFS3.EQ.0) SVCTL=TFS(IFS1,IFS2)
         IF(IFS2.GT.0.AND.IFS3.GT.0) SVCTL=TFC(IFS1,IFS2,IFS3)
-c Sense humidity
-        IF(IFS4.EQ.-66) SVCTL=GFA(IFS1)
+c Sense humidity: -66 R.H., -77 moisture content
+        IF(IFS4.EQ.-66) then 
+          SVCTL=pcrh2(TFA(IFS1),GFA(IFS1),PATMOS) ! zone relative humidity, %
+          SVCTL=min(100.0,SVCTL) ! more than 100% is not possible, however pcrh2 returns values in excess of this!!
+        endif
+        IF(IFS4.EQ.-77) then 
+          SVCTL=GFA(IFS1)
+        endif
 
 C Sensor measures plant node state-space variable
       ELSE IF(IFS1.EQ.-1.AND.IFS3.GT.0) THEN

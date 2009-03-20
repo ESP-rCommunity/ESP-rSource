@@ -4131,9 +4131,12 @@ C heat gain / loss to / from the surface.
 C Mass transport to / from the surface (kg/s) is calculated ...
 C
 C where,
-C       hc = convective heat transfer coefficient (W/(m^2 K))
-C       Asurf = surface area (m^2)
-C       Tsurf = surface temperature (degC)
+C
+C
+C Note: If a simulation run crashes when using this special material type, it may help to 
+C reduce time step length. Time step should never be longer than 6 min (i.e. 10 ts per hour).
+C Reducing this ts to 3 min (i.e. 20 ts per hour) has often let models which crashed with 10 ts/h 
+C run through.
 
       subroutine spmcmp57(icomp,ispmnod)
 #include "building.h"
@@ -4357,13 +4360,13 @@ C Results output.
       unitspm(ispmnod,9)='(%)'
       txtspm(ispmnod,9)='Area frac. for visibility, external, upper'
 
-C      write(*,"(14(a,E11.4))")
-C     & "ts_i=",tsurf(2)," tz_i=",tzone(2)," tz_sat_i=",tz_sat(2),
-C     & " zrh_i=",zrh(2)," pD_i=",pD(2)," ps_sat_i=",psurf_sat(2),
-C     & " QPhCh=",genflxf(icomp,isurf,inode),
-C     & " Qavail=",Qavail,
-C     & " MFlux_i=",mflux(2)," M_tot_i=",mh2o(icomp,isurf,2),
-C     & " beta=",beta," wz_i=",wzone(2),
+      write(*,"(12(a,E11.4))")
+     & "ts_i=",tsurf(2)," tz_i=",tzone(2)," tz_sat_i=",tz_sat(2),
+     & " zrh_i=",zrh(2)," pD_i=",pD(2)," ps_sat_i=",psurf_sat(2),
+     & " QPhCh=",genflxf(icomp,isurf,inode),
+     & " Qavail=",Qavail,
+     & " MFlux_i=",mflux(2)," M_tot_i=",mh2o(icomp,isurf,2),
+     & " beta=",beta," wz_i=",wzone(2),gfa(icomp)
 C     & " a_min_i=",asurf_min(2)," a_max_i=",asurf_max(2)
 
 C As a temporary measure, use zone-related variables, zspmf1 and zspmf2,
