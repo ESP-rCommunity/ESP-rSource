@@ -8608,13 +8608,15 @@ void openmouse_(mseb1,mseb2,mseb3,len1,len2,len3)
   return;
 } /* openmouse */
 
-/* notify pixel position of right edge of graphic display */
+/* notify pixel position of right edge of graphic display
+   note that the fbb box structure contains int data types
+   and these need to be explicitly cast to long int */
 void findrtb_(right,top,bottom)
   long int *right, *top, *bottom;
 {
-  *right = fbb.b_right;
-  *top = fbb.b_top;
-  *bottom = fbb.b_bottom;
+  *right = (long int) fbb.b_right;
+  *top = (long int) fbb.b_top;
+  *bottom = (long int) fbb.b_bottom;
   return;
 }
 

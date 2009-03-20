@@ -321,13 +321,15 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
 } /* opencfg */
 
 
-/* notify pixel position of right edge of graphic display */
+/* notify pixel position of right edge of graphic display
+   note that the fbb box structure contains int data types
+   and these need to be explicitly cast to long int */
 void findrtb_(right,top,bottom)
   long int *right, *top, *bottom;
 {
-  *right = fbb.b_right;
-  *top = fbb.b_top;
-  *bottom = fbb.b_bottom;
+  *right = (long int) fbb.b_right;
+  *top = (long int) fbb.b_top;
+  *bottom = (long int) fbb.b_bottom;
   return;
 }
 
