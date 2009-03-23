@@ -3673,7 +3673,8 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
           itrc=IW-1
         endif
         MODE='ALL '
-        CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+        IUF=IPRODB   ! assign second file unit to the events db unit
+        CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
 C copy # of plant component nodes from bps to prj commons 
         call CopyPltNodeCounts()
         IF(IER.NE.0)THEN
