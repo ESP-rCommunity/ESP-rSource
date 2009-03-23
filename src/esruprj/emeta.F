@@ -741,7 +741,8 @@ C For poly shape loop to find the floor in order to set up the floor area
       endif
  
 C Save this to file before passing into the geometry editing facility.
-C Use gversion 1.1.
+C Use gversion 1.1. 
+      NCOMP=NCOMP+1  ! Temporarily update NCOMP for geowrite use.
       if(igupgrade.lt.2)then
         igupgrade=2
         gversion(icomp) =1.1
@@ -752,17 +753,20 @@ C Use gversion 1.1.
         return
       ENDIF
 
-C Read in control file if defined.
+C Read in control file if defined. Note: the control file will not yet
+C know about this new zone so decrement NCOMP before read and re-establish
+C after reading control file.
       OKC=.false.
       if(LCTLF(1:1).ne.' '.and.LCTLF(1:4).ne.'UNKN')OKC=.true.
       if(OKC)then
+        NCOMP=NCOMP-1  ! Temporarily decrement NCOMP.
         ICTLF=IFIL+1
         CALL ERPFREE(ICTLF,ISTAT)
         call FINDFIL(LCTLF,XST)
         IF(XST) CALL EZCTLR(ICTLF,0,IUOUT,IER)
+        NCOMP=NCOMP+1  ! Re-establish NCOMP.
       endif
 
-      NCOMP=NCOMP+1
       NCCODE(ICOMP)=NCOMP
       if(OKC)then
         icascf(NCOMP)=0
@@ -1484,360 +1488,6 @@ C Debug.
           continue
         endif
         goto 43
-      elseif(WORD(1:11).eq.'*start_zone')then
-
-C If this is a new model increment icomp. If the model already has
-C zones then set icomp to the next available zone.
-        if(ncomp.eq.0)then
-          icomp=icomp+1      ! new model, ncomp not yet set
-        else
-          if(icomp.eq.0)then
-            icomp=ncomp+1    ! increment existing zone index
-          elseif(icomp.gt.0)then
-            icomp=icomp+1    ! increment index for subsequent zones
-          endif
-        endif
-        nsz=nsz+1
-        CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-        write(name(nsz),'(a)') WORD(1:12)
-        goto 43
-      elseif(WORD(1:9).eq.'*end_zone')then
-        goto 43
-      elseif(WORD(1:5).eq.'*end ')then
-
-C Jump to process the collected data.
-        goto 1000
-      elseif(WORD(1:5).eq.'*cord')then
-        nbcord(nsz)=nbcord(nsz)+1   ! increment number of coordinates in zone
-        nbc=nbcord(nsz)
-        CALL EGETWR(OUTSTR,K,valx,0.,0.,'-','cord-x',IER)
-        CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','cord-y',IER)
-        szcoords(nsz,nbc,1)=valx
-        szcoords(nsz,nbc,2)=valy
-        if(shape(nsz)(1:4).eq.'poly')then
-          CALL EGETWR(OUTSTR,K,valz,0.,0.,'-','cord-z',IER)
-          szcoords(nsz,nbc,3)=valz
-        else
-          szcoords(nsz,nbc,3)=0.0
-        endif
-        goto 43
-      elseif(WORD(1:5).eq.'*door')then
-        CALL EGETWI(OUTSTR,K,nbd,0,MS,'W','no of doors',IER)
-
-C Scan for pairs of parent surface index and the door width.
-        nbdoor(nsz)=nbd
-        if(nbdoor(nsz).gt.0)then
-          do 47 igl=1,nbdoor(nsz)
-            CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
-            CALL EGETWR(OUTSTR,K,val,0.,0.,'-','width',IER)
-            szhasdoor(nsz,iparen)=val
-  47      continue
-        endif
-        goto 43
-      elseif(WORD(1:6).eq.'*glaze')then
-        CALL EGETWI(OUTSTR,K,nbg,0,MS,'W','no of glzaings',IER)
-
-C Scan for pairs of parent surface index and the percentage of the parent
-C surface area to have as glazing.
-        nbglz(nsz)=nbg
-        if(nbglz(nsz).gt.0)then
-          do 144 igl=1,nbglz(nsz)
-            CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
-            CALL EGETWR(OUTSTR,K,val,0.,0.,'-','percent',IER)
-            szhasglaze(nsz,iparen)=val
- 144      continue
-        endif
-        goto 43
-      elseif(WORD(1:6).eq.'*shape')then
-        CALL EGETW(OUTSTR,K,WORD,'W','shape type',IFLAG)
-        if(WORD(1:3).eq.'box')then
-          write(shape(nsz),'(a)') 'box '
-          nbwalls(nsz)=6
-        elseif(WORD(1:7).eq.'extrude')then
-          write(shape(nsz),'(a)') 'extrude'
-        elseif(WORD(1:4).eq.'poly')then
-          write(shape(nsz),'(a)') 'poly'
-        endif
-        NS=0     ! reset number of surfaces and clear arrays.
-        goto 43
-      elseif(WORD(1:8).eq.'*nbwalls')then
-
-C Number of parent surfaces has a meaning for extruded shapes and set to 6 for
-C box shapes.
-        if(shape(nsz)(1:7).eq.'extrude')then
-          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
-          nbwalls(nsz)=nbw
-        elseif(shape(nsz)(1:4).eq.'poly')then
-          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
-          nbwalls(nsz)=nbw
-        else
-          nbwalls(nsz)=4
-        endif
-        goto 43
-      elseif(WORD(1:7).eq.'*origin')then
-        if(shape(nsz)(1:3).eq.'box')then
-          CALL EGETWR(OUTSTR,K,origin(1),0.,0.,'-','box X origin',IER)
-          CALL EGETWR(OUTSTR,K,origin(2),0.,0.,'-','box Y origin',IER)
-          CALL EGETWR(OUTSTR,K,origin(3),0.,0.,'-','box Z origin',IER)
-          szorigin(nsz,1)=origin(1)
-          szorigin(nsz,2)=origin(2)
-          szorigin(nsz,3)=origin(3)
-        elseif(shape(nsz)(1:7).eq.'extrude')then
-          CALL EGETWR(OUTSTR,K,origin(1),0.,0.,'-','extrude Z base',IER)
-          CALL EGETWR(OUTSTR,K,origin(2),0.,0.,'-','extrude Z top',IER)
-          CALL EGETWR(OUTSTR,K,origin(3),0.,0.,'-','extrude ignore',IER)
-          szorigin(nsz,1)=origin(1)
-          szorigin(nsz,2)=origin(2)
-          szorigin(nsz,3)=origin(3)
-        elseif(shape(nsz)(1:4).eq.'poly')then
-          szorigin(nsz,1)=0.0
-          szorigin(nsz,2)=0.0
-          szorigin(nsz,3)=0.0
-        endif
-        goto 43
-      elseif(WORD(1:7).eq.'*rotate')then
-        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
-        rotateit(nsz)=rot
-        goto 43
-      elseif(WORD(1:5).eq.'*size')then
-        if(shape(nsz)(1:3).eq.'box')then
-          CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
-          CALL EGETWR(OUTSTR,K,size(2),0.,0.,'-','box width',IER)
-          CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
-          szsize(nsz,1)=size(1)
-          szsize(nsz,2)=size(2)
-          szsize(nsz,3)=size(3)
-        elseif(shape(nsz)(1:7).eq.'extrude')then
-          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
-          szsize(nsz,2)=0.0
-          szsize(nsz,3)=0.0
-        elseif(shape(nsz)(1:4).eq.'poly')then
-          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
-          szsize(nsz,2)=0.0
-          szsize(nsz,3)=0.0
-        endif
-        goto 43
-      elseif(WORD(1:8).eq.'*surface')then
-
-C Expected order is the walls first then the top then the base and
-C then any windows and then any doors.
-        NS=NS+1
-
-C Surface name, allow for future spaces in name.
-        CALL EGETP(OUTSTR,K,WORD,'W','surface name',IER)
-        write(szhasname(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
-
-C Surface construction name, allow for spaces.
-        CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
-        write(szhasconstruction(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
-
-C Read three indices representing boundary condition.
-        CALL EGETWI(OUTSTR,K,ival1,-1,4,'W','connection type',IER)
-        CALL EGETWI(OUTSTR,K,ival2,0,MCOM,'W','connection ic2',IER)
-        CALL EGETWI(OUTSTR,K,ival3,0,MS,'W','connection ie2',IER)
-        szboundarytype(nsz,NS,1)=ival1
-        szboundarytype(nsz,NS,2)=ival2
-        szboundarytype(nsz,NS,3)=ival3
-
-C Note: if shape=poly for the each of the declaired walls the
-C following line should start with the token *list.
-        goto 43
-      elseif(WORD(1:5).eq.'*list')then
-
-C The current value of NS should still point to the surface data
-C that was just scanned. The *list line holds the number of
-C edges and then the index of each coordinate (as in the normal
-C geometry file).
-        CALL EGETWI(OUTSTR,K,ival1,3,MV,'W','nb of edges',IER)
-        isznbedges(nsz,NS)=ival1
-
-C Now proceed to read vertices on one or more lines.
-        DO 12 KV=1,ival1
-          CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
-          IF(IERV.NE.0) THEN
-            call edisp(ITRU,' reading continuation line...')
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'vertex XYZ',IER)
-            K=0
-            CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
-          ENDIF
-          iszlist(nsz,NS,KV)=ival2
-   12   CONTINUE
-        goto 43
-      elseif(WORD(1:4).eq.'*obs')then
-
-C An obstruction block to be associated with the current zone.
-        nbob(nsz)=nbob(nsz)+1
-        nob=nbob(nsz)
-        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
-        XOB(nsz,nob)=val1
-        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
-        YOB(nsz,nob)=val1
-        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
-        ZOB(nsz,nob)=val1
-        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
-        DXOB(nsz,nob)=val1
-        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
-        DYOB(nsz,nob)=val1
-        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
-        DZOB(nsz,nob)=val1
-        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
-        BANGOB(nsz,nob)=val1
-        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
-        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
-        goto 43
-
-      elseif(WORD(1:5).eq.'*mass')then
-
-C The *mass keyword is followed by 9 tokens as follows:
-        nbmass(nsz)=nbmass(nsz)+1
-        nma=nbmass(nsz)
-        CALL EGETW(OUTSTR,K,WORD,'W','mass vertical or horiz',IER)
-        if(WORD(1:2).eq.'VM'.or.WORD(1:2).eq.'vm')then
-          sdatamass(nsz,nma,1)= 90.0  ! signal vertical
-        elseif(WORD(1:2).eq.'HM'.or.WORD(1:2).eq.'hm')then
-          sdatamass(nsz,nma,1)= 0.0   ! signal horizontal
-        endif
-        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass X org',IER)
-        sdatamass(nsz,nma,2)=val1
-        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass Y org',IER)
-        sdatamass(nsz,nma,3)=val1
-        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','mass Z org',IER)
-        sdatamass(nsz,nma,4)=val1
-        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass X dis',IER)
-        sdatamass(nsz,nma,5)=val1
-        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass Z dis',IER)
-        sdatamass(nsz,nma,6)=val1
-        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','mass rotate',IER)
-        sdatamass(nsz,nma,7)=val1
-        CALL EGETW(OUTSTR,K,WORD,'W','mass name',IFLAG)
-        write(stextmass(nsz,nma,1),'(a)') WORD(1:lnblnk(WORD))
-        CALL EGETW(OUTSTR,K,WORD,'W','mass constr name',IFLAG)
-        write(stextmass(nsz,nma,2),'(a)') WORD(1:lnblnk(WORD))
-        write(stextmass(nsz,nma,3),'(a)') 'OPAQUE'   ! set as opaque
-        goto 43
-
-      elseif(WORD(1:6).eq.'*usage')then
-
-C After *usage the next token is 'pattern' (tag indicating that
-C an operations file in the training/pattern folder to use to
-C get infiltration and casual gains). Note usefile is only
-C 32 char buffer because other source code knowns the path
-C to the training/pattern folder.
-        CALL EGETW(OUTSTR,K,use(1),'W','pattern',IFLAG)
-        if(use(1)(1:7).eq.'pattern')then
-          szuse(nsz,1) = use(1)
-          CALL EGETW(OUTSTR,K,use(2),'W','pattern infil',IFLAG)
-          szuse(nsz,2) = use(2)
-          CALL EGETW(OUTSTR,K,use(3),'W','pattern casual',IFLAG)
-          szuse(nsz,3) = use(3)
-          CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
-          write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
-        else
-          call usrmsg('Usage 2nd parameter not recognised',' ','W')
-        endif
-        goto 43
-      elseif(WORD(1:9).eq.'*occupant')then
-        goto 43
-      elseif(WORD(1:9).eq.'*lighting')then
-        goto 43
-      elseif(WORD(1:10).eq.'*equipment')then
-        goto 43
-      elseif(WORD(1:12).eq.'*environment')then
-        goto 43
-      elseif(WORD(1:8).eq.'*heating')then
-        CALL EGETWR(OUTSTR,K,ht_Setpoint(nsz),-102.,102.,'W',
-     &       'heat setp',IER)
-        goto 43
-      elseif(WORD(1:8).eq.'*cooling')then
-        CALL EGETWR(OUTSTR,K,cl_Setpoint(nsz),-102.,102.,'W',
-     &       'cool Setp',IER)
-        goto 43
-      elseif(WORD(1:14).eq.'*ideal_control')then
-        i_ctl_link(nsz)=1
-        goto 43
-      elseif(WORD(1:16).eq.'*weather_station')then
-
-C If there is a line with the root name of a climate file look
-C for a match in the current climate location and if there is
-C one set the name of that file, scan it and find its site.
-        CALL EGETRM(OUTSTR,K,weather,'W','weather name',IER)
-        goto 43
-      elseif(WORD(1:5).eq.'*site')then
-
-C The site line includes latitute, longitude difference from time
-C meridian, time zone (hours before or after GMT), site exposure
-C and if siteexposureindex is 8 then read three more numbers
-C for the general exposure to sky, ground and other buildings. 
-        CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
-        CALL EGETWR(OUTSTR,K,sitelong,-15.,15.,'W','Longitude dif',IER)
-        CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
-        CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
-     &    'Site exposure',IER)
-        if(siteexposureindex.eq.8)then
-          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky exposure',IER)
-          CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
-     &      'Ground exposure',IER)
-          CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
-     &      'Building exposure',IER)
-        endif
-        havesite=.true.
-        goto 43
-      elseif(WORD(1:19).eq.'*ground_refl_annual')then
-        CALL EGETWR(OUTSTR,K,groundreflanual,0.,1.,'W',
-     &    'Ground reflectance annual value',IER)
-        havegroundreflanual=.true.
-        goto 43
-      elseif(WORD(1:20).eq.'*ground_refl_monthly')then
-
-C Ground reflectivity model, no-snow monthly albedos, snow albedo
-        CALL EGETWI(OUTSTR,K,groundreflmodel,1,3,'F',
-     &    'ground refl. model',IER)
-        DO 441 I=1,12
-          CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
-     &      'monthly gr. refl.',IER)
-  441   CONTINUE
-        CALL EGETWR(OUTSTR,K,snowrefl,0.,1.,'W','snow refl.',IER)  
-        goto 43
-      elseif(WORD(1:18).eq.'*monthly_snow_days')then
-
-C Number of days with snow on the ground (if ground refl model 2)
-        DO 442 I=1,12
-          CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
-     &      'days with snow',IER)
-  442   CONTINUE
-        havesnowdays=.true.
-        goto 43
-      elseif(WORD(1:18).eq.'*hourly_snow_depth')then
-
-C If ground refl model is 3 then this file has hourly data.
-        CALL EGETRM(OUTSTR,K,hourlysnowfile,'W','snow file',IER)
-        havehourlysnowfile=.true.
-        goto 43
-      elseif(WORD(1:16).eq.'*monthly_profile')then
-
-C Ground monthly temperature profiles. 2nd item is the number of profiles.
-C And this is followed by one line each for each profile.
-        CALL EGETWI(OUTSTR,K,groundtempsets,1,MGRDP,'F','grn prfls',IER)
-        IF(groundtempsets.eq.0) goto 43
-        DO 28 IGRDP=1,groundtempsets
-          CALL EGETWRA(IUNIT,GVA,12,-9.,99.,'W','Gr tmp',IER)
-          DO 29 J=1,12
-            groundtemps(J,IGRDP)=GVA(J)
-   29     CONTINUE
-  28    CONTINUE
-        havegroundtempsets=.true.
-        goto 43
-      elseif(WORD(1:15).eq.'*sim_parameters')then
-
-C Get the assessment independant simulation parameters.
-        CALL EGETWI(OUTSTR,K,simstartup,0,300,'W','startup',IER)
-        CALL EGETWI(OUTSTR,K,simzonetimestep,1,60,'W','zone_ts',IER)
-        CALL EGETWI(OUTSTR,K,simplanttimestep,0,100,'W','plant_ts',IER)
-        CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
-        havesimparameters=.true.
-        goto 43
       elseif(WORD(1:12).eq.'*assessments')then
 
 C Get tags related to assessments: after the tag *assessments the
@@ -1967,7 +1617,270 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
         endif
         write(6,*) 'the value of simact is ',simact
         goto 43
+      elseif(WORD(1:8).eq.'*cooling')then
+        CALL EGETWR(OUTSTR,K,cl_Setpoint(nsz),-102.,102.,'W',
+     &       'cool Setp',IER)
+        goto 43
+      elseif(WORD(1:5).eq.'*cord')then
+        nbcord(nsz)=nbcord(nsz)+1   ! increment number of coordinates in zone
+        nbc=nbcord(nsz)
+        CALL EGETWR(OUTSTR,K,valx,0.,0.,'-','cord-x',IER)
+        CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','cord-y',IER)
+        szcoords(nsz,nbc,1)=valx
+        szcoords(nsz,nbc,2)=valy
+        if(shape(nsz)(1:4).eq.'poly')then
+          CALL EGETWR(OUTSTR,K,valz,0.,0.,'-','cord-z',IER)
+          szcoords(nsz,nbc,3)=valz
+        else
+          szcoords(nsz,nbc,3)=0.0
+        endif
+        goto 43
+      elseif(WORD(1:5).eq.'*door')then
+        CALL EGETWI(OUTSTR,K,nbd,0,MS,'W','no of doors',IER)
+
+C Scan for pairs of parent surface index and the door width.
+        nbdoor(nsz)=nbd
+        if(nbdoor(nsz).gt.0)then
+          do 47 igl=1,nbdoor(nsz)
+            CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
+            CALL EGETWR(OUTSTR,K,val,0.,0.,'-','width',IER)
+            szhasdoor(nsz,iparen)=val
+  47      continue
+        endif
+        goto 43
+      elseif(WORD(1:9).eq.'*end_zone')then
+        goto 43
+      elseif(WORD(1:5).eq.'*end ')then
+
+C Jump to process the collected data.
+        goto 1000
+      elseif(WORD(1:6).eq.'*glaze')then
+        CALL EGETWI(OUTSTR,K,nbg,0,MS,'W','no of glzaings',IER)
+
+C Scan for pairs of parent surface index and the percentage of the parent
+C surface area to have as glazing.
+        nbglz(nsz)=nbg
+        if(nbglz(nsz).gt.0)then
+          do 144 igl=1,nbglz(nsz)
+            CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
+            CALL EGETWR(OUTSTR,K,val,0.,0.,'-','percent',IER)
+            szhasglaze(nsz,iparen)=val
+ 144      continue
+        endif
+        goto 43
+      elseif(WORD(1:19).eq.'*ground_refl_annual')then
+        CALL EGETWR(OUTSTR,K,groundreflanual,0.,1.,'W',
+     &    'Ground reflectance annual value',IER)
+        havegroundreflanual=.true.
+        goto 43
+      elseif(WORD(1:20).eq.'*ground_refl_monthly')then
+
+C Ground reflectivity model, no-snow monthly albedos, snow albedo
+        CALL EGETWI(OUTSTR,K,groundreflmodel,1,3,'F',
+     &    'ground refl. model',IER)
+        DO 441 I=1,12
+          CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
+     &      'monthly gr. refl.',IER)
+  441   CONTINUE
+        CALL EGETWR(OUTSTR,K,snowrefl,0.,1.,'W','snow refl.',IER)  
+        goto 43
+      elseif(WORD(1:8).eq.'*heating')then
+        CALL EGETWR(OUTSTR,K,ht_Setpoint(nsz),-102.,102.,'W',
+     &       'heat setp',IER)
+        goto 43
+      elseif(WORD(1:18).eq.'*hourly_snow_depth')then
+
+C If ground refl model is 3 then this file has hourly data.
+        CALL EGETRM(OUTSTR,K,hourlysnowfile,'W','snow file',IER)
+        havehourlysnowfile=.true.
+        goto 43
+      elseif(WORD(1:14).eq.'*ideal_control')then
+        i_ctl_link(nsz)=1
+        goto 43
       elseif(WORD(1:4).eq.'*ipv')then
+        goto 43
+      elseif(WORD(1:5).eq.'*list')then
+
+C The current value of NS should still point to the surface data
+C that was just scanned. The *list line holds the number of
+C edges and then the index of each coordinate (as in the normal
+C geometry file).
+        CALL EGETWI(OUTSTR,K,ival1,3,MV,'W','nb of edges',IER)
+        isznbedges(nsz,NS)=ival1
+
+C Now proceed to read vertices on one or more lines.
+        DO 12 KV=1,ival1
+          CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
+          IF(IERV.NE.0) THEN
+            call edisp(ITRU,' reading continuation line...')
+            CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'vertex XYZ',IER)
+            K=0
+            CALL EGETWI(OUTSTR,K,ival2,0,MTV,'F','vertex',IERV)
+          ENDIF
+          iszlist(nsz,NS,KV)=ival2
+   12   CONTINUE
+        goto 43
+      elseif(WORD(1:5).eq.'*mass')then
+
+C The *mass keyword is followed by 9 tokens as follows:
+        nbmass(nsz)=nbmass(nsz)+1
+        nma=nbmass(nsz)
+        CALL EGETW(OUTSTR,K,WORD,'W','mass vertical or horiz',IER)
+        if(WORD(1:2).eq.'VM'.or.WORD(1:2).eq.'vm')then
+          sdatamass(nsz,nma,1)= 90.0  ! signal vertical
+        elseif(WORD(1:2).eq.'HM'.or.WORD(1:2).eq.'hm')then
+          sdatamass(nsz,nma,1)= 0.0   ! signal horizontal
+        endif
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass X org',IER)
+        sdatamass(nsz,nma,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass Y org',IER)
+        sdatamass(nsz,nma,3)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','mass Z org',IER)
+        sdatamass(nsz,nma,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass X dis',IER)
+        sdatamass(nsz,nma,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass Z dis',IER)
+        sdatamass(nsz,nma,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','mass rotate',IER)
+        sdatamass(nsz,nma,7)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','mass name',IFLAG)
+        write(stextmass(nsz,nma,1),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETW(OUTSTR,K,WORD,'W','mass constr name',IFLAG)
+        write(stextmass(nsz,nma,2),'(a)') WORD(1:lnblnk(WORD))
+        write(stextmass(nsz,nma,3),'(a)') 'OPAQUE'   ! set as opaque
+        goto 43
+      elseif(WORD(1:16).eq.'*monthly_profile')then
+
+C Ground monthly temperature profiles. 2nd item is the number of profiles.
+C And this is followed by one line each for each profile.
+        CALL EGETWI(OUTSTR,K,groundtempsets,1,MGRDP,'F','grn prfls',IER)
+        IF(groundtempsets.eq.0) goto 43
+        DO 28 IGRDP=1,groundtempsets
+          CALL EGETWRA(IUNIT,GVA,12,-9.,99.,'W','Gr tmp',IER)
+          DO 29 J=1,12
+            groundtemps(J,IGRDP)=GVA(J)
+   29     CONTINUE
+  28    CONTINUE
+        havegroundtempsets=.true.
+        goto 43
+      elseif(WORD(1:18).eq.'*monthly_snow_days')then
+
+C Number of days with snow on the ground (if ground refl model 2)
+        DO 442 I=1,12
+          CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
+     &      'days with snow',IER)
+  442   CONTINUE
+        havesnowdays=.true.
+        goto 43
+      elseif(WORD(1:8).eq.'*nbwalls')then
+
+C Number of parent surfaces has a meaning for extruded shapes and set to 6 for
+C box shapes.
+        if(shape(nsz)(1:7).eq.'extrude')then
+          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
+          nbwalls(nsz)=nbw
+        elseif(shape(nsz)(1:4).eq.'poly')then
+          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
+          nbwalls(nsz)=nbw
+        else
+          nbwalls(nsz)=4
+        endif
+        goto 43
+      elseif(WORD(1:4).eq.'*obs')then
+
+C An obstruction block to be associated with the current zone.
+        nbob(nsz)=nbob(nsz)+1
+        nob=nbob(nsz)
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
+        XOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
+        YOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
+        ZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
+        DXOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
+        DYOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
+        DZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
+        BANGOB(nsz,nob)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        goto 43
+      elseif(WORD(1:7).eq.'*origin')then
+        if(shape(nsz)(1:3).eq.'box')then
+          CALL EGETWR(OUTSTR,K,origin(1),0.,0.,'-','box X origin',IER)
+          CALL EGETWR(OUTSTR,K,origin(2),0.,0.,'-','box Y origin',IER)
+          CALL EGETWR(OUTSTR,K,origin(3),0.,0.,'-','box Z origin',IER)
+          szorigin(nsz,1)=origin(1)
+          szorigin(nsz,2)=origin(2)
+          szorigin(nsz,3)=origin(3)
+        elseif(shape(nsz)(1:7).eq.'extrude')then
+          CALL EGETWR(OUTSTR,K,origin(1),0.,0.,'-','extrude Z base',IER)
+          CALL EGETWR(OUTSTR,K,origin(2),0.,0.,'-','extrude Z top',IER)
+          CALL EGETWR(OUTSTR,K,origin(3),0.,0.,'-','extrude ignore',IER)
+          szorigin(nsz,1)=origin(1)
+          szorigin(nsz,2)=origin(2)
+          szorigin(nsz,3)=origin(3)
+        elseif(shape(nsz)(1:4).eq.'poly')then
+          szorigin(nsz,1)=0.0
+          szorigin(nsz,2)=0.0
+          szorigin(nsz,3)=0.0
+        endif
+        goto 43
+      elseif(WORD(1:7).eq.'*rotate')then
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
+        rotateit(nsz)=rot
+        goto 43
+      elseif(WORD(1:15).eq.'*sim_parameters')then
+
+C Get the assessment independant simulation parameters.
+        CALL EGETWI(OUTSTR,K,simstartup,0,300,'W','startup',IER)
+        CALL EGETWI(OUTSTR,K,simzonetimestep,1,60,'W','zone_ts',IER)
+        CALL EGETWI(OUTSTR,K,simplanttimestep,0,100,'W','plant_ts',IER)
+        CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
+        havesimparameters=.true.
+        goto 43
+      elseif(WORD(1:5).eq.'*site')then
+
+C The site line includes latitute, longitude difference from time
+C meridian, time zone (hours before or after GMT), site exposure
+C and if siteexposureindex is 8 then read three more numbers
+C for the general exposure to sky, ground and other buildings. 
+        CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+        CALL EGETWR(OUTSTR,K,sitelong,-15.,15.,'W','Longitude dif',IER)
+        CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
+        CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &    'Site exposure',IER)
+        if(siteexposureindex.eq.8)then
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky exposure',IER)
+          CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
+     &      'Ground exposure',IER)
+          CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
+     &      'Building exposure',IER)
+        endif
+        havesite=.true.
+        goto 43
+      elseif(WORD(1:5).eq.'*size')then
+        if(shape(nsz)(1:3).eq.'box')then
+          CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
+          CALL EGETWR(OUTSTR,K,size(2),0.,0.,'-','box width',IER)
+          CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
+          szsize(nsz,1)=size(1)
+          szsize(nsz,2)=size(2)
+          szsize(nsz,3)=size(3)
+        elseif(shape(nsz)(1:7).eq.'extrude')then
+          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
+          szsize(nsz,2)=0.0
+          szsize(nsz,3)=0.0
+        elseif(shape(nsz)(1:4).eq.'poly')then
+          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
+          szsize(nsz,2)=0.0
+          szsize(nsz,3)=0.0
+        endif
         goto 43
       elseif(WORD(1:10).eq.'*start_xml')then  
         inumXMLmetrics=0
@@ -1985,6 +1898,96 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
           goto 43
         endif       
         goto 43
+      elseif(WORD(1:11).eq.'*start_zone')then
+
+C If this is a new model increment icomp. If the model already has
+C zones then set icomp to the next available zone.
+        if(ncomp.eq.0)then
+          icomp=icomp+1      ! new model, ncomp not yet set
+        else
+          if(icomp.eq.0)then
+            icomp=ncomp+1    ! increment existing zone index
+          elseif(icomp.gt.0)then
+            icomp=icomp+1    ! increment index for subsequent zones
+          endif
+        endif
+        nsz=nsz+1
+        CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+        write(name(nsz),'(a)') WORD(1:12)
+        goto 43
+      elseif(WORD(1:8).eq.'*surface')then
+
+C Expected order is the walls first then the top then the base and
+C then any windows and then any doors.
+        NS=NS+1
+
+C Surface name, allow for future spaces in name.
+        CALL EGETP(OUTSTR,K,WORD,'W','surface name',IER)
+        write(szhasname(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
+
+C Surface construction name, allow for spaces.
+        CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
+        write(szhasconstruction(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
+
+C Read three indices representing boundary condition.
+        CALL EGETWI(OUTSTR,K,ival1,-1,4,'W','connection type',IER)
+        CALL EGETWI(OUTSTR,K,ival2,0,MCOM,'W','connection ic2',IER)
+        CALL EGETWI(OUTSTR,K,ival3,0,MS,'W','connection ie2',IER)
+        szboundarytype(nsz,NS,1)=ival1
+        szboundarytype(nsz,NS,2)=ival2
+        szboundarytype(nsz,NS,3)=ival3
+
+C Note: if shape=poly for the each of the declaired walls the
+C following line should start with the token *list.
+        goto 43
+      elseif(WORD(1:6).eq.'*shape')then
+        CALL EGETW(OUTSTR,K,WORD,'W','shape type',IFLAG)
+        if(WORD(1:3).eq.'box')then
+          write(shape(nsz),'(a)') 'box '
+          nbwalls(nsz)=6
+        elseif(WORD(1:7).eq.'extrude')then
+          write(shape(nsz),'(a)') 'extrude'
+        elseif(WORD(1:4).eq.'poly')then
+          write(shape(nsz),'(a)') 'poly'
+        endif
+        NS=0     ! reset number of surfaces and clear arrays.
+        goto 43
+
+      elseif(WORD(1:6).eq.'*usage')then
+
+C After *usage the next token is 'pattern' (tag indicating that
+C an operations file in the training/pattern folder to use to
+C get infiltration and casual gains). Note usefile is only
+C 32 char buffer because other source code knowns the path
+C to the training/pattern folder.
+        CALL EGETW(OUTSTR,K,use(1),'W','pattern',IFLAG)
+        if(use(1)(1:7).eq.'pattern')then
+          szuse(nsz,1) = use(1)
+          CALL EGETW(OUTSTR,K,use(2),'W','pattern infil',IFLAG)
+          szuse(nsz,2) = use(2)
+          CALL EGETW(OUTSTR,K,use(3),'W','pattern casual',IFLAG)
+          szuse(nsz,3) = use(3)
+          CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
+          write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
+        else
+          call usrmsg('Usage 2nd parameter not recognised',' ','W')
+        endif
+        goto 43
+      elseif(WORD(1:16).eq.'*weather_station')then
+
+C If there is a line with the root name of a climate file look
+C for a match in the current climate location and if there is
+C one set the name of that file, scan it and find its site.
+        CALL EGETRM(OUTSTR,K,weather,'W','weather name',IER)
+        goto 43
+      elseif(WORD(1:9).eq.'*occupant')then
+        goto 43   ! not yet implemented
+      elseif(WORD(1:9).eq.'*lighting')then
+        goto 43   ! not yet implemented
+      elseif(WORD(1:10).eq.'*equipment')then
+        goto 43   ! not yet implemented
+      elseif(WORD(1:12).eq.'*environment')then
+        goto 43   ! not yet implemented
       else
         goto 43
       endif

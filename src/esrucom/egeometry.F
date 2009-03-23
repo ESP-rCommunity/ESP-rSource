@@ -2799,6 +2799,10 @@ C the connections file).
       if(izone.ne.0.and.izone.le.NCOMP)then
         if(isurf.le.NZSUR(izone).and.isurf.ne.0)then
           icon=IZSTOCN(izone,isurf)
+          if(icon.eq.0)then
+            WRITE(OTHSTR,'(a)') '|| izstocn index unknown'
+            return
+          endif
           IF(ICT(ICON).EQ.-1)THEN
             WRITE(OTHSTR,'(a)') '||< not yet defined'
           ELSEIF(ICT(ICON).EQ.0)THEN
@@ -2851,7 +2855,15 @@ C CEN 13791 partition start.
             endif
 C CEN 13791 partition end.
           ENDIF
+        else
+
+C The passed surface number was out of range.
+          WRITE(OTHSTR,'(a)') '|| surf unknown'
         endif
+      else
+
+C The passed zone number was out of range.
+        WRITE(OTHSTR,'(a)') '|| zone unknown'
       endif
       RETURN
       END
