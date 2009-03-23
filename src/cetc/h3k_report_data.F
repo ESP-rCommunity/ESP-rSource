@@ -3822,6 +3822,14 @@ C Connections: fixed input data
       Real          HGTNE ! - height of -ve linkage point relative to NODNE (m)
       integer     ITPCON ! - number of linking fluid flow component
       integer     NDSCNN ! - connection level component supplementary node numbers
+      
+C Contaminants (see esrumfs/cntmnt.F):
+      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+      integer NCONTM, NOCNTM ! Number of contaminants, ???
+      character*12 CONTMNAM    ! Contaminant name
+
+      COMMON/CONTM8/CCONC(MNOD,MCONTM)
+      real CCONC  ! Concentration at each node
 
 C Output data
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
@@ -3930,6 +3938,19 @@ C.........output node data
      &              'units', '(oC)',
      &              'mfn node temperature' )
 
+	! contaminant concentration from flow network *******************************
+       do jj=1,NCONTM
+         write(H3K_rep_NAME,'(A,A,A)')
+     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              '/conc/',
+     &              CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj)))
+
+         call add_to_xml_reporting (
+     &              CCONC(ii,jj),
+     &              H3K_rep_NAME,
+     &              'units', 'kg/kg',
+     &              'mfn node contaminant concentration' )
+       enddo
 
 C........Build connection name
 C........Only use positive side of connections
@@ -3948,7 +3969,7 @@ C.........Loop through all interconnections in a flow network
      &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
 
 	! pressure drop between nodes of connection ***********************
-	       write(H3K_rep_NAME,'(A,A)')
+              write(H3K_rep_NAME,'(A,A)')
      &             Connect_Name(1:LNBLNK(Connect_Name)),
      &             '/Dp'
 
@@ -3969,11 +3990,11 @@ C.........Loop through all interconnections in a flow network
      &             'units', '(kg/s)',
      &             'mfn connection flow rate' )
 
-        ! velocity at connection *********************************
-        ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460
-	! to "no velocity" and added type 211 to "no velocity")
-        ! Find the related component type and reject those
-	! connections which are not appropriate.
+              ! velocity at connection *********************************
+              ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460
+              ! to "no velocity" and added type 211 to "no velocity")
+              ! Find the related component type and reject those
+              ! connections which are not appropriate.
                i_CompIndex=ITPCON(jj)
                i_CompType=ITPCMP(i_CompIndex)
                b_noveloc=.false.
@@ -3986,7 +4007,7 @@ C.........Loop through all interconnections in a flow network
      &             i_CompType .eq. 460) then
 
                       ! ** skip this component **
-		      b_noveloc=.true.
+               b_noveloc=.true.
 
                elseif(i_CompType .eq. 40) then      ! common orifice flow component
                   area=SUPCMP(i_CompIndex,2)
