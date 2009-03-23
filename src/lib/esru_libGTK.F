@@ -2657,7 +2657,7 @@ C of help supplied and then provide the prompt again.
       END
 
 C ******************** EASKATOG
-C EASKABCD Generic choice of 3 - 7 items returning 1 to 7 according to
+C EASKATOG choice of 3 - 7 items returning 1 to 7 according to
 C which of the choices has been chosen.
 C MSG1 and MSG2 are prompts (upto 124 char) to be printed.
 C AOPT, BOPT & COPT, DOPT, EOPT, FOPT, GOPT are the text strings describing

@@ -18,7 +18,7 @@ ESP-r Common Coding Resources
 by Jon Hand
 Energy Systems Research Unit
 of the University of Strathclyde
-Version of 22 March 2009
+Version of 23 March 2009
 .sp 2
 .SH
 Summary
@@ -36,6 +36,10 @@ the code and readers are advised to also review the source
 code. As the ESP-r distribution is under source code
 control (via subversion), it is hoped that this document will
 be updated as the source code evolves.
+.LP
+This document should be considered work-in-progress. API details
+are still being added so check for new versions of this document
+regularly.
 .LP
 The source code of ESP-r is subdivided into a number of
 topic-focused folders. Each of the folders separates the 
@@ -84,40 +88,40 @@ process. The tester folder are listed below:
 
 tester
 |-- additional_tests
-|   |-- A42_combustion_cogen_comp_tests
-|   |-- A42_fuel_cell_comp_tests
-|   |-- ASHRAE-140
-|   `-- HOT3000_test_cases
+|   |-- A42_combustion_cogen_comp_tests  notes to be added
+|   |-- A42_fuel_cell_comp_tests         notes to be added
+|   |-- ASHRAE-140                       notes to be added
+|   `-- HOT3000_test_cases               notes to be added
 |-- scripts
 `-- test_suite
-    |-- Annex42_fuel_cell
-    |-- alberta_infil_model
-    |-- ascii_dbs
-    |-- basesimp
-    |-- bld_PV
-    |-- bld_ground_reflectivity
-    |-- bld_hc_ISO15099
-    |-- ccht_benchmark
-    |-- cellular_offices
-    |-- cetc_battery_model
-    |-- elec_gain_into_zone
-    |-- esru_benchmark_model
-    |-- h3kreports
-    |-- idealized_hvac
-    |-- multi_year_simulations
-    |-- plt_SDHW
-    |-- plt_adsorption_storage
-    |-- plt_boundary_conditions
-    |-- plt_elec_net
-    |-- plt_electric_HWT
-    |-- plt_lookup_table
-    |-- plt_pre_A42_PEMFC_model
-    |-- plt_pre_A42_SOFC_model
-    |-- plt_radiant_floor
-    |-- plt_solar_collector
-    |-- plt_trnsys_wrapper
-    |-- plt_zone_heat_gain_coupling
-    `-- pv_example
+    |-- Annex42_fuel_cell                notes to be added
+    |-- alberta_infil_model              notes to be added
+    |-- ascii_dbs                        notes to be added
+    |-- basesimp                         notes to be added
+    |-- bld_PV                           notes to be added
+    |-- bld_ground_reflectivity          notes to be added
+    |-- bld_hc_ISO15099                  notes to be added
+    |-- ccht_benchmark                   notes to be added
+    |-- cellular_offices                 model with cellular offices
+    |-- cetc_battery_model               notes to be added
+    |-- elec_gain_into_zone              notes to be added
+    |-- esru_benchmark_model             similar to validation/benchmark/QA
+    |-- h3kreports                       notes to be added
+    |-- idealized_hvac                   notes to be added
+    |-- multi_year_simulations           notes to be added
+    |-- plt_SDHW                         notes to be added
+    |-- plt_adsorption_storage           notes to be added
+    |-- plt_boundary_conditions          notes to be added
+    |-- plt_elec_net                     notes to be added
+    |-- plt_electric_HWT                 notes to be added
+    |-- plt_lookup_table                 notes to be added
+    |-- plt_pre_A42_PEMFC_model          notes to be added
+    |-- plt_pre_A42_SOFC_model           notes to be added
+    |-- plt_radiant_floor                notes to be added
+    |-- plt_solar_collector              notes to be added
+    |-- plt_trnsys_wrapper               notes to be added
+    |-- plt_zone_heat_gain_coupling      notes to be added
+    `-- pv_example                       notes to be added
 
 .ES
 .LP
@@ -606,11 +610,157 @@ C  EPROMPT: Does nothing, for compatibility only.
 
 .ES
 .sp
+.SH
+esru_libGTK.F and esru_libNonGTK.F
+.LP
+The files esru_libGTK.f and esru_libNonGTK.F are a matched collection of 
+mid-level ESP-r fortran wrappers around the GTK API and X11 and/or pure-text
+API. Unless otherwise noted, the API for each subroutine is the same
+for both of these files.  Details of the API are included in Appendix B.
+.ML
+
+C  EASKI:   Ask user for an integer with prompt, error messages & range
+C           checking as passed parameters.
+C  EASKR:   Ask user for a real number with prompt, error messages & range
+C           checking as passed parameters.
+C  EASKE:   Ask user for a real in exponential format, otherwise as easkr.
+C  EASKF:   Ask user for a file name with prompt, error messages & help.
+C  EASKS:   Ask user for a string with prompt, error messages & help.
+C  EASKS248: Edit a long (248 char) string in sections.
+C  EASKSCMD Ask user for a string with prompt, alt, error messages & help.
+C  EASKSCNCL Asking the user for a text string with prompt cancel error & help.
+C  EASKS2CMD Ask user for a string with prompt, 2 alts, error messages & help.
+
+C  EPICKS:  Allows several selections to be made from an array of strings.
+C  MENUATOL Single item menu pick with items passed via parameters.
+C  ASKOK:   Generic yes/no/default facility returning OK as a logical parameter.
+C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
+C           of the choices has been chosen.
+C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
+C           to which of the choices has been chosen.
+C EASKABCD: Generic A/B/C/D choice facility returning 1-4 according
+C           to which of the choices has been chosen.
+C  EASKPER: Provides interface to specification of a period of days.
+C eAskPerYear: Provides interface to specification of a multiyear period of days.
+C easkPerGen: Handles specification of both single-year and multi-year
+C           simulation periods.
+
+C  EMPAGE:  Low level screen control for paging based on terminal model.
+C  ELINC:   Controls scratch pad output for text screens.
+C  EPAGES:  Initialise terminal, set up a scratch pad & line count.
+C  SETLINC: Allows the user to change the length of the text page.
+C  EMENU:   Control variable width menu display on various terminals.
+C  EWMENU:  Is the binding to C function for menu dialogue.
+C  VWMENU:  Is the binding to C function for variable width menu.
+C  EMKEY:   Returns key (a-z) for a menu item based on data array index.
+C  USRMSG:  Generic message/prompt facility for all terminal types.
+C  LUSRMSG:  Generic long message/prompt facility for all terminal types.
+C  EDISP:   Generic send text to scrolling display (text or graphic).
+C  PHELPD:  Displays the current contents of common pophelp.
+C  PHELPW:  Returns the width IWH of the longest popup help string.
+
+.ES
+.SH
+The common code folder
+.LP
+One goal of the ESP-r development community is to have one
+subroutine or function for each task in order to avoid
+duplication. Facilities that are needed by multiple modules
+tend to be placed in the esrucom folder and the relevant
+Makefile for each module links to source files in esrucom
+as required. For example, there is one subroutine that reads
+a zone geometry file and this is found in esrucom/egeometry.F
+and this is referenced by all the other modules.  Updating
+egeometry.F and recompiling spreads new functionality to
+all dependent modules.  The following files are found in
+the esrucom folder:
+.IP "BC_data.F" 5
+This file contains procedures for managing user-specified
+boundary conditions. Used by NRCan staff.
+.ML
+
+C process_BC_data_file: Read a boundry condition data definition
+C    file, and write out a binary database containing the necessary
+C    records.
+
+C get_BC_data_by_col: Collect boundry condition data for the current
+C    timestep, and return the data corresponding to a given
+C    column number.
+
+C get_BC_data_by_name: Collect boundry condition data for the current
+C    timestep, and return the data corresponding to a given
+C    column header name.
+
+C report_BC_data: transport boundry condition data to the H3K
+C    xml reporting facility. 
+
+C cleanup_BC_data: Delete temporary files and free I/O channels
+
+.ES
+.IP "Lookup_data.F" 5
+This file contains subroutines and functions for managing a user-specified
+data table.
+.ML
+C process_Lookup_data_file: Reads a file that contains the
+C data characteristics and data in ASCII format. Writes out a
+C binary database containing the data records (binary file will
+C be accessed by get* subroutines.
+
+C iGet_Lookup_col_num: This function returns the column number that
+C corresponds to a column's header.
+
+C fGet_Lookup_value_by_col_num: This function returns data
+C from a lookup table that corresponds to a user-specified
+C reference value, reference column number and value column number.
+
+C fGet_Lookup_value_by_col_name: This function returns data
+C from a lookup table that corresponds
+C to a user-specified reference value, reference column name 
+C and value column name. This procedure is an interface to the 
+C function fGet_Lookup_value_by_col_num which allows the column names
+C (versus column numbers) to identify the reference and value columns.
+
+C cleanup_Lookup_data: Deletes the temporary file created by the 
+C lookup table facility.
+
+.ES
+.IP "MultiYear_climate.F" 5
+This file contains procedures for handling climate data during
+multi-year simulations.
+.ML
+
+C Parse_MY_clm_db: Parses the multi-year climate index file
+C
+C Check_MY_clm_db: Performs error checking on a multi-climate db.
+C
+C MY_clm_db_menu:  Displays a menu allowing configuration of
+C                  the multi-year database
+C
+C Spec_MY_clm_db:  Asks a user for a multi-year database file
+C
+C Save_MY_clm_db:  Controls saving a multi-year database file 
+C
+C Sort_MY_clm_db:  Sorts the records within a multi-year db.
+C
+C Fill_MY_clm_db:  Checks the records within a multi-year db
+C                  for continuity, and fills in missing records
+C
+C Prune_MY_clm_db: Removes duplicate records from the database
+C
+C Write_MY_clm_db: Writes the database to disk 
+
+.ES
+.IP "SiteUtilities.F" 5
+XX
+.IP "bsimsel.F" 5
+XX
+.IP "X.F" 5
+XX
 .bp
 .SH
 Appendix A: Function API
 .LP
-The list below includes the current (revision XX) of the API for each
+The list below includes the current (revision 4055) of the API for each
 of the subroutines and function in the lib folder.
 .SH
 esru_ask.F
@@ -1682,3 +1832,780 @@ C EPROMPT: Does nothing, for compatibility only.
 
 .ES
 .sp
+.bp
+.SH
+Appendix B: Function API for esru_libXXX.F
+.LP
+The list below includes the current (revision 4055) of the API for each
+of the subroutines and function in esru_libGTK.F.  If these differ
+with the API in esru_libNonGTK.F this is noted.
+.SH
+esru_libGTK.F
+.ML
+
+C EASKI is a facility for asking the user for an integer which
+C incorporates the prompt, error messages and range checking
+C as passed parameters as follows:
+
+C IVAL is the integer returned, PROMP1 & PROMP2 are the prompts to be
+C given to the user (similar to the syntax of USRMSG which allows
+C two lines or a leading blank line).
+C MIN is the minimum value, MAX is the maximum value.
+C MINACT and MAXACT are actions to take if the range is exceeded:
+C   'W' means warn user but accept, 'F' means refuse/fail to
+C   accept value and ask again, '-' means no range checking.
+C IDEFLT is the default value if 'D','d' typed.
+C If a space or carriage return is typed then IVAL is not changed.
+C ERMSG is a string appended to the range checking or read error
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel pressed.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+      SUBROUTINE EASKI(IVAL,PROMP1,PROMP2,MINV,MINACT,
+     &                 MAXV,MAXACT,IDEFLT,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG
+      CHARACTER MINACT*1,MAXACT*1
+
+
+C EASKR is a facility for asking the user for an real which
+C incorporates the prompt, error messages and range checking
+C as passed parameters as follows:
+
+C RVAL is the real returned, PROMP1 & PROMP2 are the prompts to be
+C given to the user (similar to the syntax of USRMSG which allows
+C two lines or a leading blank line).
+C RMIN is the minimum value, RMAX is the maximum value.
+C MINACT and MAXACT are actions to take if the range is exceeded:
+C   'W' means warn user but accept, 'F' means refuse/fail to
+C   accept value and ask again, '-' means no range checking.
+C DEFLT is the default value if 'D','d', or return typed.
+C ERMSG is a string appended to the range checking or read error
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+      SUBROUTINE EASKR(RVAL,PROMP1,PROMP2,RMIN,MINACT,
+     &                 RMAX,MAXACT,DEFLT,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG
+      CHARACTER MINACT*1,MAXACT*1
+
+
+C EASKE is a facility for asking the user for an real number
+C in exponential format which incorporates the prompt, error
+C messages and range checking as passed parameters as follows:
+
+C RVAL is the real returned, PROMP1 & PROMP2 are the prompts to be
+C given to the user (similar to the syntax of USRMSG which allows
+C two lines or a leading blank line).
+C RMIN is the minimum value, RMAX is the maximum value.
+C MINACT and MAXACT are actions to take if the range is exceeded:
+C   'W' means warn user but accept, 'F' means refuse/fail to
+C   accept value and ask again, '-' means no range checking.
+C DEFLT is the default value if 'D','d', or return typed.
+C ERMSG is a string appended to the range checking or read error
+C to identify the value.
+C IER is the error state, if 0 then OK, if -3 cancel button pressed.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+      SUBROUTINE EASKE(RVAL,PROMP1,PROMP2,RMIN,MINACT,
+     &                 RMAX,MAXACT,DEFLT,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG
+      CHARACTER MINACT*1,MAXACT*1
+
+
+C EASKF is a facility for asking the user for a file name which
+C incorporates the prompt, error messages and help facilities
+C as follows:
+
+C FILEN is the string returned, ISTRW is its length.
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C If a space is typed then FILEN is not changed.
+C ERMSG is a string placed at the top of the selection menu and to
+C any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK if -3 then user requested CANCEL.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+C DSTR is a string to use as a default.
+      SUBROUTINE EASKF(FILEN,PROMP1,PROMP2,ISTRW,DSTR,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
+
+
+C EASKS is a facility for asking the user for a text string which
+C incorporates the prompt, error messages and help facilities
+C as follows:
+
+C STRVAL is the string returned, ISTRW is its length.
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C If a space is typed then STRVAL is not changed.
+C ERMSG is a string placed at the top of the selection menu and to
+C any range checking or read errors to identify the value.
+C IER is the error state, if 0 then OK, if -3 then cancel button pressed.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+C DSTR is a string to use as a default.
+      SUBROUTINE EASKS(STRVAL,PROMP1,PROMP2,ISTRW,DSTR,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
+
+
+C EASKS248 edit a (248 char) string in a multi-line graphic box or via phrases.
+C  STRVAL is the string returned, ISTRW is its length.
+C  PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C  If a space is typed then STRVAL is not changed.
+C  ERMSG is a string placed at the top of the selection menu and to
+C  any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK, if -3 then cancel button pressed.
+C  NHELP is the number of help lines and H() is the array
+C  of text strings to be printed out if '?','H','h' is typed
+C  by the user.
+C  DSTR is a string to use as a default.
+      SUBROUTINE EASKS248(STRVAL,PROMP1,PROMP2,ISTRW,DSTR,ERMSG,IER,
+     &   NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
+
+
+C EASKSCMD is a facility for asking the user for a text string which
+C incorporates the prompt, alternative command, error messages and
+C help facilities as follows:
+C  STRVAL is the string returned, ISTRW is its length.
+C  PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C  CMD is an alternative command string, CMDACT is logical if the
+C  command action is selected.
+C  If a space is typed then STRVAL is not changed.
+C  ERMSG is a string placed at the top of the selection menu and to
+C  any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK, if -3 then cancel pressed.
+C  NHELP is the number of help lines and H() is the array
+C  of text strings to be printed out if '?','H','h' is typed
+C  by the user.
+C  DSTR is a string to use as a default.
+      SUBROUTINE EASKSCMD(STRVAL,PROMP1,PROMP2,CMD,CMDACT,ISTRW,DSTR,
+     &  ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
+      LOGICAL CMDACT
+
+
+C EASKSCNCL is a facility for asking the user for a text string which
+C incorporates the prompt, calling code defined cancel string, error
+C messages and help facilities as follows:
+C  STRVAL is the string returned, ISTRW is its length.
+C  PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C  CNCL is cancel command string, CNCLACT is logical if the
+C  cancel action is selected.
+C  If a space is typed then STRVAL is not changed.
+C  ERMSG is a string placed at the top of the selection menu and to
+C  any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK.
+C  NHELP is the number of help lines and H() is the array
+C  of text strings to be printed out if '?','H','h' is typed
+C  by the user.
+C  DSTR is a string to use as a default.
+      SUBROUTINE EASKSCNCL(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
+     &  DSTR,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
+      LOGICAL CNCLACT
+
+
+C EASKS2CMD is a facility for asking the user for a text string which
+C incorporates the prompt, two alternative commands, error messages and
+C help facilities as follows:
+C  STRVAL is the string returned, ISTRW is its length.
+C  PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C  CMD & CMD2 are alternative command strings, if ICACT is non-zero
+C  a command action is selected.
+C  If a space is typed then STRVAL is not changed.
+C  ERMSG is a string placed at the top of the selection menu and to
+C  any range checking or read errors to identify the value.
+C  IER is the error state, if 0 then OK, if -3 then cancel button pressed.
+C  NHELP is the number of help lines and H() is the array
+C  of text strings to be printed out if '?','H','h' is typed
+C  by the user.
+C  DSTR is a string to use as a default.
+      SUBROUTINE EASKS2CMD(STRVAL,PROMP1,PROMP2,CMD,CMD2,ICACT,ISTRW,
+     &  DSTR,ERMSG,IER,NHELP)
+      CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
+
+
+c EPICKS is a facility allowing a number of selections to be made
+C from an array of strings passed into the routine. EPICKS
+C incorporates the prompt, error messages and returns an array of
+C selected indexes as follows:
+
+C PROMP1 & PROMP2 are the prompts using the same syntax as USRMSG.
+C INPICK is passed as the number of items which are allowed to
+C   be selected. If = NSTALT then the prompt will include the
+C   phrase '* ALL' otherwise if INPICK < NSTALT then the prompt
+C   will be in the form '* pick 2 items'. On return INPICK becomes
+C   the actual number of items selected ( if 0 then none).
+C IVALS is an array of NSTALT size such that:
+C   IVALS(1) is the first index selected,
+C   IVALS(2) is the second index ...
+C   IVALS(INPICK) is the last index chosen.
+C NSTALT is the number of selection strings STALT passed.
+C ERMSG is a string appended to the range checking or read error
+C to identify the value. IER is the error state, if 0 then OK.
+C NHELP is the number of help lines and H() is the array
+C of text strings to be printed out if '?','H','h' is typed
+C by the user.
+
+C Note that there is no particular limit on the number of alternate
+C strings which can be passed to the subroutine as the selection menu
+C allows paging.
+C User-defined text strings and string alternatives
+C will be truncated at the width ISTRW.
+      SUBROUTINE EPICKS(INPICK,IVALS,PROMP1,PROMP2,
+     &                ISTRW,NSTALT,STALT,ERMSG,IER,NHELP)
+      DIMENSION IVALS(NSTALT)
+      CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
+
+
+C MENUATOL presents a list of up to a dozen items to select via a
+C menu format but with the text for each selection passed (as in
+C easkatog). It is assumed that the user will make one selection
+C only and if nothing selected it returns an index of zero.
+C
+C It is passed a prompt, menu title, menu width (mw characters),
+C default index (idindex) and current index (index) if zero then
+C assumes no current selection. If user exits without selection then
+C index is returned as zero if index was passed in as zero and
+C is reset to index value if non-zero was passed.
+C Automatic key characters are suppressed and are assumed to be
+C passed within the parameter list text.
+      SUBROUTINE MENUATOL(prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
+     &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,index,idindex,nhelp)
+      LOGICAL SELECT
+      CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+      CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
+
+
+C ASKOK Generic choice facility returning logical variable
+C from a yes no (with default indicated) prompt (supports help).
+C In the case of a graphic menu the messages will appear in a
+C dialogue box at the bottom of the graphic window.
+C If NHELP=-1 there is no default option.
+      SUBROUTINE ASKOK(MSG1,MSG2,OK,DOK,NHELP)
+      CHARACTER*(*) MSG1,MSG2
+      logical ok,dok
+
+
+C EASKATOG choice of 3 - 7 items returning 1 to 7 according to
+C which of the choices has been chosen.
+C MSG1 and MSG2 are prompts (upto 124 char) to be printed.
+C AOPT, BOPT & COPT, DOPT, EOPT, FOPT, GOPT are the text strings describing
+C the options available, (these should not be too long).  If all optons
+C are filled with text then all presneted.  If and option (beginning
+C with FOPT and working backwards is a single blank space then fewer
+C options are presented.
+C In the case of a graphic menu us gtk functions will be called
+C and the messages will appear in a pop-up dialogue box.
+      SUBROUTINE EASKATOG(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
+     &  IWHICH,NHELP)
+      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+
+
+C EASKDOZEN Generic choice of a dozen items returning 1 to 12 according to
+C which of the choices has been chosen.
+C MSG1 and MSG2 are prompts (upto 124 char) to be printed.
+C AOPT, BOPT & COPT, DOPT, EOPT, FOPT, etc. are the text strings describing
+C the options available, (these should not be too long).  If all optons
+C are filled with text then all presneted.  If and option (beginning
+C with FOPT and working backwards is a single blank space then fewer
+C options are presented.
+C In the case of a graphic menu us gtk functions will be called
+C and the messages will appear in a pop-up dialogue box.
+      SUBROUTINE EASKDOZEN(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
+     &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,IWHICH,NHELP)
+      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+      CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
+
+
+C EASKPER: Provides legacy interface to the more general eAskPerGen below.
+      SUBROUTINE eAskPer(PROMP1,IBDOY,IEDOY,IFDAY,IER)
+      CHARACTER*(*) PROMP1
+      integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
+
+
+C EASKPER: Provides multi-year capable interface to the more general
+C eAskPerGen below.
+      SUBROUTINE eAskPerYear(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,ier)
+      CHARACTER*(*) PROMP1
+      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
+
+
+C eAskPerGen: Provides interface to specification of a multiyear period of days. It
+C returns IBDOY and IEDOY based on the current settings of IFDAY.
+C iBYr,iEYr are the begining year and ending year of the period.
+C Promp1 gives the context of the request for a period.
+      SUBROUTINE eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,
+     &                      bMY_enabled,IER)
+      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
+      CHARACTER*(*) PROMP1
+
+
+C EMPAGE: Low level screen control for paging based on terminal MMOD.
+C The available terminal see EPAGES.
+      SUBROUTINE EMPAGE(IPAG,IW,IEND)
+
+
+C ELINC: Controls scratch pad output for text screens which returns:
+C For TTY & LPT ELINC tests if N lines fit on the page, if yes then the
+C line cout is updated to give lines left on page, if not the terminal is
+C paged and a new limit is set.
+      SUBROUTINE ELINC(N)
+
+
+C EPAGES: Initialise terminal, set up a scratch pad counter depending
+C on terminal type. The parameter TITLE will appear in the window heading.
+C The method of page termination depends on the MMOD number.
+C The available terminal types are:
+C type -6 = batch/shell/function button mode.
+C type -2 = teletype with waiting.
+C type -1 = teletype.
+C type  8 = bitmapped with dialogue box.
+C iappwi is the requested pixel width, iapphi is the requested pixel height
+C iappx & iappy are the upper-left position on the monitor <not yet implemented >
+C menuchw is the initial request for menu width (in characters)
+      SUBROUTINE EPAGES(MODEL,IIN,IOUT,iappwi,iapphi,iappx,iappy,
+     &  menuchw,TITLE)
+      CHARACTER*(*) TITLE
+
+
+C EMENU: Control menu display on various terminals.  Name is a character
+C string to form the heading of menu, ITEMS is an array of character
+C strings making up the menu, NITMS is the number of items in the menu,
+C INO is the number of the item chosen.
+      SUBROUTINE EMENU(NAME,ITEMS,NITMS,INO)
+      CHARACTER*(*) NAME,ITEMS(NITMS)
+
+
+C EWMENU: Is the binding to C function for menu dialogue.  It
+C allows the string widths to be variable widths. Uses width of
+C items passed in call to vwmenu.
+      SUBROUTINE EWMENU(name,items,nitms,impx,impy,irpx,irpy,ino)
+      character*(*) name, items(*)
+
+
+C VWMENU: Is the binding to C function for menu dialogue.  It
+C allows the string widths to be variable widths.
+      SUBROUTINE VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
+      character*(*) name, items(*)
+
+
+C EMKEY returns a key character for a menu item (a-z) based on the array
+C index of the item.  Uses ICHPK(26), 'a','b'... from esrulib...
+      SUBROUTINE EMKEY(IAI,KEY,IER)
+      CHARACTER*1 KEY
+
+
+c Generic error reporting facility.  MSG1
+C and MSG2 are text strings (upto 124 char) to be printed.  LEVEL is a
+C single character 'W' or 'w' for warning (in graphic mode followed by
+C a clearing of dialog), 'F' or 'f' for Fatal error,
+C '-' to only print the messages, '?' is a prompt in text mode. If
+C LEVEL is 'P' or 'p' then pause breifly before continuing. In the case of a
+C fatal error STOP will be called, otherwise execution will return to
+C the calling point.
+C In the case of a graphic menu the c function msg_box will be called
+C and the messages will appear in a dialogue box at the bottom of the
+C graphic window. The user must have previously called open_msg_box(2).
+      SUBROUTINE USRMSG(MSG1,MSG2,LEVEL)
+      CHARACTER*(*) MSG1,MSG2
+      CHARACTER LEVEL*1
+
+
+c Generic error reporting facility.  MSG1
+C and MSG2 are text strings (upto 248 char) to be printed.  LEVEL is a
+C single character 'W' or 'w' for warning (in graphic mode followed by
+C a clearing of dialog), 'F' or 'f' for Fatal error,
+C '-' to only print the messages, '?' is a prompt in text mode. If
+C LEVEL is 'P' or 'p' then pause breifly before continuing. In the case of a
+C fatal error STOP will be called, otherwise execution will return to
+C the calling point.
+C In the case of a graphic menu the c function msg_box will be called
+C and the messages will appear in a dialogue box at the bottom of the
+C graphic window. The user must have previously called open_msg_box(2).
+      SUBROUTINE LUSRMSG(MSG1,MSG2,LEVEL)
+      CHARACTER*(*) MSG1,MSG2
+      CHARACTER LEVEL*1
+
+
+C EDISP is a generic routine which displays lines of text passed to it
+C in a format depending on the terminal type:
+C For types -1 -2 9 does a fortran write to channel IUOUT,
+C For types -6 writes to ICOUT,
+C For type 8 manages the text which is passed to inserttext for
+C treatment as a scrolling window.
+      SUBROUTINE EDISP(ITRU,MSG)
+      CHARACTER*(*) MSG
+
+
+C PHELPD displays the current contents of common pophelp in a form
+C appropriate to the current terminal type. MSG is a short descriptive
+C string for the subject. NHELP is the number of lines to be displayed.
+C IBX & IBY are the preferred coords of the lower left corner if in
+C terminal type 8.
+      SUBROUTINE PHELPD(MSG,NHELP,OTHER,IBX,IBY,IER)
+      CHARACTER*(*) MSG,OTHER
+
+.ES
+.sp
+.bp
+.SH
+Appendix C: ESRU esrucom folder
+.LP
+Each of the API for the files in folder esrucom are listed
+in the following sections.
+.SH
+BC_data.F
+.LP
+This file contains procedures for managing user-specified
+boundary conditions. Used by NRCan staff.
+.ML
+
+C process_BC_data_file parses a boundary condition definition file, checks
+C  it for validity, and writes a binary database containing the
+C  relevant records.
+C  Inputs
+C    iASCII_num: file number to use for ascii file input
+C    iBC_TmpFile: file number to use for binary file output
+C    bAutoOK: flag indicating simulator is in silent running mode 
+C  Outputs
+C    bFatal_Error: flag indicating that error was encountered
+      subroutine process_BC_data_file(
+     &    iBase_File_num, bAutoOK, bFatal_Error )
+      integer iBase_File_num              ! Basic I/O file number
+      logical bAutoOK                     ! flag for silent-running mode
+      logical bFatal_Error                ! fatal error flag
+
+
+C bInquire_BC_Name_Exists determines if a requested boundary condition
+C has been defined.
+C Inputs:
+C    - cCol_name: Name of desired boundary condition
+C Outputs:
+C    - bInquire_BC_Name_Exists: logical result.
+      logical function bInquire_BC_Name_Exists ( cCol_name )
+      character*248 cCol_name
+
+
+C fGet_BC_data_by_name is a short-hand interface to  fGet_BC_data_by_col
+C which allows the boundary condition's name to be used to identify
+C the appropriate column.
+C Inputs:
+C   cCol_name: Desired BC column number
+C   fDay: real number denoting day (& fraction thereof) for which
+C      the boundry condition should be recovered.
+C   iInterp_method: method for interpolation
+C      1 -> step-wise
+C      2 -> linear 
+C Outputs
+C   Value of BC at future time row
+      real function fGet_BC_data_by_name(
+     &                                   cCol_name,
+     &                                   fDay,
+     &                                   iInterp_method,
+     &                                   cContext       )
+      character*248 cCol_name
+      real fDay
+      integer iInterp_method
+      character*124 cContext
+
+
+C fGet_BC_data_by_col returns boundry-condition data corresponding
+C to the current time step and user-specified column number.
+C Inputs:
+C   iCol_number: Desired BC column number
+C   fDay: real number denoting day (& fraction thereof) for which
+C      the boundry condition should be recovered.
+C   iInterp_method: method for interpolation
+C      1 -> step-wise
+C      2 -> linear 
+C Outputs
+C   Value of BC at future time row
+      real function fGet_BC_data_by_col(iCol_number,
+     &                                  fDay,
+     &                                  iInterp_method,
+     &                                  cContext       )
+      integer iCol_number     ! column number.
+      integer iInterp_method  ! interpolation method
+      real fDay               ! day number
+      character*124 cContext  ! Contextual message
+
+
+C get_BC_row returns an array containing boundary condition values
+C corresponding to a given boundary condition row number.
+C Inputs:
+C   iRow: row number 
+C Outputs
+C   fValues: array containing the BC values for the given row number.
+      subroutine get_BC_row( iRow, fValues, cContext )
+      integer iRow                      ! Row number
+      real fValues(mBC_max_count)       ! Values from file 
+
+
+C report_BC_data reports the values of the boundary condition data to
+C the XML reporting facility 
+C Inputs:
+C   None
+C Outputs
+C   None 
+      subroutine report_BC_data()
+
+
+C cleanup_BC_data  deletes the temporary file created by 
+C the boundary condition management facility.
+C Inputs:
+C   None
+C Outputs
+C   None 
+      subroutine cleanup_BC_data()
+
+.ES
+.SH
+Lookup_data.F
+.LP
+This file contains subroutines and functions for managing a user-specified
+data table.  The API follows.
+.ML
+
+C process_Lookup_data_file  parses a lookup data file, checks that the contents
+C of the file are valid and writes a binary database containing the
+C table of data.
+C Inputs:
+C iBase_file_num: Basic I/O file number; ASCII and binary files will
+C                 be set relative to this number.
+C Output:
+C bFatal_Error: flag indicating that error was encountered
+       subroutine process_Lookup_data_file(iBase_file_num,
+     &                                     bAutook, 
+     &                                     bFatal_error)
+       integer iBase_file_num        ! basic I/O file number
+       logical bAutook               ! flag for silent-running mode
+       logical bFatal_error          ! fatal error flag
+
+
+C iGet_Lookup_col_num  returns the column number that corresponds to
+C the column header specified by the user
+C Inputs:
+C cCol_name: Column name for which column number is to be determined
+C Output:
+C iCol_num: Columnn number corresponding to column name
+       integer function iGet_Lookup_col_num( cCol_name,
+     &                                       cContext   )
+       character*248 cCol_name  ! column header/name
+       character*124 cContext   ! contextual message
+
+
+C fGet_Lookup_value_by_col_num  returns data from a lookup table that corresponds
+C to a user-specified reference value, reference column number 
+C and value column number.
+C Inputs:
+C iCol_ref : Reference column number
+C iCol_value: Value column number
+C fRef_value: Reference value
+C iInterp_method: method for interpolation
+C                 1 -> step-wise
+C                 2 -> linear
+C Outputs
+C Value from lookup table corresponding reference value
+      real function fGet_Lookup_value_by_col_num(iCol_ref,
+     &                                           iCol_value,
+     &                                           fRef_value,
+     &                                           iInterp_method,
+     &                                           cContext )
+      integer iCol_ref        ! reference column number
+      integer iCol_value      ! value column number
+      real fRef_value         ! reference value
+      integer iInterp_method  ! interpolation method
+      character*124 cContext  ! contextual message
+
+
+C fGet_Lookup_value_by_col_name returns data from a lookup table that corresponds
+C to a user-specified reference value, reference column name 
+C and value column name. This procedure is an interface to the 
+C function fGet_Lookup_value_by_col_num which allows the column names
+C (versus column numbers) to identify the reference and value columns.
+C Inputs:
+C cCol_ref : Reference column name
+C cCol_value: Value column name
+C fRef_value: Reference value
+C iInterp_method: method for interpolation
+C                 1 -> step-wise
+C                 2 -> linear
+C Outputs
+C Value from lookup table corresponding to reference value
+      real function fGet_Lookup_value_by_col_name(cCol_ref,
+     &                                            cCol_value,
+     &                                            fRef_value,
+     &                                            iInterp_method,
+     &                                            cContext )
+      character*248 cCol_ref     ! reference column name
+      character*248 cCol_value   ! value column name
+      character*124 ctext        ! context message
+      real fRef_value            ! reference value
+      integer iInterp_method     ! interpolation method
+      character*124 cContext     ! contextual message
+
+
+C cleanup_Lookup_data deletes the temporary file created by
+C the lookup table facility.
+       subroutine cleanup_Lookup_data()
+
+.ES
+.SH
+MultiYear_climate.F
+.LP
+This file contains procedures for handling climate data during
+multi-year simulations.
+.ML
+
+C Parse_MY_clm_db parses the multi-year climate index file. It:
+C  - Checks if the multiyear climate file has been properly
+C    defined.
+C  - Saves the multi-year climate database in memory
+C Inputs:
+C  iFile: current file index.
+C  AutoOK: logical flag indicating that the the simulator is
+C    running in silent running mode
+C Outputs:
+C    bCriticalErr     ! flag incidating a critical error has been encountered
+      subroutine Parse_MY_clm_db( iFile_num,
+     &                            bAutoOK,
+     &                            bCriticalErr )
+      integer iFile_num        ! climate file number used by bps
+      logical bAutoOK          ! flag for silent-running mode
+      logical bCriticalErr     ! flag incidating a critical
+                               ! error has been encountered
+
+
+C Check_MY_clm_db  checks that the multi-year climate database
+C data stored in memory is correct.
+C  - Checks if the listed year records are contigious and
+C    in order, and
+C  - Checks if the clm files exist. 
+C Inputs:
+C  - bAutoOK: status of simulatior (silent/interactive modes)
+C  - cAction: action to be taken if recoverable errors are
+C    found.
+C Outputs:
+C  - bCriticalErr: flag indicating if a critical error was
+C    encountered.
+      subroutine Check_MY_clm_db(bAutoOK,cActionPass,bCriticalErr)
+      logical bCriticalErr
+      logical bAutoOK
+      character*(*) cActionPass
+
+
+C MY_clm_db_menu is used to control specification of a multi-year
+C climate database
+C Inputs - none; outputs - none 
+      subroutine MY_clm_db_menu ()
+
+
+C Spec_MY_clm_db is used to specify an existing, or new
+C multi-year climate file. 
+C Inputs 
+C  - cAction - Action to be taken if file not found
+C Outputs:
+C  - bFileExists - flag indicating that file was found
+C  - bCreate  - flag indicating file should be created
+      subroutine Spec_MY_clm_db(cActionPass,bFileExists,bCreate)
+      logical bFileExists
+      logical bCreate
+      character*(*) cActionPass
+      character*16 cAction
+      
+
+C Sort_MY_clm_db checks to see if the climate records are in order, and
+C sorts them if necessary
+C Inputs:
+C  - cContext: contextual buffer
+C  - cAction: flag indicating what actions should be taken 
+C             on out-of-order records
+C Outputs:
+C  - bOrderChanged: flag indicating if records were out of order
+      subroutine Sort_MY_clm_db(cContext,cActionPass,bOrderChanged)
+      logical bOrderChanged
+      character*(*) cActionPass
+      character*124 cContext      ! contextual buffer
+
+
+C Fill_MY_clm_db checks for continuity in the multi-year climate
+C database, and fills in missing years, if necessary
+C Inputs:
+C  - cContext: contextual buffer
+C  - cAction: flag indicating what actions should be taken 
+C             on out-of-order records
+C Outputs:
+C  - bCriticalErr: flag indicating if a critical error was
+C    encountered.
+C  - bContigious: Flag indicating if file was contigious 
+      subroutine Fill_MY_clm_db(cContext,cActionPass,
+     &                          bCriticalErr,bNonContigious)
+      logical bCriticalErr
+      logical bNonContigious
+      logical bClmFileExists      ! Flag indicating climate
+                                  ! file has been found
+      character*124 cContext !msg buffers
+      character*(*) cActionPass
+
+
+C Prune_MY_clm_db checks for duplicate records, and optionally deletes
+C them
+C Inputs:
+C  - cContext: contextual message
+C  - cAction: flag indicating the action that should be undertaken
+C    if duplicates are found 
+C Outputs:
+C  - bDuplicates: Flag indicating if file was contigious
+      subroutine Prune_MY_clm_db(cContext,cActionPass,bDuplicates)
+      logical bDuplicates
+      character*(*) cActionPass
+      character*124 cContext      ! context 
+
+
+C Save_MY_clm_db controls saving a multi-climate database to
+C disk
+C Inputs:
+C  - iFile_num: file number to use
+C Outputs:
+C  - bCriticalErr: Flag indicating if error was encountered.
+C  - bSaveOk: flag indicating that file was saved successfully.
+      subroutine Save_MY_clm_db ( iFile_num, bCriticalErr,bSaveOk )
+      integer iFile_num
+      logical bCriticalErr
+      logical bSaveOk
+
+
+C Write_MY_clm_db writes out a climate file database to disk.
+C Inputs:
+C  - iFile_num: file number to use
+C Outputs:
+C  - bCriticalErr: Flag indicating if error was encountered.
+C  - bSaveOk: flag indicating that file was saved successfully.
+      subroutine Write_MY_clm_db ( iFile_num, bCriticalErr,bSaveOk )
+      integer iFile_num
+      logical bCriticalErr
+      logical bSaveOk
+
+.ES
+.SH
+SiteUtilities.F
+.ML
+To be done
+.ES
+.SH
+bsimsel.F
+.ML
+To be done
+.ES
+.SH
+X.F
+.ML
+To be done
+.ES
+XX
