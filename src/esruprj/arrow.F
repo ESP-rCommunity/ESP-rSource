@@ -57,8 +57,7 @@ C If absolute distance back from Q, find whole length and then
 C work backwards using ratio. If P and Q are the same then
 C DIST is going to be zero and in that case and the case of
 C a very small DIST just return without attempting to draw it.
-      DIST= (P(1)-Q(1))**2 + (P(2)-Q(2))**2 + (P(3)-Q(3))**2
-      DIST= sqrt(DIST)
+      DIST= CROW(P,Q)
       if(DIST.lt.0.0001) return   ! if zero length line.
       if(act(1:1).eq.'r')then
         do 20 I=1,3

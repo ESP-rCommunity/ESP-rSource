@@ -1990,13 +1990,11 @@ C                     3 *------* 2
       vdx32=x3-x2
       vdy32=y3-y2
       vdz32=z3-z2
-      CROW21 = vdx21**2 + vdy21**2 + vdz21**2
-      CROW21=SQRT(CROW21)
+      CROW21 = CROWXYZ(x1,y1,z1,x2,y2,z2)
       if (abs(crow21).lt.0.001) then
         return
       endif
-      CROW32 = vdx32**2 + vdy32**2 + vdz32**2
-      CROW32=SQRT(CROW32)
+      CROW32 = CROWXYZ(x2,y2,z2,x3,y3,z3)
       if (abs(crow32).lt.0.001) then
         return
       endif
