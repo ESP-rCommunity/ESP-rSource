@@ -189,7 +189,7 @@ C  WIREPK:  Called from 'C' upon a wireframe control button pick.
 C  EPROMPT: Does nothing, for compatibility only.
 
 C ************** st2name
-C Given `string' swap blanks & wildcards to _ : return as `name'.
+C st2name takes `string' swap blanks & wildcards to _ : return as `name'.
       SUBROUTINE st2name(string,name)
       CHARACTER*(*) string,name
       character phrase*124
@@ -693,7 +693,7 @@ C***3.5
       END
 
 C ******************* FPRAND
-C  Opens a random access file with name FNARG.
+C FPRAND Opens a random access file with name FNARG.
 C  LENG determines the record length and type as follows:-
 C       <0      -( LENG ) characters per record, ASCII records.
 
@@ -725,6 +725,8 @@ C Open file.
 
 c ******************** ERPFREE
 C ERPFREE is used to close any file.
+C IUN (integer) is the file unit number
+C ISTAT (integer) is its status 0=OK, 1=if IUN was zero.
       SUBROUTINE ERPFREE(IUN,ISTAT)
       LOGICAL OPND
       IF(IUN.NE.0)THEN
@@ -740,6 +742,8 @@ C ERPFREE is used to close any file.
 
 c ******************** EFDELET
 C EFDELET: Delete file IUN and return ISTAT for compatibility.
+C IUN (integer) is the file unit number
+C ISTAT (integer) is its status 0=OK, 1=if IUN was zero.
       SUBROUTINE EFDELET(IUN,ISTAT)
       LOGICAL OPND
       IF(IUN.NE.0)THEN
@@ -811,7 +815,7 @@ C of the choices has been chosen. See EASKATOG for parameter documentation.
 
 
 C ******************** bSPEqual ******************
-C Determine if two SP numbers are within machine round-off error.
+C bSPEqual determines if two SP numbers are within machine round-off error.
 C
 C The floating point computations in this function are
 C based on the following paper:
@@ -1039,7 +1043,8 @@ C exceeds difference.
 
 C ******************** DAYCLK
 C DAYCLK will print the day, month, day no. and time based on the day
-C of the year IYD and clock time in hours TIME.
+C of the year IYD (integer) and clock time in hours TIME (real) on the
+C output channel ITU (integer).
       SUBROUTINE DAYCLK(IYD,TIME,ITU)
 
       CHARACTER*5 DAY(4)
@@ -1076,7 +1081,7 @@ C of the year IYD and clock time in hours TIME.
       END
 
 C ******* FDROOT
-C Given a file name (fstring) see if it contains a (path) and a (filen).
+C FDROOT: Given a file name (fstring) see if it contains a (path) and a (filen).
 C Note: mingw compilers require fstring to be declaired length (not *(*).
       SUBROUTINE fdroot(fstring,path,filen)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1166,8 +1171,8 @@ C          call edisp(iuout,'No folder separator found.')
       end
       
 C ******************** EFOPSEQ
-C EFOPSEQ: Open a sequential ASCII file and return appropriate
-C messages and error status.
+C EFOPSEQ: Open a sequential ASCII file (SFILE) and return appropriate
+C messages and error status (IEXIST).
 C IUN is the file unit number, SFILE is the file name.
 C IEXIST is a flag denoting:
 C   0 - should exist, no message but error -301 if not.
@@ -1315,8 +1320,8 @@ C If problem in opening then report difficulty.
       END
 
 C ******************** EFOPRAN
-C EFOPRAN: Open a random access file and return appropriate
-C messages and error status.
+C EFOPRAN: Open a random access file (SFILE) and return appropriate
+C messages and error status (IEXIST).
 C IUN is the file unit number, SFILE is the file name, IRW is
 C record width.  IEXIST is a flag denoting:
 C   0 - should exist, no message but error -301 if not.
@@ -1324,6 +1329,7 @@ C   1 - should exist, message & error -301 if not.
 C   2 - should not exist, error 300 & message if exists.
 C   3 - if exists use otherwise create.
 C   4 - if exists ask user before overwriting otherwise create.
+C IRW is the record width to use when opening the file.
 C IER is the error status (0 is OK).
 C If the path is other than `./' but is not `/usr/esru' then
 C concatenate path with sfile.
@@ -1662,7 +1668,7 @@ C assign WORDS.
       END
 
 C ************ c2fstr
-C Convert c function returned string to fortran format.
+C c2fstr: converts c function returned string to fortran format.
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
 
@@ -1692,7 +1698,7 @@ C      return
       end
 
 C ******* termode
-C Given an index `mode` return a terminal text string.
+C termode: given an index `mode` return a terminal text string.
       SUBROUTINE termode(mode,tmode)
       CHARACTER*(*) tmode
       tmode = ' '
@@ -1831,6 +1837,10 @@ C number on the starting item of the current menu unless the last page.
 C ******************* KEYIND
 C KEYIND decodes the index INO and returns the array index IA of the item
 C displayed and whether INO is within the list.
+C MENUL (integer) is the length of the menu.
+C INO (integer) is the index passed from the calling code.
+C IA (integer) is array index of the data
+C INOUT=0 if outside the current menu, =1 if within the menu.
       SUBROUTINE KEYIND(MENUL,INO,IA,INOUT)
 #include "epara.h"
 
@@ -1965,7 +1975,7 @@ C EPAGEND: Screen control: Page then close window if open.
       
 
 C ******* ang3vtx
-C Recover angle between three vertex (i.e. between two lines).
+C ang3vtx: recover angle between three vertex (i.e. between two lines).
 C Angel between lines: finds angle A between two lines'
 C given 3 vertex as in:    * 1
 C                           a \
@@ -2134,6 +2144,7 @@ C line expressed as X Y Z points.
 
 C ******************** UVAB
 C UVAB: Subroutine returning Unit normal vector U of vector A.
+C ierr (integer) = -1 if vector is very short.
       subroutine UVAB(A,U,ierr)
       dimension A(3),U(3)
       ierr=0
@@ -2151,7 +2162,7 @@ C UVAB: Subroutine returning Unit normal vector U of vector A.
       END
 
 C ******************** PLNDANG(AEQN,BEQN,DANG)
-C Finds dihedral angel between two planes given their equations.
+C PLNDANG: Finds dihedral angel between two planes given their equations.
       subroutine plndang(aeqn,beqn,dang)
       dimension aeqn(4),beqn(4)
       PI = 4.0 * ATAN(1.0)
@@ -2213,7 +2224,7 @@ C and returns the result in CX,CY,CZ.
       end
 
 C ******************** DOT3(a,b,product)
-C Return dot product of two vectors a & b.
+C DOT3: Return dot product of two vectors a & b.
       subroutine dot3(a,b,product)
       dimension a(3),b(3)
       product=a(1)*b(1)+a(2)*b(2)+a(3)*b(3)
@@ -2221,7 +2232,7 @@ C Return dot product of two vectors a & b.
       end
 
 C ******************** ZEROS
-C ZEROS Clear a 4x4 array prior to doing viewering transforms.
+C ZEROS Clear a 4x4 array prior to doing viewing transforms.
       SUBROUTINE ZEROS(A)
       DIMENSION A(4,4)
       A(1,1)=0.0
@@ -2264,7 +2275,7 @@ C to a given tolerance TOL and returns CLOSE = .TRUE. or .FALSE.
 
 C ******************** ESIND
       FUNCTION ESIND (DEG)
-C Returns SIN of angle where angle is given in degrees.
+C ESIND: Returns SIN of angle where angle is given in degrees.
       PI = 4.0 * ATAN(1.0)
       RAD = PI/180.
       ESIND = SIN (RAD*DEG)
@@ -2273,7 +2284,7 @@ C Returns SIN of angle where angle is given in degrees.
 
 C ******************** ECOSD
       FUNCTION ECOSD (DEG)
-C Returns COS of angel where angle is given in degrees.
+C ECOSD: Returns COS of angel where angle is given in degrees.
       PI = 4.0 * ATAN(1.0)
       RAD = PI/180.
       ECOSD = COS (RAD*DEG)
@@ -2282,7 +2293,7 @@ C Returns COS of angel where angle is given in degrees.
 
 C ******************** ETAND
       FUNCTION ETAND (DEG)
-C Returns TAN of angel where angle is given in degrees.
+C ETAND: Returns TAN of angel where angle is given in degrees.
       PI = 4.0 * ATAN(1.0)
       RAD = PI/180.
       ETAND = TAN (RAD*DEG)
@@ -3894,8 +3905,8 @@ C Determine the day of the month.
       END
 
 C ********************** EWEEKD
-C 'EWEEKD' returns the day of the week given the day of month, month
-C and year as integers.
+C 'EWEEKD' returns the day of the week (IDAY) given the day of month, month
+C and year (ND,NM,NY) as integers.
 C MON=1, TUE=2, WED=3, THU=4, FRI=5, SAT=6 AND SUN=7.
       SUBROUTINE EWEEKD(ND,NM,NY,IDAY)
       common/OUTIN/IUOUT,IUIN
@@ -3935,6 +3946,7 @@ C MON=1, TUE=2, WED=3, THU=4, FRI=5, SAT=6 AND SUN=7.
 C ********************* EDAYCH
 C EDAYCH will check for errors in the users specification of the day and
 C month under consideration.
+C IERR set to 1 if ID or IM are outwith the allowable range.
       SUBROUTINE EDAYCH(ID,IM,IERR)
       common/OUTIN/IUOUT,IUIN
       DIMENSION MNTH(12)
@@ -5309,7 +5321,7 @@ C [Unix or Linux or Cygwin gets true].
       end
 
 C ************* usrhome
-C Find users home directory.
+C usrhome: Find users home directory.
       subroutine usrhome(upath)
       COMMON/OUTIN/IUOUT,IUIN
       character*(*) upath
@@ -5338,7 +5350,7 @@ C Find if Unix or NT.
       end
 
 C ************* usrname
-C Find users name.
+C usrname: Find users name.
       subroutine usrname(uname)
       character*(*) uname
       logical unixok
@@ -5354,7 +5366,7 @@ C Find if Unix or NT.
       end
 
 C ************* usrdir
-C Find current folder.
+C usrdir: Find current folder.
       subroutine usrdir(upwd)
       character*(*) upwd
       integer getcwd
@@ -5365,7 +5377,7 @@ C Find current folder.
       end
 
 C ************* esppid
-C Find current process number.
+C esppid: Find current process number.
       subroutine esppid(ipid)
       integer getpid
       logical unixok
@@ -5381,6 +5393,9 @@ C Find if Unix or NT.
       end
 
 C ****** Date stamp routine.
+C tstamp: generates a timestamped message.
+C act (char*1) = '-' Current time, = 'm' Message plus time
+C  = '>' append message to journal
       subroutine tstamp(act,msg)
       common/OUTIN/IUOUT,IUIN
       common/journopt/journio,iuj,journcmd,jfile
@@ -5442,7 +5457,9 @@ C If there is a journal file append the current message to it and close.
       return
       end
 
-C ****** Define ectime function as fixed length character*24
+C ****** ectime function
+C ectime function as fixed length character*24 based on the
+C the passed value of ictime
       character*24 FUNCTION ECTIME(ICTIME)
       integer ICTIME
 #ifdef GCC4
@@ -5454,7 +5471,8 @@ C ****** Define ectime function as fixed length character*24
       return
       end
 
-C ****** Get date stamp in the form: Fri Jan 23 09:34:31 1998.
+C ****** dstamp
+C dstamp: Get date stamp in the form: Fri Jan 23 09:34:31 1998.
 C Used to isolate code from system details.
       subroutine dstamp(date_str)
 
@@ -5603,7 +5621,7 @@ C Compare the second of the minute.
       end
 
 C ****** Get computer clock seconds.
-C Used to isolate fortran code from system specifics.
+C getsecs: Used to isolate fortran code from system specifics.
 C Edit for machine type.
       subroutine getsecs(ictime)
       integer time
@@ -5613,10 +5631,9 @@ C Edit for machine type.
       end
 
 C ************* runit
-C Execute a command string, in text (runs in a new xterm) or graphics
+C runit: Execute a command string, in text (runs in a new xterm) or graphics
 C mode.  Assumes that command string terminates in a '&' if the
-C user wishes to run in background mode. For minGW xterm is not
-C used.
+C user wishes to run in background mode. For minGW xterm is not used.
       subroutine runit(cmd,tg)
       common/OUTIN/IUOUT,IUIN
       character*(*) cmd,tg
@@ -5719,8 +5736,8 @@ C Copy current character into word buffer
       end
 
 C ********************
-C sitell2s takes latitude and longitude difference and returns descriptive
-C string.
+C sitell2s takes latitude (clat) and longitude difference (clong) and returns
+C descriptive string (descr).
       subroutine sitell2s(clat,clong,descr)
       character descr*16
 
@@ -6003,7 +6020,7 @@ c A temporary measure.
       END
 
 C ********* LISTAS
-C General read of an ascii file.
+C LISTAS: General read of an ascii file.
       SUBROUTINE LISTAS(iunit,LFIL,IER)
       COMMON/OUTIN/IUOUT,IUIN
       character LFIL*72,outstr*124

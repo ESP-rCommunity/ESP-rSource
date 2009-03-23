@@ -18,9 +18,10 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C The following loads the COMMONS used by libesru.a and libesru.nb.a.
+C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 
       subroutine EZERO
+C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 #include "epara.h"
 
       PARAMETER (MGRDP=10)
