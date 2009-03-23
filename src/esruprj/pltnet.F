@@ -1265,8 +1265,16 @@ C name with the full path.
       h(5)='listing and editing. If there is no such file then'
       h(6)='a new one will be created to hold data for new'
       h(7)='components.'
-      llt=lnblnk(lpcdb)
-      lltmp=lpcdb
+
+C Deal with local or standard db location when making up the selection string.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        lltmp=LPCDB
+      elseif(ipathpcdb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lpcdb(1:lnblnk(lpcdb))
+      endif
+      llt=lnblnk(lltmp)
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
@@ -1291,7 +1299,6 @@ C Figure out local or standard database folder.
       call findwhichdbpath('pdb',lltmp,ier)
       lndbp=lnblnk(standarddbpath)
 
-C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
 C 'irecln' is defined in 'plantdf.h'. If plant template file unit has
@@ -1305,7 +1312,6 @@ C same opening logic as in eddb.F and moplnt.F
      &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
          endif
 	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
-C         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then
