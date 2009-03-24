@@ -24,6 +24,8 @@ C  silentmodel creates an/or updates a model from passed parameters.
 C  silentzone: creates a zone (or limited complexity) based on parameters
 C              passed to it.
 C  silentread: Reads esp-r meta file zones geometry data.
+C  metawrite:  Creates an esp-r meta file. Data input is from
+C              the current zones common blocks.
 
 C ************* silentmodel
 C silentmodel creates an/or updates a model from passed parameters.
@@ -360,7 +362,7 @@ C   assumed that a default shape for the glazing is ok.
 C hasdoor (real array) for each surface in the initial shape a zero indicates
 C   no door and a non-zero indicates the width of the door (m).
 C hasname (string array) the surface name for each surface
-C hasconstruction (string array) the name of the MLC to use for each surface
+C hasconstr (string array) the name of the MLC to use for each surface
 C boundarytype (integer (MS,3) the connection data for each surface.
 C datamass (real 4*7) values to create mass
 C textmass (char *32 4*3) text associated with mass
@@ -369,7 +371,7 @@ c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
       subroutine silentzone(ICOMP,name,shape,nbwalls,nbmass,nbedges,
      &  nbpolyc,list,origin,size,coords,rotateit,
-     &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstruction,
+     &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 #include "geometry.h"
@@ -454,8 +456,8 @@ C Paremeters passed in:
       real rotateit       ! angle of rotation
       real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS)    ! width of door in each surface of the initial shape
-      character hasconstruction*32
-      dimension hasconstruction(MS)  ! construction to use for each surface
+      character hasconstr*32
+      dimension hasconstr(MS)  ! construction to use for each surface
       character hasname*12
       dimension hasname(MS)  ! name to use for each surface
       integer boundarytype(MS,3)
@@ -647,7 +649,7 @@ C Update the connection list.
 
 C Instanciate the surface names and the constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
-        write(smlcn(icc),'(a)') hasconstruction(icc)
+        write(smlcn(icc),'(a)') hasconstr(icc)
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
@@ -802,7 +804,7 @@ C parent surface.  Later add logic to better place the door..
             endif
             act='sd'
             write(rsname,'(a)') hasname(newsurf)
-            write(rsmlcn,'(a)') hasconstruction(newsurf)
+            write(rsmlcn,'(a)') hasconstr(newsurf)
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
@@ -882,7 +884,7 @@ C the parent surface as a percentage of area.
             XW=0.0
             ZH=0.0
             write(rsname,'(a)') hasname(newsurf)
-            write(rsmlcn,'(a)') hasconstruction(newsurf)
+            write(rsmlcn,'(a)') hasconstr(newsurf)
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
@@ -1246,8 +1248,8 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character textmass*32,stextmass*32
       dimension textmass(4,3),stextmass(MSZ,4,3)
 
-      character hasconstruction*32,szhasconstruction*32
-      dimension hasconstruction(MS),szhasconstruction(MSZ,MS)  ! construction to use for each surface
+      character hasconstr*32,szhasconstr*32
+      dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
       character hasname*12,szhasname*12
       dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
@@ -1388,7 +1390,7 @@ C in the file.
   54        continue
             szhasglaze(iz,isu)=0.0
             szhasdoor(iz,isu)=0.0
-            szhasconstruction(iz,isu)=' '
+            szhasconstr(iz,isu)=' '
             szhasname(iz,isu)=' '
             szboundarytype(iz,isu,1)=0
             szboundarytype(iz,isu,2)=0
@@ -1927,7 +1929,7 @@ C Surface name, allow for future spaces in name.
 
 C Surface construction name, allow for spaces.
         CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
-        write(szhasconstruction(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
+        write(szhasconstr(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Read three indices representing boundary condition.
         CALL EGETWI(OUTSTR,K,ival1,-1,4,'W','connection type',IER)
@@ -2082,7 +2084,7 @@ C        usefile(iz) = ' '
   57        continue
             hasglaze(isu)=szhasglaze(isz,isu)
             hasdoor(isu)=szhasdoor(isz,isu)
-            hasconstruction(isu)=szhasconstruction(isz,isu)
+            hasconstr(isu)=szhasconstr(isz,isu)
             hasname(isu)=szhasname(isz,isu)
             boundarytype(isu,1)=szboundarytype(isz,isu,1)
             boundarytype(isu,2)=szboundarytype(isz,isu,2)
@@ -2168,7 +2170,7 @@ C          write(6,*) 'list',list
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
-     &      nbdoor(isz),hasdoor,hasname,hasconstruction,
+     &      nbdoor(isz),hasdoor,hasname,hasconstr,
      &      boundarytype,datamass,textmass,use,usefile(isz),IER)
   63    continue
 
@@ -2359,8 +2361,6 @@ C Paremeters passed to:silentzone
       integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
-      real szorigin(MSZ,3)      ! values dependant on shape
-      real szsize(MSZ,3)        ! values dependant on shape
       real szcoords(MSZ,MTV,3) 
 
       integer nbob  ! nbob number of obstruction blocks.
@@ -2379,8 +2379,8 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character stextmass*32
       dimension stextmass(MSZ,4,3)
 
-      character szhasconstruction*32
-      dimension szhasconstruction(MSZ,MS)  ! construction to use for each surface
+      character szhasconstr*32
+      dimension szhasconstr(MSZ,MS)  ! construction to use for each surface
       character szhasname*12
       dimension szhasname(MSZ,MS)  ! name to use for each surface
       integer szboundarytype(MSZ,MS,3)
@@ -2521,6 +2521,7 @@ C Simulation parameter sets.
       endif
 
 C For each of the zones instanciate values.
+C << add in zone description >>
       do 42 iz=1,ncomp
         name(iz) = zname(iz)  ! zone name
         shape(iz) = 'poly'    ! zone shape is poly
@@ -2531,12 +2532,6 @@ C For each of the zones instanciate values.
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
         nbcord(iz) = NZTV(IZ)   ! number of vertices in zone
         rotateit(iz) = 0.0      ! rotation is always zero
-        szorigin(iz,1) = 0.0    ! origin is ignored for poly
-        szorigin(iz,2) = 0.0
-        szorigin(iz,3) = 0.0
-        szsize(iz,1) = 0.0      ! size is ignored for poly
-        szsize(iz,2) = 0.0
-        szsize(iz,3) = 0.0
 	if(iobs(iz).eq.0)then
           nbob(iz) = 0
         else
@@ -2564,6 +2559,7 @@ C  55    continue
 C For each surface (isu) in the zone fill in the list and
 C use ivu loop for each edge. The J loop is for each vertex.
 C Use the VCOORD array for the current vertices in the model.
+C << surface use tags to be added >>
         do 52 isu=1,NZSUR(IZ)
           icc=IZSTOCN(iz,isu)    ! get the connection
           isznbedges(iz,isu)=NZNVER(icc)  ! number of edges per surface
@@ -2577,7 +2573,7 @@ C Use the VCOORD array for the current vertices in the model.
    40     CONTINUE
 
 C Surface attributes.
-          szhasconstruction(iz,isu)=SSMLCN(icc)
+          szhasconstr(iz,isu)=SSMLCN(icc)
           szhasname(iz,isu)=SSNAME(icc)
           szboundarytype(iz,isu,1)=ICT(icc)
           szboundarytype(iz,isu,2)=IC2(icc)
@@ -2701,17 +2697,11 @@ C is per zone, the nsc loop is for each coordinate.
      &        outsd(1:lnblnk(outsd)),'  # X Y Z for ',nsc
  143      continue
 
-C The origin is ignored in poly type enclosure.
-          write(ifilg,'(2a,3F8.4,a)',IOSTAT=IOS,ERR=13)
-     &      '*origin',tab,szorigin(nsz,1),szorigin(nsz,2),
-     &      szorigin(nsz,3),'  # origin (ignored in poly) '
+C The origin is ignored in poly type enclosure so do not bother with *origin.
 
-C The size is ignored in poly type enclosure.
-          write(ifilg,'(2a,3F8.4,a)',IOSTAT=IOS,ERR=13)
-     &      '*size',tab,szsize(nsz,1),szsize(nsz,2),
-     &      szsize(nsz,3),'  # size (ignored in poly) '
+C The size is ignored in poly type enclosure so do not bother with *size.
 
-C Rotation is always zero.
+C Rotation is always zero (in this version of poly).
           write(ifilg,'(2a,F8.4,a)',IOSTAT=IOS,ERR=13)
      &      '*rotate',tab,rotateit(nsz),
      &      '  # rotation around zone origin'
@@ -2727,10 +2717,10 @@ C << consider adding more attributes and putting each attribute
 C << on a separate line with a tag.
           do 144 isu=1,NZSUR(nsz)
             lnsn=lnblnk(szhasname(nsz,isu))
-            lnsc=lnblnk(szhasconstruction(nsz,isu))
+            lnsc=lnblnk(szhasconstr(nsz,isu))
             write(outs,'(5a,3I4)',IOSTAT=IOS,ERR=13)
      &        '*surface ',szhasname(nsz,isu)(1:lnsn),' ',
-     &        szhasconstruction(nsz,isu)(1:lnsc),' ',
+     &        szhasconstr(nsz,isu)(1:lnsc),' ',
      &        szboundarytype(nsz,isu,1),
      &        szboundarytype(nsz,isu,2),
      &        szboundarytype(nsz,isu,3)
