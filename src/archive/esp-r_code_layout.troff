@@ -751,11 +751,44 @@ C Write_MY_clm_db: Writes the database to disk
 
 .ES
 .IP "SiteUtilities.F" 5
-XX
+This file contains routines used to collate fuel used on site.
+.ML
+
+C SiteUtilities:           Supervisory routine
+
+C TotalPurchasedEnergy:    Totals fuel consumed in the building
+
+C ConvertEnergyToFuel:     Converts purchased energy into an
+C                          equivlent amount of fuel use.
+
+C H3KReportsFuelUse:       Transports data to H3KReports.
+
+.ES
 .IP "bsimsel.F" 5
-XX
+This source file provides an interface to the selection of
+basement types based on the BASECALC foundation loss model
+from Natural Resources Canada.
+.ML
+
+C bsimtype is based on data from BASESIMP, A Simplified Foundation  
+C Energy-Loss Model Derived from BASECALC (TM) Simultions
+C Ian Beausoleil-Morrison, CANMET Energy Technology Centre,
+C Natural Resources Canada, 1996, 1998 1999.
+
+.ES
 .IP "X.F" 5
-XX
+xxx xxx xxx
+.ML
+
+XXX XXX XXX
+.ES
+.IP "X.F" 5
+xxx xxx xxx
+.ML
+
+XXX XXX XXX
+.ES
+
 .bp
 .SH
 Appendix A: Function API
@@ -2595,13 +2628,107 @@ C  - bSaveOk: flag indicating that file was saved successfully.
 .ES
 .SH
 SiteUtilities.F
+.LP
+This file contains routines used to collate fuel used on site.
 .ML
-To be done
+
+C SiteUtilities invokes the various subroutines needed to characterize
+C purchased energy. Support for green-house-gas emissions may be
+C added in the future. 
+      subroutine SiteUtilities()
+
+
+C TotalPurchasedEnergy computes the total amount of energy use reported from all
+C parts of the simulator. 
+      subroutine TotalEnergyConsumption()
+
+
+C ConvertEnergyToFuel converts the total energy use associated with a given
+C fuel into a standard unit of measure, based on the fuel's calorific
+C value.
+      subroutine ConvertEnergyToFuel()
+
+
+C H3KReportsFuelUse reports transport data on fuel usage to the H3Kreports facility.
+      subroutine H3KReportsFuelUse
+
+
+C ZeroFuelEnergyStorageArray zeros the site energy usage storage array.
+      subroutine ZeroFuelEnergyStorageArray()
+
+
+C ZeroPltEnergyStorageArray zeros the site energy usage storage array.
+      subroutine ZeroPltEnergyStorageArray()
+
+
+C StoreSiteUtilityData takes the data stored in the passed fSUFuelEnergyUse
+C array and stuffs it into the protected fSiteEnergyUse array
+C Inputs:
+C Parameters defined via include statements.
+C   - iComponent: integer flag indicating where data originated
+C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+      subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
+
+
+C StorePltCompEnergyUse stores fuel energy use computed by plant
+C component models for later access in the site utilities facility.
+C Inputs:
+C Parameters defined via include statements.
+C   - iComP: Plant component index
+C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+      subroutine StorePltCompEnergyUse(iComponent, fSUFuelEnergyUse )
+
+
+C AggregatePltCompEnergy aggregates energy consumption computed
+C by various plant components, and appends it to the site-wide
+C energy consumption array.
+C Inputs:
+C   - None.
+      subroutine AggregatePltCompEnergyUse()
+
+
+C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
+C the plant/elec domains and attempts to attribute them according to
+C end-use.
+C Inputs: None.
+      subroutine AttributePltPfsEnergyUse()
+
+
+C fConvertEnergyToFuelAmount converts an energy input into an equivlent
+C amount of fuel. It makes the OffsiteUtilities conversion factors
+C available elsewhere in the simulator.
+C Inputs:
+C  -fEnergy:   Energy used (W)
+C  -iFuel:     Integer indicating the type of fuel used.
+C  Outputs:
+C  -fConvertEnergyToFuelAmount: Equivlent amount of fuel (various units)
+      real function fConvertEnergyToFuelAmount(fEnergy,iFuelIndex)
+      real fEnergy
+      integer iFuelIndex
+
+
 .ES
 .SH
 bsimsel.F
+.LP
+This source file provides an interface to the selection of
+basement types based on the BASECALC foundation loss model
+from Natural Resources Canada.
 .ML
-To be done
+
+C bsimtype is based on data from BASESIMP, A Simplified Foundation  
+C Energy-Loss Model Derived from BASECALC (TM) Simultions
+C Ian Beausoleil-Morrison, CANMET Energy Technology Centre,
+C Natural Resources Canada, 1996, 1998 1999.
+C ibst (integer) is the index of the user selection to be returned
+      subroutine bsimtype(ibst)
+      integer ibst  ! index of user selection
+
+
 .ES
 .SH
 X.F
