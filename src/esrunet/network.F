@@ -949,7 +949,7 @@ C      write(6,*) 'ihavenewcnn b',ihavenewcnn
       END
 
 C ************************* NETWDRW **********************************
-C This is the main drawing routine for the network  and is called
+C NETWDRW is the main drawing routine for the network  and is called
 C when the workspace needs to be resized or redrawn. 
       SUBROUTINE NETWDRW
 
@@ -1164,7 +1164,7 @@ C Redraw the connections with current scaling, limits and layer.
       END
 
 C ********************* NETWMIC *********************************
-C This routine manages the network icons, can be called from the C-side
+C NETWMIC manages the network icons, can be called from the C-side
 C to handle deletion of icons.
       SUBROUTINE NETWMIC(IMODE,IMOPT)
 

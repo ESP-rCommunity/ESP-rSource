@@ -140,8 +140,8 @@ C Check if the intersection lies between the two points
       RETURN
       END
 
-*************************** ICNTRFM **********************************
-C Called from C code interface.
+*************************** ICNTFM **********************************
+C ICNTFM is called from C code interface.
 C XYZ - icon vertices
 C TXYZ - transformed icon vertices
 C MXFM - transformation matrix

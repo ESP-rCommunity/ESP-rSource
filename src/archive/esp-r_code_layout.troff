@@ -776,6 +776,23 @@ C Ian Beausoleil-Morrison, CANMET Energy Technology Centre,
 C Natural Resources Canada, 1996, 1998 1999.
 
 .ES
+.IP "c2fdum.F" 5
+This file holds dummy routines for modules that have been compiled
+in pure-text mode.
+.ML
+
+C  netwdrw  dummy routine for esrunet/network.F
+C  nwkslctc() dummy routine for esrunet/netwkc2f.F
+C  gnwkquery() dummy routine for esrunet/netwkc2f.F
+C  netwsnap() dummy routine for esrunet/netwkc2f.F
+C  netwmic() dummy routine for esrunet/network.F
+C  gconad() dummy routine for esrunet/netwkc2f.F
+C  gridupdt() dummy routine for esrunet/netwkc2f.F
+C  nwkupdtpos() dummy routine for esrunet/netwkc2f.F
+C  icntfm() dummy routine for esrunet/netutil.F
+C  netwmco() dummy routine for esrunet/network.F
+
+.ES
 .IP "X.F" 5
 xxx xxx xxx
 .ML
@@ -2728,8 +2745,36 @@ C ibst (integer) is the index of the user selection to be returned
       subroutine bsimtype(ibst)
       integer ibst  ! index of user selection
 
+.ES
+.SH
+c2fdum.F
+.LP
+Dummy routines for modules which do not require interactive graphics.
+See the files in esrunet for specific API.
+.ML
+
+C  netwdrw  dummy drawing routine for esrunet/network.F
+
+C  nwkslctc() dummy routine for esrunet/netwkc2f.F
+
+C  gnwkquery() dummy routine for esrunet/netwkc2f.F
+
+C  netwsnap() dummy routine for esrunet/netwkc2f.F
+
+C  netwmic() dummy routine for esrunet/network.F
+
+C  gconad() dummy routine for esrunet/netwkc2f.F
+
+C  gridupdt() dummy routine for esrunet/netwkc2f.F
+
+C  nwkupdtpos() dummy routine for esrunet/netwkc2f.F
+
+C  icntfm() dummy routine for esrunet/netutil.F
+
+C  netwmco() dummy routine for esrunet/network.F
 
 .ES
+XX
 .SH
 X.F
 .ML
