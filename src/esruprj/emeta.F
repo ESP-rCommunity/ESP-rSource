@@ -2357,11 +2357,7 @@ C Paremeters passed to:silentzone
       character szuse*8,usefile*32  ! usage pattern directives
       dimension szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls
-      integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
-      integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
-      integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
-      real szcoords(MSZ,MTV,3) 
 
       integer nbob  ! nbob number of obstruction blocks.
 C      real XOB,YOB,ZOB  ! coordinates of each block origin.
@@ -2378,12 +2374,6 @@ C      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character stextmass*32
       dimension stextmass(MSZ,4,3)
-
-      character szhasconstr*32
-      dimension szhasconstr(MSZ,MS)  ! construction to use for each surface
-      character szhasname*12
-      dimension szhasname(MSZ,MS)  ! name to use for each surface
-      integer szboundarytype(MSZ,MS,3)
 
 C Site related local variables.
       real sitelat,sitelong  ! latitude and longitude difference
@@ -2530,7 +2520,6 @@ C << add in zone description >>
         szuse(iz,3) = ' '
         usefile(iz) = ' '       ! usefile (skip for now)
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
-        nbcord(iz) = NZTV(IZ)   ! number of vertices in zone
         rotateit(iz) = 0.0      ! rotation is always zero
 	if(iobs(iz).eq.0)then
           nbob(iz) = 0
@@ -2556,29 +2545,6 @@ C          BLOCKNAME(iz,ibu) = ' '
 C          BLOCKMAT(iz,ibu) = ' '
 C  55    continue
 
-C For each surface (isu) in the zone fill in the list and
-C use ivu loop for each edge. The J loop is for each vertex.
-C Use the VCOORD array for the current vertices in the model.
-C << surface use tags to be added >>
-        do 52 isu=1,NZSUR(IZ)
-          icc=IZSTOCN(iz,isu)    ! get the connection
-          isznbedges(iz,isu)=NZNVER(icc)  ! number of edges per surface
-          do 54 ivu=1,NZNVER(icc)         ! list of coordinates
-            iszlist(iz,isu,ivu)=NZJVN(icc,ivu)
-  54      continue
-          DO 40 J=1,NZTV(iz)
-            szcoords(iz,J,1)=VCOORD(iz,J,1)
-            szcoords(iz,J,2)=VCOORD(iz,J,2)
-            szcoords(iz,J,3)=VCOORD(iz,J,3)
-   40     CONTINUE
-
-C Surface attributes.
-          szhasconstr(iz,isu)=SSMLCN(icc)
-          szhasname(iz,isu)=SSNAME(icc)
-          szboundarytype(iz,isu,1)=ICT(icc)
-          szboundarytype(iz,isu,2)=IC2(icc)
-          szboundarytype(iz,isu,3)=IE2(icc)
-  52    continue
   42  continue
 
 C Check if running in dll mode.
@@ -2688,10 +2654,10 @@ C is per zone, the nsc loop is for each coordinate.
           write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)
      &      '*shape',tab,shape(nsz),'  # polygon enclosure'
 
-          do 143 nsc=1,nbcord(nsz)
+          do 143 nsc=1,NZTV(nsz)
             write(outs,'(a,3F8.4)',IOSTAT=IOS,ERR=13)
-     &        '*cord ',szcoords(nsz,nsc,1),szcoords(nsz,nsc,2),
-     &        szcoords(nsz,nsc,3)
+     &        '*cord ',VCOORD(nsz,nsc,1),VCOORD(nsz,nsc,2),
+     &        VCOORD(nsz,nsc,3)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i3)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # X Y Z for ',nsc
@@ -2716,21 +2682,18 @@ C << consider altering the tag to *nbsurfs >>
 C << consider adding more attributes and putting each attribute
 C << on a separate line with a tag.
           do 144 isu=1,NZSUR(nsz)
-            lnsn=lnblnk(szhasname(nsz,isu))
-            lnsc=lnblnk(szhasconstr(nsz,isu))
+            icc=IZSTOCN(nsz,isu)    ! get the connection
+            lnsn=lnblnk(SSNAME(icc))
+            lnsc=lnblnk(SSMLCN(icc))
             write(outs,'(5a,3I4)',IOSTAT=IOS,ERR=13)
-     &        '*surface ',szhasname(nsz,isu)(1:lnsn),' ',
-     &        szhasconstr(nsz,isu)(1:lnsc),' ',
-     &        szboundarytype(nsz,isu,1),
-     &        szboundarytype(nsz,isu,2),
-     &        szboundarytype(nsz,isu,3)
+     &        '*surface ',SSNAME(icc)(1:lnsn),' ',
+     &        SSMLCN(icc)(1:lnsc),' ',ICT(icc),IC2(icc),IE2(icc)
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # surface attributes '
 
             write(outs,'(a,25I4)',IOSTAT=ios,ERR=13) '*list ',
-     &        isznbedges(nsz,isu),
-     &        (iszlist(nsz,isu,J),J=1,isznbedges(nsz,isu))
+     &        NZNVER(icc),(NZJVN(icc,J),J=1,NZNVER(icc))
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # ',isu
