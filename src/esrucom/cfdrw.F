@@ -19,16 +19,29 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Read and write new cfd description.
+C DFDSV:     Saves the room air movement description file (version 2).
+C DFDREAD:   Reads the CFD configuration file (version 2,2.1 and 2.2)
+C NEW2OLD:   Copies new data structure to old.
+C CFMFSU:    Set up CFD to mass flow connections/ components.
+C MFLISTemp: List common block contents for debugging only.
+C CFDDEFLT: Sets default values for all data items.
+C SCHCHK:   Checks the turbulent schmidt number of all containments.
+C BCEKCK:   Checks the boundary conditions of all boundary cells  
 
 C ************* DFDSV 
 C DFDSV saves the room air movement description file (version 2).
-C IUF unit number for CFD input file. IER=0 indicates no error.
+C IUF unit number for CFD input file.
+C IZONE is the index of the zone with a CFD domain.
+C IER=0 indicates no error.
 
       SUBROUTINE DFDSV(IUF,IZONE,IER)
 #include "building.h"
 #include "cfd.h"
       
 C      integer lnblnk  ! function definition
+
+C Passed parameters.
+      integer iuf,izone,ier
 
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
@@ -493,6 +506,11 @@ C          geometry model (needed for graphic feedback scaling).
 
 C ********************* DFDREAD *********************
 C DFDREAD - Reads the CFD configuration file (version 2,2.1 and 2.2)
+C IZONE is the index of the model zone
+C itrc signals verbose reporting if greater than zero
+C itu is the unit to send reports to
+C IER is set to one if file cannot be read, otherwise negative if
+C     there is an error while scanning file.
       SUBROUTINE DFDREAD(IZONE,itrc,itu,IER)
 #include "cfd.h"
 #include "net_flow.h"
@@ -500,6 +518,9 @@ C DFDREAD - Reads the CFD configuration file (version 2,2.1 and 2.2)
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Passed parameters.
+      integer izone,itrc,itu,ier
 
 C Grid and Geometry definition:
 C   NREG(?,ICFD) - Number of regions in each direction(?: 1- x, 2- y, 3- z).
@@ -1975,10 +1996,19 @@ C connected to (ext_nod), using the same component.
 C Consequentially the number of new nodes created will be equal to the
 C number of openings in CFD domain. The nodes created here are internal
 C and constant pressure (type 1) type nodes.
-       subroutine CFMFSU(IV,ITRC,IND,ICN,OPENNAM)
+C IV is the index of the opening number.
+C ITRC signals verbose reporting if greater than zero.
+C IND is the index of the node.
+C ICN is the index of the connection.
+C OPENNAM (char 12) name of the opening.
+      subroutine CFMFSU(IV,ITRC,IND,ICN,OPENNAM)
 #include "cfd.h"
 #include "net_flow.h"
 
+C Passed parameters.
+      integer iv,itrc,ind,icn
+      character OPENNAM*12
+      
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ICFNOD/ICFD,ICP
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
@@ -1994,7 +2024,7 @@ C and constant pressure (type 1) type nodes.
       COMMON/CFDMFS2/MFNEWN(MNVLS,MNZ),NFNDN,NCFDOPNO(MNVLS,MNZ)
 
       character*12 LCFND,LEXND,LCOMPNT,CMNAM,NDNAM
-      character LTPCMP*60,outs*124,OPENNAM*12,CHECKER1*12,OPNO*10
+      character LTPCMP*60,outs*124,CHECKER1*12,OPNO*10
       LOGICAL OK,ACTCNN
 
 C Get CFD opening number as integer
@@ -2379,8 +2409,8 @@ C Convergence criteria
       end
 
 C ************************ SCHCHK ************************
-C This subroutine checks the turbulent schmidt number of all
-C contaminants defined in the CFD domain to be non - zero. If any 
+C SCHCHK checks the turbulent schmidt number of all containments
+C defined in the CFD domain to be non - zero. If any 
 C contaminant is zero it is set to the default value unity
 
       SUBROUTINE SCHCHK
@@ -2402,13 +2432,16 @@ C contaminant is zero it is set to the default value unity
       END
 
 C ************************ BCEKCK ************************
-C This subroutine checks the boundary conditions of all boundary cells  
-C (blockages are yet not considered) to be defined
-
+C BCEKCK checks the boundary conditions of all boundary cells  
+C (blockages are yet not considered) to be defined.
+C itrc signals verbose reporting if greater than zero
       SUBROUTINE BCEKCK(ITRC)
 #include "cfd.h"
       
       integer lnblnk  ! function definition
+
+C Passed parameter.
+      integer itrc
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/OUTIN/IUOUT,IUIN
@@ -2546,31 +2579,32 @@ C Warn user if cell number starts/stops wrongly
         ENDIF
  1    CONTINUE
 
-*      IF(ITRC.GT.0)THEN
-*        do 900 iz=1,ntcz
-*          write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
-* 900    continue
-*
-*        do 901 iz=1,ntcz
-*          write(6,*)'ixznt ',(ixznt(ix,iz),ix=1,ntcx)
-* 901    continue
-*
-*        do 902 iz=1,ntcz
-*          write(6,*)'iyzet ',(iyzet(iy,iz),iy=1,ntcy)
-* 902    continue
-*
-*        do 903 iz=1,ntcz
-*          write(6,*)'iyzwt ',(iyzwt(iy,iz),iy=1,ntcy)
-* 903    continue
-* 
-*        do 904 ix=1,ntcx
-*          write(6,*)'ixyhh ',(ixyhh(ix,iy),iy=1,ntcy)
-* 904   continue
-*
-*        do 905 ix=1,ntcx
-*          write(6,*)'ixyll ',(ixyll(ix,iy),iy=1,ntcy)
-* 905    continue
-*      ENDIF
+C Debug if itrc is other than zero.
+      IF(ITRC.GT.0)THEN
+        do 900 iz=1,ntcz
+          write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
+ 900    continue
+
+        do 901 iz=1,ntcz
+          write(6,*)'ixznt ',(ixznt(ix,iz),ix=1,ntcx)
+ 901    continue
+
+        do 902 iz=1,ntcz
+          write(6,*)'iyzet ',(iyzet(iy,iz),iy=1,ntcy)
+ 902    continue
+
+        do 903 iz=1,ntcz
+          write(6,*)'iyzwt ',(iyzwt(iy,iz),iy=1,ntcy)
+ 903    continue
+ 
+        do 904 ix=1,ntcx
+          write(6,*)'ixyhh ',(ixyhh(ix,iy),iy=1,ntcy)
+ 904   continue
+
+        do 905 ix=1,ntcx
+          write(6,*)'ixyll ',(ixyll(ix,iy),iy=1,ntcy)
+ 905    continue
+      ENDIF
 
 C Do checks and issue warning messages if any
 C North and South facing boundary conditions
