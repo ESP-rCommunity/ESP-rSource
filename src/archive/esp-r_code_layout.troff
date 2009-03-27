@@ -18,7 +18,7 @@ ESP-r Common Coding Resources
 by Jon Hand
 Energy Systems Research Unit
 of the University of Strathclyde
-Version of 26 March 2009
+Version of 27 March 2009
 .sp 2
 .SH
 Summary
@@ -824,11 +824,45 @@ C SCHCHK:   Checks the turbulent schmidt number of all containments.
 C BCEKCK:   Checks the boundary conditions of all boundary cells  
 
 .ES
-.IP "X.F" 5
-xxx xxx xxx
+.IP "cfgrid.F" 5
+Sets up and calculates 2D and 3D gridding for CFD domains.
 .ML
 
-XXX XXX XXX
+C GRID:    Controling routine for all gridding.
+
+C GRIDIST: Distribute grid cells according to power law equation in 1-D.
+
+C GRIDCRV: Distribute grid cells according curvilinear data in 2-D.
+
+C GRIDGEO: Calculate geometrical properties and interpolation factors 
+C          of gridded domain.
+
+C LINVOL:  Logical function: TRUE if inside nominated volume.
+
+
+.ES
+.IP "common3dv.F" 5
+Holds subroutines used to convert model coordinates into
+perspective viewing coordinates for various types of
+geometric entities.
+.ML
+
+C  ADJVIEW: Adjusts the viewing transforms & boundaries if necessary.
+
+C  CHGAZI:  Called from C code with an increment or decrement of azimuth.
+
+C  CHGELEV: Called from C code with an increment or decrement of elevation.
+
+C  DRAWOBS: Checks for obstructions, loads, converts and draws them.
+
+C  DRWSEN:  Loads, converts and draws MRT sensors (rec bodies).
+
+C  EGRNDR:  Draws 3D ground topology.
+
+C  DSGRID:  Draws a dotted site grid with current scaling factors.
+
+C  EMKVIEW: Constructs a 'viewer' format file.
+
 .ES
 
 .bp
@@ -2853,6 +2887,135 @@ C BCEKCK checks the boundary conditions of all boundary cells
 C (blockages are yet not considered) to be defined.
 C itrc signals verbose reporting if greater than zero
       SUBROUTINE BCEKCK(ITRC)
+
+.ES
+.SH
+cfgrid.F
+.LP
+Sets up and calculates 2D and 3D gridding for CFD domains.
+.ML
+
+C GRID: Controling routine for all gridding.
+C IER is returned as one if east/west grids do not match.
+      SUBROUTINE GRID(ier)
+      integer ier
+
+
+C GRIDIST: Distribute grid cells according to power law equation.
+C IR - current region.
+C IC - current cfd domain.
+C PLAW - power law coefficients.
+C NCEL - number of cells.
+C REG - linear size of regions.
+C DIST - linear dimension of grid cells.
+C ICELL - position within cell (??)
+C NDIM - parameter for array size of DIST
+      SUBROUTINE GRIDIST(IR,IC,PLAW,NCEL,REG,DIST,ICELL,NDIM)
+      integer IR,IC,NCEL,ICELL,NDIM
+      real PLAW,REG,DIST
+      dimension PLAW(MNREG,MNZ),NCEL(MNREG,MNZ),REG(MNREG,MNZ)
+      dimension DIST(NDIM)
+
+
+C GRIDGEO: Calculate geometrical properties and interpolation factors.
+      SUBROUTINE GRIDGEO
+
+
+C GRIDCRV: Calculate intersection points for curvilinear gridding.
+C IS - total number of grid points in x direction.
+C KS - total number of grid points in z direction.
+C ier is set to one if a vertical step is found.
+      SUBROUTINE GRIDCRV(IS,KS,ier)
+      integer IS,KS,ier
+
+
+C LINVOL - Logical function: TRUE if inside nominated volume.
+C Itest,Jtest,Ktest - test point
+C Ii,If start and end of I direction
+C Ji,Jf start and end of J direction
+C Ki,Kf start and end of J direction
+      LOGICAL FUNCTION LINVOL(Itest,Jtest,Ktest,Ii,If,Ji,Jf,Ki,Kf)
+      integer Itest,Jtest,Ktest,Ii,If,Ji,Jf,Ki,Kf
+
+
+.ES
+.SH
+common3dv.F
+.LP
+Holds subroutines used to convert model coordinates into
+perspective viewing coordinates for various types of
+geometric entities.
+.ML
+
+C ADJVIEW takes the current status of view and boundary mods
+C and adjusts the viewing transforms & object boundaries if 
+C necessary before displaying the zone.
+C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C then it represents the zone which is currently being edited.
+      SUBROUTINE ADJVIEW(ITRC,IER)
+      integer itrc,ier
+
+
+C CHGAZI is called from C code in esp-r.c or esru_x.c with an increment or 
+C decrement to the viewing azimuth (icazi). If not needed then provide a dummy. 
+      subroutine chgazi(icazi)
+      integer icazi
+
+
+C CHGELEV is called from C code in esp-r.c or esru_x.c with an increment or 
+C decrement to the viewing elevation (icelev). If not needed then provide a dummy. 
+      subroutine chgelev(icelev)
+      integer icelev
+
+
+C SVDSOPT - save graphics display options into common block RAY2SV.
+      subroutine SVDSOPT
+
+
+C RCDSOPT - recover graphics display options from common block RAY2SV.
+      subroutine RCDSOPT
+
+
+C DRAWOBS checks to see it obstructions are associated with zone (IFOC).
+C If so it loads the geometric description within an obstruction file
+C into common block BG1 and then converts into viewing coords, 
+C clips the image and draws it.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE DRAWOBS(IFOC,ier)
+      integer ifoc,ier
+
+
+C DRWSEN loads the geometric description within an MRT sensor file
+C into common block BG1 and then converts into viewing coords,
+C clips the image and draws it.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE DRWSEN(ier)
+      integer ier
+
+
+C EGRNDR  Draws ground topology held in GT5 and grndpl commons.
+C IER is returned as non-zero if there has been a problem.
+      SUBROUTINE EGRNDR(IER)
+      integer ier
+
+
+C DSGRID draws a dotted grid at a given reference height (RH), grid
+C density (GD), and dot density (LD) within the viewport
+C with the current scaling factors etc.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE DSGRID(RH,GD,LD,IER)
+      real RH,GD
+      integer LD,IER
+
+
+C EMKVIEW constructs a 'viewer' format file. The trace level (ITRC) defines 
+C whether information about the zones is displayed or not. IUO is the file
+C unit number. CFGOK is passed in as .TRUE. if the user can select zones.
+C IER is returned as non-zero if there is a problem.
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
+      integer ITRC,IUO,IER
+      logical CFGOK
+
 
 .ES
 .SH

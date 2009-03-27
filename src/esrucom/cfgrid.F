@@ -1,6 +1,6 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2009.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
@@ -24,13 +24,17 @@ C GRIDIST: Distribute grid cells according to power law equation in 1-D.
 C GRIDCRV: Distribute grid cells according curvilinear data in 2-D.
 C GRIDGEO: Calculate geometrical properties and interpolation factors 
 C          of gridded domain.
+C LINVOL:  Logical function: TRUE if inside nominated volume.
 
 C ************************** GRID **************************
-C GRID:    Controling routine for all gridding.
-
+C GRID: Controling routine for all gridding.
+C IER is returned as one if east/west grids do not match.
       SUBROUTINE GRID(ier)
 #include "cfd.h"
 
+C Passed parameter
+      integer ier
+      
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
      2            DZHP(ntcelz),DZPL(ntcelz),
@@ -123,10 +127,12 @@ C PLAW - power law coefficients.
 C NCEL - number of cells.
 C REG - linear size of regions.
 C DIST - linear dimension of grid cells.
-
+C ICELL - position within cell (??)
+C NDIM - parameter for array size of DIST
       SUBROUTINE GRIDIST(IR,IC,PLAW,NCEL,REG,DIST,ICELL,NDIM)
 #include "cfd.h"
-
+      integer IR,IC,NCEL,ICELL,NDIM
+      real PLAW,REG,DIST
       dimension PLAW(MNREG,MNZ),NCEL(MNREG,MNZ),REG(MNREG,MNZ)
       dimension DIST(NDIM)
 
@@ -410,11 +416,14 @@ C ************************** GRIDCRV **************************
 C GRIDCRV: Calculate intersection points for curvilinear gridding.
 C IS - total number of grid points in x direction.
 C KS - total number of grid points in z direction.
-
+C ier is set to one if a vertical step is found.
       SUBROUTINE GRIDCRV(IS,KS,ier)
 #include "building.h"
 #include "cfd.h"
 
+C Passed parameters.
+      integer IS,KS,ier
+      
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GEOMCURV/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -525,10 +534,14 @@ C Debug...
 
 C ********************* LINVOL *********************
 C LINVOL - Logical function: TRUE if inside nominated volume.
-C Passed start and end cells for I,J,K directions.
-
+C Itest,Jtest,Ktest - test point
+C Ii,If start and end of I direction
+C Ji,Jf start and end of J direction
+C Ki,Kf start and end of J direction
       LOGICAL FUNCTION LINVOL(Itest,Jtest,Ktest,Ii,If,Ji,Jf,Ki,Kf)
 
+      integer Itest,Jtest,Ktest,Ii,If,Ji,Jf,Ki,Kf
+       
       LINVOL=.false.
       if (Itest.ge.Ii.and.Itest.le.If) then
         if (Jtest.ge.Ji.and.Jtest.le.Jf) then

@@ -40,6 +40,9 @@ C then it represents the zone which is currently being edited.
       
       integer lnblnk  ! function definition
 
+C Passed parameters.
+      integer itrc,ier
+      
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -117,10 +120,14 @@ C Recover information begin edited and reset modify flag.
       END
 
 C ********* chgazi
-C CHGAZI is called from C code in wwlib.c with an increment or decrement
-C to the viewing azimuth.  If not needed then provide a dummy. 
+C CHGAZI is called from C code in esp-r.c or esru_x.c with an increment or 
+C decrement to the viewing azimuth (icazi). If not needed then provide a dummy. 
       subroutine chgazi(icazi)
 #include "prj3dv.h"
+
+C Passed paremter.
+      integer icazi
+      
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
       PI = 4.0 * ATAN(1.0)
@@ -153,10 +160,14 @@ C to the viewing azimuth.  If not needed then provide a dummy.
       end
 
 C ********* chgelev
-C CHGELEV is called from C code in wwlib.c with an increment or decrement
-C to the viewing elevation.  If not needed then provide a dummy. 
+C CHGELEV is called from C code in esp-r.c or esru_x.c with an increment or 
+C decrement to the viewing elevation (icelev). If not needed then provide a dummy. 
       subroutine chgelev(icelev)
 #include "prj3dv.h"
+
+C Passed paramter.
+      integer icelev
+      
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
 
@@ -190,7 +201,7 @@ C to the viewing elevation.  If not needed then provide a dummy.
       end
 
 C ******************** SVDSOPT ********************
-C SVDSOPT - save graphics display options.
+C SVDSOPT - save graphics display options into common block RAY2SV.
       subroutine SVDSOPT
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -218,7 +229,7 @@ C SVDSOPT - save graphics display options.
       end
 
 C ******************** RCDSOPT ********************
-C RCDSOPT - recover graphics display options.
+C RCDSOPT - recover graphics display options from common block RAY2SV.
       subroutine RCDSOPT
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -246,16 +257,21 @@ C RCDSOPT - recover graphics display options.
       end
 
 C **************DRAWOBS 
-C DRAWOBS checks to see it obstructions are associated with a zone.
+C DRAWOBS checks to see it obstructions are associated with zone (IFOC).
 C If so it loads the geometric description within an obstruction file
 C into common block BG1 and then converts into viewing coords, 
 C clips the image and draws it.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE DRAWOBS(IFOC,ier)
 #include "building.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 #include "prj3dv.h"
+
+C Passed parameters.
+      integer ifoc,ier
+      
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -440,9 +456,14 @@ C **************** DRWSEN
 C DRWSEN loads the geometric description within an MRT sensor file
 C into common block BG1 and then converts into viewing coords,
 C clips the image and draws it.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE DRWSEN(ier)
 #include "building.h"
 #include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -562,10 +583,15 @@ C Complete the polygon.
       END
 
 C ****** Routine to draw ground topology.
+C EGRNDR  Draws ground topology held in GT5 and grndpl commons.
+C IER is returned as non-zero if there has been a problem.
       SUBROUTINE EGRNDR(IER)
 #include "building.h"
 #include "prj3dv.h"
 
+C Passed parameter.
+      integer ier
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
@@ -712,12 +738,18 @@ C to normal size.
       end
 
 C-----DSGRID -----------------------------------------------------------
-C DSGRID draws a dotted grid at a given reference height RH, grid
-C density GD, and dot density LD within
-C the viewport with the current scaling factors etc.
+C DSGRID draws a dotted grid at a given reference height (RH), grid
+C density (GD), and dot density (LD) within the viewport
+C with the current scaling factors etc.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE DSGRID(RH,GD,LD,IER)
 #include "building.h"
 #include "prj3dv.h"
+
+C Passed parameters.
+      real RH,GD
+      integer LD,IER
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -856,12 +888,18 @@ C Move to next grid position.
       END
 
 C ******************* EMKVIEW 
-C EMKVIEW constructs a 'viewer' format file. The trace level defines 
-C whether information about the zones is displayed or not.
+C EMKVIEW constructs a 'viewer' format file. The trace level (ITRC) defines 
+C whether information about the zones is displayed or not. IUO is the file
+C unit number. CFGOK is passed in as .TRUE. if the user can select zones.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
-
 #include "building.h"
 #include "geometry.h"
+
+C Passed parameters.
+      integer ITRC,IUO,IER
+      logical CFGOK
+      
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -882,7 +920,7 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      LOGICAL  CFGOK,OK,dok
+      LOGICAL OK,dok
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
