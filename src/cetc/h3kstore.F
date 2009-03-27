@@ -756,10 +756,10 @@ C     #include "cfd.h"
 
 C     Commons for summary of solar (for results library)
       common/solsum/q1adjz,q1outs,q2adjz,q2lost,q2tmc,
-     &     q2wall,q2rem
+     &     q2wall,q2rem,q2cfc
 
         REAL q1adjz(2),q1outs(2),q2adjz(2),q2lost(2)
-        REAL q2tmc(2),q2wall(2),q2rem(2)
+        REAL q2tmc(2),q2wall(2),q2rem(2),q2cfc(2)
 
 
       COMMON/CCTL/ICASCF

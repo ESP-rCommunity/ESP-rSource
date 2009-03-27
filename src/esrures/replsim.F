@@ -183,7 +183,7 @@ C SYNOPF displays the names of the files used in a simulation
 
       SUBROUTINE SYNOPF
 #include "building.h"
-
+#include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
 
@@ -201,11 +201,12 @@ C SYNOPF displays the names of the files used in a simulation
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
+
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCTLF
 
       CHARACTER*248 CTLDOC
-      CHARACTER*21 LABELS(7)
+      CHARACTER*21 LABELS(8)
 
       character outs*124
 
@@ -215,7 +216,8 @@ C SYNOPF displays the names of the files used in a simulation
      &            ' Zone view factor  : ',
      &            ' Zone shad/insolat : ',
      &            ' Zone transp walls : ',
-     &            ' Zone cas gain ctrl: '/
+     &            ' Zone cas gain ctrl: ',
+     &            ' Zone cfc constr.  : '/
 
 C Echo names of files for visual check.
       write(outs,59)LSNAM
@@ -250,6 +252,10 @@ C Echo names of files for visual check.
         ENDIF
         IF(ICGC(I).EQ.1)THEN
           write(outs,86)LABELS(7),LCGCIN(I)
+          call edisp(iuout,outs)
+        ENDIF
+        IF(icfc(I).EQ.1)THEN
+          write(outs,86)LABELS(8),lcfcin(I)
           call edisp(iuout,outs)
         ENDIF
    10 CONTINUE

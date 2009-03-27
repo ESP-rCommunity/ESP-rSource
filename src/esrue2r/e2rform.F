@@ -1243,7 +1243,8 @@ C Find the matching mlc index and set the material name.
             IF(DESC(IC)(1:12).EQ.SSMLCN(icn)(1:12))ICF=IC
  201      CONTINUE
           if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
-            if (SSOTF(icn)(1:4).ne.'OPAQ') then
+            if (SSOTF(icn)(1:4).ne.'OPAQ'
+     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
               material='unknown_glz'
             else
               material='unknown'
@@ -1266,7 +1267,8 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') outs
               WRITE(ita2,'(a)') '  '
             endif
-          elseif(SSOTF(icn)(1:4).ne.'OPAQ')then
+          elseif(SSOTF(icn)(1:4).ne.'OPAQ'
+     &            .and.SSOTF(icn)(1:4).ne.'CFC ')then
 
 C Create surface based on the following:
 C  Focus zone - create.

@@ -168,7 +168,10 @@ c Read layer thermophysical properties from 'outside' to inside.
 
 C If reading an air gap allow 0.0 properties.
             if(J.eq.IPAIRG(I,1).or.J.eq.IPAIRG(I,2).or.
-     &         J.eq.IPAIRG(I,3))then
+     &         J.eq.IPAIRG(I,3).or.J.eq.IPAIRG(I,4).or.
+     &         J.EQ.IPAIRG(I,5).or.J.eq.IPAIRG(I,6).or.
+     &         J.EQ.IPAIRG(I,7).OR.J.EQ.IPAIRG(I,8).OR.
+     &         J.EQ.IPAIRG(I,9).OR.J.EQ.IPAIRG(I,10))then
               CALL EGETWR(OUTSTR,K,CON(I,J),0.,CONCH,'W','conductivity',
      &          IER)
               CALL EGETWR(OUTSTR,K,DEN(I,J),0.0,DENCH,'W','density',IER)
@@ -386,7 +389,7 @@ C Write out air gap details.
 5641      FORMAT('# air gap position & resistance for surface ',I2)
           WRITE(IFILT,5640,IOSTAT=IOS,ERR=146)(IPAIRG(I,J),
      &            RAIRG(I,J),J=1,NAIRG(I))
-5640      FORMAT(1X,5(I2,',',F8.3,','))
+5640      FORMAT(1X,10(I2,',',F8.3,','))
         ENDIF
 1190  CONTINUE
                                                                         
@@ -574,11 +577,16 @@ C Get the air gap contribution to U value for reporting.
  9990       CONTINUE
           ENDIF
         else
-          IF(SSOTF(icn1)(1:4).NE.'OPAQ')THEN
+          IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
+     &      SSOTF(icn1)(1:4).NE.'CFC ')THEN
            WRITE(OPT(i),'(A)') DESC(imatch(i))(21:32)
            IF(OPT(i).EQ.' ')OPT(i)='UNKNOWN'
-          ELSE
+          ELSEIF(SSOTF(icn1)(1:4).EQ.'OPAQ')THEN
             OPT(i)='OPAQUE'
+          ELSEIF(SSOTF(icn1)(1:4).EQ.'CFC ')THEN
+            OPT(i)='USE GSLedit'
+          ELSE
+            OPT(I)='OPAQ'
           ENDIF
           NELT=NE(I)
 
@@ -634,6 +642,9 @@ C Jump if not all requied and not the focus surface.
         if(OPT(i)(1:4).eq.'OPAQ')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
      &      SSMLCN(icn1)(1:lsml),' and is opaque:'
+        elseif(OPT(i)(1:11).eq.'USE GSLedit')then
+          write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
+     &      SSMLCN(icn1)(1:lsml),' and is complex fenestration const.'
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
      &      SSMLCN(icn1)(1:lsml),' and has unknown optical properties:'
@@ -690,7 +701,7 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is likely to be known).
-        if(OPT(i)(1:4).eq.'OPAQ')then
+        if(OPT(i)(1:4).eq.'OPAQ'.or.OPT(i)(1:11).eq.'USE GSLedit')then
           continue
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           continue

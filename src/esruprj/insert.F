@@ -2457,6 +2457,7 @@ C If in silent mode assign construction otherwise select.
           WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
           IF(DESC(ISEL)(15:18).NE.'OPAQ')SOTF(NSUR)='TRAN'
           IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
+          IF(DESC(ISEL)(15:18).EQ.'CFC ')SOTF(NSUR)='CFC '
         endif
       endif
       NGL(NSUR)=0

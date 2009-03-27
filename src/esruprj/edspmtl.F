@@ -698,7 +698,7 @@ C General image option flags.
      &    'component. ',IER)
       ENDIF
       CALL EPMENRC
-      if(SOTF(ISO)(1:4).eq.'OPAQ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
         ISPMF=1
       else
         ISPMF=0
@@ -727,7 +727,7 @@ c      IVAL=IFOC
       CALL ADJVIEW(ITRC,IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
-      if(SOTF(ISO)(1:4).eq.'OPAQ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
         ISPMF=1
       else
         ISPMF=0

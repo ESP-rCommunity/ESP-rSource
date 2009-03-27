@@ -342,7 +342,7 @@ C In special case...
         m=m+1   
         write(ITEM(m),'(A)') '  TMC number & DF(s) for each photocell:'
         do 44 ii = 1,NSUR
-          if(SOTF(II)(1:4).NE.'OPAQ')THEN
+          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
             m=m+1
             CALL EMKEY(m,KEY,IER)
             write(ITEM(m),'(A,I4,2X,F6.4,a)')key,II,DFDAT(ICOMP,N,II,1),
@@ -830,7 +830,7 @@ C Calculation type.
 C Loop through all surfaces and find out number of TMCs:
           ICOUNT=0
           do 47 i = 1, NSUR
-            if(SOTF(I)(1:4).NE.'OPAQ')THEN
+            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
               ICOUNT=ICOUNT+1              
             endif
 47        continue 

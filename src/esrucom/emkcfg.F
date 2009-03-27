@@ -45,6 +45,7 @@ C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
+#include "CFC_common.h"
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -1046,6 +1047,11 @@ C Fabric portion of description.
         if(ITW(I).EQ.1)then
           WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
      &    '*tmc ',LTWIN(I)(1:lnblnk(LTWIN(I))),'  # transparent constr'
+        endif
+        if(icfc(I).EQ.1)then
+          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
+     &    '*cfc ',lcfcin(I)(1:lnblnk(lcfcin(I))),
+     &    '  # complex fenestration constr'
         endif
         if(IVF(I).EQ.1)then
           WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)

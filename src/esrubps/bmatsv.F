@@ -1319,6 +1319,10 @@ C For 3D zone model, close the associated files.
                 CALL ERPFREE(ITLW,ISTAT)
                 CALL ERPFREE(ILWV,ISTAT)
               ENDIF
+
+C CFC output
+!             call CFCoutput(icomp)
+
    40       continue
 
 C Zone loop complete. Call HVAC simulation controller if HVAC models are active.

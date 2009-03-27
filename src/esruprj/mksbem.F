@@ -2877,7 +2877,8 @@ C Add surface areas
               else
                 continue 
               endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ')then
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &            SSOTF(icc)(1:4).ne.'CFC ')then
 
 C Check the U value for each external window.
               UVH = 0.0

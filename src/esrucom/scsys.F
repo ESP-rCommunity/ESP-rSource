@@ -43,6 +43,7 @@ C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "lookup_data.h"
+#include "CFC_common.h"
 
       PARAMETER (MSTMC=20)
 
@@ -1043,6 +1044,9 @@ C Zone file names.
         elseif(WORD(1:4).eq.'*tmc')then
           itw(icomp)=1
           LTWIN(icomp)=text(1:72)
+        elseif(WORD(1:4).eq.'*cfc')then
+          icfc(icomp)=1
+          lcfcin(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*ivf')then
           ivf(icomp)=1
           LVIEW(icomp)=text(1:72)

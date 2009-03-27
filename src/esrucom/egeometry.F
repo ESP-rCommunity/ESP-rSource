@@ -558,7 +558,7 @@ C Surface attributes:
 C 1st item - surface number ISN, 
 C 2nd item - 12 char name SNAME()
 C 3rd item is a string (32 char) indicating whether the surface is
-C     OPAQ/OPAQAUE (opaque) TRAN/optical set name. 
+C     OPAQ/OPAQAUE (opaque) TRAN/optical set name or CFC. 
 C 4th item SOTF() is a string (4 char) indicating whether the surface 
 C     is to be counted as a FLOR (floor), VERT (wall), CEIL (ceiling).
 C 5th item is the name of the construction ( 32 char).
@@ -639,7 +639,10 @@ C Now that we know the construction try and work out the optics.
         if(tmpsot(1:4).eq.'OPAQ')then
           write(SOTF(ISN),'(a)') 'OPAQUE'  ! write OPAQUE
           if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE' 
-        elseif(tmpsot(1:4).ne.'OPAQ')then
+        elseif(tmpsot(1:4).eq.'CFC ')then
+          write(SOTF(ISN),'(a)') 'CFC '    !write CFC
+          if(havec24) write(SSOTF(icn),'(a)') 'CFC '
+        elseif(tmpsot(1:4).ne.'OPAQ'.and.tmpsot(1:4).ne.'CFC ')then
 
 C We need to find the name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
@@ -660,7 +663,7 @@ C Use logic similar to parsemlcdesc to find the optical name.
               OPT=' '
               WRITE(OTF,'(A)') DESC(ICF)(15:18)
               IF(OTF.EQ.' ')OTF='OPAQ'
-              IF(OTF(1:4).NE.'OPAQ')THEN
+              IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
                 WRITE(OPT,'(A)') DESC(ICF)(21:32)
                 IF(OPT.EQ.' ')OPT='UNKNOWN'
               ELSE
@@ -909,7 +912,7 @@ C If surface `flor` not included in the list add it.
             endif
           endif
         endif
-        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.
+        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.SOTF(ijj)(1:4).ne.'CFC '.and.
      &      SOTHER(ijj,1)(1:8).eq.'EXTERIOR') then
           ZTRANA(ICOMP)=ZTRANA(ICOMP)+SNA(ijj)
         endif
@@ -1095,7 +1098,8 @@ C name of the optical property so if SOTF is not OPAQUE then
 C set it to TRAN within the legacy geometry file.
         IF(SSOTF(icc)(1:2).EQ.'  ')then
           SSOTF(icc)='OPAQUE'
-        ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ')then
+        ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ'
+     &            .OR.SSOTF(icc)(1:4).EQ.'CFC ')then
           continue
         ELSE
           SSOTF(icc)='TRAN'
@@ -1607,7 +1611,10 @@ C Surface optics set name or OPAQ/TRAN, allow for spaces.
             if(WORD(1:4).eq.'OPAQ')then
               write(SOTF(NS),'(a)') 'OPAQUE'  ! write OPAQUE
               if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE'
-            elseif(WORD(1:4).ne.'OPAQ')then
+            elseif(WORD(1:4).eq.'CFC ')then
+              write(SOTF(NS),'(a)') 'CFC '  ! write CFC
+              if(havec24) write(SSOTF(icn),'(a)') 'CFC '
+            elseif(WORD(1:4).ne.'OPAQ'.and.WORD(1:4).ne.'CFC ')then
 
 C This token could be the name of the optical property. Find out if it
 C matches then name of the optical set for the construction.
@@ -1630,7 +1637,7 @@ C the constructions database.
                   OPT=' '
                   WRITE(OTF,'(A)') DESC(ICF)(15:18)
                   IF(OTF.EQ.' ')OTF='OPAQ'
-                  IF(OTF(1:4).NE.'OPAQ')THEN
+                  IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
                     WRITE(OPT,'(A)') DESC(ICF)(21:32)
                     IF(OPT.EQ.' ')OPT='UNKNOWN'
                   ELSE
@@ -2046,7 +2053,7 @@ C If surface `flor` not included in the list add it.
             endif
           endif
         endif
-        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.
+        if (SOTF(ijj)(1:4).ne.'OPAQ'.and.SOTF(ijj)(1:4).ne.'CFC '.and.
      &      SOTHER(ijj,1)(1:8).eq.'EXTERIOR') then
           ZTRANA(ICOMP)=ZTRANA(ICOMP)+SNA(ijj)
         endif

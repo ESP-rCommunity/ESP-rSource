@@ -34,6 +34,7 @@ C This version uses generic databases.
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
+#include "CFC_common.h"
 C espprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -794,6 +795,11 @@ C Fabric portion of description.
         if(ITW(I).EQ.1)then
           WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
      &      '*tmc ',LTWIN(I)(:lnblnk(LTWIN(I))),'  # transparent constr'
+        endif
+        if(icfc(I).EQ.1)then
+          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &    '*cfc ',lcfcin(I)(1:lnblnk(lcfcin(I))),
+     &    '  # complex fenestration constr'
         endif
         if(IVF(I).EQ.1)then
           WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)

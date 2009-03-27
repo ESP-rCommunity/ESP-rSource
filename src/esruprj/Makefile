@@ -10,6 +10,7 @@ PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
 BLDdir = $(SRCdir)/esrubld
+PRJdir = $(SRCdir)/esruprj
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
@@ -21,7 +22,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  clickonbitmap.o common3dv.o context.o ctlexp.o ctlwrt.o ctprob.o \
 	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \
 	  e3dviews.o ecasctl.o econstr.o econtrol.o edatabase.o edcasctl.o \
-	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o edmrt.o \
+	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o editCFC.o edmrt.o \
 	  edobs.o edonecon.o edoptic.o edpro.o edspmtl.o edtopol.o edzone.o egeometry.o \
 	  egrid.o egtgeom.o emfnetw.o emkcfg.o enetmisc.o enetprj.o enetrewr.o \
 	  eroper.o esru_misc.o esystem.o exlgrad.o explor.o filelist.o folders.o \
@@ -224,7 +225,11 @@ PltDummy.F:
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
-	
+
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
