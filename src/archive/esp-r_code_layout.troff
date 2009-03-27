@@ -674,56 +674,6 @@ and this is referenced by all the other modules.  Updating
 egeometry.F and recompiling spreads new functionality to
 all dependent modules.  The following files are found in
 the esrucom folder:
-.IP "BC_data.F" 5
-This file contains procedures for managing user-specified
-boundary conditions. Used by NRCan staff.
-.ML
-
-C process_BC_data_file: Read a boundry condition data definition
-C    file, and write out a binary database containing the necessary
-C    records.
-
-C get_BC_data_by_col: Collect boundry condition data for the current
-C    timestep, and return the data corresponding to a given
-C    column number.
-
-C get_BC_data_by_name: Collect boundry condition data for the current
-C    timestep, and return the data corresponding to a given
-C    column header name.
-
-C report_BC_data: transport boundry condition data to the H3K
-C    xml reporting facility. 
-
-C cleanup_BC_data: Delete temporary files and free I/O channels
-
-.ES
-.IP "Lookup_data.F" 5
-This file contains subroutines and functions for managing a user-specified
-data table.
-.ML
-C process_Lookup_data_file: Reads a file that contains the
-C data characteristics and data in ASCII format. Writes out a
-C binary database containing the data records (binary file will
-C be accessed by get* subroutines.
-
-C iGet_Lookup_col_num: This function returns the column number that
-C corresponds to a column's header.
-
-C fGet_Lookup_value_by_col_num: This function returns data
-C from a lookup table that corresponds to a user-specified
-C reference value, reference column number and value column number.
-
-C fGet_Lookup_value_by_col_name: This function returns data
-C from a lookup table that corresponds
-C to a user-specified reference value, reference column name 
-C and value column name. This procedure is an interface to the 
-C function fGet_Lookup_value_by_col_num which allows the column names
-C (versus column numbers) to identify the reference and value columns.
-
-C cleanup_Lookup_data: Deletes the temporary file created by the 
-C lookup table facility.
-
-.ES
 .IP "MultiYear_climate.F" 5
 This file contains procedures for handling climate data during
 multi-year simulations.
@@ -748,20 +698,6 @@ C
 C Prune_MY_clm_db: Removes duplicate records from the database
 C
 C Write_MY_clm_db: Writes the database to disk 
-
-.ES
-.IP "SiteUtilities.F" 5
-This file contains routines used to collate fuel used on site.
-.ML
-
-C SiteUtilities:           Supervisory routine
-
-C TotalPurchasedEnergy:    Totals fuel consumed in the building
-
-C ConvertEnergyToFuel:     Converts purchased energy into an
-C                          equivlent amount of fuel use.
-
-C H3KReportsFuelUse:       Transports data to H3KReports.
 
 .ES
 .IP "bsimsel.F" 5
@@ -862,6 +798,76 @@ C  EGRNDR:  Draws 3D ground topology.
 C  DSGRID:  Draws a dotted site grid with current scaling factors.
 
 C  EMKVIEW: Constructs a 'viewer' format file.
+
+.ES
+.SH
+The esrubps code folder
+.LP
+This folder includes source code for the simulator. The folder
+does not include many files, in part because the compile process
+links to files in many other folders.
+.IP "BC_data.F" 5
+This file contains procedures for managing user-specified
+boundary conditions. Used by NRCan staff.
+.ML
+
+C process_BC_data_file: Read a boundry condition data definition
+C    file, and write out a binary database containing the necessary
+C    records.
+
+C get_BC_data_by_col: Collect boundry condition data for the current
+C    timestep, and return the data corresponding to a given
+C    column number.
+
+C get_BC_data_by_name: Collect boundry condition data for the current
+C    timestep, and return the data corresponding to a given
+C    column header name.
+
+C report_BC_data: transport boundry condition data to the H3K
+C    xml reporting facility. 
+
+C cleanup_BC_data: Delete temporary files and free I/O channels
+
+.ES
+.IP "Lookup_data.F" 5
+This file contains subroutines and functions for managing a user-specified
+data table.
+.ML
+C process_Lookup_data_file: Reads a file that contains the
+C data characteristics and data in ASCII format. Writes out a
+C binary database containing the data records (binary file will
+C be accessed by get* subroutines.
+
+C iGet_Lookup_col_num: This function returns the column number that
+C corresponds to a column's header.
+
+C fGet_Lookup_value_by_col_num: This function returns data
+C from a lookup table that corresponds to a user-specified
+C reference value, reference column number and value column number.
+
+C fGet_Lookup_value_by_col_name: This function returns data
+C from a lookup table that corresponds
+C to a user-specified reference value, reference column name 
+C and value column name. This procedure is an interface to the 
+C function fGet_Lookup_value_by_col_num which allows the column names
+C (versus column numbers) to identify the reference and value columns.
+
+C cleanup_Lookup_data: Deletes the temporary file created by the 
+C lookup table facility.
+
+.ES
+.IP "SiteUtilities.F" 5
+This file contains routines used to collate fuel used on site.
+.ML
+
+C SiteUtilities:           Supervisory routine
+
+C TotalPurchasedEnergy:    Totals fuel consumed in the building
+
+C ConvertEnergyToFuel:     Converts purchased energy into an
+C                          equivlent amount of fuel use.
+
+C H3KReportsFuelUse:       Transports data to H3KReports.
 
 .ES
 
@@ -2369,203 +2375,6 @@ Appendix C: ESRU esrucom folder
 Each of the API for the files in folder esrucom are listed
 in the following sections.
 .SH
-BC_data.F
-.LP
-This file contains procedures for managing user-specified
-boundary conditions. Used by NRCan staff.
-.ML
-
-C process_BC_data_file parses a boundary condition definition file, checks
-C  it for validity, and writes a binary database containing the
-C  relevant records.
-C  Inputs
-C    iASCII_num: file number to use for ascii file input
-C    iBC_TmpFile: file number to use for binary file output
-C    bAutoOK: flag indicating simulator is in silent running mode 
-C  Outputs
-C    bFatal_Error: flag indicating that error was encountered
-      subroutine process_BC_data_file(
-     &    iBase_File_num, bAutoOK, bFatal_Error )
-      integer iBase_File_num              ! Basic I/O file number
-      logical bAutoOK                     ! flag for silent-running mode
-      logical bFatal_Error                ! fatal error flag
-
-
-C bInquire_BC_Name_Exists determines if a requested boundary condition
-C has been defined.
-C Inputs:
-C    - cCol_name: Name of desired boundary condition
-C Outputs:
-C    - bInquire_BC_Name_Exists: logical result.
-      logical function bInquire_BC_Name_Exists ( cCol_name )
-      character*248 cCol_name
-
-
-C fGet_BC_data_by_name is a short-hand interface to  fGet_BC_data_by_col
-C which allows the boundary condition's name to be used to identify
-C the appropriate column.
-C Inputs:
-C   cCol_name: Desired BC column number
-C   fDay: real number denoting day (& fraction thereof) for which
-C      the boundry condition should be recovered.
-C   iInterp_method: method for interpolation
-C      1 -> step-wise
-C      2 -> linear 
-C Outputs
-C   Value of BC at future time row
-      real function fGet_BC_data_by_name(
-     &                                   cCol_name,
-     &                                   fDay,
-     &                                   iInterp_method,
-     &                                   cContext       )
-      character*248 cCol_name
-      real fDay
-      integer iInterp_method
-      character*124 cContext
-
-
-C fGet_BC_data_by_col returns boundry-condition data corresponding
-C to the current time step and user-specified column number.
-C Inputs:
-C   iCol_number: Desired BC column number
-C   fDay: real number denoting day (& fraction thereof) for which
-C      the boundry condition should be recovered.
-C   iInterp_method: method for interpolation
-C      1 -> step-wise
-C      2 -> linear 
-C Outputs
-C   Value of BC at future time row
-      real function fGet_BC_data_by_col(iCol_number,
-     &                                  fDay,
-     &                                  iInterp_method,
-     &                                  cContext       )
-      integer iCol_number     ! column number.
-      integer iInterp_method  ! interpolation method
-      real fDay               ! day number
-      character*124 cContext  ! Contextual message
-
-
-C get_BC_row returns an array containing boundary condition values
-C corresponding to a given boundary condition row number.
-C Inputs:
-C   iRow: row number 
-C Outputs
-C   fValues: array containing the BC values for the given row number.
-      subroutine get_BC_row( iRow, fValues, cContext )
-      integer iRow                      ! Row number
-      real fValues(mBC_max_count)       ! Values from file 
-
-
-C report_BC_data reports the values of the boundary condition data to
-C the XML reporting facility 
-C Inputs:
-C   None
-C Outputs
-C   None 
-      subroutine report_BC_data()
-
-
-C cleanup_BC_data  deletes the temporary file created by 
-C the boundary condition management facility.
-C Inputs:
-C   None
-C Outputs
-C   None 
-      subroutine cleanup_BC_data()
-
-.ES
-.SH
-Lookup_data.F
-.LP
-This file contains subroutines and functions for managing a user-specified
-data table.  The API follows.
-.ML
-
-C process_Lookup_data_file  parses a lookup data file, checks that the contents
-C of the file are valid and writes a binary database containing the
-C table of data.
-C Inputs:
-C iBase_file_num: Basic I/O file number; ASCII and binary files will
-C                 be set relative to this number.
-C Output:
-C bFatal_Error: flag indicating that error was encountered
-       subroutine process_Lookup_data_file(iBase_file_num,
-     &                                     bAutook, 
-     &                                     bFatal_error)
-       integer iBase_file_num        ! basic I/O file number
-       logical bAutook               ! flag for silent-running mode
-       logical bFatal_error          ! fatal error flag
-
-
-C iGet_Lookup_col_num  returns the column number that corresponds to
-C the column header specified by the user
-C Inputs:
-C cCol_name: Column name for which column number is to be determined
-C Output:
-C iCol_num: Columnn number corresponding to column name
-       integer function iGet_Lookup_col_num( cCol_name,
-     &                                       cContext   )
-       character*248 cCol_name  ! column header/name
-       character*124 cContext   ! contextual message
-
-
-C fGet_Lookup_value_by_col_num  returns data from a lookup table that corresponds
-C to a user-specified reference value, reference column number 
-C and value column number.
-C Inputs:
-C iCol_ref : Reference column number
-C iCol_value: Value column number
-C fRef_value: Reference value
-C iInterp_method: method for interpolation
-C                 1 -> step-wise
-C                 2 -> linear
-C Outputs
-C Value from lookup table corresponding reference value
-      real function fGet_Lookup_value_by_col_num(iCol_ref,
-     &                                           iCol_value,
-     &                                           fRef_value,
-     &                                           iInterp_method,
-     &                                           cContext )
-      integer iCol_ref        ! reference column number
-      integer iCol_value      ! value column number
-      real fRef_value         ! reference value
-      integer iInterp_method  ! interpolation method
-      character*124 cContext  ! contextual message
-
-
-C fGet_Lookup_value_by_col_name returns data from a lookup table that corresponds
-C to a user-specified reference value, reference column name 
-C and value column name. This procedure is an interface to the 
-C function fGet_Lookup_value_by_col_num which allows the column names
-C (versus column numbers) to identify the reference and value columns.
-C Inputs:
-C cCol_ref : Reference column name
-C cCol_value: Value column name
-C fRef_value: Reference value
-C iInterp_method: method for interpolation
-C                 1 -> step-wise
-C                 2 -> linear
-C Outputs
-C Value from lookup table corresponding to reference value
-      real function fGet_Lookup_value_by_col_name(cCol_ref,
-     &                                            cCol_value,
-     &                                            fRef_value,
-     &                                            iInterp_method,
-     &                                            cContext )
-      character*248 cCol_ref     ! reference column name
-      character*248 cCol_value   ! value column name
-      character*124 ctext        ! context message
-      real fRef_value            ! reference value
-      integer iInterp_method     ! interpolation method
-      character*124 cContext     ! contextual message
-
-
-C cleanup_Lookup_data deletes the temporary file created by
-C the lookup table facility.
-       subroutine cleanup_Lookup_data()
-
-.ES
-.SH
 MultiYear_climate.F
 .LP
 This file contains procedures for handling climate data during
@@ -2700,92 +2509,6 @@ C  - bSaveOk: flag indicating that file was saved successfully.
       integer iFile_num
       logical bCriticalErr
       logical bSaveOk
-
-.ES
-.SH
-SiteUtilities.F
-.LP
-This file contains routines used to collate fuel used on site.
-.ML
-
-C SiteUtilities invokes the various subroutines needed to characterize
-C purchased energy. Support for green-house-gas emissions may be
-C added in the future. 
-      subroutine SiteUtilities()
-
-
-C TotalPurchasedEnergy computes the total amount of energy use reported from all
-C parts of the simulator. 
-      subroutine TotalEnergyConsumption()
-
-
-C ConvertEnergyToFuel converts the total energy use associated with a given
-C fuel into a standard unit of measure, based on the fuel's calorific
-C value.
-      subroutine ConvertEnergyToFuel()
-
-
-C H3KReportsFuelUse reports transport data on fuel usage to the H3Kreports facility.
-      subroutine H3KReportsFuelUse
-
-
-C ZeroFuelEnergyStorageArray zeros the site energy usage storage array.
-      subroutine ZeroFuelEnergyStorageArray()
-
-
-C ZeroPltEnergyStorageArray zeros the site energy usage storage array.
-      subroutine ZeroPltEnergyStorageArray()
-
-
-C StoreSiteUtilityData takes the data stored in the passed fSUFuelEnergyUse
-C array and stuffs it into the protected fSiteEnergyUse array
-C Inputs:
-C Parameters defined via include statements.
-C   - iComponent: integer flag indicating where data originated
-C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
-C     data into Site utilities facility. Array indicies correspond
-C     to fuel, end-use.
-      subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
-
-
-C StorePltCompEnergyUse stores fuel energy use computed by plant
-C component models for later access in the site utilities facility.
-C Inputs:
-C Parameters defined via include statements.
-C   - iComP: Plant component index
-C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
-C     data into Site utilities facility. Array indicies correspond
-C     to fuel, end-use.
-      subroutine StorePltCompEnergyUse(iComponent, fSUFuelEnergyUse )
-
-
-C AggregatePltCompEnergy aggregates energy consumption computed
-C by various plant components, and appends it to the site-wide
-C energy consumption array.
-C Inputs:
-C   - None.
-      subroutine AggregatePltCompEnergyUse()
-
-
-C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
-C the plant/elec domains and attempts to attribute them according to
-C end-use.
-C Inputs: None.
-      subroutine AttributePltPfsEnergyUse()
-
-
-C fConvertEnergyToFuelAmount converts an energy input into an equivlent
-C amount of fuel. It makes the OffsiteUtilities conversion factors
-C available elsewhere in the simulator.
-C Inputs:
-C  -fEnergy:   Energy used (W)
-C  -iFuel:     Integer indicating the type of fuel used.
-C  Outputs:
-C  -fConvertEnergyToFuelAmount: Equivlent amount of fuel (various units)
-      real function fConvertEnergyToFuelAmount(fEnergy,iFuelIndex)
-      real fEnergy
-      integer iFuelIndex
-
 
 .ES
 .SH
@@ -3016,6 +2739,302 @@ C IER is returned as non-zero if there is a problem.
       integer ITRC,IUO,IER
       logical CFGOK
 
+
+.ES
+.SH
+X.F
+.LP
+xx
+.ML
+To be done
+.ES
+.bp
+.SH
+Appendix D: Function API for esrubps
+.LP
+This folder includes source code for the simulator. The folder
+does not include many files, in part because the compile process
+links to files in many other folders.
+.SH
+BC_data.F
+.LP
+This file contains procedures for managing user-specified
+boundary conditions. Used by NRCan staff.
+.ML
+
+C process_BC_data_file parses a boundary condition definition file, checks
+C  it for validity, and writes a binary database containing the
+C  relevant records.
+C  Inputs
+C    iASCII_num: file number to use for ascii file input
+C    iBC_TmpFile: file number to use for binary file output
+C    bAutoOK: flag indicating simulator is in silent running mode 
+C  Outputs
+C    bFatal_Error: flag indicating that error was encountered
+      subroutine process_BC_data_file(
+     &    iBase_File_num, bAutoOK, bFatal_Error )
+      integer iBase_File_num              ! Basic I/O file number
+      logical bAutoOK                     ! flag for silent-running mode
+      logical bFatal_Error                ! fatal error flag
+
+
+C bInquire_BC_Name_Exists determines if a requested boundary condition
+C has been defined.
+C Inputs:
+C    - cCol_name: Name of desired boundary condition
+C Outputs:
+C    - bInquire_BC_Name_Exists: logical result.
+      logical function bInquire_BC_Name_Exists ( cCol_name )
+      character*248 cCol_name
+
+
+C fGet_BC_data_by_name is a short-hand interface to  fGet_BC_data_by_col
+C which allows the boundary condition's name to be used to identify
+C the appropriate column.
+C Inputs:
+C   cCol_name: Desired BC column number
+C   fDay: real number denoting day (& fraction thereof) for which
+C      the boundry condition should be recovered.
+C   iInterp_method: method for interpolation
+C      1 -> step-wise
+C      2 -> linear 
+C Outputs
+C   Value of BC at future time row
+      real function fGet_BC_data_by_name(
+     &                                   cCol_name,
+     &                                   fDay,
+     &                                   iInterp_method,
+     &                                   cContext       )
+      character*248 cCol_name
+      real fDay
+      integer iInterp_method
+      character*124 cContext
+
+
+C fGet_BC_data_by_col returns boundry-condition data corresponding
+C to the current time step and user-specified column number.
+C Inputs:
+C   iCol_number: Desired BC column number
+C   fDay: real number denoting day (& fraction thereof) for which
+C      the boundry condition should be recovered.
+C   iInterp_method: method for interpolation
+C      1 -> step-wise
+C      2 -> linear 
+C Outputs
+C   Value of BC at future time row
+      real function fGet_BC_data_by_col(iCol_number,
+     &                                  fDay,
+     &                                  iInterp_method,
+     &                                  cContext       )
+      integer iCol_number     ! column number.
+      integer iInterp_method  ! interpolation method
+      real fDay               ! day number
+      character*124 cContext  ! Contextual message
+
+
+C get_BC_row returns an array containing boundary condition values
+C corresponding to a given boundary condition row number.
+C Inputs:
+C   iRow: row number 
+C Outputs
+C   fValues: array containing the BC values for the given row number.
+      subroutine get_BC_row( iRow, fValues, cContext )
+      integer iRow                      ! Row number
+      real fValues(mBC_max_count)       ! Values from file 
+
+
+C report_BC_data reports the values of the boundary condition data to
+C the XML reporting facility 
+C Inputs:
+C   None
+C Outputs
+C   None 
+      subroutine report_BC_data()
+
+
+C cleanup_BC_data  deletes the temporary file created by 
+C the boundary condition management facility.
+C Inputs:
+C   None
+C Outputs
+C   None 
+      subroutine cleanup_BC_data()
+
+.ES
+.SH
+Lookup_data.F
+.LP
+This file contains subroutines and functions for managing a user-specified
+data table.  The API follows.
+.ML
+
+C process_Lookup_data_file  parses a lookup data file, checks that the contents
+C of the file are valid and writes a binary database containing the
+C table of data.
+C Inputs:
+C iBase_file_num: Basic I/O file number; ASCII and binary files will
+C                 be set relative to this number.
+C Output:
+C bFatal_Error: flag indicating that error was encountered
+       subroutine process_Lookup_data_file(iBase_file_num,
+     &                                     bAutook, 
+     &                                     bFatal_error)
+       integer iBase_file_num        ! basic I/O file number
+       logical bAutook               ! flag for silent-running mode
+       logical bFatal_error          ! fatal error flag
+
+
+C iGet_Lookup_col_num  returns the column number that corresponds to
+C the column header specified by the user
+C Inputs:
+C cCol_name: Column name for which column number is to be determined
+C Output:
+C iCol_num: Columnn number corresponding to column name
+       integer function iGet_Lookup_col_num( cCol_name,
+     &                                       cContext   )
+       character*248 cCol_name  ! column header/name
+       character*124 cContext   ! contextual message
+
+
+C fGet_Lookup_value_by_col_num  returns data from a lookup table that corresponds
+C to a user-specified reference value, reference column number 
+C and value column number.
+C Inputs:
+C iCol_ref : Reference column number
+C iCol_value: Value column number
+C fRef_value: Reference value
+C iInterp_method: method for interpolation
+C                 1 -> step-wise
+C                 2 -> linear
+C Outputs
+C Value from lookup table corresponding reference value
+      real function fGet_Lookup_value_by_col_num(iCol_ref,
+     &                                           iCol_value,
+     &                                           fRef_value,
+     &                                           iInterp_method,
+     &                                           cContext )
+      integer iCol_ref        ! reference column number
+      integer iCol_value      ! value column number
+      real fRef_value         ! reference value
+      integer iInterp_method  ! interpolation method
+      character*124 cContext  ! contextual message
+
+
+C fGet_Lookup_value_by_col_name returns data from a lookup table that corresponds
+C to a user-specified reference value, reference column name 
+C and value column name. This procedure is an interface to the 
+C function fGet_Lookup_value_by_col_num which allows the column names
+C (versus column numbers) to identify the reference and value columns.
+C Inputs:
+C cCol_ref : Reference column name
+C cCol_value: Value column name
+C fRef_value: Reference value
+C iInterp_method: method for interpolation
+C                 1 -> step-wise
+C                 2 -> linear
+C Outputs
+C Value from lookup table corresponding to reference value
+      real function fGet_Lookup_value_by_col_name(cCol_ref,
+     &                                            cCol_value,
+     &                                            fRef_value,
+     &                                            iInterp_method,
+     &                                            cContext )
+      character*248 cCol_ref     ! reference column name
+      character*248 cCol_value   ! value column name
+      character*124 ctext        ! context message
+      real fRef_value            ! reference value
+      integer iInterp_method     ! interpolation method
+      character*124 cContext     ! contextual message
+
+
+C cleanup_Lookup_data deletes the temporary file created by
+C the lookup table facility.
+       subroutine cleanup_Lookup_data()
+
+.ES
+.SH
+SiteUtilities.F
+.LP
+This file contains routines used to collate fuel used on site.
+.ML
+
+C SiteUtilities invokes the various subroutines needed to characterize
+C purchased energy. Support for green-house-gas emissions may be
+C added in the future. 
+      subroutine SiteUtilities()
+
+
+C TotalPurchasedEnergy computes the total amount of energy use reported from all
+C parts of the simulator. 
+      subroutine TotalEnergyConsumption()
+
+
+C ConvertEnergyToFuel converts the total energy use associated with a given
+C fuel into a standard unit of measure, based on the fuel's calorific
+C value.
+      subroutine ConvertEnergyToFuel()
+
+
+C H3KReportsFuelUse reports transport data on fuel usage to the H3Kreports facility.
+      subroutine H3KReportsFuelUse
+
+
+C ZeroFuelEnergyStorageArray zeros the site energy usage storage array.
+      subroutine ZeroFuelEnergyStorageArray()
+
+
+C ZeroPltEnergyStorageArray zeros the site energy usage storage array.
+      subroutine ZeroPltEnergyStorageArray()
+
+
+C StoreSiteUtilityData takes the data stored in the passed fSUFuelEnergyUse
+C array and stuffs it into the protected fSiteEnergyUse array
+C Inputs:
+C Parameters defined via include statements.
+C   - iComponent: integer flag indicating where data originated
+C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+      subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
+
+
+C StorePltCompEnergyUse stores fuel energy use computed by plant
+C component models for later access in the site utilities facility.
+C Inputs:
+C Parameters defined via include statements.
+C   - iComP: Plant component index
+C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+      subroutine StorePltCompEnergyUse(iComponent, fSUFuelEnergyUse )
+
+
+C AggregatePltCompEnergy aggregates energy consumption computed
+C by various plant components, and appends it to the site-wide
+C energy consumption array.
+C Inputs:
+C   - None.
+      subroutine AggregatePltCompEnergyUse()
+
+
+C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
+C the plant/elec domains and attempts to attribute them according to
+C end-use.
+C Inputs: None.
+      subroutine AttributePltPfsEnergyUse()
+
+
+C fConvertEnergyToFuelAmount converts an energy input into an equivlent
+C amount of fuel. It makes the OffsiteUtilities conversion factors
+C available elsewhere in the simulator.
+C Inputs:
+C  -fEnergy:   Energy used (W)
+C  -iFuel:     Integer indicating the type of fuel used.
+C  Outputs:
+C  -fConvertEnergyToFuelAmount: Equivlent amount of fuel (various units)
+      real function fConvertEnergyToFuelAmount(fEnergy,iFuelIndex)
+      real fEnergy
+      integer iFuelIndex
 
 .ES
 .SH
