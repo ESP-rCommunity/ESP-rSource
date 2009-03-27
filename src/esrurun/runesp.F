@@ -464,8 +464,8 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       real coords(MS,3)
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
-      character hasconstruction*32,szhasconstruction*32
-      dimension hasconstruction(MS),szhasconstruction(MSZ,MS)  ! construction to use for each surface
+      character hasconstr*32,szhasconstr*32
+      dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
       character hasname*12,szhasname*12
       dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
@@ -553,7 +553,7 @@ C Clear the sz array structures.
   54      continue
           szhasglaze(iz,isu)=0.0
           szhasdoor(iz,isu)=0.0
-          szhasconstruction(iz,isu)=' '
+          szhasconstr(iz,isu)=' '
           szhasname(iz,isu)=' '
           szboundarytype(iz,isu,1)=0
           szboundarytype(iz,isu,2)=0
@@ -834,17 +834,17 @@ C Set the name of the new zone.
 
 C Assign the intial box surface name and construction attributes.
       write(szhasname(nsz,1),'(a)') 'front'
-      write(szhasconstruction(nsz,1),'(a)') wallconstr
+      write(szhasconstr(nsz,1),'(a)') wallconstr
       write(szhasname(nsz,2),'(a)') 'right'
-      write(szhasconstruction(nsz,2),'(a)') wallconstr
+      write(szhasconstr(nsz,2),'(a)') wallconstr
       write(szhasname(nsz,3),'(a)') 'back'
-      write(szhasconstruction(nsz,3),'(a)') wallconstr
+      write(szhasconstr(nsz,3),'(a)') wallconstr
       write(szhasname(nsz,4),'(a)') 'left'
-      write(szhasconstruction(nsz,4),'(a)') wallconstr
+      write(szhasconstr(nsz,4),'(a)') wallconstr
       write(szhasname(nsz,5),'(a)') 'roof'
-      write(szhasconstruction(nsz,5),'(a)') roofconstr
+      write(szhasconstr(nsz,5),'(a)') roofconstr
       write(szhasname(nsz,6),'(a)') 'floor'
-      write(szhasconstruction(nsz,6),'(a)') floorconstr
+      write(szhasconstr(nsz,6),'(a)') floorconstr
 
 C Determine how many surfaces in the model.
       write(shape(nsz),'(a)') 'box '
@@ -854,27 +854,27 @@ C Determine how many surfaces in the model.
         nbglz(nsz)=nbglz(nsz)+1
         NS = NS + 1
         write(szhasname(nsz,NS),'(a)') 'glz_front'
-        write(szhasconstruction(nsz,NS),'(a)') windowconstr
+        write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin2)then
         NS = NS + 1
         write(szhasname(nsz,NS),'(a)') 'glz_right'
-        write(szhasconstruction(nsz,NS),'(a)') windowconstr
+        write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin3)then
         NS = NS + 1
         write(szhasname(nsz,NS),'(a)') 'glz_back'
-        write(szhasconstruction(nsz,NS),'(a)') windowconstr
+        write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin4)then
         NS = NS + 1
         write(szhasname(nsz,NS),'(a)') 'glz_left'
-        write(szhasconstruction(nsz,NS),'(a)') windowconstr
+        write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin5)then
         NS = NS + 1
         write(szhasname(nsz,NS),'(a)') 'skylight'
-        write(szhasconstruction(nsz,NS),'(a)') skylightconstr
+        write(szhasconstr(nsz,NS),'(a)') skylightconstr
       endif
 
 C For the surfaces other than ground set to outside. If there was
@@ -942,7 +942,7 @@ C Fill surface arrays.
   57    continue
         hasglaze(isu)=szhasglaze(isz,isu)
         hasdoor(isu)=szhasdoor(isz,isu)
-        hasconstruction(isu)=szhasconstruction(isz,isu)
+        hasconstr(isu)=szhasconstr(isz,isu)
         hasname(isu)=szhasname(isz,isu)
         boundarytype(isu,1)=szboundarytype(isz,isu,1)
         boundarytype(isu,2)=szboundarytype(isz,isu,2)
@@ -954,7 +954,7 @@ C Fill surface arrays.
       call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
      &    nbmass,nbedges,nbcord(isz),list,origin,size,
      &    coords,rotateit(isz),nbglz(isz),hasglaze,
-     &    nbdoor(isz),hasdoor,hasname,hasconstruction,
+     &    nbdoor(isz),hasdoor,hasname,hasconstr,
      &    boundarytype,datamass,textmass,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct

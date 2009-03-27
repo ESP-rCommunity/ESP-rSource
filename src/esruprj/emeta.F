@@ -2350,8 +2350,6 @@ C For passing to silentmodel.
       logical dll,unixok,XST
 
 C Paremeters passed to:silentzone
-      character name*12   ! name given to the zone
-      dimension name(MSZ)
       character shape*8   ! box or extrude or poly
       dimension shape(MSZ)
       character szuse*8,usefile*32  ! usage pattern directives
@@ -2513,7 +2511,6 @@ C Simulation parameter sets.
 C For each of the zones instanciate values.
 C << add in zone description >>
       do 42 iz=1,ncomp
-        name(iz) = zname(iz)  ! zone name
         shape(iz) = 'poly'    ! zone shape is poly
         szuse(iz,1) = ' '     ! szuse (skip for now)
         szuse(iz,2) = ' '
@@ -2650,7 +2647,7 @@ C is per zone, the nsc loop is for each coordinate.
       if(ncomp.gt.0)then
         do 142 nsz=1,ncomp
           write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)
-     &      '*start_zone',tab,name(nsz),'  # zone name'
+     &      '*start_zone',tab,zname(nsz),'  # zone name'
           write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)
      &      '*shape',tab,shape(nsz),'  # polygon enclosure'
 
