@@ -147,7 +147,6 @@ C Display Zones list and wait for INIPIC item selected
 
       SUBROUTINE Zoneslist
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -155,13 +154,14 @@ C Display Zones list and wait for INIPIC item selected
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/surfsel/isursel(MCON),NbSurSel(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION IVALZ(MCOM)
-      CHARACTER H*72
+      CHARACTER H*72,zname*12,zdesc*64
       
       do 5 i=1,MCOM
         NbSurSel(i) = 0
@@ -232,18 +232,20 @@ C Two zones cannot have the same number.
 C ******************** ZNLIST (edited from esrures/utils.F) *******
 C ZNLIST takes the current selected zones and builds a descriptive
 C string to be used in headers. 
-C zdescr : string containing the names of the slected zone(s)
+C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
-#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      CHARACTER zdescr*80,outs*244,outsd*80
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
-        lna=lnzname(nznog(i))
+        lna=lnblnk(zname(nznog(i)))
         length=length+lna+1
   42  continue
       if(length.lt.72)then
@@ -279,13 +281,14 @@ C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
-#include "geometry.h"
-
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -295,9 +298,14 @@ C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/PREC2/VOL(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
+      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER outs*124
@@ -312,6 +320,7 @@ C Initialisation
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
+      ITRC=1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
         call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
@@ -323,11 +332,11 @@ C Read geometry file for chosen zone.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
-      Vol(icomp)= ZVOL
+      CALL ZINFO(iuout,SNA,ZAO,PAZI,PELV,ZVOL)
+      ZVOL = Vol(icomp)
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       FLA=0.
       IFLA=0
@@ -335,7 +344,8 @@ C Recover zone data (read only, no display).
       TRN=0.
       DO 41 I=1,NSUR
         icon=IZSTOCN(icomp,i)
-        if(SSOTF(icon)(1:4).NE.'OPAQ')then
+        if(SSOTF(icon)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icon)(1:4).NE.'CFC ')then
           TRN=TRN+SNA(I)
         else
           OPQ=OPQ+SNA(I)
@@ -345,7 +355,7 @@ C Recover zone data (read only, no display).
 C Display high level data.
       write(outs,'(A,A)')' Composition of ',ZNAME(ICOMP)
       call edisp(iuout,outs)
-      WRITE(outs,'(a,f8.2,a)')'  Volume :          ',VOL(ICOMP),'m^3'
+      WRITE(outs,'(a,f8.2,a)')'  Volume :          ',ZVOL,'m^3'
       call edisp(iuout,outs)
       WRITE(outs,'(a,f8.2,a)')'  Base/floor area : ',ZBASEA(ICOMP),'m^2'
       call edisp(iuout,outs)
@@ -478,12 +488,16 @@ C          1 = textual feedback or 2 = File
       SUBROUTINE DispTRev(Mode,IOctave,ISE,Method,IAirAb, IChanel)
 
 #include "building.h"
-#include "geometry.h"
 #include "acoustic.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -509,6 +523,7 @@ C          1 = textual feedback or 2 = File
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      CHARACTER zname*12,zdesc*64
       CHARACTER*36 RevLabA,RevLabB
       CHARACTER*63 FreqLabA,FreqLabB
       CHARACTER extraouts*189, outs*156

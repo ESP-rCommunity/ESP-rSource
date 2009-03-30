@@ -650,7 +650,6 @@ C ************ SIMTOG
 C Set simulation toggles.
       subroutine simtog
 #include "building.h"
-#include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
 
@@ -688,6 +687,7 @@ C Common for electrical file
       COMMON/GR1D04/GAM,RGAM
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/AIRWAT/WATERZ(MCOM),WATCAP
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
@@ -726,7 +726,7 @@ c This common block is used to define the sky temperature calculation method
                                                                                                                                                     
       CHARACTER*72 LAPROB,H,vsnam,lfil,entflnam
       CHARACTER*40 ITEMG(34)
-      character SALT*51,spflnam*72,outs*124
+      character SALT*51,zname*12,zdesc*64,spflnam*72,outs*124
       character HCALT*42
 
       logical MSTROK,MSTRZN
@@ -2173,7 +2173,6 @@ C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2185,6 +2184,7 @@ C ICNT    - counts trace output for page numbering purposes
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -2197,7 +2197,7 @@ C Common for libsv3 trace
 
       dimension IVALS(MCOM)
       CHARACTER*29 ITEM(33)
-      character outs*124,h*72,dtrace*72,ltrace*72
+      character outs*124,h*72,zname*12,zdesc*64,dtrace*72,ltrace*72
       character cfgroot*24,LCFGF*72
       logical OK,dok
 

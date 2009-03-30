@@ -31,7 +31,6 @@ C design question facility.
 
       SUBROUTINE MODESQ
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -39,6 +38,7 @@ C design question facility.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/DESQ0/DQA(MCOM),DQB(MCOM),DQC(MCOM),DQD(MCOM)
       COMMON/DESQ/IDESQ,IDQV1,IDQV2,IDQV3,DQV1,DQV2,DQV3
@@ -48,7 +48,7 @@ C design question facility.
       DIMENSION IRANK(MCOM),VRANK(MCOM),KDUM(MCOM),ZDUM(MCOM),
      &          LABEL(10)
 
-      character outs*124,H*72
+      character outs*124,H*72,zname*12,zdesc*64
       CHARACTER*10 LABEL
       CHARACTER*16 ITEM(10)
       logical close
@@ -150,7 +150,7 @@ C Check upper limit.
         call edisp(icout,' Answer: overheating occurs in zone(s):')
         call edisp(icout,' ')
         do 19 J=1,NZONES
-          write(outs,'(A)')zname(IRANK(J))(1:lnzname(IRANK(J)))
+          write(outs,'(A12)')zname(IRANK(J))
           call edisp(icout,outs)
    19   CONTINUE
       ENDIF
@@ -201,7 +201,7 @@ C Check upper limit.
         call edisp(icout,' ')
         call edisp(icout,' Answer: underheating occurs in zone(s):')
         do 12 J=1,NZONES
-          write(outs,'(A)')zname(KDUM(J))(1:lnzname(KDUM(J)))
+          write(outs,'(A12)')zname(KDUM(J))
           call edisp(icout,outs)
    12   CONTINUE
       ENDIF
@@ -248,7 +248,7 @@ C rules probably required.
       POFTOT=SUM/TVAL
       IF(POFTOT.LT.0.75)goto 53
 
-      write(outs,'(3A)')' Main gains to ',zname(NZNO(1)),' are:'
+      write(outs,'(A,A12,A)')' Main gains to ',zname(NZNO(1)),' are:'
       call edisp(icout,outs)
       DO 55 I=1,IK
       IR=IRANK(I)
@@ -304,7 +304,7 @@ C rules are probably required.
       POFTOT=SUM/TVAL
       IF(POFTOT.LT.0.75)goto 73
 
-      write(outs,'(3A)')' Main losses from',zname(NZNO(1)),' are:'
+      write(outs,'(A,A12,A)')' Main losses from',zname(NZNO(1)),' are:'
       call edisp(icout,outs)
       DO 75 I=1,IK
         IR=KDUM(I)

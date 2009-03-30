@@ -185,7 +185,7 @@ C     2 Minimum indoor surface temperature (C)
 
 C     building construction common block data
       COMMON/C6/INDCFG
-      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &     NPGAP(MCOM,MS,MGP)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)

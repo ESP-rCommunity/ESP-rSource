@@ -32,9 +32,6 @@ C   FNCNGR: changes the name of file ORIGNAM by appending APP
 C ********** MAIN
       program prj
 #include "building.h"
-
-C geometry.h provides commons G0 and G2.
-#include "geometry.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -50,11 +47,11 @@ C default file names for databases
 C espriou.h provides currentfile, defdbfl exemfl.
 #include "control.h"
 #include "net_flow.h"
-#include "prj3dv.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
 
+      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -81,6 +78,11 @@ C espriou.h provides currentfile, defdbfl exemfl.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
@@ -791,7 +793,7 @@ C to clarify code and allow for future evolution.
               endif
 
 C Pass information to C library code if running in graphic mode.
-              CALL ADJVIEW(IER)
+              CALL ADJVIEW(ITRC,IER)
               if(MMOD.EQ.8)then
                 call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
@@ -928,7 +930,7 @@ C to draw the model.
 C (Re)Set all surfaces to standard line width.
             CALL INLNST(1)
             izgfoc=0
-            CALL ADJVIEW(IER)
+            CALL ADJVIEW(ITRC,IER)
           endif
 
 C Re-draw the configuration buttons.
@@ -3251,7 +3253,7 @@ C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
      &                      oprfok,prob,tmcok,shdok)
 #include "building.h"
-#include "geometry.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -3268,11 +3270,17 @@ C to include the path and create a string to drive the modules.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -3288,7 +3296,7 @@ C to include the path and create a string to drive the modules.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER*72 LS
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,zn*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64,zn*12
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
 
       logical XST,asked,dok,sorted,problem
@@ -3597,10 +3605,11 @@ C Now look for unknown files.
       geofok=.true.
       do 46 i=1,ncomp
         if(LGEOM(i)(1:7).eq.'UNKNOWN'.or.LGEOM(i)(1:2).eq.'  ')then
+          write(zn,'(a)') zname(i)
           geofok=.false.
           if(lh.lt.60)then
             lh=lh+1
-            write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
+            write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
      &        ' geometry undefined.'
           endif
         else
@@ -3625,10 +3634,11 @@ C Now look for unknown files.
       oprfok=.true.
       do 43 i=1,ncomp
         if(LPROJ(i)(1:7).eq.'UNKNOWN'.or.LPROJ(i)(1:2).eq.'  ')then
+          write(zn,'(a)') zname(i)
           oprfok=.false.
           if(lh.lt.60)then
             lh=lh+1
-            write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
+            write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
      &        ' operations undefined.'
           endif
         else
@@ -3669,11 +3679,12 @@ C Do cursory check to see if the file is sorted.
       lh=0
       confok=.true.
       do 45 i=1,ncomp
+        write(zn,'(a)') zname(i)
         if(LTHRM(i)(1:7).eq.'UNKNOWN'.or.LTHRM(i)(1:2).eq.'  ')then
           confok=.false.
           if(lh.lt.60)then
             lh=lh+1
-            write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
+            write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
      &        ' constructions undefined.'
           endif
         else
@@ -3712,6 +3723,16 @@ C Zone construction file exists so attempt to scan it.
                 endif
               endif
             endif
+            if(icfc(I).eq.1)then
+              CALL read_in_cfc_file(0,IUOUT,IFIL+1,lcfcin(I),I,IER)
+              if(ier.ne.0)then
+                if(lh.lt.60)then
+                  lh=lh+1
+                  write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+     &            ' cfc file did not read cleanly.'
+                endif
+              endif
+            endif
           endif
         endif
  45   continue
@@ -3726,12 +3747,13 @@ C Zone construction file exists so attempt to scan it.
       IUO=IFIL+1
       do 52 i=1,ncomp
         if(isi(i).eq.1)then
+          write(zn,'(a)') zname(i)
           LS=LSHAD(I)
           if(LS(1:7).eq.'UNKNOWN'.or.LS(1:2).eq.'  ')then
             shdok=.false.
             if(lh.lt.60)then
               lh=lh+1
-              write(h(lh),'(3a)') 'Zone ',zname(i)(1:lnzname(i)),
+              write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
      &        ' shading undefined.'
             endif
           else
@@ -4421,7 +4443,6 @@ C << message to user that such a file does not exist
 
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -4458,6 +4479,7 @@ C   season assessment with all days included.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
@@ -4468,7 +4490,12 @@ C   season assessment with all days included.
       CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       COMMON/CONTM/CNTMFIL,CNTMDESC,NTSTEPC
@@ -4487,7 +4514,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot
       CHARACTER OUTSTR*124
-      CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
+      CHARACTER APE*6,EXT*4,OUTS*124,doit*248,zname*12,zdesc*64,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       character ipvaction*3  ! to signal external ipv file
       integer irootlen,iapelin  ! string buffer lengths
@@ -4782,11 +4809,11 @@ C << need to deal with file separator more generically >>
                 ISI(ICOMP)=1
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LSHAD(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnzname(icomp)),'.shd'
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
                 else
                   WRITE(LSHAD(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnzname(icomp)),'.shd'
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
                 endif
                 EXT='.shd'
                 CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
@@ -4797,7 +4824,7 @@ C procedure can overwrite. Mark for performing shading calculatons.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &            zname(icomp)(1:lnzname(icomp))
+     &            zname(icomp)(1:lnblnk(zname(icomp)))
                 CALL ERPFREE(IUF,ios)
                 ishad=1
                 ishd=1
@@ -4826,11 +4853,11 @@ C If v1.1 geometry file, set iobs=2 and add an initial block via ecrobs.
 C Older format geometry file so use separate zone obstructions file.
                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                     WRITE(ZOBS(icomp),'(A,A4)')
-     &                zname(icomp)(1:lnzname(icomp)),'.obs'
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
                   else
                     WRITE(ZOBS(icomp),'(3A,A4)') 
      &                zonepth(1:lnblnk(zonepth)),'/',
-     &                zname(icomp)(1:lnzname(icomp)),'.obs'
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
                   endif
                   EXT='.obs'
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
@@ -4957,11 +4984,11 @@ C out default block.
                   IOBS(ICOMP)=1
                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                     WRITE(ZOBS(icomp),'(A,A4)')
-     &                zname(icomp)(1:lnzname(icomp)),'.obs'
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
                   else
                     WRITE(ZOBS(icomp),'(3A,A4)') 
      &                zonepth(1:lnblnk(zonepth)),'/',
-     &                zname(icomp)(1:lnzname(icomp)),'.obs'
+     &                zname(icomp)(1:lnblnk(zname(icomp))),'.obs'
                   endif
                   EXT='.obs'
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
@@ -4975,11 +5002,11 @@ C fileis so create a base name for shading file and then tweak the name via fncn
                 ISI(ICOMP)=1
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LSHAD(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnzname(icomp)),'.shd'
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
                 else
                   WRITE(LSHAD(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnzname(icomp)),'.shd'
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
                 endif
                 EXT='.shd'
                 CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
@@ -4990,7 +5017,7 @@ C procedure can overwrite. Mark to update shading files.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &            zname(icomp)(1:lnzname(icomp))
+     &            zname(icomp)(1:lnblnk(zname(icomp)))
                 CALL ERPFREE(IUF,ios)
                 ishad=1
                 ishd=1
@@ -5043,11 +5070,11 @@ C before calling mrt.
               elseif(IVF(icomp).eq.0)then
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LVIEW(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
                 else
                   WRITE(LVIEW(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
+     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
                 endif
                 EXT='.vwf'
                 CALL FNCNGR(LVIEW(ICOMP),APE,EXT,NNAME)

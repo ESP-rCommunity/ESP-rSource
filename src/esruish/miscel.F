@@ -118,12 +118,12 @@ C no selection.  'iva' is the array of selections.
 
       subroutine pickssur(izone,np,act,iva,ier)
 #include "building.h"
-#include "geometry.h"
 
       common/pophelp/h(60)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)

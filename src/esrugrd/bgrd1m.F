@@ -34,17 +34,19 @@ C *********************************************************************
       SUBROUTINE MENU1M(IDRW1,IDRW2,ITRC)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
-#include "geometry.h"
-
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
@@ -54,6 +56,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/MOIST02/LMOIST(MCOM)
@@ -64,10 +67,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
-      CHARACTER*12 ZONENM
+      CHARACTER*12 ZONENM,ZNAME
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,outsd*124,outs72*72,OTHSTR*30
+      CHARACTER zdesc*64
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
       DIMENSION IVALZ(MCOM),IVALS(MS)
@@ -136,7 +140,7 @@ C Show the zone selection menu.
         H(3)=' '
         INPICK=1
    20   CALL EPICKS(INPICK,IVALZ,' ',' ',12,
-     &    NCOMP,zname,' Select Zone',IER,3)
+     &                             NCOMP,zname,' Select Zone',IER,3)
         IZ2=IVALZ(1)
         IF(IZ2.GE.1.AND.IZ2.LE.NCOMP)THEN
           IZ=IZ2

@@ -38,9 +38,6 @@ C Edit/clear/check connection attributes in common blocks via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/c20.
-#include "geometry.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
@@ -59,10 +56,15 @@ C espriou.h provides currentfile.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C3F/LCNN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -75,7 +77,7 @@ C ITSNM surface name toggle: display = 0, hidden = 1
 C ITORG origin toggle: display = 0, hidden = 1
 C ITSNR surf normal toggle: display = 0, hidden = 1.
 C ITOBS obstruction toggle: not yet enabled.
-C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITHLS highlight toggle: normal 0, constr 1, trans/opaq/cfc 2, part atrib 3
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
 C ITPPSW current view - perspective/plan/south/west
@@ -322,7 +324,7 @@ C (Re)Set all surfaces to standard line width.
         izgfoc=0
         if(MMOD.eq.8)then
           CALL INLNST(1)
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
         endif
       endif
 
@@ -496,7 +498,7 @@ C Flip logic for back-to-back within zone.
       ELSEIF(INO.EQ.15)THEN
 
 C Edit single connection.
-        call edaconn(ier)
+        call edaconn(itrc,ier)
         MODIFY=.TRUE.
       ELSEIF(INO.EQ.16)THEN
 
@@ -769,8 +771,6 @@ C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
      &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 #include "building.h"
-#include "geometry.h"
-#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -779,12 +779,14 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -793,9 +795,14 @@ C the user to confirm before writing to temporary configuration file.
       common/C3F/LCNN
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/ground/grdtmp(12,mgrdp)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C G5 required for updating zone geometry file (until such time as geometry
@@ -804,6 +811,8 @@ C write can use G6 common blocks).
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
@@ -815,7 +824,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       logical M0SKP,M1SKP,M2SKP,M3SKP,M4SKP,M5SKP,M6SKP,M7SKP,M8SKP
       logical closea,closee,close,longpause
       logical newgeo  ! to use for testing if new/old geometry file.
-      character outs*124,CXSTR*78,SN*12
+      character outs*124,CXSTR*78,zname*12,SN*12,ZN*12
       character SO*24,TOTHER*24
       character DESCRC*25
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -823,7 +832,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER H*72
-      character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,bl*2
+      character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,zdesc*64,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
 
@@ -919,7 +928,7 @@ C is not a type 3 then don`t highlight.
           nzg=1
           nznog(1)=IZ
           izgfoc = IZ
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(0,IER)
           MODIFY=.TRUE.
 
 C Find number of corners and their coordinates for this surface.
@@ -1468,7 +1477,7 @@ C found to match.
             CALL SURADJ(II,JJ,IE,TMP,IZC,ISC,ICO,DESCRC)
             if(MMOD.eq.8)LINSTY(ICO)=2
             izgfoc = IZ
-            if(MMOD.eq.8)CALL CADJVIEW(IER)
+            if(MMOD.eq.8)CALL CADJVIEW(0,IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
             IC1(IC)=IZ
@@ -1494,8 +1503,9 @@ C update the attributes.
               UPDGEO=.TRUE.
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(icn)
+              ZN=zname(II)
               WRITE(outs,'(4a)')' accepting match to surface ',
-     &          SN(1:lnblnk(SN)),' in ',zname(II)(1:lnzname(II))
+     &          SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               call edisp(iuout,outs)
               goto 110  ! no need to check further
             else
@@ -1574,14 +1584,15 @@ C is of a reasonable orientation.
               call eclose(SELV,0.0,3.0,closee)
               ICN=IZSTOCN(IIx,JJx)
               SN=SSNAME(ICN)
+              ZN=zname(IIx)
               if(closea.and.closee)then
                 WRITE(outs,'(4a)')
      &            ' Probable (orientation close) match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',zname(IIx)(1:lnzname(IIx))
+     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               else
                 WRITE(outs,'(4a)')
      &            ' Possible (orientation not close) match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',zname(IIx)(1:lnzname(IIx))
+     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               endif
               call edisp(iuout,outs)
  841        continue
@@ -1621,11 +1632,12 @@ C the view on it and calculate the angle of view to that box.
               nznog(2)=II
               if(MMOD.eq.8)LINSTY(ICO)=2
               izgfoc = IZ
-              if(MMOD.eq.8)CALL CADJVIEW(IER)
+              if(MMOD.eq.8)CALL CADJVIEW(0,IER)
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(ICN)
+              ZN=zname(II)
               WRITE(outs,'(4a)')' Probable match to surface ',
-     &            SN(1:lnblnk(SN)),' in ',zname(II)(1:lnzname(II))
+     &            SN(1:lnblnk(SN)),' in ',ZN(1:lnblnk(ZN))
               dok=.true.
               h(1)='If there is more than ONE possible matching '
               h(2)='geometric connection you are asked to confirm'
@@ -1773,7 +1785,6 @@ C common block C3 while taking into account confirmation preferences.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1792,8 +1803,13 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1807,7 +1823,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78,outs*124
-      CHARACTER OUTSTR*124,SO*12,TMP*54,H*72
+      CHARACTER OUTSTR*124,SO*12,TMP*54,zname*12,zdesc*64,H*72
       CHARACTER bl*2
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -1855,7 +1871,7 @@ C Set all surfaces to standard line width.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           IF(IER.NE.0)THEN
             RETURN
           ELSE
@@ -1907,7 +1923,7 @@ C check for easy matches.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           if(.NOT.M1SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -1935,7 +1951,7 @@ C check for easy matches.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           if(.NOT.M2SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -1964,7 +1980,7 @@ C check for easy matches.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           if(.NOT.M4SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2025,7 +2041,7 @@ C profile has not been defined.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           if(.NOT.M5SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2057,7 +2073,7 @@ C menu and recover after the call.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           if(.NOT.M6SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2108,7 +2124,7 @@ C BASESIMP end.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           if(.NOT.M7SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2136,7 +2152,7 @@ C BASESIMP end.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           call edisp(iuout,OUTSTR)
           call edisp(iuout,TMP)
           dok=.true.
@@ -2163,7 +2179,7 @@ C Not an easy match or mandated match so tell user.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(IER)
+          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
           WRITE(OUTSTR,'(A,A)')'Topology: ',CXSTR(1:lnblnk(CXSTR))
           call edisp(iuout,' ')
           call edisp(iuout,OUTSTR)
@@ -2207,6 +2223,7 @@ C associated with a concept).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
@@ -2252,7 +2269,7 @@ C Force redraw of zones, highlighting anchor list.
           kk=lstanchr(ifoc,jj)
           if(kk.ne.0)LINSTY(kk)=2
   45    continue
-        CALL ADJVIEW(IER)
+        CALL ADJVIEW(ITRC,IER)
       endif
 
 C Initial menu entry setup.
@@ -2412,7 +2429,7 @@ C Force redraw of zones, highlighting anchor list.
             kk=lstanchr(ifoc,jj)
             if(kk.ne.0)LINSTY(kk)=2
  145      continue
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
         endif
         dok=.false.
         h(1)='A chance to abort incorrect selection. '
@@ -2760,6 +2777,7 @@ C Select one or more connections from a list.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION iconnpk(lconnpk),VERT(35),flag(mcon)
@@ -2938,7 +2956,6 @@ C << Note: this procedure is somewhat out of date. Its function
 C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
@@ -2960,6 +2977,10 @@ C espriou.h for climatelist file name.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -3057,6 +3078,7 @@ C updated as well.
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
                   updatecon=.true.
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -3097,6 +3119,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
                   updatecon=.true.
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -3137,6 +3160,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
                   updatecon=.true.
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -3331,7 +3355,6 @@ C ******** serchrpl
 C Serchrpl handles search and replace of composition attributes.
       subroutine serchrpl(act,itrc,ier)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -3349,15 +3372,22 @@ C Serchrpl handles search and replace of composition attributes.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 
@@ -3370,8 +3400,8 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character LTMP*72
       character H*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character ZN*12,outs*124,SN*12,SSPARENT*12
-      character DESCRC*25,act*1
+      character zname*12,ZN*12,outs*124,SN*12,SSPARENT*12
+      character zdesc*64,DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
       character AL8*12,AL9*12,CXITM*43
@@ -3434,6 +3464,8 @@ C Search and replace by finding matching constructions.
                 call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
               endif
 
+C Instead of calling zinfo use common block G7
+C              CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
               WRITE(outs,93)
               call edisp(iuout,outs)
               WRITE(outs,94)
@@ -3460,6 +3492,7 @@ C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
                     if(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                     if(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQUE'
+                    if(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
                   endif
                 endif
  91           continue
@@ -3542,6 +3575,7 @@ C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
             IF(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
             IF(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+            IF(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
               gversion(iz) =1.1
@@ -3640,6 +3674,8 @@ C << of TRAN for SSOTF.
               call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
             endif
 
+C Use G7 common blocks rather than call zinfo.
+C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
             WRITE(outs,93)
    93     FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')
@@ -3651,7 +3687,8 @@ C << of TRAN for SSOTF.
             do 11 i=1,nsur
               icc=izstocn(ivals(iz),i)
               apply=.true.
-              if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ')apply=.false.
+              if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &            SSOTF(icc)(1:4).ne.'CFC ')apply=.false.
               if(ins1.eq.2.and.SSOTF(icc)(1:4).eq.'OPAQ')apply=.false.
 
 C Determine the match in the system topology. 
@@ -3708,6 +3745,7 @@ C 'any horizontal','any orien.','cancel'.
                   WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
                   IF(DESC(ISEL)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                   IF(DESC(ISEL)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
+                  IF(DESC(ISEL)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
                 endif
               endif
  11         continue

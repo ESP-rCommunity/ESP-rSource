@@ -37,7 +37,6 @@ C EDSITE Edits site/general information for system configuration file.
 C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
 #include "building.h"
-#include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
 
@@ -52,6 +51,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/C1/NCOMP,NCON
       common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/PREC8/SLAT,SLON
 
       integer nccode,indutl
@@ -106,7 +106,7 @@ C iSlr_half_hr_flg =0 = hour-centred; 1 = half-hour centred.
       dimension SALT(8),IVALS(8)
       character*10 wkd1, wkd2
       character*10 wkday(7)
-      character SEXP*31,SALT*31,hold*72
+      character zname*12,zdesc*64,SEXP*31,SALT*31,hold*72,ZN*12
 
 C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
@@ -246,8 +246,10 @@ C If there was a change in location, but no zones defined just return.
             if(ISI(iz).eq.1)then
               call FINDFIL(LSHAD(iz),XST)
               if(XST)then
-                write(outs,'(3a)') 'Shading for ',
-     &            zname(iz)(1:lnzname(iz)),' is out of date.'
+                write(ZN,'(A)') zname(iz)
+                LNZ=max(1,LNBLNK(ZN))
+                write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
+     &            ' is out of date.'
                 call edisp(iuout,outs)
               endif
             endif
@@ -268,6 +270,8 @@ C If there was a change in location, but no zones defined just return.
             do 43 iz=1,ncomp
               if(ISI(iz).eq.0) goto 43
               call FINDFIL(LSHAD(iz),XST)
+              write(ZN,'(A)') zname(iz)
+              LNZ=max(1,LNBLNK(ZN))
               if(XST)then
 
 C Get logical name of terminal type, expand model name
@@ -284,7 +288,7 @@ C starting up a new xterm (i.e. use '-' rather than 'text')
                   h(1)='Each zone is calculated in turn. If you do '
                   h(2)='one zone then you should do all zones.'
                   write(outs,'(3a)') 'Proceed with shading for ',
-     &              zname(iz)(1:lnzname(iz)),'?'
+     &              zn(1:lnz),'?'
                   CALL ASKOK(outs,' ',OK,DOK,2)
                   if(OK)then
                     call comissionish(iz,'ir ',ier)
@@ -931,7 +935,7 @@ C Position specific pressure coef.
       ELSEIF(INO.EQ.22)THEN
 
 C Temporal definitions.
-        call setuptemporal(MODSIT,IER)
+        call setuptemporal(ITRC,MODSIT,IER)
 C          MODSIT=.true.
 
       ELSEIF(INO.EQ.24)THEN
@@ -1066,6 +1070,7 @@ C model including view and add images (delete not yet working).
       
       integer lnblnk  ! function definition
 
+      COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/CFGV/icfgv
       common/pophelp/h(60)
@@ -1084,7 +1089,7 @@ C Images.
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-      logical MODSIT,browse,unixok
+      logical MODSIT,browse,XST,unixok
 
 C ITEMS is menu for site/context items, ITEMIMG is menu for editing
 C and control of project images.
@@ -1179,7 +1184,7 @@ C Add images from images folder or other location.
      &    'add from standard folder','add from another folder',
      &    'delete','cancel',IOK,4)
         if(iok.eq.1)then
-          if(noimg.ge.MIMG)then
+          if(noimg.ge.MING)then
             call edisp(iuout,'No more images can be associated with')
             call edisp(iuout,'the current model.')
             continue
@@ -1313,9 +1318,8 @@ C ************* setuptemporal
 C Setuptemporal coordinates access to and initial creation of
 C temporal data to be associated with a model.
 
-      SUBROUTINE setuptemporal(MODSIT,IER)
+      SUBROUTINE setuptemporal(ITRC,MODSIT,IER)
 #include "building.h"
-#include "geometry.h"
 #include "tdf2.h"
 #include "control.h"
       
@@ -1324,6 +1328,7 @@ C temporal data to be associated with a model.
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1354,7 +1359,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character*72 LTDF,LTDFA,DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      character OUTSTR*124,HDR*12
+      character zname*12,zdesc*64,OUTSTR*124,HDR*12
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1470,7 +1475,8 @@ C and present a different interface depending on file type.
       H(57)=' '
 
 C Begin with high level menu.
-    3 IER=0
+    3 INO=-4
+      IER=0
       IRT=-1
 
       if(itdflg.eq.0)then
@@ -2630,6 +2636,7 @@ C act (char*1) action to take 'i' initialise, '-' interactive
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -3429,7 +3436,7 @@ C Errors for debug printing.
 C   14 if(IOS.eq.2)then
 C        CALL USRMSG(' No prmission to write array in ',' ','W')
 C      else
-C        CALL USRMSG(' Long array write error in ',' ','W')
+C        CALL USRMSG(' Long arrary write error in ',' ','W')
 C      endif
 C      IER=1
 C      return
@@ -3551,10 +3558,12 @@ C EDDSHD Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
-#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -3567,8 +3576,8 @@ C EDDSHD Sets up shading and insolation files
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
 
-      character H*72,LCFGF*72
-      character outs*248,CFGROOT*24
+      character H*72,ZNAME*12,ZN*12,LCFGF*72
+      character zdesc*64,outs*248,CFGROOT*24
       logical XST,OK,DOK,unixok
 
       if(ncomp.eq.0)then
@@ -3582,7 +3591,9 @@ C Check if Unix-based or DOS based.
         if(ISI(iz).eq.1)then
           call FINDFIL(LSHAD(iz),XST)
           if(XST)then
-            write(outs,'(3a)') 'Shading for ',zname(iz)(1:lnzname(iz)),
+            write(ZN,'(A)') zname(iz)
+            LNZ=max(1,LNBLNK(ZN))
+            write(outs,'(3a)') 'Shading for ',ZN(1:lnz),
      &        ' is out of date.'
             call edisp(iuout,outs)
           endif
@@ -3599,6 +3610,8 @@ C Check if Unix-based or DOS based.
         do 43 iz=1,ncomp
           if(ISI(iz).eq.0) goto 43
           call FINDFIL(LSHAD(iz),XST)
+          write(ZN,'(A)') zname(iz)
+          LNZ=max(1,LNBLNK(ZN))
 
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive ish.
@@ -3612,7 +3625,7 @@ C as the command line.
             h(1)='Each zone is calculated in sequence.'
             h(2)='If you do one, you should do all.'
             write(outs,'(3a)') 'Proceed with shading for ',
-     &        zname(iz)(1:lnzname(iz)),' ?'
+     &            zn(1:lnz),' ?'
             CALL ASKOK(outs,' ',OK,DOK,2)
             if(OK)then
               call comissionish(iz,'ira',ier)

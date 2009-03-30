@@ -29,9 +29,10 @@ C zph,zpc are zone heating/cooling capacities.
 C tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE MZOUTP
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 #include "sbem.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -43,6 +44,7 @@ C tzph,tzpc are zone heating/cooling use over time.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -52,7 +54,9 @@ C tzph,tzpc are zone heating/cooling use over time.
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      character LTMP*72,h*72,outs*124
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
+      character LTMP*72,h*72,zname*12,zdesc*64,outs*124
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
       character*72 lcfgf
@@ -187,25 +191,25 @@ c Write save option 0 data.
       CALL EDAY(LD1,LM1,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Temp',tab,VA,tab,' in ',
-     & zname(IA)(1:lnzname(IA)),' on ',DS1,'@',TZA
+     & zname(IA)(1:lnblnk(zname(IA))),' on ',DS1,'@',TZA
       call edisp(IWU,outs)
 
       CALL EDAY(LD2,LM2,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Min_Temp',tab,VB,tab,' in ',
-     & zname(IB)(1:lnzname(IB)),' on ',DS1,'@',TZB
+     & zname(IB)(1:lnblnk(zname(IB))),' on ',DS1,'@',TZB
       call edisp(IWU,outs)
 
       CALL EDAY(LD3,LM3,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Heat',tab,VC,tab,' in ',
-     & zname(IC)(1:lnzname(IC)),' on ',DS1,'@',TZC
+     & zname(IC)(1:lnblnk(zname(IC))),' on ',DS1,'@',TZC
       call edisp(IWU,outs)
 
       CALL EDAY(LD4,LM4,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Cool',tab,VD,tab,' in ',
-     & zname(ID)(1:lnzname(ID)),' on ',DS1,'@',TZD
+     & zname(ID)(1:lnblnk(zname(ID))),' on ',DS1,'@',TZD
       call edisp(IWU,outs)
 
       call edisp(IWU,' ')

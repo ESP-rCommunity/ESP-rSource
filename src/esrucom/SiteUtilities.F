@@ -37,7 +37,7 @@ C=SiteUtilities=========================================================
 C
 C ABSTRACT:
 C
-C SiteUtilities invokes the various subroutines needed to characterize
+C This routine invokes the various subroutines needed to characterize
 C purchased energy. Support for green-house-gas emissions may be
 C added in the future. 
 C
@@ -70,7 +70,7 @@ C=TotalPurchasedEnergy==================================================
 C
 C ABSTRACT:
 C
-C TotalPurchasedEnergy computes the total amount of energy use reported from all
+C Computes the total amount of energy use reported from all
 C parts of the simulator. 
 C
 C=======================================================================
@@ -116,7 +116,7 @@ C=ConvertEnergyToFuel===================================================
 C
 C ABSTRACT:
 C
-C ConvertEnergyToFuel converts the total energy use associated with a given
+C This routine converts the total energy use associated with a given
 C fuel into a standard unit of measure, based on the fuel's calorific
 C value.
 C
@@ -156,7 +156,7 @@ C=H3KReportsFuelUse=====================================================
 C
 C ABSTRACT:
 C
-C H3KReportsFuelUse reports transport data on fuel usage to the H3Kreports facility.
+C Transport data on fuel usage to the H3Kreports facility.
 C
 C=======================================================================
       subroutine H3KReportsFuelUse
@@ -254,7 +254,7 @@ C=ZeroFuelEnergyStorageArray============================================
 C
 C ABSTRACT:
 C
-C ZeroFuelEnergyStorageArray zeros the site energy usage storage array.
+C This routine zeros the site energy usage storage array.
 C
 C=======================================================================
       subroutine ZeroFuelEnergyStorageArray()
@@ -287,7 +287,7 @@ C=ZeroPltEnergyStorageArray=============================================
 C
 C ABSTRACT:
 C
-C ZeroPltEnergyStorageArray zeros the site energy usage storage array.
+C This routine zeros the site energy usage storage array.
 C
 C=======================================================================
       subroutine ZeroPltEnergyStorageArray()
@@ -333,10 +333,10 @@ C=StoreSiteUtilityData==================================================
 C
 C ABSTRACT:
 C
-C StoreSiteUtilityData takes the data stored in the passed fSUFuelEnergyUse
+C This routine takes the data stored in the passed fSUFuelEnergyUse
 C array and stuffs it into the protected fSiteEnergyUse array
 C
-C Input parameters defined via include statements.
+C Inputs:
 C
 C   - iComponent: integer flag indicating where data originated
 C
@@ -373,12 +373,12 @@ C=StorePltCompEnergyUse=================================================
 C
 C ABSTRACT
 C
-C StorePltCompEnergyUse stores fuel energy use computed by plant
+C This low-level function stores fuel energy use computed by plant
 C component models for later access in the site utilities facility.
 C
-C Input parameters defined via include statements.
+C Inputs:
 C
-C   - iComponent: Plant component index
+C   - iComP: Plant component index
 C
 C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
 C     data into Site utilities facility. Array indicies correspond
@@ -433,7 +433,7 @@ C=AggregatePltCompEnergyUse=============================================
 C
 C ABSTRACT
 C
-C AggregatePltCompEnergy aggregates energy consumption computed
+C This low-level function aggregates energy consumption computed
 C by various plant components, and appends it to the site-wide
 C energy consumption array.
 C
@@ -487,7 +487,7 @@ C=AttributePltPfsEnergyUse==============================================
 C
 C ABSTRACT:
 C
-C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
+C This procedure analyses uncatagorized energy consumption reported in
 C the plant/elec domains and attempts to attribute them according to
 C end-use.
 C
@@ -801,7 +801,7 @@ C=fConvertEnergyToFuelAmount============================================
 C
 C ABSTRACT:
 C
-C fConvertEnergyToFuelAmount converts an energy input into an equivlent
+C This low-level function converts an energy input into an equivlent
 C amount of fuel. It makes the OffsiteUtilities conversion factors
 C available elsewhere in the simulator.
 C

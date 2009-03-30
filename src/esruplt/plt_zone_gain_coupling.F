@@ -93,7 +93,6 @@ C----------------------------------------------------------------------
      
       implicit none
 #include "building.h"
-#include "geometry.h"
 #include "plant.h"
 
 C----------------------------------------------------------------------
@@ -119,6 +118,10 @@ C.....Building data
       common/c1/ncomp,ncon
       integer ncomp                  ! # of zones
       integer ncon                   ! ? (not used)
+
+      common/c20/nzsur(mcom),nztv(mcom)
+      integer nzsur           ! # of surfaces in a zone
+      integer nztv            ! # of verticies in a zone (not used)
 
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)

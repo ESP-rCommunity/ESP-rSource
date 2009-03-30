@@ -286,6 +286,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/cmddata/zone,aim,act
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -522,7 +523,6 @@ C if MODE='a' (aim) will ask for aim and name files automatically or
 C if MODE='c' (create) then allow all purposes and auto name files.
       SUBROUTINE newscene(MODE)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -531,6 +531,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/e2rc/crenrp,coconv
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
@@ -549,7 +550,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
 
       character crenrp*160,coconv*40,cfgroot*24,LCFGF*72
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character h*72,MODE*1,outs*124,LBSRIF*72
+      character h*72,zname*12,zdesc*64,MODE*1,outs*124,LBSRIF*72
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character zone*16,aim*12,act*72,dname*28,tname*28
       character dname72*72,tname72*72
@@ -738,10 +739,10 @@ C Sun positions.
 
 C Set default names based on above.
       if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
-        write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
+        write (outs,'(3a)') ZNAME(ifocz)(1:lnblnk(ZNAME(ifocz))),
      &     '_',RIFPURP(IRIFFOC)(1:6)
-        write (RIFDESC(IRIFFOC),'(5a)') 'Scene of ',
-     &     zname(ifocz)(1:lnzname(ifocz)),' for ',
+        write (RIFDESC(IRIFFOC),'(a,a,a,a,a)') 'Scene of ',
+     &     ZNAME(ifocz)(1:lnblnk(ZNAME(ifocz))),' for ',
      &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
       else
         IL=min(lnblnk(cfgroot),21)
@@ -882,7 +883,6 @@ C setdfgrid allows the creation of the daylight factor grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -893,6 +893,10 @@ C if MODE is not - then sensor points file name confirmation required.
 
       common/expath/runpath,pathtype
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
@@ -901,6 +905,7 @@ C if MODE is not - then sensor points file name confirmation required.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -916,7 +921,7 @@ C if MODE is not - then sensor points file name confirmation required.
       COMMON/RAY6/LINSTY(MCON)
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      character h*72,LDFGRID*72,DESCRC*25
+      character h*72,zname*12,zdesc*64,LDFGRID*72,DESCRC*25
       character outs*124,runpath*72,pathtype*24,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 
@@ -958,7 +963,7 @@ C Ask for zone (if not defined), surface and working plane height.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       ITSNM=0
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
 
 C Ask for surface and highlight.
       call EASKSUR(ifocz,IS,'-',
@@ -969,7 +974,7 @@ C Ask for surface and highlight.
       LINSTY(IC)=2
       MODIFY=.TRUE.
       ITVNO=0
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
       CALL INLNST(1)
 
       H(1)='The grid points on the chosen surface can be '
@@ -1099,7 +1104,7 @@ C Display grid on the zone... (if in graphic mode)
         ITZNM=1
         ITSNM=1
         ITVNO=1
-        CALL ADJVIEW(IER)
+        CALL ADJVIEW(ITRC,IER)
         CALL DFGRIDLBL('g')
       endif
 
@@ -1120,7 +1125,6 @@ C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
-#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -1133,6 +1137,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
       common/radgrid/LDFGRID
 
@@ -1205,7 +1211,7 @@ C If vertices are to be labeled do it in the smallest font.
       ITZNM=1
       ITSNM=1
       ITVNO=1
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
 
 C Loop through grid points.
       do 10 I=1,NDFP

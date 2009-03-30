@@ -55,11 +55,11 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
  
       character LTMP*72,H*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -766,7 +766,6 @@ C NZNO - zone number of each.
 
       SUBROUTINE MOZDFN
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -777,9 +776,10 @@ C NZNO - zone number of each.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION IVALS(MCOM)
-      character H*72
+      character ZNAME*12,zdesc*64,H*72
 
 C If default setup then link in all zones in the model.
       IF(IDEFLT.EQ.1)then
@@ -849,7 +849,7 @@ C           which solar energy is injected in the absence
 C           of internal insolation information.
 C LSNAM   - is the name of the entire system.
 C NCCODE  - zone code.
-C ZNAME   - zone name (from geometry.h).
+C ZNAME   - zone name.
 C NCONST  - number of multilayered constructions in
 C           each zone.
 C NELTS   - number of homogeneous elements in each
@@ -865,7 +865,6 @@ C ISTREC is the start record.
 C ier is zero if no problems and -3 if user issued a cancel.
       SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 
       integer lnblnk  ! function definition
@@ -884,13 +883,15 @@ C ier is zero if no problems and -3 if user issued a cancel.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/RECV5/SNA(MCOM,MS)
-      common/PREC18/ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+C      COMMON/RECV7/ZOA(MCOM)
 
 C Nothing references ZGAE and ZGAI.
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
@@ -906,13 +907,13 @@ C Nothing references ZGAE and ZGAI.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
 
       CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
-      CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
+      CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -922,19 +923,6 @@ C longtmp is the model configuration file with full path.
       IREC=ISTREC+2
       IBP=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
-
-C If an oder library the start record is probably 32 so if
-C the data scan yields a silly number reset IREC and try and
-C read again.
-      if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
-        IREC=30+2
-        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
-        if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
-          write(6,*) 'WARNING: ncomp at record was dubious',NCOMP,IREC
-          write(6,*) 'this results file needs to be scanned with'
-          write(6,*) 'an older version of res.'
-        endif
-      endif
       IREC=IREC+1
       IF(NCOMP.GT.0)goto 3
       IBP=2
@@ -1033,7 +1021,6 @@ C     IREC=IREC+3*NCOMP
       DO 20 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)znpad
         write(ZNAME(I),'(a)') znpad(1:12)
-	lnzname(I)=lnblnk(znpad)  ! update string length
         IREC=IREC+1
    20 CONTINUE
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=1,NCP)
@@ -1099,32 +1086,27 @@ C else read in transparent and floor areas as described.
         IREC=IREC+NCOMP+NCOMP
       else
       
-C Read floor area of each zone (this is actually already available
-C in common block prec17 defined in geometry.h. Potentially we
-C do not need to read this array here. But later if we decide not
-C to scan geometry files this line would be needed.
-C << this is a place where record width is tied to number of zones! >>
+C Read floor area of each zone.
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
-C Read area of transparent surfaces connected to external boundary.
-C << this is a place where record width is tied to number of zones! >>
+C Read area of transparent surfaces connected to external type BC.
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
       endif
 
-C Read surface areas in each zone.
+C Read surface areas.
       DO 90 I=1,NCOMP
         NN=NCONST(I)
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(SNA(I,J),J=1,NN)
         IREC=IREC+1
    90 CONTINUE
 
-C ZOA Not needed so skip ncomp records
-C << could be location of other one-per-zone data >>.
+C ZOA Not needed.
       DO 100 I=1,NCOMP
+C        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZOA(I)
         IREC=IREC+1
   100 CONTINUE
       DO 110 I=1,NCOMP

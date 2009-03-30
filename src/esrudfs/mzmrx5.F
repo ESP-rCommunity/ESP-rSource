@@ -160,7 +160,7 @@ C  based on convection heat transfer.
 #include "building.h"
 #include "cfd.h"
 
-      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp) 
       common/fvals/tfs(mcom,ms),qfs(mcom)

@@ -1311,9 +1311,6 @@ C standard.
 
       SUBROUTINE MOSMSDCEN(act)
 #include "building.h"
-
-C Get common precz from geometry.h
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1326,6 +1323,8 @@ C Get common precz from geometry.h
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -1340,7 +1339,7 @@ C Get common precz from geometry.h
       dimension YAVE(MZS), NY(MZS)
       dimension CENMAX(9), CENMIN(9), CENAVE(9)
 
-      character outs*124,act*1
+      character outs*124,zname*12,zdesc*64,act*1
       character SLABEL*32,GLABEL*20,prompt*124
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -1873,7 +1872,6 @@ C Also called by recovert if act = 'p' << needs checking >>
       SUBROUTINE MOEDMDS(act,the,tzhtime,tce,tzctime,tlhe,tzlhtime,
      &  tlce,tzlctime)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1892,6 +1890,7 @@ C Also called by recovert if act = 'p' << needs checking >>
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -1899,7 +1898,7 @@ C Also called by recovert if act = 'p' << needs checking >>
       character SLABEL*32,GLABEL*20,prompt*124,outs*124,prompte*124
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
+      CHARACTER PDESCR*60,SDESCR*44,H*72,act*1,zname*12,zdesc*64
       DIMENSION YDUM(MTS)
 
 C If output to file alter the edisp unit number.
@@ -2083,7 +2082,6 @@ C << file does not need to be scanned to get the surface emissivity.
       SUBROUTINE CASDIST(act)
 
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2091,11 +2089,13 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/recver/izver,ipver,iever
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -2105,6 +2105,10 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -2116,7 +2120,7 @@ C << file does not need to be scanned to get the surface emissivity.
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
-      COMMON/RECV5/SNA(MCOM,MS)
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -2124,7 +2128,7 @@ C =2 with more than 3 day types
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER PDESCR*60,SDESCR*44,CSTR*25
+      CHARACTER PDESCR*60,SDESCR*44,CSTR*25,zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER*13 LABELS(13)
@@ -2233,8 +2237,8 @@ C Update labels to match the current zone.
 
 C Output general header information.
         write(outs,'(3a,i2,a)')
-     &    ' Casual gains distribution (kWhrs) for ',
-     &    zname(IZONE)(1:lnzname(IZONE)),' (',IZONE,')'
+     &    ' Casual gains distribution (kWhrs) for ',zname(IZONE),'(',
+     &    IZONE,')'
         call edisp(itru,' ')
         call edisp(itru,outs)
 

@@ -37,6 +37,7 @@ C icnpick is the icon to edit.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)  
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Icon commons       
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -277,7 +278,7 @@ C blanks at the start and assign back to DATA and ATRICN.
      &        IVMAX,'W',IVALD,'atrib intg data',IER,0)
             if(ier.eq.0)then
               write(istr,'(I8)') IVAL
-              call removepad(istr,inpstr,ilena,iflag)
+              call removepad(istr,inpstr,ilen,iflag)
               WRITE(ATRICN(ICN,ifocus,1),'(A)') inpstr
             endif
           ENDIF
@@ -346,7 +347,7 @@ C blanks at the start and assign back to DATA and ATRICN.
           endif
 
           if(ier.eq.0)then
-            call relstr(val,vnpstr,ilena,iflag)
+            call relstr(val,vnpstr,ilen,iflag)
             WRITE(ATRICN(ICN,ifocus,1),'(a)') vnpstr
 
 C If this real attribute is `location` then it is assumed to be a height
@@ -385,7 +386,7 @@ C attribute so check and update the Z value of the icon to match it.
      &        'nothing','atrib text data',IER,0)
           endif
           if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
-            call removepad(vstr,vnpstr,ilena,iflag)
+            call removepad(vstr,vnpstr,ilen,iflag)
             ATRICN(ICN,ifocus,1)=VNPSTR
           endif
         ENDIF
@@ -456,7 +457,7 @@ C Debug...
         dok=.true.
         CALL ASKOK(outs,'Update volume?',OK,dok,6)
         if(OK)then
-          call relstr(AVAL(1),vnpstr,ilena,iflag)
+          call relstr(AVAL(1),vnpstr,ilen,iflag)
           WRITE(ATRICN(ICN,4,1),'(a)') vnpstr
         endif
       endif
@@ -471,7 +472,7 @@ C Debug...
 
 C For this icon the hieght is in the attribute category `location` which
 C is the second attribute category.
-          call relstr(AVAL(4),vnpstr,ilena,iflag)
+          call relstr(AVAL(4),vnpstr,ilen,iflag)
           WRITE(ATRICN(ICN,5,1),'(a)') vnpstr
           XYZICON(ICN,3)=AVAL(4)
         endif
@@ -582,7 +583,7 @@ C  location,text,-,-,glazing,user,linked surface name
 C AVAL(1) is pressure coef seta.
 C Debug...
         write(6,*) 'Wind pressure component PC.'
-        call relstr(AVAL(1),vnpstr,ilena,iflag)
+        call relstr(AVAL(1),vnpstr,ilen,iflag)
         WRITE(ATRICN(ICN,3,1),'(a)') vnpstr
         return
       elseif(exttag(1:9).eq.'*Surfaces')then
@@ -592,9 +593,9 @@ C AVAL(1) is area, AVAL(2) is azi, AVAL(3) is elev, AVAL(4) is Z(m).
 C SVAL(1) is zone name SVAL(2) is surface name.
 C Debug...
         write(6,*) 'Window pressure component AZ.'
-        call relstr(AVAL(2),vnpstr,ilena,iflag)
+        call relstr(AVAL(2),vnpstr,ilen,iflag)
         WRITE(ATRICN(ICN,4,1),'(a)') vnpstr
-        call relstr(AVAL(4),vnpstr,ilena,iflag)
+        call relstr(AVAL(4),vnpstr,ilen,iflag)
         WRITE(ATRICN(ICN,5,1),'(a)')vnpstr
         call eclose(AVAL(4),XYZICON(ICN,3),0.01,close)
         if(.NOT.close)then
@@ -642,6 +643,7 @@ C      SUBROUTINE NETCNNDATR(IER,IX,IY)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -915,7 +917,7 @@ C blanks at the start and assign back to ddatrib.
      &        IVMAX,'W',IVALD,'atrib intg data',IER,0)
             if(ier.eq.0)then
               write(istr,'(I8)') IVAL
-              call removepad(istr,inpstr,ilena,iflag)
+              call removepad(istr,inpstr,ilen,iflag)
               write(ddatrib(J,ifocus,1),'(A)') inpstr
             endif
           ENDIF
@@ -948,7 +950,7 @@ C between the node icon and the component icon of this connection.
             CALL EASKR(VAL,t32,' ',VMIN,'W',
      &        VMAX,'W',VALD,'atrib real data',IER,1)
             if(ier.eq.0)then
-              call relstr(val,vnpstr,ilena,iflag)
+              call relstr(val,vnpstr,ilen,iflag)
               WRITE(ddatrib(J,ifocus,1),'(a)') vnpstr
             endif
           ENDIF
@@ -959,7 +961,7 @@ C between the node icon and the component icon of this connection.
             CALL EASKS(VSTR,t32,' ',12,'nothing',
      &        'atrib text data',IER,0)
             if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
-              call removepad(vstr,vnpstr,ilena,iflag)
+              call removepad(vstr,vnpstr,ilen,iflag)
               ddatrib(J,ifocus,1)=VNPSTR
             endif
           ENDIF
@@ -985,6 +987,7 @@ C presented by category).
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)  
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Icon commons       
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -1315,7 +1318,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
      &              IVMAX,'W',IVALD,'atrib intg data',IER,0)
                   if(ier.eq.0)then
                     write(istr,'(I8)') IVAL
-                    call removepad(istr,inpstr,ilena,iflag)
+                    call removepad(istr,inpstr,ilen,iflag)
                     write(DATCATIE(IAST,ISL,1),'(A)') inpstr
                     WRITE(ATRICN(ICN,ICATIE(IAST,ISL),1),'(A)') inpstr
                   endif
@@ -1388,7 +1391,7 @@ C                        write(6,*) 'Internal unknown pressure comp.'
                           dok=.true.
                           CALL ASKOK(outs,'Update volume?',OK,dok,6)
                           if(OK)then
-                            call relstr(AVAL(1),vnpstr,ilena,iflag)
+                            call relstr(AVAL(1),vnpstr,ilen,iflag)
                             WRITE(DATCATIE(1,4,1),'(a)') vnpstr
                             WRITE(ATRICN(ICN,ICATIE(1,4),1),'(a)')
      &vnpstr
@@ -1412,7 +1415,7 @@ C                        write(6,*) 'Internal unknown pressure comp.'
 
 C For this icon the hieght is in the attribute category `location` which
 C is the second attribute category.
-                            call relstr(AVAL(4),vnpstr,ilena,iflag)
+                            call relstr(AVAL(4),vnpstr,ilen,iflag)
                             WRITE(DATCATIE(2,1,1),'(a)') vnpstr
                             WRITE(ATRICN(ICN,ICATIE(2,1),1),'(a)')
      &vnpstr
@@ -1511,7 +1514,7 @@ C  location,text,-,-,glazing,user,linked surface name
 C AVAL(1) is pressure coef seta.
 C Debug...
 C                          write(6,*) 'Wind pressure component PC.'
-                          call relstr(AVAL(1),vnpstr,ilena,iflag)
+                          call relstr(AVAL(1),vnpstr,ilen,iflag)
                           WRITE(DATCATIE(1,3,1),'(a)') vnpstr
                           WRITE(ATRICN(ICN,ICATIE(1,3),1),'(a)') vnpstr
                           goto 792
@@ -1521,10 +1524,10 @@ C AVAL(1) is area, AVAL(2) is azi, AVAL(3) is elev, AVAL(4) is Z(m).
 C SVAL(1) is zone name SVAL(2) is surface name.
 C Debug...
 C                          write(6,*) 'Window pressure component AZ.'
-                          call relstr(AVAL(2),vnpstr,ilena,iflag)
+                          call relstr(AVAL(2),vnpstr,ilen,iflag)
                           WRITE(DATCATIE(1,4,1),'(a)') vnpstr
                           WRITE(ATRICN(ICN,ICATIE(1,4),1),'(a)') vnpstr
-                          call relstr(AVAL(4),vnpstr,ilena,iflag)
+                          call relstr(AVAL(4),vnpstr,ilen,iflag)
                           WRITE(DATCATIE(2,1,1),'(a)') vnpstr
                           WRITE(ATRICN(ICN,ICATIE(2,1),1),'(a)')vnpstr
                           call eclose(AVAL(4),XYZICON(ICN,3),0.01,close)
@@ -1584,7 +1587,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
      &              VMAX,'W',VALD,'atrib real data',IER,0)
                 endif
                 if(ier.eq.0)then
-                  call relstr(val,vnpstr,ilena,iflag)
+                  call relstr(val,vnpstr,ilen,iflag)
                   WRITE(DATCATIE(IAST,ISL,1),'(a)') vnpstr
                   WRITE(ATRICN(ICN,ICATIE(IAST,ISL),1),'(a)') vnpstr
 
@@ -1622,7 +1625,7 @@ C attribute so check and update the Z value of the icon to match it.
      &              'nothing','atrib text data',IER,0)
                 endif
                 if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
-                  call removepad(vstr,vnpstr,ilena,iflag)
+                  call removepad(vstr,vnpstr,ilen,iflag)
                   DATCATIE(IAST,ISL,1)=VNPSTR
                   ATRICN(ICN,ICATIE(IAST,ISL),1)=VNPSTR
                 endif
@@ -1662,6 +1665,7 @@ C spearates the editing of each category of atrribute.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -2042,7 +2046,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
      &              IVMAX,'W',IVALD,'atrib intg data',IER,0)
                   if(ier.eq.0)then
                     write(istr,'(I8)') IVAL
-                    call removepad(istr,inpstr,ilena,iflag)
+                    call removepad(istr,inpstr,ilen,iflag)
                     write(DATCATIE(IAST,ISL,1),'(A)') inpstr
                     write(ddatrib(J,ICATIE(IAST,ISL),1),'(A)') inpstr
                   endif
@@ -2076,7 +2080,7 @@ C between the node icon and the component icon of this connection.
                   CALL EASKR(VAL,t32,' ',VMIN,'W',
      &              VMAX,'W',VALD,'atrib real data',IER,1)
                   if(ier.eq.0)then
-                    call relstr(val,vnpstr,ilena,iflag)
+                    call relstr(val,vnpstr,ilen,iflag)
                     WRITE(DATCATIE(IAST,ISL,1),'(a)') vnpstr
                     WRITE(ddatrib(J,ICATIE(IAST,ISL),1),'(a)') vnpstr
                   endif
@@ -2088,7 +2092,7 @@ C between the node icon and the component icon of this connection.
                   CALL EASKS(VSTR,t32,' ',12,'nothing',
      &              'atrib text data',IER,0)
                   if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
-                    call removepad(vstr,vnpstr,ilena,iflag)
+                    call removepad(vstr,vnpstr,ilen,iflag)
                     DATCATIE(IAST,ISL,1)=VNPSTR
                     ddatrib(J,ICATIE(IAST,ISL),1)=VNPSTR
                   endif

@@ -236,6 +236,7 @@ C EDGOGET allows removal of output requests.
 #include "building.h"
 
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
@@ -379,7 +380,6 @@ C above.
 
       SUBROUTINE GOMENU
 #include "building.h"
-#include "geometry.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -388,6 +388,7 @@ C above.
       common/pophelp/h(60)
 
       common/loadlabel/lodlabel(mcom,7)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
 
@@ -440,7 +441,7 @@ C TDF commons.
       character H*72,xfile*144,tg*1,delim*1
       character SLABEL*32,GLABEL*20,SUFFIX*8,lodlabel*6
       character ll1*8,ll2*8,ll3*8
-      CHARACTER outs*124,pifltog*4,lpifl*72
+      CHARACTER zname*12,zdesc*64,outs*124,pifltog*4,lpifl*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       character graftitle*64,grlbl*24,t64*64,t24*24
@@ -3248,14 +3249,14 @@ C Copy new data into IGETNO array if a selection has been made.
                     write (GLABEL(NGET),'(a,a)')
      &                                  ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnzname(IZ)
+                    IZLEN=lnblnk(ZNAME(IZ))
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
                     write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
      &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
                   else
-                    write(GLABEL(NGET),'(2a)')ZNAME(IZ)(1:lnzname(IZ)),
-     &                SUFFIX
+                    write (GLABEL(NGET),'(a,a)')
+     &                   ZNAME(IZ)(1:lnblnk(ZNAME(IZ))),SUFFIX
                   endif
                 else
                   if (SLIST) then
@@ -3263,11 +3264,12 @@ C Copy new data into IGETNO array if a selection has been made.
                     IZLEN=lnblnk(ZSDESC)
                     write (GLABEL(NGET),'(a)') ZSDESC(1:IZLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnzname(IZ)
-                    write(GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
-     &                ' S',ISFSEL(IG)
+                    IZLEN=lnblnk(ZNAME(IZ))
+                    write (GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
+     &                                                  ' S',ISFSEL(IG)
                   else
-                    write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
+                    write(GLABEL(NGET),'(a)')
+     &                    ZNAME(IZ)(1:lnblnk(ZNAME(IZ)))
                   endif
                 endif
               else
@@ -3305,14 +3307,14 @@ C specific information.
                     write (GLABEL(NGET),'(a,a)')
      &                                  ZSDESS(1:IZLEN),SUFFIX(1:ISLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnzname(IZ)
+                    IZLEN=lnblnk(ZNAME(IZ))
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
                     write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
      &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
                   else
                     write (GLABEL(NGET),'(a,a)')
-     &                ZNAME(IZ)(1:lnzname(IZ)),SUFFIX
+     &                   ZNAME(IZ)(1:lnblnk(ZNAME(IZ))),SUFFIX
                   endif
                 else
                   if (SLIST) then
@@ -3320,11 +3322,12 @@ C specific information.
                     IZLEN=lnblnk(ZSDESC)
                     write (GLABEL(NGET),'(a)') ZSDESC(1:IZLEN)
                   elseif (MRTLIST) then
-                    IZLEN=lnzname(IZ)
+                    IZLEN=lnblnk(ZNAME(IZ))
                     write (GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
      &                                                  ' S',ISFSEL(IG)
                   else
-                    write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
+                    write(GLABEL(NGET),'(a)')
+     &                    ZNAME(IZ)(1:lnblnk(ZNAME(IZ)))
                   endif
                 endif
               endif
@@ -3490,7 +3493,6 @@ C This recovers one day.
 
       SUBROUTINE GOGETIT(KGET,IDAY,ISTART,IEND)
 #include "building.h"
-#include "geometry.h"
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -3504,12 +3506,17 @@ C This recovers one day.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/RECV5/SNA(MCOM,MS)
-      common/PREC18/ZTRANA(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
@@ -4306,7 +4313,8 @@ C called to calculate the values.
 
       subroutine MMACHK(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
 #include "building.h"
-#include "geometry.h"
+
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC

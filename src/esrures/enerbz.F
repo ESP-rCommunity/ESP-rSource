@@ -31,7 +31,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 
       SUBROUTINE MOZCAS(IZONE,IANZSE,NIT)
 #include "building.h"
-#include "geometry.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
@@ -39,6 +38,11 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -53,6 +57,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
@@ -63,6 +68,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       
       character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
 
+      CHARACTER zname*12,zdesc*64
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,sp*1,outsd*124
       CHARACTER*26 LABELS(17)
       CHARACTER*9 TITLE1(17)
@@ -423,10 +429,10 @@ C CALLED BY: MOZSUM
 
       SUBROUTINE MOEGET(IZONE,IDAY)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),

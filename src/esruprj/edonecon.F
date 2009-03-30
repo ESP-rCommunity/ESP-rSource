@@ -33,12 +33,9 @@ C LINDIR:  finds the angles associated with a line in space.
 C ************* EDACONN 
 C Edit connection attributes in common block __ via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EDACONN(IER)
+      SUBROUTINE EDACONN(ITRC,IER)
 #include "epara.h"
 #include "building.h"
-
-C geometry.h provides commons G0 and G2.
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -57,6 +54,10 @@ C geometry.h provides commons G0 and G2.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -64,6 +65,7 @@ C geometry.h provides commons G0 and G2.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/user/browse
 
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -228,13 +230,13 @@ C has not a type 3 then don`t highlight.
           CALL SURADJ(IC1(IFOC),IC2(IFOC),IE,TMP,IZC,ISC,IC,DESCRC)
           LINSTY(IC)=2
           izgfoc=IC1(IFOC)
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
         else
           LINSTY(IFOC)=2
           nzg=1
           nznog(1)=IC1(IFOC)
           izgfoc=IC1(IFOC)
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
         endif
 
 C General image option flags.
@@ -391,7 +393,7 @@ C and display both zones.
           nznog(1)=IC1(IFOC)
           nznog(2)=IZ
           izgfoc=IC1(IFOC)
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(0,IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
 
@@ -669,16 +671,16 @@ C CONXMENU returns an English description in CXITM of the inter-connection
 C information. This is shorter than the string returned by CONXINFO. 
       SUBROUTINE CONXMENU(ICON,CXITM)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12
-
+      CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
+      CHARACTER zname*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer ICM  ! connection for current surface.

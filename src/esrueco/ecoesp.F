@@ -705,7 +705,6 @@ C the zone no are recorded in NZNOG
 
       SUBROUTINE Zoneslist
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -713,6 +712,7 @@ C the zone no are recorded in NZNOG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -723,7 +723,7 @@ C the zone no are recorded in NZNOG
       DIMENSION IVALZ(MCOM)
      
 
-      CHARACTER H*72
+      CHARACTER H*72,zname*12,zdesc*64
       
       do 5 i=1,MCOM
         NbSurSel(i) = 0
@@ -797,14 +797,16 @@ C zdescr : string contening the name of slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
-#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      CHARACTER zdescr*80,outs*244,outsd*80
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
-        lna=lnzname(nznog(i))
+        lna=lnblnk(zname(nznog(i)))
         length=length+lna+1
   42  continue
       if(length.lt.72)then
@@ -841,13 +843,17 @@ C Icomp : Zone number
 C Iskip : If = 0, then skip the list of surfaces menu
       SUBROUTINE ZoneDisp(icomp, iskip)
 #include "building.h"
-#include "geometry.h"
 #include "epara.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -857,15 +863,18 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
       DIMENSION VERT(35)
 
-      CHARACTER H*72
+      CHARACTER H*72,zname*12,zdesc*64
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER VERT*44,KEY*1,head*31,OutStr*124
@@ -879,6 +888,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
+      ITRC=1
       itru=6
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
@@ -894,14 +904,13 @@ C Read geometry file for chosen zone.
   33    CONTINUE
       endif
 
-      if (Iskip.eq.1) CALL ADJVIEW(IER)
+      if (Iskip.eq.1) CALL ADJVIEW(ITRC,IER)
 
 C Multi-page list
       call edisp(iuout,'Please select surfaces to include in analysis.')
 
 C Recover zone data (read only, no display).
       CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
-      vol(icomp)=zvol
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
       TRN=0.
@@ -926,7 +935,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Set up header text.
-      WRITE(VERT(1),'(a,f8.2,a)')'  Volume :          ',VOL(icomp),'m^3'
+      WRITE(VERT(1),'(a,f8.2,a)')'  Volume :          ',ZVOL,'m^3'
       WRITE(VERT(2),'(a,f8.2,a)')'  Base/floor area : ',ZBASEA(icomp),
      &  'm^2'
       WRITE(VERT(3),'(a,f8.2,a)')'  Opaque constr. (OPQ):  ',OPQ,'m^2'
@@ -1165,10 +1174,11 @@ C square meter of the selected composite.
 
       FUNCTION STEPIMP(IZ,I,J,K,L,NoStep)
 #include "building.h"
-#include "geometry.h"
 #include "LCA.h"
 
       COMMON/CompDim/HeightCo,WidthCo, Perimeter, Area
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/EIAScnPt/FabPt(MMAT),TrPt(MMAT,MNbTrans),
@@ -1438,7 +1448,6 @@ C
 
       SUBROUTINE LCAcalc(itrc,Ichanel)
 #include "building.h"
-#include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
       
@@ -1448,6 +1457,8 @@ C
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -1455,6 +1466,10 @@ C
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -1467,11 +1482,13 @@ C
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -1565,6 +1582,7 @@ C
       character SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+      CHARACTER zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
       CHARACTER StepName*36,StepSName*12
@@ -1970,7 +1988,6 @@ C If approach is model based, read the current zone information
             call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           endif
           call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
-          vol(ICurZone)=zvol
           context=.false.
         ENDIF
 
@@ -2033,7 +2050,7 @@ C already scaned. No need to test the last zone
               DO 345 IT=1,(IZ-1)
 C if other side is one of the previous zone,  go to next surface
                 if(SSOTHER(Iother,1)(1:lnblnk(SSOTHER(Iother,1))).EQ. 
-     &             zname(nznog(IT))(1:lnzname(nznog(IT))) ) then
+     &             Zname(nznog(IT))(1:lnblnk(Zname(nznog(IT)))) ) then
                   Exist=.TRUE.
                   IOpsitZone= ic2(IZSTOCN(ICurZone,N))
                   IOpositSurf = ie2(IZSTOCN(ICurZone,N))
@@ -2483,7 +2500,6 @@ C phylosophy as LCACalc
 
       SUBROUTINE LCADet(itrc,Ichanel)
 #include "building.h"
-#include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
       
@@ -2500,6 +2516,10 @@ C phylosophy as LCACalc
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2512,11 +2532,13 @@ C phylosophy as LCACalc
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
       COMMON/ProjTxt/TxtCompo,TxtMat
@@ -2641,6 +2663,7 @@ C Arrays of material properties.
       CHARACTER SSPARENT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+      CHARACTER zname*12,zdesc*64
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
       CHARACTER H*72,outs*160,ITEM*36, Tmpstring*72
@@ -3146,7 +3169,6 @@ C If approach is model based, read the current zone information
      &          IER)
             endif
             call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
-            vol(ICurZone)=zvol
             context=.false.
           ENDIF
 
@@ -3221,7 +3243,7 @@ C already scaned. No need to test the last zone
                 DO 345 IT=1,(IZ-1)
 C if other side is one of the previous zone,  go to next surface
                   if(SSOTHER(Iother,1)(1:lnblnk(SSOTHER(Iother,1))).EQ. 
-     &              zname(nznog(IT))(1:lnzname(nznog(IT))) ) then
+     &              Zname(nznog(IT))(1:lnblnk(Zname(nznog(IT)))) ) then
                     Exist=.TRUE.
                     IOpsitZone= ic2(IZSTOCN(ICurZone,N))
                     IOpositSurf = ie2(IZSTOCN(ICurZone,N))
@@ -3249,9 +3271,9 @@ C     &                                LayerNam(IOpositComp,ip)
 C                        CALL edisp(Ichanel,outs)
 C 394                  CONTINUE
 C                    endif
-                    WRITE(outs,'(a12,2x,7a)')zname(nznog(IZ)),  
+                    WRITE(outs,'(a12,2x,7a)')Zname(nznog(IZ)),  
      &                    Sname(nznog(IZ),N),' Already accounted as ',
-     &                     'Zone: ', zname(IOpsitZone),', ',
+     &                     'Zone: ', Zname(IOpsitZone),', ',
      &                     'Surface :', Sname(IOpsitZone,IOpositSurf)
                     CALL edisp(Ichanel,outs)
 
@@ -3341,7 +3363,7 @@ C Mass of one surface and sum over the zone
             IF (itrc.EQ.3) THEN
               IF (ICalType.EQ.1) THEN
                 IV = IV + 1
-                WRITE(outs,93) ' Zone: ',zname(nznog(IZ)),
+                WRITE(outs,93) ' Zone: ',Zname(nznog(IZ)),
      &                         ' Surface: ', SName(nznog(IZ),ICurSurf),
      &                         ' Composite: ',SMLCN(ICurSurf),
      &                         'Area [m2]: ',Area,
@@ -3855,12 +3877,12 @@ C Next Surface
               IF (ICalType.eq.1) THEN
                 if (itrc.eq.1) then
                   IF (M.eq.14) THEN
-                    WRITE(outs,818) zname(nznog(IZ)),
+                    WRITE(outs,818) Zname(nznog(IZ)),
      &                           TotRecyZ + TotBurnZ + TotDumpZ,
      &                           TotRecyZ, TotBurnZ, TotDumpZ
  818                FORMAT(1x,A12,10x,4(1P1E9.3,6x))
                   ELSE
-                    WRITE (outs,812) zname(nznog(IZ)),
+                    WRITE (outs,812)Zname(nznog(IZ)),
      &                        (ZoneTot(IY),IY=1,MIMP)
  812                FORMAT(1X,A18, 4(3x, 1P1E9.3))
                   ENDIF
@@ -3882,7 +3904,7 @@ C Next Surface
      &                          TotRecyZ, TotBurnZ, TotDumpZ
  820                 FORMAT(1x,A,2x,4(1P1E9.3,14x))
                   ELSE                
-                    WRITE (outs,84) zname(nznog(IZ)),
+                    WRITE (outs,84)Zname(nznog(IZ)),
      &                           (ZoneTot(IY),IY=1,MIMP)
  84                 FORMAT(2X,A12,5x, 4(3x, 1P1E9.3))
                   ENDIF
@@ -4093,13 +4115,13 @@ C the perimiter of the polygon. Assumes that the surface is
 C in the current zones common blocks.
       subroutine surfprm(izone,isurf,dupedges,perim)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       DIMENSION x1(3),x2(3)
       logical dupedges
 

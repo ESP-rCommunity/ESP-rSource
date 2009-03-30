@@ -44,6 +44,7 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)

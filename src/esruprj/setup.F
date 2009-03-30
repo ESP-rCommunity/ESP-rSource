@@ -24,10 +24,6 @@ C viewpoint is changed.
 
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
-
-C geometry.h provides commons G0 and G2.
-#include "geometry.h"
-#include "prj3dv.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -42,6 +38,15 @@ C geometry.h provides commons G0 and G2.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
+      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       logical OK,DOK,MODSIT,browse,defview,unixok
       logical closea,closeb,closec,closed,concat

@@ -562,7 +562,6 @@ C defview generates a new default view.
 
       SUBROUTINE defview
 #include "building.h"
-#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
 
@@ -574,6 +573,7 @@ C defview generates a new default view.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
 
+      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12

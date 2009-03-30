@@ -53,14 +53,14 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
 
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
       character path*72,upath*72
@@ -238,7 +238,7 @@ C ***** Dummy display of images.
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(IER)
+      SUBROUTINE ADJVIEW(ITRC,IER)
       ier=0
       return
       end

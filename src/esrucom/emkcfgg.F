@@ -30,11 +30,11 @@ C This version uses generic databases.
       SUBROUTINE EMKCFGG(act,IER)
 
 #include "building.h"
-#include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
+#include "CFC_common.h"
 C espprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LOPTDB,IOPTDB (for optical database)
@@ -65,6 +65,7 @@ C ICLIM,LCLIM (for climate file)
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
@@ -230,7 +231,7 @@ C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
-      CHARACTER CXSTR*78,cfgroot*24
+      CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -795,6 +796,11 @@ C Fabric portion of description.
           WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
      &      '*tmc ',LTWIN(I)(:lnblnk(LTWIN(I))),'  # transparent constr'
         endif
+        if(icfc(I).EQ.1)then
+          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &    '*cfc ',lcfcin(I)(1:lnblnk(lcfcin(I))),
+     &    '  # complex fenestration constr'
+        endif
         if(IVF(I).EQ.1)then
           WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
      &      '*ivf ',LVIEW(I)(:LNBLNK(LVIEW(I))),' # viewfactors'
@@ -970,16 +976,17 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
+      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
+      CHARACTER zname*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
@@ -1073,17 +1080,19 @@ C ****** Scan and report current mis-matches.
       subroutine ckcurmatch(prob,iprob,ier)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/c20.
-#include "geometry.h"
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       integer nccode,indutl

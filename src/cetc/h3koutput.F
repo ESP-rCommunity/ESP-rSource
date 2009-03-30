@@ -47,7 +47,6 @@ C     This is the main subroutine of the H3k Output. Iterates through systems
       
       SUBROUTINE H3KOUTPUT_MAIN(IWU)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
@@ -67,6 +66,8 @@ c     NCOMP is used for the number of zone present in the simulation.
 c     NTSTEP is used to norlamlise the values to one hour.
       
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/precz/zname(MCOM),zdesc(MCOM) 
+c     zname(mcom) is zone name string.
       
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 c     RFILE is the the results library filename.
@@ -77,7 +78,7 @@ c     RFILE is the the results library filename.
 c     LCFGF is the configuration file used.
 c     lsnam is the description of the building.
       character*72 LBSIMP
-      character LTMP*72,h*72,outs*124
+      character LTMP*72,h*72,zname*12,zdesc*64,outs*124
       character PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
       character*72 lsnam,lproj,lgeom
@@ -731,16 +732,17 @@ c     to file IWU
 **************************************************************************
       SUBROUTINE H3KOUTPUT_Solar_Casual_Found(izone,IWU)
 #include "building.h"
-#include "geometry.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 c     ISM2 and ISM2 are required (startup and ending month)
+      COMMON/precz/zname(MCOM),zdesc(MCOM) 
+c     zname(izone) is the name of the zone 'izone'
       DIMENSION MTHNAM(12)
 c     This is used for Month names.
-      character LTMP*72,h*72,outs*256
+      character LTMP*72,h*72,zname*12,zdesc*64,outs*256
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &     'Sep','Oct','Nov','Dec'/
@@ -801,7 +803,6 @@ C     zph,zpc are zone heating/cooling capacities.
 C     tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE H3KMZOUTP()
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
@@ -817,6 +818,7 @@ C     tzph,tzpc are zone heating/cooling use over time.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -826,7 +828,7 @@ C     tzph,tzpc are zone heating/cooling use over time.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/rcmd/LCMDFL
       character LCMDFL*144
-      character LTMP*72,h*72,outs*124
+      character LTMP*72,h*72,zname*12,zdesc*64,outs*124
       character PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
       character*72 lsnam,lproj,lgeom
@@ -958,25 +960,25 @@ c     Write save option 0 data.
       CALL EDAY(LD1,LM1,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Temp',tab,VA,tab,' in ',
-     &     zname(IA)(1:lnzname(IA)),' on ',DS1,'@',TZA
+     &     zname(IA)(1:lnblnk(zname(IA))),' on ',DS1,'@',TZA
       call edisp(IWU,outs)
       
       CALL EDAY(LD2,LM2,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Min_Temp',tab,VB,tab,' in ',
-     &     zname(IB)(1:lnzname(IB)),' on ',DS1,'@',TZB
+     &     zname(IB)(1:lnblnk(zname(IB))),' on ',DS1,'@',TZB
       call edisp(IWU,outs)
       
       CALL EDAY(LD3,LM3,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Heat',tab,VC,tab,' in ',
-     &     zname(IC)(1:lnzname(IC)),' on ',DS1,'@',TZC
+     &     zname(IC)(1:lnblnk(zname(IC))),' on ',DS1,'@',TZC
       call edisp(IWU,outs)
       
       CALL EDAY(LD4,LM4,IODS)
       CALL STDATE(IYEAR,IODS,DS,DS1)
       write(outs,'(2a,f6.1,6a,f5.2)')' Max_Cool',tab,VD,tab,' in ',
-     &     zname(ID)(1:lnzname(ID)),' on ',DS1,'@',TZD
+     &     zname(ID)(1:lnblnk(zname(ID))),' on ',DS1,'@',TZD
       call edisp(IWU,outs)
 
       call edisp(IWU,' ')

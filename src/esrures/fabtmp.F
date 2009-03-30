@@ -35,10 +35,14 @@ C the results database.
 
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -134,7 +138,6 @@ C attributes are known.
 
       SUBROUTINE GZPDBE(ICOMP,IER)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
@@ -145,6 +148,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
@@ -498,7 +502,6 @@ C corresponding to graphical result display.
 C If act = i then initial display, if act = s then single step display.
       SUBROUTINE MOFHED(ICOMP,ISUR,act)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -510,7 +513,8 @@ C If act = i then initial display, if act = s then single step display.
       COMMON/GFONT/IFS,ITFS,IMFS
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/RECV5/SNA(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
@@ -519,7 +523,7 @@ C If act = i then initial display, if act = s then single step display.
 
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character TSTR*6,ZN*12,RSNAME*40,SN*12
+      character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character act*1
@@ -597,6 +601,8 @@ C Determine if the surface is transparent or opaque.
       IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
          TSTR='opaque'
+      ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC ')THEN
+         TSTR='CFC'
       ELSE
          TSTR='trnsp.'
       ENDIF
@@ -623,7 +629,6 @@ C MOFDRW displays the construction temperature profiles.
 
       SUBROUTINE MOFDRW(ICOMP,ISUR,act)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -636,13 +641,14 @@ C MOFDRW displays the construction temperature profiles.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
       DIMENSION XVAL1(MZS)
       character act*1,ETEXT*94,TDESCR*5,DS*7,DS1*10,CSTR*25,TCSTR*25
-      character ZN*12
+      character zname*12,zdesc*64,ZN*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

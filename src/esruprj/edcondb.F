@@ -1765,6 +1765,7 @@ C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
       PARAMETER (MPN=3)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/pophelp/h(60)
 
@@ -1995,7 +1996,7 @@ C Manage the list of constructions.
      &    'continue',' ',' ',IW,10)
         if(IW.EQ.1)then
 
-C Add a construction. Update this to account for OPAQ/TRAN.
+C Add a construction. Update this to account for OPAQ/TRAN/CFC.
           if(NMLC.ge.MMLC)then
             CALL USRMSG('Adding not allowed as the new item',
      &        'would exceed database space! Skipping request...','W')
@@ -2233,7 +2234,8 @@ C First check if mlc is transparent
         chgdb=.true.
         THCON=CLAMDA(IWH)
         call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM)
-        IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN')THEN
+        IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN'.OR.
+     &     OPT(1:4).EQ.'CFC ')THEN
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,
      &    ' G-value only defined for transparent constructions')
@@ -2377,9 +2379,6 @@ C << if needed.
 
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/G7/precz.
-#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -2396,10 +2395,17 @@ C geometry.h provides commons G0/G2/G7/precz.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -2446,7 +2452,7 @@ C      dimension SNA(MS),PAZI(MS),PELV(MS)
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character ZN*12,SN*12,SSPARENT*12
+      character zname*12,zdesc*64,ZN*12,SN*12,SSPARENT*12
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -2494,6 +2500,8 @@ C Editing menu.
    2  WRITE(MLED(1),'(A,1X,A12)')'a Construction:',MLCN
       IF(OTF(1:4).EQ.'TRAN')THEN
         MLED(2)='b General type: Transparent '
+      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        MLED(2)='b General type: Complex Fenestration'
       ELSE
         MLED(2)='b General type: Opaque      '
       ENDIF
@@ -2968,17 +2976,47 @@ C for the current item.
         moddb = .true.
       ELSEIF(ILED.EQ.2)THEN
 
-C Select Opaque or transparent.
+C Select Opaque or transparent or complex fenestration construction.
         H(1)='In order to make cross checking easier the user is'
         H(2)='asked to define the construction as either'
-        H(3)='OPAQUE or TRANSPARENT'
-        CALL EASKAB(' ','Please choose one type:',
-     &    'Opaque construction','Transparent construction',IW,3)
+        H(3)='OPAQUE or TRANSPARENT. A complex fenestration '
+        H(4)='construction, CFC, can also be chosen to model'
+        H(5)='windows with slat type operable blinds.' 
+
+        CALL EASKABC(' ','Please choose one type :',
+     &    'Opaque construction','Transparent construction',
+     &    'Complex Fenestration Construction',IW,5)
+
         IF(IW.EQ.1)THEN
           OTF='OPAQ' 
           OPT='OPAQUE'
         ELSEIF(IW.EQ.2)THEN
           OTF='TRAN' 
+        ELSEIF(IW.EQ.3)THEN
+          OTF='CFC '
+          OPT='USE GSLedit'
+        H(1)='Complex Fenestration Construction (CFC)'
+        H(2)=''
+        H(3)='A CFC allows for a more accurate treatment of'
+        H(4)='modeling windows with or without shading devices.'
+        H(5)=''
+        H(6)='A CFC surface has the following attributes:'
+        H(7)=' '
+        H(8)='-Exterior, vertical surface (IE=0)'
+        H(9)='-Each glazing/shading layer is separated by gas gap'
+        H(10)='-Currently limited to one shading layer per CFC'
+        H(11)=' '
+        H(12)='For an example of usage of CFCs see'
+        H(13)='"Appendix F: CFC User Reference" from'
+        H(14)='http://uwspace.uwaterloo.ca'
+        H(15)='/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+        H(16)=''
+        H(17)='The Glazing Shading Layer editor (GSLedit) used for'
+        H(18)='importing CFC input properties can be downloaded from'
+        H(19)='here:'
+        H(20)='TBA'
+        CALL PHELPD('CFC instructions',20,'-',0,0,IER)
+
         ENDIF
         moddb = .true.
 
@@ -3006,6 +3044,9 @@ C << geometry file before writing it out.
             else
               call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
             endif
+
+C Instead of zinfo use the info in common G7
+C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
 
    93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')
@@ -3059,7 +3100,7 @@ C out of date zone construction files.
 
 C Edit optical properties. Also check to see that the number of layers
 C and reference for materials matches.
-        IF(OTF(1:4).NE.'OPAQ')THEN
+        IF((OTF(1:4).NE.'OPAQ').AND.(OTF(1:4).NE.'CFC '))THEN
           H(1)='In order to allow for the optical properties to be'
           H(2)='used in the model description and to be acted on'
           H(3)='by control laws the relevant optical property id  '
@@ -3398,15 +3439,17 @@ C in each zone, tareamlc is the total area of thie construction (weighted
 C so that partitions are counted as half area).
       subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character mlcname*12,SSPARENT*12

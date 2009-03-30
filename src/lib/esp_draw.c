@@ -1573,54 +1573,44 @@ void drawoodash(xa,ya,xb,yb,uwidth)
  whereas line drawing is 0,0 in the lower left).
 */
 
-void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
-	float* ymx,float* xsc,float* ysc,float* sca,float* xadd,float* yadd)
+void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
+  long int *gw, *gh;
+  float *xmn, *xmx, *ymn, *ymx, *xsc, *ysc, *sca, *xadd, *yadd;
 {
-  float axgw, axgh, axxmn, axxmx, axymn, axymx, axxsc, axysc, axsca, axxadd, axyadd;
-
-/* Cast to local variables */
-   axgw=(float)*gw; axgh=(float)*gh;
-   axxmn=(float)*xmn; axxmx=(float)*xmx;
-   axymn=(float)*ymn; axymx=(float)*ymx;
-   
 /* Derive factors for horizontal axis. */
-    if (axxmn < 0.0 && axxmx >= 0.0) {
-	axxsc = axgw / (axxmx + (-1.0 * axxmn));
-	axxadd = (-1.0 * axxmn);
-    } else if (axxmn < 0.0 && axxmx <= 0.0) {
-	axxsc = axgw / ((-1.0 * axxmn) - (-1.0 * axxmx));
-	axxadd = (-1.0 * axxmn);
-    } else if (axxmn > 0.0 && axxmx > 0.0) {
-	axxsc = axgw / (axxmx - axxmn);
-	axxadd = -(axxmn);
-    } else if ((axxmn == 0.0) && axxmx > 0.0) {
-	axxsc = axgw / (axxmx - axxmn);
-	axxadd = 0.0;
+    if (*xmn < 0.0 && *xmx >= 0.0) {
+	*xsc = (float)*gw / (*xmx + fabs(*xmn));
+	*xadd = fabs(*xmn);
+    } else if (*xmn < 0.0 && *xmx <= 0.0) {
+	*xsc = (float)*gw / (fabs(*xmn) - fabs(*xmx));
+	*xadd = fabs(*xmn);
+    } else if (*xmn > 0.0 && *xmx > 0.0) {
+	*xsc = (float)*gw / (*xmx - *xmn);
+	*xadd = -(*xmn);
+    } else if ((*xmn == 0.0) && *xmx > 0.0) {
+	*xsc = (float)*gw / (*xmx - *xmn);
+	*xadd = 0.0;
     }
 /* Derive factors for vertical axis. */
-    if (axymn < 0.0 && axymx >= 0.0) {
-	axysc = axgh / (axymx + (-1.0 * axymn));
-	axyadd = (-1.0 * axymn);
-    } else if (axymn < 0.0 && axymx <= 0.0) {
-	axysc = axgh / ((-1.0 * axymn) - (-1.0 * axymx));
-	axyadd = (-1.0 * axymn);
-    } else if (axymn > 0.0 && axymx > 0.0) {
-	axysc = axgh / (axymx - axymn);
-	axyadd = -(axymn);
-    } else if ((axymn == 0.0) && axymx > 0.0) {
-	axysc = axgh / (axymx - axymn);
-	axyadd = 0.0;
+    if (*ymn < 0.0 && *ymx >= 0.0) {
+	*ysc = (float)*gh / (*ymx + fabs(*ymn));
+	*yadd = fabs(*ymn);
+    } else if (*ymn < 0.0 && *ymx <= 0.0) {
+	*ysc = (float)*gh / (fabs(*ymn) - fabs(*ymx));
+	*yadd = fabs(*ymn);
+    } else if (*ymn > 0.0 && *ymx > 0.0) {
+	*ysc = (float)*gh / (*ymx - *ymn);
+	*yadd = -(*ymn);
+    } else if ((*ymn == 0.0) && *ymx > 0.0) {
+	*ysc = (float)*gh / (*ymx - *ymn);
+	*yadd = 0.0;
     }
-    *xsc = axxsc;  /* cast from local to parameters */
-    *ysc = axysc;
-    *xadd = axxadd;
-    *yadd = axyadd;
 /*
  Choose single scale so will have correct aspect ratio for site plans etc.
 */
-    *sca = axxsc;
-    if (axysc < axxsc) {
-	*sca = axysc;
+    *sca = *xsc;
+    if (*ysc < *xsc) {
+	*sca = *ysc;
     }
 
 /* If echo send parameters to wwc file */
@@ -1630,7 +1620,7 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
 	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd);
     }
 /*    fprintf(stderr,"axiscale %ld %ld %f %f %f %f %f %f %f %f %f \n",
-	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd);  */
+	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd); */
   return;
 } /* axscale_ */
 
@@ -1646,8 +1636,9 @@ void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
    ladd & badd are offsets in user units for each axis so that
      various data ranges can be acommodated (see axiscale).
 */
-void linescale_(long int* loff,float* ladd,float* lscale,long int* boff,float* badd,
-	float* bscale)
+void linescale_(loff,ladd,lscale,boff,badd,bscale)
+ float *ladd, *lscale, *badd, *bscale;
+ long int *loff, *boff;
  {
 /* static variables defined @ beginning of wwlib.c */
    x_off = (gint) *loff;
@@ -2105,7 +2096,7 @@ void dinterval_(v1,v2,dv,ndec,mode)
 
     if (mde == 0) {
 	vv = *v2 - *v1;
-	v = (float) fabs(vv);   /* ?? fabs((double)vv) */
+	v = (float) fabs(vv);
 	x = (float) log10(v);
 	ix = (int) x;
         if (x < 0.0) ix=ix-2;
@@ -2522,12 +2513,12 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  gdk_gc_set_line_attributes(gc,width,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_MITER); /* gives same as default */
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
-   if(*xmn < 0. && fabs(resid) > 0.0001) { /* ?? fabs((double)resid) */
+   if(*xmn < 0. && fabs(resid) > 0.0001) {
        xticv = (int) *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
-   } else if(*xmn > 0. && fabs(resid) > 0.0001) { /* ?? fabs((double)resid) */
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
        xticv = (int) (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
@@ -2694,12 +2685,12 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  gdk_gc_set_line_attributes(gc,width,GDK_LINE_SOLID,GDK_CAP_NOT_LAST,GDK_JOIN_MITER); /* gives same as default */
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
-   if(*xmn < 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
+   if(*xmn < 0. && fabs(resid) > 0.0001) {
        xticv = (int) *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        gdk_draw_line(gr_image,gc,ofl,ofb,ix,iy);
-   } else if(*xmn > 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
        xticv = (int) (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;

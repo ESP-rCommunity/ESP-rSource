@@ -239,17 +239,17 @@ C Write node specific data.
 
  7      continue
         if(nnodat(isp).le.nspmdatl)then
-          write(ispmfil,'(10F10.4)')(spmdat(isp,idat),idat=1,
-     &    nnodat(isp))
+          write(ispmfil,'(6F10.4,F16.6,3F10.4)')(spmdat(isp,idat),
+     &    idat=1,nnodat(isp))
         else
-          write(ispmfil,'(10F10.4)')(spmdat(isp,idat),idat=istrt,
-     &iend)
+          write(ispmfil,'(6F10.4,F16.6,3F10.4)')(spmdat(isp,idat),
+     &    idat=istrt,iend)
           istrt=istrt+nspmdatl
           iend=iend+nspmdatl
           if(iend.gt.nnodat(isp))then
             iend=nnodat(isp)
-            write(ispmfil,'(10F10.4)')(spmdat(isp,idat),idat=istrt,
-     &nnodat(isp))
+            write(ispmfil,'(6F10.4,F16.6,3F10.4)')(spmdat(isp,idat),
+     &      idat=istrt,nnodat(isp))
           else
             goto 7
           endif

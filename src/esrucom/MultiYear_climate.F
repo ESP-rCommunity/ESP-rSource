@@ -56,7 +56,7 @@ C------------------ Parse_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Parse_MY_clm_db parses the multi-year climate index file. It:
+C This procedure parses the multi-year climate index file. It:
 C
 C  - Checks if the multiyear climate file has been properly
 C    defined.
@@ -429,7 +429,7 @@ C------------------ Check_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Check_MY_clm_db checks that the multi-year climate database
+C This procedure checks that the multi-year climate database
 C data stored in memory is correct.
 C
 C  - Checks if the listed year records are contigious and
@@ -634,7 +634,7 @@ C----------------------------------------------------------------------
       
 C------------------ MY_clm_db_menu ------------------------------------
 C
-C MY_clm_db_menu is used to control specification of a multi-year
+C This procedure is used to control specification of a multi-year
 C climate database
 C
 C Inputs - none; outputs - none 
@@ -1307,7 +1307,7 @@ C------------------ Spec_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Spec_MY_clm_db is used to specify an existing, or new
+C This procedure is used to specify an existing, or new
 C multi-year climate file. 
 C
 C Inputs 
@@ -1500,7 +1500,7 @@ C------------------ Sort_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Sort_MY_clm_db checks to see if the climate records are in order, and
+C This routine checks to see if the climate records are in order, and
 C sorts them if necessary
 C
 C Inputs:
@@ -1630,7 +1630,7 @@ C------------------ Fill_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Fill_MY_clm_db checks for continuity in the multi-year climate
+C This procedure checks for continuity in the multi-year climate
 C database, and fills in missing years, if necessary
 C
 C Inputs:
@@ -1760,7 +1760,7 @@ C------------------ Prune_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Prune_MY_clm_db checks for duplicate records, and optionally deletes
+C This procedure checks for duplicate records, and optionally deletes
 C them
 C
 C Inputs:
@@ -1872,7 +1872,7 @@ C------------------ Save_MY_clm_db ------------------------------------
 C
 C ABSTRACT:
 C
-C Save_MY_clm_db controls saving a multi-climate database to
+C This procedure controls saving a multi-climate database to
 C disk
 C
 C Inputs:
@@ -2021,7 +2021,7 @@ C------------------ Write_MY_clm_db -----------------------------------
 C
 C ABSTRACT:
 C
-C Write_MY_clm_db writes out a climate file database to disk.
+C This procedure writes out a climate file database to disk.
 C
 C Inputs:
 C

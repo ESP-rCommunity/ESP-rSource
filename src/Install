@@ -1073,11 +1073,7 @@ esac
 case $xml_support in
   yes) 
        # Link xml libraries, along with stdc++.
-       case $compiler in
-         sunF90)  ULIBS="$ULIBS -lXML -lCstd";;
-         GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
-         intel)   ULIBS="$ULIBS -lXML -lstdc++";;
-       esac;
+       ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in

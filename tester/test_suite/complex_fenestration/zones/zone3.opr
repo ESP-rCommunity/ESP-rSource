@@ -1,0 +1,15 @@
+*Operations 2.0
+*date Thu Feb 26 16:35:18 2009  # latest file modification 
+# operations of zone2 defined in: 
+# ../zones/zone3.opr
+no operations notes (yet)
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     0   # number of flow periods in day type: weekdays    
+     0   # number of flow periods in day type: saturday    
+     0   # number of flow periods in day type: sunday      
+     0   # number of casual gains in day type: weekdays    
+     0   # number of casual gains in day type: saturday    
+     0   # number of casual gains in day type: sunday      
+# Labels for gain types 
+ Occupt Lights Equipt

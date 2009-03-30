@@ -36,11 +36,12 @@ C Writes the model geometry to the zone transitional shading file.
       subroutine tfile1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
-#include "geometry.h"
-
       common/outin/iuout,iuin
       common/filep/ifil
+      character etype*4
+      real gversion
+      integer igupgrade
+      common/g0/etype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
@@ -54,7 +55,7 @@ C geometry.h provides commons G0 and G2.
       write(iunit,rec=irec,iostat=istat,err=1000)mon,(isc(i),i=1,nsur),
      &                                           iyd
       irec=irec+1
-      write(iunit,rec=irec,iostat=istat,err=1000)ctype(icomp),nsur,ntv,
+      write(iunit,rec=irec,iostat=istat,err=1000)etype(icomp),nsur,ntv,
      &                                           (nver(i),i=1,nsur)
       irec=irec+1
 
@@ -622,23 +623,21 @@ C shading file as previously written by tfile1 and tfile12.
       subroutine retrv1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0 and G2.
-#include "geometry.h"
-
       common/outin/iuout,iuin
       common/filep/ifil
+      common/g0/etype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
 
-      character outs*124,blkname*8,blkmat*12
+      character outs*124,etype*4,blkname*8,blkmat*12
 
       iunit=ifil
       
       irec=3
-      read(iunit,rec=irec,iostat=istat,err=1000)ctype(icomp),nsur,ntv,
+      read(iunit,rec=irec,iostat=istat,err=1000)etype(icomp),nsur,ntv,
      &                                              (nver(i),i=1,nsur)
       irec=1
       read(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)

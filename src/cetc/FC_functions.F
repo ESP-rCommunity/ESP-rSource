@@ -92,8 +92,10 @@ C ------------------------------------------------------------------------------
       SUBROUTINE H3K_HeatGainsFromModels(iZoneNumber, H3KGains)
       IMPLICIT NONE
 #include "building.h"
-#include "geometry.h"
 #include "SOFC.h"
+
+      COMMON/PREC2/VOL(MCOM)
+      REAL VOL
 
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON

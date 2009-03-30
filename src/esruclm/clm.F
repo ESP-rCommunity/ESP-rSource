@@ -1324,7 +1324,7 @@ C ***** dummy routines for c code active descriptions buttons.
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(IER)
+      SUBROUTINE ADJVIEW(ITRC,IER)
       ier=0
       return
       end

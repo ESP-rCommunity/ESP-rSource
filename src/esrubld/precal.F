@@ -30,26 +30,30 @@ C      MZMISC
 
 c ******************** MZAREA ********************
 
-c MZAREA computes the area of each zone surface as well
-c as hydraulic diameter and characteristic height.
+c MZAREA computes the area of each component surface.   The
+c area of each window is computed  for each multi-
+c layered construction in turn and the total subtracted from
+c the gross surface area of the corresponding face.
+c The total internal opaque surface, total default window 
+c are also computed.
 
 c Common block variables are:
 
 c SNA     - surface area of each multilayered construction
+c ZOA     - total surface area bounding zone
 c APRAT   - surface hydraulic diameter (4*Area/Perimeter)
 c HEIGHT  - records for each surface the difference between the
 c           max. and min. Z-value.   For vertical surfaces this is
 c           used as the characteristic dimension (rather than APRAT)
 c           in the computation of convection coefficients.
-c zonetotsurfacearea - total surface area in the zone (held in geometry.h)
+
       SUBROUTINE MZAREA(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)
 
 c The information contained in the following common block represents
@@ -58,51 +62,51 @@ c for use in subroutines MZVOLM, MZPAZI and MZCFGB.
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
 
 c Set area summations to zero.
-      zonetotsurfacearea(ICOMP)=0.
+      ZOA(ICOMP)=0.
 
 c And consider each surface of the current zone in turn.
       DO 10 I=1,NSUR
-        XS=0.
-        YS=0.
-        ZS=0.
-        ZMAX=-1.E+10
-        ZMIN=1.E+10
-        NV=NVER(I)
+      XS=0.
+      YS=0.
+      ZS=0.
+      ZMAX=-1.E+10
+      ZMIN=1.E+10
+      NV=NVER(I)
 
 c Compute gross surface area.
-        ADDL=0.
-        DO 20 J=1,NV
-          K=J+1
-          IF(J.EQ.NV)K=1
-          IP1=JVN(I,J)
-          IP2=JVN(I,K)
-          ZMAX=AMAX1(ZMAX,Z(IP1))
-          ZMIN=AMIN1(ZMIN,Z(IP1))
-          XS=XS+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
-          YS=YS+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
-          ZS=ZS+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
-          ADDL=ADDL+SQRT((X(IP2)-X(IP1))**2+(Y(IP2)-Y(IP1))**2+
-     &         (Z(IP2)-Z(IP1))**2)
-   20   CONTINUE
-        XSUM(I)=XS
-        YSUM(I)=YS
-        ZSUM(I)=ZS
-        ZAREA=.5*SQRT(XS*XS+YS*YS+ZS*ZS)
-        APRAT(ICOMP,I)=4.*ZAREA/ADDL
-        HEIGHT(ICOMP,I)=ZMAX-ZMIN
+      ADDL=0.
+      DO 20 J=1,NV
+        K=J+1
+        IF(J.EQ.NV)K=1
+        IP1=JVN(I,J)
+        IP2=JVN(I,K)
+        ZMAX=AMAX1(ZMAX,Z(IP1))
+        ZMIN=AMIN1(ZMIN,Z(IP1))
+        XS=XS+Y(IP1)*Z(IP2)-Z(IP1)*Y(IP2)
+        YS=YS+Z(IP1)*X(IP2)-X(IP1)*Z(IP2)
+        ZS=ZS+X(IP1)*Y(IP2)-Y(IP1)*X(IP2)
+        ADDL=ADDL+SQRT((X(IP2)-X(IP1))**2+(Y(IP2)-Y(IP1))**2+
+     &(Z(IP2)-Z(IP1))**2)
+   20 CONTINUE
+      XSUM(I)=XS
+      YSUM(I)=YS
+      ZSUM(I)=ZS
+      ZAREA=.5*SQRT(XS*XS+YS*YS+ZS*ZS)
+      APRAT(ICOMP,I)=4.*ZAREA/ADDL
+      HEIGHT(ICOMP,I)=ZMAX-ZMIN
 
 c Surface area is given by:
-        SNA(ICOMP,I)=ZAREA
+      SNA(ICOMP,I)=ZAREA
 
 c Check for -ve surface area: windows wrongly specified.
-        IER=0
-        IF(SNA(ICOMP,I).LT.0.00001)then
-          call edisp(iuout,' Negative surface area detected.')
-          IER=1
-        endif
+      IER=0
+      IF(SNA(ICOMP,I).LT.0.00001)then
+        call edisp(iuout,' Negative surface area detected. ')
+        IER=1
+      endif
 
 c And surface area summations by:
-        zonetotsurfacearea(ICOMP)=zonetotsurfacearea(ICOMP)+SNA(ICOMP,I)
+      ZOA(ICOMP)=ZOA(ICOMP)+SNA(ICOMP,I)
    10 CONTINUE
       RETURN
       END
@@ -126,11 +130,11 @@ c VOL    - zone bounded volume
 
       SUBROUTINE MZVOLM(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
+      COMMON/PREC2/VOL(MCOM)
 
       V=0.
 
@@ -228,7 +232,6 @@ c unavailable.
 
       SUBROUTINE MZVFCL(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -237,7 +240,7 @@ c unavailable.
 
       COMMON/V2/CFB(MCOM,MST,MST)
 
-      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
 
       character outs*124
 
@@ -248,8 +251,7 @@ c unavailable.
       JJ=J
       CFB(ICOMP,II,JJ)=0.0
       IF(II.EQ.JJ)goto 20
-      CFB(ICOMP,II,JJ)=
-     &  (SNA(ICOMP,JJ)/(zonetotsurfacearea(ICOMP)-SNA(ICOMP,II)))
+      CFB(ICOMP,II,JJ)=(SNA(ICOMP,JJ)/(ZOA(ICOMP)-SNA(ICOMP,II)))
    20 CONTINUE
    10 CONTINUE
 
@@ -295,7 +297,6 @@ C may have a different value defined for the above variables
 
       SUBROUTINE MZVENC(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty
@@ -303,6 +304,7 @@ C may have a different value defined for the above variables
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
       INTEGER ICCN
@@ -395,10 +397,9 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
 
       SUBROUTINE MZCASG(ICOMP)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz.
-#include "geometry.h"
 #include "power.h"
+      
+      integer lnblnk  ! function definition
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -407,6 +408,12 @@ C geometry.h provides commons G0/G2/G4/prec2/prec17/precz.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
 
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -422,8 +429,11 @@ C Commons for electrical data
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
 
-      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/CASGFA/FLOORA(MCOM)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Derived casual gain and electrical data.
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
@@ -449,7 +459,7 @@ C - Alex Feb. 20 2004
       INTEGER iNumb_Gain_coupling,index
       REAL Coupling_Gain_info
 
-      character outs*124
+      character outs*124,zname*12,zdesc*64
       logical close
 
       REAL PQ,PR,PA
@@ -474,8 +484,8 @@ C Establish if floor area needs be specified.
 C Floor area is required, if trace level is verbose echo the base area.
           FLOORA(ICOMP)=ZBASEA(ICOMP)
           write(outs,'(a,a,a,F6.1,a)') 'The base area of ',
-     &      zname(icomp)(1:lnzname(icomp)),
-     &      ' is',FLOORA(ICOMP),'m^2.'
+     &                     zname(icomp)(1:lnblnk(zname(icomp))),
+     &                     ' is',FLOORA(ICOMP),'m^2.'
           if (itrc.gt.1) call edisp(iuout,outs)
         endif
       else
@@ -792,7 +802,6 @@ c           surface respectively
 
       SUBROUTINE MZMISC(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -804,13 +813,14 @@ c           surface respectively
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC10/NWINS(MCOM,MS)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
-      character outs*124
+      character zname*12,zdesc*64,outs*124
 
       SLAT=XLAT
       SLON=XLON

@@ -64,13 +64,15 @@ C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file. 
       SUBROUTINE CLRPRB
 #include "building.h"
-
-C geometry.h provides commons G0/G2/G4/c20/precz.
-#include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
+      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -116,9 +118,11 @@ C HOT3000: AIM-2.
       common/C4/XLAT,XLON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -259,6 +263,7 @@ C IPV text strings
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
+      CHARACTER zname*12,zdesc*64
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character hvacfile*72,LAIM2*72,LBSIMP*72
@@ -460,9 +465,7 @@ C Clear SHOCC zone information as well.
         CTYPE(IX)=' '
         gversion(ix)=1.0
         zdesc(IX)=' '
-        lnzdesc(IX)=0
         zname(IX)=' '
-        lnzname(IX)=0
         LPROJ(IX)='UNKNOWN'
         LGEOM(IX)='UNKNOWN'
         LTHRM(IX)='UNKNOWN'
@@ -1256,11 +1259,11 @@ C ERMRT Read the MRT sensor definition file. IC is the zone index
 C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
-#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/TOTAL/nsurmf, NGRID, NTRPOL
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
@@ -1529,16 +1532,16 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C act character*1 if 'a' then area weighted, if 'r' ray traced.
       SUBROUTINE EMKMRT(LMRT,LGEOM,NZS,IUF,ICOMP,act,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
-      character LMRT*72,LGEOM*72,CUBN*6,act*1
+      character zname*12,zdesc*64,LMRT*72,LGEOM*72,CUBN*6,act*1
       character louts*248
 
       IER=0
@@ -1553,7 +1556,7 @@ C (ask user for confirmation to over-write) or create a new file.
 
 C Write out the file data.
       WRITE(IUF,30,IOSTAT=IOS,ERR=14)
-     &  zname(ICOMP)(1:lnzname(ICOMP)),LMRT(1:lnblnk(LMRT))
+     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),LMRT(1:lnblnk(LMRT))
   30  FORMAT('# zone viewfactors and MRT sensor definition of ',a,/,
      &'# defined in ',a)
 
@@ -2269,13 +2272,18 @@ C ESZONE makes a copy of the current contents of common blocks G1 G3
 C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ESCZONE(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
-      real gversion1
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion,gversion1
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/SG0/CTYPE1,gversion1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
+      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/SG4/NDP1,IDPN1(3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2330,13 +2338,18 @@ C ERZONE recovers the saved contents of common blocks G1 G2 G3
 C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ERCZONE(ICOMP)
 #include "building.h"
-#include "geometry.h"
 
-      real gversion1
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion,gversion1
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/SG0/CTYPE1,gversion1
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
+      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/SG4/NDP1,IDPN1(3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2395,10 +2408,11 @@ C If MOD = t or T then the focus is thermophysical.
 C It is assumed that the user will make one selection only.
       SUBROUTINE EASKGEOF(PROMPT,CFGOK,IZONE,MOD,IER)
 #include "building.h"
-#include "geometry.h"
 #include "epara.h"
 
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2411,7 +2425,7 @@ C It is assumed that the user will make one selection only.
 
       DIMENSION VERT(35)
       character*(*) PROMPT
-      CHARACTER VERT*27,KEY*1,DFILE*72,MOD*1,H*72
+      CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,DFILE*72,MOD*1,H*72
       CHARACTER*72 LFILG
 
 C If no configuration file then ask for zone number and name.
@@ -2680,12 +2694,13 @@ C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
 C `h` heat transfer (comvective) methods, `-` zone names only.
       SUBROUTINE ASKZONE(IZONE,IDZONE,prompt,title,mod,errmsg,IER)
 #include "building.h"
-#include "geometry.h"
 #include "epara.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2705,7 +2720,7 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*27,KEY*1,prompt2*36
+      CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -2986,7 +3001,6 @@ C `h` heat transfer (comvective) methods, 'b' obstruction blocks,
 C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
-#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -2994,6 +3008,8 @@ C `-` zone names only.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3011,7 +3027,7 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER*(*) prompt,title
 
       DIMENSION VERT(35),IVALS(MCOM)
-      CHARACTER VERT*27,KEY*1,prompt2*36
+      CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -3310,20 +3326,25 @@ C If MOD = '-' name list only, MOD = 'M' attribute Many, MOD = 'A'
 C show attributes in list.
       SUBROUTINE EASKSUR(IZONE,IS,MOD,PROMPT1,PROMPT2,IER)
 #include "building.h"
-#include "geometry.h"
 #include "epara.h"
+      
+      integer lnblnk  ! function definition
 
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
+      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       LOGICAL SELECT
@@ -3334,7 +3355,8 @@ C show attributes in list.
         IER=1
         RETURN
       ENDIF
-      write(title,'(2a)')'  Surfaces in ',zname(IZONE)(1:lnzname(IZONE))
+      write(title,'(a,a)') '  Surfaces in ',
+     &  zname(IZONE)(1:lnblnk(zname(IZONE)))
 
 C Initialise surface menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -3703,7 +3725,6 @@ C FLNAME provides a name for a defined file type.
 C *********************************************************************
       SUBROUTINE FLNAME(ICOMP,FILENM,FLTYP,EXT,NHLP,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -3711,15 +3732,17 @@ C *********************************************************************
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       LOGICAL XST
       CHARACTER FILENM*72,FLTYP*25,EXT*4
       CHARACTER*72 MSG1,TEXT,DFILE
+      CHARACTER zname*12,zdesc*64
 
       NUMCH=lnblnk(FILENM)
       IF(NUMCH.LE.0.OR.NUMCH.GE.72)THEN
         IF(ICOMP.GT.0.AND.ICOMP.LE.NCOMP)THEN
-          WRITE(FILENM,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),EXT
+          WRITE(FILENM,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),EXT
         ELSEIF(ICOMP.EQ.-1)THEN
           WRITE(FILENM,'(A6,A4)')'ground',EXT
         ELSE
@@ -3729,7 +3752,7 @@ C *********************************************************************
       CALL FINDFIL(FILENM,XST)
       IF(XST)THEN
         IF(ICOMP.GT.0.AND.ICOMP.LE.NCOMP)THEN
-          WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),EXT
+          WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),EXT
         ELSEIF(ICOMP.EQ.-1)THEN
           WRITE(DFILE,'(A6,A4)')'ground',EXT
         ELSE
@@ -3755,14 +3778,15 @@ C << check if calling code knows that current geometry file read is >>
 C << not required for this. >>
       SUBROUTINE ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER ZSDES*28,ZSDESC*20,SST1*12,ZST1*12,ZSDESS*16
+      CHARACTER ZSDES*28,ZSDESC*20,SST1*12,ZST1*12,zdesc*64,ZSDESS*16
+      CHARACTER zname*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
@@ -3824,16 +3848,18 @@ C Similar to code ZLIST in esrures/utils.F.
 
       SUBROUTINE ZNARLIST(inlist,list,insize,zdescr,length,ierr)
 #include "building.h"
-#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       dimension list(insize)
-      CHARACTER zdescr*248,outs*248,outsd*248
+      CHARACTER zname*12,zdesc*64,zdescr*248,outs*248,outsd*248
       character t124*124
 
       t124=' '
       length=0
       do 42 i=1,inlist
-        lna=lnzname(list(i))
+        lna=lnblnk(zname(list(i)))
         length=length+lna+1
   42  continue
       if(length.lt.236)then

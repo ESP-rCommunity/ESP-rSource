@@ -93,7 +93,7 @@ c multilayered construction.
 
       SUBROUTINE MZCOE1(ICOMP)
 #include "building.h"
-
+#include "CFC_common.h"
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
@@ -133,6 +133,9 @@ C For discretized constructions.
 C Set the air gap flage to off.
          IFLG=0
 
+C CFC flag
+         icfctp=icfcfl(icomp,i)
+
 c 'Outside' convection coefficient is omitted since its value
 c is time-dependent.
          IN=1 
@@ -161,7 +164,17 @@ C IL: current layer, IP: previous layer.
             FNNDP=real(NNDL(ICOMP,I,IP))
             DELXL=THRMLI(ICOMP,I,IL,4)/FNNDL
             DELXP=THRMLI(ICOMP,I,IP,4)/FNNDP
-            
+
+C Set RGAPS=1 for CFC types.Gap resistances for CFCs are
+C time dependent. Time indpendent coefficients are modified
+C with time dependent gas resistances at each time-step
+C in subroutine CFC_time_dependent_Rgap during simulation.
+          if(icfctp.gt.0)then
+             do 500 igap=1,NGP
+                  RGAPS(icomp,i,igap)=1.
+  500        continue
+          endif
+
 C The current layer is an air gap.
             IF(M.LE.NGP.AND.NPGAP(ICOMP,I,M).EQ.IL)THEN
 
@@ -238,6 +251,7 @@ C Continue with other nodes (homogeneous) in the layer.
                  QC(ICOMP,I,IN)=real(DT/(DELXL*CAP))
    50         CONTINUE
             ENDIF
+
    30    CONTINUE
 
 C Internal surface node
@@ -249,6 +263,7 @@ C Internal surface node
      &    ((DELXL*DELXL)*CAP))
          C(ICOMP,I,IN,2)=real(DT/((DELXL/2.0)*CAP))
          QC(ICOMP,I,IN)=real(DT/((DELXL/2.0)*CAP))
+
    10 CONTINUE
 
 C Initialise coefficient modifier for use in MZCOE2
@@ -376,7 +391,20 @@ C Difference equation coefficient set-up is then completed
 C by MZSETU.
 
       SUBROUTINE MZCOE3(ICOMP)
+#include "building.h"
+#include "CFC_common.h"
       COMMON/GR3D150/INDX3,DTIME
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &NPGAP(MCOM,MS,MGP)
+
+C Control CFC properties here before solar/thermal processing.
+      nc=nconst(icomp)
+      do 10 i=1,nc
+            icfctp=icfcfl(icomp,i)
+            if(icfctp.gt.0)then
+                  call CFC_shading_control(icomp,icfctp)
+            end if
+ 10   continue
 
       CALL MZSOLR(ICOMP)
       CALL MZELWE(ICOMP)
@@ -384,11 +412,21 @@ C by MZSETU.
       CALL MZWCON(ICOMP)
       CALL MZVENT(ICOMP)
       CALL SPMMOD(ICOMP)
+      call CFC_thermal_processing(icomp)
       IF(INDX3.EQ.3)THEN
         CALL MZ3CFG(ICOMP)
         CALL MZ3SU1(ICOMP)
       ELSE
         CALL MZCFGG(ICOMP)
+
+C If CFCs contain indoor/outdoor shading layers than 
+C longwave exchange between interior surfaces/extrnal environment
+C is already carried out in CFC_thermal_processing. To prevent
+C double accounting, set those internal radiant heat transfer
+C coefficients (HR) and external source fluxes (QELW) that 
+C pertain to the CFC surface to zero.
+        call set_HR_to_zero(icomp)
+        call set_QELW_to_zero(icomp)
         CALL MZSETU(ICOMP)
       ENDIF
       RETURN
@@ -403,14 +441,15 @@ c solved simultaneously at the current simulation time-step.
 
       SUBROUTINE MZSETU(ICOMP)
 #include "building.h"
-#include "geometry.h"
 #include "cfd.h"
 #include "control.h"
+#include "CFC_common.h"
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
 
-      COMMON/PREC1/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -504,12 +543,10 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       character outs*144,LCFD*72
       logical atrace,MSTROK,MSTRZN
       logical WATERZ
-
+      
 C.....Named constnats for timerows
       integer iPresent, iFuture
-      parameter (iPresent=1, iFuture=2)
-
-      real zoar  ! local for zonetotsurfacearea(MCOM)
+      parameter (iPresent=1, iFuture=2) 
 
 C Check for trace request.
       atrace = .false.
@@ -628,15 +665,17 @@ C control function BCL09).
      &            TNC(I,IN+1)+QCP(I,IN)*RGAM*(Q+QSOLE(I,1)+
      &            QELWCP+QTMCA(I,IN,1)+ARP(ICOMP,I)+QHPNOP
      &            +GENFLXP(ICOMP,I,IN) + fPltHeatLoss_P
-     &            + fAdjPltHeatLoss_P )
+     &            + fAdjPltHeatLoss_P  + qcfc_lw(icomp,i,in,1)+
+     &            qcfc_cv(icomp,i,in,1))
      &            +QCF(I,IN)*GAM*(QSOLE(I,2)
      &            +QELWCF+QTMCA(I,IN,2)+ARF(ICOMP,I)+QHPNOF
      &            +GENFLXF(ICOMP,I,IN) + fPltHeatLoss_F
-     &            + fAdjPltHeatLoss_F )
+     &            + fAdjPltHeatLoss_F  + qcfc_lw(icomp,i,in,2)+
+     &            qcfc_cv(icomp,i,in,2))
 
-             
 C Continue with remaining nodes within construction
-         DO 20 IN=2,NNDC(ICOMP,I)-1
+
+         DO 22 IN=2,NNDC(ICOMP,I)-1
 
 C Node is within multilayered construction: set present temperature
 C of the two adjacent nodes in thermal contact with currently
@@ -702,10 +741,13 @@ C Set present coefficient.
      &               RGAM-VCP(I,IN,2)*RGAM)*TNC(I,IN)+
      &               VCP(I,IN,2)*RGAM*TT2+QCP(I,IN)*RGAM*
      &               (Q+QTMCA(I,IN,1)+GENFLXP(ICOMP,I,IN)
-     &                 + fPltHeatLoss_P + fAdjPltHeatLoss_P )
+     &                 + fPltHeatLoss_P + fAdjPltHeatLoss_P
+     &                 + qcfc_lw(icomp,i,in,1)+qcfc_cv(icomp,i,in,1))
      &               +QCF(I,IN)*GAM*(QTMCA(I,IN,2)+GENFLXF(ICOMP,I,IN)
-     &                 + fPltHeatLoss_F + fAdjPltHeatLoss_F )
-   20    CONTINUE
+     &                 + fPltHeatLoss_F + fAdjPltHeatLoss_F
+     &                 + qcfc_lw(icomp,i,in,2)+qcfc_cv(icomp,i,in,2))
+
+   22    CONTINUE
 
 C Node is situated at an inside surface: only partially
 C set-up the 'W' coefficient set.
@@ -778,10 +820,10 @@ C  Also append gains associated from plant containinment heat losses
 C  ( use function fSurface_radiant_gain to obtain radiant gains at
 C    surface assocaited with plant component containment heat losses
 C   (in watts!) )
-      zoar=zonetotsurfacearea(icomp)  ! assign local
-      QCASRP=qcasr(1)*zoar*ei(icomp,i)/emarea(icomp)
+      
+      QCASRP=qcasr(1)*zoa(icomp)*ei(icomp,i)/emarea(icomp)
      &          + fSurface_radiant_gain(iComp,i,iPresent) / sna(iComp,i)
-      QCASRF=qcasr(2)*zoar*ei(icomp,i)/emarea(icomp)
+      QCASRF=qcasr(2)*zoa(icomp)*ei(icomp,i)/emarea(icomp)
      &          + fSurface_radiant_gain(iComp,i,iFuture) / sna(iComp,i)
 
 C For radiant plant find __ in W/m2 .
@@ -833,10 +875,12 @@ C Set-up present coefficient .
      &QCP(I,NN)*RGAM*ZHRP(I))*TNS(I)+VCP(I,NN,2)*RGAM*
      &HCIP(ICOMP,I)*TNair+QCP(I,NN)*RGAM*(Q+SUM+QSOLI(I,1)+
      &QTMCA(I,NN,1)+QCASRP+PADDR+GENFLXP(ICOMP,I,NN)
-     &  + fPltHeatLoss_P + fAdjPltHeatLoss_F)+
+     &  + fPltHeatLoss_P + fAdjPltHeatLoss_F
+     &  + qcfc_lw(icomp,i,in,1)+qcfc_cv(icomp,i,in,1))+
      &QCF(I,NN)*GAM*(QSOLI(I,2)+QTMCA(I,NN,2)+QCASRF
      &+GENFLXF(ICOMP,I,NN)
-     &  + fPltHeatLoss_F +fAdjPltHeatLoss_F)
+     &  + fPltHeatLoss_F +fAdjPltHeatLoss_F
+     &  + qcfc_lw(icomp,i,in,2)+qcfc_cv(icomp,i,in,2))
 
 C if cfd model is considered do not take into account convection terms
 C and add CFD present values.
@@ -848,10 +892,14 @@ C and add CFD present values.
      &                   QCP(I,NN)*RGAM*(Q+SUM+QSOLI(I,1)+
      &                   QTMCA(I,NN,1)+QCASRP+PADDR+QCFDP(ICOMP,I)+
      &                   GENFLXP(ICOMP,I,NN) 
-     &                     + fPltHeatLoss_P +fAdjPltHeatLoss_P)
+     &                     + fPltHeatLoss_P +fAdjPltHeatLoss_P
+     &                     + qcfc_lw(icomp,i,in,1)
+     &                     + qcfc_cv(icomp,i,in,1))
      &                   +QCF(I,NN)*GAM*(QSOLI(I,2)
      &                   +QTMCA(I,NN,2)+QCASRF+GENFLXF(ICOMP,I,NN)
-     &                     + fPltHeatLoss_F +fAdjPltHeatLoss_F)
+     &                     + fPltHeatLoss_F +fAdjPltHeatLoss_F
+     &                     + qcfc_lw(icomp,i,in,2)
+     &                     + qcfc_cv(icomp,i,in,2))
 C Trace...
       if(atrace)then
         write(outs,*)'Resulting E(I,N3) I N3  coef: ',E(I,N3),I,N3
@@ -924,7 +972,8 @@ C Calculate thermal bridge term.
 C Set-up present coefficient.
       E(N1,N3)=SUM2*RGAM+(1.-SUM3*RGAM)*TNair+
      &ACAP*RGAM*(QNair+QCASC(1)+QWCP+
-     &QVNP+PADDC)+(XX1+XX3+QCASC(2))*ACAP*GAM
+     &QVNP+PADDC+q_airndConv_to_cfc(icomp,1))
+     &+(XX1+XX3+QCASC(2)+q_airndConv_to_cfc(icomp,2))*ACAP*GAM
      &+qtbridge
 
       IGANg=0

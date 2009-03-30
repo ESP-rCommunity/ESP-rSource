@@ -285,7 +285,6 @@ C      end
  100  return
       end
 
-C Dummy subroutine with same parameters as function in esru_x.c
       subroutine updhelp(dh,ni,iw)
       dimension dh(60)
       character dh*72

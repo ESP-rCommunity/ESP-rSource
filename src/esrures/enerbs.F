@@ -32,7 +32,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       SUBROUTINE MOSCAS(IZONE,ISFN,IANZSE)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -46,8 +45,13 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
-      COMMON/RECV5/SNA(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -68,7 +72,7 @@ C =2 with more than 3 day types
       logical SNAPSH
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER TSTR*10,CSTR*25
+      CHARACTER TSTR*10,CSTR*25,zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SN*12,ZN*12
@@ -118,6 +122,8 @@ C and then if the surface is transparent or opaque.
       IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
         TSTR='opaque MLC'
+      ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC ')THEN
+        TSTR='CFC const.'
       ELSE
         TSTR='trnsp. MLC'
       ENDIF
@@ -287,9 +293,9 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
       SUBROUTINE MOSCS2(IZONE,ISFN,IANZSE,IE,IZC)
 
 #include "building.h"
-#include "geometry.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       common/loadlabel/lodlabel(mcom,7)
 
@@ -297,6 +303,7 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
 
       CHARACTER*18 LABELS(16)
       character outs*124,lodlabel*6
+      character zname*12,zdesc*64
 
 C Initial labels, 8-13 will be overwritten if user labels are available.
       LABELS(1)=' Conductive flux  '
@@ -555,11 +562,11 @@ C until the glitches have been sorted.
 
       SUBROUTINE MOSRGT(IZONE,ISFN,IDAY,IE)
 #include "building.h"
-#include "geometry.h"
 #include "control.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/RECV5/SNA(MCOM,MS)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 C      common/recver/izver,ipver,iever
 

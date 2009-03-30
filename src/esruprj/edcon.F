@@ -38,10 +38,8 @@ C information to be saved into a new file. ITRU unit number for user
 C output, IER=0 OK. 
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/c20/precz.
-#include "geometry.h"
 #include "epara.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -49,7 +47,12 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -57,11 +60,13 @@ C geometry.h provides commons G0/G2/c20/precz.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -75,6 +80,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND,browse,savereturn
 
@@ -82,7 +88,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
       CHARACTER*72 DFILE
-      CHARACTER SFILE*72,H*72,LTMP*72
+      CHARACTER zname*12,zdesc*64,SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82
@@ -90,6 +96,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       character docpth*24,tmppth*24,dbspth*24,TOPTIC*12,OPTIC*12
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer lzn  ! length of zone name string
+
+      logical CFCFOUND !used to determine whether CFCs exist
+      character*72 CFCFILE
+
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -105,14 +116,19 @@ C Clear number of TMC's and layers in each before loading common data.
 
 C DFILE is the default file name for any TMC file to be created,
 C UFILE is default for utility file. CFILE is default for constr file.
+C CFCFILE is default for CFC file
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
-        WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.tmc'
+        WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+        WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
+     &    '.cfc'
       else
         WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.tmc'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+        WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
       endif
       IUF=IFIL+2
 
@@ -179,7 +195,7 @@ C On entry display the current zone. Reset all surface lines to std.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(IER)
+        CALL ADJVIEW(ITRC,IER)
       endif
 
 C Read construction file into common.
@@ -271,7 +287,8 @@ C            SOTF(IS)='OPAQUE'   ! remove this line later when geo write uses G6
             SSOTF(icn1)='OPAQUE'
           endif
         endif
-        IF(SSOTF(icn1)(1:4).NE.'OPAQ')TFOUND=.TRUE.
+        IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   60  CONTINUE
       IF(.NOT.TFOUND)THEN
@@ -327,6 +344,69 @@ C If TMC file exists read it, otherwise create one.
           endif
         ENDIF
       ENDIF 
+
+C---------create cfc file
+C Now, check to see if there are any CFC surfaces and assemble ICFCFL index.
+      CFCFOUND=.FALSE.
+      DO 611 IS=1,NZSUR(icomp)
+        icn1=izstocn(icomp,is)
+        if(SSOTF(icn1)(1:4).EQ.'CFC ')then
+            CFCFOUND=.TRUE.
+            icfcfl(icomp,is)=1 !assign 1 by default
+        else
+            icfcfl(icomp,is)=0
+        end if
+ 611  CONTINUE
+
+C If CFC surfaces, proceed to create a *.cfc file
+C At this stage only the CFC index 'icfcfl' is written. The rest
+C of the *.cfc file is assembled in subroutine 'makeCFCfile'.
+      call FINDFIL(lcfcin(ICOMP),XST)
+      
+      IF(CFCFOUND)THEN
+       if(icfc(icomp).ne.1.or.(.NOT.XST))then
+        icfc(icomp)=1 
+        H(1)='Specify name of *.cfc file which will store the CFC'
+        H(2)='input data for this zone.'
+        lcfcin(icomp)=CFCFILE
+        ltmp=lcfcin(icomp)
+        CALL EASKS(ltmp,'CFC file name?',
+     &    ' ',72,CFCFILE,'CFC file name',IER,2)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          lcfcin(icomp)=ltmp
+        endif
+        H(1)='Complex Fenestration Construction (CFC)'
+        H(2)=''
+        H(3)='A CFC allows for a more accurate treatment of'
+        H(4)='modeling windows with or without shading devices.'
+        H(5)=''
+        H(6)='A CFC surface has the following attributes:'
+        H(7)=' '
+        H(8)='-Exterior, vertical surface (IE=0)'
+        H(9)='-Each glazing/shading layer is separated by gas gap'
+        H(10)='-Currently limited to one shading layer per CFC'
+        H(11)=' '
+        H(12)='For an example of usage of CFCs see'
+        H(13)='"Appendix F: CFC User Reference" from'
+        H(14)='http://uwspace.uwaterloo.ca'
+        H(15)='/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+        H(16)=''
+        H(17)='The Glazing Shading Layer editor (GSLedit) used for'
+        H(18)='importing CFC input properties can be downloaded from'
+        H(19)='the ESRU website, downloads section.'
+        CALL PHELPD('CFC instructions',19,'-',0,0,IER)
+
+        CALL EMKCFG('-',IER)
+
+        CALL makeCFCfile(ICOMP,IER)
+        IF(IER.EQ.1)THEN
+            icfc(icomp)=0
+            CALL EMKCFG('-',IER)
+            RETURN
+        ENDIF
+       endif
+      ENDIF 
+C -------------------
 
 C If in quiet mode, save data and then return without user intervention.
       if(QUIET)then
@@ -392,7 +472,7 @@ C has resized the display, redraw.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then
@@ -462,8 +542,8 @@ C Help text for this menu.
       H(54)='intended.'
 
 C Now display the menu.
-      write(head,'(3a)') 'Composition of `',
-     &  zname(ICOMP)(1:lnzname(ICOMP)),'`'
+      lzn=lnblnk(zname(ICOMP))
+      write(head,'(3a)')'Composition of `',zname(ICOMP)(1:lzn),'`'
       CALL EMENU(head,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -520,7 +600,8 @@ C TMC details, check that something transparent first.
         TFOUND=.FALSE.
         DO 71 IS=1,NZSUR(icomp)
           icn1=izstocn(icomp,is)
-          IF(SSOTF(icn1)(1:4).NE.'OPAQ')TFOUND=.TRUE.
+          IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
+     &      SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
   71    CONTINUE
         IF(TFOUND)THEN
           CALL EPMENSV
@@ -611,7 +692,8 @@ C If any of the surfaces are transparent save this info.
       TFOUND=.FALSE.
       DO 61 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF(SSOTF(icn1)(1:4).NE.'OPAQ')TFOUND=.TRUE.
+        IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
@@ -637,6 +719,42 @@ C needed and now it is not.
            CALL EMKCFG('-',IER)
          endif
       endif
+
+c----------update CFC file
+C If any of the surfaces are CFCs then save this info.
+      CFCFOUND=.FALSE.
+      DO 612 IS=1,NZSUR(icomp)
+        icn1=izstocn(icomp,is)
+        IF(SSOTF(icn1)(1:4).EQ.'CFC ')CFCFOUND=.TRUE.
+        IF(icfcfl(ICOMP,IS).GT.0)CFCFOUND=.TRUE.
+ 612  CONTINUE
+      IF(CFCFOUND.and.icfc(icomp).ne.0)THEN
+        CALL makeCFCfile(ICOMP,IER)
+        IF(IER.EQ.1)THEN
+            icfc(icomp)=0
+            CALL EMKCFG('-',IER)
+            RETURN
+        ENDIF
+C If in quiet mode then files already exist => no need to save.
+        IF(.NOT.QUIET) THEN
+          CALL EMKCFG('-',IER)
+          IF(IER.EQ.1)RETURN
+        ENDIF
+      ELSE
+
+C Check to see if there was an initial assumption that cfc file was
+C needed and now it is not.
+         if(icfc(ICOMP).eq.1)then
+           icfc(ICOMP)=0 
+           call usrmsg('Removing unused cfc file: ',lcfcin(ICOMP),'-')
+           CALL ERPFREE(IUF,ISTAT)
+           CALL EFOPSEQ(IUF,lcfcin(ICOMP),1,IER)
+           CALL EFDELET(IUF,ISTAT)
+           CALL EMKCFG('-',IER)
+         endif
+      ENDIF
+C----------------
+
       MODCON=.FALSE.
 
 C If geometry info has changed then save it as well.
@@ -744,7 +862,8 @@ C Setup text for menu.
       icn1=izstocn(icomp,isur)
    13 write(ISD(1),'(A,A)') '  Surface name    : ',SSNAME(icn1)     
       if(SSOTF(icn1)(1:4).eq.'OPAQ'.or.
-     &   SSOTF(icn1)(1:4).eq.'TRAN')then     
+     &   SSOTF(icn1)(1:4).eq.'TRAN'.or.
+     &   SSOTF(icn1)(1:4).eq.'CFC ')then     
         write(ISD(2),'(A,A)') 'a Surface type    : ',SSOTF(icn1)(1:12)
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
@@ -838,7 +957,7 @@ C Help text for this menu.
 C Menu control.
       CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
-        RETURN
+       RETURN
       ELSEIF(INODA.EQ.0)THEN
 
 C Choose another surface.
@@ -857,26 +976,34 @@ C Specify whether surface multilayer construction is opaque, transparent,
 C or fictitious (bookkeeping purposes only). If transparent ask user
 C which set of optical properties to use. (This will probably result in
 C an additional surface attribute!!!)
+C Additional option to choose CFC type. 
         H(1)='The choice of using an opaque or transparent construction'
         H(2)='is dependent on the optical properties. Where there is a'
         H(3)='mix of opaque and transparent layers the construction'
         H(4)='should be marked transparent.'
         H(5)=' '
-        H(6)='After selecting TRAN you will be asked for further '
-        H(7)='information. '
+        H(6)='For a more exact treatment of windows that may include'
+        H(7)='slat type operable blinds, choose Complex Fenestration'
+        H(8)='Construction.'
+        H(9)=' '
+        H(10)='After selecting TRAN you will be asked for further '
+        H(11)='information. '
         if(SSOTF(icn1)(1:4).eq.'OPAQ')then
           ino=1
         elseif(SSOTF(icn1)(1:4).eq.'TRAN')then
           ino=2
         elseif(SSOTF(icn1)(1:4).eq.'UNKN')then
           ino=1
+        elseif(SSOTF(icn1)(1:4).eq.'CFC ')then
+          ino=3
         else
           ino=2
         endif
         ilno=ino
-        CALL EASKABC('Select a type for the surface.',' Surface type',
+        CALL EASKABCD('Select a type for the surface.',' Surface type',
      &      'Opaque (all layers)','Transparent (at least 1 layer)',
-     &      'cancel',ino,7)
+     &      'Complex Fenestration Construction',
+     &      'cancel',ino,11)
         IF(ilno.eq.ino)GOTO 12
         IF(ino.eq.0)GOTO 12
         IF(ino.EQ.1)THEN
@@ -884,6 +1011,8 @@ C an additional surface attribute!!!)
         ELSEIF(ino.EQ.2)THEN
           SSOTF(icn1)='TRAN'
         ELSEIF(ino.EQ.3)THEN
+          SSOTF(icn1)='CFC '
+        ELSEIF(ino.EQ.4)THEN
           GOTO 12
         ENDIF
         MODGEO=.TRUE.
@@ -905,6 +1034,10 @@ C the OPAQUE/TRANSPARENT flag as well.
           endif
           if(DESC(IC)(15:18).EQ.'OPAQ')then
             SSOTF(icn1)='OPAQUE'
+            ITMCFL(ICOMP,ISUR)=0
+          endif
+          if(DESC(IC)(15:18).EQ.'CFC ')then
+            SSOTF(icn1)='CFC '
             ITMCFL(ICOMP,ISUR)=0
           endif
         ELSE
@@ -1064,9 +1197,9 @@ C zone construction file with minimum intervention by the user.
 
       SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1161,6 +1294,10 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
             endif
             if(DESC(ISEL)(15:18).EQ.'OPAQ')then
               SSOTF(ioc)='OPAQUE'
+              ITMCFL(ICOMP,IS)=0
+            endif
+            if(DESC(ISEL)(15:18).EQ.'CFC ')then
+              SSOTF(ioc)='CFC '
               ITMCFL(ICOMP,IS)=0
             endif
 
@@ -1266,13 +1403,14 @@ C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
       SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1292,7 +1430,7 @@ C the number of composite layers to build this up.
 
       dimension ival(MS)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER H*72,TOPTIC*12,louts*248
+      CHARACTER zname*12,zdesc*64,H*72,TOPTIC*12,louts*248
 
 C If in quiet mode then the file should exist, but if it is not a 
 C silly name open it and inform.
@@ -1320,7 +1458,7 @@ C            call edisp(iuout,LTWIN(ICOMP))
 
 C Write out the transparent construction file data.
       WRITE(IFU,30,IOSTAT=ISTAT,ERR=98)
-     &  zname(ICOMP)(1:lnzname(ICOMP)),
+     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &  LTWIN(ICOMP)(1:lnblnk(LTWIN(ICOMP)))
   30  FORMAT('# transparent properties of ',a,' defined in ',a)
 
@@ -1437,13 +1575,14 @@ C UNKNOWN then the user must supply this information manually). It scans
 C through each of the existing surfaces and finds unique optical types.
       SUBROUTINE EDTWIN(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1474,7 +1613,7 @@ C through each of the existing surfaces and finds unique optical types.
       CHARACTER outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER msg*28
+      CHARACTER zname*12,zdesc*64,msg*28
       
 C If tmc data has already been read in (ie NTMC>0) then move on to
 C a display of the current data.
@@ -1486,7 +1625,8 @@ C to 0.
       lastopt='  '
       DO 10 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF(SSOTF(icn1)(1:4).EQ.'OPAQ')THEN
+        IF(SSOTF(icn1)(1:4).EQ.'OPAQ'.OR.
+     &      SSOTF(icn1)(1:4).EQ.'CFC ')THEN
           ITMCFL(ICOMP,IS)=0
           GOTO 10
         ENDIF
@@ -1609,7 +1749,7 @@ C Save ITMCFL.
 C Display of current information...
    90 CONTINUE
       CALL EDISP(ITRU,' ')
-      WRITE(outs,9996)zname(ICOMP)(1:lnzname(ICOMP))
+      WRITE(outs,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
  9996 FORMAT(' Transparent construction file details for ',A)
       CALL EDISP(ITRU,outs)
       CALL EDISP(ITRU,' ')

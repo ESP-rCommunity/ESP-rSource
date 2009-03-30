@@ -32,7 +32,7 @@ C   NETWSNAP  Calculates the position of grid point co-ordinates
 C             when grid snappping is on.
 
 C *************************** NWKSLCTC *************************
-C NWKSLCTC is called from the c-side to check if an object has been selected
+C Called from the c-side to check if an object has been selected
 C IT is toggle of status for icon or connection.
 C IS is the index of the icon.
 C ISA is the index of the connection waypoint.
@@ -169,7 +169,7 @@ C Re draw the network
       END
 
 C ********************* NWKUPDTPOS *********************************
-C NWKUPDTPOS is called from the c-library and updates component and connection
+C Called from the c-library and updates component and connection
 C intermediate point positions.
       SUBROUTINE NWKUPDTPOS(IS,ISA,IT,IX,IY)
 
@@ -283,7 +283,7 @@ C Update the icon position
       END
 
 C ********************* GRIDUPDT *********************************
-C GRIDUPDT is called from the c-library and updates the network grid properties
+C Called from the c-library and updates the network grid properties
 C Zoom ,snap, etc, etc.
       SUBROUTINE GRIDUPDT(IZOOM,IGRIDU,IGRIDS,ISNP,IPAN,DX,DY)
 
@@ -380,7 +380,7 @@ C Re draw the network
       END
 
 C ****************************** GCONAD **********************************
-C GCONAD lets the user define a network connection graphically.
+C This code lets the user define a network connection graphically.
 C Called from the C-side
 
       SUBROUTINE GCONAD(IX,IY,IXR,IYR,IB)
@@ -606,7 +606,7 @@ C              write(6,*)'number of data attributes ',iatrdom(id)
 
 C If dtagatr(id,ii,1) is location then datrib(id,ii,1) is delta
                   if(dtagatr(id,ii,1)(1:8).eq.'location')then
-                    call relstr(delta,vnpstr,ilena,iflag)
+                    call relstr(delta,vnpstr,ilen,iflag)
                     write(ddatrib(nicnn,ii,1),'(a)') vnpstr
                   else
                     ddatrib(NICNN,ii,1)=datrib(id,ii,1)
@@ -710,7 +710,7 @@ C has not been made.
       END
 
 C ******************* GNWKQUERY *********************
-C GNWKQUERY is called by the c-side to get the current network viewing parameters
+C Called by the c-side to get the current network viewing parameters
 C
 C IQ - query identifier
 C PV - vertical view extents

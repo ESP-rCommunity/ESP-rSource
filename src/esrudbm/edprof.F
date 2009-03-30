@@ -34,6 +34,7 @@ C Assumes that current database is open on unit IFB.
       COMMON/MOD/MODEL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),

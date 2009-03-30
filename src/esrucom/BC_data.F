@@ -53,7 +53,7 @@ C------------------ process_BC_data_file ------------------------------
 C
 C  ABSTRACT:
 C  
-C  process_BC_data_file parses a boundary condition definition file, checks
+C  This procedure parses a boundary condition definition file, checks
 C  it for validity, and writes a binary database containing the
 C  relevant records.
 C
@@ -1037,7 +1037,7 @@ C---------------  bInquire_BC_Name_Exists -------------------------------
 C 
 C ABSTRACT:
 C
-C bInquire_BC_Name_Exists determines if a requested boundary condition
+C This procedure determines if a requested boundary condition
 C has been defined.
 C
 C Inputs:
@@ -1082,7 +1082,7 @@ C---------------  fGet_BC_data_by_name ----------------------------------
 C
 C ABSTRACT:
 C
-C fGet_BC_data_by_name is a short-hand interface to  fGet_BC_data_by_col
+C This procedure is a short-hand interface to  fGet_BC_data_by_col
 C which allows the boundary condition's name to be used to identify
 C the appropriate column.
 C  
@@ -1199,7 +1199,7 @@ C---------------  fGet_BC_data_by_col ----------------------------------
 C
 C ABSTRACT:
 C
-C fGet_BC_data_by_col returns boundry-condition data corresponding
+C This procedure returns boundry-condition data corresponding
 C to the current time step and user-specified column number.
 C
 C Inputs:
@@ -1467,7 +1467,7 @@ C---------------  get_BC_row -------------------------------------
 C
 C ABSTRACT:
 C
-C get_BC_row returns an array containing boundary condition values
+C This procedure returns an array containing boundary condition values
 C corresponding to a given boundary condition row number.
 
 C Inputs:
@@ -1561,7 +1561,7 @@ C---------------  report_BC_data -------------------------------------
 C
 C ABSTRACT:
 C
-C report_BC_data reports the values of the boundary condition data to
+C This procedure reports the values of the boundary condition data to
 C the XML reporting facility 
 C
 C Inputs:
@@ -1714,7 +1714,7 @@ C---------------  cleanup_BC_data -------------------------------------
 C
 C ABSTRACT:
 C
-C cleanup_BC_data merely deletes the temporary file created by 
+C This procedure merely deletes the temporary file created by 
 C the boundary condition management facility.
 C
 C Inputs:

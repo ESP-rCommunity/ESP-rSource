@@ -65,13 +65,13 @@ C IDCFID   - Daylight coefficient sensor ID
 
       SUBROUTINE ercgcf(itrc,itru,LCGCIN,ICOMP,ier)
 #include "building.h"
-#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -475,12 +475,12 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       SUBROUTINE CASCTMK(LCGCIN,ICOMP,ACT,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -572,7 +572,8 @@ C Write data to file.
      &     ' # No of TMC(s) in zone ' 
           DO 112 IL=1,NZSUR(ICOMP)
             icc=IZSTOCN(icomp,il)
-            IF(SSOTF(icc)(1:4).NE.'OPAQ')THEN
+            IF(SSOTF(icc)(1:4).NE.'OPAQ'
+     &            .AND.SSOTF(icc)(1:4).NE.'CFC ')THEN
               DO 114 L=1,NDF(ICOMP,N) 
                 WRITE(IUNIT,'(I3,F7.4,A)',IOSTAT=ios,ERR=1)IL,
      &               DFDAT(ICOMP,N,IL,L),' # TMC number & coresp DF '

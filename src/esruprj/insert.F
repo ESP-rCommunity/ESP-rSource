@@ -45,8 +45,6 @@ C << what about including common zndata in this manipulation? >>
 
       SUBROUTINE ADDSUR(ITRC,ICOMP,IWHICH,ACTION,MODE,ISCOPT,IER)
 #include "building.h"
-#include "geometry.h"
-#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -54,13 +52,20 @@ C << what about including common zndata in this manipulation? >>
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
+      COMMON/G2/NGL(MS)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       
@@ -71,8 +76,13 @@ C << what about including common zndata in this manipulation? >>
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -102,6 +112,7 @@ C << what about including common zndata in this manipulation? >>
       character SUSE11*8,SUSE12*8
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      character zname*12,zdesc*64
       CHARACTER H*72,ACTION*1,MODE*1,outs*124,SN*12,SN2*12
       character ZSDES*28,T14*14,D14*14
       character HOLD*72,hold64*64,holds*36,t248*248
@@ -115,7 +126,7 @@ C << what about including common zndata in this manipulation? >>
       valx=0.0
       valy=0.0
       valz=0.0
-      angr=0.0
+      ang=0.0
       IOK=0
       IRV=1
 
@@ -134,7 +145,7 @@ C While looping remember the connection associated with zone:surf.
               write(outs,'(5a)') 
      &          'Freeing `other side` information of ',
      &          ssname(ixu)(1:lnblnk(ssname(ixu))),' ',
-     &          zname(iotherzone)(1:lnzname(iotherzone)),'...'
+     &          zname(iotherzone)(1:lnblnk(zname(iotherzone))),'...'
               call edisp(iuout,outs)
 
 C The ssother() array has changed so the other zone should
@@ -188,7 +199,7 @@ C be rewritten. Scan it and update ssother and then write.
               iotherzone=IC1(IXU)
               write(outs,'(3a)') 
      &          'Freeing `other side` information in ',
-     &          zname(iotherzone)(1:lnzname(iotherzone)),'...'
+     &          zname(iotherzone)(1:lnblnk(zname(iotherzone))),'...'
               call edisp(iuout,outs)
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
               if(newgeo)then
@@ -354,6 +365,7 @@ C G5 contents into the surface below. The G6 commons were done already.
           DO 67 IV=1,NVER(IS)
             JVN(IS,IV)=JVN(IS+1,IV)
    67     CONTINUE
+          NGL(IS)=NGL(IS+1)
    66   CONTINUE
    65   NSUR=NSUR-1
         NZSUR(ICOMP)=NSUR
@@ -567,7 +579,7 @@ C Reset all surface lines in donor zone.
           nzg=1
           nznog(1)=IZ
           izgfoc=ICOMP
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(0,IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
         endif
@@ -670,6 +682,7 @@ C Up the surface count.
         NSUR=NSUR+1
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
+        NGL(NSUR)=0
         NVER(NSUR)=NVER1
         SNAME(ICOMP,NSUR)=SNAME1
         SOTF(NSUR)=SOTF1
@@ -685,7 +698,7 @@ C Up the surface count.
 C Generate combined name for dialog.
         ZSDES=' '
         WRITE(ZSDES,'(a,a1,a)') SNAME1(1:lnblnk(SNAME1)),':',
-     &    ZNAME(icomp)(1:lnzname(icomp))
+     &    ZNAME(icomp)(1:lnblnk(ZNAME(icomp)))
 
         H(1)='Actions: '
         H(2)=' Shift surface along (+=outwards) surface normal.'
@@ -712,7 +725,7 @@ C Create string buffer for variables with space at the end.
             H(7)='zero then that transform will have no effect. '
             hold64='                                                  '
             write(hold64,'(f9.4,2x,3f9.3,i4,f9.3,a)') vdis,valx,valy,
-     &        valz,irv,angr,'   '
+     &        valz,irv,ang,'   '
  552        CALL EASKS(hold64,
      &'Distance along normal, X Y & Z offsets, vertex, rotation angle:',
      &' ',64,' 0.0  0.0  0.0 0. 1  0.0  ','combined transforms',IER,7)
@@ -724,7 +737,7 @@ C Create string buffer for variables with space at the end.
             CALL EGETWR(HOLD64,K,VALY,-50.0,50.0,'W','Y off',IER)
             CALL EGETWR(HOLD64,K,VALZ,-50.0,50.0,'W','Z off',IER)
             CALL EGETWI(HOLD64,K,irv,0,nver1,'W','vertex index',IER)
-            CALL EGETWR(HOLD64,K,angr,-359.0,359.0,'W','rotation ang',
+            CALL EGETWR(HOLD64,K,ang,-359.0,359.0,'W','rotation ang',
      &        IER)
           endif
 
@@ -742,9 +755,9 @@ C Do each of the transforms in order.
             Z1(I)=Z1(I)+VALZ
  553      continue
 
-          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
+          if(ANG.LT.-.01.OR.ANG.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANGR*PI/180.
+            A=-ANG*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=X1(IRV)
@@ -811,13 +824,13 @@ C Rotate around a point in the surface.
             if(ieri.eq.-3)then
               goto 166
             endif
-            ANGR=0.
-            CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
+            ANG=0.
+            CALL EASKR(ANG,' ',' Rotation (deg + = anticlockwise) ? ',
      &       -359.0,'W',359.0,'W',0.0,'rotation',IER,8)
           endif
-          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
+          if(ANG.LT.-.01.OR.ANG.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANGR*PI/180.
+            A=-ANG*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=X1(IRV)
@@ -1043,6 +1056,7 @@ C surface in the zone`.
         NSUR=NSUR+1
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
+        NGL(NSUR)=0
 
 C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
@@ -1198,34 +1212,40 @@ C   horizontal mass 'HM' or horizontal single 'HS'.
 C MODE (1 char) passed `s` is silent (no graphic feedback) or 'g' graphic
 C   feedback.
 C VALOX,VALOY,VALOZ is the XYZ of the origin of the surface.
-C AANG is the azimuth in degrees.
+C ANG is the azimuth in degrees.
 C DDX, DDZ length and width of rectangle.
 C sn (12 char) surface name
 C constr (12 char) the name of the construction for then new surface(s).
 C opt (12 char) the name of the optical set for the new surface(s).
 C IER is zero then no issue during creation, IER is -1 then user asked
 C   for new position, IER is -3 user aborted action.
-      SUBROUTINE ADDMASS(ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
-     &   AANG,DDX,DDZ,SN,constr,OPT,IER)
+      SUBROUTINE ADDMASS(ITRC,ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
+     &   ANG,DDX,DDZ,SN,constr,OPT,IER)
 #include "building.h"
-#include "geometry.h"
-#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
+      PARAMETER  (MPL = 200 )
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
+      COMMON/G2/NGL(MS)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       character constr*12,act*2,mode*1,OPT*12,h*72
       character outs*124,SN*12
@@ -1257,8 +1277,8 @@ C Set PI and RAD.
 
       if(act(1:1).eq.'V'.or.act(1:1).eq.'v')then
 
-C Set second coord along DDX metres at AANG-90.
-        RYAZI = (AANG-90.0)*RAD
+C Set second coord along DDX metres at ANG-90.
+        RYAZI = (ANG-90.0)*RAD
         RSALT = 0.00
         z3 = DDX*SIN(RSALT)
         XYDIS = DDX*COS(RSALT)
@@ -1294,8 +1314,8 @@ C Z adjusted.
         ZZW(4) = VALOZ
 
 C Now rotate around the first coordinate.
-        if(AANG.LT.-.01.OR.AANG.GT..01)then
-          A=-AANG*PI/180.
+        if(ANG.LT.-.01.OR.ANG.GT..01)then
+          A=-ANG*PI/180.
           CA=COS(A)
           SA=SIN(A)
           XX1=XXW(1)
@@ -1390,7 +1410,7 @@ C Confirm opening.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
           ier=-1
           return
         elseif(INVT.eq.3)then
@@ -1443,6 +1463,7 @@ C Remember the reverse order of vertices for matching surface.
 
       WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
       write(SOTF(NSUR),'(a)') OPT(1:12)
+      NGL(NSUR)=0
 
 C If version 1.1 of geometry specify the use of the surface.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -1504,6 +1525,7 @@ C If SN is less than 12 characters add an _
 
         WRITE(SMLCN(NSUR),'(A12)')constr(1:12)
         write(SOTF(NSUR),'(a)') OPT(1:12)
+        NGL(NSUR)=0
 
 C If version 1.1 of geometry specify the use of the surface.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -1537,7 +1559,6 @@ C   using this index negate the index of the first surface and
 C   pass back in ier.
       SUBROUTINE ADDVERT(icomp,NUM,ACTION,IER)
 #include "building.h"
-#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1545,6 +1566,7 @@ C   pass back in ier.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
       logical ok,dok,matchver
 
@@ -1878,11 +1900,12 @@ C << could this be done with G6 and with ??
 
       SUBROUTINE CKVERT(ivb,ICOMP,bounded,iub,inve,IER)
 #include "building.h"
-#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV),ITV2(MS*MV),irelsur(MS*MV)
@@ -2016,10 +2039,12 @@ C << written at the end of the process. This has yet to be done.
       SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO,ZO,XW,ZH,
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
-#include "geometry.h"
-#include "prj3dv.h"
-
+      PARAMETER  (MPL = 200 )
+      
       integer lnblnk  ! function definition
+
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2032,10 +2057,15 @@ C << written at the end of the process. This has yet to be done.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
+      COMMON/G2/NGL(MS)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2138,7 +2168,7 @@ C edited to a thick line if currently in graphics mode.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
         endif
         goto 72
       endif
@@ -2234,7 +2264,7 @@ C edited to a thick line if currently in graphics mode.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(IER)
+        CALL ADJVIEW(ITRC,IER)
       endif
 
   43  if(IRT.eq.1)then
@@ -2427,8 +2457,10 @@ C If in silent mode assign construction otherwise select.
           WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
           IF(DESC(ISEL)(15:18).NE.'OPAQ')SOTF(NSUR)='TRAN'
           IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
+          IF(DESC(ISEL)(15:18).EQ.'CFC ')SOTF(NSUR)='CFC '
         endif
       endif
+      NGL(NSUR)=0
 
 C If version 1.1 of geometry specify the use of the surface.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -2615,7 +2647,7 @@ C Update the image if not in one of the silent modes.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &      iicfgz,iicfgn,iicfgc,iicfgdfn)
           if(MMOD.EQ.8)then
@@ -2742,7 +2774,7 @@ C Update the image if in non-silent mode
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(IER)
+          CALL ADJVIEW(ITRC,IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &      iicfgz,iicfgn,iicfgc,iicfgdfn)
           if(MMOD.EQ.8)then
@@ -2939,7 +2971,6 @@ C           is the point of insertion (so as to know when to
 C           stop shifting).
       subroutine adjcbg6g7(act,ix,icon)
 #include "building.h"
-#include "geometry.h"
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -2957,6 +2988,8 @@ C   where a surface such as a floor has been subdivided)
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

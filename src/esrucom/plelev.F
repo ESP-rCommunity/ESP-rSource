@@ -29,9 +29,6 @@ C array of selected zones to include.
 C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/precz.
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -39,6 +36,10 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
@@ -55,12 +56,13 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      CHARACTER sstr*90,blabel*4,direc*1
+      CHARACTER zname*12,zdesc*64,sstr*90,blabel*4,direc*1
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
 #ifdef OSX
@@ -156,7 +158,7 @@ C Check for a zone obstructions file.
           isym=0
           call etplot(ZCOG(newfoc,2),ZCOG(newfoc,3),iupdown,isym)
         endif
-        IF(lnzname(newfoc).GT.1)THEN
+        IF(lnblnk(zname(newfoc)).GT.1)THEN
           write(tz,'(A)')zname(newfoc)
           call winfnt(ITFS)
           call wstxpt(ix+2,iy-2,tz)

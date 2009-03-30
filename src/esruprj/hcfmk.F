@@ -36,11 +36,8 @@ C ******************** HCFMK ********************
 C HCFMK controls the creation and editing of a convection-regime
 C control file.
 
-      SUBROUTINE HCFMK(ITRU,IUF,ICOMP,IER)
+      SUBROUTINE HCFMK(ITRC,ITRU,IUF,ICOMP,IER)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/precz.
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -48,7 +45,12 @@ C geometry.h provides commons G0/G2/precz.
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
@@ -67,7 +69,7 @@ C geometry.h provides commons G0/G2/precz.
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
 
       CHARACTER*72 LTMP
-      character HFILE*72,H*72,head*33
+      character HFILE*72,H*72,zname*12,zdesc*64,head*33
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER ITEM(29)*33
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -83,10 +85,10 @@ C in case it is useful.
       newgeo=.false.  ! assume older format geometry.
       IHCFP=0
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
+        WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.htc'
       else
         WRITE(HFILE,'(A,A,A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.htc'
       endif
       IF(IHC(ICOMP).EQ.1)THEN
 
@@ -274,7 +276,7 @@ C names, turn off grid and origin.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -322,7 +324,7 @@ C Redraw wireframe on each return.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(IER)
+      CALL ADJVIEW(ITRC,IER)
 
 C Help text for this menu.
       h(1)='The choice of algorithm for calculating internal surface'
@@ -506,19 +508,21 @@ C        driven flow caused by surface-to-air temperature differences.
 C IOPT: 1 = in-floor heating, 2 = heated wall panel, 3 = other.
       SUBROUTINE EconvA(ITRU,IUF,ICOMP,iopt,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SSPARENT*12
@@ -787,19 +791,21 @@ C        driven flow caused by a heater located within the room.
 C IOPT: 1 = heater under a window, 2 = heater not under a window. 
       SUBROUTINE EconvB(ITRU,IUF,ICOMP,iopt,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SSPARENT*12
@@ -1062,7 +1068,6 @@ C        or wall mounted diffusers.
 C IOPT: 1 = VAV with CV heating, 2 = VAV with VV heating, 3 = CV variable T.
       SUBROUTINE EconvC(ITRU,IUF,ICOMP,iopt,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1073,6 +1078,7 @@ C IOPT: 1 = VAV with CV heating, 2 = VAV with VV heating, 3 = CV variable T.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       CHARACTER outs*124,h*72,hcfpdescr*72
       character*24 hcphrase(5)
@@ -1424,19 +1430,21 @@ C        driven flow caused by a circulating fan within the room. There is no
 C        intentional supply or extract of air from the room.
       SUBROUTINE EconvD(ITRU,IUF,ICOMP,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SSPARENT*12
@@ -1577,7 +1585,6 @@ C        forces are generated by surface-to-air temperature differences.
 C IOPT: 1 = VAV with CV heat, 2 = VAV with VV heating, 3 = CV with var temp.
       SUBROUTINE EconvE(ITRU,IUF,ICOMP,iopt,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1588,6 +1595,7 @@ C IOPT: 1 = VAV with CV heat, 2 = VAV with VV heating, 3 = CV with var temp.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       CHARACTER outs*124,h*72,hcfpdescr*72
       character*24 hcphrase(5)
@@ -1882,9 +1890,9 @@ C EHCMAN controls manual creation/editing of convection file.
 
       SUBROUTINE EHCMAN(ITRU,IUF,ICOMP,IER)
 #include "building.h"
-#include "geometry.h"
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
@@ -2104,16 +2112,18 @@ C Derived from code in EconvA.
 C IOPT: 1 = Molina & Maestre, 2 = Bar-Cohen correlation.
       SUBROUTINE EconvF(ITRU,IUF,ICOMP,IOPT,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C IAORZ is the air origin zone. '0' if outdoor air, zone number otherwise.
@@ -2312,7 +2322,6 @@ C NS is the number of surface in the zone << why pass this value? >>
       SUBROUTINE EPHCF(IZ,IN,NS,IER)
 #include "epara.h"
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2323,7 +2332,9 @@ C NS is the number of surface in the zone << why pass this value? >>
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/HCCEN/CENLOC(MP,14)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       character H*72,outs*124,SN*12,ITEM(MS+5)*30,KEY*1,SSPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER stuff*10
@@ -2952,7 +2963,6 @@ C It contains a header with a date stamp and associated zone name
 C As well as documentation based on the last edit by the user.
       SUBROUTINE EMKHTC(FILE,ICOMP,IUF,ITRU,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2966,12 +2976,14 @@ C As well as documentation based on the last edit by the user.
       COMMON/Vld20/Vldtng
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       common/HCFPHI/hcfpdescr(MP)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       dimension HCIA(MS),HCEA(MS),IHCIA(MS),IHCEA(MS)
       character*12 sn(MS)
       character hcfpdescr*72,dstmp*24,t117*117,FILE*72
-      CHARACTER louts*248
+      CHARACTER zname*12,zdesc*64,louts*248
       CHARACTER SSPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       logical Vldtng
@@ -2984,7 +2996,7 @@ C As well as documentation based on the last edit by the user.
 
       call dstamp(dstmp)
       write(iuf,'(2a)',IOSTAT=ISTAT,ERR=990) '*HC_CTL for zone ',
-     &  zname(icomp)(1:lnzname(icomp))
+     &  zname(icomp)(1:lnblnk(zname(icomp)))
       write(iuf,'(2a)',IOSTAT=ISTAT,ERR=990) '*Date,',dstmp
       WRITE(IUF,'(I4,a)',IOSTAT=ISTAT,ERR=990)
      &        IHCFP,' # number control intervals'
@@ -3319,12 +3331,12 @@ C listhtc reports on the current heat transfer correlation definition
 C held in a *.htc file.
       subroutine listhtc(ITRU,ICOMP,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

@@ -18,16 +18,15 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
+C The following loads the COMMONS used by libesru.a and libesru.nb.a.
 
       subroutine EZERO
-C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
-#include "epara.h"
 
       PARAMETER (MGRDP=10)
 
 C Commons for paged menus, PMENUSV is to pop in a definition for
 C later recovery.
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
      &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
       common/ground/grdtmp(12,mgrdp)

@@ -116,9 +116,6 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/prec2/precz/c20.
-#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -143,6 +140,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
+#include "CFC_common.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -181,8 +179,9 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
-C NZSUR is the number of surfaces in each zone (from geometry.h).
-C NZTV is the number of vertices in each zone (from geometry.h).
+C NZSUR is the number of surfaces in each zone.
+C NZTV is the number of vertices in each zone.
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating
@@ -197,7 +196,16 @@ C LPNF (72 char) plant network file name.
 C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/CFGV/icfgv
+      COMMON/PREC2/VOL(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
+
+C CTYPE (4 char) - zone shape type (REC, REG or GEN)
+C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
+      character CTYPE*4
+      real gversion
+      integer igupgrade
+      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -471,6 +479,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
+      character zname*12,zdesc*64
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
@@ -839,7 +848,7 @@ C so LSTRIPC and LOUTSTR are used.
       elseif(WORD(1:4).eq.'*opt')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
 
-C Process the file name following *opt and depending on its path
+C Process the file name folloing *opt and depending on its path
 C set the LOPTDB common block string via call to findwhichdbpath.
         call findwhichdbpath('opt',lworking,ier)
       elseif(WORD(1:7).eq.'*stdopt')then
@@ -851,6 +860,7 @@ C set the LOPTDB common block string via call to findwhichdbpath.
 C Process the file name folloing *prs and depending on its path
 C set the lapres common block string via call to findwhichdbpath.
         call findwhichdbpath('prs',lworking,ier)
+C        CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
       elseif(WORD(1:7).eq.'*stdprs')then
         ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
@@ -884,23 +894,6 @@ C debug.
       elseif(WORD(1:7).eq.'*stdpdb')then
         ipathpcdb=2  ! standard folder for plant template database
         CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
-      elseif(WORD(1:5).eq.'*sbem')then
-
-C Process the file name following *sbem and depending on its path
-C set the LSBEM common block string via call to findwhichdbpath.
-        CALL EGETRM(LOUTSTR,K,lworking,'W','SBEM db',IER)
-        call findwhichdbpath('sbm',lworking,ier)
-        ISBEM=1
-        IRNCMD=1
-
-      elseif(WORD(1:8).eq.'*stdsbem')then
-
-C SBEM database file in standard location.
-        ipathsbem=2  ! standard folder for SBEM database
-        CALL EGETRM(LOUTSTR,K,LSBEM,'W','standard SBEM db',IER)
-        ISBEM=1
-        IRNCMD=1
-
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
@@ -1370,6 +1363,12 @@ C CPCALC global information.
 
 C Radiance scene file.
         CALL EGETRM(LOUTSTR,K,lradcf,'W','radiance scene file',IER)
+      elseif(WORD(1:5).eq.'*sbem')then
+
+C SBEM database file
+        CALL EGETW(LOUTSTR,K,LSBEM,'W','SBEM db',IER)
+        ISBEM=1
+        IRNCMD=1
       elseif(WORD(1:4).eq.'*ncm')then
 
 C SBEM project specific file
@@ -1841,6 +1840,9 @@ C Zone file names.
         elseif(WORD(1:4).eq.'*tmc')then
           itw(icomp)=1
           LTWIN(icomp)=text(1:72)
+        elseif(WORD(1:4).eq.'*cfc')then
+          icfc(icomp)=1
+          lcfcin(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*ivf')then
           ivf(icomp)=1
           LVIEW(icomp)=text(1:72)
@@ -2052,7 +2054,6 @@ C fully read to find the number of surfaces in the zone.
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
-            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             CALL ERPFREE(IUF,ios)
             call georead(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
             gversion(icomp) = 1.1   ! set the version number.
@@ -2066,28 +2067,22 @@ C file version is prior to version 1.1.
               CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
               write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
               zname(ICOMP)=' '
-              lnzname(ICOMP)=0
               zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
             ELSEIF(ND.EQ.2)THEN
               CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
               write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
               CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
               ZN=WORD(1:12)
               call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
               zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
             ELSEIF(ND.gt.2)THEN
               CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
               write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
               CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
               ZN=WORD(1:12)
               call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
               call egetrm(outstr,K,phrase,'W','Z description',IER)
               ZDESC(ICOMP)=phrase
-              lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
             ENDIF
             CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
             K=0
@@ -2109,20 +2104,17 @@ C Close geometry file and set version number.
           NZSUR(ICOMP)=0
           NZTV(ICOMP)=0
           VOL(ICOMP)=0.0
-          lnzname(ICOMP)=0
         ENDIF
 
 C Fill in a default zone name if blank or UNKNOWN.
         IF(zname(ICOMP)(1:2).EQ.'  '.OR.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')THEN
-          IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
-          IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
-          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
+            IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
+            IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then
           write(zdesc(ICOMP),'(2a)') 
-     &      zname(ICOMP)(1:lnzname(ICOMP)),' describes a'
-          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
+     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a'
         endif
 
 C Reporting.
@@ -2151,6 +2143,11 @@ C Reporting.
           IF(ITW(ICOMP).EQ.1)THEN
             WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Transp. constr: ',
      &          LTWIN(ICOMP)(1:LNBLNK(LTWIN(ICOMP)))
+            CALL EDISP(iuout,OUTS)
+          ENDIF
+          IF(icfc(ICOMP).EQ.1)THEN
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' CFC constr: ',
+     &          lcfcin(ICOMP)(1:LNBLNK(lcfcin(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(IVF(ICOMP).EQ.1)THEN
@@ -2829,15 +2826,16 @@ C if possible. If ICON=0 then generate a text heading.
 
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
+      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
+      CHARACTER zname*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer ICM  ! connection for current surface.
@@ -3004,7 +3002,7 @@ C see if the path is local or absolute or standard database folder.
 C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
-C       =  'prs' for pressure coef, 'sbm' for UK SBEM database.
+C       =  'prs' for pressure coef
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3039,9 +3037,6 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'prs')then
             ipathapres=1  ! local folder for pressure database
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3055,9 +3050,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'prs')then
             ipathapres=2
             write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=2
-            write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3069,9 +3061,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'prs')then
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3085,9 +3074,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'prs')then
             ipathapres=1  ! local folder for pressure database
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3099,9 +3085,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'prs')then
             ipathapres=2
             write(lapres,'(a)') file(lndbp+2:lnwkg)  ! without path
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=2
-            write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3113,9 +3096,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'prs')then
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
-            write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif
@@ -3131,9 +3111,6 @@ C Debug.
       elseif(topic(1:3).eq.'prs')then
         write(6,*) lapres
         write(6,*) 'findwhichdbpath ipath is ',ipathapres
-      elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
       endif
 
       return

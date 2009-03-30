@@ -63,7 +63,7 @@ void winfnt_(font_index)
  */
 
 
-  if (ifont_index == 0 ) {
+  if (butn_fnt == 0 ) {
 #ifdef SUN
      pfd = pango_font_description_from_string("Courier,Medium 8");
      f_height = font_calculations_array[courier_small].f_height;

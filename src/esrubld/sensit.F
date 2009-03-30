@@ -1130,10 +1130,10 @@ C UAZ01 edits surface properties in memory.
 
       SUBROUTINE UAZ01(IZONE,IACT,DIR)
 #include "building.h"
-#include "geometry.h"
 #include "uncertainty.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/PREC2/VOL(MCOM)
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)

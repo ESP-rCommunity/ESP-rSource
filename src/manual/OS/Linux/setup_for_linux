@@ -7,9 +7,12 @@ echo "standard databases."
 echo " "
 echo "You should be root when running this installer"
 echo " "
-echo "NOTE: the installation folder is /usr/esru. IF YOU HAVE AN"
+echo "NOTE: the installation folder is /opt/esru rather than"
+echo "the traditional /home/esru or /usr/esru. IF YOU HAVE AN"
 echo "OLDER ESP-r in /home/esru or /usr/esru you should"
-echo "remove it."
+echo "remove it. There is no longer a requirement for a link"
+echo "named /usr/esru but if one does exist it should point"
+echo "to /opt/esru"
 echo " "
 
 DSP1=" \n
@@ -25,7 +28,7 @@ DSP3=" \n
 DSP4=" \n
  Your PATH environment variable needs to be updated. The .bash_profile\n
  file the PATH= line should include the following...\n
- :/usr/esru/bin:/usr/esru/esp-r/bin\n
+ :/opt/esru/bin:/opt/esru/esp-r/bin\n
  \n
  and if you have separately installed Radiance then be sure\n
  to define the RAYPATH environment variable and export it.\n
@@ -121,11 +124,11 @@ fi
 echo " This may take a few minutes ..."
 
 # Check that necessary folders exist.
-if [ ! -d /usr/esru ]; then
-  mkdir /usr/esru
+if [ ! -d /opt/esru ]; then
+  mkdir /opt/esru
 fi
   
-cd /usr/esru
+cd /opt/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
   zcat $ISD/esp-r_X11_11.6_linux.tar.gz | tar xf - 
@@ -140,12 +143,12 @@ echo " "
 # echo "Creating a link to the ESP-r distribution... "
 # ln -s /opt/esru /usr/esru
 echo "Setting folder permissions... "
-chmod a+x /usr/esru
-chmod a+x /usr/esru/esp-r
-chmod a+x /usr/esru/esp-r/bin
-chmod a+r /usr/esru
-chmod a+r /usr/esru/esp-r
-chmod a+r /usr/esru/esp-r/bin
+chmod a+x /opt/esru
+chmod a+x /opt/esru/esp-r
+chmod a+x /opt/esru/esp-r/bin
+chmod a+r /opt/esru
+chmod a+r /opt/esru/esp-r
+chmod a+r /opt/esru/esp-r/bin
 
 echo "...done. "
 echo -e $DSP4

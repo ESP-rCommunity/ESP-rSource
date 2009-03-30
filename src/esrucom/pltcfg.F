@@ -144,7 +144,6 @@ C  itrc the level of reporting (zero is quiet).
 
 #include "plant.h"
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -154,6 +153,7 @@ C LPCDB/IPCDB (for plant template database)
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/C6/INDCFG
       COMMON/C8/LPNAM
@@ -184,8 +184,9 @@ C Electrical details for specified plant components
       CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24,fs*1
       CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PZDESCR*25
+      CHARACTER ZDESCR*25
       character*68 mscdsc, cvrdsc      
+      CHARACTER ZNAME*12,ZDESC*64
       character loutstr*248,louts*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)
@@ -263,8 +264,8 @@ C -> but don't open the database if save-level 0 or 5 are specified!
 
 C Read the total number of plant components (NTPC) in the database.
       IREC = 1
-      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) PZDESCR
-      IF (PZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
+      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) ZDESCR
+      IF (ZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
         call lusrmsg('May not be a plant db!',LPCDB,'W')
       endif
       IREC=2

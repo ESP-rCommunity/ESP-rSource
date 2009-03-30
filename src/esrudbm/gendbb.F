@@ -2331,6 +2331,7 @@ C types (e.g. ALL shows all, MATLCA shows only material impacts).
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Generic db commons: file log, list of db, current classifications,
 C and current items then lengths of each list.
@@ -2468,6 +2469,7 @@ C Itwhich is the index of the db item selected.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,

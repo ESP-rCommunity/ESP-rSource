@@ -56,7 +56,7 @@ C << are no longer any so-called default windows and doors.
       common/outin/iuout,iuin
       common/filep/ifil
 
-      common/prec1/sna(mcom,ms)
+      common/prec1/sna(mcom,ms),zoa(mcom)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
 
@@ -1708,7 +1708,7 @@ C intra-nodal temperatures.
       subroutine mzcnb1(icomp,iconst)
 #include "building.h"
 
-      common/prec1/sna(mcom,ms)
+      common/prec1/sna(mcom,ms),zoa(mcom)
       common/conadj/wa(ms,mn,6)
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
@@ -1739,7 +1739,7 @@ C temperatures.
 #include "building.h"
 #include "control.h"
       
-      common/prec1/sna(mcom,ms)
+      common/prec1/sna(mcom,ms),zoa(mcom)
       common/conadj/wa(ms,mn,6)
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
@@ -1806,7 +1806,7 @@ C defined.
       common/outin/iuout,iuin
       common/pophelp/h(60)
 
-      common/prec1/sna(mcom,ms)
+      common/prec1/sna(mcom,ms),zoa(mcom)
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
 

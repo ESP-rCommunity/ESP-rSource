@@ -61,7 +61,7 @@ C
 C-------------------------process_Lookup_data_file-----------------
 C
 C Abstract:
-C process_Lookup_data_file parses a lookup data file, checks that the contents
+C This subroutine parses a lookup data file, checks that the contents
 C of the file are valid and writes a binary database containing the
 C table of data.
 C
@@ -626,7 +626,7 @@ C........Yes. Warn user and delete temporary file.
 C----------------------------iGet_Lookup_col_num--------------------
 C
 C Abstract:
-C iGet_Lookup_col_num returns the column number that corresponds to
+C This function returns the column number that corresponds to
 C the column header specified by the user
 C
 C Inputs:
@@ -726,7 +726,7 @@ C----------------------------------------------------------------------
 C----------------------fGet_Lookup_value_by_col_num-----------------
 C
 C Abstract:
-C fGet_Lookup_value_by_col_num returns data from a lookup table that corresponds
+C This function returns data from a lookup table that corresponds
 C to a user-specified reference value, reference column number 
 C and value column number.
 C
@@ -1004,7 +1004,7 @@ C Verify if errors encountered
 C----------------------fGet_Lookup_value_by_col_name-----------------
 C
 C Abstract:
-C fGet_Lookup_value_by_col_name returns data from a lookup table that corresponds
+C This function returns data from a lookup table that corresponds
 C to a user-specified reference value, reference column name 
 C and value column name. This procedure is an interface to the 
 C function fGet_Lookup_value_by_col_num which allows the column names
@@ -1090,7 +1090,7 @@ C Get value from lookup table
 C----------------------cleanup_Lookup_data-----------------
 C
 C Abstract:
-C cleanup_Lookup_data deletes the temporary file created by
+C This subroutine deletes the temporary file created by
 C the lookup table facility.
 C
 C---------------------------------------------------------------------

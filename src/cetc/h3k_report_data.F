@@ -61,7 +61,6 @@ C*******************************************************************************
       SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
-#include "geometry.h"
 #include "aim2_common.h"
 #include "control.h"
 C.....Passed variable
@@ -71,6 +70,20 @@ C.....Common variables
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
       integer ncon           ! number of connections 
+
+C.....Zone volumes.
+      common/prec2/vol(mcom)
+      real vol
+
+C Zone areas
+      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
+     &  IZBASELIST(MCOM)
+      real ZBASEA
+      integer IBASES,IUZBASEA,IZBASELIST
+
+      common/c20/nzsur(mcom),nztv(mcom)
+      integer nzsur           ! # of surfaces in a zone
+      integer nztv            ! # of verticies in a zone (not used)
 
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -229,8 +242,9 @@ C.....Surface Energy balances.
      &     q2lost(2),           ! - lost to exterior (W)
      &     q2tmc(2),            ! - Absorbed by glazing (W)
      &     q2wall(2),           ! - Absorbed by opaque construction (W)
-     &     q2rem(2)             ! - Absorbed by roof? (W)
-      REAL q1adjz, q1outs, q2adjz, q2lost, q2tmc, q2wall,q2rem
+     &     q2rem(2),            ! - Absorbed by roof? (W)
+     &     q2cfc(2)             ! - Absorbed by CFC (W) - currently not used
+      REAL q1adjz, q1outs, q2adjz, q2lost, q2tmc, q2wall,q2rem,q2cfc
 
 C.....MLC data
       common/gr1d01/nnds,nndz(mcom),nndc(mcom,ms),nndl(mcom,ms,me)
@@ -252,8 +266,9 @@ C.....Flags for temperature-dependence of MLC themal properties
       logical ivthps, ivthpz
 
 C.....Surface area data
-      common/prec1/sna(mcom,ms)
+      common/prec1/sna(mcom,ms),zoa(mcom)
       real sna                 ! Area of a surface
+      real zoa                 ! Total surface area for zone
 
       common/cctl/icascf(mcom)  ! Zone control type
       integer icascf
@@ -3832,7 +3847,7 @@ C........Build node name
      &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
 
 C.........output node data
-      ! total mass flow entering a node *******************************
+	! total mass flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/flowrate'
@@ -3843,7 +3858,7 @@ C.........output node data
      &              'units', '(kg/s)',
      &              'mfn total node flow rate' )
 
-       ! total volume flow entering a node *******************************
+	! total volume flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/volflowrate'
@@ -3854,7 +3869,7 @@ C.........output node data
      &              'units', '(m3/h)',
      &              'mfn total node volume flow rate' )
 
-       ! node temperature from flow network *******************************
+	! node temperature from flow network *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/temp'
@@ -3882,8 +3897,8 @@ C.........Loop through all interconnections in a flow network
      &             ' (via ',
      &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
 
-       ! pressure drop between nodes of connection ***********************
-               write(H3K_rep_NAME,'(A,A)')
+	! pressure drop between nodes of connection ***********************
+	       write(H3K_rep_NAME,'(A,A)')
      &             Connect_Name(1:LNBLNK(Connect_Name)),
      &             '/Dp'
 
@@ -3893,7 +3908,7 @@ C.........Loop through all interconnections in a flow network
      &             'units', '(Pa)',
      &             'mfn connection pressure drop' )
 
-        ! flow through connection ****************************************
+	! flow through connection ****************************************
                write(H3K_rep_NAME,'(A,A)')
      &             Connect_Name(1:LNBLNK(Connect_Name)),
      &             '/flow'
@@ -3906,9 +3921,9 @@ C.........Loop through all interconnections in a flow network
 
         ! velocity at connection *********************************
         ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460
-        ! to "no velocity" and added type 211 to "no velocity")
+	! to "no velocity" and added type 211 to "no velocity")
         ! Find the related component type and reject those
-        ! connections which are not appropriate.
+	! connections which are not appropriate.
                i_CompIndex=ITPCON(jj)
                i_CompType=ITPCMP(i_CompIndex)
                b_noveloc=.false.
@@ -3921,7 +3936,7 @@ C.........Loop through all interconnections in a flow network
      &             i_CompType .eq. 460) then
 
                       ! ** skip this component **
-                   b_noveloc=.true.
+		      b_noveloc=.true.
 
                elseif(i_CompType .eq. 40) then      ! common orifice flow component
                   area=SUPCMP(i_CompIndex,2)
@@ -3948,14 +3963,14 @@ C.........Loop through all interconnections in a flow network
                endif
         ! end code snippet from mfget.F
 
-               if (b_noveloc .eqv. .false.) THEN
+	       if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of 
-        ! node "i_neg". Densit() returns density in kg/m3
+	! node "i_neg". Densit() returns density in kg/m3
                   if (FLW1(jj) .lt. 0) THEN
-                    rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
+	             rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
-                    rhon=DENSIT(NDFLD(ii),TNOD(ii))
-                  Endif
+	             rhon=DENSIT(NDFLD(ii),TNOD(ii))
+	          Endif
 
         ! Finally, write to H3K reporting
                   write(H3K_rep_NAME,'(A,A)')

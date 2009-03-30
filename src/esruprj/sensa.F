@@ -196,6 +196,8 @@ C muadel should be equivalent to max(MNCNG,MNIL,MNACT))
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)
@@ -603,7 +605,6 @@ C IERR is zero is ok, 101 if there was a problem with the location
 C   specification and 2 if there was a cancel issued during editing.
       subroutine LOCDEF(ITEM,IERR)
 #include "building.h"
-#include "geometry.h"
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -611,7 +612,10 @@ C   specification and 2 if there was a cancel issued during editing.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -626,7 +630,7 @@ C   specification and 2 if there was a cancel issued during editing.
       character LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER H*72,STMP*12
+      CHARACTER H*72, ZNAME*12, zdesc*64, STMP*12
 
       integer idst,ihst,idft,ihft   ! for local editing.
       integer idf,ids,ihf,ihs
@@ -681,7 +685,7 @@ C Otherwise select the zones from a list of zone names.
           H(3)='You may choose them in any order. '
           INPIC=NCOMP
           CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-     &      12,NCOMP,ZNAME,' zone list',IERR,3)
+     &                          12,NCOMP,ZNAME,' zone list',IERR,3)
 
 C Check for errors.
           if (IERR.ne.0) goto 999
@@ -725,8 +729,8 @@ C are applicable.
           call edisp(iuout,'  ')
           H(1)=' Pick one, several or all surfaces for inclusion.'
           call EPICKS(INPIC,IVALS,' Which surfaces to include: ',
-     &      ' (If surface selection not required choose * All) ',
-     &      12,NZSUR(IZONE),STMP,ZNAME(IZONE),IERR,1)
+     &         ' (If surface selection not required choose * All) ',
+     &                       12,NZSUR(IZONE),STMP,ZNAME(IZONE),IERR,1)
 
 C Check for errors.
           if (IERR.ne.0) goto 999

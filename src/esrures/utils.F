@@ -605,16 +605,16 @@ C string to be used in headers.
 
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
-
-C Get common block precz/lnprecz from geometry.h
-#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      CHARACTER zdescr*80,outs*244,outsd*80
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,NZ
-        lna=lnzname(NZNO(i))
+        lna=lnblnk(zname(NZNO(i)))
         length=length+lna+1
   42  continue
       if(length.lt.72)then
@@ -652,18 +652,20 @@ C a different colour for each name.
 
       SUBROUTINE COLZNLIST(line,isize,ierr)
 #include "building.h"
-#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      character word*24
+      CHARACTER zname*12,zdesc*64,word*24
 
 C Figure out how much text there is to write out. isecond is the last
 C zone index that fit within 72 characters.
       length=0
       isecond=0
       do 42 i=1,NZ
-        lna=lnzname(NZNO(i))
+        lna=lnblnk(zname(NZNO(i)))
         length=length+lna+1
         if(length.lt.72)isecond=i
   42  continue
@@ -682,7 +684,7 @@ C Set ix to last character position before looping through zones.
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
           call findviewtext(icx,line,isize,ix,iy)
-          lna=lnzname(NZNO(i))
+          lna=lnblnk(zname(NZNO(i)))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
@@ -705,7 +707,7 @@ C Set ix to last character position before looping through zones.
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
           call findviewtext(icx,line,isize,ix,iy)
-          lna=lnzname(NZNO(i))
+          lna=lnblnk(zname(NZNO(i)))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
@@ -721,7 +723,7 @@ C If there is a second line that can be created do it.
 C Find x and y pixels for the current line and character postion.
 C Then get index of colour for this zone, then plot text in that colour.
             call findviewtext(icx,line+1,isize,ix,iy)
-            lna=lnzname(NZNO(i))
+            lna=lnblnk(zname(NZNO(i)))
             write(word,'(a)',iostat=ios,err=1) zname(NZNO(I))(1:lna)
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
@@ -738,7 +740,7 @@ C Then get index of colour for this zone, then plot text in that colour.
           call wstxpt(ix,iy,word)
           icx=11
           call findviewtext(icx,line,isize,ix,iy)
-          lna=lnzname(NZNO(1))
+          lna=lnblnk(zname(NZNO(1)))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(1))
           call winscl('-',0)
@@ -956,7 +958,6 @@ C ASKZON: call to enquire which zone the user is interested in.
 
       SUBROUTINE ASKZON(IZONE)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -964,9 +965,10 @@ C ASKZON: call to enquire which zone the user is interested in.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION IVALS(MCOM),zn(MCON)
-      character H*72,zn*12
+      character H*72,zname*12,zdesc*64,zn*12
 
 C If only one zone in problem then supply it.
       if(NZ.eq.1)then
@@ -1021,21 +1023,22 @@ C the user is interested in for stats/ graphs/ listings etc.
 
       SUBROUTINE PICKSUR(IZ,NP,IVA,IER)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION IVA(MS),IVALS(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character H*72,ST(MS)*12,CSTR*25
-      character outs*124
+      CHARACTER zname*12,zdesc*64,outs*124
 
 C Check for illegal zone number.
       IER=0
@@ -1148,7 +1151,6 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       SUBROUTINE PIKMRTS(IZLST,ISLST,NSEL,IER)
 #include "building.h"
-#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1156,6 +1158,7 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -1166,7 +1169,7 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character H*72,ST(60)*22,outs*124,LMRT*72,CUBN*6
+      character H*72,ST(60)*22,outs*124,LMRT*72,CUBN*6,zname*12,zdesc*64
 
       IER=0
 

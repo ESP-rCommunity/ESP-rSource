@@ -1080,6 +1080,7 @@ case $xml_support in
          GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
          intel)   ULIBS="$ULIBS -lXML -lstdc++";;
        esac;
+#        ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in

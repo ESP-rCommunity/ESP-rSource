@@ -539,7 +539,7 @@ C TRNSYS types data.
       CHARACTER*40 ZGTYPE
       CHARACTER*16 ZCDATE
       CHARACTER*80 ZCDESC
-      CHARACTER*23 PZDESC
+      CHARACTER*23 ZDESC
       character*68 dtdesc, mfsdsc, tdtdsc, tmfsds
       character*30 adodsc, tadods
       character*60 ltpcmp, tltpcm
@@ -550,9 +550,9 @@ C Reset component index.
       INDXPC=-1
 
 C Skip to next entry.
-   10 READ (IUFIL,1010,IOSTAT=ISTAT,ERR=1,END=900) PZDESC
+   10 READ (IUFIL,1010,IOSTAT=ISTAT,ERR=1,END=900) ZDESC
  1010 FORMAT (A23)
-      IF(PZDESC(1:22).NE.' Component Description') GOTO 10
+      IF(ZDESC(1:22).NE.' Component Description') GOTO 10
 
 C Generic type of plant component.
       READ(IUFIL,10201,IOSTAT=ISTAT,ERR=1) ZGTYPE
@@ -884,7 +884,7 @@ C once per item until the end-of-file.
       common/totconv/itotconv
       common/SFIG/NSIGFIG
 
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,PZDESC*23
+      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,ZDESC*23
       character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
       character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60,ctype*20
 
@@ -1042,8 +1042,8 @@ C Reset component index.
       INDXPC=-1
 
 C Skip to next entry.
-   10 READ (IUFIL,'(a23)',IOSTAT=ISTAT,ERR=1,END=900) PZDESC
-      IF(PZDESC(1:22).NE.' Component Description') GOTO 10
+   10 READ (IUFIL,'(a23)',IOSTAT=ISTAT,ERR=1,END=900) ZDESC
+      IF(ZDESC(1:22).NE.' Component Description') GOTO 10
 
 C Generic type of plant component.
       READ(IUFIL,'(23X,A40)',IOSTAT=ISTAT,ERR=1) ZGTYPE

@@ -37,15 +37,13 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 
       subroutine inscon(icomp,icstat,act)
 #include "building.h"
-
-C geometry.h provides commons G0/G2/c20/precz.
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
 C   ntmc & nwins: the number of insolation sources (i.e. external
 C                 and transparent surfaces); the latter is held
-C                 in common.
+C                 in common. CFCs count as transparent surfaces for
+C                 shading analysis
 C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
@@ -53,19 +51,24 @@ C                 in common.
       common/pophelp/h(60)
       common/filep/ifil
 
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
+
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      common/c20/nzsur(mcom),nztv(mcom)
+      common/precz/zname(mcom),zdesc(mcom)
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
       dimension month(12),iavdec(12)
+      character zname*12,ctype*4
       character paction*16
       character*72 h
-      character month*3,outs*124,tbase*72,ltrns*72,act*1
+      character month*3,outs*124,tbase*72,ltrns*72,act*1,zdesc*64
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc
@@ -169,7 +172,7 @@ C day number.
 
 C Attempt to open the relevant zone transitional shading file 
 C for this month. If unknown call igeoms to set up grid.
-      write(ltrns,'(a)')zname(icomp)(1:lnzname(icomp))
+      write(ltrns,'(a)')zname(icomp)(1:lnblnk(zname(icomp)))
       write(tbase,'(a,a3)')ltrns(:lnblnk(ltrns)),month(mon)
       call erpfree(iunit,istat)
       call findfil(tbase,xst)
@@ -211,7 +214,6 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 c   ntmc   - how many insolation sources were found
       subroutine findtmc(icomp,act,ntmc)
 #include "building.h"
-#include "geometry.h"
 
 C   ntmc & nwins: the number of insolation sources (i.e. external
 C                 and transparent surfaces); the latter is held
@@ -221,6 +223,8 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
       common/filep/ifil
+
+      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
@@ -228,6 +232,7 @@ C                 in common.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -249,6 +254,7 @@ C isurfinso list of insolation sources.
      &       lstsfcalc(mcom,ms),nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension iva(ms)
+      character ctype*4
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
       character paction*16
@@ -283,7 +289,7 @@ C for /ishdirec/.
       endif
       ishadf=0
 
-C Establish if any of the surfaces are TMCs.
+C Establish if any of the surfaces are TMCs or CFCs.
       ntmc=0
       nwins=0
 
@@ -443,8 +449,8 @@ C            in the misur list.
 
       subroutine insolc(icomp)
 #include "building.h"
-#include "geometry.h"
 
+      common/c20/nzsur(mcom),nztv(mcom)
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/sunhr/isunhr
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)

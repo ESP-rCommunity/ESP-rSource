@@ -1,0 +1,661 @@
+.de MT    \"macro to start text
+.nr VS 12
+.nr PS 10
+.vs 12
+.ps 10
+..
+.de mT    \"macro to start table text
+.nr VS 10
+.nr PS 8
+.vs 10
+.ps 8
+..
+.de ML    \"macro to start listing
+.LD
+.vs 7
+.ps 6
+.cs 1 24
+.cs 3 24
+..
+.de ES    \"macro to end code listing
+.DE
+.cs 1
+.cs 2
+.cs 3
+..
+.EQ
+delim $$
+gsize 10
+gfont R
+.EN
+.nr HM 0.5i
+.ll 6.4i
+.nr LL 6.4i
+.MT
+.TL
+Facilities available in ESRU libraries
+and common source directory
+.AU
+by Jon Hand
+Energy Simulation Research Unit
+of the University of Strathclyde
+30 June 1993
+.sp 2
+.LP
+Summary
+.PP
+A number of structural changes have been applied
+to application software developed and supported within ESRU.  This is a 
+summary of a library of
+interface facilities and the creation of a directory of common code
+for reading, reporting and creating files compatible with 
+ESRU applications.  The
+code has been written by the ESP-r consortium with the bulk of the
+code originating with the staff of the Energy Simulation Research Unit.
+This document is a guide to the use of the libraries and common code and
+includes a summary, the interface to each of the procedures as well as
+examples of their use.  The
+following libraries have been produced:
+.LP
+libesru.a is the primary library for ESRU applications.  On X terminals 
+it requires the use of libXww.a and libX.a and includes the following object files:
+.IP "esrulib_low.o" 5
+low level facilities for reading and writing strings, stripping
+comments, date checking, solar angles, psychrometrics and vector
+math as well as ASCII and binary file access.
+.IP "esrulib_ter.o" 5
+terminal interaction, paging, graphic and text menus
+.IP "wwlib.o" 5
+C interface (callable from fortran code) to the ww toolkit of graphics
+facilities and dialogue facilities.
+.LP
+In /usr/esru/esp-r/src/esrucom are a number of standard subroutines for ESP-r compatible
+file reading, creation and reporting.  These are included (via soft
+links) by the various Makefiles.
+.IP " esystem.F" 5
+reading and reporting on ESP-r system configuration files.
+.IP " scsys.F" 5
+scans system configuration files without decoding
+mass flow and plant networks.
+.IP " eleakage.F" 5
+reading of leakage distribution files.
+.IP " edatabase.F" 5
+reading and creation of primitive and composite thermophysical databases and
+climate files.
+.IP " egeometry.F" 5
+reading, reporting, creation, rotation, conversion of zone geometry files as
+well as site obstructions.
+.IP " econstr.F" 5
+reading, reporting and creation of zone construction files, as well as
+reading multilayer construction databases and primitive construction 
+databases.
+.IP " econtrol.F" 5
+reading and reporting on system control files.
+.IP " emfnetw.F" 5
+reading, reporting, and selection of mass flow networks
+and their components.
+.IP " esru_misc.F" 5
+math and utility file reading facilities.
+.IP " eroper.F" 5
+reading and reporting on operations files.
+.IP " e3dviews.o" 5
+typical transforms, clipping, and labeling facilities for producing
+3d views of geometry with attribution.
+.IP " pltcfg.o" 5
+reading and reporting on plant network files.
+.IP " startup.c" 5
+"c" main program for most applications - allows command line
+to be parsed and passed to fortran code.
+.sp 1
+.bp
+.LP
+Details of source files
+.PP
+The following discussion looks into the details of each of the files.
+A sysnopsis is provided, the full interface specification is included
+in the full document which is available from ESRU and
+by e-mail by request to esp-r@esru.strathclyde.ac.uk.  Those in
+the research community who are working with ESP-r will find this
+to be a useful reference, especially since the interface to the
+various subroutines and functions are evolving.
+.LP
+esrulib_low
+.PP
+The files esrulib_low.f is a collection of low level support Fortran 
+Functions and Subroutines.  None of the routines makes use of common blocks.
+Esrulib_low.f contains the 
+following input conversion functions/routines:
+.mT
+.TS
+l l.
+EGETI	Reads several integers from input channel.
+EGETR	Reads several reals from input channel.
+EGETS	Reads several strings from input channel.
+EGETW	Finds kth word in a string (' 'or','separated)
+EGETWI	Similar to EGETI with range checking & error messages.
+EGETWR	Similar to EGETW with range checking & error messages.
+EGETWRA	Recovers (IRVA) reals of real array (RVA) from an ASCII file.
+EGETWIA	Recovers (IRVA) int of array (IVA) from an ASCII file.
+EGETRM	T{
+Returns the remainder (RSTR with no leading blanks) from 
+a text string (TSTR) after position k.
+T}
+_
+INTCNV	Converts word (20 char) into integer.
+INTSTR	Converts integer into a string (10 char) with no leading blanks.
+RELSTR	Converts a real into a string (10 char) with no leading blanks.
+RELCNV	Converts word (20 char) into real.
+STRIPC	Strips comments from a ASCII file string and returns the data.
+CHITMS	Checks a character string & returns the number of data items.
+CHARCH	Old routine to check a string for a specific number of data items.
+NOYES	INTEGER FUNCTION to read the answer Y,y,1,N,n,0 to a question.
+IFIRST	Returns the ASCII value for the first character in a string ISTR.
+_
+ERPFREE	Is used to close any file.
+EFDELET	Delete file IUN and return ISTAT for compatibility.
+_
+EDAY	Returns the year day number when passed the day of month & month.
+STDATE	T{
+Takes the day of year and returns two descriptive strings:
+DESCR takes the form '12 Jan' & DESCR1 takes the form 'Fri 12 Jan'.
+T}
+ESTIME	T{
+Takes an integer timestep and returns two string descriptions:
+DESCRH in the form '12h28' & DESCRD which takes the form of 12.46.
+T}
+EDAYR	Returns the day and month numbers from the day-of-year.
+EWEEKD	T{
+Returns the day of the week given the day of month, month and year as integers.
+T}
+EDAYCH	Checks for errors in the users specification of the day & month. 
+DATTIM	Returns UNIX time via a string in the form : 16 Sep 73 14:23.
+DAYCLK	Prints the day, month, day no. & time based on DOY & decimal hour.
+EPROMPT	Does nothing, for compatibility only.
+_
+ESIND	Function returning SIN of angle where angle is given in degrees.
+ECOSD	Function returning COS of angle where angle is given in degrees.
+IFAX	Integer function returning the integer part of it's argument.
+EAZALT	Computes the solar azimuth & altitude angles at current time.
+EPAREA	Calculates the area for any closed polygon.
+ORTTRN	ordinal transform of point by transform matrix.
+VECTRN	T{
+Transforms a vector VECIN by the 4x4 (homogeneous) matrix
+TMAT and returns the vector VECOUT.
+T}
+VECPLN	T{
+Returns the point of intersection X,Y,Z between a line
+defined by X1,Y1,Z1 & X2,Y2,Z2 and a plane defined in PEQN.
+T}
+HMATMUL	Multiplies the homogeneous (4x4) matrices A by B returning C.
+HREVMAT	T{
+Takes the homogeneous perspective transformation PER and 
+returns it's inverse REP making use of CROUT.
+T} 
+CROUT	T{
+Inverts a nonsymetric square matrix A (order N), returning
+the matrix B and IERR =-1 if matrix is singular.
+T}
+DPACC	T{
+Provides double precision accumulation of inner products for
+CROUT in the form SUM(+,-)SUM(+,-)AB.
+T}
+EYEMAT	Provides transform eyepoint - viewpoint....
+ETRANSW	Transforms default Windows/doors into global co-ordinates.
+AVER	Returns the centre of gravity of an polygon array.
+CROSS	Performs a cross-product on vectors A() & B() returning in C().
+ZEROS	Clear a 4x4 array prior to doing viewing transforms.
+ECLOSE	Checks tolerance between two real numbers.
+_
+
+TAIRFE	Returns air temperature from enthalpy & moisture content.
+TSATH0	Determines the saturation temperature from enthalpy.
+TDB	T{
+Calculates dry bulb temperature from enthalpy and
+moisture content. (Reversal of the ENTHP2).
+T}
+ENTHP1	Calculates enthalpy of moist air kJ/kg.
+ENTHP2	Calculates enthalpy of moist air kJ/kg.
+HUMRAT	Calculates humidity ratio kg/kg.
+HUMRT1	Calculates humidity ratio kg/kg.
+VAPRS2	Evaluates vapour pressure (mbar).
+SATVP	Evaluates saturated vapour pressure (mbar).
+TWB	Calculates the wet bulb temp from db and moisture content.
+PCSAT1	Evaluates percentage saturation.
+PCSAT2	Evaluates percentage saturation.
+PCRH1	Evaluates relative humidity.
+PCRH2	Evaluates relative humidity.
+SPVOL1	Calculates specific volume m^3/kg dry air.
+SPVOL2	Calculates specific volume m^3/kg dry air.
+HUVOL1	Evaluates humid volume m^3/kg.
+HUVOL2	Evaluates humid volume m^3/kg.
+SPHTC1	Returns the specific heat capacity of air kJ/(kg K).
+SPHTC2	Returns the specific heat capacity of air kJ/(kg K).
+DEWPT	Returns dew point based on curve fit and iteration.
+SHTH2O	Water specific heat capacity kJ/(kg K).
+DENH2O	Water density kg/m^3.
+.TE
+.MT
+.PP
+The interfaces to each of the routines in the form of:
+.nf
+
+C **************** EGETWR 
+C EGETWR gets first word after position K from the STRING of
+C characters and converts it into a real number RV, tests it against
+C the minimum RMN and the maximum RMX and provides a warning
+C message if RACT='W', a failure message if RACT='F' and does
+C no range checking if RACT='-'. Words may be separated by blanks, 
+C commas, or tab.
+      SUBROUTINE EGETWR(IOUT,STRING,K,RV,RMN,RMX,RACT,MSG,IER)
+      CHARACTER*(*) STRING, MSG
+
+c ******************** STRIPC 
+C STRIPC strips comments from a ASCII file string and returns the data.
+C It assumes that if a string begins with a '#' then the whole line is 
+C a comment an the next line is read.  If a ' #' is discovered within
+C a line the rest of the line is removed. 
+C IER=0 if ok. MSG is a text string used in error messages. If
+C IR=0 then acts silently, otherwise notes when EOF found.
+C IEXP is the number of expected items in the line: 
+C   IEXP = 0 means don't care or already know no. items - don't check
+C   IEXP >0  means a specific number of items expected (error if not)
+C   IEXP = 99 check number of items and return in ITEMS
+
+      SUBROUTINE STRIPC(INPCH,IOUT,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+
+      CHARACTER*124 tmp,STRING,OUTSTR,MSG1
+      CHARACTER*(*) MSG
+
+.fi
+.LP
+are listed in the full document which is available from ESRU and
+by e-mail by request to esp-r@esru.strathclyde.ac.uk , as are
+the other code mentioned in this document.
+.LP
+esrulib_ter
+.PP
+The file esrulib_ter.f is a collection of text and bid-mapped terminal 
+control Fortran Functions and Subroutines.  It contains the following 
+functions/routines:
+.mT
+.TS
+l l.
+EASKI	T{
+Ask user for an integer with prompt, error messages & range 
+checking as passed parameters.
+T}
+EASKR	T{
+Ask user for a real number with prompt, error messages & range 
+checking as passed parameters.
+T}
+EASKS	T{
+Ask user for a string with prompt, error messages & list of 
+standard strings passed parameters.
+T}
+st2name	Given `string' swap blanks & wildcards to _ return as `name'.
+EPICKS	T{
+Allows several selections to be made from an array of strings.
+T}
+EASKOK	Generic yes/no facility returning OK as a logical parameter. 
+EASKAB	T{
+Generic A/B choice facility returning 1 or 2 according to which
+of the choices has been chosen.
+T}
+_
+EASKPER	Provides interface to specification of a period of days.
+DAYCLK	Print day, month, day no. and time based on the julian day & time.
+FDROOT	Given a file name see if it contains a path.
+EFOPSEQ	Open a sequential file with existence flag & path check.
+EDELSEQ	Delete a sequential file with path check.
+EFOPRAN	Open a random access file with existence flag & path check.
+FINDFIL	Check existence of SFILE (with path) & return logical XST. 
+ADDPATH	Return file name appended onto the path and logical concat.
+_
+C2FSTR	Convert c function returned string to fortran format.
+TERMODE	Returns logical nane of terminal type.
+EKPAGE	Maps key characters, pages & array indexs in long display lists.
+KEYIND	Decodes EMENU index and returns the array index of the item.
+EPMENSV	saves menu definitions (common block PMENU).
+EPMENRC	recovers menu definitions (common block PMENU) from PMENUSV.
+EPAGE	Screen control: page without waiting.
+EPAGEW	Screen control: Wait before paging.
+EPWAIT	Screen control: Wait without paging.
+EPAGEND	Screen control: Page then close window if open.
+EMPAGE	Low level screen control for paging based on terminal model.
+ELINC	Controls scratch pad output for text screens.
+EPAGES	Initialise terminal, set up a scratch pad & line count.
+SETLINC	Allows the user to change the length of the text page.
+EMENU	Control variable width menu display on various terminals.
+EWMENU	Is the binding to C function for menu dialogue.
+VWMENU	Is the binding to C function for variable width menu.
+EMKEY	Returns key (a-z) for a menu item based on data array index.
+USRMSG	Generic message/prompt facility for all terminal types.
+EDISP	Generic send text to scrolling display (text or graphic).
+EHELPW	Returns the width IWH of the longest help text string.
+EHELPD	Displays the current contents of common EHELP.
+UPDVIEW	Called from C to pass back updates to common VIEWPX & GFONT
+SCANTUT	Scans a tutorial file for available topics.
+READTUT	Reads a tutorial file and displays a selected topic.
+.TE
+.MT
+.LP
+wwlib.c
+.PP
+Wwlib.c is a collection of functions which provide graphing
+functions for bitmap screens based on WW calls.  
+The code is divided into three
+sections, the first providing initialisation and closing of
+the graphics environment, the second section being older functions
+which are begin phased out, and the final section being new code
+as follows:
+.mT
+.TS
+l l.
+winint	initialise the ww window with message at top.
+tchild	return child process terminal info.
+winclr	clears the screen
+wincsr	switch on (TRUE) off (FALSE) cursor
+winfin	closes the ww window
+_
+
+winlin	OLD draws a line to x,y and sets the rasterop to 'draw'
+winpen	changes the rasterop temporarily to 'type'
+winloc	OLD returns the character or mouse button pressed
+winpos	OLD returns the position of the mouse after winloc
+winget	T{
+OLD returns mouse position and any char pressed
+without waiting for user input
+T}
+wintxt	OLD outputs the value ichar as a text character
+winstm	OLD set the mouse to position x, y
+windmp	dumps the windows image to the file name (disabled)
+winlod	loads the file frame.num to the screen   (disabled)
+windcl	OLD define the colour 'n' in RGB using ir,ig,ib
+winscl	OLD set current colour to n
+_
+winfnt	changes the font (4 different sizes 0,1,2,3)
+wstxpt	outputs a string beginning at pixel x and y.
+
+winbut	T{
+puts a button on the screen and 
+returns the character or mouse button pressed
+T}
+wind3d	T{
+opens a viewing box taking into account menu width and dialogue box.
+T}
+win3dclr	clear viewing box.
+viewtext	T{
+displays a line of text within the viewing
+box with size and location parameters
+T}
+openaskbox	T{
+creates a text input box within the dialogue
+area positioned to match the msg's passed.
+T}
+askdialog	controls input of strings in the dialogue area.
+einp	single line terminal emulator for askdialog.
+msgbox	T{
+places prompts in the dialogue box with the same syntax used in USRMSG.
+T}
+abbox	T{
+places prompts in dialogue box as in msgbox
+and presents two user supplied choices.
+T}
+opengdisp	opens a scrolling text display area.
+egdisp	writes text in the scrolling text display area.
+egdispclr	clears scrolling text display at EPAGEW.
+eline	draws or moves a line @ pixel location x y.       
+edline	draws a dotted line from x1 y1 to x2 y2.       
+edash	draws a dashed line from x1 y1 to x2 y2. 
+echain	draws a chained line from x1 y1 to x2 y2. 
+ecirc	draws a filled or open circle @ location x y.
+esymbol	draws one of 12 symbols at location x y.
+eghelp	opens and displays help text in a box.
+axiscale	T{
+determines scaling parameters for horizontal and vertical axis.
+T}
+linescale	stores scaling parameters for lines.
+vrtaxis	T{
+draws a vertical axis (tic & labels on right or left side).
+T}
+horaxis	T{
+draws a horizontal axis with tic marks and labels.
+T}
+dinterval	T{
+determines the tic interval for an axis as well
+as the number of decimal places.
+T}
+labelstr	T{
+generates an appropriate label for the value passed.
+T}
+opentutorial	place tutorial button on screen.
+opensetup	place environment button on screen.
+aux_menu	test for mouse click in other portions of the screen.
+refreshenv	pass back window information to fortran common.
+runexec	execute a program based on match char string.
+_
+.TE
+.MT
+.PP
+.LP
+/usr/esru/esp/src/esrucom/egeometry.f
+.PP
+This is a collection of ESP compatible geometry and site obstruction
+file reading, reporting and creation 
+facilities implemented as Fortran Subroutines.  Each allows 
+for comments to be included in the ASCII files either as 
+whole lines or at the end of a line.  No limit is imposed on the number
+and placement of whole comment lines, however data lines longer than
+124 characters will be truncated.  In most cases only the 
+name of the file to be read is passed along with its unit number.  
+The subroutine checks for its existence, opens it, reads the data 
+and closes it before returning. 
+.PP 
+Standard within all of the file reading facilities is an English language 
+and/or tabular report on the data read in.  This is available at three
+levels; none, minimal and verbose.  In most cases, the terse number 
+combinations found in the file are decoded into an English equivalent.
+.PP
+Generally data is placed in common blocks after it has been read and
+processed.  For example, it does not matter which type of geometry file
+format is encountered in the file, the common block data is that of a 
+GEN format, fully transformed into site coordinates. Most of the
+reporting facilities are based on common block data so that an
+application can provide reporting facilities at any point, rather
+than just during file reading.
+.PP
+Each of the file creation facilities takes information from common blocks
+and generates an annotated file.
+.PP
+The file /usr/esru/esp-r/src/esrucom/egeometry.f contains the 
+following Subroutines:
+.mT
+.TS
+l l.
+EGOMIN	T{
+Reads zone geometry data as ASCII strings, with or without
+range checking and printed summary
+T}
+EMKGEO	T{
+Write a plain or annotated geometry file (GEN type) based on  
+common blocks G0 G1 G2 G3 G4 G5
+T}
+ERECC	Converts REC into a GEN description
+EREGC	Converts REG into a GEN description
+ECROT	Rotate a zone by ANG degrees
+SURINFO	Display surface details and attributes in a tabular format.
+ZINFO	T{
+Takes zone geometry data and returns descriptive information
+T}
+INSINFO	English description of default insolation options.
+DWDINFO	Prints a table about the location and size of windows & doors.
+VERINFO	Prints vertex/surface list summaries.
+.TE
+.MT
+.PP 
+.LP
+/usr/esru/esp/src/esrucom/econstr.f
+.PP
+The file /usr/esru/esp/src/esrucom/econstr.f contains the following Subroutines:
+.mT
+.TS
+l l.
+ECONST	Reads zone construction file with or without comments.  
+EMKCON	Creates a zone construction file based on blocks T1 T2 T3 T3ADD T4.
+CONINF	T{
+Provides a description of the constructions in a zone based
+on common blocks.
+T}
+ERTWIN	T{
+Reads all transparent wall properties and blind/shutter
+operational details from an annotated ascii file.
+T}
+.TE
+.MT
+.PP 
+.LP
+/usr/esru/esp/src/esrucom/edatabase.f
+.PP
+The file /usr/esru/esp/src/esrucom/edatabase.f contains the following:
+.mT
+.TS
+l l.
+ERMLDB	Read an ASCII or binary mlc db and return data via block MLC.
+ETMLDB	Provides reporting on current description of a composite.
+EPKMLC	Select a composite construction with display of details.
+ERPCDB	Reads one element from a binary primitive construction db.
+EMKAMLD	Creates an ascii composite constr db based on common MLC.
+EROPTDB	Returns optical properties for def window and TMC.
+EDWINO	Allow user to select a glazing type by name.
+.TE
+.MT
+.PP 
+.PP 
+Standard within all of the file reading facilities is an English language 
+and/or tabular report on the data read in.  This is available at three
+levels; none, minimal and verbose.  In many cases, the terse number 
+combinations found in the file are decoded into an English equivalent.
+.sp 1
+.LP
+/usr/esru/esp/src/esrucom/esystem.f
+.PP
+The file /usr/esru/esp/src/esrucom/esystem.f contains the following Subroutines:
+.mT
+.TS
+l l.
+ERSYS	Reads a commented system configuration file.
+SITEINFO	English description of the site information.
+CONXINFO	English description of the inter-connection common blocks.
+.TE
+.MT 
+.PP
+.LP
+/usr/esru/esp/src/esrucom/emfnetw.F
+.PP
+The file /usr/esru/esp/src/esrucom/emfnetw.F contains the following:
+.mT
+.TS
+l l.
+EMFREAD	Reads a mass flow network description file.
+MFCKCN	Check validity of control supplementary data.
+MFERR	Error trap routine.
+MFLIST	List mass flow network description file.
+MFLNAME	Display list of current components or nodes.
+ASKNOD	Presents a selection list of mass flow nodes.
+ASKCMP	Presents a selection list of mass flow components.
+ASKCON	Presents a selection list of mass flow connections. 
+.TE
+.MT 
+.PP
+.LP
+/usr/esru/esp/src/esrucom/econtrol.f
+.PP
+The file /usr/esru/esp/src/esrucom/econtrol.f contains the following:
+.mT
+.TS
+l l.
+EZCTLR	Reads the configuration control strategy file.
+EZCTLI	Zeroises all control data in common BCTL and CCTL.
+EVCNTRL	T{
+Decodes & returns string describing a control file sensors,
+actuators, control types, control laws.
+T}
+EZCTLC	Checks all building control functions and plant for validity.
+.TE
+.MT
+.LP
+/usr/esru/esp/src/esrucom/esru_misc.f
+.PP
+This is a collection of facilities which support the reading and
+creation of ESP compatible files implemented as Fortran Subroutines.  
+
+.PP
+Esru_misc.f contains the following Subroutines:
+.mT
+.TS
+l l.
+ERUTIL	Reads a commented zone utility file.
+ECRUTL	Read in a utility file or create a fresh common block.
+EMKUTIL	Creates a zone utility file.
+EGOMST	Reads site obstruction data.
+MKGOMST	Creates an site obstruction file based on common GS5.
+ERMRT	Read the viewfactor/ MRT sensor definition file.
+EMKMRT	Write viewfactor/MRT sensor definition file.
+ERBLDF	Read a default window blind shutter control file.
+EMKBLDF	Write default window blind control common block data.
+_
+ETILE	Writes transformed doors & windows to viewer file.
+EMKVIEW	Constructs a 'viewer' format file.
+EPLNEQN	Finds equation of plane containing a polygon in PNTLST format. 
+ETRANSW	Transforms default Windows or doors into global co-ordinates.
+ESZONE	Saves the current contents of common blocks G1 G2 G3 G4 G5.
+ERZONE	Recovers the saved contents of common blocks G1 G2 G3 G4 G5.
+EASKGEOF	Presents a list of zones (by name).
+EASKSUR	Presents a list of surfaces in a zone IZONE.
+SURADJ	Returns information about connection for a particular surf.
+.TE 
+.MT
+.LP
+/usr/esru/esp/src/esrucom/e3dviews.f
+.PP
+The file e3dviews.f is a collection of support facilities for 
+producing 3d images of configurations, implemented as Fortran 
+Functions and Subroutines and also making use of C code in wwlib.c.
+LENS, MATPOL, CLIPFL, PLNBX, CUTPOL have been revised from code
+initially supplied by Mike Grant.
+The file /usr/esru/esp/src/esrucom/e3dviews.f contains the following:
+.mT
+.TS
+l l.
+LENS	Initialise viewing parameters
+MATPOL	Transforms polygon described in 3dv format.
+CLIPFL	T{
+Takes a polygon description and returns clipping flags based
+on viewing frustrum.
+T}
+PLNBX	Checks a polygon against a clipping plane.
+CUTPOL	Cuts a polygon within a viewing frustrum.
+VERTLBL	T{
+Displays a vertex label based on the coords passed and the
+vertex number.
+T}
+ORIGESP	Returns a surface/body indicating the site origin.
+SITE2D	T{
+Returns the 2D viewing coords of the current site extremes
+found in common block RAY5.
+T}
+BNDOBJ	Does range checking on objects to be displayed.
+.TE
+.MT 
+.LP
+Include files
+.PP
+The include files used by ESP-r are:
+
+.nf
+building.h      flows.h         plant.h         plylib.h        tdf.h
+epara.h         gagge.h         plantdb.h       prj3dv.h        wwinfo.h
+flow_ed.h       monitor.h       plantdf.h       tbridge.h
+
+.fi
+.MT

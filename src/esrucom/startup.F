@@ -434,7 +434,7 @@ C Use espriou.h for climatelist file name and defdbfl.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
@@ -469,7 +469,7 @@ C cdintglz (char*32) internal glazing/window
      &  cdintfloor(5),cdintceil(5),cdintptn(5),cdintdoor(5),cdintglz(5)
 
       CHARACTER OUTSTR*124,WORD*20,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD,DSBEM
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dinstpath*48,di*48
       logical unixok,dll
@@ -2178,7 +2178,7 @@ C  to be passed to e2r from the invocation line.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
 
 C Application name
       common/APPNAME/cAppName

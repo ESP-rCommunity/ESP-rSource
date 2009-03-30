@@ -33,7 +33,6 @@ C a zone transitional shading file.
 
       subroutine shsynp(icomp)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -47,6 +46,7 @@ C a zone transitional shading file.
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
+      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,mt),psof(ms,mt)
 
@@ -206,7 +206,6 @@ C surface shading for each hour based on common block data.
 
       subroutine shadsynp(icomp)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -216,6 +215,7 @@ C surface shading for each hour based on common block data.
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
+      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,mt),psof(ms,mt)
 
@@ -335,7 +335,6 @@ C Outputs information on internal surface insolation.
 C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
       subroutine insynp(icomp,act)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -345,6 +344,7 @@ C parameter act (1 char) is 's' for silent mode and 'i' for interacitve
       common/contr/mon,isc(ms),iyd
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/c20/nzsur(mcom),nztv(mcom)
       common/c24/izstocn(mcom,ms)
       common/data2/pso(ms,24),psof(ms,24)
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)

@@ -367,6 +367,7 @@ C *********************************************************************
 #include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -1689,10 +1690,11 @@ C DRWGND draws the complete ground domain.
 C *********************************************************************
       SUBROUTINE DRWGND
 #include "building.h"
-#include "prj3dv.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
 
       DIMENSION XGND(8),YGND(8),ZGND(8)

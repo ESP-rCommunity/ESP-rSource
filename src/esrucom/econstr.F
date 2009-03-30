@@ -56,13 +56,13 @@ C ABSE    - solar absorptivity of external surfaces.
 
       SUBROUTINE ECONST(LCONS,IUNIT,ICOMP,ITRC,ITRU,IER)
 #include "building.h"
-#include "geometry.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -168,7 +168,10 @@ c Read layer thermophysical properties from 'outside' to inside.
 
 C If reading an air gap allow 0.0 properties.
             if(J.eq.IPAIRG(I,1).or.J.eq.IPAIRG(I,2).or.
-     &         J.eq.IPAIRG(I,3))then
+     &         J.eq.IPAIRG(I,3).or.J.eq.IPAIRG(I,4).or.
+     &         J.EQ.IPAIRG(I,5).or.J.eq.IPAIRG(I,6).or.
+     &         J.EQ.IPAIRG(I,7).OR.J.EQ.IPAIRG(I,8).OR.
+     &         J.EQ.IPAIRG(I,9).OR.J.EQ.IPAIRG(I,10))then
               CALL EGETWR(OUTSTR,K,CON(I,J),0.,CONCH,'W','conductivity',
      &          IER)
               CALL EGETWR(OUTSTR,K,DEN(I,J),0.0,DENCH,'W','density',IER)
@@ -320,13 +323,14 @@ C is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
 #include "building.h"
-#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
 
@@ -338,7 +342,8 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       CHARACTER*72 CONFIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character outs*124,louts*248
+      CHARACTER ZNAME*12
+      character outs*124,louts*248,zdesc*64
 
       IER=0
 
@@ -357,7 +362,7 @@ C If in quiet mode then file should exist.
 
 C Write out the construction file data.
       WRITE(IFILT,30,IOSTAT=IOS,ERR=146)
-     &  zname(ICOMP)(1:lnzname(ICOMP)),CONFIL(1:lnblnk(CONFIL))
+     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),CONFIL(1:lnblnk(CONFIL))
   30  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
      &'# no of |air |surface(from geo)| multilayer construction',/,
      &'# layers|gaps|  no.  name      | database name ')
@@ -384,7 +389,7 @@ C Write out air gap details.
 5641      FORMAT('# air gap position & resistance for surface ',I2)
           WRITE(IFILT,5640,IOSTAT=IOS,ERR=146)(IPAIRG(I,J),
      &            RAIRG(I,J),J=1,NAIRG(I))
-5640      FORMAT(1X,5(I2,',',F8.3,','))
+5640      FORMAT(1X,10(I2,',',F8.3,','))
         ENDIF
 1190  CONTINUE
                                                                         
@@ -475,12 +480,13 @@ C CONINF provides a description of the constructions in a zone based
 C on common blocks. If isur=0 then all, otherwise for one surface. 
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
-#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -522,13 +528,14 @@ C Arrays of material properties.
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
+      CHARACTER zname*12
+      CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
       character iprtext*4,TITL*72,GDESCR*36
 
 C Heading if all surfaces.
       if(isur.eq.0)then
         CALL EDISP(ITRU,' ')
-        WRITE(OUTS,9996)zname(ICOMP)(1:lnzname(ICOMP)),ICOMP
+        WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP))),ICOMP
  9996   FORMAT(' Zone construction details for ',A,' (',I2,')')
         CALL EDISP(ITRU,OUTS)
       endif
@@ -570,11 +577,16 @@ C Get the air gap contribution to U value for reporting.
  9990       CONTINUE
           ENDIF
         else
-          IF(SSOTF(icn1)(1:4).NE.'OPAQ')THEN
+          IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
+     &      SSOTF(icn1)(1:4).NE.'CFC ')THEN
            WRITE(OPT(i),'(A)') DESC(imatch(i))(21:32)
            IF(OPT(i).EQ.' ')OPT(i)='UNKNOWN'
-          ELSE
+          ELSEIF(SSOTF(icn1)(1:4).EQ.'OPAQ')THEN
             OPT(i)='OPAQUE'
+          ELSEIF(SSOTF(icn1)(1:4).EQ.'CFC ')THEN
+            OPT(i)='USE GSLedit'
+          ELSE
+            OPT(I)='OPAQ'
           ENDIF
           NELT=NE(I)
 
@@ -630,6 +642,9 @@ C Jump if not all requied and not the focus surface.
         if(OPT(i)(1:4).eq.'OPAQ')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
      &      SSMLCN(icn1)(1:lsml),' and is opaque:'
+        elseif(OPT(i)(1:11).eq.'USE GSLedit')then
+          write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
+     &      SSMLCN(icn1)(1:lsml),' and is complex fenestration const.'
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           write(outs,'(4a)') sn(1:lnblnk(sn)),' is composed of ',
      &      SSMLCN(icn1)(1:lsml),' and has unknown optical properties:'
@@ -686,7 +701,7 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is likely to be known).
-        if(OPT(i)(1:4).eq.'OPAQ')then
+        if(OPT(i)(1:4).eq.'OPAQ'.or.OPT(i)(1:11).eq.'USE GSLedit')then
           continue
         elseif(OPT(i)(1:7).eq.'UNKNOWN')then
           continue
@@ -752,7 +767,6 @@ c         (not used in the current implementation),
 
       SUBROUTINE ERTWIN(ITRC,ITRU,IUA,LUA,ICOMP,IER)
 #include "building.h"
-#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -776,6 +790,7 @@ c         (not used in the current implementation),
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
       
@@ -783,7 +798,8 @@ c         (not used in the current implementation),
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER OUTSTR*124,OUTS*124,LUA*72,TOPTIC*12,WORD*20
+      CHARACTER zname*12
+      CHARACTER OUTSTR*124,OUTS*124,LUA*72,TOPTIC*12,WORD*20,zdesc*64
       character msg*28
       LOGICAL MODGEO
 
@@ -829,7 +845,7 @@ C if the surface attribute should be updated.
 C Reporting.
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
-        WRITE(OUTS,9996)zname(ICOMP)(1:lnzname(ICOMP))
+        WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
  9996   FORMAT(' Transparent construction file details for ',A)
         CALL EDISP(ITRU,OUTS)
         CALL EDISP(ITRU,' ')
@@ -863,7 +879,7 @@ C the list points to an existing set of properties.
             write(outs,'(6a,1x,a)')
      &      ' Mismatched TMC & mlc layers: ',
      &      SSNAME(icn)(1:lnblnk(SSNAME(icn))),' in ',
-     &      zname(ICOMP)(1:lnzname(ICOMP)),' composed of ',
+     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' composed of ',
      &      SSMLCN(icn),TOPTIC(ICOMP,I)
             call edisp(iuout,outs)
             goto 1002
@@ -908,7 +924,7 @@ C Calculate reflectance.
   100   CONTINUE
         IF(SUM.LT.0..OR.SUM.GT.1.)then
           write(outs,'(3a,i2,a,f6.3)')' In ',
-     &      zname(ICOMP)(1:lnzname(ICOMP)),' tmc ',
+     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' tmc ',
      &      i,': the optical reflectance is ',SUM
           CALL EDISP(ITRU,outs)
           CALL EDISP(ITRU,' Reading of zone optics terminated.')

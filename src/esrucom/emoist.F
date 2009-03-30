@@ -24,9 +24,6 @@ C *********************************************************************
       SUBROUTINE EMSTRR(LMSTR,IUNIT,ICOMP,ITRC,ITRU,IER)
 #include "building.h"
 
-C espriou.h provides current file.
-#include "espriou.h"
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -44,7 +41,6 @@ C Open existing ASCII moisture data file as unit IUNIT.
         IER=1
         RETURN
       ENDIF
-      write(currentfile,'(a)') LMSTR(1:lnblnk(LMSTR))
 
 C Read the moisture node distribution information.
       MNDS=MNDS-MNDZ(ICOMP)

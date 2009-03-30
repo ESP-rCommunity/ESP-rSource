@@ -19,7 +19,6 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C cread3dv.F contains the following Fortran subroutines:
-
 C  DRAWESP: Loads the geometric description(s) from an ESP file,
 C           converts into viewing coords, clips the image and draws it.
 
@@ -31,14 +30,9 @@ C source code manages the G7 and G8 data.
 C ******************** DRAWESP 
 C DRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
-C ier is returned as non-zero if there has been a problem.
-      SUBROUTINE DRAWESP(ier)
+      SUBROUTINE DRAWESP(ITRC,ier)
 #include "building.h"
-#include "geometry.h"
-#include "prj3dv.h"
-
-C Passed parameter.
-      integer ier
+      PARAMETER  (MPL = 200 )
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -50,6 +44,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
+     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
 
@@ -58,11 +54,15 @@ C      COMMON/OUTIN/IUOUT,IUIN
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
+      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
+     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates of each vertice in zone.
@@ -82,15 +82,15 @@ C NZJVN : topology of vertices associated with each connection.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12,t13*13
+      CHARACTER MLCN*12,zname*12,zdesc*64,t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3
+      integer iix,iiy,iixlast,iiylast
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3
+      integer*8 iix,iiy,iixlast,iiylast
 #endif
 
 C If not in graphic mode return.
@@ -390,6 +390,8 @@ C move cursor to vertex and remember position.
             IV=NZJVN(icc,IP)
             CALL VERTLBL(ix,iy,IV,ier)
           ENDIF
+          ixlast=ix
+          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
 
@@ -399,8 +401,6 @@ C move cursor to vertex and remember position.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -409,7 +409,7 @@ C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
             if(NAP.ne.NBP)then
-              call eswline(iixlast,iiylast,iix,iiy)
+              call eswline(ixlast,iylast,ix,iy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -421,6 +421,8 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
+                  iix=ix
+                  iiy=iy
                   call edline(iixlast,iiylast,iix,iiy,LD)
                   found=.true.
                 endif
@@ -430,17 +432,17 @@ C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
+                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call eswline(iixlast,iiylast,iix,iiy)
+                call eswline(ixlast,iylast,ix,iy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(iixlast,iiylast,iix,iiy)
+            call edwline(ixlast,iylast,ix,iy)
           else
-            call eswline(iixlast,iiylast,iix,iiy)
+            call eswline(ixlast,iylast,ix,iy)
           endif
           call forceflush()
 
@@ -449,12 +451,16 @@ C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
             IV=NZJVN(icc,IP1)
             CALL VERTLBL(ix,iy,IV,ier)
+            ixlast=ix
+            iylast=iy
             iixlast=ix   ! cast for edline call
             iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
+          ixlast=ix
+          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
@@ -463,14 +469,12 @@ C Complete the polygon.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
             if(NAP.ne.NBP)then
-              call eswline(iixlast,iiylast,iix,iiy)
+              call eswline(ixlast,iylast,ix,iy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -482,6 +486,8 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
+                  iix=ix
+                  iiy=iy
                   call edline(iixlast,iiylast,iix,iiy,LD)
                   found=.true.
                 endif
@@ -491,17 +497,17 @@ C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
+                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call eswline(iixlast,iiylast,iix,iiy)
+                call eswline(ixlast,iylast,ix,iy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(iixlast,iiylast,iix,iiy)
+            call edwline(ixlast,iylast,ix,iy)
           else
-            call eswline(iixlast,iiylast,iix,iiy)
+            call eswline(ixlast,iylast,ix,iy)
           endif
           call forceflush()
   300   CONTINUE
@@ -528,8 +534,6 @@ C offset the surface name depending on orientation.
                 CALL VECTRN(VN,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),ixc,iyc)
-                iixc=ixc
-                iiyc=iyc
                 call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
                 IF(SSVFC(icc).EQ.'VERT'.or.SSVFC(icc).EQ.'CEIL'.or.
      &             SSVFC(icc).EQ.'FLOR')THEN
@@ -546,52 +550,29 @@ C offset the surface name depending on orientation.
                 CALL VECTRN(CG,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),ixc,iyc)
-                iixc=ixc
-                iiyc=iyc
-                IF(SSVFC(icc).EQ.'VERT')THEN
+                 IF(SSVFC(icc).EQ.'VERT')THEN
 
 C Draw arrow and horizontal line.
-                  iid1=ixc+3
-                  iid2=iyc-3
-                  call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=ixc+3
-                  iid2=iyc+3
-                  call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=ixc+7
-                  call eswline(iixc,iiyc,iid1,iiyc)
+                  call eswline(ixc,iyc,ixc+3,iyc-3)
+                  call eswline(ixc,iyc,ixc+3,iyc+3)
+                  call eswline(ixc,iyc,ixc+7,iyc)
                   ixc=ixc+7
                 ELSEIF(SSVFC(icc).EQ.'CEIL')THEN
 
 C Draw arrow to surface then up and horizontal to the text.
-                  iid1=ixc+3
-                  iid2=iyc-3
-                  call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=ixc-3
-                  iid2=iyc-3
-                  call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iyc-5
-                  call eswline(iixc,iiyc,iixc,iid1)
-                  iid1=iyc-5
-                  iid2=ixc+7
-                  iid3=iyc-5
-                  call eswline(iixc,iid1,iid2,iid3)
+                  call eswline(ixc,iyc,ixc+3,iyc-3)
+                  call eswline(ixc,iyc,ixc-3,iyc-3)
+                  call eswline(ixc,iyc,ixc,iyc-5)
+                  call eswline(ixc,iyc-5,ixc+7,iyc-5)
                   iyc=iyc-5
                   ixc=ixc+7
                 ELSEIF(SSVFC(icc).EQ.'FLOR')THEN
 
 C Draw arrow to surface then down and horizontal to the text.
-                  iid1=ixc+3
-                  iid2=iyc+3
-                  call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=ixc-3
-                  iid2=iyc+3
-                  call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iyc+5
-                  call eswline(iixc,iiyc,iixc,iid1)
-                  iid1=iyc+5
-                  iid2=ixc+7
-                  iid3=iyc+5
-                  call eswline(iixc,iid1,iid2,iid3)
+                  call eswline(ixc,iyc,ixc+3,iyc+3)
+                  call eswline(ixc,iyc,ixc-3,iyc+3)
+                  call eswline(ixc,iyc,ixc,iyc+5)
+                  call eswline(ixc,iyc+5,ixc+7,iyc+5)
                   iyc=iyc+5
                   ixc=ixc+7
                 ENDIF

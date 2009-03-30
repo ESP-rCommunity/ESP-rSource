@@ -27,8 +27,15 @@ C ********************* sbempr
 C Subroutine SBEMPR reads SBEM database
       SUBROUTINE SBEMPR(IER)
 #include "esprdbfile.h"
-C esprdbfile.h supplies LSBEM (SBEM database)
-C and default file names for databases
+C esprdbfile.h supplies the following:
+C LAPRES,IAPRES (for window pressure databases)
+C LOPTDB,IOPTDB (for optical database)
+C LPCDB/IPCDB (for plant template database)
+C LPRFDB,IPRODB (for event profile database)
+C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+C ICLIM,LCLIM (for climate file)
+C LSBEM (SBEM database)
+C default file names for databases
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
@@ -40,15 +47,16 @@ C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
-      CHARACTER OUTSTR*124,LOUTSTR*248,fs*1
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      CHARACTER OUTSTR*124,LOUTSTR*248
       CHARACTER*42 WORD,FUELNAM
       CHARACTER SYSNAM*60
       CHARACTER*40 ACTNAME
       CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
       CHARACTER*102 ACTDOC  ! to hold documentation string for activity
-      character*144 lworking ! for processing the path of LSBEM
-      integer NIT,lndbp
-      logical unixok
+      integer NIT
       
 C Initialise counters
       IDEBUG=0
@@ -57,56 +65,11 @@ C Initialise counters
       IHSYS=0
       IBRUK=0
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
-C Read SBEM database. If lsbem has not yet been assigned
-C then assign from default name (which has a
-C full path). Process DSBEM with findwhichdbpath. Use the value
-C of ipathsbem to control file opening logic. This is similar
-C to the logic used for the optics database which is also ASCII.
-      if(isbem.eq.0)then
-        write(lworking,'(a)') DSBEM(1:lnblnk(DSBEM))
-        call findwhichdbpath('sbm',lworking,ier)
-      endif
+C Read SBEM database
+      LSBEM=DSBEM
       IUF=IFIL+1
-      if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
-        CALL EFOPSEQ(IUF,LSBEM,1,IER)
-        if(IER.ne.0)then
-          write(6,*) 'error while opening ',LSBEM
-          ier=1
-          return
-        endif
-      elseif(ipathsbem.eq.2)then
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    lsbem(1:lnblnk(lsbem))
-
-C Debug.
-        write(6,*) 'working sbem ',lworking
-        CALL EFOPSEQ(IUF,lworking,1,IER)
-        if(IER.ne.0)then
-          write(6,*) 'error while opening ',lworking
-          ier=1
-          return
-        endif
-      endif
-
-C Remember the current file name for inclusion in errors.
-      if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
-        write(currentfile,'(a)') LSBEM(1:lnblnk(LSBEM))
-      elseif(ipathsbem.eq.2)then
-        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
-      endif
-
-C Start reading the tokens in the SBEM file. Many of the lines
-C in the file are fixed format (data is expected at a specific
-C point in the line).
+      CALL EFOPSEQ(IUF,LSBEM,1,IER)
+      write(currentfile,'(a)') LSBEM(1:lnblnk(LSBEM))
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'SBEM db',IER)
       IF(OUTSTR(1:5).NE.'*sbem')then
         CONTINUE ! WARNING MSG TO GO HERE
@@ -692,7 +655,6 @@ C Subroutine MKSBEM writes out a project specific SBEM file that holds
 C data relevant to the UK National Calculation Method.
       SUBROUTINE MKSBEM
 #include "building.h"
-#include "geometry.h"
 #include "sbem.h"
       
       integer lnblnk  ! function definition
@@ -702,8 +664,10 @@ C data relevant to the UK National Calculation Method.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       CHARACTER CFGROOT*24,LCFGF*72,TMPSTR*64
+      CHARACTER ZNAME*12,ZDESC*64
       integer ireadactivityindex
       
       TMPSTR=' '
@@ -907,8 +871,8 @@ C Write building zone to HVAC system linkage information
           WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
         ENDIF
         WRITE(IUF,'(3A,I3,A)',IOSTAT=IOS,ERR=3)
-     &   'Zone ',ZNAME(IZ),' is linked to system number ',
-     &   IHLZ(IZ),TMPSTR
+     &     'Zone ',ZNAME(IZ),' is linked to system number ',
+     &     IHLZ(IZ),TMPSTR
  102  CONTINUE
 
 C Write DHW generator information
@@ -937,8 +901,8 @@ C Write building zone to DHW system linkage information
           WRITE(TMPSTR,'(2A)')' (HVAC system) ',HVACNAME(-IDHWLZ(IZ))
         ENDIF
         WRITE(IUF,'(3A,I3,A)',IOSTAT=IOS,ERR=3)
-     &   'Zone ',ZNAME(IZ),' is linked to DHW system number ',
-     &   IDHWLZ(IZ),TMPSTR
+     &     'Zone ',ZNAME(IZ),' is linked to DHW system number ',
+     &     IDHWLZ(IZ),TMPSTR
  104  CONTINUE
 
 C Write building zone to activity type linkage information
@@ -964,7 +928,7 @@ C Check if there is a user defined entry for lighting heat gains
           WRITE(IUF,'(6A,1X,F7.2)') 'User_defined',' ','Zone',
      &    zname(iz),
      &    ' is linked to user defined lighting heat gains of (W): ',
-     &    '  ',LIGHTWATTAGE(IZ)
+     &        '  ',LIGHTWATTAGE(IZ)
              
 C Otherwise take the suggested values (gains) for the specified 
 C lighting type
