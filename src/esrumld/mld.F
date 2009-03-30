@@ -238,7 +238,7 @@ C ***** Dummy display of images.
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

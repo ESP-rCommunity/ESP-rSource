@@ -452,7 +452,7 @@ C (Re)Set all surfaces to std line width.
             VIEWM(3)=VIEWMI(3)
             ANG=ANGI
           endif
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
 C Open core of databases.
           call opendb(ier)

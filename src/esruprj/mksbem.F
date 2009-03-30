@@ -1097,11 +1097,10 @@ C If surface is exterior then check if use is specified if not then ask
               ADF=SSUSE(ICN,1)
               IF(ADF(1:1).EQ.'-')THEN
                 IZGFOC=ICOMP
-                ITRC=0
                 MODIFY=.TRUE.
                 CALL INLNST(1)
                 LINSTY(ICN)=2
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 WRITE(OUTS,'(2A)')'Enter usage for surface ',SSNAME(ICN)
                 CALL EDISP(IUOUT,' ')
                 CALL EDISP(IUOUT,OUTS)
@@ -1805,6 +1804,7 @@ C Make a copy of constructions file and tmc file if applicable
         IUNIT=12
         QUIET=.FALSE.
         call FINDFIL(LTHRM(ICOMP),XST)
+	ITRC=0
         ITRU=6
         CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,ITRC,ITRU,IER)
         EXT='.con'
@@ -2035,7 +2035,7 @@ C If surface is exterior then check if use is specified if not then ask
                 MODIFY=.TRUE.
                 CALL INLNST(1)
                 LINSTY(ICN)=2
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 ijk=lnblnk(ssname(icn))
                 WRITE(OUTS,'(3A)')'Surface ',SSNAME(ICN)(1:ijk),
      &          ' has use: something else. Confirm this in which case'
@@ -2322,7 +2322,7 @@ C Display what the notional model looks like
                   nznog(ic)=IC
  2312           continue
                 izgfoc=ICOMP
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
               ELSE
                 CONTINUE
               ENDIF

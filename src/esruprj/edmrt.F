@@ -382,7 +382,7 @@ C the zone, obstructions and sensors.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(0,IER)
+      CALL ADJVIEW(IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then
@@ -610,7 +610,7 @@ C an offset from prj start position.
 C Edit item identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         ICUB=IFOC
-        CALL EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
+        CALL EDMRTS(ICOMP,ICUB,IER)
       ELSE
 
 C Not one of the legal menu choices.
@@ -624,7 +624,7 @@ C Not one of the legal menu choices.
 
 C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
-      SUBROUTINE EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
+      SUBROUTINE EDMRTS(ICOMP,ICUB,IER)
 #include "building.h"
 #include "geometry.h"
       
@@ -680,7 +680,7 @@ C draw the sensor cubes.  Set all surface lines to standard width.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then

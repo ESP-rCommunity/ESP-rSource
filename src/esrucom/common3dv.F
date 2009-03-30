@@ -19,6 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C cmmon3dv.F contains the following Fortran subroutines:
+
 C  ADJVIEW: Adjusts the viewing transforms & boundaries if necessary.
 C  CHGAZI:  Called from C code with an increment or decrement of azimuth.
 C  CHGELEV: Called from C code with an increment or decrement of elevation.
@@ -32,16 +33,16 @@ C ************* ADJVIEW
 C ADJVIEW takes the current status of view and boundary mods
 C and adjusts the viewing transforms & object boundaries if 
 C necessary before displaying the zone.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
 #include "building.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
 C Passed parameters.
-      integer itrc,ier
+      integer ier
       
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -107,7 +108,7 @@ C Remind user of which model even when looking at one zone.
         call viewtext(etext,iside,isize,ifont)
 
 C Draw the selected bodies.
-        CALL DRAWESP(ITRC,IER)
+        CALL DRAWESP(IER)
 
 C Recover information begin edited and reset modify flag.
         if(izgfoc.NE.0)CALL ERCZONE(izgfoc)
@@ -153,8 +154,7 @@ C Passed paremter.
       EYEM(3)=Z+VIEWM(3)
       MODIFY=.TRUE.
       MODLEN=.TRUE.
-      itrc=0
-      CALL ADJVIEW(itrc,IER)
+      CALL ADJVIEW(IER)
 
       return
       end
@@ -194,8 +194,7 @@ C Passed paramter.
       EYEM(3)=Z+VIEWM(3)
       MODIFY=.TRUE.
       MODLEN=.TRUE.
-      itrc=0
-      CALL ADJVIEW(itrc,IER)
+      CALL ADJVIEW(IER)
 
       return
       end

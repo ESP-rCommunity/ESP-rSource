@@ -592,7 +592,7 @@ C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Test edge adjacencies and subsurfaces if it is the first time
 C in to the zone or if the geometry has benn modified.
@@ -823,7 +823,7 @@ C been changes check if user wants to save the changes and
 C if so update the geometry file. Also update the volume of
 C any flow network node associated with this zone.
         call tstamp('>','PRJ: enter zone vertices')
-        CALL EDVERT(ITRC,iuout,ICOMP,MODGEO,IER)
+        CALL EDVERT(iuout,ICOMP,MODGEO,IER)
         if(MODGEO)then
           DOK=.true.
           h(1)='Changes to vertex data may be lost if you continue'
@@ -1082,7 +1082,7 @@ C LINSTY of selected surface to 2 (i.e. thick lines) and redraw.
               izgfoc=ICOMP
               MODIFY=.TRUE.
               MODGEO=.TRUE.
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
 
 C Use a slightly wider editing box than the name. Take the string
 C (T14) and ensure that there are no spaces or strange characters.
@@ -1114,7 +1114,7 @@ C Reset all line widths to normal and redraw (if last surface in list).
                 CALL INLNST(1)
                 MODIFY=.TRUE.
                 MODGEO=.TRUE.
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
               endif
             elseif(IRT.eq.2.and.ISEL.GT.0)then
 
@@ -1740,7 +1740,7 @@ C other zone.
             nzg=1
             nznog(1)=IZ
             izgfoc=ICOMP
-            CALL ADJVIEW(0,IER)
+            CALL ADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
             call eclose(gversion(IZ),1.1,0.01,newgeo)
@@ -3055,7 +3055,7 @@ C Note IC is the connection at the other side of surface icom:is.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for the menu.
       H(1)='This menu displays the surface attributes that may'
@@ -3123,7 +3123,7 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         return
       ELSEIF(INODA.EQ.1)THEN
         write(T14,'(2a)')SSNAME(ioc),'  '
@@ -3602,7 +3602,7 @@ C and display both zones.
             nznog(1)=ICOMP
             nznog(2)=IZ
             izgfoc=ICOMP
-            CALL ADJVIEW(0,IER)
+            CALL ADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
 
@@ -4619,7 +4619,7 @@ C Do not need second tag if generating notional model
 C ************* EDVERT 
 C Edit vertex attributes in common block G1 via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EDVERT(ITRC,ITRU,ICOMP,MODGEO,IER)
+      SUBROUTINE EDVERT(ITRU,ICOMP,MODGEO,IER)
 #include "epara.h"
 #include "building.h"
 #include "geometry.h"
@@ -4702,7 +4702,7 @@ C Do a bound check on the current zone and update display.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='This menu allows existing vertices to be viewed and'
@@ -4840,7 +4840,7 @@ C Show the new point on the current wireframe.
               nzg=1
               nznog(1)=ICOMP
               izgfoc=ICOMP
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
 
 C Check to see if this new vertex should be included in any existing edges.
 C << example of checking if should be inserted in another surface >>
@@ -4940,7 +4940,7 @@ C Distance between two vertices.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
         elseif(ino.eq.3)then
           inpick=1
@@ -5031,7 +5031,7 @@ C Show the new point on the current wireframe.
               nzg=1
               nznog(1)=ICOMP
               izgfoc=ICOMP
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
             endif
             dok=.false.
             h(1)='If you have several vertices to create, you'
@@ -5044,7 +5044,7 @@ C Show the new point on the current wireframe.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         elseif(ino.eq.4)then
 
 C Angle between two lines.
@@ -5069,7 +5069,7 @@ C Angle between two lines.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         elseif(ino.eq.5)then
 
 C Intersection line and plane.
@@ -5308,7 +5308,7 @@ C And re-draw the zone to clean up the circles.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
         elseif(ino.eq.7)then
 
@@ -5344,7 +5344,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         elseif(ino.eq.8)then
 
 C Bring a point off a line into alignment. Begin by checking the
@@ -5586,7 +5586,7 @@ C Show the new point on the current wireframe.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           else
             goto 3
           endif
@@ -5635,7 +5635,7 @@ C be a new vertex and update the wireframe.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             goto 92
           endif
         endif
@@ -5987,7 +5987,7 @@ C Do a bound check on the current zone and update display.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='This menu allows existing vertices to be viewed and'
@@ -6202,7 +6202,7 @@ C Reverse the ordering, redraw image and return.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           goto 92
         endif
         if(IRT.eq.6)then
@@ -6317,7 +6317,7 @@ C Ask user if they want to update the vertex with the new values.
                   nzg=1
                   nznog(1)=ICOMP
                   izgfoc=ICOMP
-                  CALL ADJVIEW(ITRC,IER)
+                  CALL ADJVIEW(IER)
                   goto 92
                 endif
               endif
@@ -6348,7 +6348,7 @@ C Update the image.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
 C Show these points as small circles...
         call edisp(iuout,' proposed points are shown as dots....')
@@ -6417,7 +6417,7 @@ C Update the image.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
 C Add/insert a surface.
@@ -6839,16 +6839,16 @@ C Use logic similar to parsemlcdesc to find the optical name.
 
 C Instanciate the new surface via call addmass with all of the parameters.
           if(IRT.eq.6)then
-            call addmass(1,ICOMP,'VS','G',VALOX,VALOY,VALOZ,
+            call addmass(ICOMP,'VS','G',VALOX,VALOY,VALOZ,
      &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.7)then
-            call addmass(1,ICOMP,'HS','G',VALOX,VALOY,VALOZ,
+            call addmass(ICOMP,'HS','G',VALOX,VALOY,VALOZ,
      &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.9)then
-            call addmass(1,ICOMP,'VM','G',VALOX,VALOY,VALOZ,
+            call addmass(ICOMP,'VM','G',VALOX,VALOY,VALOZ,
      &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.10)then
-            call addmass(1,ICOMP,'HM','G',VALOX,VALOY,VALOZ,
+            call addmass(ICOMP,'HM','G',VALOX,VALOY,VALOZ,
      &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           endif
 
@@ -6861,7 +6861,7 @@ C Track users confirmation of new surface.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             GOTO 30
           elseif(INVT.eq.-3)then
             return
@@ -6898,7 +6898,7 @@ C Update the image.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       ELSEIF(IVERT.EQ.(MVERT-7))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -6921,7 +6921,7 @@ C a thick line.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
    93   H(1)='The list of associated vertices should be given in'
         H(2)='anticlockwise order as one faces the outside of the'

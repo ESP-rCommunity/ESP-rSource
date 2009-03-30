@@ -312,7 +312,6 @@ C Initialisation
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
-      ITRC=1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
         call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
@@ -324,7 +323,7 @@ C Read geometry file for chosen zone.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
       CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)

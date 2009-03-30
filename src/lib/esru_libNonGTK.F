@@ -4408,7 +4408,7 @@ C If image info altered (view point) then update display.
       IF(MODIFY)THEN
         if(ITPPSW.eq.0)then
           CALL INLNST(1)
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.
@@ -4637,7 +4637,7 @@ C Refresh the image.
         do 444,ix=1,ncomp
           ZBFLG(ix)=0.
   444   continue
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         IF(ier.NE.0)RETURN
         MODLEN=.FALSE.
         MODBND=.FALSE.
@@ -4725,7 +4725,7 @@ C Use the ASKTIM in esru_lib.F (as opposed to ASKRTIM in esrures/utils.F).
           ITSNM=1
           MODIFY=.TRUE.
           MODLEN=.TRUE.
-          CALL ADJVIEW(itrc,IER)
+          CALL ADJVIEW(IER)
 
 C Generate a heading for the view.
           CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)

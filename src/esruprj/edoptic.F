@@ -1611,7 +1611,7 @@ C attributes.
         do 2 i = 1,ncon
           if(NSTMCFL(i).ne.0)LINSTY(i)=2
   2     continue
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       endif
 
 C Initial menu entry setup.

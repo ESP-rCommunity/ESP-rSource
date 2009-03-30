@@ -865,7 +865,7 @@ C Redraw the bluiding in the graphic screen.
 C (Re)Set all surfaces to standard line width.
               CALL INLNST(1)
               izgfoc=0
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
             endif
 
             write(outs,'(a,a)')'Which zone is associated with ',
@@ -977,7 +977,7 @@ C Redraw the building in the graphic screen.
 C (Re)Set all surfaces to standard line width.
             CALL INLNST(1)
             izgfoc=0
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
           WRITE(OUTS,'(A)') 
      &'Select the zone containing the surface. '
@@ -1005,7 +1005,7 @@ C General image option flags.
           nzg=1
           nznog(1)=IZ
           izgfoc=IZ
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
           ISO=1
           WRITE(OUTS,'(A)')
@@ -1933,7 +1933,7 @@ C << might want to save current values for later recovery >>
       nzg=1
       nznog(1)=ISZONE
       izgfoc=ISZONE
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -2249,7 +2249,7 @@ C Redraw the affected zones in the graphic screen.
               nzg=2
               nznog(1)=IC1(ICN)
               nznog(2)=IC2(ICN)
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
 
 C (Re)Set all surfaces to standard line width.
               CALL INLNST(1)

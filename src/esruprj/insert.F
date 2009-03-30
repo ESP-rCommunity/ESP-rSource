@@ -567,7 +567,7 @@ C Reset all surface lines in donor zone.
           nzg=1
           nznog(1)=IZ
           izgfoc=ICOMP
-          CALL ADJVIEW(0,IER)
+          CALL ADJVIEW(IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
         endif
@@ -1205,7 +1205,7 @@ C constr (12 char) the name of the construction for then new surface(s).
 C opt (12 char) the name of the optical set for the new surface(s).
 C IER is zero then no issue during creation, IER is -1 then user asked
 C   for new position, IER is -3 user aborted action.
-      SUBROUTINE ADDMASS(ITRC,ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
+      SUBROUTINE ADDMASS(ICOMP,ACT,MODE,VALOX,VALOY,VALOZ,
      &   AANG,DDX,DDZ,SN,constr,OPT,IER)
 #include "building.h"
 #include "geometry.h"
@@ -1390,7 +1390,7 @@ C Confirm opening.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           ier=-1
           return
         elseif(INVT.eq.3)then
@@ -2138,7 +2138,7 @@ C edited to a thick line if currently in graphics mode.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
         goto 72
       endif
@@ -2234,7 +2234,7 @@ C edited to a thick line if currently in graphics mode.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       endif
 
   43  if(IRT.eq.1)then
@@ -2615,7 +2615,7 @@ C Update the image if not in one of the silent modes.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &      iicfgz,iicfgn,iicfgc,iicfgdfn)
           if(MMOD.EQ.8)then
@@ -2742,7 +2742,7 @@ C Update the image if in non-silent mode
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &      iicfgz,iicfgn,iicfgc,iicfgdfn)
           if(MMOD.EQ.8)then

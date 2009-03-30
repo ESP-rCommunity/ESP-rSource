@@ -4687,7 +4687,7 @@ C          ITHLZ=ISEL
         endif
 
         CALL INLNST(1)
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODLEN=.FALSE.
         MODBND=.FALSE.
         MODIFY=.FALSE.
@@ -4729,7 +4729,7 @@ C compute positon and update the view.
           ITSNM=1
           MODIFY=.TRUE.
           MODLEN=.TRUE.
-          CALL ADJVIEW(itrc,IER)
+          CALL ADJVIEW(IER)
 
 C Generate a heading for the view.
           CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
@@ -4850,7 +4850,7 @@ C If image info altered (viewpoint) then update display.
       IF(MODIFY)THEN
         if(ITPPSW.eq.0)then
           CALL INLNST(1)
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.
@@ -4969,7 +4969,7 @@ C Refresh the image.
         do 444,ix=1,ncomp
           ZBFLG(ix)=0.
   444   continue
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         IF(ier.NE.0)RETURN
         MODLEN=.FALSE.
         MODBND=.FALSE.
@@ -5063,7 +5063,7 @@ C compute positon and update the view.
           ITSNM=1
           MODIFY=.TRUE.
           MODLEN=.TRUE.
-          CALL ADJVIEW(itrc,IER)
+          CALL ADJVIEW(IER)
 
 C Generate a heading for the view.
           CALL EDTIME(STIME,DESCRH,DESCRD,TIMER)
@@ -5251,7 +5251,7 @@ C If image info altered (viewpoint) then update display.
       IF(MODIFY)THEN
         if(ITPPSW.eq.0)then
           CALL INLNST(1)
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           IF(ier.NE.0)RETURN
           MODLEN=.FALSE.
           MODBND=.FALSE.

@@ -162,7 +162,7 @@ C If ground needs drawing or updating do it here.
           nzg=0
         endif
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -226,7 +226,7 @@ C List help.
       ELSEIF(INO.EQ.3)THEN
 
 C Edit, and manipulate vertices and support transforms.
-        call EDGVERT(ITRC,grmod,IER)
+        call EDGVERT(grmod,IER)
         if(grmod)MODIFY=.TRUE.
       ELSEIF(INO.EQ.4)THEN
 
@@ -399,7 +399,7 @@ C Save ground file.
 C ****** EDGVERT
 C Edit vertex attributes in common block G1 via a paging menu.
 C IER=0 OK, IER=1 problem.
-      SUBROUTINE EDGVERT(ITRC,MODGEO,IER)
+      SUBROUTINE EDGVERT(MODGEO,IER)
 #include "epara.h"
 #include "building.h"
 #include "prj3dv.h"
@@ -482,7 +482,7 @@ C Update display.
         CALL INLNST(1)
         ITVNO=0
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         MODIFY=.false.
@@ -636,7 +636,7 @@ C Show the new point on the current wireframe.
               if(MMOD.ge.8)then
                 CALL INLNST(1)
                 izgfoc=0
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 call EGRNDR(IER)
               endif
 
@@ -818,7 +818,7 @@ C Show the new point on the current wireframe.
               MODBND=.TRUE.
               call usrmsg(' ',' ','-')
               if(MMOD.ge.8)then
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 CALL INLNSTG(3)
                 call EGRNDR(IER)
               endif
@@ -831,7 +831,7 @@ C Show the new point on the current wireframe.
           endif
           MODIFY=.true.
           if(MMOD.ge.8)then
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             CALL INLNSTG(3)
             call EGRNDR(IER)
           endif
@@ -1126,7 +1126,7 @@ C Show the new point on the current wireframe.
             MODIFY=.TRUE.
             MODBND=.TRUE.
             if(MMOD.ge.8)then
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
               CALL INLNSTG(3)
               call EGRNDR(IER)
             endif
@@ -1174,7 +1174,7 @@ C be a new vertex and update the wireframe.
 C            if(MMOD.ge.8)then
 C              CALL INLNST(1)
 C              izgfoc=0
-C              CALL ADJVIEW(ITRC,IER)
+C              CALL ADJVIEW(IER)
 C              call EGRNDR(IER)
 C            endif
             goto 92
@@ -2533,7 +2533,7 @@ C Update display.
         CALL INLNST(1)
         ITVNO=0
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         MODIFY=.false.
@@ -2682,7 +2682,7 @@ C Reverse the ordering, redraw image and return.
           MODIFY=.TRUE.
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call EGRNDR(IER)
           goto 92
         endif
@@ -2707,7 +2707,7 @@ C Update the image.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call EGRNDR(IER)
 
 C Show these points as small circles...
@@ -2765,7 +2765,7 @@ C Update the image.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           CALL INLNSTG(3)
           call EGRNDR(IER)
         endif
@@ -3056,7 +3056,7 @@ C Update the image.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           CALL INLNSTG(3)
           call EGRNDR(IER)
         endif
@@ -3222,7 +3222,7 @@ C ****** Routine to update-draw ground during triangulation.
 
       CALL startbuffer()
       izgfoc=0
-      CALL ADJVIEW(0,IER)
+      CALL ADJVIEW(IER)
       WRITE(outs,'(A,i3,A,i3)')' Verts: ',IVV,' surfs ',NGTG
       iside=1
       isize=0

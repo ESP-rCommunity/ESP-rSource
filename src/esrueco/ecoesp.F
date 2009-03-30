@@ -879,7 +879,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
-      ITRC=1
       itru=6
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
@@ -895,7 +894,7 @@ C Read geometry file for chosen zone.
   33    CONTINUE
       endif
 
-      if (Iskip.eq.1) CALL ADJVIEW(ITRC,IER)
+      if (Iskip.eq.1) CALL ADJVIEW(IER)
 
 C Multi-page list
       call edisp(iuout,'Please select surfaces to include in analysis.')

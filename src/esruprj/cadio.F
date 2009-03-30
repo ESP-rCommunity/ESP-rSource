@@ -356,7 +356,7 @@ C If user canceled the wireframe export loop back.
           endif
           call usrmsg('sending wireframe... ',' ','-')
           MODIFY=.TRUE.
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,

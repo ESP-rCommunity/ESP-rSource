@@ -958,7 +958,7 @@ C Ask for zone (if not defined), surface and working plane height.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       ITSNM=0
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Ask for surface and highlight.
       call EASKSUR(ifocz,IS,'-',
@@ -969,7 +969,7 @@ C Ask for surface and highlight.
       LINSTY(IC)=2
       MODIFY=.TRUE.
       ITVNO=0
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       CALL INLNST(1)
 
       H(1)='The grid points on the chosen surface can be '
@@ -1099,7 +1099,7 @@ C Display grid on the zone... (if in graphic mode)
         ITZNM=1
         ITSNM=1
         ITVNO=1
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         CALL DFGRIDLBL('g')
       endif
 
@@ -1205,7 +1205,7 @@ C If vertices are to be labeled do it in the smallest font.
       ITZNM=1
       ITSNM=1
       ITVNO=1
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Loop through grid points.
       do 10 I=1,NDFP

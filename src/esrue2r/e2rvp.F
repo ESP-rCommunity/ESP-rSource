@@ -441,7 +441,7 @@ C Draw the problem in plan/elevation with viewcone.
           call VCONE('E')
         elseif(ITPPSW.eq.3)then
           MODIFY=.TRUE.
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           MODLEN=.FALSE.
           MODIFY=.FALSE.
         endif

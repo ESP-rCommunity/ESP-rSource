@@ -800,6 +800,15 @@ C  DSGRID:  Draws a dotted site grid with current scaling factors.
 C  EMKVIEW: Constructs a 'viewer' format file.
 
 .ES
+.IP "cread3dv.F" 5
+This source file holds one variant of the subroutine drawesp.
+There is another variant in the file read3dv.F
+.ML
+
+C DRAWESP loads the geometric description(s) from an ESP file,
+C converts into viewing coords, clips the image and draws it.
+
+.ES
 .SH
 The esrubps code folder
 .LP
@@ -2673,9 +2682,9 @@ geometric entities.
 C ADJVIEW takes the current status of view and boundary mods
 C and adjusts the viewing transforms & object boundaries if 
 C necessary before displaying the zone.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       integer itrc,ier
 
 
@@ -2739,6 +2748,21 @@ C IER is returned as non-zero if there is a problem.
       integer ITRC,IUO,IER
       logical CFGOK
 
+
+.ES
+.SH
+cread3dv.F
+.LP
+This includes one version of the subroutine drawesp that limits
+the scanning of zone geometry files. There is another version of
+drawesp in read3dv.F 
+.ML
+
+C DRAWESP loads the geometric description(s) from an ESP file,
+C converts into viewing coords, clips the image and draws it.
+C ier is returned as non-zero if there has been a problem.
+      SUBROUTINE DRAWESP(ier)
+      integer ier
 
 .ES
 .SH

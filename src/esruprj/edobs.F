@@ -231,7 +231,7 @@ C read of file).
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='In order to account for external shading devices, '
@@ -347,7 +347,7 @@ C Material to associate with the reveal.
           call EREVEAL(ICOMP,IRS,AZI,ELV,RTK,OWID,blkroot,mat,IER)
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
@@ -502,7 +502,7 @@ C To delete the last obstruction, dereference the file and exit.
             else
               CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             endif
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           ELSE
             CALL USRMSG(' ',' Too many obstructions defined!','W')
             GOTO 92
@@ -511,7 +511,7 @@ C To delete the last obstruction, dereference the file and exit.
 C Edit the new block, first hilight the obstruction.
           IB=NB
           ITOBS = IB
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           CALL EPMENSV
           CALL EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
           CALL EPMENRC
@@ -571,7 +571,7 @@ C Ask for transform distance for obstruction and then apply.
             else
               CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             endif
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 
@@ -1031,7 +1031,7 @@ C Display the zone.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='The specification of obstructions is currently based'
@@ -1057,7 +1057,7 @@ C Now display the menu.
       CALL EMENU('Block Details',VERT,19,IVERT)
       IF(IVERT.EQ.19)THEN
         ITOBS = 0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         RETURN
       ELSEIF(IVERT.EQ.1)THEN
   42    H(1)='You can edit the origin of the block, make it the same'

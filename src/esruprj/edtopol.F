@@ -322,7 +322,7 @@ C (Re)Set all surfaces to standard line width.
         izgfoc=0
         if(MMOD.eq.8)then
           CALL INLNST(1)
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
       endif
 
@@ -496,7 +496,7 @@ C Flip logic for back-to-back within zone.
       ELSEIF(INO.EQ.15)THEN
 
 C Edit single connection.
-        call edaconn(itrc,ier)
+        call edaconn(ier)
         MODIFY=.TRUE.
       ELSEIF(INO.EQ.16)THEN
 
@@ -919,7 +919,7 @@ C is not a type 3 then don`t highlight.
           nzg=1
           nznog(1)=IZ
           izgfoc = IZ
-          if(MMOD.eq.8)CALL CADJVIEW(0,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           MODIFY=.TRUE.
 
 C Find number of corners and their coordinates for this surface.
@@ -1468,7 +1468,7 @@ C found to match.
             CALL SURADJ(II,JJ,IE,TMP,IZC,ISC,ICO,DESCRC)
             if(MMOD.eq.8)LINSTY(ICO)=2
             izgfoc = IZ
-            if(MMOD.eq.8)CALL CADJVIEW(0,IER)
+            if(MMOD.eq.8)CALL CADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
             IC1(IC)=IZ
@@ -1621,7 +1621,7 @@ C the view on it and calculate the angle of view to that box.
               nznog(2)=II
               if(MMOD.eq.8)LINSTY(ICO)=2
               izgfoc = IZ
-              if(MMOD.eq.8)CALL CADJVIEW(0,IER)
+              if(MMOD.eq.8)CALL CADJVIEW(IER)
               ICN=IZSTOCN(II,JJ)
               SN=SSNAME(ICN)
               WRITE(outs,'(4a)')' Probable match to surface ',
@@ -1855,7 +1855,7 @@ C Set all surfaces to standard line width.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           IF(IER.NE.0)THEN
             RETURN
           ELSE
@@ -1907,7 +1907,7 @@ C check for easy matches.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           if(.NOT.M1SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -1935,7 +1935,7 @@ C check for easy matches.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           if(.NOT.M2SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -1964,7 +1964,7 @@ C check for easy matches.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           if(.NOT.M4SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2025,7 +2025,7 @@ C profile has not been defined.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           if(.NOT.M5SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2057,7 +2057,7 @@ C menu and recover after the call.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           if(.NOT.M6SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2108,7 +2108,7 @@ C BASESIMP end.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           if(.NOT.M7SKP)then
             call edisp(iuout,OUTSTR)
             call edisp(iuout,TMP)
@@ -2136,7 +2136,7 @@ C BASESIMP end.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           call edisp(iuout,OUTSTR)
           call edisp(iuout,TMP)
           dok=.true.
@@ -2163,7 +2163,7 @@ C Not an easy match or mandated match so tell user.
           nzg=1
           nznog(1)=IC1(ICC)
           izgfoc=IC1(ICC)
-          if(MMOD.eq.8)CALL CADJVIEW(ITRC,IER)
+          if(MMOD.eq.8)CALL CADJVIEW(IER)
           WRITE(OUTSTR,'(A,A)')'Topology: ',CXSTR(1:lnblnk(CXSTR))
           call edisp(iuout,' ')
           call edisp(iuout,OUTSTR)
@@ -2252,7 +2252,7 @@ C Force redraw of zones, highlighting anchor list.
           kk=lstanchr(ifoc,jj)
           if(kk.ne.0)LINSTY(kk)=2
   45    continue
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       endif
 
 C Initial menu entry setup.
@@ -2412,7 +2412,7 @@ C Force redraw of zones, highlighting anchor list.
             kk=lstanchr(ifoc,jj)
             if(kk.ne.0)LINSTY(kk)=2
  145      continue
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
         dok=.false.
         h(1)='A chance to abort incorrect selection. '

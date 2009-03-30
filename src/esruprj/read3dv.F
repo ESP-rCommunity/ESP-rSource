@@ -25,12 +25,16 @@ C           converts into viewing coords, clips the image and draws it.
 C ******************** DRAWESP 
 C DRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
-      SUBROUTINE DRAWESP(ITRC,ier)
+C ier is returned as non-zero if there has been a problem.
+      SUBROUTINE DRAWESP(ier)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
+
+C Passed parameter.
+      integer ier
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -169,9 +173,6 @@ C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
       IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
       IF(nznog(IZ).NE.izgfoc)THEN
-        WRITE(OUTSTR,77)LGEOM(nznog(IZ))(:LNBLNK(LGEOM(nznog(IZ))))
-   77   FORMAT(' Reading: ',A)
-        if(ITRC.gt.1)CALL USRMSG(' ',OUTSTR,'-')
         call eclose(gversion(nznog(IZ)),1.1,0.01,newgeo)
         if(newgeo)then
           call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)

@@ -179,7 +179,7 @@ C On entry display the current zone. Reset all surface lines to std.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       endif
 
 C Read construction file into common.
@@ -392,7 +392,7 @@ C has resized the display, redraw.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then

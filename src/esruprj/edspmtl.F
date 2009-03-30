@@ -679,7 +679,7 @@ C General image option flags.
       nzg=1
       nznog(1)=IZ
       izgfoc=IZ
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -718,7 +718,7 @@ c      IVAL=IFOC
       nzg=1
       nznog(1)=IZ
       izgfoc=IZ
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
       if(SOTF(ISO)(1:4).eq.'OPAQ')then
@@ -915,7 +915,7 @@ C General image option flags.
         nzg=1
         nznog(1)=IZ
         izgfoc=IZ
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODIFY=.TRUE.
         MODBND=.TRUE.
 
@@ -943,7 +943,7 @@ C Recover the related zone.
         nzg=1
         nznog(1)=IZ
         izgfoc=IZ
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODIFY=.TRUE.
         MODBND=.TRUE.
        

@@ -791,7 +791,7 @@ C to clarify code and allow for future evolution.
               endif
 
 C Pass information to C library code if running in graphic mode.
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
               if(MMOD.EQ.8)then
                 call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
@@ -928,7 +928,7 @@ C to draw the model.
 C (Re)Set all surfaces to standard line width.
             CALL INLNST(1)
             izgfoc=0
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
 
 C Re-draw the configuration buttons.

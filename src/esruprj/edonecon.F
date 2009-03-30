@@ -33,7 +33,7 @@ C LINDIR:  finds the angles associated with a line in space.
 C ************* EDACONN 
 C Edit connection attributes in common block __ via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EDACONN(ITRC,IER)
+      SUBROUTINE EDACONN(IER)
 #include "epara.h"
 #include "building.h"
 
@@ -228,13 +228,13 @@ C has not a type 3 then don`t highlight.
           CALL SURADJ(IC1(IFOC),IC2(IFOC),IE,TMP,IZC,ISC,IC,DESCRC)
           LINSTY(IC)=2
           izgfoc=IC1(IFOC)
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         else
           LINSTY(IFOC)=2
           nzg=1
           nznog(1)=IC1(IFOC)
           izgfoc=IC1(IFOC)
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
 
 C General image option flags.
@@ -391,7 +391,7 @@ C and display both zones.
           nznog(1)=IC1(IFOC)
           nznog(2)=IZ
           izgfoc=IC1(IFOC)
-          CALL ADJVIEW(0,IER)
+          CALL ADJVIEW(IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
 

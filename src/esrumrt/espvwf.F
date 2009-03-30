@@ -837,7 +837,7 @@ C Determine geometry bounds and force it to be drawn.
       MODIFY=.TRUE.
       MODLEN=.TRUE.
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       if(ncub.gt.0)then
         CALL ESCZONE(ICOMP)
         CALL DRWSEN(ier)

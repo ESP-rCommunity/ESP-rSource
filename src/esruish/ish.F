@@ -555,7 +555,7 @@ C Set logical status flags based on returned value of istat.
 
 C Read in the model files taking into account the current value
 C of paction (so that we do not do a recursive asci->bin->ascii.
-               call shdprb(itc,silent,icomp,istat)
+               call shdprb(silent,icomp,istat)
                if(istat.eq.0)then
                  loaded_existing=.true.
                elseif(istat.eq.1)then
@@ -892,7 +892,7 @@ C the zone's name as root, ask whether to use it.
          write(lname,'(a)')zname(icomp)(1:lnzname(icomp))
          ltrns=lname
          istat=0
-         call shdprb(itc,silent,icomp,istat)
+         call shdprb(silent,icomp,istat)
          if(istat.eq.0)then
            loaded_existing=.true.
          elseif(istat.eq.1)then
@@ -957,7 +957,7 @@ C the day and time, compute the positon and update the view.
                nzg=1
                nznog(1)=icomp
                izgfoc=icomp
-               call adjview(itc,ier)
+               call adjview(ier)
 
 C Generate a heading for the view.
                call edtime(stime,descrh,descrd,timer)
@@ -1410,7 +1410,7 @@ C  ifstat = 6  user cancel
 C  ifstat = 7  error opening geometry file
 C  ifstat = 8  new file filled via import of ascii file
 
-      subroutine shdprb(itc,silent,icomp,ifstat)
+      subroutine shdprb(silent,icomp,ifstat)
 #include "building.h"
 #include "geometry.h"
       
@@ -1557,7 +1557,7 @@ C Determine it's bounds for future comparison. Force it to be drawn.
          nzg=1
          nznog(1)=icomp
          izgfoc=icomp
-         call adjview(itc,ier)
+         call adjview(ier)
       endif
       return
       end

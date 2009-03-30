@@ -293,7 +293,7 @@ C redraw the model image.
 C (Re)Set all surfaces to standard line width.
             CALL INLNST(1)
             izgfoc=0
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
 
 C Re-draw the configuration buttons.
@@ -1332,7 +1332,7 @@ C redraw the model image.
 C (Re)Set all surfaces to standard line width.
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
         if(MMOD.eq.8)then
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -2752,7 +2752,7 @@ C If browsing, do not save files but allow ish to be started.
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         IUO=IFIL+1
         call tstamp('>','PRJ: enter hc file')
-        CALL HCFMK(ITRC,ITRU,IUO,IC,IER)
+        CALL HCFMK(ITRU,IUO,IC,IER)
         MODIFY=.TRUE.
 
 C Loop back and see if another zone is requested.

@@ -958,11 +958,11 @@ C Next, if there are mass pairs to add make standard calls to insert them.
           write(constr,'(a)') textmass(imu,2)(1:lnblnk(textmass(imu,2)))
           write(opt,'(a)') textmass(imu,3)(1:lnblnk(textmass(imu,3)))
           if(closev)then
-            call addmass(1,ICOMP,'VM','s',datamass(imu,2),
+            call addmass(ICOMP,'VM','s',datamass(imu,2),
      &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
      &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
           else
-            call addmass(1,ICOMP,'HM','s',datamass(imu,2),
+            call addmass(ICOMP,'HM','s',datamass(imu,2),
      &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
      &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
           endif

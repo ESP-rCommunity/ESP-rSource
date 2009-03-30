@@ -119,7 +119,7 @@ C Draw the zone and display the vertex numbers.
       itvno=0
       itsnm=0
       CALL INLNST(1)
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Get the name of the CFD input file.
       if(LCFD(izone)(1:2).eq.'  ')then
@@ -974,7 +974,7 @@ C to be refreshed.
             itvno=0
             itsnm=0
             CALL INLNST(1)
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
         else
           CALL USRMSG(' Define origin of CFD domain ',
@@ -1842,7 +1842,7 @@ C to be refreshed.
             itvno=0
             itsnm=0
             CALL INLNST(1)
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
         else
           CALL USRMSG(' Define origin of CFD domain ',
@@ -3801,7 +3801,7 @@ C Redraw the zone with vertices.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(0,IER)
+      CALL ADJVIEW(IER)
 
 C Ask for and display the top defining vertices (west to east).
 C Allow user to type in the list of vertices as a string.  The

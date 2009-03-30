@@ -468,7 +468,7 @@ C the image.
         MODIFY=.TRUE.
         MODBND=.TRUE.
         izgfoc=ICOMP
-        CALL ADJVIEW(0,IER)
+        CALL ADJVIEW(IER)
         outdone=.true.
       elseif(INO.EQ.8)then
         H(1)='Browsing lists the file contents in the text feedback'
@@ -1143,7 +1143,7 @@ C Display the other zone, resetting all surface lines to std.
           nzg=1
           nznog(1)=newfoc
           izgfoc=newfoc
-          CALL ADJVIEW(0,IER)
+          CALL ADJVIEW(IER)
         endif
 
 C Generate combined zone & generate surface names as identifiers.
@@ -1284,7 +1284,7 @@ C Highlight surface on image.
                   CALL INLNST(1)
                   CALL SURADJ(ifocz,isf,IE,TMP,IZC,ISC,IC,DESCRC)
                   LINSTY(IC)=2
-                  CALL ADJVIEW(ITRC,IER)
+                  CALL ADJVIEW(IER)
 
                   H(1)='Large sources of indirect illumination should'
                   H(2)='have their distributions pre-calculated as  '

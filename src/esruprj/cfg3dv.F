@@ -29,11 +29,14 @@ C ************* CADJVIEW
 C CADJVIEW takes the current status of view and boundary mods
 C and adjusts the viewing transforms & object boundaries if 
 C necessary before displaying the zone.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
-C then it represents the zone which is currently being edited.
-      SUBROUTINE CADJVIEW(ITRC,IER)
+C IER=0 OK, IER=1 problem. 
+C izgfoc greater than zero represents the zone which is currently being edited.
+      SUBROUTINE CADJVIEW(IER)
 #include "building.h"
 #include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -73,7 +76,7 @@ C If viewpoint or bounds different then initialise viewing paramters.
         ENDIF
 
 C Draw the selected bodies.
-        CALL CDRAWESP(ITRC,IER)
+        CALL CDRAWESP(IER)
 
 C Recover information begin edited and reset modify flag.
         if(izgfoc.NE.0)CALL ERCZONE(izgfoc)
@@ -88,10 +91,14 @@ C Recover information begin edited and reset modify flag.
 C ******************** CDRAWESP 
 C CDRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
-      SUBROUTINE CDRAWESP(ITRC,ier)
+C ier is returned as non-zero if there has been a problem.
+      SUBROUTINE CDRAWESP(ier)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

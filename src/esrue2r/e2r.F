@@ -207,7 +207,6 @@ C Make case insensitive.
       if (aim(1:8).eq.'day_coef') aim='Day_coef'
       if (act(1:6).eq.'create') act='Create'
 
-      ITRC=1
       IFS=1
       ITFS=1
       IMFS=1
@@ -662,7 +661,7 @@ C redraw the model image.
 C (Re)Set all surfaces to std line width.
         CALL INLNST(1)
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
 C At this point we know the new model bounds. Reset the ground disk
 C diameter and centre.
@@ -1246,7 +1245,7 @@ C (Re)Set all surfaces to std line width.
           VIEWM(3)=VIEWMI(3)
           ANG=ANGI
         endif
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
 C At this point we know the model bounds. Set the ground disk
 C diameter and centre.

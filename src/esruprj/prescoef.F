@@ -332,7 +332,7 @@ C Wind velocity profile.
 C ************* EDCPFAC
 C Edit coordinates that define at which facade location CPCALC
 C should calculate pressure coefficients.
-      SUBROUTINE EDCPFAC(ITRC,IER)
+      SUBROUTINE EDCPFAC(IER)
 #include "epara.h"
 #include "building.h"
 #include "geometry.h"
@@ -597,7 +597,7 @@ C Manual input of cordinates.
           nzg=1
           nznog(1)=IC
           izgfoc=IC
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
  256      CALL EASKSUR(IC,ISO,'-','with respect to which external ',
      &               'surface do you want to define coordinates? ',IER)
           call ZSID(IC,ISO,ZSDES,ZSDESC,ZSDESS) 
@@ -615,7 +615,7 @@ C selected to a thick line.
           nznog(1)=IC
           izgfoc=IC
           izgfoc=IC
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
 C Ask for x offset.
           DX=1.0
@@ -731,7 +731,7 @@ C  transparent surface of the zone
                 nzg=1
                 nznog(1)=IZU
                 izgfoc=IZU
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
 
 C Find maximum and minimum vertex coordinates of transparent surface
                 xdebi=x(JVN(IZW,1))
@@ -1669,7 +1669,7 @@ C Produce help text.
 C Define facade coordinates. 
 
             CALL EPMENSV
-            call EDCPFAC(ITRC,IER)
+            call EDCPFAC(IER)
             CALL EPMENRC
           elseif(INOO.EQ.11) then
 

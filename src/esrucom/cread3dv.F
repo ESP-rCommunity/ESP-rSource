@@ -19,6 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C cread3dv.F contains the following Fortran subroutines:
+
 C  DRAWESP: Loads the geometric description(s) from an ESP file,
 C           converts into viewing coords, clips the image and draws it.
 
@@ -30,10 +31,14 @@ C source code manages the G7 and G8 data.
 C ******************** DRAWESP 
 C DRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
-      SUBROUTINE DRAWESP(ITRC,ier)
+C ier is returned as non-zero if there has been a problem.
+      SUBROUTINE DRAWESP(ier)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY

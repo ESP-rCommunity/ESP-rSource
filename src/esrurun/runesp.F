@@ -1205,7 +1205,7 @@ C      CALL EDISP(IUOUT,'runesp running simulation(s) ...')
 C      CALL RUNSIM
 
 C Dummy routines from common3dv.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end
