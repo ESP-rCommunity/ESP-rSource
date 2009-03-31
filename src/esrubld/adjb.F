@@ -53,9 +53,8 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
 #include "building.h"
+#include "geometry.h"
 #include "control.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -67,9 +66,8 @@ C ARF    - future time adjacent incident radiation & casual etc.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -136,8 +134,9 @@ C      DIMENSION tsurm(3)
 C      data init/1/
 C FINISH SPECIAL mod for PASSYS
 
-      CHARACTER zname*12,zdesc*64,outs*124
+      CHARACTER outs*124
       LOGICAL ATRACE
+      real zoar  ! local real for zonetotsurfacearea(MCOM)
 
 C Flag trace info.
       ATRACE=.FALSE.
@@ -163,8 +162,8 @@ C Zone-by-zone.
         if(ATRACE)then
           call edisp(itu,' ')
           write(outs,'(1x,A,A,I2,A,I2,A)') 
-     &       zname(icomp)(1:lnblnk(zname(icomp))),' (',ICOMP,') with ',
-     &       NC,' surfaces, units W/m^2 '
+     &      zname(icomp)(1:lnzname(icomp)),' (',ICOMP,') with ',
+     &      NC,' surfaces, units W/m^2 '
           call edisp(itu,outs)
           write(outs,'(8x,A,13x,A)')'inside face','|      other face'
           call edisp(itu,outs)
@@ -194,7 +193,8 @@ C     &      QPLTP(ICOMP),QPLTF(ICOMP)
           APp(ICOMP,I)=APf(ICOMP,I)
 
 C For reporting radiant casual at inside face.
-          qradcin(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+          zoar=zonetotsurfacearea(icomp)
+          qradcin(I)=(QCASRT(icomp)*zoar*0.5)*
      &                    ei(icomp,I)/emarea(icomp)
 
 C For reporting plant radiant energy at inside face.
@@ -255,7 +255,8 @@ C Plant radiant energy at other face same as inside face.
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
-              qradcas(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+              zoar=zonetotsurfacearea(icomp)
+              qradcas(I)=(QCASRT(icomp)*zoar*0.5)*
      &                    ei(icomp,I)/emarea(icomp)
               
 C Instead, use the future zone radiative casual gains, and append
@@ -319,8 +320,8 @@ C Plant radiant energy at other face.
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
-              
-              qradcas(I)=(QCASRT(ICPLE)*zoa(ICPLE)*0.5)*
+              zoar=zonetotsurfacearea(ICPLE)
+              qradcas(I)=(QCASRT(ICPLE)*zoar*0.5)*
      &                 ei(ICPLE,ISCPLE)/emarea(ICPLE)
 
 C Instead, use the future zone radiative casual gains, and append
@@ -336,8 +337,8 @@ C     &         / sna(iCPLE,iSCPLE)
 
 C Debug...
 C      write(6,'(A,4I4,4F8.2)')'iz is oiz ois qr QCASRT zoa sna=',
-C     &        icomp,i,ICPLE,ISCPLE,qradcas(I),QCASRT(ICPLE),zoa(ICPLE),
-C     &        sna(ICPLE,ISCPLE)
+C     &        icomp,i,ICPLE,ISCPLE,qradcas(I),QCASRT(ICPLE),
+C     &        zonetotsurfacearea(ICPLE),sna(ICPLE,ISCPLE)
 
               ARF(ICOMP,I)=QSLIF(ICPLE,ISCPLE)+qlwsum(I)+qradcas(I)+
      &                     qpltro(I)
@@ -453,7 +454,8 @@ C the inside of the wall (CEN is in a universe where this happens).
 C This appears to be a bug:
 C The timestep-averaged zone radiative casual gains
 C are used to calculate the future gains at the outside surface.
-              qradcas(I)=(QCASRT(icomp)*zoa(icomp)*0.5)*
+              zoar=zonetotsurfacearea(icomp)
+              qradcas(I)=(QCASRT(icomp)*zoar*0.5)*
      &                    ei(icomp,I)/emarea(icomp)
               
 C Instead, use the future zone radiative casual gains, and append

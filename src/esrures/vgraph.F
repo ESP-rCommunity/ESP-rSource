@@ -453,6 +453,7 @@ C      =29  - dew point temperature
 
       SUBROUTINE VGGET(IZONE,IDAY,IGET,I12)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -464,7 +465,6 @@ C      =29  - dew point temperature
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 

@@ -45,7 +45,7 @@ C *********************************************************************
       SUBROUTINE INITST
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/GR3D130/IFST(MNOD3),W3(MCFF3),NCLMN(MCFF3),NXT(MCFF3),SML3
@@ -523,14 +523,14 @@ C STUPST Sets up the zone matrix for the zone with a structured mesh.
 C *********************************************************************
       SUBROUTINE STUPST(IComp)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &ARF(MCOM,MS)
       COMMON/BCL9/IHPZON,IHPCON,IHPNDO,QNOPF,QHPSV
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &HCOF(MCOM,MS)
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC2/VOL(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -846,7 +846,8 @@ C The internal heat fluxes.
                       QQQ1=QCASRS(IZN)
                       QQQ2=QSLIF(IZN,ISN)
                     ENDIF
-                    FluxI=QQQ1*ZOA(IZN)*EI(IZN,ISN)/EMAREA(IZN)+QQQ2
+                    FluxI=QQQ1*zonetotsurfacearea(IZN)*EI(IZN,ISN)/
+     &EMAREA(IZN)+QQQ2
                     SumPrt=SumPrt+Area*FluxI
                   ENDIF
                 ENDIF
@@ -1231,7 +1232,8 @@ C Initialize the self coupling term.
         SLFC=TERM
         CALL UPDZMX(IN,IN,SLFC,IPRV,LCTN)
         CALL CFFVLU(IN,IPRT,CFV,IPRV,LCTN)
-        QCASRF=QCASR(2)*ZOA(IComp)*EI(IComp,IS)/EMAREA(IComp)
+        QCASRF=QCASR(2)*zonetotsurfacearea(IComp)*EI(IComp,IS)/
+     &EMAREA(IComp)
         SLFC=TERM*T3F(IN)+Area*(QSOLI(IS,2)+QTMCA(IS,ILN,2)+QCASRF)
         CALL UPDZMX(IN,IPRT,SLFC,IPRV,LCTN)
 

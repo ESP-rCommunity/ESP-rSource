@@ -48,6 +48,7 @@ c               3: zone temperature and plant flux.
 
       subroutine minptb
 #include "building.h"
+#include "geometry.h"
 #include "monitor.h"
 
       common/outin/iuout,iuin
@@ -56,12 +57,11 @@ c               3: zone temperature and plant flux.
       common/c1/ncomp,ncon
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       common/pophelp/h(60)
 
       dimension IVALS(MCOM)
-      character zname*12,zdesc*64,H*72,hold*24
+      character H*72,hold*24
 
 c Initialize array.
       do 5 i=1,MDPH
@@ -155,6 +155,7 @@ c after the start-up period.
 
       subroutine zngrph(iss,isf,instep,mode)
 #include "building.h"
+#include "geometry.h"
 #include "monitor.h"
       
       integer lnblnk  ! function definition
@@ -173,7 +174,6 @@ C Parameters for eline calls.
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -201,7 +201,7 @@ C since not all compilers use the same default.
      &          ncoord2(1,2,2)
 
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
-      character etext*82, clabel*20,nterm*1,tab*1,zname*12,zdesc*64
+      character etext*82, clabel*20,nterm*1,tab*1
       logical colok
 
 #ifdef OSX
@@ -388,7 +388,7 @@ c each curve as 'Z??' where 'Z' stands for zone.
                endif
                clabel='                    '
 C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
-               ln=lnblnk(zname(mzone(i)))
+               ln=lnzname(mzone(i))
                write(clabel,'(2a)') zname(mzone(i))(1:ln),nterm
                ncoord(i,1,1)=igl+int((0+xadd)*xsc)
                ncoord(i,1,2)=igb-int((value+yadd)*ysc)

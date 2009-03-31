@@ -289,6 +289,9 @@ C Translate esp data to radiance geom and materials.
 C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -296,11 +299,6 @@ C ACT = 's' silent, ACT = 'i' interactive.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -470,7 +468,7 @@ C the image.
         MODIFY=.TRUE.
         MODBND=.TRUE.
         izgfoc=ICOMP
-        CALL ADJVIEW(0,IER)
+        CALL ADJVIEW(IER)
         outdone=.true.
       elseif(INO.EQ.8)then
         H(1)='Browsing lists the file contents in the text feedback'
@@ -557,6 +555,7 @@ C mkriofil: Write inside/outside materials and composition files.
 C If ACT='i' then interactive, ACT='s' for silent.
       SUBROUTINE mkriofil(ftr,fict,ACT,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -564,13 +563,8 @@ C If ACT='i' then interactive, ACT='s' for silent.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -583,7 +577,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -661,7 +654,7 @@ C Arrays of material properties.
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,LBSRIF,aglzfil
       character BLKNAME*8,BLKMAT*12,ZSN*28
-      character h*72,zname*12,ZN*12,zdesc*64,outs*124,material*12,QT*1
+      character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
@@ -1150,7 +1143,7 @@ C Display the other zone, resetting all surface lines to std.
           nzg=1
           nznog(1)=newfoc
           izgfoc=newfoc
-          CALL ADJVIEW(0,IER)
+          CALL ADJVIEW(IER)
         endif
 
 C Generate combined zone & generate surface names as identifiers.
@@ -1293,7 +1286,7 @@ C Highlight surface on image.
                   CALL INLNST(1)
                   CALL SURADJ(ifocz,isf,IE,TMP,IZC,ISC,IC,DESCRC)
                   LINSTY(IC)=2
-                  CALL ADJVIEW(ITRC,IER)
+                  CALL ADJVIEW(IER)
 
                   H(1)='Large sources of indirect illumination should'
                   H(2)='have their distributions pre-calculated as  '

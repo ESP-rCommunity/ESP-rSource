@@ -39,6 +39,9 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
       SUBROUTINE EDZONE(ITRC,ICOMP,IER)
 #include "net_flow.h"
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20.
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
@@ -60,29 +63,20 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C NB number of obstruction blocks.
 C X0 Y0 Z0 coordinates of each block origin.
@@ -105,11 +99,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user has defined
-C the floor area (one) or it was calculated (zero).
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C prec17 common is described in geometry.h.
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -137,7 +127,7 @@ C the floor area (one) or it was calculated (zero).
 
       DIMENSION IVALS(MS),ITEMS(28),ITEMSS(MS),IVALSS(MS),jvn1(MV)
       DIMENSION SALT(10),trnalt(17),IVLST(MTV)
-      CHARACTER H*72,zname*12,zdesc*64,HEAD*32,SALT*33,hold*36
+      CHARACTER H*72,HEAD*32,SALT*33,hold*36
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER DESCRC*25
@@ -183,11 +173,10 @@ C Assume that no alterations have been made to geometry.
 
 C GFILE is the default file name for any geom file to be created,
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &      '.geo'
+        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       else
         WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       endif
 
 C On entry to zone level determine its bounds for future comparison.
@@ -609,7 +598,7 @@ C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Test edge adjacencies and subsurfaces if it is the first time
 C in to the zone or if the geometry has benn modified.
@@ -720,13 +709,13 @@ C Zone name, make sure it has no illegal characters.
         if(T14(1:2).NE.'  ')then
           write(T12,'(a)') T14(1:12)
           call st2name(T12,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
 
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &        '.geo'
+            WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
           else
             WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &        zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
           endif
           call tstamp('>','PRJ: edited zone name')
           MODIFY=.TRUE.
@@ -742,6 +731,7 @@ C Zone description
      &           64,D64,'zone descr',IER,1)
         if(T64(1:2).eq.'  ')goto 64
         zdesc(icomp)=T64
+        lnzdesc(icomp)=lnblnk(T64)  ! update the length of this string.
         call tstamp('>','PRJ: edited zone description')
         MODIFY=.TRUE.
         MODGEO=.TRUE.
@@ -839,7 +829,7 @@ C been changes check if user wants to save the changes and
 C if so update the geometry file. Also update the volume of
 C any flow network node associated with this zone.
         call tstamp('>','PRJ: enter zone vertices')
-        CALL EDVERT(ITRC,iuout,ICOMP,MODGEO,IER)
+        CALL EDVERT(iuout,ICOMP,MODGEO,IER)
         if(MODGEO)then
           DOK=.true.
           h(1)='Changes to vertex data may be lost if you continue'
@@ -1098,7 +1088,7 @@ C LINSTY of selected surface to 2 (i.e. thick lines) and redraw.
               izgfoc=ICOMP
               MODIFY=.TRUE.
               MODGEO=.TRUE.
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
 
 C Use a slightly wider editing box than the name. Take the string
 C (T14) and ensure that there are no spaces or strange characters.
@@ -1130,7 +1120,7 @@ C Reset all line widths to normal and redraw (if last surface in list).
                 CALL INLNST(1)
                 MODIFY=.TRUE.
                 MODGEO=.TRUE.
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
               endif
             elseif(IRT.eq.2.and.ISEL.GT.0)then
 
@@ -1758,7 +1748,7 @@ C other zone.
             nzg=1
             nznog(1)=IZ
             izgfoc=ICOMP
-            CALL ADJVIEW(0,IER)
+            CALL ADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
             call eclose(gversion(IZ),1.1,0.01,newgeo)
@@ -2346,6 +2336,9 @@ C ************* EDINSUL
 C Edit zone insolation distribution.
       SUBROUTINE EDINSUL(ICOMP,IER)
 #include "building.h"
+
+C Get common blocks g0/g2/g4/precz from geometry.h
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2353,11 +2346,6 @@ C Edit zone insolation distribution.
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -2365,7 +2353,6 @@ C Edit zone insolation distribution.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -2378,7 +2365,6 @@ C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
 C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -2389,7 +2375,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       DIMENSION IALT(8),IVAL(8),IVA(MS)
       dimension isd(16)
       CHARACTER IALT*36,H*72
-      CHARACTER zname*12,zdesc*64,isd*33,SFIL*72,DSFIL*72
+      CHARACTER isd*33,SFIL*72,DSFIL*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ZN*12
       character LCFGF*72,cfgroot*24
@@ -2718,21 +2704,19 @@ C IVA array of selections is returned.
 
       SUBROUTINE PICKSSUR(IZONE,NP,act,IVA,iaplic,ilimit,IER)
 #include "building.h"
+#include "geometry.h"
       common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION STMP(MS),IVA(MS),IVALS(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character H*72,STMP*42,act*1,msg1*32,msg2*32
-      CHARACTER zname*12,zdesc*64
 
       IER=0
       IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
@@ -2903,6 +2887,7 @@ C << possible to alter the inside/outside hc from this interface? >>
 
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -2912,18 +2897,11 @@ C << possible to alter the inside/outside hc from this interface? >>
       common/pophelp/h(60)
 
 C Optical and geometric properties.
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -2956,7 +2934,7 @@ C Optical and geometric properties.
       CHARACTER*33 ISD(22)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER zname*12,zdesc*64,DESCRC*25,outs*124,CXSTR*78
+      CHARACTER DESCRC*25,outs*124,CXSTR*78
       CHARACTER SALT*33,H*72,SN*12,SN2*12,T14*14
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -3087,7 +3065,7 @@ C Note IC is the connection at the other side of surface icom:is.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for the menu.
       H(1)='This menu displays the surface attributes that may'
@@ -3155,7 +3133,7 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         return
       ELSEIF(INODA.EQ.1)THEN
         write(T14,'(2a)')SSNAME(ioc),'  '
@@ -3636,7 +3614,7 @@ C and display both zones.
             nznog(1)=ICOMP
             nznog(2)=IZ
             izgfoc=ICOMP
-            CALL ADJVIEW(0,IER)
+            CALL ADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
 
@@ -4653,31 +4631,28 @@ C Do not need second tag if generating notional model
 C ************* EDVERT 
 C Edit vertex attributes in common block G1 via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EDVERT(ITRC,ITRU,ICOMP,MODGEO,IER)
+      SUBROUTINE EDVERT(ITRU,ICOMP,MODGEO,IER)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
+#include "prj3dv.h"
       common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
       logical withinbox  ! true if point within bounding box.
 
       DIMENSION VERT(35),IVLST(MTV),ITEMP(MTV),COG1(3),COG2(3),COG3(3)
       DIMENSION VP(3),EQN(4),XX(MV),YY(MV),ZZ(MV)
-      CHARACTER VERT*33,KEY*1,H*72,head*28,zname*12,zdesc*64,HOLD*36
+      CHARACTER VERT*33,KEY*1,H*72,head*28,HOLD*36
       character outs*124,headv*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -4739,7 +4714,7 @@ C Do a bound check on the current zone and update display.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='This menu allows existing vertices to be viewed and'
@@ -4877,7 +4852,7 @@ C Show the new point on the current wireframe.
               nzg=1
               nznog(1)=ICOMP
               izgfoc=ICOMP
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
 
 C Check to see if this new vertex should be included in any existing edges.
 C << example of checking if should be inserted in another surface >>
@@ -4977,7 +4952,7 @@ C Distance between two vertices.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
         elseif(ino.eq.3)then
           inpick=1
@@ -5068,7 +5043,7 @@ C Show the new point on the current wireframe.
               nzg=1
               nznog(1)=ICOMP
               izgfoc=ICOMP
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
             endif
             dok=.false.
             h(1)='If you have several vertices to create, you'
@@ -5081,7 +5056,7 @@ C Show the new point on the current wireframe.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         elseif(ino.eq.4)then
 
 C Angle between two lines.
@@ -5096,9 +5071,9 @@ C Angle between two lines.
             iwhich3=IVLST(3)
             call ang3vtx(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
      &        Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
-     &        ang)
+     &        ang3)
             write(outs,'(a,3i3,a,f9.4)') ' Angle between verts ',
-     &        iwhich1,iwhich2,iwhich3,' is ',ang
+     &        iwhich1,iwhich2,iwhich3,' is ',ang3
             call edisp(itru,outs)
           endif
           MODIFY=.true.
@@ -5106,7 +5081,7 @@ C Angle between two lines.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         elseif(ino.eq.5)then
 
 C Intersection line and plane.
@@ -5345,7 +5320,7 @@ C And re-draw the zone to clean up the circles.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
         elseif(ino.eq.7)then
 
@@ -5381,7 +5356,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         elseif(ino.eq.8)then
 
 C Bring a point off a line into alignment. Begin by checking the
@@ -5623,7 +5598,7 @@ C Show the new point on the current wireframe.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           else
             goto 3
           endif
@@ -5672,7 +5647,7 @@ C be a new vertex and update the wireframe.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             goto 92
           endif
         endif
@@ -5884,28 +5859,24 @@ C menu. ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 C Make use of VERINFO to display the current vertex surface connections.
       SUBROUTINE EDVLIST(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G2/NGL(MS)
+
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
@@ -5914,7 +5885,6 @@ C Make use of VERINFO to display the current vertex surface connections.
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -5923,8 +5893,6 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/RAY6/LINSTY(MCON)
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -5943,7 +5911,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       DIMENSION TMAT(4,4),RMAT(4,4),EQN(4),CG(3),EP(3)  ! for warp checks
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       CHARACTER VERT*34,options*34,KEY*1,H*72,SN*12,T14*14,D14*14
-      character head*32,zname*12,zdesc*64,HOLDS*36,outs*124
+      character head*32,HOLDS*36,outs*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       CHARACTER SNAME1*12,SNAMED*12,msgv*48
       character hold64*64,t248*248,OPT*12
@@ -6031,7 +5999,7 @@ C Do a bound check on the current zone and update display.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='This menu allows existing vertices to be viewed and'
@@ -6207,12 +6175,12 @@ C Rotate around a point in the surface (offer user cancel option).
           endif
           H(1)='The rotation is applied with positive'
           H(2)='being anticlockwise. '
-          ANG=0.
-          CALL EASKR(ANG,' ','Rotation (+ = anticlockwise)?',
+          ANGR=0.
+          CALL EASKR(ANGR,' ','Rotation (+ = anticlockwise)?',
      &       -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=XX(IRV)
@@ -6246,7 +6214,7 @@ C Reverse the ordering, redraw image and return.
           nzg=1
           nznog(1)=ICOMP
           izgfoc=ICOMP
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           goto 92
         endif
         if(IRT.eq.6)then
@@ -6361,7 +6329,7 @@ C Ask user if they want to update the vertex with the new values.
                   nzg=1
                   nznog(1)=ICOMP
                   izgfoc=ICOMP
-                  CALL ADJVIEW(ITRC,IER)
+                  CALL ADJVIEW(IER)
                   goto 92
                 endif
               endif
@@ -6392,7 +6360,7 @@ C Update the image.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
 C Show these points as small circles...
         call edisp(iuout,' proposed points are shown as dots....')
@@ -6461,7 +6429,7 @@ C Update the image.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
 C Add/insert a surface.
@@ -6628,7 +6596,7 @@ C Get azimuth and length and height.
           CALL EASKS(HOLDS,' Surface azimuth (deg) length & height:',
      &      ' ',36,' 180.0 1.0 1.0  ','azim length height',IER,6)
           K=0
-          CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Azim',IER)
+          CALL EGETWR(HOLDS,K,AANG,0.0,360.0,'W','Azim',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
           CALL EGETWR(HOLDS,K,DDZ,0.0,50.0,'W','width',IER)
 
@@ -6659,7 +6627,7 @@ C Get rotation and length and height.
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
      &      ' ',36,' 180.0  1.0  1.0  ','rotation length height',IER,3)
           K=0
-          CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Rot',IER)
+          CALL EGETWR(HOLDS,K,AANG,0.0,360.0,'W','Rot',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
           CALL EGETWR(HOLDS,K,DDZ,0.0,50.0,'W','width',IER)
 
@@ -6792,7 +6760,6 @@ C Up the surface count and zone surface attributes.
           ICONT=IZSTOCN(icomp,nsur)+1
           NSUR=NSUR+1
           NZSUR(ICOMP)=NZSUR(ICOMP)+1
-          NGL(NSUR)=0
           SNAME(ICOMP,NSUR)=SNAME1
           SMLCN(NSUR)='UNKNOWN'
           SVFC(NSUR)='UNKN'
@@ -6888,17 +6855,17 @@ C Use logic similar to parsemlcdesc to find the optical name.
 
 C Instanciate the new surface via call addmass with all of the parameters.
           if(IRT.eq.6)then
-            call addmass(1,ICOMP,'VS','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+            call addmass(ICOMP,'VS','G',VALOX,VALOY,VALOZ,
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.7)then
-            call addmass(1,ICOMP,'HS','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+            call addmass(ICOMP,'HS','G',VALOX,VALOY,VALOZ,
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.9)then
-            call addmass(1,ICOMP,'VM','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+            call addmass(ICOMP,'VM','G',VALOX,VALOY,VALOZ,
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           elseif(IRT.eq.10)then
-            call addmass(1,ICOMP,'HM','G',VALOX,VALOY,VALOZ,
-     &        ANG,DDX,DDZ,SN,constr,OPT,INVT)
+            call addmass(ICOMP,'HM','G',VALOX,VALOY,VALOZ,
+     &        AANG,DDX,DDZ,SN,constr,OPT,INVT)
           endif
 
 C Track users confirmation of new surface.
@@ -6910,7 +6877,7 @@ C Track users confirmation of new surface.
             nzg=1
             nznog(1)=ICOMP
             izgfoc=ICOMP
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             GOTO 30
           elseif(INVT.eq.-3)then
             return
@@ -6947,7 +6914,7 @@ C Update the image.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       ELSEIF(IVERT.EQ.(MVERT-7))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -6970,7 +6937,7 @@ C a thick line.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
    93   H(1)='The list of associated vertices should be given in'
         H(2)='anticlockwise order as one faces the outside of the'
@@ -7046,14 +7013,11 @@ C common block G1.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKVERT(INPICK,IVLST,TITLE,PROMPT1,PROMPT2,NHELP,IER)
 #include "building.h"
+#include "epara.h"
+#include "prj3dv.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
-      integer CREATE,EDIT
-      PARAMETER (CREATE=1,EDIT=20)
       DIMENSION  item(36)
       DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MTV)
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
@@ -7242,12 +7206,12 @@ C the perimiter of the polygon. Assumes that the surface is
 C in the current zones common blocks.
       subroutine surfprm(izone,isurf,dupedges,perim)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       logical dupedges
 
       perim=0.0
@@ -7304,18 +7268,12 @@ C << conversion to the 'G1' format takes place.
  
       SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
-
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C X,Y & Z   - coordinates of the vertices defining the zone
 C NSUR      - Number of faces comprising zone
@@ -7325,13 +7283,8 @@ C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-C NGL       - contains the number of windows in each face (set to zero)
-C             this is depreciated as the default window data structure is no
-C             longer used.        
-      COMMON/G2/NGL(MS)
-
-C Default solar distribution and shading directives.
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
+C NGL (from geometry.h) - contains the nb of windows in each face
+C   this is depreciated.        
 
 C SNAME (12 char) - surface name attribute
 C ZBASEA    - area of base (m^2)
@@ -7401,19 +7354,11 @@ C    otherwise  -,- )
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
-C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+C ZNAME (12 char) - the zone name from geometry.h.
+C ZDESC (64 char) - zone notes from geometry.h.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero).
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl
@@ -7421,7 +7366,6 @@ C calculated based on FLOR orientations (zero).
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/dllerr/dllsubr,dllmesg
@@ -7438,11 +7382,11 @@ C be inserted.
       dimension iwhichsurfw(MS), iwhichsurfd(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER OUTSTR*124,WORD*20,zname*12
+      CHARACTER OUTSTR*124,WORD*20
       character lzip*72,dfile*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      character phrasea*64,phraseb*64,zdesc*64,outs*124
+      character phrasea*64,phraseb*64,outs*124
       character dllsubr*12,dllmesg*124,act*2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -7554,12 +7498,15 @@ C is tested for illegal characters.
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         zname(ICOMP)=' '
+        lnzname(ICOMP)=0
         zdesc(ICOMP)=' '
+        lnzdesc(ICOMP)=0
       ELSEIF(ND.EQ.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         call egetrm(outstr,K,phrasea,'W','Z description',IER)
         zdesc(ICOMP)=' '
+        lnzdesc(ICOMP)=0
       ELSEIF(ND.gt.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -7571,11 +7518,13 @@ C Combine the comment from the first line with the one after the zone CTYPE.
         iprc= 63 - ipra
         iwidth=ipra + iprb + 1
         if(iwidth.lt.64)then
-          write(ZDESC(ICOMP),'(3a)') phrasea(1:ipra),' ',
+          write(zdesc(ICOMP),'(3a)') phrasea(1:ipra),' ',
      &      phraseb(1:iprb)
+          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         else
-          write(ZDESC(ICOMP),'(3a)') phrasea(1:ipra),' ',
+          write(zdesc(ICOMP),'(3a)') phrasea(1:ipra),' ',
      &      phraseb(1:iprc)
+          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         endif
       ENDIF
       write(outs,'(3a)') 'The file ',lzip(1:lnblnk(lzip)),
@@ -7587,10 +7536,12 @@ C Fill in a default zone name and description if blank.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')then
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update the length of this string.
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
         write(zdesc(ICOMP),'(a,a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+     &    zname(ICOMP)(1:lnzname(ICOMP)),' describes a '
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.
@@ -7725,9 +7676,6 @@ C handle (easily if one per surface) and convert it to a transparent
 C surface later on in the subroutine. 
       IRVA=NSUR
       CALL EGETWIA(IUNIT,IVA,IRVA,0,3,'F','def window list',IER)
-      DO 14 KS=1,NSUR
-        NGL(KS)=0
-   14 CONTINUE
 
 C Read the window dimension details and advise user (if IVA non-zero).
       nbdef=0
@@ -7847,7 +7795,9 @@ C Estimate base area.
 C If base area has not yet been calculated, do this now and
 C get surface areas via call to zinfo.
       if(checkbase)then
-        call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+        call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+	vol(icomp)=zvol
+        zonetotsurfacearea(icomp)=zoa
         do 43 ijj=1,NSUR
           if(SVFC(ijj).eq.'FLOR')then
 
@@ -7860,7 +7810,7 @@ C If surface `flor` not included in the list add it.
           endif
   43    continue
         write(outs,'(a,f6.2,3a)') 'Base area estimated at ',
-     &     ZBASEA(ICOMP),'m^2 for ',zname(icomp),
+     &     ZBASEA(ICOMP),'m^2 for ',zname(icomp)(1:lnzname(icomp)),
      &    ' (probably an older file).'
         call edisp(itru,outs)
         if(lastlist.gt.0)iuzbasea(icomp)=0
@@ -7941,10 +7891,10 @@ C Update the G7 common blocks and then write out configuration file.
 
 C Make up a zone geometry file name for this new zone.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+        WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       else
         WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.geo'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.geo'
       endif
       LGEOM(icomp)= DFILE
       write(outs,'(A,A)') 'Updating initial surfaces in ',zname(icomp)
@@ -8106,17 +8056,15 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
  
       SUBROUTINE LINTHBRDG(ICOMP,act,THPER)
 #include "building.h"
+#include "geometry.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -8638,15 +8586,15 @@ C been made.
 
 #include "net_flow.h"
 #include "building.h"
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/C24/IZSTOCN(MCOM,MS)
+#include "geometry.h"
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+C IZSTOCN - for each zone:surface a pointer to connection index.
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

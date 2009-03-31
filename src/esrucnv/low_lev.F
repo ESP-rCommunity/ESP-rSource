@@ -24,12 +24,12 @@ C ***** face3d
 C face3d are triangles or quads which are general surfaces in autocad.
       subroutine face3d(itrc)
 #include "building.h"
+#include "geometry.h"
       
       COMMON/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk
@@ -137,12 +137,12 @@ C this subroutine processes the 'LINE' command in .dxf file of
 C autocad and translates it if it is extruded.
       subroutine genlin(itrc)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -344,12 +344,12 @@ C autocad and skip over it.
 C ****** genarc
       subroutine genarc(itrc) 
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins

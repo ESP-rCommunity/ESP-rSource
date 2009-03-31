@@ -60,6 +60,7 @@ C  Check whether it is an ascii file or a binary file. Depending on
 C which create the scratch or ascii version.
       subroutine supplyandcheck(tfile,act,ier)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
 #include "control.h"      
@@ -71,7 +72,6 @@ C Related to TDF ITEMS file.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
@@ -81,7 +81,6 @@ C Related to TDF ITEMS file.
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)   
         
@@ -98,7 +97,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
       CHARACTER SPARENT*12
       CHARACTER LTDF*72,LTDFA*72,tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
-      character DBTAG*12,DBTASK*12,DBZN*15,zname*12,zdesc*64,DBSN*15
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
       logical unixok,FOUND
 

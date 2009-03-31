@@ -471,7 +471,6 @@ C interaction is begun.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcsort/icode(maxpc)
 
@@ -680,6 +679,7 @@ C interaction is begun.
 #include "epara.h"
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
      &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
@@ -688,12 +688,10 @@ C interaction is begun.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
       DIMENSION VERT(35),CSTR(4)
-      CHARACTER PCNAME*15,ZNAME*12,ZDESC*64,CSTR*9
+      CHARACTER PCNAME*15,CSTR*9
       character*(*) head
       character sendstr*20,sendnd*12,recvnd*12 
       CHARACTER H*72,VERT*88,KEY*1,MOD*1
@@ -746,24 +744,21 @@ C current menu line index. Build up text strings for the menu.
           ELSEIF(IPCT(L).EQ.2) THEN 
             if(isvt.eq.0.or.isvt.eq.10.or.isvt.eq.20) then
               WRITE(SENDND,'(A,I2)')'water node',IPN2(L)
-              WRITE(SENDSTR,'(A)')
-     &'fixed temp' 
+              WRITE(SENDSTR,'(A)')  'fixed temp' 
             elseif(isvt.eq.1.or.isvt.eq.11.or.isvt.eq.21) then
               WRITE(SENDND,'(A,I2)')'air node',IPN2(L)
-              WRITE(SENDSTR,'(A)')
-     &'fix temp/RH' 
+              WRITE(SENDSTR,'(A)')  'fix temp/RH' 
             elseif(isvt.eq.9.or.isvt.eq.19.or.isvt.eq.29) then
               WRITE(SENDND,'(A,I2)')'solid node',IPN2(L)
-              WRITE(SENDSTR,'(A)')
-     &'fixed temp' 
+              WRITE(SENDSTR,'(A)')  'fixed temp' 
             endif            
           ELSEIF(IPCT(L).EQ.4) THEN
             IF(PCONSD(L,1).GT.0.) THEN
               ICZ=NINT(PCONSD(L,1))
-              WRITE(SENDSTR,'(A12)')ZNAME(ICZ)(1:12)
+              WRITE(SENDSTR,'(A)')ZNAME(ICZ)(1:12)
               WRITE(SENDND,'(A)')'zone air'
             ELSE
-              WRITE(SENDSTR,'(A13)')'outside air  '
+              WRITE(SENDSTR,'(A)')'outside air  '
               WRITE(SENDND,'(A)')'ambient '
             ENDIF
           ENDIF
@@ -940,17 +935,16 @@ C interaction is begun.
 #include "epara.h"
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
       COMMON/C11/NCONT,IPCC(MPCOM),INDCP(MPCOM),CNTDAT(MPCOM,3)  
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       DIMENSION VERT(35)
-      CHARACTER PCNAME*15, zname*12
+      CHARACTER PCNAME*15
       character*(*) head
-      CHARACTER H*72,VERT*44,KEY*1,MOD*1,CNTSTR*20,zdesc*64
+      CHARACTER H*72,VERT*44,KEY*1,MOD*1,CNTSTR*20
       LOGICAL SELECT,OK,dok
 
 C Initialise node menu variables based on window size. 
@@ -987,7 +981,7 @@ C current menu line index. Build up text strings for the menu.
           ELSEIF(INDCP(L).EQ.2)THEN
             WRITE(CNTSTR,'(A,F7.3)') 'fix temp: ',CNTDAT(L,1)
           ELSEIF(INDCP(L).EQ.3)THEN
-            WRITE(CNTSTR,'(A,A12)') 'zone: ',ZNAME(NINT(CNTDAT(L,1)))
+            WRITE(CNTSTR,'(A,A)') 'zone: ',ZNAME(NINT(CNTDAT(L,1)))
           ENDIF
           WRITE(VERT(M),'(A1,1X,A15,1X,A20,1X,I3)')KEY,PCNAME(IPCC(L)),
      &CNTSTR,INDCP(L)
@@ -1243,7 +1237,7 @@ C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok,unixok
-      CHARACTER*25 ZDESC
+      CHARACTER*25 PZDESC
       character h*72,buffer*72,ltmp*72,fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
@@ -1271,8 +1265,16 @@ C name with the full path.
       h(5)='listing and editing. If there is no such file then'
       h(6)='a new one will be created to hold data for new'
       h(7)='components.'
-      llt=lnblnk(lpcdb)
-      lltmp=lpcdb
+
+C Deal with local or standard db location when making up the selection string.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        lltmp=LPCDB
+      elseif(ipathpcdb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lpcdb(1:lnblnk(lpcdb))
+      endif
+      llt=lnblnk(lltmp)
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
@@ -1297,7 +1299,6 @@ C Figure out local or standard database folder.
       call findwhichdbpath('pdb',lltmp,ier)
       lndbp=lnblnk(standarddbpath)
 
-C      endif
       if(mode.eq.1.or.mode.eq.2) then
 
 C 'irecln' is defined in 'plantdf.h'. If plant template file unit has
@@ -1311,7 +1312,6 @@ C same opening logic as in eddb.F and moplnt.F
      &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
          endif
 	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
-C         CALL FPRAND (ipcdb,istat,irecln,3,lpcdb)
 
 C Check for error on openening.
          if(istat.lt.0) then
@@ -1339,8 +1339,8 @@ C File doesn't exist.
 
 C Old file, so check header.
          IREC = 1
-         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
-         IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
+         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) PZDESC
+         IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
             ok=.false.
             dok=.true.
             h(1)='The file exists, but is either not a plant db file'

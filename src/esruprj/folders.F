@@ -752,6 +752,9 @@ C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -773,11 +776,6 @@ C Maintain model folders.
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -1284,6 +1282,7 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition
@@ -1296,16 +1295,11 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/user/browse
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1327,7 +1321,7 @@ C CFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)
-      character ITEMS*72,zname*12,zdesc*64,head*25,path*72,L*72,ZN*12
+      character ITEMS*72,head*25,path*72,L*72,ZN*12
       character LCFD*72,H*72,outs*124
       character D*72,T15*12,D15*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1584,6 +1578,7 @@ C Edit zone name - read and then write the geometry file.
         CALL EASKS(T15,' ','Zone name?',12,D15,'zone name',IER,2)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
+	  lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1
@@ -2290,7 +2285,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.cvs'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.cvs'
         D = 'new.cvs'
         H(1)='The 3D control volumes file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2299,7 +2294,7 @@ C There is no zone view factor file so offer restricted choice.
         CALL EASKS(L,outs,' ',72,D,'control volumes',IER,2)
         if(L(1:2).ne.'  ')L3DCVS(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.cnc'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.cnc'
         D = 'new.cnc'
         H(1)='The 3D node connections file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2307,7 +2302,7 @@ C There is no zone view factor file so offer restricted choice.
      &      ' ',72,D,'control connections file',IER,2)
         if(L(1:2).ne.'  ')L3DCNC(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.ndc'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.ndc'
         D = 'new.ndc'
         H(1)='The 3D nodes coordinates file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2315,7 +2310,7 @@ C There is no zone view factor file so offer restricted choice.
      &      ' ',72,D,'3D coordinates file',IER,2)
         if(L(1:2).ne.'  ')L3DNDC(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.3dt'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.3dt'
         D = 'new.3dt'
         H(1)='The 3D nodes temperatures file defines the'
         H(2)='location of additional construction nodes'
@@ -2346,7 +2341,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.mst'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.mst'
         D = 'new.mst'
         H(1)='The moisture file holds moisture transport data'
         H(2)='for nodes. << more text to be added here >>'
@@ -2377,7 +2372,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.csm'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.csm'
         D = 'new.csm'
         H(1)='The structured mesh file holds structured mesh data'
         H(2)='for a zone.'

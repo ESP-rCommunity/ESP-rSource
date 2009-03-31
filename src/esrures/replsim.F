@@ -30,6 +30,7 @@ C MZINPT code in espbps/input.f.
 
       SUBROUTINE MOGCFG
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
 
@@ -38,11 +39,6 @@ C MZINPT code in espbps/input.f.
       COMMON/FILEP/IFIL
       common/trc/itrc
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl
@@ -64,8 +60,8 @@ C Temporal definition commons.
       COMMON/TDFFT/LTDF,LTDFA
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER*72 LCFGF,path,LTDF,LTDFA,ltmp
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248

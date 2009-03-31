@@ -44,13 +44,14 @@ C JREC = current results database record position.
 C Inside and 'outside' surfaces are handled differently.
 
 #include "building.h"
+CC#include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
       COMMON/RECV9/CHARDM(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/RECV12/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
@@ -273,11 +274,12 @@ C HC   = heat transfer coef.
 C Inside and 'outside' surfaces are handled differently.
 
 #include "building.h"
+CC#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
       COMMON/RECV9/CHARDM(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/RECV12/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),

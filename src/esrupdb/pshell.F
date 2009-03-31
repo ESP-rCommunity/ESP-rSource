@@ -88,14 +88,14 @@ C ie compare component descriptions
       CHARACTER*40 ZGTYPE
       CHARACTER*16 ZCDATE
       CHARACTER*80 ZCDESC
-      CHARACTER*80 ZDESC
+      CHARACTER*80 PZDESC
 
       NN = INDXPR(N1)
       CALL PCGET (NN)
-      ZDESC = ZCDESC
+      PZDESC = ZCDESC
       NN = INDXPR(N2)
       CALL PCGET (NN)
-      IF (ZDESC .GT. ZCDESC) THEN
+      IF (PZDESC .GT. ZCDESC) THEN
          COMPDS = .FALSE.
       ELSE
          COMPDS = .TRUE.

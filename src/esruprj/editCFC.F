@@ -43,6 +43,7 @@ C ********************************************************************
       subroutine makeCFCfile(icomp,ier)
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
@@ -50,16 +51,12 @@ C ********************************************************************
       integer ifil
       common/pophelp/h(60)
       character h*72
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      integer nzsur,nztv
       COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
       integer izstocn
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      CHARACTER zname*12,zdesc*64
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
@@ -963,6 +960,7 @@ C ********************************************************************
       subroutine read_in_cfc_file(itrc,itru,iua,lua,icomp,ier)
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -976,8 +974,6 @@ C ********************************************************************
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      character zname*12,zdesc*64
 
       integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr
       integer nshade_layers,ie,ND,ISR,icn,ntmpcfc_el,iflag,istat

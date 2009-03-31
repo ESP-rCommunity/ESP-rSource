@@ -154,7 +154,7 @@ C except where explicitly redefined.
       common/coe32/qsoli(ms,2),qsole(ms,2)
       common/coe32j/qtmca(ms,mn,2)
       common/pvpnl/tpnl,qpnl,pvpwr
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
      &            arp(mcom,ms),arf(mcom,ms)  
@@ -165,6 +165,12 @@ C except where explicitly redefined.
       character spmlabel*16,outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
       complex vspm
+
+C Explicit definitions.
+      REAL VOC,VMP,QREF,TREF,SCELL,PBRCH,EMPV,VALF,
+     &E,DF1,DF2,DF,VMP1,VMP2,VMP3,VMP4,
+     &VMPMOD,VITER,A1,A2,fMiscLossFactor
+
       logical bNumsAreClose
       parameter (fSmall=1.0E-05)
 
@@ -398,7 +404,8 @@ C node and the two boundary nodes.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP1 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -406,7 +413,7 @@ C Trace output.
      &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
      &         ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
-      write(outs,'(a,i3,i3,i3)') 'Number of panels in surface: ',npnnls
+      write(outs,'(a,i3)') 'Number of panels in surface: ',npnnls
       call edisp(itu,outs)
       if(ispmtyp(ispmnod,2).gt.0)then
          write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qsole1
@@ -457,7 +464,7 @@ C except where explicitly redefined.
       common/pvpnl/tpnl,qpnl,pvpwr
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
      &arp(mcom,ms),arf(mcom,ms)  
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/solext/exrad(ms),exdir(ms),exdif(ms),exshad(ms),
      &                                                    exshadf(ms)
@@ -530,7 +537,8 @@ C node and the two boundary nodes.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP2 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -538,7 +546,7 @@ C Trace output.
      &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
      &         ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
-      write(outs,'(a,i3,i3,i3)') 'Number of panels in surface: ',npnnls
+      write(outs,'(a,i3)') 'Number of panels in surface: ',npnnls
       call edisp(itu,outs)
       if(ispmtyp(ispmnod,2).gt.0)then
          write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qsole1
@@ -892,7 +900,8 @@ C per zone.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP3 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -941,7 +950,7 @@ C except where explicitly redefined.
       common/coe32/qsoli(ms,2),qsole(ms,2)
       common/coe32j/qtmca(ms,mn,2)
       common/pvpnl/tpnl,qpnl,pvpwr
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       
       real mu
@@ -1101,7 +1110,8 @@ C node as well as the two boundary nodes.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP4 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -1266,9 +1276,8 @@ C Special materials.
       common/pvpnl/tpnl,qpnl,pvpwr
       real    tpnl,qpnl,pvpwr
 
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       real    sna		!- surface area
-      real    zoa		!- total surface area of the zone
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       integer isd1		!- start day number 
@@ -1852,7 +1861,8 @@ C XML output.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP5 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -1860,8 +1870,7 @@ C Trace output.
      &    'Affected zone, surface and node: ',ispmloc(ispmnod,1),
      &                          ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
-      write(outs,'(a,i3,i3,i3)') 'Number. of modules in surface:',
-     &                                                        iNPnnls
+      write(outs,'(a,i3)') 'Number. of modules in surface:',iNPnnls
       call edisp(itu,outs)
       if(ispmtyp(ispmnod,2).gt.0)then
          write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qsole1
@@ -2038,7 +2047,8 @@ C Reduce relative absorption for all layers after the tinted layer.
        
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999 
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999 
       write(outs,'(a,a)') 'Trace output from SPMCMP51 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -2097,7 +2107,7 @@ C except where explicitly redefined.
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/evapsur/vapsur(mcom)
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       common/fvala/tfa(mcom),qfa(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
@@ -2165,7 +2175,8 @@ C per zone.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999     
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999     
       write(outs,'(a,a)') 'Trace output from SPMCMP52 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -2228,7 +2239,7 @@ C thrmli(icomp,isurf,ielem,2) = density
 C thrmli(icomp,isurf,ielem,3) = specific heat
 C thrmli(icomp,isurf,ielem,4) = thickness
       common/vthp14/thrmli(mcom,ms,me,7)
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
@@ -2458,7 +2469,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -2544,7 +2555,8 @@ C XML output.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP53 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -2603,6 +2615,8 @@ C except where explicitly redefined.
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
       common/vthp14/thrmli(mcom,ms,me,7)
+      COMMON/PREC1/SNA(MCOM,MS)
+      real    sna            !- surface area (m2)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
@@ -2843,7 +2857,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -2913,7 +2927,8 @@ C XML output.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.EQ.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP54 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -3217,7 +3232,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3291,7 +3306,8 @@ C XML output.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP55 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -3621,7 +3637,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then
+            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3705,7 +3721,8 @@ C XML output.
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
-      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.izntrc(icomp).ne.1)goto999
+      if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from spmcmp56 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)

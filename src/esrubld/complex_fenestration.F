@@ -300,8 +300,8 @@ C ********************************************************************
       real tnc,qncnst
       COMMON/MOIST82/TNS(MS),QNsrf
       real tns,qnsrf
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      real sna,zoa
+      COMMON/PREC1/SNA(MCOM,MS)
+      real sna
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       real ei,ee,ai,ae
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
@@ -1507,8 +1507,8 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real atp,atf,arp,arf
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real tfa,qfa
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      real sna,zoa
+      COMMON/PREC1/SNA(MCOM,MS)
+      real sna
       common/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
       integer icori,icore
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)

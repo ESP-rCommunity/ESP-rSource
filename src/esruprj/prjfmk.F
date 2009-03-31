@@ -54,6 +54,7 @@ C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -72,7 +73,6 @@ C LPROJ   - zone scheduling (operation file)
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -107,7 +107,7 @@ C Flag noting whether file was browsed for (so that cfg can be
 C updated when the user exits).
       logical gotviabrowse
 
-      CHARACTER zname*12,zdesc*64,tcname*248
+      CHARACTER tcname*248
       CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -150,11 +150,10 @@ C just write operations file
 
 C GFILE is the default file name for any operations file.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.opr'
+        WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       else
         WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &     zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.opr'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
       endif
 
 C LPROJ() might already have a name, but not yet exist. Check for this. 
@@ -485,7 +484,7 @@ C flows are to preserve ach or volume of flow.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -626,7 +625,7 @@ C Ask which zone, then confirm whether absolute W values are to be scaled.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 39
@@ -952,8 +951,8 @@ C << must be revised for multiple day types and periods. >>
       SUBROUTINE EDAFCTL(ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
       common/pophelp/h(60)
-      COMMON/PREC2/VOL(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
@@ -1278,16 +1277,14 @@ C IER=0 is OK.
       SUBROUTINE EDAIR2(ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -1311,7 +1308,7 @@ C IER=0 is OK.
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-      character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
+      character vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
@@ -1438,10 +1435,10 @@ C Help text for this menu.
 C Now display the menu.
       if(mmod.eq.8)then
         write (title,'(2a)') 'Air flow in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       else
         write (title,'(2a)') 'Ventilation in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       endif
       CALL EMENU(title,VERT,MVERT,IVERT)
 
@@ -1544,7 +1541,7 @@ C flows are to preserve ac/h or volume of flow.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -1703,16 +1700,14 @@ C IER=0 is OK.
       SUBROUTINE EDAIR3(ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
-      integer lnblnk  ! function definition
+C      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -1748,7 +1743,7 @@ C of one signals m3/h and a value of 2 signals m3/s.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      character zname*12,zdesc*64,vert(35)*33,H*72,KEY*1,title*33
+      character vert(35)*33,H*72,KEY*1,title*33
       character LTMP*72
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
@@ -1884,10 +1879,10 @@ C Help text for this menu.
 C Now display the menu.
       if(mmod.eq.8)then
         write (title,'(2a)') 'Air flow in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       else
         write (title,'(2a)') 'Ventilation in ',
-     &    zname(icomp)(1:lnblnk(zname(icomp)))
+     &    zname(icomp)(1:lnzname(icomp))
       endif
       CALL EMENU(title,VERT,MVERT,IVERT)
       if (IVERT.EQ.MVERT) then
@@ -1993,7 +1988,7 @@ C flows are to preserve ac/h or volume of flow.
      &        ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -2155,23 +2150,19 @@ C     =2 infil, =0 ventilation attributes.
 
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
-      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
 
-      character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
+      character OUTS*124,HOLD*16,h*72
 
 C Working variables
       real ACIX,ACVX,TAX,XTA,XACH
@@ -2302,7 +2293,7 @@ C Present zone list.
      &       ier)
             if (IER.ne.0.or.IV.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 38
@@ -2431,10 +2422,10 @@ C  ICD - copy (=2) delete (=1) flag
 
       subroutine CDAIRFL(ICD)
 #include "building.h"
+#include "geometry.h"
 
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2445,16 +2436,16 @@ C  ICD - copy (=2) delete (=1) flag
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
 
-      character zname*12,zdesc*64,h*72,VERT(3*MA)*35,OUTS*124,OUT*4
-      INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilen,ilm
+      character h*72,VERT(3*MA)*35,OUTS*124,OUT*4
+      INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilistlen,ilm
 
       dimension IVERT(3*MA),ITEMP(3*MA)
 
-       ILEN=0
+      ilistlen=0
 
 C Set up menu of current definitions.
       DO 399 IDTY=1,NBDAYTYPE
-        ILEN=ILEN+NAC(IDTY)
+        ilistlen=ilistlen+NAC(IDTY)
  399  CONTINUE
 
 C Loop through the items until the page to be displayed.
@@ -2486,14 +2477,14 @@ C To delete period(s) redisplay the menu and allow user to indicate
 C which one, then collapse the period list.
       if (ICD.eq.1) then
         H(1)='One or more of the periods may be deleted.'
-        call EPICKS(ILEN,IVERT,' ','Air flow period(s) to delete:',
+        call EPICKS(ilistlen,IVERT,' ','Air flow period(s) to delete:',
      &         35,M,VERT,'Air flow period to delete',IER,1)
 
 C Delete items in IVERT array. Sort IVERT first.
-        if (ILEN.gt.0) then
+        if (ilistlen.gt.0) then
           KFLAG=-1
           call SORTI(IVERT,ITEMP,NBDAYTYPE*MA,KFLAG)
-          do 100 IJ=1,ILEN
+          do 100 IJ=1,ilistlen
             IAFP=IVERT(IJ)
             IGOON=1
             ILET=0
@@ -2590,6 +2581,7 @@ C << initial intent to guide later revisions?
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,act,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -2602,9 +2594,6 @@ C LPROJ   - zone scheduling (operation file)
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/PREC2/VOL(MCOM)
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -2639,7 +2628,7 @@ C Scratch copy of air flow pattern from an operations file.
                            !questions about the operation files data
 
       character*(*) sfile
-      character zname*12,zdesc*64,h*72
+      character h*72
       CHARACTER oprdescc*248,ctlstrc*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
@@ -2764,11 +2753,10 @@ C then clear casual gain data structure and create a new file.
 
 C IF asked to copy all then 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(GFILE,'(2a)') 
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+          WRITE(GFILE,'(2a)') zname(idest)(1:lnzname(idest)),'.opr'
         else
           WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+     &      zname(idest)(1:lnzname(idest)),'.opr'
         endif
         write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
         if(act(1:1).eq.'s')then
@@ -3119,11 +3107,10 @@ C  ICOMP zone number
 
       subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
+#include "geometry.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -3134,7 +3121,7 @@ C  ICOMP zone number
       INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
       REAL ACI,ACV,TA
 
-      character zname*12,zdesc*64,outs*124
+      character outs*124
       dimension TACI(24),TACV(24)
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
@@ -3359,6 +3346,7 @@ C Returns: ICGS*(),ICGF*(),CMGS*(),CMGL*(),RADC*(),CONC*() common.
 C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -3372,9 +3360,6 @@ C ITRC is the trace level, IER=0 is OK.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -3404,7 +3389,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
       character lodlabel*6,typstr*8,H*72
-      character zname*12,zdesc*64,title*28
+      character title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
 C   e.g. 123W in source zone is also 123W in destination zone.
@@ -3413,7 +3398,7 @@ C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
       character act*8,iwatt*8
-      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,ILEN,IOPT,ICGTS,IDTYP
+      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,IOPT,ICGTS,IDTYP
       dimension kstr(MDTY),ILLEN(MDTY)
 
 C If not browsing, take the information from loadcnt
@@ -3586,8 +3571,7 @@ C Now display the menu.
       if(mmod.eq.8)then
         write(title,'(a,a)') 'Casual gains in ',zname(ICOMP)
       else
-        write(title,'(a,a)') 'Gains: ',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP)))
+        write(title,'(a,a)') 'Gains: ',zname(ICOMP)(1:lnzname(ICOMP))
       endif
       CALL EMENU(title,VERT,MVERT,IVERT)
       if (IVERT.EQ.1)THEN
@@ -3841,7 +3825,7 @@ C confirm whether absolute W values are to be scaled.
      &      ier)
             if (IER.ne.0.or.isource.eq.ICOMP) then
               write (OUTS,'(3a)')  'the current zone (',
-     &          ZNAME(ICOMP)(1:lnblnk(ZNAME(ICOMP))),').'
+     &          zname(ICOMP)(1:lnzname(ICOMP)),').'
               call USRMSG('The selected zone should be different from',
      &          outs,'W')
               goto 39
@@ -4226,6 +4210,7 @@ C If silent is true then use icgs & icgf parameters.
 
       subroutine EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,icgsX,icgfX)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -4239,10 +4224,6 @@ C If silent is true then use icgs & icgf parameters.
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
-
-C Base area for zones.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       logical OK,DOK,CLOSE,silent
 
@@ -4683,6 +4664,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6,h*72,VERT(3*MC)*35
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
+      integer ilistlen
 
 C Choose day type to delete/copy period from
       IX=1
@@ -4700,7 +4682,7 @@ C Choose day type to delete/copy period from
 
       IDT=kstr(1)
       M=0
-      ILEN=NCAS(IDT)
+      ilistlen=NCAS(IDT)
       DO 10 L=1,NCAS(IDT)
         M=M+1
         if(ICGT(IDT,L).gt.0)then
@@ -4720,14 +4702,15 @@ C Choose day type to delete/copy period from
 
       IF(ICD.EQ.1)THEN
         H(1)='One or more of the periods may be deleted (removed).'
-        call EPICKS(ILEN,IVERT,' ','Casual gain period(s) to delete:',
-     &         35,M,VERT,'Casual gain period to delete',IER,1)
+        call EPICKS(ilistlen,IVERT,' ',
+     &    'Casual gain period(s) to delete:',
+     &    35,M,VERT,'Casual gain period to delete',IER,1)
 
 C Delete items in IVERT array. Sort IVERT first.
-        if (ILEN.gt.0) then
+        if (ilistlen.gt.0) then
           KFLAG=-1
           call SORTI(IVERT,ITEMP,MC,KFLAG)
-          do 100 IJ=1,ILEN
+          do 100 IJ=1,ilistlen
             ICGP=IVERT(IJ)
             call insdelcasper(icomp,IDT,'d',icgp,ier)
             M=M-1
@@ -4801,6 +4784,7 @@ C << initial intent to guide later revisions?
       subroutine IMPORTZCASG(isource,idest,actcas,iwatt,sfile,itrc,
      &  act,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -4813,8 +4797,6 @@ C LPROJ   - zone scheduling (operation file)
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -4850,10 +4832,6 @@ C Descriptive label for a zone load or casual gain.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C Base area for zones.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
       COMMON/P3TYPENC/ICGTC(MDTY,MC)
@@ -4876,7 +4854,7 @@ C Base area for zones.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ltmp*72
       character lodlabel*6,lodlabelc*6
-      character zname*12,zdesc*64,fs*1,GFILE*72,iwatt*8
+      character fs*1,GFILE*72,iwatt*8
       character actcas*8
       character act*1   ! '-' normal, 's' silent
       LOGICAL XST,unixok,dok,ok
@@ -5001,10 +4979,10 @@ C name based on the zone name.
         call edisp(iuout,'Destination operation file not found...')
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(GFILE,'(2a)') 
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+     &      zname(idest)(1:lnzname(idest)),'.opr'
         else
           WRITE(GFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &      zname(idest)(1:lnblnk(zname(idest))),'.opr'
+     &      zname(idest)(1:lnzname(idest)),'.opr'
         endif
         write(ltmp,'(a)') LPROJ(idest)(1:lnblnk(LPROJ(idest)))
         if(act(1:1).eq.'s')then
@@ -5177,13 +5155,13 @@ C  ICOMP zone number
 
       subroutine PLTCASGN(ICOMP,IDTYP)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -5196,13 +5174,11 @@ C  ICOMP zone number
 
 C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
       character lodlabel*6, outs*124
-      character zname*12,zdesc*64
+
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
@@ -5691,7 +5667,7 @@ C initcasday does initial setup of all casual day types.
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,ILEN
+      INTEGER NCAS,ICGS,ICGF,ICGT,ILN
       REAL CMGS,CMGL,RADC,CONC
       dimension iper(24),iperf(24)
       character hold*48,H*72,OUTS*12,LOUTS*24,VOUTS*50
@@ -5718,8 +5694,8 @@ C initcasday does initial setup of all casual day types.
         hold='                                    '
         write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         OUTS=CALENTAG(IDTY)
-        ILEN=LNBLNK(OUTS)
-        WRITE(VOUTS,'(3A)')'No. of ',OUTS(1:ILEN),
+        ILN=LNBLNK(OUTS)
+        WRITE(VOUTS,'(3A)')'No. of ',OUTS(1:ILN),
      &  ' casual gain periods?'
         CALL EASKS(HOLD,VOUTS,
      &  'occupants / lights / equipment or small power',
@@ -5734,7 +5710,7 @@ C Get user to specify the start times for occup periods if non-zero.
 C Increment ipcount for each new period.
         ipcount=NCAS(IDTY)
         if(nbocper.gt.0)then
-          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' occupant'
+          WRITE(LOUTS,'(2A)')OUTS(1:ILN),' occupant'
           call initcasper(nbocper,iper,iperf,'i',LOUTS)
           do 71 ij=1,nbocper
             ipcount=ipcount+1
@@ -5748,7 +5724,7 @@ C Increment ipcount for each new period.
   71      continue
         endif
         if(nbltper.gt.0)then
-          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' lighting'
+          WRITE(LOUTS,'(2A)')OUTS(1:ILN),' lighting'
           call initcasper(nbltper,iper,iperf,'i',LOUTS)
           do 72 ij=1,nbltper
             ipcount=ipcount+1
@@ -5762,7 +5738,7 @@ C Increment ipcount for each new period.
   72      continue
         endif
         if(nbspper.gt.0)then
-          WRITE(LOUTS,'(2A)')OUTS(1:ILEN),' small power'
+          WRITE(LOUTS,'(2A)')OUTS(1:ILN),' small power'
           call initcasper(nbspper,iper,iperf,'i',LOUTS)
           do 73 ij=1,nbspper
             ipcount=ipcount+1

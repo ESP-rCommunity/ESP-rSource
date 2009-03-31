@@ -574,9 +574,6 @@ plt_zone_gain_coupling.F:
 cetc_cogen.F:
 	rm -f cetc_cogen.F
 	ln -s $(PLTdir)/cetc_cogen.F
-BC_data.F:
-	rm -f BC_data.F
-	ln -s $(COMdir)/BC_data.F
 plt_bc_components.F:
 	rm -f plt_bc_components.F
 	ln -s $(PLTdir)/plt_bc_components.F
@@ -595,9 +592,6 @@ Annex42_fuel_cell.F:
 shocc_dummy.c:
 	rm -f shocc_dummy.c
 	ln -s $(SHCdir)/shocc_dummy.c .
-Lookup_data.F:
-	rm -f Lookup_data.F
-	ln -s $(COMdir)/Lookup_data.F
 
 ##Unused 'time-out' code.
 ##timeout.cpp:
@@ -639,11 +633,6 @@ mains_temp_draw_profiles.F:
 stratified_tank.F:
 	rm -f stratified_tank.F
 	ln -s $(PLTdir)/stratified_tank.F .
-
-SiteUtilities.F:
-	rm -f SiteUtilities.F
-	ln -s $(COMdir)/SiteUtilities.F .
-
 complex_fenestration.F:
 	rm -f complex_fenestration.F
 	ln -s $(BLDdir)/complex_fenestration.F .
@@ -661,7 +650,7 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
-	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F BC_data.F bcfunc.F bctlf.F \
+	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \
@@ -692,8 +681,7 @@ clean:
 	window_control.F PEM_FC_pt1.F PEM_FC_pt2.F powoc_calc.F \
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F RE-H2-ctl.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
-	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
-	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F SiteUtilities.F \
+	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
+	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F
-
-
+	

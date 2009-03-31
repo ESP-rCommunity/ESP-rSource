@@ -24,6 +24,7 @@ C file names. No range checking is done, ie assumed to have
 C been checked elsewhere.  
       SUBROUTINE ESCSYS(FILE,IUC,IUF,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "tdf2.h"
 #include "cfd.h"
@@ -69,20 +70,11 @@ C espriou.h provides currentfile.
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/CFGV/icfgv
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
-
-C CTYPE (3 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*3
-      real gversion
-      COMMON/G0/CTYPE,gversion
 
 C Common blocks as in esystem.F (some omitted).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -245,7 +237,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,ZN*12
-      character zname*12,zdesc*64
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character lradcf*72
@@ -1185,22 +1176,28 @@ C Quick read, get the zone name and the number of surfaces.
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
             CTYPE=WORD(1:3)
             zname(ICOMP)=' '
+            lnzname(ICOMP)=0
             zdesc(ICOMP)=' '
+            lnzdesc(ICOMP)=0
           ELSEIF(ND.EQ.2)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
             CTYPE=WORD(1:3)
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
+            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             zdesc(ICOMP)=' '
+            lnzdesc(ICOMP)=0
           ELSEIF(ND.gt.2)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
             CTYPE=WORD(1:3)
             CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
             ZN=WORD(1:12)
             call st2name(ZN,zname(ICOMP))
+            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             call egetrm(outstr,K,phrase,'W','Z description',IER)
             ZDESC(ICOMP)=phrase
+            lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
           ENDIF
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
           K=0
@@ -1220,17 +1217,20 @@ C Close geometry file.
           NZSUR(ICOMP)=0
           NZTV(ICOMP)=0
           VOL(ICOMP)=0.0
+          lnzname(ICOMP)=0
         ENDIF
 
 C Fill in a default zone name if blank or UNKNOWN.
         IF(zname(ICOMP)(1:2).EQ.'  '.OR.
      &     zname(ICOMP)(1:7).EQ.'UNKNOWN')THEN
-            IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
-            IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
+          IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
         ENDIF
         if(zdesc(ICOMP)(1:1).EQ.' ')then
           write(zdesc(ICOMP),'(2a)') 
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a...'
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' describes a...'
+          lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
         endif
   22  continue
 

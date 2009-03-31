@@ -27,6 +27,9 @@ C e2vrml:  Generate VRLM 2.0 world of esp-r model.
 C ******* Translate esp data to tsbi3 file geom and materials.
       SUBROUTINE e2tsbi3(itrc,incobs,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/precz.
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -48,14 +51,9 @@ C ******* Translate esp data to tsbi3 file geom and materials.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
 C Arrays of material properties.
@@ -87,7 +85,7 @@ C Arrays of material properties.
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       dimension iprndx(50),optndx(50)
-      character optndx*12,OPT*12,ZSN*28,q*1,zname*12,zdesc*64,T12*12
+      character optndx*12,OPT*12,ZSN*28,q*1,T12*12
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION ZSN(MS)
       character CONTYPE*12
@@ -309,7 +307,9 @@ C Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        vol(mz)=zvol
+        zonetotsurfacearea(mz)=zoa
 
 C Loop through all vertices and find the top and bottom of the zone.
         ZMX=-1.E+7
@@ -350,7 +350,7 @@ C Zone connections field - add 9 to esp zone index.
              lizc = 4
           endif
 
-C         write(zsn(is),'(3a)') zname(mz)(1:lnblnk(zname(mz))),':',
+C         write(zsn(is),'(3a)') zname(mz)(1:lnzname(mz)),':',
 C    &       SNAME(mz,is)
 
 C Eliminate double definition of surfaces
@@ -571,7 +571,9 @@ C RE-Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        vol(mz)=zvol
+        zonetotsurfacearea(mz)=zoa
         FLA=0.
 
 C Loop through all vertices and find the top and bottom of the zone.
@@ -586,7 +588,7 @@ C Loop through all vertices and find the top and bottom of the zone.
   44    continue
 
 C Write zone name.
-        WRITE(ioout,'(3a)')q,zname(mz)(1:lnblnk(zname(mz))),q
+        WRITE(ioout,'(3a)')q,zname(mz)(1:lnzname(mz)),q
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
@@ -732,6 +734,7 @@ C e2vrml takes zones/obstructions and any ground topology and
 C creates a grey-scale VRML 2.0 world.
       SUBROUTINE e2vrml(itrc,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -754,17 +757,12 @@ C creates a grey-scale VRML 2.0 world.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -807,7 +805,7 @@ C Arrays of material properties.
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER GMLCN*12,GSNAME*6
-      character ZSN*28,q*1,zname*12,zdesc*64
+      character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
       logical XST,numb
@@ -938,7 +936,9 @@ C Read in the zone geometry.
         else
           call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
         endif
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        vol(newfoc)=zvol
+        zonetotsurfacearea(newfoc)=zoa
         WRITE(ioout,'(a)')' '
         WRITE(ioout,'(3a)')'# zone ',zname(newfoc),' starts here....'
         do 5 j=1,nsur
@@ -983,7 +983,7 @@ C For the inside and outside layer get surface properties.
 
 C Remeber characters in surface name
           lsn=lnblnk(sname(newfoc,j))
-          write(zsn(j),'(3a)') zname(newfoc)(1:lnblnk(zname(newfoc))),
+          write(zsn(j),'(3a)') zname(newfoc)(1:lnzname(newfoc)),
      &      ':',sname(newfoc,j)(1:lsn)
           lzsn=lnblnk(zsn(j))
 
@@ -1035,8 +1035,7 @@ C Ensure first character is not a number.
             WRITE(ioout,'(a)') '        ccw TRUE'
             WRITE(ioout,'(a)') '        solid FALSE'
             WRITE(ioout,'(3a)')'        coord DEF COORD_',
-     &        zname(newfoc)(1:lnblnk(zname(newfoc))),
-     &        ' Coordinate { point ['
+     &        zname(newfoc)(1:lnzname(newfoc)),' Coordinate { point ['
 
 C Note on coordinates:
 C In esp-r the +Z is up, in VRML +Y is up.  In esp-r and VRML +X is same.
@@ -1094,7 +1093,7 @@ C Write differently if opaque or transparent.
               WRITE(ioout,'(a)')'        solid TRUE'
             endif
             WRITE(ioout,'(2a)') '        coord USE COORD_',
-     &        zname(newfoc)(1:lnblnk(zname(newfoc)))
+     &        zname(newfoc)(1:lnzname(newfoc))
             WRITE(ioout,'(a)')  '        coordIndex [ '
             write(outs,'(24I4)') (JVN(J,K)-1,K=1,NVER(j))
             call sdelim(outs,outsd,'C',IW)

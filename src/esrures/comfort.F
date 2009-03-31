@@ -40,6 +40,7 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -49,10 +50,8 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
       common/pophelp/h(60)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/loadlabel/lodlabel(mcom,7)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -70,7 +69,7 @@ C Pre calculated data (filtered).
       character longtfile*144,longtfiledos*144
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
-      character outs*124,TSTR*24,H*72,zname*12,zdesc*64,ZN*12
+      character outs*124,TSTR*24,H*72,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
@@ -446,7 +445,7 @@ C If output to file alter the edisp unit number.
         call edisp(itru,'  ')
         write(outs,'(A,A,A,I3,A,I3)',IOSTAT=IOS,ERR=1)
      &    ' Comfort assessment for ',
-     &    zname(IZONE)(:lnblnk(zname(IZONE))),' on  Day',IDCO,
+     &    zname(IZONE)(1:lnzname(IZONE)),' on  Day',IDCO,
      &    ' of month',IMCO
         call edisp(itru,outs)
         call edisp(itru,' ')
@@ -751,6 +750,7 @@ C << todo - use of explicit read of casual gains >>
 
       subroutine getocup(izone,iday,ih,ioc,ier)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever
@@ -777,8 +777,6 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X2a_QTOTOCCUP
       REAL X2c_QTOTEQUIP
-      
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)

@@ -441,6 +441,7 @@ c solved simultaneously at the current simulation time-step.
 
       SUBROUTINE MZSETU(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 #include "control.h"
 #include "CFC_common.h"
@@ -448,8 +449,7 @@ c solved simultaneously at the current simulation time-step.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
-      COMMON/PREC2/VOL(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -546,7 +546,9 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       
 C.....Named constnats for timerows
       integer iPresent, iFuture
-      parameter (iPresent=1, iFuture=2) 
+      parameter (iPresent=1, iFuture=2)
+
+      real zoar  ! local for zonetotsurfacearea(MCOM)
 
 C Check for trace request.
       atrace = .false.
@@ -820,10 +822,10 @@ C  Also append gains associated from plant containinment heat losses
 C  ( use function fSurface_radiant_gain to obtain radiant gains at
 C    surface assocaited with plant component containment heat losses
 C   (in watts!) )
-      
-      QCASRP=qcasr(1)*zoa(icomp)*ei(icomp,i)/emarea(icomp)
+      zoar=zonetotsurfacearea(icomp)  ! assign local
+      QCASRP=qcasr(1)*zoar*ei(icomp,i)/emarea(icomp)
      &          + fSurface_radiant_gain(iComp,i,iPresent) / sna(iComp,i)
-      QCASRF=qcasr(2)*zoa(icomp)*ei(icomp,i)/emarea(icomp)
+      QCASRF=qcasr(2)*zoar*ei(icomp,i)/emarea(icomp)
      &          + fSurface_radiant_gain(iComp,i,iFuture) / sna(iComp,i)
 
 C For radiant plant find __ in W/m2 .

@@ -28,6 +28,9 @@ C Prjqa writes out a QA report (to screen or file) for
 C the current model.
       subroutine prjqa(ier)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
+#include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
 #include "tdf2.h"
@@ -67,17 +70,10 @@ C espriou.h provides currentfile.
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -87,8 +83,6 @@ C LPNF (72 char) plant network file name.
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
@@ -99,8 +93,6 @@ C LPNF (72 char) plant network file name.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -202,9 +194,9 @@ C Remember if each zone is fully attributed.
       character DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,cfgroot*24,ZN*12,SN*12
+      character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
@@ -1375,7 +1367,7 @@ C Jump if no zones.
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,2x,a)') IVALS(IZ),
      &      zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),OPQ,TRN,
      &      ZBASEA(IVALS(IZ)),
-     &      zdesc(IVALS(IZ))(1:lnblnk(zdesc(IVALS(IZ))))
+     &      zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
           else
             aok=' part-attributed '
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,a)') IVALS(IZ),
@@ -1882,7 +1874,7 @@ C as an earlier one.
             endif
  101        if(duplicate.and.ilcot.ne.0)then
               write(outs,'(2a)') ' Uses same operations as zone ',
-     &          zname(ilcot)
+     &          zname(ilcot)(1:lnzname(ilcot))
               call edisp(itu,outs)
             else
               CALL ERPFREE(IUF,ISTAT)
@@ -1909,7 +1901,7 @@ C as an earlier one.
             endif
           else
             write(outs,'(2a)') ' No operations defined for zone ',
-     &        zname(IVALS(IZ))
+     &        zname(IVALS(IZ))(1:lnzname(IVALS(IZ)))
             call edisp(itu,'  ')
             call edisp(itu,outs)
           endif
@@ -2055,6 +2047,7 @@ C not browsing.
 
       subroutine mupdate(ier)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -2063,10 +2056,6 @@ C not browsing.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
@@ -2076,12 +2065,10 @@ C not browsing.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -2110,7 +2097,7 @@ C Images.
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,zdesc*64,ZN*12
+      character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
       logical ok,dok,ddok,found,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.

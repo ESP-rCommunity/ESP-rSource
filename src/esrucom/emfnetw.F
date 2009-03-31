@@ -906,6 +906,7 @@ C MFLIST Fluid flow file: list common block contents.
 
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -923,8 +924,7 @@ C MFLIST Fluid flow file: list common block contents.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,zname*12,zdesc*64
+      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       CHARACTER LAPROB*72
       CHARACTER outs*124,fldtyp*6,nodtyp*20,dat1*4,dat2*4,tmnam*12
       logical written
