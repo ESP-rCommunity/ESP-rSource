@@ -259,8 +259,9 @@ C.....Surface Energy balances.
      &     q2lost(2),           ! - lost to exterior (W)
      &     q2tmc(2),            ! - Absorbed by glazing (W)
      &     q2wall(2),           ! - Absorbed by opaque construction (W)
-     &     q2rem(2)             ! - Absorbed by roof? (W)
-      REAL q1adjz, q1outs, q2adjz, q2lost, q2tmc, q2wall,q2rem
+     &     q2rem(2),            ! - Absorbed by roof? (W)
+     &     q2cfc(2)             ! - Absorbed by CFC (W) - currently not used
+      REAL q1adjz, q1outs, q2adjz, q2lost, q2tmc, q2wall,q2rem,q2cfc
 
 C.....MLC data
       common/gr1d01/nnds,nndz(mcom),nndc(mcom,ms),nndl(mcom,ms,me)

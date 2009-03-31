@@ -55,7 +55,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plt_zone_gain_coupling.o cetc_cogen.o BC_data.o plt_bc_components.o Hydrogen_appliances.o \
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
-	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o
+	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
+	  complex_fenestration.o editCFC.o
 
 $(PROG): $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -643,6 +644,12 @@ SiteUtilities.F:
 	rm -f SiteUtilities.F
 	ln -s $(COMdir)/SiteUtilities.F .
 
+complex_fenestration.F:
+	rm -f complex_fenestration.F
+	ln -s $(BLDdir)/complex_fenestration.F .
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -686,6 +693,7 @@ clean:
 	h3k_report_data.F radiant_floor.F DHW_module.F h3k_plant_postprocess.F RE-H2-ctl.F \
 	ADS_storage_tanks.F ADS_storage_unit.F ADS_controller.F solar_collectors.F \
 	ground_temp_mains.F Lookup_data.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
-	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F SiteUtilities.F
+	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F SiteUtilities.F \
+	complex_fenestration.F editCFC.F
 
 

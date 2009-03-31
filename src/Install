@@ -90,7 +90,7 @@ mode="interactive"         # Interactive/silent installation
 SRCdir=`pwd`               # Source Directory
 DESTdir=/usr/esru          # Target Directory
 xml_support=prompt         # support for XML output
-debugging="no"             # include debugging symbols
+debugging="yes"            # include debugging symbols
 EXE=""                     # executable file extension (i.e. .exe on cygwin and Windows)
 FFLAGS="-I../include "     # initial fortran compiler flags
 CFLAGS="-I../include "     # initial C compiler flags
@@ -106,7 +106,7 @@ make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
 enableFPE="no"             # FPE-exception handling?
-extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
+extendedDebug="yes"        # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 

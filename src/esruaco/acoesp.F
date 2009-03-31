@@ -344,7 +344,8 @@ C Recover zone data (read only, no display).
       TRN=0.
       DO 41 I=1,NSUR
         icon=IZSTOCN(icomp,i)
-        if(SSOTF(icon)(1:4).NE.'OPAQ')then
+        if(SSOTF(icon)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icon)(1:4).NE.'CFC ')then
           TRN=TRN+SNA(I)
         else
           OPQ=OPQ+SNA(I)

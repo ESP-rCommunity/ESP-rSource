@@ -355,7 +355,7 @@ C the wrong format.
 
 C ******* parsemlcdesc
 C Parse the DESC string from the MLC common block returning text for
-C MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
+C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
       subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
       
@@ -371,9 +371,11 @@ C Clear parameters to be returned and then copy from DES.
       WRITE(MLCN,'(A)')DES(1:12)
       WRITE(OTF,'(A)') DES(15:18)
       IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
-      IF(OTF(1:4).NE.'OPAQ')THEN
+      IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
         WRITE(OPT,'(A)') DES(21:32)
         IF(OPT.EQ.' ')OPT='UNKNOWN'
+      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        OPT='USE GSLedit'
       ELSE
         OPT='OPAQUE'
       ENDIF
@@ -515,9 +517,13 @@ C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ')THEN
+        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
           WRITE(OUTSTR,'(5a)')' Details of transparent construction: ',
      &      MLCN,' with ',OPT,' optics.'
+          CALL EDISP(ITRU,OUTSTR)
+        ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+          WRITE(OUTSTR,'(3a)')' ',
+     &      'Details of complex fenestration construction: ',MLCN
           CALL EDISP(ITRU,OUTSTR)
         ELSE
           WRITE(OUTSTR,'(2a)')' Details of opaque construction: ',MLCN
@@ -660,7 +666,7 @@ C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
 C QPAQ.
-      if(OTF(1:4).NE.'OPAQ')then
+      if(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')then
         if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
@@ -781,7 +787,7 @@ C an inside wall to inside wall hc 0.13 both sides.
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ')THEN
+        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
           WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3)')
      &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,

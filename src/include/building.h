@@ -16,6 +16,7 @@ C Type declarations.
       integer MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID,MMTR,MBND,MSNOD
       integer MMAT,MIPVM,MIPVA,MSPS,MDTY,MGTY,MGPER
       integer MCNDV,MCNDC,MPICK,MVAR,MIMG,MSPMRES
+      integer MCFC
 
 C Geometry.
       PARAMETER (MCOM=52)	!- Zones.
@@ -31,9 +32,9 @@ C Ground topology.
       PARAMETER (MGTV=500)	!- Vertices.
 
 C Construction.
-      PARAMETER (ME=8)		!- Elements/construction.
-      PARAMETER (MN=35)		!- Nodes/construction.
-      PARAMETER (MGP=3)		!- Air gaps/construction.
+      PARAMETER (ME=20)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
+      PARAMETER (MN=50)		!- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
+      PARAMETER (MGP=10)	!- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
       PARAMETER (MMLC=120)	!- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)	!- Control volumes per construction.
 
@@ -164,3 +165,4 @@ C Miscellaneous.
       PARAMETER (MPICK=30)
       PARAMETER (MVAR=5)
       PARAMETER (MIMG=10)	!- Images associated with model.
+      PARAMETER (MCFC=7)	! Maximum number of different CFC types within a zone.

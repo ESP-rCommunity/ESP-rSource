@@ -140,6 +140,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
+#include "CFC_common.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -1839,6 +1840,9 @@ C Zone file names.
         elseif(WORD(1:4).eq.'*tmc')then
           itw(icomp)=1
           LTWIN(icomp)=text(1:72)
+        elseif(WORD(1:4).eq.'*cfc')then
+          icfc(icomp)=1
+          lcfcin(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*ivf')then
           ivf(icomp)=1
           LVIEW(icomp)=text(1:72)
@@ -2139,6 +2143,11 @@ C Reporting.
           IF(ITW(ICOMP).EQ.1)THEN
             WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' Transp. constr: ',
      &          LTWIN(ICOMP)(1:LNBLNK(LTWIN(ICOMP)))
+            CALL EDISP(iuout,OUTS)
+          ENDIF
+          IF(icfc(ICOMP).EQ.1)THEN
+            WRITE(OUTS,'(2a)',IOSTAT=ISTAT,ERR=1)' CFC constr: ',
+     &          lcfcin(ICOMP)(1:LNBLNK(lcfcin(ICOMP)))
             CALL EDISP(iuout,OUTS)
           ENDIF
           IF(IVF(ICOMP).EQ.1)THEN

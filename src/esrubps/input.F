@@ -1400,6 +1400,7 @@ C Timestep zone airflow is handled by tdf.
 #include "building.h"
 #include "cfd.h"
 #include "espriou.h"
+#include "CFC_common.h"
 C espriou.h provides currentfile.
 
       common/trc/itrc
@@ -1482,6 +1483,14 @@ C If zone TMC file read it in.
           return
         endif
       endif
+
+C If zone CFC file read it in.
+      if (icfc(icomp).eq.1)then
+        call read_in_cfc_file(itrc,itu,iunit,lcfcin(icomp),icomp,ier)
+        if(dll.and.ier.eq.2)then
+          return
+        end if
+      end if
 
 C If zone casual gain control file, read it in.
       IF(ICGC(ICOMP).EQ.1)then

@@ -250,6 +250,7 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -902,6 +903,16 @@ C Use equation of Berdahl and Martin, if INDEX OF EXPOSURE is 8
 C      IF(IXPOS.EQ.8)THEN
 C        QELWF(I)=QELWFB(I)+QELWFC(I)+QELWFG(I)
 C      ENDIF
+
+C Calculate equivalent temperature of surroundings 
+C     - used in CFC longwave exchange for outdoor blinds
+        TEQV(I)=(A1(ICOMP,I)*(TBLD(I)**4)+B1(ICOMP,I)*(TSKY**4)+
+     &          C1(ICOMP,I)*(TGRD**4))**0.25
+
+C Estimate contribution to external longwave flux (for CFC output)
+        Bld_fraction(icomp,i)=(A1(ICOMP,I)*(TBLD(I)**4))/(TEQV(I)**4)
+        Sky_fraction(icomp,i)=(B1(ICOMP,I)*(TSKY**4))/(TEQV(I)**4)
+        Grd_fraction(icomp,i)=(C1(ICOMP,I)*(TGRD**4))/(TEQV(I)**4)
 
         DT=((TP+TF)/2.0)-TFC(ICOMP,I,1)
         IF(DT.GE.0.0.AND.DT.LT.0.01)DT=0.01

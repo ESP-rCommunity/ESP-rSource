@@ -4168,7 +4168,7 @@ C TFC(MCOM,MS,MN),     ! - future construction temperature (oC)
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
      &              hcof(mcom,ms)
       common/fvalg/gfa(mcom)
-      COMMON/VAPC2/ZMDAP(MCOM),ZMDAF(MCOM)
+      COMMON/VAPC2/ZMDAP(MCOM),ZMDAF(MCOM) ! present and future dry air mass in zone
       common/atpres/patmos
 
 c Common for the number of time steps per hour
@@ -4215,7 +4215,7 @@ C initialize
         enddo
       endif
 
-      time_step=3600./float(ntstep)
+      time_step=3600./float(ntstep) ! seconds
       den_h2o=1010.0 !  kg/m^3
 
 C set required local variables 
@@ -4251,9 +4251,9 @@ C Data for internal surface
 
 C 
       do i=1,2
-        pD(i)=zrh(i)*SATVP(tzone(i))/100.0 ! vapour pressure at rh, tzone; mbar
+        pD(i)=VAPRS2(tzone(i),wzone(i),PATMOS) ! vapour pressure at rh, tzone; mbar
         psurf_sat(i)=SATVP(tsurf(i))       ! saturation vapour pressure at tsurf; mbar
-        tz_sat(i)=dewpt(humr(tzone(i),zrh(i),PATMOS),PATMOS)
+        tz_sat(i)=dewpt(wzone(i),PATMOS)
       enddo
 
 C Store old future value as current present value
@@ -4360,14 +4360,26 @@ C Results output.
       unitspm(ispmnod,9)='(%)'
       txtspm(ispmnod,9)='Area frac. for visibility, external, upper'
 
-      write(*,"(12(a,E11.4))")
-     & "ts_i=",tsurf(2)," tz_i=",tzone(2)," tz_sat_i=",tz_sat(2),
-     & " zrh_i=",zrh(2)," pD_i=",pD(2)," ps_sat_i=",psurf_sat(2),
-     & " QPhCh=",genflxf(icomp,isurf,inode),
-     & " Qavail=",Qavail,
-     & " MFlux_i=",mflux(2)," M_tot_i=",mh2o(icomp,isurf,2),
-     & " beta=",beta," wz_i=",wzone(2),gfa(icomp)
+C Internal surface data
+c      write(*,"(15(a,E11.4))")
+c     & "ts_i=",tsurf(2)," tz_i=",tzone(2)," tz_sat_i=",tz_sat(2),
+c     & " zrh_i=",zrh(2)," pD_i=",pD(2)," ps_sat_i=",psurf_sat(2),
+c     & " QPhCh=",genflxf(icomp,isurf,inode),
+c     & " Qavail=",Qavail,
+c     & " MFlux_i=",mflux(2)," M_tot_i=",mh2o(icomp,isurf,2),
+c     & " beta=",beta," wz_i=",wzone(2)," gfa=",gfa(icomp),
+c     & " airmass=",ZMDAF(icomp)*(1.0+gfa(icomp)),
+c     & " nsinc=",real(nsinc)
 C     & " a_min_i=",asurf_min(2)," a_max_i=",asurf_max(2)
+
+C External surface data:
+c      write(*,"(10(a,E11.4))")
+c     & "ts_e=",tsurf(1)," tamb=",tzone(1)," tsat_amb=",tz_sat(1),
+c     & " ambrh=",zrh(1)," pD_e=",pD(1)," ps_sat_e=",psurf_sat(1),
+c     & " MFlux_e=",mflux(1)," M_tot_e=",mh2o(icomp,isurf,1),
+c     & " wamb=",wzone(1),
+c     & " nsinc=",real(nsinc)
+C     & " a_min_e=",asurf_min(1)," a_max_e=",asurf_max(1)
 
 C As a temporary measure, use zone-related variables, zspmf1 and zspmf2,
 C for results library storage. Output is limited to one special material

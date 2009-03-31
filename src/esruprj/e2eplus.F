@@ -2032,8 +2032,8 @@ C Have not yet worked out equivalent to a constant boundary condition.
 
 C If a surface is transparent, it must have a non-blank
 C parent, if not ask the user for a suggestion.
-          if(SSOTF(icc)(1:4).NE.'OPAQ'.and.
-     &       (SSPARENT(icc)(1:2).eq.'  '.or.
+          if(SSOTF(icc)(1:4).NE.'OPAQ'.and.SSOTF(icc)(1:4).NE.'CFC '
+     &      .and.(SSPARENT(icc)(1:2).eq.'  '.or.
      &        SSPARENT(icc)(1:2).eq.'- '))then
             call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
             write(outs,'(3a,i2,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
@@ -2083,7 +2083,8 @@ C internal mass.
 C Generate combined zone & generate surface names as identifiers.
           WRITE(ioout,'(a)') ' '
 
-          if(SSOTF(icc)(1:4).NE.'OPAQ')then
+          if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
+     &      SSOTF(icc)(1:4).NE.'CFC ')then
             WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &        'Surface:HeatTransfer:sub',com
           else
@@ -2105,7 +2106,8 @@ C Generate combined zone & generate surface names as identifiers.
           WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
      &      ZSDES(1:lnblnk(ZSDES)),com,
      &      '   !- User Supplied Surface Name'
-          if(SSOTF(icc)(1:4).NE.'OPAQ')then
+          if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
+     &      SSOTF(icc)(1:4).NE.'CFC ')then
             WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','WINDOW',com,
      &        '   !- Surface Type!'
             WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',

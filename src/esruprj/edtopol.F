@@ -77,7 +77,7 @@ C ITSNM surface name toggle: display = 0, hidden = 1
 C ITORG origin toggle: display = 0, hidden = 1
 C ITSNR surf normal toggle: display = 0, hidden = 1.
 C ITOBS obstruction toggle: not yet enabled.
-C ITHLS highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+C ITHLS highlight toggle: normal 0, constr 1, trans/opaq/cfc 2, part atrib 3
 C ITGRD grid toggle: display = 0, hidden = 1
 C ITVNO vertex toggle: display = 0, hidden = 1
 C ITPPSW current view - perspective/plan/south/west
@@ -3078,6 +3078,7 @@ C updated as well.
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
                   updatecon=.true.
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -3118,6 +3119,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
                   updatecon=.true.
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -3158,6 +3160,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   WRITE(SSMLCN(icc),'(A12)')DESC(imlcrepl)(1:12)
                  if(DESC(imlcrepl)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
                  if(DESC(imlcrepl)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+                 if(DESC(imlcrepl)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
                   updatecon=.true.
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -3489,6 +3492,7 @@ C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
                     if(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                     if(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQUE'
+                    if(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
                   endif
                 endif
  91           continue
@@ -3571,6 +3575,7 @@ C << If newgeometry then can write out the optical property instead
 C << of TRAN for SSOTF.
             IF(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
             IF(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+            IF(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
               gversion(iz) =1.1
@@ -3682,7 +3687,8 @@ C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
             do 11 i=1,nsur
               icc=izstocn(ivals(iz),i)
               apply=.true.
-              if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ')apply=.false.
+              if(ins1.eq.1.and.SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &            SSOTF(icc)(1:4).ne.'CFC ')apply=.false.
               if(ins1.eq.2.and.SSOTF(icc)(1:4).eq.'OPAQ')apply=.false.
 
 C Determine the match in the system topology. 
@@ -3739,6 +3745,7 @@ C 'any horizontal','any orien.','cancel'.
                   WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
                   IF(DESC(ISEL)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
                   IF(DESC(ISEL)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
+                  IF(DESC(ISEL)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
                 endif
               endif
  11         continue

@@ -1363,7 +1363,8 @@ C Jump if no zones.
             icc=izstocn(ivals(iz),i)
             if(SSOTHER(icc,1)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
             if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
-            if(SSOTF(icc)(1:4).NE.'OPAQ')then
+            if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icc)(1:4).NE.'CFC ')then
               TRN=TRN+SSNA(icc)
             else
               OPQ=OPQ+SSNA(icc)
@@ -1536,7 +1537,8 @@ C For floors.
                 xareawall = xareawall + SSNA(icc)
                 xuavwall = xuavwall + (SSNA(icc) * UVH)
               endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ')then
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &            SSOTF(icc)(1:4).ne.'CFC ')then
               if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &           SSVFC(icc)(1:4).eq.'SLOP')then
 
@@ -2191,7 +2193,8 @@ C see if there are shading and obstruction files.
                   DO 678 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &                 SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2205,7 +2208,8 @@ C see if there are shading and obstruction files.
                   DO 679 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &                 SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2254,7 +2258,8 @@ C Otherwise assume all applicable for shading and insolation.
                 DO 778 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &               SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC ')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -2267,7 +2272,8 @@ C Otherwise assume all applicable for shading and insolation.
                 DO 779 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &               SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC ')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif

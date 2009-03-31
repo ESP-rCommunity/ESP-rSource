@@ -122,6 +122,8 @@ C and then if the surface is transparent or opaque.
       IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
         TSTR='opaque MLC'
+      ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC ')THEN
+        TSTR='CFC const.'
       ELSE
         TSTR='trnsp. MLC'
       ENDIF

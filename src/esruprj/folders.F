@@ -1284,6 +1284,7 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1373,6 +1374,7 @@ C Find out the length of each of the files:names to be displayed.
       li=LNBLNK(LHCCO(IZ))
       ll=LNBLNK(LCFD(IZ))
       lm=LNBLNK(LMOIST(IZ))
+      ln=LNBLNK(lcfcin(IZ))
 
 C Find maximum with of text and title. IWA is for required files,
 C IWC is for optional files, IW is the overall width.
@@ -1382,7 +1384,8 @@ C IWC is for optional files, IW is the overall width.
       else
         IWB=29
       endif
-      IWC=MAX0(36,ld+22,le+22,lf+22,lg+22,lh+22,li+22,ll+22,lm+22)
+      IWC=
+     & MAX0(36,ld+22,le+22,lf+22,lg+22,lh+22,li+22,ll+22,lm+22,ln+22)
       if(IWC.le.72)then
         IWD=IWC-22
       else
@@ -1468,11 +1471,16 @@ C << to be done >>
       else
        WRITE(ITEMS(19),'(A)') 'r  structured mesh  : '
       endif
-      ITEMS(20)='  _____________________________    '
-      ITEMS(21)='* check existence of zone files    '
-      ITEMS(22)='? help                             '
-      ITEMS(23)='- exit this menu                   '
-      MITEM=23
+      if(lcfcin(IZ)(1:7).eq.'UNKNOWN')then
+       WRITE(ITEMS(20),'(A)') 's  CFC constr: '
+      else
+       WRITE(ITEMS(20),'(2A)') 's  CFC constr: ',lcfcin(IZ)(1:IWD)
+      endif
+      ITEMS(21)='  _____________________________    '
+      ITEMS(22)='* check existence of zone files    '
+      ITEMS(23)='? help                             '
+      ITEMS(24)='- exit this menu                   '
+      MITEM=24
 
 C Help text for this menu.
       H(1)='The files defining the composition of a zone are'
@@ -1551,6 +1559,10 @@ C Check existence of this zone's files.
         L=LGrdSt
         if(.NOT.XST.and.IZ.eq.IndxSt)call usrmsg(
      &    ' structured mesh file missing!',L,'W')
+        call FINDFIL(lcfcin(IZ),XST)
+        L=lcfcin(IZ)
+        if(.NOT.XST.and.icfc(IZ).eq.1)call usrmsg(
+     &     ' CFC file missing!',L,'W')
       ELSEIF(INO.EQ.2)THEN
 
 C Edit zone name - read and then write the geometry file.
@@ -2376,6 +2388,89 @@ C There is no zone view factor file so offer restricted choice.
           LGrdSt=L
           IndxSt=IZ
         endif
+      ELSEIF(INO.EQ.20)THEN
+        if(browse)then
+          call usrmsg('Cannot update model while in browse ',
+     &                'mode, you must `own` the model!','W')
+          goto 3
+        endif
+        H(1)='The zone complex fenestration constructions (CFC)'
+        H(2)='provides a more exact treatment for windows which'
+        H(3)='can include operable slat-type shading layers.'
+        if(icfc(IZ).eq.1)then
+          CALL EASKABCD(' For the zone CFC file',' :',
+     &      'change name','browse','dereference it','continue',IW,3)
+          if(IW.EQ.1)then
+            L=lcfcin(IZ)
+          elseif(IW.EQ.2)then
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('?','zon','cfc',sfile,snpfile,nfile,
+     &                           iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','zon','cfc',sfile,snpfile,nfile,
+     &                           iier)
+              if(snpfile(1:2).ne.'  ')then
+                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &            snpfile(1:lnblnk(snpfile))
+              else
+                L=lcfcin(IZ)
+              endif
+            else
+              L=lcfcin(IZ)
+            endif
+          elseif(IW.EQ.3)then
+            lcfcin(IZ)=' '
+            icfc(IZ)=0
+            modcfg=.TRUE.
+            goto 3
+          elseif(IW.EQ.4)then
+            goto 3
+          endif
+        else
+
+C There is no zone cfc file so offer restricted choice.
+          CALL EASKABC(' For the zone CFC file',' :',
+     &      'edit name','browse','continue',IW,3)
+          if(IW.EQ.1)then
+            L=' '
+          elseif(IW.EQ.2)then
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('?','zon','cfc',sfile,snpfile,nfile,
+     &                          iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','zon','cfc',sfile,snpfile,nfile,
+     &                           iier)
+              if(snpfile(1:2).ne.'  ')then
+                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &            snpfile(1:lnblnk(snpfile))
+              else
+                L=lcfcin(IZ)
+              endif
+            else
+              L=lcfcin(IZ)
+            endif
+          elseif(IW.EQ.3)then
+            goto 3
+          endif
+        endif
+        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+          WRITE(D,'(A,A4)')ZN(1:lnblnk(ZN)),'.cfc'
+        else
+          WRITE(D,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &      ZN(1:lnblnk(ZN)),'.cfc'
+        endif
+        write(outs,'(3a)')' CFC file for ',ZN(1:lnblnk(ZN)),' ?'
+  511   CALL EASKS(L,outs,' ',72,D,'cfc file',IER,6)
+        IF(L.eq.' '.or.IER.NE.0)GOTO 511
+        lcfcin(IZ)=L
+        icfc(IZ)=1
+        modcfg=.TRUE.
       ELSE
         INO=-4
         GOTO 2

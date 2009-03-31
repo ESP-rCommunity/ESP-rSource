@@ -42,7 +42,8 @@ C   act    - 's' for silent mode, '-' for user interaction mode.
 
 C   ntmc & nwins: the number of insolation sources (i.e. external
 C                 and transparent surfaces); the latter is held
-C                 in common.
+C                 in common. CFCs count as transparent surfaces for
+C                 shading analysis
 C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
@@ -288,7 +289,7 @@ C for /ishdirec/.
       endif
       ishadf=0
 
-C Establish if any of the surfaces are TMCs.
+C Establish if any of the surfaces are TMCs or CFCs.
       ntmc=0
       nwins=0
 

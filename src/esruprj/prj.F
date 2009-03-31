@@ -3253,6 +3253,7 @@ C  shdok checks if shading files are readable.
       subroutine checkmodel(mlcok,bndryok,bndrysxc,confok,geofok,
      &                      oprfok,prob,tmcok,shdok)
 #include "building.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -3719,6 +3720,16 @@ C Zone construction file exists so attempt to scan it.
                   lh=lh+1
                   write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
      &            ' tmc file did not read cleanly.'
+                endif
+              endif
+            endif
+            if(icfc(I).eq.1)then
+              CALL read_in_cfc_file(0,IUOUT,IFIL+1,lcfcin(I),I,IER)
+              if(ier.ne.0)then
+                if(lh.lt.60)then
+                  lh=lh+1
+                  write(h(lh),'(3a)') 'Zone ',zn(1:lnblnk(zn)),
+     &            ' cfc file did not read cleanly.'
                 endif
               endif
             endif

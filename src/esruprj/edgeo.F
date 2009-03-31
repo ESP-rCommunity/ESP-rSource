@@ -261,7 +261,7 @@ C which include solar obstructions. << needs to be tested >>
           DO 778 I=1,NZSUR(icomp)
             ioc=IZSTOCN(icomp,i)
             if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &         SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &            SSOTF(ioc)(1:4).ne.'OPAQ')then
               nsurfinso(icomp)=nsurfinso(icomp)+1
               isurfinso(icomp,nsurfinso(icomp))=I
             endif
@@ -296,6 +296,7 @@ C might have edited vertices or added a surface.
 
       OPQ=0.
       TRN=0.
+      CFC=0.
 
 C Check if base area is non-zero and whether the ibases list is
 C full of zeros. If it is a partial list find the last non-zero
@@ -378,8 +379,10 @@ C Check to see if a non `FLOR` surface has been included in ibases.
             endif
           endif
         endif
-        if(SOTF(I)(1:4).NE.'OPAQ')then
+        if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')then
           TRN=TRN+SSNA(ioc)
+        elseif(SOTF(I)(1:4).EQ.'CFC ')then
+          CFC=CFC+SSNA(ioc)
         else
           OPQ=OPQ+SSNA(ioc)
         endif
@@ -559,6 +562,9 @@ C Read current zone back in and then update the configuration file.
      &         SIGSTR(1:LSTR),' m^2'
       call SIGFIG(TRN,NSIGFIG,RNO,SIGSTR,LSTR)
       WRITE(ITEMS(ITEMC+4),'(3a)')'   transp. constr.: ',
+     &         SIGSTR(1:LSTR),' m^2'
+      call SIGFIG(CFC,NSIGFIG,RNO,SIGSTR,LSTR)
+      WRITE(ITEMS(ITEMC+4),'(3a)')'   cfc constr.: ',
      &         SIGSTR(1:LSTR),' m^2'
       ITEMS(ITEMC+5)='  _____________________________'
       WRITE(ITEMS(ITEMC+6),'(A,i3,a)')
@@ -1136,6 +1142,8 @@ C Use logic similar to parsemlcdesc to find the optical name.
               OPT=' '
               IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
                 SOTF(ISS)='OPAQUE'
+              ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+                SOTF(ISS)='CFC '
               ELSE
                 WRITE(OPT,'(A)') DESC(ISEL)(21:32)
                 IF(OPT.EQ.' ')OPT='UNKNOWN'
@@ -2139,7 +2147,8 @@ C For floors.
                areawall = areawall + SSNA(icc)
                uavwall = uavwall + (SSNA(icc) * UVD)
              endif
-           elseif(SOTF(is)(1:4).ne.'OPAQ')then
+           elseif(SOTF(is)(1:4).ne.'OPAQ'.and.
+     &            SOTF(is)(1:4).ne.'CFC ')then
              if(SVFC(is)(1:4).eq.'CEIL'.or.
      &          SVFC(is)(1:4).eq.'SLOP')then
 
@@ -2373,7 +2382,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      common/pmchange/comold,tmcold,vwfold,ishold
+      common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -2384,7 +2393,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,ZN*12
       character LCFGF*72,cfgroot*24
-      LOGICAL comold,tmcold,vwfold,ishold
+      LOGICAL comold,tmcold,vwfold,ishold,cfcold
       logical changed,newgeo
       logical unixok
 
@@ -2992,7 +3001,8 @@ C Check perimeter.
       endif
 
    13 WRITE(ISD(1),'(A,A12)')  'a surface name    : ',SSNAME(ioc)
-      if(SSOTF(ioc)(1:4).eq.'OPAQ'.or.SSOTF(ioc)(1:4).eq.'TRAN')then     
+      if(SSOTF(ioc)(1:4).eq.'OPAQ'.or.SSOTF(ioc)(1:4).eq.'TRAN'.or.
+     &                                SSOTF(ioc)(1:4).eq.'CFC ')then     
         WRITE(ISD(2),'(A,A12)')'b surface type    : ',SSOTF(ioc)(1:12)
       else
         WRITE(ISD(2),'(A,A12)')'b optical set name: ',SSOTF(ioc)(1:12)
@@ -3327,6 +3337,8 @@ C Use logic similar to parsemlcdesc to find the optical name.
             OPT=' '
             IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
               SOTF(IS)='OPAQUE'
+            ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+              SOTF(IS)='CFC '
             ELSE
               WRITE(OPT,'(A)') DESC(ISEL)(21:32)
               IF(OPT.EQ.' ')OPT='UNKNOWN'
@@ -6816,6 +6828,8 @@ C Use logic similar to parsemlcdesc to find the optical name.
             OPT=' '
             IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
               SOTF(NSUR)='OPAQUE'
+            ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+              SOTF(NSUR)='CFC '
             ELSE
               WRITE(OPT,'(A)') DESC(ISEL)(21:32)
               IF(OPT.EQ.' ')OPT='UNKNOWN'
@@ -6864,6 +6878,8 @@ C Use logic similar to parsemlcdesc to find the optical name.
             OPT=' '
             IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
               OPT='OPAQUE'
+            ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+              SOTF(NSUR)='CFC '
             ELSE
               WRITE(OPT,'(A)') DESC(ISEL)(21:32)
               IF(OPT.EQ.' ')OPT='UNKNOWN'

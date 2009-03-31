@@ -76,7 +76,7 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/pmchange/comold,tmcold,vwfold,ishold
+      common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       dimension IVALB(MB)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -90,7 +90,7 @@ C LPRFDB,IPRODB (for event profile database)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
-      LOGICAL comold,tmcold,vwfold,ishold,unixok
+      LOGICAL comold,tmcold,vwfold,ishold,unixok,cfcold
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
 

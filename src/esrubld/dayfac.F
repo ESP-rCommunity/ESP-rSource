@@ -425,14 +425,14 @@ C Get information about areas of all surfaces opaque and TMC:
       IF(.NOT.close)THEN
         ZAREA=ZAREA+SNA(I)
         ITVTR=ITMCFL(ICOMP,I)
-        IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+        IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
           AVREF=AVREF+SNA(I)*(1.-AI(ICOMP,I))
         ELSE
           AVREF=AVREF+SNA(I)*(1.-(TVTR(ICOMP,ITVTR)+AI(ICOMP,I)))
         ENDIF
 
         IF(SVFC(I).EQ.'CEIL')THEN
-          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
             RCW=RCW+(1.-AI(ICOMP,I))*SNA(I)
             AU=AU+SNA(I)
           ELSE
@@ -441,7 +441,7 @@ C Get information about areas of all surfaces opaque and TMC:
           ENDIF
 
         ELSEIF(SVFC(I)(1:4).EQ.'FLOR')THEN
-          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
             RFW=RFW+(1.-AI(ICOMP,I))*SNA(I)
             AL=AL+SNA(I)
           ELSE
@@ -450,7 +450,7 @@ C Get information about areas of all surfaces opaque and TMC:
           ENDIF
 
         ELSE
-          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
             RCW=RCW+(1.-AI(ICOMP,I))*SNA(I)*HU/RDZ
             RFW=RFW+(1.-AI(ICOMP,I))*SNA(I)*HL/RDZ
             AU=AU+SNA(I)*HU/RDZ

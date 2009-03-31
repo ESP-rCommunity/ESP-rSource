@@ -997,6 +997,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "net_flow.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
       
@@ -1499,6 +1500,11 @@ C Ask if user wishes to remove all files related to the zone.
           CALL EFOPSEQ(IUO,LTWIN(IW2),1,IER)
           if(ier.eq.0)CALL EFDELET(IUO,ISTAT)
         endif
+        if(icfc(IW2).eq.1)then
+          CALL ERPFREE(IUO,ISTAT)
+          CALL EFOPSEQ(IUO,lcfcin(IW2),1,IER)
+          if(ier.eq.0)CALL EFDELET(IUO,ISTAT)
+        endif
         if(ICGC(IW2).eq.1)then
           CALL ERPFREE(IUO,ISTAT)
           CALL EFOPSEQ(IUO,LCGCIN(IW2),1,IER)
@@ -1514,6 +1520,7 @@ C For next zones shift surface names.
         DO 66 IS=1,NZSUR(IX+1)
           SNAME(IX,IS)=SNAME(IX+1,IS)
           ITMCFL(IX,IS)=ITMCFL(IX+1,IS)
+          icfcfl(IX,IS)=icfcfl(IX+1,IS)
    66   continue
 
 C For each zone `above' the selected one reset the various file names
@@ -1538,6 +1545,7 @@ C and zone based data.
         ISI(IX)=ISI(IX+1)
         IHC(IX)=IHC(IX+1)
         ITW(IX)=ITW(IX+1)
+        icfc(IX)=icfc(IX+1)
         ICGC(IX)=ICGC(IX+1)
         IOBS(IX)=IOBS(IX+1)
         icascf(IX)=icascf(IX+1)
@@ -1655,6 +1663,7 @@ C act = 'ob+' or 'ob-' obstruction changes.
 C IER=0 OK. 
       SUBROUTINE WARNMOD(ICOMP,act)
 #include "building.h"
+#include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -1664,11 +1673,12 @@ C IER=0 OK.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/pmchange/comold,tmcold,vwfold,ishold
+      common/pmchange/comold,tmcold,vwfold,ishold,cfcold
+
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER act*3
 
-      LOGICAL XST,comold,tmcold,vwfold,ishold
+      LOGICAL XST,comold,tmcold,vwfold,ishold,cfcold
 
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
      &act(1:3).eq.'sat')then
@@ -1691,6 +1701,13 @@ C << refine testing for setting tmcold >>
           else
             tmcold = .false.
           endif
+        endif
+      endif
+      if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
+     &act(1:3).eq.'sat')then
+        if(icfc(ICOMP).eq.1)then
+          call FINDFIL(lcfcin(ICOMP),XST)
+          if(XST)cfcold = .true.
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
@@ -1737,6 +1754,7 @@ C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1749,14 +1767,14 @@ C IER=0 OK.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/pmchange/comold,tmcold,vwfold,ishold
+      common/pmchange/comold,tmcold,vwfold,ishold,cfcold
       common/C21/IFCFG,cfgroot,LCFGF
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER H*72,zname*12,zdesc*64,act*1
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
-      logical unixok
+      logical unixok,cfcold
       logical silent  ! if true then use silent recalc
 
 C Check if Unix-based or DOS based.
@@ -1768,9 +1786,10 @@ C Check if Unix-based or DOS based.
         tmcold = .false.
         vwfold = .false.
         ishold = .false.
+        cfcold = .false.
         return
       elseif(act(1:1).eq.'r'.or.act(1:1).eq.'R')then
-        if(comold.or.tmcold.or.vwfold.or.ishold)then
+        if(comold.or.tmcold.or.vwfold.or.ishold.or.cfcold)then
           nh=nh+1
           write(h(nh),'(3a)') 'For ',
      &    zname(icomp)(1:lnblnk(zname(icomp))),' the last action makes:'
@@ -1784,6 +1803,13 @@ C Check if Unix-based or DOS based.
           nh=nh+1
           write(h(nh),'(3a)')' the TMC file ',
      &          LTWIN(ICOMP)(1:lnblnk(LTWIN(ICOMP))),' out of date.'
+          nh=nh+1
+          h(nh)=' (rebuild via construction facility) '
+        endif
+        if(cfcold)then
+          nh=nh+1
+          write(h(nh),'(3a)')' the CFC file ',
+     &          lcfcin(ICOMP)(1:lnblnk(lcfcin(ICOMP))),' out of date.'
           nh=nh+1
           h(nh)=' (rebuild via construction facility) '
         endif
@@ -1832,7 +1858,7 @@ C If existing db out of date the perform recalculation.
           endif
         endif
       endif
-      if(comold.or.tmcold)then
+      if(comold.or.tmcold.or.cfcold)then
         if(silent)then
 	  ok= .true.
 	else
@@ -1840,8 +1866,9 @@ C If existing db out of date the perform recalculation.
           h(1)='Zone construction files should be rebuilt after '
           h(2)='surface attributes change or surfaces are added or'
           h(3)='deleted. '
-          CALL ASKOK('Update the zone construction and/ or TMC files',
-     &    'to reflect the changes that you have made?',OK,DOK,3)
+        CALL ASKOK('Update the zone construction and/ or TMC and/ or',
+     &    ' CFC files to reflect the changes that you have made?',
+     &      OK,DOK,3)
         endif
         if(OK)then
           QUIET=.true.
@@ -2801,6 +2828,8 @@ C section of the string DESC.
         else
           if(DESC(imatch)(15:18).EQ.'OPAQ')then
             SOTF(icc)='OPAQUE'
+          elseif(DESC(imatch)(15:18).EQ.'CFC ')then
+            SOTF(icc)='CFC '
           else
             WRITE(SOTF(icc),'(A)') DESC(imatch)(21:32)
             willneedtmc=.true.
@@ -2951,6 +2980,8 @@ C section of the string DESC.
             else
               if(DESC(imatch)(15:18).EQ.'OPAQ')then
                 rsotf='OPAQUE'
+              elseif(DESC(imatch)(15:18).EQ.'CFC ')then
+                rsotf='CFC '
               else
                 write(rsotf,'(A)') DESC(imatch)(21:32)
                 willneedtmc=.true.
@@ -3031,6 +3062,8 @@ C section of the string DESC.
             else
               if(DESC(imatch)(15:18).EQ.'OPAQ')then
                 rsotf='OPAQUE'
+              elseif(DESC(imatch)(15:18).EQ.'CFC ')then
+                rsotf='CFC '
               else
                 write(rsotf,'(A)') DESC(imatch)(21:32)
                 willneedtmc=.true.

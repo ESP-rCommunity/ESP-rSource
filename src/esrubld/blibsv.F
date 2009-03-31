@@ -634,7 +634,7 @@ C#include "cfd.h"
 
 C Commons for summary of solar (for results library)
       common/solsum/q1adjz(2),q1outs(2),q2adjz(2),q2lost(2),q2tmc(2),
-     &  q2wall(2),q2rem(2)
+     &  q2wall(2),q2rem(2),q2cfc(2)
 
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/PREC2/VOL(MCOM)
@@ -1392,7 +1392,7 @@ C Solar distribution values: QW1 slot used for solar entering from outside,
 C QW2 slot used for solar from adjacent zones and QSA is solar absorbed.
           QW1=q1outs(2)
           QW2=q1adjz(2)
-          QSA=q2tmc(2)+q2wall(2)+q2rem(2)
+          QSA=q2tmc(2)+q2wall(2)+q2rem(2)+q2cfc(2)
 
 C Thermal bridges.
           qbridge=totheatloss(icomp)*(TF-TFA(icomp))
@@ -1408,7 +1408,7 @@ C Solar trace rather than default window stuff.
           QW1=(q1outs(1)+q1outs(2))*0.5
           QW2=(q1adjz(1)+q1adjz(2))*0.5
           QSA=((q2tmc(1)+q2tmc(2))*0.5)+((q2wall(1)+q2wall(2))*0.5)+
-     &        ((q2rem(1)+q2rem(2))*0.5)
+     &        ((q2rem(1)+q2rem(2))*0.5)+((q2cfc(1)+q2cfc(2))*0.5)
 
 C Thermal bridges.
           qbridge=totheatloss(icomp)*
@@ -2331,6 +2331,7 @@ C Possibly all calculations should use the IVTHPZ in the future?
 #include "building.h"
 C#include "cfd.h"
 #include "control.h"
+#include "CFC_common.h"
 
       COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -2420,6 +2421,27 @@ C Calculate QCFD? for use by CFD conflation type 2.
         QCFDF(ICOMP,ISFN)=hcif(ICOMP,ISFN)*(tfa(ICOMP)-tfs(ICOMP,ISFN))
         qconvi(ICOMP,ISFN,2)=QCFDF(ICOMP,ISFN)*sna(ICOMP,ISFN)
 
+C Calculate Inside Face Convection for CFCs
+C ONLY IF INDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+        icfcType = icfcfl(icomp,isfn) !CFC type
+        IF(icfcType.ge.1)then !surface is CFC
+
+          ne=NELTS(ICOMP,ISFN)
+
+          icfcLayerType = icfcltp(icomp,icfcType,ne) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+          if(icfcLayerType.ge.2)then    !INDOOR BLIND PRESENT
+
+            qconvi(icomp,isfn,2)=(q_blind_airndS(icomp,isfn)    !conv. flux from back blind surface to air node
+     &                           +q_glass_airndS(icomp,isfn)    !conv. flux from interior glass to air node
+     &        +(hcif(icomp,isfn)*(tfa(icomp)-tfs(icomp,isfn)))) !conv. flux from front blind surface to air node
+     &                            *sna(icomp,isfn)
+
+          endif
+
+        ENDIF
+
 C -- Longwave radiation.
         qlwrdi(ICOMP,ISFN,1)=qlwrdi(ICOMP,ISFN,2)
         qlwrdi(ICOMP,ISFN,2)=0.
@@ -2430,6 +2452,25 @@ C -- Longwave radiation.
           endif
   702   continue
         qlwrdi(ICOMP,ISFN,2)=qlwrdi(ICOMP,ISFN,2)*sna(ICOMP,ISFN)
+
+C Calculate Inside Longwave Radiation for CFCs
+C ONLY IF INDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+        icfcType = icfcfl(icomp,isfn) !CFC type
+        IF(icfcType.ge.1)then !surface is CFC
+
+          ne=NELTS(ICOMP,ISFN)
+
+          icfcLayerType = icfcltp(icomp,icfcType,ne) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+          if(icfcLayerType.ge.2)then    !INDOOR BLIND PRESENT
+
+            qlwrdi(icomp,isfn,2)=q_cfclw_toRoom(icomp,isfn)
+     &                            *sna(icomp,isfn)
+
+          endif
+
+        ENDIF
 
 C -- Radiant casual gains are area AND emissivity weighted.
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
@@ -2455,7 +2496,7 @@ C -- Plant radiant energy.
 
 C -- Shortwave. Test if TMC (include solar abs).
         qswrdi(ICOMP,ISFN,1)=qswrdi(ICOMP,ISFN,2)
-        IF(ITMCFL(icomp,ISFN).EQ.0)THEN
+        IF(ITMCFL(icomp,ISFN).EQ.0.AND.icfcfl(icomp,ISFN).EQ.0)THEN
           qswrdi(ICOMP,ISFN,2)=qsoli(ISFN,2)*sna(ICOMP,ISFN)
         ELSE
           NN=NNDC(ICOMP,ISFN)
@@ -2490,6 +2531,23 @@ C -- Convection.
           qconve(ICOMP,ISFN,2)=hcof(ICOMP,ISFN)*sna(ICOMP,ISFN)*
      &                                            (tf-tfc(ICOMP,ISFN,1))
 
+C Calculate Outside Face Convection for CFCs
+C ONLY IF OUTDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+          icfcType = icfcfl(icomp,isfn) !CFC type
+          IF(icfcType.ge.1)then !surface is CFC
+
+            icfcLayerType = icfcltp(icomp,icfcType,1) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+            if(icfcLayerType.ge.2)then    !OUTDOOR BLIND PRESENT
+
+              qconve(icomp,isfn,2)=(q_glass_extS(icomp,isfn)    !conv. flux from exposed glass surface to external air
+     &          +(hcof(icomp,isfn)*(tf-tfc(icomp,isfn,1))))    !conv. flux from both blind surfaces to air node (hcof is multiplied by 2 in subroutine cfc_convection)
+     &                              *sna(icomp,isfn)
+
+            endif
+          ENDIF
+
 C -- Longwave radiation (ground, buildings, sky).
           qlwrde(ICOMP,ISFN,1)=qlwrde(ICOMP,ISFN,2)
           qlwrde(ICOMP,ISFN,2)=QELWFG(ISFN)*sna(ICOMP,ISFN)
@@ -2498,9 +2556,29 @@ C -- Longwave radiation (ground, buildings, sky).
           qlwrsk(ICOMP,ISFN,1)=qlwrsk(ICOMP,ISFN,2)
           qlwrsk(ICOMP,ISFN,2)=QELWFK(ISFN)*sna(ICOMP,ISFN)
 
+C Calculate Outside Face Longwave Radiation for CFCs
+C ONLY IF OUTDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+        icfcType = icfcfl(icomp,isfn) !CFC type
+        IF(icfcType.ge.1)then !surface is CFC
+
+          icfcLayerType = icfcltp(icomp,icfcType,1) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+          if(icfcLayerType.ge.2)then    !OUTDOOR BLIND PRESENT
+
+            qlwrde(ICOMP,ISFN,2)=Grd_fraction(icomp,isfn)*
+     &      q_cfclw_toExt(icomp,isfn)*SNA(icomp,isfn) !Fraction of total longwave flux to ground
+            qlwrbd(ICOMP,ISFN,2)=Bld_fraction(icomp,isfn)*
+     &      q_cfclw_toExt(icomp,isfn)*SNA(icomp,isfn) !Fraction of total longwave flux to buildings
+            qlwrsk(ICOMP,ISFN,2)=Sky_fraction(icomp,isfn)*
+     &      q_cfclw_toExt(icomp,isfn)*SNA(icomp,isfn) !Fraction of total longwave flux to sky
+
+          endif
+        ENDIF
+
 C -- Shortwave radiation. Test if TMC.
           qswrde(ICOMP,ISFN,1)=qswrde(ICOMP,ISFN,2)
-          if (ITMCFL(icomp,ISFN).EQ.0) then
+          if (ITMCFL(icomp,ISFN).EQ.0.AND.icfcfl(icomp,ISFN).EQ.0)then
             qswrde(ICOMP,ISFN,2)=qsole(ISFN,2)*sna(ICOMP,ISFN)
           else
             qswrde(ICOMP,ISFN,2)=QTMCA(ISFN,1,2)*sna(ICOMP,ISFN)

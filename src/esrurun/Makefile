@@ -20,7 +20,8 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	clickonbitmap.o context.o ctlexp.o ctlwrt.o ctread.o \
 	dossupport.o e3dviews.o ecasctl.o \
 	econstr.o econtrol.o edatabase.o edcfd.o edcon.o edcondb.o eddb.o \
-	edgeo.o edipv.o edobs.o edonecon.o edoptic.o edpro.o edtopol.o edzone.o egeometry.o egtgeom.o \
+	edgeo.o edipv.o editCFC.o edobs.o edonecon.o edoptic.o edpro.o edtopol.o \
+	edzone.o egeometry.o egtgeom.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o explor.o filelist.o \
 	folders.o gtopol.o hcfmk.o initalc.o insert.o item.o maintn.o mfcdat.o \
 	mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mksbem.o \
@@ -275,7 +276,9 @@ tdfedit.F:
 aim2_pretimestep.F:
 	rm -f aim2_pretimestep.F
 	ln -s $(CETCdir)/aim2_pretimestep.F .
-
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -294,5 +297,6 @@ clean:
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
+	editCFC.F
 	
 

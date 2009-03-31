@@ -1303,7 +1303,8 @@ C << take text from _e.gdba files to fill this in >>
      & 'matching construction name (`same` if symetric),'
         write(dbdoc(3),'(3a)')
      & 'colour name on `other` face, colour name on `inside` face, ',
-     & 'OPAQ:TRAN tag and optical name, acoustic name on `other` face,',
+     & 'OPAQ:TRAN:CFC tag and optical name,',
+     & ' acoustic name on `other` face,',
      & ' acoustic name on `inside` face,'
         write(dbdoc(4),'(3a)')
      & 'longwave emissivity at `inside` and `other` face, ',
