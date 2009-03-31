@@ -56,13 +56,13 @@ C ABSE    - solar absorptivity of external surfaces.
 
       SUBROUTINE ECONST(LCONS,IUNIT,ICOMP,ITRC,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -323,14 +323,13 @@ C is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
 
@@ -342,8 +341,7 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       CHARACTER*72 CONFIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER ZNAME*12
-      character outs*124,louts*248,zdesc*64
+      character outs*124,louts*248
 
       IER=0
 
@@ -362,7 +360,7 @@ C If in quiet mode then file should exist.
 
 C Write out the construction file data.
       WRITE(IFILT,30,IOSTAT=IOS,ERR=146)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),CONFIL(1:lnblnk(CONFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),CONFIL(1:lnblnk(CONFIL))
   30  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
      &'# no of |air |surface(from geo)| multilayer construction',/,
      &'# layers|gaps|  no.  name      | database name ')
@@ -480,13 +478,12 @@ C CONINF provides a description of the constructions in a zone based
 C on common blocks. If isur=0 then all, otherwise for one surface. 
       SUBROUTINE CONINF(ICOMP,ISUR,ITRU)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -528,14 +525,13 @@ C Arrays of material properties.
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER zname*12
-      CHARACTER OUTS*124,zdesc*64,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
+      CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
       character iprtext*4,TITL*72,GDESCR*36
 
 C Heading if all surfaces.
       if(isur.eq.0)then
         CALL EDISP(ITRU,' ')
-        WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP))),ICOMP
+        WRITE(OUTS,9996)zname(ICOMP)(1:lnzname(ICOMP)),ICOMP
  9996   FORMAT(' Zone construction details for ',A,' (',I2,')')
         CALL EDISP(ITRU,OUTS)
       endif
@@ -767,6 +763,7 @@ c         (not used in the current implementation),
 
       SUBROUTINE ERTWIN(ITRC,ITRU,IUA,LUA,ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -790,7 +787,6 @@ c         (not used in the current implementation),
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
       
@@ -798,8 +794,7 @@ c         (not used in the current implementation),
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER zname*12
-      CHARACTER OUTSTR*124,OUTS*124,LUA*72,TOPTIC*12,WORD*20,zdesc*64
+      CHARACTER OUTSTR*124,OUTS*124,LUA*72,TOPTIC*12,WORD*20
       character msg*28
       LOGICAL MODGEO
 
@@ -845,7 +840,7 @@ C if the surface attribute should be updated.
 C Reporting.
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
-        WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
+        WRITE(OUTS,9996)zname(ICOMP)(1:lnzname(ICOMP))
  9996   FORMAT(' Transparent construction file details for ',A)
         CALL EDISP(ITRU,OUTS)
         CALL EDISP(ITRU,' ')
@@ -879,7 +874,7 @@ C the list points to an existing set of properties.
             write(outs,'(6a,1x,a)')
      &      ' Mismatched TMC & mlc layers: ',
      &      SSNAME(icn)(1:lnblnk(SSNAME(icn))),' in ',
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' composed of ',
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' composed of ',
      &      SSMLCN(icn),TOPTIC(ICOMP,I)
             call edisp(iuout,outs)
             goto 1002
@@ -924,7 +919,7 @@ C Calculate reflectance.
   100   CONTINUE
         IF(SUM.LT.0..OR.SUM.GT.1.)then
           write(outs,'(3a,i2,a,f6.3)')' In ',
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' tmc ',
+     &      zname(ICOMP)(1:lnzname(ICOMP)),' tmc ',
      &      i,': the optical reflectance is ',SUM
           CALL EDISP(ITRU,outs)
           CALL EDISP(ITRU,' Reading of zone optics terminated.')

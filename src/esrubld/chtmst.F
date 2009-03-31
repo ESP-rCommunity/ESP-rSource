@@ -146,7 +146,7 @@ C *********************************************************************
       SUBROUTINE MZCOE5(ICOMP)
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
@@ -462,7 +462,7 @@ C **********************************************************************
       SUBROUTINE MSTCAP(ICOMP,I,IL,IN,CAPUv,CAPMl)
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
       COMMON/MOIST06/ISORP(MCOM,MS,ME),SORP(MCOM,MS,ME,3)
@@ -569,7 +569,7 @@ C *********************************************************************
       SUBROUTINE DELUAF(ICOMP)
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)

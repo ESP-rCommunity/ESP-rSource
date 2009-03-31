@@ -32,6 +32,7 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
 
       SUBROUTINE  DAYFAC(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -56,11 +57,9 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION XPL(MV),YPL(MV),ZPL(MV),DF(MGT)
       CHARACTER WINFO*10,CSTR*25 
-      character zname*12,zdesc*64
       logical close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei
 
@@ -418,7 +417,7 @@ C available and method should check for transp MLC.
       W=WIDTH*HIGH
 
 C Get information about areas of all surfaces opaque and TMC:
-      call ZINFO(IOUT,SNA,ZOA,PAZI,PELV,VOL)
+      call ZINFO(IOUT,SNA,ZOA,PAZI,PELV,ZVOL)
 
       DO 10 I=1,NSUR
       call eclose(PAZI(I),PAZI(J),0.5,close)

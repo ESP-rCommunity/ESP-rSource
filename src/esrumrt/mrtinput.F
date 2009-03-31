@@ -24,6 +24,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDMRTC(ITRC,ITRU,ICOMP,IER)
 
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -34,7 +35,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -235,7 +235,6 @@ C IER=0 OK, IER=1 problem.
 
       common/pophelp/h(60)
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/MRT2/GEOLOAD,MRTLOAD
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL

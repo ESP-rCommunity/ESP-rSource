@@ -1,6 +1,6 @@
 
 Notes for the self-extracting installer for a precompiled 
-X11 or GTK version 11.5 of ESP-r to run on an OSX 10.4 (or newer)
+X11 or GTK version 11.6 of ESP-r to run on an OSX 10.4 (or newer)
 Mac computer. It should run natively on PPC based Macs and in
 emulation mode on Intel based Mac computers. It assumes that
 you have the X11 environment installed as well as the development
@@ -12,13 +12,14 @@ This installer is intended to be used via either the OSX terminal
 Typically the `run` file you downloaded
 should be placed in /opt and run via a sudo command from 
 that folder via the command 
-  sudo ./esp-r_v11.5_osx_precomp.run
+  sudo ./esp-r_v11.6_osx_precomp.run
 
 On most OSX machines a file ending in .run will be
 treated as an executable. If the installer does not 
 execute you may have to issue the following command 
 to change its permissions:
-  sudo chmod a+x ./esp-r_v11.5_osx_precomp.run
+
+  sudo chmod a+x ./esp-r_v11.6_osx_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version
@@ -52,6 +53,7 @@ Once you have installed ESP-r:
 To start up the ESP-r Project Manger, log into your computer
 as normal, start up an X11 command window and give the 
 following command sequence:
+
  tcsh
  esp-r
  
@@ -69,7 +71,8 @@ libgobject-2.0 libglib-2.0 libintl libiconv.
 If ESP-r refuses to run you might have to download a few 
 packages via the fink environment (more about that in
 setting_up_osx.txt). On Intel based machines it reportedly
-runs in emulation mode.
+runs in emulation mode but you may need to put libgfortran
+libraries into /usr/local/lib.
 
 On Macs with older versions of OSX you may get warnings
 about undefined symbols. If this happens you are probably
@@ -79,7 +82,7 @@ Full instructions for setting up your Mac prior to using
 this installer are found in the file setting_up_osx.txt
 
 Check the ESRU web site <http://www.esru.strath.ac.uk>
-for tutorials, publications and the ESP-r cookbook and
-cookbook exercises as well as for information on how to 
+for tutorials, publications and the ESP-r Cookbook and
+Cookbook exercises as well as for information on how to 
 join the ESP-r discussion list.
 

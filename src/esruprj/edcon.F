@@ -38,6 +38,9 @@ C information to be saved into a new file. ITRU unit number for user
 C output, IER=0 OK. 
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/c20/precz.
+#include "geometry.h"
 #include "epara.h"
 #include "CFC_common.h"
       
@@ -47,12 +50,7 @@ C output, IER=0 OK.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
@@ -60,13 +58,11 @@ C output, IER=0 OK.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -88,7 +84,7 @@ C output, IER=0 OK.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
       CHARACTER*72 DFILE
-      CHARACTER zname*12,zdesc*64,SFILE*72,H*72,LTMP*72
+      CHARACTER SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER outs*124,VERT*48,KEY*1,head*31,ETEXT*82
@@ -96,7 +92,6 @@ C output, IER=0 OK.
       character docpth*24,tmppth*24,dbspth*24,TOPTIC*12,OPTIC*12
       LOGICAL MODGEO,MODCON,TFOUND,XST,again,QUIET
       logical newgeo  ! to use for testing if new/old geometry file.
-      integer lzn  ! length of zone name string
 
       logical CFCFOUND !used to determine whether CFCs exist
       character*72 CFCFILE
@@ -118,15 +113,15 @@ C DFILE is the default file name for any TMC file to be created,
 C UFILE is default for utility file. CFILE is default for constr file.
 C CFCFILE is default for CFC file
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.tmc'
-        WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+        WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
+        WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.con'
         WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.cfc'
       else
         WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.tmc'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.con'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
         WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
       endif
@@ -195,7 +190,7 @@ C On entry display the current zone. Reset all surface lines to std.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       endif
 
 C Read construction file into common.
@@ -472,7 +467,7 @@ C has resized the display, redraw.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then
@@ -542,8 +537,8 @@ C Help text for this menu.
       H(54)='intended.'
 
 C Now display the menu.
-      lzn=lnblnk(zname(ICOMP))
-      write(head,'(3a)')'Composition of `',zname(ICOMP)(1:lzn),'`'
+      write(head,'(3a)') 'Composition of `',
+     &  zname(ICOMP)(1:lnzname(ICOMP)),'`'
       CALL EMENU(head,VERT,MVERT,IVERT)
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
@@ -1197,9 +1192,9 @@ C zone construction file with minimum intervention by the user.
 
       SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1403,14 +1398,13 @@ C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
       SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1430,7 +1424,7 @@ C the number of composite layers to build this up.
 
       dimension ival(MS)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER zname*12,zdesc*64,H*72,TOPTIC*12,louts*248
+      CHARACTER H*72,TOPTIC*12,louts*248
 
 C If in quiet mode then the file should exist, but if it is not a 
 C silly name open it and inform.
@@ -1458,7 +1452,7 @@ C            call edisp(iuout,LTWIN(ICOMP))
 
 C Write out the transparent construction file data.
       WRITE(IFU,30,IOSTAT=ISTAT,ERR=98)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),
+     &  zname(ICOMP)(1:lnzname(ICOMP)),
      &  LTWIN(ICOMP)(1:lnblnk(LTWIN(ICOMP)))
   30  FORMAT('# transparent properties of ',a,' defined in ',a)
 
@@ -1575,14 +1569,13 @@ C UNKNOWN then the user must supply this information manually). It scans
 C through each of the existing surfaces and finds unique optical types.
       SUBROUTINE EDTWIN(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1613,7 +1606,7 @@ C through each of the existing surfaces and finds unique optical types.
       CHARACTER outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER zname*12,zdesc*64,msg*28
+      CHARACTER msg*28
       
 C If tmc data has already been read in (ie NTMC>0) then move on to
 C a display of the current data.
@@ -1749,7 +1742,7 @@ C Save ITMCFL.
 C Display of current information...
    90 CONTINUE
       CALL EDISP(ITRU,' ')
-      WRITE(outs,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
+      WRITE(outs,9996)zname(ICOMP)(1:lnzname(ICOMP))
  9996 FORMAT(' Transparent construction file details for ',A)
       CALL EDISP(ITRU,outs)
       CALL EDISP(ITRU,' ')

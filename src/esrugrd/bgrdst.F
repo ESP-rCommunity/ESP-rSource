@@ -222,7 +222,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -939,7 +938,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1213,7 +1211,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       COMMON/GRSD61/NBnd,IBndZ(MBND),IBndS(MBND)
       COMMON/GRSD62/IBRowS(MBND),IBRowE(MBND)
@@ -1470,6 +1467,9 @@ C *********************************************************************
       SUBROUTINE SLCTZN(ITRC,SZN,IZ,ZONOK)
 #include "building.h"
 
+C geometry.h provides commons G0/G2/precz.
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1481,12 +1481,7 @@ C *********************************************************************
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/GRSD31/INDLCL(MS)
@@ -1506,7 +1501,7 @@ C *********************************************************************
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER SZN*12,zname*12,zdesc*64,H*72
+      CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
       newgeo=.false.  ! assume older format geometry.

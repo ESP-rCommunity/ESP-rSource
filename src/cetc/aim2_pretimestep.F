@@ -738,11 +738,9 @@ C   USE AIM2_CALC_DATA
       IMPLICIT NONE
 
 #include "building.h"
+#include "geometry.h"
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
-      COMMON/PREC2/VOL(MCOM)
-      REAL VOL
-
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 
@@ -1564,6 +1562,7 @@ C AIM2_report decodes the AIM-2 common blocks into a brief report.
 
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 #include "espriou.h"
@@ -1583,9 +1582,6 @@ C espriou.h provides currentfile.
      &     bWindowsAreOpen,
      &     fDeltaTInttoExt,
      &     fWindowLowSetpoint
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      character zname*12,zdesc*64
 
       REAL fWindowSetpoint,fACSetPoint
       INTEGER iWindowControlZone
@@ -1921,7 +1917,7 @@ C Describe crawl space, attic and controls.
       if(AIM2_CrawlSpace_zone.eq.0)then
         crawl='There is no crawl space.'
       else
-        llna=lnblnk(zname(AIM2_CrawlSpace_zone))
+        llna=lnzname(AIM2_CrawlSpace_zone)
         write(crawl,'(3a)') 
      &    'Zone ',zname(AIM2_CrawlSpace_zone)(1:llna),
      &    ' is the crawl space.'
@@ -1929,14 +1925,14 @@ C Describe crawl space, attic and controls.
       if(AIM2_attic_zone.eq.0)then
         attic='There is no attic space.'
       else
-        llna=lnblnk(zname(AIM2_attic_zone))
+        llna=lnzname(AIM2_attic_zone)
         write(attic,'(3a)') 
      &    'Zone ',zname(AIM2_attic_zone)(1:llna),
      &    ' is the attic space.'
       endif
 
       outs248 = ' '
-      llna=lnblnk(zname(AIM2_ref_zone))
+      llna=lnzname(AIM2_ref_zone)
       write(outs248,'(3a,i2,4a)') 
      &  'Indoor air temperatures are taken from ',
      &  zname(AIM2_ref_zone)(1:llna),

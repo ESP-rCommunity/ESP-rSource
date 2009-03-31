@@ -38,6 +38,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       SUBROUTINE  MZLS1
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -56,23 +57,20 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC3I/CHARDM(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),
      &                NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
       COMMON/PREC10/NWINS(MCOM,MS)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       common/PREC18/ZTRANA(MCOM)
 
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
       dimension izdum(MZS)
       CHARACTER*72 LCFGF
-      CHARACTER ZNAME*12,zdesc*64,ZNPAD*15,doit*248,outs248*248
+      CHARACTER ZNPAD*15,doit*248,outs248*248
       CHARACTER*6 NAME
       character outs*124,tfile*72,cfgroot*24,longtfile*144
       logical concat
@@ -104,9 +102,11 @@ C Clear dummy zones variable (in place of old NDOORS array).
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSNAM
       IREC = IREC + 1
 
+C Record width is slightly sensitive to the number of zones in the model
+C an extra record is used.
       NCP=NCOMP
       IF(NCOMP.GT.20)NCP=20
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCCODE(I),I=1,NCP)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  4
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),
@@ -114,26 +114,33 @@ C Clear dummy zones variable (in place of old NDOORS array).
       IREC = IREC + 1
     4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
       IREC=IREC+1
+
+C Write one operation file name per record.
       DO 20 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
       IREC = IREC + 1
    20 CONTINUE
 
+C Write one geometry file name per record.
       DO 40 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
       IREC = IREC + 1
    40 CONTINUE
 
+C Write one shading file name per record.
       DO 60 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
       IREC = IREC + 1
    60 CONTINUE
 
+C Write one construction file name per record.
       DO 80 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
       IREC = IREC + 1
    80 CONTINUE
 
+C Record width is not sensitive to the number of surfaces in the model
+C extra records are used.
       X=FLOAT(NCON)/20.
       N=INT(X)+1
       DO 100 I = 1,N
@@ -183,6 +190,8 @@ C Write out 15 char string for zone name (so reading logic the same).
       IREC = IREC + 1
   150 CONTINUE
 
+C Record width is slightly sensitive to the number of zones. A second
+C record is used if more than 20 zones.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCONST(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  5
@@ -230,23 +239,29 @@ C DUMP FOR ALL THREE POSSIBLE AIR GAPS
   180 CONTINUE
 
 C Save floor area of each zone.
+C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZBASEA(I),I=1,NCOMP)
       IREC = IREC + 1
 C      write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
 
 C Save area of transparent surfaces connected to external type BC.
+C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZTRANA(I),I=1,NCOMP)
       IREC = IREC + 1
 C      write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
 
-C Save surface area of each surface in each zone.
+C Save surface area of each surface in each zone. Record width is
+C sensitive to the number of surfaces in the zone.
       DO 230 I=1,NCOMP
       NN=NCONST(I)
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(SNA(I,J),J=1,NN)
       IREC=IREC+1
   230 CONTINUE
+
+C Write one data record per zone.
+C << more items could be written into this e.g. ZBASEA and ZTRANA >>
       DO 240 I=1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZOA(I)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)zonetotsurfacearea(I)
       IREC=IREC+1
   240 CONTINUE
       DO 250 I=1,NCOMP
@@ -598,6 +613,7 @@ C ndbph is number of data blocks/hr for monitor function.
 
       SUBROUTINE MZLS3(ICOMP,IDAY,ITSMUS,ndbph)
 #include "building.h"
+#include "geometry.h"
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
@@ -614,7 +630,7 @@ C#include "cfd.h"
 
       COMMON/SAVE/ISAVE
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/recver/izver,ipver,iever
@@ -637,8 +653,6 @@ C Commons for summary of solar (for results library)
      &  q2wall(2),q2rem(2),q2cfc(2)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -780,7 +794,7 @@ C Local variables for casual gains.
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       PARAMETER       (SMALL=1.0E-15)
 
-      character outs*144,zname*12,zdesc*64
+      character outs*144
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,bresfil*72
       logical close
 
@@ -1438,7 +1452,7 @@ C For each casual gain type.
         ENDIF
 
 C Casual gains and average FRACtion controlled.
-        QCASR=QCASRT(icomp)*(ZOA(ICOMP))/2.0
+        QCASR=QCASRT(icomp)*(zonetotsurfacearea(ICOMP))/2.0
         QCASC=QCASCT/2.0
         if(ICGCTL(ICOMP).gt.0)then
           FRAC=(CGCTL(ICOMP,1,ICGCTL(ICOMP))+
@@ -2329,11 +2343,12 @@ C Possibly all calculations should use the IVTHPZ in the future?
       SUBROUTINE SURBAL(ICOMP)
 
 #include "building.h"
+#include "geometry.h"
 C#include "cfd.h"
 #include "control.h"
 #include "CFC_common.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
@@ -2386,6 +2401,7 @@ C Energy balance.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL IVTHPS,IVTHPZ
+      real zoar  ! local for zonetotsurfacearea(MCOM)
 
 C Do for all surfaces.
       do 10 ISFN=1,NCONST(ICOMP)
@@ -2473,8 +2489,9 @@ C STANDARD ESP-R CALCULATION APPLIES
         ENDIF
 
 C -- Radiant casual gains are area AND emissivity weighted.
+        zoar = zonetotsurfacearea(ICOMP) ! assign local value
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
-        qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoa(ICOMP)*sna(ICOMP,ISFN)*
+        qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoar*sna(ICOMP,ISFN)*
      &                                      ei(ICOMP,ISFN)/emarea(ICOMP)
 
 C -- Plant radiant energy.

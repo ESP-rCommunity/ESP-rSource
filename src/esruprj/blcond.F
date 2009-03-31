@@ -40,11 +40,11 @@ C calls other subroutines or returns back to INITPF (bld.F or bps.F).
 C ********************************************************************
       SUBROUTINE LKMENU(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/HELP/IHELPM
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -260,9 +260,9 @@ C thermal conductivity by zone.
 C ****************************************************************
       SUBROUTINE LKZONE(ICOMP,INDX)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
       CHARACTER OUTS*124
@@ -318,9 +318,9 @@ C the thermal conductivity .
 C ******************************************************************
       SUBROUTINE SURFMN(ICOMP,TEXT,INPICK,IVALS)
 #include "building.h"
+#include "geometry.h"
 
       common/pophelp/h(60)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -348,9 +348,9 @@ C thermal conductivity by surface.
 C ****************************************************************
       SUBROUTINE KCONST(ICOMP,INDX,TEXT)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
       DIMENSION IVALS(MS)
@@ -477,16 +477,15 @@ C names beside the layer number.
 C *********************************************************************
       SUBROUTINE WRTLYR(ICOMP,ICNST,ILYR,NAMELYR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      CHARACTER NAMELYR*124,zdesc*64
-      CHARACTER zname*12
+      CHARACTER NAMELYR*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lnsn
@@ -495,7 +494,7 @@ C *********************************************************************
       lnsn=lnblnk(ssname(ioc))
 
       WRITE(NAMELYR,'(5A,I2,A)') ' WARNING The layer ( ',
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),', ',
+     &  zname(ICOMP)(1:lnzname(ICOMP)),', ',
      &  SSNAME(ioc)(1:lnsn),', ',ILYR,') is already defined.'
       RETURN
       END
@@ -576,12 +575,12 @@ C by the linear thermal conductivity menu .
 C *********************************************************************
       SUBROUTINE KCHECK(ICOMP,KERR)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)

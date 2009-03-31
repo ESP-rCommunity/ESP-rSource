@@ -72,11 +72,10 @@ c ---
 c ---
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "aim2_parameters.h"
 #include "aim2_common.h"
 #include "Ventilation_Data.h"
-      COMMON/PREC2/VOL
-      REAL VOL(MCOM)
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 

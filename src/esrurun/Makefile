@@ -22,7 +22,7 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	econstr.o econtrol.o edatabase.o edcfd.o edcon.o edcondb.o eddb.o \
 	edgeo.o edipv.o editCFC.o edobs.o edonecon.o edoptic.o edpro.o edtopol.o \
 	edzone.o egeometry.o egtgeom.o \
-	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o explor.o filelist.o \
+	emeta.o emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o explor.o filelist.o \
 	folders.o gtopol.o hcfmk.o initalc.o insert.o item.o maintn.o mfcdat.o \
 	mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mksbem.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
@@ -147,6 +147,9 @@ egeometry.F:
 egtgeom.F:
 	rm -f egtgeom.F
 	ln -s $(COMdir)/egtgeom.F .
+emeta.F:
+	rm -f emeta.F
+	ln -s $(PRJdir)/emeta.F .
 emfnetw.F:
 	rm -f emfnetw.F
 	ln -s $(COMdir)/emfnetw.F .

@@ -30,6 +30,9 @@ C itrc (integer) =0 turns off reporting, =1 brief
 C ioout (integer) is the file unit to write to
 C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz.
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
@@ -71,22 +74,14 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -117,8 +112,6 @@ C compact schedule is correctly written out.
      &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
      &          CMGS3(MC),CMGL3(MC),RADC3(MC),CONC3(MC)
       COMMON/P3TYPE/ICGT1(MC),ICGT2(MC),ICGT3(MC)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
 C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -191,7 +184,7 @@ C surface can be resolved into a quad).
       real loadcasp,ver  ! file version passed to subroutine
       integer iver    ! file version as integer
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
-      character zname*12,zdesc*64,act*1,layname*25
+      character act*1,layname*25
       character T25*25,T25a*25,t12a*12
       character*10 wkday(7)
       character*9 RAMONTH(12)
@@ -1011,7 +1004,7 @@ C << might not need to call eroper when ip3ver(mz) is working >>
           CALL EROPER(0,iuout,IUO,mz,IER)
           if(ip3ver(mz).lt.1)then
             WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &      '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
+     &      '!- ============= zone ',zname(mz)(1:lnzname(mz)),
      &      ' has old schedules (periods need to be sorted) ======= '
             goto 13
           endif
@@ -1019,7 +1012,7 @@ C << might not need to call eroper when ip3ver(mz) is working >>
 
 C No schedules for this zone, write out place-holders and continue.
           WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &      '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
+     &      '!- ============= zone ',zname(mz)(1:lnzname(mz)),
      &      ' has no schedules (place holder NOTHING used) ======= '
           WRITE(ioout,'(a)',iostat=ios,err=7) ' '
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'LIGHTS',com
@@ -1029,11 +1022,10 @@ C No schedules for this zone, write out place-holders and continue.
 C The "Name" field was added after the 1.23 version of EnergyPlus
 C For previous versions comment this field
             WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
-     &        zname(mz)(1:lnblnk(zname(mz))),'Lights',com,
-     &        '   !- Name'
+     &        zname(mz)(1:lnzname(mz)),'Lights',com,'   !- Name'
           endif  
           WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &      zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
+     &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
           WRITE(ioout,'(6a)',iostat=ios,err=5) '  NOTHING',com,
      &      '   !- SCHEDULE Name'
           totcgnsl=0.0
@@ -1057,7 +1049,7 @@ C Write out a place-holder small power for the zone.
           WRITE(ioout,'(a)',iostat=ios,err=7) ' '
           WRITE(ioout,'(2a)',iostat=ios,err=7) 'ELECTRIC EQUIPMENT',com
           WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &      zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
+     &      zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
           WRITE(ioout,'(6a)',iostat=ios,err=5) '  NOTHING',com,
      &      '   !- Schedule Name'
           totcgnsl=0.0
@@ -1081,7 +1073,7 @@ C << V2.0 includes General as the End-Use Subcategory
 C Start with a comment about zone schedule documentation.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(3a)',iostat=ios,err=7) 
-     &    '!- ============= zone ',zname(mz)(1:lnblnk(zname(mz))),
+     &    '!- ============= zone ',zname(mz)(1:lnzname(mz)),
      &    ' schedules follow ======='
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
      &    '! ',oprdesc(mz)(1:lnblnk(oprdesc(mz)))
@@ -1210,7 +1202,7 @@ C Write out the initial portion of lighting compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),' ',lodlabel(mz,2),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
      &    '   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
      &    '   !- ScheduleType' 
@@ -1361,13 +1353,12 @@ C Write the light objects for this zone.
 C The "Name" field was added after the 1.23 version of EnergyPlus
 C For previous versions comment this field
           WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
-     &      zname(mz)(1:lnblnk(zname(mz))),'Lights',com,
-     &      '   !- Name'
+     &      zname(mz)(1:lnzname(mz)),'Lights',com,'   !- Name'
         endif  
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
+     &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),' ',lodlabel(mz,2),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,2),com,
      &    '   !- Schedule Name'
         totcgnsl=loadcasp(mz,2,1)+loadcasp(mz,2,2)
         WRITE(ioout,'(a,F12.4,2a)',iostat=ios,err=7) '  ',
@@ -1391,8 +1382,7 @@ C Write out the initial portion of small power compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),' ',lodlabel(mz,3),com,
-     &    '   !- Name'
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,'   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
      &    '   !- ScheduleType' 
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Through: 12/31',com
@@ -1535,13 +1525,12 @@ C the only write a brief note and jump to people.
 C The "Name" field was added after the 1.23 version of EnergyPlus
 C For previous versions comment this field
           WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
-     &      zname(mz)(1:lnblnk(zname(mz))),'EQUIPMENT',com,
-     &      '   !- Name'
+     &      zname(mz)(1:lnzname(mz)),'EQUIPMENT',com,'   !- Name'
         endif
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
+     &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),' ',lodlabel(mz,3),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,3),com,
      &    '   !- Schedule Name'
         totcgnsl=loadcasp(mz,3,1)+loadcasp(mz,3,2)
         WRITE(ioout,'(a,F12.4,a)',iostat=ios,err=7) '  ',
@@ -1575,8 +1564,7 @@ C Write out the initial portion of people compact schedule.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),' ',lodlabel(mz,1),com,
-     &    '   !- Name'
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,'   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '  Fraction',com,
      &    '   !- ScheduleType' 
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Through: 12/31',com
@@ -1731,7 +1719,7 @@ C are no occupants then don't bother.
 
 C There are occupant casual gains.
         write(outs,'(3a,f7.1,a,f7.1,a)') 'Zone ',
-     &    zname(mz)(1:lnblnk(zname(mz))),
+     &    zname(mz)(1:lnzname(mz)),
      &    ' has a peak sensible occupant load of ',loadcasp(mz,1,1),
      &    ' W and peak latent ',loadcasp(mz,1,2),'W.'
         call edisp(iuout,outs)
@@ -1745,7 +1733,7 @@ C for one person as oneperson.
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) 'SCHEDULE:COMPACT',com
         WRITE(ioout,'(5a)',iostat=ios,err=5) '  ',
-     &    'Activity level ',zname(mz)(1:lnblnk(zname(mz))),com,
+     &    'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &    '   !- Name'
         WRITE(ioout,'(3a)',iostat=ios,err=7) '  Any Number',com,
      &    '   !- ScheduleType' 
@@ -1772,15 +1760,14 @@ C Now write out the people.
 C The "Name" field was added after the 1.23 version of EnergyPlus
 C For previous versions comment this field
           WRITE(ioout,'(5a)',iostat=ios,err=7) '  ',
-     &      zname(mz)(1:lnblnk(zname(mz))),'People',com,
-     &      '   !- Name'
+     &      zname(mz)(1:lnzname(mz)),'People',com,'   !- Name'
         endif
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
+     &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
         WRITE(ioout,'(a,F7.3,2a)',iostat=ios,err=7) '  ',vpeople,com,
      &    '   !- Number of people'
         WRITE(ioout,'(6a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),' ',lodlabel(mz,1),com,
+     &    zname(mz)(1:lnzname(mz)),' ',lodlabel(mz,1),com,
      &    '   !- Number of people schedule'
 
 C Further logic required if there is more than one radiant/convective split.
@@ -1788,7 +1775,7 @@ C Further logic required if there is more than one radiant/convective split.
         WRITE(ioout,'(a,F6.4,2a)',iostat=ios,err=5) '  ',
      &    radsplit,com,'   !- Radiant fraction'
         WRITE(ioout,'(5a)',iostat=ios,err=5) '  ',
-     &    'Activity level ',zname(mz)(1:lnblnk(zname(mz))),com,
+     &    'Activity level ',zname(mz)(1:lnzname(mz)),com,
      &    '   !- Activity level schedule name (W/person)'
           
         if(iver.le.12)then
@@ -1851,11 +1838,11 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
 C Read in the zone geometry.
         WRITE(ioout,'(a)',iostat=ios,err=5) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=5) '! ',
-     &    zdesc(mz)(1:lnblnk(zdesc(mz)))
+     &    zdesc(mz)(1:lnzdesc(mz))
         WRITE(ioout,'(a)',iostat=ios,err=5) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=5) 'ZONE',com
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ',
-     &    zname(mz)(1:lnblnk(zname(mz))),com,'   !- Zone Name'
+     &    zname(mz)(1:lnzname(mz)),com,'   !- Zone Name'
         WRITE(ioout,'(4a)',iostat=ios,err=5) '  ','0.0',com,
      &    '   !- Relative North (to building) {deg}'
         WRITE(ioout,'(8a)',iostat=ios,err=5) '  ','0.0',com,'0.0',com,
@@ -2114,7 +2101,7 @@ C Generate combined zone & generate surface names as identifiers.
      &        SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &        '   !- Construction Name of the Surface'
             lsn0=lnblnk(SSPARENT(icc))
-            lzn0=lnblnk(zname(mz))
+            lzn0=lnzname(mz)
             WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
      &        SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
             WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
@@ -2167,7 +2154,7 @@ C and site exposure.
      &          SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &          '   !- Construction Name of the Surface'
               WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &          zname(mz)(1:lnblnk(zname(mz))),
+     &          zname(mz)(1:lnzname(mz)),
      &          com,'   !- InsideFaceEnvironment'
               WRITE(ioout,'(a,f8.4,2a)',iostat=ios,err=6) '  ',
      &          SSNA(icc),sim,'   !-  Area {m}'
@@ -2206,7 +2193,7 @@ C Check if parent surface name is a blank or just a dash.
      &            SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &            '   !- Construction Name of the Surface'
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
-     &            zname(mz)(1:lnblnk(zname(mz))),
+     &            zname(mz)(1:lnzname(mz)),
      &            com,'  !- InsideFaceEnvironment'
 
 C Other face environment.
@@ -2294,7 +2281,7 @@ C There is a parent for this surface.
      &            SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),com,
      &            '   !- Construction Name of the Surface'
                 lsn0=lnblnk(SSPARENT(icc))
-                lzn0=lnblnk(zname(mz))
+                lzn0=lnzname(mz)
                 WRITE(ZSDES,'(a,a1,a)',iostat=ios,err=6) 
      &            SSPARENT(icc)(1:lsn0),':',zname(mz)(1:lzn0)
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',

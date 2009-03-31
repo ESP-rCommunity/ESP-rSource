@@ -124,6 +124,8 @@ C If south elevation, omitt the view-cone.
 C ******* Default views formation.
       SUBROUTINE VEWFORM(IER)
 #include "building.h"
+#include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -133,7 +135,6 @@ C ******* Default views formation.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
@@ -146,7 +147,6 @@ C ******* Default views formation.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -160,7 +160,7 @@ C ******* Default views formation.
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
 
       character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
-      character zname*12,zdesc*64,outs*124,LBSRIF*72
+      character outs*124,LBSRIF*72
       character doit*124,ltmp*72,trvewsh*10
       character vewcmds*124,rvewsh*10
 #ifdef OSX
@@ -441,7 +441,7 @@ C Draw the problem in plan/elevation with viewcone.
           call VCONE('E')
         elseif(ITPPSW.eq.3)then
           MODIFY=.TRUE.
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           MODLEN=.FALSE.
           MODIFY=.FALSE.
         endif
