@@ -282,7 +282,6 @@ C Initialise geometry data file. and set currentfile.
         endif
       ENDIF
       write(currentfile,'(a)') LGEOM(1:lnblnk(LGEOM))
-
 C Read lines from file, if one item then assumed to 
 C be CTYPE, if 2 then the second is the zone name which
 C is tested for illegal characters, if '*Geometry 1.1'
@@ -554,7 +553,7 @@ C If end of file then assume no names, do not error.
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
 
-C Instanciate defaults for the surfaces to be read in.
+C Instantiate defaults for the surfaces to be read in.
       CALL FILSUR(itru,ICOMP,0)
 
       icn1=izstocn(icomp,1)
@@ -566,6 +565,7 @@ C        call edisp(iuout,'Subsequent geometry scan...')
       DO 42 I=1,NSUR
 
 C Check and see if izstocn returns non-zeros and set havec24.
+        
         icn1=izstocn(icomp,I)
         if(icn1.gt.0)then
           havec24=.true.
@@ -632,7 +632,7 @@ C Now that we know the construction try and work out the optics.
 C We need to find the name of the optical set for the construction.
 C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
-          if(NMLC.gt.0)then
+          if(NMLC.gt.0)then                
             ICF=-1
             lstr=lnblnk(SMLCN(ISN))
             DO 20 IC=1,NMLC
@@ -645,6 +645,7 @@ C the name of the optical property. Otherwise leave SOFT as TRAN
 
 C Use logic similar to parsemlcdesc to find the optical name.
             if(ICF.gt.0)then
+            
               OPT=' '
               WRITE(OTF,'(A)') DESC(ICF)(15:18)
               IF(OTF.EQ.' ')OTF='OPAQ'
@@ -655,7 +656,29 @@ C Use logic similar to parsemlcdesc to find the optical name.
                 OPT='OPAQUE'
               ENDIF
             else
-              OPT='OPAQUE'
+
+C No matching database record. Use if file specifies 'TRAN', use that.
+C otherwise, use 'OPAQUE'
+              user_specd_TRAN: if ( tmpsot(1:4).eq.'TRAN' ) then
+C Use user-provided TRAN definition. Ensures that 
+C the model can be read even if it contains optical 
+C data that does not correspond with the optics databaes.
+C [Note that several applications now stream ESP-r input 
+C files independently of the optical databases, and must 
+C be supported.]
+
+                OPT='TRAN'
+
+              else
+              
+C Definition is not 'TRAN' or 'OPAQ', default to OPAQUE.
+C [An even better approach would produce a fatal error, since
+C  the user --- or third-party app --- has used an unsupported 
+C  keyword.]
+                OPT='OPAQUE'
+              
+              endif user_specd_TRAN
+              
             endif
             write(SOTF(ISN),'(a)') OPT
             if(havec24) write(SSOTF(icn),'(a)') OPT
@@ -664,7 +687,6 @@ C Use logic similar to parsemlcdesc to find the optical name.
             if(havec24) write(SSOTF(icn),'(a)') 'TRAN'
           endif
         endif
-
 C Depending on what the 'other' column is file the SOTHER array.
 C Note when seanning an older file we will not yet know the
 C C3 based information and so sother(2) and sother(3) are placeholders.

@@ -1,0 +1,36 @@
+# transparent properties of Main defined in user/obs_4_eachface/zones/Main.tmc
+  12    # surfaces
+# tmc index for each surface
+  0  0  0  0  0  0  1  0  2  3  0  4
+   3  Right0001     # layers in tmc type  1
+# Transmission @ 5 angles & visible tr.
+0.135 0.137 0.126 0.109 0.064 0.730
+# For each layer absorption @ 5 angles
+0.6240 0.6020 0.5130 0.3850 0.1860 
+0.0100 0.0100 0.0100 0.0100 0.0100 
+0.0950 0.1050 0.1190 0.1290 0.1350 
+0   # blind/shutter control flag
+   3  Front0001     # layers in tmc type  2
+# Transmission @ 5 angles & visible tr.
+0.135 0.137 0.126 0.109 0.064 0.730
+# For each layer absorption @ 5 angles
+0.6240 0.6020 0.5130 0.3850 0.1860 
+0.0100 0.0100 0.0100 0.0100 0.0100 
+0.0950 0.1050 0.1190 0.1290 0.1350 
+0   # blind/shutter control flag
+   3  Left0001     # layers in tmc type  3
+# Transmission @ 5 angles & visible tr.
+0.135 0.137 0.126 0.109 0.064 0.730
+# For each layer absorption @ 5 angles
+0.6240 0.6020 0.5130 0.3850 0.1860 
+0.0100 0.0100 0.0100 0.0100 0.0100 
+0.0950 0.1050 0.1190 0.1290 0.1350 
+0   # blind/shutter control flag
+   3  Back0001     # layers in tmc type  4
+# Transmission @ 5 angles & visible tr.
+0.135 0.137 0.126 0.109 0.064 0.730
+# For each layer absorption @ 5 angles
+0.6240 0.6020 0.5130 0.3850 0.1860 
+0.0100 0.0100 0.0100 0.0100 0.0100 
+0.0950 0.1050 0.1190 0.1290 0.1350 
+0   # blind/shutter control flag

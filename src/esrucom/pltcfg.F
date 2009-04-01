@@ -293,9 +293,13 @@ C Read number of plant components in system.
       IF(IER.NE.0)RETURN
       K=0
       CALL EGETWI(OUTSTR,K,NPCOMP,1,MPCOM,'F','no p comp',IER)
+      
       CALL EGETWI(OUTSTR,K,NPMTYP,1,4,'F','type of matrix',IER)
       IF(IER.NE.0) GOTO 1001
-
+      if ( NPCOMP < 1 ) then
+        indcfg = 1
+        return
+      ENDIF
 C  Set the electrical component counter to 0.
       npel=0
 
@@ -571,7 +575,7 @@ C     check is performed in MZPMXT.
 
          if(pcondr(ipcon).lt.0..or.pcondr(ipcon).gt.1.) goto 925
          if(ipct(ipcon).eq.4) then
-          if(pconsd(ipcon,1).lt.0.or.
+          if(pconsd(ipcon,1).lt. (0.) .or.
      &       pconsd(ipcon,1).gt.real(mcom)) goto 913
          endif
    46   continue

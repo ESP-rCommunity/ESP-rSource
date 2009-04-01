@@ -1,0 +1,4 @@
+3 THREE_ZONE_MODEL
+[Main] fFracEquipCapToZone[0] = 0.700000
+[Ceiling01] fFracEquipCapToZone[1] = 0.000000
+[Foundation-1] fFracEquipCapToZone[2] = 0.300000
