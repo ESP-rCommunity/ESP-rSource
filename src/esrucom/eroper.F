@@ -720,7 +720,7 @@ C Maximum number of casual gains/day       MC=20
 C IUO is the file unit to use
 C FILE (variable width char) is the name of the file to scan.
 
-      SUBROUTINE ERZSCHED(IUO,FILE,IER)
+      SUBROUTINE ERZSCHED(IUO,FILE,actflatfile,IER)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -771,20 +771,26 @@ C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24,H*72
       character louts*248
+      character actflatfile*1  ! action requested.
       logical havehi,dll,ok,dok
       INTEGER IDTY,IR
       REAL R
 
       dok=.false.
-
+ 
+      if(actflatfile(1:1).eq.'W')then
 C Compose help message
-      H(1) ='The number of day types defined in the operations file'
-      H(2) ='from outside the current model definitiion should be '
-      H(3) ='the same as the number of day types defined in the current'
-      H(4) ='model. If this is not the case then the data imported may'
-      H(5) ='corrupt the operations file in the current model.'
-      CALL PHELPD('Warning',5,'-',0,0,IER)
-      call askok(' ','Import data?',OK,dok,3)
+        H(1) ='The number of day types defined in the operations file'
+        H(2) ='from outside the current model definitiion should be '
+        H(3) ='the same as the number of day types defined in the '
+        H(4) ='current model. If this is not the case then the data '
+        H(5) ='imported may corrupt the operations file in the current '
+        H(6) ='model.'
+        CALL PHELPD('Warning',6,'-',0,0,IER)
+        call askok(' ','Import data?',OK,dok,3)
+      elseif(actflatfile(1:1).eq.'-')then
+        ok=.true.
+      endif
       if(.not.ok)return
 
 C Check if running in dll mode.
@@ -1255,6 +1261,7 @@ C ICOMP is the zone number.
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -1264,7 +1271,6 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
@@ -1297,8 +1303,7 @@ C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
 
-      character OPFIL*72,zname*12,lodlabel*6
-      character zdesc*64
+      character OPFIL*72,lodlabel*6
       character dstmp*24
       logical Vldtng
 
@@ -1334,7 +1339,7 @@ C If version 1 write out header.
      &  '  # latest file modification '
       endif
       WRITE(IUO,30,IOSTAT=IOS,ERR=1)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),OPFIL(1:lnblnk(OPFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),OPFIL(1:lnblnk(OPFIL))
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
 C Write the common block data to the file.
@@ -1451,6 +1456,7 @@ C control from zone operation common block data.
 C << need to update reporting for different day types and ctl periods >>
       SUBROUTINE VENTINF(ICOMP,ITRU)
 #include "building.h"
+#include "geometry.h"
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
@@ -1460,7 +1466,6 @@ C << need to update reporting for different day types and ctl periods >>
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -2041,8 +2046,7 @@ C Passed the zone index.
 C Returns IER=0 if all ok.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU,IER)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2050,10 +2054,6 @@ C Returns IER=0 if all ok.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty,idt
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -2084,7 +2084,7 @@ C   W/m2 or person/m2, if three then non-zero are mixed.
 
       logical close,needtodivide,writeit
 
-      character H*72,zname*12,zdesc*64,outs*124
+      character H*72,outs*124
 
 C Temporary arrays: MC array is 72 so that is
 C   sized for 24 hours X 3 day types. Array size should be
@@ -2121,13 +2121,13 @@ C Warn user if the zone base area is still zero.
       if(close)then
         FLOOR=1.0
         write(outs,'(3a,F6.1,a)') 'The base area of ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    zname(icomp)(1:lnzname(icomp)),
      &    ' has been set to ',FLOOR,'m^2.'
         call edisp(iuout,outs)
       else
         FLOOR=ZBASEA(ICOMP)
         write(outs,'(3a,F6.1,a)') 'The base area of ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    zname(icomp)(1:lnzname(icomp)),
      &    ' is',FLOOR,'m^2.'
         call edisp(iuout,outs)
       endif

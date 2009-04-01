@@ -415,14 +415,16 @@ C in res for the simplified convection calculation approaches.
         do 42 ICOMP=1,NCOMP
           if(IHC(ICOMP).EQ.1.and.ISAVE.lt.4)SAVE4=.true.
    42   continue
-        if(SAVE4.and.ISAVE.ne.4)then
-          dok=.true.
-          h(1)='A model which includes a (non-standard) convection'
-          h(2)='regime must be run with save level 4 (full energy '
-          h(3)='balance). You should say yes. '
-          CALL ASKOK(' Convection regime file detected.',
-     &               ' Change save level to 4 ? ',SAVE4OK,dok,3)
-          if(SAVE4OK)ISAVE=4
+        if (autook) then
+          if(SAVE4.and.ISAVE.ne.4)then
+            dok=.true.
+            h(1)='A model which includes a (non-standard) convection'
+            h(2)='regime must be run with save level 4 (full energy '
+            h(3)='balance). You should say yes. '
+            CALL ASKOK(' Convection regime file detected.',
+     &                 ' Change save level to 4 ? ',SAVE4OK,dok,3)
+            if(SAVE4OK)ISAVE=4
+          endif
         endif
         call tstamp('>','SIM: enter simulate')
         call SIMCON
@@ -513,6 +515,7 @@ C ************ SIMTOG
 C Set simulation toggles.
       subroutine simtog
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -541,7 +544,6 @@ C Common for electrical file
       COMMON/GR1D04/GAM,RGAM
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/AIRWAT/WATERZ(MCOM),WATCAP
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
@@ -566,7 +568,7 @@ c This common block is used to define the sky temperature calculation method
                                                                                                                                                     
       CHARACTER*72 LAPROB,H,vsnam,lfil,entflnam
       CHARACTER*40 ITEMG(34)
-      character SALT*51,zname*12,zdesc*64,spflnam*72,outs*124
+      character SALT*51,spflnam*72,outs*124
       character HCALT*42
 
       logical MSTROK,MSTRZN
@@ -1734,6 +1736,7 @@ C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1744,7 +1747,6 @@ C ICNT    - counts trace output for page numbering purposes
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       common/C21/IFCFG,cfgroot,LCFGF
 
@@ -1753,7 +1755,7 @@ C Common for libsv3 trace
 
       dimension IVALS(MCOM)
       CHARACTER*29 ITEM(33)
-      character outs*124,h*72,zname*12,zdesc*64,dtrace*72,ltrace*72
+      character outs*124,h*72,dtrace*72,ltrace*72
       character cfgroot*24,LCFGF*72
       logical OK,dok
 

@@ -35,14 +35,10 @@ C the results database.
 
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -138,6 +134,7 @@ C attributes are known.
 
       SUBROUTINE GZPDBE(ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
@@ -148,10 +145,12 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -183,7 +182,7 @@ C Arrays of material properties.
       logical closemat
       DIMENSION ICLN(30)
 
-      CHARACTER outs*124,DESC*48,NAM*72,TITL*72,CSTR*25
+      CHARACTER outs*124,NAM*72,TITL*72,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
@@ -467,9 +466,15 @@ C temperature graphical output.
       SUBROUTINE MOFAXS(ICOMP,ISUR)
 #include "building.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       CALL MOFHED(ICOMP,ISUR,'i')
       XMAX=THKMAX
@@ -477,7 +482,9 @@ C temperature graphical output.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
       call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
@@ -491,17 +498,19 @@ C corresponding to graphical result display.
 C If act = i then initial display, if act = s then single step display.
       SUBROUTINE MOFHED(ICOMP,ISUR,act)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
@@ -510,11 +519,16 @@ C If act = i then initial display, if act = s then single step display.
 
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character zname*12,zdesc*64,TSTR*6,ZN*12,RSNAME*40,SN*12
+      character TSTR*6,ZN*12,RSNAME*40,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character act*1
       integer lml   ! string length for construction name.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. 
@@ -525,9 +539,13 @@ C and the simulation and output timesteps.
         if(act.eq.'i')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(act.eq.'s')then
           call startbuffer
           call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
       ENDIF
 
@@ -540,7 +558,10 @@ C and the simulation and output timesteps.
      &    ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
       endif
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -549,7 +570,10 @@ C and the simulation and output timesteps.
      &   SDESCR(11:lnblnk(SDESCR))
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -561,7 +585,10 @@ C and the simulation and output timesteps.
      &   SN(1:lnblnk(SN)),' of ',ZN(1:lnblnk(ZN)),' facing ',
      &   CSTR(1:lnblnk(CSTR))
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,3,0,1)
+        iside=3
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -570,6 +597,8 @@ C Determine if the surface is transparent or opaque.
       IF(SSOTF(ICN)(1:4).EQ.'OPAQ'.OR.
      &   SSOTF(ICN)(1:4).EQ.'UNKN')THEN
          TSTR='opaque'
+      ELSEIF(SSOTF(ICN)(1:4).EQ.'CFC ')THEN
+         TSTR='CFC'
       ELSE
          TSTR='trnsp.'
       ENDIF
@@ -580,7 +609,10 @@ C Print info on surface.
      &  SSMLCN(ICN)(1:lml),', with area ',SNA(ICOMP,ISUR),' m2.'
       GTEXT=ETEXT
       if(MMOD.EQ.8)then
-        CALL viewtext(ETEXT,4,0,1)
+        iside=4
+        isize=0
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
       else
         call edisp(iuout,ETEXT)
       endif
@@ -593,6 +625,7 @@ C MOFDRW displays the construction temperature profiles.
 
       SUBROUTINE MOFDRW(ICOMP,ISUR,act)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -602,16 +635,23 @@ C MOFDRW displays the construction temperature profiles.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
       DIMENSION XVAL1(MZS)
       character act*1,ETEXT*94,TDESCR*5,DS*7,DS1*10,CSTR*25,TCSTR*25
-      character zname*12,zdesc*64,ZN*12
+      character ZN*12
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Re-establish available colours.
       call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
@@ -666,14 +706,18 @@ C Commence drawing. Remember that everything shifted over 1
 C to allow for outside temp to be in VAL2(1,?)
           icnt=icnt+1
           X=THKMIN
-          call etplot(X,VAL2(1,J),0,0)
+          iupdown=0
+          isym=0
+          call etplot(X,VAL2(1,J),iupdown,isym)
           X=0.
+          iupdown=1
           DO 90 L=1,NNT
-            call etplot(X,VAL2(L+1,J),1,0)
+            call etplot(X,VAL2(L+1,J),iupdown,isym)
             M=((L-1)/2)+1
             X=X+ETHK(M)/2.
    90     CONTINUE
-          call etplot(THKMAX,VAL2(NNT+2,J),1,0)
+          iupdown=1
+          call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
           call forceflush
           if(act.eq.'a')then
 
@@ -694,20 +738,27 @@ C each timestep. Pause 200msec at each timestep.
             call STIME(j,TDESCR)
             call STDATE(IYEAR,ID,DS,DS1)
             WRITE(ETEXT,'(4A)')' Time ',DS1,' at ',TDESCR
-            call viewtext(ETEXT,5,0,1)
+            iside=5
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
 
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
               call winscl('i',nifgrey-1)
               X=THKMIN
-              call etplot(X,VAL2(1,J),0,0)
+              iupdown=0
+              isym=0
+              call etplot(X,VAL2(1,J),iupdown,isym)
               X=0.
+              iupdown=1
               DO 91 L=1,NNT
-                call etplot(X,VAL2(L+1,J),1,0)
+                call etplot(X,VAL2(L+1,J),iupdown,isym)
                 M=((L-1)/2)+1
                 X=X+ETHK(M)/2.
    91         CONTINUE
-              call etplot(THKMAX,VAL2(NNT+2,J),1,0)
+              iupdown=1
+              call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
               call forceflush()
               call winscl('-',0)
             endif

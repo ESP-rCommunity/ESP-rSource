@@ -25,30 +25,35 @@ C           converts into viewing coords, clips the image and draws it.
 C ******************** DRAWESP 
 C DRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
-      SUBROUTINE DRAWESP(ITRC,ier)
+C ier is returned as non-zero if there has been a problem.
+      SUBROUTINE DRAWESP(ier)
 #include "building.h"
-      PARAMETER  (MPL = 200 )
+#include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
+
+C Passed parameter.
+      integer ier
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -56,15 +61,11 @@ C converts into viewing coords, clips the image and draws it.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -79,8 +80,17 @@ C converts into viewing coords, clips the image and draws it.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,ETEXT*82
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
-      CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64,t13*13
+      CHARACTER MLCN*12,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3
+#endif
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -102,18 +112,22 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
       CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
-        CALL axiscale(igw,igwh,-1000.,1000.,-1000.,1000.,xsc,ysc,sca,
-     &                Xadd,Yadd)
+        call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
+     &                sca,Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
       ENDIF
@@ -127,8 +141,11 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
-      WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-      CALL viewtext(ETEXT,1,1,1)
+      WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Beginning of loop to read in several ESP compatible geometry files.
       IZ=0
@@ -156,9 +173,6 @@ C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
       IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
       IF(nznog(IZ).NE.izgfoc)THEN
-        WRITE(OUTSTR,77)LGEOM(nznog(IZ))(:LNBLNK(LGEOM(nznog(IZ))))
-   77   FORMAT(' Reading: ',A)
-        if(ITRC.gt.1)CALL USRMSG(' ',OUTSTR,'-')
         call eclose(gversion(nznog(IZ)),1.1,0.01,newgeo)
         if(newgeo)then
           call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
@@ -379,8 +393,8 @@ C move cursor to vertex and remember position.
             IV=JVN(I,IP)
             CALL VERTLBL(ix,iy,IV,ier)
           ENDIF
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
           IP1 = IBNXT(IP)
 
@@ -388,6 +402,8 @@ C move cursor to vertex and remember position.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -396,9 +412,9 @@ C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
             if(NAP.ne.NBP)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             elseif(icc.eq.0)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -410,7 +426,7 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   found=.true.
                 endif
               endif
@@ -419,17 +435,17 @@ C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
+                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call eswline(ixlast,iylast,ix,iy)
+                call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           call forceflush()
 
@@ -438,28 +454,30 @@ C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
             IV=JVN(I,IP1)
             CALL VERTLBL(ix,iy,IV,ier)
-            ixlast=ix
-            iylast=iy
+            iixlast=ix   ! cast for edline call
+            iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
             if(NAP.ne.NBP)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             elseif(icc.eq.0)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -471,7 +489,7 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  call edline(ixlast,iylast,ix,iy,LD)
+                  call edline(iixlast,iiylast,iix,iiy,LD)
                   found=.true.
                 endif
               endif
@@ -480,17 +498,17 @@ C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
+                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call eswline(ixlast,iylast,ix,iy)
+                call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           call forceflush()
   300   CONTINUE
@@ -517,6 +535,8 @@ C offset the surface name depending on orientation.
                 CALL VECTRN(VN,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),ixc,iyc)
+                iixc=ixc
+                iiyc=iyc
                 call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
                 IF(SSVFC(icc).EQ.'VERT'.or.SSVFC(icc).EQ.'CEIL'.or.
      &             SSVFC(icc).EQ.'FLOR')THEN
@@ -533,29 +553,52 @@ C offset the surface name depending on orientation.
                 CALL VECTRN(CG,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),ixc,iyc)
-                 IF(SSVFC(icc).EQ.'VERT')THEN
+                iixc=ixc
+                iiyc=iyc
+                IF(SSVFC(icc).EQ.'VERT')THEN
 
 C Draw arrow and horizontal line.
-                  call eswline(ixc,iyc,ixc+3,iyc-3)
-                  call eswline(ixc,iyc,ixc+3,iyc+3)
-                  call eswline(ixc,iyc,ixc+7,iyc)
+                  iid1=ixc+3
+                  iid2=iyc-3
+                  call eswline(iixc,iiyc,iid1,iid2)
+                  iid1=ixc+3
+                  iid2=iyc+3
+                  call eswline(iixc,iiyc,iid1,iid2)
+                  iid1=ixc+7
+                  call eswline(iixc,iiyc,iid1,iiyc)
                   ixc=ixc+7
                 ELSEIF(SSVFC(icc).EQ.'CEIL')THEN
 
 C Draw arrow to surface then up and horizontal to the text.
-                  call eswline(ixc,iyc,ixc+3,iyc-3)
-                  call eswline(ixc,iyc,ixc-3,iyc-3)
-                  call eswline(ixc,iyc,ixc,iyc-5)
-                  call eswline(ixc,iyc-5,ixc+7,iyc-5)
+                  iid1=ixc+3
+                  iid2=iyc-3
+                  call eswline(iixc,iiyc,iid1,iid2)
+                  iid1=ixc-3
+                  iid2=iyc-3
+                  call eswline(iixc,iiyc,iid1,iid2)
+                  iid1=iyc-5
+                  call eswline(iixc,iiyc,iixc,iid1)
+                  iid1=iyc-5
+                  iid2=ixc+7
+                  iid3=iyc-5
+                  call eswline(iixc,iid1,iid2,iid3)
                   iyc=iyc-5
                   ixc=ixc+7
                 ELSEIF(SSVFC(icc).EQ.'FLOR')THEN
 
 C Draw arrow to surface then down and horizontal to the text.
-                  call eswline(ixc,iyc,ixc+3,iyc+3)
-                  call eswline(ixc,iyc,ixc-3,iyc+3)
-                  call eswline(ixc,iyc,ixc,iyc+5)
-                  call eswline(ixc,iyc+5,ixc+7,iyc+5)
+                  iid1=ixc+3
+                  iid2=iyc+3
+                  call eswline(iixc,iiyc,iid1,iid2)
+                  iid1=ixc-3
+                  iid2=iyc+3
+                  call eswline(iixc,iiyc,iid1,iid2)
+                  iid1=iyc+5
+                  call eswline(iixc,iiyc,iixc,iid1)
+                  iid1=iyc+5
+                  iid2=ixc+7
+                  iid3=iyc+5
+                  call eswline(iixc,iid1,iid2,iid3)
                   iyc=iyc+5
                   ixc=ixc+7
                 ENDIF

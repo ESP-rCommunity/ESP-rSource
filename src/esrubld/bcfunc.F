@@ -287,7 +287,7 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
 
@@ -371,7 +371,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -600,7 +600,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -1020,7 +1020,7 @@ C the present time row surface and air point temperatures.
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -1328,7 +1328,7 @@ C A basic controller.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
 C Common for relative humidity control (ideal) and dew point relative humidity
 C control.
@@ -1766,7 +1766,7 @@ C An exponential pre-heat (or cool) controller.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       
@@ -1919,7 +1919,7 @@ C A fixed heat injection/extraction controller.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       CHARACTER OUTS*124
 
 C Fatal error test.
@@ -2021,7 +2021,7 @@ C suitable for use with controller types 0,35,36,37,38,39.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
@@ -2357,7 +2357,7 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
@@ -2722,7 +2722,7 @@ C A multi-stage controller with hysteresis.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -3066,7 +3066,7 @@ C represents the heat pipe physics.
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -3229,7 +3229,7 @@ C ON condition is reached.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
@@ -3346,7 +3346,7 @@ C It also is used to support temporal file setpoint sensing.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
@@ -3607,7 +3607,7 @@ C It is suitable for use with a type 0 controller.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
@@ -3801,7 +3801,7 @@ C Heating and cooling restrictions are allowed.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC7/ITCNST      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -3989,7 +3989,7 @@ C Heating and cooling restrictions are allowed.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN    
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FLTCTR/QHLAST,QCLAST
       COMMON/FLTCLR/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
@@ -4194,7 +4194,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -4456,7 +4456,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
@@ -4734,7 +4734,7 @@ C Fuzzy Logic PI/PD Controller.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FZCTL1/FZM(MFP,3,5,10),ERRSAV(MFP),QSAV(MFP),
      &ACUT(3,5),FZCTIP(5,5),FZCTOP(5),COA(5)
       COMMON/FZCTL2/NFZF(MFP,3),FZT(MFP,3),NONZRO
@@ -5051,7 +5051,7 @@ C is identically the same as the sensor input.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       
       character outs*124
 
@@ -5122,7 +5122,7 @@ C This control law is suitable for a type 0 controller.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
@@ -5339,6 +5339,9 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       SUBROUTINE BCL20
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -5347,15 +5350,11 @@ C if 0 for a wetted surface 1 for a swiming pool.
       COMMON/FILEP/IFIL
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       integer nccode,indutl
@@ -5852,7 +5851,8 @@ C ******************** BCL23
 C This subroutine dynamically allocates heating and cooling setpoint
 C temperatures from a previously defined temporal file based on column
 C numbers specifed in the contol law. It is a simplified implementation
-C of control law 1 (basic heating and cooling)
+C of control law 1 (basic heating and cooling). It can use two items in tdf:
+C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
       SUBROUTINE BCL23
 #include "building.h"
 #include "tdf2.h"
@@ -5870,7 +5870,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
@@ -5906,15 +5906,19 @@ C Read setpoints from tdf here (CSP and HSP)
 C "COLUMNSETP" is an integer specifying the column where the setpoints
 C should be read from. This could be the ISD but when calling the RCTDFB it
 C seems that is always set to 2 (and it is also used in few other places as 2).
-       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
-       itdi=IACTIV(ICF)
-       IFOC=itdi
-       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-       HSP=VAL(COLUMNSETP)
-       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
-       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-       CSP=VAL(COLUMNSETP)
-
+      COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
+      if(IACTIV(ICF).ne.0)then
+        itdi=IACTIV(ICF)
+      elseif(IHTCLSETP(ICF).ne.0)then
+        itdi=IHTCLSETP(ICF) 
+      endif   
+      IFOC=itdi
+      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+      HSP=VAL(COLUMNSETP)
+      COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
+      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+      CSP=VAL(COLUMNSETP)
+        
 C Debug.
 c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
 c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
@@ -6223,6 +6227,10 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
@@ -6236,6 +6244,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
 
@@ -6245,7 +6257,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/t1/ne(ms),nairg(ms),ipairg(ms,mgp),rairg(ms,mgp)
       common/t2/con(ms,me),den(ms,me),sht(ms,me),thk(ms,me)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       common/prec12/ei(mcom,ms),ee(mcom,ms),ai(mcom,ms),ae(mcom,ms)
@@ -6257,10 +6269,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
@@ -6295,7 +6303,7 @@ C Arrays of material properties.
       logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character desc*48,titl*72,nam*72
+      character titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 

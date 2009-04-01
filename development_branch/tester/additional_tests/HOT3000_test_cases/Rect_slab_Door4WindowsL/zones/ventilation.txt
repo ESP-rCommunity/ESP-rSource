@@ -1,3 +1,0 @@
-2 TWO_ZONE_MODEL
-[attic] fFracEquipCapToZone[0] = 0.000000
-[attic] fFracEquipCapToZone[1] = 0.000000

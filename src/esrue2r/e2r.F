@@ -31,15 +31,18 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
@@ -48,10 +51,9 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to model.
       common/rpath/path
@@ -126,7 +128,7 @@ C Materials data array.
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 matfil,rmmfil,glzfil,aglzfil
       character rambfil*72,optnfil*72,tfile*72,runpath*72,pathtype*24
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,cfgroot*24
       character crenrp*160,coconv*40
       character rscedes*72,rzoncmd*60,rupaxis*1
@@ -150,6 +152,7 @@ C Materials data array.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnrp  ! length of run path
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Initialize global common data.
       call ezero
@@ -204,7 +207,6 @@ C Make case insensitive.
       if (aim(1:8).eq.'day_coef') aim='Day_coef'
       if (act(1:6).eq.'create') act='Create'
 
-      ITRC=1
       IFS=1
       ITFS=1
       IMFS=1
@@ -364,11 +366,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updazi(1)
         endif
         call setzscale()
@@ -656,7 +661,7 @@ C redraw the model image.
 C (Re)Set all surfaces to std line width.
         CALL INLNST(1)
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
 C At this point we know the new model bounds. Reset the ground disk
 C diameter and centre.
@@ -1138,6 +1143,7 @@ C *************** MODLSU ***************
 C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -1165,7 +1171,6 @@ C Path to model.
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1183,6 +1188,7 @@ C Path to model.
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
       integer lnrp  ! length of run path
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1219,7 +1225,10 @@ C If there is a ground topology read it.
         call tstamp('>','E2R: scanning model')
         call tstamp('>',LCFGF)
         nzg=NCOMP
-        IF(MMOD.EQ.8)call updwire(ncomp)
+        IF(MMOD.EQ.8)then
+          numberofzones=ncomp
+          call updwire(numberofzones)
+        endif
         DO 444 I=1,nzg
           nznog(I)=I
  444    CONTINUE
@@ -1236,7 +1245,7 @@ C (Re)Set all surfaces to std line width.
           VIEWM(3)=VIEWMI(3)
           ANG=ANGI
         endif
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
 
 C At this point we know the model bounds. Set the ground disk
 C diameter and centre.
@@ -1460,15 +1469,12 @@ C inqu_tmc: Check if tmc control active.
       subroutine inqu_tmc
 #include "building.h"
 
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl

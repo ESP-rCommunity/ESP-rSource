@@ -53,7 +53,7 @@ C exportcad: controls model export facilities.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       logical MODIFY,MODLEN,MODBND,unixok,browse
 
-      DIMENSION ITEMS1(11)
+      DIMENSION ITEMS1(12)
 
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
@@ -62,6 +62,11 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       if(.NOT.cfgok)then
         call usrmsg(' You must load a model before',
@@ -82,8 +87,9 @@ C Check if Unix-based or DOS based.
       ITEMS1(7) ='g to TSBI3                 '
       ITEMS1(8) ='h to EnergyPlus            '
       ITEMS1(9) ='i to VRML #2.0             '
-      ITEMS1(10)='? help                     '
-      ITEMS1(11)='- exit this menu           '
+      ITEMS1(10)='j to ESP-r meta file       '
+      ITEMS1(11)='? help                     '
+      ITEMS1(12)='- exit this menu           '
 
 C Help text for this menu.
       H(1)='This facility allows you to export the current model'
@@ -130,10 +136,21 @@ C Help text for this menu.
       H(42)='   are > 4 sides use POLYLINE entities.  Or you could use'
       H(43)='   POLYLINE entities for all zone surfaces.'
       H(44)=' '
-      H(45)='NOTE: if you are useing Native Windows version the paths'
-      H(46)='to the exported files may not work correctly. '
+      H(45)='NOTE: if you need to debug the import of CAD data turn'
+      H(46)='the reporting level from silent or standard to detailed.'
+      H(47)=' '
+      H(48)='NOTE: if you are useing Native Windows version the paths'
+      H(49)='to the exported files may not work correctly. '
+      H(50)=' '
+      H(51)='The option for ESP-r meta file creates a compact'
+      H(52)='description of a model in a single file. This file'
+      H(53)='is typically created by 3rd party applications and'
+      H(54)='used by prj to expand to a standard ESP-r model.'
+      H(55)='This export facility supports testing of this file'
+      H(56)='format and data structures.'
+      H(57)=' '
  
-      CALL EMENU('Export Model',ITEMS1,43,INO1)
+      CALL EMENU('Export Model',ITEMS1,12,INO1)
 
 C Prepare filter command lines with path.
 
@@ -339,13 +356,16 @@ C If user canceled the wireframe export loop back.
           endif
           call usrmsg('sending wireframe... ',' ','-')
           MODIFY=.TRUE.
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-          CALL viewtext(ETEXT,1,1,1)
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          iside=1
+          isize=1
+          ifont=1
+          call viewtext(etext,iside,isize,ifont)
 
 C Toggle the wirefram export file closed.
           call usrmsg('sending wireframe...done.',' ','-')
@@ -516,11 +536,38 @@ C        call edisp(iuout,outs)
 C        call edisp(iuout,'Use a VRML viewer to explore it.')
 
       ELSEIF(INO1.EQ.10)THEN
+
+C Export to ESP-r meta file.
+        call tstamp('>','PRJ: export to ESP-r meta')
+        doit = ' '
+        H(1)='The option for ESP-r meta file creates a compact'
+        H(2)='description of a model in a single file. This file'
+        H(3)='is typically created by 3rd party applications and'
+        H(4)='used by prj to expand to a standard ESP-r model.'
+        H(5)='This export facility supports testing of this file'
+        H(6)='format and data structures.'
+        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.mesp'
+        CALL EASKS(LFIL,' ','ESP-r meta file name?',
+     &             72,' ','ESP-r meta file',IER,6)
+        if(unixok)then
+          call addpath(LFIL,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LFIL,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        ioout=2
+        call METAWRITE(ioout,longtfile,'-',IER)
+      ELSEIF(INO1.EQ.11)THEN
       
 C Pop up the help text.
-       CALL PHELPD('export menu',46,'-',0,0,IER)
+       CALL PHELPD('export menu',55,'-',0,0,IER)
 
-      ELSEIF(INO1.EQ.11)THEN
+      ELSEIF(INO1.EQ.12)THEN
         RETURN
       else
         goto 33
@@ -824,6 +871,7 @@ C exemplar (char 144) is the full path to selected cfg file.
 C useraction (char 8) is passed in to specify the task.
 C ier (integer) is returned as 1 if no exemplars file found.
       subroutine rexmpl(iexfil,exemplar,useraction,ier)
+#include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
       
@@ -840,14 +888,22 @@ C espriou.h provides currentfile, defdbfl exemfl.
 
 C Images - included to warn user on subsequent browsing sessions
 C to quit the image browser.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
       dimension name(30),mitem(30),label(30),inl2in(30),group(15)
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
       character exemplar*144,line*72,H*72,outs*124,rootp*72,separ*42
-      character imgfmt*4,imgfoc*4,limgfil*72,doit*248,upath*72
+      character doit*248,upath*72
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
 
@@ -1511,7 +1567,15 @@ C ICLIM,LCLIM (for climate file)
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
       common/hvacinfo/ihvacflag,hvacfile
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       common/aim2def/iAIM2,LAIM2
@@ -1538,7 +1602,7 @@ C The string buffer doit is only used within ifdef code.
       character path*72,upath*72,cfgroot*24,curdir*72
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character imgfmt*4,imgfoc*4,limgfil*72,tp*32,tr*32
+      character tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
       character LTDF*72,LTDFA*72,GTGEOM*72,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1

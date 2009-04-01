@@ -113,6 +113,10 @@
 *cfg	/usr/esru/esp-r/training/cellular_natv/cfg/cellular_natv.cfg
 *root	/usr/esru/esp-r/training/cellular_natv
 *item
+*name	... with hybrid natural & mechanical ventilation
+*cfg	/usr/esru/esp-r/training/cellular_hybrid/cfg/cellular_mctl.cfg
+*root	/usr/esru/esp-r/training/cellular_hybrid
+*item
 *name	... with component based HVAC
 *cfg	/usr/esru/esp-r/training/cellular_hvac/cfg/cellular_hvac.cfg
 *root	/usr/esru/esp-r/training/cellular_hvac

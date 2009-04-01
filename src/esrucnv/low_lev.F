@@ -22,12 +22,14 @@ C Set of low level routines.
 
 C ***** face3d
 C face3d are triangles or quads which are general surfaces in autocad.
-      subroutine face3d
+      subroutine face3d(itrc)
 #include "building.h"
+#include "geometry.h"
       
+      COMMON/OUTIN/IUOUT,IUIN
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk
@@ -50,11 +52,11 @@ C face3d are triangles or quads which are general surfaces in autocad.
       xnorm = 0.
       ynorm = 0.
       znorm = 1.
-      call readgc  
+      call readgc(itrc)  
       count=0      
  9001 if (gcode.ne.0)then
          if (gcode.eq.8) then
-            call getlay(currlay)
+            call getlay(currlay,itrc)
             call matchl(currlay,head,RZNAME,match,im)
             if(match)indxzon=im
          elseif (gcode.ge.10 .and. gcode.le.16) then
@@ -74,7 +76,7 @@ C face3d are triangles or quads which are general surfaces in autocad.
          elseif (gcode.eq.230) then
             znorm = realin
          endif
-         call readgc
+         call readgc(itrc)
          goto  9001
       endif
 
@@ -112,6 +114,10 @@ C Update the izstocn array!
           NZSUR(indxzon) = NZSUR(indxzon) + 1
           NCON=NCON+1
           IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
+          if(itrc.gt.1)then
+            write(iuout,*) 
+     &        'face3d increment esp surf list ',NCON,NZSUR(indxzon)
+          endif
         endif
       endif
 
@@ -119,7 +125,7 @@ C Update the izstocn array!
          coorx=x(i)
          coory=y(i)
          coorz=z(i)
-         call putcoods
+         call putcoods(itrc)
  10   continue
 
       return
@@ -129,14 +135,14 @@ C Update the izstocn array!
 ****** genlin
 C this subroutine processes the 'LINE' command in .dxf file of
 C autocad and translates it if it is extruded.
-      subroutine genlin
+      subroutine genlin(itrc)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -151,8 +157,12 @@ C autocad and translates it if it is extruded.
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
-      logical match
+      logical match,close
 
+      sx = 0.      
+      sy = 0.
+      ex = 0.        
+      ey = 0.       
       xnorm = 0.
       ynorm = 0.
       znorm = 1.
@@ -167,10 +177,10 @@ C autocad and translates it if it is extruded.
       z1 = dfltelev
       z2 = dfltelev
 
-      call readgc        
+      call readgc(itrc)        
  9001 if (gcode.ne.0)then
          if (gcode.eq.8) then
-            call getlay(currlay)
+            call getlay(currlay,itrc)
             call matchl(currlay,head,RZNAME,match,im)
             if(match)indxzon=im
          elseif (gcode.eq.10) then
@@ -198,13 +208,14 @@ C autocad and translates it if it is extruded.
          elseif (gcode.eq.230) then
             thickz = realin
          endif
-         call readgc
+         call readgc(itrc)
          goto  9001
       endif
 
       call writelc
       call initmatrix
-      if (flag3d.eq.0.) then        
+      call eclose(flag3d,0.0,0.001,close)
+      if (close) then        
           call edisp(iuout, ' skipping single LINE ')
       else        
          xnorm = thickx
@@ -238,25 +249,29 @@ C update IZSTOCN to reflect this change.
              NZSUR(indxzon) = NZSUR(indxzon) + 1
              NCON=NCON+1
              IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
+             if(itrc.gt.1)then
+               write(iuout,*) 
+     &         'genlin increment esp surf list ',NCON,NZSUR(indxzon)
+             endif
            endif
          endif
       
          coorx = sx
          coory = sy
          coorz = z1
-         call putcoods        
+         call putcoods(itrc)      
          coorx = ex
          coory = ey
          coorz = z2
-         call putcoods        
+         call putcoods(itrc)        
          coorx = ex + dx
          coory = ey + dy
          coorz = z2 + dz
-         call putcoods        
+         call putcoods(itrc)        
          coorx = sx + dx
          coory = sy + dy
          coorz = z1 + dz
-         call putcoods        
+         call putcoods(itrc)        
       endif        
       return
       end
@@ -264,7 +279,7 @@ C update IZSTOCN to reflect this change.
 ****** gencrl
 C this subroutine processes the 'CIRLCE' command in .dxf file of
 C autocad and skip over it.
-      subroutine gencrl
+      subroutine gencrl(itrc)
 
       integer gcode,innum
       integer currlay, currcol, oldlay, oldcol
@@ -278,12 +293,12 @@ C autocad and skip over it.
       ynorm = 0.
       znorm = 1.
 
-      call readgc        
+      call readgc(itrc)     
  9001 if (gcode.ne.0)then
          if (gcode.eq.8) then
-            call getlay(currlay)
+            call getlay(currlay,itrc)
          endif
-         call readgc
+         call readgc(itrc)
          goto  9001
       endif
 
@@ -293,8 +308,9 @@ C autocad and skip over it.
 ****** gentext
 C this subroutine processes the 'TEXT' command in .dxf file of
 C autocad and skip over it.
-      subroutine gentext
+      subroutine gentext(itrc)
 
+      COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum
       integer currlay, currcol, oldlay, oldcol
       common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
@@ -307,14 +323,18 @@ C autocad and skip over it.
       ynorm = 0.
       znorm = 1.
 
-      call readgc        
+      call readgc(itrc)        
  9001 if (gcode.ne.0)then
          if (gcode.eq.1) then
            tstr = instring
+           if(itrc.gt.1)then
+             write(iuout,*) 
+     &         'gentext string is ',tstr(1:lnblnk(tstr))
+           endif
          elseif (gcode.eq.8) then
-            call getlay(currlay)
+            call getlay(currlay,itrc)
          endif
-         call readgc
+         call readgc(itrc)
          goto  9001
       endif
 
@@ -322,14 +342,14 @@ C autocad and skip over it.
       end
 
 C ****** genarc
-      subroutine genarc 
+      subroutine genarc(itrc) 
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -344,8 +364,9 @@ C ****** genarc
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
-      logical match
+      logical match,close
 
+C Clear initial values for local variables.
       if (thick .gt. 0.) then
         flag3d = 1.
       else
@@ -354,12 +375,16 @@ C ****** genarc
       xnorm = 0.
       ynorm = 0.
       znorm = 1.
-      call readgc                
+      radiu = 0.
+      cx = 0.      
+      cy = 0.
+                     
+      call readgc(itrc)                
  9001 if (gcode.ne.0)then
         if (gcode.eq.8) then
 
 C Find current layer and then matching zone.
-          call getlay(currlay)
+          call getlay(currlay,itrc)
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
         elseif (gcode.eq.10) then
@@ -387,7 +412,7 @@ C Find current layer and then matching zone.
         elseif (gcode.eq.230) then
           znorm = realin
         endif 
-        call readgc 
+        call readgc(itrc) 
         goto  9001
       endif
       if (startangl.gt.endangl) endangl=endangl+360.0
@@ -404,7 +429,8 @@ C Find current layer and then matching zone.
 
       call writelc
       call initmatrix
-      if (flag3d.eq.0.) then                
+      call eclose(flag3d,0.0,0.001,close)
+      if (close) then                
         call edisp(iuout, ' LIN (ARC) skipped')              
       else                
  9003   if (startangl.lt.endangl)then
@@ -426,31 +452,35 @@ C update IZSTOCN for this surface.
               NZSUR(indxzon) = NZSUR(indxzon) + 1
               NCON=NCON+1
               IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
+              if(itrc.gt.1)then
+                write(iuout,*) 
+     &          'genarc increment esp surf list ',NCON,NZSUR(indxzon)
+              endif
             endif
           endif
             
           coorx=radiu*cos(startangl*radians)+cx                
           coory=radiu*sin(startangl*radians)+cy                
           coorz=elev                
-          call putcoods                
+          call putcoods(itrc)                
           coorz=elev+thick                
-          call putcoods                
+          call putcoods(itrc)                
           startangl=startangl+divs                
           if (startangl.ge.endangl) goto 110                
           coorx=radiu*cos(startangl*radians)+cx                
           coory=radiu*sin(startangl*radians)+cy                
           coorz=elev+thick                
-          call putcoods                
+          call putcoods(itrc)                
           coorz=elev                
-          call putcoods                
+          call putcoods(itrc)                
           goto  9003
         endif
  110    coorx=radiu*cos(endangl*radians)+cx
         coory=radiu*sin(endangl*radians)+cy                
         coorz=elev+thick                
-        call putcoods                
+        call putcoods(itrc)                
         coorz=elev                
-        call putcoods                
+        call putcoods(itrc)                
       endif                
       coorz=0                
       return                

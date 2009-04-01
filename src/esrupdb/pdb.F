@@ -37,10 +37,11 @@ C The routine PCHELP contains a description of a
 C database entry.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -49,6 +50,7 @@ C Path to problem and command line file (if any).
       common/appw/iappw,iappx,iappy
 
       common/OUTIN/IUOUT,IUIN
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
@@ -69,9 +71,9 @@ C Name of current application
 
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(9)*26 
-      CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
+      CHARACTER PZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,fs*1
       character mfsdsc*68,ltpcmp*60 
 
@@ -154,7 +156,9 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
      &'ESP-r Plant db Manager: enquiries to esru@strath.ac.uk')
 
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,7,1,1,3,igl,igr,igt,igb,igw,igh)
+        CALL win3d(menuchw,7,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -242,8 +246,8 @@ C IRECLN= from plantdb.h file.
         if(ier.ne.0)goto 100
 
         IREC = 1
-        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) ZDESC
-        IF (ZDESC .NE. ' PLANT COMPONENT DATABASE')then
+        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
+        IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
           call usrmsg('File is not a plant component database,',
      &      'please supply the file name again.','W')
           goto 100
@@ -425,7 +429,7 @@ C ***** dummy routine for c code active descriptions buttons.
       end
 
 C Dummy routines from common3dv.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

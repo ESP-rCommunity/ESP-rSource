@@ -29,13 +29,13 @@ C for first day of recovery period.
 
       SUBROUTINE MOREC1(IDAY,IREC)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,
      &NTS,ISAVE
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C Compute start record address for requested recovery day.
       if (ISAVE.eq.1) then

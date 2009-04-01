@@ -53,6 +53,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDCOMP(izone,iuf,IER)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
       
       integer lnblnk  ! function definition
@@ -65,7 +66,6 @@ C IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -77,7 +77,7 @@ C IER=0 indicates no error.
 
       character H*72,OUTSTR*124,WORD*124
       CHARACTER ITEM(11)*34
-      character zname*12,zdesc*64,ltmp*72,dtmp*72,LCFD*72
+      character ltmp*72,dtmp*72,LCFD*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI
@@ -119,16 +119,16 @@ C Draw the zone and display the vertex numbers.
       itvno=0
       itsnm=0
       CALL INLNST(1)
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Get the name of the CFD input file.
       if(LCFD(izone)(1:2).eq.'  ')then
         if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
           WRITE(LCFD(izone),'(A,A4)')
-     &      zname(izone)(1:lnblnk(zname(izone))),'.dfd'
+     &      zname(izone)(1:lnzname(izone)),'.dfd'
         else
           WRITE(LCFD(izone),'(A,A,A,A4)') netpth(1:lnblnk(netpth)),'/',
-     &      zname(izone)(1:lnblnk(zname(izone))),'.dfd'
+     &      zname(izone)(1:lnzname(izone)),'.dfd'
         endif
       endif
       H(1)='A CFD input file holds the definition of the'
@@ -358,11 +358,13 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDGGRD(izone,IER)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -375,10 +377,6 @@ C IER=0 indicates no error.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C NREG(1,*) is X, NREG(2,*) is Y, NREG(3,*) is west, NREG(4,*) is east
@@ -473,8 +471,8 @@ C No cancels so instanciate variables.
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
       call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(iyend),Y(iyend),Z(iyend),ang)
-      call eclose(ang,90.00,0.1,close)
+     &                       Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
+      call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
      &     'X & Y axes are not orthogonal. Please check and respecify.',
@@ -485,8 +483,8 @@ C Check X and Y.
 
 C Check X and Z.
       call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang)
-      call eclose(ang,90.00,0.1,close)
+     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+      call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
      &     'X & Z axes are not orthogonal. Please check and respecify.',
@@ -497,8 +495,8 @@ C Check X and Z.
 
 C Check Y and Z.
       call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang)
-      call eclose(ang,90.00,0.1,close)
+     &                       Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+      call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
      &     'Y & Z axes are not orthogonal. Please check and respecify.',
@@ -517,8 +515,8 @@ C Non orthogonal.
 
 C Check Y and Ze.
         call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &                Z(iorg),X(izende),Y(izende),Z(izende),ang)
-        call eclose(ang,90.00,0.1,close)
+     &                Z(iorg),X(izende),Y(izende),Z(izende),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call usrmsg(' Y & Ze axes are not orthogonal. ',
      &                ' Please check and respecify.','W')
@@ -637,8 +635,8 @@ C No cancels so instanciate variables.
 C Make sure axes are orthogonal, as dfs only supports Cartesian coordinates.
 C Check X and Y.
         call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &               Z(iorg),X(iyend),Y(iyend),Z(iyend),ang)
-        call eclose(ang,90.00,0.1,close)
+     &               Z(iorg),X(iyend),Y(iyend),Z(iyend),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' X & Y axes are not orthogonal. Respecify.')
           goto 9
@@ -646,8 +644,8 @@ C Check X and Y.
 
 C Check X and Z.
         call ang3vtx(X(ixend),Y(ixend),Z(ixend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izend),Y(izend),Z(izend),ang)
-        call eclose(ang,90.00,0.1,close)
+     &               Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' X & Z axes are not orthogonal. Respecify.')
           goto 9
@@ -655,8 +653,8 @@ C Check X and Z.
 
 C Check Y and Z.
         call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &               Z(iorg),X(izend),Y(izend),Z(izend),ang)
-        call eclose(ang,90.00,0.1,close)
+     &               Z(iorg),X(izend),Y(izend),Z(izend),ang3)
+        call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
           call edisp(iuout,' Y & Z axes are not orthogonal. Respecify.')
           goto 9
@@ -949,6 +947,8 @@ C Restore standard graphics window variables.
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
             CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igw=igr-igl
+            igwh=igb-igt
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -974,7 +974,7 @@ C to be refreshed.
             itvno=0
             itsnm=0
             CALL INLNST(1)
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
         else
           CALL USRMSG(' Define origin of CFD domain ',
@@ -1678,18 +1678,16 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDBVAR(IZONE,IER)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
@@ -1817,6 +1815,8 @@ C Restore standard graphics window variables.
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
             CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igw=igr-igl
+            igwh=igb-igt
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -1842,7 +1842,7 @@ C to be refreshed.
             itvno=0
             itsnm=0
             CALL INLNST(1)
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
         else
           CALL USRMSG(' Define origin of CFD domain ',
@@ -3749,14 +3749,13 @@ C TOPBOT: Define upper and lower curvilinear x-section for use in
 C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -3802,7 +3801,7 @@ C Redraw the zone with vertices.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(0,IER)
+      CALL ADJVIEW(IER)
 
 C Ask for and display the top defining vertices (west to east).
 C Allow user to type in the list of vertices as a string.  The
@@ -3947,8 +3946,8 @@ C and cell distribution for each region.
       common/pophelp/h(60)
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/ICFNOD/ICFD,ICP
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -3975,6 +3974,8 @@ C Reset the display bounds for grid display.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
         CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         GRMODE=.true.
       ENDIF
 

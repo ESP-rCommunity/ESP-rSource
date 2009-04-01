@@ -147,6 +147,7 @@ C Display Zones list and wait for INIPIC item selected
 
       SUBROUTINE Zoneslist
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
@@ -154,14 +155,13 @@ C Display Zones list and wait for INIPIC item selected
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/surfsel/isursel(MCON),NbSurSel(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION IVALZ(MCOM)
-      CHARACTER H*72,zname*12,zdesc*64
+      CHARACTER H*72
       
       do 5 i=1,MCOM
         NbSurSel(i) = 0
@@ -232,20 +232,18 @@ C Two zones cannot have the same number.
 C ******************** ZNLIST (edited from esrures/utils.F) *******
 C ZNLIST takes the current selected zones and builds a descriptive
 C string to be used in headers. 
-C zdescr : string contening the name of slected zone(s)
+C zdescr : string containing the names of the slected zone(s)
 C length : Length of zdescr
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      CHARACTER zname*12,zdesc*64,zdescr*80,outs*244,outsd*80
+      CHARACTER zdescr*80,outs*244,outsd*80
 
       length=0
       do 42 i=1,nzg
-        lna=lnblnk(zname(nznog(i)))
+        lna=lnzname(nznog(i))
         length=length+lna+1
   42  continue
       if(length.lt.72)then
@@ -281,14 +279,13 @@ C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
 
+C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
+#include "geometry.h"
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -298,14 +295,9 @@ C ZoneDisp - displays zone based information and allows....
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER outs*124
@@ -320,7 +312,6 @@ C Initialisation
 
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
-      ITRC=1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
         call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
@@ -332,11 +323,11 @@ C Read geometry file for chosen zone.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZAO,PAZI,PELV,ZVOL)
-      ZVOL = Vol(icomp)
+      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       FLA=0.
       IFLA=0
@@ -344,7 +335,8 @@ C Recover zone data (read only, no display).
       TRN=0.
       DO 41 I=1,NSUR
         icon=IZSTOCN(icomp,i)
-        if(SSOTF(icon)(1:4).NE.'OPAQ')then
+        if(SSOTF(icon)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icon)(1:4).NE.'CFC ')then
           TRN=TRN+SNA(I)
         else
           OPQ=OPQ+SNA(I)
@@ -354,7 +346,7 @@ C Recover zone data (read only, no display).
 C Display high level data.
       write(outs,'(A,A)')' Composition of ',ZNAME(ICOMP)
       call edisp(iuout,outs)
-      WRITE(outs,'(a,f8.2,a)')'  Volume :          ',ZVOL,'m^3'
+      WRITE(outs,'(a,f8.2,a)')'  Volume :          ',VOL(ICOMP),'m^3'
       call edisp(iuout,outs)
       WRITE(outs,'(a,f8.2,a)')'  Base/floor area : ',ZBASEA(ICOMP),'m^2'
       call edisp(iuout,outs)
@@ -385,6 +377,10 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -395,7 +391,7 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER H*72,DESC*48
+      CHARACTER H*72
 
 C Read database if not already done.
       if (.not.MLDBOK) then 
@@ -483,16 +479,12 @@ C          1 = textual feedback or 2 = File
       SUBROUTINE DispTRev(Mode,IOctave,ISE,Method,IAirAb, IChanel)
 
 #include "building.h"
+#include "geometry.h"
 #include "acoustic.h"
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -518,7 +510,6 @@ C          1 = textual feedback or 2 = File
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER zname*12,zdesc*64
       CHARACTER*36 RevLabA,RevLabB
       CHARACTER*63 FreqLabA,FreqLabB
       CHARACTER extraouts*189, outs*156
@@ -1224,6 +1215,7 @@ C RESMN      - Minimum reverberation time
 #include "building.h"
 #include "acoustic.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/Zones/TxtZone
 
@@ -1235,6 +1227,15 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initialisation
       YMAX=1.0
@@ -1246,6 +1247,8 @@ C Setup the graph dimension according to the max and min RT
       IF ((MAll.EQ.4).AND.(MethodCalc.GT.1)) THEN
       ELSE
         Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         do 20 I=1,MNbAbs
           if (TReverb(I).gt.RESMX) then
             RESMX=TReverb(I)
@@ -1261,7 +1264,9 @@ C Calculate plotting box locations.
         plxmax=4000.
         YMAX=RESMX+0.5
         YMIN=0.
-        CALL axiscale(igw,igwh,plxmin,plxmax,Ymin,Ymax,                 
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
         CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
 
@@ -1272,19 +1277,28 @@ C Scale and draw monitoring plot.
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1
         write(title,'(20x,2a)') 'Reverberation time for space: ',TxtZone
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
 
 C Write the label concerning the calculation mode used
       IF (MAll.LT.4) THEN
         IPS=IPS+1
         write(title,'(1x,2a)') 'Method: ',CalName(MethodCalc)(1:11)
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
       IF ((MAll.EQ.4).AND.(MethodCalc.EQ.1)) THEN
         IPS=IPS+1
         write(title,'(1x,a)') 'Method: All'
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
 
 C Define for each calculation method which symbol to use on the curve
@@ -1298,10 +1312,14 @@ C Define for each calculation method which symbol to use on the curve
 
 
 C Plot reverberation time curve
-      CALL etplot(125.,TReverb(1),0,0)
+      iupdown=0
+      isym=0
+      CALL etplot(125.,TReverb(1),iupdown,isym)
       do 30 I=1,MNbABS
           FREQ=INT(100* EXP((I-1)/3.*LOG(2.)))
-          CALL etplot(FREQ,TReverb(I),1,Isymbol)
+          iupdown=1
+          isym=Isymbol
+          CALL etplot(FREQ,TReverb(I),iupdown,isym)
  30   continue
 
 C Label curves
@@ -1309,7 +1327,10 @@ C Label curves
         IPS=IPS+1
         write(title,'(40x,3(a,8x))')'Sabine (x)','Eyring (+)',
      &                              'Millington (.)'
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        CALL viewtext(title,iside,isize,ifont)
       ENDIF
 
       RETURN

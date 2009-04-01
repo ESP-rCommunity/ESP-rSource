@@ -77,7 +77,6 @@ my @gInput;                    # Buffer to store configuration file
 
 my $debug = 0;
 
-my $gVerboseArg = "";
 #--------------------------------------------------------------------
 # SYNOPSYS 
 #--------------------------------------------------------------------
@@ -183,10 +182,6 @@ if ( @ARGV ){
   }
 }
 
-# Set arguement for subordinate script verbosity
-if ( $gVerbose ) { $gVerboseArg = "-v"; }
-if ( $gVeryVerbose ) { $gVerboseArg = "-vv"; }
-
 # Attempt to obtain lock on file 
 
 stream_out (`date`);
@@ -249,51 +244,26 @@ sub LockFile($$){
     # If there's anything left, check if line matches '*FILE-LOCK OPEN'
     if ( $line_copy =~ /[^\s]/ ){
     
-      # Check if file is unlocked, and attempt to unlock
+      
       if ( $action =~ /lock/ ){
           
             if ( $line_copy =~ /\*FILE-LOCK,UNLOCKED/ ){
         
-              # Lock file, and initialize counter at 1.
-              $line =~ s/UNLOCKED/LOCKED,1/g;
+            # Lock file 
+              $line =~ s/UNLOCKED/LOCKED/g;
               
               $FileLockedOk = 1;
               
             }
             
       }
-
-      # If file's already locked, increment counter,
-      if ( $action =~ /lock/ ){
-
-         if ( $line_copy =~ /\*FILE-LOCK,LOCKED/ ){
-
-            #Read counter and increment value
-
-            my ($dummy_flag,$dummy_status,$count) = split ( /,/, $line_copy ); 
-
-            # On the 24th attempt to unlock a file, force it 
-            # to unlock.
-            if ( $count > 23 ){
-              $action = "unlock";
-            }else{
-              # Increment counter, and store in buffer.
-              $count = $count +1;
-              $line = "*FILE-LOCK,LOCKED,$count\n";
-
-            }
-
-         }
-
-      }
-
       
       if ( $action =~ /unlock/ ){
           
             if ( $line_copy =~ /\*FILE-LOCK,LOCKED/ ){
         
-            # UnLock file 
-              $line =~ s/LOCKED.*$/UNLOCKED/g;
+            # Lock file 
+              $line =~ s/LOCKED/UNLOCKED/g;
               
               $FileLockedOk = 1;
               
@@ -375,7 +345,7 @@ sub test_branch($){
     if ( $gBranches{$branch}{"tests"} !~ "STATIC" )      { $local_test_options .= " --skip-forcheck ";  }
     if ( $gBranches{$branch}{"tests"} !~ "BUILD" )       { $local_test_options .= " --skip-builds ";    }
     if ( $gBranches{$branch}{"tests"} !~ "REGRESSION" )  { $local_test_options .= " --skip-regression ";}
-    if ( $gBranches{$branch}{"tests"} =~ "CALLGRIND" )   { $local_test_options .= " --run-callgrind ";}
+    
     # Build url arguements 
     my $URL_1 = $gBranches{$branch}{"name"}."\@".$old_rev;
     my $URL_2 = $gBranches{$branch}{"name"}."\@".$gBranches{$branch}{"test_rev"};
@@ -405,7 +375,7 @@ sub test_branch($){
       $extra_options  ="--test-build-args=$extra_args";
       $extra_options .=" --ref-build-args=$extra_args";
     }
-    execute("./automated_tests.pl -vv $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options $gVerboseArg");
+    execute("./automated_tests.pl $gTestOptions $local_test_options $addresses -b $URL_1 -b $URL_2 $extra_options");
 
     # Set flag to update branch entry in input file 
     $gBranches{$branch}{"updated"} = 1;

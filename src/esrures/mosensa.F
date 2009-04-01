@@ -42,6 +42,7 @@ C can proceed.
 
       SUBROUTINE MOSA
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -50,12 +51,10 @@ C can proceed.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
-      CHARACTER ITEM(10)*25, H*72, zname*12,zdesc*64, outs*124
+      CHARACTER ITEM(10)*25,H*72,outs*124
 
 C Check that the result library contains the results from a 
 C uncertainty analysis.
@@ -102,7 +101,7 @@ C Instanciate h() strings for this menu.
       elseif(INO.EQ.3)then
         NZ=1
         CALL EPICKS(NZ,NZNO,' ',' Which zone to include: ',
-     &                              12,NCOMP,zname,' zone list',IER,1)
+     &    12,NCOMP,zname,' zone list',IER,1)
       elseif(INO.EQ.5)then
         CALL SAINTRA
       elseif(INO.EQ.6) then
@@ -124,6 +123,7 @@ C SAINTRA calculates summary statistics within result sets.
 
       SUBROUTINE SAINTRA
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -131,8 +131,6 @@ C SAINTRA calculates summary statistics within result sets.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
@@ -147,7 +145,7 @@ C SAINTRA calculates summary statistics within result sets.
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS)
-      character outs*124,zname*12,zdesc*64,RSNAME*40,H*72
+      character outs*124,RSNAME*40,H*72
       character SLABEL*32,GLABEL*20, HEAD1*108, HEAD2*108
 
       logical display, TOTALS
@@ -408,19 +406,19 @@ C SAINTER calculates summary statistics within result sets.
 
       SUBROUTINE SAINTER
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
@@ -434,8 +432,15 @@ C SAINTER calculates summary statistics within result sets.
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
       logical graphit
       integer YAXSET, ADDLIN
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
-      character outs*124,zname*12,zdesc*64,H*72
+      character outs*124,H*72
       character SLABEL*32,GLABEL*20
 
 C Call the menu of choices (this also sets some default options).
@@ -729,64 +734,76 @@ C Assume fully occupied.
             if (IMET.eq.1) then 
               VHI=VAL(3,J)+sqrt(VAL(1,J))
               VLO=VAL(3,J)-sqrt(VAL(2,J))
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VAL(3,J),0,0)
+                call etplot(HR,VAL(3,J),iupdown,isym)
               else
-                call etplot(HRold,VMEANold,0,0)
+                call etplot(HRold,VMEANold,iupdown,isym)
               endif
               VMEANold=VAL(3,J)
-              MARK=4
-              IPEN=-303
-              call etplot(HR,VAL(3,J),IPEN,MARK)
+              iupdown=-303
+              isym=4
+              call etplot(HR,VAL(3,J),iupdown,isym)
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VHI,0,0)
+                call etplot(HR,VHI,iupdown,isym)
               else
-                call etplot(HRold,VHIold,0,0)
+                call etplot(HRold,VHIold,iupdown,isym)
               endif
-              MARK=2
-              IPEN=1
-              call etplot(HR,VHI,IPEN,MARK)
+              iupdown=1
+              isym=2
+              call etplot(HR,VHI,iupdown,isym)
               VHIold=VHI
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VLO,0,0)
+                call etplot(HR,VLO,iupdown,isym)
               else
-                call etplot(HRold,VLOold,0,0)
+                call etplot(HRold,VLOold,iupdown,isym)
               endif
-              MARK=3
-              IPEN=1
-              call etplot(HR,VLO,IPEN,MARK)
+              iupdown=1
+              isym=3
+              call etplot(HR,VLO,iupdown,isym)
               VLOold=VLO
               HRold=HR
             else
               SD=sqrt(VAL(4,J)/float(NVAL(1)-1))
               SDH=VAL(3,J)+SD
               SDL=VAL(3,J)-SD
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,VAL(3,J),0,0)
+                call etplot(HR,VAL(3,J),iupdown,isym)
               else
-                call etplot(HRold,VMEANold,0,0)
+                call etplot(HRold,VMEANold,iupdown,isym)
               endif
               VMEANold=VAL(3,J)
-              MARK=4
-              IPEN=-303
-              call etplot(HR,VAL(3,J),IPEN,MARK)
+              iupdown=-303
+              isym=4
+              call etplot(HR,VAL(3,J),iupdown,isym)
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,SDH,0,0)
+                call etplot(HR,SDH,iupdown,isym)
               else
-                call etplot(HRold,SDHold,0,0)
+                call etplot(HRold,SDHold,iupdown,isym)
               endif
-              MARK=2
-              IPEN=1
-              call etplot(HR,SDH,IPEN,MARK)
+              iupdown=1
+              isym=2
+              call etplot(HR,SDH,iupdown,isym)
               SDHold=SDH
+              iupdown=0
+              isym=0
               if (J.eq.IOH1.AND.IHRD.eq.0) then
-                call etplot(HR,SDL,0,0)
+                call etplot(HR,SDL,iupdown,isym)
               else
-                call etplot(HRold,SDLold,0,0)
+                call etplot(HRold,SDLold,iupdown,isym)
               endif
-              MARK=3
-              IPEN=1
-              call etplot(HR,SDL,IPEN,MARK)
+              iupdown=1
+              isym=3
+              call etplot(HR,SDL,iupdown,isym)
               SDLold=SDL
               HRold=HR
             endif
@@ -815,7 +832,9 @@ C Calculate overall standard deviation and display depending on IFMT.
         TMAX=FLOAT(IOH1)+DHR+1.0/FLOAT(NTS)
         call dinterval(TMIN,TMAX+1.,DT,NDEC,1)
         IY1=1
-        call axiscale(igw,igwh,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
      &              YSC(1),sca,Xadd,Yadd(1))
         call vrtaxis(YMIN(1),YMAX(1),igl,igb,igt,Yadd(1),YSC(1),0,0,
      &               'Output')
@@ -834,6 +853,7 @@ C SAPARSEN calculates individual parameter uncertainties.
 
       SUBROUTINE SAPARSEN
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -841,8 +861,6 @@ C SAPARSEN calculates individual parameter uncertainties.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SIMPKA/NSIM
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
@@ -858,7 +876,7 @@ C SAPARSEN calculates individual parameter uncertainties.
       dimension YTOT(MZS), YTOTAB(MZS)
       dimension IUNC(MNFA), IPT(MNRS,MNFA)
       
-      character outs*124,zname*12,zdesc*64,RSNAME*40
+      character outs*124,RSNAME*40
       character SLABEL*32,GLABEL*20
       
 C Call the menu of choices (this also sets some default options).
@@ -1229,8 +1247,8 @@ C WHSET displays currently chosen sets and lets user toggle selections.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/SETNAM/RSNAME(MNRS)
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       CHARACTER VERT(35)*65, H*72, RSNAME*40, KEY*1
       LOGICAL SELECT

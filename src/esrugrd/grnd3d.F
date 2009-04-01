@@ -367,7 +367,6 @@ C *********************************************************************
 #include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -1415,13 +1414,24 @@ C *********************************************************************
       SUBROUTINE FHCGND(IL)
 #include "building.h"
 
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*16
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
       XMN2=0.
       YMN2=0.
@@ -1430,7 +1440,12 @@ C *********************************************************************
       XYMX=AMAX1(XMX2,YMX2)
       CALL startbuffer
       CALL WIN3D(28,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+     &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMX2,YMX2,IX,IY)
       CALL ELINE(IX,IY,1)
@@ -1449,14 +1464,24 @@ C *********************************************************************
       DO 10 I=1,NDXG-1
         CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
         CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYG-1
         CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
         CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
+      ipos=0
+      isize=itfs
       DO 30 I=1,NDXG
         XCF=XCF+1.
         YCF=-0.5
@@ -1464,22 +1489,27 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')ITPGND(I,J,IL)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
    30 CONTINUE
-      CALL VIEWTEXT('Construction Details',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Construction Details',iside,isize,ifont)
+      ipos=4
+      isize=itfs
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL('1',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('1',XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL('2',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('2',XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL('3',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('3',XLAB,YLAB,ipos,isize)
       XLAB=XMN2-XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL('4',XLAB,YLAB,4,ITFS)
+      CALL ETLABEL('4',XLAB,YLAB,ipos,isize)
       call forceflush()
       RETURN
       END
@@ -1490,14 +1520,25 @@ C *********************************************************************
       SUBROUTINE FHCBSF(ISRF)
 #include "building.h"
 
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
       COMMON/GRND07/VERTX(6,4)
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*4,VERTX*2
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer iix1,iiy1,iix2,iiy2
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
+      integer*8 iix1,iiy1,iix2,iiy2
+#endif
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
         NUMX=NDXG
@@ -1516,7 +1557,12 @@ C *********************************************************************
       XYMX=AMAX1(XMX2,YMX2)
       CALL startbuffer()
       CALL WIN3D(33,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+     &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,IX,IY)
       CALL ELINE(IX,IY,1)
@@ -1535,14 +1581,24 @@ C *********************************************************************
       DO 10 I=1,NUMX-1
         CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
         CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NUMY-1
         CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
         CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        CALL EDLINE(IX1,IY1,IX2,IY2,4)
+        iix1=IX1
+        iiy1=IY1
+        iix2=IX2
+        iiy2=IY2
+        CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
+      ipos=0
+      isize=itfs
       IF(ISRF.EQ.1)THEN
         DO 30 I=1,NUMX
           XCF=XCF+1.
@@ -1551,7 +1607,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(1,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    30   CONTINUE
       ELSEIF(ISRF.EQ.2)THEN
         DO 40 I=1,NUMX
@@ -1561,7 +1617,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(2,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
       ELSEIF(ISRF.EQ.3)THEN
         DO 50 I=NUMX,1,-1
@@ -1571,7 +1627,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(3,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    50   CONTINUE
       ELSEIF(ISRF.EQ.4)THEN
         DO 60 I=NUMX,1,-1
@@ -1581,7 +1637,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(4,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    60   CONTINUE
       ELSEIF(ISRF.EQ.5)THEN
         DO 70 I=1,NUMX
@@ -1591,7 +1647,7 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(5,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    70   CONTINUE
       ELSE
         DO 80 I=1,NUMX
@@ -1601,22 +1657,28 @@ C *********************************************************************
           YCF=YCF+1.
           CALL U2PIXEL(XCF,YCF,IX,IY)
           WRITE(LABELS,'(I3)')IBSRF(6,I,J)
-          CALL ETLABEL(LABELS,XCF,YCF,0,ITFS)
+          CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    80   CONTINUE
       ENDIF
-      CALL VIEWTEXT('Boundary Surface Details',1,1,2)
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext('Boundary Surface Details',iside,isize,ifont)
       XLAB=XMN2-XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,1),XLAB,YLAB,2,ITFS)
+      ipos=2
+      isize=itfs
+      CALL ETLABEL(VERTX(ISRF,1),XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMN2-XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,2),XLAB,YLAB,2,ITFS)
+      CALL ETLABEL(VERTX(ISRF,2),XLAB,YLAB,ipos,isize)
       XLAB=XMX2+XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,3),XLAB,YLAB,4,ITFS)
+      ipos=4
+      CALL ETLABEL(VERTX(ISRF,3),XLAB,YLAB,ipos,isize)
       XLAB=XMN2-XYMX/20.
       YLAB=YMX2+XYMX/20.
-      CALL ETLABEL(VERTX(ISRF,4),XLAB,YLAB,4,ITFS)
+      CALL ETLABEL(VERTX(ISRF,4),XLAB,YLAB,ipos,isize)
       call forceflush()
 
       RETURN
@@ -1627,14 +1689,21 @@ C DRWGND draws the complete ground domain.
 C *********************************************************************
       SUBROUTINE DRWGND
 #include "building.h"
+#include "prj3dv.h"
 
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igh
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
 
       DIMENSION XGND(8),YGND(8),ZGND(8)
       DIMENSION XS(8),YS(8),ZS(8)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       THKX=0.
       DO 10 IX=1,NDXG
@@ -1686,7 +1755,12 @@ C Find 2D extremes coordinates.
 C Clear the graphical feedback window.
       CALL startbuffer()
       CALL WIN3D(28,20,4,3,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-      CALL AXISCALE(IGW,IGWH,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,XADD,YADD)
+      igw=igr-igl
+      igwh=igb-igt
+      igwid=igw
+      igheight=igwh
+      CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
+     &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the vertices.
@@ -1716,21 +1790,32 @@ C Locate and label the vertices.
       CALL VERTLBL(IX,IY,8,IER)
 
 C Draw the ground.
-      CALL ETPLOT(XS(1),YS(1),0,0)
+      iupdown=0
+      isym=0
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
+      iupdown=1
       DO 120 I=2,4
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   120 CONTINUE
-      CALL ETPLOT(XS(1),YS(1),1,0)
+      iupdown=1
+      CALL ETPLOT(XS(1),YS(1),iupdown,isym)
       DO 130 I=5,8
-        CALL ETPLOT(XS(I),YS(I),1,0)
+        CALL ETPLOT(XS(I),YS(I),iupdown,isym)
   130 CONTINUE
-      CALL ETPLOT(XS(5),YS(5),1,0)
-      CALL ETPLOT(XS(2),YS(2),0,0)
-      CALL ETPLOT(XS(6),YS(6),1,0)
-      CALL ETPLOT(XS(3),YS(3),0,0)
-      CALL ETPLOT(XS(7),YS(7),1,0)
-      CALL ETPLOT(XS(4),YS(4),0,0)
-      CALL ETPLOT(XS(8),YS(8),1,0)
+      iupdown=1
+      CALL ETPLOT(XS(5),YS(5),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(2),YS(2),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(6),YS(6),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(3),YS(3),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(7),YS(7),iupdown,isym)
+      iupdown=0
+      CALL ETPLOT(XS(4),YS(4),iupdown,isym)
+      iupdown=1
+      CALL ETPLOT(XS(8),YS(8),iupdown,isym)
       call forceflush()
 
       RETURN

@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <string>
 #include <cstdio>
-#include <cstring>
 
 #include "sys/stat.h"
 

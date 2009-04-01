@@ -52,6 +52,10 @@ C ****** GTOPOL
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C6/INDCFG
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
@@ -59,8 +63,13 @@ C ****** GTOPOL
       character*32 VERTS(MGRT)
       dimension ivals(MGRT)
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
-      CHARACTER DESC*48,H*72,outs*124,ltmp*72,t15*15,ETEXT*82
+      CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       grmod=.true.
 
@@ -153,13 +162,16 @@ C If ground needs drawing or updating do it here.
           nzg=0
         endif
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         grmod=.false.
@@ -214,7 +226,7 @@ C List help.
       ELSEIF(INO.EQ.3)THEN
 
 C Edit, and manipulate vertices and support transforms.
-        call EDGVERT(ITRC,grmod,IER)
+        call EDGVERT(grmod,IER)
         if(grmod)MODIFY=.TRUE.
       ELSEIF(INO.EQ.4)THEN
 
@@ -387,9 +399,10 @@ C Save ground file.
 C ****** EDGVERT
 C Edit vertex attributes in common block G1 via a paging menu.
 C IER=0 OK, IER=1 problem.
-      SUBROUTINE EDGVERT(ITRC,MODGEO,IER)
+      SUBROUTINE EDGVERT(MODGEO,IER)
 #include "epara.h"
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -401,14 +414,11 @@ C IER=0 OK, IER=1 problem.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6G/LINSTYG(MGRT)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
 
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
@@ -472,7 +482,7 @@ C Update display.
         CALL INLNST(1)
         ITVNO=0
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         MODIFY=.false.
@@ -626,7 +636,7 @@ C Show the new point on the current wireframe.
               if(MMOD.ge.8)then
                 CALL INLNST(1)
                 izgfoc=0
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 call EGRNDR(IER)
               endif
 
@@ -808,7 +818,7 @@ C Show the new point on the current wireframe.
               MODBND=.TRUE.
               call usrmsg(' ',' ','-')
               if(MMOD.ge.8)then
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 CALL INLNSTG(3)
                 call EGRNDR(IER)
               endif
@@ -821,7 +831,7 @@ C Show the new point on the current wireframe.
           endif
           MODIFY=.true.
           if(MMOD.ge.8)then
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             CALL INLNSTG(3)
             call EGRNDR(IER)
           endif
@@ -839,9 +849,9 @@ C Angle between two lines.
             iwhich3=IVLST(3)
             call ang3vtx(XGT(IWHICH1),YGT(IWHICH1),ZGT(IWHICH1),
      &        XGT(IWHICH2),YGT(IWHICH2),ZGT(IWHICH2),XGT(IWHICH3),
-     &        YGT(IWHICH3),ZGT(IWHICH3),ang)
+     &        YGT(IWHICH3),ZGT(IWHICH3),ang3)
             write(outs,'(a,3i3,a,f9.4)') ' Angle between verts ',
-     &        iwhich1,iwhich2,iwhich3,' is ',ang
+     &        iwhich1,iwhich2,iwhich3,' is ',ang3
             call edisp(iuout,outs)
           endif
           MODIFY=.true.
@@ -1116,7 +1126,7 @@ C Show the new point on the current wireframe.
             MODIFY=.TRUE.
             MODBND=.TRUE.
             if(MMOD.ge.8)then
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
               CALL INLNSTG(3)
               call EGRNDR(IER)
             endif
@@ -1164,7 +1174,7 @@ C be a new vertex and update the wireframe.
 C            if(MMOD.ge.8)then
 C              CALL INLNST(1)
 C              izgfoc=0
-C              CALL ADJVIEW(ITRC,IER)
+C              CALL ADJVIEW(IER)
 C              call EGRNDR(IER)
 C            endif
             goto 92
@@ -1363,15 +1373,12 @@ C common block G1.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKGVERT(INPICK,IVLST,TITLE,PROMPT1,PROMPT2,NHELP,IER)
 #include "building.h"
+#include "epara.h"
+#include "prj3dv.h"
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
-      integer CREATE,EDIT
-      PARAMETER (CREATE=1,EDIT=20)
       DIMENSION  item(36)
       DIMENSION  COG1(3),COG2(3),COG3(3),IVLST(MGTV)
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
@@ -1874,7 +1881,6 @@ C show attributes in list.
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT/GTNAME
@@ -2017,6 +2023,7 @@ C It is easy to add a surface at the end of the list.
 C Method checks for minimally linked vertices.
       SUBROUTINE ADDGSUR(ITRC,IWHICH,ACTION,IER)
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -2026,8 +2033,6 @@ C Method checks for minimally linked vertices.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,closex,closey,closez,OK,DOK
@@ -2180,13 +2185,13 @@ C User asked to cancel so retract new information and return.
               return
             endif
             H(1)='A positive rotation is anticlockwise.'
-            ANG=0.
-            CALL EASKR(ANG,' ','Rotation degrees?',
+            ANGR=0.
+            CALL EASKR(ANGR,' ','Rotation degrees?',
      &       -359.0,'W',359.0,'W',0.0,'rotation',IER,1)
           endif
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=X1(IRV)
@@ -2431,8 +2436,8 @@ C IER=1 problem.
       SUBROUTINE EDGVLIST(ITRC,IER)
 #include "building.h"
 #include "epara.h"
+#include "prj3dv.h"
 
-      PARAMETER  (MPL = 200 )
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2442,9 +2447,12 @@ C IER=1 problem.
       COMMON/GTFIL/GTGEOM
       COMMON/GT/GTNAME
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -2453,8 +2461,6 @@ C IER=1 problem.
       COMMON/RAY6G/LINSTYG(MGRT)
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       DIMENSION  COG1(3),COG2(3),COG3(3)
       DIMENSION  XXW(4),YYW(4),ZZW(4)
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
@@ -2465,9 +2471,14 @@ C IER=1 problem.
 
       DIMENSION VERT(36)
       DIMENSION  XX(8),YY(8),ZZ(8),XT(8),YT(8),ZT(8),jvn1(8)
-      CHARACTER VERT*35,KEY*1,HOLD*72,H*72,DESC*48,SN*6
+      CHARACTER VERT*35,KEY*1,HOLD*72,H*72,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -2522,7 +2533,7 @@ C Update display.
         CALL INLNST(1)
         ITVNO=0
         izgfoc=0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         CALL INLNSTG(3)
         call EGRNDR(IER)
         MODIFY=.false.
@@ -2635,12 +2646,12 @@ C Rotate around a point in the surface.
           endif
           H(1)='The rotation is applied with positive'
           H(2)='being anticlockwise. '
-          ANG=0.
-          CALL EASKR(ANG,' ',' Rotation (deg + = anticlockwise) ? ',
+          ANGR=0.
+          CALL EASKR(ANGR,' ',' Rotation (deg + = anticlockwise) ?',
      &       -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
             PI = 4.0 * ATAN(1.0)
-            A=-ANG*PI/180.
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=XX(IRV)
@@ -2671,7 +2682,7 @@ C Reverse the ordering, redraw image and return.
           MODIFY=.TRUE.
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call EGRNDR(IER)
           goto 92
         endif
@@ -2696,7 +2707,7 @@ C Update the image.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call EGRNDR(IER)
 
 C Show these points as small circles...
@@ -2754,7 +2765,7 @@ C Update the image.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           CALL INLNSTG(3)
           call EGRNDR(IER)
         endif
@@ -2889,7 +2900,7 @@ C Get rotation and length and height.
           CALL EASKS(HOLDS,' Surface rotation (deg) length & height: ',
      &      ' ',36,' 180.0 1.0 1.0  ','rotation length height',IER,3)
           K=0
-          CALL EGETWR(HOLDS,K,ANG,0.0,360.0,'W','Rot',IER)
+          CALL EGETWR(HOLDS,K,ANGR,0.0,360.0,'W','Rot',IER)
           CALL EGETWR(HOLDS,K,DDX,0.0,50.0,'W','length',IER)
           CALL EGETWR(HOLDS,K,DDZ,0.0,50.0,'W','width',IER)
 
@@ -2909,8 +2920,8 @@ C Set first coord at origin (lower left) and the unrotated other corners.
 
 C Now rotate around the first coordinate.
           PI = 4.0 * ATAN(1.0)
-          if(ANG.LT.-.01.OR.ANG.GT..01)then
-            A=-ANG*PI/180.
+          if(ANGR.LT.-.01.OR.ANGR.GT..01)then
+            A=-ANGR*PI/180.
             CA=COS(A)
             SA=SIN(A)
             XX1=XXW(1)
@@ -2946,20 +2957,25 @@ C Draw the (perhaps clipped) rectangle.
           DO 302 JB = 1,NB
             IP = IABS(IBPNT)
             CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,0,0)
+            iupdown=0
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
 C Draw succeeding points until last vertex.
             IP1 = IBNXT(IP)
  451        CONTINUE
             CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            isym=0
+            call etplot(AAX,AAY,iupdown,isym)
 
             IP1 = IBNXT(IP1)
             IF(IP1 .NE. IP) GOTO 451
 
 C Complete rec.
             CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-            call etplot(AAX,AAY,1,0)
+            iupdown=1
+            call etplot(AAX,AAY,iupdown,isym)
   302     CONTINUE
    32     CONTINUE
           call forceflush()
@@ -3040,7 +3056,7 @@ C Update the image.
         if(MMOD.ge.8)then
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           CALL INLNSTG(3)
           call EGRNDR(IER)
         endif
@@ -3188,8 +3204,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
 C ****** Routine to update-draw ground during triangulation.
       SUBROUTINE UGRNDR(IVV,NGTG,MSG,IER)
 #include "building.h"
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+#include "prj3dv.h"
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -3197,13 +3212,24 @@ C ****** Routine to update-draw ground during triangulation.
 
       character*(*) msg
       character outs*72
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       CALL startbuffer()
       izgfoc=0
-      CALL ADJVIEW(0,IER)
+      CALL ADJVIEW(IER)
       WRITE(outs,'(A,i3,A,i3)')' Verts: ',IVV,' surfs ',NGTG
-      CALL viewtext(outs,1,0,1)
-      CALL viewtext(msg,2,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
+      iside=2
+      call viewtext(msg,iside,isize,ifont)
 
       if(IVV.eq.0)return
       do 42 iv = 1,IVV
@@ -3226,9 +3252,13 @@ C ****** Routine to update-draw ground during triangulation.
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           if(J.eq.1)then
-            call etplot(COG3(1),COG3(2),0,0)
+            iupdown=0
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
           else
-            call etplot(COG3(1),COG3(2),1,0)
+            iupdown=1
+            isym=0
+            call etplot(COG3(1),COG3(2),iupdown,isym)
           endif
  1100   CONTINUE
 
@@ -3238,7 +3268,9 @@ C Finish off the surface.
         COG1(3)=ZGT(JGVN(igs,1))
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call etplot(COG3(1),COG3(2),1,0)
+        iupdown=1
+        isym=0
+        call etplot(COG3(1),COG3(2),iupdown,isym)
   43  continue
       call forceflush()
       call pauses(1)
@@ -3272,6 +3304,7 @@ C input: vertex list and number of vertices
 C output: triangle list
       SUBROUTINE TRIANG(ier)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3279,11 +3312,10 @@ C output: triangle list
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
-
 
       INTEGER NVSEL, NTSEL, VLIST(90), CLOSE, CENTER, TRIANGLE
       REAL DIST, TRI(12), DX
@@ -3293,6 +3325,11 @@ C output: triangle list
       CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C If there is a ground geometry then check its bounds.
       do 741 iv = 1,NGTV
@@ -3368,7 +3405,9 @@ C If viewpoint or bounds different then initialise viewing paramters.
 C Clear current viewing box.
         CALL startbuffer()
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
-        CALL axiscale(igw,igwh,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
+        igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
         call linescale(igl,Xadd,sca,igb,Yadd,sca)
 
@@ -3559,7 +3598,7 @@ C in IVSEL().
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      REAL CCR(MGRT), CENT(MGRT,2), LARGEANG, ANG
+      REAL CCR(MGRT), CENT(MGRT,2), LARGEANG, ANGT
       REAL ELEV, ANGLE(90)
 
       INTEGER VLIST(90), NVERT, NMK, VMK(90), CENTER, LARGEVERT
@@ -3582,12 +3621,12 @@ C in IVSEL().
           vdx=XGT(VLIST(I))-XGT(CENTER)
           vdy=YGT(VLIST(I))-YGT(CENTER)
           vdz=0.0
-          ANG=0.0
+          ANGT=0.0
           elev=0.0
-          CALL UV2AZ(vdx,vdy,vdz,ANG,elev)
+          CALL UV2AZ(vdx,vdy,vdz,ANGT,elev)
 
-          IF (ANG.GT.LARGEANG) THEN
-            LARGEANG = ANG
+          IF (ANGT.GT.LARGEANG) THEN
+            LARGEANG = ANGT
             LARGEVERT = I
       write(6,*)'Found large angle ',LARGEANG,VLIST(LARGEVERT)
           ENDIF
@@ -3607,17 +3646,17 @@ C 180deg before forming.
 C The triangle has an angle greater than 180deg therefore do not 
 C make it, or less than 0deg
         IF ((K+1).GT.NMK) THEN
-          ANG=ANGLE(K)-ANGLE(1) 
-          ANG=ANG+360.
+          ANGT=ANGLE(K)-ANGLE(1) 
+          ANGT=ANGT+360.
         ELSE
-          ANG=ANGLE(K)-ANGLE(K+1) 
+          ANGT=ANGLE(K)-ANGLE(K+1) 
         ENDIF
 
-        IF (ANG.GE.180.0) THEN
+        IF (ANGT.GE.180.0) THEN
 
 C debug...
           write(6,*)'triangle has angle greater than 180degs '
-        ELSEIF (ang.le.0.0) THEN
+        ELSEIF (angt.le.0.0) THEN
 
 C debug...
           write(6,*)'triangle has angle less than 0degs '

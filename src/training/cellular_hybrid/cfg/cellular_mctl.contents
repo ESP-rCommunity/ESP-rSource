@@ -1,0 +1,624 @@
+Synopsis
+ 
+This is a synopsis of the model Cellular offices with tempered mech vent (via
+flow network) defined in cellular_mctl.cfg generated on Mon Oct 20 02:45:59
+2008. Notes associated with the model are in cellular_mctl.log
+ 
+The model is located at latitude   39.18 with a longitude difference of  -1.67
+from the local time meridian. The year used in simulations is 2001 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate used is: BALTIMORE MD USA iwec 724060 and is held in:
+/usr/esru/esp-r/climate/USA_MD_Baltimore_iwec and uses hour centred solar data.
+An Integrated Performance View has been defined:
+The climatelist was incomplete or missing so the
+IPV details might be incorrect.
+Title : base case model of two adjacent cellular
+Version   : Version cellular_offices_bc
+synopsis:
+:The cellular_bc is for comparison purposes for other model variants
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 5)____________days descrip___
+1st win Tue-06-Feb to Mon-12-Feb   7 cellular_offices_bc 1st winter run
+spring  Tue-17-Apr to Mon-23-Apr   7 cellular_offices_bc spring run
+summer  Tue-03-Jul to Mon-09-Jul   7 cellular_offices_bc summer run
+autumn  Tue-02-Oct to Mon-08-Oct   7 cellular_offices_bc autumn run
+2nd win Tue-20-Nov to Mon-26-Nov   7 cellular_offices_bc 2nd winter run
+ 
+display day Tue-06-Feb.
+display day Tue-17-Apr.
+display day Tue-03-Jul.
+display day Tue-02-Oct.
+display day Tue-20-Nov.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
+  finish 00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
+  days      1        1       1       1       1
+ 
+ Ratios for:  winter spring summer autumn winter
+ heating       8.86   8.83  23.47   8.42   8.94
+ cooling       1.00   1.00  15.68   1.00   1.00
+ lighting     10.00   9.00  16.00   8.00   9.00
+ small power  10.00   9.00  16.00   8.00   9.00
+ fans&pumps   10.00   9.00  16.00   8.00   9.00
+ DHW          10.00   9.00  16.00   8.00   9.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Resultant T (degC)    3   35.40 1.000 1.000 comfort ocup_zones
+Zones: manager_a manager_b coridor
+ 2 Zone db T (degC)    3   35.40 1.000 1.000 ZndbT dbt_zones
+Zones: manager_a manager_b coridor
+ 3 Infiltration (W)    3   35.40 1.000 1.000 Infil infil_zones
+Zones: manager_a manager_b coridor
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 offices        2   27.00 1.000
+Zones: manager_a manager_b
+ 2 other          1    8.40 1.000
+Zones: coridor
+ 
+ 
+Databases associated with the model:
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : ../dbs/cellular.materials
+ constructions          : ../dbs/cellular.constrdb
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1
+ optical properties     : /usr/esru/esp-r/databases/optics.db2
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+zone control tempers inlet air from plant to manager_a & b to 18degC
+ 
+Zones control includes  1 functions.
+strictly controls plant and plant-B temperature to 18degC
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 16.1 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+16.10C.
+   3 18.00 db temp   > flux      free floating
+ 
+ Zone to contol loop linkages:
+ zone ( 1) manager_a    << control  0
+ zone ( 2) manager_b    << control  0
+ zone ( 3) coridor      << control  0
+ zone ( 4) plant        << control  1
+ zone ( 5) plant-B      << control  1
+ 
+ Flow control includes  6 loops.
+Windows open and fan shuts down for manager_a when ambient temp is between 10
+and 21 degC and room temp is more than 21degC .
+ 
+ The sensor for function  1 senses node (1) manager_a
+ The actuator for function  1 is flow connection:   1 man_alow - manager_a via low_win
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  8.00 dry bulb > flow       multi sensor on/off 0.0 3.0 -3.0 0.0 0.0 0.0 25.0 -1.0 0.0
+multi-sensor: normally closed with 3 sensors: For sensor 1 ambient T setpoint 25.00
+inverse action AND sensor 2 ambient T setpoint 10.00 direct action AND sensor 3 sense
+node manager_a setpoint 21.00 direct action.
+   3 17.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  2 senses node (1) manager_a
+ The actuator for function  2 is flow connection:   2 man_ahi - manager_a via high_win
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  8.00 dry bulb > flow       multi sensor on/off 0.0 3.0 -3.0 0.0 0.0 0.0 25.0 -1.0 0.0
+multi-sensor: normally closed with 3 sensors: For sensor 1 ambient T setpoint 25.00
+inverse action AND sensor 2 ambient T setpoint 10.00 direct action AND sensor 3 sense
+node manager_a setpoint 21.00 direct action.
+   3 17.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  3 senses node (1) manager_a
+ The actuator for function  3 is flow connection:   9 plant - manager_a via fan
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  8.00 dry bulb > flow       multi sensor on/off 1.0 3.0 -3.0 0.0 0.0 0.0 25.0 -1.0 0.0
+multi-sensor: normally open with 3 sensors: For sensor 1 ambient T setpoint 25.00
+inverse action AND sensor 2 ambient T setpoint 10.00 direct action AND sensor 3 sense
+node manager_a setpoint 21.00 direct action.
+   3 17.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  4 senses node (1) manager_a
+ The actuator for function  4 is flow connection:   3 man_blow - manager_b via low_win
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  5 senses node (1) manager_a
+ The actuator for function  5 is flow connection:   4 man_bhi - manager_b via high_win
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  6 senses node (1) manager_a
+ The actuator for function  6 is flow connection:  10 plant-B - manager_b via fan
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2001 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  8.00 dry bulb > flow       on / off            -100.0 1.0 1.0
+on/off setpoint -100.00 direct action ON fraction 1.000.
+   3 17.00 dry bulb > flow       on / off            100.0 1.0 0.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+  10 nodes,   8 components,  15 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 manager_a    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
+   2 manager_b    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
+   3 coridor      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   18.300
+   4 man_alow     air   boundary & wind ind   1.0000   0.0000     coef    5.000  azim 180.000
+   5 man_ahi      air   boundary & wind ind   2.9000   0.0000     coef    5.000  azim 180.000
+   6 man_blow     air   boundary & wind ind   1.0000   0.0000     coef    5.000  azim 180.000
+   7 man_bhi      air   boundary & wind ind   2.9000   0.0000     coef    5.000  azim 180.000
+   8 corid_left   air   boundary & wind ind   1.5000   0.0000     coef    9.000  azim 270.000
+   9 plant        air   internal & unknown    1.2000   20.000     (-)     0.000  vol   25.000
+  10 plant-B      air   internal & unknown    1.2000   20.000     (-)     0.000  vol   60.000
+ 
+ Component    Type C+ L+ Description
+ 
+ door_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0100 crack length (m)  1.000
+ 
+ the_crack     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0100 crack length (m)  1.000
+ 
+ window_cr     120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  3.000
+ 
+ low_win       110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.300
+ 
+ high_win      110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.350
+ 
+ small_grill   110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.200
+ 
+ rtrn_grill    110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.350
+ 
+ fan            30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)  0.60000E-01
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 man_alow      0.000   manager_a    -0.500   low_win         1.000   1.000
+    2 man_ahi       0.000   manager_a     1.400   high_win        2.900   2.900
+    3 man_blow      0.000   manager_b    -0.500   low_win         1.000   1.000
+    4 man_bhi       0.000   manager_b     1.400   high_win        2.900   2.900
+    5 manager_a    -1.400   coridor      -1.400   door_cr         0.100   0.100
+    6 manager_b    -1.400   coridor      -1.400   door_cr         0.100   0.100
+    7 manager_a    -1.400   coridor      -1.400   rtrn_grill      0.100   0.100
+    8 manager_b    -1.400   coridor      -1.400   rtrn_grill      0.100   0.100
+    9 plant         0.150   manager_a    -0.150   fan             1.350   1.350
+   10 plant-B       0.150   manager_b    -0.150   fan             1.350   1.350
+   11 corid_left    0.000   coridor       0.000   small_grill     1.500   1.500
+   12 coridor       0.000   plant         0.000   rtrn_grill      1.500   1.200
+   13 coridor       0.000   plant-B       0.000   rtrn_grill      1.500   1.200
+   14 corid_left    0.000   plant         0.000   the_crack       1.500   1.200
+   15 corid_left    0.000   plant-B       0.000   the_crack       1.500   1.200
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+manager_a    -> manager_a
+manager_b    -> manager_b
+coridor      -> coridor
+plant        -> plant
+plant-B      -> plant-B
+ 
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
+ 2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
+ 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+ 4 plant           0.3   6     3.2     0.0     1.0  plant describes HVAC plant for ideal control
+ 5 plant-B         0.3   6     3.2     0.0     1.0  plant-B describes plant to heat manager_b
+   all           100.   52    177.     29.     37.
+ 
+ 
+ Zone manager_a ( 1) is composed of 13 surfaces and 30 vertices.
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
+ manager describes cellular office on left
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & avg U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ 
+ A summary of the surfaces in manager_a( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
+ 11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
+ 12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+ 13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: manager_a
+ 
+Notes:
+The office has one occupant during office hours, lighting at 10W/m2
+and one computer in the room. .
+Number of weekdays     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone manager_b ( 2) is composed of 13 surfaces and 30 vertices.
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
+ manager_b describes right office
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & avg U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ 
+ A summary of the surfaces in manager_b( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
+ 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
+ 12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+ 13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: manager_b
+ 
+Notes:
+manager b has the same profile as manager a . . .
+Number of weekdays     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone coridor ( 3) is composed of 14 surfaces and 32 vertices.
+ It encloses a volume of 18.3m^3 of space, with a total surface
+ area of 54.8m^2 & approx floor area of 8.42m^2
+ coridor describes passage adjacent to offices
+ 
+ A summary of the surfaces in coridor( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.00     90.   0. right        OPAQUE   VERT -     door         ||< identical environment
+  2  18.3      0.   0. wall         OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  3  3.00    270.   0. left         OPAQUE   VERT -     door         ||< identical environment
+  4  6.10      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  5  6.10      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  6  2.32    180.   0. door         OPAQUE   VERT -     door         ||< door:manager_a
+  7  1.28    180.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:manager_a
+  8  0.920   180.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager_a
+  9  4.48    180.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager_a
+ 10  0.920   180.   0. part_frameb  OPAQUE   VERT -     insul_frame  ||< part_frame:manager_b
+ 11  2.32    180.   0. door_b       OPAQUE   VERT -     door         ||< door:manager_b
+ 12  1.28    180.   0. ptn_coridb   OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:manager_b
+ 13  4.48    180.   0. part_glazb   DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager_b
+ 14  0.300   180.   0. filler       OPAQUE   VERT -     gyp_gyp_ptn  ||< adiabatic
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: coridor
+ 
+Notes:
+half a person and 10W/m2 lighting
+Number of weekdays     casual gains=  6
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
+Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
+Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
+Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  6
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
+Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
+Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
+Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  6
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
+Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
+Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
+Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone plant ( 4) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.300m^3 of space, with a total surface
+ area of 3.20m^2 & approx floor area of 1.000m^2
+ plant describes HVAC plant for ideal control
+ 
+ A summary of the surfaces in plant( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  0.300     0.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  2  0.300   270.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  3  0.300   180.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  4  0.300    90.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  5  1.000     0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< adiabatic
+  6  1.000     0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< adiabatic
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: plant
+ 
+Notes:
+no operations notes (yet)
+Number of weekdays     casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone plant-B ( 5) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 0.300m^3 of space, with a total surface
+ area of 3.20m^2 & approx floor area of 1.000m^2
+ plant-B describes plant to heat manager_b
+ 
+ A summary of the surfaces in plant-B( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  0.300     0.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  2  0.300   270.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  3  0.300   180.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  4  0.300    90.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< adiabatic
+  5  1.00      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< adiabatic
+  6  1.00      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< adiabatic
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: plant-B
+ 
+Notes:
+no operations notes (yet)
+Number of weekdays     casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 37.420m2, wall area is 7.3600m2, window area is 10.640m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ There is 18.000m2 of outside surface area, 18.000m2 of which is vertical.
+ 
+ Outside walls are 19.669 % of floor area & avg U of 0.461 & UA of 3.3916
+ Glazing is 28.434 % of floor & 59.111 % facade with avg U of 2.811 & UA of 29.905
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: extern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick
+    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 Glasswool
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 Aerated conc block
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ Total area of extern_wall is      6.40
+ 
+ Details of opaque construction: insul_frame
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ Total area of insul_frame is     11.04
+ 
+ Details of opaque construction: door
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ Total area of door is     15.28
+ 
+ Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of dbl_glz is     28.56
+ 
+ Details of opaque construction: susp_flr_re
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ Total area of susp_flr_re is     33.10
+ 
+ Details of opaque construction: ceiling
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ Total area of ceiling is     33.10
+ 
+ Details of opaque construction: gyp_blk_ptn
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 Block inner (3% mc)
+    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ Total area of gyp_blk_ptn is     18.30
+ 
+ Details of opaque construction: gyp_gyp_ptn
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ Total area of gyp_gyp_ptn is     59.42

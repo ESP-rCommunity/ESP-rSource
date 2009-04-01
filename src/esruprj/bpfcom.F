@@ -1273,6 +1273,7 @@ C List a building/plant/flow/global/optical control.  If II = 0 then
 C list out the zone/loop associations. 
       SUBROUTINE LSTCNTL(itru,icfoc,II,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
       
@@ -1281,9 +1282,8 @@ C list out the zone/loop associations.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      character outs*124,SSTR*72,zname*12,zdesc*64
+      character outs*124,SSTR*72
 
 C List linkages with zones if II = 0.
       if(II.eq.0)then

@@ -169,8 +169,10 @@ C IEEE callback (Solaris)
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
@@ -272,7 +274,8 @@ C Name of current application
       
       character cAppName*12
       character sTimeout*72
-      integer iTimeoutFlag      
+      integer iTimeoutFlag
+      integer iverb     ! verbosity passed on command line
 
       LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
@@ -407,7 +410,9 @@ C all console write is rerouted to the log file
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
       else
-        call parsim(MODL,iappw,iappx,iappy,inf,browsing,sps,aut,actf)
+        call parsim(iverb,MODL,iappw,iappx,iappy,inf,browsing,sps,aut,
+     &    actf)
+        itrc=iverb    ! set trace after call to parsim
       endif
 
 C Detect if the simulator was started up from the project manager
@@ -538,11 +543,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           CALL win3d(menuchw,16,16,4,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call opencpw
           call opensetup
           call updcapt(1)
         elseif(iglib.eq.2)then
           CALL win3d(menuchw,16,16,5,4,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         endif
         call setzscale()
         mdispl=0
@@ -700,6 +709,8 @@ C Increment input flag if no input data errors detected.
               call edisp(iuout, ' ')
               call edisp(iuout,
      &              'Fatal error: Model was not scanned correctly')
+              call pauses(3)   ! pause for 2 seconds then abort program.
+              call epagend
               stop 
             endif 
             if(dll)then
@@ -726,8 +737,13 @@ C Increment input flag if no input data errors detected.
                 dllmesg='IER1 flag set while scanning the model.'
                 ier=2
                 return
+              else
+                call usrmsg('IER1 flag set while scanning the model.',
+     &            ' ','W')
+                call pauses(2)   ! pause for 2 seconds then abort program.
+                CALL EPAGEND
+                STOP
               endif
-              STOP
             endif
           endif
         else
@@ -1138,6 +1154,7 @@ C Close moisture result library.
         CALL EPAGEND
         if( dll ) return
 
+        call epagend
         STOP
       else
 
@@ -1165,6 +1182,7 @@ C Error.
         CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
         if( dll ) return
+        call epagend
         STOP
       ENDIF
 
@@ -1182,7 +1200,7 @@ C Dummy routines (needed for call back from c).
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

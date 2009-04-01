@@ -574,7 +574,7 @@ theVisual = XDefaultVisual(theDisp, theScreen);
 theCmap   = DefaultColormap(theDisp, theScreen);
 rootW     = RootWindow(theDisp,theScreen);
 dispDEEP  = DisplayPlanes(theDisp,theScreen);
-mdepth = dispDEEP;
+mdepth = (long int) dispDEEP;
 
 /* set colours for the border, background and forground */
 bd = WhitePixel(theDisp,theScreen);
@@ -961,7 +961,7 @@ char *act;  /* single character passed */
 long int *n;
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -1014,7 +1014,7 @@ long int *n;	/* index as in winscl_ */
 long int *xcolid;	/* index of colour used by X */
 {
  int ic;
- ic = *n;
+ ic = (int) *n;
 /* sets the current forground colour n depending on which active colour set being used */
   if(*act == 'g') {
      if (ic >= 0 && ic <= ngscale ) {
@@ -5900,8 +5900,8 @@ void edline_(x1,y1,x2,y2,ipdis)
   }
 
   ldash = *ipdis;
-  ix = *x1;         /* first point in case of short line */
-  iy = *y1;
+  ix = (int) *x1;         /* first point in case of short line */
+  iy = (int) *y1;
   xx1 = (float) *x1;  xx2 = (float) *x2;  /* use floats for calcs */
   yy1 = (float) *y1;  yy2 = (float) *y2;
 
@@ -5959,8 +5959,8 @@ void edwline_(x1,y1,x2,y2)
     fprintf(wwc,"%ld %ld %ld %ld\n",*x1,*y1,*x2,*y2);
   }
 
-  ix = *x1;  iy = *y1;     /* convert to local variables */
-  jx = *x2;  jy = *y2;
+  ix = (int) *x1;  iy = (int) *y1;     /* convert to local variables */
+  jx = (int) *x2;  jy = (int) *y2;
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,ix,iy,jx,jy);
   return;
@@ -5980,8 +5980,8 @@ void eswline_(x1,y1,x2,y2)
     fprintf(wwc,"*eswline\n");
     fprintf(wwc,"%ld %ld %ld %ld\n",*x1,*y1,*x2,*y2);
   }
-  ix = *x1;  iy = *y1;     /* convert to local variables */
-  jx = *x2;  jy = *y2;
+  ix = (int) *x1;  iy = (int) *y1;     /* convert to local variables */
+  jx = (int) *x2;  jy = (int) *y2;
   XSetLineAttributes(theDisp,theGC,width,LineSolid,CapNotLast,JoinMiter);
   XDrawLine(theDisp,win,theGC,ix,iy,jx,jy);	/* draw the line */
   return;
@@ -6022,11 +6022,11 @@ void edash_(x1,y1,x2,y2,ipdis)
     fprintf(wwc,"%ld %ld %ld %ld %ld\n",*x1,*y1,*x2,*y2,*ipdis);
   }
 
-  ldash = *ipdis;
-  ix1 = ixl = *x1;         /* give values to local variables */
-  iy1 = iyl = *y1;
-  ix2 = *x2;
-  iy2 = *y2;
+  ldash = (int) *ipdis;
+  ix1 = ixl = (int) *x1;         /* give values to local variables */
+  iy1 = iyl = (int) *y1;
+  ix2 = (int) *x2;
+  iy2 = (int) *y2;
 
   if(ldash == 0) {    /* clear dash_on & dash_rem and return */
     dash_on = 0;
@@ -6129,11 +6129,11 @@ void echain_(x1,y1,x2,y2,ipdis)
     fprintf(wwc,"%ld %ld %ld %ld %ld\n",*x1,*y1,*x2,*y2,*ipdis);
   }
 
-  ldash = *ipdis;
-  ix1 = ixl = *x1;         /* give values to local variables */
-  iy1 = iyl = *y1;
-  ix2 = *x2;
-  iy2 = *y2;
+  ldash = (int) *ipdis;
+  ix1 = ixl = (int) *x1;         /* give values to local variables */
+  iy1 = iyl = (int) *y1;
+  ix2 = (int) *x2;
+  iy2 = (int) *y2;
 
   if(ldash == 0) {    /* clear dash_on & dash_rem and return */
     dash_on = 0;
@@ -6314,7 +6314,7 @@ void egrbox_(x,y,dx,dy,gp)
   yo = *y;     /* origin y coord */
   dx1 = *dx;   /* delta width (ie. x axis) */
   dy1 = *dy;   /* delta height (ie. y axis) */
-  gpo = *gp;   /* grey step as in gscale */
+  gpo = (int) *gp;   /* grey step as in gscale */
 
 /* convert into pixels and move to origin*/
   u2pixel_(&xo,&yo,&lix,&liy);
@@ -6412,7 +6412,7 @@ void ecirarc_(x,y,ths,thf,r,num,di)
   yo   = *y;    /* start of arc y coord */
   ths1 = *ths;  /* angle (deg between positive x axis and start of arc */
   thf1 = *thf;  /* angle (deg between positive x axis and end of arch */
-  nseg = *num;  /* straight line segment resolution */
+  nseg = (int) *num;  /* straight line segment resolution */
   di1  = *di;   /* line type 0. solid, > 0. dashed shading */
   radius = *r;  /* radius of arc in user units  */
 
@@ -6473,10 +6473,10 @@ void ecirc_(x,y,rad,operation)
   long int *x, *y, *rad, *operation;
 {
   int x1,y1,rad1,op,ul,ut,boxdim;
-  x1 = *x;
-  y1 = *y;
-  rad1 = *rad;
-  op = *operation;
+  x1 = (int) *x;
+  y1 = (int) *y;
+  rad1 = (int) *rad;
+  op = (int) *operation;
   ul = x1 - rad1; /* left edge */
   ut = y1 - rad1; /* top edge */
   boxdim = rad1 + rad1;
@@ -6509,12 +6509,12 @@ void earc_(x,y,rad,ang1,ang2,operation)
   long int *x, *y, *rad, *operation, *ang1, *ang2;
 {
   int x1,y1,rad1,op,ul,ut,boxdim,an1,an2;
-  x1 = *x;
-  y1 = *y;
-  rad1 = *rad;
-  op = *operation;
-  an1 = *ang1;
-  an2 = *ang2;
+  x1 = (int) *x;
+  y1 = (int) *y;
+  rad1 = (int) *rad;
+  op = (int) *operation;
+  an1 = (int) *ang1;
+  an2 = (int) *ang2;
   ul = x1 - rad1; /* left edge */
   ut = y1 - rad1; /* top edge */
   boxdim = rad1 + rad1;
@@ -6543,44 +6543,54 @@ void earc_(x,y,rad,ang1,ang2,operation)
  whereas line drawing is 0,0 in the lower left).
 */
 
-void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
-  long int *gw, *gh;
-  float *xmn, *xmx, *ymn, *ymx, *xsc, *ysc, *sca, *xadd, *yadd;
+void axiscale_(long int* gw,long int* gh,float* xmn,float* xmx,float* ymn,
+	float* ymx,float* xsc,float* ysc,float* sca,float* xadd,float* yadd)
 {
+  float axgw, axgh, axxmn, axxmx, axymn, axymx, axxsc, axysc, axsca, axxadd, axyadd;
+
+/* Cast to local variables */
+   axgw=(float)*gw; axgh=(float)*gh;
+   axxmn=(float)*xmn; axxmx=(float)*xmx;
+   axymn=(float)*ymn; axymx=(float)*ymx;
+   
 /* Derive factors for horizontal axis. */
-    if (*xmn < 0.0 && *xmx >= 0.0) {
-	*xsc = (float)*gw / (*xmx + fabs(*xmn));
-	*xadd = fabs(*xmn);
-    } else if (*xmn < 0.0 && *xmx <= 0.0) {
-	*xsc = (float)*gw / (fabs(*xmn) - fabs(*xmx));
-	*xadd = fabs(*xmn);
-    } else if (*xmn > 0.0 && *xmx > 0.0) {
-	*xsc = (float)*gw / (*xmx - *xmn);
-	*xadd = -(*xmn);
-    } else if ((*xmn == 0.0) && *xmx > 0.0) {
-	*xsc = (float)*gw / (*xmx - *xmn);
-	*xadd = 0.0;
+    if (axxmn < 0.0 && axxmx >= 0.0) {
+	axxsc = axgw / (axxmx + (-1.0 * axxmn));
+	axxadd = (-1.0 * axxmn);
+    } else if (axxmn < 0.0 && axxmx <= 0.0) {
+	axxsc = axgw / ((-1.0 * axxmn) - (-1.0 * axxmx));
+	axxadd = (-1.0 * axxmn);
+    } else if (axxmn > 0.0 && axxmx > 0.0) {
+	axxsc = axgw / (axxmx - axxmn);
+	axxadd = -(axxmn);
+    } else if ((axxmn == 0.0) && axxmx > 0.0) {
+	axxsc = axgw / (axxmx - axxmn);
+	axxadd = 0.0;
     }
 /* Derive factors for vertical axis. */
-    if (*ymn < 0.0 && *ymx >= 0.0) {
-	*ysc = (float)*gh / (*ymx + fabs(*ymn));
-	*yadd = fabs(*ymn);
-    } else if (*ymn < 0.0 && *ymx <= 0.0) {
-	*ysc = (float)*gh / (fabs(*ymn) - fabs(*ymx));
-	*yadd = fabs(*ymn);
-    } else if (*ymn > 0.0 && *ymx > 0.0) {
-	*ysc = (float)*gh / (*ymx - *ymn);
-	*yadd = -(*ymn);
-    } else if ((*ymn == 0.0) && *ymx > 0.0) {
-	*ysc = (float)*gh / (*ymx - *ymn);
-	*yadd = 0.0;
+    if (axymn < 0.0 && axymx >= 0.0) {
+	axysc = axgh / (axymx + (-1.0 * axymn));
+	axyadd = (-1.0 * axymn);
+    } else if (axymn < 0.0 && axymx <= 0.0) {
+	axysc = axgh / ((-1.0 * axymn) - (-1.0 * axymx));
+	axyadd = (-1.0 * axymn);
+    } else if (axymn > 0.0 && axymx > 0.0) {
+	axysc = axgh / (axymx - axymn);
+	axyadd = -(axymn);
+    } else if ((axymn == 0.0) && axymx > 0.0) {
+	axysc = axgh / (axymx - axymn);
+	axyadd = 0.0;
     }
+    *xsc = axxsc;  /* cast from local to parameters */
+    *ysc = axysc;
+    *xadd = axxadd;
+    *yadd = axyadd;
 /*
  Choose single scale so will have correct aspect ratio for site plans etc.
 */
-    *sca = *xsc;
-    if (*ysc < *xsc) {
-	*sca = *ysc;
+    *sca = axxsc;
+    if (axysc < axxsc) {
+	*sca = axysc;
     }
 
 /* If echo send parameters to wwc file */
@@ -6589,6 +6599,8 @@ void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
      fprintf(wwc,"%ld %ld %f %f %f %f %f %f %f %f %f \n",
 	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd);
     }
+/*    fprintf(stderr,"axiscale %ld %ld %f %f %f %f %f %f %f %f %f \n",
+	*gw,*gh,*xmn,*xmx,*ymn,*ymx,*xsc,*ysc,*sca,*xadd,*yadd);  */
   return;
 } /* axscale_ */
 
@@ -6604,9 +6616,8 @@ void axiscale_(gw,gh,xmn,xmx,ymn,ymx,xsc,ysc,sca,xadd,yadd)
    ladd & badd are offsets in user units for each axis so that
      various data ranges can be acommodated (see axiscale).
 */
-void linescale_(loff,ladd,lscale,boff,badd,bscale)
- float *ladd, *lscale, *badd, *bscale;
- long int *loff, *boff;
+void linescale_(long int* loff,float* ladd,float* lscale,long int* boff,float* badd,
+	float* bscale)
  {
 /* static variables defined @ beginning of wwlib.c */
    x_off = *loff;
@@ -6651,11 +6662,11 @@ void dinterval_(v1,v2,dv,ndec,mode)
     int ix,nd,mde;
     double dx, dz;
 
-    mde = *mode;
+    mde = (int) *mode;
 
     if (mde == 0) {
 	vv = *v2 - *v1;
-	v = fabs(vv);
+	v = fabs(vv);  /* ?? fabs((double)vv) */
 	x = log10(v);
 	ix = x;
         if (x < 0.0) ix=ix-2;
@@ -6711,7 +6722,7 @@ void labelstr(n,val,WticC,sstr)
 {
   int idum, n1, ticc;
   float val1;
-  n1 = *n;
+  n1 = (int) *n;
   val1 = *val;
 
   if (n1==0){
@@ -6775,7 +6786,8 @@ void vrtaxis_(ymn,ymx,offl,offb,offt,yadd,sca,mode,side,msg,mlen)
     fprintf(wwc,"%s\n",msg2);
  }
 
- ofl = *offl; ofb = *offb; oft = *offt; mde = *mode; sid = *side;
+ ofl = (int) *offl; ofb = (int) *offb; oft = (int) *offt;
+ mde = *mode; sid = (int) *side;
 
 /* Define tic intervals (DDX data increment, NY decimal places). */
  dinterval_(ymn, ymx, &ddy, &ny, &mde);
@@ -6928,7 +6940,7 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
    fprintf(wwc,"%s\n",msg2);
  }
 
- ofl = *offl; ofr = *offr; ofb = *offb; mde = *mode;
+ ofl = (int) *offl; ofr = (int) *offr; ofb = (int) *offb; mde = *mode;
 
 /* Define tic intervals (DDX data increment, NX num decimal places). */
  dinterval_(xmn, xmx, &ddx, &nx, &mde);
@@ -6955,12 +6967,12 @@ void horaxis_(xmn,xmx,offl,offr,offb,xadd,sca,mode,msg,mlen)
  nintvl = rintvl;
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
-   if(*xmn < 0. && fabs(resid) > 0.0001) {
+   if(*xmn < 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        XDrawLine(theDisp,win,theGC,ofl,ofb,ix,iy);
-   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
@@ -7061,8 +7073,8 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
    fprintf(wwc,"%s\n",msg2);
  }
 
- ofl = *offl; ofr = *offr; ofb = *offb; mde = *mode;
- iind = *ind; iidiv = *idiv; iisjday = *isjday;
+ ofl = (int) *offl; ofr = (int) *offr; ofb = (int) *offb; mde = *mode;
+ iind = (int) *ind; iidiv = (int) *idiv; iisjday = (int) *isjday;
 
 /* Define tic intervals (DDX data increment, NX num decimal places). */
  dinterval_(xmn, xmx, &ddx, &nx, &mde);
@@ -7109,12 +7121,12 @@ void horaxishdw_(xmn,xmx,offl,offr,offb,xadd,sca,mode,ind,idiv,isjday,msg,mlen)
  nintvl = rintvl;
  if (mde == 1) {
    resid = *xmn - (int) *xmn;
-   if(*xmn < 0. && fabs(resid) > 0.0001) {
+   if(*xmn < 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) *xmn;
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
        XDrawLine(theDisp,win,theGC,ofl,ofb,ix,iy);
-   } else if(*xmn > 0. && fabs(resid) > 0.0001) {
+   } else if(*xmn > 0. && fabs(resid) > 0.0001) {  /* ?? fabs((double)resid) */
        xticv = (int) (*xmn + ddx);
        ix = ofl + (int) (((float) xticv + *xadd) * *sca);
        iy = ofb;
@@ -7309,14 +7321,14 @@ int		len_title;
   unsigned int start_height,start_width;
 
   if(m_lines == 0)return;	/* don't bother if no menu */
-  iw = *iwth;  /* character width to display */
+  iw = (int) *iwth;  /* character width to display */
 
-  xb = *impx;  yb = *impy; pflg = *ipflg;
+  xb = (int) *impx;  yb = (int) *impy; pflg = (int) *ipflg;
   f_to_c_l(titleptr,&len_title,&lt1);  /* get actual width of title xrt_height*/
   changed_font = 0; label_font = 0;
   saved_font = use_font = current_font; /* save existing font  */
-  *irpx = 0;
-  *irpy = 0;
+  *irpx = (long int) 0;
+  *irpy = (long int) 0;
 
 /* remember position and size of the whole module (so as to detect changes) */
   XGetWindowAttributes(theDisp,win,&wa);
@@ -7431,7 +7443,7 @@ int		len_title;
              iy = menubx.b_top + ((i + 1) * (f_height+2)) + 5;
              hl_box.b_bottom = iy + 3;
              hl_box.b_top = hl_box.b_bottom - (f_height+4);
-/* debug     fprintf(stderr,"m_list %s %d %d %d %d\n",m_list[i],i,iy,hl_box.b_bottom,hl_box.b_top);  */
+/* debug     fprintf(stderr,"m_list %s %d %d %d %d\n",m_list[i],i,iy,hl_box.b_bottom,hl_box.b_top); */
              xbox(hl_box,fg,ginvert, BMCLEAR | BMNOT );        /* grey item */
              XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
              XDrawString(theDisp,win,theGC,menubx.b_left+10,iy,m_list[i],iw);  /* print text */
@@ -7439,20 +7451,20 @@ int		len_title;
              XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
              Timer(300);
              xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
-             *ino = i +1;  /* compensate for c starting at zero */
-             *uresp = 0;
+             *ino = (long int) i +1;  /* compensate for c starting at zero */
+             *uresp = (long int) 0;
    	     break;
            }
          } else if (!xboxinside(gmenubx,x,y)){   /* outside menu - check aux menu */
            no_valid_event = FALSE;
 /* debug   fprintf(stderr,"outside menu at x %d y %d\n",x,y); */
-           *irpx=x;
-           *irpy=y;
+           *irpx=(long int) x;
+           *irpy=(long int) y;
            iaux = aux_menu((XEvent *) &event);
            i = OFFEND;
            if ( iaux == 5 ) {
 /* debug     fprintf(stderr,"Inside graphics display x %d y %d button %d\n",x,y,butid); */
-             *uresp=butid;    /* Set to id of button pressed */
+             *uresp=(long int) butid;    /* Set to id of button pressed */
            }
            break;
          }
@@ -7497,7 +7509,7 @@ int		len_title;
         if(blen > 0) {
           if (buf[0] == '\r' || buf[0] == '\n' ) {
             no_valid_event = FALSE;
-            *uresp = 0;
+            *uresp = (long int) 0;
             xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear help box */
    	    break;
           } else if (buf[0] == '\010') {  /*  buf[0] is BS  */
@@ -7523,12 +7535,12 @@ int		len_title;
 
 /* user has pressed a key equivalent to an item first character, confirm by hilighting item */
                 no_valid_event = FALSE;
-                *ino = index+1;   /* add 1 to compensate for c starting at zero */
-                *uresp = 0;
+                *ino = (long int) index + (long int) 1;   /* add 1 to compensate for c starting at zero */
+                *uresp = (long int) 0;
                 iy = menubx.b_top + ((index + 1) * (f_height+2)) + 5;
                 hl_box.b_bottom = iy + 3;
                 hl_box.b_top = hl_box.b_bottom - (f_height+4);
-/* debug        fprintf(stderr,"m_list %s %d %d\n",m_list[index],index,iy);  */
+/* debug        fprintf(stderr,"m_list %s %d %d\n",m_list[index],index,iy); */
                 xbox(hl_box,fg,ginvert, BMCLEAR | BMNOT );        /* invert box */
                 XSetForeground(theDisp,theGC, white); XSetBackground(theDisp,theGC, ginvert);
                 XDrawString(theDisp,win,theGC,menubx.b_left+10,iy,m_list[index],iw);  /* print text */
@@ -7542,7 +7554,7 @@ int		len_title;
    	    break;
           }
         } else {
-/* debug  fprintf(stderr,"track_edit_str nothing in buf \n");  */
+/* debug  fprintf(stderr,"track_edit_str nothing in buf \n"); */
         }
         break;
     }
@@ -8324,14 +8336,14 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
  long int eyex,eyey,sym,sz;  /* centre for image symbols and symbol index and size */
  long int saved_font;
  int bh,hdl;
- int oocfgz = *icfgz;	/* toggle for zones button */
- int iioocfgz = *iicfgz;	/* toggle for zones images */
- int oocfgn = *icfgn;	/* toggle for network button */
- int iioocfgn = *iicfgn;	/* toggle for network images */
- int oocfgc = *icfgc;	/* toggle for control button */
- int iioocfgc = *iicfgc;	/* toggle for control images */
- int oocfgdfn = *icfgdfn;	/* toggle for domain button */
- int iioocfgdfn = *iicfgdfn;	/* toggle for domain images */
+ int oocfgz = (int) *icfgz;	/* toggle for zones button */
+ int iioocfgz = (int) *iicfgz;	/* toggle for zones images */
+ int oocfgn = (int) *icfgn;	/* toggle for network button */
+ int iioocfgn = (int) *iicfgn;	/* toggle for network images */
+ int oocfgc = (int) *icfgc;	/* toggle for control button */
+ int iioocfgc = (int) *iicfgc;	/* toggle for control images */
+ int oocfgdfn = (int) *icfgdfn;	/* toggle for domain button */
+ int iioocfgdfn = (int) *iicfgdfn;	/* toggle for domain images */
  ocfgz = oocfgz; ocfgn = oocfgn; ocfgc = oocfgc; ocfgdfn = oocfgdfn; /* remember toggles */
  iiocfgz = iioocfgz; iiocfgn = iioocfgn; iiocfgc = iioocfgc; iiocfgdfn = iioocfgdfn; /* remember images */
 
@@ -8596,13 +8608,14 @@ void openmouse_(mseb1,mseb2,mseb3,len1,len2,len3)
   return;
 } /* openmouse */
 
-/* notify pixel position of right edge of graphic display */
-void findrtb_(right,top,bottom)
-  long int *right, *top, *bottom;
+/* notify pixel position of right edge of graphic display
+   note that the fbb box structure contains int data types
+   and these need to be explicitly cast to long int */
+void findrtb_(long int* right,long int* top,long int* bottom)
 {
-  *right = fbb.b_right;
-  *top = fbb.b_top;
-  *bottom = fbb.b_bottom;
+  *bottom = (long int) fbb.b_bottom;
+  *right = (long int) fbb.b_right;
+  *top = (long int) fbb.b_top;
   return;
 }
 

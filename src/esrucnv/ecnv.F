@@ -30,6 +30,7 @@ C Portions of the DXF translation can be traced back (eventually)
 C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
@@ -75,12 +76,10 @@ C ESP-r commons.
       common/C3F/LCNN
       COMMON/C6/INDCFG
       common/CFGV/icfgv
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -96,16 +95,14 @@ C bSHOCCed     - logical flag whether project has SHOCC input
 C bZoneSHOCCed - logical array whether zones have SHOCC input
 C SHOCCshlFile - path to SHOCC .shl file for SHOCC'd project library
 C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
-      common/SHOCCcfg/bSHOCCed,SHOCCshlFile,bZoneSHOCCed(mcom),
-     &                SHOCCshzFile(mcom)
+C      common/SHOCCcfg/bSHOCCed,SHOCCshlFile,bZoneSHOCCed(mcom),
+C     &                SHOCCshzFile(mcom)
+C      logical bSHOCCed,bZoneSHOCCed
+C      character SHOCCshlFile*72,SHOCCshzFile*72
      
 C Name of current application
       common/APPNAME/cAppName
-      
       character cAppName*12     
-     
-      logical bSHOCCed,bZoneSHOCCed
-      character SHOCCshlFile*72,SHOCCshzFile*72
 
 C Material data array.
       real matver
@@ -119,7 +116,7 @@ C Material data array.
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
-      character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*144
+      character RZNAME*24,head*4,ZN*12,LTMP*144
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character path*72,upath*72,LCNN*72
       character upgcfg*72
@@ -133,6 +130,10 @@ C Material data array.
       character ltobs*72,outs*248
       logical OPND,match,doobs,unixok
 
+C Data types for parcnv call.
+      integer itrc,incobs,ichop,itmprm,iverb
+      real conv
+ 
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
 C iotmp2 for miscel output files. Iotobs is obstruction block
@@ -152,15 +153,15 @@ C storage.
       IUIN=5
       LIMTTY=20
       LIMIT=20
-      itrc=1    ! set trance on prior to call to parcnv
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
       cAppName = 'encv'
 
 C Get command line parameters.
-      call parcnv(itrc,conv,incobs,ichop,itmprm,iformat,oformat,inf,ouf,
-     &  upgcfg)
+      call parcnv(iverb,conv,incobs,ichop,itmprm,iformat,oformat,inf,
+     &  ouf,upgcfg)
+      itrc=iverb    ! set trace after call to parcnv
       xincr=0        
       yincr=0        
       zincr=0        
@@ -184,6 +185,7 @@ C Get command line parameters.
       radians = PI/180.
       minseg = 6
       dxfconv = 1.0
+      layuse(1)=0
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -485,7 +487,10 @@ C of LSNAM and then jump to 28 to allow data from DXF file
 C to be scanned.
           do 27 i=1,100
             read(ioout,'(A)') buffer
-            write(6,*) buffer(1:lnblnk(buffer))
+            if(itrc.gt.1)then
+              write(outs,*) buffer(1:lnblnk(buffer))
+              call edisp(iuout,outs)
+            endif
             if(buffer(1:10).eq.'* Building') then
               write(ioout,'(A)',IOSTAT=IOS,ERR=2)LSNAM(1:lnblnk(LSNAM))
               goto 28
@@ -499,46 +504,52 @@ C to be scanned.
   28  continue   ! we found the * Building line.
 
 C The general control part of the program
+      if(itrc.gt.1)then
+        call edisp(iuout,' ')
+        call edisp(iuout,'Start of debug of DXF file contents...')
+      endif
       instring = 'start'
  9007 if (instring(1:3).ne.'EOF')then
-        call readgc
+        call readgc(itrc)
         if (instring(1:4).eq.'HEAD') then
 
 C HEAD section. Note if header section has a number of entries then
 C keep reading until ENDSEC is read.
+          if(itrc.gt.1) call edisp(iuout,' ')
           if(itrc.gt.0)call edisp(iuout,' Processing dxf head...')
  9002     if (instring(1:6).ne.'ENDSEC')then
             if (instring(2:5).eq.'SURF') then
-              call readgc
+              call readgc(itrc)
               minseg=innum
             else
               read(ioin,'(A)') instring
               lineno = lineno + 1
               goto  9002
             endif
-            call readgc
+            call readgc(itrc)
             goto  9002
           endif
           if(itrc.gt.0)call edisp(iuout, ' Head processed...')
         elseif (instring(1:4).eq.'TABL') then
 
-C TABLE section.
+C TABLE section. Read until we find ENDSEC.
+          if(itrc.gt.1) call edisp(iuout,' ')
           if(itrc.gt.0)call edisp(iuout, ' Tables being processed....')
  9008     if (instring(1:6).ne.'ENDSEC')then
             if (gcode.eq.2 .and. instring(:5).eq.'LAYER') then
               ilay = 0
-              call readgc
+              call readgc(itrc)
  9009         if (gcode.ne.0 .or.
      &           (gcode.eq.0 .and. instring(1:6).ne.'ENDTAB')) then
                 if (gcode.eq.2) then
-                  call getlay(ilay)
+                  call getlay(ilay,itrc)
                   if (ilay .gt. 0) laycolour(ilay) = 1
                 elseif (gcode.eq.62) then
                   if (ilay .gt. 0) laycolour(ilay) = abs(innum)
                 elseif (gcode .eq. 70) then
                   if (ilay .gt. 0) layflag(ilay) = innum
                 endif
-                call readgc
+                call readgc(itrc)
                 goto 9009
               endif
             else
@@ -546,14 +557,44 @@ C TABLE section.
               lineno = lineno + 1
               goto  9008
             endif
-            call readgc
+            call readgc(itrc)
             goto  9008
           endif
           if(itrc.gt.0)call edisp(iuout, ' Tables processed....')
 
 C Transform information into esp-r common blocks. Begin by looping
-C though known layers, skipping layer `0` and `1`.
+C though known layers, skipping layer `0` and `1`.  But if there are
+C only two layers and they are '0' and '1' then we have no named
+C layers so warn the user and advise that layer zero data will be
+C placed in a zone named First.
            if(oformat(1:3).eq.'esp')then
+             if(numlay.eq.1)then
+               if(layname(1)(1:1).eq.'0')then
+                 call edisp(iuout,
+     & 'DXF file has no named layers. Dumping layer 0 into zone First')
+
+C Assuming a single esp-r zone so create file names etc.
+                 NCOMP=NCOMP+1
+                 write(ZN,'(a)') 'First'
+                 ln =lnblnk(ZN)
+                 if(itrc.gt.1)then
+                   write(outs,'(a,i2,2a)') 'Creating new zone ',
+     &               NCOMP,' named ',zn
+                   call edisp(iuout,outs)
+                 endif
+                 NCCODE(NCOMP)=NCOMP
+                 write(zname(NCOMP),'(a)') ZN
+                 lnzname(NCOMP)=lnblnk(ZN)
+                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+                   write(lf,'(a,a4)') ZN(1:ln),'.geo'
+                 else
+                   write(lf,'(a,a1,a,a4)') zonepth(1:lnblnk(zonepth)),
+     &               fs,ZN(1:ln),'.geo'
+                 endif
+                 LGEOM(NCOMP)=lf
+                 goto 46    ! jump to next step
+               endif
+             endif
              do 45 i=1,numlay
                ll=lnblnk(layname(i))
                if(layname(i)(1:ll).ne.'0'.and.
@@ -565,8 +606,14 @@ C Found a new zone so create file names etc.
                    NCOMP=NCOMP+1
                    ln = min0(12,lnblnk(RZNAME))
                    write(ZN,'(a)') RZNAME(1:ln)
+                   if(itrc.gt.1)then
+                     write(outs,'(a,i2,2a)') 'Creating new zone ',
+     &                 NCOMP,' named ',zn
+                     call edisp(iuout,outs)
+                   endif
                    NCCODE(NCOMP)=NCOMP
                    write(zname(NCOMP),'(a)') ZN
+                   lnzname(NCOMP)=lnblnk(ZN)
                    if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                      write(lf,'(a,a4)') ZN(1:ln),'.geo'
                    else
@@ -586,13 +633,18 @@ C that zone files live in same folder as the configuration file.
                        if(zonepth(1:2).eq.'  '.or.
      &                    zonepth(1:2).eq.'./')then
                          write(lf,'(a,a4)') 
-     &                     zname(im)(1:lnblnk(zname(im))),'.obs'
+     &                     zname(im)(1:lnzname(im)),'.obs'
                        else
                          write(lf,'(a,a1,a,a4)') 
      &                     zonepth(1:lnblnk(zonepth)),fs,
-     &                     zname(im)(1:lnblnk(zname(im))),'.obs'
+     &                     zname(im)(1:lnzname(im)),'.obs'
                        endif
                        ZOBS(im)=lf
+                       if(itrc.gt.1)then
+                         write(outs,'(2a)')'Creating obstructions for ',
+     &                     head(1:lnblnk(head))
+                         call edisp(iuout,outs)
+                       endif
                      endif
                    endif
                  endif
@@ -601,7 +653,9 @@ C that zone files live in same folder as the configuration file.
 
 C If obstruction layers (names beginning with "OBS_" make
 C a scratch file to collect data.
-             ltobs='/tmp/tobs'
+
+C << the following line will not work with Windows >>
+  46         ltobs='/tmp/tobs'
              open(iotobs,file=ltobs(1:lnblnk(ltobs)),status='UNKNOWN',
      &            err=903)
 
@@ -609,7 +663,7 @@ C Continue with configuration file.
              write(ioout,'(I7,a)')ncomp,'  # no of zones'
 
 C Write zone information to configuration file depending on format.
-C Knowing zones, create utility files.
+C Knowing zones, create other zone files.
              do 44 k2=1,ncomp
                if(icfgv.lt.3)then
                  call usrmsg('Configuration file is an old format. ',
@@ -648,13 +702,14 @@ C << ? entity treatment with esp-r? >>
             zscale=1.    
             rotangl=0.
       
+            if(itrc.gt.1) call edisp(iuout,' ')
             if(itrc.gt.0)call edisp(iuout, ' Entities processing...')
             blkxorg=0.0
             blkyorg=0.0
             blkzorg=0.0
             currlay = 0
             currcol = 1
-            call readgc
+            call readgc(itrc)
  91         if (instring(1:6).ne.'ENDSEC'.and. instring(1:6).ne.
      &                           'ENDBLK') then
               elev=dfltelev        
@@ -662,9 +717,9 @@ C << ? entity treatment with esp-r? >>
               if (gcode.eq.0.and.instring(1:4).eq.'LINE') then
 
 C Take in 2D lines, if extruded then make into surfaces.
-                call genlin
+                call genlin(itrc)
               elseif (gcode.eq.0.and.instring(1:3).eq.'ARC') then
-                call genarc
+                call genarc(itrc)
               elseif (gcode.eq.0.and.instring(1:5).eq.'POINT') then
                 if(itrc.gt.0)call edisp(iuout, ' skipping POINT ')
               elseif (instring(1:5).eq.'TRACE') then        
@@ -675,27 +730,27 @@ C Take in 2D lines, if extruded then make into surfaces.
                 call insert(itrc)        
               elseif (instring(1:5).eq.'CIRCL') then        
                 if(itrc.gt.0)call edisp(iuout, ' skipping CIRCLE ')
-                call gencrl
+                call gencrl(itrc)
               elseif (instring(1:5).eq.'POLYL') then
-                call genplin
+                call genplin(itrc)
               elseif (instring(1:6).eq.'3DFACE') then
-                call face3d
+                call face3d(itrc)
               elseif (instring(1:6).eq.'3DLINE') then
                 if(itrc.gt.0)call edisp(iuout,' skipping single line ')
               elseif (instring(1:4).eq.'TEXT') then 
                 if(itrc.gt.0)call edisp(iuout, ' skipping text ')
-                call gentext
+                call gentext(itrc)
               elseif (gcode.eq.8) then
-                call getlay(currlay)
-                call readgc
+                call getlay(currlay,itrc)
+                call readgc(itrc)
               elseif (gcode.eq.39) then
                 thick = realin
-                call readgc
+                call readgc(itrc)
               elseif (gcode.eq.62) then
                currcol = innum
-               call readgc
+               call readgc(itrc)
               else
-               call readgc
+               call readgc(itrc)
               endif
              goto  91
            endif
@@ -779,7 +834,7 @@ C zone.
      &            err=903)
             endif
   142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
-            if(ZN(:lnblnk(ZN)).eq.zname(ivv)(:lnblnk(zname(ivv))))then
+            if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
               NB=NB+1
               XO(NB)=TXO
               YO(NB)=TYO
@@ -908,42 +963,37 @@ C **** wegeom
 C write esp geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C common prec17 is described in geometry.h.
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)
-      character lf*72,zname*12,zdesc*64,SN*12,SOTF*4,louts*248
+      character lf*72,SN*12,SOTF*4,louts*248
+      integer lnzn
        
       ier=0
       CALL EFOPSEQ(iotmp2,lf,3,IER)
       if(ier.ne.0)goto 903
-      write(iotmp2,'(a,a,a,a)')'# geometry of ',
-     &       zname(iv)(1:lnblnk(zname(iv))),' defined in: ',
-     &       lf(1:lnblnk(lf))
-      write(iotmp2,'(a,a)')'GEN ',zname(iv)(1:lnblnk(zname(iv)))
+      lnzn=lnzname(iv)
+      write(iotmp2,'(4a)')'# geometry of ',
+     &  zname(iv)(1:lnzn),' defined in: ',lf(1:lnblnk(lf))
+      write(iotmp2,'(5a)')'GEN ',zname(iv)(1:lnzn),' ',
+     &  zname(iv)(1:lnzn),' was imported from DXF  # type, name, descr'
       write(iotmp2,'(I8,I8,a)')NZTV(iv),NZSUR(iv),
      &      '   0.000    # vertices, surfaces, rotation angle'
       write(iotmp2,'(a)')'#  X co-ord, Y co-ord, Z co-ord '
       do 58 ivv=1,NZTV(iv)
-            write(iotmp2,'(3f10.3)')VCOORD(iv,ivv,1),VCOORD(iv,ivv,2),
+         write(iotmp2,'(3f11.5)')VCOORD(iv,ivv,1),VCOORD(iv,ivv,2),
      &         VCOORD(iv,ivv,3)
   58  continue
       write(iotmp2,'(a)')'# no of vert & list of associated vert'
@@ -980,6 +1030,11 @@ C Write out sets of packed strings, for unused index and indentation.
      &      '# id  surface      geom  loc/  mlc db       environment'
       write(iotmp2,'(a)')
      &      '# no  name         type  posn  name         other side'
+
+C << logic below does not yet account for whether a surface is opaque
+C << or transparent, it also does not check the orientation of the
+C << surfaces.
+
       do 60 is=1,NZSUR(iv)
         IF(is.LE.9)WRITE(SN,'(a5,i1)')'Surf-',is
         IF(is.GT.9)WRITE(SN,'(a5,i2)')'Surf-',is
@@ -1029,13 +1084,15 @@ C Surfaces associated with base.
 C ****** putcoods
 C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
 
-C << to be done - include trace directive >>
-
-      subroutine putcoods
+      subroutine putcoods(itrc)
 #include "building.h"
+#include "geometry.h"
       parameter (MAXLAY = 80)
       
       integer lnblnk  ! function definition
+      
+      integer IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
 
       integer currlay, currcol, oldlay, oldcol
       integer gcode,innum,ioin,ioout,ioblk,flagins
@@ -1047,12 +1104,11 @@ C << to be done - include trace directive >>
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       common/dxfe/oformat,indxzon,head
 
-      character instring*72,oformat*24,head*4
+      character instring*72,oformat*24,head*4,outs*124
       character layname*72
       logical match
       integer nbofsurf  ! to pass to matchv
@@ -1104,29 +1160,40 @@ C format (for later recovery as an obstruction block).
           y1=y*dxfconv
           z1=z*dxfconv
 
-C If on layer "0" or "1" do not bother to match vertex.
-          if(llay.eq.1)then
-            if(layname(currlay)(1:1).eq.'0')return
-            if(layname(currlay)(1:1).eq.'1')return
+C If on layer "0" or "1" do not bother to match vertex if there are
+C named layers. If there are no named layers then accept '0'. 
+          if(numlay.eq.1)then
+            if(layname(1)(1:1).eq.'0')then
+              continue   ! this is a known case.
+            endif
+          else
+            if(llay.eq.1)then
+              if(layname(currlay)(1:1).eq.'0')return
+              if(layname(currlay)(1:1).eq.'1')return
+            endif
           endif
           nbofsurf=NZSUR(indxzon)
           if(head.eq.'TRN_')ITMCFL(indxzon,nbofsurf)=1
           call matchv(indxzon,nbofsurf,match,x1,y1,z1)
 
 C Debug.
-C          if(match)then
-C            write(6,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
-C          else
-C            write(6,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
-C          endif
+          if(itrc.gt.1)then
+            if(match)then
+              write(outs,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
+            else
+              write(outs,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
+            endif
+            call edisp(iuout,outs)
+          endif
         endif
       endif     
       return
       end
 
 C ********** readgc
-C Subroutine to read group code from dxf file.
-      subroutine readgc
+C Subroutine to read group code from dxf file. The parameter
+C itrc sets debug mode if greater than one.
+      subroutine readgc(itrc)
 
       COMMON/OUTIN/IUOUT,IUIN
       integer gcode,innum,ioin,ioout,ioblk
@@ -1140,42 +1207,61 @@ C Subroutine to read group code from dxf file.
       read(ioin,'(I6)',end=500,err=600) gcode
       if (gcode.lt.10) then
          read(ioin,'(A)') instring
+
+C Debug...
+         if(itrc.gt.1)then
+           write(iuout,*) 'gcode linr nb & string ',gcode,lineno,
+     &       ' ',instring(1:lnblnk(instring))
+         endif
       elseif (gcode.ge.60.and.gcode.le.80) then
-         read(ioin,*) innum
+         read(ioin,*,end=500,err=600) innum
       elseif (gcode.ge.30.and.gcode.lt.60) then
-         read(ioin,*) realin
+         read(ioin,*,end=500,err=600) realin
       elseif (gcode.ge.210.and.gcode.lt.240) then
-         read(ioin,*) realin
+         read(ioin,*,end=500,err=600) realin
       elseif (gcode.ge.10.and.gcode.lt.20) then
-         read(ioin,*) coorx
+         read(ioin,*,end=500,err=600) coorx
          read(ioin,'(i6)') icode
-C debug...
-C          write(6,*) 'gcode is ',gcode,coorx,icode
+
+C Debug...
+         if(itrc.gt.1)then
+           write(iuout,*) 'gcode is ',gcode,coorx,lineno
+         endif
          if (icode.ne.(gcode+10)) then
             call edisp(iuout,'Y co-ordinate missing')
             goto 600
          endif
-         read(ioin,*) coory
+         read(ioin,*,end=500,err=600) coory
          lineno = lineno + 2
       else
          read(ioin,'(A)') instring
+
+C Debug...
+         if(itrc.gt.1)then
+           write(iuout,*) 'gcode linr nb & string ',gcode,lineno,
+     &       ' ',instring(1:lnblnk(instring))
+         endif
       endif
       lineno = lineno + 2
       return
 
- 500  call edisp(iuout, 'ABNORMAL END OF INPUT FILE')
+ 500  call edisp(iuout, 'readgc ABNORMAL END OF INPUT FILE')
       stop 'ecnv aborted.'
 
- 600  write(outs,'(a,I4)') 'ERROR reading dxf file at line : ',lineno
+ 600  write(outs,'(a,I4)') 'readgc ERROR reading dxf file at line : ',
+     &  lineno
       call edisp(iuout,outs)
       stop 'ecnv aborted.'
       end
 
 C ****** matchl 
 C Given a layer, return related zone (im), name (RZNAME), and 
-C head of name (head).
+C head of name (head).  If there were no named layers and the
+C conversion is stuffing layer 1 named zero into a zone named
+C first then accept match.
       subroutine matchl(il,head,RZNAME,match,im)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1183,10 +1269,9 @@ C head of name (head).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/layers/layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      character layname*72,zname*12,zdesc*64,TZNAME*24,RZNAME*24,head*4
+      character layname*72,TZNAME*24,RZNAME*24,head*4
       logical match
 
       head=' '
@@ -1196,6 +1281,18 @@ C 'OPQ_' or 'TRN_', find the characters after this and check if this
 C matches a known zone name.
       call st2name(layname(il),TZNAME)
       ltz = lnblnk(TZNAME)
+
+C If there were no named layers and the conversion is stuffing
+C layer 1 named zero into a zone named first then accept match.
+      if(numlay.eq.1.and.ltz.eq.1)then
+        if(TZNAME(1:1).eq.'0')then
+          RZNAME='First'
+          head='____'
+          match=.true.
+          im=1
+          return
+        endif
+      endif
 
 C Check to see that we are not dealing with the special layer "0" or
 C "1".
@@ -1247,7 +1344,7 @@ C **** matchv
 C Matches or adds a vertex to a zone.
       subroutine matchv(iz,is,match,x1,y1,z1)
 #include "building.h"
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+#include "geometry.h"
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
@@ -1343,10 +1440,17 @@ C << to write only the header portion.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -1365,9 +1469,9 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER LCFGF*72
-      CHARACTER LCNN*72,LAPROB*72,LPRJLG*72,LOUT*72
+      CHARACTER LCNN*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
-      character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
+      character indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character dstmp*24
@@ -1417,6 +1521,8 @@ C Comment for configuration index (upgrade registration level).
       IF(IXPOS.EQ.8)WRITE(ioout,'(3F8.3,A)')
      &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
+
+C << updated to use ipath* >>
       WRITE(ioout,'(A,A)') '*prm  ',LFMAT(1:lnblnk(LFMAT))
       WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
       WRITE(ioout,'(A,A)') '*opt  ',LOPTDB(1:lnblnk(LOPTDB))
@@ -1459,6 +1565,10 @@ C Write images if any.
         do 142 img=1,noimg
           WRITE(ioout,'(a,a4,2x,a4,2x,a)')'*img ',imgfmt(img),
      &      imgfoc(img),limgfil(img)(1:lnblnk(limgfil(img)))
+          if(icfgv.gt.3)then
+            WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)'*imdoc ',
+     &        imgdoc(img)(1:lnblnk(imgdoc(img)))
+          endif
  142    continue
       endif
 
@@ -1495,7 +1605,7 @@ C Write primary energy conversions if these have been set.
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

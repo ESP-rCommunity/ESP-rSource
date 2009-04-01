@@ -23,32 +23,31 @@ C ESRU: espvwf
 C Revised to take in configuration file and zone focus.
       program espvwf
 #include "building.h"
+
+C geometry.h provides commons G0/G2/c20/precz.
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/appw/iappw,iappx,iappy
       COMMON/FILEP/IFIL
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/pophelp/h(60)
       COMMON/MRT2/GEOLOAD,MRTLOAD
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -87,13 +86,12 @@ C Indicator of possible focus zone.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -122,18 +120,19 @@ C Name of current application
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
-      CHARACTER H*72,OUTSTR*124,zname*12,CUBN*6,ITEM*29
+      CHARACTER H*72,OUTSTR*124,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
-      character path*72,upath*72,cfgroot*24,zdesc*64
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      character path*72,upath*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer numberofzones ! to pass to updwire rather than ncomp
 
 C Common block variable meanings:
 C     NSURMF  -  total number of surfaces
@@ -296,11 +295,14 @@ C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
         CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -416,9 +418,9 @@ C successful then scan all the zones via ZDATA.
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
-            IF(MMOD.EQ.8) call updwire(ncomp)
-            NZONES=NCOMP
-            CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+            numberofzones=ncomp
+            IF(MMOD.EQ.8)call updwire(numberofzones)
+            CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
 C vwf file. If this file exists
@@ -552,9 +554,9 @@ C Find the path and local file name.
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
-          IF(MMOD.EQ.8) call updwire(ncomp)
-          NZONES=NCOMP
-          CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
+          numberofzones=ncomp
+          IF(MMOD.EQ.8) call updwire(numberofzones)
+          CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
           call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 
@@ -611,8 +613,8 @@ C Read geometry file for either calculation purpose
         CALL EASKGEOF('Select a zone to assess:',CFGOK,IC,'-',IER)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 10
         IER=0
+        write(outs,'(a,a)')'VWF: shift zone focus to: ',zname(IC)
         ZN=zname(IC)
-        write(outs,'(a,a)')'VWF: shift zone focus to: ',ZN
         call tstamp('>',outs)
         goto 42
       ELSEIF(INO.EQ.6)THEN
@@ -713,10 +715,10 @@ C Save view factor file.
         H(2)='each of the surfaces in a zone as well as MRT sensor'
         H(3)='definitions.'
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DFILE,'(A,A4)')zn(1:lnblnk(zn)),'.vwf'
+          WRITE(DFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
         else
           WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zn(1:lnblnk(zn)),'.vwf'
+     &      zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
         endif
         LTMP=LVIEW(icomp)
         CALL EASKS(LTMP,' Viewfactor & MRT file name ?',' ',
@@ -764,12 +766,11 @@ C drawn and remember number of surfaces to pass to sensor file.
 
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.
-      ZN=zname(ICOMP)
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-       WRITE(VFILE,'(A,A4)')zn(1:lnblnk(zn)),'.vwf'
+       WRITE(VFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       else
         WRITE(VFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zn(1:lnblnk(zn)),'.vwf'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       endif
 
 C Get mrt file name. If it exists read it, if not create one with 
@@ -836,7 +837,7 @@ C Determine geometry bounds and force it to be drawn.
       MODIFY=.TRUE.
       MODLEN=.TRUE.
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       if(ncub.gt.0)then
         CALL ESCZONE(ICOMP)
         CALL DRWSEN(ier)
@@ -854,6 +855,7 @@ C Calculate viewfactors for a zone.
       SUBROUTINE CALVF(ICOMP)
 
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -863,7 +865,6 @@ C Calculate viewfactors for a zone.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/MRT2/GEOLOAD,MRTLOAD

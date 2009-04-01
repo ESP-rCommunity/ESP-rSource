@@ -19,6 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Mid level routines for dxf translator.
+c  BLOCK: processes the block definitions in .dxf file
+C  insert: processes the 'INSERT' command in .dxf file and
+C  getlay: looks through the current layer names for the
 
 C ******** block
 c BLOCK processes the block definitions in .dxf file
@@ -46,7 +49,7 @@ C << a /tmp folder so work out a different approach >>
 
       character bname*72,pbname*72,chr*1,instring*72
       character oformat*24,RZNAME*24,head*4,outs*124
-      logical skip,reset,match
+      logical skip,reset,match,close
 
       reset = .false.
 
@@ -58,7 +61,8 @@ C on the current process number. << >>
 
 C The temporary block file (blockdxf2e) will be read in again,
 C if the mm>>metre conversion is on then disable it while writing.
-      if(dxfconv.ne.1.0)then
+      call eclose(dxfconv,1.0,0.001,close)
+      if(.NOT.close)then
         reset = .true.
         dxflast = dxfconv 
         dxfconv = 1.0  
@@ -69,13 +73,13 @@ C block base offset removed.
       flagins=1
       elevlast = dfltelev
       thicklast = dfltthick
- 10   call readgc
+ 10   call readgc(itrc)
       if (instring(1:6).eq.'ENDSEC') goto 100
 
       if (instring(1:5).ne.'BLOCK') goto 10
       dfltelev = elevlast
       dfltthick = thicklast
-      call readgc                
+      call readgc(itrc)                
  9001 if (gcode.ne.0)then
         if (gcode.eq.2) then
           leng=lnblnk(instring)
@@ -124,7 +128,7 @@ C `ENDBLK` found.
               write(outs,'(a,a)') ' skipping ',bname(1:lnblnk(bname))
               call edisp(iuout,outs)
             endif
- 91         call readgc                
+ 91         call readgc(itrc)                
             if (gcode.eq.0.and.instring(1:6).eq.'ENDBLK')goto 10
             goto 91
           endif
@@ -144,7 +148,7 @@ C Note the gcode=10 reads in the x & y block origin
         elseif (gcode.eq.39) then
           dfltthick=realin
         endif
-        call readgc
+        call readgc(itrc)
         goto  9001
       endif
       write(ioblk,'(a)') 'BLOCK BASE '
@@ -162,15 +166,15 @@ C that we cannot use.
             call edisp(iuout,outs)
           endif
         elseif (instring(1:4).eq.'LINE') then
-          call genlin
+          call genlin(itrc)
         elseif (instring(1:3).eq.'ARC') then
-          call genarc
+          call genarc(itrc)
         elseif (instring(1:5).eq.'SOLID') then
           if(itrc.gt.0)then
             write(outs,'(a,a)') ' skipping SOLID:',bname(1:leng)
             call edisp(iuout,outs)
           endif
-          call readgc
+          call readgc(itrc)
           goto  9003
         elseif (instring(1:6).eq.'CIRCLE') then
 
@@ -179,7 +183,7 @@ C Circles are not delt with, but need to skip lines.
             write(outs,'(a,a)')' skipping CIRCLE:',bname(1:leng)
             call edisp(iuout,outs)
           endif
-          call gencrl
+          call gencrl(itrc)
         elseif (instring(1:6).eq.'INSERT') then
           call insert(itrc)
         elseif (instring(1:5).eq.'POINT') then
@@ -187,12 +191,12 @@ C Circles are not delt with, but need to skip lines.
             write(outs,'(a,a)') ' skipping POINT:',bname(1:leng)
             call edisp(iuout,outs)
           endif
-          call readgc
+          call readgc(itrc)
           goto  9003
         elseif (instring(1:5).eq.'POLYL') then
-          call genplin
+          call genplin(itrc)
         elseif (instring(1:5).eq.'3DFAC') then
-          call face3d
+          call face3d(itrc)
         elseif (instring(1:5).eq.'3DLIN') then 
           if(itrc.gt.0)then
             write(outs,'(a,a)') ' skipping line:',bname(1:leng)
@@ -205,17 +209,17 @@ C Text is not delt with, but need to skip lines.
             write(outs,'(a,a)') ' skipping text:',bname(1:leng)
             call edisp(iuout,outs)
           endif
-          call gentext
+          call gentext(itrc)
         elseif (gcode.eq.8) then
-          call getlay(currlay)
+          call getlay(currlay,itrc)
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
-          call readgc
+          call readgc(itrc)
         elseif (gcode.eq.62) then
           currcol = innum
-          call readgc
+          call readgc(itrc)
         else
-          call readgc
+          call readgc(itrc)
         endif
         goto  9003
       endif
@@ -239,7 +243,7 @@ C Reset conversion if necessary.
       end
 
 C ******** insert
-C This subroutine processes the 'INSERT' command in .dxf file and
+C Subroutine insert processes the 'INSERT' command in .dxf file and
 C translates it into 'FIL' command for .vew file of viewer.
 C Note: all the insert files are assumed to be in local folder.
       subroutine insert(itrc) 
@@ -287,10 +291,10 @@ C Note: all the insert files are assumed to be in local folder.
 
 C Read an entity from DXF file. Depending on the value of gcode
 C process the entity type.
-      call readgc
+      call readgc(itrc)
  9001 if (gcode.ne.0)then
         if (gcode.eq.8) then
-           call getlay(currlay)
+           call getlay(currlay,itrc)
            call matchl(currlay,head,RZNAME,match,im)
            if(match)indxzon=im
         elseif (gcode.eq.2) then
@@ -352,7 +356,7 @@ C These 3 commands put in for the 'UCS' type of info
         elseif (gcode .eq. 230) then
           zucs = realin
         endif
-        call readgc
+        call readgc(itrc)
         goto  9001
       endif
 
@@ -458,12 +462,16 @@ C in and converted.
       return
       end
 
-C ********* layers
-C  LAYERS looks through the current layer names for the
+C ********* getlay
+C  getlay looks through the current layer names for the
 C  string in instring, and returns the equivalent layer number
 C  if the string is not in the current layer names list, then
 C  the name is added.
-      subroutine getlay(ilay)
+      subroutine getlay(ilay,itrc)
+
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
 
       parameter (MAXLAY = 80)
       integer gcode,innum
@@ -475,7 +483,7 @@ C  the name is added.
      &       layflag(MAXLAY)
 
       common/laytoo/ layuse(MAXLAY)
-      character layname*72,instring*72
+      character layname*72,instring*72,outs*124
 
       do 100 i = 1, numlay
         if (layname(i) .eq. instring) then
@@ -492,6 +500,11 @@ C If this line is reached then name was not found so add it.
       layflag(numlay) = 0
       ilay = numlay
       layuse(numlay) = 0
+      if(itrc.gt.0)then
+         write(outs,'(a,i3,1x,a)') 'new layer ',numlay,
+     &     instring(1:lnblnk(instring))
+         call edisp(iuout,outs)
+      endif
  999  return
       end
 
@@ -531,19 +544,17 @@ C Write the contents of a viewer layer file.
 
 C ******* genplin
 C genplin - parse a 2 or 3D polyline from information in DXF file.
+C itrc indicator so that debug can be done from command line.
 
-C << to be done - pass itrc indicator so that debug can be done
-C << more easily.
-
-      subroutine genplin
+      subroutine genplin(itrc)
 #include "building.h"
+#include "geometry.h"
       parameter (MAXPNT = 100)
 
       COMMON/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer gcode,innum,ioin,ioout,ioblk,polylinflag,flagins
@@ -561,7 +572,7 @@ C << more easily.
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
-      logical match
+      logical match,close
 
 C << Note, if this is being called within a block definition >>
 C << and the layer name is 0 (as it might be in microgds) then >>
@@ -575,12 +586,12 @@ C << can ignore this and continue with the current layer info. >>
       mclosed = 0
       nclosed = 0
       flag3d = 0.0
-      call readgc
+      call readgc(itrc)
  9001 if (gcode.ne.0)then
         if (gcode.eq.8) then
 
 C Find current layer and then matching zone.
-          call getlay(currlay)
+          call getlay(currlay,itrc)
           call matchl(currlay,head,RZNAME,match,im)
           if(match)indxzon=im
         elseif (gcode.eq.38) then
@@ -616,11 +627,12 @@ C             if (btest(innum,6) .eq. .TRUE.) nclosed = 1
         elseif (gcode.eq.230) then
           znorm = realin
         endif
-        call readgc
+        call readgc(itrc)
         goto  9001
       endif
 
  9002 if (instring(1:6).eq.'SEQEND')then
+        call eclose(flag3d,0.0,0.001,close)
 
 C Write out the line in chunks of 255 verticies.
         call writelc
@@ -646,7 +658,7 @@ C This is a closed poly so copy first point to last.
 C This is a mesh surface.
           numd = numtod
           call edisp(iuout,' skipping MESH ')
-        elseif (flag3d .eq. 0.0) then
+        elseif (close) then
 
 C << Polylines can probably be treated as surfaces >>
           if(oformat(1:6).eq.'viewer')then
@@ -662,13 +674,17 @@ C Add a surface to zone and update connection.
               NZSUR(indxzon) = NZSUR(indxzon) + 1
               NCON=NCON+1
               IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
+              if(itrc.gt.1)then
+                write(iuout,*) 
+     &          'genplin increment esp surf list ',NCON,NZSUR(indxzon)
+              endif
             endif
           endif
           do 9006 i = istart, istart+numd-1
             coorx = xarray(i)
             coory = yarray(i)
             coorz = zarray(i)
-            call putcoods
+            call putcoods(itrc)
  9006     continue
         else
 
@@ -684,19 +700,23 @@ C Dump out the sides as planes.  If esp update connections.
                 NZSUR(indxzon) = NZSUR(indxzon) + 1
                 NCON=NCON+1
                 IZSTOCN(indxzon,NZSUR(indxzon)) = NCON
+                if(itrc.gt.1)then
+                  write(iuout,*) 
+     &            'genplin increment esp surf list ',NCON,NZSUR(indxzon)
+                endif
               endif
             endif
             coorx = xarray(i)
             coory = yarray(i)
             coorz = zarray(i)
-            call putcoods
+            call putcoods(itrc)
             coorz = coorz + thick
-            call putcoods
+            call putcoods(itrc)
             coorx = xarray(i+1)
             coory = yarray(i+1)
-            call putcoods
+            call putcoods(itrc)
             coorz = zarray(i+1)
-            call putcoods
+            call putcoods(itrc)
  9007     continue
         endif
         istart = istart+numd-1
@@ -704,7 +724,7 @@ C Dump out the sides as planes.  If esp update connections.
         if (numtod .gt. 1) goto 9005
       else
         if (instring(1:6).eq.'VERTEX') then
-          call vertex
+          call vertex(itrc)
         endif
         goto  9002
       endif
@@ -714,7 +734,7 @@ C Dump out the sides as planes.  If esp update connections.
         elseif (gcode.eq.39) then
           thick=realin
         endif
-        call readgc
+        call readgc(itrc)
         goto  9003
       endif
       thick = 0.0
@@ -725,7 +745,7 @@ C Dump out the sides as planes.  If esp update connections.
 
 C ****** vertex
 C vertex - compose XYZ from data in a DXF file.
-      subroutine vertex
+      subroutine vertex(itrc)
 
       parameter (MAXPNT = 100)
       integer gcode,innum,flagins
@@ -739,7 +759,7 @@ C vertex - compose XYZ from data in a DXF file.
       character instring*72
 
       ivertflag = 0
-      call readgc 
+      call readgc(itrc) 
  9001 if (gcode.ne.0)then
         if (gcode.eq.38) then 
           elev=realin 
@@ -758,7 +778,7 @@ C vertex - compose XYZ from data in a DXF file.
           elev = realin
         elseif (gcode.eq.50) then 
         endif
-        call readgc
+        call readgc(itrc)
         goto  9001
       endif
 

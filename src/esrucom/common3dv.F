@@ -19,6 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C cmmon3dv.F contains the following Fortran subroutines:
+
 C  ADJVIEW: Adjusts the viewing transforms & boundaries if necessary.
 C  CHGAZI:  Called from C code with an increment or decrement of azimuth.
 C  CHGELEV: Called from C code with an increment or decrement of elevation.
@@ -32,13 +33,17 @@ C ************* ADJVIEW
 C ADJVIEW takes the current status of view and boundary mods
 C and adjusts the viewing transforms & object boundaries if 
 C necessary before displaying the zone.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
+C Passed parameters.
+      integer ier
+      
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -48,12 +53,16 @@ C then it represents the zone which is currently being edited.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       LOGICAL MODIFY,MODLEN,MODBND
 
       character ETEXT*82
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       SMALL=0.01
 
@@ -63,9 +72,11 @@ C If not in graphic mode return.
 C Tell wireframe control the current number of selected zones.
 C If only drawing a ground topology set updwire manually.
       if(itdsp.eq.6)then
-        call updwire(1)
+        numberofzones=1
+        call updwire(numberofzones)  ! pass local integer
       else
-        call updwire(nzg)
+        numberofzones=nzg
+        call updwire(numberofzones)  ! pass local integer
       endif
 
 C If altered then do a bound check on the current zone and update display.
@@ -91,10 +102,13 @@ C If viewpoint or bounds different then initialise viewing paramters.
 
 C Remind user of which model even when looking at one zone.
         WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
-        CALL viewtext(ETEXT,1,1,1)
+        iside=1
+        isize=1
+        ifont=1
+        call viewtext(etext,iside,isize,ifont)
 
 C Draw the selected bodies.
-        CALL DRAWESP(ITRC,IER)
+        CALL DRAWESP(IER)
 
 C Recover information begin edited and reset modify flag.
         if(izgfoc.NE.0)CALL ERCZONE(izgfoc)
@@ -107,10 +121,14 @@ C Recover information begin edited and reset modify flag.
       END
 
 C ********* chgazi
-C CHGAZI is called from C code in wwlib.c with an increment or decrement
-C to the viewing azimuth.  If not needed then provide a dummy. 
+C CHGAZI is called from C code in esp-r.c or esru_x.c with an increment or 
+C decrement to the viewing azimuth (icazi). If not needed then provide a dummy. 
       subroutine chgazi(icazi)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+#include "prj3dv.h"
+
+C Passed paremter.
+      integer icazi
+      
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
       PI = 4.0 * ATAN(1.0)
@@ -136,17 +154,20 @@ C to the viewing azimuth.  If not needed then provide a dummy.
       EYEM(3)=Z+VIEWM(3)
       MODIFY=.TRUE.
       MODLEN=.TRUE.
-      itrc=0
-      CALL ADJVIEW(itrc,IER)
+      CALL ADJVIEW(IER)
 
       return
       end
 
 C ********* chgelev
-C CHGELEV is called from C code in wwlib.c with an increment or decrement
-C to the viewing elevation.  If not needed then provide a dummy. 
+C CHGELEV is called from C code in esp-r.c or esru_x.c with an increment or 
+C decrement to the viewing elevation (icelev). If not needed then provide a dummy. 
       subroutine chgelev(icelev)
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+#include "prj3dv.h"
+
+C Passed paramter.
+      integer icelev
+      
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       logical MODIFY,MODLEN,MODBND
 
@@ -173,14 +194,13 @@ C to the viewing elevation.  If not needed then provide a dummy.
       EYEM(3)=Z+VIEWM(3)
       MODIFY=.TRUE.
       MODLEN=.TRUE.
-      itrc=0
-      CALL ADJVIEW(itrc,IER)
+      CALL ADJVIEW(IER)
 
       return
       end
 
 C ******************** SVDSOPT ********************
-C SVDSOPT - save graphics display options.
+C SVDSOPT - save graphics display options into common block RAY2SV.
       subroutine SVDSOPT
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -208,7 +228,7 @@ C SVDSOPT - save graphics display options.
       end
 
 C ******************** RCDSOPT ********************
-C RCDSOPT - recover graphics display options.
+C RCDSOPT - recover graphics display options from common block RAY2SV.
       subroutine RCDSOPT
 
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -236,20 +256,25 @@ C RCDSOPT - recover graphics display options.
       end
 
 C **************DRAWOBS 
-C DRAWOBS checks to see it obstructions are associated with a zone.
+C DRAWOBS checks to see it obstructions are associated with zone (IFOC).
 C If so it loads the geometric description within an obstruction file
 C into common block BG1 and then converts into viewing coords, 
 C clips the image and draws it.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE DRAWOBS(IFOC,ier)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+#include "prj3dv.h"
+
+C Passed parameters.
+      integer ifoc,ier
+      
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
@@ -257,8 +282,6 @@ C clips the image and draws it.
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -278,6 +301,11 @@ C clips the image and draws it.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -372,8 +400,8 @@ C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -383,12 +411,14 @@ C If IP1 is ever negative then jump to a later point.
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           call forceflush()
 
@@ -398,19 +428,21 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           call forceflush()
  1000   CONTINUE
@@ -423,18 +455,27 @@ C **************** DRWSEN
 C DRWSEN loads the geometric description within an MRT sensor file
 C into common block BG1 and then converts into viewing coords,
 C clips the image and draws it.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE DRWSEN(ier)
 #include "building.h"
+#include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
       CHARACTER temp*7,CUBN*6
 
@@ -501,8 +542,8 @@ C First move to the beginning (as passed back from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -512,7 +553,9 @@ C If IP1 is ever negative then jump to a later point.
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          call eswline(ixlast,iylast,ix,iy)
+          iix=ix
+          iiy=iy
+          call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
 
 C Repeat until next point is the first, remember position and skip
@@ -521,14 +564,16 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          call eswline(ixlast,iylast,ix,iy)
+          iix=ix
+          iiy=iy
+          call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
  1000   CONTINUE
   301 CONTINUE
@@ -537,13 +582,17 @@ C Complete the polygon.
       END
 
 C ****** Routine to draw ground topology.
+C EGRNDR  Draws ground topology held in GT5 and grndpl commons.
+C IER is returned as non-zero if there has been a problem.
       SUBROUTINE EGRNDR(IER)
 #include "building.h"
-      PARAMETER  (MPL = 200 )
+#include "prj3dv.h"
 
+C Passed parameter.
+      integer ier
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -557,6 +606,13 @@ C ****** Routine to draw ground topology.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
       CHARACTER GMLCN*12, GSNAME*6,stemp*7
+
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iiy,iixlast,iiylast
+#else
+      integer*8 iix,iiy,iixlast,iiylast
+#endif     
 
 C Save the current font and switch to a smaller font for displaying
 C surface names etc. Ixc,iyc keep track of surface/pixel COG.
@@ -614,8 +670,8 @@ C Move to first point.
           IP = IABS(IBPNT)
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           ixc=ixc+ix
           iyc=iyc+iy
 
@@ -624,34 +680,38 @@ C Draw succeeding points until last vertex.
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(linstyg(igs).eq.3)then
-            call edline(ixlast,iylast,ix,iy,2)
+            call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           elseif(linstyg(igs).eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           else
-            call edline(ixlast,iylast,ix,iy,LD)
+            call edline(iixlast,iiylast,iix,iiy,LD)
           endif
           ixc=ixc+ix
           iyc=iyc+iy
 
           IP1 = IBNXT(IP1)
-          ixlast=ix
-          iylast=iy
+          iixlast=ix   ! cast for call to edline
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(linstyg(igs).eq.3)then
-            call edline(ixlast,iylast,ix,iy,2)
+            call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           elseif(linstyg(igs).eq.1)then
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           else
-            call edline(ixlast,iylast,ix,iy,LD)
+            call edline(iixlast,iiylast,iix,iiy,LD)
           endif
           call forceflush()
 
@@ -677,19 +737,30 @@ C to normal size.
       end
 
 C-----DSGRID -----------------------------------------------------------
-C DSGRID draws a dotted grid at a given reference height RH, grid
-C density GD, and dot density LD within
-C the viewport with the current scaling factors etc.
+C DSGRID draws a dotted grid at a given reference height (RH), grid
+C density (GD), and dot density (LD) within the viewport
+C with the current scaling factors etc.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE DSGRID(RH,GD,LD,IER)
 #include "building.h"
+#include "prj3dv.h"
+
+C Passed parameters.
+      real RH,GD
+      integer LD,IER
+      
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       DIMENSION COG1(3),COG2(3),COG3(3)
       logical close,greyok
 
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iix,iiy,iix1,iiy1
+#else
+      integer*8 iix,iiy,iix1,iiy1
+#endif       
 C If not in graphic mode return.
       if(MMOD.lt.8)return
 
@@ -751,8 +822,18 @@ C Transform other end of line.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
-C Draw the dotted line.
-        call edline(ix,iy,ix1,iy1,LD)
+C Draw the dotted line, first take calculated pixels and
+C cast to local variable to pass to edline. Only do this if
+C the length of the line is more than one pixel.
+        if(ix.eq.ix1.and.iy.eq.iy1)then
+          continue
+        else
+          iix=ix
+          iiy=iy
+          iix1=ix1
+          iiy1=iy1
+          call edline(iix,iiy,iix1,iiy1,LD)
+        endif
 
 C Move to next grid position.
         XINC=XINC+GRIDD
@@ -784,8 +865,16 @@ C Transform other end of line.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
-C Draw the dotted line.
-        call edline(ix,iy,ix1,iy1,LD)
+C Draw the dotted line after casting to local variable.
+        if(ix.eq.ix1.and.iy.eq.iy1)then
+          continue
+        else
+          iix=ix
+          iiy=iy
+          iix1=ix1
+          iiy1=iy1
+          call edline(iix,iiy,iix1,iiy1,LD)
+        endif
 
 C Move to next grid position.
         YINC=YINC+GRIDD
@@ -798,11 +887,18 @@ C Move to next grid position.
       END
 
 C ******************* EMKVIEW 
-C EMKVIEW constructs a 'viewer' format file. The trace level defines 
-C whether information about the zones is displayed or not.
+C EMKVIEW constructs a 'viewer' format file. The trace level (ITRC) defines 
+C whether information about the zones is displayed or not. IUO is the file
+C unit number. CFGOK is passed in as .TRUE. if the user can select zones.
+C IER is returned as non-zero if there is a problem.
       SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
-
 #include "building.h"
+#include "geometry.h"
+
+C Passed parameters.
+      integer ITRC,IUO,IER
+      logical CFGOK
+      
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -814,13 +910,8 @@ C whether information about the zones is displayed or not.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -828,14 +919,14 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      LOGICAL  CFGOK,OK,dok
+      LOGICAL OK,dok
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER zname*12,zdesc*64,GMLCN*12,GSNAME*6,outs*124
+      CHARACTER GMLCN*12,GSNAME*6,outs*124
 
       IER=0
       IUF=IFIL+1

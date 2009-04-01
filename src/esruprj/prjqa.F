@@ -28,6 +28,9 @@ C Prjqa writes out a QA report (to screen or file) for
 C the current model.
       subroutine prjqa(ier)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
+#include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
 #include "tdf2.h"
@@ -67,24 +70,19 @@ C espriou.h provides currentfile.
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT2/TMCT2(MCOM,MTMC,5,MBP),TMCA2(MCOM,MTMC,ME,5,MBP),
@@ -95,8 +93,6 @@ C LPNF (72 char) plant network file name.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -179,7 +175,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
 
 C Remember if each zone is fully attributed.
       logical attribok(MCOM)
-      logical allattribok,changedit,ok,dok,concat,unixok
+      logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension IVALS(MCOM),areamlc(MCOM)
       dimension uavgtran(MCOM),uavwall(MCOM),uavslproof(MCOM)
       dimension uavfltroof(MCOM),uavgsky(MCOM),areatran(MCOM)
@@ -195,12 +191,12 @@ C Remember if each zone is fully attributed.
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
-      character DESC*48,DESCRC*25
+      character DESCRC*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,cfgroot*24,ZN*12,SN*12
+      character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*144,tg*1,delim*1,zdesc*64,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
       character outs*124,outs248*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
@@ -217,7 +213,9 @@ C Remember if each zone is fully attributed.
       character uname*24,pwd*40
       character LAIM2*72
       character ipvaction*3  ! signal that external ipv file
-
+      character MLCSYM*12
+      character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
+      
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
 C in the current model. A -1 means not applicable
@@ -229,6 +227,7 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical nameok  ! to use for testing if duplicate names in zone,
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1091,23 +1090,24 @@ C Check if IPV file and dispersed demands files are known.
 
 C Integrated Performance View. If compact only print description,
 C if verbose print periods, seasons and ratios as well.
+        ieripv=1  ! there is no IPV
         if(icfgv.lt.4)then
           if(lnblnk(lipvdatf).eq.0)then
-            continue
+            ieripv=1  ! there is no IPV
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-            continue
+            ieripv=1  ! there is no IPV
           else
 	    ipvaction='ipv'
-            call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)
+            call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)  ! this returns a value for ieripv
             call edisp(itu,' ')
           endif
         else
 
 C Check if embedded within configuration file.
           if(nipvassmt.eq.0)then ! there was nothing in the cfg file.
-            continue
+            ieripv=1  ! there is no IPV
           else
-            ieripv=0
+            ieripv=0  ! there is an IPV assessment
           endif
         endif
         if(ieripv.eq.0)then
@@ -1355,7 +1355,8 @@ C Jump if no zones.
             icc=izstocn(ivals(iz),i)
             if(SSOTHER(icc,1)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
             if(SSMLCN(icc)(1:4).eq.'UNKN')attribok(IVALS(IZ))=.false.
-            if(SSOTF(icc)(1:4).NE.'OPAQ')then
+            if(SSOTF(icc)(1:4).NE.'OPAQ'.AND.
+     &            SSOTF(icc)(1:4).NE.'CFC ')then
               TRN=TRN+SSNA(icc)
             else
               OPQ=OPQ+SSNA(icc)
@@ -1366,7 +1367,7 @@ C Jump if no zones.
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,2x,a)') IVALS(IZ),
      &      zname(IVALS(IZ)),VOL(IVALS(IZ)),NZSUR(ivals(iz)),OPQ,TRN,
      &      ZBASEA(IVALS(IZ)),
-     &      zdesc(IVALS(IZ))(1:lnblnk(zdesc(IVALS(IZ))))
+     &      zdesc(IVALS(IZ))(1:lnzdesc(IVALS(IZ)))
           else
             aok=' part-attributed '
             write(outs,'(i2,1x,a,f7.1,i4,3f8.1,a)') IVALS(IZ),
@@ -1528,7 +1529,8 @@ C For floors.
                 xareawall = xareawall + SSNA(icc)
                 xuavwall = xuavwall + (SSNA(icc) * UVH)
               endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ')then
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &            SSOTF(icc)(1:4).ne.'CFC ')then
               if(SSVFC(icc)(1:4).eq.'CEIL'.or.
      &           SSVFC(icc)(1:4).eq.'SLOP')then
 
@@ -1559,6 +1561,18 @@ C Consider glazing on walls to be a part of facade.
             endif
           else
             continue
+          endif
+
+C Check for duplicate surface names in this zone. Report is
+C duplicates are found.
+          write(SN,'(a12)')SSNAME(icc)
+          call snamdup(SN,izz,ij,nameok)
+          if(nameok)then
+            continue
+          else
+            write(outs,'(3a)') 'Surface ',SN(1:lnblnk(SN)),
+     &        ' has a duplicate name. Names must be unique!'
+            call edisp(itu,outs)
           endif
  111    continue
 
@@ -1774,6 +1788,7 @@ C Note optional zone extensions.
         endif
 
 C Check for mismatch in surface attributes and boundary conditions.
+        call edisp(itu,' ')
         bndrysxc=.true.
         DO 1243 IS=1,NZSUR(IVALS(IZ))
           icc=IZSTOCN(IVALS(IZ),is)
@@ -1795,6 +1810,39 @@ C Check for mismatch in surface attributes and boundary conditions.
      &       bndrysxc=.false.
           if(ICT(icc).eq.5.and.SSOTHER(icc,1)(1:5).ne.'ADIAB')
      &       bndrysxc=.false.
+
+C While looping check that constructions of partitions are matching.
+          if(ICT(icc).eq.3)then
+            showother=.true.
+            icoth=IZSTOCN(IC2(icc),IE2(icc))
+          else
+            showother=.false.
+          endif
+          write(SN,'(a12)')SSNAME(icc)
+          if(showother.and.icoth.ne.0)then
+            do 17 ii=1,nmlc
+              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM)
+                if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+                  continue
+                elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+
+C If the current construction is nonsymmetric then it should not be
+C used for a partition (and db does not have a linked MLC - inform the user.
+                  write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
+     &              ' has a nonsymmetric construction ',
+     &              SSMLCN(icc)(1:lnblnk(SSMLCN(icc))),'.'
+                  call edisp(itu,outs)
+                  write(outs,'(5a)') 'It faces ',
+     &              SSNAME(icoth),' which is composed of ',
+     &              SSMLCN(icoth)(1:12),' (which may not match).'
+                  call edisp(itu,outs)
+                else
+                  continue
+                endif
+              endif
+  17        continue
+          endif
  1243   continue
         if(.NOT.bndrysxc)then
           call edisp(itu,
@@ -1826,7 +1874,7 @@ C as an earlier one.
             endif
  101        if(duplicate.and.ilcot.ne.0)then
               write(outs,'(2a)') ' Uses same operations as zone ',
-     &          zname(ilcot)
+     &          zname(ilcot)(1:lnzname(ilcot))
               call edisp(itu,outs)
             else
               CALL ERPFREE(IUF,ISTAT)
@@ -1853,7 +1901,7 @@ C as an earlier one.
             endif
           else
             write(outs,'(2a)') ' No operations defined for zone ',
-     &        zname(IVALS(IZ))
+     &        zname(IVALS(IZ))(1:lnzname(IVALS(IZ)))
             call edisp(itu,'  ')
             call edisp(itu,outs)
           endif
@@ -1999,6 +2047,7 @@ C not browsing.
 
       subroutine mupdate(ier)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -2007,10 +2056,6 @@ C not browsing.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
@@ -2020,12 +2065,10 @@ C not browsing.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -2038,12 +2081,23 @@ C IPV data.
       common/IPVF/lipvdatf
       character lipvdatf*72
 
+C Images.
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
+
       character cfgroot*24,LCFGF*72,h*72,outs*124
       character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character zname*12,zdesc*64,ZN*12
+      character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
       logical ok,dok,ddok,found,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -2054,6 +2108,7 @@ C IPV data.
 C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
       integer iuo  ! file unit for operations file.
+      integer imgloop ! loop counter for images
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -2106,8 +2161,7 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         call askok('The current model uses an out-of-date format for',
      &    'some geometry or obstruction files. Update this?',ok,dok,5)
         if(ok)then
-	
-          
+
           do 776 iz=1,ncomp
             call eclose(gversion(iz),1.1,0.01,newgeo)
             if(newgeo)then
@@ -2126,7 +2180,8 @@ C see if there are shading and obstruction files.
                   DO 678 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &                 SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2140,7 +2195,8 @@ C see if there are shading and obstruction files.
                   DO 679 I=1,NZSUR(iz)
                     ioc=IZSTOCN(iz,i)
                     if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &                 SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &                 SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &                 SSOTF(ioc)(1:4).ne.'CFC ')then
                       nsurfinso(iz)=nsurfinso(iz)+1
                       isurfinso(iz,nsurfinso(iz))=I
                     endif
@@ -2189,7 +2245,8 @@ C Otherwise assume all applicable for shading and insolation.
                 DO 778 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &               SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC ')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -2202,7 +2259,8 @@ C Otherwise assume all applicable for shading and insolation.
                 DO 779 I=1,NZSUR(iz)
                   ioc=IZSTOCN(iz,i)
                   if(SSOTHER(ioc,1)(1:5).eq.'EXTER'.and.
-     &               SSOTF(ioc)(1:4).ne.'OPAQ')then
+     &               SSOTF(ioc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(ioc)(1:4).ne.'CFC ')then
                     nsurfinso(iz)=nsurfinso(iz)+1
                     isurfinso(iz,nsurfinso(iz))=I
                   endif
@@ -2339,6 +2397,16 @@ C be a black string.
             call ripvdat(IUO,lipvdatf,ipvaction,ier)
           endif
           icfgv=4   ! set to current version.
+
+C If there are any images associated with the model create a filler
+C string for the image documentation.
+          if(noimg.gt.0)then
+            do 22 imgloop=1,MIMG
+              imgdoc(imgloop)='no documentation (yet) for this image'
+  22        continue
+          endif
+
+C Update the model configuration file.
           CALL EMKCFG('-',IER)
 
 C Check if there were zone utility files and if so check and see if
@@ -2476,6 +2544,10 @@ C << some variables are off - further debugging required.
       subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 #include "building.h"
 #include "esprdbfile.h"
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -2504,8 +2576,7 @@ C Arrays of material properties.
       logical closemat
       
       dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER DESC*48,NAM*72
-      CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)

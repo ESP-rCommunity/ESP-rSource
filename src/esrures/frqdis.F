@@ -769,9 +769,11 @@ C corresponding to graphical result display.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -788,6 +790,11 @@ C corresponding to graphical result display.
       logical zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed
 C and the simulation and output timesteps. Use opengdisp to get
@@ -805,6 +812,8 @@ C text dialogue box that would normally be displayed.
 C Reduce the white space on the right so the label percent is not
 C so separated from the axis.
           call win3d(menuchw,12,12,5,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           call startbuffer()
         endif
       ENDIF
@@ -826,7 +835,10 @@ C If output to file alter the edisp unit number.
       endif
       GTEXT=ETEXT
       if(act.eq.'g')then
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(itru,GTEXT)
       endif
@@ -835,7 +847,10 @@ C If output to file alter the edisp unit number.
      &   SDESCR(11:lnblnk(SDESCR))
       GTEXT=ETEXT
       if(act.eq.'g')then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(itru,GTEXT)
       endif
@@ -847,7 +862,10 @@ C if names of zones can be shown.
           WRITE(ETEXT,'(1x,2a)')'Using anchor list ',ALOCLBL(ialstused)
           GTEXT=ETEXT
           if(act.eq.'g')then
-            CALL viewtext(GTEXT,3,0,1)
+            iside=3
+            isize=0
+            ifont=1
+            call viewtext(gtext,iside,isize,ifont)
           else
             call edisp(itru,GTEXT)
           endif
@@ -856,7 +874,10 @@ C if names of zones can be shown.
           if(ierr.ne.1)then
             write(outsd1,'(1x,a)')outsd
             if(act.eq.'g')then
-              CALL viewtext(outsd1,3,0,1)
+              iside=3
+              isize=0
+              ifont=1
+              call viewtext(outsd1,iside,isize,ifont)
             else
               call edisp(itru,outsd1)
             endif
@@ -868,7 +889,10 @@ C if names of zones can be shown.
           GTEXT=' Not filtered by occupancy'
         endif
         if(act.eq.'g')then
-          CALL viewtext(GTEXT,4,0,1)
+          iside=4
+          isize=0
+          ifont=1
+          call viewtext(gtext,iside,isize,ifont)
         else
           call edisp(itru,GTEXT)
         endif
@@ -879,7 +903,10 @@ C if names of zones can be shown.
           GTEXT=' Not filtered by occupancy'
         endif
         if(act.eq.'g')then
-          CALL viewtext(GTEXT,3,0,1)
+          iside=3
+          isize=0
+          ifont=1
+          call viewtext(gtext,iside,isize,ifont)
         else
           call edisp(itru,GTEXT)
         endif
@@ -899,8 +926,14 @@ C MODDRW draws a histogram of the frequency distribution.
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
       COMMON/FREQS1/ICBIN(MF),ITOTAL
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character alabel*60
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
       YMAX = IFREQ
       IF(IG.EQ.2)YMAX=ITOTAL
@@ -911,7 +944,9 @@ C MODDRW draws a histogram of the frequency distribution.
 C Reset graphing area.
 
 C Compute scales and offsets.
-      call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access.
@@ -933,7 +968,9 @@ C If moderate data range use mode 1, otherwise try 0.
 C Right axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
-      call axiscale(igw,igwh,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
      &              Xadd,Padd)
       call vrtaxis(PMIN,PMAX,igr,igb,igt,Padd,psc,0,1,'Percent')
 

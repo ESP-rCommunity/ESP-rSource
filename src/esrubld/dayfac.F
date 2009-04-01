@@ -32,6 +32,7 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
 
       SUBROUTINE  DAYFAC(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -56,11 +57,9 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION XPL(MV),YPL(MV),ZPL(MV),DF(MGT)
       CHARACTER WINFO*10,CSTR*25 
-      character zname*12,zdesc*64
       logical close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei
 
@@ -418,21 +417,21 @@ C available and method should check for transp MLC.
       W=WIDTH*HIGH
 
 C Get information about areas of all surfaces opaque and TMC:
-      call ZINFO(IOUT,SNA,ZOA,PAZI,PELV,VOL)
+      call ZINFO(IOUT,SNA,ZOA,PAZI,PELV,ZVOL)
 
       DO 10 I=1,NSUR
       call eclose(PAZI(I),PAZI(J),0.5,close)
       IF(.NOT.close)THEN
         ZAREA=ZAREA+SNA(I)
         ITVTR=ITMCFL(ICOMP,I)
-        IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+        IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
           AVREF=AVREF+SNA(I)*(1.-AI(ICOMP,I))
         ELSE
           AVREF=AVREF+SNA(I)*(1.-(TVTR(ICOMP,ITVTR)+AI(ICOMP,I)))
         ENDIF
 
         IF(SVFC(I).EQ.'CEIL')THEN
-          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
             RCW=RCW+(1.-AI(ICOMP,I))*SNA(I)
             AU=AU+SNA(I)
           ELSE
@@ -441,7 +440,7 @@ C Get information about areas of all surfaces opaque and TMC:
           ENDIF
 
         ELSEIF(SVFC(I)(1:4).EQ.'FLOR')THEN
-          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
             RFW=RFW+(1.-AI(ICOMP,I))*SNA(I)
             AL=AL+SNA(I)
           ELSE
@@ -450,7 +449,7 @@ C Get information about areas of all surfaces opaque and TMC:
           ENDIF
 
         ELSE
-          IF(SOTF(I)(1:4).EQ.'OPAQ')THEN
+          IF(SOTF(I)(1:4).EQ.'OPAQ'.OR.SOTF(I)(1:4).EQ.'CFC ')THEN
             RCW=RCW+(1.-AI(ICOMP,I))*SNA(I)*HU/RDZ
             RFW=RFW+(1.-AI(ICOMP,I))*SNA(I)*HL/RDZ
             AU=AU+SNA(I)*HU/RDZ

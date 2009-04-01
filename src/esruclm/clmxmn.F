@@ -33,10 +33,16 @@ C IP = 6  - EXTERNAL RELATIVE HUMIDITY HELD IN IX(5,MT).
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CGSC/XSC,YSC(6),Xadd,Yadd(6)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/CLMDAT/IDY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A           CDIR(MT),CHUM(MT)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C IF PERIOD NOT CHANGED NO NEED TO RECALCULATE
       IF(INEW.EQ.0)GO TO 2
@@ -102,8 +108,10 @@ C   IN FACT 1 & 3 SHARE SAME AXIS
         YMAX(I)=YMAX(I)+1.0
         YMIN(I)=YMIN(I)-1.0
         A=2.0
-  75    call axiscale(igw,igwh,TMIN,TMAX,YMIN(I),YMAX(I),XSC,bysc,sca,
-     &              Xadd,addY)
+  75    igwid=igw
+        igheight=igwh
+        call axiscale(igwid,igheight,TMIN,TMAX,YMIN(I),YMAX(I),XSC,
+     &              bysc,sca,Xadd,addY)
         YSC(I)=bysc
         Yadd(I)=addY
   70  CONTINUE

@@ -387,7 +387,9 @@ C espriou.h provides currentfile, cdblfil.
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 C      common/appw/iappw,iappx,iappy
 
@@ -551,6 +553,8 @@ C If use already aksed for graph and date has change draw again.
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
           CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 C Debug.
@@ -1387,6 +1391,8 @@ C axis are required and then directly call CLMDRW
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
           CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 C Debug.

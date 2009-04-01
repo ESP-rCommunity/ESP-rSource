@@ -254,6 +254,7 @@ C          flow control function.
       SUBROUTINE EZCTLR(IUNIT,ITRC,ITRU,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
 #include "espriou.h"
@@ -267,7 +268,6 @@ C espriou.h provides currentfile.
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
      &             opticdoc
       common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
@@ -289,7 +289,6 @@ C Error subroutine and error details for dll mode.
       CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*72
       CHARACTER PERST1*14,PERST2*44,PERST3*44,NODID*12,
      &          WORD*20,CMPID*12,NDPOS*12,NDNEG*12
-      character ZNAME*12,zdesc*64
       character dllsubr*12,dllmesg*124,outs*124,t40*40
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248,LOUTSTR*248
@@ -1969,6 +1968,7 @@ C EVCNTRL: Decodes and returns a string (72 char) describing a config
 C control file sensors, actuator, control types, control laws.
       SUBROUTINE EVCNTRL(icfoc,II,JJ,KK,WHICH,SSTR)
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
@@ -1976,7 +1976,6 @@ C control file sensors, actuator, control types, control laws.
       integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1985,12 +1984,15 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      character DESC*48
       CHARACTER SSTR*72,SSTRB*48
-      CHARACTER WHICH*1,ZNAME*12,ZN*12,zdesc*64
+      CHARACTER WHICH*1,ZN*12
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -3326,12 +3328,12 @@ C SSTR is the string (72 char) returned
 C SSTRB is brief string (48 char) returned
       subroutine decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3345,7 +3347,7 @@ C SSTRB is brief string (48 char) returned
       integer icfoc
       dimension icsn(5)
       character sstr*72,sstrb*48
-      CHARACTER ZNAME*12,ZN*12,zdesc*64,NNAM*14,DESC*20
+      CHARACTER ZN*12,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -3710,6 +3712,7 @@ C control loops for legality.
 
       subroutine ezctlc(ier)
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
@@ -3721,7 +3724,6 @@ C control loops for legality.
       common/c1/ncomp,ncon
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       COMMON/MFLOW1/NNOD,NCMP,NCNN

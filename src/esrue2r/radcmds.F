@@ -562,6 +562,7 @@ C defview generates a new default view.
 
       SUBROUTINE defview
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/FILEP/IFIL
 
@@ -573,7 +574,6 @@ C defview generates a new default view.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
 
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
@@ -1001,6 +1001,7 @@ C Assumes that the path to the image is given.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -1016,6 +1017,11 @@ C Assumes that the path to the image is given.
       integer lnrp  ! length of run path
       
       dimension UGRV(72),UGRANG(72)
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
       
       logical XST,unixok
 
@@ -1101,8 +1107,12 @@ C Check for daylight factor results.
           if (MMOD.eq.8) then
             CALL startbuffer()
             call win3d(menuchw,8,8,5,3,igl,igr,igt,igb,igw,igwh)
-            call axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
-     &                  Xadd,Yadd)
+            igw=igr-igl
+            igwh=igb-igt
+            igwid=igw
+            igheight=igwh
+            call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,
+     &                  sca,Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.
             call linescale(igl,Xadd,xsc,igb,Yadd,ysc)

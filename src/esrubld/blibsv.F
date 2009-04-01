@@ -38,6 +38,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       SUBROUTINE  MZLS1
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -56,23 +57,20 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC3I/CHARDM(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),
      &                NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
       COMMON/PREC10/NWINS(MCOM,MS)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       common/PREC18/ZTRANA(MCOM)
 
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
       dimension izdum(MZS)
       CHARACTER*72 LCFGF
-      CHARACTER ZNAME*12,zdesc*64,ZNPAD*15,doit*248,outs248*248
+      CHARACTER ZNPAD*15,doit*248,outs248*248
       CHARACTER*6 NAME
       character outs*124,tfile*72,cfgroot*24,longtfile*144
       logical concat
@@ -104,9 +102,11 @@ C Clear dummy zones variable (in place of old NDOORS array).
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSNAM
       IREC = IREC + 1
 
+C Record width is slightly sensitive to the number of zones in the model
+C an extra record is used.
       NCP=NCOMP
       IF(NCOMP.GT.20)NCP=20
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCCODE(I),I=1,NCP)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  4
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),
@@ -114,26 +114,33 @@ C Clear dummy zones variable (in place of old NDOORS array).
       IREC = IREC + 1
     4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
       IREC=IREC+1
+
+C Write one operation file name per record.
       DO 20 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
       IREC = IREC + 1
    20 CONTINUE
 
+C Write one geometry file name per record.
       DO 40 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
       IREC = IREC + 1
    40 CONTINUE
 
+C Write one shading file name per record.
       DO 60 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
       IREC = IREC + 1
    60 CONTINUE
 
+C Write one construction file name per record.
       DO 80 I = 1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
       IREC = IREC + 1
    80 CONTINUE
 
+C Record width is not sensitive to the number of surfaces in the model
+C extra records are used.
       X=FLOAT(NCON)/20.
       N=INT(X)+1
       DO 100 I = 1,N
@@ -183,6 +190,8 @@ C Write out 15 char string for zone name (so reading logic the same).
       IREC = IREC + 1
   150 CONTINUE
 
+C Record width is slightly sensitive to the number of zones. A second
+C record is used if more than 20 zones.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCONST(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  5
@@ -230,23 +239,29 @@ C DUMP FOR ALL THREE POSSIBLE AIR GAPS
   180 CONTINUE
 
 C Save floor area of each zone.
+C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZBASEA(I),I=1,NCOMP)
       IREC = IREC + 1
 C      write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
 
 C Save area of transparent surfaces connected to external type BC.
+C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZTRANA(I),I=1,NCOMP)
       IREC = IREC + 1
 C      write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
 
-C Save surface area of each surface in each zone.
+C Save surface area of each surface in each zone. Record width is
+C sensitive to the number of surfaces in the zone.
       DO 230 I=1,NCOMP
       NN=NCONST(I)
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(SNA(I,J),J=1,NN)
       IREC=IREC+1
   230 CONTINUE
+
+C Write one data record per zone.
+C << more items could be written into this e.g. ZBASEA and ZTRANA >>
       DO 240 I=1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)ZOA(I)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)zonetotsurfacearea(I)
       IREC=IREC+1
   240 CONTINUE
       DO 250 I=1,NCOMP
@@ -314,6 +329,9 @@ C      /
 C     /
 C NB The following NCOMP records are used to store
 C external and internal window and door areas per zone.
+
+C << This data structure no longer exists so this section
+C << could be used for something else.
 
       IRECPL = IREC+NCOMP
       IREC = 2
@@ -595,6 +613,7 @@ C ndbph is number of data blocks/hr for monitor function.
 
       SUBROUTINE MZLS3(ICOMP,IDAY,ITSMUS,ndbph)
 #include "building.h"
+#include "geometry.h"
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
@@ -611,7 +630,7 @@ C#include "cfd.h"
 
       COMMON/SAVE/ISAVE
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/recver/izver,ipver,iever
@@ -631,11 +650,9 @@ C#include "cfd.h"
 
 C Commons for summary of solar (for results library)
       common/solsum/q1adjz(2),q1outs(2),q2adjz(2),q2lost(2),q2tmc(2),
-     &  q2wall(2),q2rem(2)
+     &  q2wall(2),q2rem(2),q2cfc(2)
 
       COMMON/CCTL/ICASCF(MCOM)
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -761,7 +778,7 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
@@ -777,7 +794,7 @@ C Local variables for casual gains.
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       PARAMETER       (SMALL=1.0E-15)
 
-      character outs*144,zname*12,zdesc*64
+      character outs*144
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,bresfil*72
       logical close
 
@@ -1389,7 +1406,7 @@ C Solar distribution values: QW1 slot used for solar entering from outside,
 C QW2 slot used for solar from adjacent zones and QSA is solar absorbed.
           QW1=q1outs(2)
           QW2=q1adjz(2)
-          QSA=q2tmc(2)+q2wall(2)+q2rem(2)
+          QSA=q2tmc(2)+q2wall(2)+q2rem(2)+q2cfc(2)
 
 C Thermal bridges.
           qbridge=totheatloss(icomp)*(TF-TFA(icomp))
@@ -1405,7 +1422,7 @@ C Solar trace rather than default window stuff.
           QW1=(q1outs(1)+q1outs(2))*0.5
           QW2=(q1adjz(1)+q1adjz(2))*0.5
           QSA=((q2tmc(1)+q2tmc(2))*0.5)+((q2wall(1)+q2wall(2))*0.5)+
-     &        ((q2rem(1)+q2rem(2))*0.5)
+     &        ((q2rem(1)+q2rem(2))*0.5)+((q2cfc(1)+q2cfc(2))*0.5)
 
 C Thermal bridges.
           qbridge=totheatloss(icomp)*
@@ -1435,7 +1452,7 @@ C For each casual gain type.
         ENDIF
 
 C Casual gains and average FRACtion controlled.
-        QCASR=QCASRT(icomp)*(ZOA(ICOMP))/2.0
+        QCASR=QCASRT(icomp)*(zonetotsurfacearea(ICOMP))/2.0
         QCASC=QCASCT/2.0
         if(ICGCTL(ICOMP).gt.0)then
           FRAC=(CGCTL(ICOMP,1,ICGCTL(ICOMP))+
@@ -2326,10 +2343,12 @@ C Possibly all calculations should use the IVTHPZ in the future?
       SUBROUTINE SURBAL(ICOMP)
 
 #include "building.h"
+#include "geometry.h"
 C#include "cfd.h"
 #include "control.h"
+#include "CFC_common.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
@@ -2382,6 +2401,7 @@ C Energy balance.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL IVTHPS,IVTHPZ
+      real zoar  ! local for zonetotsurfacearea(MCOM)
 
 C Do for all surfaces.
       do 10 ISFN=1,NCONST(ICOMP)
@@ -2417,6 +2437,27 @@ C Calculate QCFD? for use by CFD conflation type 2.
         QCFDF(ICOMP,ISFN)=hcif(ICOMP,ISFN)*(tfa(ICOMP)-tfs(ICOMP,ISFN))
         qconvi(ICOMP,ISFN,2)=QCFDF(ICOMP,ISFN)*sna(ICOMP,ISFN)
 
+C Calculate Inside Face Convection for CFCs
+C ONLY IF INDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+        icfcType = icfcfl(icomp,isfn) !CFC type
+        IF(icfcType.ge.1)then !surface is CFC
+
+          ne=NELTS(ICOMP,ISFN)
+
+          icfcLayerType = icfcltp(icomp,icfcType,ne) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+          if(icfcLayerType.ge.2)then    !INDOOR BLIND PRESENT
+
+            qconvi(icomp,isfn,2)=(q_blind_airndS(icomp,isfn)    !conv. flux from back blind surface to air node
+     &                           +q_glass_airndS(icomp,isfn)    !conv. flux from interior glass to air node
+     &        +(hcif(icomp,isfn)*(tfa(icomp)-tfs(icomp,isfn)))) !conv. flux from front blind surface to air node
+     &                            *sna(icomp,isfn)
+
+          endif
+
+        ENDIF
+
 C -- Longwave radiation.
         qlwrdi(ICOMP,ISFN,1)=qlwrdi(ICOMP,ISFN,2)
         qlwrdi(ICOMP,ISFN,2)=0.
@@ -2428,9 +2469,29 @@ C -- Longwave radiation.
   702   continue
         qlwrdi(ICOMP,ISFN,2)=qlwrdi(ICOMP,ISFN,2)*sna(ICOMP,ISFN)
 
+C Calculate Inside Longwave Radiation for CFCs
+C ONLY IF INDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+        icfcType = icfcfl(icomp,isfn) !CFC type
+        IF(icfcType.ge.1)then !surface is CFC
+
+          ne=NELTS(ICOMP,ISFN)
+
+          icfcLayerType = icfcltp(icomp,icfcType,ne) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+          if(icfcLayerType.ge.2)then    !INDOOR BLIND PRESENT
+
+            qlwrdi(icomp,isfn,2)=q_cfclw_toRoom(icomp,isfn)
+     &                            *sna(icomp,isfn)
+
+          endif
+
+        ENDIF
+
 C -- Radiant casual gains are area AND emissivity weighted.
+        zoar = zonetotsurfacearea(ICOMP) ! assign local value
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
-        qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoa(ICOMP)*sna(ICOMP,ISFN)*
+        qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoar*sna(ICOMP,ISFN)*
      &                                      ei(ICOMP,ISFN)/emarea(ICOMP)
 
 C -- Plant radiant energy.
@@ -2452,7 +2513,7 @@ C -- Plant radiant energy.
 
 C -- Shortwave. Test if TMC (include solar abs).
         qswrdi(ICOMP,ISFN,1)=qswrdi(ICOMP,ISFN,2)
-        IF(ITMCFL(icomp,ISFN).EQ.0)THEN
+        IF(ITMCFL(icomp,ISFN).EQ.0.AND.icfcfl(icomp,ISFN).EQ.0)THEN
           qswrdi(ICOMP,ISFN,2)=qsoli(ISFN,2)*sna(ICOMP,ISFN)
         ELSE
           NN=NNDC(ICOMP,ISFN)
@@ -2487,6 +2548,23 @@ C -- Convection.
           qconve(ICOMP,ISFN,2)=hcof(ICOMP,ISFN)*sna(ICOMP,ISFN)*
      &                                            (tf-tfc(ICOMP,ISFN,1))
 
+C Calculate Outside Face Convection for CFCs
+C ONLY IF OUTDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+          icfcType = icfcfl(icomp,isfn) !CFC type
+          IF(icfcType.ge.1)then !surface is CFC
+
+            icfcLayerType = icfcltp(icomp,icfcType,1) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+            if(icfcLayerType.ge.2)then    !OUTDOOR BLIND PRESENT
+
+              qconve(icomp,isfn,2)=(q_glass_extS(icomp,isfn)    !conv. flux from exposed glass surface to external air
+     &          +(hcof(icomp,isfn)*(tf-tfc(icomp,isfn,1))))    !conv. flux from both blind surfaces to air node (hcof is multiplied by 2 in subroutine cfc_convection)
+     &                              *sna(icomp,isfn)
+
+            endif
+          ENDIF
+
 C -- Longwave radiation (ground, buildings, sky).
           qlwrde(ICOMP,ISFN,1)=qlwrde(ICOMP,ISFN,2)
           qlwrde(ICOMP,ISFN,2)=QELWFG(ISFN)*sna(ICOMP,ISFN)
@@ -2495,9 +2573,29 @@ C -- Longwave radiation (ground, buildings, sky).
           qlwrsk(ICOMP,ISFN,1)=qlwrsk(ICOMP,ISFN,2)
           qlwrsk(ICOMP,ISFN,2)=QELWFK(ISFN)*sna(ICOMP,ISFN)
 
+C Calculate Outside Face Longwave Radiation for CFCs
+C ONLY IF OUTDOOR BLIND IS PRESENT - OTHERWISE 
+C STANDARD ESP-R CALCULATION APPLIES
+        icfcType = icfcfl(icomp,isfn) !CFC type
+        IF(icfcType.ge.1)then !surface is CFC
+
+          icfcLayerType = icfcltp(icomp,icfcType,1) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
+
+          if(icfcLayerType.ge.2)then    !OUTDOOR BLIND PRESENT
+
+            qlwrde(ICOMP,ISFN,2)=Grd_fraction(icomp,isfn)*
+     &      q_cfclw_toExt(icomp,isfn)*SNA(icomp,isfn) !Fraction of total longwave flux to ground
+            qlwrbd(ICOMP,ISFN,2)=Bld_fraction(icomp,isfn)*
+     &      q_cfclw_toExt(icomp,isfn)*SNA(icomp,isfn) !Fraction of total longwave flux to buildings
+            qlwrsk(ICOMP,ISFN,2)=Sky_fraction(icomp,isfn)*
+     &      q_cfclw_toExt(icomp,isfn)*SNA(icomp,isfn) !Fraction of total longwave flux to sky
+
+          endif
+        ENDIF
+
 C -- Shortwave radiation. Test if TMC.
           qswrde(ICOMP,ISFN,1)=qswrde(ICOMP,ISFN,2)
-          if (ITMCFL(icomp,ISFN).EQ.0) then
+          if (ITMCFL(icomp,ISFN).EQ.0.AND.icfcfl(icomp,ISFN).EQ.0)then
             qswrde(ICOMP,ISFN,2)=qsole(ISFN,2)*sna(ICOMP,ISFN)
           else
             qswrde(ICOMP,ISFN,2)=QTMCA(ISFN,1,2)*sna(ICOMP,ISFN)

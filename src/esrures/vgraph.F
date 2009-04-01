@@ -453,6 +453,7 @@ C      =29  - dew point temperature
 
       SUBROUTINE VGGET(IZONE,IDAY,IGET,I12)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -464,7 +465,6 @@ C      =29  - dew point temperature
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 
@@ -784,6 +784,11 @@ C VGDRW initiates axis drawing and displays all requested profiles.
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       character VITEM*24,HITEM*24
+#ifdef OSX
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
 C Initiate graph axis drawing.
       CALL VAXIS(VITEM,HITEM)
@@ -852,9 +857,13 @@ C Set all possible values, computing average if requested.
     1       MARK=6
             IPEN=0
             IF(TIME.LE.TSTART)THEN
-              call etplot(YVAL2,YVAL1,0,0)
+              iupdown=0
+              isym=0
+              call etplot(YVAL2,YVAL1,iupdown,isym)
             ELSE
-              call etplot(YVAL2,YVAL1,IPEN,MARK)
+              iupdown=IPEN
+              isym=MARK
+              call etplot(YVAL2,YVAL1,iupdown,isym)
             ENDIF
    30     CONTINUE
    20   CONTINUE
@@ -869,8 +878,14 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       SUBROUTINE VAXIS(VITEM,HITEM)
 
       COMMON/VGRAF1/YMAXV,YMINV,YMAXH,YMINH
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character VITEM*24,HITEM*24,VIT*24,HIT*24
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+#endif
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -888,7 +903,9 @@ C Interval on horizontal axis.
 
 C Determine the scaling for both axis and place in static 
 C memory for access by plotting code.
-      call axiscale(igw,igwh,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
      &              Xadd,Yadd)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
 
@@ -918,6 +935,7 @@ C to graphical result display.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -928,6 +946,11 @@ C to graphical result display.
       CHARACTER outsd*80,outsd1*81
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C Generate a descriptive string for the time period to be displayed.
 C and the simulation and output timesteps.
@@ -941,24 +964,32 @@ C and the simulation and output timesteps.
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         call startbuffer()
       ENDIF
 
       WRITE(ETEXT,'(1X,A44,A,A22)')SDESCR,' Lib:',RFILE(1:22)
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,'(1X,A60)')PDESCR
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
       call znlist(outsd,len,ierr) 
       if(ierr.ne.1)then
         write(outsd1,'(1x,a)')outsd
-        CALL viewtext(outsd1,3,0,1)
+        iside=3
+        call viewtext(outsd1,iside,isize,ifont)
       endif
 
       WRITE(ETEXT,'(4a)')' Variables: Vert=',
      &  VITEM(1:lnblnk(VITEM)),'  Horiz=',HITEM(1:lnblnk(HITEM))
-      CALL viewtext(ETEXT,4,0,1)
+      iside=4
+      call viewtext(etext,iside,isize,ifont)
 
       RETURN
       END

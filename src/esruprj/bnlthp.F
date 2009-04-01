@@ -75,6 +75,9 @@ C **************************************************************
       SUBROUTINE THMENU(ITRC)
 #include "building.h"
 
+C geometry.h provides commons G0/G2/precz.
+#include "geometry.h"
+
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
@@ -87,13 +90,8 @@ C **************************************************************
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP) 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -108,10 +106,9 @@ C **************************************************************
       LOGICAL OK,DOK,SAVEOK,XST
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72,zdesc*64
+      CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72
       CHARACTER*20 ITEM3(MCOM),ITEM4(MS),ITEM5(ME)
       CHARACTER*95 TEXT,TEXT1
-      CHARACTER zname*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       character ltmp*72

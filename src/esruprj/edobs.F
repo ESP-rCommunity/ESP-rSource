@@ -33,6 +33,7 @@ C to create one.
 C Use file unit IPRODB temporarily.
       SUBROUTINE EDOBS(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -42,28 +43,24 @@ C LPRFDB,IPRODB (for event profile database)
 
       common/pophelp/h(60)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -72,7 +69,7 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/pmchange/comold,tmcold,vwfold,ishold
+      common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       dimension IVALB(MB)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
@@ -80,13 +77,13 @@ C LPRFDB,IPRODB (for event profile database)
       character*30 PICK(MB)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,zname*12,HOLD*24
-      character blkroot*6,mat*12,DESC*48,tbn*8
-      character holds*36,SFIL*72,DSFIL*72,ZN*12,zdesc*64
+      CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,HOLD*24
+      character blkroot*6,mat*12,tbn*8
+      character holds*36,SFIL*72,DSFIL*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
-      LOGICAL comold,tmcold,vwfold,ishold,unixok
+      LOGICAL comold,tmcold,vwfold,ishold,unixok,cfcold
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
 
@@ -234,7 +231,7 @@ C read of file).
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='In order to account for external shading devices, '
@@ -350,7 +347,7 @@ C Material to associate with the reveal.
           call EREVEAL(ICOMP,IRS,AZI,ELV,RTK,OWID,blkroot,mat,IER)
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
@@ -505,7 +502,7 @@ C To delete the last obstruction, dereference the file and exit.
             else
               CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             endif
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           ELSE
             CALL USRMSG(' ',' Too many obstructions defined!','W')
             GOTO 92
@@ -514,7 +511,7 @@ C To delete the last obstruction, dereference the file and exit.
 C Edit the new block, first hilight the obstruction.
           IB=NB
           ITOBS = IB
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           CALL EPMENSV
           CALL EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
           CALL EPMENRC
@@ -574,7 +571,7 @@ C Ask for transform distance for obstruction and then apply.
             else
               CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             endif
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 
@@ -638,15 +635,14 @@ C the geometry file is version 1.1 or greater then it can hold
 C the block information.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/precz.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
@@ -658,13 +654,11 @@ C the block information.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
       CHARACTER H*72,BLKNAME*8,BLKMAT*12,LTMP*72,OFILE*72
-      character zname*12,zdesc*64
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -733,10 +727,10 @@ C If older geometry file ask for the obstruction file, if it exists
 C then read it in, if not found create one with default information.
 C In either case offer the choice to dereference obstructions.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(OFILE,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.obs'
+        WRITE(OFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.obs'
       else
         WRITE(OFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.obs'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.obs'
       endif
 
 C If silent is true create standard name. If this matches an
@@ -942,16 +936,17 @@ C ************* EDOBSB
 C EDOBSB: Edit details of an obstruction block.
       SUBROUTINE EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -973,7 +968,7 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       LOGICAL MODIFY,MODLEN,MODBND
       DIMENSION VERT(19),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S8*8
-      character BLKNAME*8,BLKMAT*12,HOLD*32,DESC*48,outs*124
+      character BLKNAME*8,BLKMAT*12,HOLD*32,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -1036,7 +1031,7 @@ C Display the zone.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
 
 C Help text for this menu.
       H(1)='The specification of obstructions is currently based'
@@ -1062,7 +1057,7 @@ C Now display the menu.
       CALL EMENU('Block Details',VERT,19,IVERT)
       IF(IVERT.EQ.19)THEN
         ITOBS = 0
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         RETURN
       ELSEIF(IVERT.EQ.1)THEN
   42    H(1)='You can edit the origin of the block, make it the same'
@@ -1221,16 +1216,13 @@ C IRS is the selected surface, AZI is its asimuth, RTK is the thickness
 C of the reveal (adj wall), OWID is the width of the obstruction block.
       SUBROUTINE EREVEAL(ICOMP,IRS,azim,elev,RTK,OWID,blkroot,mat,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)

@@ -144,6 +144,7 @@ C  itrc the level of reporting (zero is quiet).
 
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -153,7 +154,6 @@ C LPCDB/IPCDB (for plant template database)
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/C6/INDCFG
       COMMON/C8/LPNAM
@@ -184,9 +184,8 @@ C Electrical details for specified plant components
       CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24,fs*1
       CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER ZDESCR*25
+      CHARACTER PZDESCR*25
       character*68 mscdsc, cvrdsc      
-      CHARACTER ZNAME*12,ZDESC*64
       character loutstr*248,louts*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)
@@ -264,8 +263,8 @@ C -> but don't open the database if save-level 0 or 5 are specified!
 
 C Read the total number of plant components (NTPC) in the database.
       IREC = 1
-      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) ZDESCR
-      IF (ZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
+      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) PZDESCR
+      IF (PZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
         call lusrmsg('May not be a plant db!',LPCDB,'W')
       endif
       IREC=2
@@ -388,13 +387,16 @@ C of miscellaneous data items.
             IREC1=NPCDAT(IPCOMP,2)
             READ(IUNIT1,REC=IREC1,IOSTAT=ISTAT,ERR=950)
      &        AA,ICODE,CEDATE,NNODE,NMATX,NMISC
-C Save number of nodes associated with each component
+
+C Save number of nodes associated with each component.
             NPCDAT(iPComp,8) = NNODE
-C Check to see if required number of items is specified
+
+C Check to see if required number of items is specified.
             if(npi(ipcomp).ne.nmisc) then
-              write(OUTS,707)ipcomp
-  707         format
-     &       ('Invalid no of parameters specified for component',i5)
+              write(OUTS,'(a,i3,a,i2,a,i2,a)')
+     &          'Invalid no of parameters for component',
+     &          ipcomp,' found ',npi(ipcomp),' expecting ',nmisc,
+     &          ' please check plant component.'
               call edisp(iuout,OUTS)
               call epwait
               stop
@@ -659,15 +661,39 @@ C Check if there is a plant fluid flow network available: 0 = no
      &   )
         IF(IFLWN.EQ.0) goto 606
 
+C << NOTE: none of this is really necessary. Even in stand-alone
+C << mode the configuration file will have these entries. 
+
 C Read names of PROBLEM, PRESSURE DISTRIBUTION and RESULTS files, un-
 C less this was already done above (building side air flow wanted)
+C Note that some older models may be missing the names of the flow
+C network, pressure db and flow results file. If there are more than
+C one item on the lines then do not bother setting the variable and
+C warn the user.
+
+C << should this be updated for ipath* >>
         IF(IAIRN.ge.0) THEN
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'network file',IER)
-          LAPROB=OUTSTR(1:72)
-          CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'pressure file',IER)
-          write(LAPRES,'(a)') LOUTSTR(1:144)
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'mfs res file',IER)
-          LAFRES=OUTSTR(1:72)
+          CALL STRIPC(iuc,OUTSTR,99,ND,1,'network file',IER)
+          if(ND.gt.1)then
+            call usrmsg('plant looking for mass flow network and foud',
+     &        outstr(1:48),'W')
+          else
+            write(LAPROB,'(a)') OUTSTR(1:lnblnk(outstr))
+          endif	
+          CALL LSTRIPC(iuc,LOUTSTR,99,ND,1,'pressure file',IER)
+          if(ND.gt.1)then
+            call usrmsg('plant looking for pressure db and foud',
+     &        outstr(1:48),'W')
+          else
+            write(LAPRES,'(a)') LOUTSTR(1:144)
+          endif	
+          CALL STRIPC(iuc,OUTSTR,99,ND,1,'mfs res file',IER)
+          if(ND.gt.1)then
+            call usrmsg('looking for mass flow results and foud',
+     &        outstr(1:48),'W')
+          else
+            LAFRES=OUTSTR(1:72)
+          endif	
           IF(IER.NE.0)RETURN
 
 C Reporting.

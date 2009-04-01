@@ -83,9 +83,13 @@ C Sets up defaults and offers main menu.
 
       program ish
 #include "building.h"
+
+C geometry.h provides commons G0/G2/c20/precz.
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
+#include "prj3dv.h"
 
 C IEEE callback (Solaris)
 #ifdef SUN
@@ -103,12 +107,13 @@ C IEEE callback (Solaris)
       common/filep/ifil
       common/tc/itc,icnt
       common/spad/mmod,limit,limtty
-      common/image/imt,eyem(3),viewm(3),hith,yon,ang,hang,wide
       common/pophelp/h(60)
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
+      integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray2/itdsp,itbnd,itept,itznm,itsnm,itvno,itorg,itsnr,
@@ -118,7 +123,6 @@ C IEEE callback (Solaris)
       common/contr/mon,isc(ms),iyd
       common/data1/ical,idifc,init
       common/mtfile/ltrns,multic,mons,monf
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -126,7 +130,6 @@ C IEEE callback (Solaris)
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/c21/ifcfg,cfgroot,lcfgf
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
@@ -142,14 +145,13 @@ C Indicator of possible focus zone and action to take.
       common/rzone/inzone
       common/ract/paction
 
-      common/precz/zname(mcom),zdesc(mcom)
       common/prec8/slat,slon
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
-      common/deflt2/dfcfg,dfctl,defrlb,dafres,daprob,dpnf,dsbem
+      common/deflt2/dfcfg,dfctl,defrlb,dafres,daprob,dpnf
       
 C Significant figure reporting limit.
       common/sfig/nsigfig
@@ -168,13 +170,13 @@ C Material data arrays.
       character*72 lname,ltrns,tbase,h
       character*72 lcfgf
       character*72 lview,lhcco,ltwin,lcgcin,zobs
-      character items*26,ctype*4,cAppName*12
+      character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
-      character descrh*5,descrd*5,zname*12,zdesc*64,inf*144,lcmdfl*144
+      character descrh*5,descrd*5,inf*144,lcmdfl*144
       character path*72,upath*72,cfgroot*24,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72
-      character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf,dsbem
+      character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*72 ! for ascii shading file
@@ -188,6 +190,12 @@ C Material data arrays.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
+      integer numberofzones ! to pass to updwire rather than ncomp
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -339,11 +347,14 @@ C feedback).
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
         call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updwire(0)
+          numberofzones=0
+          call updwire(numberofzones)  ! pass local integer
           call updcapt(1)
           call updazi(1)
         endif
@@ -518,9 +529,12 @@ C Open core of databases if not already done so.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
-               if(mmod.EQ.8)call updwire(ncomp)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
+               if(mmod.EQ.8)then
+                 numberofzones=ncomp   ! use local integer for updwire.
+                 call updwire(numberofzones)
+               endif
 
 C If inzone = 'All' display an image of the model. If inzone is
 C either a string which matches a zone name or is an index, then
@@ -533,7 +547,7 @@ C a list.
 
 C Set up zone transitional shading file based on zone name.
 C Set logical status flags based on returned value of istat.
-               write(lname,'(a)')zn(1:lnblnk(zn))
+               write(lname,'(a)')zname(icomp)(1:lnzname(icomp))
                ok=.true.
                ltrns=lname
                itc=0
@@ -541,7 +555,7 @@ C Set logical status flags based on returned value of istat.
 
 C Read in the model files taking into account the current value
 C of paction (so that we do not do a recursive asci->bin->ascii.
-               call shdprb(itc,silent,icomp,istat)
+               call shdprb(silent,icomp,istat)
                if(istat.eq.0)then
                  loaded_existing=.true.
                elseif(istat.eq.1)then
@@ -658,41 +672,38 @@ C starting calculations.
 C Proceed with shading and then insolation calculations.
             if(iobs(icomp).eq.1)then
                call egomst(iuf,zobs(icomp),0,0,iuout,ier)
-               zn=zname(icomp)
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...'
+     &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
                call tstamp('>','Ish: re-calculate shading')
                call shdcon(icomp,ier,'s')
                changed_existing=.true.  ! so we know to update ASCII on exit
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...done.'
+     &           zname(icomp)(1:lnzname(icomp)),'...done.'
                call edisp(iuout,outs)
             elseif(iobs(icomp).eq.2)then
-               zn=zname(icomp)
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...'
+     &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
                call tstamp('>','Ish: re-calculate shading')
                call shdcon(icomp,ier,'s')
                changed_existing=.true.  ! so we know to update ASCII on exit
                write(outs,'(3a)')'Shading calculations for ',
-     &                           zn(1:lnblnk(zn)),'...done.'
+     &           zname(icomp)(1:lnzname(icomp)),'...done.'
                call edisp(iuout,outs)
             else
                call edisp(iuout,
      &           'No obstructions, calculating insolation.')
             endif
             icstat=0
-            zn=zname(icomp)
             write(outs,'(3a)')'Insolation calculations for ',
-     &                        zn(1:lnblnk(zn)),'...'
+     &        zname(icomp)(1:lnzname(icomp)),'...'
             call edisp(iuout,outs)
             call tstamp('>','Ish: start insolation computation')
             call inscon(icomp,icstat,'s')
             changed_existing=.true.  ! so we know to update ASCII on exit
             write(outs,'(3a)')'Insolation calculations for ',
-     &                        zn(1:lnblnk(zn)),'...done.'
+     &        zname(icomp)(1:lnzname(icomp)),'...done.'
             call edisp(iuout,outs)
          else
             call usrmsg('Unknown Zone Shading & Insolation file.',
@@ -713,7 +724,7 @@ C done, ask user to delete the transitional files.
                do 155 ix=1,ncomp
                   do 156 im=1,12
                      write(lname,'(a,a3)')
-     &                    zname(ix)(1:lnblnk(zname(ix))),month(im)
+     &                    zname(ix)(1:lnzname(ix)),month(im)
                      call efopran(iunit,lname,irecw,0,ier)
                      if(ier.eq.0)call efdelet(iunit,istat)
  156              continue
@@ -856,8 +867,8 @@ C GTK version will be returning the name with the full path.
             endif
             if(ier.eq.0)then
                cfgok=.true.
-               nzones=ncomp
-               call zdata (itrc,ier,nzones,isfsum)
+               numberofzones=ncomp
+               call zdata (itrc,ier,numberofzones,isfsum)
             endif
          endif
 
@@ -873,15 +884,15 @@ C Read geometry file for either calculation purpose.
          ier=0
          icomp=ic
          zn=zname(icomp)
-         write(outs,'(2a)')'Ish: shift zone focus to: ',zn
+         write(outs,'(2a)')'Ish: shift zone focus to: ',zname(icomp)
          call tstamp('>',outs)
 
 C If there is an existing transitional shading file with 
 C the zone's name as root, ask whether to use it.
-         write(lname,'(a)')zname(icomp)(1:lnblnk(zname(icomp)))
+         write(lname,'(a)')zname(icomp)(1:lnzname(icomp))
          ltrns=lname
          istat=0
-         call shdprb(itc,silent,icomp,istat)
+         call shdprb(silent,icomp,istat)
          if(istat.eq.0)then
            loaded_existing=.true.
          elseif(istat.eq.1)then
@@ -946,14 +957,17 @@ C the day and time, compute the positon and update the view.
                nzg=1
                nznog(1)=icomp
                izgfoc=icomp
-               call adjview(itc,ier)
+               call adjview(ier)
 
 C Generate a heading for the view.
                call edtime(stime,descrh,descrd,timer)
                write(etext,'(a,i2,1x,a3,a,a5,a,f6.1,a,f5.1)')
      &            'View @ ',ido,month(imo),', ',descrh,
      &            ' Sun position - azimuth ',sazi,', altitude ',salt
-               call viewtext(etext,2,1,ifs)
+               iside=2
+               isize=1
+               ifont=ifs
+               call viewtext(etext,iside,isize,ifont)
                call easkab(' ','View:','next hour','exit',iw,0)
                if(iw.eq.1)then
                   stime=stime+((60.0/float(nts))/60.0)
@@ -1281,8 +1295,7 @@ C Redirect synoptic outputs and result of ASHRAE method to a
 C user specified file.
       elseif(inos.eq.21)then
          if(ixopen.eq.0)then
-            write(xfile,'(2a)')zname(icomp)(1:lnblnk(zname(icomp))),
-     &                         '.txt'  ! initial file name
+            write(xfile,'(2a)')zname(icomp)(1:lnzname(icomp)),'.txt'  ! initial file name
          endif
          call edisp(iuout,' ')
          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Report',ier)
@@ -1318,7 +1331,7 @@ C then offer to save or delete.
                do 55 ix=1,ncomp
                   do 56 im=1,12
                      write(lname,'(A,A3)')
-     &                      zname(ix)(1:lnblnk(zname(ix))),month(im)
+     &                 zname(ix)(1:lnzname(ix)),month(im)
                      call efopran(iunit,lname,irecw,0,ier)
                      if(ier.eq.0)then
                         write(outs,'(2a)') 'Deleting ',lname
@@ -1397,8 +1410,9 @@ C  ifstat = 6  user cancel
 C  ifstat = 7  error opening geometry file
 C  ifstat = 8  new file filled via import of ascii file
 
-      subroutine shdprb(itc,silent,icomp,ifstat)
+      subroutine shdprb(silent,icomp,ifstat)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1406,14 +1420,12 @@ C  ifstat = 8  new file filled via import of ascii file
       common/outin/iuout,iuin
       common/pophelp/h(60)
       common/filep/ifil
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/c20/nzsur(mcom),nztv(mcom)
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
       common/udesc/lview(mcom),lhcco(mcom),
@@ -1423,7 +1435,7 @@ C  ifstat = 8  new file filled via import of ascii file
       common/ract/paction
 
       character*72 lview,lhcco,ltwin,lcgcin,zobs
-      character h*72,ctype*4,exportfile*72,paction*16,outs*124
+      character h*72,exportfile*72,paction*16,outs*124
 
       logical modify,modlen,modbnd,silent,xst
       logical newgeo  ! Used to test for new/old geometry file.
@@ -1545,7 +1557,7 @@ C Determine it's bounds for future comparison. Force it to be drawn.
          nzg=1
          nznog(1)=icomp
          izgfoc=icomp
-         call adjview(itc,ier)
+         call adjview(ier)
       endif
       return
       end
@@ -1595,6 +1607,7 @@ C Material data arrays.
       DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
+      character t144*144   ! for use with erprcdb
       integer nclass  ! number of material classifications
 
       IER=0
@@ -1844,7 +1857,8 @@ C Open optical Properties db and read into common.
 C Open the Pressure Coefficients db.
 C      call FINDFIL(LAPRES,XST)
 C      if(XST)then
-C        CALL ERPRCDB(LAPRES,0,3,IER)
+C        t144='  '
+C        CALL ERPRCDB(t144,0,3,IER)
 C        call usrmsg(' ',' ','-')
 C      else
 C        call usrmsg('Pressure Coefficients db not found',

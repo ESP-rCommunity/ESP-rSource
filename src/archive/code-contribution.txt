@@ -1,44 +1,115 @@
-When you have completed the steps outlined in the QA checklist, send a note
-to the archivist using the template below.
-
-
+.\" ******************** ESP-r Code Commit Documentation ********************
+.EQ
+delim ##
+.EN
+.\" ---------------------------------------
+.TL
+ESP-r Developers' Code Contribution Checklist 
+.br
+Last updated: February 6, 2009
+.sp 2
+.\"---------------------------------------
+.NH 1
+Synopsis
+.LP
+This document outlines the documentation to be sent to the archivist
+when a code commit is made. When you have completed the steps 
+outlined in the QA checklist, send a note to the archivist using 
+the template below.
+.LP
+Ideally, code submissions should be related to one concept. For
+example changes which implement a new interface to an ideal zone
+control should be made separately from code that extends a statistical
+report in the results analysis module. A change in a data structure
+should be made to all associated code blocks in one commit if possible
+so that the ESP-r distribution is consistent. If there are multiple
+issues in the commit then each should be noted separately.
+.LP
+The documentation sent to the archivist is a summary of the
+contribution which will form part of the release note which
+will be published when ESP-r versions change. Readers will
+be looking for the significance and applicability of your
+changes. Avoid detail, as
+the archivist can look at the detailed documentation
+in your branch. Be sure to include the following in your
+summary:
+.IP
+* the nature of the change
+.IP
+* whether it is new functionality for the user, repairs a bug, 
+tidies code, or is a work in progress 
+.IP
+* if new functionality is provided for the user, then indicate whether this
+affects the Simulator, Project Manager, Results Analyzer, etc.
+.IP
+* what users might notice
+.IP
+* what developers might notice
+.IP
+* if a new method has been implemented provide a citation to a thesis 
+or a paper that describes its theoretical basis
+.IP
+* if a bug has been repaired, then indicate which application this affects
+and the nature of the change
+.IP
+* if a bug fix alters simulation results describe what the changes
+are and what types of models would be impacted
+.IP
+* if this change tidies code or alters a data structure but does
+not alter functionality indicate this
+.IP
+* if the submission is work in progress indicate whether it is
+safe for others to use
+.IP
+* IMPORTANT: Use proper grammar and spelling!
+.NH 1
+Example
+.LP
+The listing below is a sample of the documentation. Note that
+the revision numbers follow the following syntax. If you made two
+commits 101 and 103 this is represented by r100:104. If you made
+a single commit 345 then this is represented by r344:345.
+.LD
+.fam C
 _____________________________________________________________________________
+
 Revisions to merge into development_branch:
 - r100:103 and r345 of sub-branch Joe_Developer.
 
+Summary
+- Added scripts to convert models between native windows and Linux.
+  Users working across platforms will find these useful.
 
-Summary of changes:
-- If the submitted code bundles together numerous contributions, then
-  provide a one or two sentence description of each. Use a separate point
-  for each item and clearly indicate whether it provides new functionality
-  for the user, repairs a bug, tidies code, or is a work in progress.  Do not
-  dwell on the details (these should be contained in the svn log of your
-  sub-branch) but rather provide a high-level description that communicates
-  the significance of the change to users and other developers.
-- If new functionality is provided for the user, then indicate whether this
-  affects the Simulator, the Project Manager, the Results Analyzer, etc.
-  If this code affects the Project Manager or Results Analyzer, then
-  detail this change from the user's perspective.  If a new model has been
-  added, then provide a citation to a thesis or a paper that describes its
-  theoretical basis.
-- If a bug has been repaired, then indicate whether this affects the
-  Simulator, the Project Manager, the Results Analyzer, etc.  If it affects
-  simulation results, then detail under what circumstances.
-- If this change tidies code without providing (at this point in time) new
-  functionality or repairing a bug, then clearly indicate this.
-- If this contribution is a work in progress that does not provide (at this
-  point in time) new functionality or repair a bug, then clearly indicate
-  this.
-- IMPORTANT: Use proper grammar and spelling!
+- Added site related data to flatfile format. No impact on users.
+  The flatfile continues to evolve. What is included is 
+  functional and should not be considered work in progress.
 
+- Increase text buffer length for X11 version. Interface only, 
+  no impact on predictions.
 
-Testing summary:
-- Successfully compiled GTK and X11 versions of ESP-r on Linux
-  (GCC 3.4.6).
-- Successfully compiled X11 version on Cygwin (GCC 3.4.4).
-- Exercised relevant bps and prj menus for both GTK and X11
-  versions on Linux. All menus found to work as expected.
-- Ran tester.pl over complete test suite comparing Joe_Deverloper@1109 against
-  development_branch@1108 using X11 version on Linux.  All test cases passed:
-  no differences reported.
+- Further work on UK NCM notional model creation (databases,
+  and automation of tasks, thermal bridges). Fewer interactions
+  when generating notional model. The work has a likely future 
+  impact in terms of code consolidation and extension of the 
+  ESP-r data model and should be considered work in progress.
+
+Testing
+- Pre-commit and post-commit syntax checks on full source of all modules
+- Scripts used to convert an exemplar model for use on another machine
+- Interactive test of the X11 text buffer by listing and scrolling
+  back through a QA report.
+- Added site data to a flatfile and checked that the ESP-r model
+  created included this information.
+- Interactive creation of a notional model noting altered dialogues.
+- Compile Solaris F90 X11
+- Compile Linux GCC 3.4 X11 and GTK and text-only
+- Compile OSX GCC 3.4 X11 and GTK
+- Test merge into development branch with no conflicts reported
+- Compile test merge with Linux GCC 3.4 X11
+
+Revisions to take from Joe_Developer:
+r100:103
+r344:345
 _____________________________________________________________________________
+.fam T
+.DE

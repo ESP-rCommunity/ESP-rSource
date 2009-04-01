@@ -140,7 +140,7 @@ C Common for electrical file
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       COMMON/GR3D100/BLDG3D,ZONE3D(MCOM)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
@@ -183,7 +183,7 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
  
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
@@ -690,6 +690,9 @@ C IREP=1 implies no reporting or data checking.
       SUBROUTINE MZPREC(IREP,IER)
 #include "building.h"
 
+C geometry.h provides commons G0/G2/c20/precz.
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/WARN/IWARN
@@ -702,10 +705,6 @@ C IREP=1 implies no reporting or data checking.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       
@@ -721,7 +720,6 @@ C =3 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C During setup scan for inbuilt and user defined ground temperatures.
@@ -731,10 +729,9 @@ C         if = 0 then use compiled pattern.
       common/C25/igttype,GTMP(12)
       common/ground/grdtmp(12,mgrdp)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       COMMON/PREC7/ITCNST
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -782,7 +779,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       character outs*124,CXSTR*78,spflnam*72,lfil*72,H*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      character zname*12,zdesc*64
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124
@@ -1494,6 +1490,7 @@ C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
 C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       subroutine ckcurmatch(prob,iprob,ier)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1501,13 +1498,8 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       integer nccode,indutl

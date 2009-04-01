@@ -185,7 +185,7 @@ C     2 Minimum indoor surface temperature (C)
 
 C     building construction common block data
       COMMON/C6/INDCFG
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &     NPGAP(MCOM,MS,MGP)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
@@ -212,6 +212,8 @@ C     (found in ESRUPLT/PMATRX.F)to store present time values of some variables
      &     ConDp(MCOM,MS), TetaMf(MCOM,MS), TetaMp(MCOM,MS),
      &     Tpipef(MCOM,MS), Tpipep(MCOM,MS)
       REAL    COUT(MPCOE), J11, J12, J21, J22
+      
+      character outs*124
 C----------------------------------------------------------------------
 
 C     Trace output
@@ -219,9 +221,8 @@ C     Trace output
      &     ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP95C'
 
       IF(INDCFG .NE. 3) THEN
-         WRITE(*,*) 'This plant component should be used when the'
-         WRITE(*,*) 'building simulation is active, i.e., INDCFG = 3.'
-         WRITE(*,*) 'Leaving subroutine CMP95C'
+         call usrmsg('Use this plant component only when the simulaton',
+     &    'is active, i.e., INDCFG = 3. Leaving subroutine CMP95C','W')
          RETURN
       ENDIF
 
@@ -336,8 +337,12 @@ C     specific heat of slab system
 
 C     Check if the specified injection node is valid -----------------
       IF(In .LT. 1 .OR. In .GT. Ncentr+1) THEN
-         WRITE(*,*)'Fatal error: injection node not valid.'
+         WRITE(outs,*)'CMP95C Fatal error: injection node',In,
+     &     ' not in range 1 to',Ncentr+1
+         call edisp(iuout,outs)
+         WRITE(*,outs)
          WRITE(*,*)'Source error: subroutine CMP95C.  Simulation halted'
+         call pauses(2)   ! pause for 2 seconds then abort program.
          STOP
       ENDIF
 

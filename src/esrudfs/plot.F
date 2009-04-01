@@ -38,6 +38,7 @@ C LMON   - labels for monitoring values.
       SUBROUTINE PLOT(iplt,NPLT,ITM,NITER,RMX,NCRV,CRES,CMON,LRES,LMON)
 #include "cfd.h"
 
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Stores all MFRP residuals, maximum and minimum residuals and max X value.
@@ -50,6 +51,15 @@ C Stores all MFRP monitoring values, maximum and minimum values.
 
       CHARACTER title*124,LRES(4)*24,LMON(4)*24,LINE(4)*5
       DIMENSION ILINE(4),CRES(4),CMON(4)
+#ifdef OSX
+      integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
 
       LOGICAL RDR
 
@@ -132,7 +142,7 @@ C Re-set Maximum and Minimum residuals.
 
 C Re-scale the screen and re-draw the coordinate axes.
       ipltwd=int(igw/2)-15
-      iglmon=igl+ipltwd+30
+      iglmon=igl + int(ipltwd) + 30
       IF(RDR)THEN
 
 C Calculate plotting box locations.
@@ -141,32 +151,42 @@ C Calculate plotting box locations.
         YMAX=1.
         YMIN=0.
         CALL startbuffer()
-        CALL axiscale(ipltwd,igwh,plxmin,plxmax,Ymin,Ymax,
-     &                                         xsc,ysc,sca,xadd,yadd)
+        igheight=igwh
+        CALL axiscale(ipltwd,igheight,plxmin,plxmax,Ymin,Ymax,
+     &                xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw residuals plot.
         CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
      &                                        'Number of Iterations')
         CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
-        CALL etplot(plxmin,YMIN,0,0)
-        CALL etplot(plxmin,YMAX,1,0)
-        CALL etplot(plxmax,YMAX,1,0)
-        CALL etplot(plxmax,YMIN,1,0)
+        iupdown=0
+        isym=0
+        CALL etplot(plxmin,YMIN,iupdown,isym)
+        iupdown=1
+        CALL etplot(plxmin,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMIN,iupdown,isym)
 
 C Scale and draw monitoring plot.
         CALL horaxis(plxmin,plxmax,iglmon,igr,igb,xadd,XSC,0,' ')
         CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
-        CALL etplot(plxmin,YMIN,0,0)
-        CALL etplot(plxmin,YMAX,1,0)
-        CALL etplot(plxmax,YMAX,1,0)
-        CALL etplot(plxmax,YMIN,1,0)
+        iupdown=0
+        isym=0
+        CALL etplot(plxmin,YMIN,iupdown,isym)
+        iupdown=1
+        CALL etplot(plxmin,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMAX,iupdown,isym)
+        CALL etplot(plxmax,YMIN,iupdown,isym)
         call forceflush()
       ENDIF
 
 C Print title. IPS is used to keep track of number of title lines.
       IPS=1
       write(title,'(12x,a,36x,a)') 'RESIDUALS','MONITORING VALUES'
-      CALL viewtext(title,IPS,0,0)
+      iside=IPS
+      isize=0
+      ifont=0
+      call viewtext(title,iside,isize,ifont)
 
 C Plot residuals curves.
       do 30 I=1,NCRV
@@ -175,31 +195,40 @@ C Rescale axis for first curve.
         if (I.eq.1) then
           YMAX=RESMX
           YMIN=RESMN
-          CALL axiscale(ipltwd,igwh,Xmin,Xmax,Ymin,Ymax,
+          igheight=igwh
+          CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
           CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
         endif
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN
-          CALL etplot(1.0,RESID(I,1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(1.0,RESID(I,1),iupdown,isym)
           DO 100 J=2,IPLT
+            iupdown=ILINE(I)
             XPLT=real(J)
-            CALL etplot(XPLT,RESID(I,J),ILINE(I),0)
+            CALL etplot(XPLT,RESID(I,J),iupdown,isym)
   100     CONTINUE
         elseif(IPLT.gt.1) then
 
 C Else just plot current iteration value.
           XPLT=real(IPLT-1)
-          CALL etplot(XPLT,RESID(I,IPLT-1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XPLT,RESID(I,IPLT-1),iupdown,isym)
+          iupdown=ILINE(I)
           XPLT=real(IPLT)
-          CALL etplot(XPLT,RESID(I,IPLT),ILINE(I),0)
+          CALL etplot(XPLT,RESID(I,IPLT),iupdown,isym)
         ENDIF
  30   continue
 
 C Plot a star where the max residual value is on the curve.
       XMARK=XMAX*1.01
-      CALL etplot(XMARK,XRMX,0,13)
+      iupdown=0
+      isym=13
+      CALL etplot(XMARK,XRMX,iupdown,isym)
 
 C Plot monitoring curves.
       do 40 I=1,NCRV
@@ -207,24 +236,31 @@ C Plot monitoring curves.
 C Rescale axis for each curve.
         YMAX=XMONMX(I)
         YMIN=XMONMN(I)
-        CALL axiscale(ipltwd,igwh,Xmin,Xmax,Ymin,Ymax,
+        igheight=igwh
+        CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
         CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN
-          CALL etplot(1.0,XMONIT(I,1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(1.0,XMONIT(I,1),iupdown,isym)
           DO 110 J=2,IPLT
             XPLT=real(J)
-            CALL etplot(XPLT,XMONIT(I,J),ILINE(I),0)
+            iupdown=ILINE(I)
+            CALL etplot(XPLT,XMONIT(I,J),iupdown,isym)
   110     CONTINUE
         elseif(IPLT.gt.1) then
 
 C Else just plot current iteration value.
           XPLT=real(IPLT-1)
-          CALL etplot(XPLT,XMONIT(I,IPLT-1),0,0)
+          iupdown=0
+          isym=0
+          CALL etplot(XPLT,XMONIT(I,IPLT-1),iupdown,isym)
           XPLT=real(IPLT)
-          CALL etplot(XPLT,XMONIT(I,IPLT),ILINE(I),0)
+          iupdown=ILINE(I)
+          CALL etplot(XPLT,XMONIT(I,IPLT),iupdown,isym)
         ENDIF
  40   continue
       call forceflush()
@@ -234,16 +270,25 @@ C Label curves.
         IPS=IPS+1
         write(title,'(2(2(a,1x),a,1PE11.3,1x))') 
      &          LINE(I),LRES(I),'=',CRES(I),LINE(I),LMON(I),'=',CMON(I)
-        CALL viewtext(title,IPS,0,0)
+        iside=IPS
+        isize=0
+        ifont=0
+        call viewtext(title,iside,isize,ifont)
  50   continue
 
 C Display time-step index and iteration index.
       IPS=IPS+2
       write(title,'(a,i4)')'ITST=',ITM
-      CALL viewtext(title,IPS,0,0)
+      iside=IPS
+      isize=0
+      ifont=0
+      call viewtext(title,iside,isize,ifont)
       IPS=IPS+1
       write(title,'(a,i4)')'ITER=',NITER
-      CALL viewtext(title,IPS,0,0)
+      iside=IPS
+      isize=0
+      ifont=0
+      call viewtext(title,iside,isize,ifont)
       call forceflush()
 
       RETURN

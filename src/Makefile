@@ -3,7 +3,7 @@
 SRCdir=`pwd`
 
 PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd ish mfs \
-	       mld mrt pdb prj res run vew win32test
+	   mld mrt pdb prj res run vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)
@@ -34,6 +34,7 @@ disableGccFPE:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libNoFPE
 
+
 enableXML:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libH3KReports
@@ -41,15 +42,7 @@ enableXML:
 disableXML:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libNoH3KReports
-    
-enableRTC:    
-	cd $(SRCdir)/lib; \
-	$(MAKE) the_libRTC
-    
-disableRTC:
-	cd $(SRCdir)/lib; \
-	$(MAKE) the_libNoRTC   
-    
+
 # PROGRAMS:
 
 aco: 
@@ -96,9 +89,7 @@ vew:
 	cd $(SRCdir)/esruvew; $(MAKE)
 vww: 
 	cd $(SRCdir)/esruvww; $(MAKE)
-win32test:
-	cd $(SRCdir)/win32_apps; $(MAKE)
-	
+
 clean:
 	cd $(SRCdir)/lib;     $(MAKE) clean
 	cd $(SRCdir)/esruaco; $(MAKE) clean
@@ -123,7 +114,6 @@ clean:
 	cd $(SRCdir)/esrurun; $(MAKE) clean
 	cd $(SRCdir)/esruvew; $(MAKE) clean
 	cd $(SRCdir)/esruvww; $(MAKE) clean
-	cd $(SRCdir)/win32_apps; $(MAKE) clean
 	@if [ -f $(SRCdir)/include/espinstalldir.h ]; then rm $(SRCdir)/include/espinstalldir.h; fi
 	@if [ -f $(SRCdir)/include/build_info.h    ]; then rm $(SRCdir)/include/build_info.h;    fi	
 
@@ -150,7 +140,6 @@ strip:
 	cd $(SRCdir)/esrurun; $(MAKE) strip
 	cd $(SRCdir)/esruvew; $(MAKE) strip
 	cd $(SRCdir)/esruvww; $(MAKE) strip
-	cd $(SRCdir)/win32_apps; $(MAKE) strip
 
 InstBins:
 	cd $(SRCdir)/esruaco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
@@ -175,7 +164,7 @@ InstBins:
 	cd $(SRCdir)/esrurun; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvew; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruvww; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/win32_apps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
+
 tars: clean
 	rm -f esp-r.tar esp-r.tar.gz esp-r_training.tar esp-r_training.tar.gz
 	tar cvf - esru* archive bitmaps lib cetc Install* Makefile* Readme* bin \

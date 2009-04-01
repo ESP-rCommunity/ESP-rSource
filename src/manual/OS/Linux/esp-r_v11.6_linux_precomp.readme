@@ -1,0 +1,122 @@
+The 'run' file is a self-extracting installer
+for a precompiled ESP-r version 11.6. The installer
+offers two versions of ESP-r - a GTK graphics library
+version and an X11 verision. The GTK version looks and
+feels like the native Windows version of ESP-r but is
+not quite as feature rich as the X11 version.
+
+On most Linux boxes a file ending in .run will
+be treated as an executable.
+
+Typically the file esp-r_v11.6_linux_precomp.run
+should be placed in /tmp and run (as root) from 
+that folder via the command ./esp-r_v11.6_linux_precomp.run
+
+If the installer does not execute you may have to
+issue the following command to change its permissions:
+  chmod a+x ./esp-r_v11.6_linux_precomp.run
+
+It will ask you a number of questions and, if
+successful it will place an ESP-r distribution
+in the folders:
+  /opt/esru/esp-r/
+        bin
+	climate
+	databases
+	manual
+	training
+	validation
+	
+During the install process look for directions for
+adapting your PATH environment variable.  Once you
+have checked that ESP-r modules run you can remove
+the installer.
+
+To start up the Project Manger give the command
+ 'esp-r' (without the quotes) in a command window.
+ 
+To find out what command line options are available
+for an ESP-r module use the -help option with
+the module name e.g. 'clm -help' (without the quotes).
+
+Note: the ESP-r executables were created on a Linux
+box running Ubuntu 8.4 and they should run on
+most 32-bit recent Linux distributions. The
+executables do have dependencies so you might have to
+download a few libraries from your Linux distribution
+site. The libraries are libX11 libg2c libm libc libgcc_s
+libdl.
+
+Check the ESRU web site for tutorials, publications as 
+well as for information on how to join the ESP-r discussion 
+list.
+
+Of course you would never want to spend an hour making a
+model when you can do it in a day or two so you will
+definitely  not  want to read the ESP-r cookbook
+and the associated exercises which are available on the
+publications page.
+
+=======
+
+The 'run' file is a self-extracting installer
+for a precompiled ESP-r version 11.6. The installer
+offers two versions of ESP-r - a GTK graphics library
+version and an X11 verision. The GTK version looks and
+feels like the native Windows version of ESP-r but is
+not quite as feature rich as the X11 version.
+
+On most Linux boxes a file ending in .run will
+be treated as an executable.
+
+Typically the file esp-r_v11.6_linux_precomp.run
+should be placed in /tmp and run (as root) from 
+that folder via the command
+
+ ./esp-r_v11.6_linux_precomp.run
+
+If the installer does not execute you may have to
+issue the following command to change its permissions:
+
+  chmod a+x ./esp-r_v11.6_linux_precomp.run
+
+It will ask you a number of questions and, if
+successful it will place an ESP-r distribution
+in the folders:
+  /opt/esru/esp-r/
+        bin
+	climate
+	databases
+	manual
+	training
+	validation
+	
+During the install process look for directions for
+adapting your PATH environment variable.  Once you
+have checked that ESP-r modules run you can remove
+the installer.
+
+To start up the Project Manger give the command
+ 'esp-r' (without the quotes) in a command window.
+ 
+To find out what command line options are available
+for an ESP-r module use the -help option with
+the module name e.g. 'mrt -help' (without the quotes).
+
+Note: the ESP-r executables were created on a Linux
+box running Ubuntu 8.4 and they should run on
+most 32-bit recent Linux distributions. The
+executables do have dependencies so you might have to
+download a few libraries from your Linux distribution
+site. The libraries are libX11 libg2c libm libc libgcc_s
+libdl.
+
+Check the ESRU web site for tutorials, publications as 
+well as for information on how to join the ESP-r discussion 
+list.
+
+Of course you would never want to spend an hour making a
+model when you can do it in a day or two so you will
+definitely  not  want to read the ESP-r Cookbook
+and the associated exercises which are available on the
+publications page.

@@ -73,7 +73,15 @@ C Project log file.
       common/LOG/LPRJLG
 
 C Images.
-      common/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -98,7 +106,7 @@ C Passed in parameters.
       character doit*248,tfile*72,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
-      character imgfmt*4,imgfoc*4,limgfil*72,limg*72,act*2
+      character limg*72,act*2
       character iformat*4,ifocus*4
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
@@ -107,6 +115,7 @@ C Passed in parameters.
 
       integer iyeart    ! for local editing
       integer lnmp,lncr ! for with of mpath & cfgroot strings
+      character tcname*248   ! for editing image notes
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -639,8 +648,18 @@ C Provide a listing of the current contents of the ../images folder.
           noimg=noimg+1
           imgfmt(noimg)=iformat
           imgfoc(noimg)=ifocus
+
+C Edit operation description if newer file.
+          if(icfgv.gt.3)then
+            H(1)='Notes (<248 char) for images can help with' 
+            H(2)='communicating supporting information.'
+            tcname=imgdoc(noimg)
+            CALL EASKS248(tcname,' ','Image notes:',
+     &        72,'associated image','image notes',IER,2)
+            if(tcname(1:2).ne.'  ')imgdoc(noimg)=tcname
+          endif
         endif
-        if(noimg.lt.10)then
+        if(noimg.lt.MIMG)then
           dok=.false.
           h(1)='If you have more images select ok.'
           CALL ASKOK(' ',' Another image?',OK,dok,1)
@@ -698,7 +717,11 @@ C          call edisp(iuout,' ')
         H(3)='values and these may be changed via the `model context`'
         H(4)='menu option accessed via the `browse/edit/simulate`'
         H(5)='option of the present menu.'
-        CALL PHELPD('new site',5,'-',0,0,IER)
+        H(6)=' '
+        H(7)='If you have additional day types (e.g. summer holiday) '
+        H(8)='that you want to define, do this before working with '
+        H(9)='any schedules. '
+        CALL PHELPD('new site',9,'-',0,0,IER)
       endif
 
 C Create a system configuration file based on the registration
@@ -729,6 +752,9 @@ C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -750,11 +776,6 @@ C Maintain model folders.
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C External text editor.
       common/texted/tedlbl,teditor
@@ -1261,6 +1282,8 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+#include "geometry.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1272,16 +1295,11 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/user/browse
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1303,7 +1321,7 @@ C CFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)
-      character ITEMS*72,zname*12,zdesc*64,head*25,path*72,L*72,ZN*12
+      character ITEMS*72,head*25,path*72,L*72,ZN*12
       character LCFD*72,H*72,outs*124
       character D*72,T15*12,D15*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1350,6 +1368,7 @@ C Find out the length of each of the files:names to be displayed.
       li=LNBLNK(LHCCO(IZ))
       ll=LNBLNK(LCFD(IZ))
       lm=LNBLNK(LMOIST(IZ))
+      ln=LNBLNK(lcfcin(IZ))
 
 C Find maximum with of text and title. IWA is for required files,
 C IWC is for optional files, IW is the overall width.
@@ -1359,7 +1378,8 @@ C IWC is for optional files, IW is the overall width.
       else
         IWB=29
       endif
-      IWC=MAX0(36,ld+22,le+22,lf+22,lg+22,lh+22,li+22,ll+22,lm+22)
+      IWC=
+     & MAX0(36,ld+22,le+22,lf+22,lg+22,lh+22,li+22,ll+22,lm+22,ln+22)
       if(IWC.le.72)then
         IWD=IWC-22
       else
@@ -1445,11 +1465,16 @@ C << to be done >>
       else
        WRITE(ITEMS(19),'(A)') 'r  structured mesh  : '
       endif
-      ITEMS(20)='  _____________________________    '
-      ITEMS(21)='* check existence of zone files    '
-      ITEMS(22)='? help                             '
-      ITEMS(23)='- exit this menu                   '
-      MITEM=23
+      if(lcfcin(IZ)(1:7).eq.'UNKNOWN')then
+       WRITE(ITEMS(20),'(A)') 's  CFC constr: '
+      else
+       WRITE(ITEMS(20),'(2A)') 's  CFC constr: ',lcfcin(IZ)(1:IWD)
+      endif
+      ITEMS(21)='  _____________________________    '
+      ITEMS(22)='* check existence of zone files    '
+      ITEMS(23)='? help                             '
+      ITEMS(24)='- exit this menu                   '
+      MITEM=24
 
 C Help text for this menu.
       H(1)='The files defining the composition of a zone are'
@@ -1528,6 +1553,10 @@ C Check existence of this zone's files.
         L=LGrdSt
         if(.NOT.XST.and.IZ.eq.IndxSt)call usrmsg(
      &    ' structured mesh file missing!',L,'W')
+        call FINDFIL(lcfcin(IZ),XST)
+        L=lcfcin(IZ)
+        if(.NOT.XST.and.icfc(IZ).eq.1)call usrmsg(
+     &     ' CFC file missing!',L,'W')
       ELSEIF(INO.EQ.2)THEN
 
 C Edit zone name - read and then write the geometry file.
@@ -1549,6 +1578,7 @@ C Edit zone name - read and then write the geometry file.
         CALL EASKS(T15,' ','Zone name?',12,D15,'zone name',IER,2)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
+	  lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1
@@ -2255,7 +2285,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.cvs'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.cvs'
         D = 'new.cvs'
         H(1)='The 3D control volumes file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2264,7 +2294,7 @@ C There is no zone view factor file so offer restricted choice.
         CALL EASKS(L,outs,' ',72,D,'control volumes',IER,2)
         if(L(1:2).ne.'  ')L3DCVS(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.cnc'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.cnc'
         D = 'new.cnc'
         H(1)='The 3D node connections file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2272,7 +2302,7 @@ C There is no zone view factor file so offer restricted choice.
      &      ' ',72,D,'control connections file',IER,2)
         if(L(1:2).ne.'  ')L3DCNC(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.ndc'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.ndc'
         D = 'new.ndc'
         H(1)='The 3D nodes coordinates file defines ...'
         H(2)='<< more text to be added here >>'
@@ -2280,7 +2310,7 @@ C There is no zone view factor file so offer restricted choice.
      &      ' ',72,D,'3D coordinates file',IER,2)
         if(L(1:2).ne.'  ')L3DNDC(IZ)=L
 
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.3dt'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.3dt'
         D = 'new.3dt'
         H(1)='The 3D nodes temperatures file defines the'
         H(2)='location of additional construction nodes'
@@ -2311,7 +2341,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.mst'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.mst'
         D = 'new.mst'
         H(1)='The moisture file holds moisture transport data'
         H(2)='for nodes. << more text to be added here >>'
@@ -2342,7 +2372,7 @@ C There is no zone view factor file so offer restricted choice.
             goto 3
           endif
         endif
-        WRITE(L,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.csm'
+        WRITE(L,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.csm'
         D = 'new.csm'
         H(1)='The structured mesh file holds structured mesh data'
         H(2)='for a zone.'
@@ -2353,6 +2383,89 @@ C There is no zone view factor file so offer restricted choice.
           LGrdSt=L
           IndxSt=IZ
         endif
+      ELSEIF(INO.EQ.20)THEN
+        if(browse)then
+          call usrmsg('Cannot update model while in browse ',
+     &                'mode, you must `own` the model!','W')
+          goto 3
+        endif
+        H(1)='The zone complex fenestration constructions (CFC)'
+        H(2)='provides a more exact treatment for windows which'
+        H(3)='can include operable slat-type shading layers.'
+        if(icfc(IZ).eq.1)then
+          CALL EASKABCD(' For the zone CFC file',' :',
+     &      'change name','browse','dereference it','continue',IW,3)
+          if(IW.EQ.1)then
+            L=lcfcin(IZ)
+          elseif(IW.EQ.2)then
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('?','zon','cfc',sfile,snpfile,nfile,
+     &                           iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','zon','cfc',sfile,snpfile,nfile,
+     &                           iier)
+              if(snpfile(1:2).ne.'  ')then
+                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &            snpfile(1:lnblnk(snpfile))
+              else
+                L=lcfcin(IZ)
+              endif
+            else
+              L=lcfcin(IZ)
+            endif
+          elseif(IW.EQ.3)then
+            lcfcin(IZ)=' '
+            icfc(IZ)=0
+            modcfg=.TRUE.
+            goto 3
+          elseif(IW.EQ.4)then
+            goto 3
+          endif
+        else
+
+C There is no zone cfc file so offer restricted choice.
+          CALL EASKABC(' For the zone CFC file',' :',
+     &      'edit name','browse','continue',IW,3)
+          if(IW.EQ.1)then
+            L=' '
+          elseif(IW.EQ.2)then
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('?','zon','cfc',sfile,snpfile,nfile,
+     &                          iier)
+            if(nfile.gt.0)then
+              sfile=' '
+              snpfile=' '
+              call browsefilelist('b','zon','cfc',sfile,snpfile,nfile,
+     &                           iier)
+              if(snpfile(1:2).ne.'  ')then
+                write(L,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
+     &            snpfile(1:lnblnk(snpfile))
+              else
+                L=lcfcin(IZ)
+              endif
+            else
+              L=lcfcin(IZ)
+            endif
+          elseif(IW.EQ.3)then
+            goto 3
+          endif
+        endif
+        if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+          WRITE(D,'(A,A4)')ZN(1:lnblnk(ZN)),'.cfc'
+        else
+          WRITE(D,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
+     &      ZN(1:lnblnk(ZN)),'.cfc'
+        endif
+        write(outs,'(3a)')' CFC file for ',ZN(1:lnblnk(ZN)),' ?'
+  511   CALL EASKS(L,outs,' ',72,D,'cfc file',IER,6)
+        IF(L.eq.' '.or.IER.NE.0)GOTO 511
+        lcfcin(IZ)=L
+        icfc(IZ)=1
+        modcfg=.TRUE.
       ELSE
         INO=-4
         GOTO 2

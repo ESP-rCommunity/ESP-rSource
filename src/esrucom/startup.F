@@ -230,8 +230,8 @@ C Set defaults and exemplars depending on whether Unix or NT.
       endif
 
 C Debug.
-      write(6,*) 'standard databases are at ',
-     &  standarddbpath(1:lnblnk(standarddbpath))
+C      write(6,*) 'standard databases are at ',
+C     &  standarddbpath(1:lnblnk(standarddbpath))
 
 C If running in dll mode skip reading .esprc file.
       if(dll)then
@@ -434,7 +434,7 @@ C Use espriou.h for climatelist file name and defdbfl.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
@@ -469,7 +469,7 @@ C cdintglz (char*32) internal glazing/window
      &  cdintfloor(5),cdintceil(5),cdintptn(5),cdintdoor(5),cdintglz(5)
 
       CHARACTER OUTSTR*124,WORD*20,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dinstpath*48,di*48
       logical unixok,dll
@@ -1151,8 +1151,8 @@ C ********* parsim
 C parsim: allows terminal, size, config file, simulation parameter file arguments
 C  to be passed to the program from the invocation line.  
 
-      subroutine parsim(termtype,iappw,iappx,iappy,inf,browse,sps,
-     &  aut,actf)
+      subroutine parsim(iverb,termtype,iappw,iappx,iappy,inf,browse,
+     &  sps,aut,actf)
       
       integer lnblnk  ! function definition
 
@@ -1166,7 +1166,7 @@ C Application name
       
       character sTimeout*72  
       integer iTimeoutFlag
-      integer termtype,iappw,iappx,iappy
+      integer iverb,termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1201,6 +1201,7 @@ C into binary, and set default terminal type as necessary
       aut  = 'default'
       actf  = 'UNKNOWN'
       argument = ' '
+      iverb = 0
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
@@ -1219,6 +1220,8 @@ C Get arguments from command line: if one parameter.
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:2).eq.'-v')then
+          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:8) .eq. '-version' ) then
 C Display version information and then quit
           CALL ESPrVersion("summary",cAppName,IUOUT)
@@ -1610,11 +1613,12 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C Debugging code.
+C        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1677,11 +1681,11 @@ C If act is asci2bin or bin2asci read ascii file name
         goto 41
 
   42    continue
-        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1748,12 +1752,12 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-     &    data2,data3
-        call edisp248(iuout,outs,90)
+C        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+C     &    data2,data3
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1831,12 +1835,12 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-     &    data2,data3
-        call edisp248(iuout,outs,90)
+C        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+C     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+C     &    data2,data3
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1896,10 +1900,10 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1953,10 +1957,10 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        call edisp248(iuout,outs,90)
+C        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C        call edisp248(iuout,outs,90)
         return
       endif
 
@@ -2174,7 +2178,7 @@ C  to be passed to e2r from the invocation line.
       
       integer lnblnk  ! function definition
 
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
 
 C Application name
       common/APPNAME/cAppName
@@ -2434,7 +2438,7 @@ C Errors.
       end
 
 C parcnv parse command line paramters for ecnv.
-      subroutine parcnv(itrc,conv,iobs,ichop,itmprm,iform,oform,
+      subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
       
       integer lnblnk  ! function definition
@@ -2443,7 +2447,7 @@ C parcnv parse command line paramters for ecnv.
 
       integer iargc,m
       integer termtype
-      integer i,itrc,itmprm,iobs,ichop
+      integer i,iverb,itmprm,iobs,ichop
       real conv
       character argument*72,prog*48,inf*144,outs*248,appn*24
       character iform*24,oform*24,ouf*144,ucfg*72,mode*8
@@ -2454,7 +2458,7 @@ C parcnv parse command line paramters for ecnv.
       ouf  = 'UNKNOWN'
       ucfg  = 'UNKNOWN'
       conv = 0.001
-      itrc = 0
+      iverb = 0
       itmprm = 1
       iobs  = 0
       ichop = 0
@@ -2510,7 +2514,7 @@ C If one parameter.
       call edisp(iuout,' ')
           stop
         elseif(argument(1:2).eq.'-v')then
-          itrc = 1
+          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:3).eq.'-mm')then
           conv = 0.001
         elseif(argument(1:6).eq.'-metre')then

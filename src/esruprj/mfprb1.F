@@ -40,6 +40,7 @@ C fluid flow model description file.
 
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
@@ -57,7 +58,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -71,7 +71,7 @@ C LPRFDB,IPRODB (for event profile database)
 
       CHARACTER*33 ITEM1(24)
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER H*72,LTMP*72,zname*12,zdesc*64,outs*124,outstr*124
+      CHARACTER H*72,LTMP*72,outs*124,outstr*124
       character cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -546,7 +546,7 @@ C Set the wind reduction factor.
 C Link nodes and zones.
         DO 33 IZ=1,NCOMP
           if(ICAAS(IZ).gt.0)then
-            write(outs,'(3A)')zname(IZ)(:lnblnk(zname(IZ))),
+            write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
      &         ' is currently linked to: ',NDNAM(ICAAS(IZ))
             h(1)='You can have nodes which are not linked to a '
             h(2)='thermal zone, but if you do link nodes and zones '
@@ -563,8 +563,8 @@ C Link nodes and zones.
               ICAAS(IZ)=0
             endif
           else
-            write(outs,'(A,A)') zname(IZ)(:lnblnk(zname(IZ))),
-     &                          ' has no mass flow node. '
+            write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
+     &                          ' has no mass flow node.'
             CALL EASKAB(outs,' ','accept','select a node',iacc,3)
             if(iacc.eq.1)then
               ICAAS(IZ)=0
@@ -681,6 +681,7 @@ C
       SUBROUTINE MFNDES(MOD,INOD)
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -688,8 +689,6 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/PREC2/VOL(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -710,12 +709,6 @@ C LAPRES,IAPRES (for window pressure databases)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -723,7 +716,7 @@ C LAPRES,IAPRES (for window pressure databases)
 
       CHARACTER H*72,outs*124,prt*60,DEPRE*40
       CHARACTER NDNAM*12,NODID*12,T12*12
-      CHARACTER LAPROB*72,t72*72
+      CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -872,7 +865,7 @@ C Redraw the bluiding in the graphic screen.
 C (Re)Set all surfaces to standard line width.
               CALL INLNST(1)
               izgfoc=0
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
             endif
 
             write(outs,'(a,a)')'Which zone is associated with ',
@@ -984,7 +977,7 @@ C Redraw the building in the graphic screen.
 C (Re)Set all surfaces to standard line width.
             CALL INLNST(1)
             izgfoc=0
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
           WRITE(OUTS,'(A)') 
      &'Select the zone containing the surface. '
@@ -1012,7 +1005,7 @@ C General image option flags.
           nzg=1
           nznog(1)=IZ
           izgfoc=IZ
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
           ISO=1
           WRITE(OUTS,'(A)')
@@ -1028,8 +1021,10 @@ C Use SSURCOG as the average height of this surface
           VALH=ZAVE
           
 C Create a menu showing the available database items. 
-C Allow user to select one. Begin by reading current database.
-          CALL ERPRCDB(LAPRES,0,3,IER)
+C Allow user to select one. Begin by reading current database
+C (signal by passing a blank string to erprcdb).
+          t144='  '
+          CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) THEN
             CALL EDISP(IUOUT,
      &'Error opening pressure coefficients database.')
@@ -1836,6 +1831,7 @@ C Fluid flow model file: edit or input wind speed reduction factor
 
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -1846,12 +1842,6 @@ C Fluid flow model file: edit or input wind speed reduction factor
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -1943,7 +1933,7 @@ C << might want to save current values for later recovery >>
       nzg=1
       nznog(1)=ISZONE
       izgfoc=ISZONE
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -2086,14 +2076,13 @@ C << should mode Z be visible when user first enters flow facility? >>
 
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       
@@ -2145,7 +2134,7 @@ C associated with the largest ventilation rate.
 
       LOGICAL MODIFY,MODLEN,MODBND,XST
       logical closevz,closeiz,close,foundit
-      character zname*12,zdesc*64,NDNAM*12, outs*124, MODE*1
+      character NDNAM*12, outs*124, MODE*1
       character*72 LAPROB,H
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12
 
@@ -2184,7 +2173,7 @@ C Clear zone->node mapping
 
 C Get zone information. 
             WRITE(OUTS,'(A,A12)')
-     &        'Generating fluid flow node for ', ZNAME(IZ)
+     &        'Generating fluid flow node for ',ZNAME(IZ)
             CALL edisp(iuout,OUTS)
             ICAAS(IZ)=NNOD
 
@@ -2260,7 +2249,7 @@ C Redraw the affected zones in the graphic screen.
               nzg=2
               nznog(1)=IC1(ICN)
               nznog(2)=IC2(ICN)
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
 
 C (Re)Set all surfaces to standard line width.
               CALL INLNST(1)
@@ -2372,7 +2361,7 @@ C Clear vent and infil flow rates and vent source zone index (initial pass).
 
 C Get zone information. 
             WRITE(OUTS,'(A,A12)')
-     &        'Generating flow node for zone:', ZNAME(IZ)
+     &        'Generating flow node for zone:',ZNAME(IZ)
             CALL edisp(iuout,OUTS)
             ICAAS(IZ)=NNOD
 
@@ -2494,7 +2483,7 @@ C used with the current zone index.
             IF(IGN.EQ.0)THEN
 
 C There are no flow periods on any day, write crack connections only.
-              WRITE(OUTS,'(A,A12,A)')
+              WRITE(OUTS,'(3A)')
      &          'No operation ventilation or infiltration so zone: ',
      &          ZNAME(IZ),' has cracks only.'
               call edisp(iuout,outs)
@@ -2803,8 +2792,8 @@ C grill to use and write that connection out.
           ELSE
 
 C There is no operations file so write crack connections only.
-            WRITE(OUTS,'(A,A12,A)')
-     &        'No schedules so making zone: ', ZNAME(IZ),
+            WRITE(OUTS,'(3A)')
+     &        'No schedules so making zone: ',ZNAME(IZ),
      &        ' with cracks only.'
             call edisp(iuout,outs)
             NCNN=NCNN+1

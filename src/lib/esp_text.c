@@ -162,16 +162,32 @@ void egphelpscroll_ (long int *IBX,long int *IBY,long int *IPFLG,long int *more,
 
 /* react to different disp_fnt in order to set the size of the popup box */
    if (disp_fnt == 0 ) {
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 8");
+#else
      pfd = pango_font_description_from_string("Serif,Medium 8");
+#endif
 /* debug     fprintf(stderr,"popup font medium 8\n"); */
    } else if (disp_fnt == 1 ) {	
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 10");
+#else
      pfd = pango_font_description_from_string("Serif,Medium 10");
+#endif
 /* debug     fprintf(stderr,"popup font medium 10\n"); */
    } else if (disp_fnt == 2 ) {	
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 12");
+#else
      pfd = pango_font_description_from_string("Serif,Medium 12");
+#endif
 /* debug     fprintf(stderr,"popup font medium 12\n"); */
    } else if (disp_fnt == 3 ) {
+#ifdef SUN
+     pfd = pango_font_description_from_string("Courier,Medium 14");
+#else
      pfd = pango_font_description_from_string("Serif,Medium 14");
+#endif
 /* debug     fprintf(stderr,"configure font medium 14\n"); */
    } else if (disp_fnt == 4 ) {
      pfd = pango_font_description_from_string("Courier,Medium 8");

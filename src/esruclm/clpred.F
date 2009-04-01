@@ -395,6 +395,7 @@ C precipitable water content
 C Wind speed reduction based on wind direction (if allowable maximum
 C segments is changed then remember to change maximum allowable angular 
 C segments MAAS)
+        NSEG=3   ! initial value
         IF(IST.EQ.2)THEN
           IF(INO.EQ.9)THEN
             CALL EASKI(NSEG,' How many angular segments to divide into?'

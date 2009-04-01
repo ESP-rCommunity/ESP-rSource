@@ -30,7 +30,9 @@ C of lines to include in the text portion of the display.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER*72 ETEXT,GTEXT
@@ -38,6 +40,11 @@ C of lines to include in the text portion of the display.
       character PERST1*14,PERST2*44,PERST3*44
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C If in type 8 terminal make the text display area larger before
 C displaying the following data ( but only clear it if LINES != LIMTTY)
@@ -57,6 +64,8 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 
           CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
+          igw=igr-igl
+          igwh=igb-igt
         elseif(iglib.eq.2)then
           continue
         endif
@@ -78,7 +87,10 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif
@@ -89,7 +101,10 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       write(ETEXT,'(1X,A44)')PERST2
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif
@@ -107,7 +122,9 @@ C Display heading for climate graph.
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER*72 ETEXT,GTEXT
@@ -117,6 +134,11 @@ C Display heading for climate graph.
       integer onright ! number of right axis
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -143,6 +165,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
@@ -151,6 +175,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
@@ -159,6 +185,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
               CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
@@ -167,6 +195,8 @@ C The calling code will know how many axis are required.
             elseif(onleft.eq.0)then
               CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
+            igw=igr-igl
+            igwh=igb-igt
           endif
         elseif(iglib.eq.2)then
           continue
@@ -189,7 +219,10 @@ C The calling code will know how many axis are required.
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,1,0,1)
+        iside=1
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif
@@ -200,7 +233,10 @@ C The calling code will know how many axis are required.
       write(ETEXT,'(1X,A44)')PERST2
       GTEXT=ETEXT
       if(MMOD.gt.0)then
-        CALL viewtext(GTEXT,2,0,1)
+        iside=2
+        isize=0
+        ifont=1
+        call viewtext(gtext,iside,isize,ifont)
       else
         call edisp(iuout,GTEXT)
       endif

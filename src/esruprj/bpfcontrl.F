@@ -39,6 +39,7 @@ C          block sctl to have been filled for the current period.
 
       SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
 #include "net_flow.h"
 #include "control.h"
@@ -49,7 +50,6 @@ C          block sctl to have been filled for the current period.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -62,7 +62,6 @@ C          block sctl to have been filled for the current period.
      &             opticdoc
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -73,8 +72,7 @@ C ipeerptbk is pointer from position in display to day type.
       dimension mptback(35),iperptbk(35)
       CHARACTER*43 VERT(35)
       CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
-      CHARACTER outs*124,H*72,LASCI*72,zname*12,cfgroot*24
-      character zdesc*64
+      CHARACTER outs*124,H*72,LASCI*72,cfgroot*24
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -122,9 +120,11 @@ C then set iclkok variable and jump to browse functions.
         H(1)='The system control file holds the definition of the'
         H(2)='building/plant control systems. The file is optional.'
         H(3)='The browse option presents a list of files in the'
-        H(4)='project `ctl` folder.'
-        CALL EASKS2CMD(LASCI,' ','Control file?',
-     &    'ignore','browse',iclkok,72,' ','Control file',IER,4)
+        H(4)='project `ctl` folder. If you do not select one then'
+        H(5)='it is assumed that you do not want any control.'
+        H(6)='If you cancel then nothing will be changed.'
+        CALL EASKS2CMD(LASCI,'Control file? (suggested name)',' ',
+     &    'cancel','browse',iclkok,72,' ','Control file',IER,6)
         if(iclkok.eq.1)then
           return
         endif
@@ -150,15 +150,21 @@ C            call edisp(iuout,'Reading existing control file.')
         H(4)='from your model but does not delete it. Your may'
         H(5)='re-establish this control by re-referencing the control'
         H(6)='file in a later session.'
-        CALL EASKS2CMD(LASCI,' Control file? (see help)',
-     &  ' ','dereference','browse',iclkok,72,' ','Control file',IER,6)
+        H(7)=' '
+        H(8)='The browse option presents a list of files in the'
+        H(9)='project `ctl` folder. If you do not select one then'
+        H(10)='it is assumed that you do not want any control.'
+        H(11)='If you cancel then nothing will be changed.'
+        CALL EASKS2CMD(LASCI,'Control file? (see help)',
+     &  ' ','dereference','browse',iclkok,72,' ','Control file',IER,11)
       endif
       call usrmsg(' ',' ','-')
 
 C If user wishes to deselect current control reset file name to
-C blank and save the configuration file.
+C blank, call ezctli to clear commons and save the configuration file.
       if(iclkok.eq.1)then
         if(cfgok.and.(.NOT.browse))then
+	  call ezctli
           LCTLF='  '
           CALL EMKCFG('-',IER)
           call usrmsg(' ',' ','-')
@@ -169,7 +175,6 @@ C blank and save the configuration file.
         endif
         return
       elseif(iclkok.eq.2)then
-        call edisp(iuout,'2nd alternate selected')
         sfile=' '
         snpfile=' '
         call edisp(iuout,' ')
@@ -183,10 +188,25 @@ C blank and save the configuration file.
             write(LASCI,'(3a)')ctlpth(1:lnblnk(ctlpth)),fs,
      &        snpfile(1:lnblnk(snpfile))
           else
-            LASCI=LCTLF
+
+C If the user supplied a blank file then this is the same as
+C de-referencing the file.
+            call edisp(iuout,
+     &        'A blank control file name returned. Clearing data.') 
+	    call ezctli
+            LCTLF='  '
+            CALL EMKCFG('-',IER)
+            goto 44
           endif
         else
-          LASCI=LCTLF
+
+C If the user did not select a file then this is the same as
+C de-referencing the file. 
+          call edisp(iuout,'No control file selected. Clearing data.') 
+	  call ezctli
+          LCTLF='  '
+          CALL EMKCFG('-',IER)
+          goto 44
         endif
       endif
       IF(LASCI(1:2).NE.'  ')LCTLF=LASCI
@@ -561,13 +581,7 @@ C Edit building/plant/flow/global control description.
 c Relate control functions to the appropriate zones
 c from the configuration file.
         if(icfoc.eq.0)then
-          NZT=NCOMP
-          H(1)=
-     &      'This should match the current system configuration file.'
-          CALL EASKI(NZT,' ','Number of zones in model?',
-     &      1,'F',MCOM,'F',NCOMP,'no of zones',IERI,1)
-          if(ieri.eq.-3) goto 92
-          NZ=NZT
+          NZ=NCOMP
           IF(NZ.GT.1.OR.NCF.GT.1)GOTO 304
 
 c Match single zone with single control function.
@@ -4106,7 +4120,6 @@ C Edit flow control function II.
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
@@ -4238,10 +4251,10 @@ C of if:elseif:else recover.
         if(NITEMS.gt.0)then
           WRITE(outs,'(a,i3,a)')' For period',KK,' current data...'
           call edisp(iuout,outs)
-          if(NITEMS.LE.13)then
-            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
+          if(NITEMS.LE.12)then
+            write(outs,'(12F10.2)')(cm(L),L=2,NITEMS+1)
           else
-            write(outs,'(13F9.1)')(cm(L),L=2,13)
+            write(outs,'(12F10.2)')(cm(L),L=2,12)
           endif
           call SDELIM(outs,outsc,'S',IW)
           call edisp(iuout,outsc)
@@ -4306,7 +4319,7 @@ C What is the equivalent for flow.....
 
 C Miscellaneous data for on / off controller.
           cm(1)=3.
-  53      WRITE(HOLD,'(3f8.2)')cm(2),cm(3),cm(4)
+  53      WRITE(HOLD,'(3f11.5)')cm(2),cm(3),cm(4)
           H(1)= 'Number of items for on/off controller = 3 '
           H(2)= ' 1st is setpoint, '
           H(3)= ' 2nd is action index 1=direct, -1=inverse'
@@ -4355,7 +4368,7 @@ C Miscellaneous data for proportional controller.
           if(ier.ne.0)goto 54
         elseif(iclaw.eq.2)then
           cm(1)=6.
-  55      WRITE(HOLD,'(3f8.2)')cm(2),cm(3),cm(4)
+  55      WRITE(HOLD,'(3f10.4)')cm(2),cm(3),cm(4)
           H(1)= 'Number of items for range controller = 6 '
           H(2)= ' 1st is low setpoint, '
           H(3)= ' 2nd is mid setpint'
@@ -4383,7 +4396,7 @@ C Miscellaneous data for proportional controller.
           CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','mid set pt',IER)
           CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','high set pt',IER)
           if(ier.ne.0)goto 55
- 157      WRITE(HOLD,'(3f8.3)')cm(5),cm(6),cm(7)
+ 157      WRITE(HOLD,'(3f9.4)')cm(5),cm(6),cm(7)
           CALL EASKS(HOLD,
      &      ' Ratios of rate or area for: low, mid, high (see help)',
      &      ' : ',42,' 0. 1. 1. ',' flow range controller',IER,16)
@@ -4463,7 +4476,7 @@ C<< To include feed back to text feedback area using USRMSG
           if(ieri.ne.0)goto 56
           cm(3)=real(NSEN)
           call edisp(iuout,' Ideal multi-sensor controller:')
-          cm(1)=2.+8.*NSEN
+          cm(1)=2.0+8.0*NSEN
           OK=.true.
           IF(NSEN.EQ.1)
      &    CALL ASKOK('You have chosen just one sensor, the only option',
@@ -4497,32 +4510,32 @@ C Auxiliary sensor details,
      &        'e relative humidity ',' ',' ',' ',' ',' ',' ',
      &        ino,idno,56)
               IF(INO.EQ.1)THEN
-                CM(NDX+1)=0
+                CM(NDX+1)=0.0
                 msg1=' senses ambient T'
               elseif(INO.eq.2)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses wind speed'
               elseif(INO.eq.3)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses wind direction'
               elseif(INO.eq.4)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses diffuse solar'
               elseif(INO.eq.5)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses direct solar'
               elseif(INO.eq.6)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses RH'
               ENDIF
             ELSEIF(IW.EQ.2)THEN
-              CM(NDX)=-4.
+              CM(NDX)=-4.0
               call ASKRNOD('  sensed flow node','-',INOD,IER)
               CM(NDX+1)=INOD
               write(msg1,'(2a)') ' senses nd ',ndnam(inod)
             ENDIF
-            CM(NDX+2)=0
-            CM(NDX+3)=0
+            CM(NDX+2)=0.0
+            CM(NDX+3)=0.0
             CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
      &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,56)
             write(msg2,'(a,f5.2)') ' setpoint ',cm(ndx+4)
@@ -4546,13 +4559,13 @@ C     &        0.,'F',1.,'F',1.,' Aux sensor set-point',IER,56)
      &      CALL EASKABC('Logical action variable',
      &      'with next sensor','AND','OR','NOT',iad,56)
             IF(IAD.EQ.1)THEN
-              CM(NDX+7)=1.
+              CM(NDX+7)=1.0
               msg4=' AND'
             ELSEIF(IAD.EQ.2)THEN
-              CM(NDX+7)=2.
+              CM(NDX+7)=2.0
               msg4=' OR'
             ELSEIF(IAD.EQ.3)THEN
-              CM(NDX+7)=3.
+              CM(NDX+7)=3.0
               msg4=' NOT'
             ENDIF
 
@@ -4674,11 +4687,11 @@ C PI controller
           H(27)='loop will be used as the sensed parameter'
           CALL ECLOSE(CM(1),0.0,0.001,close1)
           IF(CLOSE1)THEN
-            CM(2)=21
-            CM(3)=1.
+            CM(2)=21.0
+            CM(3)=1.0
             CM(4)=0.3
-            CM(5)=1.
-            CM(6)=1000.
+            CM(5)=1.0
+            CM(6)=1000.0
           ENDIF
           CM(1)=8.0
           call edisp(iuout,' ')
@@ -5008,7 +5021,6 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5730,14 +5742,13 @@ C flow connections.It is assumed that the user will make one selection only.
       SUBROUTINE actloc(prompt,title,icfoc,II,isn1,ian1,ian2,ian3,
      &  errmsg,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "plant.h"
 #include "epara.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5755,7 +5766,7 @@ C flow connections.It is assumed that the user will make one selection only.
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
+      CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
 
@@ -6189,8 +6200,6 @@ C   for control law one.
       common/sctlmenu/menu(misc),prompt1(misc),prompt2(misc)
       common/sctldata/ndec(misc),vmin(misc),vmax(misc),
      &  vdef(misc),nctlhelp,nmenulines
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
       DIMENSION VERT(35),SALT(24),IVALS(24)
@@ -8073,7 +8082,7 @@ C Reading heating and cooling setpoints from temporal file
           prompt1(2)='Set the column number which contains heating'
           prompt2(2)='setpoint value in the temporal (tdf) file'
           ndec(2)=0; vmin(2)=1.0; vmax(2)=80.0; vdef(2)=5.0
-          menu(3)='Heating setpoint column number'
+          menu(3)='Cooling setpoint column number'
           prompt1(3)='Set the column number which contains cooling'
           prompt2(3)='setpoint value in the temporal (tdf) file'
           ndec(3)=0; vmin(3)=1.0; vmax(3)=80.0; vdef(3)=6.0

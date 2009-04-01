@@ -46,7 +46,9 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
@@ -80,6 +82,13 @@ C Currently only one node plotted.
       logical OK,DOK
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+#endif
 
 C In order to pass strings across to C it is necessary to first
 C do an internal write placing an end marker which C can understand.
@@ -254,6 +263,8 @@ C Refresh the drawing area.
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
         CALL win3d(menuchw,12,8,7,3,igl,igr,igt,igb,igw,igwh)
+        igw=igr-igl
+        igwh=igb-igt
       ENDIF
 
       ICOUNT=0
@@ -360,11 +371,15 @@ C Assign flows; leaving flow is plotted +ve.
      &       I2,' month ',I2,' (',I4,')',A1)
 10602 FORMAT(2X,'Node ',A12,' with all connections, day ',
      &       I2,' month ',I2,' (',I4,')',A1)
-      CALL viewtext(ETEXT,1,0,1)
+      iside=1
+      isize=0
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
       WRITE(ETEXT,10603) IODL,IOML,IRY,nterm
 10603 FORMAT(42X,'to day ',I2,' of month ',I2,' (',I4,')',A1)
-      CALL viewtext(ETEXT,2,0,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Draw a pairs of labels and line types at top of the graph.
       WRITE(temp,'(A,A12,A,A1)')'Node ',NDNAM(NDONUM),' leaving',nterm
@@ -378,7 +393,10 @@ C Scale and draw axes.
       XMIN=0.
       XMAX=FLOAT(ICOUNT)/NTSPH+1.
       YMAX=YMAX+0.1
-      CALL axiscale(igw,igwh,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,Xadd,Yadd)
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
+     &  Xadd,Yadd)
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
       CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)
       call linescale(igl,Xadd,xsc,igb,Yadd,ysc)

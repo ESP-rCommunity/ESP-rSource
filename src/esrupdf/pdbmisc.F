@@ -51,7 +51,7 @@ C Common for screen control.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       LOGICAL OK,dok
-      CHARACTER ZDESC*25,h*72,buffer*72,lltmp*144
+      CHARACTER PZDESC*25,h*72,buffer*72,lltmp*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       
@@ -129,8 +129,8 @@ C File doesn't exist.
 
 C Old file, so check header.
          IREC = 1
-         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) ZDESC
-         IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
+         READ (ipcdb,REC=IREC,IOSTAT=ISTAT,ERR=99999) PZDESC
+         IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
             ok=.false.
             dok=.true.
             h(1)='An error was reported while trying to open an'

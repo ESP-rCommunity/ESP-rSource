@@ -1,3 +1,0 @@
-1 114.0        # Number of HVAC systems, site altitude
-1 1 1 # SysType; Pri; Zones;
-5 2 1 1.0 25000 0.78 1 -1 125 0 1 # Furnace Type;Fuel Type;Num of 1st zone;Frac for zone1;cap

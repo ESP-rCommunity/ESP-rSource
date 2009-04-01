@@ -1,14 +1,12 @@
 SHELL=/bin/sh
 SRCdir = `pwd`/..
 CETCdir = $(SRCdir)/cetc
-RTCdir = $(SRCdir)/RTcoupling
 LIBGTK = libgtkesru.a
 LIBX11 = libxesru.a
 LIBnoX = libnoxesru.a
 LIBver = libversion.a
 LIBfpe = libfpe.a
 LIBxml = libXML.a
-LIBrtc = libRTC.a
 # .SUFFIXES: .o .F
 # .F.o:
 # 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c $<
@@ -20,12 +18,7 @@ OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esr
 OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o
 OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_nox.o
 GTK_OBJ = esp-r.o esp_menu.o esp_text.o esp_ask.o esp_draw.o esp_file.o
-
-# Library containing versioning information
 OBJECTSVersion = version.o
-
-
-
 OBJECTS_FPE_enable = fpe_enable.o
 OBJECTS_FPE_disable = fpe_disable.o
 
@@ -35,22 +28,13 @@ XML_COBJECTS = TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWi
 XML_FOBJECTS = ConfigureH3kReports.o
 
 # C and Fortran stubs used to build bps without H3Kreports
-NO_XML_C_STUBS = 
+NO_XML_C_STUBS =
 NO_XML_F_STUBS = TReports_dummy.o
 
-# Objects for runtime coupling
-RTC_OBJECTS = runtime_coupling.o
-NO_RTC_OBJECTS = no_runtime_coupling.o
-
-# GTK objects:
 GTKFLAGS = -I. -DG_DISABLE_DEPRECIATED -DGDK_DISABLE_DEPRECIATED \
 	-DGDK_PIXBUF_DISABLE_DEPRECIATED -DGTK_DISABLE_DEPRECIATED \
         `pkg-config gtk+-2.0 --cflags`
 
-# ###############################        
-# Targets for graphical libraries        
-# ###############################
-        
 the_libGTK:$(OBJECTSGTK) $(GTK_OBJ)
 	ar ruv $(LIBGTK) $(OBJECTSGTK) $(GTK_OBJ)
 	if test -s /usr/bin/ranlib ; \
@@ -69,21 +53,18 @@ the_libnoX: $(OBJECTSnoX)
 	then ranlib $(LIBnoX) ; \
 	fi
 
-# Library containg svn revision data    
 the_libVer: $(OBJECTSVersion) 
 	ar ruv $(LIBver) $(OBJECTSVersion)
 	if test -s /usr/bin/ranlib ; \
 	then ranlib $(LIBver) ; \
 	fi
 
-# Library containing gcc3 floating point exception handling    
 the_libFPE: $(OBJECTS_FPE_enable) 
 	ar ruv $(LIBfpe) $(OBJECTS_FPE_enable)
 	if test -s /usr/bin/ranlib ; \
 	then ranlib $(LIBfpe) ; \
 	fi
 
-# Library containing stubs for FPE.     
 the_libNoFPE: $(OBJECTS_FPE_disable) 
 	ar ruv $(LIBfpe) $(OBJECTS_FPE_disable)
 	if test -s /usr/bin/ranlib ; \
@@ -105,30 +86,13 @@ the_libNoH3KReports: $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)
 	then ranlib $(LIBxml) ; \
 	fi
 
-# Target to build bps with run-time couplings 
-the_libRTC: $(RTC_OBJECTS)
-	ar ruv $(LIBrtc) $(RTC_OBJECTS)
-	if test -s /usr/bin/ranlib ; \
-	then ranlib $(LIBrtc) ; \
-	fi
-    
-# Target to build bps without run-time couplings 
-the_libNoRTC: $(NO_RTC_OBJECTS)
-	ar ruv $(LIBrtc) $(NO_RTC_OBJECTS)
-	if test -s /usr/bin/ranlib ; \
-	then ranlib $(LIBrtc) ; \
-	fi    
-        
 clean:
 	rm -f core $(LIBX11) $(LIBnoX) $(LIBGTK) $(LIBver) $(LIBfpe) $(LIBxml) \
 	           $(OBJECTSX11) $(OBJECTSnoX) $(OBJECTSGTK) $(GTK_OBJ) \
 	           $(OBJECTSVersion) $(OBJECTS_FPE_enable) $(OBJECTS_FPE_disable) \
 	           $(XML_COBJECTS) $(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS) \
 	           TReports_dummy.F ConfigureH3kReports.F TReportsManager.cpp \
-	           TBinnedData.cpp TVariableData.cpp TXMLAdapter.cpp TWildCards.cpp \
-	           runtime_coupling.cpp no_runtime_coupling.F
-
-               
+	           TBinnedData.cpp TVariableData.cpp TXMLAdapter.cpp TWildCards.cpp 
 # File-by-file build instructions:
 
 esp-r.o:
@@ -200,12 +164,3 @@ ConfigureH3kReports.o:
 	rm -f ConfigureH3kReports.F ;
 	ln -s $(CETCdir)/h3kreports/ConfigureH3kReports.F . ;
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c ConfigureH3kReports.F
-runtime_coupling.o:
-	rm -f runtime_coupling.cpp ;
-	ln -s $(RTCdir)/runtime_coupling.cpp . ;
-	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c runtime_coupling.cpp
-no_runtime_coupling.o:
-	rm -f no_runtime_coupling.F ;
-	ln -s $(RTCdir)/no_runtime_coupling.F . ;
-	$(MFC) $(LD_FLAGS) $(FFLAGS) -c no_runtime_coupling.F    
-    

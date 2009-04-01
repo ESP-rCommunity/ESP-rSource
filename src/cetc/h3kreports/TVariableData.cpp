@@ -13,9 +13,6 @@
 
 #include <algorithm>
 #include <cstdlib>
-#include <climits>
-#include <cstring>
-#include <memory>
 #include "TVariableData.h"
 
 #define DEBUG 0

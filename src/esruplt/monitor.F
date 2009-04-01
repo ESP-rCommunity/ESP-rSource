@@ -158,8 +158,10 @@ C Parameters for eline calls.
 
 c Graph commons.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C Need to remember the following variables (i.e those are
@@ -173,6 +175,13 @@ C since not all compilers use the same default.
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character*12 statev(3)
       logical colok
+#ifdef OSX
+      integer igwid,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+#else
+      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to etplot
+#endif
 
       tab=' '
 
@@ -206,7 +215,10 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 c Display header information.
       write(etext,'(3a)') ' Variations of ',statev(mstate),
      &  ' state variable with time'
-      call viewtext(etext,1,1,1)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(etext,iside,isize,ifont)
 
 C Generate view period string.
       CALL EDAY(ISD1,ISM1,IODS)
@@ -215,7 +227,8 @@ C Generate view period string.
       CALL STDATE(IYEAR,IODF,DE,DE1)
       write(etext,'(7a,i4)') 'Period',tab,DS1,' to ',DE1,' Year',tab,
      &  IYEAR
-      call viewtext(etext,2,1,1)
+      iside=2
+      call viewtext(etext,iside,isize,ifont)
 
 C Find minimum and maximum values for x-axis based on the simulation
 C period.
@@ -230,7 +243,9 @@ c Case for 1st or 2nd phase.
       endif
 
 c Determine scaling ratios for the drawing and axis.
-      call axiscale(igw,igwh,xmin,xmax,ymin,ymax,xsc,ysc,sca,
+      igwid=igw
+      igheight=igwh
+      call axiscale(igwid,igheight,xmin,xmax,ymin,ymax,xsc,ysc,sca,
      &      xadd,yadd)
 
 c Draw a scale horizontal axis, move to beginning point.
