@@ -255,7 +255,7 @@ C irecdata - zone and surface number for results recovery (=0 if all)
       character xfile*144,tg*1,delim*1,t12*12
       character chkresult*8
       
-      logical XST,ok,dok,CLOSE,unixok
+      logical CLOSE,unixok
       
 C      write (6,*) 'Debug: call pars:',LVFILE,LGROUP,iflg,irpt
 
@@ -432,21 +432,13 @@ C Process selected models.
      &     'screen','cancel',' ',' ',' ',' ',irpt,3)
       endif
       if (irpt.eq.1) then
- 9      itu=ixunit
+        itu=ixunit
         if(unixok)then
           write(xfile,'(a)')'/tmp/Stand_tests.txt'
         else
           write(xfile,'(a)')'Stand_tests.txt'
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','exported_res',IER)
-        XST=.false.
-        call findfil(xfile,XST)
-        if(XST)then
-          dok=.false.
-          h(1)='Chance to change file name or location. '
-          CALL ASKOK('File already exists.','Change name?',OK,dok,1)
-          if (OK) goto 9
-        endif
         
 C Set irpt to -1 so that if running multiple groups this question will 
 C not be asked again.
