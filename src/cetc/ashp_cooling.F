@@ -226,6 +226,7 @@ c the current time step
 
 c If cooling load > 0 or ventilation load > 0 for hvac system
       if(cooling_vent_yes) then
+
 c Call subroutine to determine outdour air properties (temperature,
 c relative humidity, humidity ratio, enthalpy, specific heat, and density)
         call OUTDOOR_AIR_PROPERTIES(tout,rhout,wout,hout,cpout,den_out)
@@ -342,8 +343,9 @@ c the part-load ratio and the part-load factor for the time step
      &     rlatent_load,shr,fan_power_auto(isys),ss_cooling_cap)
 
 c Set total cooling load on coil: sum of sensible and latent load
+        
         total_cooling_load = sensible_cooling_load + rlatent_load
-  
+
 c Correct part load factor for the effect of off-cycle power use for
 c air-source heat pump system
         if((isys_type(isys).eq.1).or.(isys_type(isys).eq.2).or.
@@ -438,13 +440,15 @@ c variables to appropriate values
  30     continue
       endif
             
-c Call Subroutine to determine various outputs associated with the 
+C Call Subroutine to determine various outputs associated with the 
 c AC system
-c      if((idyp.eq.isd1).or.(output_flag)) then
-c        output_flag = .true.
-c        call ACSYSTEM_OUTPUT(isys,sys_energy,plr_heat_pump,
-c     &  plf_heat_pump,ss_cooling_cap,shr,time_step)
-c      endif
+      call ACSYSTEM_OUTPUT(isys,sys_energy,plr_heat_pump,
+     &  plf_heat_pump,ss_cooling_cap,shr,time_step)
+
+
+      if((idyp.eq.isd1).or.(output_flag)) then
+         output_flag = .true.
+      endif
 
 c Following are activated only when the time step output for the
 c cooling model is desired

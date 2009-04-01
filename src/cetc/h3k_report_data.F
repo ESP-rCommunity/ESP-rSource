@@ -84,11 +84,20 @@ C QPA(MCOM)            ! - zone air point heat injection (W)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       REAL TPA, QPA
 
+C Atmospheric pressure      
+      COMMON/ATPRES/PATMOS      
+      real PATMOS
+      
 C TFA(MCOM)            ! - future zone air point temperature (oC)
 C QFA(MCOM)            ! - zone air point heat injection (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       REAL TFA, QFA
 
+C GFA(MCOM)            ! zone futue  relative humidity values
+      common/FVALG/GFA(MCOM)
+      real gfa
+      
+      
 C TPC(MCOM,MS,MN),     ! - present construction temperature (oC)
 C QPC(MCOM)            ! - construction heat injection (W)
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
@@ -371,6 +380,7 @@ C                                           ! per m2 of floor area
       real fThickness                ! Thickness of a layer in a MLC
       real fConductivity             ! Conductivity of MLC layer.
 
+      real fZoneRH                   ! Zone relative humidity (%)
 
 C.....Misc Zone parameters returned by zoneinfo
 C      real fSurfArea(MS)          ! Area of each surface`
@@ -469,7 +479,9 @@ C     References
 C----------------------------------------------------------------------
       real fSurface_radiant_gain   ! Function returining the
                                    ! radiant gain on a surface (W)
-
+      real PCRH2                   ! Function returning relative 
+                                   ! humidity given zone temperature, 
+                                   ! moisture content and atm. pressure.
 C----------------------------------------------------------------------
 C     Check zone index. If iZone=1, re-zero running totals for
 C     entire building.
@@ -664,7 +676,24 @@ C.......Create base name
      &                                  // '/surface_'
      &                                  // cSurf_Chars
 
-
+C-----------------------------------------------------------------------
+C       Report total short wave radiation on this surface.
+C-----------------------------------------------------------------------
+        call add_to_xml_reporting (
+     &          qswrde(iZone,iSurface,2),
+     &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/shortwave' ,
+     &          'units', '(W)',
+     &          'Short-wave solar radiation'
+     &           )
+     
+        call add_to_xml_reporting (
+     &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
+     &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/'
+     &            //  'shortwave/unit_area' ,
+     &          'units', '(W/m2)',
+     &          'Short-wave solar radiation per unit area'
+     &          )     
+     
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
 C       balance on exterior surface node. Equation depends on
@@ -1096,6 +1125,15 @@ C.....AIR POINT TEMPERATURE
      &         'units', '(oC)',
      &         'Zone air-point temperature' )
 
+C.....Zone relative humidity
+      fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)     
+
+      call add_to_xml_reporting (
+     &         fZoneRH,
+     &         H3K_rep_NAME(1:16)// '/air_point/relative_humidity',
+     &         'units', '(%)',
+     &         'Zone relative humidity' )
+     
 C.....ZONE HEAT INJECTION / EXTRACTION
 
       call add_to_xml_reporting (

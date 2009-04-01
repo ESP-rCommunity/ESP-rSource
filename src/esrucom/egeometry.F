@@ -244,7 +244,8 @@ C MLC commons to recover optical property name.
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*20
+      
+      CHARACTER LGEOM*72,WORD*20,loutstr*248
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -286,14 +287,14 @@ C Read lines from file, if one item then assumed to
 C be CTYPE, if 2 then the second is the zone name which
 C is tested for illegal characters, if '*Geometry 1.1'
 C the should use georead to scan the file.
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'geo line 1',IER)
+      call lstripc(IUNIT,loutstr,99,ND,1,'geo line 1',IER)
       IF(IER.NE.0)goto 1001
-      if(OUTSTR(1:13).eq.'*Geometry 1.1')then
+      if(loutstr(1:13).eq.'*Geometry 1.1')then
         K=13
-        CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+        CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         zname(ICOMP)=' '
-        CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+        CALL EGETW(loutstr,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(ICOMP))
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
@@ -304,29 +305,30 @@ C the should use georead to scan the file.
       else
         K=0
         IF(ND.EQ.1)THEN
-          CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+          CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
           lnzname(ICOMP)=0
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
-          CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+          CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+          CALL EGETW(loutstr,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
           lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
-          CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+          CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+          CALL EGETW(loutstr,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+
           lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
-          call egetrm(outstr,K,phrase,'W','Z description',IER)
+          call egetrm(loutstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
           lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
@@ -350,23 +352,23 @@ C Fill in a default zone name and description if blank.
 
 C Zone is of type REC, look for 7 items on one or two lines.
       IF(CTYPE(icomp)(1:3).EQ.'REC')THEN
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'line 2',IER)
+        call lstripc(IUNIT,loutstr,99,ND,1,'line 2',IER)
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWR(OUTSTR,K,XO,0.,0.,'-','X origin',IER)
-        CALL EGETWR(OUTSTR,K,YO,0.,0.,'-','Y origin',IER)
-        CALL EGETWR(OUTSTR,K,ZO,0.,0.,'-','Z origin',IER)
+        CALL EGETWR(loutstr,K,XO,0.,0.,'-','X origin',IER)
+        CALL EGETWR(loutstr,K,YO,0.,0.,'-','Y origin',IER)
+        CALL EGETWR(loutstr,K,ZO,0.,0.,'-','Z origin',IER)
 
-C If only 3 items on first line read another OUTSTR and try to continue.
+C If only 3 items on first line read another loutstr and try to continue.
         IF(ND.EQ.3) THEN
           K=0
-          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'line 2',IER)
+          call lstripc(IUNIT,loutstr,0,ND,1,'line 2',IER)
           IF(IER.NE.0)goto 1001
         ENDIF
-        CALL EGETWR(OUTSTR,K,DX,0.,0.,'-','length',IER)
-        CALL EGETWR(OUTSTR,K,DY,0.,0.,'-','width',IER)
-        CALL EGETWR(OUTSTR,K,DZ,0.,0.,'-','height',IER)
-        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rotation angle',IER)
+        CALL EGETWR(loutstr,K,DX,0.,0.,'-','length',IER)
+        CALL EGETWR(loutstr,K,DY,0.,0.,'-','width',IER)
+        CALL EGETWR(loutstr,K,DZ,0.,0.,'-','height',IER)
+        CALL EGETWR(loutstr,K,AR,-360.,360.,'W','rotation angle',IER)
 
 C Now convert to a gen description.
         CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
@@ -376,21 +378,21 @@ C Now convert to a gen description.
 
 C Zone is of type REG.
       ELSEIF(CTYPE(icomp)(1:3).EQ.'REG')THEN
-        CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'line 2',IER)
+        call lstripc(IUNIT,loutstr,4,ND,1,'line 2',IER)
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWI(OUTSTR,K,NW,3,MS-2,'W','no of walls',IER)
-        CALL EGETWR(OUTSTR,K,Z1,0.,1000.,'W','floor height',IER)
-        CALL EGETWR(OUTSTR,K,Z2,Z1,1000.,'F','ceiling ht',IER)
-        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
+        CALL EGETWI(loutstr,K,NW,3,MS-2,'W','no of walls',IER)
+        CALL EGETWR(loutstr,K,Z1,0.,1000.,'W','floor height',IER)
+        CALL EGETWR(loutstr,K,Z2,Z1,1000.,'F','ceiling ht',IER)
+        CALL EGETWR(loutstr,K,AR,-360.,360.,'W','rot angle',IER)
 
 C Read base vertex data.
         DO 60 IW=1,NW
-          CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'vertex data',IER)
+          call lstripc(IUNIT,loutstr,2,ND,1,'vertex data',IER)
           IF(IER.NE.0)goto 1001
           K=0
-          CALL EGETWR(OUTSTR,K,XX(IW),0.,0.,'-','Base X',IER)
-          CALL EGETWR(OUTSTR,K,YY(IW),0.,0.,'-','Base Y',IER)
+          CALL EGETWR(loutstr,K,XX(IW),0.,0.,'-','Base X',IER)
+          CALL EGETWR(loutstr,K,YY(IW),0.,0.,'-','Base Y',IER)
    60   CONTINUE
 
 C Now convert to GEN body type and place into in common block.
@@ -406,45 +408,51 @@ C Now convert to GEN body type and place into in common block.
 
 C Zone is of type GEN.
       ELSEIF(CTYPE(icomp)(1:3).EQ.'GEN')THEN
-        CALL STRIPC(IUNIT,OUTSTR,3,ND,1,'NTV NSUR AR',IER)
+        call lstripc(IUNIT,loutstr,3,ND,1,
+     &       '# of verticies, surfices, rotation angle',IER)
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no of vertices',IER)
-        CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no of surfaces',IER)
+C Read verticies        
+        CALL EGETWI(loutstr,K,NTV,4,MTV,'F','# of vertices',IER)
+C Read surfaces
+C (Shouldn't four planar surfaces be required to fully-bound a zone?)
+        CALL EGETWI(loutstr,K,NSUR,3,MS,'F','# of surfaces',IER)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
-        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
+C Read rotation angle. Does this input work?
+        CALL EGETWR(loutstr,K,AR,-360.,360.,'W','rotation angle',IER)
 
 C Read each vertex data line, strip any comments, see if 3 items and
 C place in X(),Y(),Z().
         DO 62 I=1,NTV
-          CALL STRIPC(IUNIT,OUTSTR,3,ND,1,'vertex data',IER)
+          call lstripc(IUNIT,loutstr,3,ND,1,'vertex data',IER)
           IF(IER.NE.0)goto 1001
           K=0
-          CALL EGETWR(OUTSTR,K,X(I),0.,0.,'-','X coord',IER)
-          CALL EGETWR(OUTSTR,K,Y(I),0.,0.,'-','Y coord',IER)
-          CALL EGETWR(OUTSTR,K,Z(I),0.,0.,'-','Z coord',IER)
-   62   CONTINUE
+          CALL EGETWR(loutstr,K,X(I),0.,0.,'-','X coord',IER)
+          CALL EGETWR(loutstr,K,Y(I),0.,0.,'-','Y coord',IER)
+          CALL EGETWR(loutstr,K,Z(I),0.,0.,'-','Z coord',IER)
+   62   CONTINUE 
 
 C Read vertex list for each surface, strip comments, begin by finding
 C the number of expected vertices (first item on list).
         DO 10 I=1,NSUR
-          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'vertex list',IER)
+          
+          call lstripc(IUNIT,loutstr,99,ND,1,'vertex list',IER)
           IF(IER.NE.0)goto 1001
           IF(ND.GE.4)THEN
             K=0
-            CALL EGETWI(OUTSTR,K,J,3,MV,'F','nb assoc vertices',IERV)
+            CALL EGETWI(loutstr,K,J,3,MV,'F','nb assoc vertices',IERV)
             NVER(I)=J
 
 C Now proceed to read vertices on one or more lines.
             DO 12 KV=1,NVER(I)
-              CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
+              CALL EGETWI(loutstr,K,IVAL,0,MTV,'F','vertex',IERV)
               IF(IERV.NE.0) THEN
                 call edisp(ITRU,' reading continuation line...')
-                CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'vertex XYZ',IER)
+                call lstripc(IUNIT,loutstr,0,ND,0,'vertex XYZ',IER)
                 IF(IER.NE.0)goto 1001
                 K=0
-                CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
+                CALL EGETWI(loutstr,K,IVAL,0,MTV,'F','vertex',IERV)
               ENDIF
               IF(IERV.NE.0) GOTO 1001
               JVN(I,KV)=IVAL
@@ -458,6 +466,7 @@ C Rotate if required.
           y1=Y(1)
           CALL ESCROT(AR,x1,y1)
         endif
+C Unrecognized keyword.      
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',
      &    LGEOM(1:lnblnk(LGEOM))
@@ -481,17 +490,17 @@ C non zero then it represents a depreciated default window.
       CALL EGETWIA(IUNIT,IVA,IRVA,0,MG,'F','def window list',IER)
 
 C Read the window dimension details and advise user (if IVA non-zero).
-      DO 16 KS=1,NSUR
-        IF(IVA(KS).GT.0)THEN
+      default_windows: IF( IVA(KS).GT.0 )THEN
+        DO 16 KS=1,NSUR
           DO 18 KW=1,IVA(KS)
-            CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'window data',IER)
+            call lstripc(IUNIT,loutstr,99,ND,1,'window data',IER)
             IF(IER.NE.0)goto 1001
             IF(ND.GE.4)THEN
               K=0
-              CALL EGETWR(OUTSTR,K,VALX,0.,0.,'-','win X off',IER)
-              CALL EGETWR(OUTSTR,K,VALZ,0.,0.,'-','win Z off',IER)
-              CALL EGETWR(OUTSTR,K,VALW,0.,100.,'W','win width',IER)
-              CALL EGETWR(OUTSTR,K,VALH,0.,100.,'W','win ht',IER)
+              CALL EGETWR(loutstr,K,VALX,0.,0.,'-','win X off',IER)
+              CALL EGETWR(loutstr,K,VALZ,0.,0.,'-','win Z off',IER)
+              CALL EGETWR(loutstr,K,VALW,0.,100.,'W','win width',IER)
+              CALL EGETWR(loutstr,K,VALH,0.,100.,'W','win ht',IER)
               call usrmsg(
      &  'A default window description has been detected. This is not',
      &  'supported, note its demensions and make an equiv surface.','W')
@@ -501,8 +510,8 @@ C Read the window dimension details and advise user (if IVA non-zero).
               call edisp(itru,outs)
             ENDIF
    18     CONTINUE
-        ENDIF 
-   16 CONTINUE
+   16   CONTINUE
+      endif default_windows
 
 C Read surface indentations (one per surface).
       IRVA=NSUR
@@ -514,16 +523,16 @@ C Read surface indentations (one per surface).
 C Read default insolation surface numbers. NN = insolation defining 
 C index:  1; one plane, 2; two planes, 3; all planes (diffuse).
 C IDPN defines the default plane numbers.
-      CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'insolation data',IER)
+      call lstripc(IUNIT,loutstr,4,ND,1,'insolation data',IER)
       IF(IER.NE.0)goto 1001
       K=0
-      CALL EGETWI(OUTSTR,K,IV,1,3,'W','Def insol index',IER)
+      CALL EGETWI(loutstr,K,IV,1,3,'W','Def insol index',IER)
       NDP(ICOMP)=IV
-      CALL EGETWI(OUTSTR,K,IV,0,NSUR,'W','1st recv surf',IER)
+      CALL EGETWI(loutstr,K,IV,0,NSUR,'W','1st recv surf',IER)
       IDPN(ICOMP,1)=IV
-      CALL EGETWI(OUTSTR,K,IV,0,NSUR,'W','2nd recv surf',IER)
+      CALL EGETWI(loutstr,K,IV,0,NSUR,'W','2nd recv surf',IER)
       IDPN(ICOMP,2)=IV
-      CALL EGETWI(OUTSTR,K,IV,-1,NSUR,'W','3rd insol data',IER)
+      CALL EGETWI(loutstr,K,IV,-1,NSUR,'W','3rd insol data',IER)
       IDPN(ICOMP,3)=IV
       IF(IR.EQ.1)THEN
         DO 40 I=1,3
@@ -532,7 +541,7 @@ C IDPN defines the default plane numbers.
           IF(NDP(ICOMP).EQ.2.AND.I.LE.2)IX=1
           if(IDPN(ICOMP,I).NE.-1.AND.IDPN(ICOMP,I).NE.0)then
             if(IDPN(ICOMP,I).LT.IX.OR.IDPN(ICOMP,I).GT.NSUR)then
-              CALL USRMSG(' Nonexistent insolation plane!',OUTSTR,'W')
+              CALL USRMSG(' Nonexistent insolation plane!',loutstr,'W')
             endif
           endif
    40   CONTINUE
@@ -572,7 +581,7 @@ C Check and see if izstocn returns non-zeros and set havec24.
         else
           havec24=.false.
         endif
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'surface attributes',IER)
+        call lstripc(IUNIT,loutstr,0,ND,0,'surface attributes',IER)
         IF(IER.EQ.2)THEN
 
 C End of file sensed, however this is not an error at this point.
@@ -587,7 +596,7 @@ C        1         2         3         4         5         6         7
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C 1, Surf-1        OPAQ  VERT  UNKN         EXTERIOR       
         K=0
-        CALL EGETWI(OUTSTR,K,ISN,1,NSUR,'F','surface no',IER)
+        CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
         IF(IER.NE.0)GOTO 44
 
 C The value of I and ISN should be the same. If not warn.
@@ -596,14 +605,14 @@ C The value of I and ISN should be the same. If not warn.
      &      'Disagreement between surface index and position in list.')
         endif
 
-        SNAME(ICOMP,ISN)=OUTSTR(6:17)
+        SNAME(ICOMP,ISN)=loutstr(6:17)
         if(havec24)then
           icn=izstocn(icomp,isn)
-          ssname(icn)=OUTSTR(6:17)
+          ssname(icn)=loutstr(6:17)
         endif
 
 C Interpret positional portion of the string.
-        tmpvfc=OUTSTR(26:29)
+        tmpvfc=loutstr(26:29)
         IF(tmpvfc.EQ.'VERT'.OR.tmpvfc.EQ.'SLOP')then
           write(SVFC(ISN),'(a)') tmpvfc
           if(havec24) write(SSVFC(icn),'(a)') tmpvfc
@@ -616,11 +625,11 @@ C Interpret positional portion of the string.
         ENDIF
 
 C Interpret the construction name.
-        write(SMLCN(ISN),'(a)') OUTSTR(32:43)
-        if(havec24) write(SSMLCN(icn),'(a)') OUTSTR(32:43)
+        write(SMLCN(ISN),'(a)') loutstr(32:43)
+        if(havec24) write(SSMLCN(icn),'(a)') loutstr(32:43)
 
 C Now that we know the construction try and work out the optics.
-        write(tmpsot,'(a)') OUTSTR(20:23)
+        write(tmpsot,'(a)') loutstr(20:23)
         if(tmpsot(1:4).eq.'OPAQ')then
           write(SOTF(ISN),'(a)') 'OPAQUE'  ! write OPAQUE
           if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE' 
@@ -690,7 +699,7 @@ C  keyword.]
 C Depending on what the 'other' column is file the SOTHER array.
 C Note when seanning an older file we will not yet know the
 C C3 based information and so sother(2) and sother(3) are placeholders.
-        write(tother,'(a)') OUTSTR(45:59)
+        write(tother,'(a)') loutstr(45:59)
         if(tother(1:7).eq.'UNKNOWN')then
           write(sother(isn,1),'(a)') 'UNKNOWN'
           write(sother(isn,2),'(a)') '0'
@@ -821,7 +830,7 @@ C Child/parent unknown in legacy file so write place holder.
    42 CONTINUE
 
 C Check if base area has been defined.
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,0,'base',IER)
+      call lstripc(IUNIT,loutstr,99,ND,0,'base',IER)
       IF(IER.EQ.2)THEN
 
 C End of file sensed before zone base area was defined. Estimate.
@@ -841,22 +850,22 @@ C Gather information about surfaces associated with floor area.
   59  continue
       ZBASEA(ICOMP)=0.00
       K=0
-      CALL EGETWI(OUTSTR,K,IB1,0,MS,'-','zn base 1st index',IER)
-      CALL EGETWI(OUTSTR,K,IB2,0,MS,'-','zn base 2nd index',IER)
-      CALL EGETWI(OUTSTR,K,IB3,0,MS,'-','zn base 3rd index',IER)
-      CALL EGETWI(OUTSTR,K,IB4,0,MS,'-','zn base 4th index',IER)
+      CALL EGETWI(loutstr,K,IB1,0,MS,'-','zn base 1st index',IER)
+      CALL EGETWI(loutstr,K,IB2,0,MS,'-','zn base 2nd index',IER)
+      CALL EGETWI(loutstr,K,IB3,0,MS,'-','zn base 3rd index',IER)
+      CALL EGETWI(loutstr,K,IB4,0,MS,'-','zn base 4th index',IER)
       if(ND.eq.6)then
-        CALL EGETWI(OUTSTR,K,IB5,0,MS,'-','zn base 5th index',IER)
+        CALL EGETWI(loutstr,K,IB5,0,MS,'-','zn base 5th index',IER)
       elseif(ND.gt.6)then
-        CALL EGETWI(OUTSTR,K,IB5,0,MS,'-','zn base 5th index',IER)
-        CALL EGETWI(OUTSTR,K,IB6,0,MS,'-','zn base 6th index',IER)
+        CALL EGETWI(loutstr,K,IB5,0,MS,'-','zn base 5th index',IER)
+        CALL EGETWI(loutstr,K,IB6,0,MS,'-','zn base 6th index',IER)
       endif
-      CALL EGETWR(OUTSTR,K,VAL,0.,99999.,'W','zn base area m2',IER)
+      CALL EGETWR(loutstr,K,VAL,0.,99999.,'W','zn base area m2',IER)
 
 C If there is an 8th item on the line it is the value for iuzbasea
 C (user might have selected the list of surfaces assoc with base).
       if(ND.eq.8)then
-        CALL EGETWI(OUTSTR,K,IUB,0,2,'-','zn base area user flag',IER)
+        CALL EGETWI(loutstr,K,IUB,0,2,'-','zn base area user flag',IER)
       else
         IUB=0
       endif
@@ -943,7 +952,7 @@ C Close geometry data file before exiting.
       CALL ERPFREE(IUNIT,ios)
       RETURN
 
- 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1001 write(outs,'(3a)') 'Conversion error in...',loutstr(1:50),'...'
       if(dll)then
         dllsubr='EGOMIN'
         dllmesg=outs

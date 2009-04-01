@@ -289,13 +289,17 @@ C Configuration file plant data : first read system description.
       LPNAM=OUTSTR(1:72)
 
 C Read number of plant components in system.
-      CALL STRIPC(iuc,OUTSTR,2,ND,1,'no plant comps',IER)
+      CALL STRIPC(iuc,OUTSTR,2,ND,1,'# of plant components',IER)
       IF(IER.NE.0)RETURN
       K=0
-      CALL EGETWI(OUTSTR,K,NPCOMP,1,MPCOM,'F','no p comp',IER)
+      CALL EGETWI(OUTSTR,K,NPCOMP,0,MPCOM,'F',
+     &            '# of plant components',IER)
       
       CALL EGETWI(OUTSTR,K,NPMTYP,1,4,'F','type of matrix',IER)
       IF(IER.NE.0) GOTO 1001
+
+C If at least one plant componet is not found, then reset simulation
+C to 'building only'.      
       if ( NPCOMP < 1 ) then
         indcfg = 1
         return
