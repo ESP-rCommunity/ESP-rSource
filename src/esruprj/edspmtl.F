@@ -40,7 +40,6 @@ C IER=0 OK, IER=1 problem.
       common/filep/ifil
 
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/spmfxst/ispmxist,spflnam 
       common/spmopn/ispopen 
@@ -338,6 +337,7 @@ C Data items.
       subroutine EDSPM(ISPM,MODE,ITRU)
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -362,11 +362,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-
 C << rewrite logic using G6 common block >>
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -380,7 +375,6 @@ C << rewrite logic using G6 common block >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -685,7 +679,7 @@ C General image option flags.
       nzg=1
       nznog(1)=IZ
       izgfoc=IZ
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -724,7 +718,7 @@ c      IVAL=IFOC
       nzg=1
       nznog(1)=IZ
       izgfoc=IZ
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
       if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
@@ -921,7 +915,7 @@ C General image option flags.
         nzg=1
         nznog(1)=IZ
         izgfoc=IZ
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODIFY=.TRUE.
         MODBND=.TRUE.
 
@@ -949,7 +943,7 @@ C Recover the related zone.
         nzg=1
         nznog(1)=IZ
         izgfoc=IZ
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODIFY=.TRUE.
         MODBND=.TRUE.
        

@@ -28,14 +28,24 @@ C Returns the corner points of the arrow as pixel locations in 'ipoints'.
 C IDRAW=0 don't draw; =1 shaft single line thickness; =2 shaft double line thickness.
 
       SUBROUTINE ARROW(P,Q,al,aw,ipoints,act,IDRAW)
+#include "prj3dv.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       DIMENSION P(3),Q(3),SNORM(3),A(3),PLANE(4),CORNER(4,3)
       DIMENSION VEC(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
       character act*1
 C     character outs*124
+
+C Local variables to pass to edline.
+#ifdef OSX
+      integer iixp,iiyp,iixq,iiyq
+      integer iixc1,iiyc1,iixc2,iiyc2
+      integer iixc3,iiyc3,iixc4,iiyc4
+#else
+      integer*8 iixp,iiyp,iixq,iiyq
+      integer*8 iixc1,iiyc1,iixc2,iiyc2
+      integer*8 iixc3,iiyc3,iixc4,iiyc4
+#endif     
 
 C Calculate the vector between P and Q.
       do 10 I=1,3
@@ -47,8 +57,7 @@ C If absolute distance back from Q, find whole length and then
 C work backwards using ratio. If P and Q are the same then
 C DIST is going to be zero and in that case and the case of
 C a very small DIST just return without attempting to draw it.
-      DIST= (P(1)-Q(1))**2 + (P(2)-Q(2))**2 + (P(3)-Q(3))**2
-      DIST= sqrt(DIST)
+      DIST= CROW(P,Q)
       if(DIST.lt.0.0001) return   ! if zero length line.
       if(act(1:1).eq.'r')then
         do 20 I=1,3
@@ -181,16 +190,19 @@ C Draw the damn thing!
 
 C Draw the arrow. (IDRAW determines shaft width).
       if (IDRAW.gt.0) then
-        if (IDRAW.eq.1) call eswline(ixp,iyp,ixq,iyq)
-        if (IDRAW.eq.2) call edwline(ixp,iyp,ixq,iyq)
-        call eswline(ixc1,iyc1,ixc2,iyc2)
-        call eswline(ixc2,iyc2,ixc3,iyc3)
-        call eswline(ixc3,iyc3,ixc4,iyc4)
-        call eswline(ixc4,iyc4,ixc1,iyc1)
-        call eswline(ixc1,iyc1,ixq,iyq)
-        call eswline(ixc2,iyc2,ixq,iyq)
-        call eswline(ixc3,iyc3,ixq,iyq)
-        call eswline(ixc4,iyc4,ixq,iyq)
+        iixp=ixp; iiyp=iyp; iixq=ixq; iiyq=iyq;
+        iixc1=ixc1; iiyc1=iyc1; iixc2=ixc2; iiyc2=iyc2;
+        iixc3=ixc3; iiyc3=iyc3; iixc4=ixc4; iiyc4=iyc4;
+        if (IDRAW.eq.1) call eswline(iixp,iiyp,iixq,iiyq)
+        if (IDRAW.eq.2) call edwline(iixp,iiyp,iixq,iiyq)
+        call eswline(iixc1,iiyc1,iixc2,iiyc2)
+        call eswline(iixc2,iiyc2,iixc3,iiyc3)
+        call eswline(iixc3,iiyc3,iixc4,iiyc4)
+        call eswline(iixc4,iiyc4,iixc1,iiyc1)
+        call eswline(iixc1,iiyc1,iixq,iiyq)
+        call eswline(iixc2,iiyc2,iixq,iiyq)
+        call eswline(iixc3,iiyc3,iixq,iiyq)
+        call eswline(iixc4,iiyc4,iixq,iiyq)
       endif
       call forceflush()
 

@@ -546,6 +546,7 @@ C MGLTBL: monthly multi-column tabular listing for selected
 C gains and losses.
       SUBROUTINE MGLTBL
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -554,7 +555,6 @@ C gains and losses.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
@@ -563,7 +563,6 @@ C gains and losses.
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -571,7 +570,7 @@ C gains and losses.
 
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
-      character outs*124,zname*12,zdesc*64,prompt*124,outsl*144
+      character outs*124,prompt*124,outsl*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -865,9 +864,9 @@ C CALLS: GZTMS.
 
       SUBROUTINE CZMRT(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
       DIMENSION ZTMS(MS),YDUM(MS),TSO(MS)
@@ -902,9 +901,9 @@ C CALLS:  GZTMS.
 
       SUBROUTINE CZRESL(IDAY,IZONE,ISET)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       DIMENSION ZTMS(MS),YDUM(MS),TSO(MS)
 

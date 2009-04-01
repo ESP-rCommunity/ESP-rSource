@@ -1261,6 +1261,7 @@ C ICOMP is the zone number.
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -1270,7 +1271,6 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
@@ -1303,8 +1303,7 @@ C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
 
-      character OPFIL*72,zname*12,lodlabel*6
-      character zdesc*64
+      character OPFIL*72,lodlabel*6
       character dstmp*24
       logical Vldtng
 
@@ -1340,7 +1339,7 @@ C If version 1 write out header.
      &  '  # latest file modification '
       endif
       WRITE(IUO,30,IOSTAT=IOS,ERR=1)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),OPFIL(1:lnblnk(OPFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),OPFIL(1:lnblnk(OPFIL))
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
 C Write the common block data to the file.
@@ -1457,6 +1456,7 @@ C control from zone operation common block data.
 C << need to update reporting for different day types and ctl periods >>
       SUBROUTINE VENTINF(ICOMP,ITRU)
 #include "building.h"
+#include "geometry.h"
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
@@ -1466,7 +1466,6 @@ C << need to update reporting for different day types and ctl periods >>
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -2047,8 +2046,7 @@ C Passed the zone index.
 C Returns IER=0 if all ok.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU,IER)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2056,10 +2054,6 @@ C Returns IER=0 if all ok.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty,idt
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
@@ -2090,7 +2084,7 @@ C   W/m2 or person/m2, if three then non-zero are mixed.
 
       logical close,needtodivide,writeit
 
-      character H*72,zname*12,zdesc*64,outs*124
+      character H*72,outs*124
 
 C Temporary arrays: MC array is 72 so that is
 C   sized for 24 hours X 3 day types. Array size should be
@@ -2127,13 +2121,13 @@ C Warn user if the zone base area is still zero.
       if(close)then
         FLOOR=1.0
         write(outs,'(3a,F6.1,a)') 'The base area of ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    zname(icomp)(1:lnzname(icomp)),
      &    ' has been set to ',FLOOR,'m^2.'
         call edisp(iuout,outs)
       else
         FLOOR=ZBASEA(ICOMP)
         write(outs,'(3a,F6.1,a)') 'The base area of ',
-     &    zname(icomp)(1:lnblnk(zname(icomp))),
+     &    zname(icomp)(1:lnzname(icomp)),
      &    ' is',FLOOR,'m^2.'
         call edisp(iuout,outs)
       endif

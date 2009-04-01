@@ -81,7 +81,6 @@ C IALT is the number of text alternatives available for a text field.
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
       COMMON/TDFG6/IALT(MBITS)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -103,6 +102,11 @@ C IALT is the number of text alternatives available for a text field.
       character*35 ITEMS(9)      
       CHARACTER DFILE*72,tfile*72,LIMP*72,LEXP*72
       CHARACTER OUTSTR*124
+#ifdef OSX
+      integer impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
+#else
+      integer*8 impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
+#endif
       
       IER=0
 
@@ -317,7 +321,19 @@ C Help text for this menu.
         write(itypes,9)
    9    format(34('-'))
         call updmenu(IPD,itypes,IPDL,iw)
-        call evwmenu(head,0,0,IMW,irpx,irpy,INODA,ipflg,iuresp)
+        inoe=INODA   ! assign to local passed parameters
+        impxe=0   
+        impye=0   
+        irpxe=0
+        irpye=0
+        ipflge=ipflg
+        call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,ipflge,
+     &    iuresp)
+#ifdef OSX
+        INODA=inoe  !  cast back from returned parameter
+#else
+        INODA=int(inoe)  !  cast back to integer from returned parameter
+#endif
       else
         CALL EMENU(head,IPD,IPDL,INODA)
       endif 
@@ -465,7 +481,19 @@ C Define the beginning and ending dates for the TDF display.
               iw=LEN(IPD(1))
               write(itypes,9)
               call updmenu(IPD,itypes,IPDL,iw)
-              call evwmenu(head,0,0,IMW,irpx,irpy,INODA,ipflg,iuresp)
+              inoe=INODA   ! assign to local passed parameters
+              impxe=0   
+              impye=0   
+              irpxe=0
+              irpye=0
+              ipflge=ipflg
+              call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,
+     &          ipflge,iuresp)
+#ifdef OSX
+              INODA=inoe  !  cast back from returned parameter
+#else
+              INODA=int(inoe)  !  cast back to integer from returned parameter
+#endif
             else
               CALL EMENU(head,IPD,IPDL,INODA)
             endif 

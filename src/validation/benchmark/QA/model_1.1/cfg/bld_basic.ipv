@@ -1,20 +1,20 @@
-*IPV,4,0
+*IPV,4,0,i3t   
 *title,Basic 3 zone model. version 3 of ipv    
 *version,Version bld_basic_c more metrics        
-*date,Fri May 14 12:13:24 2004
+*date,Tue Mar 11 13:44:13 2008
 *synop,General test model for use in training courses
 *images,0
 *simulations,3
-*period,37,43,bld_basic_f winter run                  
-*period,107,113,bld_basic_f transition run              
-*period,184,190,bld_basic_f summer run                  
-*display_days,3,38,108,186
+*period,9,15,bld_basic winter run                    
+*period,65,71,bld_basic transition run                
+*period,192,198,bld_basic summer run                    
+*display_days,3,10,66,193
 season multipliers: heating|cooling|lights|fans|smallp|DWH
-*win1,17.074,1.000,19.000,19.000,19.000,19.000
-*spr,12.898,1.000,17.000,17.000,17.000,17.000
-*sum,23.467,15.679,16.000,16.000,16.000,16.000
-*aut,8.419,1.000,8.000,8.000,8.000,8.000
-*win2,8.941,1.000,9.000,9.000,9.000,9.000
+*win1,1.000,1.000,1.000,1.000,1.000,1.000
+*spr,1.000,1.000,1.000,1.000,1.000,1.000
+*sum,1.000,1.000,1.000,1.000,1.000,1.000
+*aut,1.000,1.000,1.000,1.000,1.000,1.000
+*win2,1.000,1.000,1.000,1.000,1.000,1.000
 *metrics,7
 # metric data: metric index, nb zones, 2 miscel , floor area
 *metric_1,6,0,0,2,64.0,1.000,1.000,comfort,-,Resultant T (degC)

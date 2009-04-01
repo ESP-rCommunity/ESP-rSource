@@ -65,13 +65,13 @@ C IDCFID   - Daylight coefficient sensor ID
 
       SUBROUTINE ercgcf(itrc,itru,LCGCIN,ICOMP,ier)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -475,12 +475,12 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       SUBROUTINE CASCTMK(LCGCIN,ICOMP,ACT,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

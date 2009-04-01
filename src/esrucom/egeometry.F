@@ -91,19 +91,15 @@ C conversion to the 'G1' format takes place.
        SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+#include "geometry.h"
+
 C espriou.h provides current file.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C X,Y & Z   - coordinates of the vertices defining the zone
 C NSUR      - Number of faces comprising zone
@@ -112,14 +108,6 @@ C             vertices in each face
 C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-C NGL       - contains the number of windows in each face (set to zero)
-C             this is depreciated as the default window data structure is no
-C             longer used.        
-      COMMON/G2/NGL(MS)
-
-C Default solar distribution and shading directives.
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C Include ishdirc common in legacy file read so that some inference
 C can be made in case the data is saved to version 1.1 file.
@@ -232,22 +220,14 @@ C if the common block C24 has been filled.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
-C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+C ZNAME (12 char) - the zone name (from geometry.h).
+C ZDESC (64 char) - zone notes (from geometry.h).
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list. 
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C zbasea(),ibases(),iuzbasea(),izbaselist() are defined in geometry.h
       
 C Save total transparent surface area for surfaces connected to external BC.
       common/PREC18/ZTRANA(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
@@ -264,13 +244,13 @@ C MLC commons to recover optical property name.
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*20,zname*12
+      CHARACTER OUTSTR*124,LGEOM*72,WORD*20
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124
+      character ZN*12,phrase*64,outs*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
@@ -317,6 +297,7 @@ C the should use georead to scan the file.
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(ICOMP))
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
         CALL ERPFREE(IUNIT,ios)
         call georead(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
@@ -327,22 +308,28 @@ C the should use georead to scan the file.
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
+          lnzname(ICOMP)=0
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           call egetrm(outstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
+          lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
         IF(IFLAG.NE.0)GOTO 1001
         gversion(icomp) = 1.0   ! set the version number.
@@ -351,13 +338,15 @@ C the should use georead to scan the file.
 C The file format is prior to 1.1 so continue scanning.
 C Fill in a default zone name and description if blank.
       if(zname(ICOMP)(1:2).EQ.'  '.OR.
-     &     zname(ICOMP)(1:7).EQ.'UNKNOWN')then
+     &   zname(ICOMP)(1:7).EQ.'UNKNOWN')then
         IF(ICOMP.LE.9)WRITE(zname(ICOMP),'(A5,I1)')'Zone-',ICOMP
         IF(ICOMP.GT.9)WRITE(zname(ICOMP),'(A5,I2)')'Zone-',ICOMP
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
       endif
       if(zdesc(ICOMP)(1:1).EQ.' ')then
-        write(zdesc(ICOMP),'(a,a)') 
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),' describes a '
+        write(zdesc(ICOMP),'(2a)') 
+     &    zname(ICOMP)(1:lnzname(ICOMP)),' describes a '
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.
@@ -488,13 +477,9 @@ C Rotate if required.
       ENDIF
 
 C Read line of unused indices (one per surface) if any index is
-C non zero then it represents a depreciated default window, warn the
-C user and set NGL to 0.
+C non zero then it represents a depreciated default window.
       IRVA=NSUR
       CALL EGETWIA(IUNIT,IVA,IRVA,0,MG,'F','def window list',IER)
-      DO 14 KS=1,NSUR
-        NGL(KS)=0
-   14 CONTINUE
 
 C Read the window dimension details and advise user (if IVA non-zero).
       DO 16 KS=1,NSUR
@@ -895,9 +880,11 @@ C Now close geometry data file.
    44 CALL ERPFREE(IUNIT,ios)
 
 C If base area has not yet been calculated, do this now and calculate 
-C transparent area for surfaces connected to external type BC.
+C transparent area for surfaces connected to external boundary conditions.
 C Get surface areas via call to zinfo.
-      call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+      call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+      vol(icomp)=zvol
+      zonetotsurfacearea(icomp)=zoa
       ZTRANA(ICOMP)=0.
       lastlist=0
       do 43 ijj=1,NSUR
@@ -964,11 +951,13 @@ C with user before overwriting.
 
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G4/prec17/precz/c20.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NOTE: G1 is only valid for the zone that has currently been
@@ -978,23 +967,15 @@ C named ZNDATA which holds this information globally.
 C << todo: emkgeo could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
 C Dummy array for default windows.
       dimension NGLD(MS)
 
-      CHARACTER GENFIL*72,zname*12,zdesc*64,louts*248
+      CHARACTER GENFIL*72,louts*248
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SO*15    ! to write out legacy
@@ -1025,14 +1006,14 @@ C over-write) or create a new file.
       ENDIF
 
       WRITE(IFILG,30,IOSTAT=ios,ERR=13)
-     &  zname(ICOMP)(1:lnblnk(zname(ICOMP))),GENFIL(1:lnblnk(GENFIL))
+     &  zname(ICOMP)(1:lnzname(ICOMP)),GENFIL(1:lnblnk(GENFIL))
   30  FORMAT('# geometry of ',a,' defined in: ',a)
-      lz=lnblnk(zname(ICOMP))
-      ld=lnblnk(zdesc(ICOMP))
+      lz=lnzname(ICOMP)
 
 C File is always a GEN type as this is representation in common.
       WRITE(IFILG,'(a3,2x,A,2x,a,2x,a)',IOSTAT=ios,ERR=13) 'GEN',
-     &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:ld),'# type, name, descr'
+     &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:lnzdesc(ICOMP)),
+     &  '# type, name, descr'
 
 C Vertex coordinates.
       WRITE(IFILG,'(I8,I8,F8.3,4x,A)',IOSTAT=ios,ERR=13)
@@ -1197,20 +1178,17 @@ C       +ve).
  
       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
-#include "espriou.h"
+
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+#include "geometry.h"
+
 C espriou.h provides currentfile.
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C X,Y & Z   - coordinates of the vertices defining the zone
 C NSUR      - Number of faces comprising zone
@@ -1219,9 +1197,6 @@ C             vertices in each face
 C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-C Default solar distribution and shading directives.
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -1232,9 +1207,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
 C SNAME (12 char) - surface name attribute
-C ZBASEA    - area of base (m^2)
-C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
-C             base area has been supplied by the user.
 C SOTF (32 char) - surface attribute indicating OPAQUE or an optical property.
 C SVFC (4 char) - string indicating whether the surface is to be
 C     counted as a FLOR (face up), VERT (wall), CEIL (face down),
@@ -1263,23 +1235,15 @@ C if the common block C24 has been filled.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
-C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+C ZNAME (12 char) - the zone name (from geometry.h).
+C ZDESC (64 char) - zone notes (from geometry.h).
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C prec17 common described in geometry.h
       
 C Save total transparent surface area for surfaces connected to external BC.
 
 C << do we need transparent surface area facing different orientations? >>
       common/PREC18/ZTRANA(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Error subroutine and error details for dll mode.
@@ -1318,13 +1282,13 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
 
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*32,zname*12
+      CHARACTER OUTSTR*124,LGEOM*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,zdesc*64,outs*124
+      character ZN*12,phrase*64,outs*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc
@@ -1379,6 +1343,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(ICOMP))
+        lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
       else
         K=0
@@ -1386,14 +1351,18 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
+          lnzname(ICOMP)=0
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
+          lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           zdesc(ICOMP)=' '
+          lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
           CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -1402,6 +1371,7 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
           call st2name(ZN,zname(ICOMP))
           call egetrm(outstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
+          lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
         IF(IFLAG.NE.0)GOTO 1001
 
@@ -1460,6 +1430,7 @@ C is short, but will be extended to 248 char.
         zdesc(ICOMP)=' '
         CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'Z description',IER)
         write(zdesc(ICOMP),'(a)') LOUTSTR(1:64)
+        lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
 
 C Next look for *vertex lines, incrementing the value of NTV
 C as each of these lines is scanned. If the tag is *edges then
@@ -2037,9 +2008,11 @@ C Now close geometry data file.
    44 CALL ERPFREE(IUNIT,ios)
 
 C If base area has not yet been calculated, do this now and calculate 
-C transparent area for surfaces connected to external type BC.
+C transparent area for surfaces connected to external boundary.
 C Get surface areas via call to zinfo.
-      call zinfo(iuout,sna,zoa,pazi,pelv,vol)
+      call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+      vol(ICOMP)=zvol
+      zonetotsurfacearea(ICOMP)=zoa
       ZTRANA(ICOMP)=0.
       do 43 ijj=1,NSUR
         if(checkbase)then
@@ -2104,16 +2077,10 @@ C geometry file.
 
       SUBROUTINE GEOWRITE(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
-
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C NOTE: G1 is only valid for the zone that has currently been
 C scanned and is being worked on. There is another common block
@@ -2123,7 +2090,6 @@ C << todo: geowrite could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -2136,22 +2102,12 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C ZNAME (12 char) - the zone name.
-C ZDESC ( char) - zone notes.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+C ZNAME (12 char) - the zone name (from geometry.h).
+C ZDESC (64 char) - zone notes (from geometry.h).
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
                
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
@@ -2177,7 +2133,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       character BLKNAME*8,BLKMAT*12
 
-      CHARACTER GENFIL*72,zname*12,zdesc*64
+      CHARACTER GENFIL*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,outsd*124,outs72*72,OTHSTR*30
@@ -2228,15 +2184,14 @@ C over-write) or create a new file.
       write(currentfile,'(a)') GENFIL(1:lnblnk(GENFIL))
 
 C Write out the header including date stamp and documentation.
-      lz=lnblnk(zname(ICOMP))
+      lz=lnzname(ICOMP)
       write(ifilg,'(6a)',IOSTAT=ios,ERR=13) '*Geometry 1.1',tab,
      &  'GEN',tab,zname(ICOMP)(1:lz),
      &  ' # tag version, format, zone name'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*date ',dstmp,
      &  '  # latest file modification '
 
-      ld=lnblnk(zdesc(ICOMP))
-      write(ifilg,'(a)',IOSTAT=IOS,ERR=13) zdesc(ICOMP)(1:ld)
+      write(ifilg,'(a)',IOSTAT=IOS,ERR=13)zdesc(ICOMP)(1:lnzdesc(ICOMP))
 
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
      &  '# tag, X co-ord, Y co-ord, Z co-ord'
@@ -2733,27 +2688,18 @@ C of information currently in Common blocks G0 G6 G7 G20.
 C If context is .true. then give verbose description of the boundary.
       SUBROUTINE SURINFO(ICOMP,ITRU,context)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       common/SFIG/NSIGFIG
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER zname*12,OUTSTR*124,zdesc*64,OTHSTR*30
+      CHARACTER OUTSTR*124,OTHSTR*30
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,SIGSTR*12
 C      character SO*15  ! buffer to use for sother() info.
@@ -2764,7 +2710,7 @@ C Check version number of file.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
 
 C Surface summary: print header, followed by surface information.
-      lzn=LNBLNK(zname(ICOMP))
+      lzn=lnzname(ICOMP)
       call edisp(ITRU,' ')
       write(outstr,'(3a,i2,a)')' A summary of the surfaces in ',
      &  zname(ICOMP)(1:lzn),'(',icomp,') follows:'
@@ -2843,26 +2789,27 @@ C the connections file).
 
       SUBROUTINE OTHERINFO(izone,isurf,OTHSTR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER OTHSTR*30,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12
+      CHARACTER OTHSTR*30,SST2*12,ZST2*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
       if(izone.ne.0.and.izone.le.NCOMP)then
         if(isurf.le.NZSUR(izone).and.isurf.ne.0)then
           icon=IZSTOCN(izone,isurf)
+          if(icon.eq.0)then
+            WRITE(OTHSTR,'(a)') '|| izstocn index unknown'
+            return
+          endif
           IF(ICT(ICON).EQ.-1)THEN
             WRITE(OTHSTR,'(a)') '||< not yet defined'
           ELSEIF(ICT(ICON).EQ.0)THEN
@@ -2915,7 +2862,15 @@ C CEN 13791 partition start.
             endif
 C CEN 13791 partition end.
           ENDIF
+        else
+
+C The passed surface number was out of range.
+          WRITE(OTHSTR,'(a)') '|| surf unknown'
         endif
+      else
+
+C The passed zone number was out of range.
+        WRITE(OTHSTR,'(a)') '|| zone unknown'
       endif
       RETURN
       END
@@ -2927,34 +2882,18 @@ C (G7,PREC2,PREC2,PREC17,C20,C24) have been filled. It does not
 C require a recent scan of zone geometry.
       SUBROUTINE ZINFOREP(itu,icomp)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
-      common/OUTIN/IUOUT,IUIN
       common/SFIG/NSIGFIG
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/C24/IZSTOCN(MCOM,MS)
-      character zname*12,zdesc*64
       character outstr*124,t10*10,t10a*10,T12*12,T12A*12
 
-      zoa=0.0
-      do 42 ij=1,nzsur(icomp)
-        ic=izstocn(icomp,ij)
-        if(ic.gt.0)zoa=zoa+ssna(ic)
-  42  continue
       call edisp(itu,' ')
 
 C Convert nsur,ntv,zvol etc into strings with no leading spaces.
       CALL INTSTR(NZSUR(icomp),t10,lna,IER)
       CALL INTSTR(NZTV(icomp),t10a,lnaa,IER)
       WRITE(outstr,'(3a,i2,5a)')' Zone ',
-     &   zname(ICOMP)(1:LNBLNK(zname(ICOMP))),
+     &   zname(ICOMP)(1:lnzname(ICOMP)),
      &   ' (',ICOMP,') is composed of ',t10(1:lna),' surfaces and ',
      &   t10a(1:lnaa),' vertices.'
       call edisp(itu,outstr)
@@ -2964,7 +2903,7 @@ C Report data to required number of significant figures.
       WRITE(outstr,'(3a)')' It encloses a volume of ',T12(1:LSTR),
      &   'm^3 of space, with a total surface'
       call edisp(itu,outstr)
-      call SIGFIG(ZOA,NSIGFIG,RNO,T12,LSTR)
+      call SIGFIG(zonetotsurfacearea(icomp),NSIGFIG,RNO,T12,LSTR)
       call SIGFIG(ZBASEA(ICOMP),NSIGFIG,RNO,T12A,LSTRA)
       if(IUZBASEA(icomp).eq.0)then
         write(outstr,'(5a)') ' area of ',T12(1:LSTR),
@@ -2977,7 +2916,7 @@ C Report data to required number of significant figures.
      &     'm^2 & user list floor area of ',T12A(1:LSTRA),'m^2'
       endif
       call edisp(itu,outstr)
-      WRITE(outstr,'(1x,A)') zdesc(ICOMP)
+      WRITE(outstr,'(1x,A)') zdesc(ICOMP)(1:lnzdesc(ICOMP))
       call edisp(itu,outstr)
       return
       end
@@ -2989,9 +2928,9 @@ C SNA   - surface area of each polygon
 C ZOA   - total surface area associated with zone.
 C PAZI  - plane azimuth angle
 C PELV  - plane elevation angle
-C VOL   - zone bounded volume
+C ZVOL   - zone bounded volume
 C << IOUT is not used >>
-      SUBROUTINE ZINFO(IOUT,SNA,ZOA,PAZI,PELV,VOL)
+      SUBROUTINE ZINFO(IOUT,SNA,ZOA,PAZI,PELV,ZVOL)
 #include "building.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -3092,10 +3031,10 @@ C << pangs - it might be better?
 C << also - why not include surface tilt angle?
 	
    60 CONTINUE
-      VOL=ABS(V)
+      ZVOL=ABS(V)
 
 C Check for small volume.
-      IF(VOL.LE.0.00001)THEN
+      IF(ZVOL.LE.0.00001)THEN
         CALL USRMSG(' Negative or zero zone volume detected. Vertex', 
      &    ' information may be in error or surfaces incomplete.','W')
         RETURN
@@ -3106,16 +3045,19 @@ C Check for small volume.
 
 C ********************** ZGUPDATE
 C 'ZGUPDATE' takes the geometry commons G1 and updates G7 & PREC2
-C SSNA(MCON)    - surface area of each polygon
-C SSPAZI(MCON)  - plane azimuth angle
-C SSPELV(MCON)  - plane elevation angle
-C SSPERIM(MCON)  - perimeter of each surface.
-C SUREQN(MCON,4)- equation of each polygon
-C SSURCOG(MCON,3) - vertex weighted COG of polygon,
+C SSNA(MCON)    - surface area of each polygon (from geometry.h)
+C SSPAZI(MCON)  - plane azimuth angle (from geometry.h)
+C SSPELV(MCON)  - plane elevation angle (from geometry.h)
+C SSPERIM(MCON)  - perimeter of each surface (from geometry.h)
+C SUREQN(MCON,4)- equation of each polygon (from geometry.h)
+C SSURCOG(MCON,3) - vertex weighted COG of polygon (from geometry.h)
 C SSURVN(MCON,3)  - unit normal vector from COG of polygon.
 C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
 #include "building.h"
+#include "geometry.h"
+      
+      integer lnblnk  ! function definition
 
 C << could it use ?? instead of G1? >>
 
@@ -3123,11 +3065,7 @@ C << could it use ?? instead of G1? >>
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/PREC2/VOL(MCOM)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
       LOGICAL CLOSE,closeaz,closeel
@@ -3339,17 +3277,13 @@ C in the current zones common blocks.
 C act is '-' derive geometric data or 'c' also determine parent
       subroutine suredgeadj(itrc,act,izone,ier)
 #include "building.h"
-      
-C      integer lnblnk  ! function definition
+#include "geometry.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -3369,10 +3303,8 @@ C   where a surface such as a floor has been subdivided)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER zname*12,zdesc*64
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
@@ -3647,12 +3579,11 @@ C be duplicates.
 
       SUBROUTINE SURREL(ACT,ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C G9 holds information on children of a surface.
       integer nbchild       ! how many children (up to 4)
@@ -3662,7 +3593,6 @@ C G9 holds information on children of a surface.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
@@ -3846,6 +3776,7 @@ C << zone geometry file if havec24 is true?
 
       SUBROUTINE ZDATA(ITRC,IER,NZONES,ISFSUM)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -3856,22 +3787,17 @@ C << zone geometry file if havec24 is true?
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
+C Variables from geometry.h:
 C SSURCOG is centre of gravity of surface (vertex weighted).
 C SSUREQN is the surface equation A*X + B*Y + C*Z = D
 C SSURVN is point 1 unit vectpr off of surface COG along the normal.
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
@@ -3985,7 +3911,7 @@ C << should this also fill G6?? >>.
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.  Gather misc zone infor-
 C mation so make a probable guess at locations.
-      CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+      CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
       if(ISUR.eq.0)then
         DO 44 I=1,NSUR
           SOTF(I)='OPAQUE'
@@ -4075,7 +4001,8 @@ C file.
 C << update documentation as well as reporting based on files >>
       SUBROUTINE INSINFO(ICOMP,ITRU)
 #include "building.h"
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
+#include "geometry.h"
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -4212,15 +4139,15 @@ C ZINDEX is passed a string (which might be a zone name or an index) and
 C returns an index to the matching zone.  If no match then returns 0. 
       SUBROUTINE ZINDEX(STRING,index)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      CHARACTER zname*12,ZN*12,zdesc*64
+      CHARACTER ZN*12
       character*(*) STRING
 
 C If ALL then return negative of NCOMP.
@@ -4234,7 +4161,7 @@ C Loop through each of the zones and see if a match.
       lstr = lnblnk(STRING)
       do 42 i = 1, NCOMP
         ZN = zname(i)
-        lzn = lnblnk(ZN)
+        lzn = lnzname(i)
         if(lstr.eq.lzn)then
           if(STRING(1:lstr).eq.ZN(1:lzn))then
             index = i
@@ -4291,12 +4218,12 @@ C it is unique (thus OK = TRUE) if duplicate then OK = FALSE.
 C If 'is' is passed as 0 then check all, otherwise exclude surface is. 
       SUBROUTINE SNAMDUP(STRING,icomp,is,ok)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -4329,12 +4256,12 @@ C surface index in the zone matches the name.
 C If 'is' is returned as 0 if no match. 
       subroutine matchsname(STRING,icomp,is)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12

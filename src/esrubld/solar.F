@@ -173,6 +173,7 @@ C and future time rows. Units: W/m^2
 
       SUBROUTINE MZSLGN(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
 #include "tdf2.h"
 C ADD NEW PARAMETER STATEMENT
@@ -193,12 +194,9 @@ C in elevation and azimuth.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
-
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -344,7 +342,7 @@ C COMMONS FOR CFC type CONSTRUCTIONS
 
       logical bCloseToZero     ! Boolean used for comparison to zero
 
-      character outs*124,zname*12,zdesc*64,vsnam*72
+      character outs*124,vsnam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
@@ -393,7 +391,7 @@ C Tdf common block to allow using vertical solar radiation data
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
 
-      ZAREA=ZOA(ICOMP)
+      ZAREA=zonetotsurfacearea(ICOMP)
 
 C      write (6,*) 'solar ',btimef
 
@@ -2185,12 +2183,12 @@ c Britain).
 
       SUBROUTINE MZSANG
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/BTIME/BTIMEP,BTIMEF
@@ -2200,7 +2198,7 @@ c Britain).
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character outs*124,zname*12,zdesc*64
+      character outs*124
       logical close
 
       ISUNUP=1
@@ -3137,7 +3135,9 @@ c         receiving internal surfaces.
 
       SUBROUTINE MZSHDO(IYRD)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3148,7 +3148,6 @@ c         receiving internal surfaces.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

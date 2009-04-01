@@ -101,10 +101,11 @@ C surface temperature information. Note
 C << TA QM no longer used, but ordering not changed. >>
       SUBROUTINE MOMNRD(ICOMP,TA,TS,QM,NS,TMNRD)
 #include "building.h"
+CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
 
 C Sum product of opaque surface temperatures and areas.
       ZPROD=0.
@@ -124,10 +125,11 @@ C surface temperature information.
 C << GEP, GIP, QM, TA not used >>
       SUBROUTINE MOMRTS(ICOMP,TA,TS,QM,NS,OP,GEP,GIP,TMRTS)
 #include "building.h"
+CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS),OP(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
 
 C Sum product of surface temperatures and areas.
       ZPROD=0.
@@ -149,10 +151,11 @@ C surface temperature information.
 C << QM not used >>
       SUBROUTINE MORESL(ICOMP,TA,TS,QM,NS,TRESL)
 #include "building.h"
+CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
 
 C Sum product of opaque surface temperatures and areas.
       ZPROD=0.
@@ -175,6 +178,7 @@ C IOPT - specific temperature differences.
 
       SUBROUTINE SENMRT(IDAY,IZONE,ISENS,ISET,IOPT)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -184,7 +188,6 @@ C IOPT - specific temperature differences.
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)

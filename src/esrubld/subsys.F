@@ -51,14 +51,14 @@ C    SBC       = Stefan-Boltzmann constant.
 
       SUBROUTINE MZCFGG(ICOMP)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
 
       COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON /PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &              NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),
@@ -78,7 +78,7 @@ C values for use as present values at the next time-step.
       COMMON/COE31PS/HRPS(MCOM,MS,MS),ZHRPS(MCOM,MS)
       common/ts4/itsitr(msch),itrpas
 
-      character outs*144,zname*12,zdesc*64
+      character outs*144
 
       DIMENSION QX(MS,MS)
 
@@ -250,6 +250,7 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition
@@ -258,7 +259,6 @@ C  difference between the external ambient and surface temperatures.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/DNORGH/IRTYPE
 
@@ -317,15 +317,15 @@ C used.
       
 c This common block is used to define the sky temperature calculation method
       COMMON/EXLONGWV/iExt_longwave_flg
-      integer iExt_longwave_flg    ! 0 = 1 = Martin & Berdahl (1984);
-                                   ! NOT AVAILABLE: Clarke ($7.5.4 JC book, 2nd edition, 2001);
+      integer iExt_longwave_flg    ! 0 = Martin & Berdahl (1984);
+                                   ! 1 = Clarke ($7.5.4 JC book, 2nd edition, 2001);
                                    ! 2 = Cole (?);
                                    ! 3 = Czeplak & Kasten (1987);               
                                    ! 4 = Swinbank (clear - uses dry bulb T);                  
                                    ! 5 = Swinbank (clear - uses wet bulb T); 
 
 
-      character outs*124,ZSDES*28,ZSDESC*20,ZSDESS*16,zname*12,zdesc*64
+      character outs*124,ZSDES*28,ZSDESC*20,ZSDESS*16
       DIMENSION PROPB(8),PROPS(8),PROPG(8)
       DIMENSION TBLD(MS),HROF(MS)
       DIMENSION QELWFC(MS)
@@ -573,7 +573,7 @@ C For zero RF set dew point temperature to 293.
       ENDIF
 
 C Here provide the different sky temperature options
-      IF((iExt_longwave_flg.EQ.0).or.(iExt_longwave_flg.EQ.1))THEN
+      IF(iExt_longwave_flg.EQ.0)THEN
 
 C Use default Martin & Berdahl calculation
 C Clear sky condition:
@@ -591,18 +591,18 @@ C Radiation from the atmosphere:
 
 C Assume the atmosphere is a black body emitter:
         TSKY=(RSKY/SBC)**0.25
-CC      ELSEIF(iExt_longwave_flg.EQ.1)THEN
+      ELSEIF(iExt_longwave_flg.EQ.1)THEN
 
 C Use Clarke's calculation
 C Clear sky temperature as in bld #5.4 (after Swinbank).
-C        TCSKY=0.05532*((TWBF+ZEROK)**1.5)
+        TCSKY=0.05532*((TWBF+ZEROK)**1.5)
 
 C Cloudy sky temperature as JC Book.
-C        TSKYJC=((1.0-CLOUDC)*TCSKY**4+CLOUDC*(1.0-0.84*CLOUDC)*(0.527+
-C     &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
-C     &  (TWBF+ZEROK)**4)**0.25
-c         TJC=TSKYJC-ZEROK 
-C         TSKY=TSKYJC   
+        TSKYJC=((1.0-CLOUDC)*TCSKY**4+CLOUDC*(1.0-0.84*CLOUDC)*(0.527+
+     &  (0.161*(EXP(8.45*(1.0-(273.0/(TWBF+ZEROK))))))+0.84*CLOUDC)*
+     &  (TWBF+ZEROK)**4)**0.25
+         TJC=TSKYJC-ZEROK 
+         TSKY=TSKYJC   
       ELSEIF(iExt_longwave_flg.EQ.2)THEN
 
 C Use Cole's calculation
@@ -1108,6 +1108,7 @@ C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
 
@@ -1126,7 +1127,6 @@ C                 external temperature (for use in MZLS3).
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C TDF commons.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
@@ -1138,12 +1138,8 @@ C TDF commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
-
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
      
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -1186,7 +1182,7 @@ C mechanical ventilation and infiltration.
       PARAMETER    (SMALL=1.0E-15)
       DIMENSION VAL(MBITS+2)
 
-      CHARACTER LAPROB*72,zname*12,zdesc*64
+      CHARACTER LAPROB*72
       character outs*124
       logical close
 
@@ -1757,6 +1753,7 @@ C a moisture balance at the air point.
 
       SUBROUTINE MZVAPC(ICOMP,ZRH,CNDS)
 #include "building.h"
+#include "geometry.h"
 
 #include "hvac_parameters.h"
 #include "hvac_common.h"
@@ -1764,8 +1761,6 @@ C a moisture balance at the air point.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
-
-      COMMON/PREC2/VOL(MCOM)
 
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1802,12 +1797,6 @@ C Common for relative humidity control (ideal)
       COMMON/MOIST53/Ppair(MCOM),Fpair(MCOM),Spair(MCOM)
       COMMON/MOIST54/Pfair(MCOM),Ffair(MCOM),Sfair(MCOM)
 
-C Common for surface condensation on glass (SPMCMP57())
-C     1 ... external surface of ms
-C     2... internal surface of ms
-      common/surfcond/mh2o(mcom,ms,2),dmh2op(mcom,2),dmh2of(mcom,2)
-      real mh2o,dmh2op,dmh2of
-
 c Common for time step computed parameters of HVAC system
 c in common/hvac_timestep_parameters is included via hvac_parameters.h.
       character outs*124
@@ -1838,10 +1827,6 @@ C Initialise.
       VSRCF(ICOMP)=0.0
       ZMDAF(ICOMP)=1.2*VOL(ICOMP)
       GFA(ICOMP)=0.0
-      do i=1,2
-        dmh2op(icomp,i)=0.0 ! from SPMCMP57()
-        dmh2of(icomp,i)=0.0 ! from SPMCMP57()
-      enddo
 
     5 VCIP(ICOMP)=VCIF(ICOMP)
       VCCP(ICOMP)=VCCF(ICOMP)
@@ -1886,14 +1871,14 @@ C Total mass flow rate lost from the zone (no moisture included).
 C Zonal mass of dry air (relies on DENSIT in MFUTIL of ESRUmfs).
       ZMDAF(ICOMP)=DENSIT(1,TFA(ICOMP))*VOL(ICOMP)
 
+
 C Perform a free float air node moisture balance.
 C Calculate RHS of equation from (future value = present value + all in - all out).
 C Mass flow into the zone is averaged over present and future timesteps, this mirrors 
 C the treatment of exfiltration. (Previously only future inlet flows were considered 
 C leading to instability with timesteps over 3 minutes).
-C 2nd to last line of equation takes into account the effect of a
-C cooling coil on zone moisture balance, last line takes effect of surface condensation
-C on internal surface of glass into account (SPMCMP57()).
+C Last line of equation takes into account the effect of a
+C cooling coil on zone moisture balance.
       RHS=GPA(ICOMP)*ZMDAP(ICOMP)+
      &    (VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)+
      &    VSRCF(ICOMP))*3600./(2*NTSTEP)+
@@ -1901,7 +1886,6 @@ C on internal surface of glass into account (SPMCMP57()).
      &    VSRCP(ICOMP))*3600./(2*NTSTEP)-
      &    GPA(ICOMP)*VCLP(ICOMP)*3600./(2.*NTSTEP)
      &    + coil_moist_in(ICOMP) - coil_moist_out1(ICOMP)  
-     &    + dmh2op(icomp,2)*0.5+dmh2of(icomp,2)*0.5 
 
 C Equation modified to account for cooling coil operation effect on 
 C zone moisture balance.
@@ -1924,24 +1908,29 @@ C Trace ... does the moisture equation balance?
      &  IZNTRC(ICOMP).NE.1) THEN
           CONTINUE        
         ELSE
+
+C Write header of the trace message.
+          write(outs,'(A,I4)')' Subroutine MZVAPC   Trace output',ICNT
+          call edisp(itu,outs)
+          write(outs,'(23X,A,I4)')' Zone',ICOMP
+          ICNT=ICNT+1
+          CALL DAYCLK(IDYP,BTIMEF,ITU)
+          call edisp(itu,outs)
+
 C Left hand side
-          WRITE(OUTS,'(A)')' Left hand side '
+          WRITE(OUTS,'(A)')' Left hand side of mass balance'
           CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A,F10.5)') 'Future mass (kg)', 
+          WRITE(OUTS,'(A,F10.5)') ' Future mass (kg)', 
      &      GFA(ICOMP)*ZMDAF(ICOMP)
           CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A,F10.5)') 'Present mass (kg)', 
+          WRITE(OUTS,'(A,F10.5)') ' Present mass (kg)', 
      &      GPA(ICOMP)*ZMDAP(ICOMP)
-          CALL EDISP(ITU,OUTS)
-          WRITE(OUTS,'(A)')' Future - present mass (kg):'
-          CALL EDISP(ITU,OUTS)
           CALL EDISP(ITU,OUTS)
 
           AHS=GFA(ICOMP)*ZMDAF(ICOMP) - GPA(ICOMP)*ZMDAP(ICOMP)
-          WRITE(OUTS,'(F10.5)') AHS
+          WRITE(OUTS,'(A,F10.5)')' Future - present mass (kg):',AHS
           CALL EDISP(ITU,OUTS)
-     &    
-C
+
 C Right hand side
           WRITE(OUTS,'(A)') ' '
           CALL EDISP(ITU,OUTS)
@@ -2071,14 +2060,8 @@ C Trace output ?
 
       IF(ITRACE(10).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 9999
-      write(outs,'(A,I4)')' Subroutine MZVAPC   Trace output',ICNT
-      call edisp(itu,outs)
-      write(outs,'(23X,A,I4)')' Zone',ICOMP
-      ICNT=ICNT+1
-      CALL DAYCLK(IDYP,BTIMEF,ITU)
-      call edisp(itu,outs)
 
-C Output computed results.
+C Append computed results to early trace statements.
       write(outs,9997)ZMDAP(ICOMP),ZMDAF(ICOMP)
  9997 format(' ZMDAP = ',F14.6,' ZMDAF = ',F14.6)
       call edisp(itu,outs)

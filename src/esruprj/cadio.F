@@ -53,7 +53,7 @@ C exportcad: controls model export facilities.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       logical MODIFY,MODLEN,MODBND,unixok,browse
 
-      DIMENSION ITEMS1(11)
+      DIMENSION ITEMS1(12)
 
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
@@ -87,8 +87,9 @@ C Check if Unix-based or DOS based.
       ITEMS1(7) ='g to TSBI3                 '
       ITEMS1(8) ='h to EnergyPlus            '
       ITEMS1(9) ='i to VRML #2.0             '
-      ITEMS1(10)='? help                     '
-      ITEMS1(11)='- exit this menu           '
+      ITEMS1(10)='j to ESP-r meta file       '
+      ITEMS1(11)='? help                     '
+      ITEMS1(12)='- exit this menu           '
 
 C Help text for this menu.
       H(1)='This facility allows you to export the current model'
@@ -140,8 +141,16 @@ C Help text for this menu.
       H(47)=' '
       H(48)='NOTE: if you are useing Native Windows version the paths'
       H(49)='to the exported files may not work correctly. '
+      H(50)=' '
+      H(51)='The option for ESP-r meta file creates a compact'
+      H(52)='description of a model in a single file. This file'
+      H(53)='is typically created by 3rd party applications and'
+      H(54)='used by prj to expand to a standard ESP-r model.'
+      H(55)='This export facility supports testing of this file'
+      H(56)='format and data structures.'
+      H(57)=' '
  
-      CALL EMENU('Export Model',ITEMS1,11,INO1)
+      CALL EMENU('Export Model',ITEMS1,12,INO1)
 
 C Prepare filter command lines with path.
 
@@ -347,7 +356,7 @@ C If user canceled the wireframe export loop back.
           endif
           call usrmsg('sending wireframe... ',' ','-')
           MODIFY=.TRUE.
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -527,11 +536,38 @@ C        call edisp(iuout,outs)
 C        call edisp(iuout,'Use a VRML viewer to explore it.')
 
       ELSEIF(INO1.EQ.10)THEN
+
+C Export to ESP-r meta file.
+        call tstamp('>','PRJ: export to ESP-r meta')
+        doit = ' '
+        H(1)='The option for ESP-r meta file creates a compact'
+        H(2)='description of a model in a single file. This file'
+        H(3)='is typically created by 3rd party applications and'
+        H(4)='used by prj to expand to a standard ESP-r model.'
+        H(5)='This export facility supports testing of this file'
+        H(6)='format and data structures.'
+        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.mesp'
+        CALL EASKS(LFIL,' ','ESP-r meta file name?',
+     &             72,' ','ESP-r meta file',IER,6)
+        if(unixok)then
+          call addpath(LFIL,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LFIL,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        ioout=2
+        call METAWRITE(ioout,longtfile,'-',IER)
+      ELSEIF(INO1.EQ.11)THEN
       
 C Pop up the help text.
-       CALL PHELPD('export menu',49,'-',0,0,IER)
+       CALL PHELPD('export menu',55,'-',0,0,IER)
 
-      ELSEIF(INO1.EQ.11)THEN
+      ELSEIF(INO1.EQ.12)THEN
         RETURN
       else
         goto 33

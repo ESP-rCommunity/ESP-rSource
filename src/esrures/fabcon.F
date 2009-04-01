@@ -151,6 +151,7 @@ C to the fabric temperature or condensation information.
 
       SUBROUTINE MOIHED(ICOMP,ISUR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -160,11 +161,10 @@ C to the fabric temperature or condensation information.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/VAP1/IDO,IMO,TIMO,IDAYO,ITIMO
@@ -173,7 +173,7 @@ C to the fabric temperature or condensation information.
 
       CHARACTER ETEXT*94,PDESCR*60,SDESCR*44,RSNAME*40,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character zname*12,zdesc*64,TSTR*6,ZN*12,SN*12,DS*7,DS1*10
+      character TSTR*6,ZN*12,SN*12,DS*7,DS1*10
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lml   ! string length for construction name.
@@ -273,15 +273,11 @@ C zone RH. If iverb=0 then report only summary, if iverb=1 report each
 C timestep.
       SUBROUTINE MOSURC(IZONE,izrh,iverb)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/OUTPCH/ICOUT
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -293,7 +289,7 @@ C timestep.
       DIMENSION TSURF(MS),TSO(MS),ihit(ms)
       CHARACTER*1 A(MS)
       character outs*124,xfile*144,TDESCR*5,DESCR1*10,DESCR*7
-      character zname*12,zdesc*64,tg*1,delim*1,CSTR*25
+      character tg*1,delim*1,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical found
@@ -322,7 +318,7 @@ C For each day of the reporting period.
       NC=NZSUR(IZONE)
       if(iverb.eq.0)then
         write(outs,'(2a)')' Summary condensation report for: ',
-     &     zname(IZONE)(1:lnblnk(zname(IZONE)))
+     &    zname(IZONE)(1:lnzname(IZONE))
         call edisp(itru,outs)
       endif
       DO 30 IDO=IODS,IODF
@@ -332,7 +328,7 @@ C Heading.
           CALL STDATE(IYEAR,IDO,DESCR,DESCR1)
           call edisp(itru,' ')
           write(outs,'(a,a,a,a10)')' Summary condensation report for: ',
-     &      zname(IZONE)(1:lnblnk(zname(IZONE))),' on ',DESCR1
+     &      zname(IZONE)(1:lnzname(IZONE)),' on ',DESCR1
           call edisp(itru,outs)
           call edisp(itru,' ')
           call edisp(itru,' Time                       Surface')
@@ -389,7 +385,7 @@ C izctime is number of timesteps when some surface in zone has condensation.
   42  continue
       hrs=izctime(IZONE)*TFACT
       WRITE(outs,'(2a,i5,f8.2)') ' Total occurances & hours in ',
-     &  zname(IZONE)(1:lnblnk(zname(IZONE))),izctime(IZONE),hrs
+     &  zname(IZONE)(1:lnzname(IZONE)),izctime(IZONE),hrs
       call edisp(itru,outs)
       RETURN
       END
@@ -766,10 +762,10 @@ C and vapour pressure gradients.
 
       SUBROUTINE MOIDRW(ICOMP,ISUR)
 #include "building.h"
+#include "geometry.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C IPRZ is primitive db ref for each layer.
       common/T8/IPRZ(MS,ME)
@@ -782,7 +778,7 @@ C IPRZ is primitive db ref for each layer.
       COMMON/VAP3/PSS(MN),PS(MN),PSSI,PSSO,PSI,PSO,
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
-      character CSTR*25,TCSTR*25,zname*12,zdesc*64,ZN*12
+      character CSTR*25,TCSTR*25,ZN*12
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
@@ -850,6 +846,7 @@ C period.
 
       SUBROUTINE FINDCND(ICOMP)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -862,12 +859,7 @@ C period.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -879,7 +871,6 @@ C period.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ground/grdtmp(12,mgrdp)
 
@@ -914,7 +905,7 @@ C Arrays of material properties.
       common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
-      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144,zname*12,zdesc*64
+      CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1

@@ -853,6 +853,7 @@ C by setting the ALPHA parameter = 0.
  
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "control.h"
 
 C climate file commons
@@ -885,10 +886,6 @@ C when version 2 of the law will be published
 
 C Adaptive comfort common
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
-
-C Zone information
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
       DIMENSION ICLM(24,6)
       PARAMETER (MMD=20)

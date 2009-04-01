@@ -39,6 +39,7 @@ C          block sctl to have been filled for the current period.
 
       SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
 #include "net_flow.h"
 #include "control.h"
@@ -49,7 +50,6 @@ C          block sctl to have been filled for the current period.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -62,7 +62,6 @@ C          block sctl to have been filled for the current period.
      &             opticdoc
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -73,8 +72,7 @@ C ipeerptbk is pointer from position in display to day type.
       dimension mptback(35),iperptbk(35)
       CHARACTER*43 VERT(35)
       CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
-      CHARACTER outs*124,H*72,LASCI*72,zname*12,cfgroot*24
-      character zdesc*64
+      CHARACTER outs*124,H*72,LASCI*72,cfgroot*24
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -4122,7 +4120,6 @@ C Edit flow control function II.
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
@@ -5024,7 +5021,6 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5746,14 +5742,13 @@ C flow connections.It is assumed that the user will make one selection only.
       SUBROUTINE actloc(prompt,title,icfoc,II,isn1,ian1,ian2,ian3,
      &  errmsg,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "plant.h"
 #include "epara.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5771,7 +5766,7 @@ C flow connections.It is assumed that the user will make one selection only.
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
+      CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
 
@@ -6205,8 +6200,6 @@ C   for control law one.
       common/sctlmenu/menu(misc),prompt1(misc),prompt2(misc)
       common/sctldata/ndec(misc),vmin(misc),vmax(misc),
      &  vdef(misc),nctlhelp,nmenulines
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       character act*1,h*72
       DIMENSION VERT(35),SALT(24),IVALS(24)

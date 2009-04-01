@@ -671,6 +671,7 @@ C surface when `type 3' control over convection calculations is imposed.
       SUBROUTINE SELCOR3(ICOMP,ISUR,inRout,ICOR)
 
 #include "building.h"
+#include "geometry.h"
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -681,7 +682,6 @@ C surface when `type 3' control over convection calculations is imposed.
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
      &            CVdat(MS*MBP,8)
       COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/PREC2/VOL(MCOM)
       COMMON/Fisher/Vdot(MCOM),SAT(MCOM),ADJREF(MCOM,MS),DELTAR(MCOM)
       COMMON/adaptHC/HCctl5
 

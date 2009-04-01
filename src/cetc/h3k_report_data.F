@@ -61,6 +61,7 @@ C*******************************************************************************
       SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "aim2_common.h"
 #include "control.h"
 C.....Passed variable
@@ -70,20 +71,6 @@ C.....Common variables
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
       integer ncon           ! number of connections 
-
-C.....Zone volumes.
-      common/prec2/vol(mcom)
-      real vol
-
-C Zone areas
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
-      real ZBASEA
-      integer IBASES,IUZBASEA,IZBASELIST
-
-      common/c20/nzsur(mcom),nztv(mcom)
-      integer nzsur           ! # of surfaces in a zone
-      integer nztv            ! # of verticies in a zone (not used)
 
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -283,9 +270,8 @@ C.....Flags for temperature-dependence of MLC themal properties
       logical ivthps, ivthpz
 
 C.....Surface area data
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
       real sna                 ! Area of a surface
-      real zoa                 ! Total surface area for zone
 
       common/cctl/icascf(mcom)  ! Zone control type
       integer icascf
@@ -3906,7 +3892,7 @@ C........Build node name
      &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
 
 C.........output node data
-	! total mass flow entering a node *******************************
+      ! total mass flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/flowrate'
@@ -3917,7 +3903,7 @@ C.........output node data
      &              'units', '(kg/s)',
      &              'mfn total node flow rate' )
 
-	! total volume flow entering a node *******************************
+       ! total volume flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/volflowrate'
@@ -3928,7 +3914,7 @@ C.........output node data
      &              'units', '(m3/h)',
      &              'mfn total node volume flow rate' )
 
-	! node temperature from flow network *******************************
+       ! node temperature from flow network *******************************
          write(H3K_rep_NAME,'(A,A)')
      &              Node_Name(1:LNBLNK(Node_Name)),
      &              '/temp'
@@ -3980,7 +3966,7 @@ C.........Loop through all interconnections in a flow network
      &             'units', '(Pa)',
      &             'mfn connection pressure drop' )
 
-	! flow through connection ****************************************
+        ! flow through connection ****************************************
                write(H3K_rep_NAME,'(A,A)')
      &             Connect_Name(1:LNBLNK(Connect_Name)),
      &             '/flow'
@@ -4035,14 +4021,14 @@ C.........Loop through all interconnections in a flow network
                endif
         ! end code snippet from mfget.F
 
-	       if (b_noveloc .eqv. .false.) THEN
+               if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of 
-	! node "i_neg". Densit() returns density in kg/m3
+        ! node "i_neg". Densit() returns density in kg/m3
                   if (FLW1(jj) .lt. 0) THEN
-	             rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
+                    rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
-	             rhon=DENSIT(NDFLD(ii),TNOD(ii))
-	          Endif
+                    rhon=DENSIT(NDFLD(ii),TNOD(ii))
+                  Endif
 
         ! Finally, write to H3K reporting
                   write(H3K_rep_NAME,'(A,A)')

@@ -1765,7 +1765,6 @@ C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
       PARAMETER (MPN=3)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/pophelp/h(60)
 
@@ -2379,6 +2378,9 @@ C << if needed.
 
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G7/precz.
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -2395,17 +2397,10 @@ C << if needed.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -2452,7 +2447,7 @@ C      dimension SNA(MS),PAZI(MS),PELV(MS)
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,PNAM*72,MMLAY*38,MLCSYM*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character zname*12,zdesc*64,ZN*12,SN*12,SSPARENT*12
+      character ZN*12,SN*12,SSPARENT*12
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -3045,9 +3040,6 @@ C << geometry file before writing it out.
               call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
             endif
 
-C Instead of zinfo use the info in common G7
-C            CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
-
    93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')
             WRITE(outs,93)
@@ -3439,17 +3431,15 @@ C in each zone, tareamlc is the total area of thie construction (weighted
 C so that partitions are counted as half area).
       subroutine mlcrefs(mlcname,areamlc,tareamlc,found)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character mlcname*12,SSPARENT*12

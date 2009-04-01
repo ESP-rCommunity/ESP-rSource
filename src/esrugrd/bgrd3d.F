@@ -465,7 +465,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D51/NUMSS,IBDYSS(MSSZ,2),ILNBSS(MSSZ,2),IVRTSS(MSSZ,2)
@@ -564,7 +563,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -695,7 +693,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -820,7 +817,6 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -978,6 +974,9 @@ C *********************************************************************
       SUBROUTINE SELZON(ITRC,SZN,ZONOK,IZ)
 #include "building.h"
 
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
@@ -989,13 +988,8 @@ C *********************************************************************
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D09/XP(3),YP(3),ZP(3)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
@@ -1005,7 +999,7 @@ C *********************************************************************
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER SZN*12,zname*12,zdesc*64,H*72
+      CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
       newgeo=.false.  ! assume older format geometry.
@@ -1105,14 +1099,12 @@ C READ3D reads 3D gridding cofiguration file.
 C *********************************************************************
       SUBROUTINE READ3D(IZ)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1138,11 +1130,11 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER STRG*124,FILE3D*72
-      CHARACTER H*72,WORD*124,zname*12,zdesc*64
+      CHARACTER H*72,WORD*124
 
       IER=0
 
-      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.c3d'
+      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.c3d'
       FILE3D=WORD(1:72)
 
 C Open the file.
@@ -1445,14 +1437,12 @@ C SAVE3D saves 3D gridding configuration file.
 C *********************************************************************
       SUBROUTINE SAVE3D(IZ)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1478,9 +1468,9 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER*72 FILE3D
-      CHARACTER H*72,WORD*124,zname*12,zdesc*64
+      CHARACTER H*72,WORD*124
 
-      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnblnk(zname(IZ))),'.c3d'
+      WRITE(WORD,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.c3d'
       FILE3D=WORD(1:72)
       H(1)='    Input the name for the zone file in which'
       H(2)=' the multi-gridding configuration details are'

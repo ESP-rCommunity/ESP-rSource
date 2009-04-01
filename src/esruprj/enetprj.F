@@ -472,8 +472,6 @@ C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
      &ENODPH(MENOD),ENODTYP(MENOD),ENODBASEV(MENOD),
@@ -493,7 +491,7 @@ C Hybrid components that calculate nodal voltages
       COMMON/calcV_LOC/iplant_calcV_LOC(MENOD),iPV_calcV_LOC(MENOD)
 
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,MHEAD,ILEN,NODE
+      INTEGER NENOD,ENODNO,ENODPHTYP,ENODPH,ENODTYP,NODE
       INTEGER iplant_calcV_LOC,iPV_calcV_LOC
 
       DIMENSION VERT(35)
@@ -670,8 +668,6 @@ C of which is selected
 C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-
 
 C The connected hybrid components
       COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
@@ -691,7 +687,7 @@ C The descriptive strings
 
 C Type casting (all variables and arrays cast explicitly)
       INTEGER NHYBCOM,HYBCOMNO,HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,
-     &NHYBDAT,MHEAD,ILEN
+     &NHYBDAT
 
       REAL HYBDAT
 
@@ -858,7 +854,6 @@ C of which is selected
 C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C The connected power only components
       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
@@ -878,7 +873,7 @@ C The descriptive strings
 
 C Type casting (all varaiables and arrays cast explicitly)
       INTEGER NPOWCOM,POWCOMNO,POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,
-     &NPOWCDATS,MHEAD,ILEN
+     &NPOWCDATS
 
       REAL POWCDAT
 
@@ -1048,7 +1043,6 @@ C of which is selected
 C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C The connecting components
       COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
@@ -1066,8 +1060,7 @@ C The descriptive strings
      &POWCOMDESC(MPOWCOM)
 
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NCONECOM,CONECOMNO,CONECOMID,CONECOMPHTYP,NCONECOMDAT,
-     &MHEAD,ILEN
+      INTEGER NCONECOM,CONECOMNO,CONECOMID,CONECOMPHTYP,NCONECOMDAT
 
       REAL CONECOMDAT
 
@@ -1239,7 +1232,6 @@ C of which is selected
 C Commons
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C The electrical network topology
       COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),
@@ -1257,8 +1249,7 @@ C The descriptive strings
      &POWCOMDESC(MPOWCOM)
 
 C Type casting (all varaiables and arrays cast explicitly)
-      INTEGER NECON,ECONO,CONPHTYP,CONPH,CCNO,SENOD,EENOD,
-     &MHEAD,ILEN
+      INTEGER NECON,ECONO,CONPHTYP,CONPH,CCNO,SENOD,EENOD
 
       DIMENSION VERT(35)
 

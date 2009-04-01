@@ -40,7 +40,7 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       
@@ -712,7 +712,7 @@ C *********************************************************************
       SUBROUTINE MZ3CFG(ICOMP)
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &              NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),
@@ -816,7 +816,7 @@ C *********************************************************************
       FUNCTION GETF12(ICOMP,IS1,IS2,AREA2)
 #include "building.h"
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/V2/CFB(MCOM,MST,MST)
 
       GETF12=CFB(ICOMP,IS1,IS2)*AREA2/SNA(ICOMP,IS2)

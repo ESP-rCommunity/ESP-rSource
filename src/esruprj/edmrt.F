@@ -28,6 +28,7 @@ C calculations will be commissioned. If silent the viewfactor file name
 C will have been defined prior to calling edmrt.
       SUBROUTINE EDMRT(ITRC,ITRU,IUF,ICOMP,silent,act,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -39,28 +40,19 @@ C will have been defined prior to calling edmrt.
 
       common/pophelp/h(60)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -82,7 +74,7 @@ C will have been defined prior to calling edmrt.
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character doit*248,tmode*8,tfile*72,zname*12,zdesc*64,ZN*12
+      character doit*248,tmode*8,tfile*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,act*1
       character longtfile*144,longtfiledos*144
@@ -110,10 +102,10 @@ C If user is browsing model then give warning and exit.
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(VFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.vwf'
+        WRITE(VFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       else
         WRITE(VFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.vwf'
+     &        zname(ICOMP)(1:lnzname(ICOMP)),'.vwf'
       endif
  
       write(head,'(2A)')'  Viewfactors in ',zname(ICOMP)
@@ -128,7 +120,7 @@ C Set VEWF array in preparation for editing or silent creation.
       endif
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
+      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
       NS=NZSUR(ICOMP)
       DO 111 I=1,NS
         II=I
@@ -390,7 +382,7 @@ C the zone, obstructions and sensors.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(0,IER)
+      CALL ADJVIEW(IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then
@@ -542,7 +534,7 @@ C use in area weighted computation.
 
 C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 
-          CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,VOL)
+          CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
           NS=NZSUR(icomp)
           DO 11 I=1,NS
             II=I
@@ -618,7 +610,7 @@ C an offset from prj start position.
 C Edit item identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         ICUB=IFOC
-        CALL EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
+        CALL EDMRTS(ICOMP,ICUB,IER)
       ELSE
 
 C Not one of the legal menu choices.
@@ -632,15 +624,15 @@ C Not one of the legal menu choices.
 
 C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
-      SUBROUTINE EDMRTS(ITRC,ITRU,ICOMP,ICUB,IER)
+      SUBROUTINE EDMRTS(ICOMP,ICUB,IER)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -652,7 +644,7 @@ C EDMRTS: Edit details of a MRT sensor block.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
-      CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30,zname*12,zdesc*64
+      CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
 #ifdef OSX
@@ -688,7 +680,7 @@ C draw the sensor cubes.  Set all surface lines to standard width.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
       if(MMOD.EQ.8)then

@@ -36,9 +36,9 @@ C Standard path to corporate databases (based on Install data)
 C Array of integers indicating whether database is defined via
 C an absolute path (zero), local path (one), standard path (2)
       common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
-     &                   ipathmat,ipathmul,ipathclim
+     &                   ipathmat,ipathmul,ipathclim,ipathsbem
       integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
-     &                   ipathmat,ipathmul,ipathclim
+     &                   ipathmat,ipathmul,ipathclim,ipathsbem
 
 C Array of integers representing file unit numbers of databases
       integer iapres  ! file unit of wind pressure coef database
@@ -84,13 +84,14 @@ C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
 C DFCON - default materials, DFMUL - default constructions
 C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
-C DPCDB - default plant components
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB
+C DPCDB - default plant components, DSBEM - default UK SBEM
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM
       character*72 DCLIM,DFCON,DFMUL
       character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
+      character DSBEM*144
 
-C LSBEM - (72 char) default SBEM building type and systems db file name
+C LSBEM - (144 char) SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM
-      character*72 LSBEM
+      character*144 LSBEM
 
 C end of esp-r_dbfile.h

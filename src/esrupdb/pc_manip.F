@@ -1099,14 +1099,14 @@ C zeroize header information
 
       common/PCCTL/MPC, NXTREC
       common/PCDATC/NPC,ITMLOC(MAXPC,2)
-      CHARACTER ZDESC*25,h*72
+      CHARACTER PZDESC*25,h*72
       logical ok,dok
 
 C Write header.
       IF (IFLG .EQ. 0) THEN
-        ZDESC = ' PLANT COMPONENT DATABASE'
+        PZDESC = ' PLANT COMPONENT DATABASE'
         IREC = 1
-        WRITE (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) ZDESC
+        WRITE (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
 
 C Zeroize no of items.
         NPC = 0

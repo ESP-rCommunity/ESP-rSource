@@ -20,10 +20,13 @@ C Boston, MA 02111-1307 USA.
 
 C esru_ask.F includes notices used by ESP-r modules.
 
-C   cpwpk()     Copyright notice.
+C   cpwpk()    Displays a copyright notice via help text data structure.
 C   askabout() Creates text for a popup notice for each module.
 
 C ***** copyright notice.
+C cpwpk displays a copyright notice via help text data structure.
+C It saves and recover any current contextual help messages.
+C The integer parameter il is not used.
       subroutine cpwpk(il)
       common/pophelp/h(60)
       dimension dh(60)
@@ -65,6 +68,7 @@ C message of each applicaton (and thus support an application independent
 C static help menu under GTK).
 C If initonly is 1 then only assign the h() array and do not display
 C If initonly is 0 save prior h(), update h(), display and re-establish prior.
+C module (char *4) identifies the ESP-r module.
       subroutine askabout(module,initonly)
       common/pophelp/h(60)
       dimension dh(60)

@@ -42,7 +42,7 @@ C 'PCPUT' is called to add it to the datatbase.
      &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
      &              adodsc(mxaout),noutyp(mxaout)
 
-      character dtdesc*68,adodsc*30,ZDESC*25 
+      character dtdesc*68,adodsc*30,PZDESC*25 
       character LTMP*72,ltmpg*72,buffer*90,H*72
       LOGICAL OK,dok
 
@@ -71,12 +71,12 @@ C Read from file, get filename
         IF (ISTAT .NE. 0)goto 205
 
 C Read components data from file
-        READ (IUFIL,2) ZDESC
+        READ (IUFIL,2) PZDESC
     2   FORMAT (A25,/)
-        IF(ZDESC(1:24).EQ.' PLANT COMPONENT LIBRARY') THEN
+        IF(PZDESC(1:24).EQ.' PLANT COMPONENT LIBRARY') THEN
           call usrmsg(' ',' File is obsolete.','-')
           goto 100
-        ELSE IF(ZDESC(1:25).NE.' PLANT COMPONENT DATABASE') THEN
+        ELSE IF(PZDESC(1:25).NE.' PLANT COMPONENT DATABASE') THEN
           call usrmsg(' ',' Not a PLANT COMPONENT DATABASE!','-')
           goto 100
         END IF

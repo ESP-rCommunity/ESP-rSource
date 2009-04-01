@@ -37,7 +37,6 @@ C Scan list of climate databases and present selection to user.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Typical periods win1|trn1|sum|trn2|win2 with start & finish
       common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
