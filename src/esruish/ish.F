@@ -715,7 +715,11 @@ C Proceed with shading and then insolation calculations.
 C Finished silent recalculation so exit program, delete the transitional
 C shading files. If a single month calculation has been done then
 C offer to save or delete. If a multi-month calculation has been
-C done, ask user to delete the transitional files.
+C done, ask user to delete the transitional files. Note that the
+C logic loops through all of the zones, some of which may not
+C have transitional files. Those that do not will return a -301
+C ier state from efopran call and thus non-existant files will
+C not be deleted.
             iunit=ifil
             if(multic.eq.0)then
                call efdelet(iunit,istat)
@@ -725,6 +729,7 @@ C done, ask user to delete the transitional files.
                   do 156 im=1,12
                      write(lname,'(a,a3)')
      &                    zname(ix)(1:lnzname(ix)),month(im)
+                     ier=0  ! reset ier in case prev file did not exist
                      call efopran(iunit,lname,irecw,0,ier)
                      if(ier.eq.0)call efdelet(iunit,istat)
  156              continue
@@ -1332,6 +1337,7 @@ C then offer to save or delete.
                   do 56 im=1,12
                      write(lname,'(A,A3)')
      &                 zname(ix)(1:lnzname(ix)),month(im)
+                     ier=0  ! reset ier in case prev file did not exist
                      call efopran(iunit,lname,irecw,0,ier)
                      if(ier.eq.0)then
                         write(outs,'(2a)') 'Deleting ',lname
