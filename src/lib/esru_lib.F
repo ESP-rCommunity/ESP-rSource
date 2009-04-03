@@ -35,6 +35,9 @@ C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
 C           to which of the choices has been chosen.
 C  EASKABCD: Generic A/B/C/D choice facility returning 1-4 according
 C           to which of the choices has been chosen.
+C  iCountWords: Counts the number of space/tab/comma-separated
+C           words in a string.
+C  CHITMS, CHITMS400, LCHITMS: Legacy interfaces to iCountWords.
 
 C  isadll:  Checks if module is being used as a dll (silent running).
 C  isunix:  Checks if machine type is Unix or NT.
@@ -1041,6 +1044,7 @@ C exceeds difference.
       return
       end
 
+
 C ******************** DAYCLK
 C DAYCLK will print the day, month, day no. and time based on the day
 C of the year IYD (integer) and clock time in hours TIME (real) on the
@@ -1170,6 +1174,7 @@ C          call edisp(iuout,'No folder separator found.')
       return
       end
       
+
 C ******************** EFOPSEQ
 C EFOPSEQ: Open a sequential ASCII file (SFILE) and return appropriate
 C messages and error status (IEXIST).
@@ -3646,135 +3651,6 @@ C Find out the number of separate words/string groupings.
 
       END
 
-C ********************* CHITMS
-C CHITMS checks a character string (A), returning the number of data
-C items (IW) separated by ' ' tab or ','.  Note to keep from
-C overwriting the string passed, deal with a copy.
-      SUBROUTINE CHITMS(A,IW)
-      CHARACTER*(*) A
-      CHARACTER B*124,C*1
-
-      lastcc = MIN0(LNBLNK(A),123)
-      WRITE(B,'(A)',IOSTAT=IOS,ERR=1) A(1:lastcc+1)
-C      WRITE(B,'(A)') A(1:LNBLNK(A)+1)
-
-C Loop through B and convert all ',' and 'tabs' to blanks.
-      DO 100 I=1,LNBLNK(B)+1
-        C=B(I:I)
-        IF(C.EQ.','.OR.ICHAR(C).EQ.9) B(I:I)=' '
-  100 CONTINUE
-
-C Loop through B and see how many 'words'.
-      K=0
-      IW=0
-  102 IW=IW+1
-
-C Start by skipping blanks before the word.
-   10 K=K+1
-      C=B(K:K)
-      IF(C.EQ.' ') GOTO 10
-
-C Loop character by character until separator is found.
-   20 K=K+1
-      C=B(K:K)
-      IF(K.GE.LNBLNK(B))RETURN
-      IF(C.EQ.' ') GOTO 102
-      GOTO 20
-
-   1  if(IOS.eq.2)then
-        write(6,*) 'CHITMS: permission error in internal write: ',A
-      else
-        write(6,*) 'CHITMS: error in internal write: ',A
-      endif
-      return
-
-      END
-
-C ********************* LCHITMS
-C LCHITMS checks a long character string (A), returning the number of data
-C items (IW) separated by ' ' tab or ',' or '|'.  Note to keep from
-C overwriting the string passed, deal with a copy.
-      SUBROUTINE LCHITMS(A,IW)
-      CHARACTER*(*) A
-      CHARACTER B*248,C*1
-
-      lastcc = MIN0(LNBLNK(A),247)
-      WRITE(B,'(A)',IOSTAT=IOS,ERR=1) A(1:lastcc+1)
-
-C Loop through B and convert all ',' 'tabs' '|' to blanks.
-      DO 100 I=1,LNBLNK(B)+1
-        C=B(I:I)
-        IF(C.EQ.','.OR.ICHAR(C).EQ.9.OR.ICHAR(C).EQ.124) B(I:I)=' '
-  100 CONTINUE
-
-C Loop through B and see how many 'words'.
-      K=0
-      IW=0
-  102 IW=IW+1
-
-C Start by skipping blanks before the word.
-   10 K=K+1
-      C=B(K:K)
-      IF(C.EQ.' ') GOTO 10
-
-C Loop character by character until separator is found.
-   20 K=K+1
-      C=B(K:K)
-      IF(K.GE.LNBLNK(B))RETURN
-      IF(C.EQ.' ') GOTO 102
-      GOTO 20
-
-   1  if(IOS.eq.2)then
-        write(6,*) 'LCHITMS: permission error in internal write: ',A
-      else
-        write(6,*) 'LCHITMS: error in internal write: ',A
-      endif
-      return
-
-      END
-
-C ********************* CHITMS400
-C CHITMS400 checks a 400 long char string (A), returning the number of data
-C items (IW) separated by ' ' tab or ',' or '|'.  Note to keep from
-C overwriting the string passed, deal with a copy.
-      SUBROUTINE CHITMS400(A,IW)
-      CHARACTER*(*) A
-      CHARACTER B*400,C*1
-
-      lastcc = MIN0(LNBLNK(A),247)
-      WRITE(B,'(A)',IOSTAT=IOS,ERR=1) A(1:lastcc+1)
-
-C Loop through B and convert all ',' 'tabs' '|' to blanks.
-      DO 100 I=1,LNBLNK(B)+1
-        C=B(I:I)
-        IF(C.EQ.','.OR.ICHAR(C).EQ.9.OR.ICHAR(C).EQ.124) B(I:I)=' '
-  100 CONTINUE
-
-C Loop through B and see how many 'words'.
-      K=0
-      IW=0
-  102 IW=IW+1
-
-C Start by skipping blanks before the word.
-   10 K=K+1
-      C=B(K:K)
-      IF(C.EQ.' ') GOTO 10
-
-C Loop character by character until separator is found.
-   20 K=K+1
-      C=B(K:K)
-      IF(K.GE.LNBLNK(B))RETURN
-      IF(C.EQ.' ') GOTO 102
-      GOTO 20
-
-   1  if(IOS.eq.2)then
-        write(6,*) 'CHITMS400: permission error in internal write: ',A
-      else
-        write(6,*) 'CHITMS400: error in internal write: ',A
-      endif
-      return
-
-      END
 
 C ******************* CHARCH
 C CHARCH: Older routine to check a string for a number of data items.
@@ -6506,3 +6382,90 @@ C EPROMPT: Does nothing, for compatibility only.
       RETURN
       END
 
+
+C ********************* iCountWords
+C iWordsInString checks a character string (A), returning the number of data
+C items (IW) separated by ' ' tab or ','.  Note to keep from
+C overwriting the string passed, deal with a copy.
+      integer function iCountWords(cString)
+      implicit none
+      character*(*) cString
+      character*1   cChar
+      integer iLastChar, iCurChar
+      logical bLastCharWasSpace
+      integer lnblnk
+      integer iChar
+
+C.....Get length of string      
+      iLastChar = lnblnk(cString)
+
+C.....Now search for words
+
+      bLastCharWasSpace = .true.
+      iCountWords       = 0
+
+      SearchForWords: do iCurChar=1, iLastChar
+
+        cChar = cString(iCurChar:iCurChar)
+
+        IsNonBlank: if ( cChar /= ' '      .and.
+     &                   cChar /= ','      .and.
+     &                   iChar(cChar) /= 9        ) then
+
+C.........If character is non-blank and last character
+C.........was blank, comma or tab, increment word coumt
+          IsNewWord: if ( bLastCharWasSpace ) then
+
+            iCountWords = iCountWords + 1
+
+          endif IsNewWord
+
+          bLastCharWasSpace = .false.
+
+        else
+
+          bLastCharWasSpace = .true. 
+
+        endif IsNonBlank
+
+      enddo SearchForWords
+
+      return
+      end function iCountWords
+
+C ********************* CHITMS, LCHITMS, CHITMS400
+C These are legacy interfaces to iCountWords. They return
+C the number of words (IW) for a string A.
+
+      subroutine CHITMS(a,iw)
+      implicit none
+      integer iw
+      character*(*) a
+      integer iCountWords
+
+      iw = iCountWords(a)
+
+      return
+      end subroutine CHITMS
+
+      subroutine LCHITMS(a,iw)
+      implicit none
+      integer iw
+      character*(*) a
+      integer iCountWords
+
+      iw = iCountWords(a)
+
+      return
+      end subroutine LCHITMS
+
+      subroutine CHITMS400(a,iw)
+      implicit none
+      integer iw
+      character*(*) a
+      integer iCountWords
+
+      iw = iCountWords(a)
+
+      return
+      end subroutine CHITMS400
