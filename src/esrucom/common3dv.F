@@ -752,7 +752,11 @@ C Passed parameters.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      DIMENSION COG1(3),COG2(3),COG3(3)
+
+C Explicit local variables
+      real COG1(3),COG2(3),COG3(3)
+      real GRIDD,XD,DD
+      real GXMN,GYMN,XINC,YINC
       logical close,greyok
 
 C Local variables to pass to edline.
