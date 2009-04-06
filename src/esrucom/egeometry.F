@@ -490,8 +490,9 @@ C non zero then it represents a depreciated default window.
       CALL EGETWIA(IUNIT,IVA,IRVA,0,MG,'F','def window list',IER)
 
 C Read the window dimension details and advise user (if IVA non-zero).
-      default_windows: IF( IVA(KS).GT.0 )THEN
-        DO 16 KS=1,NSUR
+      
+      DO 16 KS=1,NSUR
+        IF( IVA(KS).GT.0 )THEN
           DO 18 KW=1,IVA(KS)
             call lstripc(IUNIT,loutstr,99,ND,1,'window data',IER)
             IF(IER.NE.0)goto 1001
@@ -510,8 +511,9 @@ C Read the window dimension details and advise user (if IVA non-zero).
               call edisp(itru,outs)
             ENDIF
    18     CONTINUE
-   16   CONTINUE
-      endif default_windows
+        ENDIF
+   16 CONTINUE
+      
 
 C Read surface indentations (one per surface).
       IRVA=NSUR
@@ -697,7 +699,7 @@ C  keyword.]
           endif
         endif
 C Depending on what the 'other' column is file the SOTHER array.
-C Note when seanning an older file we will not yet know the
+C Note when scanning an older file we will not yet know the
 C C3 based information and so sother(2) and sother(3) are placeholders.
         write(tother,'(a)') loutstr(45:59)
         if(tother(1:7).eq.'UNKNOWN')then
