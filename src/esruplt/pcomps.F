@@ -284,8 +284,8 @@ C radiant heating/cooling system
      &  .OR. ITYPE .EQ. 110 ) THEN
 C Generic syntax checker for coefficient generator
          CALL HVAC_model_static_temp(IPCOMP)
-      ELSE IF ( iType .eq. 88 .or. 
-     &          iType .eq. 124     )then
+      ELSE IF ( ( iType .eq. 88 ) .or.
+     &          ( iType .EQ. 125 ) ) then
 C Hydrogen compressor static template
          call H2_comp_static_template (iPComp)
       ELSE IF( ITYPE .EQ. 104 ) THEN
@@ -330,8 +330,8 @@ C 2-node stratified storage tank model
       ELSE IF(ITYPE.EQ.123) THEN
          CALL stratified_tank_static(IPCOMP)
 C 2-node NCHE (natural convection heat exchanger) model
-C     ELSE IF(ITYPE.EQ.124) THEN
-C         CALL NCHE_static_template(IPCOMP)
+      ELSE IF(ITYPE.EQ.124) THEN
+         CALL NCHE_static_template(IPCOMP)
 
       ELSE
 
