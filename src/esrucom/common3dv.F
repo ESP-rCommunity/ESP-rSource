@@ -292,6 +292,9 @@ C Passed parameters.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
@@ -468,6 +471,9 @@ C Passed parameter.
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
@@ -601,6 +607,9 @@ C Passed parameter.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY6G/LINSTYG(MGRT)
 
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
@@ -754,7 +763,8 @@ C Passed parameters.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C Explicit local variables
-      real COG1(3),COG2(3),COG3(3)
+      real COG1,COG2,COG3
+      dimension COG1(3),COG2(3),COG3(3)
       real GRIDD,XD,DD
       real GXMN,GYMN,XINC,YINC
       logical close,greyok
