@@ -5746,8 +5746,8 @@ void u2pixel_(ux,uy,ix,iy)
   x=(x + x_add) * x_scale;
   y=(y + y_add) * y_scale;
 
-  *ix = x_off + (int) x;
-  *iy = y_off - (int) y;
+  *ix = (long int) x_off + (long int) x;
+  *iy = (long int) y_off - (long int) y;
   return;
 }
 
