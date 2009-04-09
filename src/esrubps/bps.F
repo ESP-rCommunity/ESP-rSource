@@ -106,6 +106,13 @@ C#include "../cetc/AIMS_module.F"
 C GCEP.
 C#include "../cetc/GCEP_module.F"
 
+C======BlockData==========================
+C  This block data is used to initialize
+C  variables in the stratified_tank and NCHE
+C  commons
+
+#include "BlockData.h"
+
       program bps
 
 C======hot3000========================start

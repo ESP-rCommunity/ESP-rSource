@@ -1,0 +1,19 @@
+# operations of zone1 defined in: 
+# ../zones/zone1.opr
+nil_operations  # description
+# control(no control of air flow  ), low & high setpoints 
+   0     0.000     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     1   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    200.0,      0.0, 0.000, 1.000
+     1   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    200.0,      0.0, 0.000, 1.000
+     1   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    200.0,      0.0, 0.000, 1.000
+# Labels for gain types 
+ Occupt Lights Equipt
