@@ -483,7 +483,7 @@ C non zero then it represents a depreciated default window.
 
 C Read the window dimension details and advise user (if IVA non-zero).
       DO 16 KS=1,NSUR
-        IF(IVA(KS).GT.0)THEN
+        IF( IVA(KS).GT.0 )THEN
           DO 18 KW=1,IVA(KS)
             CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'window data',IER)
             IF(IER.NE.0)goto 1001
@@ -502,9 +502,9 @@ C Read the window dimension details and advise user (if IVA non-zero).
               call edisp(itru,outs)
             ENDIF
    18     CONTINUE
-        ENDIF 
+        ENDIF
    16 CONTINUE
-
+      
 C Read surface indentations (one per surface).
       IRVA=NSUR
       CALL EGETWRA(IUNIT,YY,IRVA,0.,1.,'W','surfaces recess',IER)
@@ -666,7 +666,7 @@ C Use logic similar to parsemlcdesc to find the optical name.
         endif
 
 C Depending on what the 'other' column is file the SOTHER array.
-C Note when seanning an older file we will not yet know the
+C Note when scanning an older file we will not yet know the
 C C3 based information and so sother(2) and sother(3) are placeholders.
         write(tother,'(a)') OUTSTR(45:59)
         if(tother(1:7).eq.'UNKNOWN')then
