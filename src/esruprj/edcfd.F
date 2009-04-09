@@ -3769,6 +3769,11 @@ C Curvilinear boundary vertex numbers.
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
       CHARACTER act*1,H*72,HOLD*72,outs*124
+#ifdef OSX
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Tell the user the rules of selection.
       ier=0
@@ -3831,9 +3836,9 @@ C the individual vertex numbers from the list.
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            ixd=ix-ixx
-            iyd=iy-iyy
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-ixx
+            iyd=iiy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -3894,9 +3899,9 @@ C Ask for and display the bottom defining vertices (west to east).
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            ixd=ix-ixx
-            iyd=iy-iyy
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-ixx
+            iyd=iiy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')

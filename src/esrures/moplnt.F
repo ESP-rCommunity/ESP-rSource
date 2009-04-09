@@ -1432,10 +1432,10 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
 #endif
 
       logical colok,ok,dok
@@ -2746,8 +2746,8 @@ C Finally label lines, matching zone line colour if used.
               call winscl('z',ICM)
             endif
           endif
-          call u2pixel(TIMEold(I),Yold(I),ixs,iys)
-          call wstxpt(ixs,iys,t20)
+          call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
+          call wstxpt(iid1,iid2,t20)
           if(colok)call winscl('-',0)
           call forceflush()
  202    continue
@@ -2756,7 +2756,8 @@ C If there are optional user defined labels draw them.
         if(ngrlbl.gt.0)then
           do 201 ijj=1,ngrlbl
             t24=grlbl(ijj)
-            call wstxpt(lblpx(ijj),lblpy(ijj),t24)
+            iid1=lblpx(ijj); iid2=lblpy(ijj);
+            call wstxpt(iid1,iid2,t24)
  201      continue
         endif
       elseif (MENUTYPE.eq.5) then

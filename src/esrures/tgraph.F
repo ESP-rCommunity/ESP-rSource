@@ -205,10 +205,10 @@ C act='p' iget parameters already set.
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2   ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
 #endif
 
       logical kwatts,colok
@@ -458,7 +458,8 @@ C draw vertical axis.
           else
             call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
-            call wstxpt(igx(I),igt-5,ALABEL(I))
+            iid1=igx(I); iid2=igt-5;
+            call wstxpt(iid1,iid2,ALABEL(I))
           endif
         endif
  100  continue
@@ -595,8 +596,8 @@ C If IMFS is > zero then use IMFS-1 for line label.
         if(colok)then
           if(IGETNO(I,2).gt.0)call winscl('z',IGETNO(I,2))
         endif
-        call u2pixel(TIMEold(I),Yold(I),ixs,iys)
-        call wstxpt(ixs,iys,t20)
+        call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
+        call wstxpt(iid1,iid2,t20)
         if(colok)call winscl('-',0)
         call forceflush()
  200  continue
@@ -608,7 +609,8 @@ C If there are optional user defined labels draw them.
       if(ngrlbl.gt.0)then
         do 201 ijj=1,ngrlbl
           t24=grlbl(ijj)
-          call wstxpt(lblpx(ijj),lblpy(ijj),t24)
+          iid1=lblpx(ijj); iid2=lblpy(ijj);
+          call wstxpt(iid1,iid2,t24)
  201    continue
       endif
       goto 1

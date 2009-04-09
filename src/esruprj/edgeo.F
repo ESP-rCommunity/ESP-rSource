@@ -4656,6 +4656,11 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       character outs*124,headv*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+#ifdef OSX
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Initial values for vertex at angle facility.
       V1=1.0
@@ -4810,8 +4815,8 @@ C Show the new point on the current wireframe.
             COG1(3)=z3
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            call ecirc(ix,iy,3,1)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            call ecirc(iix,iiy,3,1)
             call forceflush()
             if(NTV.lt.MTV)then
               h(1)='This can become a new vertex. '
@@ -5001,8 +5006,8 @@ C Show the new point on the current wireframe.
             COG1(3)=z3
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            call ecirc(ix,iy,3,1)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            call ecirc(iix,iiy,3,1)
             call forceflush()
             if(NTV.lt.MTV)then
               h(1)='This can become a new vertex. '
@@ -5115,8 +5120,8 @@ C Show the new point on the current wireframe.
             COG1(3)=z3
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            call ecirc(ix,iy,3,1)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            call ecirc(iix,iiy,3,1)
             call forceflush()
           endif
         elseif(ino.eq.6)then
@@ -5188,8 +5193,8 @@ C Show the new point on the current wireframe.
                 COG1(3)=z3
                 CALL VECTRN(COG1,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),ix,iy)
-                call ecirc(ix,iy,3,0)
+                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                call ecirc(iix,iiy,3,0)
                 call forceflush()
 
 C Ask if it should be added.
@@ -5241,8 +5246,8 @@ C skip over the surface being used to define the plane.
               COG1(3)=z(jwhich3)
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              call ecirc(ix,iy,3,1)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              call ecirc(iix,iiy,3,1)
               call forceflush()
               do 446 jivj=1,NSUR
                 if(jivj.eq.is) goto 446  ! skip past surface is
@@ -5413,8 +5418,8 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
             COG1(3)=z3
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            call ecirc(ix,iy,3,1)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            call ecirc(iix,iiy,3,1)
             call forceflush()
             dok=.true.
             h(1)='Last chance to change the vertex position. '
@@ -5578,8 +5583,8 @@ C Show the new point on the current wireframe.
             COG1(3)=z3
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            call ecirc(ix,iy,3,1)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            call ecirc(iix,iiy,3,1)
             call forceflush()
             dok=.true.
             h(1)='Last chance to abort the change. '
@@ -5921,6 +5926,11 @@ C Make use of VERINFO to display the current vertex surface connections.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
+#ifdef OSX
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Initialise zone surface-vertex list menu size variables based on
 C window size. IVERT is the menu position, MVERT the current
@@ -6235,8 +6245,8 @@ C it reports back no warps.
 C See if any points are out of the plane.
           iwhich=0
           ofby=0.0 
-	  call CHECKWARP(2,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	  if(ivoff.gt.0)then
+          call CHECKWARP(2,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+          if(ivoff.gt.0)then
 
 C We need to loop through each edges. If at loop=kk then setthe
 C coordiantes to next vertex (e.g. ignore one). Then compute equation
@@ -6274,15 +6284,15 @@ C which results in no deviation.
 C See if any points are out of the plane.
               iwhich=0
               ofby=0.0 
-	      call CHECKWARP(1,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+              call CHECKWARP(1,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
 
 C Debug.
               write(6,*) is,iwhich,ofby,ivoff
-	      if(ivoff.gt.0)then
+              if(ivoff.gt.0)then
                 goto 59
               else
-	        lln=lnblnk(sname(icomp,is))
-	        write(outs,'(3a,i3)') ' Surface ',
+                lln=lnblnk(sname(icomp,is))
+                write(outs,'(3a,i3)') ' Surface ',
      &            sname(icomp,is)(1:lln),' warp is probably @ vertex ',
      &            JVN(is,loop)
                 call edisp(iuout,outs)
@@ -6300,7 +6310,7 @@ C warped vertex calculate how much it is off the plane.
      &            Z(JVN(is,loop)),TMAT,X1,Y1,ZZZ,IERR)
                 call eclose(ZZZ,1.0,0.001,close)
                 ofby=zzz
-	        diff=1.0-ZZZ
+                diff=1.0-ZZZ
                 WRITE(outs,'(a,F7.4,a,3F9.5)') ' Vertex is off by ',
      &            diff,'m @ ',X(JVN(is,loop)),
      &            Y(JVN(is,loop)),Z(JVN(is,loop))
@@ -6370,8 +6380,8 @@ C Show these points as small circles...
           COG1(3)=ZZ(J)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
-          CALL ecirc(ix,iy,3,1)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL ecirc(iix,iiy,3,1)
   154   CONTINUE
         call forceflush()
 
@@ -7023,6 +7033,11 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
+#ifdef OSX
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Initialise vertex list menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -7122,9 +7137,9 @@ C hit and then loop through each of the vertices for something close.
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            ixd=ix-ixx
-            iyd=iy-iyy
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-ixx
+            iyd=iiy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -7137,7 +7152,7 @@ C hit and then loop through each of the vertices for something close.
               INPICK=INPICK+1
               ijvn=ijvn+1
               IVLST(ijvn)=i
-              CALL ecirc(ix,iy,3,0)
+              CALL ecirc(iix,iiy,3,0)
               call forceflush()
               goto 46
             endif

@@ -657,6 +657,11 @@ C a different colour for each name.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       character word*24
+#ifdef OSX
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Figure out how much text there is to write out. isecond is the last
 C zone index that fit within 72 characters.
@@ -675,7 +680,8 @@ C Set ix to last character position before looping through zones.
         word='Zones:'
         call findviewtext(2,line,isize,ix,iy)
         call winscl('-',0)
-        call wstxpt(ix,iy,word)
+        iix=ix; iiy=iy;
+        call wstxpt(iix,iiy,word)
         icx=9
         do 43 i=1,NZ
 
@@ -697,7 +703,8 @@ C Set ix to last character position before looping through zones.
         word='Zones:'
         call findviewtext(2,line,isize,ix,iy)
         call winscl('-',0)
-        call wstxpt(ix,iy,word)
+        iix=ix; iiy=iy;
+        call wstxpt(iix,iiy,word)
         icx=9
         iloop=MIN0(isecond,NZ)
         do 143 i=1,iloop
@@ -735,7 +742,8 @@ C Then get index of colour for this zone, then plot text in that colour.
           write(word,'(A,I2,A)',iostat=ios,err=1)' Zone (',NZNO(1),') '
           call findviewtext(2,line,isize,ix,iy)
           call winscl('-',0)
-          call wstxpt(ix,iy,word)
+          iix=ix; iiy=iy;
+          call wstxpt(iix,iiy,word)
           icx=11
           call findviewtext(icx,line,isize,ix,iy)
           lna=lnzname(NZNO(1))
@@ -747,7 +755,8 @@ C Then get index of colour for this zone, then plot text in that colour.
           word='Zones:'
           call findviewtext(2,line,isize,ix,iy)
           call winscl('-',0)
-          call wstxpt(ix,iy,word)
+          iix=ix; iiy=iy;
+          call wstxpt(iix,iiy,word)
           icx=9
           do 44 i=1,NZ
             call findviewtext(icx,line,isize,ix,iy)
@@ -763,7 +772,8 @@ C Then get index of colour for this zone, then plot text in that colour.
           word='Zones:'
           call findviewtext(2,line,isize,ix,iy)
           call winscl('-',0)
-          call wstxpt(ix,iy,word)
+          iix=ix; iiy=iy;
+          call wstxpt(iix,iiy,word)
           icx=9
           do 45 i=1,NZ
             call findviewtext(icx,line,isize,ix,iy)
@@ -784,7 +794,8 @@ C Then get index of colour for this zone, then plot text in that colour.
           word='Zn:'
           call findviewtext(2,line,isize,ix,iy)
           call winscl('-',0)
-          call wstxpt(ix,iy,word)
+          iix=ix; iiy=iy;
+          call wstxpt(iix,iiy,word)
           icx=5
           do 46 i=1,NZ
             call findviewtext(icx,line,isize,ix,iy)

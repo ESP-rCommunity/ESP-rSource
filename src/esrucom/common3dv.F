@@ -345,10 +345,10 @@ C Transform the location into eyepoint and then screen coords.
           COG1(3)=ZB(1)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
           btemp='        '
           write(btemp,'(a)') BLKNAME(IB)
-          CALL wstxpt(ix,iy,btemp)
+          CALL wstxpt(iix,iiy,btemp)
         ENDIF
 
 C If editing an obstruction, highlight it.
@@ -402,9 +402,9 @@ C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
 C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -413,9 +413,7 @@ C If IP1 is ever negative then jump to a later point.
 
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(IPEN.eq.1)then
             call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
@@ -431,15 +429,13 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(IPEN.eq.1)then
             call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
@@ -478,9 +474,9 @@ C Local arrays.
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 #ifdef OSX
-      integer iix,iiy,iixlast,iiylast
+      integer iix,iiy,iixlast,iiylast,iid2
 #else
-      integer*8 iix,iiy,iixlast,iiylast
+      integer*8 iix,iiy,iixlast,iiylast,iid2
 #endif     
 
       CHARACTER temp*7,CUBN*6
@@ -500,9 +496,10 @@ C Transform the location into eyepoint and then screen coords.
         COG1(3)=ZB(1)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
         write(temp,'(A)')CUBN(IB)
-        CALL wstxpt(ix,iy+8,temp)
+        iid2=iiy+8
+        CALL wstxpt(iix,iid2,temp)
 
 C Continue on with surfaces in the sensor.
 C Copy polygon for sensor surface I into structure AX AY AZ
@@ -547,9 +544,9 @@ C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
 C First move to the beginning (as passed back from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -558,9 +555,7 @@ C If IP1 is ever negative then jump to a later point.
 
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
 
@@ -570,15 +565,13 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
  1000   CONTINUE
@@ -618,9 +611,9 @@ C Local arrays.
 
 C Local variables to pass to edline.
 #ifdef OSX
-      integer iix,iiy,iixlast,iiylast
+      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
 #else
-      integer*8 iix,iiy,iixlast,iiylast
+      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
 #endif     
 
 C Save the current font and switch to a smaller font for displaying
@@ -636,15 +629,15 @@ C surface names etc. Ixc,iyc keep track of surface/pixel COG.
           COG1(3)=ZGT(IV)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
-          CALL ecirc(ix,iy,2,1)
-          CALL VERTLBL(ix,iy,IV,ier)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL ecirc(iix,iiy,2,1)
+          CALL VERTLBL(iix,iiy,IV,ier)
   42    continue
       endif
       if(ngt.eq.0)return
       do 43 igs = 1, NGT
-        ixc=0
-        iyc=0
+        iixc=0
+        iiyc=0
 
 C Copy polygon for Surface I into structure A for compatibility with
 C viewer format 'holes' in surfaces.
@@ -678,19 +671,17 @@ C Transform surface polygon as above.
 C Move to first point.
           IP = IABS(IBPNT)
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
-          ixc=ixc+ix
-          iyc=iyc+iy
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
+          iixc=iixc+iix
+          iiyc=iiyc+iiy
 
 C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP)
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -700,19 +691,17 @@ C Draw succeeding points until last vertex.
           else
             call edline(iixlast,iiylast,iix,iiy,LD)
           endif
-          ixc=ixc+ix
-          iyc=iyc+iy
+          iixc=iixc+iix
+          iiyc=iiyc+iiy
 
           IP1 = IBNXT(IP1)
-          iixlast=ix   ! cast for call to edline
-          iiylast=iy
+          iixlast=iix   ! cast for call to edline
+          iiylast=iiy
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -725,16 +714,17 @@ C Complete ground surface.
           call forceflush()
 
 C If ground surface names are to be displayed place near the centre of polygon.
-C If the surface is not drawn (ixc=0 & iyc=0) do not label it.  For clarity drop to
+C If the surface is not drawn (iixc=0 & iyc=0) do not label it.  For clarity drop to
 C the next smaller font for the surface name and then restore font
 C to normal size.
           IF(ITSNM.EQ.0)THEN
-            IF(ixc.GT.0.AND.iyc.GT.0.AND.(NAP.EQ.NBP))THEN
+            IF(iixc.GT.0.AND.iiyc.GT.0.AND.(NAP.EQ.NBP))THEN
               IF(IFS.GT.0)CALL winfnt(NAMEFT)
               write(stemp,'(A)')GSNAME(igs)
-              ixc=ixc/NBP
-              iyc=iyc/NBP
-              CALL wstxpt(ixc,iyc+(3*(NAMEFT+1)),stemp)
+              iixc=iixc/NBP
+              iiyc=iiyc/NBP
+              iid2=iiyc+(3*(NAMEFT+1))
+              CALL wstxpt(iixc,iid2,stemp)
               IF(IFS.GT.0)CALL winfnt(IFS)
             endif
           endif
@@ -826,7 +816,7 @@ C Transform one end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
 
 C Transform other end of line.
         COG1(1)=XINC
@@ -834,18 +824,14 @@ C Transform other end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix1,iy1)
+        call u2pixel(COG3(1),COG3(2),iix1,iiy1)
 
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline. Only do this if
 C the length of the line is more than one pixel.
-        if(ix.eq.ix1.and.iy.eq.iy1)then
+        if(iix.eq.iix1.and.iiy.eq.iiy1)then
           continue
         else
-          iix=ix
-          iiy=iy
-          iix1=ix1
-          iiy1=iy1
           call edline(iix,iiy,iix1,iiy1,LD)
         endif
 
@@ -869,7 +855,7 @@ C Transform one end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
 
 C Transform other end of line.
         COG1(1)=XMX+GRIDD
@@ -877,16 +863,12 @@ C Transform other end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix1,iy1)
+        call u2pixel(COG3(1),COG3(2),iix1,iiy1)
 
 C Draw the dotted line after casting to local variable.
-        if(ix.eq.ix1.and.iy.eq.iy1)then
+        if(iix.eq.iix1.and.iiy.eq.iiy1)then
           continue
         else
-          iix=ix
-          iiy=iy
-          iix1=ix1
-          iiy1=iy1
           call edline(iix,iiy,iix1,iiy1,LD)
         endif
 

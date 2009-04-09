@@ -1144,6 +1144,11 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer lnrp  ! length of run path
 
       LOGICAL MODIFY,MODLEN,MODBND
+#ifdef OSX
+      integer iix,iiy,iid1,iid2
+#else
+      integer*8 iix,iiy,iid1,iid2
+#endif
       
 C If not in graphical mode return.
       if (MMOD.ne.8) return
@@ -1214,8 +1219,8 @@ C Loop through grid points.
         COG1(3)=DFPTS(I,3)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
-        CALL ecirc(ix,iy,3,1)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        CALL ecirc(iix,iiy,3,1)
         if(act.eq.'g'.or.act.eq.'G')then
           IF(I.le.9)THEN
             WRITE(VT,'(i1)') I
@@ -1231,7 +1236,8 @@ C Loop through grid points.
             WRITE(VT,'(f4.1)') DFVALS(I)
           ENDIF
         endif
-        CALL wstxpt(ix+1,iy-1,VT)
+        iid1=iix+1; iid2=iiy-1;
+        CALL wstxpt(iid1,iid2,VT)
  10   continue
 
 C Reset display options.

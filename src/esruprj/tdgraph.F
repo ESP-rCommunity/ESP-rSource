@@ -53,9 +53,11 @@ C Parameters for eline calls.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iid1,iid2,iilastx,iilasty,iix,iiy
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iid1,iid2,iilastx,iilasty,iix,iiy
 #endif
 
 C Start drawing; first header
@@ -99,52 +101,84 @@ C Must generalise this for various numbers of period fields.
 C If plotting colours for different lines set this.
         if(colok)call winscl('z',M)
         IF(M.EQ.1)THEN
-          CALL wstxpt(50,igt-15,temp2)
-          call eline (20,igt-20, LNMVAB)
-          call eline (45,igt-20, LNDRAB)
-          call esymbol(30,igt-20,0,0)
+          iid1=50; iid2=igt-15;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=20; iid2=igt-20;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=45; iid2=igt-20;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=30; iid2=igt-20;
+          call esymbol(iid1,iid2,0,0)
           IFSYM(1)=0
         ELSEIF(M.EQ.2)THEN
-          CALL wstxpt(50,igt-35,temp2)
-          call eline (20,igt-40, LNMVAB)
-          call eline (45,igt-40, LNDRAB)
-          call esymbol(30,igt-40,1,0)
+          iid1=50; iid2=igt-35;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=20; iid2=igt-40;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=45; iid2=igt-40;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=30; iid2=igt-40;
+          call esymbol(iid1,iid2,1,0)
           IFSYM(2)=1
         ELSEIF(M.EQ.3)THEN
-          CALL wstxpt(170,igt-15,temp2)
-          call eline (140,igt-20, LNMVAB)
-          call eline (165,igt-20, LNDRAB)
-          call esymbol(150,igt-20,2,0)
+          iid1=170; iid2=igt-15;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=140; iid2=igt-20;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=165; iid2=igt-20;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=150; iid2=igt-20;
+          call esymbol(iid1,iid2,2,0)
           IFSYM(3)=2
         ELSEIF(M.EQ.4)THEN
-          CALL wstxpt(170,igt-35,temp2)
-          call eline (140,igt-40, LNMVAB)
-          call eline (165,igt-40, LNDRAB)
-          call esymbol(150,igt-40,3,0)
+          iid1=170; iid2=igt-35;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=140; iid2=igt-40;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=165; iid2=igt-40;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=150; iid2=igt-40;
+          call esymbol(iid1,iid2,3,0)
           IFSYM(4)=3
         ELSEIF(M.EQ.5)THEN
-          CALL wstxpt(290,igt-15,temp2)
-          call eline (260,igt-20, LNMVAB)
-          call eline (285,igt-20, LNDRAB)
-          call esymbol(270,igt-20,4,0)
+          iid1=290; iid2=igt-15;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=260; iid2=igt-20;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=285; iid2=igt-20;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=270; iid2=igt-20;
+          call esymbol(iid1,iid2,4,0)
           IFSYM(5)=4
         ELSEIF(M.EQ.6)THEN
-          CALL wstxpt(290,igt-35,temp2)
-          call eline (260,igt-40, LNMVAB)
-          call eline (285,igt-40, LNDRAB)
-          call esymbol(270,igt-40,5,0)
+          iid1=290; iid2=igt-35;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=260; iid2=igt-40;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=285; iid2=igt-40;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=270; iid2=igt-40;
+          call esymbol(iid1,iid2,5,0)
           IFSYM(6)=5
         ELSEIF(M.EQ.7)THEN
-          CALL wstxpt(410,igt-15,temp2)
-          call eline (380,igt-20, LNMVAB)
-          call eline (405,igt-20, LNDRAB)
-          call esymbol(390,igt-20,6,0)
+          iid1=410; iid2=igt-15;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=380; iid2=igt-20;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=405; iid2=igt-20;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=390; iid2=igt-20;
+          call esymbol(iid1,iid2,6,0)
           IFSYM(7)=6
         ELSEIF(M.EQ.8)THEN
-          CALL wstxpt(410,igt-35,temp2)
-          call eline (380,igt-40, LNMVAB)
-          call eline (405,igt-40, LNDRAB)
-          call esymbol(390,igt-40,7,0)
+          iid1=410; iid2=igt-35;
+          CALL wstxpt(iid1,iid2,temp2)
+          iid1=380; iid2=igt-40;
+          call eline (iid1,iid2, LNMVAB)
+          iid1=405; iid2=igt-40;
+          call eline (iid1,iid2, LNDRAB)
+          iid1=390; iid2=igt-40;
+          call esymbol(iid1,iid2,7,0)
           IFSYM(8)=7
         ENDIF
 
@@ -318,34 +352,34 @@ C Scan TAB columns. Depending on which field use different symbol.
           ITREC=ixmin+49
           CALL ERTABU(ITRC,ITREC,IER)
           VAL=TABU(ITCOL(IFOC,J))
-          ix=igl+INT((1.+Xadd)*xsc)
-          iy=igb-INT((VAL+Yadd)*ysc)
-          call eline (ix,iy, LNMVAB)
-          lastx=ix
-          lasty=iy
+          iix=igl+INT((1.+Xadd)*xsc)
+          iiy=igb-INT((VAL+Yadd)*ysc)
+          call eline (iix,iiy, LNMVAB)
+          iilastx=iix
+          iilasty=iiy
 
           DO 55 IP=ixmin+1,ixmax
             ITREC=IP+49
             CALL ERTABU(ITRC,ITREC,IER)
             VAL=TABU(ITCOL(IFOC,J))
-            ix=igl+INT((REAL(IP)+Xadd)*xsc)
-            iy=igb-INT((VAL+Yadd)*ysc)
-            call eline (lastx,lasty, LNMVAB)
-            call eline (ix,iy, LNDRAB)
-            lastx=ix
-            lasty=iy
+            iix=igl+INT((REAL(IP)+Xadd)*xsc)
+            iiy=igb-INT((VAL+Yadd)*ysc)
+            call eline (iilastx,iilasty, LNMVAB)
+            call eline (iix,iiy, LNDRAB)
+            iilastx=iix
+            iilasty=iiy
             if(iperiod.gt.200.and.iperiod.le.500)then
               IR=INT(AMOD(REAL(IP),REAL(NTSPH*4)))
-              IF(IR.EQ.0)CALL esymbol(ix,iy,IFSYM(J-ISFLDS+1),0)
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
             elseif(iperiod.gt.500.and.iperiod.le.1000)then
               IR=INT(AMOD(REAL(IP),REAL(NTSPH*12)))
-              IF(IR.EQ.0)CALL esymbol(ix,iy,IFSYM(J-ISFLDS+1),0)
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
             elseif(iperiod.gt.1000)then
               IR=INT(AMOD(REAL(IP),REAL(NTSPH*24)))
-              IF(IR.EQ.0)CALL esymbol(ix,iy,IFSYM(J-ISFLDS+1),0)
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
             else
               IR=INT(AMOD(REAL(IP),REAL(NTSPH)))
-              IF(IR.EQ.0)CALL esymbol(ix,iy,IFSYM(J-ISFLDS+1),0)
+              IF(IR.EQ.0)CALL esymbol(iix,iiy,IFSYM(J-ISFLDS+1),0)
             endif
    55     CONTINUE
         ENDIF
