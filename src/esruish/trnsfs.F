@@ -95,6 +95,8 @@ C rotation.
       c(3)=sin(al)*sin(be)*cos(ga)
       c(4)=cos(al)*sin(be)*cos(ga)
       c(5)=cos(be)*cos(ga)
+
+
       ip1=jvn(is,1)
       xor=x(ip1)
       yor=y(ip1)
@@ -131,6 +133,7 @@ C Transformed y value should be close to zero; warn if not.
      &             ' (should be 0).')
             call edisp(icout,outs)
          endif
+
    10 continue
 
 C Trace output.
@@ -538,12 +541,13 @@ C           face vertices.
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/pangl/pazi,pelv,ptilt
 
+      logical bHorizontal
+
       pi = 4.0 * atan(1.0)
       r=pi/180.
       xsum=0.
       ysum=0.
       zsum=0.
-
 C Compute azimuth and elevation angles for face 'IS'.
       nv=nver(is)
       do 10 i=1,nv
@@ -583,57 +587,63 @@ C azimuth calculated above is zero. It is now reset to
 C the azimuth of the plane comprising the first two
 C vertices of the face and the same two vertices but with
 C an adjusted Z value.
-      xsum=0.
-      ysum=0.
-      zsum=0.
-      do 20 i=1,4
-         if(i.eq.1)then
-            ip1=jvn(is,1)
-            ip2=jvn(is,2)
-            xx1=x(ip1)
-            xx2=x(ip2)
-            yy1=y(ip1)
-            yy2=y(ip2)
-            zz1=z(ip1)
-            zz2=z(ip2)
-         elseif(i.eq.2)then
-            ip1=jvn(is,2)
-            ip2=jvn(is,2)
-            xx1=x(ip1)
-            xx2=x(ip2)
-            yy1=y(ip1)
-            yy2=y(ip2)
-            zz1=z(ip1)
-            zz2=z(ip2)+0.1
-         elseif(i.eq.3)then
-            ip1=jvn(is,2)
-            ip2=jvn(is,1)
-            xx1=x(ip1)
-            xx2=x(ip2)
-            yy1=y(ip1)
-            yy2=y(ip2)
-            zz1=z(ip1)+0.1
-            zz2=z(ip2)+0.1
-         elseif(i.eq.4)then
-            ip1=jvn(is,1)
-            ip2=jvn(is,1)
-            xx1=x(ip1)
-            xx2=x(ip2)
-            yy1=y(ip1)
-            yy2=y(ip2)
-            zz1=z(ip1)+0.1
-            zz2=z(ip2)
-         endif
-         xsum=xsum+yy1*zz2-zz1*yy2
-         ysum=ysum+zz1*xx2-xx1*zz2
-         zsum=zsum+xx1*yy2-yy1*xx2
-   20 continue
-      pazi=90.0
-      if(abs(xsum).lt.0.00001)pazi=0.0
-      if(xsum.lt.0.0)pazi=-90.0
-      if(abs(ysum).lt.0.00001)goto 3
-      pazi=atan2(xsum,ysum)/r
-    3 if(pazi.lt.0.)pazi=pazi+360.
 
+      call eclose ( abs(pelv), 90., 0.001, bHorizontal )
+
+      if ( bHorizontal ) then
+
+        xsum=0.
+        ysum=0.
+        zsum=0.
+        do 20 i=1,4
+          if(i.eq.1)then
+              ip1=jvn(is,1)
+              ip2=jvn(is,2)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)
+              zz2=z(ip2)
+          elseif(i.eq.2)then
+              ip1=jvn(is,2)
+              ip2=jvn(is,2)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)
+              zz2=z(ip2)+0.1
+          elseif(i.eq.3)then
+              ip1=jvn(is,2)
+              ip2=jvn(is,1)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)+0.1
+              zz2=z(ip2)+0.1
+          elseif(i.eq.4)then
+              ip1=jvn(is,1)
+              ip2=jvn(is,1)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)+0.1
+              zz2=z(ip2)
+          endif
+          xsum=xsum+yy1*zz2-zz1*yy2
+          ysum=ysum+zz1*xx2-xx1*zz2
+          zsum=zsum+xx1*yy2-yy1*xx2
+  20    continue
+        pazi=90.0
+        if(abs(xsum).lt.0.00001)pazi=0.0
+        if(xsum.lt.0.0)pazi=-90.0
+        if(abs(ysum).lt.0.00001)goto 3
+        pazi=atan2(xsum,ysum)/r
+    3   if(pazi.lt.0.)pazi=pazi+360.
+
+      endif
       return
       end

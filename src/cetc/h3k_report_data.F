@@ -83,7 +83,7 @@ C TPA(MCOM),           ! - present zone air point temperature (oC)
 C QPA(MCOM)            ! - zone air point heat injection (W)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       REAL TPA, QPA
-
+      
 C TFA(MCOM)            ! - future zone air point temperature (oC)
 C QFA(MCOM)            ! - zone air point heat injection (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -344,7 +344,6 @@ C lnblnk is a function returning the index of last non-blank character in a stri
       INTEGER LNBLNK
 
 C .... Humidity functions
-      REAL PCRH2
       REAL DEWPT
       REAL HUMR
       
@@ -408,6 +407,7 @@ C                                           ! per m2 of floor area
       real fThickness                ! Thickness of a layer in a MLC
       real fConductivity             ! Conductivity of MLC layer.
 
+      real fZoneRH                   ! Zone relative humidity (%)
 
 C.....Misc Zone parameters returned by zoneinfo
 C      real fSurfArea(MS)          ! Area of each surface`
@@ -506,7 +506,9 @@ C     References
 C----------------------------------------------------------------------
       real fSurface_radiant_gain   ! Function returining the
                                    ! radiant gain on a surface (W)
-
+      real PCRH2                   ! Function returning relative 
+                                   ! humidity given zone temperature, 
+                                   ! moisture content and atm. pressure.
       real PSat01 ! Function returns the saturation vapour pressure at temperature T
       
 C----------------------------------------------------------------------
@@ -717,6 +719,24 @@ C.......Create base name for surface values output
 
         iH3K_NameLen=lnblnk(H3K_rep_NAME)
 
+C-----------------------------------------------------------------------
+C       Report total short wave radiation on this surface.
+C-----------------------------------------------------------------------
+        call add_to_xml_reporting (
+     &          qswrde(iZone,iSurface,2),
+     &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/shortwave' ,
+     &          'units', '(W)',
+     &          'Short-wave solar radiation'
+     &           )
+     
+        call add_to_xml_reporting (
+     &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
+     &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/'
+     &            //  'shortwave/unit_area' ,
+     &          'units', '(W/m2)',
+     &          'Short-wave solar radiation per unit area'
+     &          )     
+     
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
 C       balance on exterior surface node. Equation depends on

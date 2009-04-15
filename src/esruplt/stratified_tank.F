@@ -21,33 +21,6 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C===================== Block data ======================================
-C     Created by: Didier Thevenard
-C     Created on: April 2007
-C     Copyright:  CETC 2007
-C-----------------------------------------------------------------------
-C     ABSTRACT:
-C     Block data to initialize variables in the CETC_STANK common
-C
-C=======================================================================
-
-      BLOCK DATA
-
-#include "stratified_tank.h"
-
-      INTEGER NAUX
-      PARAMETER(NAUX=MAX_NNODES*MAX_STANK)
-
-      DATA N_STANK/0/
-     &     IPCOMP_STANK/MAX_STANK*0./
-     &     TP_STANK/NAUX*0./
-     &     TF_STANK/NAUX*0./
-     &     TAVGP_STANK/MAX_STANK*0./
-     &     TAVGF_STANK/MAX_STANK*0./
-     &     PTIMEF_STANK/-9.9999E+10/
-
-      END
-
 C===================== stratified_tank_static ==========================
 C     Created by: Didier Thevenard
 C     Created on: April 2007
@@ -494,6 +467,9 @@ C---- ESP-r Common blocks
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL ADATA,BDATA
 
+      COMMON/PCNAM/PCNAME(MPCOM)       ! PLANT COMPONENT NAMES
+      CHARACTER*15 PCNAME
+
 #include "stratified_tank.h"
 
 C---- Arguments
@@ -648,6 +624,15 @@ C---- Additional outputs
       PCAOUT(IPCOMP,3) = STEPCOUNT
       PCAOUT(IPCOMP,4) = MIXCOUNT
       PCAOUT(IPCOMP,5) = NSECAVG
+
+C---- XML output
+
+      call add_to_xml_reporting(
+     &   TAVGF_STANK(I_STANK),
+     &   'plant/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
+     &    //'/misc_data/average_temperature',
+     &   'units','(C)',
+     &   'Stratified tank : Average temperature')
 
 C---- Trace output
 
