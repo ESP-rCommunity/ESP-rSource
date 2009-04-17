@@ -1762,7 +1762,17 @@ C mode.
 
           endif 
 
-C Assign results file names.
+C Assign results file names based on names recorded in the simulation
+C parameter sets.  If the user is browsing then code in reslib.F will ensure 
+C that it is placed in the users home folder (if there is a relative path
+C included such as ../res then this will be ignored). 
+C If the file user is not browsing and the simulation was started 
+C in the model cfg folder then the supplied name will be used as is (e.g.
+C if it has a relative path then it will be written using that relative
+C path.
+C If the file name includes an absolute path e.g. /tmp then this is respected
+C for interactive or silent runs and for invocations from within the cfg folder
+C or from another location.
           if(sblres(i)(1:2).ne.'  ')then
             RFILE=sblres(i)
           endif
@@ -1780,10 +1790,10 @@ C Assign results file names.
           endif
 
 C debug...
-C          write(6,*)rfile
-C          write(6,*)LAFRES
-C          write(6,*)pfile
-C          write(6,*)'splres ',splres
+          write(6,*) ' input.F usesps rfile ',i,rfile
+C          write(6,*) ' input.F usesps lafres ',i,LAFRES
+C          write(6,*) ' input.F usesps pfile ',i,pfile
+C          write(6,*) ' input.F usesps splres ',i,splres
           if(match)goto 43
         endif
    42 continue
@@ -1803,7 +1813,7 @@ C Check that we have enough info to proceede if autook
             return
           else
             call usrmsg(outs,' ','W')
-            call pauses(2)   ! pause for 2 seconds then abort program.
+            call pauses(3)   ! pause for 3 seconds then abort program.
             CALL EPAGEND
             STOP
           endif

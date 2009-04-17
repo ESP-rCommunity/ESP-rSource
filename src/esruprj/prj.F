@@ -571,6 +571,7 @@ C and if so do what it says.
           if(XST)then
 
 C Call newprb without the need to confirm model but to check its path.
+C We assume that the user owns the model to be transformed.
             itisanexemplar=.false.
             confirm=.false.
             ckpath=.true.
@@ -679,7 +680,7 @@ C              write(6,*)'idst naloc =',nidst,naloc
   23      CALL ERPFREE(IFCFG,ISTAT)
 
 C Call newprb without the need to confirm model but to check its path.
-C << for now assume that the file passed is not an exemplar >>
+C Assume that the file passed is not an exemplar.
           itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
@@ -694,8 +695,8 @@ C          call edisp(iuout,'* Loading supplied model description.')
           call tstamp('>',LCFGF)
         else
 
-C The model file might not exist.
-C << for now assume that the file passed is not an exemplar >>
+C The model file might not exist. Request the path is checked.
+C Assume that the file name passed is not an exemplar.
           itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
@@ -847,13 +848,16 @@ C If there is an obstructions file read it.
       ITEMS(4) =  ' .... Model selection ........'
       ITEMS(5) =  'd open existing'
       ITEMS(6) =  'e create new'
+
+C Debug.
+      write(6,*) ' model management browse status ',browse
       if(CFGOK)then
         if(browse)then
           ITEMS(7) =  ' .... Current model (browse) ....'
-          ITEMS(13)=  'm browse/simulate'
+          ITEMS(13)=  'm browse/ simulate'
         else
           ITEMS(7) =  ' .... Current model ..........'
-          ITEMS(13)=  'm browse/edit/simulate'
+          ITEMS(13)=  'm browse/ edit/ simulate'
         endif
         WRITE(ITEMS(8),'(2A)') '  cfg  : ',LCFGF(1:22)
         WRITE(ITEMS(9),'(2A)') '  path : ',path(1:22)
@@ -1095,6 +1099,9 @@ C Set initial browse toggle to match useraction.
                   browse=.false.
                 endif
 
+C Debug.
+                write(6,*) 'after exemplar selection browse ',browse
+
 C Copy the exemplar configuration file (with full path) to LCMDFL.
                 write(LCMDFL,'(a)') exemplar(1:lnblnk(exemplar))
                 ltcmdfl=exemplar
@@ -1133,8 +1140,10 @@ C action if there is no match in the paths.
                     itisanexemplar=.false.
                   endif
                 endif
-C                write(outs,*) '* Browse status is ',browse
-C                call edisp(iuout,outs)
+
+C Debug.
+                write(outs,*) '* Browse status ',browse,itisanexemplar
+                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.
@@ -1187,7 +1196,8 @@ C Something was passed in via the command line so offer choice.
             CALL EASKABC(outs,' ','use it as the model',
      &        'specify another','cancel',IW,7)
 
-C Find the path and local file name.
+C User confirmed model so find the path and local file name. The
+C variable dirpath is where esp-r training models are located.
             if(IW.eq.1)then
               ltcmdfl=LCMDFL
               call fdroot(ltcmdfl,path,LCFGF)
@@ -1733,6 +1743,8 @@ C Invoke simulator for the case of a simulation parameter set.
           else
             goto 3
           endif
+
+C Setup chile process for the type of terminal.
           call tstamp('>','PRJ: beginning simulation with param set.')
           doit = ' '
           call tchild(ICPMOD)
@@ -1754,6 +1766,9 @@ C Debug the patched file name.
             longtfile=' '
             longtfile=longtfiledos
           endif
+
+C Debug.
+          write(6,*) ' simula browse status ',browse
 
 C If browsing pass this information to bps and if the user
 C has set the trace level above one add a -v optin to the
@@ -1786,7 +1801,7 @@ C an offset from prj start position.
           endif
 
 C Debug.
-C          call usrmsg('Begining simulation via',doit,'-')
+          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         else
@@ -1842,7 +1857,7 @@ C an offset from prj start position.
           endif
 
 C Debug.
-C          call usrmsg('Begining simulation via',doit,'-')
+          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         endif

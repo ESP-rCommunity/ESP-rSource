@@ -275,9 +275,17 @@ C Help text for this menu.
 C If user has defined model and perhaps resized the display then
 C redraw the model image.
       if(indcfg.eq.2)then
-        CALL EMENU('Browse/Edit/Simulate',ITEMS,nitems,INO)
+        if(browse)then
+          CALL EMENU('Browse/ Simulate',ITEMS,nitems,INO)
+        else
+          CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
+        endif
       elseif(indcfg.eq.0)then
-        CALL EMENU('Browse/Edit/Simulate',ITEMS,nitems,INO)
+        if(browse)then
+          CALL EMENU('Browse/ Simulate',ITEMS,nitems,INO)
+        else
+          CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
+        endif
       else
         if(CFGOK.AND.MODIFY)then
           MODBND=.TRUE.
@@ -309,7 +317,11 @@ C Re-draw the configuration buttons.
             call viewtext(etext,iside,isize,ifont)
           endif
         endif
-        CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
+        if(browse)then
+          CALL EMENU('Browse/ Simulate',ITEMS,nitems,INO)
+        else
+          CALL EMENU('Browse/ Edit/ Simulate',ITEMS,nitems,INO)
+        endif
       endif
       IF(INO.EQ.nitems)THEN
 
@@ -994,6 +1006,12 @@ C the results file should be placed in the users home folder.
         if(browse)then
           remote=.true.
         else
+
+C Check the configuration file name and if concat is true then
+C prj was started up somewhere other than the cfg folder so
+C results files should be saved to the users home folder.
+C Note: logic in esrubps/reslib.F should be similar, but it
+C makes use of calls to dealremote.
           ltmp = LCFGF
           call isunix(unixok)
           if(unixok)then
@@ -1020,7 +1038,12 @@ C Set folder separator (fs) to \ or / as required.
           fs = char(92)
         endif
 
+C Debug.
+        write(6,*) 'edcfg res remote is ',remote,nsset
         if(nsset.gt.0)then
+
+C If there are simulation parameter sets use the names of the results
+C files splres or sblres and prepend user home folder if remote is true.
           if(isset.eq.0)isset=1
           if(INDCFG.eq.2)then
             if(splres(isset)(1:2).ne.'  '.and.
@@ -1091,6 +1114,7 @@ C                write(6,*) 'remote so reset tfile to ',longtfile
 
 C There are no simulation parameter sets so take a guess at the
 C file name that the user might have given.
+C << update this logic to use a default name based on the root name >>
           if(browse)then
             write(longtfile,'(3a)') upath(1:lnblnk(upath)),fs,'libb'
           else
@@ -1100,6 +1124,7 @@ C file name that the user might have given.
           call edisp248(iuout,longtfile,100)
           call edisp(iuout,' ')
         endif
+
         call tstamp('>','PRJ: beginning res')
         doit = ' '
         call tchild(ICPMOD)
@@ -2486,7 +2511,8 @@ C File is older format and assumed to be unsorted.
                     endif
                   else
 
-C File is current format and might be unsorted.
+C File is current format and might be unsorted. If user is not
+C browsing update the operation file.
                     sorted=.true.
                     problem=.false.
                     DO 400 IDTY=1,NBDAYTYPE
@@ -3171,12 +3197,15 @@ C Fall through case.
 
 C ************* NEWPRB 
 C NEWPRB specifies a new model via existing or new configuration file
-C and the various CAD and native definition facilities. Confirm=true
-C request confirmation of configuration file name, ckpath=true finds
-C the path to it (should be false for CAD use as the file and its
-C location is already known). If itisanexemplar=true then ensure that
-C browse is set to true in any case because the user has previously
-C selected an exemplar model.
+C and the various CAD and native definition facilities. 
+C Parameters passed into newprb:
+C  confirm=true request confirmation of configuration file name
+C  ckpath=true finds the path to it (should be false for CAD use as
+C         the file and its location is already known). 
+C  itisanexemplar=true then ensure that browse is set to true in
+C         any case because the user has previously selected an exemplar model.
+C Parameter returned:
+C  ier = 0 if no problems found.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
 #include "esprdbfile.h"
