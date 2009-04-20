@@ -1789,8 +1789,8 @@ C or from another location.
             ERESLIB=selres(i)
           endif
 
-C debug...
-          write(6,*) ' input.F usesps rfile ',i,rfile
+C Debug...
+C          write(6,*) ' input.F usesps rfile ',i,rfile
 C          write(6,*) ' input.F usesps lafres ',i,LAFRES
 C          write(6,*) ' input.F usesps pfile ',i,pfile
 C          write(6,*) ' input.F usesps splres ',i,splres

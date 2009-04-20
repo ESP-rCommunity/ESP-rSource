@@ -100,8 +100,8 @@ C Active domain common.
 
 C Check and see if in a remote folder.
 C Debug.
-      write(6,*) ' path is ',path
-      write(6,*) ' users home is ',upath
+C      write(6,*) ' path is ',path
+C      write(6,*) ' users home is ',upath
 C      write(6,*) ichar(path(1:1)),' ',ichar(path(2:2))
 
 C If simulator was commissioned with browsing yes then by definition
@@ -124,7 +124,7 @@ C results files should be saved to the users home folder.
       endif
 
 C Debug.
-      write(6,*) 'mzlibf browse and remote ',browse,remote
+C      write(6,*) 'mzlibf browse and remote ',browse,remote
 
 C Skip building library if plant only configuration
       IF(INDCFG.EQ.2) GOTO 121
@@ -136,7 +136,9 @@ C Now assign user-specified building library. Use dealremote to confirm
 C the file name and check if the file is being placed in a location the
 C user can write to.
     4 LTMP=RFILE
-      write(6,*) 'reslib.F spfileok remote ',spfileok,remote
+
+C Debug.
+C      write(6,*) 'reslib.F spfileok remote ',spfileok,remote
       if(.not.spfileok) then
         iw=0
         call dealremote('zi',remote,LTMP,IW)

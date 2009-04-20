@@ -1039,7 +1039,7 @@ C Set folder separator (fs) to \ or / as required.
         endif
 
 C Debug.
-        write(6,*) 'edcfg res remote is ',remote,nsset
+C        write(6,*) 'edcfg res remote is ',remote,nsset
         if(nsset.gt.0)then
 
 C If there are simulation parameter sets use the names of the results
