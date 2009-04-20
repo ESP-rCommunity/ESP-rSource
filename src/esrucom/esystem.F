@@ -879,9 +879,9 @@ C set the LPCDB common block string via call to findwhichdbpath.
         call findwhichdbpath('pdb',lworking,ier)
 
 C debug.
-        write(6,*) lworking
-        write(6,*) lpcdb
-        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
+C        write(6,*) lworking
+C        write(6,*) lpcdb
+C        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
       elseif(WORD(1:7).eq.'*stdpdb')then
         ipathpcdb=2  ! standard folder for plant template database
         CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
@@ -3130,19 +3130,19 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
+C      write(6,*) file
       if(topic(1:3).eq.'opt')then
-        write(6,*) loptdb
-        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+C        write(6,*) loptdb
+C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
       elseif(topic(1:3).eq.'pdb')then
-        write(6,*) LPCDB
-        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+C        write(6,*) LPCDB
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
       elseif(topic(1:3).eq.'prs')then
-        write(6,*) lapres
-        write(6,*) 'findwhichdbpath ipath is ',ipathapres
+C        write(6,*) lapres
+C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
       endif
 
       return

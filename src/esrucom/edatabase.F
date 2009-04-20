@@ -1152,7 +1152,7 @@ C prepended.
      &    loptdb(1:lnblnk(loptdb))
 
 C Debug.
-        write(6,*) 'working optics ',lworking
+C        write(6,*) 'working optics ',lworking
         CALL EFOPSEQ(IOPTDB,lworking,1,IER)
       endif
       IF(IER.NE.0)THEN
