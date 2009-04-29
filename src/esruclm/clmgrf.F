@@ -387,6 +387,9 @@ C indicate how much space is available for the graph (i.e. what
 C axis that do not need to be drawn)
 C season (1 char) '-' do not bother 's' indicate season.
       SUBROUTINE CLMDRW(IPICK,mxmn,onleft,onright,season)
+#include "seasons.h"
+C seasons.h provides typper and typsea
+
       PARAMETER (MT=24)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -404,12 +407,6 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-
-C Typical periods and season definitions.
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
       character season*1
       logical mxmn,colok

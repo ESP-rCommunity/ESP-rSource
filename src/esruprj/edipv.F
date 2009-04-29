@@ -284,6 +284,8 @@ C If act = 'i' then initialise variables.
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -351,16 +353,6 @@ C ipvadesc is a 40 char description associated with each assessment.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/IPVSEALB/ipvadesc(MIPVA)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
 
 C ddm* are the degree-day multipliers (or user defined multipliers) between
 C the periods simulated and the whole season for heating, cooling, lights,
@@ -1806,6 +1798,8 @@ C      ='i1d' initial default period ??
 #include "building.h"
 C#include "espriou.h"  
 C espriou.h for climatelist file name.
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -1822,16 +1816,6 @@ C ipvadesc is a 40 char description associated with each assessment.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/IPVSEALB/ipvadesc(MIPVA)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
 
 C ddm* are the degree-day multipliers (or user defined multipliers) between
 C the periods simulated and the whole season for heating, cooling, lights,
@@ -2324,6 +2308,8 @@ C << update logic to accept parameters for a silent use >>
       SUBROUTINE getmultip
 #include "building.h"
 #include "esprdbfile.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -2344,11 +2330,6 @@ C << update logic to accept parameters for a silent use >>
       real CHUM     ! ambient RH
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
 C dm* are the degree-day and day-ratio multipliers between the
 C typical periods and the whole season for heating (DD), cooling (DD),

@@ -90,19 +90,13 @@ C ************* SELPER
 C SELPER: Menu for period selection - user defined, monthly, typical
 C week or season (scanned from climatelist file).
       subroutine selper(ier)
+#include "seasons.h"
+C seasons.h provides typper and typsea
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT0/CLAT,CLONG
-
-C Typical periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
       common/pophelp/h(60)
       COMMON/PERPER/PERST2
       dimension pmenu(29)
@@ -383,6 +377,8 @@ C << the text block from within clm!
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile, cdblfil.
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -404,11 +400,6 @@ C      common/appw/iappw,iappx,iappy
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-C Typical periods and season definitions.
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
@@ -1424,14 +1415,11 @@ C iuf, return ier=0 if ok. This item can either
 C be as a fragment to be included in the climatelist file by
 C the user or as part of an item management facility.
       subroutine mkitemclimatelist(iuf,ier)
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
-C Typical periods and season definitions.
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
       COMMON/CLMDT1/CLMLOC
@@ -1502,6 +1490,8 @@ C asked to confirm whether the best-fit week is to be used in the
 C climatelist.
       SUBROUTINE DDRADSUM(act)
 #include "building.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -1518,13 +1508,6 @@ C climatelist.
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
 
 C dm* are the degree-day and day-ratio multipliers between the
 C typical periods and the whole season for heating (DD), cooling (DD),

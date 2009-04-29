@@ -705,6 +705,8 @@ C Where act='a' list all, act='m' list metrics, act='d' list
 C demand sets. Itru is the channel for listing.
       subroutine listipvdat(itru,act,ier)
 #include "building.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -728,9 +730,6 @@ C See ripvdat for IPV common block information.
 
       common/IPVDMD/idmdinc(7)
       common/IPVI/nipvimg,lipvimg(4)
-
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
       dimension list(32)  ! zone lists currently limited to 32 max.
 

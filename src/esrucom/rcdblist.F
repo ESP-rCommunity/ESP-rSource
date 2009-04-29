@@ -31,21 +31,14 @@ C Scan list of climate databases and present selection to user.
 #include "epara.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-C Typical periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
       dimension name(60), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
@@ -473,21 +466,15 @@ C  if 'f' then stop the application
 C  if 'u' then jump to 'useit' part of calling subroutine
 C  if 'e' then found 'end' so close unit number (92)
       subroutine itemclimatelist(idblfil,act,actreturn,clmdb,ier)
+#include "seasons.h"
+C seasons.h provides typper and typsea
+
 C << clmdb might need to be a longer name >>
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-C Typical periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
 C Strings associated with one climatelist item.
 C clmlnam (char*32) is the selection list string

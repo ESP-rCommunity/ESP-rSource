@@ -26,6 +26,8 @@ C climatic data sets compatible with ESP-r.
       program clm
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -67,15 +69,6 @@ C Project journal on/off, unit number, cmd, file name.
 C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
-
-C Typical assessment periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
 C Climate list common.
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)

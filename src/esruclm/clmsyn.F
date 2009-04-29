@@ -1075,6 +1075,9 @@ C ********* SYNOPDEGS *******
 C SYNOPDEGS computes seasonal heating and cooling DEGREE DAYS 
 C for the given period.
       SUBROUTINE SYNOPDEGS
+#include "seasons.h"
+C seasons.h provides typper and typsea
+
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
@@ -1085,15 +1088,6 @@ C for the given period.
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish,typical day
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
 

@@ -1095,6 +1095,8 @@ C and act on the information within the file.
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -1147,16 +1149,6 @@ C Simulation parameter sets.
 C IPV description.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
 
 C Control documentation common
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
@@ -2224,6 +2216,8 @@ C the file with minimum interaction.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -2290,16 +2284,6 @@ C Simulation parameter sets.
 C IPV description.
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
 
 C Control documentation common
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
