@@ -33,6 +33,8 @@ C component data is given for both isotropic and anisotropic skies.
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/exporttgi/ixopen,ixloc,ixunit
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       DIMENSION ALT(24),AZI(24)

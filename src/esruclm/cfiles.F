@@ -959,6 +959,14 @@ C Recover one day's data from climate file into common block for use.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RADTYP/IDNGH
+
+      integer NDAY  ! current day that data has been scanned for
+      real CDIF     ! diffuse solar
+      real CTMP     ! ambient dry bulb temperature
+      real CDNR     ! direct normal solar
+      real CVEL     ! wind velocity
+      real CDIR     ! wind direction
+      real CHUM     ! ambient RH
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       COMMON/CLMVAR/VNAME(6)
@@ -1017,6 +1025,8 @@ C Write one day's climate data to the current climate file.
       PARAMETER (MT=24)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       DIMENSION ICLM(24,6)

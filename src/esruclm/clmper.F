@@ -306,6 +306,9 @@ C returns IDS and IDF based on the current settings of IFDAY.
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/pophelp/h(60)
       CHARACTER H*72,hold*24
+      
+      integer ier  ! for error state
+      integer ifday  ! indicates the format for days.
 
       IER=0
       H(1)='The output time defines the day, month and '
@@ -397,6 +400,8 @@ C      common/appw/iappw,iappx,iappy
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 C Typical periods and season definitions.
@@ -1509,6 +1514,8 @@ C climatelist.
       COMMON/RADTYP/IDNGH
       common/exporttgi/ixopen,ixloc,ixunit
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
@@ -1524,6 +1531,7 @@ C typical periods and the whole season for heating (DD), cooling (DD),
 C lights (ratio), small power (ratio), fans (ratio), domestic hot
 C water (ratio). For nipvassmt=1 these are initially set to 1.0.
 C This information is potentially used to support IPV calculations.
+      real dmheat,dmcool,dmlight,dmsmlpw,dmfan,dmdhw
       common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
      &             dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
 
@@ -1533,6 +1541,8 @@ C This information is potentially used to support IPV calculations.
       dimension seacddwk(MSPS),seahddtot(MSPS),seacddtot(MSPS)
       dimension seahddwk(MSPS)
       logical ok,dok
+      
+      real hddw,cddw,radw   ! weightings for heating dd, cooling dd, solar radiation.
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -1540,7 +1550,7 @@ C This information is potentially used to support IPV calculations.
         return
       endif
 
-C Initial weightings for heading dd, cooling dd, solar radiation.
+C Initial weightings for heating dd, cooling dd, solar radiation.
       hddw=1.0
       cddw=1.0
       radw=1.0

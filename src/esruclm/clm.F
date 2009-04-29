@@ -1034,8 +1034,10 @@ C hour in any specified day.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     A              CDIR(MT),CHUM(MT)
+     &              CDIR(MT),CHUM(MT)
       character outs*124,xfile*144,tg*1,delim*1,h*72
       logical ok,dok
 

@@ -54,6 +54,8 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
      &             PWV(MD,MT),PWD(MD,MT),PRH(MD,MT),PLAST(MD,MT)
       COMMON/FILEP/IFIL
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       COMMON/RADTYP/IDNGH

@@ -278,12 +278,14 @@ C we are drawing grid
 
 C If the configuration file has been read and there is a filter for
 C which surfaces should be displayed test this here. Locate the
-C connection (IC) which relates to this surface.
+C connection (IC) which relates to this surface if a real zone.
         IF(CFGOK.AND.(.NOT.ISTOK))THEN
-          CALL SURADJ(nznog(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
-          IF(ITDSP.EQ.2.AND.IE.NE.0)GOTO 1000
-          IF(ITDSP.EQ.3.AND.IE.NE.3)GOTO 1000
-          IF(ITDSP.EQ.4.AND.(IE.EQ.0.OR.IE.EQ.3))GOTO 1000
+          if(iz.ne.0)then
+            CALL SURADJ(nznog(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
+            IF(ITDSP.EQ.2.AND.IE.NE.0)GOTO 1000
+            IF(ITDSP.EQ.3.AND.IE.NE.3)GOTO 1000
+            IF(ITDSP.EQ.4.AND.(IE.EQ.0.OR.IE.EQ.3))GOTO 1000
+          endif
         ENDIF
 
 C Copy polygon for Surface I into structure A for compatibility with

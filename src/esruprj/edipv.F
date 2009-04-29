@@ -374,6 +374,7 @@ C typical periods and the whole season for heating (DD), cooling (DD),
 C lights (ratio), small power (ratio), fans (ratio), domestic hot
 C water (ratio). For nipvassmt=1 these are initially set to 1.0.
 C This information is potentially used to support IPV calculations.
+      real dmheat,dmcool,dmlight,dmsmlpw,dmfan,dmdhw
       common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
      &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
 
@@ -2334,6 +2335,13 @@ C << update logic to accept parameters for a silent use >>
       COMMON/CLMDT0/CLAT,CLONG
       COMMON/RADTYP/IDNGH
 
+      integer NDAY  ! current day that data has been scanned for
+      real CDIF     ! diffuse solar
+      real CTMP     ! ambient dry bulb temperature
+      real CDNR     ! direct normal solar
+      real CVEL     ! wind velocity
+      real CDIR     ! wind direction
+      real CHUM     ! ambient RH
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
@@ -2347,6 +2355,7 @@ C typical periods and the whole season for heating (DD), cooling (DD),
 C lights (ratio), small power (ratio), fans (ratio), domestic hot
 C water (ratio). For nipvassmt=1 these are initially set to 1.0.
 C This information is potentially used to support IPV calculations.
+      real dmheat,dmcool,dmlight,dmsmlpw,dmfan,dmdhw
       common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
      &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
@@ -2367,6 +2376,8 @@ C best week.
       dimension wkdiff(MIPVA),iwkbest(MIPVA),iwkbstrt(MIPVA)
       dimension wkheatdd(MIPVA),wkcooldd(MIPVA),cddratio(MIPVA)
       dimension hddratio(MIPVA)
+      
+      real hddw,cddw,radw   ! weightings for heating dd, cooling dd, solar radiation.
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -2967,8 +2978,10 @@ C Recover one day's data from climate file into common block for use.
       PARAMETER (MT=24)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     A              CDIR(MT),CHUM(MT)
+     &              CDIR(MT),CHUM(MT)
       COMMON/CLMVAR/VNAME(6)
       CHARACTER*32 VNAME
       DIMENSION ICLM(24,6)
